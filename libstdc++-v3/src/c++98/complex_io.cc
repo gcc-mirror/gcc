@@ -95,7 +95,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
-  extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
+  extern "C" void ldbl (...) __attribute__ ((alias (#dbl), weak))
 
 _GLIBCXX_LDBL_COMPAT (_ZStlsIdcSt11char_traitsIcEERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E,
 		      _ZStlsIecSt11char_traitsIcEERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E);

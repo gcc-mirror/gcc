@@ -3362,7 +3362,7 @@ build_this (tree obj)
 {
   /* In a template, we are only concerned about the type of the
      expression, so we can take a shortcut.  */
-  if (processing_template_decl)
+  if (processing_nonlambda_template ())
     return build_address (obj);
 
   return cp_build_addr_expr (obj, tf_warning_or_error);
@@ -3743,7 +3743,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   /* FIXME P0135 doesn't say what to do in C++17 about list-initialization from
      a single element.  For now, let's handle constructors as before and also
      consider conversion operators from the element.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && BRACE_ENCLOSED_INITIALIZER_P (expr)
       && CONSTRUCTOR_NELTS (expr) == 1)
     fromtype = TREE_TYPE (CONSTRUCTOR_ELT (expr, 0)->value);
@@ -6579,6 +6579,30 @@ maybe_print_user_conv_context (conversion *convs)
 	}
 }
 
+/* Locate the parameter with the given index within FNDECL.
+   ARGNUM is zero based, -1 indicates the `this' argument of a method.
+   Return the location of the FNDECL itself if there are problems.  */
+
+static location_t
+get_fndecl_argument_location (tree fndecl, int argnum)
+{
+  int i;
+  tree param;
+
+  /* Locate param by index within DECL_ARGUMENTS (fndecl).  */
+  for (i = 0, param = FUNCTION_FIRST_USER_PARM (fndecl);
+       i < argnum && param;
+       i++, param = TREE_CHAIN (param))
+    ;
+
+  /* If something went wrong (e.g. if we have a builtin and thus no arguments),
+     return the location of FNDECL.  */
+  if (param == NULL)
+    return DECL_SOURCE_LOCATION (fndecl);
+
+  return DECL_SOURCE_LOCATION (param);
+}
+
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
    ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is nonzero when
@@ -6680,7 +6704,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	complained = permerror (loc, "invalid conversion from %qH to %qI",
 				TREE_TYPE (expr), totype);
       if (complained && fn)
-	inform (DECL_SOURCE_LOCATION (fn),
+	inform (get_fndecl_argument_location (fn, argnum),
 		"  initializing argument %P of %qD", argnum, fn);
 
       return cp_convert (totype, expr, complain);
@@ -7154,8 +7178,9 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	 with no corresponding parameter is conditionally-supported, with
 	 implementation-defined semantics.
 
-	 We support it as pass-by-invisible-reference, just like a normal
-	 value parameter.
+	 We support it as pass-by-invisible-reference to the caller's
+	 object.  That's different to named by-value parameters, which
+	 construct a copy and pass a reference to that.
 
 	 If the call appears in the context of a sizeof expression,
 	 it is not potentially-evaluated.  */
@@ -8035,7 +8060,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* In C++17 we shouldn't be copying a TARGET_EXPR except into a base
 	 subobject.  */
-      if (CHECKING_P && cxx_dialect >= cxx1z)
+      if (CHECKING_P && cxx_dialect >= cxx17)
 	gcc_assert (TREE_CODE (arg) != TARGET_EXPR
 		    /* It's from binding the ref parm to a packed field. */
 		    || convs[0]->need_temporary_p
@@ -8792,7 +8817,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
      of the destination, the initializer expression is used to initialize the
      destination object."  Handle that here to avoid doing overload
      resolution.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && args && vec_safe_length (*args) == 1
       && name == complete_ctor_identifier)
     {
@@ -8821,7 +8846,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	      && (flags & LOOKUP_DELEGATING_CONS))
 	    check_self_delegation (arg);
 	  /* Avoid change of behavior on Wunused-var-2.C.  */
-	  mark_lvalue_use (instance);
+	  instance = mark_lvalue_use (instance);
 	  return build2 (INIT_EXPR, class_type, instance, arg);
 	}
     }

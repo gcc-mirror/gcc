@@ -734,6 +734,14 @@ default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Default implementation of TARGET_FUNCTION_ARG_OFFSET.  */
+
+HOST_WIDE_INT
+default_function_arg_offset (machine_mode, const_tree)
+{
+  return 0;
+}
+
 /* Default implementation of TARGET_FUNCTION_ARG_PADDING: usually pad
    upward, but pad short args downward on big-endian machines.  */
 
@@ -1129,6 +1137,18 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
   return rclass;
 }
 
+/* The default implementation of TARGET_SECONDARY_MEMORY_NEEDED_MODE.  */
+
+machine_mode
+default_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (!targetm.lra_p ()
+      && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+      && INTEGRAL_MODE_P (mode))
+    return mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0).require ();
+  return mode;
+}
+
 /* By default, if flag_pic is true, then neither local nor global relocs
    should be placed in readonly memory.  */
 
@@ -1145,6 +1165,25 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
    return id;
 }
 
+/* The default implementation of TARGET_CONSTANT_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return align;
+}
+
+/* An implementation of TARGET_CONSTANT_ALIGNMENT that aligns strings
+   to at least BITS_PER_WORD but otherwise makes no changes.  */
+
+HOST_WIDE_INT
+constant_alignment_word_strings (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
 /* Default to natural alignment for vector types.  */
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
@@ -1153,6 +1192,15 @@ default_vector_alignment (const_tree type)
   if (align > MAX_OFILE_ALIGNMENT)
     align = MAX_OFILE_ALIGNMENT;
   return align;
+}
+
+/* The default implementation of
+   TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_preferred_vector_alignment (const_tree type)
+{
+  return TYPE_ALIGN (type);
 }
 
 /* By default assume vectors of element TYPE require a multiple of the natural
@@ -2185,6 +2233,12 @@ enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
 {
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+}
+
+HOST_WIDE_INT
+default_stack_clash_protection_final_dynamic_probe (rtx residual ATTRIBUTE_UNUSED)
+{
+  return 0;
 }
 
 #include "gt-targhooks.h"

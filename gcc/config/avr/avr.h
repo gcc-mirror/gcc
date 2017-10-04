@@ -471,8 +471,6 @@ typedef struct avr_args
 
 #define MOVE_RATIO(speed) ((speed) ? 3 : 2)
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define Pmode HImode
 
 #define FUNCTION_MODE HImode

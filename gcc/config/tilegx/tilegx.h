@@ -94,13 +94,6 @@
 #define BIGGEST_FIELD_ALIGNMENT 128
 #define WIDEST_HARDWARE_FP_SIZE 64
 
-/* Make strings word-aligned so strcpy from constants will be
-   faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -377,11 +370,6 @@ enum reg_class
 #define SHIFT_COUNT_TRUNCATED 0
 
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
-
-/* We represent all SI values as sign-extended DI values in
-   registers.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
-  ((INPREC) <= 32 || (OUTPREC) > 32)
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)

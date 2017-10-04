@@ -24,11 +24,24 @@ import (
 // Send SIGQUIT to get a stack trace.
 var sigquit = syscall.SIGQUIT
 
+func init() {
+	if runtime.Sigisblocked(int(syscall.SIGQUIT)) {
+		// We can't use SIGQUIT to kill subprocesses because
+		// it's blocked. Use SIGKILL instead. See issue
+		// #19196 for an example of when this happens.
+		sigquit = syscall.SIGKILL
+	}
+}
+
 func TestCrashDumpsAllThreads(t *testing.T) {
 	switch runtime.GOOS {
 	case "darwin", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
 	default:
 		t.Skipf("skipping; not supported on %v", runtime.GOOS)
+	}
+
+	if runtime.Sigisblocked(int(syscall.SIGQUIT)) {
+		t.Skip("skipping; SIGQUIT is blocked, see golang.org/issue/19196")
 	}
 
 	// We don't use executeTest because we need to kill the
@@ -165,6 +178,10 @@ func TestPanicSystemstack(t *testing.T) {
 		t.Skip("Skipping in short mode (GOTRACEBACK=crash is slow)")
 	}
 
+	if runtime.Sigisblocked(int(syscall.SIGQUIT)) {
+		t.Skip("skipping; SIGQUIT is blocked, see golang.org/issue/19196")
+	}
+
 	t.Parallel()
 	cmd := exec.Command(os.Args[0], "testPanicSystemstackInternal")
 	cmd = testEnv(cmd)
@@ -246,6 +263,19 @@ func TestSignalExitStatus(t *testing.T) {
 
 func TestSignalIgnoreSIGTRAP(t *testing.T) {
 	output := runTestProg(t, "testprognet", "SignalIgnoreSIGTRAP")
+	want := "OK\n"
+	if output != want {
+		t.Fatalf("want %s, got %s\n", want, output)
+	}
+}
+
+func TestSignalDuringExec(t *testing.T) {
+	switch runtime.GOOS {
+	case "darwin", "dragonfly", "freebsd", "linux", "netbsd", "openbsd":
+	default:
+		t.Skipf("skipping test on %s", runtime.GOOS)
+	}
+	output := runTestProg(t, "testprognet", "SignalDuringExec")
 	want := "OK\n"
 	if output != want {
 		t.Fatalf("want %s, got %s\n", want, output)

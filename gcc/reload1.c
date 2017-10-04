@@ -768,10 +768,8 @@ reload (rtx_insn *first, int global)
   /* Enable find_equiv_reg to distinguish insns made by reload.  */
   reload_first_uid = get_max_uid ();
 
-#ifdef SECONDARY_MEMORY_NEEDED
   /* Initialize the secondary memory table.  */
   clear_secondary_mem ();
-#endif
 
   /* We don't have a stack slot for any spill reg yet.  */
   memset (spill_stack_slot, 0, sizeof spill_stack_slot);
@@ -6331,7 +6329,6 @@ choose_reload_regs_init (struct insn_chain *chain, rtx *save_reload_reg_rtx)
 			      rld[i].when_needed, rld[i].mode);
 }
 
-#ifdef SECONDARY_MEMORY_NEEDED
 /* If X is not a subreg, return it unmodified.  If it is a subreg,
    look up whether we made a replacement for the SUBREG_REG.  Return
    either the replacement or the SUBREG_REG.  */
@@ -6343,7 +6340,6 @@ replaced_subreg (rtx x)
     return find_replacement (&SUBREG_REG (x));
   return x;
 }
-#endif
 
 /* Compute the offset to pass to subreg_regno_offset, for a pseudo of
    mode OUTERMODE that is available in a hard reg of mode INNERMODE.
@@ -6561,14 +6557,12 @@ choose_reload_regs (struct insn_chain *chain)
 		  && reg_last_reload_reg[regno] != 0
 		  && (GET_MODE_SIZE (GET_MODE (reg_last_reload_reg[regno]))
 		      >= GET_MODE_SIZE (mode) + byte)
-#ifdef CANNOT_CHANGE_MODE_CLASS
 		  /* Verify that the register it's in can be used in
 		     mode MODE.  */
-		  && !REG_CANNOT_CHANGE_MODE_P (REGNO (reg_last_reload_reg[regno]),
-						GET_MODE (reg_last_reload_reg[regno]),
-						mode)
-#endif
-		  )
+		  && (REG_CAN_CHANGE_MODE_P
+		      (REGNO (reg_last_reload_reg[regno]),
+		       GET_MODE (reg_last_reload_reg[regno]),
+		       mode)))
 		{
 		  enum reg_class rclass = rld[r].rclass, last_class;
 		  rtx last_reg = reg_last_reload_reg[regno];
@@ -6593,12 +6587,8 @@ choose_reload_regs (struct insn_chain *chain)
 			      && (secondary_reload_class (1, rclass, mode,
 							  last_reg)
 				  == NO_REGS)
-#ifdef SECONDARY_MEMORY_NEEDED
-			      && ! SECONDARY_MEMORY_NEEDED (last_class, rclass,
-							    mode)
-#endif
-			      ))
-
+			      && !(targetm.secondary_memory_needed
+				   (mode, last_class, rclass))))
 		      && (rld[r].nregs == max_group_size
 			  || ! TEST_HARD_REG_BIT (reg_class_contents[(int) group_class],
 						  i))
@@ -6973,9 +6963,7 @@ choose_reload_regs (struct insn_chain *chain)
 	{
 	  int r = reload_order[j];
 	  rtx check_reg;
-#ifdef SECONDARY_MEMORY_NEEDED
 	  rtx tem;
-#endif
 	  if (reload_inherited[r] && rld[r].reg_rtx)
 	    check_reg = rld[r].reg_rtx;
 	  else if (reload_override_in[r]
@@ -7014,15 +7002,15 @@ choose_reload_regs (struct insn_chain *chain)
 	      if (pass)
 	        pass = 2;
 	    }
-#ifdef SECONDARY_MEMORY_NEEDED
 	  /* If we needed a memory location for the reload, we also have to
 	     remove its related reloads.  */
 	  else if (rld[r].in
 		   && rld[r].out != rld[r].in
 		   && (tem = replaced_subreg (rld[r].in), REG_P (tem))		   
 		   && REGNO (tem) < FIRST_PSEUDO_REGISTER
-		   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (tem)),
-					       rld[r].rclass, rld[r].inmode)
+		   && (targetm.secondary_memory_needed
+		       (rld[r].inmode, REGNO_REG_CLASS (REGNO (tem)),
+			rld[r].rclass))
 		   && remove_address_replacements
 		      (get_secondary_mem (tem, rld[r].inmode, rld[r].opnum,
 					  rld[r].when_needed)))
@@ -7030,7 +7018,6 @@ choose_reload_regs (struct insn_chain *chain)
 	      if (pass)
 	        pass = 2;
 	    }
-#endif
 	}
     }
 
@@ -8046,12 +8033,8 @@ inherit_piecemeal_p (int dest ATTRIBUTE_UNUSED,
 		     int src ATTRIBUTE_UNUSED,
 		     machine_mode mode ATTRIBUTE_UNUSED)
 {
-#ifdef CANNOT_CHANGE_MODE_CLASS
-  return (!REG_CANNOT_CHANGE_MODE_P (dest, mode, reg_raw_mode[dest])
-	  && !REG_CANNOT_CHANGE_MODE_P (src, mode, reg_raw_mode[src]));
-#else
-  return true;
-#endif
+  return (REG_CAN_CHANGE_MODE_P (dest, mode, reg_raw_mode[dest])
+	  && REG_CAN_CHANGE_MODE_P (src, mode, reg_raw_mode[src]));
 }
 
 /* Output insns to reload values in and out of the chosen reload regs.  */
@@ -8535,9 +8518,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx_insn *last = get_last_insn ();
   rtx_insn *tem;
-#ifdef SECONDARY_MEMORY_NEEDED
   rtx tem1, tem2;
-#endif
 
   /* If IN is a paradoxical SUBREG, remove it and try to put the
      opposite SUBREG on OUT.  Likewise for a paradoxical SUBREG on OUT.  */
@@ -8673,15 +8654,14 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       set_dst_reg_note (insn, REG_EQUIV, in, out);
     }
 
-#ifdef SECONDARY_MEMORY_NEEDED
   /* If we need a memory location to do the move, do it that way.  */
   else if ((tem1 = replaced_subreg (in), tem2 = replaced_subreg (out),
 	    (REG_P (tem1) && REG_P (tem2)))
 	   && REGNO (tem1) < FIRST_PSEUDO_REGISTER
 	   && REGNO (tem2) < FIRST_PSEUDO_REGISTER
-	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (tem1)),
-				       REGNO_REG_CLASS (REGNO (tem2)),
-				       GET_MODE (out)))
+	   && targetm.secondary_memory_needed (GET_MODE (out),
+					       REGNO_REG_CLASS (REGNO (tem1)),
+					       REGNO_REG_CLASS (REGNO (tem2))))
     {
       /* Get the memory to use and rewrite both registers to its mode.  */
       rtx loc = get_secondary_mem (in, GET_MODE (out), opnum, type);
@@ -8695,7 +8675,6 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       gen_reload (loc, in, opnum, type);
       gen_reload (out, loc, opnum, type);
     }
-#endif
   else if (REG_P (out) && UNARY_P (in))
     {
       rtx op1;

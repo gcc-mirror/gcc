@@ -747,16 +747,16 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     return true;
 
   // A pointer to a regular type may not be converted to a pointer to
-  // a type that may not live in the heap, except when converting to
+  // a type that may not live in the heap, except when converting from
   // unsafe.Pointer.
   if (lhs->points_to() != NULL
       && rhs->points_to() != NULL
-      && !rhs->points_to()->in_heap()
-      && lhs->points_to()->in_heap()
-      && !lhs->is_unsafe_pointer_type())
+      && !lhs->points_to()->in_heap()
+      && rhs->points_to()->in_heap()
+      && !rhs->is_unsafe_pointer_type())
     {
       if (reason != NULL)
-	reason->assign(_("conversion from notinheap type to normal type"));
+	reason->assign(_("conversion from normal type to notinheap type"));
       return false;
     }
 
@@ -5842,7 +5842,9 @@ Struct_type::do_verify()
       Type* t = p->type();
       if (p->is_anonymous())
 	{
-	  if (t->named_type() != NULL && t->points_to() != NULL)
+	  if ((t->named_type() != NULL && t->points_to() != NULL)
+              || (t->named_type() == NULL && t->points_to() != NULL
+                  && t->points_to()->points_to() != NULL))
 	    {
 	      go_error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
@@ -6372,7 +6374,7 @@ Struct_type::make_struct_type_descriptor_type()
 				       "pkgPath", pointer_string_type,
 				       "typ", ptdt,
 				       "tag", pointer_string_type,
-				       "offset", uintptr_type);
+				       "offsetAnon", uintptr_type);
       Type* nsf = Type::make_builtin_named_type("structField", sf);
 
       Type* slice_type = Type::make_array_type(nsf, NULL);
@@ -6429,14 +6431,9 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 
       Struct_field_list::const_iterator q = f->begin();
       go_assert(q->is_field_name("name"));
-      if (pf->is_anonymous())
-	fvals->push_back(Expression::make_nil(bloc));
-      else
-	{
-	  std::string n = Gogo::unpack_hidden_name(pf->field_name());
-	  Expression* s = Expression::make_string(n, bloc);
-	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
-	}
+      std::string n = Gogo::unpack_hidden_name(pf->field_name());
+      Expression* s = Expression::make_string(n, bloc);
+      fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 
       ++q;
       go_assert(q->is_field_name("pkgPath"));
@@ -6469,8 +6466,15 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	}
 
       ++q;
-      go_assert(q->is_field_name("offset"));
-      fvals->push_back(Expression::make_struct_field_offset(this, &*pf));
+      go_assert(q->is_field_name("offsetAnon"));
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      Expression* o = Expression::make_struct_field_offset(this, &*pf);
+      Expression* one = Expression::make_integer_ul(1, uintptr_type, bloc);
+      o = Expression::make_binary(OPERATOR_LSHIFT, o, one, bloc);
+      int av = pf->is_anonymous() ? 1 : 0;
+      Expression* anon = Expression::make_integer_ul(av, uintptr_type, bloc);
+      o = Expression::make_binary(OPERATOR_OR, o, anon, bloc);
+      fvals->push_back(o);
 
       Expression* v = Expression::make_struct_composite_literal(element_type,
 								fvals, bloc);
@@ -7636,6 +7640,11 @@ Array_type::get_backend_length(Gogo* gogo)
   go_assert(this->length_ != NULL);
   if (this->blength_ == NULL)
     {
+      if (this->length_->is_error_expression())
+        {
+          this->blength_ = gogo->backend()->error_expression();
+          return this->blength_;
+        }
       Numeric_constant nc;
       mpz_t val;
       if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
@@ -11841,6 +11850,12 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	      go_assert(expr->type()->struct_type() == st);
 	    }
 	  ret = st->field_reference(expr, name, location);
+          if (ret == NULL)
+            {
+              go_error_at(location, "type has no field %qs",
+                          Gogo::message_name(name).c_str());
+              return Expression::make_error(location);
+            }
 	}
       else if (it != NULL && it->find_method(name) != NULL)
 	ret = Expression::make_interface_field_reference(expr, name,

@@ -1,6 +1,6 @@
 // PR c++/66197
 // { dg-do run }
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 extern "C" void abort();
 

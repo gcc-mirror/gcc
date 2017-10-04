@@ -1,3 +1,106 @@
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-warn.c (warn_tautological_bitwise_comparison): Use wi::to_widest
+	when combining the original unconverted comparison operands.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (handle_noipa_attribute): Don't add "stack_protect"
+	attribute.
+
+2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (to_ada_name): Add index parameter.
+	(pp_ada_tree_identifier): Likewise.
+	(dump_ada_macros): Adjust call to to_ada_name.
+	(struct overloaded_name_hash): New type.
+	(struct overloaded_name_hasher): Likewise.
+	(overloaded_names): New hash table.
+	(compute_overloading_index): New function.
+	(dump_ada_decl_name): Call it and pass the result to
+	pp_ada_tree_identifier.
+	(dump_ada_double_name): Adjust calls to pp_ada_tree_identifier.
+	(dump_ada_function_declaration): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_constructor): Likewise.
+	(print_destructor): Likewise.
+	(dump_ada_specs): Delete overloaded_names table.
+
+2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (max_ada_macros): Move around.
+	(store_ada_macro_index): Likewise.
+	(source_file): Rename into...
+	(macro_source_file): ...this.
+	(count_ada_macro): Move around.
+	(store_ada_macro): Likewise.
+	(compare_macro): Likewise.
+	(print_ada_macros): Merge in...
+	(dump_ada_macros): ...this.
+	(source_file_base): Rename into...
+	(current_source_file): ...this.
+	(print_comment): Move around.
+	(dump_ada_nodes): Call dump_ada_declaration directly.
+	(struct with): Change type of limited field to bool.
+	(append_withs): Change type of limited_access parameter to bool.
+	(pp_ada_tree_identifie): Likewise.
+	(dump_ada_decl_nam): Likewise.
+	(dump_generic_ada_node): Likewise.  Do not print the return type.
+	(to_ada_name): Change type of space_found parameter to bool.
+	(dump_ada_function_declaration): Return void and change type of
+	parameters to bool.  Also print the return type for a function.
+	(print_ada_methods): Rename into...
+	(dump_ada_methods): ...this.
+	(print_ada_declaration): Rename into ...
+	(dump_ada_declaration): ...this.  Do not print the return type.
+	(print_ada_struct_decl): Rename into...
+	(dump_ada_struct_decl): ...this.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (handle_packed_attribute): Test DECL_C_BIT_FIELD
+	rather than DECL_INITIAL.
+	(common_handle_aligned_attribute): Likewise.
+
+2017-09-20  Alexandre Oliva <aoliva@redhat.com>
+
+	* c.opt (gen-decls): Add RejectNegative.
+
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* c-common.h (cxx_dialect): Add cxx2a as a dialect.
+	* opt.c: Add options for -std=c++2a and -std=gnu++2a.
+	* c-opts.c (set_std_cxx2a): New.
+	(c_common_handle_option): Set options when -std=c++2a is enabled.
+	(c_common_post_options): Adjust comments.
+	(set_std_cxx14, set_std_cxx17): Likewise.
+
+2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-pragma.c (handle_pragma_scalar_storage_order): Expand on error
+	message for non-uniform endianness and issue a warning in C++.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wc++1z-compat): Change from option to undocumented alias.
+	(Wc++17-compat): Change from undocumented alias to option.
+	(Wnoexcept-type): Enable by Wc++17-compat instead of Wc++1z-compat,
+	change C++1z to C++17 in description.
+	(std=c++1z, std=gnu++1z): Change from option to undocumented
+	deprecated alias.
+	(std=c++17, std=gnu++17): Change from undocumented alias to option.
+	Adjust description.
+	* c-common.h (enum cxx_dialect): Rename cxx1z to cxx17.
+	* c-opts.c (set_std_cxx1z): Rename to ...
+	(set_std_cxx17): ... this.
+	(c_common_handle_option): Rename OPT_std_c__1z to OPT_std_c__17
+	and OPT_std_gnu__1z to OPT_std_gnu__17.  Adjust set_std_cxx1z
+	caller.  
+	(c_common_post_options): Use cxx17 instead of cxx1z.  Adjust
+	comments.
+
 2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* c-attribs.c (common_handle_aligned_attribute): Don't warn

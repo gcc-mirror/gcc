@@ -92,10 +92,10 @@ fterminated-vtables
 Driver RejectNegative
 
 gfull
-Driver
+Driver RejectNegative
 
 gused
-Driver
+Driver RejectNegative
 
 headerpad_max_install_names
 Driver

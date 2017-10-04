@@ -30,8 +30,7 @@
 #include "tree.h"
 #include "tree-iterator.h"
 #include "hsa-brig-format.h"
-
-class brig_to_generic;
+#include "brig-util.h"
 
 #include <map>
 #include <string>
@@ -39,6 +38,8 @@ class brig_to_generic;
 #include <set>
 
 #include "phsa.h"
+
+class brig_to_generic;
 
 typedef std::map<std::string, tree> label_index;
 typedef std::map<const BrigDirectiveVariable *, tree> variable_index;
@@ -84,6 +85,12 @@ public:
 
   tree add_local_variable (std::string name, tree type);
 
+  size_t group_variable_segment_offset (const std::string &name) const;
+
+  bool has_group_variable (const std::string &name) const;
+
+  size_t group_segment_size () const;
+
   tree get_m_var_declfor_reg (const BrigOperandRegister *reg);
 
   bool convert_to_wg_function ();
@@ -119,10 +126,16 @@ public:
 
   /* The __context function argument.  */
   tree m_context_arg;
+
   /* The __group_base_ptr argument in the current function.
-     Points to the start of the group segment for the kernel
-     instance.  */
+     Points to the start of the group segment for the work-group.  */
   tree m_group_base_arg;
+
+   /* The __group_local_offset_ptr argument in the current function.  It
+      contains the offset related to the group_base_ptr where the function's
+      local area for group variables resides.  */
+  tree m_group_local_offset_arg;
+
   /* The __private_base_ptr argument in the current function.
      Points to the start of the private segment.  */
   tree m_private_base_arg;
@@ -159,7 +172,7 @@ public:
   /* True if the function has at least one alloca instruction.  */
   bool m_has_allocas;
 
-  /* If the kernel containts at least one function call that _may_
+  /* If the kernel contains at least one function call that _may_
      contain a barrier call, this is set to true.  */
   bool m_has_function_calls_with_barriers;
 
@@ -198,6 +211,10 @@ public:
 
   /* The functions called by this function.  */
   std::vector<tree> m_called_functions;
+
+  /* Stores the kernel scope group variable offsets if the function is
+     a kernel.  */
+  group_variable_offset_index m_local_group_variables;
 
   brig_to_generic *m_parent;
   /* The metadata of the function that should be stored with the binary and

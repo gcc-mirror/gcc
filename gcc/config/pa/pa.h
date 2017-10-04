@@ -309,11 +309,6 @@ typedef struct GTY(()) machine_function
    atomic operations.  */
 #define MALLOC_ABI_ALIGNMENT (TARGET_SOM ? 64 : 128)
 
-/* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
-  (TREE_CODE (EXP) == STRING_CST		\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -1019,10 +1014,6 @@ do {									     \
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
@@ -1315,3 +1306,5 @@ do {									     \
    seven and four instructions, respectively.  */  
 #define MAX_PCREL17F_OFFSET \
   (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
+
+#define NEED_INDICATE_EXEC_STACK 0

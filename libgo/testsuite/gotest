@@ -348,18 +348,18 @@ x)
 			fi
 			match=false
 			;;
-		    $goos | $goarch | cgo)
+		    $goos | $goarch | cgo | go1.[0-9])
 			match=true
 			;;
-		    "!"$goos | "!"$goarch | "!cgo")
+		    "!"$goos | "!"$goarch | "!cgo" | "!"go1.[0-9])
 			;;
 		    *,*)
 			cmatch=true
 			for ctag in `echo $tag | sed -e 's/,/ /g'`; do
 			    case $ctag in
-			    $goos | $goarch | cgo)
+			    $goos | $goarch | cgo | go1.[0-9])
 				;;
-			    "!"$goos | "!"$goarch | "!cgo")
+			    "!"$goos | "!"$goarch | "!cgo" | "!"go1.[0-9])
 				cmatch=false
 				;;
 			    "!"*)

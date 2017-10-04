@@ -1,5 +1,5 @@
 // PR c++/80614
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <typename T> void fn() {}
 

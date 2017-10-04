@@ -568,22 +568,6 @@ static int d_demangle_callback (const char *, int,
                                 demangle_callbackref, void *);
 static char *d_demangle (const char *, int, size_t *);
 
-/* True iff TYPE is a demangling component representing a
-   function-type-qualifier.  */
-
-static int
-is_fnqual_component_type (enum demangle_component_type type)
-{
-  return (type == DEMANGLE_COMPONENT_RESTRICT_THIS
-	  || type == DEMANGLE_COMPONENT_VOLATILE_THIS
-	  || type == DEMANGLE_COMPONENT_CONST_THIS
-	  || type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS
-	  || type == DEMANGLE_COMPONENT_TRANSACTION_SAFE
-	  || type == DEMANGLE_COMPONENT_NOEXCEPT
-	  || type == DEMANGLE_COMPONENT_THROW_SPEC
-	  || type == DEMANGLE_COMPONENT_REFERENCE_THIS);
-}
-
 #define FNQUAL_COMPONENT_CASE				\
     case DEMANGLE_COMPONENT_RESTRICT_THIS:		\
     case DEMANGLE_COMPONENT_VOLATILE_THIS:		\
@@ -593,6 +577,23 @@ is_fnqual_component_type (enum demangle_component_type type)
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:		\
     case DEMANGLE_COMPONENT_NOEXCEPT:			\
     case DEMANGLE_COMPONENT_THROW_SPEC
+
+/* True iff TYPE is a demangling component representing a
+   function-type-qualifier.  */
+
+static int
+is_fnqual_component_type (enum demangle_component_type type)
+{
+  switch (type)
+    {
+    FNQUAL_COMPONENT_CASE:
+      return 1;
+    default:
+      break;
+    }
+  return 0;
+}
+
 
 #ifdef CP_DEMANGLE_DEBUG
 
@@ -1258,6 +1259,8 @@ has_return_type (struct demangle_component *dc)
     {
     default:
       return 0;
+    case DEMANGLE_COMPONENT_LOCAL_NAME:
+      return has_return_type (d_right (dc));
     case DEMANGLE_COMPONENT_TEMPLATE:
       return ! is_ctor_dtor_or_conversion (d_left (dc));
     FNQUAL_COMPONENT_CASE:
@@ -1300,25 +1303,22 @@ static struct demangle_component *
 d_encoding (struct d_info *di, int top_level)
 {
   char peek = d_peek_char (di);
+  struct demangle_component *dc;
 
   if (peek == 'G' || peek == 'T')
-    return d_special_name (di);
+    dc = d_special_name (di);
   else
     {
-      struct demangle_component *dc;
-
       dc = d_name (di);
 
-      if (dc != NULL && top_level && (di->options & DMGL_PARAMS) == 0)
+      if (!dc)
+	/* Failed already.  */;
+      else if (top_level && (di->options & DMGL_PARAMS) == 0)
 	{
 	  /* Strip off any initial CV-qualifiers, as they really apply
 	     to the `this' parameter, and they were not output by the
 	     v2 demangler without DMGL_PARAMS.  */
-	  while (dc->type == DEMANGLE_COMPONENT_RESTRICT_THIS
-		 || dc->type == DEMANGLE_COMPONENT_VOLATILE_THIS
-		 || dc->type == DEMANGLE_COMPONENT_CONST_THIS
-		 || dc->type == DEMANGLE_COMPONENT_REFERENCE_THIS
-		 || dc->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS)
+	  while (is_fnqual_component_type (dc->type))
 	    dc = d_left (dc);
 
 	  /* If the top level is a DEMANGLE_COMPONENT_LOCAL_NAME, then
@@ -1326,24 +1326,37 @@ d_encoding (struct d_info *di, int top_level)
 	     really apply here; this happens when parsing a class
 	     which is local to a function.  */
 	  if (dc->type == DEMANGLE_COMPONENT_LOCAL_NAME)
-	    {
-	      struct demangle_component *dcr;
-
-	      dcr = d_right (dc);
-	      while (is_fnqual_component_type (dcr->type))
-		dcr = d_left (dcr);
-	      dc->u.s_binary.right = dcr;
-	    }
-
-	  return dc;
+	    while (is_fnqual_component_type (d_right (dc)->type))
+	      d_right (dc) = d_left (d_right (dc));
 	}
+      else
+	{
+	  peek = d_peek_char (di);
+	  if (peek != '\0' && peek != 'E')
+	    {
+	      struct demangle_component *ftype;
 
-      peek = d_peek_char (di);
-      if (dc == NULL || peek == '\0' || peek == 'E')
-	return dc;
-      return d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME, dc,
-			  d_bare_function_type (di, has_return_type (dc)));
+	      ftype = d_bare_function_type (di, has_return_type (dc));
+	      if (ftype)
+		{
+		  /* If this is a non-top-level local-name, clear the
+		     return type, so it doesn't confuse the user by
+		     being confused with the return type of whaever
+		     this is nested within.  */
+		  if (!top_level && dc->type == DEMANGLE_COMPONENT_LOCAL_NAME
+		      && ftype->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+		    d_left (ftype) = NULL;
+
+		  dc = d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME,
+				    dc, ftype);
+		}
+	      else
+		dc = NULL;
+	    }
+	}
     }
+
+  return dc;
 }
 
 /* <tagged-name> ::= <name> B <source-name> */
@@ -2095,7 +2108,8 @@ d_special_name (struct d_info *di)
       switch (d_next_char (di))
 	{
 	case 'V':
-	  return d_make_comp (di, DEMANGLE_COMPONENT_GUARD, d_name (di), NULL);
+	  return d_make_comp (di, DEMANGLE_COMPONENT_GUARD,
+			      d_name (di), NULL);
 
 	case 'R':
 	  {
@@ -3380,13 +3394,10 @@ d_expression_1 (struct d_info *di)
 
 	    if (suffix)
 	      /* Indicate the suffix variant for d_print_comp.  */
-	      return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
-				  d_make_comp (di,
-					       DEMANGLE_COMPONENT_BINARY_ARGS,
-					       operand, operand));
-	    else
-	      return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
-				  operand);
+	      operand = d_make_comp (di, DEMANGLE_COMPONENT_BINARY_ARGS,
+				     operand, operand);
+
+	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op, operand);
 	  }
 	case 2:
 	  {
@@ -3571,11 +3582,14 @@ static struct demangle_component *
 d_local_name (struct d_info *di)
 {
   struct demangle_component *function;
+  struct demangle_component *name;
 
   if (! d_check_char (di, 'Z'))
     return NULL;
 
   function = d_encoding (di, 0);
+  if (!function)
+    return NULL;
 
   if (! d_check_char (di, 'E'))
     return NULL;
@@ -3585,13 +3599,10 @@ d_local_name (struct d_info *di)
       d_advance (di, 1);
       if (! d_discriminator (di))
 	return NULL;
-      return d_make_comp (di, DEMANGLE_COMPONENT_LOCAL_NAME, function,
-			  d_make_name (di, "string literal",
-				       sizeof "string literal" - 1));
+      name = d_make_name (di, "string literal", sizeof "string literal" - 1);
     }
   else
     {
-      struct demangle_component *name;
       int num = -1;
 
       if (d_peek_char (di) == 'd')
@@ -3604,21 +3615,30 @@ d_local_name (struct d_info *di)
 	}
 
       name = d_name (di);
-      if (name)
-	switch (name->type)
-	  {
-	    /* Lambdas and unnamed types have internal discriminators.  */
-	  case DEMANGLE_COMPONENT_LAMBDA:
-	  case DEMANGLE_COMPONENT_UNNAMED_TYPE:
-	    break;
-	  default:
-	    if (! d_discriminator (di))
-	      return NULL;
-	  }
+
+      if (name
+	  /* Lambdas and unnamed types have internal discriminators
+	     and are not functions.  */
+	  && name->type != DEMANGLE_COMPONENT_LAMBDA
+	  && name->type != DEMANGLE_COMPONENT_UNNAMED_TYPE)
+	{
+	  /* Read and ignore an optional discriminator.  */
+	  if (! d_discriminator (di))
+	    return NULL;
+	}
+
       if (num >= 0)
 	name = d_make_default_arg (di, num, name);
-      return d_make_comp (di, DEMANGLE_COMPONENT_LOCAL_NAME, function, name);
     }
+
+  /* Elide the return type of the containing function so as to not
+     confuse the user thinking it is the return type of whatever local
+     function we might be containing.  */
+  if (function->type == DEMANGLE_COMPONENT_TYPED_NAME
+      && d_right (function)->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+    d_left (d_right (function)) = NULL;
+
+  return d_make_comp (di, DEMANGLE_COMPONENT_LOCAL_NAME, function, name);
 }
 
 /* <discriminator> ::= _ <number>    # when number < 10
@@ -4698,32 +4718,21 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	    return;
 	  }
 
-	/* If typed_name is a template, then it applies to the
-	   function type as well.  */
-	if (typed_name->type == DEMANGLE_COMPONENT_TEMPLATE)
-	  {
-	    dpt.next = dpi->templates;
-	    dpi->templates = &dpt;
-	    dpt.template_decl = typed_name;
-	  }
-
 	/* If typed_name is a DEMANGLE_COMPONENT_LOCAL_NAME, then
 	   there may be CV-qualifiers on its right argument which
-	   really apply here; this happens when parsing a class which
+	   really apply here; this happens when parsing a class that
 	   is local to a function.  */
 	if (typed_name->type == DEMANGLE_COMPONENT_LOCAL_NAME)
 	  {
-	    struct demangle_component *local_name;
-
-	    local_name = d_right (typed_name);
-	    if (local_name->type == DEMANGLE_COMPONENT_DEFAULT_ARG)
-	      local_name = local_name->u.s_unary_num.sub;
-	    if (local_name == NULL)
+	    typed_name = d_right (typed_name);
+	    if (typed_name->type == DEMANGLE_COMPONENT_DEFAULT_ARG)
+	      typed_name = typed_name->u.s_unary_num.sub;
+	    if (typed_name == NULL)
 	      {
 		d_print_error (dpi);
 		return;
 	      }
-	    while (is_fnqual_component_type (local_name->type))
+	    while (is_fnqual_component_type (typed_name->type))
 	      {
 		if (i >= sizeof adpm / sizeof adpm[0])
 		  {
@@ -4735,13 +4744,22 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 		adpm[i].next = &adpm[i - 1];
 		dpi->modifiers = &adpm[i];
 
-		adpm[i - 1].mod = local_name;
+		adpm[i - 1].mod = typed_name;
 		adpm[i - 1].printed = 0;
 		adpm[i - 1].templates = dpi->templates;
 		++i;
 
-		local_name = d_left (local_name);
+		typed_name = d_left (typed_name);
 	      }
+	  }
+
+	/* If typed_name is a template, then it applies to the
+	   function type as well.  */
+	if (typed_name->type == DEMANGLE_COMPONENT_TEMPLATE)
+	  {
+	    dpt.next = dpi->templates;
+	    dpi->templates = &dpt;
+	    dpt.template_decl = typed_name;
 	  }
 
 	d_print_comp (dpi, options, d_right (dc));

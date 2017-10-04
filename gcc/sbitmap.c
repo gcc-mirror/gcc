@@ -316,6 +316,59 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
   bmap->elms[start_word] |= mask;
 }
 
+/* Return TRUE if any bit between START and END inclusive is set within
+   the simple bitmap BMAP.  Return FALSE otherwise.  */
+
+bool
+bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
+{
+  unsigned int start_word = start / SBITMAP_ELT_BITS;
+  unsigned int start_bitno = start % SBITMAP_ELT_BITS;
+
+  /* Testing within a word, starting at the beginning of a word.  */
+  if (start_bitno == 0 && (end - start) < SBITMAP_ELT_BITS)
+    {
+      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << (end - start)) - 1;
+      return (bmap->elms[start_word] & mask) != 0;
+    }
+
+  unsigned int end_word = end / SBITMAP_ELT_BITS;
+  unsigned int end_bitno = end % SBITMAP_ELT_BITS;
+
+  /* Testing starts somewhere in the middle of a word.  Test up to the
+     end of the word or the end of the requested region, whichever comes
+     first.  */
+  if (start_bitno != 0)
+    {
+      unsigned int nbits = ((start_word == end_word)
+			    ? end_bitno - start_bitno
+			    : SBITMAP_ELT_BITS - start_bitno);
+      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << nbits) - 1;
+      mask <<= start_bitno;
+      if (bmap->elms[start_word] & mask)
+	return true;
+      start_word++;
+    }
+
+  if (start_word > end_word)
+    return false;
+
+  /* Now test words at a time until we hit a partial word.  */
+  unsigned int nwords = (end_word - start_word);
+  while (nwords)
+    {
+      if (bmap->elms[start_word])
+	return true;
+      start_word++;
+      nwords--;
+    }
+
+  /* Now handle residuals in the last word.  */
+  SBITMAP_ELT_TYPE mask
+    = ((SBITMAP_ELT_TYPE)1 << (SBITMAP_ELT_BITS - end_bitno)) - 1;
+  return (bmap->elms[start_word] & mask) != 0;
+}
+
 #if GCC_VERSION < 3400
 /* Table of number of set bits in a character, indexed by value of char.  */
 static const unsigned char popcount_table[] =

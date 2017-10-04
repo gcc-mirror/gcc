@@ -431,6 +431,11 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       if (array_expr == error_mark_node || index_exp == error_mark_node)
 	error ("ambiguous conversion for array subscript");
 
+      if (TREE_CODE (TREE_TYPE (array_expr)) == POINTER_TYPE)
+	array_expr = mark_rvalue_use (array_expr);
+      else
+	array_expr = mark_lvalue_use_nonread (array_expr);
+      index_exp = mark_rvalue_use (index_exp);
       expr = build_array_ref (input_location, array_expr, index_exp);
     }
   if (processing_template_decl && expr != error_mark_node)
@@ -973,14 +978,16 @@ grokfield (const cp_declarator *declarator,
 }
 
 /* Like `grokfield', but for bitfields.
-   WIDTH is non-NULL for bit fields only, and is an INTEGER_CST node.  */
+   WIDTH is the width of the bitfield, a constant expression.
+   The other parameters are as for grokfield.  */
 
 tree
 grokbitfield (const cp_declarator *declarator,
-	      cp_decl_specifier_seq *declspecs, tree width,
+	      cp_decl_specifier_seq *declspecs, tree width, tree init,
 	      tree attrlist)
 {
-  tree value = grokdeclarator (declarator, declspecs, BITFIELD, 0, &attrlist);
+  tree value = grokdeclarator (declarator, declspecs, BITFIELD,
+			       init != NULL_TREE, &attrlist);
 
   if (value == error_mark_node)
     return NULL_TREE; /* friends went bad.  */
@@ -1035,7 +1042,11 @@ grokbitfield (const cp_declarator *declarator,
       error ("static member %qD cannot be a bit-field", value);
       return NULL_TREE;
     }
-  cp_finish_decl (value, NULL_TREE, false, NULL_TREE, 0);
+
+  int flags = LOOKUP_IMPLICIT;
+  if (init && DIRECT_LIST_INIT_P (init))
+    flags = LOOKUP_NORMAL;
+  cp_finish_decl (value, init, false, NULL_TREE, flags);
 
   if (width != error_mark_node)
     {
@@ -1046,7 +1057,10 @@ grokbitfield (const cp_declarator *declarator,
 	       TREE_TYPE (width));
       else
 	{
-	  DECL_INITIAL (value) = width;
+	  /* Temporarily stash the width in DECL_BIT_FIELD_REPRESENTATIVE.
+	     check_bitfield_decl picks it from there later and sets DECL_SIZE
+	     accordingly.  */
+	  DECL_BIT_FIELD_REPRESENTATIVE (value) = width;
 	  SET_DECL_C_BIT_FIELD (value);
 	}
     }
@@ -1550,7 +1564,7 @@ finish_anon_union (tree anon_union_decl)
     return;
   if (main_decl == NULL_TREE)
     {
-      warning (0, "anonymous union with no members");
+      pedwarn (input_location, 0, "anonymous union with no members");
       return;
     }
 

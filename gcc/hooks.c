@@ -133,6 +133,13 @@ hook_bool_mode_uhwi_false (machine_mode, unsigned HOST_WIDE_INT)
   return false;
 }
 
+/* Generic hook that takes (unsigned int, unsigned int) and returns true.  */
+bool
+hook_bool_uint_uint_true (unsigned int, unsigned int)
+{
+  return true;
+}
+
 /* Generic hook that takes (unsigned int, machine_mode) and returns false.  */
 bool
 hook_bool_uint_mode_false (unsigned int, machine_mode)
@@ -491,6 +498,23 @@ hook_bool_uint_uintp_false (unsigned int, unsigned int *)
 /* Generic hook that takes a register class and returns false.  */
 bool
 hook_bool_reg_class_t_false (reg_class_t regclass ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+/* Generic hook that takes 2 machine_modes and a register class and
+   returns true.  */
+bool
+hook_bool_mode_mode_reg_class_t_true (machine_mode, machine_mode, reg_class_t)
+{
+  return true;
+}
+
+/* Generic hook that takes a machine_mode and 2 register classes
+   and returns false.  */
+bool
+hook_bool_mode_reg_class_t_reg_class_t_false (machine_mode, reg_class_t,
+					      reg_class_t)
 {
   return false;
 }

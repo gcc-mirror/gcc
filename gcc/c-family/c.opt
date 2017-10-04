@@ -378,11 +378,11 @@ C++ ObjC++ Var(warn_cxx14_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014.
 
 Wc++1z-compat
-C++ ObjC++ Var(warn_cxx1z_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
-Warn about C++ constructs whose meaning differs between ISO C++ 2014 and (forthcoming) ISO C++ 201z(7?).
+C++ ObjC++ Warning Alias(Wc++17-compat) Undocumented
 
 Wc++17-compat
-C++ ObjC++ Warning Alias(Wc++1z-compat) Undocumented
+C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
@@ -809,8 +809,8 @@ C++ ObjC++ Var(warn_noexcept) Warning
 Warn when a noexcept expression evaluates to false even though the expression can't actually throw.
 
 Wnoexcept-type
-C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++1z-compat)
-Warn if C++1z noexcept function type will change the mangled name of a symbol.
+C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++17-compat)
+Warn if C++17 noexcept function type will change the mangled name of a symbol.
 
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
@@ -1810,7 +1810,7 @@ ObjC ObjC++ Var(flag_zero_link)
 Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode.
 
 gen-decls
-ObjC ObjC++ Driver Var(flag_gen_declaration)
+ObjC ObjC++ Driver Var(flag_gen_declaration) RejectNegative
 Dump declarations to a .decl file.
 
 femit-struct-debug-baseonly
@@ -1925,11 +1925,16 @@ C++ ObjC++
 Conform to the ISO 2014 C++ standard.
 
 std=c++1z
-C++ ObjC++
-Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support).
+C++ ObjC++ Alias(std=c++17) Undocumented
+Deprecated in favor of -std=c++17.
 
 std=c++17
-C++ ObjC++ Alias(std=c++1z) Undocumented
+C++ ObjC++
+Conform to the ISO 2017 C++ standard.
+
+std=c++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard (experimental and incomplete support).
 
 std=c11
 C ObjC
@@ -1982,11 +1987,16 @@ C++ ObjC++
 Conform to the ISO 2014 C++ standard with GNU extensions.
 
 std=gnu++1z
-C++ ObjC++
-Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support).
+C++ ObjC++ Alias(std=gnu++17) Undocumented
+Deprecated in favor of -std=gnu++17.
 
 std=gnu++17
-C++ ObjC++ Alias(std=gnu++1z) Undocumented
+C++ ObjC++
+Conform to the ISO 2017 C++ standard with GNU extensions.
+
+std=gnu++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC

@@ -18,6 +18,8 @@
 // PR 14026
 // 18.6.4 uncaught_exception
 
+// { dg-options "-Wno-deprecated" }
+
 #include <cstdlib>
 #include <exception>
 #include <testsuite_hooks.h>

@@ -23,10 +23,17 @@
 	(match_operand:VALL_F16 1 "general_operand" ""))]
   "TARGET_SIMD"
   "
-    if (GET_CODE (operands[0]) == MEM
-	&& !(aarch64_simd_imm_zero (operands[1], <MODE>mode)
-	     && aarch64_legitimate_address_p (<MODE>mode, operands[0],
-					      PARALLEL, 1)))
+  /* Force the operand into a register if it is not an
+     immediate whose use can be replaced with xzr.
+     If the mode is 16 bytes wide, then we will be doing
+     a stp in DI mode, so we check the validity of that.
+     If the mode is 8 bytes wide, then we will do doing a
+     normal str, so the check need not apply.  */
+  if (GET_CODE (operands[0]) == MEM
+      && !(aarch64_simd_imm_zero (operands[1], <MODE>mode)
+	   && ((GET_MODE_SIZE (<MODE>mode) == 16
+		&& aarch64_mem_pair_operand (operands[0], DImode))
+	       || GET_MODE_SIZE (<MODE>mode) == 8)))
       operands[1] = force_reg (<MODE>mode, operands[1]);
   "
 )
@@ -126,7 +133,7 @@
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VQ 0 "nonimmediate_operand"
-		"=w, Ump,  m,  w, ?r, ?w, ?r, w")
+		"=w, Umq,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VQ 1 "general_operand"
 		"m,  Dz, w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD

@@ -317,12 +317,6 @@ enum reg_class
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -409,7 +403,6 @@ enum reg_class
    quickly between memory and registers or between two memory
    locations.  */
 #define MOVE_MAX 4
-#define TRULY_NOOP_TRUNCATION(op,ip) 1
 
 /* All load operations zero extend.  */
 #define LOAD_EXTEND_OP(MEM) ZERO_EXTEND
@@ -417,8 +410,6 @@ enum reg_class
 /* A number, the maximum number of registers that can appear in a
    valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
-
-#define TRULY_NOOP_TRUNCATION(op,ip) 1
 
 /* An alias for a machine mode name.  This is the machine mode that
    elements of a jump-table should have.  */

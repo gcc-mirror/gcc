@@ -294,11 +294,6 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
   {0x00000000, 0x00000000, 0x01000000},	/* SHIFT_REGS */		\
   {0xfffffffe, 0xffffffff, 0x03ffffff}}	/* ALL_REGS */
 
-/* Defines invalid mode changes.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  pa_cannot_change_mode_class (FROM, TO, CLASS)
-
 /* Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */

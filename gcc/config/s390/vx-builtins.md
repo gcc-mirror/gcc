@@ -1005,15 +1005,16 @@
 
 ; Vector shift left by byte
 
-(define_insn "vec_slb<mode>"
-  [(set (match_operand:V_HW 0 "register_operand"                    "=v")
-	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "v")
-		      (match_operand:<tointvec> 2 "register_operand" "v")]
+; Pattern definition in vector.md, see vec_vslb
+(define_expand "vec_slb<mode>"
+  [(set (match_operand:V_HW 0 "register_operand"                     "")
+	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
+		      (match_operand:<tointvec> 2 "register_operand" "")]
 		     UNSPEC_VEC_SLB))]
   "TARGET_VX"
-  "vslb\t%v0,%v1,%v2"
-  [(set_attr "op_type" "VRR")])
-
+{
+  PUT_MODE (operands[2], V16QImode);
+})
 
 ; Vector shift left double by byte
 
@@ -1076,14 +1077,16 @@
 
 ; Vector shift right logical by byte
 
-; Pattern definition in vector.md
+; Pattern definition in vector.md, see vec_vsrb
 (define_expand "vec_srb<mode>"
   [(set (match_operand:V_HW 0 "register_operand"                     "")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "")
 		      (match_operand:<tointvec> 2 "register_operand" "")]
 		     UNSPEC_VEC_SRLB))]
-  "TARGET_VX")
-
+  "TARGET_VX"
+{
+  PUT_MODE (operands[2], V16QImode);
+})
 
 ; Vector subtract
 
@@ -1187,7 +1190,7 @@
 		       (match_operand:QI    4 "const_mask_operand" "C")]
 		      UNSPEC_VEC_MSUM))]
   "TARGET_VXE"
-  "vmslg\t%v0,%v1,%v2,%v3"
+  "vmslg\t%v0,%v1,%v2,%v3,%4"
   [(set_attr "op_type" "VRR")])
 
 (define_insn "vmslg"
@@ -1198,7 +1201,7 @@
 		    (match_operand:QI    4 "const_mask_operand" "C")]
 		   UNSPEC_VEC_MSUM))]
   "TARGET_VXE"
-  "vmslg\t%v0,%v1,%v2,%v3"
+  "vmslg\t%v0,%v1,%v2,%v3,%4"
   [(set_attr "op_type" "VRR")])
 
 

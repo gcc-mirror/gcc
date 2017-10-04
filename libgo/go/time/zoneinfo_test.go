@@ -5,9 +5,55 @@
 package time_test
 
 import (
+	"fmt"
+	"os"
 	"testing"
 	"time"
 )
+
+func init() {
+	if time.ZoneinfoForTesting() != nil {
+		panic(fmt.Errorf("zoneinfo initialized before first LoadLocation"))
+	}
+}
+
+func TestEnvVarUsage(t *testing.T) {
+	time.ResetZoneinfoForTesting()
+
+	const testZoneinfo = "foo.zip"
+	const env = "ZONEINFO"
+
+	defer os.Setenv(env, os.Getenv(env))
+	os.Setenv(env, testZoneinfo)
+
+	// Result isn't important, we're testing the side effect of this command
+	time.LoadLocation("Asia/Jerusalem")
+	defer time.ResetZoneinfoForTesting()
+
+	if zoneinfo := time.ZoneinfoForTesting(); testZoneinfo != *zoneinfo {
+		t.Errorf("zoneinfo does not match env variable: got %q want %q", zoneinfo, testZoneinfo)
+	}
+}
+
+func TestLoadLocationValidatesNames(t *testing.T) {
+	time.ResetZoneinfoForTesting()
+	const env = "ZONEINFO"
+	defer os.Setenv(env, os.Getenv(env))
+	os.Setenv(env, "")
+
+	bad := []string{
+		"/usr/foo/Foo",
+		"\\UNC\foo",
+		"..",
+		"a..",
+	}
+	for _, v := range bad {
+		_, err := time.LoadLocation(v)
+		if err != time.ErrLocation {
+			t.Errorf("LoadLocation(%q) error = %v; want ErrLocation", v, err)
+		}
+	}
+}
 
 func TestVersion3(t *testing.T) {
 	t.Skip("gccgo does not use the zip file")
@@ -44,8 +90,8 @@ func TestFirstZone(t *testing.T) {
 		{
 			"Pacific/Fakaofo",
 			1325242799,
-			"Thu, 29 Dec 2011 23:59:59 -1100 (TKT)",
-			"Sat, 31 Dec 2011 00:00:00 +1300 (TKT)",
+			"Thu, 29 Dec 2011 23:59:59 -1100 (-11)",
+			"Sat, 31 Dec 2011 00:00:00 +1300 (+13)",
 		},
 	}
 

@@ -47,6 +47,12 @@
 #
 #######################################
 
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 	.globl	muldi3_hardproc
 	.ent	muldi3_hardproc
 muldi3_hardproc:

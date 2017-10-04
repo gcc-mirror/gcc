@@ -354,12 +354,6 @@ enum reg_class
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST       \
-    && (ALIGN) < FASTEST_ALIGNMENT)     \
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
@@ -449,7 +443,6 @@ do { \
    quickly between memory and registers or between two memory
    locations.  */
 #define MOVE_MAX 4
-#define TRULY_NOOP_TRUNCATION(op,ip) 1
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */

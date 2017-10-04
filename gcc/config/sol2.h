@@ -372,7 +372,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Solaris 11 build 135+ implements dl_iterate_phdr.  GNU ld needs
    --eh-frame-hdr to create the required .eh_frame_hdr sections.  */
 #if defined(HAVE_LD_EH_FRAME_HDR) && defined(TARGET_DL_ITERATE_PHDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif /* HAVE_LD_EH_FRAME && TARGET_DL_ITERATE_PHDR */
 #endif
 

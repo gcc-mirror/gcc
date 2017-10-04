@@ -1,3 +1,51 @@
+2017-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_encoding): Strip return type when name is a
+	LOCAL_NAME.
+	(d_local_name): Strip return type of enclosing TYPED_NAME.
+	* testsuite/demangle-expected: Add and adjust tests.
+
+2017-09-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_name): Revert addition of 'toplevel' parm.
+	(has_return_type): Recurse for DEMANGLE_COMPONENT_LOCAL_NAME.
+	(d_encoding): Revert d_name change.  Use is_fnqual_component_type
+	to strip modifiers that do not belong.
+	(d_special_name, d_class_enum_type): Revert d_name call change.
+	(d_expresion_1): Commonize DEMANGLE_COMPONENT_UNARY building.
+	(d_local_name): Revert parsing of a function type.
+	(d_print_comp_inner): An inner LOCAL_NAME might contain a
+	TEMPLATE.
+	* testsuite/demangle-expected: Add & adjust tests
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_name): Add 'toplevel' parm.  Pass to	...
+	(d_local_name): ... here.  Parse trailing function args on nested
+	local_name.
+	(d_encoding, d_special_name, d_class_enum_type): Adjust d_name calls.
+	* testsuite/demangle-expected: Add tests.
+
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Iterate marking dependent sections necessary.
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (is_fnqual_component_type): Reimplement using
+	FNQUAL_COMPONENT_CASE.
+	(d_encoding): Hold bare_function_type in local var.
+	(d_local_name): Build name in both cases and build result once.
+	Collapse switch-if to single conditional.
+	(d_local_name): 
+
+	* testsuite/demangle-expected: Realign blank lines with tests.
+
 2017-09-12  Jiong Wang  <jiong.wang@arm.com>
 
 	* dwarfnames.c (DW_CFA_DUP): New define.

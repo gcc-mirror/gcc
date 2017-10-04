@@ -4108,15 +4108,22 @@ package body Sem_Aggr is
          begin
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
-               if List_Length (Choices (Assoc)) > 1 then
-                  Check_SPARK_05_Restriction
-                    ("component association in record aggregate must "
-                     & "contain a single choice", Assoc);
-               end if;
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  Error_Msg_N ("iterated component association can only "
+                    & "appear in an array aggregate", N);
+                  raise Unrecoverable_Error;
 
-               if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                  Check_SPARK_05_Restriction
-                    ("record aggregate cannot contain OTHERS", Assoc);
+               else
+                  if List_Length (Choices (Assoc)) > 1 then
+                     Check_SPARK_05_Restriction
+                       ("component association in record aggregate must "
+                        & "contain a single choice", Assoc);
+                  end if;
+
+                  if Nkind (First (Choices (Assoc))) = N_Others_Choice then
+                     Check_SPARK_05_Restriction
+                       ("record aggregate cannot contain OTHERS", Assoc);
+                  end if;
                end if;
 
                Assoc := Next (Assoc);

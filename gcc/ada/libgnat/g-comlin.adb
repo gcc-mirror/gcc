@@ -3153,18 +3153,16 @@ package body GNAT.Command_Line is
 
          New_Line;
 
-         if Section /= "" and then Config.Switches /= null then
+         if Section /= "" then
             Put_Line ("Switches after " & Section);
          end if;
 
          --  Compute size of the switches column
 
-         if Config.Switches /= null then
-            for S in Config.Switches'Range loop
-               Max_Len := Natural'Max
-                 (Max_Len, Switch_Name (Config.Switches (S), Section)'Length);
-            end loop;
-         end if;
+         for S in Config.Switches'Range loop
+            Max_Len := Natural'Max
+              (Max_Len, Switch_Name (Config.Switches (S), Section)'Length);
+         end loop;
 
          if Config.Aliases /= null then
             for A in Config.Aliases'Range loop
@@ -3177,27 +3175,25 @@ package body GNAT.Command_Line is
 
          --  Display the switches
 
-         if Config.Switches /= null then
-            for S in Config.Switches'Range loop
-               declare
-                  N : constant String :=
-                    Switch_Name (Config.Switches (S), Section);
+         for S in Config.Switches'Range loop
+            declare
+               N : constant String :=
+                     Switch_Name (Config.Switches (S), Section);
 
-               begin
-                  if N /= "" then
-                     Put (" ");
-                     Put (N);
-                     Put ((1 .. Max_Len - N'Length + 1 => ' '));
+            begin
+               if N /= "" then
+                  Put (" ");
+                  Put (N);
+                  Put ((1 .. Max_Len - N'Length + 1 => ' '));
 
-                     if Config.Switches (S).Help /= null then
-                        Put (Config.Switches (S).Help.all);
-                     end if;
-
-                     New_Line;
+                  if Config.Switches (S).Help /= null then
+                     Put (Config.Switches (S).Help.all);
                   end if;
-               end;
-            end loop;
-         end if;
+
+                  New_Line;
+               end if;
+            end;
+         end loop;
 
          --  Display the aliases
 
@@ -3348,6 +3344,7 @@ package body GNAT.Command_Line is
       Parser      : Opt_Parser := Command_Line_Parser;
       Concatenate : Boolean := True)
    is
+      Local_Config    : Command_Line_Configuration := Config;
       Getopt_Switches : String_Access;
       C               : Character := ASCII.NUL;
 
@@ -3373,22 +3370,22 @@ package body GNAT.Command_Line is
          --  Do automatic handling when possible
 
          if Index /= -1 then
-            case Config.Switches (Index).Typ is
+            case Local_Config.Switches (Index).Typ is
                when Switch_Untyped =>
                   null;   --  no automatic handling
 
                when Switch_Boolean =>
-                  Config.Switches (Index).Boolean_Output.all :=
-                    Config.Switches (Index).Boolean_Value;
+                  Local_Config.Switches (Index).Boolean_Output.all :=
+                    Local_Config.Switches (Index).Boolean_Value;
                   return;
 
                when Switch_Integer =>
                   begin
                      if Parameter = "" then
-                        Config.Switches (Index).Integer_Output.all :=
-                          Config.Switches (Index).Integer_Default;
+                        Local_Config.Switches (Index).Integer_Output.all :=
+                          Local_Config.Switches (Index).Integer_Default;
                      else
-                        Config.Switches (Index).Integer_Output.all :=
+                        Local_Config.Switches (Index).Integer_Output.all :=
                           Integer'Value (Parameter);
                      end if;
 
@@ -3402,8 +3399,8 @@ package body GNAT.Command_Line is
                   return;
 
                when Switch_String =>
-                  Free (Config.Switches (Index).String_Output.all);
-                  Config.Switches (Index).String_Output.all :=
+                  Free (Local_Config.Switches (Index).String_Output.all);
+                  Local_Config.Switches (Index).String_Output.all :=
                     new String'(Parameter);
                   return;
             end case;
@@ -3441,45 +3438,57 @@ package body GNAT.Command_Line is
    --  Start of processing for Getopt
 
    begin
+      --  We work with a local copy of Config, because Config can be null, for
+      --  example if Define_Switch was never called. We could modify Config
+      --  itself, but then we would have to make it into an 'in out' parameter,
+      --  which would be incompatible.
+
+      if Local_Config = null then
+         Local_Config := new Command_Line_Configuration_Record;
+      end if;
+
+      if Local_Config.Switches = null then
+         Local_Config.Switches := new Switch_Definitions (1 .. 0);
+      end if;
+
       --  Initialize sections
 
-      if Config.Sections = null then
-         Config.Sections := new Argument_List'(1 .. 0 => null);
+      if Local_Config.Sections = null then
+         Local_Config.Sections := new Argument_List'(1 .. 0 => null);
       end if;
 
       Internal_Initialize_Option_Scan
         (Parser                   => Parser,
          Switch_Char              => Parser.Switch_Character,
          Stop_At_First_Non_Switch => Parser.Stop_At_First,
-         Section_Delimiters       => Section_Delimiters (Config));
+         Section_Delimiters       => Section_Delimiters (Local_Config));
 
       Getopt_Switches := new String'
-        (Get_Switches (Config, Parser.Switch_Character, Section_Name.all)
+        (Get_Switches (Local_Config, Parser.Switch_Character, Section_Name.all)
          & " h -help");
 
       --  Initialize output values for automatically handled switches
 
-      if Config.Switches /= null then
-         for S in Config.Switches'Range loop
-            case Config.Switches (S).Typ is
-               when Switch_Untyped =>
-                  null;   --  Nothing to do
+      for S in Local_Config.Switches'Range loop
+         case Local_Config.Switches (S).Typ is
+            when Switch_Untyped =>
+               null;   --  Nothing to do
 
-               when Switch_Boolean =>
-                  Config.Switches (S).Boolean_Output.all :=
-                    not Config.Switches (S).Boolean_Value;
+            when Switch_Boolean =>
+               Local_Config.Switches (S).Boolean_Output.all :=
+                 not Local_Config.Switches (S).Boolean_Value;
 
-               when Switch_Integer =>
-                  Config.Switches (S).Integer_Output.all :=
-                    Config.Switches (S).Integer_Initial;
+            when Switch_Integer =>
+               Local_Config.Switches (S).Integer_Output.all :=
+                 Local_Config.Switches (S).Integer_Initial;
 
-               when Switch_String =>
-                  if Config.Switches (S).String_Output.all = null then
-                     Config.Switches (S).String_Output.all := new String'("");
-                  end if;
-            end case;
-         end loop;
-      end if;
+            when Switch_String =>
+               if Local_Config.Switches (S).String_Output.all = null then
+                  Local_Config.Switches (S).String_Output.all :=
+                    new String'("");
+               end if;
+         end case;
+      end loop;
 
       --  For all sections, and all switches within those sections
 
@@ -3500,34 +3509,34 @@ package body GNAT.Command_Line is
                  or else
                Full_Switch (Parser) = "-help"
             then
-               Display_Help (Config);
+               Display_Help (Local_Config);
                raise Exit_From_Command_Line;
             end if;
 
             --  Do switch expansion if needed
 
             For_Each_Simple
-              (Config,
+              (Local_Config,
                Section   => Section_Name.all,
                Switch    => Parser.Switch_Character & Full_Switch (Parser),
                Parameter => Parameter (Parser));
 
          else
             if Current_Section = -1 then
-               Current_Section := Config.Sections'First;
+               Current_Section := Local_Config.Sections'First;
             else
                Current_Section := Current_Section + 1;
             end if;
 
-            exit when Current_Section > Config.Sections'Last;
+            exit when Current_Section > Local_Config.Sections'Last;
 
-            Section_Name := Config.Sections (Current_Section);
+            Section_Name := Local_Config.Sections (Current_Section);
             Goto_Section (Section_Name.all, Parser);
 
             Free (Getopt_Switches);
             Getopt_Switches := new String'
               (Get_Switches
-                 (Config, Parser.Switch_Character, Section_Name.all));
+                 (Local_Config, Parser.Switch_Character, Section_Name.all));
          end if;
       end loop;
 

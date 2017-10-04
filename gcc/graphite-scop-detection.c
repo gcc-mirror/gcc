@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
+#include "cfganal.h"
 #include "graphite.h"
 
 class debug_printer
@@ -261,191 +262,11 @@ trivially_empty_bb_p (basic_block bb)
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG)
+    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG
+	&& gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
       return false;
 
   return true;
-}
-
-/* Returns true when P1 and P2 are close phis with the same
-   argument.  */
-
-static inline bool
-same_close_phi_node (gphi *p1, gphi *p2)
-{
-  return (types_compatible_p (TREE_TYPE (gimple_phi_result (p1)),
-			      TREE_TYPE (gimple_phi_result (p2)))
-	  && operand_equal_p (gimple_phi_arg_def (p1, 0),
-			      gimple_phi_arg_def (p2, 0), 0));
-}
-
-static void make_close_phi_nodes_unique (basic_block bb);
-
-/* Remove the close phi node at GSI and replace its rhs with the rhs
-   of PHI.  */
-
-static void
-remove_duplicate_close_phi (gphi *phi, gphi_iterator *gsi)
-{
-  gimple *use_stmt;
-  use_operand_p use_p;
-  imm_use_iterator imm_iter;
-  tree res = gimple_phi_result (phi);
-  tree def = gimple_phi_result (gsi->phi ());
-
-  gcc_assert (same_close_phi_node (phi, gsi->phi ()));
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    {
-      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	SET_USE (use_p, res);
-
-      update_stmt (use_stmt);
-
-      /* It is possible that we just created a duplicate close-phi
-	 for an already-processed containing loop.  Check for this
-	 case and clean it up.  */
-      if (gimple_code (use_stmt) == GIMPLE_PHI
-	  && gimple_phi_num_args (use_stmt) == 1)
-	make_close_phi_nodes_unique (gimple_bb (use_stmt));
-    }
-
-  remove_phi_node (gsi, true);
-}
-
-/* Removes all the close phi duplicates from BB.  */
-
-static void
-make_close_phi_nodes_unique (basic_block bb)
-{
-  gphi_iterator psi;
-
-  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-    {
-      gphi_iterator gsi = psi;
-      gphi *phi = psi.phi ();
-
-      /* At this point, PHI should be a close phi in normal form.  */
-      gcc_assert (gimple_phi_num_args (phi) == 1);
-
-      /* Iterate over the next phis and remove duplicates.  */
-      gsi_next (&gsi);
-      while (!gsi_end_p (gsi))
-	if (same_close_phi_node (phi, gsi.phi ()))
-	  remove_duplicate_close_phi (phi, &gsi);
-	else
-	  gsi_next (&gsi);
-    }
-}
-
-/* Return true when NAME is defined in LOOP.  */
-
-static bool
-defined_in_loop_p (tree name, loop_p loop)
-{
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-  return loop == loop_containing_stmt (SSA_NAME_DEF_STMT (name));
-}
-
-/* Transforms LOOP to the canonical loop closed SSA form.  */
-
-static void
-canonicalize_loop_closed_ssa (loop_p loop)
-{
-  edge e = single_exit (loop);
-  basic_block bb;
-
-  if (!e || e->flags & EDGE_ABNORMAL)
-    return;
-
-  bb = e->dest;
-
-  if (single_pred_p (bb))
-    {
-      e = split_block_after_labels (bb);
-      DEBUG_PRINT (dp << "Splitting bb_" << bb->index << ".\n");
-      make_close_phi_nodes_unique (e->src);
-    }
-  else
-    {
-      gphi_iterator psi;
-      basic_block close = split_edge (e);
-
-      e = single_succ_edge (close);
-      DEBUG_PRINT (dp << "Splitting edge (" << e->src->index << ","
-		      << e->dest->index << ")\n");
-
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  gphi *phi = psi.phi ();
-	  unsigned i;
-
-	  for (i = 0; i < gimple_phi_num_args (phi); i++)
-	    if (gimple_phi_arg_edge (phi, i) == e)
-	      {
-		tree res, arg = gimple_phi_arg_def (phi, i);
-		use_operand_p use_p;
-		gphi *close_phi;
-
-		/* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
-		if (TREE_CODE (arg) != SSA_NAME
-		    || !defined_in_loop_p (arg, loop))
-		  continue;
-
-		close_phi = create_phi_node (NULL_TREE, close);
-		res = create_new_def_for (arg, close_phi,
-					  gimple_phi_result_ptr (close_phi));
-		add_phi_arg (close_phi, arg,
-			     gimple_phi_arg_edge (close_phi, 0),
-			     UNKNOWN_LOCATION);
-		use_p = gimple_phi_arg_imm_use_ptr (phi, i);
-		replace_exp (use_p, res);
-		update_stmt (phi);
-	      }
-	}
-
-      make_close_phi_nodes_unique (close);
-    }
-
-  /* The code above does not properly handle changes in the post dominance
-     information (yet).  */
-  recompute_all_dominators ();
-}
-
-/* Converts the current loop closed SSA form to a canonical form
-   expected by the Graphite code generation.
-
-   The loop closed SSA form has the following invariant: a variable
-   defined in a loop that is used outside the loop appears only in the
-   phi nodes in the destination of the loop exit.  These phi nodes are
-   called close phi nodes.
-
-   The canonical loop closed SSA form contains the extra invariants:
-
-   - when the loop contains only one exit, the close phi nodes contain
-   only one argument.  That implies that the basic block that contains
-   the close phi nodes has only one predecessor, that is a basic block
-   in the loop.
-
-   - the basic block containing the close phi nodes does not contain
-   other statements.
-
-   - there exist only one phi node per definition in the loop.
-*/
-
-static void
-canonicalize_loop_closed_ssa_form (void)
-{
-  checking_verify_loop_closed_ssa (true);
-
-  loop_p loop;
-  FOR_EACH_LOOP (loop, 0)
-    canonicalize_loop_closed_ssa (loop);
-
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-  update_ssa (TODO_update_ssa);
-
-  checking_verify_loop_closed_ssa (true);
 }
 
 /* Can all ivs be represented by a signed integer?
@@ -542,17 +363,7 @@ public:
 
   /* Build scop outer->inner if possible.  */
 
-  sese_l build_scop_depth (sese_l s, loop_p loop);
-
-  /* If loop and loop->next are valid scops, try to merge them.  */
-
-  sese_l build_scop_breadth (sese_l s1, loop_p loop);
-
-  /* Return true when LOOP is a valid scop, that is a Static Control Part, a
-     region of code that can be represented in the polyhedral model.  SCOP
-     defines the region we analyse.  */
-
-  bool loop_is_valid_in_scop (loop_p loop, sese_l scop) const;
+  void build_scop_depth (loop_p loop);
 
   /* Return true when BEGIN is the preheader edge of a loop with a single exit
      END.  */
@@ -578,22 +389,7 @@ public:
 
   void remove_intersecting_scops (sese_l s1);
 
-  /* Return true when the body of LOOP has statements that can be represented
-     as a valid scop.  */
-
-  bool loop_body_is_valid_scop (loop_p loop, sese_l scop) const;
-
-  /* Return true when BB contains a harmful operation for a scop: that
-     can be a function call with side effects, the induction variables
-     are not linear with respect to SCOP, etc.  The current open
-     scop should end before this statement.  */
-
-  bool harmful_stmt_in_bb (sese_l scop, basic_block bb) const;
-
-  /* Return true when a statement in SCOP cannot be represented by Graphite.
-     The assumptions are that L1 dominates L2, and SCOP->entry dominates L1.
-     Limit the number of bbs between adjacent loops to
-     PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
+  /* Return true when a statement in SCOP cannot be represented by Graphite.  */
 
   bool harmful_loop_in_region (sese_l scop) const;
 
@@ -647,18 +443,11 @@ public:
      FIXME: For the moment, graphite cannot be used on loops that iterate using
      induction variables that wrap.  */
 
-  static bool can_represent_loop_1 (loop_p loop, sese_l scop);
-
-  /* Return true when all the loops within LOOP can be represented by
-     Graphite.  */
-
   static bool can_represent_loop (loop_p loop, sese_l scop);
 
   /* Returns the number of pbbs that are in loops contained in SCOP.  */
 
   static int nb_pbbs_in_loops (scop_p scop);
-
-  static bool graphite_can_represent_stmt (sese_l, gimple *, basic_block);
 
 private:
   vec<sese_l> scops;
@@ -674,14 +463,19 @@ scop_detection::get_sese (loop_p loop)
   if (!loop)
     return invalid_sese;
 
-  if (!loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
-    return invalid_sese;
-  edge scop_end = single_exit (loop);
-  if (!scop_end)
-    return invalid_sese;
   edge scop_begin = loop_preheader_edge (loop);
-  sese_l s (scop_begin, scop_end);
-  return s;
+  edge scop_end = single_exit (loop);
+  if (!scop_end || (scop_end->flags & EDGE_COMPLEX))
+    return invalid_sese;
+  /* Include the BB with the loop-closed SSA PHI nodes.
+     canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
+  if (! single_pred_p (scop_end->dest)
+      || ! single_succ_p (scop_end->dest)
+      || ! trivially_empty_bb_p (scop_end->dest))
+    gcc_unreachable ();
+  scop_end = single_succ_edge (scop_end->dest);
+
+  return sese_l (scop_begin, scop_end);
 }
 
 /* Return the closest dominator with a single entry edge.  */
@@ -848,30 +642,6 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
       return invalid_sese;
     }
 
-  /* FIXME: We should remove this piece of code once
-     canonicalize_loop_closed_ssa has been removed, because that function
-     adds a BB with single exit.  */
-  if (!trivially_empty_bb_p (get_exit_bb (combined)))
-    {
-      /* Find the first empty succ (with single exit) of combined.exit.  */
-      basic_block imm_succ = combined.exit->dest;
-      if (single_succ_p (imm_succ)
-	  && single_pred_p (imm_succ)
-	  && trivially_empty_bb_p (imm_succ))
-	combined.exit = single_succ_edge (imm_succ);
-      else
-	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] Discarding SCoP because "
-			  << "no single exit (empty succ) for sese exit";
-		       print_sese (dump_file, combined));
-	  return invalid_sese;
-	}
-    }
-
-  /* Analyze all the BBs in new sese.  */
-  if (harmful_loop_in_region (combined))
-    return invalid_sese;
-
   DEBUG_PRINT (dp << "[merged-sese] s1: "; print_sese (dump_file, combined));
 
   return combined;
@@ -879,71 +649,40 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 
 /* Build scop outer->inner if possible.  */
 
-sese_l
-scop_detection::build_scop_depth (sese_l s, loop_p loop)
+void
+scop_detection::build_scop_depth (loop_p loop)
 {
-  if (!loop)
-    return s;
-
-  DEBUG_PRINT (dp << "[Depth loop_" << loop->num << "]\n");
-  s = build_scop_depth (s, loop->inner);
-
-  sese_l s2 = merge_sese (s, get_sese (loop));
-  if (!s2)
+  sese_l s = invalid_sese;
+  loop = loop->inner;
+  while (loop)
     {
-      /* s might be a valid scop, so return it and start analyzing from the
-	 adjacent loop.  */
-      build_scop_depth (invalid_sese, loop->next);
-      return s;
-    }
-
-  if (!loop_is_valid_in_scop (loop, s2))
-    return build_scop_depth (invalid_sese, loop->next);
-
-  return build_scop_breadth (s2, loop);
-}
-
-/* If loop and loop->next are valid scops, try to merge them.  */
-
-sese_l
-scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
-{
-  if (!loop)
-    return s1;
-  DEBUG_PRINT (dp << "[Breadth loop_" << loop->num << "]\n");
-  gcc_assert (s1);
-
-  loop_p l = loop;
-  sese_l s2 = build_scop_depth (invalid_sese, l->next);
-  if (!s2)
-    {
-      if (s1)
-	add_scop (s1);
-      return s1;
-    }
-
-  sese_l combined = merge_sese (s1, s2);
-
-  /* Combining adjacent loops may add unrelated loops into the
-     region so we have to check all sub-loops of the outer loop
-     that are in the combined region.  */
-  if (combined)
-    for (l = loop_outer (loop)->inner; l; l = l->next)
-      if (bb_in_sese_p (l->header, combined)
-	  && ! loop_is_valid_in_scop (l, combined))
+      sese_l next = get_sese (loop);
+      if (! next
+	  || harmful_loop_in_region (next))
 	{
-	  combined = invalid_sese;
-	  break;
+	  if (s)
+	    add_scop (s);
+	  build_scop_depth (loop);
+	  s = invalid_sese;
 	}
-
-  if (combined)
-    s1 = combined;
-  else
-    add_scop (s2);
-
-  if (s1)
-    add_scop (s1);
-  return s1;
+      else if (! s)
+	s = next;
+      else
+	{
+	  sese_l combined = merge_sese (s, next);
+	  if (! combined
+	      || harmful_loop_in_region (combined))
+	    {
+	      add_scop (s);
+	      s = next;
+	    }
+	  else
+	    s = combined;
+	}
+      loop = loop->next;
+    }
+  if (s)
+    add_scop (s);
 }
 
 /* Returns true when Graphite can represent LOOP in SCOP.
@@ -951,7 +690,7 @@ scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
    induction variables that wrap.  */
 
 bool
-scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
+scop_detection::can_represent_loop (loop_p loop, sese_l scop)
 {
   tree niter;
   struct tree_niter_desc niter_desc;
@@ -967,55 +706,6 @@ scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
     && graphite_can_represent_expr (scop, loop, niter);
 }
 
-/* Return true when all the loops within LOOP can be represented by
-   Graphite.  */
-
-bool
-scop_detection::can_represent_loop (loop_p loop, sese_l scop)
-{
-  if (!can_represent_loop_1 (loop, scop))
-    return false;
-  if (loop->inner && !can_represent_loop (loop->inner, scop))
-    return false;
-  if (loop->next && !can_represent_loop (loop->next, scop))
-    return false;
-
-  return true;
-}
-
-/* Return true when LOOP is a valid scop, that is a Static Control Part, a
-   region of code that can be represented in the polyhedral model.  SCOP
-   defines the region we analyse.  */
-
-bool
-scop_detection::loop_is_valid_in_scop (loop_p loop, sese_l scop) const
-{
-  if (!scop)
-    return false;
-
-  if (!optimize_loop_nest_for_speed_p (loop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
-		      << loop->num << " is not on a hot path.\n");
-      return false;
-    }
-
-  if (!can_represent_loop (loop, scop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] cannot represent loop_"
-		      << loop->num << "\n");
-      return false;
-    }
-
-  if (loop_body_is_valid_scop (loop, scop))
-    {
-      DEBUG_PRINT (dp << "[valid-scop] loop_" << loop->num
-		      << " is a valid scop.\n");
-      return true;
-    }
-  return false;
-}
-
 /* Return true when BEGIN is the preheader edge of a loop with a single exit
    END.  */
 
@@ -1029,7 +719,8 @@ scop_detection::region_has_one_loop (sese_l s)
     return false;
 
   /* Otherwise, check whether we have adjacent loops.  */
-  return begin->dest->loop_father == end->src->loop_father;
+  return (single_pred_p (end->src)
+	  && begin->dest->loop_father == single_pred (end->src)->loop_father);
 }
 
 /* Add to SCOPS a scop starting at SCOP_BEGIN and ending at SCOP_END.  */
@@ -1066,10 +757,7 @@ scop_detection::add_scop (sese_l s)
   DEBUG_PRINT (dp << "[scop-detection] Adding SCoP: "; print_sese (dump_file, s));
 }
 
-/* Return true when a statement in SCOP cannot be represented by Graphite.
-   The assumptions are that L1 dominates L2, and SCOP->entry dominates L1.
-   Limit the number of bbs between adjacent loops to
-   PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
+/* Return true when a statement in SCOP cannot be represented by Graphite.  */
 
 bool
 scop_detection::harmful_loop_in_region (sese_l scop) const
@@ -1110,14 +798,12 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
       loop_p loop = bb->loop_father;
       if (loop_in_sese_p (loop, scop))
 	bitmap_set_bit (loops, loop->num);
-      else
-	{
-	  /* We only check for harmful statements in basic blocks not part of
-	     any loop fully contained in the scop: other bbs are checked below
-	     in loop_is_valid_in_scop.  */
-	  if (harmful_stmt_in_bb (scop, bb))
-	    return true;
-	}
+
+      /* Check for harmful statements in basic blocks part of the region.  */
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	if (!stmt_simple_for_scop_p (scop, gsi_stmt (gsi), bb))
+	  return true;
 
       if (bb != exit_bb)
 	for (basic_block dom = first_dom_son (CDI_DOMINATORS, bb);
@@ -1135,8 +821,41 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
       loop_p loop = (*current_loops->larray)[j];
       gcc_assert (loop->num == (int) j);
 
-      if (!loop_is_valid_in_scop (loop, scop))
-	return true;
+      /* Check if the loop nests are to be optimized for speed.  */
+      if (! loop->inner
+	  && ! optimize_loop_for_speed_p (loop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
+		       << loop->num << " is not on a hot path.\n");
+	  return true;
+	}
+
+      if (! can_represent_loop (loop, scop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot represent loop_"
+		       << loop->num << "\n");
+	  return true;
+	}
+
+      if (! loop_ivs_can_be_represented (loop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
+		       << "IV cannot be represented.\n");
+	  return true;
+	}
+
+      /* Check if all loop nests have at least one data reference.
+	 ???  This check is expensive and loops premature at this point.
+	 If important to retain we can pre-compute this for all innermost
+	 loops and reject those when we build a SESE region for a loop
+	 during SESE discovery.  */
+      if (! loop->inner
+	  && ! loop_nest_has_data_refs (loop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
+		       << "does not have any data reference.\n");
+	  return true;
+	}
     }
 
   return false;
@@ -1336,42 +1055,27 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  loop_p nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
+  loop_p nest;
   loop_p loop = loop_containing_stmt (stmt);
-  vec<data_reference_p> drs = vNULL;
+  if (!loop_in_sese_p (loop, scop))
+    nest = loop;
+  else
+    nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
 
-  graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+  auto_vec<data_reference_p> drs;
+  if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
+    return false;
 
   int j;
   data_reference_p dr;
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
-      int nb_subscripts = DR_NUM_DIMENSIONS (dr);
-
-      if (nb_subscripts < 1)
-	{
-	  free_data_refs (drs);
+      for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
+	if (! graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
 	  return false;
-	}
-
-      tree ref = DR_REF (dr);
-
-      for (int i = nb_subscripts - 1; i >= 0; i--)
-	{
-	  if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i))
-	      || (TREE_CODE (ref) != ARRAY_REF && TREE_CODE (ref) != MEM_REF
-		  && TREE_CODE (ref) != COMPONENT_REF))
-	    {
-	      free_data_refs (drs);
-	      return false;
-	    }
-
-	  ref = TREE_OPERAND (ref, 0);
-	}
     }
 
-    free_data_refs (drs);
-    return true;
+  return true;
 }
 
 /* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
@@ -1394,14 +1098,32 @@ stmt_has_side_effects (gimple *stmt)
   return false;
 }
 
-/* Returns true if STMT can be represented in polyhedral model. LABEL,
-   simple COND stmts, pure calls, and assignments can be repesented.  */
+/* Return true only when STMT is simple enough for being handled by Graphite.
+   This depends on SCOP, as the parameters are initialized relatively to
+   this basic block, the linear functions are initialized based on the outermost
+   loop containing STMT inside the SCOP.  BB is the place where we try to
+   evaluate the STMT.  */
 
 bool
-scop_detection::graphite_can_represent_stmt (sese_l scop, gimple *stmt,
-					     basic_block bb)
+scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
+					basic_block bb) const
 {
-  loop_p loop = bb->loop_father;
+  gcc_assert (scop);
+
+  if (is_gimple_debug (stmt))
+    return true;
+
+  if (stmt_has_side_effects (stmt))
+    return false;
+
+  if (!stmt_has_simple_data_refs_p (scop, stmt))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Graphite cannot handle data-refs in stmt:\n";
+	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
+      return false;
+    }
+
   switch (gimple_code (stmt))
     {
     case GIMPLE_LABEL:
@@ -1427,6 +1149,7 @@ scop_detection::graphite_can_represent_stmt (sese_l scop, gimple *stmt,
 	    return false;
 	  }
 
+	loop_p loop = bb->loop_father;
 	for (unsigned i = 0; i < 2; ++i)
 	  {
 	    tree op = gimple_op (stmt, i);
@@ -1457,99 +1180,6 @@ scop_detection::graphite_can_represent_stmt (sese_l scop, gimple *stmt,
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS | TDF_MEMSYMS));
       return false;
     }
-}
-
-/* Return true only when STMT is simple enough for being handled by Graphite.
-   This depends on SCOP, as the parameters are initialized relatively to
-   this basic block, the linear functions are initialized based on the outermost
-   loop containing STMT inside the SCOP.  BB is the place where we try to
-   evaluate the STMT.  */
-
-bool
-scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
-					basic_block bb) const
-{
-  gcc_assert (scop);
-
-  if (is_gimple_debug (stmt))
-    return true;
-
-  if (stmt_has_side_effects (stmt))
-    return false;
-
-  if (!stmt_has_simple_data_refs_p (scop, stmt))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] "
-		      << "Graphite cannot handle data-refs in stmt:\n";
-	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
-      return false;
-    }
-
-  return graphite_can_represent_stmt (scop, stmt, bb);
-}
-
-/* Return true when BB contains a harmful operation for a scop: that
-   can be a function call with side effects, the induction variables
-   are not linear with respect to SCOP, etc.  The current open
-   scop should end before this statement.  */
-
-bool
-scop_detection::harmful_stmt_in_bb (sese_l scop, basic_block bb) const
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!stmt_simple_for_scop_p (scop, gsi_stmt (gsi), bb))
-      return true;
-
-  return false;
-}
-
-/* Return true when the body of LOOP has statements that can be represented as a
-   valid scop.  */
-
-bool
-scop_detection::loop_body_is_valid_scop (loop_p loop, sese_l scop) const
-{
-  if (!loop_ivs_can_be_represented (loop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		      << "IV cannot be represented.\n");
-      return false;
-    }
-
-  if (!loop_nest_has_data_refs (loop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		      << "does not have any data reference.\n");
-      return false;
-    }
-
-  basic_block *bbs = get_loop_body (loop);
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = bbs[i];
-
-      if (harmful_stmt_in_bb (scop, bb))
-	{
-	  free (bbs);
-	  return false;
-	}
-    }
-  free (bbs);
-
-  if (loop->inner)
-    {
-      loop = loop->inner;
-      while (loop)
-	{
-	  if (!loop_body_is_valid_scop (loop, scop))
-	    return false;
-	  loop = loop->next;
-	}
-    }
-
-  return true;
 }
 
 /* Returns the number of pbbs that are in loops contained in SCOP.  */
@@ -1696,7 +1326,7 @@ find_params_in_bb (sese_info_p region, gimple_poly_bb_p gbb)
     }
 }
 
-/* Record the parameters used in the SCOP.  A variable is a parameter
+/* Record the parameters used in the SCOP BBs.  A variable is a parameter
    in a scop if it does not vary during the execution of that scop.  */
 
 static void
@@ -1704,19 +1334,8 @@ find_scop_parameters (scop_p scop)
 {
   unsigned i;
   sese_info_p region = scop->scop_info;
-  struct loop *loop;
 
-  /* Find the parameters used in the loop bounds.  */
-  FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
-    {
-      tree nb_iters = number_of_latch_executions (loop);
-
-      if (!chrec_contains_symbols (nb_iters))
-	continue;
-
-      nb_iters = scalar_evolution_in_region (region->region, loop, nb_iters);
-      scan_tree_for_params (region, nb_iters);
-    }
+  /* Parameters used in loop bounds are processed during gather_bbs.  */
 
   /* Find the parameters used in data accesses.  */
   poly_bb_p pbb;
@@ -1736,15 +1355,20 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
   if (!def || !is_gimple_reg (def))
     return;
 
-  /* Do not gather scalar variables that can be analyzed by SCEV as they can be
-     generated out of the induction variables.  */
-  if (scev_analyzable_p (def, scop->scop_info->region))
-    return;
+  bool scev_analyzable = scev_analyzable_p (def, scop->scop_info->region);
 
   gimple *use_stmt;
   imm_use_iterator imm_iter;
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+    /* Do not gather scalar variables that can be analyzed by SCEV as they can
+       be generated out of the induction variables.  */
+    if ((! scev_analyzable
+	 /* But gather SESE liveouts as we otherwise fail to rewrite their
+	    exit PHIs.  */
+	 || ! bb_in_sese_p (gimple_bb (use_stmt), scop->scop_info->region))
+	&& ((def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+	    /* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
+	    || gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI))
       {
 	writes->safe_push (def);
 	DEBUG_PRINT (dp << "Adding scalar write: ";
@@ -1758,7 +1382,8 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
       }
 }
 
-/* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
+/* Record USE if it is defined in other bbs different than USE_STMT
+   in the SCOP.  */
 
 static void
 build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
@@ -1774,7 +1399,9 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
     return;
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (use);
-  if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
+  if (gimple_bb (def_stmt) != gimple_bb (use_stmt)
+      /* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
+      || gimple_code (def_stmt) == GIMPLE_PHI)
     {
       DEBUG_PRINT (dp << "Adding scalar read: ";
 		   print_generic_expr (dump_file, use);
@@ -1825,11 +1452,12 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
-  loop_p nest = outermost_loop_in_sese (region, bb);
-
+  loop_p nest;
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
-    loop = nest;
+    nest = loop;
+  else
+    nest = outermost_loop_in_sese (region, bb);
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
@@ -1855,7 +1483,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 
 /* Compute alias-sets for all data references in DRS.  */
 
-static void
+static bool 
 build_alias_set (scop_p scop)
 {
   int num_vertices = scop->drs.length ();
@@ -1868,6 +1496,19 @@ build_alias_set (scop_p scop)
     for (j = i+1; scop->drs.iterate (j, &dr2); j++)
       if (dr_may_alias_p (dr1->dr, dr2->dr, true))
 	{
+	  /* Dependences in the same alias set need to be handled
+	     by just looking at DR_ACCESS_FNs.  */
+	  if (DR_NUM_DIMENSIONS (dr1->dr) == 0
+	      || DR_NUM_DIMENSIONS (dr1->dr) != DR_NUM_DIMENSIONS (dr2->dr)
+	      || ! operand_equal_p (DR_BASE_OBJECT (dr1->dr),
+				    DR_BASE_OBJECT (dr2->dr),
+				    OEP_ADDRESS_OF)
+	      || ! types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (dr1->dr)),
+				       TREE_TYPE (DR_BASE_OBJECT (dr2->dr))))
+	    {
+	      free_graph (g);
+	      return false;
+	    }
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
 	}
@@ -1876,20 +1517,22 @@ build_alias_set (scop_p scop)
   for (i = 0; i < num_vertices; i++)
     all_vertices[i] = i;
 
-  graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
+  scop->max_alias_set
+    = graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL) + 1;
   free (all_vertices);
 
   for (i = 0; i < g->n_vertices; i++)
     scop->drs[i].alias_set = g->vertices[i].component + 1;
 
   free_graph (g);
+  return true;
 }
 
 /* Gather BBs and conditions for a SCOP.  */
 class gather_bbs : public dom_walker
 {
 public:
-  gather_bbs (cdi_direction, scop_p);
+  gather_bbs (cdi_direction, scop_p, int *);
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -1899,31 +1542,9 @@ private:
   scop_p scop;
 };
 }
-gather_bbs::gather_bbs (cdi_direction direction, scop_p scop)
-  : dom_walker (direction), scop (scop)
+gather_bbs::gather_bbs (cdi_direction direction, scop_p scop, int *bb_to_rpo)
+  : dom_walker (direction, false, bb_to_rpo), scop (scop)
 {
-}
-
-/* Record in execution order the loops fully contained in the region.  */
-
-static void
-record_loop_in_sese (basic_block bb, sese_info_p region)
-{
-  loop_p father = bb->loop_father;
-  if (loop_in_sese_p (father, region->region))
-    {
-      bool found = false;
-      loop_p loop0;
-      int j;
-      FOR_EACH_VEC_ELT (region->loop_nest, j, loop0)
-	if (father == loop0)
-	  {
-	    found = true;
-	    break;
-	  }
-      if (!found)
-	region->loop_nest.safe_push (father);
-    }
 }
 
 /* Call-back for dom_walk executed before visiting the dominated
@@ -1934,9 +1555,22 @@ gather_bbs::before_dom_children (basic_block bb)
 {
   sese_info_p region = scop->scop_info;
   if (!bb_in_sese_p (bb, region->region))
-    return NULL;
+    return dom_walker::STOP;
 
-  record_loop_in_sese (bb, region);
+  /* For loops fully contained in the region record parameters in the
+     loop bounds.  */
+  loop_p loop = bb->loop_father;
+  if (loop->header == bb
+      && loop_in_sese_p (loop, region->region))
+    {
+      tree nb_iters = number_of_latch_executions (loop);
+      if (chrec_contains_symbols (nb_iters))
+	{
+	  nb_iters = scalar_evolution_in_region (region->region,
+						 loop, nb_iters);
+	  scan_tree_for_params (region, nb_iters);
+	}
+    }
 
   gcond *stmt = single_pred_cond_non_loop_exit (bb);
 
@@ -2048,13 +1682,20 @@ build_scops (vec<scop_p> *scops)
   if (dump_file)
     dp.set_dump_file (dump_file);
 
-  canonicalize_loop_closed_ssa_form ();
-
   scop_detection sb;
-  sb.build_scop_depth (scop_detection::invalid_sese, current_loops->tree_root);
+  sb.build_scop_depth (current_loops->tree_root);
 
   /* Now create scops from the lightweight SESEs.  */
   vec<sese_l> scops_l = sb.get_scops ();
+
+  /* Domwalk needs a bb to RPO mapping.  Compute it once here.  */
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int postorder_num = pre_and_rev_post_order_compute (NULL, postorder, true);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  for (int i = 0; i < postorder_num; ++i)
+    bb_to_rpo[postorder[i]] = i;
+  free (postorder);
+
   int i;
   sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
@@ -2062,7 +1703,7 @@ build_scops (vec<scop_p> *scops)
       scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */
-      gather_bbs (CDI_DOMINATORS, scop).walk (s->entry->dest);
+      gather_bbs (CDI_DOMINATORS, scop, bb_to_rpo).walk (s->entry->dest);
 
       /* domwalk does not fulfil our code-generations constraints on the
          order of pbb which is to produce sth like execution order, delaying
@@ -2075,7 +1716,12 @@ build_scops (vec<scop_p> *scops)
       scop->pbbs.qsort (cmp_pbbs);
       order.release ();
 
-      build_alias_set (scop);
+      if (! build_alias_set (scop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot handle dependences\n");
+	  free_scop (scop);
+	  continue;
+	}
 
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */
@@ -2087,7 +1733,8 @@ build_scops (vec<scop_p> *scops)
 	}
 
       unsigned max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
-      if (scop->drs.length () >= max_arrays)
+      if (max_arrays > 0
+	  && scop->drs.length () >= max_arrays)
 	{
 	  DEBUG_PRINT (dp << "[scop-detection-fail] too many data references: "
 		       << scop->drs.length ()
@@ -2099,8 +1746,8 @@ build_scops (vec<scop_p> *scops)
 
       find_scop_parameters (scop);
       graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
-
-      if (scop_nb_params (scop) > max_dim)
+      if (max_dim > 0
+	  && scop_nb_params (scop) > max_dim)
 	{
 	  DEBUG_PRINT (dp << "[scop-detection-fail] too many parameters: "
 			  << scop_nb_params (scop)
@@ -2113,6 +1760,7 @@ build_scops (vec<scop_p> *scops)
       scops->safe_push (scop);
     }
 
+  free (bb_to_rpo);
   DEBUG_PRINT (dp << "number of SCoPs: " << (scops ? scops->length () : 0););
 }
 

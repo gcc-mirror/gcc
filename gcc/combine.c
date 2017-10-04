@@ -1232,6 +1232,12 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
   FOR_EACH_BB_FN (this_basic_block, cfun)
     {
       rtx_insn *last_combined_insn = NULL;
+
+      /* Ignore instruction combination in basic blocks that are going to
+	 be removed as unreachable anyway.  See PR82386.  */
+      if (EDGE_COUNT (this_basic_block->preds) == 0)
+	continue;
+
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
@@ -6869,12 +6875,10 @@ simplify_set (rtx x)
 	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
 	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
       && (WORD_REGISTER_OPERATIONS || !paradoxical_subreg_p (src))
-#ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (REG_P (dest) && REGNO (dest) < FIRST_PSEUDO_REGISTER
-	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
-					 GET_MODE (SUBREG_REG (src)),
-					 GET_MODE (src)))
-#endif
+	    && !REG_CAN_CHANGE_MODE_P (REGNO (dest),
+				       GET_MODE (SUBREG_REG (src)),
+				       GET_MODE (src)))
       && (REG_P (dest)
 	  || (GET_CODE (dest) == SUBREG
 	      && REG_P (SUBREG_REG (dest)))))
@@ -7444,7 +7448,14 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (pos_rtx && CONST_INT_P (pos_rtx))
     pos = INTVAL (pos_rtx), pos_rtx = 0;
 
-  if (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
+  if (GET_CODE (inner) == SUBREG
+      && subreg_lowpart_p (inner)
+      && (paradoxical_subreg_p (inner)
+	  /* If trying or potentionally trying to extract
+	     bits outside of is_mode, don't look through
+	     non-paradoxical SUBREGs.  See PR82192.  */
+	  || (pos_rtx == NULL_RTX
+	      && pos + len <= GET_MODE_PRECISION (is_mode))))
     {
       /* If going from (subreg:SI (mem:QI ...)) to (mem:QI ...),
 	 consider just the QI as the memory to extract from.
@@ -7470,7 +7481,12 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       if (new_rtx != 0)
 	return gen_rtx_ASHIFT (mode, new_rtx, XEXP (inner, 1));
     }
-  else if (GET_CODE (inner) == TRUNCATE)
+  else if (GET_CODE (inner) == TRUNCATE
+	   /* If trying or potentionally trying to extract
+	      bits outside of is_mode, don't look through
+	      TRUNCATE.  See PR82192.  */
+	   && pos_rtx == NULL_RTX
+	   && pos + len <= GET_MODE_PRECISION (is_mode))
     inner = XEXP (inner, 0);
 
   inner_mode = GET_MODE (inner);
@@ -7723,7 +7739,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   else if (!MEM_P (inner))
     {
       /* On the LHS, don't create paradoxical subregs implicitely truncating
-	 the register unless TRULY_NOOP_TRUNCATION.  */
+	 the register unless TARGET_TRULY_NOOP_TRUNCATION.  */
       if (in_dest
 	  && !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (inner),
 					     wanted_inner_mode))
@@ -7976,8 +7992,8 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  && (i = exact_log2 (UINTVAL (XEXP (x, 1)) + 1)) >= 0)
 	{
 	  new_rtx = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
-	  new_rtx = make_extraction (mode, new_rtx, 0, XEXP (XEXP (x, 0), 1), i, 1,
-				 0, in_code == COMPARE);
+	  new_rtx = make_extraction (mode, new_rtx, 0, XEXP (XEXP (x, 0), 1),
+				     i, 1, 0, in_code == COMPARE);
 	}
 
       /* Same as previous, but for (subreg (lshiftrt ...)) in first op.  */
@@ -8016,10 +8032,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	{
 	  /* Apply the distributive law, and then try to make extractions.  */
 	  new_rtx = gen_rtx_fmt_ee (GET_CODE (XEXP (x, 0)), mode,
-				gen_rtx_AND (mode, XEXP (XEXP (x, 0), 0),
-					     XEXP (x, 1)),
-				gen_rtx_AND (mode, XEXP (XEXP (x, 0), 1),
-					     XEXP (x, 1)));
+				    gen_rtx_AND (mode, XEXP (XEXP (x, 0), 0),
+						 XEXP (x, 1)),
+				    gen_rtx_AND (mode, XEXP (XEXP (x, 0), 1),
+						 XEXP (x, 1)));
 	  new_rtx = make_compound_operation (new_rtx, in_code);
 	}
 
@@ -8033,9 +8049,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	{
 	  new_rtx = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
 	  new_rtx = make_extraction (mode, new_rtx,
-				 (GET_MODE_PRECISION (mode)
-				  - INTVAL (XEXP (XEXP (x, 0), 1))),
-				 NULL_RTX, i, 1, 0, in_code == COMPARE);
+				     (GET_MODE_PRECISION (mode)
+				      - INTVAL (XEXP (XEXP (x, 0), 1))),
+				     NULL_RTX, i, 1, 0, in_code == COMPARE);
 	}
 
       /* On machines without logical shifts, if the operand of the AND is
@@ -8055,8 +8071,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  if ((INTVAL (XEXP (x, 1)) & ~mask) == 0)
 	    SUBST (XEXP (x, 0),
 		   gen_rtx_ASHIFTRT (mode,
-				     make_compound_operation
-				     (XEXP (XEXP (x, 0), 0), next_code),
+				     make_compound_operation (XEXP (XEXP (x,
+									  0),
+								    0),
+							      next_code),
 				     XEXP (XEXP (x, 0), 1)));
 	}
 
@@ -8066,9 +8084,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	 we are in a COMPARE.  */
       else if ((i = exact_log2 (UINTVAL (XEXP (x, 1)) + 1)) >= 0)
 	new_rtx = make_extraction (mode,
-			       make_compound_operation (XEXP (x, 0),
-							next_code),
-			       0, NULL_RTX, i, 1, 0, in_code == COMPARE);
+				   make_compound_operation (XEXP (x, 0),
+							    next_code),
+				   0, NULL_RTX, i, 1, 0, in_code == COMPARE);
 
       /* If we are in a comparison and this is an AND with a power of two,
 	 convert this into the appropriate bit extract.  */
@@ -8119,9 +8137,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  && (nonzero_bits (XEXP (x, 0), mode) & (1 << (mode_width - 1))) == 0)
 	{
 	  new_rtx = gen_rtx_ASHIFTRT (mode,
-				  make_compound_operation (XEXP (x, 0),
-							   next_code),
-				  XEXP (x, 1));
+				      make_compound_operation (XEXP (x, 0),
+							       next_code),
+				      XEXP (x, 1));
 	  break;
 	}
 
@@ -8142,9 +8160,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	{
 	  new_rtx = make_compound_operation (XEXP (lhs, 0), next_code);
 	  new_rtx = make_extraction (mode, new_rtx,
-				 INTVAL (rhs) - INTVAL (XEXP (lhs, 1)),
-				 NULL_RTX, mode_width - INTVAL (rhs),
-				 code == LSHIFTRT, 0, in_code == COMPARE);
+				     INTVAL (rhs) - INTVAL (XEXP (lhs, 1)),
+				     NULL_RTX, mode_width - INTVAL (rhs),
+				     code == LSHIFTRT, 0, in_code == COMPARE);
 	  break;
 	}
 
@@ -8161,9 +8179,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  && INTVAL (rhs) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (rhs) < mode_width
 	  && (new_rtx = extract_left_shift (mode, lhs, INTVAL (rhs))) != 0)
-	new_rtx = make_extraction (mode, make_compound_operation (new_rtx, next_code),
-			       0, NULL_RTX, mode_width - INTVAL (rhs),
-			       code == LSHIFTRT, 0, in_code == COMPARE);
+	new_rtx = make_extraction (mode, make_compound_operation (new_rtx,
+								  next_code),
+				   0, NULL_RTX, mode_width - INTVAL (rhs),
+				   code == LSHIFTRT, 0, in_code == COMPARE);
 
       break;
 
@@ -12498,7 +12517,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     (ne:DI (and:DI (reg:DI 4) (const_int 0xffffffff)) (const_int 0))
 	     -> (ne:DI (reg:SI 4) (const_int 0))
 
-	     unless TRULY_NOOP_TRUNCATION allows it or the register is
+	     unless TARGET_TRULY_NOOP_TRUNCATION allows it or the register is
 	     known to hold a value of the required mode the
 	     transformation is invalid.  */
 	  if ((equality_comparison_p || unsigned_comparison_p)
@@ -13338,8 +13357,8 @@ reg_truncated_to_mode (machine_mode mode, const_rtx x)
 }
 
 /* If X is a hard reg or a subreg record the mode that the register is
-   accessed in.  For non-TRULY_NOOP_TRUNCATION targets we might be able
-   to turn a truncate into a subreg using this information.  Return true
+   accessed in.  For non-TARGET_TRULY_NOOP_TRUNCATION targets we might be
+   able to turn a truncate into a subreg using this information.  Return true
    if traversing X is complete.  */
 
 static bool

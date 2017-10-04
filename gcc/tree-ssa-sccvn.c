@@ -3028,16 +3028,13 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 	      return false;
 
 	    /* Verify the controlling stmt is the same.  */
-	    gimple *last1 = last_stmt (idom1);
-	    gimple *last2 = last_stmt (idom2);
-	    if (gimple_code (last1) != GIMPLE_COND
-		|| gimple_code (last2) != GIMPLE_COND)
+	    gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1));
+	    gcond *last2 = safe_dyn_cast <gcond *> (last_stmt (idom2));
+	    if (! last1 || ! last2)
 	      return false;
 	    bool inverted_p;
-	    if (! cond_stmts_equal_p (as_a <gcond *> (last1),
-				      vp1->cclhs, vp1->ccrhs,
-				      as_a <gcond *> (last2),
-				      vp2->cclhs, vp2->ccrhs,
+	    if (! cond_stmts_equal_p (last1, vp1->cclhs, vp1->ccrhs,
+				      last2, vp2->cclhs, vp2->ccrhs,
 				      &inverted_p))
 	      return false;
 
@@ -3122,7 +3119,7 @@ vn_phi_lookup (gimple *phi)
   vp1.ccrhs = NULL_TREE;
   basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1.block);
   if (EDGE_COUNT (idom1->succs) == 2)
-    if (gcond *last1 = dyn_cast <gcond *> (last_stmt (idom1)))
+    if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
       {
 	vp1.cclhs = vn_valueize (gimple_cond_lhs (last1));
 	vp1.ccrhs = vn_valueize (gimple_cond_rhs (last1));
@@ -3168,7 +3165,7 @@ vn_phi_insert (gimple *phi, tree result)
   vp1->ccrhs = NULL_TREE;
   basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
   if (EDGE_COUNT (idom1->succs) == 2)
-    if (gcond *last1 = dyn_cast <gcond *> (last_stmt (idom1)))
+    if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
       {
 	vp1->cclhs = vn_valueize (gimple_cond_lhs (last1));
 	vp1->ccrhs = vn_valueize (gimple_cond_rhs (last1));
@@ -3358,6 +3355,12 @@ set_ssa_val_to (tree from, tree to)
 
   if (currval != to
       && !operand_equal_p (currval, to, 0)
+      /* Different undefined SSA names are not actually different.  See
+         PR82320 for a testcase were we'd otherwise not terminate iteration.  */
+      && !(TREE_CODE (currval) == SSA_NAME
+	   && TREE_CODE (to) == SSA_NAME
+	   && ssa_undefined_value_p (currval, false)
+	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
 	 getting invariant gimple addresses here, so can use
@@ -3860,11 +3863,11 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 static bool
 visit_phi (gimple *phi)
 {
-  bool changed = false;
-  tree result;
-  tree sameval = VN_TOP;
-  bool allsame = true;
+  tree result, sameval = VN_TOP, seen_undef = NULL_TREE;
   unsigned n_executable = 0;
+  bool allsame = true;
+  edge_iterator ei;
+  edge e;
 
   /* TODO: We could check for this in init_sccvn, and replace this
      with a gcc_assert.  */
@@ -3873,8 +3876,6 @@ visit_phi (gimple *phi)
 
   /* See if all non-TOP arguments have the same value.  TOP is
      equivalent to everything, so we can ignore it.  */
-  edge_iterator ei;
-  edge e;
   FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
     if (e->flags & EDGE_EXECUTABLE)
       {
@@ -3884,8 +3885,12 @@ visit_phi (gimple *phi)
 	if (TREE_CODE (def) == SSA_NAME)
 	  def = SSA_VAL (def);
 	if (def == VN_TOP)
-	  continue;
-	if (sameval == VN_TOP)
+	  ;
+	/* Ignore undefined defs for sameval but record one.  */
+	else if (TREE_CODE (def) == SSA_NAME
+		 && ssa_undefined_value_p (def, false))
+	  seen_undef = def;
+	else if (sameval == VN_TOP)
 	  sameval = def;
 	else if (!expressions_equal_p (def, sameval))
 	  {
@@ -3893,30 +3898,36 @@ visit_phi (gimple *phi)
 	    break;
 	  }
       }
-  
-  /* If none of the edges was executable or all incoming values are
-     undefined keep the value-number at VN_TOP.  If only a single edge
-     is exectuable use its value.  */
-  if (sameval == VN_TOP
-      || n_executable == 1)
-    return set_ssa_val_to (PHI_RESULT (phi), sameval);
 
+
+  /* If none of the edges was executable keep the value-number at VN_TOP,
+     if only a single edge is exectuable use its value.  */
+  if (n_executable <= 1)
+    result = seen_undef ? seen_undef : sameval;
+  /* If we saw only undefined values and VN_TOP use one of the
+     undefined values.  */
+  else if (sameval == VN_TOP)
+    result = seen_undef ? seen_undef : sameval;
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
-  result = vn_phi_lookup (phi);
-  if (result)
-    changed = set_ssa_val_to (PHI_RESULT (phi), result);
-  /* Otherwise all value numbered to the same value, the phi node has that
-     value.  */
-  else if (allsame)
-    changed = set_ssa_val_to (PHI_RESULT (phi), sameval);
+  else if ((result = vn_phi_lookup (phi)))
+    ;
+  /* If all values are the same use that, unless we've seen undefined
+     values as well and the value isn't constant.
+     CCP/copyprop have the same restriction to not remove uninit warnings.  */
+  else if (allsame
+	   && (! seen_undef || is_gimple_min_invariant (sameval)))
+    result = sameval;
   else
     {
-      vn_phi_insert (phi, PHI_RESULT (phi));
-      changed = set_ssa_val_to (PHI_RESULT (phi), PHI_RESULT (phi));
+      result = PHI_RESULT (phi);
+      /* Only insert PHIs that are varying, for constant value numbers
+         we mess up equivalences otherwise as we are only comparing
+	 the immediate controlling predicates.  */
+      vn_phi_insert (phi, result);
     }
 
-  return changed;
+  return set_ssa_val_to (PHI_RESULT (phi), result);
 }
 
 /* Try to simplify RHS using equivalences and constant folding.  */

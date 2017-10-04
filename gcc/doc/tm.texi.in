@@ -1050,19 +1050,7 @@ must be aligned to 16 byte boundaries.
 If this macro is not defined, then @var{basic-align} is used.
 @end defmac
 
-@defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
-If defined, a C expression to compute the alignment given to a constant
-that is being placed in memory.  @var{constant} is the constant and
-@var{basic-align} is the alignment that the object would ordinarily
-have.  The value of this macro is used instead of that alignment to
-align the object.
-
-The default definition just returns @var{basic-align}.
-
-The typical use of this macro is to increase alignment for string
-constants to be word aligned so that @code{strcpy} calls that copy
-constants can be done inline.
-@end defmac
+@hook TARGET_CONSTANT_ALIGNMENT
 
 @defmac LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
@@ -2303,50 +2291,19 @@ intermediate storage.  This case often occurs between floating-point and
 general registers.
 @end defmac
 
-@defmac SECONDARY_MEMORY_NEEDED (@var{class1}, @var{class2}, @var{m})
-Certain machines have the property that some registers cannot be copied
-to some other registers without using memory.  Define this macro on
-those machines to be a C expression that is nonzero if objects of mode
-@var{m} in registers of @var{class1} can only be copied to registers of
-class @var{class2} by storing a register of @var{class1} into memory
-and loading that memory location into a register of @var{class2}.
-
-Do not define this macro if its value would always be zero.
-@end defmac
+@hook TARGET_SECONDARY_MEMORY_NEEDED
 
 @defmac SECONDARY_MEMORY_NEEDED_RTX (@var{mode})
-Normally when @code{SECONDARY_MEMORY_NEEDED} is defined, the compiler
+Normally when @code{TARGET_SECONDARY_MEMORY_NEEDED} is defined, the compiler
 allocates a stack slot for a memory location needed for register copies.
 If this macro is defined, the compiler instead uses the memory location
 defined by this macro.
 
 Do not define this macro if you do not define
-@code{SECONDARY_MEMORY_NEEDED}.
+@code{TARGET_SECONDARY_MEMORY_NEEDED}.
 @end defmac
 
-@defmac SECONDARY_MEMORY_NEEDED_MODE (@var{mode})
-When the compiler needs a secondary memory location to copy between two
-registers of mode @var{mode}, it normally allocates sufficient memory to
-hold a quantity of @code{BITS_PER_WORD} bits and performs the store and
-load operations in a mode that many bits wide and whose class is the
-same as that of @var{mode}.
-
-This is right thing to do on most machines because it ensures that all
-bits of the register are copied and prevents accesses to the registers
-in a narrower mode, which some machines prohibit for floating-point
-registers.
-
-However, this default behavior is not correct on some machines, such as
-the DEC Alpha, that store short integers in floating-point registers
-differently than in integer registers.  On those machines, the default
-widening will not work correctly and you must define this macro to
-suppress that widening in some cases.  See the file @file{alpha.h} for
-details.
-
-Do not define this macro if you do not define
-@code{SECONDARY_MEMORY_NEEDED} or if widening @var{mode} to a mode that
-is @code{BITS_PER_WORD} bits wide is correct for your machine.
-@end defmac
+@hook TARGET_SECONDARY_MEMORY_NEEDED_MODE
 
 @hook TARGET_CLASS_LIKELY_SPILLED_P
 
@@ -2365,34 +2322,7 @@ This macro helps control the handling of multiple-word values
 in the reload pass.
 @end defmac
 
-@defmac CANNOT_CHANGE_MODE_CLASS (@var{from}, @var{to}, @var{class})
-If defined, a C expression that returns nonzero for a @var{class} for which
-a change from mode @var{from} to mode @var{to} is invalid.
-
-For example, loading 32-bit integer or floating-point objects into
-floating-point registers on Alpha extends them to 64 bits.
-Therefore loading a 64-bit object and then storing it as a 32-bit object
-does not store the low-order 32 bits, as would be the case for a normal
-register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
-as below:
-
-@smallexample
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
-   ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
-@end smallexample
-
-Even if storing from a register in mode @var{to} would be valid,
-if both @var{from} and @code{raw_reg_mode} for @var{class} are wider
-than @code{word_mode}, then we must prevent @var{to} narrowing the
-mode.  This happens when the middle-end assumes that it can load
-or store pieces of an @var{N}-word pseudo, and that the pseudo will
-eventually be allocated to @var{N} @code{word_mode} hard registers.
-Failure to prevent this kind of mode change will result in the
-entire @code{raw_reg_mode} being modified instead of the partial
-value that the middle-end intended.
-
-@end defmac
+@hook TARGET_CAN_CHANGE_MODE_CLASS
 
 @hook TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
 
@@ -2905,6 +2835,8 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
+@hook TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE
+
 @need 2000
 @node Frame Registers
 @subsection Registers That Address the Stack Frame
@@ -3339,13 +3271,7 @@ argument @var{libname} exists for symmetry with
 
 @hook TARGET_FUNCTION_ARG_ADVANCE
 
-@defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
-If defined, a C expression that is the number of bytes to add to the
-offset of the argument passed in memory.  This is needed for the SPU,
-which passes @code{char} and @code{short} arguments in the preferred
-slot that is in the middle of the quad word instead of starting at the
-top.
-@end defmac
+@hook TARGET_FUNCTION_ARG_OFFSET
 
 @hook TARGET_FUNCTION_ARG_PADDING
 
@@ -4149,6 +4075,8 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+
+@hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
 
 @hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 
@@ -7482,12 +7410,12 @@ define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
 
 You may return a non-@code{UNKNOWN} value even if for some hard registers
 the sign extension is not performed, if for the @code{REGNO_REG_CLASS}
-of these hard registers @code{CANNOT_CHANGE_MODE_CLASS} returns nonzero
+of these hard registers @code{TARGET_CAN_CHANGE_MODE_CLASS} returns false
 when the @var{from} mode is @var{mem_mode} and the @var{to} mode is any
 integral mode larger than this but not larger than @code{word_mode}.
 
 You must return @code{UNKNOWN} if for some hard registers that allow this
-mode, @code{CANNOT_CHANGE_MODE_CLASS} says that they cannot change to
+mode, @code{TARGET_CAN_CHANGE_MODE_CLASS} says that they cannot change to
 @code{word_mode}, but that they can change to another integral mode that
 is larger then @var{mem_mode} but still smaller than @code{word_mode}.
 @end defmac
@@ -7540,21 +7468,7 @@ You need not define this macro if it would always have the value of zero.
 @anchor{TARGET_SHIFT_TRUNCATION_MASK}
 @hook TARGET_SHIFT_TRUNCATION_MASK
 
-@defmac TRULY_NOOP_TRUNCATION (@var{outprec}, @var{inprec})
-A C expression which is nonzero if on this machine it is safe to
-``convert'' an integer of @var{inprec} bits to one of @var{outprec}
-bits (where @var{outprec} is smaller than @var{inprec}) by merely
-operating on it as if it had only @var{outprec} bits.
-
-On many machines, this expression can be 1.
-
-@c rearranged this, removed the phrase "it is reported that".  this was
-@c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for modes
-for which @code{TARGET_MODES_TIEABLE_P} is false, suboptimal code can result.
-If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
-such cases may improve things.
-@end defmac
+@hook TARGET_TRULY_NOOP_TRUNCATION
 
 @hook TARGET_MODE_REP_EXTENDED
 

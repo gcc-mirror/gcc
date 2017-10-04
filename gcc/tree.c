@@ -873,7 +873,7 @@ tree_size (const_tree node)
 
     case VECTOR_CST:
       return (sizeof (struct tree_vector)
-	      + (TYPE_VECTOR_SUBPARTS (TREE_TYPE (node)) - 1) * sizeof (tree));
+	      + (VECTOR_CST_NELTS (node) - 1) * sizeof (tree));
 
     case STRING_CST:
       return TREE_STRING_LENGTH (node) + offsetof (struct tree_string, str) + 1;
@@ -1696,23 +1696,26 @@ make_vector (unsigned len MEM_STAT_DECL)
 
   TREE_SET_CODE (t, VECTOR_CST);
   TREE_CONSTANT (t) = 1;
+  VECTOR_CST_NELTS (t) = len;
 
   return t;
 }
 
 /* Return a new VECTOR_CST node whose type is TYPE and whose values
-   are in a list pointed to by VALS.  */
+   are given by VALS.  */
 
 tree
-build_vector (tree type, tree *vals MEM_STAT_DECL)
+build_vector (tree type, vec<tree> vals MEM_STAT_DECL)
 {
+  unsigned int nelts = vals.length ();
+  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
   int over = 0;
   unsigned cnt = 0;
-  tree v = make_vector (TYPE_VECTOR_SUBPARTS (type));
+  tree v = make_vector (nelts);
   TREE_TYPE (v) = type;
 
   /* Iterate through elements and check for overflow.  */
-  for (cnt = 0; cnt < TYPE_VECTOR_SUBPARTS (type); ++cnt)
+  for (cnt = 0; cnt < nelts; ++cnt)
     {
       tree value = vals[cnt];
 
@@ -1735,20 +1738,21 @@ build_vector (tree type, tree *vals MEM_STAT_DECL)
 tree
 build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
 {
-  tree *vec = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
-  unsigned HOST_WIDE_INT idx, pos = 0;
+  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
+  unsigned HOST_WIDE_INT idx;
   tree value;
 
+  auto_vec<tree, 32> vec (nelts);
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
     {
       if (TREE_CODE (value) == VECTOR_CST)
 	for (unsigned i = 0; i < VECTOR_CST_NELTS (value); ++i)
-	  vec[pos++] = VECTOR_CST_ELT (value, i);
+	  vec.quick_push (VECTOR_CST_ELT (value, i));
       else
-	vec[pos++] = value;
+	vec.quick_push (value);
     }
-  while (pos < TYPE_VECTOR_SUBPARTS (type))
-    vec[pos++] = build_zero_cst (TREE_TYPE (type));
+  while (vec.length () < nelts)
+    vec.quick_push (build_zero_cst (TREE_TYPE (type)));
 
   return build_vector (type, vec);
 }
@@ -1773,9 +1777,9 @@ build_vector_from_val (tree vectype, tree sc)
 
   if (CONSTANT_CLASS_P (sc))
     {
-      tree *v = XALLOCAVEC (tree, nunits);
+      auto_vec<tree, 32> v (nunits);
       for (i = 0; i < nunits; ++i)
-	v[i] = sc;
+	v.quick_push (sc);
       return build_vector (vectype, v);
     }
   else
@@ -5817,11 +5821,10 @@ find_atomic_core_type (tree type)
   tree base_atomic_type;
 
   /* Only handle complete types.  */
-  if (TYPE_SIZE (type) == NULL_TREE)
+  if (!tree_fits_uhwi_p (TYPE_SIZE (type)))
     return NULL_TREE;
 
-  HOST_WIDE_INT type_size = tree_to_uhwi (TYPE_SIZE (type));
-  switch (type_size)
+  switch (tree_to_uhwi (TYPE_SIZE (type)))
     {
     case 8:
       base_atomic_type = atomicQI_type_node;

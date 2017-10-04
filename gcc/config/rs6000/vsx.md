@@ -382,8 +382,16 @@
    UNSPEC_VSX_VTSTDC
    UNSPEC_VSX_VEC_INIT
    UNSPEC_VSX_VSIGNED2
+
    UNSPEC_LXVL
+   UNSPEC_LXVLL
+   UNSPEC_LVSL_REG
+   UNSPEC_LVSR_REG
    UNSPEC_STXVL
+   UNSPEC_STXVLL
+   UNSPEC_XL_LEN_R
+   UNSPEC_XST_LEN_R
+
    UNSPEC_VCLZLSBB
    UNSPEC_VCTZLSBB
    UNSPEC_VEXTUBLX
@@ -1781,6 +1789,15 @@
   "xscvspdp %x0,%x1"
   [(set_attr "type" "fp")])
 
+;; Same as vsx_xscvspdp, but use SF as the type
+(define_insn "vsx_xscvspdp_scalar2"
+  [(set (match_operand:SF 0 "vsx_register_operand" "=ww")
+	(unspec:SF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
+		   UNSPEC_VSX_CVSPDP))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xscvspdp %x0,%x1"
+  [(set_attr "type" "fp")])
+
 ;; Generate xvcvhpsp instruction
 (define_insn "vsx_xvcvhpsp"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
@@ -1794,41 +1811,32 @@
 ;; format of scalars is actually DF.
 (define_insn "vsx_xscvdpsp_scalar"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "f")]
+	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww")]
 		     UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvdpsp %x0,%x1"
   [(set_attr "type" "fp")])
 
-;; Same as vsx_xscvspdp, but use SF as the type
-(define_insn "vsx_xscvspdp_scalar2"
-  [(set (match_operand:SF 0 "vsx_register_operand" "=ww")
-	(unspec:SF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
-		   UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "xscvspdp %x0,%x1"
-  [(set_attr "type" "fp")])
-
 ;; ISA 2.07 xscvdpspn/xscvspdpn that does not raise an error on signalling NaNs
 (define_insn "vsx_xscvdpspn"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=ww,?ww")
-	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "wd,wa")]
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=ww")
+	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "ws")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
   "xscvdpspn %x0,%x1"
   [(set_attr "type" "fp")])
 
 (define_insn "vsx_xscvspdpn"
-  [(set (match_operand:DF 0 "vsx_register_operand" "=ws,?ws")
-	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wf,wa")]
+  [(set (match_operand:DF 0 "vsx_register_operand" "=ws")
+	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSPDPN))]
   "TARGET_XSCVSPDPN"
   "xscvspdpn %x0,%x1"
   [(set_attr "type" "fp")])
 
 (define_insn "vsx_xscvdpspn_scalar"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wf,?wa")
-	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww,ww")]
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
+	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
   "xscvdpspn %x0,%x1"
@@ -4352,6 +4360,43 @@
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
 
+(define_insn "lxvll"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI [(match_operand:DI 1 "gpc_reg_operand" "b")
+		       (match_operand:DI 2 "register_operand" "r")]
+		      UNSPEC_LXVLL))]
+  "TARGET_P9_VECTOR"
+  "lxvll %x0,%1,%2"
+  [(set_attr "type" "vecload")])
+
+;; Expand for builtin xl_len_r
+(define_expand "xl_len_r"
+  [(match_operand:V16QI 0 "vsx_register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")]
+  ""
+{
+  rtx shift_mask = gen_reg_rtx (V16QImode);
+  rtx rtx_vtmp = gen_reg_rtx (V16QImode);
+  rtx tmp = gen_reg_rtx (DImode);
+
+  emit_insn (gen_altivec_lvsl_reg (shift_mask, operands[2]));
+  emit_insn (gen_ashldi3 (tmp, operands[2], GEN_INT (56)));
+  emit_insn (gen_lxvll (rtx_vtmp, operands[1], tmp));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (operands[0], rtx_vtmp, rtx_vtmp,
+	     shift_mask));
+  DONE;
+})
+
+(define_insn "stxvll"
+  [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
+	(unspec:V16QI [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+		       (match_operand:DI 2 "register_operand" "r")]
+	              UNSPEC_STXVLL))]
+  "TARGET_P9_VECTOR"
+  "stxvll %x0,%1,%2"
+  [(set_attr "type" "vecstore")])
+
 ;; Store VSX Vector with Length
 (define_expand "stxvl"
   [(set (match_dup 3)
@@ -4376,6 +4421,25 @@
   "sldi %2,%2,56\;stxvl %x0,%1,%2"
   [(set_attr "length" "8")
    (set_attr "type" "vecstore")])
+
+;; Expand for builtin xst_len_r
+(define_expand "xst_len_r"
+  [(match_operand:V16QI 0 "vsx_register_operand" "=wa")
+   (match_operand:DI 1 "register_operand" "b")
+   (match_operand:DI 2 "register_operand" "r")]
+  "UNSPEC_XST_LEN_R"
+{
+  rtx shift_mask = gen_reg_rtx (V16QImode);
+  rtx rtx_vtmp = gen_reg_rtx (V16QImode);
+  rtx tmp = gen_reg_rtx (DImode);
+
+  emit_insn (gen_altivec_lvsr_reg (shift_mask, operands[2]));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (rtx_vtmp, operands[0], operands[0],
+	     shift_mask));
+  emit_insn (gen_ashldi3 (tmp, operands[2], GEN_INT (56)));
+  emit_insn (gen_stxvll (rtx_vtmp, operands[1], tmp));
+  DONE;
+})
 
 ;; Vector Compare Not Equal Byte
 (define_insn "vcmpneb"
@@ -4733,9 +4797,10 @@
    (SFBOOL_SHL_D		 7)		;; shift left dest
    (SFBOOL_SHL_A		 8)		;; shift left arg
    (SFBOOL_MTVSR_D		 9)		;; move to vecter dest
-   (SFBOOL_BOOL_A_DI		10)		;; SFBOOL_BOOL_A1/A2 as DImode
-   (SFBOOL_TMP_VSX_DI		11)		;; SFBOOL_TMP_VSX as DImode
-   (SFBOOL_MTVSR_D_V4SF		12)])		;; SFBOOL_MTVSRD_D as V4SFmode
+   (SFBOOL_MFVSR_A_V4SF		10)		;; SFBOOL_MFVSR_A as V4SFmode
+   (SFBOOL_BOOL_A_DI		11)		;; SFBOOL_BOOL_A1/A2 as DImode
+   (SFBOOL_TMP_VSX_DI		12)		;; SFBOOL_TMP_VSX as DImode
+   (SFBOOL_MTVSR_D_V4SF		13)])		;; SFBOOL_MTVSRD_D as V4SFmode
 
 ;; Attempt to optimize some common GLIBC operations using logical operations to
 ;; pick apart SFmode operations.  For example, there is code from e_powf.c
@@ -4773,29 +4838,22 @@
 ;;
 ;; (set (reg:DI reg3) (unspec:DI [(reg:V4SF reg2)] UNSPEC_P8V_RELOAD_FROM_VSX))
 ;;
-;; (set (reg:DI reg3) (lshiftrt:DI (reg:DI reg3) (const_int 32)))
+;; (set (reg:DI reg4) (and:DI (reg:DI reg3) (reg:DI reg3)))
 ;;
-;; (set (reg:DI reg5) (and:DI (reg:DI reg3) (reg:DI reg4)))
+;; (set (reg:DI reg5) (ashift:DI (reg:DI reg4) (const_int 32)))
 ;;
-;; (set (reg:DI reg6) (ashift:DI (reg:DI reg5) (const_int 32)))
+;; (set (reg:SF reg6) (unspec:SF [(reg:DI reg5)] UNSPEC_P8V_MTVSRD))
 ;;
-;; (set (reg:SF reg7) (unspec:SF [(reg:DI reg6)] UNSPEC_P8V_MTVSRD))
-;;
-;; (set (reg:SF reg7) (unspec:SF [(reg:SF reg7)] UNSPEC_VSX_CVSPDPN))
+;; (set (reg:SF reg6) (unspec:SF [(reg:SF reg6)] UNSPEC_VSX_CVSPDPN))
 
 (define_peephole2
   [(match_scratch:DI SFBOOL_TMP_GPR "r")
    (match_scratch:V4SF SFBOOL_TMP_VSX "wa")
 
-   ;; MFVSRD
+   ;; MFVSRWZ (aka zero_extend)
    (set (match_operand:DI SFBOOL_MFVSR_D "int_reg_operand")
-	(unspec:DI [(match_operand:V4SF SFBOOL_MFVSR_A "vsx_register_operand")]
-		   UNSPEC_P8V_RELOAD_FROM_VSX))
-
-   ;; SRDI
-   (set (match_dup SFBOOL_MFVSR_D)
-	(lshiftrt:DI (match_dup SFBOOL_MFVSR_D)
-		     (const_int 32)))
+	(zero_extend:DI
+	 (match_operand:SI SFBOOL_MFVSR_A "vsx_register_operand")))
 
    ;; AND/IOR/XOR operation on int
    (set (match_operand:SI SFBOOL_BOOL_D "int_reg_operand")
@@ -4820,15 +4878,15 @@
    && (REG_P (operands[SFBOOL_BOOL_A2])
        || CONST_INT_P (operands[SFBOOL_BOOL_A2]))
    && (REGNO (operands[SFBOOL_BOOL_D]) == REGNO (operands[SFBOOL_MFVSR_D])
-       || peep2_reg_dead_p (3, operands[SFBOOL_MFVSR_D]))
+       || peep2_reg_dead_p (2, operands[SFBOOL_MFVSR_D]))
    && (REGNO (operands[SFBOOL_MFVSR_D]) == REGNO (operands[SFBOOL_BOOL_A1])
        || (REG_P (operands[SFBOOL_BOOL_A2])
 	   && REGNO (operands[SFBOOL_MFVSR_D])
 		== REGNO (operands[SFBOOL_BOOL_A2])))
    && REGNO (operands[SFBOOL_BOOL_D]) == REGNO (operands[SFBOOL_SHL_A])
    && (REGNO (operands[SFBOOL_SHL_D]) == REGNO (operands[SFBOOL_BOOL_D])
-       || peep2_reg_dead_p (4, operands[SFBOOL_BOOL_D]))
-   && peep2_reg_dead_p (5, operands[SFBOOL_SHL_D])"
+       || peep2_reg_dead_p (3, operands[SFBOOL_BOOL_D]))
+   && peep2_reg_dead_p (4, operands[SFBOOL_SHL_D])"
   [(set (match_dup SFBOOL_TMP_GPR)
 	(ashift:DI (match_dup SFBOOL_BOOL_A_DI)
 		   (const_int 32)))
@@ -4837,12 +4895,13 @@
 	(match_dup SFBOOL_TMP_GPR))
 
    (set (match_dup SFBOOL_MTVSR_D_V4SF)
-	(and_ior_xor:V4SF (match_dup SFBOOL_MFVSR_A)
+	(and_ior_xor:V4SF (match_dup SFBOOL_MFVSR_A_V4SF)
 			  (match_dup SFBOOL_TMP_VSX)))]
 {
   rtx bool_a1 = operands[SFBOOL_BOOL_A1];
   rtx bool_a2 = operands[SFBOOL_BOOL_A2];
   int regno_mfvsr_d = REGNO (operands[SFBOOL_MFVSR_D]);
+  int regno_mfvsr_a = REGNO (operands[SFBOOL_MFVSR_A]);
   int regno_tmp_vsx = REGNO (operands[SFBOOL_TMP_VSX]);
   int regno_mtvsr_d = REGNO (operands[SFBOOL_MTVSR_D]);
 
@@ -4861,6 +4920,7 @@
       operands[SFBOOL_BOOL_A_DI] = gen_rtx_REG (DImode, regno_bool_a);
     }
 
+  operands[SFBOOL_MFVSR_A_V4SF] = gen_rtx_REG (V4SFmode, regno_mfvsr_a);
   operands[SFBOOL_TMP_VSX_DI] = gen_rtx_REG (DImode, regno_tmp_vsx);
   operands[SFBOOL_MTVSR_D_V4SF] = gen_rtx_REG (V4SFmode, regno_mtvsr_d);
 })

@@ -147,12 +147,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MALLOC_ABI_ALIGNMENT BIGGEST_ALIGNMENT
 
-/* Make strings dword-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars dword-aligned for the same reasons.
    Also, align arrays of SImode items.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -839,10 +833,6 @@ do \
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

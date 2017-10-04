@@ -2884,6 +2884,13 @@ match_char_kind (int * kind, int * is_iso_c)
       goto no_match;
     }
 
+  if (gfc_derived_parameter_expr (e))
+    {
+      saved_kind_expr = e;
+      *kind = 0;
+      return MATCH_YES;
+    }
+
   fail = gfc_extract_int (e, kind, 1);
   *is_iso_c = e->ts.is_iso_c;
   if (fail)
@@ -3268,8 +3275,8 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    kind_expr = gfc_copy_expr (actual_param->expr);
 	  else
 	    {
-	      if (param->value)
-		kind_expr = gfc_copy_expr (param->value);
+	      if (c1->initializer)
+		kind_expr = gfc_copy_expr (c1->initializer);
 	      else if (!(actual_param && param->attr.pdt_len))
 		{
 		  gfc_error ("The derived parameter '%qs' at %C does not "
@@ -3296,6 +3303,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
       if (kind_expr)
 	{
+	  /* Try simplification even for LEN expressions.  */
+	  gfc_resolve_expr (kind_expr);
+	  gfc_simplify_expr (kind_expr, 1);
 	  /* Variable expressions seem to default to BT_PROCEDURE.
 	     TODO find out why this is and fix it.  */
 	  if (kind_expr->ts.type != BT_INTEGER
@@ -3308,8 +3318,6 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 
 	  tail->expr = gfc_copy_expr (kind_expr);
-	  /* Try simplification even for LEN expressions.  */
-	  gfc_simplify_expr (tail->expr, 1);
 	}
 
       if (actual_param)
@@ -3453,6 +3461,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	{
 	  gfc_expr *e = gfc_copy_expr (c1->kind_expr);
 	  gfc_insert_kind_parameter_exprs (e);
+	  gfc_simplify_expr (e, 1);
 	  gfc_extract_int (e, &c2->ts.kind);
 	  gfc_free_expr (e);
 	  if (gfc_validate_kind (c2->ts.type, c2->ts.kind, true) < 0)

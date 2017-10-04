@@ -109,12 +109,6 @@ extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 							    machine_mode,
 							    rtx);
-extern bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class,
-						   enum reg_class,
-						   machine_mode);
-extern bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
-						    machine_mode,
-						    enum reg_class);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
 extern void rs6000_secondary_reload_gpr (rtx, rtx, rtx, bool);
 extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,
@@ -154,7 +148,6 @@ extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
 extern bool valid_sf_si_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (machine_mode);
-extern machine_mode rs6000_secondary_memory_needed_mode (machine_mode);
 extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode,
 						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (machine_mode, rtx,

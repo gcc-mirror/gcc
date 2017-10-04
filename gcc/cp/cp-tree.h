@@ -2473,10 +2473,12 @@ struct GTY(()) lang_decl_min {
   union lang_decl_u2 {
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
        THUNK_VIRTUAL_OFFSET.
+       In a VAR_DECL for which DECL_HAS_VALUE_EXPR_P holds,
+       this is DECL_CAPTURED_VARIABLE.
        Otherwise this is DECL_ACCESS.  */
     tree GTY ((tag ("0"))) access;
 
-    /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
+    /* For TREE_STATIC VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
     int GTY ((tag ("1"))) discriminator;
   } GTY ((desc ("%0.u.base.u2sel"))) u2;
 };
@@ -3242,6 +3244,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   (DECL_LANG_SPECIFIC (VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK (NODE)) \
    ->u.min.template_info)
 
+/* For a lambda capture proxy, its captured variable.  */
+#define DECL_CAPTURED_VARIABLE(NODE) \
+  (LANG_DECL_U2_CHECK (NODE, 0)->access)
+
 /* For a VAR_DECL, indicates that the variable is actually a
    non-static data member of anonymous union that has been promoted to
    variable status.  */
@@ -3886,7 +3892,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    declared with constexpr specifier are implicitly inline variables.  */
 #define DECL_INLINE_VAR_P(NODE) \
   (DECL_VAR_DECLARED_INLINE_P (NODE)				\
-   || (cxx_dialect >= cxx1z					\
+   || (cxx_dialect >= cxx17					\
        && DECL_DECLARED_CONSTEXPR_P (NODE)			\
        && DECL_CLASS_SCOPE_P (NODE)))
 
@@ -5661,6 +5667,8 @@ struct cp_parameter_declarator {
   tree default_argument;
   /* True iff this is a template parameter pack.  */
   bool template_parameter_pack_p;
+  /* Location within source.  */
+  location_t loc;
 };
 
 /* A declarator.  */
@@ -6154,7 +6162,7 @@ extern void check_member_template		(tree);
 extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
 		       tree, bool, tree, tree);
 extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
-			  tree, tree);
+			  tree, tree, tree);
 extern bool any_dependent_type_attributes_p	(tree);
 extern tree cp_reconstruct_complex_type		(tree, tree);
 extern bool attributes_naming_typedef_ok	(tree);
@@ -6244,6 +6252,7 @@ extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
                                                  bool = true);
 extern tree mark_lvalue_use			(tree);
+extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
 extern void mark_exp_read			(tree);
 
@@ -6407,6 +6416,7 @@ extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
+extern bool processing_nonlambda_template	(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern tree fn_type_unification			(tree, tree, tree,
@@ -6715,7 +6725,7 @@ extern tree finish_template_type		(tree, tree, int);
 extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
 extern bool outer_automatic_var_p		(tree);
-extern tree process_outer_var_ref		(tree, tsubst_flags_t);
+extern tree process_outer_var_ref		(tree, tsubst_flags_t, bool force_use = false);
 extern cp_expr finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,
@@ -6794,7 +6804,7 @@ extern tree lambda_function			(tree);
 extern void apply_deduced_return_type           (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
-extern tree build_capture_proxy			(tree);
+extern tree build_capture_proxy			(tree, tree);
 extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);

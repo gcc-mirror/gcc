@@ -4551,7 +4551,7 @@ mark_template_parm (tree t, void* data)
     }
 
   /* In C++17 the type of a non-type argument is a deduced context.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && TREE_CODE (t) == TEMPLATE_PARM_INDEX)
     for_each_template_parm (TREE_TYPE (t),
 			    &mark_template_parm,
@@ -6475,7 +6475,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	   to leave it in that form rather than lower it to a
 	   CONSTRUCTOR.  */;
       else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
-	       || cxx_dialect >= cxx1z)
+	       || cxx_dialect >= cxx17)
 	{
 	  /* C++17: A template-argument for a non-type template-parameter shall
 	     be a converted constant expression (8.20) of the type of the
@@ -6663,7 +6663,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		       orig_expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if ((cxx_dialect >= cxx11 && cxx_dialect < cxx1z)
+	  else if ((cxx_dialect >= cxx11 && cxx_dialect < cxx17)
 		   && decl_linkage (decl) == lk_none)
 	    {
 	      if (complain & tf_error)
@@ -9494,6 +9494,32 @@ in_template_function (void)
   return ret;
 }
 
+/* Returns true iff we are currently within a template other than a generic
+   lambda.  We test this by finding the outermost closure type and checking
+   whether it is dependent.  */
+
+bool
+processing_nonlambda_template (void)
+{
+  if (!processing_template_decl)
+    return false;
+
+  tree outer_closure = NULL_TREE;
+  for (tree t = current_class_type; t;
+       t = decl_type_context (TYPE_MAIN_DECL (t)))
+    {
+      if (LAMBDA_TYPE_P (t))
+	outer_closure = t;
+      else
+	break;
+    }
+
+  if (outer_closure)
+    return dependent_type_p (outer_closure);
+  else
+    return true;
+}
+
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 bool
@@ -10817,7 +10843,7 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
-	  if (cxx_dialect >= cxx1z)
+	  if (cxx_dialect >= cxx17)
 	    CLASSTYPE_LITERAL_P (type) = true;
 
 	  if (!DECL_TEMPLATE_INFO (decl)
@@ -12809,14 +12835,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    cp_apply_type_quals_to_decl (cp_type_quals (type), r);
 
 	    if (DECL_C_BIT_FIELD (r))
-	      /* For bit-fields, DECL_INITIAL gives the number of bits.  For
-		 non-bit-fields DECL_INITIAL is a non-static data member
-		 initializer, which gets deferred instantiation.  */
-	      DECL_INITIAL (r)
-		= tsubst_expr (DECL_INITIAL (t), args,
+	      /* For bit-fields, DECL_BIT_FIELD_REPRESENTATIVE gives the
+		 number of bits.  */
+	      DECL_BIT_FIELD_REPRESENTATIVE (r)
+		= tsubst_expr (DECL_BIT_FIELD_REPRESENTATIVE (t), args,
 			       complain, in_decl,
 			       /*integral_constant_expression_p=*/true);
-	    else if (DECL_INITIAL (t))
+	    if (DECL_INITIAL (t))
 	      {
 		/* Set up DECL_TEMPLATE_INFO so that we can get at the
 		   NSDMI in perform_member_init.  Still set DECL_INITIAL
@@ -15986,7 +16011,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  {
 	    /* We're in tsubst_lambda_expr, we've already inserted a new
 	       capture proxy, so look it up and register it.  */
-	    tree inst = lookup_name (DECL_NAME (decl));
+	    tree inst = lookup_name_real (DECL_NAME (decl), 0, 0,
+					  /*block_p=*/true, 0, LOOKUP_HIDDEN);
 	    gcc_assert (inst != decl && is_capture_proxy (inst));
 	    register_local_specialization (inst, decl);
 	    break;
@@ -16906,9 +16932,9 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (nested)
 	push_function_context ();
 
-      tree body = start_lambda_function (fn, r);
-
       local_specialization_stack s (lss_copy);
+
+      tree body = start_lambda_function (fn, r);
 
       register_parameter_specializations (oldfn, fn);
 
@@ -18136,11 +18162,7 @@ tsubst_copy_and_build (tree t,
 	      r = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
 	  }
 	else if (outer_automatic_var_p (r))
-	  {
-	    r = process_outer_var_ref (r, complain);
-	    if (is_capture_proxy (r) && !DECL_PACK_P (t))
-	      register_local_specialization (r, t);
-	  }
+	  r = process_outer_var_ref (r, complain);
 
 	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
 	  /* If the original type was a reference, we'll be wrapped in
@@ -19543,7 +19565,7 @@ type_unification_real (tree tparms,
       tsubst_flags_t complain = (explain_p
 				 ? tf_warning_or_error
 				 : tf_none);
-      bool tried_array_deduction = (cxx_dialect < cxx1z);
+      bool tried_array_deduction = (cxx_dialect < cxx17);
 
       for (i = 0; i < ntparms; i++)
 	{
@@ -20918,7 +20940,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       else if (uses_template_parms (tparm))
 	{
 	  /* We haven't deduced the type of this parameter yet.  */
-	  if (cxx_dialect >= cxx1z
+	  if (cxx_dialect >= cxx17
 	      /* We deduce from array bounds in try_array_deduction.  */
 	      && !(strict & UNIFY_ALLOW_INTEGER))
 	    {
@@ -21890,7 +21912,7 @@ get_partial_spec_bindings (tree tmpl, tree spec_tmpl, tree args)
   else
     deduced_args = innermost_deduced_args;
 
-  bool tried_array_deduction = (cxx_dialect < cxx1z);
+  bool tried_array_deduction = (cxx_dialect < cxx17);
  again:
   if (unify (tparms, deduced_args,
 	     INNERMOST_TEMPLATE_ARGS (spec_args),
@@ -23707,7 +23729,7 @@ dependent_type_p_r (tree type)
 	   arg_type = TREE_CHAIN (arg_type))
 	if (dependent_type_p (TREE_VALUE (arg_type)))
 	  return true;
-      if (cxx_dialect >= cxx1z)
+      if (cxx_dialect >= cxx17)
 	{
 	  /* A value-dependent noexcept-specifier makes the type dependent.  */
 	  tree spec = TYPE_RAISES_EXCEPTIONS (type);

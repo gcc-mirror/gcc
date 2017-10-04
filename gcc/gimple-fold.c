@@ -5919,18 +5919,18 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		       && (CONSTRUCTOR_NELTS (rhs)
 			   == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
 		{
-		  unsigned i;
-		  tree val, *vec;
+		  unsigned i, nelts;
+		  tree val;
 
-		  vec = XALLOCAVEC (tree,
-				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)));
+		  nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
+		  auto_vec<tree, 32> vec (nelts);
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
 		      val = (*valueize) (val);
 		      if (TREE_CODE (val) == INTEGER_CST
 			  || TREE_CODE (val) == REAL_CST
 			  || TREE_CODE (val) == FIXED_CST)
-			vec[i] = val;
+			vec.quick_push (val);
 		      else
 			return NULL_TREE;
 		    }
@@ -7056,6 +7056,58 @@ gimple_convert_to_ptrofftype (gimple_seq *seq, location_t loc, tree op)
   if (ptrofftype_p (TREE_TYPE (op)))
     return op;
   return gimple_convert (seq, loc, sizetype, op);
+}
+
+/* Build a vector of type TYPE in which each element has the value OP.
+   Return a gimple value for the result, appending any new statements
+   to SEQ.  */
+
+tree
+gimple_build_vector_from_val (gimple_seq *seq, location_t loc, tree type,
+			      tree op)
+{
+  tree res, vec = build_vector_from_val (type, op);
+  if (is_gimple_val (vec))
+    return vec;
+  if (gimple_in_ssa_p (cfun))
+    res = make_ssa_name (type);
+  else
+    res = create_tmp_reg (type);
+  gimple *stmt = gimple_build_assign (res, vec);
+  gimple_set_location (stmt, loc);
+  gimple_seq_add_stmt_without_update (seq, stmt);
+  return res;
+}
+
+/* Build a vector of type TYPE in which the elements have the values
+   given by ELTS.  Return a gimple value for the result, appending any
+   new instructions to SEQ.  */
+
+tree
+gimple_build_vector (gimple_seq *seq, location_t loc, tree type,
+		     vec<tree> elts)
+{
+  unsigned int nelts = elts.length ();
+  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
+  for (unsigned int i = 0; i < nelts; ++i)
+    if (!TREE_CONSTANT (elts[i]))
+      {
+	vec<constructor_elt, va_gc> *v;
+	vec_alloc (v, nelts);
+	for (i = 0; i < nelts; ++i)
+	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[i]);
+
+	tree res;
+	if (gimple_in_ssa_p (cfun))
+	  res = make_ssa_name (type);
+	else
+	  res = create_tmp_reg (type);
+	gimple *stmt = gimple_build_assign (res, build_constructor (type, v));
+	gimple_set_location (stmt, loc);
+	gimple_seq_add_stmt_without_update (seq, stmt);
+	return res;
+      }
+  return build_vector (type, elts);
 }
 
 /* Return true if the result of assignment STMT is known to be non-negative.

@@ -2997,7 +2997,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		 to the value directly in mode MODE, otherwise we must
 		 start with the register in word_mode and explicitly
 		 convert it.  */
-	      if (TRULY_NOOP_TRUNCATION (size * BITS_PER_UNIT, BITS_PER_WORD))
+	      if (targetm.truly_noop_truncation (size * BITS_PER_UNIT,
+						 BITS_PER_WORD))
 		reg = gen_rtx_REG (mode, REGNO (entry_parm));
 	      else
 		{
@@ -4248,9 +4249,8 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
       locate->size.constant -= part_size_in_regs;
     }
 
-#ifdef FUNCTION_ARG_OFFSET
-  locate->offset.constant += FUNCTION_ARG_OFFSET (passed_mode, type);
-#endif
+  locate->offset.constant
+    += targetm.calls.function_arg_offset (passed_mode, type);
 }
 
 /* Round the stack offset in *OFFSET_PTR up to a multiple of BOUNDARY.
@@ -5681,6 +5681,58 @@ get_arg_pointer_save_area (void)
   return ret;
 }
 
+
+/* If debugging dumps are requested, dump information about how the
+   target handled -fstack-check=clash for the prologue.
+
+   PROBES describes what if any probes were emitted.
+
+   RESIDUALS indicates if the prologue had any residual allocation
+   (i.e. total allocation was not a multiple of PROBE_INTERVAL).  */
+
+void
+dump_stack_clash_frame_info (enum stack_clash_probes probes, bool residuals)
+{
+  if (!dump_file)
+    return;
+
+  switch (probes)
+    {
+    case NO_PROBE_NO_FRAME:
+      fprintf (dump_file,
+	       "Stack clash no probe no stack adjustment in prologue.\n");
+      break;
+    case NO_PROBE_SMALL_FRAME:
+      fprintf (dump_file,
+	       "Stack clash no probe small stack adjustment in prologue.\n");
+      break;
+    case PROBE_INLINE:
+      fprintf (dump_file, "Stack clash inline probes in prologue.\n");
+      break;
+    case PROBE_LOOP:
+      fprintf (dump_file, "Stack clash probe loop in prologue.\n");
+      break;
+    }
+
+  if (residuals)
+    fprintf (dump_file, "Stack clash residual allocation in prologue.\n");
+  else
+    fprintf (dump_file, "Stack clash no residual allocation in prologue.\n");
+
+  if (frame_pointer_needed)
+    fprintf (dump_file, "Stack clash frame pointer needed.\n");
+  else
+    fprintf (dump_file, "Stack clash no frame pointer needed.\n");
+
+  if (TREE_THIS_VOLATILE (cfun->decl))
+    fprintf (dump_file,
+	     "Stack clash noreturn prologue, assuming no implicit"
+	     " probes in caller.\n");
+  else
+    fprintf (dump_file,
+	     "Stack clash not noreturn prologue.\n");
+}
+
 /* Add a list of INSNS to the hash HASHP, possibly allocating HASHP
    for the first time.  */
 

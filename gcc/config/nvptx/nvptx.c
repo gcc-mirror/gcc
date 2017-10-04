@@ -2304,11 +2304,14 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
   fprintf (asm_out_file, ";\n");
 
   if (find_reg_note (insn, REG_NORETURN, NULL))
-    /* No return functions confuse the PTX JIT, as it doesn't realize
-       the flow control barrier they imply.  It can seg fault if it
-       encounters what looks like an unexitable loop.  Emit a trailing
-       trap, which it does grok.  */
-    fprintf (asm_out_file, "\t\ttrap; // (noreturn)\n");
+    {
+      /* No return functions confuse the PTX JIT, as it doesn't realize
+	 the flow control barrier they imply.  It can seg fault if it
+	 encounters what looks like an unexitable loop.  Emit a trailing
+	 trap and exit, which it does grok.  */
+      fprintf (asm_out_file, "\t\ttrap; // (noreturn)\n");
+      fprintf (asm_out_file, "\t\texit; // (noreturn)\n");
+    }
 
   if (result)
     {
@@ -5529,6 +5532,14 @@ nvptx_hard_regno_nregs (unsigned int, machine_mode)
   return 1;
 }
 
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+nvptx_can_change_mode_class (machine_mode, machine_mode, reg_class_t)
+{
+  return false;
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -5658,6 +5669,9 @@ nvptx_hard_regno_nregs (unsigned int, machine_mode)
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS nvptx_hard_regno_nregs
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS nvptx_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

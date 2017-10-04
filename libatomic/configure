@@ -12333,6 +12333,7 @@ _ACEOF
 
 
 
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic_load/store for size 2" >&5
 $as_echo_n "checking for __atomic_load/store for size 2... " >&6; }
 if test "${libat_cv_have_at_ldst_2+set}" = set; then :
@@ -12394,6 +12395,7 @@ $as_echo "$libat_cv_have_at_ldst_2" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define HAVE_ATOMIC_LDST_2 $yesno
 _ACEOF
+
 
 
 
@@ -12467,6 +12469,7 @@ _ACEOF
 
 
 
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic_load/store for size 8" >&5
 $as_echo_n "checking for __atomic_load/store for size 8... " >&6; }
 if test "${libat_cv_have_at_ldst_8+set}" = set; then :
@@ -12534,6 +12537,7 @@ _ACEOF
 
 
 
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __atomic_load/store for size 16" >&5
 $as_echo_n "checking for __atomic_load/store for size 16... " >&6; }
 if test "${libat_cv_have_at_ldst_16+set}" = set; then :
@@ -12595,6 +12599,7 @@ $as_echo "$libat_cv_have_at_ldst_16" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define HAVE_ATOMIC_LDST_16 $yesno
 _ACEOF
+
 
 
 
@@ -14693,7 +14698,8 @@ else
 /* end confdefs.h.  */
 
     int foo_alt(void) { return 0; }
-    void *foo_sel(void) { return foo_alt; }
+    typedef int F (void);
+    F *foo_sel(void) { return foo_alt; }
     int foo(void) __attribute__((ifunc("foo_sel")));
 int
 main ()

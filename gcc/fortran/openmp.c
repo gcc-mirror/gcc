@@ -2185,8 +2185,7 @@ gfc_match_oacc_wait (void)
 	  }
 
 	if (!gfc_resolve_expr (el->expr)
-	    || el->expr->ts.type != BT_INTEGER || el->expr->rank != 0
-	    || el->expr->expr_type != EXPR_CONSTANT)
+	    || el->expr->ts.type != BT_INTEGER || el->expr->rank != 0)
 	  {
 	    gfc_error ("WAIT clause at %L requires a scalar INTEGER expression",
 		       &el->expr->where);

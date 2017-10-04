@@ -1,3 +1,24 @@
+2017-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Add a note that maintainership also includes web
+	pages, docs, and testsuite related to that area.
+
+2017-09-25  Tom de Vries  <tom@codesourcery.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as nvptx maintainer.
+
+2017-09-18  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* MAINTAINERS: Add myself as a maintainer for the Ada front end.
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Remove myself as a vxworks maintainer.
+
+2017-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: Remove email address of Jim Norris.
+
 2017-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* MAINTAINERS (Reviewers): Move myself from here...

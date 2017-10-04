@@ -3282,7 +3282,7 @@ outer_automatic_var_p (tree decl)
    rewrite it for lambda capture.  */
 
 tree
-process_outer_var_ref (tree decl, tsubst_flags_t complain)
+process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
 {
   if (cp_unevaluated_operand)
     /* It's not a use (3.2) if we're in an unevaluated context.  */
@@ -3303,16 +3303,25 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
 
-  if (containing_function && DECL_TEMPLATE_INFO (context)
-      && LAMBDA_FUNCTION_P (containing_function))
+  /* Core issue 696: Only an odr-use of an outer automatic variable causes a
+     capture (or error), and a constant variable can decay to a prvalue
+     constant without odr-use.  So don't capture yet.  */
+  if (decl_constant_var_p (decl) && !force_use)
+    return decl;
+
+  if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
-      /* Check whether we've already built a proxy;
-	 insert_pending_capture_proxies doesn't update
-	 local_specializations.  */
-      tree d = lookup_name (DECL_NAME (decl));
-      if (d && is_capture_proxy (d)
-	  && DECL_CONTEXT (d) == containing_function)
-	return d;
+      /* Check whether we've already built a proxy.  */
+      tree d = retrieve_local_specialization (decl);
+      if (d && is_capture_proxy (d))
+	{
+	  if (DECL_CONTEXT (d) == containing_function)
+	    /* We already have an inner proxy.  */
+	    return d;
+	  else
+	    /* We need to capture an outer proxy.  */
+	    return process_outer_var_ref (d, complain, force_use);
+	}
     }
 
   /* If we are in a lambda function, we can move out until we hit
@@ -3347,23 +3356,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
      time to implicitly capture.  */
   if (context == containing_function
       && DECL_TEMPLATE_INFO (containing_function)
-      && any_dependent_template_arguments_p (DECL_TI_ARGS
-					     (containing_function)))
+      && uses_template_parms (DECL_TI_ARGS (containing_function)))
     return decl;
-
-  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
-     support for an approach in which a reference to a local
-     [constant] automatic variable in a nested class or lambda body
-     would enter the expression as an rvalue, which would reduce
-     the complexity of the problem"
-
-     FIXME update for final resolution of core issue 696.  */
-  if (decl_constant_var_p (decl))
-    {
-      tree t = maybe_constant_value (convert_from_reference (decl));
-      if (TREE_CONSTANT (t))
-	return t;
-    }
 
   if (lambda_expr && VAR_P (decl)
       && DECL_ANON_UNION_VAR_P (decl))

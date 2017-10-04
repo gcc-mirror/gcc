@@ -78,7 +78,6 @@ package body System.Tasking.Stages is
    use Parameters;
    use Task_Primitives;
    use Task_Primitives.Operations;
-   use Task_Info;
 
    -----------------------
    -- Local Subprograms --
@@ -1045,7 +1044,6 @@ package body System.Tasking.Stages is
 
       function Secondary_Stack_Size return Storage_Elements.Storage_Offset is
          use System.Storage_Elements;
-         use System.Secondary_Stack;
 
       begin
          if Parameters.Sec_Stack_Dynamic then
@@ -1539,7 +1537,6 @@ package body System.Tasking.Stages is
       pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
 
       use System.Soft_Links;
-      use System.Standard_Library;
 
       function To_Address is new
         Ada.Unchecked_Conversion

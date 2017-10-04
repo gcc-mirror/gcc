@@ -193,16 +193,6 @@ enum {
 };
 void	runtime_hashinit(void);
 
-void	runtime_traceback(int32)
-  __asm__ (GOSYM_PREFIX "runtime.traceback");
-void	runtime_tracebackothers(G*)
-  __asm__ (GOSYM_PREFIX "runtime.tracebackothers");
-enum
-{
-	// The maximum number of frames we print for a traceback
-	TracebackMaxFrames = 100,
-};
-
 /*
  * external data
  */
@@ -217,7 +207,6 @@ extern	M*	runtime_getallm(void)
 extern	Sched*  runtime_sched;
 extern	uint32	runtime_panicking(void)
   __asm__ (GOSYM_PREFIX "runtime.getPanicking");
-extern	struct debugVars runtime_debug;
 
 extern	bool	runtime_isstarted;
 extern	bool	runtime_isarchive;
@@ -253,10 +242,6 @@ void	runtime_schedinit(void)
   __asm__ (GOSYM_PREFIX "runtime.schedinit");
 void	runtime_initsig(bool)
   __asm__ (GOSYM_PREFIX "runtime.initsig");
-void	runtime_goroutineheader(G*)
-  __asm__ (GOSYM_PREFIX "runtime.goroutineheader");
-void	runtime_printtrace(Slice, G*)
-  __asm__ (GOSYM_PREFIX "runtime.printtrace");
 #define runtime_open(p, f, m) open((p), (f), (m))
 #define runtime_read(d, v, n) read((d), (v), (n))
 #define runtime_write(d, v, n) write((d), (v), (n))
@@ -327,8 +312,6 @@ G*	__go_go(void (*pfn)(void*), void*);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
   __asm__(GOSYM_PREFIX "runtime.nanotime");
-int64	runtime_unixnanotime(void) // real time, can skip
-  __asm__ (GOSYM_PREFIX "runtime.unixnanotime");
 void	runtime_dopanic(int32) __attribute__ ((noreturn));
 void	runtime_startpanic(void)
   __asm__ (GOSYM_PREFIX "runtime.startpanic");
@@ -343,21 +326,10 @@ void	runtime_blockevent(int64, int32);
 extern int64 runtime_blockprofilerate;
 G*	runtime_netpoll(bool)
   __asm__ (GOSYM_PREFIX "runtime.netpoll");
-void	runtime_crash(void)
-  __asm__ (GOSYM_PREFIX "runtime.crash");
 void	runtime_parsedebugvars(void)
   __asm__(GOSYM_PREFIX "runtime.parsedebugvars");
 void	_rt0_go(void);
 G*	runtime_timejump(void);
-
-void	runtime_callStopTheWorldWithSema(void)
-  __asm__(GOSYM_PREFIX "runtime.callStopTheWorldWithSema");
-void	runtime_callStartTheWorldWithSema(void)
-  __asm__(GOSYM_PREFIX "runtime.callStartTheWorldWithSema");
-void	runtime_acquireWorldsema(void)
-  __asm__(GOSYM_PREFIX "runtime.acquireWorldsema");
-void	runtime_releaseWorldsema(void)
-  __asm__(GOSYM_PREFIX "runtime.releaseWorldsema");
 
 /*
  * mutual exclusion locks.  in the uncontended case,
@@ -404,17 +376,6 @@ bool	runtime_notetsleepg(Note*, int64)  // false - timeout
   __asm__ (GOSYM_PREFIX "runtime.notetsleepg");
 
 /*
- * Lock-free stack.
- * Initialize uint64 head to 0, compare with 0 to test for emptiness.
- * The stack does not keep pointers to nodes,
- * so they can be garbage collected if there are no other pointers to nodes.
- */
-void	runtime_lfstackpush(uint64 *head, LFNode *node)
-  __asm__ (GOSYM_PREFIX "runtime.lfstackpush");
-void*	runtime_lfstackpop(uint64 *head)
-  __asm__ (GOSYM_PREFIX "runtime.lfstackpop");
-
-/*
  * low level C-called
  */
 #define runtime_mmap mmap
@@ -454,9 +415,6 @@ void	runtime_procyield(uint32)
 void	runtime_osyield(void)
   __asm__(GOSYM_PREFIX "runtime.osyield");
 
-void	runtime_printcreatedby(G*)
-  __asm__(GOSYM_PREFIX "runtime.printcreatedby");
-
 uintptr	runtime_memlimit(void);
 
 #define ISNAN(f) __builtin_isnan(f)
@@ -490,15 +448,6 @@ bool	runtime_gcwaiting(void);
 void	runtime_badsignal(int);
 Defer*	runtime_newdefer(void);
 void	runtime_freedefer(Defer*);
-
-struct time_now_ret
-{
-  int64_t sec;
-  int32_t nsec;
-};
-
-struct time_now_ret now() __asm__ (GOSYM_PREFIX "time.now")
-  __attribute__ ((no_split_stack));
 
 extern void _cgo_wait_runtime_init_done (void);
 extern void _cgo_notify_runtime_init_done (void)

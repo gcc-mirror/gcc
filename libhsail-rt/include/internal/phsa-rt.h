@@ -42,7 +42,8 @@ typedef void (*gccbrigKernelLauncherFunc) (void *context, void *);
 /* Pointer type for kernel functions produced by gccbrig from the HSAIL.
    This is private from outside the device binary and only called by
    the launcher.  */
-typedef void (*gccbrigKernelFunc) (unsigned char *, void *, void *, void *);
+typedef void (*gccbrigKernelFunc) (unsigned char *, void *, void *, uint32_t,
+				   void *);
 
 /* Context data that is passed to the kernel function, initialized
    by the runtime to the current launch information.  The data is

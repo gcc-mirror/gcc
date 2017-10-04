@@ -1636,22 +1636,6 @@ FP_ASM_SPEC "\
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this macro is used
@@ -2298,26 +2282,10 @@ enum reg_class
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
   mips_secondary_reload_class (CLASS, MODE, X, false)
 
-/* When targeting the o32 FPXX ABI, all moves with a length of doubleword
-   or greater must be performed by FR-mode-aware instructions.
-   This can be achieved using MFHC1/MTHC1 when these instructions are
-   available but otherwise moves must go via memory.
-   For the o32 FP64A ABI, all odd-numbered moves with a length of
-   doubleword or greater are required to use memory.  Using MTC1/MFC1
-   to access the lower-half of these registers would require a forbidden
-   single-precision access.  We require all double-word moves to use
-   memory because adding even and odd floating-point registers classes
-   would have a significant impact on the backend.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  mips_secondary_memory_needed ((CLASS1), (CLASS2), (MODE))
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) mips_class_max_nregs (CLASS, MODE)
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  mips_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -2673,11 +2641,6 @@ typedef struct mips_args {
    width of the shifted operand.  However, Loongson vector shifts
    do not truncate the shift amount at all.  */
 #define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_VECTORS)
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
-  (TARGET_64BIT ? ((INPREC) <= 32 || (OUTPREC) > 32) : 1)
 
 
 /* Specify the machine mode that pointers have.

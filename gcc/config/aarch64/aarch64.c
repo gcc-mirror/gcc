@@ -141,8 +141,8 @@ static void aarch64_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
 static bool aarch64_vector_mode_supported_p (machine_mode);
-static bool aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
-						 const unsigned char *sel);
+static bool aarch64_vectorize_vec_perm_const_ok (machine_mode,
+						 vec_perm_indices);
 static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 const_tree type,
@@ -1140,6 +1140,17 @@ aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned nregs,
   /* Fall back to generic for multi-reg and very large modes.  */
   else
     return choose_hard_reg_mode (regno, nregs, false);
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Make strings word-aligned so
+   that strcpy from constants will be faster.  */
+
+static HOST_WIDE_INT
+aarch64_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST && !optimize_size)
+    return MAX (align, BITS_PER_WORD);
+  return align;
 }
 
 /* Return true if calls to DECL should be treated as
@@ -3666,12 +3677,14 @@ aarch64_expand_prologue (void)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (frame_size > PROBE_INTERVAL && frame_size > STACK_CHECK_PROTECT)
-	    aarch64_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					    frame_size - STACK_CHECK_PROTECT);
+	  if (frame_size > PROBE_INTERVAL
+	      && frame_size > get_stack_check_protect ())
+	    aarch64_emit_probe_stack_range (get_stack_check_protect (),
+					    (frame_size
+					     - get_stack_check_protect ()));
 	}
       else if (frame_size > 0)
-	aarch64_emit_probe_stack_range (STACK_CHECK_PROTECT, frame_size);
+	aarch64_emit_probe_stack_range (get_stack_check_protect (), frame_size);
     }
 
   aarch64_sub_sp (IP0_REGNUM, initial_adjust, true);
@@ -4620,7 +4633,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		{
 		  tree exp = SYMBOL_REF_DECL (sym);
 		  align = TYPE_ALIGN (TREE_TYPE (exp));
-		  align = CONSTANT_ALIGNMENT (exp, align);
+		  align = aarch64_constant_alignment (exp, align);
 		}
 	      else if (SYMBOL_REF_DECL (sym))
 		align = DECL_ALIGN (SYMBOL_REF_DECL (sym));
@@ -6009,6 +6022,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case POINTER_REGS:
     case GENERAL_REGS:
     case ALL_REGS:
+    case POINTER_AND_FP_REGS:
     case FP_REGS:
     case FP_LO_REGS:
       return
@@ -6082,7 +6096,7 @@ aarch64_elf_asm_constructor (rtx symbol, int priority)
          -Wformat-truncation false positive, use a larger size.  */
       char buf[23];
       snprintf (buf, sizeof (buf), ".init_array.%.5u", priority);
-      s = get_section (buf, SECTION_WRITE, NULL);
+      s = get_section (buf, SECTION_WRITE | SECTION_NOTYPE, NULL);
       switch_to_section (s);
       assemble_align (POINTER_SIZE);
       assemble_aligned_integer (POINTER_BYTES, symbol);
@@ -6102,7 +6116,7 @@ aarch64_elf_asm_destructor (rtx symbol, int priority)
          -Wformat-truncation false positive, use a larger size.  */
       char buf[23];
       snprintf (buf, sizeof (buf), ".fini_array.%.5u", priority);
-      s = get_section (buf, SECTION_WRITE, NULL);
+      s = get_section (buf, SECTION_WRITE | SECTION_NOTYPE, NULL);
       switch_to_section (s);
       assemble_align (POINTER_SIZE);
       assemble_aligned_integer (POINTER_BYTES, symbol);
@@ -11889,19 +11903,9 @@ aarch64_builtin_support_vector_misalignment (machine_mode mode,
       if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
         return false;
 
+      /* Misalignment factor is unknown at compile time.  */
       if (misalignment == -1)
-	{
-	  /* Misalignment factor is unknown at compile time but we know
-	     it's word aligned.  */
-	  if (aarch64_simd_vector_alignment_reachable (type, is_packed))
-            {
-              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
-
-              if (element_size != 64)
-                return true;
-            }
-	  return false;
-	}
+	return false;
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
@@ -13144,9 +13148,8 @@ aarch64_split_combinev16qi (rtx operands[3])
 struct expand_vec_perm_d
 {
   rtx target, op0, op1;
-  unsigned char perm[MAX_VECT_LEN];
+  auto_vec_perm_indices perm;
   machine_mode vmode;
-  unsigned char nelt;
   bool one_vector_p;
   bool testing_p;
 };
@@ -13229,7 +13232,7 @@ aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 static bool
 aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
@@ -13317,7 +13320,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
@@ -13404,7 +13407,7 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
-  unsigned int i, high, mask, nelt = d->nelt;
+  unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
@@ -13497,7 +13500,7 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_ext (struct expand_vec_perm_d *d)
 {
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
   rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
@@ -13561,7 +13564,7 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_rev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, nelt = d->nelt;
+  unsigned int i, j, diff, nelt = d->perm.length ();
   rtx (*gen) (rtx, rtx);
 
   if (!d->one_vector_p)
@@ -13639,7 +13642,7 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   rtx out = d->target;
   rtx in0;
   machine_mode vmode = d->vmode;
-  unsigned int i, elt, nelt = d->nelt;
+  unsigned int i, elt, nelt = d->perm.length ();
   rtx lane;
 
   elt = d->perm[0];
@@ -13684,7 +13687,7 @@ aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 {
   rtx rperm[MAX_VECT_LEN], sel;
   machine_mode vmode = d->vmode;
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
 
   if (d->testing_p)
     return true;
@@ -13718,12 +13721,11 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
-  if (d->perm[0] >= d->nelt)
+  unsigned int nelt = d->perm.length ();
+  if (d->perm[0] >= nelt)
     {
-      unsigned i, nelt = d->nelt;
-
       gcc_assert (nelt == (nelt & -nelt));
-      for (i = 0; i < nelt; ++i)
+      for (unsigned int i = 0; i < nelt; ++i)
 	d->perm[i] ^= nelt; /* Keep the same index, but in the other vector.  */
 
       std::swap (d->op0, d->op1);
@@ -13762,15 +13764,16 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 
   d.vmode = GET_MODE (target);
   gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = false;
 
+  nelt = GET_MODE_NUNITS (d.vmode);
+  d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
       int ei = INTVAL (e) & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
-      d.perm[i] = ei;
+      d.perm.quick_push (ei);
     }
 
   switch (which)
@@ -13805,22 +13808,21 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 }
 
 static bool
-aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
-				     const unsigned char *sel)
+aarch64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
   bool ret;
 
   d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
-  memcpy (d.perm, sel, nelt);
+  d.perm.safe_splice (sel);
 
   /* Calculate whether all elements are in one vector.  */
+  nelt = sel.length ();
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned int e = d.perm[i];
       gcc_assert (e < 2 * nelt);
       which |= (e < nelt ? 1 : 2);
     }
@@ -15686,6 +15688,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   aarch64_hard_regno_call_part_clobbered
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

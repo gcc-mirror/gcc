@@ -1,6 +1,6 @@
 ! PR tree-optimization/29581
 ! { dg-do run }
-! { dg-options "-O2 -ftree-loop-linear" }
+! { dg-options "-O2 -ftree-loop-linear -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
 
       SUBROUTINE FOO (K)
       INTEGER I, J, K, A(5,5), B
@@ -25,3 +25,5 @@
         A(1,1) = 0
         IF (ANY(A.NE.0)) CALL ABORT
       END
+
+! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } }

@@ -255,7 +255,7 @@ func TestZip64EdgeCase(t *testing.T) {
 	testZip64DirectoryRecordLength(buf, t)
 }
 
-// Tests that we generate a zip64 file if the the directory at offset
+// Tests that we generate a zip64 file if the directory at offset
 // 0xFFFFFFFF, but not before.
 func TestZip64DirectoryOffset(t *testing.T) {
 	if testing.Short() && race.Enabled {
@@ -678,6 +678,18 @@ func TestZeroLengthHeader(t *testing.T) {
 func BenchmarkZip64Test(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		testZip64(b, 1<<26)
+	}
+}
+
+func BenchmarkZip64TestSizes(b *testing.B) {
+	for _, size := range []int64{1 << 12, 1 << 20, 1 << 26} {
+		b.Run(fmt.Sprint(size), func(b *testing.B) {
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					testZip64(b, size)
+				}
+			})
+		})
 	}
 }
 

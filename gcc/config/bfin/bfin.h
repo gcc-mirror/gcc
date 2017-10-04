@@ -321,11 +321,6 @@ extern const char *bfin_library_id_string;
 
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) bfin_local_alignment ((TYPE), (ALIGN))
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST        \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))    
-
 #define TRAMPOLINE_SIZE (TARGET_FDPIC ? 30 : 18)
 
 /* Definitions for register eliminations.
@@ -798,10 +793,6 @@ typedef struct {
  || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
 #define NOTICE_UPDATE_CC(EXPR, INSN) 0
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */

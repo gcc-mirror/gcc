@@ -654,7 +654,22 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   if (!wi::fits_shwi_p (maxsize) || wi::neg_p (maxsize))
     *pmax_size = -1;
   else
-    *pmax_size = maxsize.to_shwi ();
+    {
+      *pmax_size = maxsize.to_shwi ();
+      if (*poffset > HOST_WIDE_INT_MAX - *pmax_size)
+	*pmax_size = -1;
+    }
+
+  /* Punt if *POFFSET + *PSIZE overflows in HOST_WIDE_INT, the callers don't
+     check for such overflows individually and assume it works.  */
+  if (*psize != -1 && *poffset > HOST_WIDE_INT_MAX - *psize)
+    {
+      *poffset = 0;
+      *psize = -1;
+      *pmax_size = -1;
+
+      return exp;
+    }
 
   return exp;
 }

@@ -1436,29 +1436,38 @@ member_name_cmp (const void *a_p, const void *b_p)
     b = OVL_FUNCTION (b);
 
   /* We're in STAT_HACK or USING_DECL territory (or possibly error-land). */
-  if (TREE_CODE (a) == TREE_CODE (b))
-    /* We can get two TYPE_DECLs or two USING_DECLs.  Place in source
-       order.  */
-    return DECL_SOURCE_LOCATION (a) < DECL_SOURCE_LOCATION (b) ? -1 : +1;
+  if (TREE_CODE (a) != TREE_CODE (b))
+    {
+      /* If one of them is a TYPE_DECL, it loses.  */
+      if (TREE_CODE (a) == TYPE_DECL)
+	return +1;
+      else if (TREE_CODE (b) == TYPE_DECL)
+	return -1;
 
-  /* If one of them is a TYPE_DECL, it loses.  */
-  if (TREE_CODE (a) == TYPE_DECL)
-    return +1;
-  else if (TREE_CODE (b) == TYPE_DECL)
-    return -1;
+      /* If one of them is a USING_DECL, it loses.  */
+      if (TREE_CODE (a) == USING_DECL)
+	return +1;
+      else if (TREE_CODE (b) == USING_DECL)
+	return -1;
 
-  /* If one of them is a USING_DECL, it loses.  */
-  if (TREE_CODE (a) == USING_DECL)
-    return +1;
-  else if (TREE_CODE (b) == USING_DECL)
-    return -1;
+      /* There are no other cases with different kinds of decls, as
+	 duplicate detection should have kicked in earlier.  However,
+	 some erroneous cases get though. */
+      gcc_assert (errorcount);
+    }
+  
+  /* Using source location would be the best thing here, but we can
+     get identically-located decls in the following circumstances:
 
-  /* There are no other cases, as duplicate detection should have
-     kicked in earlier.  However, some erroneous cases get though.
-     Order by source location.  We should really prevent this
-     happening.  */
-  gcc_assert (errorcount);
-  return DECL_SOURCE_LOCATION (a) < DECL_SOURCE_LOCATION (b) ? -1 : +1;
+     1) duplicate artificial type-decls for the same type.
+
+     2) pack expansions of using-decls.
+
+     We should not be doing #1, but in either case it doesn't matter
+     how we order these.  Use UID as a proxy for source ordering, so
+     that identically-located decls still have a well-defined stable
+     ordering.  */
+  return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
 }
 
 static struct {
@@ -5286,7 +5295,7 @@ qualify_lookup (tree val, int flags)
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return false;
   /* Look through lambda things that we shouldn't be able to see.  */
-  if (is_lambda_ignored_entity (val))
+  if (!(flags & LOOKUP_HIDDEN) && is_lambda_ignored_entity (val))
     return false;
   return true;
 }

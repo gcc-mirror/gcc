@@ -93,8 +93,12 @@ extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, in
 
 extern tree default_builtin_reciprocal (tree);
 
+extern HOST_WIDE_INT default_constant_alignment (const_tree, HOST_WIDE_INT);
+extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,
+						      HOST_WIDE_INT);
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 
+extern HOST_WIDE_INT default_preferred_vector_alignment (const_tree);
 extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 extern bool
 default_builtin_support_vector_misalignment (machine_mode mode,
@@ -132,6 +136,7 @@ extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance
   (cumulative_args_t, machine_mode, const_tree, bool);
+extern HOST_WIDE_INT default_function_arg_offset (machine_mode, const_tree);
 extern pad_direction default_function_arg_padding (machine_mode, const_tree);
 extern rtx default_function_arg
   (cumulative_args_t, machine_mode, const_tree, bool);
@@ -159,6 +164,7 @@ extern bool default_different_addr_displacement_p (void);
 extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
 					     machine_mode,
 					     secondary_reload_info *);
+extern machine_mode default_secondary_memory_needed_mode (machine_mode);
 extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
 extern int default_reloc_rw_mask (void);
@@ -269,5 +275,6 @@ extern unsigned int default_min_arithmetic_precision (void);
 
 extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
+extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
 
 #endif /* GCC_TARGHOOKS_H */

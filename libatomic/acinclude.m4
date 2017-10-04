@@ -195,7 +195,8 @@ AC_DEFUN([LIBAT_CHECK_IFUNC], [
   CFLAGS="$CFLAGS -Werror"
   AC_TRY_LINK([
     int foo_alt(void) { return 0; }
-    void *foo_sel(void) { return foo_alt; }
+    typedef int F (void);
+    F *foo_sel(void) { return foo_alt; }
     int foo(void) __attribute__((ifunc("foo_sel")));],
     [return foo();], libat_cv_have_ifunc=yes, libat_cv_have_ifunc=no)])
   LIBAT_DEFINE_YESNO([HAVE_IFUNC], [$libat_cv_have_ifunc],

@@ -1837,7 +1837,17 @@ package body Sem_Res is
    --  Start of processing for Replace_Actual_Discriminants
 
    begin
-      if not Expander_Active then
+      if Expander_Active then
+         null;
+
+      --  Allow the replacement of concurrent discriminants in GNATprove even
+      --  though this is a light expansion activity. Note that generic units
+      --  are not modified.
+
+      elsif GNATprove_Mode and not Inside_A_Generic then
+         null;
+
+      else
          return;
       end if;
 
@@ -1848,9 +1858,7 @@ package body Sem_Res is
          Tsk := Prefix (Prefix (Name (N)));
       end if;
 
-      if No (Tsk) then
-         return;
-      else
+      if Present (Tsk) then
          Replace_Discrs (Default);
       end if;
    end Replace_Actual_Discriminants;
@@ -3002,6 +3010,14 @@ package body Sem_Res is
                Resolve_Unchecked_Type_Conversion (N, Ctx_Type);
          end case;
 
+         --  Mark relevant use-type and use-package clauses as effective using
+         --  the original node because constant folding may have occured and
+         --  removed references that need to be examined.
+
+         if Nkind (Original_Node (N)) in N_Op then
+            Mark_Use_Clauses (Original_Node (N));
+         end if;
+
          --  Ada 2012 (AI05-0149): Apply an (implicit) conversion to an
          --  expression of an anonymous access type that occurs in the context
          --  of a named general access type, except when the expression is that
@@ -3054,7 +3070,14 @@ package body Sem_Res is
          --  Here we are resolving the corresponding expanded body, so we do
          --  need to perform normal freezing.
 
-         Freeze_Expression (N);
+         --  As elsewhere we do not emit freeze node within a generic. We make
+         --  an exception for entities that are expressions, only to detect
+         --  misuses of deferred constants and preserve the output of various
+         --  tests.
+
+         if not Inside_A_Generic or else Is_Entity_Name (N) then
+            Freeze_Expression (N);
+         end if;
 
          --  Now we can do the expansion
 
@@ -3561,6 +3584,7 @@ package body Sem_Res is
             Rewrite (Actval,
               Make_Raise_Constraint_Error (Loc,
                 Reason => CE_Range_Check_Failed));
+
             Set_Raises_Constraint_Error (Actval);
             Set_Etype (Actval, Etype (F));
          end if;
@@ -3568,12 +3592,12 @@ package body Sem_Res is
          Assoc :=
            Make_Parameter_Association (Loc,
              Explicit_Actual_Parameter => Actval,
-             Selector_Name => Make_Identifier (Loc, Chars (F)));
+             Selector_Name             => Make_Identifier (Loc, Chars (F)));
 
          --  Case of insertion is first named actual
 
-         if No (Prev) or else
-            Nkind (Parent (Prev)) /= N_Parameter_Association
+         if No (Prev)
+           or else Nkind (Parent (Prev)) /= N_Parameter_Association
          then
             Set_Next_Named_Actual (Assoc, First_Named_Actual (N));
             Set_First_Named_Actual (N, Actval);
@@ -6715,6 +6739,8 @@ package body Sem_Res is
          end if;
       end if;
 
+      Mark_Use_Clauses (Subp);
+
       Warn_On_Overlapping_Actuals (Nam, N);
    end Resolve_Call;
 
@@ -7270,6 +7296,8 @@ package body Sem_Res is
             Check_Ghost_Context (E, N);
          end if;
       end if;
+
+      Mark_Use_Clauses (E);
    end Resolve_Entity_Name;
 
    -------------------
@@ -7473,6 +7501,12 @@ package body Sem_Res is
          Resolve (Prefix (Prefix (Entry_Name)));
          Index := First (Expressions (Entry_Name));
          Resolve (Index, Entry_Index_Type (Nam));
+
+         --  Generate a reference for the index when it denotes an entity
+
+         if Is_Entity_Name (Index) then
+            Generate_Reference (Entity (Index), Nam);
+         end if;
 
          --  Up to this point the expression could have been the actual in a
          --  simple entry call, and be given by a named association.
@@ -11467,8 +11501,8 @@ package body Sem_Res is
             S : constant Entity_Id := Current_Scope_No_Loops;
          begin
             if Ekind (S) = E_Function
-              and then Nkind (Original_Node (Unit_Declaration_Node (S)))
-                                                        = N_Expression_Function
+              and then Nkind (Original_Node (Unit_Declaration_Node (S))) =
+                         N_Expression_Function
             then
                return;
             end if;

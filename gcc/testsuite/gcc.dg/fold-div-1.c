@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-funsafe-math-optimizations -fdump-tree-gimple" } */
+/* { dg-options "-O1 -funsafe-math-optimizations -fdump-tree-gimple" } */
 
 float f(float x)
 {

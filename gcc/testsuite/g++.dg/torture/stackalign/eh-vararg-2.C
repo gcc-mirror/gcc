@@ -31,7 +31,7 @@ struct B {};
 void
 test (va_list arg)
 #if __cplusplus <= 201402L
-throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   char *p;

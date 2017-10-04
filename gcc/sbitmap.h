@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
      * set_difference		: bitmap_and_compl
      * set_disjuction		: (not implemented)
      * set_compare		: bitmap_equal_p
+     * bit_in_range_p		: bitmap_bit_in_range_p
 
    Some operations on 3 sets that occur frequently in data flow problems
    are also implemented:
@@ -253,6 +254,7 @@ extern bool bitmap_and (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_ior (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_xor (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_subset_p (const_sbitmap, const_sbitmap);
+extern bool bitmap_bit_in_range_p (const_sbitmap, unsigned int, unsigned int);
 
 extern int bitmap_first_set_bit (const_sbitmap);
 extern int bitmap_last_set_bit (const_sbitmap);

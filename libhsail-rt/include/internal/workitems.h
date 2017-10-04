@@ -63,6 +63,11 @@ typedef struct
      to the work-group.  */
   void *group_base_ptr;
 
+  /* The offset in the group memory for the kernel local group variables.
+     To support module scope group variables, there might be need to preseve
+     room for them in the beginning of the group segment.  */
+  uint32_t initial_group_offset;
+
   /* Similarly to the private segment that gets space allocated for all
      WIs in the work-group.  */
   void *private_base_ptr;

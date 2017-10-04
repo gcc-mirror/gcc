@@ -1980,8 +1980,22 @@ package body Sem_Ch12 is
 
                            if Needs_Freezing then
                               Check_Generic_Parent;
-                              Set_Has_Delayed_Freeze (Actual);
-                              Append_Elmt (Actual, Actuals_To_Freeze);
+
+                              --  If the actual is a renaming of a proper
+                              --  instance of the formal package, indicate
+                              --  that it is the instance that must be frozen.
+
+                              if Nkind (Parent (Actual)) =
+                                N_Package_Renaming_Declaration
+                              then
+                                 Set_Has_Delayed_Freeze
+                                   (Renamed_Entity (Actual));
+                                 Append_Elmt
+                                  (Renamed_Entity (Actual), Actuals_To_Freeze);
+                              else
+                                 Set_Has_Delayed_Freeze (Actual);
+                                 Append_Elmt (Actual, Actuals_To_Freeze);
+                              end if;
                            end if;
                         end if;
                      end Explicit_Freeze_Check;
@@ -4826,7 +4840,7 @@ package body Sem_Ch12 is
          end loop;
 
          if Removed then
-            Install_Context (Curr_Comp);
+            Install_Context (Curr_Comp, Chain => False);
 
             if Present (Curr_Scope)
               and then Is_Child_Unit (Curr_Scope)
@@ -15118,10 +15132,10 @@ package body Sem_Ch12 is
                --  preserved. In order to preserve some of this information,
                --  wrap the aggregate in a qualified expression, using the id
                --  of its type. For further disambiguation we qualify the type
-               --  name with its scope (if visible) because both id's will have
-               --  corresponding entities in an instance. This resolves most of
-               --  the problems with missing type information on aggregates in
-               --  instances.
+               --  name with its scope (if visible and not hidden by a local
+               --  homograph) because both id's will have corresponding
+               --  entities in an instance. This resolves most of the problems
+               --  with missing type information on aggregates in instances.
 
                if Present (N2)
                  and then Nkind (N2) = Nkind (N)
@@ -15131,7 +15145,11 @@ package body Sem_Ch12 is
                then
                   Nam := Make_Identifier (Loc, Chars (Typ));
 
-                  if Is_Immediately_Visible (Scope (Typ)) then
+                  if Is_Immediately_Visible (Scope (Typ))
+                    and then
+                      (not In_Open_Scopes (Scope (Typ))
+                         or else Current_Entity (Scope (Typ)) = Scope (Typ))
+                  then
                      Nam :=
                        Make_Selected_Component (Loc,
                          Prefix        =>

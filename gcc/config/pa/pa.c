@@ -159,9 +159,7 @@ static void pa_hpux64_gas_file_start (void) ATTRIBUTE_UNUSED;
 static void pa_hpux64_hpas_file_start (void) ATTRIBUTE_UNUSED;
 static void output_deferred_plabels (void);
 static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-static void pa_hpux_file_end (void);
-#endif
+static void pa_file_end (void);
 static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
 static bool pa_pass_by_reference (cumulative_args_t, machine_mode,
@@ -178,6 +176,8 @@ static struct machine_function * pa_init_machine_status (void);
 static reg_class_t pa_secondary_reload (bool, rtx, reg_class_t,
 					machine_mode,
 					secondary_reload_info *);
+static bool pa_secondary_memory_needed (machine_mode,
+					reg_class_t, reg_class_t);
 static void pa_extra_live_on_entry (bitmap);
 static machine_mode pa_promote_function_mode (const_tree,
 						   machine_mode, int *,
@@ -202,6 +202,7 @@ static bool pa_callee_copies (cumulative_args_t, machine_mode,
 static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool pa_modes_tieable_p (machine_mode, machine_mode);
+static bool pa_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -298,11 +299,7 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 #undef TARGET_ASM_FILE_END
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-#define TARGET_ASM_FILE_END pa_hpux_file_end
-#else
-#define TARGET_ASM_FILE_END output_deferred_plabels
-#endif
+#define TARGET_ASM_FILE_END pa_file_end
 
 #undef TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK pa_reloc_rw_mask
@@ -377,6 +374,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD pa_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED pa_secondary_memory_needed
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY pa_extra_live_on_entry
@@ -416,6 +415,12 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_HARD_REGNO_MODE_OK pa_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P pa_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS pa_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6189,6 +6194,20 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.  */
+
+static bool
+pa_secondary_memory_needed (machine_mode mode ATTRIBUTE_UNUSED,
+			    reg_class_t class1 ATTRIBUTE_UNUSED,
+			    reg_class_t class2 ATTRIBUTE_UNUSED)
+{
+#ifdef PA_SECONDARY_MEMORY_NEEDED
+  return PA_SECONDARY_MEMORY_NEEDED (mode, class1, class2);
+#else
+  return false;
+#endif
+}
+
 /* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  The argument pointer
    is only marked as live on entry by df-scan when it is a fixed
    register.  It isn't a fixed register in the 64-bit runtime,
@@ -9954,22 +9973,26 @@ pa_hpux_asm_output_external (FILE *file, tree decl, const char *name)
   extern_symbol p = {decl, name};
   vec_safe_push (extern_symbols, p);
 }
+#endif
 
 /* Output text required at the end of an assembler file.
    This includes deferred plabels and .import directives for
    all external symbols that were actually referenced.  */
 
 static void
-pa_hpux_file_end (void)
+pa_file_end (void)
 {
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   unsigned int i;
   extern_symbol *p;
 
   if (!NO_DEFERRED_PROFILE_COUNTERS)
     output_deferred_profile_counters ();
+#endif
 
   output_deferred_plabels ();
 
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   for (i = 0; vec_safe_iterate (extern_symbols, i, &p); i++)
     {
       tree decl = p->decl;
@@ -9980,30 +10003,32 @@ pa_hpux_file_end (void)
     }
 
   vec_free (extern_symbols);
-}
 #endif
 
-/* Return true if a change from mode FROM to mode TO for a register
-   in register class RCLASS is invalid.  */
+  if (NEED_INDICATE_EXEC_STACK)
+    file_end_indicate_exec_stack ();
+}
 
-bool
-pa_cannot_change_mode_class (machine_mode from, machine_mode to,
-			     enum reg_class rclass)
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+pa_can_change_mode_class (machine_mode from, machine_mode to,
+			  reg_class_t rclass)
 {
   if (from == to)
-    return false;
+    return true;
 
   if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to))
-    return false;
+    return true;
 
   /* Reject changes to/from modes with zero size.  */
   if (!GET_MODE_SIZE (from) || !GET_MODE_SIZE (to))
-    return true;
+    return false;
 
   /* Reject changes to/from complex and vector modes.  */
   if (COMPLEX_MODE_P (from) || VECTOR_MODE_P (from)
       || COMPLEX_MODE_P (to) || VECTOR_MODE_P (to))
-    return true;
+    return false;
       
   /* There is no way to load QImode or HImode values directly from memory
      to a FP register.  SImode loads to the FP registers are not zero
@@ -10011,16 +10036,16 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
      of LOAD_EXTEND_OP.  Thus, we can't allow changing between modes with
      different sizes in the floating-point registers.  */
   if (MAYBE_FP_REG_CLASS_P (rclass))
-    return true;
+    return false;
 
   /* TARGET_HARD_REGNO_MODE_OK places modes with sizes larger than a word
      in specific sets of registers.  Thus, we cannot allow changing
      to a larger mode when it's larger than a word.  */
   if (GET_MODE_SIZE (to) > UNITS_PER_WORD
       && GET_MODE_SIZE (to) > GET_MODE_SIZE (from))
-    return true;
+    return false;
 
-  return false;
+  return true;
 }
 
 /* Implement TARGET_MODES_TIEABLE_P.
@@ -10029,7 +10054,7 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
    are not ok in the floating-point registers.  However, this prevents
    tieing these modes to SImode and DImode in the general registers.
    So, this isn't a good idea.  We rely on TARGET_HARD_REGNO_MODE_OK and
-   CANNOT_CHANGE_MODE_CLASS to prevent these modes from being used
+   TARGET_CAN_CHANGE_MODE_CLASS to prevent these modes from being used
    in the floating-point registers.  */
 
 static bool

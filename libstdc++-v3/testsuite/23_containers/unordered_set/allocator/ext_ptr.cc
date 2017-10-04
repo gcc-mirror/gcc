@@ -30,7 +30,7 @@ struct E : std::equal_to<T> { };
 
 using __gnu_test::CustomPointerAlloc;
 
-// { dg-xfail-if "node reinsertion assumes raw pointers" { c++1z } }
+// { dg-xfail-if "node reinsertion assumes raw pointers" { c++17 } }
 // TODO when removing this xfail change the test back to "dg-do run".
 template class std::unordered_set<T, H, E, CustomPointerAlloc<T>>;
 

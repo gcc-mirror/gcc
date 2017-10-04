@@ -59,7 +59,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   %{shared:-shared} \
   %{!shared: \
     %{!static: \
-      %{!static-static: \
+      %{!static-pie: \
 	%{rdynamic:-export-dynamic} \
 	%{" SPEC_32 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "} \
 	%{" SPEC_64 ":-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "} \

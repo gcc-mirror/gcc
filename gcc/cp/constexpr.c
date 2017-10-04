@@ -3304,7 +3304,7 @@ var_in_constexpr_fn (tree t)
 bool
 var_in_maybe_constexpr_fn (tree t)
 {
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && DECL_FUNCTION_SCOPE_P (t)
       && LAMBDA_FUNCTION_P (DECL_CONTEXT (t)))
     return true;
@@ -3379,7 +3379,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  VERIFY_CONSTANT (nelts);
 	  gcc_assert (TREE_CODE (nelts) == INTEGER_CST
 		      && TREE_CODE (TREE_OPERAND (probe, 1)) == INTEGER_CST);
-	  if (wi::eq_p (TREE_OPERAND (probe, 1), nelts))
+	  if (wi::to_widest (TREE_OPERAND (probe, 1)) == wi::to_widest (nelts))
 	    {
 	      diag_array_subscript (ctx, ary, TREE_OPERAND (probe, 1));
 	      *non_constant_p = true;

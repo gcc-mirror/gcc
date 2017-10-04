@@ -1,5 +1,4 @@
 ! Test conditional compilation in free form if -fopenmp
-! { dg-options "-fopenmp" }
    10 foo = 2&
   &56
   if (foo.ne.256) call abort

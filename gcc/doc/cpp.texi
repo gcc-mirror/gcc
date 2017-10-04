@@ -1877,9 +1877,10 @@ selected, the value of the macro is
 @code{199711L} for the 1998 C++ standard,
 @code{201103L} for the 2011 C++ standard,
 @code{201402L} for the 2014 C++ standard,
-or an unspecified value strictly larger than @code{201402L} for the
-experimental languages enabled by @option{-std=c++1z} and
-@option{-std=gnu++1z}.
+@code{201703L} for the 2017 C++ standard,
+or an unspecified value strictly larger than @code{201703L} for the
+experimental languages enabled by @option{-std=c++2a} and
+@option{-std=gnu++2a}.
 
 @item __OBJC__
 This macro is defined, with value 1, when the Objective-C compiler is in

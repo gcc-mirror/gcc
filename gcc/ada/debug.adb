@@ -163,7 +163,7 @@ package body Debug is
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7
    --  d.8
-   --  d.9
+   --  d.9  Enable build-in-place for nonlimited types
 
    --  Debug flags for binder (GNATBIND)
 
@@ -819,6 +819,9 @@ package body Debug is
    --  d.6  By default the C back-end avoids declaring types that are not
    --       referenced by the generated C code. This debug flag restores the
    --       output of all the types.
+
+   --  d.9  Enable build-in-place for function calls returning some nonlimited
+   --       types.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

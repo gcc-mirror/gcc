@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 13, 2017
+GNAT Reference Manual , Sep 29, 2017
 
 AdaCore
 
@@ -5546,6 +5546,9 @@ pragma is ignored in this case (with a warning).
 Specifying SPACE also disables alignment promotions for standalone objects,
 which occur when the compiler increases the alignment of a specific object
 without changing the alignment of its type.
+
+Specifying SPACE also disables component reordering in unpacked record types,
+which can result in larger sizes in order to meet alignment requirements.
 
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:
@@ -18099,7 +18102,7 @@ will be as described for elementary types, e.g. a packed array of length
 @item 
 @emph{Records}.
 
-For the normal non-packed case, the alignment of a record is equal to
+For the normal unpacked case, the alignment of a record is equal to
 the maximum alignment of any of its components.  For tagged records, this
 includes the implicit access type used for the tag.  If a pragma @code{Pack}
 is used and all components are packable (see separate section on pragma

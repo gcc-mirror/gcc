@@ -1,5 +1,5 @@
 // { dg-do run { xfail sparc64-*-elf arm-*-pe } }
-// { dg-options "-fexceptions" }
+// { dg-options "-fexceptions -Wno-deprecated" }
 
 #include <exception>
 #include <stdlib.h>

@@ -8396,11 +8396,23 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	sym->attr.subref_array_pointer = 1;
     }
 
+  if (target->expr_type == EXPR_NULL)
+    {
+      gfc_error ("Selector at %L cannot be NULL()", &target->where);
+      return;
+    }
+  else if (target->ts.type == BT_UNKNOWN)
+    {
+      gfc_error ("Selector at %L has no type", &target->where);
+      return;
+    }
+
   /* Get type if this was not already set.  Note that it can be
      some other type than the target in case this is a SELECT TYPE
      selector!  So we must not update when the type is already there.  */
   if (sym->ts.type == BT_UNKNOWN)
     sym->ts = target->ts;
+
   gcc_assert (sym->ts.type != BT_UNKNOWN);
 
   /* See if this is a valid association-to-variable.  */
@@ -8518,7 +8530,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
-      if (!sym->ts.u.cl->length)
+      if (!sym->ts.u.cl->length && !sym->ts.deferred)
 	sym->ts.u.cl->length
 	  = gfc_get_int_expr (gfc_default_integer_kind,
 			      NULL, target->value.character.length);
@@ -11107,11 +11119,8 @@ start:
 
 	    /* Assigning a class object always is a regular assign.  */
 	    if (code->expr2->ts.type == BT_CLASS
+		&& code->expr1->ts.type == BT_CLASS
 		&& !CLASS_DATA (code->expr2)->attr.dimension
-		&& !(UNLIMITED_POLY (code->expr2)
-		     && code->expr1->ts.type == BT_DERIVED
-		     && (code->expr1->ts.u.derived->attr.sequence
-			 || code->expr1->ts.u.derived->attr.is_bind_c))
 		&& !(gfc_expr_attr (code->expr1).proc_pointer
 		     && code->expr2->expr_type == EXPR_VARIABLE
 		     && code->expr2->symtree->n.sym->attr.flavor
@@ -11926,6 +11935,7 @@ deferred_requirements (gfc_symbol *sym)
   if (sym->ts.deferred
       && !(sym->attr.pointer
 	   || sym->attr.allocatable
+	   || sym->attr.associate_var
 	   || sym->attr.omp_udr_artificial_var))
     {
       gfc_error ("Entity %qs at %L has a deferred type parameter and "
@@ -14125,6 +14135,57 @@ resolve_fl_parameter (gfc_symbol *sym)
 }
 
 
+/* Called by resolve_symbol to chack PDTs.  */
+
+static void
+resolve_pdt (gfc_symbol* sym)
+{
+  gfc_symbol *derived = NULL;
+  gfc_actual_arglist *param;
+  gfc_component *c;
+  bool const_len_exprs = true;
+  bool assumed_len_exprs = false;
+
+  if (sym->ts.type == BT_DERIVED)
+    derived = sym->ts.u.derived;
+  else if (sym->ts.type == BT_CLASS)
+    derived = CLASS_DATA (sym)->ts.u.derived;
+  else
+    gcc_unreachable ();
+
+  gcc_assert (derived->attr.pdt_type);
+
+  for (param = sym->param_list; param; param = param->next)
+    {
+      c = gfc_find_component (derived, param->name, false, true, NULL);
+      gcc_assert (c);
+      if (c->attr.pdt_kind)
+	continue;
+
+      if (param->expr && !gfc_is_constant_expr (param->expr)
+	  && c->attr.pdt_len)
+	const_len_exprs = false;
+      else if (param->spec_type == SPEC_ASSUMED)
+	assumed_len_exprs = true;
+    }
+
+  if (!const_len_exprs
+      && (sym->ns->proc_name->attr.is_main_program
+	  || sym->ns->proc_name->attr.flavor == FL_MODULE
+	  || sym->attr.save != SAVE_NONE))
+    gfc_error ("The AUTOMATIC object %qs at %L must not have the "
+	       "SAVE attribute or be a variable declared in the "
+	       "main program, a module or a submodule(F08/C513)",
+	       sym->name, &sym->declared_at);
+
+  if (assumed_len_exprs && !(sym->attr.dummy
+      || sym->attr.select_type_temporary || sym->attr.associate_var))
+    gfc_error ("The object %qs at %L with ASSUMED type parameters "
+	       "must be a dummy or a SELECT TYPE selector(F08/4.2)",
+	       sym->name, &sym->declared_at);
+}
+
+
 /* Do anything necessary to resolve a symbol.  Right now, we just
    assume that an otherwise unknown symbol is a variable.  This sort
    of thing commonly happens for symbols in module.  */
@@ -14378,15 +14439,6 @@ resolve_symbol (gfc_symbol *sym)
     {
       gfc_error ("%qs at %L cannot have the VALUE attribute because "
 		 "it is not a dummy argument", sym->name, &sym->declared_at);
-      return;
-    }
-
-  if (sym->attr.dummy && sym->ts.type == BT_DERIVED
-      && sym->ts.u.derived->attr.pdt_type
-      && gfc_spec_list_type (sym->param_list, NULL) == SPEC_DEFERRED)
-    {
-      gfc_error ("%qs at %L cannot have DEFERRED type parameters because "
-		 "it is a dummy argument", sym->name, &sym->declared_at);
       return;
     }
 
@@ -14721,6 +14773,7 @@ resolve_symbol (gfc_symbol *sym)
   if (class_attr.codimension
       && !(class_attr.allocatable || sym->attr.dummy || sym->attr.save
 	   || sym->attr.select_type_temporary
+	   || sym->attr.associate_var
 	   || (sym->ns->save_all && !sym->attr.automatic)
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
@@ -14927,6 +14980,9 @@ resolve_symbol (gfc_symbol *sym)
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.function))
     if (!resolve_typespec_used (&sym->ts, &sym->declared_at, sym->name))
       return;
+
+  if (sym->param_list)
+    resolve_pdt (sym);
 }
 
 

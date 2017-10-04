@@ -169,17 +169,6 @@ along with GCC; see the file COPYING3.  If not see
    bitfields and the structures that contain them.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Align string constants and constructors to at least a word boundary.
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that 'strcpy' calls that copy
-   constants can be done inline.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  (!optimize_size &&							\
-   (TREE_CODE (EXP) == STRING_CST || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
-
 /* Align arrays, unions and records to at least a word boundary.
    One use of this macro is to increase alignment of medium-size
    data to make it all fit in fewer cache lines.  Another is to
@@ -668,10 +657,6 @@ typedef struct xtensa_args
 
 /* Shift instructions ignore all but the low-order few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = -1, 1)

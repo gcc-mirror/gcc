@@ -368,17 +368,6 @@ extern int cris_cpu_version;
      ? (BASIC_ALIGN < 32 ? 32 : BASIC_ALIGN)			\
      : (BASIC_ALIGN < 16 ? 16 : BASIC_ALIGN)) : BASIC_ALIGN)
 
-/* Note that CONSTANT_ALIGNMENT has the effect of making gcc believe that
-   ALL references to constant stuff (in code segment, like strings) has
-   this alignment.  That is a rather rushed assumption.  Luckily we do not
-   care about the "alignment" operand to builtin memcpy (only place where
-   it counts), so it doesn't affect any bad spots.  */
-#define CONSTANT_ALIGNMENT(CONSTANT, BASIC_ALIGN)		\
- (TARGET_CONST_ALIGN						\
-  ? (TARGET_ALIGN_BY_32						\
-     ? (BASIC_ALIGN < 32 ? 32 : BASIC_ALIGN)			\
-     : (BASIC_ALIGN < 16 ? 16 : BASIC_ALIGN)) : BASIC_ALIGN)
-
 /* FIXME: Define LOCAL_ALIGNMENT for word and dword or arrays and
    structures (if -mstack-align=), and check that it is good.  */
 
@@ -1037,8 +1026,6 @@ enum cris_symbol_type
 #define MOVE_MAX 4
 
 /* Maybe SHIFT_COUNT_TRUNCATED is safe to define?  FIXME: Check later.  */
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)

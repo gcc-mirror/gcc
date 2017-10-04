@@ -1056,7 +1056,7 @@ package Sem_Util is
      (Typ : Entity_Id;
       Nam : Name_Id) return Entity_Id;
    --  Retrieve one of the primitives First, Next, Has_Element, Element from
-   --  the value of the Iterable aspect of a formal type.
+   --  the value of the Iterable aspect of a type.
 
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by

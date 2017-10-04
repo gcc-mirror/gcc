@@ -2275,7 +2275,6 @@ gfc_unlikely (tree cond, enum br_predictor predictor)
 				  build_int_cst (integer_type_node,
 						 predictor));
     }
-  cond = fold_convert (boolean_type_node, cond);
   return cond;
 }
 
@@ -2297,7 +2296,6 @@ gfc_likely (tree cond, enum br_predictor predictor)
 				  build_int_cst (integer_type_node,
 						 predictor));
     }
-  cond = fold_convert (boolean_type_node, cond);
   return cond;
 }
 

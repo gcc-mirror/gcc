@@ -568,8 +568,11 @@ package body Sem_Ch6 is
          --  Note that we cannot defer this freezing to the analysis of the
          --  expression itself, because a freeze node might appear in a nested
          --  scope, leading to an elaboration order issue in gigi.
+         --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
-         Freeze_Expr_Types (Def_Id);
+         if not Inside_A_Generic then
+            Freeze_Expr_Types (Def_Id);
+         end if;
 
          --  For navigation purposes, indicate that the function is a body
 
@@ -751,8 +754,8 @@ package body Sem_Ch6 is
         and then Is_Tagged_Type (Etype (Def_Id))
       then
          Check_Dynamically_Tagged_Expression
-           (Expr => Expr,
-            Typ  => Etype (Def_Id),
+           (Expr        => Expr,
+            Typ         => Etype (Def_Id),
             Related_Nod => Original_Node (N));
       end if;
 
@@ -1498,6 +1501,7 @@ package body Sem_Ch6 is
       end;
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -2882,6 +2886,11 @@ package body Sem_Ch6 is
                                New_Copy_Tree (Specification (N)));
 
                begin
+                  --  Link the body and the generated spec
+
+                  Set_Corresponding_Body (Decl, Body_Id);
+                  Set_Corresponding_Spec (N, Subp);
+
                   Set_Defining_Unit_Name (Specification (Decl), Subp);
 
                   --  To ensure proper coverage when body is inlined, indicate
@@ -3233,8 +3242,8 @@ package body Sem_Ch6 is
          --------------------
 
          function Mask_Type_Refs (Node : Node_Id) return Traverse_Result is
-
             procedure Mask_Type (Typ : Entity_Id);
+            --  ??? what does this do?
 
             ---------------
             -- Mask_Type --
@@ -3256,6 +3265,8 @@ package body Sem_Ch6 is
                end if;
             end Mask_Type;
 
+         --  Start of processing for Mask_Type_Refs
+
          begin
             if Is_Entity_Name (Node) and then Present (Entity (Node)) then
                Mask_Type (Etype (Entity (Node)));
@@ -3275,8 +3286,13 @@ package body Sem_Ch6 is
 
          procedure Mask_References is new Traverse_Proc (Mask_Type_Refs);
 
+         --  Local variables
+
          Return_Stmt : constant Node_Id :=
                          First (Statements (Handled_Statement_Sequence (N)));
+
+      --  Start of processing for Mask_Unfrozen_Types
+
       begin
          pragma Assert (Nkind (Return_Stmt) = N_Simple_Return_Statement);
 
@@ -3710,9 +3726,9 @@ package body Sem_Ch6 is
 
          if not Is_Frozen (Spec_Id)
            and then (Expander_Active
-                       or else ASIS_Mode
-                       or else (Operating_Mode = Check_Semantics
-                                  and then Serious_Errors_Detected = 0))
+                      or else ASIS_Mode
+                      or else (Operating_Mode = Check_Semantics
+                                and then Serious_Errors_Detected = 0))
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
@@ -4345,6 +4361,7 @@ package body Sem_Ch6 is
       --  Deal with end of scope processing for the body
 
       Process_End_Label (HSS, 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  If we are compiling an entry wrapper, remove the enclosing

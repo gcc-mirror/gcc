@@ -1,3 +1,195 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (convert_arg_to_ellipsis): Correct comment about passing
+	by reference.
+
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* constexpr.c (cxx_eval_store_expression): Use wi::to_widest
+	when comparing the array bounds with an ARRAY_REF index.
+
+2017-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68754
+	* method.c (defaulted_late_check): Early return if the defaulted
+	declaration does not match the expected signature.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	P0683R1 - default member initializers for bit-fields
+	* cp-tree.h (grokbitfield): Add INIT parameter.
+	* parser.c (cp_parser_constant_expression): Add STRICT_P argument,
+	if true, parse a conditional-expression rather than
+	assignment-expression.
+	(cp_parser_member_declaration): For C++11 and later pass true
+	as STRICT_P to cp_parser_constant_expression.  Parse C++2A bitfield
+	NSDMIs.  Adjust grokbitfield caller.  Handle DECL_INITIAL also for
+	DECL_C_BIT_FIELDs.
+	(cp_parser_objc_class_ivars): Adjust grokbitfield caller.
+	* class.c (check_field_decl): Recurse even for DECL_C_BIT_FIELDs.
+	(check_field_decls): Call check_field_decl even for DECL_C_BIT_FIELDs.
+	* decl2.c (grokbitfield): Add INIT parameter, pass it to
+	cp_finish_decl.
+	* pt.c (tsubst_decl): Handle DECL_INITIAL for all FIELD_DECLs, not
+	just non-bitfields.
+
+	* class.c (check_bitfield_decl): Retrieve and clear width from
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
+	(check_field_decls): Test DECL_BIT_FIELD_REPRESENTATIVE rather than
+	DECL_INITIAL.
+	(remove_zero_width_bit_fields): Adjust comment.
+	* decl2.c (grokbitfield): Stash width into
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
+	* pt.c (tsubst_decl): For DECL_C_BIT_FIELD, tsubst_expr
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL for width.
+
+	* parser.c (cp_parser_member_declaration): Parse attributes before
+	colon of a bitfield in addition to after colon.
+
+	* Make-lang.in (check-c++-all): Test also c++2a.
+
+2017-09-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56973, DR 696 - capture constant variables only as needed.
+	* expr.c (mark_use): Split out from mark_rvalue_use and
+	mark_lvalue_use.  Handle lambda capture of constant variables.
+	(mark_lvalue_use_nonread): New.
+	* semantics.c (process_outer_var_ref): Don't capture a constant
+	variable until forced.
+	* pt.c (processing_nonlambda_template): New.
+	* call.c (build_this): Check it.
+	* decl2.c (grok_array_decl): Call mark_rvalue_use and
+	mark_lvalue_use_nonread.
+	* init.c (constant_value_1): Don't call mark_rvalue_use.
+	* typeck.c (build_static_cast): Handle lambda capture.
+
+	Use local_specializations to find capture proxies.
+	* cp-tree.h (DECL_CAPTURED_VARIABLE): New.
+	* lambda.c (build_capture_proxy): Set it.
+	(add_capture): Pass initializer to build_capture_proxy.
+	(start_lambda_function): Likewise.
+	(insert_capture_proxy): Use register_local_specialization.
+	(is_lambda_ignored_entity): Always ignore proxies.
+	* name-lookup.c (qualify_lookup): Don't check
+	is_lambda_ignored_entity if LOOKUP_HIDDEN is set.
+	* semantics.c (process_outer_var_ref): Use
+	retrieve_local_specialization.
+	* parser.c (cp_parser_lambda_body): Push local_specializations.
+	* pt.c (tsubst_expr): Pass LOOKUP_HIDDEN when looking for a proxy.
+	(tsubst_lambda_expr): Push local_specializations sooner.
+	(tsubst_copy_and_build): Don't register_local_specialization.
+
+	* call.c (build_special_member_call): Use the return value of
+	mark_lvalue_use.
+	* decl.c (compute_array_index_type): Likewise.
+	* parser.c (cp_parser_oacc_wait_list): Likewise.
+	* lambda.c (is_normal_capture_proxy): Handle *this capture.
+	(add_capture): Clarify internal_error message.
+
+2017-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/81926
+	* cp-objcp-common.c (cp_get_debug_type): Do only one lookup.
+
+2017-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81929
+	* tree.c (struct replace_placeholders_t): Add pset field.
+	(replace_placeholders_r): Call cp_walk_tree with d->pset as
+	last argument instead of NULL.  Formatting fix.
+	(replace_placeholders): Add pset variable, add its address
+	into data.  Pass &pset instead of NULL to cp_walk_tree.
+
+2017-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (get_fndecl_argument_location): New function.
+	(convert_like_real): Use it  when complaining about argument type
+	mismatches.
+	* cp-tree.h (struct cp_parameter_declarator): Add "loc" field.
+	* parser.c (make_parameter_declarator): Add "loc" param and use
+	it to initialize the new field.
+	(cp_parser_translation_unit): Add UNKNOWN_LOCATION for "loc" of
+	the "no_parameters" parameter.
+	(cp_parser_parameter_declaration_list): Set the location of the
+	result of grokdeclarator to be the parameter's loc, assuming no
+	errors.
+	(cp_parser_parameter_declaration): Generate a location for the
+	parameter and pass to make_parameter_declarator.
+
+2017-09-20  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (member_name_cmp): Use DECL_UID for final
+	ordering.
+
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0409R2 - allow lambda capture [=, this]
+	* parser.c (cp_parser_lambda_introducer): For cxx2a don't pedwarn on
+	redundant [=, this].
+
+2017-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82069 - ICE with lambda in template
+	* semantics.c (process_outer_var_ref): Check uses_template_parms
+	instead of any_dependent_template_arguments_p.
+
+2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64644
+	* decl2.c (finish_anon_union): Complain about "anonymous union with
+	no members" with a pedwarn.
+
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typeck.c (build_reinterpret_cast_1,
+	build_const_cast_1): Implement -Wcast-align=strict.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (redeclaration_error_message): Use cxx17 instead of cxx1z,
+	adjust diagnostics refering to C++1z or -std=gnu++1z or -std=c++1z
+	to C++17 or -std=gnu++17 or -std=c++17.  Adjust comments.
+	(cxx_init_decl_processing, next_initializable_field,
+	is_direct_enum_init, check_initializer, cp_finish_decl,
+	mark_inline_variable, grokdeclarator, grokparms, xref_basetypes,
+	finish_function): Likewise.
+	* cp-tree.h (DECL_INLINE_VAR_P): Likewise.
+	* pt.c (mark_template_parm, convert_nontype_argument,
+	instantiate_class_template_1, type_unification_real, unify,
+	get_partial_spec_bindings, dependent_type_p_r): Likewise.
+	* typeck.c (cp_build_unary_op): Likewise.
+	* constexpr.c (var_in_maybe_constexpr_fn): Likewise.
+	* call.c (build_user_type_conversion_1, build_over_call,
+	build_special_member_call): Likewise.
+	* lambda.c (begin_lambda_type): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+	* class.c (build_base_field, finalize_literal_type_property,
+	explain_non_literal_class): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name,
+	cp_parser_primary_expression, cp_parser_lambda_introducer,
+	cp_parser_lambda_declarator_opt, cp_parser_selection_statement,
+	cp_convert_range_for, cp_parser_perform_range_for_lookup,
+	cp_parser_decomposition_declaration, cp_parser_linkage_specification,
+	cp_parser_static_assert, cp_parser_simple_type_specifier,
+	cp_parser_namespace_definition, cp_parser_using_declaration,
+	cp_parser_init_declarator, cp_parser_type_parameter_key,
+	cp_parser_exception_specification_opt, cp_parser_std_attribute_spec,
+	cp_parser_constructor_declarator_p): Likewise.
+	* mangle.c (struct globals): Rename need_cxx1z_warning to
+	need_cxx17_warning.
+	(write_exception_spec, start_mangling, mangle_decl): Likewise.
+	* Make-lang.in (check-c++1z): Rename to check-c++17, depend on
+	it.
+	(check-c++17): New goal.  Use 17 instead of 1z.
+	(check-c++-all): Use 17 instead of 1z.
+
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81314
+	* cp-gimplify.c (omp_var_to_track): Look through references.
+	(omp_cxx_notice_variable): Likewise.
+
 2017-09-13  Nathan Sidwell  <nathan@acm.org>
 
 	Conv-op identifers not in identifier hash table

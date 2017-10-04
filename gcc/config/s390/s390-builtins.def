@@ -2271,7 +2271,7 @@ OB_DEF_VAR (s390_vec_test_mask_dbl,     s390_vtm,           0,                  
 B_DEF      (s390_vtm,                   vec_test_mask_intv16qi,0,               B_VX,               0,                  BT_FN_INT_UV16QI_UV16QI)
 
 B_DEF      (s390_vec_msum_u128,         vec_msumv2di,       0,                  B_VXE,              O4_U2,              BT_FN_UV16QI_UV2DI_UV2DI_UV16QI_INT)
-B_DEF      (s390_vmslg,                 vmslg,              0,                  B_VXE,              O4_U2,              BT_FN_INT128_UV2DI_UV2DI_INT128_INT)
+B_DEF      (s390_vmslg,                 vmslg,              0,                  B_VXE,              O4_U4,              BT_FN_INT128_UV2DI_UV2DI_INT128_INT)
 
 OB_DEF     (s390_vec_eqv,               s390_vec_eqv_b8,    s390_vec_eqv_dbl_c, B_VXE,              BT_FN_OV4SI_OV4SI_OV4SI)
 OB_DEF_VAR (s390_vec_eqv_b8,            s390_vnx,           0,                  0,                  BT_OV_BV16QI_BV16QI_BV16QI)

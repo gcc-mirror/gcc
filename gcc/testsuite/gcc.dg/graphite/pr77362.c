@@ -1,0 +1,22 @@
+/* { dg-do compile } */
+/* { dg-options "-O2 -floop-nest-optimize -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" } */
+
+int mc[2];
+int f2, sk;
+short int hm;
+
+void
+zm (void)
+{
+  int k1;
+
+  for (k1 = 0; k1 < 2; ++k1)
+    {
+      for (sk = 0; sk < 2; ++sk)
+	mc[sk] = hm = ++f2;
+      if (hm >= 0)
+	++hm;
+    }
+}
+
+/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } } */

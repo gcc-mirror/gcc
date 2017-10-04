@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 // Package math provides basic constants and mathematical functions.
+//
+// This package does not guarantee bit-identical results across architectures.
 package math
 
 // Mathematical constants.

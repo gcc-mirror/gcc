@@ -46,36 +46,21 @@ func explode(s []byte, n int) [][]byte {
 	return a[0:na]
 }
 
-// Count counts the number of non-overlapping instances of sep in s.
-// If sep is an empty slice, Count returns 1 + the number of Unicode code points in s.
-func Count(s, sep []byte) int {
-	n := len(sep)
-	if n == 0 {
+// countGeneric actually implements Count
+func countGeneric(s, sep []byte) int {
+	// special case
+	if len(sep) == 0 {
 		return utf8.RuneCount(s) + 1
 	}
-	if n > len(s) {
-		return 0
-	}
-	count := 0
-	c := sep[0]
-	i := 0
-	t := s[:len(s)-n+1]
-	for i < len(t) {
-		if t[i] != c {
-			o := IndexByte(t[i:], c)
-			if o < 0 {
-				break
-			}
-			i += o
+	n := 0
+	for {
+		i := Index(s, sep)
+		if i == -1 {
+			return n
 		}
-		if n == 1 || Equal(s[i:i+n], sep) {
-			count++
-			i += n
-			continue
-		}
-		i++
+		n++
+		s = s[i+len(sep):]
 	}
-	return count
 }
 
 // Contains reports whether subslice is within b.
@@ -229,20 +214,21 @@ func genSplit(s, sep []byte, sepSave, n int) [][]byte {
 	if n < 0 {
 		n = Count(s, sep) + 1
 	}
-	c := sep[0]
-	start := 0
+
 	a := make([][]byte, n)
-	na := 0
-	for i := 0; i+len(sep) <= len(s) && na+1 < n; i++ {
-		if s[i] == c && (len(sep) == 1 || Equal(s[i:i+len(sep)], sep)) {
-			a[na] = s[start : i+sepSave]
-			na++
-			start = i + len(sep)
-			i += len(sep) - 1
+	n--
+	i := 0
+	for i < n {
+		m := Index(s, sep)
+		if m < 0 {
+			break
 		}
+		a[i] = s[:m+sepSave]
+		s = s[m+len(sep):]
+		i++
 	}
-	a[na] = s[start:]
-	return a[0 : na+1]
+	a[i] = s
+	return a[:i+1]
 }
 
 // SplitN slices s into subslices separated by sep and returns a slice of

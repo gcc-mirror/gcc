@@ -604,9 +604,17 @@ LTLIBOBJS
 LIBOBJS
 NATIVE_FALSE
 NATIVE_TRUE
+HAVE_OBJCOPY_DEBUGLINK_FALSE
+HAVE_OBJCOPY_DEBUGLINK_TRUE
+OBJCOPY
+HAVE_COMPRESSED_DEBUG_FALSE
+HAVE_COMPRESSED_DEBUG_TRUE
+HAVE_ZLIB_FALSE
+HAVE_ZLIB_TRUE
 HAVE_PTHREAD_FALSE
 HAVE_PTHREAD_TRUE
 PTHREAD_CFLAGS
+CLOCK_GETTIME_LINK
 BACKTRACE_USES_MALLOC
 ALLOC_FILE
 VIEW_FILE
@@ -746,7 +754,8 @@ CFLAGS
 LDFLAGS
 LIBS
 CPPFLAGS
-CPP'
+CPP
+OBJCOPY'
 
 
 # Initialize some variables set by options.
@@ -1396,6 +1405,7 @@ Some influential environment variables:
   CPPFLAGS    C/C++/Objective C preprocessor flags, e.g. -I<include dir> if
               you have headers in a nonstandard directory <include dir>
   CPP         C preprocessor
+  OBJCOPY     location of objcopy
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -11136,7 +11146,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11139 "configure"
+#line 11149 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11242,7 +11252,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11245 "configure"
+#line 11255 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12703,6 +12713,19 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_STRNLEN $ac_have_decl
 _ACEOF
 
+for ac_func in lstat readlink
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
 
 # Check for getexecname function.
 if test -n "${with_target_subdir}"; then
@@ -12724,6 +12747,70 @@ if test "$have_getexecname" = "yes"; then
 $as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
 
 fi
+
+# Check for the clock_gettime function.
+for ac_func in clock_gettime
+do :
+  ac_fn_c_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
+if test "x$ac_cv_func_clock_gettime" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOCK_GETTIME 1
+_ACEOF
+
+fi
+done
+
+clock_gettime_link=
+# At least for glibc, clock_gettime is in librt.  But don't
+# pull that in if it still doesn't give us the function we want.  This
+# test is copied from libgomp, and modified to not link in -lrt as
+# we're using this for test timing only.
+if test "$ac_cv_func_clock_gettime" = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
+$as_echo_n "checking for clock_gettime in -lrt... " >&6; }
+if test "${ac_cv_lib_rt_clock_gettime+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_gettime ();
+int
+main ()
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_rt_clock_gettime=yes
+else
+  ac_cv_lib_rt_clock_gettime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
+$as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
+if test "x$ac_cv_lib_rt_clock_gettime" = x""yes; then :
+  CLOCK_GETTIME_LINK=-lrt
+
+$as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
+fi
+
+fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -pthread is supported" >&5
 $as_echo_n "checking whether -pthread is supported... " >&6; }
@@ -12758,6 +12845,166 @@ fi
 else
   HAVE_PTHREAD_TRUE='#'
   HAVE_PTHREAD_FALSE=
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for compress in -lz" >&5
+$as_echo_n "checking for compress in -lz... " >&6; }
+if test "${ac_cv_lib_z_compress+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lz  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char compress ();
+int
+main ()
+{
+return compress ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_z_compress=yes
+else
+  ac_cv_lib_z_compress=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_z_compress" >&5
+$as_echo "$ac_cv_lib_z_compress" >&6; }
+if test "x$ac_cv_lib_z_compress" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBZ 1
+_ACEOF
+
+  LIBS="-lz $LIBS"
+
+fi
+
+if test $ac_cv_lib_z_compress = "yes"; then
+
+$as_echo "#define HAVE_ZLIB 1" >>confdefs.h
+
+fi
+ if test "$ac_cv_lib_z_compress" = yes; then
+  HAVE_ZLIB_TRUE=
+  HAVE_ZLIB_FALSE='#'
+else
+  HAVE_ZLIB_TRUE='#'
+  HAVE_ZLIB_FALSE=
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --compress-debug-sections is supported" >&5
+$as_echo_n "checking whether --compress-debug-sections is supported... " >&6; }
+if test "${libgo_cv_ld_compress+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zlib-gnu"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_ld_compress=yes
+else
+  libgo_cv_ld_compress=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LDFLAGS=$LDFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_compress" >&5
+$as_echo "$libgo_cv_ld_compress" >&6; }
+ if test "$libgo_cv_ld_compress" = yes; then
+  HAVE_COMPRESSED_DEBUG_TRUE=
+  HAVE_COMPRESSED_DEBUG_FALSE='#'
+else
+  HAVE_COMPRESSED_DEBUG_TRUE='#'
+  HAVE_COMPRESSED_DEBUG_FALSE=
+fi
+
+
+
+# Extract the first word of "objcopy", so it can be a program name with args.
+set dummy objcopy; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_OBJCOPY+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$OBJCOPY"; then
+  ac_cv_prog_OBJCOPY="$OBJCOPY" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_OBJCOPY="objcopy"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+OBJCOPY=$ac_cv_prog_OBJCOPY
+if test -n "$OBJCOPY"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY" >&5
+$as_echo "$OBJCOPY" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether objcopy supports debuglink" >&5
+$as_echo_n "checking whether objcopy supports debuglink... " >&6; }
+if test "${libbacktrace_cv_objcopy_debuglink+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "${with_target_subdir}"; then
+  libbacktrace_cv_objcopy_debuglink=no
+elif ${OBJCOPY} --add-gnu-debuglink=x /bin/ls /tmp/ls$$; then
+  rm -f /tmp/ls$$
+  libbacktrace_cv_objcopy_debuglink=yes
+else
+  libbacktrace_cv_objcopy_debuglink=no
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_objcopy_debuglink" >&5
+$as_echo "$libbacktrace_cv_objcopy_debuglink" >&6; }
+ if test "$libbacktrace_cv_objcopy_debuglink" = yes; then
+  HAVE_OBJCOPY_DEBUGLINK_TRUE=
+  HAVE_OBJCOPY_DEBUGLINK_FALSE='#'
+else
+  HAVE_OBJCOPY_DEBUGLINK_TRUE='#'
+  HAVE_OBJCOPY_DEBUGLINK_FALSE=
 fi
 
 
@@ -12925,6 +13172,18 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PTHREAD_TRUE}" && test -z "${HAVE_PTHREAD_FALSE}"; then
   as_fn_error "conditional \"HAVE_PTHREAD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ZLIB_TRUE}" && test -z "${HAVE_ZLIB_FALSE}"; then
+  as_fn_error "conditional \"HAVE_ZLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_COMPRESSED_DEBUG_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_FALSE}"; then
+  as_fn_error "conditional \"HAVE_COMPRESSED_DEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_OBJCOPY_DEBUGLINK_TRUE}" && test -z "${HAVE_OBJCOPY_DEBUGLINK_FALSE}"; then
+  as_fn_error "conditional \"HAVE_OBJCOPY_DEBUGLINK\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${NATIVE_TRUE}" && test -z "${NATIVE_FALSE}"; then

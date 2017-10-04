@@ -1,5 +1,7 @@
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r253413.
+
 	gcc/cp/
 	* cp-tree.h (SET_IDENTIFIER_GLOBAL_VALUE): Drop NAME arg.
 	* decl.c (record_builtin_type): Adjust SET_IDENTIFIER_GLOBAL_VALUE.

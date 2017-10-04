@@ -74,6 +74,13 @@ package body Exp_Ch5 is
    --  Utility to create declarations and loop statement for both forms
    --  of formal container iterators.
 
+   function Convert_To_Iterable_Type
+     (Container : Entity_Id;
+      Loc       : Source_Ptr) return Node_Id;
+   --  Returns New_Occurrence_Of (Container), possibly converted to an ancestor
+   --  type, if the type of Container inherited the Iterable aspect from that
+   --  ancestor.
+
    function Change_Of_Representation (N : Node_Id) return Boolean;
    --  Determine if the right-hand side of assignment N is a type conversion
    --  which requires a change of representation. Called only for the array
@@ -189,7 +196,7 @@ package body Exp_Ch5 is
             Make_Function_Call (Loc,
               Name                   => New_Occurrence_Of (First_Op, Loc),
               Parameter_Associations => New_List (
-                New_Occurrence_Of (Container, Loc))));
+                Convert_To_Iterable_Type (Container, Loc))));
 
       --  Statement that advances cursor in loop
 
@@ -200,7 +207,7 @@ package body Exp_Ch5 is
             Make_Function_Call (Loc,
               Name                   => New_Occurrence_Of (Next_Op, Loc),
               Parameter_Associations => New_List (
-                New_Occurrence_Of (Container, Loc),
+                Convert_To_Iterable_Type (Container, Loc),
                 New_Occurrence_Of (Cursor, Loc))));
 
       --  Iterator is rewritten as a while_loop
@@ -211,13 +218,12 @@ package body Exp_Ch5 is
             Make_Iteration_Scheme (Loc,
               Condition =>
                 Make_Function_Call (Loc,
-                  Name                   =>
-                    New_Occurrence_Of (Has_Element_Op, Loc),
+                  Name => New_Occurrence_Of (Has_Element_Op, Loc),
                   Parameter_Associations => New_List (
-                    New_Occurrence_Of (Container, Loc),
+                    Convert_To_Iterable_Type (Container, Loc),
                     New_Occurrence_Of (Cursor, Loc)))),
-          Statements       => Stats,
-          End_Label        => Empty);
+          Statements => Stats,
+          End_Label  => Empty);
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -232,6 +238,31 @@ package body Exp_Ch5 is
           and then
             not Same_Representation (Etype (Rhs), Etype (Expression (Rhs)));
    end Change_Of_Representation;
+
+   ------------------------------
+   -- Convert_To_Iterable_Type --
+   ------------------------------
+
+   function Convert_To_Iterable_Type
+     (Container : Entity_Id;
+      Loc       : Source_Ptr) return Node_Id
+   is
+      Typ    : constant Entity_Id := Base_Type (Etype (Container));
+      Aspect : constant Node_Id   := Find_Aspect (Typ, Aspect_Iterable);
+      Result : Node_Id;
+
+   begin
+      Result := New_Occurrence_Of (Container, Loc);
+
+      if Entity (Aspect) /= Typ then
+         Result :=
+           Make_Type_Conversion (Loc,
+             Subtype_Mark => New_Occurrence_Of (Entity (Aspect), Loc),
+             Expression   => Result);
+      end if;
+
+      return Result;
+   end Convert_To_Iterable_Type;
 
    -------------------------
    -- Expand_Assign_Array --
@@ -1546,7 +1577,14 @@ package body Exp_Ch5 is
          --  suppressed in this case). It is unnecessary but harmless in
          --  other cases.
 
-         if Has_Discriminants (L_Typ) then
+         --  Special case: no copy if the target has no discriminants.
+
+         if Has_Discriminants (L_Typ)
+           and then Is_Unchecked_Union (Base_Type (L_Typ))
+         then
+            null;
+
+         elsif Has_Discriminants (L_Typ) then
             F := First_Discriminant (R_Typ);
             while Present (F) loop
 
@@ -2352,13 +2390,13 @@ package body Exp_Ch5 is
             end;
          end if;
 
-      --  Build-in-place function call case. Note that we're not yet doing
-      --  build-in-place for user-written assignment statements (the assignment
-      --  here came from an aggregate.)
+      --  Build-in-place function call case. This is for assignment statements
+      --  that come from aggregate component associations or from init procs.
+      --  User-written assignment statements with b-i-p calls are handled
+      --  elsewhere.
 
-      elsif Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Rhs)
-      then
+      elsif Is_Build_In_Place_Function_Call (Rhs) then
+         pragma Assert (not Comes_From_Source (N));
          Make_Build_In_Place_Call_In_Assignment (N, Rhs);
 
       elsif Is_Tagged_Type (Typ)
@@ -3207,7 +3245,7 @@ package body Exp_Ch5 is
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Element_Op, Loc),
              Parameter_Associations => New_List (
-               New_Occurrence_Of (Container, Loc),
+               Convert_To_Iterable_Type (Container, Loc),
                New_Occurrence_Of (Cursor, Loc))));
 
          Set_Statements (New_Loop,
@@ -3226,7 +3264,7 @@ package body Exp_Ch5 is
                Make_Function_Call (Loc,
                  Name                   => New_Occurrence_Of (Element_Op, Loc),
                  Parameter_Associations => New_List (
-                   New_Occurrence_Of (Container, Loc),
+                   Convert_To_Iterable_Type (Container, Loc),
                    New_Occurrence_Of (Cursor, Loc))));
 
          Prepend (Elmt_Ref, Stats);

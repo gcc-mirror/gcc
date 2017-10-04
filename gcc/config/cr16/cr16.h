@@ -114,11 +114,6 @@ while (0)
      && ((ALIGN) < BITS_PER_WORD))               \
      ? (BITS_PER_WORD) : (ALIGN))
 
-/* In CR16 strings are word-aligned; strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(CONSTANT, ALIGN)                            \
-  (((TREE_CODE (CONSTANT) == STRING_CST) && ((ALIGN) < BITS_PER_WORD)) \
-     ? (BITS_PER_WORD) : (ALIGN))
-
 #define STRICT_ALIGNMENT 0
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -550,8 +545,6 @@ struct cumulative_args
 #define CASE_VECTOR_MODE  Pmode
 
 #define MOVE_MAX 4
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 #define STORE_FLAG_VALUE  1
 

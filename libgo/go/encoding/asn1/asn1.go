@@ -22,6 +22,7 @@ package asn1
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"reflect"
 	"strconv"
@@ -206,6 +207,14 @@ func parseBitString(bytes []byte) (ret BitString, err error) {
 	return
 }
 
+// NULL
+
+// NullRawValue is a RawValue with its Tag set to the ASN.1 NULL type tag (5).
+var NullRawValue = RawValue{Tag: TagNull}
+
+// NullBytes contains bytes representing the DER-encoded ASN.1 NULL type.
+var NullBytes = []byte{TagNull, 0}
+
 // OBJECT IDENTIFIER
 
 // An ObjectIdentifier represents an ASN.1 OBJECT IDENTIFIER.
@@ -293,16 +302,24 @@ type Flag bool
 // given byte slice. It returns the value and the new offset.
 func parseBase128Int(bytes []byte, initOffset int) (ret, offset int, err error) {
 	offset = initOffset
+	var ret64 int64
 	for shifted := 0; offset < len(bytes); shifted++ {
-		if shifted == 4 {
+		// 5 * 7 bits per byte == 35 bits of data
+		// Thus the representation is either non-minimal or too large for an int32
+		if shifted == 5 {
 			err = StructuralError{"base 128 integer too large"}
 			return
 		}
-		ret <<= 7
+		ret64 <<= 7
 		b := bytes[offset]
-		ret |= int(b & 0x7f)
+		ret64 |= int64(b & 0x7f)
 		offset++
 		if b&0x80 == 0 {
+			ret = int(ret64)
+			// Ensure that the returned value fits in an int on all platforms
+			if ret64 > math.MaxInt32 {
+				err = StructuralError{"base 128 integer too large"}
+			}
 			return
 		}
 	}
@@ -975,12 +992,12 @@ func setDefaultValue(v reflect.Value, params fieldParameters) (ok bool) {
 //
 // The following tags on struct fields have special meaning to Unmarshal:
 //
-//	application	specifies that a APPLICATION tag is used
-//	default:x	sets the default value for optional integer fields (only used if optional is also present)
-//	explicit	specifies that an additional, explicit tag wraps the implicit one
-//	optional	marks the field as ASN.1 OPTIONAL
-//	set		causes a SET, rather than a SEQUENCE type to be expected
-//	tag:x		specifies the ASN.1 tag number; implies ASN.1 CONTEXT SPECIFIC
+//	application specifies that a APPLICATION tag is used
+//	default:x   sets the default value for optional integer fields (only used if optional is also present)
+//	explicit    specifies that an additional, explicit tag wraps the implicit one
+//	optional    marks the field as ASN.1 OPTIONAL
+//	set         causes a SET, rather than a SEQUENCE type to be expected
+//	tag:x       specifies the ASN.1 tag number; implies ASN.1 CONTEXT SPECIFIC
 //
 // If the type of the first field of a structure is RawContent then the raw
 // ASN1 contents of the struct will be stored in it.

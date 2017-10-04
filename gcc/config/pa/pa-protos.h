@@ -106,8 +106,6 @@ extern void pa_asm_output_aligned_local (FILE *, const char *,
 					 unsigned HOST_WIDE_INT,
 					 unsigned int);
 extern void pa_hpux_asm_output_external (FILE *, tree, const char *);
-extern bool pa_cannot_change_mode_class (machine_mode, machine_mode,
-					 enum reg_class);
 extern HOST_WIDE_INT pa_initial_elimination_offset (int, int);
 
 extern const int pa_magic_milli[];

@@ -1,3 +1,5 @@
+/* { dg-additional-options "--param graphite-allow-codegen-errors=1" } */
+
 #include <stdlib.h>
 #include <assert.h>
 
@@ -46,3 +48,4 @@ int main()
   return 0;
 }
 
+/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } } */

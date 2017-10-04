@@ -572,11 +572,14 @@ package Types is
    No_Unit : constant Unit_Number_Type := -1;
    --  Special value used to signal no unit
 
-   type Source_File_Index is new Int range 0 .. Int'Last;
+   type Source_File_Index is new Int range -1 .. Int'Last;
    --  Type used to index the source file table (see package Sinput)
 
    No_Source_File : constant Source_File_Index := 0;
    --  Value used to indicate no source file present
+
+   No_Access_To_Source_File : constant Source_File_Index := -1;
+   --  Value used to indicate a source file is present but unreadable
 
    -----------------------------------
    -- Representation of Time Stamps --

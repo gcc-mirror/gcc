@@ -167,9 +167,6 @@ struct GTY(()) machine_function
 #define DATA_ABI_ALIGNMENT(TYPE, BASIC_ALIGN) \
  mmix_data_alignment (TYPE, BASIC_ALIGN)
 
-#define CONSTANT_ALIGNMENT(CONSTANT, BASIC_ALIGN) \
- mmix_constant_alignment (CONSTANT, BASIC_ALIGN)
-
 #define LOCAL_ALIGNMENT(TYPE, BASIC_ALIGN) \
  mmix_local_alignment (TYPE, BASIC_ALIGN)
 
@@ -787,8 +784,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define LOAD_EXTEND_OP(MODE) (TARGET_ZERO_EXTEND ? ZERO_EXTEND : SIGN_EXTEND)
 
 #define MOVE_MAX 8
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* ??? MMIX allows a choice of STORE_FLAG_VALUE.  Revisit later,
    we don't have scc expanders yet.  */

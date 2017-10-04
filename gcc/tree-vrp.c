@@ -1851,8 +1851,7 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 	      || code == ROUND_DIV_EXPR
 	      || code == RSHIFT_EXPR
 	      || code == LSHIFT_EXPR);
-  gcc_assert ((vr0->type == VR_RANGE
-	       || (code == MULT_EXPR && vr0->type == VR_ANTI_RANGE))
+  gcc_assert (vr0->type == VR_RANGE
 	      && vr0->type == vr1->type);
 
   rtype = vr0->type;
@@ -2462,9 +2461,14 @@ extract_range_from_binary_expr_1 (value_range *vr,
       signop sign = TYPE_SIGN (expr_type);
       unsigned int prec = TYPE_PRECISION (expr_type);
 
-      if (range_int_cst_p (&vr0)
-	  && range_int_cst_p (&vr1)
-	  && TYPE_OVERFLOW_WRAPS (expr_type))
+      if (!range_int_cst_p (&vr0)
+	  || !range_int_cst_p (&vr1))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
+      if (TYPE_OVERFLOW_WRAPS (expr_type))
 	{
 	  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) vrp_int;
 	  typedef generic_wide_int
@@ -2930,9 +2934,11 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		= wi::set_bit_in_zero (TYPE_PRECISION (expr_type) - 1,
 				       TYPE_PRECISION (expr_type));
 	      if (!TYPE_UNSIGNED (expr_type)
-		  && ((value_range_constant_singleton (&vr0)
+		  && ((int_cst_range0
+		       && value_range_constant_singleton (&vr0)
 		       && !wi::cmps (vr0.min, sign_bit))
-		      || (value_range_constant_singleton (&vr1)
+		      || (int_cst_range1
+			  && value_range_constant_singleton (&vr1)
 			  && !wi::cmps (vr1.min, sign_bit))))
 		{
 		  min = TYPE_MIN_VALUE (expr_type);
@@ -4518,7 +4524,12 @@ build_assert_expr_for (tree cond, tree v)
      operand of the ASSERT_EXPR.  Create it so the new name and the old one
      are registered in the replacement table so that we can fix the SSA web
      after adding all the ASSERT_EXPRs.  */
-  create_new_def_for (v, assertion, NULL);
+  tree new_def = create_new_def_for (v, assertion, NULL);
+  /* Make sure we preserve abnormalness throughout an ASSERT_EXPR chain
+     given we have to be able to fully propagate those out to re-create
+     valid SSA when removing the asserts.  */
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (v))
+    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_def) = 1;
 
   return assertion;
 }

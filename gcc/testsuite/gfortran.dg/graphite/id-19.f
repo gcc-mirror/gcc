@@ -1,3 +1,4 @@
+! { dg-additional-options "-fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" { target ilp32 } }
       SUBROUTINE ECCODR(FPQR)
       DIMENSION FPQR(25,25,25)
       INTEGER P,Q,R
@@ -13,3 +14,4 @@
   140    QM2= QM2+TWO
   150 PM2= PM2+TWO
       END
+! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }

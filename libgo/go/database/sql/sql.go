@@ -278,6 +278,27 @@ type Scanner interface {
 	Scan(src interface{}) error
 }
 
+// Out may be used to retrieve OUTPUT value parameters from stored procedures.
+//
+// Not all drivers and databases support OUTPUT value parameters.
+//
+// Example usage:
+//
+//   var outArg string
+//   _, err := db.ExecContext(ctx, "ProcName", sql.Named("Arg1", Out{Dest: &outArg}))
+type Out struct {
+	_Named_Fields_Required struct{}
+
+	// Dest is a pointer to the value that will be set to the result of the
+	// stored procedure's OUTPUT parameter.
+	Dest interface{}
+
+	// In is whether the parameter is an INOUT parameter. If so, the input value to the stored
+	// procedure is the dereferenced value of Dest's pointer, which is then replaced with
+	// the output value.
+	In bool
+}
+
 // ErrNoRows is returned by Scan when QueryRow doesn't return a
 // row. In such a case, QueryRow returns a placeholder *Row value that
 // defers this error until a Scan.
@@ -372,10 +393,18 @@ func (dc *driverConn) expired(timeout time.Duration) bool {
 	return dc.createdAt.Add(timeout).Before(nowFunc())
 }
 
-func (dc *driverConn) prepareLocked(ctx context.Context, query string) (*driverStmt, error) {
+// prepareLocked prepares the query on dc. When cg == nil the dc must keep track of
+// the prepared statements in a pool.
+func (dc *driverConn) prepareLocked(ctx context.Context, cg stmtConnGrabber, query string) (*driverStmt, error) {
 	si, err := ctxDriverPrepare(ctx, dc.ci, query)
 	if err != nil {
 		return nil, err
+	}
+	ds := &driverStmt{Locker: dc, si: si}
+
+	// No need to manage open statements if there is a single connection grabber.
+	if cg != nil {
+		return ds, nil
 	}
 
 	// Track each driverConn's open statements, so we can close them
@@ -385,9 +414,7 @@ func (dc *driverConn) prepareLocked(ctx context.Context, query string) (*driverS
 	if dc.openStmt == nil {
 		dc.openStmt = make(map[*driverStmt]bool)
 	}
-	ds := &driverStmt{Locker: dc, si: si}
 	dc.openStmt[ds] = true
-
 	return ds, nil
 }
 
@@ -583,6 +610,17 @@ func Open(driverName, dataSourceName string) (*DB, error) {
 	return db, nil
 }
 
+func (db *DB) pingDC(ctx context.Context, dc *driverConn, release func(error)) error {
+	var err error
+	if pinger, ok := dc.ci.(driver.Pinger); ok {
+		withLock(dc, func() {
+			err = pinger.Ping(ctx)
+		})
+	}
+	release(err)
+	return err
+}
+
 // PingContext verifies a connection to the database is still alive,
 // establishing a connection if necessary.
 func (db *DB) PingContext(ctx context.Context) error {
@@ -602,11 +640,7 @@ func (db *DB) PingContext(ctx context.Context) error {
 		return err
 	}
 
-	if pinger, ok := dc.ci.(driver.Pinger); ok {
-		err = pinger.Ping(ctx)
-	}
-	db.putConn(dc, err)
-	return err
+	return db.pingDC(ctx, dc, dc.releaseConn)
 }
 
 // Ping verifies a connection to the database is still alive,
@@ -975,9 +1009,9 @@ func (db *DB) conn(ctx context.Context, strategy connReuseStrategy) (*driverConn
 		db:        db,
 		createdAt: nowFunc(),
 		ci:        ci,
+		inUse:     true,
 	}
 	db.addDepLocked(dc, dc)
-	dc.inUse = true
 	db.mu.Unlock()
 	return dc, nil
 }
@@ -1137,22 +1171,39 @@ func (db *DB) prepare(ctx context.Context, query string, strategy connReuseStrat
 	if err != nil {
 		return nil, err
 	}
+	return db.prepareDC(ctx, dc, dc.releaseConn, nil, query)
+}
+
+// prepareDC prepares a query on the driverConn and calls release before
+// returning. When cg == nil it implies that a connection pool is used, and
+// when cg != nil only a single driver connection is used.
+func (db *DB) prepareDC(ctx context.Context, dc *driverConn, release func(error), cg stmtConnGrabber, query string) (*Stmt, error) {
 	var ds *driverStmt
+	var err error
+	defer func() {
+		release(err)
+	}()
 	withLock(dc, func() {
-		ds, err = dc.prepareLocked(ctx, query)
+		ds, err = dc.prepareLocked(ctx, cg, query)
 	})
 	if err != nil {
-		db.putConn(dc, err)
 		return nil, err
 	}
 	stmt := &Stmt{
-		db:            db,
-		query:         query,
-		css:           []connStmt{{dc, ds}},
-		lastNumClosed: atomic.LoadUint64(&db.numClosed),
+		db:    db,
+		query: query,
+		cg:    cg,
+		cgds:  ds,
 	}
-	db.addDep(stmt, stmt)
-	db.putConn(dc, nil)
+
+	// When cg == nil this statement will need to keep track of various
+	// connections they are prepared on and record the stmt dependency on
+	// the DB.
+	if cg == nil {
+		stmt.css = []connStmt{{dc, ds}}
+		stmt.lastNumClosed = atomic.LoadUint64(&db.numClosed)
+		db.addDep(stmt, stmt)
+	}
 	return stmt, nil
 }
 
@@ -1179,18 +1230,21 @@ func (db *DB) Exec(query string, args ...interface{}) (Result, error) {
 	return db.ExecContext(context.Background(), query, args...)
 }
 
-func (db *DB) exec(ctx context.Context, query string, args []interface{}, strategy connReuseStrategy) (res Result, err error) {
+func (db *DB) exec(ctx context.Context, query string, args []interface{}, strategy connReuseStrategy) (Result, error) {
 	dc, err := db.conn(ctx, strategy)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		db.putConn(dc, err)
-	}()
+	return db.execDC(ctx, dc, dc.releaseConn, query, args)
+}
 
+func (db *DB) execDC(ctx context.Context, dc *driverConn, release func(error), query string, args []interface{}) (res Result, err error) {
+	defer func() {
+		release(err)
+	}()
 	if execer, ok := dc.ci.(driver.Execer); ok {
 		var dargs []driver.NamedValue
-		dargs, err = driverArgs(nil, args)
+		dargs, err = driverArgs(dc.ci, nil, args)
 		if err != nil {
 			return nil, err
 		}
@@ -1215,7 +1269,7 @@ func (db *DB) exec(ctx context.Context, query string, args []interface{}, strate
 	}
 	ds := &driverStmt{Locker: dc, si: si}
 	defer ds.Close()
-	return resultFromStatement(ctx, ds, args...)
+	return resultFromStatement(ctx, dc.ci, ds, args...)
 }
 
 // QueryContext executes a query that returns rows, typically a SELECT.
@@ -1242,19 +1296,21 @@ func (db *DB) Query(query string, args ...interface{}) (*Rows, error) {
 }
 
 func (db *DB) query(ctx context.Context, query string, args []interface{}, strategy connReuseStrategy) (*Rows, error) {
-	ci, err := db.conn(ctx, strategy)
+	dc, err := db.conn(ctx, strategy)
 	if err != nil {
 		return nil, err
 	}
 
-	return db.queryConn(ctx, ci, ci.releaseConn, query, args)
+	return db.queryDC(ctx, nil, dc, dc.releaseConn, query, args)
 }
 
-// queryConn executes a query on the given connection.
+// queryDC executes a query on the given connection.
 // The connection gets released by the releaseConn function.
-func (db *DB) queryConn(ctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*Rows, error) {
+// The ctx context is from a query method and the txctx context is from an
+// optional transaction context.
+func (db *DB) queryDC(ctx, txctx context.Context, dc *driverConn, releaseConn func(error), query string, args []interface{}) (*Rows, error) {
 	if queryer, ok := dc.ci.(driver.Queryer); ok {
-		dargs, err := driverArgs(nil, args)
+		dargs, err := driverArgs(dc.ci, nil, args)
 		if err != nil {
 			releaseConn(err)
 			return nil, err
@@ -1275,7 +1331,7 @@ func (db *DB) queryConn(ctx context.Context, dc *driverConn, releaseConn func(er
 				releaseConn: releaseConn,
 				rowsi:       rowsi,
 			}
-			rows.initContextClose(ctx)
+			rows.initContextClose(ctx, txctx)
 			return rows, nil
 		}
 	}
@@ -1291,7 +1347,7 @@ func (db *DB) queryConn(ctx context.Context, dc *driverConn, releaseConn func(er
 	}
 
 	ds := &driverStmt{Locker: dc, si: si}
-	rowsi, err := rowsiFromStatement(ctx, ds, args...)
+	rowsi, err := rowsiFromStatement(ctx, dc.ci, ds, args...)
 	if err != nil {
 		ds.Close()
 		releaseConn(err)
@@ -1306,13 +1362,16 @@ func (db *DB) queryConn(ctx context.Context, dc *driverConn, releaseConn func(er
 		rowsi:       rowsi,
 		closeStmt:   ds,
 	}
-	rows.initContextClose(ctx)
+	rows.initContextClose(ctx, txctx)
 	return rows, nil
 }
 
 // QueryRowContext executes a query that is expected to return at most one row.
 // QueryRowContext always returns a non-nil value. Errors are deferred until
 // Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
 func (db *DB) QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row {
 	rows, err := db.QueryContext(ctx, query, args...)
 	return &Row{rows: rows, err: err}
@@ -1321,6 +1380,9 @@ func (db *DB) QueryRowContext(ctx context.Context, query string, args ...interfa
 // QueryRow executes a query that is expected to return at most one row.
 // QueryRow always returns a non-nil value. Errors are deferred until
 // Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
 func (db *DB) QueryRow(query string, args ...interface{}) *Row {
 	return db.QueryRowContext(context.Background(), query, args...)
 }
@@ -1361,12 +1423,17 @@ func (db *DB) begin(ctx context.Context, opts *TxOptions, strategy connReuseStra
 	if err != nil {
 		return nil, err
 	}
+	return db.beginDC(ctx, dc, dc.releaseConn, opts)
+}
+
+// beginDC starts a transaction. The provided dc must be valid and ready to use.
+func (db *DB) beginDC(ctx context.Context, dc *driverConn, release func(error), opts *TxOptions) (tx *Tx, err error) {
 	var txi driver.Tx
 	withLock(dc, func() {
 		txi, err = ctxDriverBegin(ctx, opts, dc.ci)
 	})
 	if err != nil {
-		db.putConn(dc, err)
+		release(err)
 		return nil, err
 	}
 
@@ -1374,11 +1441,12 @@ func (db *DB) begin(ctx context.Context, opts *TxOptions, strategy connReuseStra
 	// The cancel function in Tx will be called after done is set to true.
 	ctx, cancel := context.WithCancel(ctx)
 	tx = &Tx{
-		db:     db,
-		dc:     dc,
-		txi:    txi,
-		cancel: cancel,
-		ctx:    ctx,
+		db:          db,
+		dc:          dc,
+		releaseConn: release,
+		txi:         txi,
+		cancel:      cancel,
+		ctx:         ctx,
 	}
 	go tx.awaitDone()
 	return tx, nil
@@ -1387,6 +1455,189 @@ func (db *DB) begin(ctx context.Context, opts *TxOptions, strategy connReuseStra
 // Driver returns the database's underlying driver.
 func (db *DB) Driver() driver.Driver {
 	return db.driver
+}
+
+// ErrConnDone is returned by any operation that is performed on a connection
+// that has already been committed or rolled back.
+var ErrConnDone = errors.New("database/sql: connection is already closed")
+
+// Conn returns a single connection by either opening a new connection
+// or returning an existing connection from the connection pool. Conn will
+// block until either a connection is returned or ctx is canceled.
+// Queries run on the same Conn will be run in the same database session.
+//
+// Every Conn must be returned to the database pool after use by
+// calling Conn.Close.
+func (db *DB) Conn(ctx context.Context) (*Conn, error) {
+	var dc *driverConn
+	var err error
+	for i := 0; i < maxBadConnRetries; i++ {
+		dc, err = db.conn(ctx, cachedOrNewConn)
+		if err != driver.ErrBadConn {
+			break
+		}
+	}
+	if err == driver.ErrBadConn {
+		dc, err = db.conn(ctx, cachedOrNewConn)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	conn := &Conn{
+		db: db,
+		dc: dc,
+	}
+	return conn, nil
+}
+
+type releaseConn func(error)
+
+// Conn represents a single database session rather a pool of database
+// sessions. Prefer running queries from DB unless there is a specific
+// need for a continuous single database session.
+//
+// A Conn must call Close to return the connection to the database pool
+// and may do so concurrently with a running query.
+//
+// After a call to Close, all operations on the
+// connection fail with ErrConnDone.
+type Conn struct {
+	db *DB
+
+	// closemu prevents the connection from closing while there
+	// is an active query. It is held for read during queries
+	// and exclusively during close.
+	closemu sync.RWMutex
+
+	// dc is owned until close, at which point
+	// it's returned to the connection pool.
+	dc *driverConn
+
+	// done transitions from 0 to 1 exactly once, on close.
+	// Once done, all operations fail with ErrConnDone.
+	// Use atomic operations on value when checking value.
+	done int32
+}
+
+func (c *Conn) grabConn(context.Context) (*driverConn, releaseConn, error) {
+	if atomic.LoadInt32(&c.done) != 0 {
+		return nil, nil, ErrConnDone
+	}
+	c.closemu.RLock()
+	return c.dc, c.closemuRUnlockCondReleaseConn, nil
+}
+
+// PingContext verifies the connection to the database is still alive.
+func (c *Conn) PingContext(ctx context.Context) error {
+	dc, release, err := c.grabConn(ctx)
+	if err != nil {
+		return err
+	}
+	return c.db.pingDC(ctx, dc, release)
+}
+
+// ExecContext executes a query without returning any rows.
+// The args are for any placeholder parameters in the query.
+func (c *Conn) ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error) {
+	dc, release, err := c.grabConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return c.db.execDC(ctx, dc, release, query, args)
+}
+
+// QueryContext executes a query that returns rows, typically a SELECT.
+// The args are for any placeholder parameters in the query.
+func (c *Conn) QueryContext(ctx context.Context, query string, args ...interface{}) (*Rows, error) {
+	dc, release, err := c.grabConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return c.db.queryDC(ctx, nil, dc, release, query, args)
+}
+
+// QueryRowContext executes a query that is expected to return at most one row.
+// QueryRowContext always returns a non-nil value. Errors are deferred until
+// Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
+func (c *Conn) QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row {
+	rows, err := c.QueryContext(ctx, query, args...)
+	return &Row{rows: rows, err: err}
+}
+
+// PrepareContext creates a prepared statement for later queries or executions.
+// Multiple queries or executions may be run concurrently from the
+// returned statement.
+// The caller must call the statement's Close method
+// when the statement is no longer needed.
+//
+// The provided context is used for the preparation of the statement, not for the
+// execution of the statement.
+func (c *Conn) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
+	dc, release, err := c.grabConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return c.db.prepareDC(ctx, dc, release, c, query)
+}
+
+// BeginTx starts a transaction.
+//
+// The provided context is used until the transaction is committed or rolled back.
+// If the context is canceled, the sql package will roll back
+// the transaction. Tx.Commit will return an error if the context provided to
+// BeginTx is canceled.
+//
+// The provided TxOptions is optional and may be nil if defaults should be used.
+// If a non-default isolation level is used that the driver doesn't support,
+// an error will be returned.
+func (c *Conn) BeginTx(ctx context.Context, opts *TxOptions) (*Tx, error) {
+	dc, release, err := c.grabConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return c.db.beginDC(ctx, dc, release, opts)
+}
+
+// closemuRUnlockCondReleaseConn read unlocks closemu
+// as the sql operation is done with the dc.
+func (c *Conn) closemuRUnlockCondReleaseConn(err error) {
+	c.closemu.RUnlock()
+	if err == driver.ErrBadConn {
+		c.close(err)
+	}
+}
+
+func (c *Conn) txCtx() context.Context {
+	return nil
+}
+
+func (c *Conn) close(err error) error {
+	if !atomic.CompareAndSwapInt32(&c.done, 0, 1) {
+		return ErrConnDone
+	}
+
+	// Lock around releasing the driver connection
+	// to ensure all queries have been stopped before doing so.
+	c.closemu.Lock()
+	defer c.closemu.Unlock()
+
+	c.dc.releaseConn(err)
+	c.dc = nil
+	c.db = nil
+	return err
+}
+
+// Close returns the connection to the connection pool.
+// All operations after a Close will return with ErrConnDone.
+// Close is safe to call concurrently with other operations and will
+// block until all other operations finish. It may be useful to first
+// cancel any used context and then call close directly after.
+func (c *Conn) Close() error {
+	return c.close(nil)
 }
 
 // Tx is an in-progress database transaction.
@@ -1412,6 +1663,10 @@ type Tx struct {
 	dc  *driverConn
 	txi driver.Tx
 
+	// releaseConn is called once the Tx is closed to release
+	// any held driverConn back to the pool.
+	releaseConn func(error)
+
 	// done transitions from 0 to 1 exactly once, on Commit
 	// or Rollback. once done, all operations fail with
 	// ErrTxDone.
@@ -1425,7 +1680,7 @@ type Tx struct {
 		v []*Stmt
 	}
 
-	// cancel is called after done transitions from false to true.
+	// cancel is called after done transitions from 0 to 1.
 	cancel func()
 
 	// ctx lives for the life of the transaction.
@@ -1457,11 +1712,12 @@ var ErrTxDone = errors.New("sql: Transaction has already been committed or rolle
 // close returns the connection to the pool and
 // must only be called by Tx.rollback or Tx.Commit.
 func (tx *Tx) close(err error) {
+	tx.cancel()
+
 	tx.closemu.Lock()
 	defer tx.closemu.Unlock()
 
-	tx.db.putConn(tx.dc, err)
-	tx.cancel()
+	tx.releaseConn(err)
 	tx.dc = nil
 	tx.txi = nil
 }
@@ -1470,19 +1726,36 @@ func (tx *Tx) close(err error) {
 // a successful call to (*Tx).grabConn. For tests.
 var hookTxGrabConn func()
 
-func (tx *Tx) grabConn(ctx context.Context) (*driverConn, error) {
+func (tx *Tx) grabConn(ctx context.Context) (*driverConn, releaseConn, error) {
 	select {
 	default:
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return nil, nil, ctx.Err()
 	}
+
+	// closeme.RLock must come before the check for isDone to prevent the Tx from
+	// closing while a query is executing.
+	tx.closemu.RLock()
 	if tx.isDone() {
-		return nil, ErrTxDone
+		tx.closemu.RUnlock()
+		return nil, nil, ErrTxDone
 	}
 	if hookTxGrabConn != nil { // test hook
 		hookTxGrabConn()
 	}
-	return tx.dc, nil
+	return tx.dc, tx.closemuRUnlockRelease, nil
+}
+
+func (tx *Tx) txCtx() context.Context {
+	return tx.ctx
+}
+
+// closemuRUnlockRelease is used as a func(error) method value in
+// ExecContext and QueryContext. Unlocking in the releaseConn keeps
+// the driver conn from being returned to the connection pool until
+// the Rows has been closed.
+func (tx *Tx) closemuRUnlockRelease(error) {
+	tx.closemu.RUnlock()
 }
 
 // Closes all Stmts prepared for this transaction.
@@ -1540,7 +1813,7 @@ func (tx *Tx) Rollback() error {
 	return tx.rollback(false)
 }
 
-// Prepare creates a prepared statement for use within a transaction.
+// PrepareContext creates a prepared statement for use within a transaction.
 //
 // The returned statement operates within the transaction and will be closed
 // when the transaction has been committed or rolled back.
@@ -1551,43 +1824,14 @@ func (tx *Tx) Rollback() error {
 // for the execution of the returned statement. The returned statement
 // will run in the transaction context.
 func (tx *Tx) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
-	tx.closemu.RLock()
-	defer tx.closemu.RUnlock()
-
-	// TODO(bradfitz): We could be more efficient here and either
-	// provide a method to take an existing Stmt (created on
-	// perhaps a different Conn), and re-create it on this Conn if
-	// necessary. Or, better: keep a map in DB of query string to
-	// Stmts, and have Stmt.Execute do the right thing and
-	// re-prepare if the Conn in use doesn't have that prepared
-	// statement. But we'll want to avoid caching the statement
-	// in the case where we only call conn.Prepare implicitly
-	// (such as in db.Exec or tx.Exec), but the caller package
-	// can't be holding a reference to the returned statement.
-	// Perhaps just looking at the reference count (by noting
-	// Stmt.Close) would be enough. We might also want a finalizer
-	// on Stmt to drop the reference count.
-	dc, err := tx.grabConn(ctx)
+	dc, release, err := tx.grabConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var si driver.Stmt
-	withLock(dc, func() {
-		si, err = ctxDriverPrepare(ctx, dc.ci, query)
-	})
+	stmt, err := tx.db.prepareDC(ctx, dc, release, tx, query)
 	if err != nil {
 		return nil, err
-	}
-
-	stmt := &Stmt{
-		db: tx.db,
-		tx: tx,
-		txds: &driverStmt{
-			Locker: dc,
-			si:     si,
-		},
-		query: query,
 	}
 	tx.stmts.Lock()
 	tx.stmts.v = append(tx.stmts.v, stmt)
@@ -1618,34 +1862,67 @@ func (tx *Tx) Prepare(query string) (*Stmt, error) {
 // The returned statement operates within the transaction and will be closed
 // when the transaction has been committed or rolled back.
 func (tx *Tx) StmtContext(ctx context.Context, stmt *Stmt) *Stmt {
-	tx.closemu.RLock()
-	defer tx.closemu.RUnlock()
-
-	// TODO(bradfitz): optimize this. Currently this re-prepares
-	// each time. This is fine for now to illustrate the API but
-	// we should really cache already-prepared statements
-	// per-Conn. See also the big comment in Tx.Prepare.
+	dc, release, err := tx.grabConn(ctx)
+	if err != nil {
+		return &Stmt{stickyErr: err}
+	}
+	defer release(nil)
 
 	if tx.db != stmt.db {
 		return &Stmt{stickyErr: errors.New("sql: Tx.Stmt: statement from different database used")}
 	}
-	dc, err := tx.grabConn(ctx)
-	if err != nil {
-		return &Stmt{stickyErr: err}
-	}
 	var si driver.Stmt
-	withLock(dc, func() {
-		si, err = ctxDriverPrepare(ctx, dc.ci, stmt.query)
-	})
+	var parentStmt *Stmt
+	stmt.mu.Lock()
+	if stmt.closed || stmt.cg != nil {
+		// If the statement has been closed or already belongs to a
+		// transaction, we can't reuse it in this connection.
+		// Since tx.StmtContext should never need to be called with a
+		// Stmt already belonging to tx, we ignore this edge case and
+		// re-prepare the statement in this case. No need to add
+		// code-complexity for this.
+		stmt.mu.Unlock()
+		withLock(dc, func() {
+			si, err = ctxDriverPrepare(ctx, dc.ci, stmt.query)
+		})
+		if err != nil {
+			return &Stmt{stickyErr: err}
+		}
+	} else {
+		stmt.removeClosedStmtLocked()
+		// See if the statement has already been prepared on this connection,
+		// and reuse it if possible.
+		for _, v := range stmt.css {
+			if v.dc == dc {
+				si = v.ds.si
+				break
+			}
+		}
+
+		stmt.mu.Unlock()
+
+		if si == nil {
+			cs, err := stmt.prepareOnConnLocked(ctx, dc)
+			if err != nil {
+				return &Stmt{stickyErr: err}
+			}
+			si = cs.si
+		}
+		parentStmt = stmt
+	}
+
 	txs := &Stmt{
 		db: tx.db,
-		tx: tx,
-		txds: &driverStmt{
+		cg: tx,
+		cgds: &driverStmt{
 			Locker: dc,
 			si:     si,
 		},
-		query:     stmt.query,
-		stickyErr: err,
+		parentStmt: parentStmt,
+		query:      stmt.query,
+	}
+	if parentStmt != nil {
+		tx.db.addDep(parentStmt, txs)
 	}
 	tx.stmts.Lock()
 	tx.stmts.v = append(tx.stmts.v, txs)
@@ -1672,42 +1949,11 @@ func (tx *Tx) Stmt(stmt *Stmt) *Stmt {
 // ExecContext executes a query that doesn't return rows.
 // For example: an INSERT and UPDATE.
 func (tx *Tx) ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error) {
-	tx.closemu.RLock()
-	defer tx.closemu.RUnlock()
-
-	dc, err := tx.grabConn(ctx)
+	dc, release, err := tx.grabConn(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	if execer, ok := dc.ci.(driver.Execer); ok {
-		dargs, err := driverArgs(nil, args)
-		if err != nil {
-			return nil, err
-		}
-		var resi driver.Result
-		withLock(dc, func() {
-			resi, err = ctxDriverExec(ctx, execer, query, dargs)
-		})
-		if err == nil {
-			return driverResult{dc, resi}, nil
-		}
-		if err != driver.ErrSkip {
-			return nil, err
-		}
-	}
-
-	var si driver.Stmt
-	withLock(dc, func() {
-		si, err = ctxDriverPrepare(ctx, dc.ci, query)
-	})
-	if err != nil {
-		return nil, err
-	}
-	ds := &driverStmt{Locker: dc, si: si}
-	defer ds.Close()
-
-	return resultFromStatement(ctx, ds, args...)
+	return tx.db.execDC(ctx, dc, release, query, args)
 }
 
 // Exec executes a query that doesn't return rows.
@@ -1718,15 +1964,12 @@ func (tx *Tx) Exec(query string, args ...interface{}) (Result, error) {
 
 // QueryContext executes a query that returns rows, typically a SELECT.
 func (tx *Tx) QueryContext(ctx context.Context, query string, args ...interface{}) (*Rows, error) {
-	tx.closemu.RLock()
-	defer tx.closemu.RUnlock()
-
-	dc, err := tx.grabConn(ctx)
+	dc, release, err := tx.grabConn(ctx)
 	if err != nil {
 		return nil, err
 	}
-	releaseConn := func(error) {}
-	return tx.db.queryConn(ctx, dc, releaseConn, query, args)
+
+	return tx.db.queryDC(ctx, tx.ctx, dc, release, query, args)
 }
 
 // Query executes a query that returns rows, typically a SELECT.
@@ -1737,6 +1980,9 @@ func (tx *Tx) Query(query string, args ...interface{}) (*Rows, error) {
 // QueryRowContext executes a query that is expected to return at most one row.
 // QueryRowContext always returns a non-nil value. Errors are deferred until
 // Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
 func (tx *Tx) QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row {
 	rows, err := tx.QueryContext(ctx, query, args...)
 	return &Row{rows: rows, err: err}
@@ -1745,6 +1991,9 @@ func (tx *Tx) QueryRowContext(ctx context.Context, query string, args ...interfa
 // QueryRow executes a query that is expected to return at most one row.
 // QueryRow always returns a non-nil value. Errors are deferred until
 // Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
 func (tx *Tx) QueryRow(query string, args ...interface{}) *Row {
 	return tx.QueryRowContext(context.Background(), query, args...)
 }
@@ -1754,6 +2003,24 @@ type connStmt struct {
 	dc *driverConn
 	ds *driverStmt
 }
+
+// stmtConnGrabber represents a Tx or Conn that will return the underlying
+// driverConn and release function.
+type stmtConnGrabber interface {
+	// grabConn returns the driverConn and the associated release function
+	// that must be called when the operation completes.
+	grabConn(context.Context) (*driverConn, releaseConn, error)
+
+	// txCtx returns the transaction context if available.
+	// The returned context should be selected on along with
+	// any query context when awaiting a cancel.
+	txCtx() context.Context
+}
+
+var (
+	_ stmtConnGrabber = &Tx{}
+	_ stmtConnGrabber = &Conn{}
+)
 
 // Stmt is a prepared statement.
 // A Stmt is safe for concurrent use by multiple goroutines.
@@ -1765,17 +2032,29 @@ type Stmt struct {
 
 	closemu sync.RWMutex // held exclusively during close, for read otherwise.
 
-	// If in a transaction, else both nil:
-	tx   *Tx
-	txds *driverStmt
+	// If Stmt is prepared on a Tx or Conn then cg is present and will
+	// only ever grab a connection from cg.
+	// If cg is nil then the Stmt must grab an arbitrary connection
+	// from db and determine if it must prepare the stmt again by
+	// inspecting css.
+	cg   stmtConnGrabber
+	cgds *driverStmt
+
+	// parentStmt is set when a transaction-specific statement
+	// is requested from an identical statement prepared on the same
+	// conn. parentStmt is used to track the dependency of this statement
+	// on its originating ("parent") statement so that parentStmt may
+	// be closed by the user without them having to know whether or not
+	// any transactions are still using it.
+	parentStmt *Stmt
 
 	mu     sync.Mutex // protects the rest of the fields
 	closed bool
 
 	// css is a list of underlying driver statement interfaces
 	// that are valid on particular connections. This is only
-	// used if tx == nil and one is found that has idle
-	// connections. If tx != nil, txsi is always used.
+	// used if cg == nil and one is found that has idle
+	// connections. If cg != nil, cgds is always used.
 	css []connStmt
 
 	// lastNumClosed is copied from db.numClosed when Stmt is created
@@ -1790,8 +2069,12 @@ func (s *Stmt) ExecContext(ctx context.Context, args ...interface{}) (Result, er
 	defer s.closemu.RUnlock()
 
 	var res Result
-	for i := 0; i < maxBadConnRetries; i++ {
-		_, releaseConn, ds, err := s.connStmt(ctx)
+	strategy := cachedOrNewConn
+	for i := 0; i < maxBadConnRetries+1; i++ {
+		if i == maxBadConnRetries {
+			strategy = alwaysNewConn
+		}
+		dc, releaseConn, ds, err := s.connStmt(ctx, strategy)
 		if err != nil {
 			if err == driver.ErrBadConn {
 				continue
@@ -1799,7 +2082,7 @@ func (s *Stmt) ExecContext(ctx context.Context, args ...interface{}) (Result, er
 			return nil, err
 		}
 
-		res, err = resultFromStatement(ctx, ds, args...)
+		res, err = resultFromStatement(ctx, dc.ci, ds, args...)
 		releaseConn(err)
 		if err != driver.ErrBadConn {
 			return res, err
@@ -1814,23 +2097,8 @@ func (s *Stmt) Exec(args ...interface{}) (Result, error) {
 	return s.ExecContext(context.Background(), args...)
 }
 
-func driverNumInput(ds *driverStmt) int {
-	ds.Lock()
-	defer ds.Unlock() // in case NumInput panics
-	return ds.si.NumInput()
-}
-
-func resultFromStatement(ctx context.Context, ds *driverStmt, args ...interface{}) (Result, error) {
-	want := driverNumInput(ds)
-
-	// -1 means the driver doesn't know how to count the number of
-	// placeholders, so we won't sanity check input here and instead let the
-	// driver deal with errors.
-	if want != -1 && len(args) != want {
-		return nil, fmt.Errorf("sql: expected %d arguments, got %d", want, len(args))
-	}
-
-	dargs, err := driverArgs(ds, args)
+func resultFromStatement(ctx context.Context, ci driver.Conn, ds *driverStmt, args ...interface{}) (Result, error) {
+	dargs, err := driverArgs(ci, ds, args)
 	if err != nil {
 		return nil, err
 	}
@@ -1874,7 +2142,7 @@ func (s *Stmt) removeClosedStmtLocked() {
 // connStmt returns a free driver connection on which to execute the
 // statement, a function to call to release the connection, and a
 // statement bound to that connection.
-func (s *Stmt) connStmt(ctx context.Context) (ci *driverConn, releaseConn func(error), ds *driverStmt, err error) {
+func (s *Stmt) connStmt(ctx context.Context, strategy connReuseStrategy) (dc *driverConn, releaseConn func(error), ds *driverStmt, err error) {
 	if err = s.stickyErr; err != nil {
 		return
 	}
@@ -1885,22 +2153,21 @@ func (s *Stmt) connStmt(ctx context.Context) (ci *driverConn, releaseConn func(e
 		return
 	}
 
-	// In a transaction, we always use the connection that the
-	// transaction was created on.
-	if s.tx != nil {
+	// In a transaction or connection, we always use the connection that the
+	// the stmt was created on.
+	if s.cg != nil {
 		s.mu.Unlock()
-		ci, err = s.tx.grabConn(ctx) // blocks, waiting for the connection.
+		dc, releaseConn, err = s.cg.grabConn(ctx) // blocks, waiting for the connection.
 		if err != nil {
 			return
 		}
-		releaseConn = func(error) {}
-		return ci, releaseConn, s.txds, nil
+		return dc, releaseConn, s.cgds, nil
 	}
 
 	s.removeClosedStmtLocked()
 	s.mu.Unlock()
 
-	dc, err := s.db.conn(ctx, cachedOrNewConn)
+	dc, err = s.db.conn(ctx, strategy)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -1916,18 +2183,28 @@ func (s *Stmt) connStmt(ctx context.Context) (ci *driverConn, releaseConn func(e
 
 	// No luck; we need to prepare the statement on this connection
 	withLock(dc, func() {
-		ds, err = dc.prepareLocked(ctx, s.query)
+		ds, err = s.prepareOnConnLocked(ctx, dc)
 	})
 	if err != nil {
-		s.db.putConn(dc, err)
+		dc.releaseConn(err)
 		return nil, nil, nil, err
 	}
-	s.mu.Lock()
-	cs := connStmt{dc, ds}
-	s.css = append(s.css, cs)
-	s.mu.Unlock()
 
 	return dc, dc.releaseConn, ds, nil
+}
+
+// prepareOnConnLocked prepares the query in Stmt s on dc and adds it to the list of
+// open connStmt on the statement. It assumes the caller is holding the lock on dc.
+func (s *Stmt) prepareOnConnLocked(ctx context.Context, dc *driverConn) (*driverStmt, error) {
+	si, err := dc.prepareLocked(ctx, s.cg, s.query)
+	if err != nil {
+		return nil, err
+	}
+	cs := connStmt{dc, si}
+	s.mu.Lock()
+	s.css = append(s.css, cs)
+	s.mu.Unlock()
+	return cs.ds, nil
 }
 
 // QueryContext executes a prepared query statement with the given arguments
@@ -1937,8 +2214,12 @@ func (s *Stmt) QueryContext(ctx context.Context, args ...interface{}) (*Rows, er
 	defer s.closemu.RUnlock()
 
 	var rowsi driver.Rows
-	for i := 0; i < maxBadConnRetries; i++ {
-		dc, releaseConn, ds, err := s.connStmt(ctx)
+	strategy := cachedOrNewConn
+	for i := 0; i < maxBadConnRetries+1; i++ {
+		if i == maxBadConnRetries {
+			strategy = alwaysNewConn
+		}
+		dc, releaseConn, ds, err := s.connStmt(ctx, strategy)
 		if err != nil {
 			if err == driver.ErrBadConn {
 				continue
@@ -1946,7 +2227,7 @@ func (s *Stmt) QueryContext(ctx context.Context, args ...interface{}) (*Rows, er
 			return nil, err
 		}
 
-		rowsi, err = rowsiFromStatement(ctx, ds, args...)
+		rowsi, err = rowsiFromStatement(ctx, dc.ci, ds, args...)
 		if err == nil {
 			// Note: ownership of ci passes to the *Rows, to be freed
 			// with releaseConn.
@@ -1955,12 +2236,21 @@ func (s *Stmt) QueryContext(ctx context.Context, args ...interface{}) (*Rows, er
 				rowsi: rowsi,
 				// releaseConn set below
 			}
+			// addDep must be added before initContextClose or it could attempt
+			// to removeDep before it has been added.
 			s.db.addDep(s, rows)
+
+			// releaseConn must be set before initContextClose or it could
+			// release the connection before it is set.
 			rows.releaseConn = func(err error) {
 				releaseConn(err)
 				s.db.removeDep(s, rows)
 			}
-			rows.initContextClose(ctx)
+			var txctx context.Context
+			if s.cg != nil {
+				txctx = s.cg.txCtx()
+			}
+			rows.initContextClose(ctx, txctx)
 			return rows, nil
 		}
 
@@ -1978,7 +2268,7 @@ func (s *Stmt) Query(args ...interface{}) (*Rows, error) {
 	return s.QueryContext(context.Background(), args...)
 }
 
-func rowsiFromStatement(ctx context.Context, ds *driverStmt, args ...interface{}) (driver.Rows, error) {
+func rowsiFromStatement(ctx context.Context, ci driver.Conn, ds *driverStmt, args ...interface{}) (driver.Rows, error) {
 	var want int
 	withLock(ds, func() {
 		want = ds.si.NumInput()
@@ -1991,7 +2281,7 @@ func rowsiFromStatement(ctx context.Context, ds *driverStmt, args ...interface{}
 		return nil, fmt.Errorf("sql: statement expects %d inputs; got %d", want, len(args))
 	}
 
-	dargs, err := driverArgs(ds, args)
+	dargs, err := driverArgs(ci, ds, args)
 	if err != nil {
 		return nil, err
 	}
@@ -2054,13 +2344,21 @@ func (s *Stmt) Close() error {
 		return nil
 	}
 	s.closed = true
+	txds := s.cgds
+	s.cgds = nil
+
 	s.mu.Unlock()
 
-	if s.tx != nil {
-		return s.txds.Close()
+	if s.cg == nil {
+		return s.db.removeDep(s, s)
 	}
 
-	return s.db.removeDep(s, s)
+	if s.parentStmt != nil {
+		// If parentStmt is set, we must not close s.txds since it's stored
+		// in the css array of the parentStmt.
+		return s.db.removeDep(s.parentStmt, s)
+	}
+	return txds.Close()
 }
 
 func (s *Stmt) finalClose() error {
@@ -2107,18 +2405,28 @@ type Rows struct {
 	lasterr error // non-nil only if closed is true
 
 	// lastcols is only used in Scan, Next, and NextResultSet which are expected
-	// not not be called concurrently.
+	// not to be called concurrently.
 	lastcols []driver.Value
 }
 
-func (rs *Rows) initContextClose(ctx context.Context) {
+func (rs *Rows) initContextClose(ctx, txctx context.Context) {
 	ctx, rs.cancel = context.WithCancel(ctx)
-	go rs.awaitDone(ctx)
+	go rs.awaitDone(ctx, txctx)
 }
 
-// awaitDone blocks until the rows are closed or the context canceled.
-func (rs *Rows) awaitDone(ctx context.Context) {
-	<-ctx.Done()
+// awaitDone blocks until either ctx or txctx is canceled. The ctx is provided
+// from the query context and is canceled when the query Rows is closed.
+// If the query was issued in a transaction, the transaction's context
+// is also provided in txctx to ensure Rows is closed if the Tx is closed.
+func (rs *Rows) awaitDone(ctx, txctx context.Context) {
+	var txctxDone <-chan struct{}
+	if txctx != nil {
+		txctxDone = txctx.Done()
+	}
+	select {
+	case <-ctx.Done():
+	case <-txctxDone:
+	}
 	rs.close(ctx.Err())
 }
 
@@ -2407,7 +2715,7 @@ func (rs *Rows) Scan(dest ...interface{}) error {
 }
 
 // rowsCloseHook returns a function so tests may install the
-// hook throug a test only mutex.
+// hook through a test only mutex.
 var rowsCloseHook = func() func(*Rows, *error) { return nil }
 
 // Close closes the Rows, preventing further enumeration. If Next is called
@@ -2431,7 +2739,9 @@ func (rs *Rows) close(err error) error {
 		rs.lasterr = err
 	}
 
-	err = rs.rowsi.Close()
+	withLock(rs.dc, func() {
+		err = rs.rowsi.Close()
+	})
 	if fn := rowsCloseHook(); fn != nil {
 		fn(rs, &err)
 	}

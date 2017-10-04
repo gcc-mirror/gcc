@@ -1767,7 +1767,7 @@ spu_expand_prologue (void)
 
   if (total_size > 0)
     {
-      if (flag_stack_check)
+      if (flag_stack_check || flag_stack_clash_protection)
 	{
 	  /* We compare against total_size-1 because
 	     ($sp >= total_size) <=> ($sp > total_size-1) */
@@ -3055,7 +3055,7 @@ spu_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
   if (JUMP_P (insn) && dep_type == REG_DEP_ANTI)
-    return insn_cost (dep_insn) - 3;
+    return insn_sched_cost (dep_insn) - 3;
 
   return cost;
 }
@@ -3881,6 +3881,18 @@ spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, mode));
 }
 
+/* Implement TARGET_FUNCTION_ARG_OFFSET.  The SPU ABI wants 32/64-bit
+   types at offset 0 in the quad-word on the stack.  8/16-bit types
+   should be at offsets 3/2 respectively.  */
+
+static HOST_WIDE_INT
+spu_function_arg_offset (machine_mode mode, const_tree type)
+{
+  if (type && INTEGRAL_TYPE_P (type) && GET_MODE_SIZE (mode) < 4)
+    return 4 - GET_MODE_SIZE (mode);
+  return 0;
+}
+
 /* Implement TARGET_FUNCTION_ARG_PADDING.  */
 
 static pad_direction
@@ -4147,7 +4159,7 @@ spu_encode_section_info (tree decl, rtx rtl, int first)
    which is both 16-byte aligned and padded to a 16-byte boundary.  This
    would make it safe to store with a single instruction. 
    We guarantee the alignment and padding for static objects by aligning
-   all of them to 16-bytes. (DATA_ALIGNMENT and CONSTANT_ALIGNMENT.)
+   all of them to 16-bytes. (DATA_ALIGNMENT and TARGET_CONSTANT_ALIGNMENT.)
    FIXME: We currently cannot guarantee this for objects on the stack
    because assign_parm_setup_stack calls assign_stack_local with the
    alignment of the parameter mode and in that case the alignment never
@@ -5378,7 +5390,7 @@ spu_allocate_stack (rtx op0, rtx op1)
   emit_insn (gen_spu_convert (sp, stack_pointer_rtx));
   emit_insn (gen_subv4si3 (sp, sp, splatted));
 
-  if (flag_stack_check)
+  if (flag_stack_check || flag_stack_clash_protection)
     {
       rtx avail = gen_reg_rtx(SImode);
       rtx result = gen_reg_rtx(SImode);
@@ -7162,6 +7174,37 @@ spu_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   return (GET_MODE_BITSIZE (mode1) <= MAX_FIXED_MODE_SIZE
 	  && GET_MODE_BITSIZE (mode2) <= MAX_FIXED_MODE_SIZE);
 }
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  GCC assumes that modes are
+   in the lowpart of a register, which is only true for SPU.  */
+
+static bool
+spu_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
+{
+  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+	  || (GET_MODE_SIZE (from) <= 4 && GET_MODE_SIZE (to) <= 4)
+	  || (GET_MODE_SIZE (from) >= 16 && GET_MODE_SIZE (to) >= 16));
+}
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return inprec <= 32 && outprec <= inprec;
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.
+
+   Make all static objects 16-byte aligned.  This allows us to assume
+   they are also padded to 16 bytes, which means we can use a single
+   load or store instruction to access them.  */
+
+static HOST_WIDE_INT
+spu_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return MAX (align, 128);
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7281,6 +7324,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
 
+#undef TARGET_FUNCTION_ARG_OFFSET
+#define TARGET_FUNCTION_ARG_OFFSET spu_function_arg_offset
+
 #undef TARGET_FUNCTION_ARG_PADDING
 #define TARGET_FUNCTION_ARG_PADDING spu_function_arg_padding
 
@@ -7392,6 +7438,15 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS spu_hard_regno_nregs
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS spu_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION spu_truly_noop_truncation
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT spu_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

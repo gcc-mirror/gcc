@@ -978,7 +978,7 @@
    (set (attr "mode")
 	(cond [(and (eq_attr "alternative" "1")
 		    (match_test "TARGET_AVX512VL"))
-		 (const_string "XI")
+		 (const_string "<sseinsnmode>")
 	       (and (match_test "<MODE_SIZE> == 16")
 		    (ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
 			 (and (eq_attr "alternative" "3")

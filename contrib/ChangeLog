@@ -1,3 +1,11 @@
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Handle libbacktrace.
+
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites (isl): Bump version to 0.18.
+
 2017-08-02  Yury Gribov  <tetra2005@gmail.com>
 
 	* mklog: Added new implementation.

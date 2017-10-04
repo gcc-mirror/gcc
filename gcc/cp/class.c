@@ -3231,12 +3231,12 @@ check_bitfield_decl (tree field)
   tree w;
 
   /* Extract the declared width of the bitfield, which has been
-     temporarily stashed in DECL_INITIAL.  */
-  w = DECL_INITIAL (field);
+     temporarily stashed in DECL_BIT_FIELD_REPRESENTATIVE by grokbitfield.  */
+  w = DECL_BIT_FIELD_REPRESENTATIVE (field);
   gcc_assert (w != NULL_TREE);
   /* Remove the bit-field width indicator so that the rest of the
-     compiler does not treat that value as an initializer.  */
-  DECL_INITIAL (field) = NULL_TREE;
+     compiler does not treat that value as a qualifier.  */
+  DECL_BIT_FIELD_REPRESENTATIVE (field) = NULL_TREE;
 
   /* Detect invalid bit-field type.  */
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
@@ -3324,7 +3324,7 @@ check_field_decl (tree field,
     {
       for (tree fields = TYPE_FIELDS (type); fields;
 	   fields = DECL_CHAIN (fields))
-	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
+	if (TREE_CODE (fields) == FIELD_DECL)
 	  any_default_members |= check_field_decl (fields, t,
 						   cant_have_const_ctor,
 						   no_const_asn_ref);
@@ -3571,7 +3571,8 @@ check_field_decls (tree t, tree *access_decls,
 	    DECL_PACKED (x) = 1;
 	}
 
-      if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
+      if (DECL_C_BIT_FIELD (x)
+	  && integer_zerop (DECL_BIT_FIELD_REPRESENTATIVE (x)))
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
@@ -3635,10 +3636,10 @@ check_field_decls (tree t, tree *access_decls,
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
-      if ((! DECL_C_BIT_FIELD (x) || ! check_bitfield_decl (x))
-	  && check_field_decl (x, t,
-			       cant_have_const_ctor_p,
-			       no_const_asn_ref_p))
+      if (DECL_C_BIT_FIELD (x))
+	check_bitfield_decl (x);
+
+      if (check_field_decl (x, t, cant_have_const_ctor_p, no_const_asn_ref_p))
 	{
 	  if (any_default_members
 	      && TREE_CODE (t) == UNION_TYPE)
@@ -4317,7 +4318,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 back end issues with overlapping FIELD_DECLs, but that doesn't seem to
 	 be a problem anymore.  We need them to handle initialization of C++17
 	 aggregate bases.  */
-      if (cxx_dialect >= cxx1z && !BINFO_VIRTUAL_P (binfo))
+      if (cxx_dialect >= cxx17 && !BINFO_VIRTUAL_P (binfo))
 	{
 	  tree decl = build_base_field_1 (t, basetype, next_field);
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
@@ -5268,9 +5269,9 @@ remove_zero_width_bit_fields (tree t)
     {
       if (TREE_CODE (*fieldsp) == FIELD_DECL
 	  && DECL_C_BIT_FIELD (*fieldsp)
-          /* We should not be confused by the fact that grokbitfield
+	  /* We should not be confused by the fact that grokbitfield
 	     temporarily sets the width of the bit field into
-	     DECL_INITIAL (*fieldsp).
+	     DECL_BIT_FIELD_REPRESENTATIVE (*fieldsp).
 	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
 	     to that width.  */
 	  && (DECL_SIZE (*fieldsp) == NULL_TREE
@@ -5351,7 +5352,7 @@ finalize_literal_type_property (tree t)
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
-    CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx1z);
+    CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
@@ -5394,9 +5395,9 @@ explain_non_literal_class (tree t)
     return;
 
   inform (0, "%q+T is not literal because:", t);
-  if (cxx_dialect < cxx1z && LAMBDA_TYPE_P (t))
+  if (cxx_dialect < cxx17 && LAMBDA_TYPE_P (t))
     inform (0, "  %qT is a closure type, which is only literal in "
-	    "C++1z and later", t);
+	    "C++17 and later", t);
   else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (0, "  %q+T has a non-trivial destructor", t);
   else if (CLASSTYPE_NON_AGGREGATE (t)

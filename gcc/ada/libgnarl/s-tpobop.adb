@@ -60,7 +60,6 @@ package body System.Tasking.Protected_Objects.Operations is
    package STPO renames System.Task_Primitives.Operations;
 
    use Parameters;
-   use Task_Primitives;
    use Ada.Exceptions;
    use Entries;
 

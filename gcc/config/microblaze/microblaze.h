@@ -234,12 +234,6 @@ extern enum pipeline_type microblaze_pipe;
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
-
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   ((((ALIGN) < BITS_PER_WORD)						\
     && (TREE_CODE (TYPE) == ARRAY_TYPE					\
@@ -553,11 +547,6 @@ typedef struct microblaze_args
 #define STORE_FLAG_VALUE			1
 
 #define SHIFT_COUNT_TRUNCATED			1
-
-/* This results in inefficient code for 64 bit to 32 conversions.
-   Something needs to be done about this.  Perhaps not use any 32 bit
-   instructions?  Perhaps use PROMOTE_MODE?  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 #define Pmode SImode
 

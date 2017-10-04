@@ -1688,6 +1688,35 @@ alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
   return NO_REGS;
 }
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
+
+   If we are copying between general and FP registers, we need a memory
+   location unless the FIX extension is available.  */
+
+static bool
+alpha_secondary_memory_needed (machine_mode, reg_class_t class1,
+			       reg_class_t class2)
+{
+  return (!TARGET_FIX
+	  && ((class1 == FLOAT_REGS && class2 != FLOAT_REGS)
+	      || (class2 == FLOAT_REGS && class1 != FLOAT_REGS)));
+}
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.  If MODE is
+   floating-point, use it.  Otherwise, widen to a word like the default.
+   This is needed because we always store integers in FP registers in
+   quadword format.  This whole area is very tricky!  */
+
+static machine_mode
+alpha_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return mode;
+  if (GET_MODE_SIZE (mode) >= 4)
+    return mode;
+  return mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0).require ();
+}
 
 /* Given SEQ, which is an INSN list, look for any MEMs in either
    a SET_DEST or a SET_SRC and copy the in-struct, unchanging, and
@@ -7731,8 +7760,8 @@ alpha_expand_prologue (void)
      Note that we are only allowed to adjust sp once in the prologue.  */
 
   probed_size = frame_size;
-  if (flag_stack_check)
-    probed_size += STACK_CHECK_PROTECT;
+  if (flag_stack_check || flag_stack_clash_protection)
+    probed_size += get_stack_check_protect ();
 
   if (probed_size <= 32768)
     {
@@ -7746,7 +7775,7 @@ alpha_expand_prologue (void)
 	  /* We only have to do this probe if we aren't saving registers or
 	     if we are probing beyond the frame because of -fstack-check.  */
 	  if ((sa_size == 0 && probed_size > probed - 4096)
-	      || flag_stack_check)
+	      || flag_stack_check || flag_stack_clash_protection)
 	    emit_insn (gen_probe_stack (GEN_INT (-probed_size)));
 	}
 
@@ -7776,7 +7805,8 @@ alpha_expand_prologue (void)
 	 late in the compilation, generate the loop as a single insn.  */
       emit_insn (gen_prologue_stack_probe_loop (count, ptr));
 
-      if ((leftover > 4096 && sa_size == 0) || flag_stack_check)
+      if ((leftover > 4096 && sa_size == 0)
+	  || flag_stack_check || flag_stack_clash_protection)
 	{
 	  rtx last = gen_rtx_MEM (DImode,
 				  plus_constant (Pmode, ptr, -leftover));
@@ -7784,7 +7814,7 @@ alpha_expand_prologue (void)
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      if (flag_stack_check)
+      if (flag_stack_check || flag_stack_clash_protection)
 	{
 	  /* If -fstack-check is specified we have to load the entire
 	     constant into a register and subtract from the sp in one go,
@@ -9907,6 +9937,16 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	  ? alpha_hard_regno_mode_ok (32, mode2)
 	  : true);
 }
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+alpha_can_change_mode_class (machine_mode from, machine_mode to,
+			     reg_class_t rclass)
+{
+  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+	  || !reg_classes_intersect_p (FLOAT_REGS, rclass));
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10062,6 +10102,10 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD alpha_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED alpha_secondary_memory_needed
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE alpha_secondary_memory_needed_mode
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P alpha_scalar_mode_supported_p
@@ -10106,6 +10150,9 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P alpha_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS alpha_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

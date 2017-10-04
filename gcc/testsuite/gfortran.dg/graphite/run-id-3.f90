@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-ffrontend-optimize -floop-nest-optimize" }
+! { dg-additional-options "-fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" { target ilp32 } }
 ! PR 56872 - wrong front-end optimization with a single constructor.
 ! Original bug report by Rich Townsend.
   integer :: k
@@ -10,3 +11,4 @@
   res = SUM([(s**(REAL(k-1)/REAL(m-1)),k=1,m)])
   if (abs(res - 5.84732246) > 1e-6) call abort
   end
+! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }

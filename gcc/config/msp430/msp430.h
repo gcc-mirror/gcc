@@ -204,8 +204,6 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define RETURN_ADDR_RTX(COUNT, FA)		\
   msp430_return_addr_rtx (COUNT)
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
-
 #define SLOW_BYTE_ACCESS		0
 
 
@@ -406,14 +404,6 @@ typedef struct
    when spilling hard registers when they may contain PSImode values.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO,NREGS,MODE) \
   ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode : choose_hard_reg_mode ((REGNO), (NREGS), false))
-
-/* Also stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
-  (   ((TO) == PSImode && (FROM) == SImode)	\
-   || ((TO) == SImode  && (FROM) == PSImode)    \
-   || ((TO) == DImode  && (FROM) == PSImode)    \
-   || ((TO) == PSImode && (FROM) == DImode)     \
-      )
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 

@@ -1,3 +1,74 @@
+2017-10-04  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-3.c
+	(main): Reduce sum of arr elements.  Assert that hres is exactly
+	representable in 32-bit floating point.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c
+	(main): Reduce sum of arr elements.  Assert that hres and hmres are
+	exactly representable in 32-bit floating point.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c (gwv_np_4): Same.
+
+2017-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c++/for-12.C: Remove superfluous -fopenmp option
+	setting.
+	* testsuite/libgomp.c++/pr69393.C: Same.
+	* testsuite/libgomp.c++/taskloop-1.C: Same.
+	* testsuite/libgomp.c++/taskloop-3.C: Same.
+	* testsuite/libgomp.c++/taskloop-4.C: Same.
+	* testsuite/libgomp.c/for-4.c: Same.
+	* testsuite/libgomp.c/pr66199-3.c: Same.
+	* testsuite/libgomp.c/pr66199-4.c: Same.
+	* testsuite/libgomp.c/pr66199-6.c: Same.
+	* testsuite/libgomp.c/taskloop-1.c: Same.
+	* testsuite/libgomp.c/taskloop-3.c: Same.
+	* testsuite/libgomp.c/taskloop-4.c: Same.
+	* testsuite/libgomp.fortran/aligned1.f03: Same.
+	* testsuite/libgomp.fortran/condinc1.f: Same.
+	* testsuite/libgomp.fortran/condinc3.f90: Same.
+	* testsuite/libgomp.fortran/crayptr1.f90: Same.
+	* testsuite/libgomp.fortran/crayptr2.f90: Same.
+	* testsuite/libgomp.fortran/crayptr3.f90: Same.
+	* testsuite/libgomp.fortran/omp_cond1.f: Same.
+	* testsuite/libgomp.fortran/omp_cond3.F90: Same.
+	* testsuite/libgomp.fortran/pr66199-1.f90: Same.
+	* testsuite/libgomp.fortran/pr66199-2.f90: Same.
+	* testsuite/libgomp.fortran/recursion1.f90: Same.
+	* testsuite/libgomp.fortran/target2.f90: Same.
+	* testsuite/libgomp.fortran/target5.f90: Same.
+	* testsuite/libgomp.fortran/task3.f90: Same.
+
+2017-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c (main): Remove
+	vector_length(32) clause from acc parallel directive.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c (main): Same.
+
+2017-09-27  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-reduction.c (main):
+	Remove acc_device_nvidia references.
+
+2017-09-16  Tom de Vries  <tom@codesourcery.com>
+
+	PR c/81875
+	* testsuite/libgomp.c-c++-common/pr81875.c: New test.
+
+2017-09-14  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c++/cancel-taskgroup-1.C: Remove.
+	* testsuite/libgomp.c/cancel-taskgroup-1.c: Move to ...
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-1.c: ... here.
+	* testsuite/libgomp.c/c.exp: Include test-cases from
+	libgomp.c-c++-common.
+	* testsuite/libgomp.c++/c++.exp: Same.  Force c++-mode compilation of .c
+	files.
+
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81314
+	* testsuite/libgomp.c++/pr81314.C: New test.
+
 2017-09-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* libgomp.texi (Top): www.openacc.org now uses https.

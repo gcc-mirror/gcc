@@ -1,6 +1,6 @@
 // PR c++/78358
 // { dg-do run }
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 #include <tuple>
 

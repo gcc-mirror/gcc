@@ -1471,7 +1471,10 @@ scan_one_insn (rtx_insn *insn)
 	      && targetm.legitimate_constant_p (GET_MODE (SET_DEST (set)),
 						XEXP (note, 0))
 	      && REG_N_SETS (REGNO (SET_DEST (set))) == 1))
-      && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set))))
+      && general_operand (SET_SRC (set), GET_MODE (SET_SRC (set)))
+      /* LRA does not use equiv with a symbol for PIC code.  */
+      && (! ira_use_lra_p || ! pic_offset_table_rtx
+	  || ! contains_symbol_ref_p (XEXP (note, 0))))
     {
       enum reg_class cl = GENERAL_REGS;
       rtx reg = SET_DEST (set);

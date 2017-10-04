@@ -1,3 +1,58 @@
+2017-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (push_parm_decl): Store c_parm's location into the
+	PARAM_DECL.
+	(build_c_parm): Add "loc" param and store it within the c_parm.
+	* c-parser.c (struct c_parser): Add "last_token_location" field.
+	(c_parser_consume_token): Store location of the token into the
+	new field.
+	(c_parser_declaration_or_fndef): Store params into DECL_ARGUMENTS
+	when handling a FUNCTION_DECL, if it doesn't already have them.
+	(c_parser_parameter_declaration): Generate a location for the
+	parameter, and pass it to the call to build_c_parm.
+	* c-tree.h (struct c_parm): Add field "loc".
+	(build_c_parm): Add location_t param.
+	* c-typeck.c (get_fndecl_argument_location): New function.
+	(inform_for_arg): New function.
+	(convert_for_assignment): Use inform_for_arg when dealing with
+	ic_argpass.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (grokfield): Use SET_DECL_C_BIT_FIELD here if
+	width is non-NULL.
+	(finish_struct): Test DECL_C_BIT_FIELD instead of DECL_INITIAL,
+	don't SET_DECL_C_BIT_FIELD here.
+
+	PR c/82340
+	* c-decl.c (build_compound_literal): Use c_apply_type_quals_to_decl
+	instead of trying to set just TREE_READONLY manually.
+
+2017-09-16  Tom de Vries  <tom@codesourcery.com>
+
+	PR c/81875
+	* c-parser.c (c_parser_omp_for_loop): Fold only operands of cond, not
+	cond itself.
+
+2017-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* c-typeck.c (ep_convert_and_check): Just call convert_and_check
+	for C11.
+	(build_conditional_expr): For C11, generate result with excess
+	precision when one argument is an integer and the other is of a
+	type using excess precision.
+
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-typeck.c (build_c_cast): Implement -Wcast-align=strict.
+
+2017-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82167
+	* c-typeck.c (c_expr_sizeof_expr): Use the type of expr.value rather
+	than expr.original_type.
+
 2017-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	* c-decl.c (field_decl_cmp, resort_data, resort_field_decl_cmp,

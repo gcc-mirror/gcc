@@ -1,3 +1,8 @@
+2017-09-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libgfortran/79612
+	* runtime/bounds.c: Use GFC_ASSERT.
+
 2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34640

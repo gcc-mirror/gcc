@@ -1,6 +1,7 @@
 ! PR 77848: Verify versioning is on when vectorization fails
 ! { dg-do compile }
 ! { dg-options "-O3 -ffast-math -fdump-tree-ifcvt -fdump-tree-vect-details" }
+! { dg-additional-options "-mzarch" { target { s390*-*-* } } }
 
       subroutine sub(x,a,n,m)
       implicit none

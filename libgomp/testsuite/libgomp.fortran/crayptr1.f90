@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fopenmp -fcray-pointer" }
+! { dg-options "-fcray-pointer" }
 
   use omp_lib
   integer :: a, b, c, p

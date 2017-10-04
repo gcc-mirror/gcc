@@ -220,7 +220,7 @@ func cgoLookupIPCNAME(name string) (addrs []IPAddr, cname string, err error) {
 			addrs = append(addrs, addr)
 		case syscall.AF_INET6:
 			sa := (*syscall.RawSockaddrInet6)(unsafe.Pointer(r.Ai_addr))
-			addr := IPAddr{IP: copyIP(sa.Addr[:]), Zone: zoneToString(int(sa.Scope_id))}
+			addr := IPAddr{IP: copyIP(sa.Addr[:]), Zone: zoneCache.name(int(sa.Scope_id))}
 			addrs = append(addrs, addr)
 		}
 	}
@@ -345,7 +345,7 @@ func cgoSockaddr(ip IP, zone string) (*syscall.RawSockaddr, syscall.Socklen_t) {
 		return cgoSockaddrInet4(ip4), syscall.Socklen_t(syscall.SizeofSockaddrInet4)
 	}
 	if ip6 := ip.To16(); ip6 != nil {
-		return cgoSockaddrInet6(ip6, zoneToInt(zone)), syscall.Socklen_t(syscall.SizeofSockaddrInet6)
+		return cgoSockaddrInet6(ip6, zoneCache.index(zone)), syscall.Socklen_t(syscall.SizeofSockaddrInet6)
 	}
 	return nil, 0
 }

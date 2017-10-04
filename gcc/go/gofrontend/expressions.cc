@@ -210,7 +210,11 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     }
 
   // This should have been checked already.
-  go_assert(lhs_interface_type->implements_interface(rhs_type, NULL));
+  if (!lhs_interface_type->implements_interface(rhs_type, NULL))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(location);
+    }
 
   // An interface is a tuple.  If LHS_TYPE is an empty interface type,
   // then the first field is the type descriptor for RHS_TYPE.
@@ -6044,35 +6048,46 @@ Binary_expression::do_get_backend(Translate_context* context)
     {
       go_assert(left_type->integer_type() != NULL);
 
-      mpz_t bitsval;
       int bits = left_type->integer_type()->bits();
-      mpz_init_set_ui(bitsval, bits);
-      Bexpression* bits_expr =
-          gogo->backend()->integer_constant_expression(right_btype, bitsval);
-      Bexpression* compare =
-          gogo->backend()->binary_expression(OPERATOR_LT,
-                                             right, bits_expr, loc);
 
-      Bexpression* zero_expr =
-          gogo->backend()->integer_constant_expression(left_btype, zero);
-      overflow = zero_expr;
-      Bfunction* bfn = context->function()->func_value()->get_decl();
-      if (this->op_ == OPERATOR_RSHIFT
-	  && !left_type->integer_type()->is_unsigned())
+      Numeric_constant nc;
+      unsigned long ul;
+      if (!this->right_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&ul) != Numeric_constant::NC_UL_VALID
+	  || ul >= static_cast<unsigned long>(bits))
 	{
-          Bexpression* neg_expr =
-              gogo->backend()->binary_expression(OPERATOR_LT, left,
-                                                 zero_expr, loc);
-          Bexpression* neg_one_expr =
-              gogo->backend()->integer_constant_expression(left_btype, neg_one);
-          overflow = gogo->backend()->conditional_expression(bfn,
-                                                             btype, neg_expr,
-                                                             neg_one_expr,
-                                                             zero_expr, loc);
+	  mpz_t bitsval;
+	  mpz_init_set_ui(bitsval, bits);
+	  Bexpression* bits_expr =
+	    gogo->backend()->integer_constant_expression(right_btype, bitsval);
+	  Bexpression* compare =
+	    gogo->backend()->binary_expression(OPERATOR_LT,
+					       right, bits_expr, loc);
+
+	  Bexpression* zero_expr =
+	    gogo->backend()->integer_constant_expression(left_btype, zero);
+	  overflow = zero_expr;
+	  Bfunction* bfn = context->function()->func_value()->get_decl();
+	  if (this->op_ == OPERATOR_RSHIFT
+	      && !left_type->integer_type()->is_unsigned())
+	    {
+	      Bexpression* neg_expr =
+		gogo->backend()->binary_expression(OPERATOR_LT, left,
+						   zero_expr, loc);
+	      Bexpression* neg_one_expr =
+		gogo->backend()->integer_constant_expression(left_btype,
+							     neg_one);
+	      overflow = gogo->backend()->conditional_expression(bfn,
+								 btype,
+								 neg_expr,
+								 neg_one_expr,
+								 zero_expr,
+								 loc);
+	    }
+	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
+							ret, overflow, loc);
+	  mpz_clear(bitsval);
 	}
-      ret = gogo->backend()->conditional_expression(bfn, btype, compare, ret,
-                                                    overflow, loc);
-      mpz_clear(bitsval);
     }
 
   // Add checks for division by zero and division overflow as needed.
@@ -14448,15 +14463,14 @@ Receive_expression::do_get_backend(Translate_context* context)
       go_assert(this->channel_->type()->is_error());
       return context->backend()->error_expression();
     }
-  Expression* td = Expression::make_type_descriptor(channel_type, loc);
 
   Expression* recv_ref =
     Expression::make_temporary_reference(this->temp_receiver_, loc);
   Expression* recv_addr =
     Expression::make_temporary_reference(this->temp_receiver_, loc);
   recv_addr = Expression::make_unary(OPERATOR_AND, recv_addr, loc);
-  Expression* recv = Runtime::make_call(Runtime::CHANRECV1, loc, 3,
-					td, this->channel_, recv_addr);
+  Expression* recv = Runtime::make_call(Runtime::CHANRECV1, loc, 2,
+					this->channel_, recv_addr);
   return Expression::make_compound(recv, recv_ref, loc)->get_backend(context);
 }
 

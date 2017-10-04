@@ -351,6 +351,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
+#define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
@@ -846,20 +847,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
   x86_field_alignment ((TYPE), (COMPUTED))
 #endif
-
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  EXP is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ix86_constant_alignment ((EXP), (ALIGN))
 
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
@@ -1518,24 +1505,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
-
-/* If we are copying between general and FP registers, we need a memory
-   location. The same is true for SSE and MMX registers.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
-
-/* Get_secondary_mem widens integral modes to BITS_PER_WORD.
-   There is no need to emit full 64 bit move on 64 bit targets
-   for integral modes that can be moved using 32 bit move.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
-  (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
-   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0).require ()	\
-   : MODE)
-
-/* Return a class of registers that cannot change FROM mode to TO mode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  ix86_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1929,10 +1898,6 @@ typedef struct ix86_args {
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be
    stored in a register.  This macro is only called when TYPE is a
@@ -2272,6 +2237,7 @@ enum processor_type
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
+  PROCESSOR_KNM,
   PROCESSOR_SKYLAKE_AVX512,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,

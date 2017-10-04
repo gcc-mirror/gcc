@@ -271,13 +271,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)             \
   (TREE_CODE (TYPE) == ARRAY_TYPE               \
@@ -1448,10 +1441,6 @@ do { \
    low-order few bits.
 */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */

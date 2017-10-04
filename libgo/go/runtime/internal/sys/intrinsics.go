@@ -14,22 +14,22 @@ func builtinCtz64(uint64) int32
 
 // Ctz64 counts trailing (low-order) zeroes,
 // and if all are zero, then 64.
-func Ctz64(x uint64) uint64 {
+func Ctz64(x uint64) int {
 	if x == 0 {
 		return 64
 	}
-	return uint64(builtinCtz64(x))
+	return int(builtinCtz64(x))
 }
 
 //go:nosplit
 
 // Ctz32 counts trailing (low-order) zeroes,
 // and if all are zero, then 32.
-func Ctz32(x uint32) uint32 {
+func Ctz32(x uint32) int {
 	if x == 0 {
 		return 32
 	}
-	return uint32(builtinCtz32(x))
+	return int(builtinCtz32(x))
 }
 
 //extern __builtin_bswap64

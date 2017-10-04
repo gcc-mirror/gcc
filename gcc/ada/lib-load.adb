@@ -122,7 +122,7 @@ package body Lib.Load is
 
       --  No change if we did not find the spec
 
-      if X = No_Source_File then
+      if X <= No_Source_File then
          return;
       end if;
 
@@ -326,7 +326,7 @@ package body Lib.Load is
          Main_Source_File := Load_Source_File (Fname);
          Current_Error_Source_File := Main_Source_File;
 
-         if Main_Source_File /= No_Source_File then
+         if Main_Source_File > No_Source_File then
             Version := Source_Checksum (Main_Source_File);
          else
             --  To avoid emitting a source location (since there is no file),
@@ -334,7 +334,13 @@ package body Lib.Load is
             --  in errout.adb.
 
             Set_Standard_Error;
-            Write_Str ("file """ & Get_Name_String (Fname) & """ not found");
+            if Main_Source_File = No_Access_To_Source_File then
+               Write_Str ("no read access for file """
+                          & Get_Name_String (Fname) & """");
+            else
+               Write_Str ("file """
+                          & Get_Name_String (Fname) & """ not found");
+            end if;
             Write_Eol;
             Set_Standard_Output;
          end if;
@@ -716,7 +722,7 @@ package body Lib.Load is
 
          --  File was found
 
-         if Src_Ind /= No_Source_File then
+         if Src_Ind > No_Source_File then
             Units.Table (Unum) :=
               (Cunit             => Empty,
                Cunit_Entity      => Empty,
@@ -824,7 +830,11 @@ package body Lib.Load is
 
          else
             if Debug_Flag_L then
-               Write_Str ("  file was not found, load failed");
+               if Src_Ind = No_Access_To_Source_File then
+                  Write_Str ("  no read access to file, load failed");
+               else
+                  Write_Str ("  file was not found, load failed");
+               end if;
                Write_Eol;
             end if;
 
@@ -857,7 +867,11 @@ package body Lib.Load is
 
                else
                   Error_Msg_File_1 := Fname;
-                  Error_Msg ("file{ not found", Load_Msg_Sloc);
+                  if Src_Ind = No_Access_To_Source_File then
+                     Error_Msg ("no read access to file{", Load_Msg_Sloc);
+                  else
+                     Error_Msg ("file{ not found", Load_Msg_Sloc);
+                  end if;
                end if;
 
                Write_Dependency_Chain;
@@ -983,7 +997,7 @@ package body Lib.Load is
       Unum  : constant Unit_Number_Type := Get_Cunit_Unit_Number (U);
       Fnum  : constant Unit_Number_Type := Get_Cunit_Unit_Number (From);
    begin
-      if Source_Index (Fnum) /= No_Source_File then
+      if Source_Index (Fnum) > No_Source_File then
          Units.Table (Unum).Version :=
            Units.Table (Unum).Version
              xor

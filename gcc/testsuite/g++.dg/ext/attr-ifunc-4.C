@@ -13,7 +13,10 @@ struct Klassier : Klass
 {
   int implementation ();
   int magic ();
-  static void *resolver ();
+
+  typedef int (Klassier::*MemFuncPtr)();
+
+  static MemFuncPtr resolver ();
 };
 
 int Klassier::implementation (void)
@@ -22,11 +25,9 @@ int Klassier::implementation (void)
   return 0;
 }
 
-void *Klassier::resolver (void)
+Klassier::MemFuncPtr Klassier::resolver (void)
 {
-  int (Klassier::*pmf) () = &Klassier::implementation;
-  
-  return (void *)(int (*)(Klassier *))(((Klassier *)0)->*pmf);
+  return &Klassier::implementation;
 }
 
 int Klassier::magic (void) __attribute__ ((ifunc ("_ZN8Klassier8resolverEv")));
@@ -39,6 +40,6 @@ int __attribute__ ((weak)) Foo (Klass &base)
 int main ()
 {
   Klassier obj;
-  
+
   return Foo (obj) != 0;
 }

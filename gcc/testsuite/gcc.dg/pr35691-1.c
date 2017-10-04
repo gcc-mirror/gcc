@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-forwprop-details" } */
+/* { dg-options "-O2 -fdump-tree-forwprop1-details" } */
 
 int foo(int z0, unsigned z1)
 {
