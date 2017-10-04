@@ -1,3 +1,13 @@
+2017-10-04  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-3.c
+	(main): Reduce sum of arr elements.  Assert that hres is exactly
+	representable in 32-bit floating point.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c
+	(main): Reduce sum of arr elements.  Assert that hres and hmres are
+	exactly representable in 32-bit floating point.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c (gwv_np_4): Same.
+
 2017-09-28  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.c++/for-12.C: Remove superfluous -fopenmp option
