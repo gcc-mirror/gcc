@@ -1,3 +1,9 @@
+2017-10-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82413
+	* fold-const.c (build_range_check): Use widest_int when comparing
+	the maximum ETYPE value with HIGH.
+
 2017-10-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/82396
