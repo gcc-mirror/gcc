@@ -6180,6 +6180,50 @@ maybe_warn_string_init (location_t loc, tree type, struct c_expr expr)
 		  "array initialized from parenthesized string constant");
 }
 
+/* Attempt to locate the parameter with the given index within FNDECL,
+   returning DECL_SOURCE_LOCATION (FNDECL) if it can't be found.  */
+
+static location_t
+get_fndecl_argument_location (tree fndecl, int argnum)
+{
+  int i;
+  tree param;
+
+  /* Locate param by index within DECL_ARGUMENTS (fndecl).  */
+  for (i = 0, param = DECL_ARGUMENTS (fndecl);
+       i < argnum && param;
+       i++, param = TREE_CHAIN (param))
+    ;
+
+  /* If something went wrong (e.g. if we have a builtin and thus no arguments),
+     return DECL_SOURCE_LOCATION (FNDECL).  */
+  if (param == NULL)
+    return DECL_SOURCE_LOCATION (fndecl);
+
+  return DECL_SOURCE_LOCATION (param);
+}
+
+/* Issue a note about a mismatching argument for parameter PARMNUM
+   to FUNDECL, for types EXPECTED_TYPE and ACTUAL_TYPE.
+   Attempt to issue the note at the pertinent parameter of the decl;
+   failing that issue it at the location of FUNDECL; failing that
+   issue it at PLOC.  */
+
+static void
+inform_for_arg (tree fundecl, location_t ploc, int parmnum,
+		tree expected_type, tree actual_type)
+{
+  location_t loc;
+  if (fundecl && !DECL_IS_BUILTIN (fundecl))
+    loc = get_fndecl_argument_location (fundecl, parmnum - 1);
+  else
+    loc = ploc;
+
+  inform (loc,
+	  "expected %qT but argument is of type %qT",
+	  expected_type, actual_type);
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
    original type of RHS; this differs from TREE_TYPE (RHS) for enum
@@ -6251,10 +6295,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (PLOC, OPT, AR, parmnum, rname))			 \
-          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-		  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,		 \
-                  "expected %qT but argument is of type %qT",            \
-                  type, rhstype);                                        \
+          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS);                                     \
@@ -6280,10 +6321,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		 \
-          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-		  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,		 \
-                  "expected %qT but argument is of type %qT",            \
-                  type, rhstype);                                        \
+          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS, QUALS);				 \
@@ -6309,10 +6347,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {                                                                  \
       case ic_argpass:                                                   \
         if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))           \
-          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))                \
-                  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,               \
-                  "expected %qT but argument is of type %qT",            \
-                  type, rhstype);                                        \
+          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);      \
         break;                                                           \
       case ic_assign:                                                    \
         warning_at (LOCATION, OPT, AS, QUALS);                           \
@@ -6864,10 +6899,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      if (pedwarn (expr_loc, OPT_Wincompatible_pointer_types,
 			   "passing argument %d of %qE from incompatible "
 			   "pointer type", parmnum, rname))
-		inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-			? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-			"expected %qT but argument is of type %qT",
-			type, rhstype);
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	      break;
 	    case ic_assign:
 	      pedwarn (location, OPT_Wincompatible_pointer_types,
@@ -6910,10 +6942,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    if (pedwarn (expr_loc, OPT_Wint_conversion,
 			 "passing argument %d of %qE makes pointer from "
 			 "integer without a cast", parmnum, rname))
-	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-		      "expected %qT but argument is of type %qT",
-		      type, rhstype);
+	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	    break;
 	  case ic_assign:
 	    pedwarn (location, OPT_Wint_conversion,
@@ -6944,10 +6973,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  if (pedwarn (expr_loc, OPT_Wint_conversion,
 		       "passing argument %d of %qE makes integer from "
 		       "pointer without a cast", parmnum, rname))
-	    inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-		    ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-		    "expected %qT but argument is of type %qT",
-		    type, rhstype);
+	    inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	  break;
 	case ic_assign:
 	  pedwarn (location, OPT_Wint_conversion,
@@ -6985,9 +7011,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     case ic_argpass:
       error_at (expr_loc, "incompatible type for argument %d of %qE", parmnum,
 		rname);
-      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-	      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-	      "expected %qT but argument is of type %qT", type, rhstype);
+      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
       break;
     case ic_assign:
       error_at (location, "incompatible types when assigning to type %qT from "

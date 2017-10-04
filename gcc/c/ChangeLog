@@ -1,3 +1,22 @@
+2017-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (push_parm_decl): Store c_parm's location into the
+	PARAM_DECL.
+	(build_c_parm): Add "loc" param and store it within the c_parm.
+	* c-parser.c (struct c_parser): Add "last_token_location" field.
+	(c_parser_consume_token): Store location of the token into the
+	new field.
+	(c_parser_declaration_or_fndef): Store params into DECL_ARGUMENTS
+	when handling a FUNCTION_DECL, if it doesn't already have them.
+	(c_parser_parameter_declaration): Generate a location for the
+	parameter, and pass it to the call to build_c_parm.
+	* c-tree.h (struct c_parm): Add field "loc".
+	(build_c_parm): Add location_t param.
+	* c-typeck.c (get_fndecl_argument_location): New function.
+	(inform_for_arg): New function.
+	(convert_for_assignment): Use inform_for_arg when dealing with
+	ic_argpass.
+
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (grokfield): Use SET_DECL_C_BIT_FIELD here if

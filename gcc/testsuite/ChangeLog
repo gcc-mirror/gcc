@@ -1,5 +1,15 @@
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/diagnostic-range-bad-called-object.c: Update expected
+	underlining for param.
+	* gcc.dg/param-type-mismatch.c: Update expected results to reflect
+	highlighting of parameters; add test coverage for trivial
+	parameter decls, and for callback parameters.
+	* gcc.dg/pr68533.c: Update location of two errors to reflect
+	location of params.
+
+2017-10-04  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit.dg/test-expressions.c (make_test_of_vectors): New function.
 	(create_code): Call it.
 	* jit.dg/test-vector-rvalues.cc: New test case.

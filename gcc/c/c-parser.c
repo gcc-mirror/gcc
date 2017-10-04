@@ -206,6 +206,9 @@ struct GTY(()) c_parser {
   /* Buffer to hold all the tokens from parsing the vector attribute for the
      SIMD-enabled functions (formerly known as elemental functions).  */
   vec <c_token, va_gc> *cilk_simd_fn_tokens;
+
+  /* Location of the last consumed token.  */
+  location_t last_token_location;
 };
 
 /* Return a pointer to the Nth token in PARSERs tokens_buf.  */
@@ -770,6 +773,7 @@ c_parser_consume_token (c_parser *parser)
   gcc_assert (parser->tokens[0].type != CPP_EOF);
   gcc_assert (!parser->in_pragma || parser->tokens[0].type != CPP_PRAGMA_EOL);
   gcc_assert (parser->error || parser->tokens[0].type != CPP_PRAGMA);
+  parser->last_token_location = parser->tokens[0].location;
   if (parser->tokens != &parser->tokens_buf[0])
     parser->tokens++;
   else if (parser->tokens_avail == 2)
@@ -2120,6 +2124,10 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      tree d = start_decl (declarator, specs, false,
 				   chainon (postfix_attrs,
 					    all_prefix_attrs));
+	      if (d && TREE_CODE (d) == FUNCTION_DECL)
+		if (declarator->kind == cdk_function)
+		  if (DECL_ARGUMENTS (d) == NULL_TREE)
+		    DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
 	      if (omp_declare_simd_clauses.exists ()
 		  || !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
 		{
@@ -4039,6 +4047,9 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_skip_to_end_of_parameter (parser);
       return NULL;
     }
+
+  location_t start_loc = c_parser_peek_token (parser)->location;
+
   specs = build_null_declspecs ();
   if (attrs)
     {
@@ -4061,8 +4072,33 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
     }
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
     postfix_attrs = c_parser_attributes (parser);
+
+  /* Generate a location for the parameter, ranging from the start of the
+     initial token to the end of the final token.
+
+     If we have a identifier, then use it for the caret location, e.g.
+
+       extern int callee (int one, int (*two)(int, int), float three);
+                                   ~~~~~~^~~~~~~~~~~~~~
+
+     otherwise, reuse the start location for the caret location e.g.:
+
+       extern int callee (int one, int (*)(int, int), float three);
+                                   ^~~~~~~~~~~~~~~~~
+  */
+  location_t end_loc = parser->last_token_location;
+
+  /* Find any cdk_id declarator; determine if we have an identifier.  */
+  c_declarator *id_declarator = declarator;
+  while (id_declarator && id_declarator->kind != cdk_id)
+    id_declarator = id_declarator->declarator;
+  location_t caret_loc = (id_declarator->u.id
+			  ? id_declarator->id_loc
+			  : start_loc);
+  location_t param_loc = make_location (caret_loc, start_loc, end_loc);
+
   return build_c_parm (specs, chainon (postfix_attrs, prefix_attrs),
-		       declarator);
+		       declarator, param_loc);
 }
 
 /* Parse a string literal in an asm expression.  It should not be
