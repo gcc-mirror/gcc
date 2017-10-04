@@ -1,3 +1,10 @@
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR c++/71946
+	* g++.dg/cpp0x/lambda/lambda-asm1.C: New.
+	* g++.dg/cpp0x/lambda/lambda-stmtexpr1.C: Likewise.
+
 2017-10-04  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/aarch64/bic_imm_1.c: New.

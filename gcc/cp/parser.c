@@ -10557,6 +10557,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 {
   bool nested = (current_function_decl != NULL_TREE);
   bool local_variables_forbidden_p = parser->local_variables_forbidden_p;
+  bool in_function_body = parser->in_function_body;
   if (nested)
     push_function_context ();
   else
@@ -10567,6 +10568,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
   save_omp_privatization_clauses (omp_privatization_save);
   /* Clear this in case we're in the middle of a default argument.  */
   parser->local_variables_forbidden_p = false;
+  parser->in_function_body = true;
 
   /* Finish the function call operator
      - class_specifier
@@ -10653,6 +10655,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
   restore_omp_privatization_clauses (omp_privatization_save);
   parser->local_variables_forbidden_p = local_variables_forbidden_p;
+  parser->in_function_body = in_function_body;
   if (nested)
     pop_function_context();
   else
