@@ -1,3 +1,22 @@
+2017-10-04  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-protos.h (enum simd_immediate_check): New
+	check type for aarch64_simd_valid_immediate.
+	(aarch64_output_simd_mov_immediate): Update prototype.
+	(aarch64_simd_valid_immediate): Update prototype.
+	* config/aarch64/aarch64-simd.md (orr<mode>3): modified pattern to add
+	support for ORR-immediate.
+	(and<mode>3): modified pattern to add support for BIC-immediate.
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Function
+	now checks for valid immediate for BIC and ORR based on new enum
+	argument.
+	(aarch64_output_simd_mov_immediate): Function now used to output
+	BIC/ORR imm as well based on new enum argument.
+	* config/aarch64/constraints.md (Do): New vector immediate constraint.
+	(Db) : Likewise.
+	* config/aarch64/predicates.md (aarch64_reg_or_orr_imm): New predicate.
+	(aarch64_reg_or_bic_imm): Likewise.
+
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vx-builtins.md ("vec_mergeh<mode>")

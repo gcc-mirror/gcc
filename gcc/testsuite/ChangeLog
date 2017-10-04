@@ -1,3 +1,8 @@
+2017-10-04  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/bic_imm_1.c: New.
+	* gcc.target/aarch64/orr_imm_1.c: Likewise.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/abi/mangle41.C: Adjust diagnostics.
