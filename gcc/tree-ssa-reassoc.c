@@ -495,10 +495,13 @@ sort_by_operand_rank (const void *pa, const void *pb)
   const operand_entry *oea = *(const operand_entry *const *)pa;
   const operand_entry *oeb = *(const operand_entry *const *)pb;
 
+  if (oeb->rank != oea->rank)
+    return oeb->rank > oea->rank ? 1 : -1;
+
   /* It's nicer for optimize_expression if constants that are likely
-     to fold when added/multiplied//whatever are put next to each
+     to fold when added/multiplied/whatever are put next to each
      other.  Since all constants have rank 0, order them by type.  */
-  if (oeb->rank == 0 && oea->rank == 0)
+  if (oea->rank == 0)
     {
       if (constant_type (oeb->op) != constant_type (oea->op))
 	return constant_type (oeb->op) - constant_type (oea->op);
@@ -508,51 +511,50 @@ sort_by_operand_rank (const void *pa, const void *pb)
 	return oeb->id > oea->id ? 1 : -1;
     }
 
+  if (TREE_CODE (oea->op) != SSA_NAME)
+    {
+      if (TREE_CODE (oeb->op) != SSA_NAME)
+	return oeb->id > oea->id ? 1 : -1;
+      else
+	return 1;
+    }
+  else if (TREE_CODE (oeb->op) != SSA_NAME)
+    return -1;
+
   /* Lastly, make sure the versions that are the same go next to each
      other.  */
-  if (oeb->rank == oea->rank
-      && TREE_CODE (oea->op) == SSA_NAME
-      && TREE_CODE (oeb->op) == SSA_NAME)
+  if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
     {
-      if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
+      /* As SSA_NAME_VERSION is assigned pretty randomly, because we reuse
+	 versions of removed SSA_NAMEs, so if possible, prefer to sort
+	 based on basic block and gimple_uid of the SSA_NAME_DEF_STMT.
+	 See PR60418.  */
+      gimple *stmta = SSA_NAME_DEF_STMT (oea->op);
+      gimple *stmtb = SSA_NAME_DEF_STMT (oeb->op);
+      basic_block bba = gimple_bb (stmta);
+      basic_block bbb = gimple_bb (stmtb);
+      if (bbb != bba)
 	{
-	  /* As SSA_NAME_VERSION is assigned pretty randomly, because we reuse
-	     versions of removed SSA_NAMEs, so if possible, prefer to sort
-	     based on basic block and gimple_uid of the SSA_NAME_DEF_STMT.
-	     See PR60418.  */
-	  gimple *stmta = SSA_NAME_DEF_STMT (oea->op);
-	  gimple *stmtb = SSA_NAME_DEF_STMT (oeb->op);
-	  basic_block bba = gimple_bb (stmta);
-	  basic_block bbb = gimple_bb (stmtb);
-	  if (bbb != bba)
-	    {
-	      /* One of the SSA_NAMEs can be defined in oeN->stmt_to_insert
-		 but the other might not.  */
-	      if (!bba)
-		return 1;
-	      if (!bbb)
-		return -1;
-	      /* If neither is, compare bb_rank.  */
-	      if (bb_rank[bbb->index] != bb_rank[bba->index])
-		return bb_rank[bbb->index] - bb_rank[bba->index];
-	    }
-
-	  bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
-	  bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
-	  if (da != db)
-	    return da ? 1 : -1;
-
-	  return (SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op)
-		  ? 1 : -1);
+	  /* One of the SSA_NAMEs can be defined in oeN->stmt_to_insert
+	     but the other might not.  */
+	  if (!bba)
+	    return 1;
+	  if (!bbb)
+	    return -1;
+	  /* If neither is, compare bb_rank.  */
+	  if (bb_rank[bbb->index] != bb_rank[bba->index])
+	    return bb_rank[bbb->index] - bb_rank[bba->index];
 	}
-      else
-	return oeb->id > oea->id ? 1 : -1;
+
+      bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
+      bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
+      if (da != db)
+	return da ? 1 : -1;
+
+      return SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op) ? 1 : -1;
     }
 
-  if (oeb->rank != oea->rank)
-    return oeb->rank > oea->rank ? 1 : -1;
-  else
-    return oeb->id > oea->id ? 1 : -1;
+  return oeb->id > oea->id ? 1 : -1;
 }
 
 /* Add an operand entry to *OPS for the tree operand OP.  */
