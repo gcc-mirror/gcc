@@ -1,4 +1,9 @@
 2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78018
+	* g++.dg/cpp1y/lambda-generic-78018.C: New.
+
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
 	PR c++/71946
