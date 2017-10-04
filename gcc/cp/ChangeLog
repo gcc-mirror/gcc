@@ -1,3 +1,9 @@
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR c++/71946
+	* parser.c (cp_parser_lambda_body): Set parser->in_function_body.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	Move mangling aliases out of global namespace.
