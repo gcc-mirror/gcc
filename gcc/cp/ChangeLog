@@ -1,3 +1,10 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	Give builtin types the correct name.
+	* name-lookup.c (set_global_binding): Assert name is DECL_NAME.
+	* decl.c (record_builtin_type): Reimplement, use new TYPE_DECL for
+	rname.
+
 2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Andrew Pinski  <apinski@cavium.com>
 
