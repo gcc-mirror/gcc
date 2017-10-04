@@ -1,5 +1,10 @@
 2017-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/82381
+	* tree-ssa-reassoc.c (sort_by_operand_rank): Check for different
+	oeN->rank first.  Return 1 or -1 if one op is SSA_NAME and the other
+	is not.
+
 	PR tree-optimization/82374
 	* omp-low.c (create_omp_child_function): Copy DECL_ATTRIBUTES,
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION,
