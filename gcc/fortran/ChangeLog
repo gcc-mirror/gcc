@@ -1,3 +1,19 @@
+2017-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/60458
+	PR fortran/77296
+	* resolve.c (resolve_assoc_var): Deferred character type
+	associate names must not receive an integer conatant length.
+	* symbol.c (gfc_is_associate_pointer): Deferred character
+	length functions also require an associate pointer.
+	* trans-decl.c (gfc_get_symbol_decl): Deferred character
+	length functions or derived type components require the assoc
+	name to have variable string length.
+	* trans-stmt.c (trans_associate_var): Set the string length of
+	deferred string length associate names. The address expression
+	is not needed for allocatable, pointer or dummy targets. Change
+	the comment about defered string length targets.
+
 2017-10-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* io.c (match_wait_element): Correctly match END and EOR tags.
