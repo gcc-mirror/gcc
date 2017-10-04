@@ -1,3 +1,7 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/mangle41.C: Adjust diagnostics.
+
 2017-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82373

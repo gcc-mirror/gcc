@@ -1,3 +1,8 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (supplement_binding): Don't use
+	maybe_remove_implicit_alias.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.
