@@ -1,5 +1,10 @@
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* doc/sourcebuild.texi: Document vect_intdouble_cvt and
+	vect_doubleint_cvt.
+
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* doc/sourcebuild.texi: Document vect_long_mult.
 
 2017-10-04  Richard Sandiford  <richard.sandiford@linaro.org>
