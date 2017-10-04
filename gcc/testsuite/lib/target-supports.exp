@@ -6299,6 +6299,30 @@ proc check_effective_target_vect_int_mult { } {
     return $et_vect_int_mult_saved($et_index)
 }
 
+# Return 1 if the target supports 64 bit hardware vector
+# multiplication of long operands with a long result, 0 otherwise.
+#
+# This can change for different subtargets so do not cache the result.
+
+proc check_effective_target_vect_long_mult { } {
+    if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+	 || (([istarget powerpc*-*-*]
+              && ![istarget powerpc-*-linux*paired*])
+              && [check_effective_target_ilp32])
+	 || [is-effective-target arm_neon]
+	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32])
+	 || [istarget aarch64*-*-*]
+	 || ([istarget mips*-*-*]
+	      && [et-is-effective-target mips_msa]) } {
+	set answer 1
+    } else {
+	set answer 0
+    }
+
+    verbose "check_effective_target_vect_long_mult: returning $answer" 2
+    return $answer
+}
+
 # Return 1 if the target supports vector even/odd elements extraction, 0 otherwise.
 
 proc check_effective_target_vect_extract_even_odd { } {

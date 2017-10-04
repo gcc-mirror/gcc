@@ -1,5 +1,11 @@
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.dg/vect/pr60656.c: Check vect_long_mult.
+	* lib/target-supports.exp (check_effective_target_vect_long_mult):
+	New proc.
+
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gfortran.dg/vect/fast-math-mgrid-resid.f: Use -mzarch on S/390.
 	* gfortran.dg/vect/pr77848.f: Likewise.
 

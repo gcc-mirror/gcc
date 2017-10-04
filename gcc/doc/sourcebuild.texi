@@ -1422,6 +1422,9 @@ Target supports @code{vector short} multiplication.
 @item vect_int_mult
 Target supports @code{vector int} multiplication.
 
+@item vect_long_mult
+Target supports 64 bit @code{vector long} multiplication.
+
 @item vect_extract_even_odd
 Target supports vector even/odd element extraction.
 
