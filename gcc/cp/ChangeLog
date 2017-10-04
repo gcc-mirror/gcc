@@ -1,3 +1,8 @@
+2017-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81525 - broken handling of auto in generic lambda.
+	* pt.c (tsubst_decl) [VAR_DECL]: Use strip_innermost_template_args.
+
 2017-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/81926
