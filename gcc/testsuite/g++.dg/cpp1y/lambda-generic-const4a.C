@@ -7,13 +7,13 @@ template <int i> struct A {
 template <int i> constexpr A<i> a = {};
 
 template <typename F> void foo (F f) {
-  f (A<0>{});
+  f (42);
 }
 template <typename T>
 void bar (T) {
   constexpr auto N = a<1>;
   auto f = [&] (auto i) {
-    if (static_cast<int>(N) != 1) __builtin_abort();
+    if (static_cast<decltype(i)>(N) != 1) __builtin_abort();
   };
   foo (f);
 }

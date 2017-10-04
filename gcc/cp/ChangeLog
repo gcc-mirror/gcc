@@ -1,3 +1,8 @@
+2017-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81525 - broken handling of auto in generic lambda.
+	* pt.c (tsubst_decl) [VAR_DECL]: Use strip_innermost_template_args.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (convert_arg_to_ellipsis): Correct comment about passing
