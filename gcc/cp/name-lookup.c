@@ -4847,6 +4847,7 @@ set_global_binding (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
+  gcc_checking_assert (name == DECL_NAME (val));
   tree *slot = find_namespace_slot (global_namespace, name, true);
   tree old = MAYBE_STAT_DECL (*slot);
 
