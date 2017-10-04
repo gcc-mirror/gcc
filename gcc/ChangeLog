@@ -1,3 +1,11 @@
+2017-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82374
+	* omp-low.c (create_omp_child_function): Copy DECL_ATTRIBUTES,
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION,
+	DECL_FUNCTION_SPECIFIC_TARGET and DECL_FUNCTION_VERSIONED from
+	current_function_decl to the new decl.
+
 2017-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_2_HW): Define new
