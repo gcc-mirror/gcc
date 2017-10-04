@@ -94,6 +94,8 @@ extern tree cp_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE cxx_builtin_function_ext_scope
 #undef	LANG_HOOKS_TYPE_HASH_EQ
 #define LANG_HOOKS_TYPE_HASH_EQ	cxx_type_hash_eq
+#undef	LANG_HOOKS_COPY_LANG_QUALIFIERS
+#define LANG_HOOKS_COPY_LANG_QUALIFIERS	cxx_copy_lang_qualifiers
 #undef LANG_HOOKS_MISSING_NORETURN_OK_P
 #define LANG_HOOKS_MISSING_NORETURN_OK_P cp_missing_noreturn_ok_p
 #undef LANG_HOOKS_BLOCK_MAY_FALLTHRU
