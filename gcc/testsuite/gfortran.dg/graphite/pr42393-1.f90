@@ -1,4 +1,4 @@
-! { dg-options "-O2 -fgraphite-identity -fno-loop-block -fno-loop-interchange -fno-loop-strip-mine --param graphite-allow-codegen-errors=1" }
+! { dg-options "-O2 -fgraphite-identity -fno-loop-block -fno-loop-interchange -fno-loop-strip-mine -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
 
 MODULE beta_gamma_psi
   INTEGER, PARAMETER :: dp=KIND(0.0D0)

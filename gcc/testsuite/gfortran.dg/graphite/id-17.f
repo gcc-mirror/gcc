@@ -1,3 +1,4 @@
+! { dg-additional-options "-fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" { target ilp32 } }
       SUBROUTINE SPECTOP(Dr,N)
       DIMENSION d1(0:32,0:32) , Dr(0:32,0:32) , x(0:32)
       DO k = 0 , N
@@ -14,3 +15,4 @@
          ENDDO
       ENDDO
       END
+! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }

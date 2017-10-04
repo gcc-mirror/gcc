@@ -1,7 +1,7 @@
 ! { dg-do compile { target i?86-*-* x86_64-*-* } }
 ! { dg-require-effective-target ilp32 }
 ! { dg-require-effective-target sse2 }
-! { dg-options "-O2 -floop-parallelize-all -fprefetch-loop-arrays -msse2" }
+! { dg-options "-O2 -floop-parallelize-all -fprefetch-loop-arrays -msse2 -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
 
 subroutine phasad(t,i,ium)
   implicit none
@@ -17,3 +17,4 @@ subroutine phasad(t,i,ium)
   return
 end subroutine phasad
 
+! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" } }
