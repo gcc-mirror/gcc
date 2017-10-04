@@ -1,3 +1,14 @@
+2017-10-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Revert r253399:
+
+	PR rtl-optimization/82396
+	* haifa-sched.c (autopref_multipass_init): Simplify
+	initialization.
+	(autopref_rank_data): Simplify sort order.
+	* sched-int.h (autopref_multipass_data_): Remove
+	multi_mem_insn_p, min_offset and max_offset.
+
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* doc/sourcebuild.texi: Document vect_peeling_profitable.

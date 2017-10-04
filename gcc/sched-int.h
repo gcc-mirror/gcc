@@ -819,8 +819,15 @@ struct autopref_multipass_data_
   /* Base part of memory address.  */
   rtx base;
 
-  /* Memory offset from the base.  */
-  int offset;
+  /* Memory offsets from the base.  For single simple sets
+     only min_offset is valid.  For multi-set insns min_offset
+     and max_offset record the minimum and maximum offsets from the same
+     base among the sets inside the PARALLEL.  */
+  int min_offset;
+  int max_offset;
+
+  /* True if this is a load/store-multiple instruction.  */
+  bool multi_mem_insn_p;
 
   /* Entry status.  */
   enum autopref_multipass_data_status status;
