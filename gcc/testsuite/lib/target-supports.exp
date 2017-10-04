@@ -5211,7 +5211,9 @@ proc check_effective_target_vect_float { } {
 	     || [istarget aarch64*-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [is-effective-target arm_neon] } {
+	     || [is-effective-target arm_neon]
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vxe]) } {
 	    set et_vect_float_saved($et_index) 1
 	}
     }
