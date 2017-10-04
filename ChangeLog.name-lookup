@@ -1,6 +1,13 @@
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (SET_IDENTIFIER_GLOBAL_VALUE): Drop NAME arg.
+	* decl.c (record_builtin_type): Adjust SET_IDENTIFIER_GLOBAL_VALUE.
+	* decl2.c (get_local_tls_init_fn, get_tls_init_fn): Likewise.
+	* name-lookup.c (set_global_binding): Drop NAME arg.
+	* name-lookup.h (set_global_binding): Drop NAME arg.
+
+	gcc/cp/
 	* decl.c (record_builtin_type): Reimplement. Push decls with
 	matching name.
 

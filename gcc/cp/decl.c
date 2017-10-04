@@ -3915,7 +3915,7 @@ record_builtin_type (enum rid rid_index,
       tree tname = get_identifier (name);
       tree tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, tname, type);
       DECL_ARTIFICIAL (tdecl) = 1;
-      SET_IDENTIFIER_GLOBAL_VALUE (tname, tdecl);
+      SET_IDENTIFIER_GLOBAL_VALUE (tdecl);
       decl = tdecl;
     }
 
@@ -3925,7 +3925,7 @@ record_builtin_type (enum rid rid_index,
 	{
 	  tree rdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, rname, type);
 	  DECL_ARTIFICIAL (rdecl) = 1;
-	  SET_IDENTIFIER_GLOBAL_VALUE (rname, rdecl);
+	  SET_IDENTIFIER_GLOBAL_VALUE (rdecl);
 	  if (!decl)
 	    decl = rdecl;
 	}

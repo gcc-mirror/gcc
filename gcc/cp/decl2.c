@@ -3149,7 +3149,7 @@ get_local_tls_init_fn (void)
       TREE_PUBLIC (fn) = false;
       DECL_ARTIFICIAL (fn) = true;
       mark_used (fn);
-      SET_IDENTIFIER_GLOBAL_VALUE (sname, fn);
+      SET_IDENTIFIER_GLOBAL_VALUE (fn);
     }
   return fn;
 }
@@ -3211,7 +3211,7 @@ get_tls_init_fn (tree var)
 
       DECL_BEFRIENDING_CLASSES (fn) = var;
 
-      SET_IDENTIFIER_GLOBAL_VALUE (sname, fn);
+      SET_IDENTIFIER_GLOBAL_VALUE (fn);
     }
   return fn;
 }
@@ -3268,7 +3268,7 @@ get_tls_wrapper_fn (tree var)
 
       DECL_BEFRIENDING_CLASSES (fn) = var;
 
-      SET_IDENTIFIER_GLOBAL_VALUE (sname, fn);
+      SET_IDENTIFIER_GLOBAL_VALUE (fn);
     }
   return fn;
 }

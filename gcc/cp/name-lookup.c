@@ -4835,15 +4835,15 @@ get_namespace_binding (tree ns, tree name)
   return ret;
 }
 
-/* Set value binding of NAME in the global namespace to VAL.  Does not
-   add it to the list of things in the namespace.  */
+/* Push internal decl VAL into the global namespace.  Does not do the
+   full overload fn handling and does not add it to the list of things
+   in the namespace.  */
 
 void
-set_global_binding (tree name, tree val)
+set_global_binding (tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-
-  tree *slot = find_namespace_slot (global_namespace, name, true);
+  tree *slot = find_namespace_slot (global_namespace, DECL_NAME (val), true);
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
