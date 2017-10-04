@@ -163,3 +163,11 @@ entrypoints:
 -------------------
 ``LIBGCCJIT_ABI_9`` covers the addition of
 :func:`gcc_jit_function_get_address`
+
+.. _LIBGCCJIT_ABI_10:
+
+``LIBGCCJIT_ABI_10``
+--------------------
+
+``LIBGCCJIT_ABI_10`` covers the addition of
+:func:`gcc_jit_context_new_rvalue_from_vector`

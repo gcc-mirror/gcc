@@ -447,6 +447,62 @@ reproducer::xstrdup_printf (const char *fmt, ...)
   return result;
 }
 
+/* A helper class for implementing make_debug_string, for building
+   a temporary string from a vec of rvalues.  */
+
+class comma_separated_string
+{
+ public:
+  comma_separated_string (const auto_vec<recording::rvalue *> &rvalues,
+			  enum recording::precedence prec);
+  ~comma_separated_string ();
+
+  const char *as_char_ptr () const { return m_buf; }
+
+ private:
+  char *m_buf;
+};
+
+/* comma_separated_string's ctor
+   Build m_buf.  */
+
+comma_separated_string::comma_separated_string
+  (const auto_vec<recording::rvalue *> &rvalues,
+   enum recording::precedence prec)
+: m_buf (NULL)
+{
+  /* Calculate length of said buffer.  */
+  size_t sz = 1; /* nil terminator */
+  for (unsigned i = 0; i< rvalues.length (); i++)
+    {
+      sz += strlen (rvalues[i]->get_debug_string_parens (prec));
+      sz += 2; /* ", " separator */
+    }
+
+  /* Now allocate and populate the buffer.  */
+  m_buf = new char[sz];
+  size_t len = 0;
+
+  for (unsigned i = 0; i< rvalues.length (); i++)
+    {
+      strcpy (m_buf + len, rvalues[i]->get_debug_string_parens (prec));
+      len += strlen (rvalues[i]->get_debug_string_parens (prec));
+      if (i + 1 < rvalues.length ())
+	{
+	  strcpy (m_buf + len, ", ");
+	  len += 2;
+	}
+    }
+  m_buf[len] = '\0';
+}
+
+/* comma_separated_string's dtor.  */
+
+comma_separated_string::~comma_separated_string ()
+{
+  delete[] m_buf;
+}
+
 /**********************************************************************
  Recording.
  **********************************************************************/
@@ -997,6 +1053,23 @@ recording::context::new_string_literal (const char *value)
 {
   recording::rvalue *result =
     new memento_of_new_string_literal (this, NULL, new_string (value));
+  record (result);
+  return result;
+}
+
+/* Create a recording::memento_of_new_rvalue_from_vector instance and add it
+   to this context's list of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_rvalue_from_vector.  */
+
+recording::rvalue *
+recording::context::new_rvalue_from_vector (location *loc,
+					    vector_type *type,
+					    rvalue **elements)
+{
+  recording::rvalue *result
+    = new memento_of_new_rvalue_from_vector (this, loc, type, elements);
   record (result);
   return result;
 }
@@ -2035,7 +2108,7 @@ recording::type *
 recording::type::get_vector (size_t num_units)
 {
   recording::type *result
-    = new memento_of_get_vector (this, num_units);
+    = new vector_type (this, num_units);
   m_ctxt->record (result);
   return result;
 }
@@ -2523,13 +2596,13 @@ recording::memento_of_get_aligned::write_reproducer (reproducer &r)
 	   m_alignment_in_bytes);
 }
 
-/* The implementation of class gcc::jit::recording::memento_of_get_vector.  */
+/* The implementation of class gcc::jit::recording::vector_type.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
-   for recording::memento_of_get_vector.  */
+   for recording::vector_type.  */
 
 void
-recording::memento_of_get_vector::replay_into (replayer *)
+recording::vector_type::replay_into (replayer *)
 {
   set_playback_obj
     (m_other_type->playback_type ()->get_vector (m_num_units));
@@ -2539,7 +2612,7 @@ recording::memento_of_get_vector::replay_into (replayer *)
    results of get_vector.  */
 
 recording::string *
-recording::memento_of_get_vector::make_debug_string ()
+recording::vector_type::make_debug_string ()
 {
   return string::from_printf
     (m_ctxt,
@@ -2549,11 +2622,10 @@ recording::memento_of_get_vector::make_debug_string ()
      m_num_units);
 }
 
-/* Implementation of recording::memento::write_reproducer for volatile
-   types. */
+/* Implementation of recording::memento::write_reproducer for vector types. */
 
 void
-recording::memento_of_get_vector::write_reproducer (reproducer &r)
+recording::vector_type::write_reproducer (reproducer &r)
 {
   const char *id = r.make_identifier (this, "type");
   r.write ("  gcc_jit_type *%s =\n"
@@ -4569,6 +4641,96 @@ recording::memento_of_new_string_literal::write_reproducer (reproducer &r)
     m_value->get_debug_string ());
 }
 
+/* The implementation of class
+   gcc::jit::recording::memento_of_new_rvalue_from_vector.  */
+
+/* The constructor for
+   gcc::jit::recording::memento_of_new_rvalue_from_vector.  */
+
+recording::memento_of_new_rvalue_from_vector::
+memento_of_new_rvalue_from_vector (context *ctxt,
+				   location *loc,
+				   vector_type *type,
+				   rvalue **elements)
+: rvalue (ctxt, loc, type),
+  m_vector_type (type),
+  m_elements ()
+{
+  for (unsigned i = 0; i < type->get_num_units (); i++)
+    m_elements.safe_push (elements[i]);
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_new_rvalue_from_vector.  */
+
+void
+recording::memento_of_new_rvalue_from_vector::replay_into (replayer *r)
+{
+  auto_vec<playback::rvalue *> playback_elements;
+  playback_elements.create (m_elements.length ());
+  for (unsigned i = 0; i< m_elements.length (); i++)
+    playback_elements.safe_push (m_elements[i]->playback_rvalue ());
+
+  set_playback_obj (r->new_rvalue_from_vector (playback_location (r, m_loc),
+					       m_type->playback_type (),
+					       playback_elements));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::memento_of_new_rvalue_from_vector.  */
+
+void
+recording::memento_of_new_rvalue_from_vector::visit_children (rvalue_visitor *v)
+{
+  for (unsigned i = 0; i< m_elements.length (); i++)
+    v->visit (m_elements[i]);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   vectors.  */
+
+recording::string *
+recording::memento_of_new_rvalue_from_vector::make_debug_string ()
+{
+  comma_separated_string elements (m_elements, get_precedence ());
+
+  /* Now build a string.  */
+  string *result = string::from_printf (m_ctxt,
+					"{%s}",
+					elements.as_char_ptr ());
+
+ return result;
+
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   vectors.  */
+
+void
+recording::memento_of_new_rvalue_from_vector::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "vector");
+  const char *elements_id = r.make_tmp_identifier ("elements_for_", this);
+  r.write ("  gcc_jit_rvalue *%s[%i] = {\n",
+	   elements_id,
+	   m_elements.length ());
+  for (unsigned i = 0; i< m_elements.length (); i++)
+    r.write ("    %s,\n", r.get_identifier_as_rvalue (m_elements[i]));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_rvalue_from_vector (%s, /* gcc_jit_context *ctxt */\n"
+	   "                                            %s, /* gcc_jit_location *loc */\n"
+	   "                                            %s, /* gcc_jit_type *vec_type */\n"
+	   "                                            %i, /* size_t num_elements  */ \n"
+	   "                                            %s); /* gcc_jit_rvalue **elements*/\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier (m_vector_type),
+	   m_elements.length (),
+	   elements_id);
+}
+
 /* The implementation of class gcc::jit::recording::unary_op.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4982,39 +5144,14 @@ recording::call::visit_children (rvalue_visitor *v)
 recording::string *
 recording::call::make_debug_string ()
 {
-  enum precedence prec = get_precedence ();
   /* First, build a buffer for the arguments.  */
-  /* Calculate length of said buffer.  */
-  size_t sz = 1; /* nil terminator */
-  for (unsigned i = 0; i< m_args.length (); i++)
-    {
-      sz += strlen (m_args[i]->get_debug_string_parens (prec));
-      sz += 2; /* ", " separator */
-    }
-
-  /* Now allocate and populate the buffer.  */
-  char *argbuf = new char[sz];
-  size_t len = 0;
-
-  for (unsigned i = 0; i< m_args.length (); i++)
-    {
-      strcpy (argbuf + len, m_args[i]->get_debug_string_parens (prec));
-      len += strlen (m_args[i]->get_debug_string_parens (prec));
-      if (i + 1 < m_args.length ())
-	{
-	  strcpy (argbuf + len, ", ");
-	  len += 2;
-	}
-    }
-  argbuf[len] = '\0';
+  comma_separated_string args (m_args, get_precedence ());
 
   /* ...and use it to get the string for the call as a whole.  */
   string *result = string::from_printf (m_ctxt,
 					"%s (%s)",
 					m_func->get_debug_string (),
-					argbuf);
-
-  delete[] argbuf;
+					args.as_char_ptr ());
 
   return result;
 }

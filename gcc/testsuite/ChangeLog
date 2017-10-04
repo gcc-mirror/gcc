@@ -1,3 +1,9 @@
+2017-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-expressions.c (make_test_of_vectors): New function.
+	(create_code): Call it.
+	* jit.dg/test-vector-rvalues.cc: New test case.
+
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* g++.dg/vect/slp-pr56812.cc: xfail for targets which don't want

@@ -1433,6 +1433,23 @@ gcc_jit_function_get_address (gcc_jit_function *fn,
 			      gcc_jit_location *loc);
 
 
+#define LIBGCCJIT_HAVE_gcc_jit_context_new_rvalue_from_vector
+
+/* Build a vector rvalue from an array of elements.
+
+   "vec_type" should be a vector type, created using gcc_jit_type_get_vector.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_10; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_rvalue_from_vector
+*/
+extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *vec_type,
+					size_t num_elements,
+					gcc_jit_rvalue **elements);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
