@@ -1,3 +1,9 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* toplev.c (toplev::main): Remove excess parens on pretty_printer
+	decl.
+	* caller-save.c (insert_save): Remove excess parens on TO_SAVE parm.
+
 2017-10-04  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64-protos.h (enum simd_immediate_check): New
