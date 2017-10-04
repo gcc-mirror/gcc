@@ -1,5 +1,9 @@
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* doc/sourcebuild.texi: Document vect_peeling_profitable.
+
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* doc/sourcebuild.texi: Document vect_intdouble_cvt and
 	vect_doubleint_cvt.
 
