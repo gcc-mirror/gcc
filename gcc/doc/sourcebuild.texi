@@ -1508,6 +1508,12 @@ Target supports conversion from @code{float} to @code{signed int}.
 @item vect_floatuint_cvt
 Target supports conversion from @code{float} to @code{unsigned int}.
 
+@item vect_intdouble_cvt
+Target supports conversion from @code{signed int} to @code{double}.
+
+@item vect_doubleint_cvt
+Target supports conversion from @code{double} to @code{signed int}.
+
 @item vect_max_reduc
 Target supports max reduction for vectors.
 @end table
