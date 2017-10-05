@@ -4,7 +4,7 @@
 /* { dg-additional-options "-mavx -mno-avx2" { target i?86-*-* x86_64-*-* } } */
 /* { dg-additional-options "-mvsx" { target powerpc_vsx_ok } } */
 
-#define SIZE (1024 * 1024 * 1024)
+#define SIZE (1024 * 1024)
 
 float a[SIZE];
 float b[SIZE];
