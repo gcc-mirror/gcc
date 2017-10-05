@@ -1,3 +1,8 @@
+2017-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-pretty-print.c (pp_c_parameter_type_list): Print ... for variadic
+	functions.
+
 2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* c-warn.c (warn_tautological_bitwise_comparison): Use wi::to_widest

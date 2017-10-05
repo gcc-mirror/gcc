@@ -521,6 +521,11 @@ pp_c_parameter_type_list (c_pretty_printer *pp, tree t)
 	  else
 	    pp->abstract_declarator (TREE_VALUE (parms));
 	}
+      if (!first && !parms)
+	{
+	  pp_separate_with (pp, ',');
+	  pp_c_ws_string (pp, "...");
+	}
     }
   pp_c_right_paren (pp);
 }
