@@ -1,3 +1,9 @@
+2017-09-28  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-align-1.c: Fix vect_hw_misalign condition.
+	* gcc.dg/vect/vect-align-2.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-1.c: Likewise
+
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/warn/mvp.C: New.
