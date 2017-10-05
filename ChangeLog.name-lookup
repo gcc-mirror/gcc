@@ -1,6 +1,24 @@
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (extern_c_fns): Use hash_table<named_decl_hash>.
+	(check_extern_c_conflict, c_linkage_bindings): Adjust.
+
+	gcc/cp/
+	* cp-tree.h (struct named_decl_hash): New.
+	(lang_decl_ns): Change type of bindings field.
+	* lex.c (maybe_add_lang_decl_raw): Adjust.
+	* name-lookup.c (find_namespace_slot): Adjust.
+
+	gcc/cp/
+	* decl2.c (struct mangled_decl_hash): New.
+	(mangled_decls): Use a hash_table, not map.
+	(generate_mangled_alias, record_mangling): Adjust.
+	gcc/
+	* tree.h (DECL_ASSEBLER_NAME_RAW): New.
+	(DECL_ASSEBLER_NAME_SET_P, SET_DECL_ASSEMBLER_NAME): Use it.
+
+	gcc/cp/
 	* name-lookup.c (set_global_binding): No need for stat_hack.
 
 	Merge trunk r253446.

@@ -2513,9 +2513,9 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   return decl;
 }
 
-/* Map of identifiers to extern C functions (or LISTS thereof).  */
+/* Table of identifiers to extern C functions (or LISTS thereof).  */
 
-static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
+static GTY(()) hash_table<named_decl_hash> *extern_c_fns;
 
 /* DECL has C linkage. If we have an existing instance, make sure it
    has the same exception specification [7.5, 7.6].  If there's no
@@ -2529,17 +2529,15 @@ check_extern_c_conflict (tree decl)
     return;
 
   if (!extern_c_fns)
-    extern_c_fns = hash_map<lang_identifier *,tree>::create_ggc (127);
+    extern_c_fns = hash_table<named_decl_hash>::create_ggc (127);
 
-  bool existed;
-  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
-  if (!existed)
-    *slot = decl;
-  else
+  tree *slot = extern_c_fns
+    ->find_slot_with_hash (DECL_NAME (decl),
+			   IDENTIFIER_HASH_VALUE (DECL_NAME (decl)), INSERT);
+  if (tree old = *slot)
     {
-      tree old = *slot;
-      if (TREE_CODE (old) == TREE_LIST)
-	old = TREE_VALUE (old);
+      if (TREE_CODE (old) == OVERLOAD)
+	old = OVL_FUNCTION (old);
 
       int mismatch = 0;
       if (DECL_CONTEXT (old) == DECL_CONTEXT (decl))
@@ -2565,9 +2563,25 @@ check_extern_c_conflict (tree decl)
 		     "due to different exception specifications");
 	}
       else
-	/* Chain it on for c_linkage_binding's use.  */
-	*slot = tree_cons (NULL_TREE, decl, *slot);
+	{
+	  if (old == *slot)
+	    /* The hash table expects OVERLOADS, so construct one with
+	       OLD as both the function and the chain.  This allocate
+	       an excess OVERLOAD node, but it's rare to have multiple
+	       extern "C" decls of the same name.  And we save
+	       complicating the hash table logic (which is used
+	       elsewhere).  */
+	    *slot = ovl_make (old, old);
+
+	  slot = &OVL_CHAIN (*slot);
+
+	  /* Chain it on for c_linkage_binding's use.  */
+	  *slot = tree_cons (NULL_TREE, decl, *slot);
+	}
+      
     }
+  else
+    *slot = decl;
 }
 
 /* Returns a list of C-linkage decls with the name NAME.  Used in
@@ -2577,8 +2591,15 @@ tree
 c_linkage_bindings (tree name)
 {
   if (extern_c_fns)
-    if (tree *slot = extern_c_fns->get (name))
-      return *slot;
+    if (tree *slot = extern_c_fns
+	->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), NO_INSERT))
+      {
+	tree result = *slot;
+	if (TREE_CODE (result) == OVERLOAD)
+	  result = OVL_CHAIN (result);
+	return result;
+      }
+
   return NULL_TREE;
 }
 
