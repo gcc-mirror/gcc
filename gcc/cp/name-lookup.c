@@ -86,17 +86,9 @@ create_local_binding (cp_binding_level *level, tree name)
 static tree *
 find_namespace_slot (tree ns, tree name, bool create_p = false)
 {
-  tree *slot;
-
-  if (create_p)
-    {
-      bool existed;
-      slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
-      if (!existed)
-	*slot = NULL_TREE;
-    }
-  else
-    slot = DECL_NAMESPACE_BINDINGS (ns)->get (name);
+  tree *slot = DECL_NAMESPACE_BINDINGS (ns)
+    ->find_slot_with_hash (name, name ? IDENTIFIER_HASH_VALUE (name) : 0,
+			   create_p ? INSERT : NO_INSERT);
   return slot;
 }
 
