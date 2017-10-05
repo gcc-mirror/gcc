@@ -1,3 +1,8 @@
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.c (arm_test_fpu_data): New.
+	(arm_run_selftests): Call arm_test_fpu_data.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* toplev.c (toplev::main): Remove excess parens on pretty_printer
