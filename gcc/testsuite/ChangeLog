@@ -1,3 +1,7 @@
+2017-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/Wincompatible-pointer-types-1.c: New test.
+
 2017-10-05  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/vect/slp-perm-9.c: Use vect_sizes_16B_8B.
