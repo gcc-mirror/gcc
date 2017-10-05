@@ -59,16 +59,6 @@
 #endif
 #include <windows.h>
 
-#ifndef _O_U8TEXT
-#define _O_U8TEXT _O_TEXT
-#endif
-#ifndef _O_U16TEXT
-#define _O_U16TEXT _O_TEXT
-#endif
-#ifndef _O_WTEXT
-#define _O_WTEXT _O_TEXT
-#endif
-
 /* After including this file it is possible to use the character t as prefix
    to routines. If GNAT_UNICODE_SUPPORT is defined then the unicode enabled
    versions will be used.  */
