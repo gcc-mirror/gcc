@@ -30761,44 +30761,13 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 static int
 ia32_multipass_dfa_lookahead (void)
 {
-  switch (ix86_tune)
-    {
-    case PROCESSOR_PENTIUM:
-    case PROCESSOR_LAKEMONT:
-      return 2;
-
-    case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_K6:
-      return 1;
-
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
-    case PROCESSOR_BDVER4:
-      /* We use lookahead value 4 for BD both before and after reload
-	 schedules. Plan is to have value 8 included for O3. */
-        return 4;
-
-    case PROCESSOR_CORE2:
-    case PROCESSOR_NEHALEM:
-    case PROCESSOR_SANDYBRIDGE:
-    case PROCESSOR_HASWELL:
-    case PROCESSOR_BONNELL:
-    case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_KNM:
-    case PROCESSOR_INTEL:
-      /* Generally, we want haifa-sched:max_issue() to look ahead as far
-	 as many instructions can be executed on a cycle, i.e.,
-	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
-      if (reload_completed)
-        return ix86_issue_rate ();
-      /* Don't use lookahead for pre-reload schedule to save compile time.  */
-      return 0;
-
-    default:
-      return 0;
-    }
+  /* Generally, we want haifa-sched:max_issue() to look ahead as far
+     as many instructions can be executed on a cycle, i.e.,
+     issue_rate.  */
+  if (reload_completed)
+    return ix86_issue_rate ();
+  /* Don't use lookahead for pre-reload schedule to save compile time.  */
+  return 0;
 }
 
 /* Return true if target platform supports macro-fusion.  */

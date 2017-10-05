@@ -1,3 +1,8 @@
+2017-10-05  Jan Hubicka <hubicka@ucw.cz>
+
+	* i386.c (ia32_multipass_dfa_lookahead): Default to issue rate
+	for post-reload scheduling.
+
 2017-10-05  Tamar Christina  <tamar.christina@arm.com>
 
 	* doc/sourcebuild.texi (vect_sizes_16B_8B, vect_sizes_32B_16B): New.
