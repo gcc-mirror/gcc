@@ -1,3 +1,8 @@
+2017-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Correct error
+	message for incompatible -msdata=* and -mcall-* options.
+
 2017-10-05  Jan Hubicka <hubicka@ucw.cz>
 
 	* i386.c (ia32_multipass_dfa_lookahead): Default to issue rate
