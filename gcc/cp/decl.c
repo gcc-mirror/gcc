@@ -3897,7 +3897,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
    RID_POINTERS.  NAME is the name used when looking up the builtin
    type.  TYPE is the _TYPE node for the builtin type.
 
-   The calls to SET_IDENTIFIER_GLOBAL_VALUE below should be
+   The calls to set_global_binding below should be
    eliminated.  Built-in types should not be looked up name; their
    names are keywords that the parser can recognize.  However, there
    is code in c-common.c that uses identifier_global_value to look up
@@ -3915,7 +3915,7 @@ record_builtin_type (enum rid rid_index,
       tree tname = get_identifier (name);
       tree tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, tname, type);
       DECL_ARTIFICIAL (tdecl) = 1;
-      SET_IDENTIFIER_GLOBAL_VALUE (tdecl);
+      set_global_binding (tdecl);
       decl = tdecl;
     }
 
@@ -3925,7 +3925,7 @@ record_builtin_type (enum rid rid_index,
 	{
 	  tree rdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, rname, type);
 	  DECL_ARTIFICIAL (rdecl) = 1;
-	  SET_IDENTIFIER_GLOBAL_VALUE (rdecl);
+	  set_global_binding (rdecl);
 	  if (!decl)
 	    decl = rdecl;
 	}
@@ -4509,7 +4509,7 @@ build_cp_library_fn_ptr (const char* name, tree type, int ecf_flags)
 }
 
 /* Like build_library_fn, but also pushes the function so that we will
-   be able to find it via IDENTIFIER_GLOBAL_VALUE.  Also, the function
+   be able to find it via get_global_binding.  Also, the function
    may throw exceptions listed in RAISES.  */
 
 tree
@@ -10126,7 +10126,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    gcc_assert (flags == NO_SPECIAL);
 		    flags = TYPENAME_FLAG;
 		    sfk = sfk_conversion;
-		    tree glob = IDENTIFIER_GLOBAL_VALUE (dname);
+		    tree glob = get_global_binding (dname);
 		    if (glob && TREE_CODE (glob) == TYPE_DECL)
 		      name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		    else

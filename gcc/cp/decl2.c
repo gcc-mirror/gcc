@@ -2985,7 +2985,7 @@ get_guard (tree decl)
   tree guard;
 
   sname = mangle_guard_variable (decl);
-  guard = IDENTIFIER_GLOBAL_VALUE (sname);
+  guard = get_global_binding (sname);
   if (! guard)
     {
       tree guard_type;
@@ -3153,7 +3153,7 @@ static tree
 get_local_tls_init_fn (void)
 {
   tree sname = get_identifier ("__tls_init");
-  tree fn = IDENTIFIER_GLOBAL_VALUE (sname);
+  tree fn = get_global_binding (sname);
   if (!fn)
     {
       fn = build_lang_decl (FUNCTION_DECL, sname,
@@ -3163,7 +3163,7 @@ get_local_tls_init_fn (void)
       TREE_PUBLIC (fn) = false;
       DECL_ARTIFICIAL (fn) = true;
       mark_used (fn);
-      SET_IDENTIFIER_GLOBAL_VALUE (fn);
+      set_global_binding (fn);
     }
   return fn;
 }
@@ -3191,7 +3191,7 @@ get_tls_init_fn (tree var)
     return get_local_tls_init_fn ();
 
   tree sname = mangle_tls_init_fn (var);
-  tree fn = IDENTIFIER_GLOBAL_VALUE (sname);
+  tree fn = get_global_binding (sname);
   if (!fn)
     {
       fn = build_lang_decl (FUNCTION_DECL, sname,
@@ -3225,7 +3225,7 @@ get_tls_init_fn (tree var)
 
       DECL_BEFRIENDING_CLASSES (fn) = var;
 
-      SET_IDENTIFIER_GLOBAL_VALUE (fn);
+      set_global_binding (fn);
     }
   return fn;
 }
@@ -3243,7 +3243,7 @@ get_tls_wrapper_fn (tree var)
     return NULL_TREE;
 
   tree sname = mangle_tls_wrapper_fn (var);
-  tree fn = IDENTIFIER_GLOBAL_VALUE (sname);
+  tree fn = get_global_binding (sname);
   if (!fn)
     {
       /* A named rvalue reference is an lvalue, so the wrapper should
@@ -3282,7 +3282,7 @@ get_tls_wrapper_fn (tree var)
 
       DECL_BEFRIENDING_CLASSES (fn) = var;
 
-      SET_IDENTIFIER_GLOBAL_VALUE (fn);
+      set_global_binding (fn);
     }
   return fn;
 }
@@ -4429,7 +4429,7 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (ovl_iterator iter (IDENTIFIER_GLOBAL_VALUE (cp_operator_id (code)));
+  for (ovl_iterator iter (get_global_binding (cp_operator_id (code)));
        iter; ++iter)
     {
       tree fn = *iter;

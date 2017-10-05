@@ -147,7 +147,7 @@ declare_library_fn (const char *name, tree rtype, tree ptype,
 		    int ecf, int tm_ecf)
 {
   tree ident = get_identifier (name);
-  tree res = IDENTIFIER_GLOBAL_VALUE (ident);
+  tree res = get_global_binding (ident);
   if (!res)
     {
       tree type = build_function_type_list (rtype, ptype, NULL_TREE);
@@ -158,7 +158,7 @@ declare_library_fn (const char *name, tree rtype, tree ptype,
 	  char *tm_name = concat ("_ITM_", name + 2, NULL_TREE);
 	  tree tm_ident = get_identifier (tm_name);
 	  free (tm_name);
-	  tree tm_fn = IDENTIFIER_GLOBAL_VALUE (tm_ident);
+	  tree tm_fn = get_global_binding (tm_ident);
 	  if (!tm_fn)
 	    tm_fn = push_library_fn (tm_ident, type, except, ecf | tm_ecf);
 	  record_tm_replacement (res, tm_fn);
@@ -609,7 +609,7 @@ build_throw (tree exp)
       if (!throw_fn)
 	{
 	  tree name = get_identifier ("__cxa_throw");
-	  throw_fn = IDENTIFIER_GLOBAL_VALUE (name);
+	  throw_fn = get_global_binding (name);
 	  if (!throw_fn)
 	    {
 	      /* Declare void __cxa_throw (void*, void*, void (*)(void*)).  */
@@ -622,7 +622,7 @@ build_throw (tree exp)
 	      if (flag_tm)
 		{
 		  tree itm_name = get_identifier ("_ITM_cxa_throw");
-		  tree itm_fn = IDENTIFIER_GLOBAL_VALUE (itm_name);
+		  tree itm_fn = get_global_binding (itm_name);
 		  if (!itm_fn)
 		    itm_fn = push_throw_library_fn (itm_name, tmp);
 		  apply_tm_attr (itm_fn, get_identifier ("transaction_pure"));
@@ -764,7 +764,7 @@ build_throw (tree exp)
       if (!rethrow_fn)
 	{
 	  tree name = get_identifier ("__cxa_rethrow");
-	  rethrow_fn = IDENTIFIER_GLOBAL_VALUE (name);
+	  rethrow_fn = get_global_binding (name);
 	  if (!rethrow_fn)
 	    /* Declare void __cxa_rethrow (void).  */
 	    rethrow_fn = push_throw_library_fn

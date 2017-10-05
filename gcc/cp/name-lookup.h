@@ -178,9 +178,6 @@ struct GTY(()) cp_label_binding {
    CURRENT_BINDING_LEVEL.  You should use lookup_name_current_level
    instead.  */
 
-/* Note that the information in the `names' component of the global contour
-   is duplicated in the IDENTIFIER_GLOBAL_VALUEs of all identifiers.  */
-
 struct GTY(()) cp_binding_level {
   /* A chain of _DECL nodes for all variables, constants, functions,
       and typedef types.  These are in the reverse of the order
@@ -303,7 +300,11 @@ extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_binding (tree ns, tree id);
-extern void set_global_binding (tree val);
+extern void set_global_binding (tree decl);
+inline tree get_global_binding (tree id)
+{
+  return get_namespace_binding (NULL_TREE, id);
+}
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);

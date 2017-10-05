@@ -3780,13 +3780,13 @@ identifier_type_value (tree id)
 }
 
 
-/* Return the IDENTIFIER_GLOBAL_VALUE of T, for use in common code, since
-   the definition of IDENTIFIER_GLOBAL_VALUE is different for C and C++.  */
+/* Return the get_global_binding of T, for use in common code, since
+   the definition of get_global_binding is different for C and C++.  */
 
 tree
 identifier_global_value	(tree t)
 {
-  return IDENTIFIER_GLOBAL_VALUE (t);
+  return get_global_binding (t);
 }
 
 /* Push a definition of struct, union or enum tag named ID.  into
@@ -4844,31 +4844,31 @@ get_namespace_binding (tree ns, tree name)
   return ret;
 }
 
-/* Push internal decl VAL into the global namespace.  Does not do the
+/* Push internal DECL into the global namespace.  Does not do the
    full overload fn handling and does not add it to the list of things
    in the namespace.  */
 
 void
-set_global_binding (tree val)
+set_global_binding (tree decl)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree *slot = find_namespace_slot (global_namespace, DECL_NAME (val), true);
+  tree *slot = find_namespace_slot (global_namespace, DECL_NAME (decl), true);
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
-    *slot = val;
-  else if (old == val)
+    *slot = decl;
+  else if (old == decl)
     ;
   else if (!STAT_HACK_P (*slot)
-	   && TREE_CODE (val) == TYPE_DECL && DECL_ARTIFICIAL (val))
-    *slot = stat_hack (old, val);
+	   && TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    *slot = stat_hack (old, decl);
   else if (!STAT_HACK_P (*slot)
 	   && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-    *slot = stat_hack (val, old);
+    *slot = stat_hack (decl, old);
   else
     /* The user's placed something in the implementor's
        namespace.  */
-    diagnose_name_conflict (val, old);
+    diagnose_name_conflict (decl, old);
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }

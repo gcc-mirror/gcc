@@ -1,3 +1,21 @@
+2017-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	Kill IDENTIFIER_GLOBAL_VALUE, SET_IDENTIFIER_GLOBAL_VALUE
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
+	SET_IDENTIFIER_GLOBAL_VALUE): Delete.
+	* name-lookup.h (set_global_binding): Remove NAME parm.
+	(get_global_binding): New inline fn.
+	* name-lookup.c (identifier_global_value): Use get_global_binding.
+	(set_global_binding): Adjust arg name.
+	* class.c (build_ctor_vtbl_group, build_vtbl_initializer): Adjust.
+	* decl.c (record_builtin_type, expand_static_init,
+	grokdeclarator): Adjust.
+	* decl2.c (get_guard, get_local_tls_init_fn, get_tls_init_fn,
+	get_tls_wrapper_fn, maybe_warn_sized_delete): Adjust.
+	* except.c (declare_library_fn, build_throw): Adjust.
+	* init.c (throw_bad_array_length): Adjust.
+	* rtti.c (throw_bad_cast, throw_bad_typeid, get_tinfo_decl): Adjust.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r253413.
