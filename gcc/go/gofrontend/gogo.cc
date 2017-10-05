@@ -5343,8 +5343,9 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 {
   if (this->fndecl_ == NULL)
     {
-      std::string asm_name;
       bool is_visible = false;
+      bool is_init_fn = false;
+      Type* rtype = NULL;
       if (no->package() != NULL)
         ;
       else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
@@ -5355,7 +5356,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       else if (no->name() == gogo->get_init_fn_name())
 	{
 	  is_visible = true;
-	  asm_name = no->name();
+	  is_init_fn = true;
 	}
       else if (Gogo::unpack_hidden_name(no->name()) == "main"
                && gogo->is_main_package())
@@ -5368,17 +5369,29 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
         {
 	  if (!this->is_unnamed_type_stub_method_)
 	    is_visible = true;
-	  Type* rtype = NULL;
 	  if (this->type_->is_method())
 	    rtype = this->type_->receiver()->type();
-	  asm_name = gogo->function_asm_name(no->name(), NULL, rtype);
         }
 
+      std::string asm_name;
       if (!this->asm_name_.empty())
 	{
 	  asm_name = this->asm_name_;
+
+	  // If an assembler name is explicitly specified, there must
+	  // be some reason to refer to the symbol from a different
+	  // object file.
 	  is_visible = true;
 	}
+      else if (is_init_fn)
+	{
+	  // These names appear in the export data and are used
+	  // directly in the assembler code.  If we change this here
+	  // we need to change Gogo::init_imports.
+	  asm_name = no->name();
+	}
+      else
+	asm_name = gogo->function_asm_name(no->name(), NULL, rtype);
 
       // If a function calls the predeclared recover function, we
       // can't inline it, because recover behaves differently in a
@@ -5408,10 +5421,6 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       // Check the //go:nosplit compiler directive.
       if ((this->pragmas_ & GOPRAGMA_NOSPLIT) != 0)
 	disable_split_stack = true;
-
-      // Encode name if asm_name not already set at this point
-      if (asm_name.empty())
-	asm_name = gogo->unexported_function_asm_name(no->name());
 
       // This should go into a unique section if that has been
       // requested elsewhere, or if this is a nointerface function.

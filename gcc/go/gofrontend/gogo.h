@@ -767,10 +767,6 @@ class Gogo
   function_asm_name(const std::string& go_name, const Package*,
 		    const Type* receiver);
 
-  // Return the assembler name to use for an unexported function.
-  std::string
-  unexported_function_asm_name(const std::string& go_name);
-
   // Return the name to use for a function descriptor.
   std::string
   function_descriptor_name(Named_object*);

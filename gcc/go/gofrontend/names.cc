@@ -54,19 +54,6 @@ Gogo::function_asm_name(const std::string& go_name, const Package* package,
   return go_encode_id(ret);
 }
 
-// Return the assembler name to use for an unexported function.
-// FIXME: This should probably be removed and the callers changed to
-// simply call function_name.
-
-std::string
-Gogo::unexported_function_asm_name(const std::string& go_name)
-{
-  std::string ret = this->package_name();
-  ret.append(1, '.');
-  ret.append(Gogo::unpack_hidden_name(go_name));
-  return go_encode_id(ret);
-}
-
 // Return the name to use for a function descriptor.  These symbols
 // are globally visible.
 
@@ -171,18 +158,9 @@ Gogo::specific_type_function_names(const Type* type, const Named_type* name,
 std::string
 Gogo::global_var_asm_name(const std::string& go_name, const Package* package)
 {
-  // FIXME: Using package_name for hidden names and pkgpath_symbol for
-  // non-hidden names doesn't make sense, but it dates back to the
-  // first public commit of the gofrontend repo.
-  std::string ret;
-  if (Gogo::is_hidden_name(go_name))
-    ret = (package != NULL
-	   ? package->package_name()
-	   : this->package_name());
-  else
-    ret = (package != NULL
-	   ? package->pkgpath_symbol()
-	   : this->pkgpath_symbol());
+  std::string ret = (package != NULL
+		     ? package->pkgpath_symbol()
+		     : this->pkgpath_symbol());
   ret.push_back('.');
   ret.append(Gogo::unpack_hidden_name(go_name));
   return go_encode_id(ret);
