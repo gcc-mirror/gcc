@@ -1,3 +1,53 @@
+2017-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (Wparentheses): Document C++ MVP behaviour.
+
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.c (arm_test_fpu_data): New.
+	(arm_run_selftests): Call arm_test_fpu_data.
+
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* toplev.c (toplev::main): Remove excess parens on pretty_printer
+	decl.
+	* caller-save.c (insert_save): Remove excess parens on TO_SAVE parm.
+
+2017-10-04  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-protos.h (enum simd_immediate_check): New
+	check type for aarch64_simd_valid_immediate.
+	(aarch64_output_simd_mov_immediate): Update prototype.
+	(aarch64_simd_valid_immediate): Update prototype.
+	* config/aarch64/aarch64-simd.md (orr<mode>3): modified pattern to add
+	support for ORR-immediate.
+	(and<mode>3): modified pattern to add support for BIC-immediate.
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Function
+	now checks for valid immediate for BIC and ORR based on new enum
+	argument.
+	(aarch64_output_simd_mov_immediate): Function now used to output
+	BIC/ORR imm as well based on new enum argument.
+	* config/aarch64/constraints.md (Do): New vector immediate constraint.
+	(Db) : Likewise.
+	* config/aarch64/predicates.md (aarch64_reg_or_orr_imm): New predicate.
+	(aarch64_reg_or_bic_imm): Likewise.
+
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/vx-builtins.md ("vec_mergeh<mode>")
+	("vec_mergel<mode>"): Change mode iterator to V_128_NOSINGLE.
+
+2017-10-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Revert r253399:
+
+	PR rtl-optimization/82396
+	* haifa-sched.c (autopref_multipass_init): Simplify
+	initialization.
+	(autopref_rank_data): Simplify sort order.
+	* sched-int.h (autopref_multipass_data_): Remove
+	multi_mem_insn_p, min_offset and max_offset.
+
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* doc/sourcebuild.texi: Document vect_peeling_profitable.

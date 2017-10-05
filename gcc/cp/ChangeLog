@@ -1,3 +1,69 @@
+2017-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	Warn on MVP declarations
+	* cp-tree.h (struct cp_declarator): Add parenthesized field.
+	* decl.c (grokdeclarator): Warn about unnecessary parens.
+	* parser.c (make_declarator): Init parenthesized field.
+	(cp_parser_direct_declarator): Set parenthesized field.
+
+	Kill IDENTIFIER_GLOBAL_VALUE, SET_IDENTIFIER_GLOBAL_VALUE
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
+	SET_IDENTIFIER_GLOBAL_VALUE): Delete.
+	* name-lookup.h (set_global_binding): Remove NAME parm.
+	(get_global_binding): New inline fn.
+	* name-lookup.c (set_global_binding): Remove NAME parm. Adjust.
+	(identifier_global_value): Move to ...
+	* cp-objcp-common.c (identifier_global_value): ... here.
+	* class.c (build_ctor_vtbl_group, build_vtbl_initializer): Adjust.
+	* decl.c (record_builtin_type, expand_static_init,
+	grokdeclarator): Adjust.
+	* decl2.c (get_guard, get_local_tls_init_fn, get_tls_init_fn,
+	get_tls_wrapper_fn, maybe_warn_sized_delete): Adjust.
+	* except.c (declare_library_fn, build_throw): Adjust.
+	* init.c (throw_bad_array_length): Adjust.
+	* rtti.c (throw_bad_cast, throw_bad_typeid, get_tinfo_decl): Adjust.
+
+	* decl2.c (record_mangling): Fix spello and formatting from
+	previous patch.
+
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	Give builtin types the correct name.
+	* name-lookup.c (set_global_binding): Assert name is DECL_NAME.
+	* decl.c (record_builtin_type): Reimplement, use new TYPE_DECL for
+	rname.
+
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR c++/71946
+	* parser.c (cp_parser_lambda_body): Set parser->in_function_body.
+
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	Move mangling aliases out of global namespace.
+	* cp-tree.h (record_mangling): New.
+	(maybe_remove_implicit_alias): Delete.
+	* decl2.c (mangled_decls): New hash map.
+	(generate_mangling_alias): Reimplement using mangled_decls.
+	(record_mangling): New.
+	* mangle.c (decl_implicit_alias_p,
+	maybe_remove_implicit_alias): Delete.
+	(mangle_decl): Use record_mangling.
+	* name-lookup.c (supplement_binding_1): Remove
+	maybe_remove_implicit_alias check.
+
+2017-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82373
+	* error.c (dump_function_decl): If show_return, call dump_type_suffix
+	on the same return type dump_type_prefix has been called on.
+
+2017-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81525 - broken handling of auto in generic lambda.
+	* pt.c (tsubst_decl) [VAR_DECL]: Use strip_innermost_template_args.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (convert_arg_to_ellipsis): Correct comment about passing

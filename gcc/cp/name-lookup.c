@@ -3779,16 +3779,6 @@ identifier_type_value (tree id)
   return ret;
 }
 
-
-/* Return the get_global_binding of T, for use in common code, since
-   the definition of get_global_binding is different for C and C++.  */
-
-tree
-identifier_global_value	(tree t)
-{
-  return get_global_binding (t);
-}
-
 /* Push a definition of struct, union or enum tag named ID.  into
    binding_level B.  DECL is a TYPE_DECL for the type.  We assume that
    the tag ID is not already defined.  */
@@ -4852,6 +4842,7 @@ void
 set_global_binding (tree decl)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+
   tree *slot = find_namespace_slot (global_namespace, DECL_NAME (decl), true);
   tree old = MAYBE_STAT_DECL (*slot);
 

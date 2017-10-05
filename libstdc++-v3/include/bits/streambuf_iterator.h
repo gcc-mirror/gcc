@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // NB: This implementation assumes the "end of stream" value
       // is EOF, or -1.
       mutable streambuf_type*	_M_sbuf;
-      mutable int_type		_M_c;
+      int_type			_M_c;
 
     public:
       ///  Construct end of input stream iterator.
@@ -122,28 +122,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type
       operator*() const
       {
+	int_type __c = _M_get();
+
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
 	// Dereferencing a past-the-end istreambuf_iterator is a
 	// libstdc++ extension
-	__glibcxx_requires_cond(!_M_at_eof(),
+	__glibcxx_requires_cond(!_S_is_eof(__c),
 				_M_message(__gnu_debug::__msg_deref_istreambuf)
 				._M_iterator(*this));
 #endif
-	return traits_type::to_char_type(_M_get());
+	return traits_type::to_char_type(__c);
       }
 
       /// Advance the iterator.  Calls streambuf.sbumpc().
       istreambuf_iterator&
       operator++()
       {
-	__glibcxx_requires_cond(!_M_at_eof(),
+	__glibcxx_requires_cond(_M_sbuf &&
+				(!_S_is_eof(_M_c) || !_S_is_eof(_M_sbuf->sgetc())),
 				_M_message(__gnu_debug::__msg_inc_istreambuf)
 				._M_iterator(*this));
-	if (_M_sbuf)
-	  {
-	    _M_sbuf->sbumpc();
-	    _M_c = traits_type::eof();
-	  }
+
+	_M_sbuf->sbumpc();
+	_M_c = traits_type::eof();
 	return *this;
       }
 
@@ -151,16 +152,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       istreambuf_iterator
       operator++(int)
       {
-	__glibcxx_requires_cond(!_M_at_eof(),
+	__glibcxx_requires_cond(_M_sbuf &&
+				(!_S_is_eof(_M_c) || !_S_is_eof(_M_sbuf->sgetc())),
 				_M_message(__gnu_debug::__msg_inc_istreambuf)
 				._M_iterator(*this));
 
 	istreambuf_iterator __old = *this;
-	if (_M_sbuf)
-	  {
-	    __old._M_c = _M_sbuf->sbumpc();
-	    _M_c = traits_type::eof();
-	  }
+	__old._M_c = _M_sbuf->sbumpc();
+	_M_c = traits_type::eof();
 	return __old;
       }
 
@@ -176,26 +175,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       int_type
       _M_get() const
       {
-	const int_type __eof = traits_type::eof();
-	int_type __ret = __eof;
-	if (_M_sbuf)
-	  {
-	    if (!traits_type::eq_int_type(_M_c, __eof))
-	      __ret = _M_c;
-	    else if (!traits_type::eq_int_type((__ret = _M_sbuf->sgetc()),
-					       __eof))
-	      _M_c = __ret;
-	    else
-	      _M_sbuf = 0;
-	  }
+	int_type __ret = _M_c;
+	if (_M_sbuf && _S_is_eof(__ret) && _S_is_eof(__ret = _M_sbuf->sgetc()))
+	  _M_sbuf = 0;
 	return __ret;
       }
 
       bool
       _M_at_eof() const
+      { return _S_is_eof(_M_get()); }
+
+      static bool
+      _S_is_eof(int_type __c)
       {
 	const int_type __eof = traits_type::eof();
-	return traits_type::eq_int_type(_M_get(), __eof);
+	return traits_type::eq_int_type(__c, __eof);
       }
     };
 
@@ -373,13 +367,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __is_iterator_type::traits_type     traits_type;
       typedef typename __is_iterator_type::streambuf_type  streambuf_type;
       typedef typename traits_type::int_type               int_type;
+      const int_type __eof = traits_type::eof();
 
       if (__first._M_sbuf && !__last._M_sbuf)
 	{
 	  const int_type __ival = traits_type::to_int_type(__val);
 	  streambuf_type* __sb = __first._M_sbuf;
 	  int_type __c = __sb->sgetc();
-	  while (!traits_type::eq_int_type(__c, traits_type::eof())
+	  while (!traits_type::eq_int_type(__c, __eof)
 		 && !traits_type::eq_int_type(__c, __ival))
 	    {
 	      streamsize __n = __sb->egptr() - __sb->gptr();
@@ -396,11 +391,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__c = __sb->snextc();
 	    }
 
-	  if (!traits_type::eq_int_type(__c, traits_type::eof()))
-	    __first._M_c = __c;
-	  else
-	    __first._M_sbuf = 0;
+	  __first._M_c = __eof;
 	}
+
       return __first;
     }
 

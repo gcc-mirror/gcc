@@ -1,3 +1,59 @@
+2017-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/warn/mvp.C: New.
+
+2017-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/pr82374.c (SIZE): Change from 1G to 1M to make it ilp32
+	friendly.
+
+2017-10-05  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/graphite/id-17.f: Fix typo.
+	* gfortran.dg/graphite/id-19.f: Likewise.
+	* gfortran.dg/graphite/pr29832.f90: Likewise.
+	* gfortran.dg/graphite/pr42326-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42326.f90: Likewise.
+	* gfortran.dg/graphite/pr68550-2.f90: Likewise.
+	* gfortran.dg/graphite/run-id-2.f90: Likewise.
+	* gfortran.dg/graphite/run-id-3.f90: Likewise.
+
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80471
+	* g++.dg/cpp1y/pr80471.C: New.
+
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78131
+	* g++.dg/cpp1z/constexpr-lambda17.C: New.
+
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78018
+	* g++.dg/cpp1y/lambda-generic-78018.C: New.
+
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Andrew Pinski  <apinski@cavium.com>
+
+	PR c++/71946
+	* g++.dg/cpp0x/lambda/lambda-asm1.C: New.
+	* g++.dg/cpp0x/lambda/lambda-stmtexpr1.C: Likewise.
+
+2017-10-04  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/bic_imm_1.c: New.
+	* gcc.target/aarch64/orr_imm_1.c: Likewise.
+
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/mangle41.C: Adjust diagnostics.
+
+2017-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82373
+	* g++.dg/cpp1y/pr82373.C: New test.
+
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/diagnostic-range-bad-called-object.c: Update expected

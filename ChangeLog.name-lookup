@@ -1,5 +1,7 @@
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r253446.
+
 	Kill IDENTIFIER_GLOBAL_VALUE, SET_IDENTIFIER_GLOBAL_VALUE
 	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
 	SET_IDENTIFIER_GLOBAL_VALUE): Delete.

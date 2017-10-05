@@ -1,3 +1,9 @@
+2017-10-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/82379
+	* configure.tgt (SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS): Set
+	to sanitizer_linux_x86_64.lo if __x86_64__ is defined by $CC.
+
 2017-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* libbacktrace/backtrace-rename.h (backtrace_uncompress_zdebug):

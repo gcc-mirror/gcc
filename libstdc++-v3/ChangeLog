@@ -1,3 +1,19 @@
+2017-10-04  Petr Ovtchenkov  <ptr@void-ptr.info>
+	    François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/streambuf_iterator.h
+	(istreambuf_iterator<>::operator*()): Do not capture iterator state
+	in Debug assertion.
+	(istreambuf_iterator<>::operator++()): Likewise and remove _M_sbuf check.
+	(istreambuf_iterator<>::operator++(int)): Likewise.
+	(istreambuf_iterator<>::_M_get()): Remove _M_c assignment.
+	(istreambuf_iterator<>::_S_is_eof()): New.
+	(istreambuf_iterator<>::_M_at_eof()): Adapt, use latter.
+	(find(istreambuf_iterator<>, istreambuf_iterator<>, _CharT)):
+	Return an iterator with _M_c set to eof to capture streambuf state
+	on evaluation.
+	(testsuite/24_iterators/istreambuf_iterator/2.cc): Add checks.
+
 2017-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/charconv (__unsigned_least_t): Fix number of closing >s for

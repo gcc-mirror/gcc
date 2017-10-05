@@ -4579,6 +4579,17 @@ in the @code{?}: operator is a boolean expression, the omitted value is
 always 1.  Often programmers expect it to be a value computed
 inside the conditional expression instead.
 
+For C++ this also warns for some cases of unnecessary parentheses in
+declarations, which can indicate an attempt at a function call instead
+of a declaration:
+@smallexample
+@{
+  // Declares a local variable called mymutex.
+  std::unique_lock<std::mutex> (mymutex);
+  // User meant std::unique_lock<std::mutex> lock (mymutex);
+@}
+@end smallexample
+
 This warning is enabled by @option{-Wall}.
 
 @item -Wsequence-point
