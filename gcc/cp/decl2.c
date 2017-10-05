@@ -4377,10 +4377,8 @@ record_mangling (tree decl, bool need_warning)
   tree *slot = &mangled_decls->get_or_insert (id, &existed);
 
   /* If this is already an alias, remove the alias, because the real
-     decl takes presidence.  */
-  if (!existed)
-    ;
-  else if (DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
+     decl takes precedence.  */
+  if (existed && DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
     if (symtab_node *n = symtab_node::get (*slot))
       if (n->cpp_implicit_alias)
 	{
