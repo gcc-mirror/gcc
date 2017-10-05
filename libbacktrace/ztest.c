@@ -432,9 +432,9 @@ test_large (struct backtrace_state *state)
   ctime = average_time (ctimes, trials);
   ztime = average_time (ztimes, trials);
 
-  printf ("backtrace time: %zu ns\n", ctime);
-  printf ("zlib time:    : %zu ns\n", ztime);
-  printf ("percentage    : %g\n", (double) ztime / (double) ctime);
+  printf ("backtrace: %zu ns\n", ctime);
+  printf ("zlib     : %zu ns\n", ztime);
+  printf ("ratio    : %g\n", (double) ztime / (double) ctime);
 
   return;
 

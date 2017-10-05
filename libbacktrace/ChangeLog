@@ -1,3 +1,11 @@
+2017-10-05  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_zlib_fetch): Change pval argument to uint64_t *.
+	Read a four byte integer.
+	(elf_zlib_inflate): Change val to uint64_t.  Align pin to a 32-bit
+	boundary before ever calling elf_zlib_fetch.
+	* ztest.c (test_large): Simplify print statements a bit.
+
 2017-10-02  Ian Lance Taylor  <iant@golang.org>
 
 	* ztest.c: #include <errno.h>.
