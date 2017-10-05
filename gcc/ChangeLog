@@ -1,3 +1,7 @@
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/sourcebuild.texi (vect_sizes_16B_8B, vect_sizes_32B_16B): New.
+
 2017-10-05  Jan Hubicka <hubicka@ucw.cz>
 
 	* i386.c (znver1_cost): Set branch_cost to 3 (instead of 2)

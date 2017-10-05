@@ -7671,6 +7671,19 @@ proc check_effective_target_vect_sizes_32B_16B { } {
   }
 }
 
+# Return true if 16- and 8-bytes vectors are available.
+
+proc check_effective_target_vect_sizes_16B_8B { } {
+  if { [check_avx_available]
+       || [is-effective-target arm_neon]
+       || [istarget aarch64*-*-*] } {
+     return 1;
+  } else {
+    return 0;
+  }
+}
+
+
 # Return true if 128-bits vectors are preferred even if 256-bits vectors
 # are available.
 

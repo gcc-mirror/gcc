@@ -1,4 +1,9 @@
-2017-09-28  Tamar Christina  <tamar.christina@arm.com>
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/slp-perm-9.c: Use vect_sizes_16B_8B.
+	* lib/target-supports.exp (vect_sizes_16B_8B): New.
+
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/vect/vect-align-1.c: Fix vect_hw_misalign condition.
 	* gcc.dg/vect/vect-align-2.c: Likewise.
