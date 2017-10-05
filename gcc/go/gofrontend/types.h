@@ -1213,11 +1213,6 @@ class Type
   void
   make_gc_symbol_var(Gogo*);
 
-  // Return the name of the type descriptor variable.  If NAME is not
-  // NULL, it is the name to use.
-  std::string
-  type_descriptor_var_name(Gogo*, Named_type* name);
-
   // Return true if the type descriptor for this type should be
   // defined in some other package.  If NAME is not NULL, it is the
   // name of this type.  If this returns true it sets *PACKAGE to the
@@ -1556,6 +1551,92 @@ class Typed_identifier_list
 
  private:
   std::vector<Typed_identifier> entries_;
+};
+
+// A type used to indicate a parsing error.  This exists to simplify
+// later error detection.
+
+class Error_type : public Type
+{
+ public:
+  Error_type()
+    : Type(TYPE_ERROR)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return false; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type*);
+
+  void
+  do_reflection(Gogo*, std::string*) const;
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
+};
+
+// The void type.
+
+class Void_type : public Type
+{
+ public:
+  Void_type()
+    : Type(TYPE_VOID)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return false; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type*)
+  { go_unreachable(); }
+
+  void
+  do_reflection(Gogo*, std::string*) const
+  { }
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
+};
+
+// The boolean type.
+
+class Boolean_type : public Type
+{
+ public:
+  Boolean_type()
+    : Type(TYPE_BOOLEAN)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return true; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type* name);
+
+  // We should not be asked for the reflection string of a basic type.
+  void
+  do_reflection(Gogo*, std::string* ret) const
+  { ret->append("bool"); }
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
 };
 
 // The type of an integer.
@@ -2141,6 +2222,37 @@ class Pointer_type : public Type
  private:
   // The type to which this type points.
   Type* to_type_;
+};
+
+// The nil type.  We use a special type for nil because it is not the
+// same as any other type.  In C term nil has type void*, but there is
+// no such type in Go.
+
+class Nil_type : public Type
+{
+ public:
+  Nil_type()
+    : Type(TYPE_NIL)
+  { }
+
+ protected:
+  bool
+  do_compare_is_identity(Gogo*)
+  { return false; }
+
+  Btype*
+  do_get_backend(Gogo* gogo);
+
+  Expression*
+  do_type_descriptor(Gogo*, Named_type*)
+  { go_unreachable(); }
+
+  void
+  do_reflection(Gogo*, std::string*) const
+  { go_unreachable(); }
+
+  void
+  do_mangled_name(Gogo*, std::string* ret) const;
 };
 
 // The type of a field in a struct.
