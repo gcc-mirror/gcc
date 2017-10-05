@@ -1,3 +1,28 @@
+2017-10-05  Jan Hubicka <hubicka@ucw.cz>
+
+	* i386.c (ix86_size_cost, i386_cost, i486_cost, pentium_cost,
+	lakemont_cost, pentiumpro_cost, geode_cost, k6_cost,
+	athlon_cost, k8_cost, amdfam10_cost, btver1_cost, btver2_cost,
+	pentium4_cost, nocona_cost): Set reassociation width to 1.
+	(bdver1_cost, bdver2_cost, bdver3_cost, bdver4_cost): Set reassociation
+	width to 2 for fp operations and 1 otherwise.
+	(znver1_cost): Set scalar reassoc width to 4 and vector to 3 and 6
+	for int and fp.
+	(atom_cost): Set reassociation width to 2.
+	(slm_cost, generic_cost): Set fp reassociation width to 2 and 1 otherwise.
+	(intel_cost): Set fp reassociation width to 4 and 1 otherwise.
+	(core_cost): Set fp reassociation width to 4 and vector to 2.
+	(ix86_reassociation_width): Rewrite using cost table; special case
+	plus/minus on Zen; honor X86_TUNE_SSE_SPLIT_REGS
+	and TARGET_AVX128_OPTIMAL.
+	* i386.h (processor_costs): Add
+	reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp.
+	(TARGET_VECTOR_PARALLEL_EXECUTION, TARGET_REASSOC_INT_TO_PARALLEL,
+	TARGET_REASSOC_FP_TO_PARALLEL): Remove.
+	* x86-tune.def (X86_TUNE_REASSOC_INT_TO_PARALLEL): Remove.
+	(X86_TUNE_REASSOC_FP_TO_PARALLEL): Remove.
+	(X86_TUNE_VECTOR_PARALLEL_EXECUTION):  Remove.
+
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/invoke.texi (Wparentheses): Document C++ MVP behaviour.
