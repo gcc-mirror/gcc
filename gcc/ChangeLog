@@ -1,5 +1,10 @@
 2017-10-05  Jan Hubicka <hubicka@ucw.cz>
 
+	* i386.c (znver1_cost): Set branch_cost to 3 (instead of 2)
+	to improve monte carlo in scimark.
+
+2017-10-05  Jan Hubicka <hubicka@ucw.cz>
+
 	* i386.c (ix86_size_cost, i386_cost, i486_cost, pentium_cost,
 	lakemont_cost, pentiumpro_cost, geode_cost, k6_cost,
 	athlon_cost, k8_cost, amdfam10_cost, btver1_cost, btver2_cost,

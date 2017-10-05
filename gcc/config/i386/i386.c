@@ -1421,7 +1421,7 @@ struct processor_costs znver1_cost = {
      to limit number of prefetches at all, as their execution also takes some
      time).  */
   100,					/* number of parallel prefetches.  */
-  2,					/* Branch cost.  */
+  3,					/* Branch cost.  */
   COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
