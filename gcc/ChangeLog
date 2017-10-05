@@ -1,3 +1,7 @@
+2017-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (Wparentheses): Document C++ MVP behaviour.
+
 2017-10-05  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm.c (arm_test_fpu_data): New.

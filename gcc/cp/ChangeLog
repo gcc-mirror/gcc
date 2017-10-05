@@ -1,5 +1,11 @@
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
+	Warn on MVP declarations
+	* cp-tree.h (struct cp_declarator): Add parenthesized field.
+	* decl.c (grokdeclarator): Warn about unnecessary parens.
+	* parser.c (make_declarator): Init parenthesized field.
+	(cp_parser_direct_declarator): Set parenthesized field.
+
 	Kill IDENTIFIER_GLOBAL_VALUE, SET_IDENTIFIER_GLOBAL_VALUE
 	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
 	SET_IDENTIFIER_GLOBAL_VALUE): Delete.

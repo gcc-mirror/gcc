@@ -1451,6 +1451,7 @@ make_declarator (cp_declarator_kind kind)
 
   declarator = (cp_declarator *) alloc_declarator (sizeof (cp_declarator));
   declarator->kind = kind;
+  declarator->parenthesized = UNKNOWN_LOCATION;
   declarator->attributes = NULL_TREE;
   declarator->std_attributes = NULL_TREE;
   declarator->declarator = NULL;
@@ -19808,6 +19809,7 @@ cp_parser_direct_declarator (cp_parser* parser,
   bool saved_in_declarator_p = parser->in_declarator_p;
   bool first = true;
   tree pushed_scope = NULL_TREE;
+  cp_token *open_paren = NULL, *close_paren = NULL;
 
   while (true)
     {
@@ -19857,6 +19859,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 	    {
 	      tree params;
 	      bool is_declarator = false;
+
+	      open_paren = NULL;
 
 	      /* In a member-declarator, the only valid interpretation
 		 of a parenthesis is the start of a
@@ -19979,6 +19983,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      parser->default_arg_ok_p = saved_default_arg_ok_p;
 	      parser->in_declarator_p = saved_in_declarator_p;
 
+	      open_paren = token;
 	      /* Consume the `('.  */
 	      matching_parens parens;
 	      parens.consume_open (parser);
@@ -19992,6 +19997,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	      first = false;
 	      /* Expect a `)'.  */
+	      close_paren = cp_lexer_peek_token (parser->lexer);
 	      if (!parens.require_close (parser))
 		declarator = cp_error_declarator;
 	      if (declarator == cp_error_declarator)
@@ -20013,6 +20019,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  if (ctor_dtor_or_conv_p)
 	    *ctor_dtor_or_conv_p = 0;
 
+	  open_paren = NULL;
 	  first = false;
 	  parser->default_arg_ok_p = false;
 	  parser->in_declarator_p = true;
@@ -20308,6 +20315,22 @@ cp_parser_direct_declarator (cp_parser* parser,
      point.  That's an error; the declarator is not optional.  */
   if (!declarator)
     cp_parser_error (parser, "expected declarator");
+  else if (open_paren)
+    {
+      /* Record overly parenthesized declarator so we can give a
+	 diagnostic about confusing decl/expr disambiguation.  */
+      if (declarator->kind == cdk_array)
+	{
+	  /* If the open and close parens are on different lines, this
+	     is probably a formatting thing, so ignore.  */
+	  expanded_location open = expand_location (open_paren->location);
+	  expanded_location close = expand_location (close_paren->location);
+	  if (open.line != close.line || open.file != close.file)
+	    open_paren = NULL;
+	}
+      if (open_paren)
+	declarator->parenthesized = open_paren->location;
+    }
 
   /* If we entered a scope, we must exit it now.  */
   if (pushed_scope)
