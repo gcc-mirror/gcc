@@ -1,3 +1,7 @@
+2017-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/to_chars/1.cc: Add dg-require-string-conversions.
+
 2017-10-04  Petr Ovtchenkov  <ptr@void-ptr.info>
 	    François Dumont  <fdumont@gcc.gnu.org>
 
