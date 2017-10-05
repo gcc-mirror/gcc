@@ -1,3 +1,7 @@
+2017-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/warn/mvp.C: New.
+
 2017-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/pr82374.c (SIZE): Change from 1G to 1M to make it ilp32

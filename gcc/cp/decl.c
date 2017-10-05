@@ -10807,6 +10807,13 @@ grokdeclarator (const cp_declarator *declarator,
 					    attr_flags);
 	}
 
+      /* We don't want to warn in parmeter context because we don't
+	 yet know if the parse will succeed, and this might turn out
+	 to be a constructor call.  */
+      if (decl_context != PARM
+	  && declarator->parenthesized != UNKNOWN_LOCATION)
+	warning_at (declarator->parenthesized, OPT_Wparentheses,
+		    "unnecessary parentheses in declaration of %qs", name);
       if (declarator->kind == cdk_id || declarator->kind == cdk_decomp)
 	break;
 
