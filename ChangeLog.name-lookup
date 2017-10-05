@@ -1,7 +1,11 @@
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (set_global_binding): No need for stat_hack.
+
 	Merge trunk r253446.
 
+	gcc/cp/
 	Kill IDENTIFIER_GLOBAL_VALUE, SET_IDENTIFIER_GLOBAL_VALUE
 	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
 	SET_IDENTIFIER_GLOBAL_VALUE): Delete.

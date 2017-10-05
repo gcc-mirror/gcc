@@ -4844,22 +4844,13 @@ set_global_binding (tree decl)
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
   tree *slot = find_namespace_slot (global_namespace, DECL_NAME (decl), true);
-  tree old = MAYBE_STAT_DECL (*slot);
 
-  if (!old)
-    *slot = decl;
-  else if (old == decl)
-    ;
-  else if (!STAT_HACK_P (*slot)
-	   && TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    *slot = stat_hack (old, decl);
-  else if (!STAT_HACK_P (*slot)
-	   && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-    *slot = stat_hack (decl, old);
-  else
-    /* The user's placed something in the implementor's
-       namespace.  */
-    diagnose_name_conflict (decl, old);
+  if (*slot)
+    /* The user's placed something in the implementor's namespace.  */
+    diagnose_name_conflict (decl, MAYBE_STAT_DECL (*slot));
+
+  /* Force the binding, so compiler internals continue to work.  */
+  *slot = decl;
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
