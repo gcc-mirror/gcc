@@ -25,4 +25,4 @@ program testarray
    end do
 end program
 
-! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }
+! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } }

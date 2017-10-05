@@ -34,4 +34,4 @@ subroutine phasad(t,i,ium)
   return
 end subroutine phasad
 
-! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" } }
+! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } }

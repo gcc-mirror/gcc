@@ -65,4 +65,4 @@ CONTAINS
   END FUNCTION exp_radius_very_extended
 
 END
-! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }
+! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } }

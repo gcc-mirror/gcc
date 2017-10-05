@@ -11,4 +11,4 @@
   res = SUM([(s**(REAL(k-1)/REAL(m-1)),k=1,m)])
   if (abs(res - 5.84732246) > 1e-6) call abort
   end
-! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }
+! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } }
