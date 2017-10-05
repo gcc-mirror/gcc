@@ -8912,7 +8912,7 @@ build_ctor_vtbl_group (tree binfo, tree t)
 
   /* See if we've already created this construction vtable group.  */
   id = mangle_ctor_vtbl_for_type (t, binfo);
-  if (IDENTIFIER_GLOBAL_VALUE (id))
+  if (get_global_binding (id))
     return;
 
   gcc_assert (!SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t));
@@ -9294,7 +9294,7 @@ build_vtbl_initializer (tree binfo,
 	      if (!dvirt_fn)
 		{
 		  tree name = get_identifier ("__cxa_deleted_virtual");
-		  dvirt_fn = IDENTIFIER_GLOBAL_VALUE (name);
+		  dvirt_fn = get_global_binding (name);
 		  if (!dvirt_fn)
 		    dvirt_fn = push_library_fn
 		      (name,
