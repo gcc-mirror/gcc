@@ -2446,7 +2446,7 @@ throw_bad_array_new_length (void)
     {
       tree name = get_identifier ("__cxa_throw_bad_array_new_length");
 
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
 	  (name, build_function_type_list (sizetype, NULL_TREE));

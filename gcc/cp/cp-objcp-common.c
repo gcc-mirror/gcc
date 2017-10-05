@@ -400,6 +400,15 @@ cp_pushdecl (tree decl)
   return pushdecl (decl);
 }
 
+/* Get the global value binding of NAME.  Called directly from
+   c-common.c, not via a hook. */
+
+tree
+identifier_global_value (tree name)
+{
+  return get_global_binding (name);
+}
+
 /* Register c++-specific dumps.  */
 
 void
