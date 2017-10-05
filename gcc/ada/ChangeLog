@@ -1,3 +1,9 @@
+2017-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82393
+	* mingw32.h (_O_U8TEXT, _O_U16TEXT, _O_WTEXT): Delete.
+	* sysdep.c (__gnat_set_mode ): Use DJGPP version for Cygwin.
+
 2017-10-02  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 
