@@ -1,3 +1,7 @@
+2017-10-05  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_arg_to_ellipsis): Use the result of force_rvalue.
+
 2017-10-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82406 - C++ error with noexcept function type
