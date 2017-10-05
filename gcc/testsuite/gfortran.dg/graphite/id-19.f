@@ -14,4 +14,4 @@
   140    QM2= QM2+TWO
   150 PM2= PM2+TWO
       END
-! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }
+! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } }

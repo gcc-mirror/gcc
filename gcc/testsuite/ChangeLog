@@ -1,3 +1,14 @@
+2017-10-05  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/graphite/id-17.f: Fix typo.
+	* gfortran.dg/graphite/id-19.f: Likewise.
+	* gfortran.dg/graphite/pr29832.f90: Likewise.
+	* gfortran.dg/graphite/pr42326-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42326.f90: Likewise.
+	* gfortran.dg/graphite/pr68550-2.f90: Likewise.
+	* gfortran.dg/graphite/run-id-2.f90: Likewise.
+	* gfortran.dg/graphite/run-id-3.f90: Likewise.
+
 2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80471
