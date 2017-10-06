@@ -1,3 +1,8 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	P0704R1 - fixing const-qualified pointers to members
+	* g++.dg/cpp2a/ptrmem1.C: New test.
+
 2017-10-06  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/ubsan/ptr-overflow-sanitization-1.c: New test.
