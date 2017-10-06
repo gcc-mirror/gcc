@@ -369,6 +369,8 @@ test_large (struct backtrace_state *state)
 
   for (i = 0; i < trials; ++i)
     {
+      unsigned long uncompress_sizearg;
+
       cid = ZLIB_CLOCK_GETTIME_ARG;
       if (clock_gettime (cid, &ts1) < 0)
 	{
@@ -406,7 +408,8 @@ test_large (struct backtrace_state *state)
 	  return;
 	}
 
-      r = uncompress (uncompressed_buf, &uncompressed_bufsize,
+      uncompress_sizearg = uncompressed_bufsize;
+      r = uncompress (uncompressed_buf, &uncompress_sizearg,
 		      compressed_buf + 12, compressed_bufsize - 12);
 
       if (clock_gettime (cid, &ts2) < 0)
