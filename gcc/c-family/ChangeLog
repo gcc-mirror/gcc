@@ -1,3 +1,9 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-warn.c (warn_tautological_bitwise_comparison): Instead of
+	using to_widest use wide_int with the larger of the two precisions.
+
 2017-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-pretty-print.c (pp_c_parameter_type_list): Print ... for variadic
