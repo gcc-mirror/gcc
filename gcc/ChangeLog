@@ -1,5 +1,12 @@
 2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	PR target/82322
+	* config/s390/s390-builtins.def (s390_vfi): Define new overloaded
+	builtin.
+	* config/s390/s390-builtin-types.def: Regenerate.
+
+2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	PR target/82317
 	* config/s390/s390-builtin-types.def: Regenerate.
 	* config/s390/s390-builtins.def (s390_vfmaxdb_4, s390_vfmindb_4):
