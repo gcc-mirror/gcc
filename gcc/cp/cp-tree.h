@@ -828,6 +828,25 @@ class lkp_iterator : public ovl_iterator
   }
 };
 
+/* hash traits for declarations.  Hashes potential overload sets via
+   DECL_NAME.  */
+
+struct named_decl_hash : ggc_remove <tree>
+{
+  typedef tree value_type; /* A DECL or OVERLOAD  */
+  typedef tree compare_type; /* An identifier.  */
+
+  inline static hashval_t hash (const value_type decl);
+  inline static bool equal (const value_type existing, compare_type candidate);
+
+  static inline void mark_empty (value_type &p) {p = NULL_TREE;}
+  static inline bool is_empty (value_type p) {return !p;}
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
   tree arguments;
@@ -2548,10 +2567,10 @@ struct GTY(()) lang_decl_ns {
   vec<tree, va_gc> *usings;
   vec<tree, va_gc> *inlinees;
 
-  /* Map from IDENTIFIER nodes to DECLS.  It'd be nice to have this
-     inline, but as the hash_map has a dtor, we can't then put this
-     struct into a union (until moving to c++11).  */
-  hash_map<lang_identifier *, tree> *bindings;
+  /* Hash table of bound decls. It'd be nice to have this inline, but
+     as the hash_map has a dtor, we can't then put this struct into a
+     union (until moving to c++11).  */
+  hash_table<named_decl_hash> *bindings;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -7368,6 +7387,20 @@ inline bool
 type_unknown_p (const_tree expr)
 {
   return TREE_TYPE (expr) == unknown_type_node;
+}
+
+inline hashval_t
+named_decl_hash::hash (const value_type decl)
+{
+  tree name = OVL_NAME (decl);
+  return name ? IDENTIFIER_HASH_VALUE (name) : 0;
+}
+
+inline bool
+named_decl_hash::equal (const value_type existing, compare_type candidate)
+{
+  tree name = OVL_NAME (existing);
+  return candidate == name;
 }
 
 /* -- end of C++ */
