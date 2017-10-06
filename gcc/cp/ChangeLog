@@ -1,3 +1,10 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82299
+	* decl.c (reshape_init): Suppress warn_useless_cast for direct enum
+	init.
+	* typeck.c (convert_for_assignment): Likewise.
+
 2017-10-05  Jason Merrill  <jason@redhat.com>
 
 	* call.c (convert_arg_to_ellipsis): Use the result of force_rvalue.
