@@ -1,5 +1,10 @@
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
+	* graphite-sese-to-poly.c (extract_affine): For casts increasing
+	precision do not perform modulo reduction.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82436
 	* tree-vect-slp.c (vect_supported_load_permutation_p): More
 	conservatively choose the vectorization factor when checking
