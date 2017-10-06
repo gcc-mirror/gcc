@@ -1,3 +1,8 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-c++-common/Wtautological-compare-6.c: New test.
+
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/graphite/id-15.c: No longer expect a code generation error.
