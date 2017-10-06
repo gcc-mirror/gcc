@@ -1,6 +1,5 @@
 ! { dg-do compile }
 ! { dg-options "-floop-nest-optimize -fcheck=bounds -O1" }
-! { dg-additional-options "-fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" { target ilp32 } }
 
 SUBROUTINE PD2VAL(RES,NDERIV,TG1,TG2,C0)
     INTEGER, PARAMETER :: dp=8
@@ -13,5 +12,3 @@ SUBROUTINE PD2VAL(RES,NDERIV,TG1,TG2,C0)
   RES(K)=RES(K)+DOT_PRODUCT(T1(0:3),C0(96:99,K))*T2(10)
  ENDDO
 END SUBROUTINE PD2VAL
-
-! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } }

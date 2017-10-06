@@ -1,5 +1,64 @@
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
+	* graphite-isl-ast-to-gimple.c: Include ssa.h and tree-ssa.h.
+	(translate_isl_ast_to_gimple::translate_pending_phi_nodes,
+	translate_isl_ast_to_gimple::is_valid_rename,
+	translate_isl_ast_to_gimple::get_rename,
+	translate_isl_ast_to_gimple::get_def_bb_for_const,
+	translate_isl_ast_to_gimple::get_new_name,
+	translate_isl_ast_to_gimple::collect_all_ssa_names,
+	translate_isl_ast_to_gimple::copy_loop_phi_args,
+	translate_isl_ast_to_gimple::collect_all_ssa_names,
+	translate_isl_ast_to_gimple::copy_loop_phi_args,
+	translate_isl_ast_to_gimple::copy_loop_phi_nodes,
+	translate_isl_ast_to_gimple::add_close_phis_to_merge_points,
+	translate_isl_ast_to_gimple::add_close_phis_to_outer_loops,
+	translate_isl_ast_to_gimple::copy_loop_close_phi_args,
+	translate_isl_ast_to_gimple::copy_loop_close_phi_nodes,
+	translate_isl_ast_to_gimple::copy_cond_phi_args,
+	translate_isl_ast_to_gimple::copy_cond_phi_nodes,
+	translate_isl_ast_to_gimple::edge_for_new_close_phis,
+	translate_isl_ast_to_gimple::add_phi_arg_for_new_expr,
+	translate_isl_ast_to_gimple::rename_uses,
+	translate_isl_ast_to_gimple::rename_all_uses): Remove.
+	(translate_isl_ast_to_gimple::get_rename_from_scev): Simplify.
+	(set_rename_for_each_def): Likewise.
+	(graphite_copy_stmts_from_block): Handle debug stmt resetting
+	here.  Handle rewriting SCEV analyzable uses here.
+	(copy_bb_and_scalar_dependences): Generate code for PHI
+	copy-in/outs.
+	(graphite_regenerate_ast_isl): Adjust.
+	* graphite-scop-detection.c (trivially_empty_bb_p): Move to sese.[ch].
+	(add_write, add_read): New functions.
+	(build_cross_bb_scalars_def): Use it and simplify.
+	(build_cross_bb_scalars_use): Likewise.
+	(graphite_find_cross_bb_scalar_vars): Inline into...
+	(try_generate_gimple_bb): ...here.  Add dependences for PHIs,
+	simulating out-of-SSA.  Compute liveout and add dependencies.
+	(build_scops): Force an empty entry block.
+	* sese.h (sese_info_t::liveout, sese_info_t::debug_liveout): New
+	members.
+	(sese_build_liveouts): Declare.
+	(sese_trivially_empty_bb_p): Likewise.
+	* sese.c (sese_build_liveouts_bb): Properly handle PHIs,
+	compute liveout and debug_liveout.
+	(sese_bad_liveouts_use): Remove.
+	(sese_reset_debug_liveouts_bb): Likewise.
+	(sese_reset_debug_liveouts): Rewrite in terms of debug_liveout.
+	(sese_build_liveouts): Build liveout and debug_liveout and store
+	it in region.
+	(new_sese_info): Adjust.
+	(free_sese_info): Likewise.
+	(sese_insert_phis_for_liveouts): Reset debug stmts from here,
+	do not build liveout here.
+	(move_sese_in_condition): Adjust region entry.
+	(scev_analyzable_p): Match up with chrec_apply requirements.
+	(sese_trivially_empty_bb_p): New.
+	* tree-into-ssa.c (get_reaching_def): Properly support generating
+	default-defs for incremental rewrite of anonymous names.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
 	* graphite-sese-to-poly.c (extract_affine): For casts increasing
 	precision do not perform modulo reduction.
 

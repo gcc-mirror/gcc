@@ -1,5 +1,4 @@
 /* { dg-require-effective-target int32plus } */
-/* { dg-additional-options "--param graphite-allow-codegen-errors=1" { target ilp32 } } */
 
 typedef long unsigned int size_t;
 extern void *memset (void *__s, int __c, size_t __n) __attribute__ ((__nothrow__)) __attribute__ ((__nonnull__ (1)));
@@ -118,5 +117,3 @@ mul_double (l1, h1, l2, h2, lv, hv)
     }
   return (*hv < 0 ? ~(toplow & tophigh) : toplow | tophigh) != 0;
 }
-
-/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } } */

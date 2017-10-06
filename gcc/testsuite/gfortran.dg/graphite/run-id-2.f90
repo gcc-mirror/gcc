@@ -1,4 +1,3 @@
-! { dg-additional-options "-fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" { target ilp32 } }
   IMPLICIT NONE
   INTEGER, PARAMETER :: dp=KIND(0.0D0)
   REAL(KIND=dp)      :: res
@@ -65,4 +64,3 @@ CONTAINS
   END FUNCTION exp_radius_very_extended
 
 END
-! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" { target ilp32 } } }
