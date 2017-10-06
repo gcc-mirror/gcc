@@ -3084,7 +3084,8 @@ ready_sort_real (struct ready_list *ready)
   if (n_ready_real == 2)
     swap_sort (first, n_ready_real);
   else if (n_ready_real > 2)
-    qsort (first, n_ready_real, sizeof (rtx), rank_for_schedule);
+    /* HACK: Disable qsort checking for now (PR82396).  */
+    (qsort) (first, n_ready_real, sizeof (rtx), rank_for_schedule);
 
   if (sched_verbose >= 4)
     {
