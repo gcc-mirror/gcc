@@ -1,3 +1,8 @@
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82436
+	* gcc.dg/vect/pr82436.c: New testcase.
+
 2017-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/Wincompatible-pointer-types-1.c: New test.

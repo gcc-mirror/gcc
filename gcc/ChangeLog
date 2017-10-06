@@ -1,3 +1,11 @@
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82436
+	* tree-vect-slp.c (vect_supported_load_permutation_p): More
+	conservatively choose the vectorization factor when checking
+	whether we can perform the required load permutation.
+	(vect_transform_slp_perm_load): Assert when we may not fail.
+
 2017-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Correct error
