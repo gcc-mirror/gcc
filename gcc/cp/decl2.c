@@ -3328,7 +3328,7 @@ generate_tls_wrapper (tree fn)
     TREE_READONLY (fn) = true;
   finish_return_stmt (convert_from_reference (var));
   finish_function_body (body);
-  expand_or_defer_fn (finish_function (0));
+  expand_or_defer_fn (finish_function (/*inline_p=*/false));
 }
 
 /* Start the process of running a particular set of global constructors
@@ -3395,7 +3395,7 @@ finish_objects (int method_type, int initp, tree body)
 
   /* Finish up.  */
   finish_compound_stmt (body);
-  fn = finish_function (0);
+  fn = finish_function (/*inline_p=*/false);
 
   if (method_type == 'I')
     {
@@ -3535,7 +3535,7 @@ finish_static_storage_duration_function (tree body)
 {
   /* Close out the function.  */
   finish_compound_stmt (body);
-  expand_or_defer_fn (finish_function (0));
+  expand_or_defer_fn (finish_function (/*inline_p=*/false));
 }
 
 /* Return the information about the indicated PRIORITY level.  If no
@@ -4284,7 +4284,7 @@ handle_tls_init (void)
   finish_then_clause (if_stmt);
   finish_if_stmt (if_stmt);
   finish_function_body (body);
-  expand_or_defer_fn (finish_function (0));
+  expand_or_defer_fn (finish_function (/*inline_p=*/false));
 }
 
 /* We're at the end of compilation, so generate any mangling aliases that
@@ -5249,7 +5249,7 @@ vtv_finish_verification_constructor_init_function (tree function_body)
   tree fn;
 
   finish_compound_stmt (function_body);
-  fn = finish_function (0);
+  fn = finish_function (/*inline_p=*/false);
   DECL_STATIC_CONSTRUCTOR (fn) = 1;
   decl_init_priority_insert (fn, MAX_RESERVED_INIT_PRIORITY - 1);
 

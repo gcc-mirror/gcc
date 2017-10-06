@@ -23281,7 +23281,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	DECL_SAVED_TREE (d) = pop_stmt_list (block);
       else
 	{
-	  d = finish_function (0);
+	  d = finish_function (/*inline_p=*/false);
 	  expand_or_defer_fn (d);
 	}
 

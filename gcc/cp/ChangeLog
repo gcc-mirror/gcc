@@ -1,3 +1,24 @@
+2017-10-06  Paolo Carlini  <paolo.carlini@oracle>
+
+	PR c++/47791
+	* decl.c (finish_function): Take a bool intead of an int; adjust.
+	* cp-tree.h (finish_function): Adjust declaration.
+	* decl2.c (generate_tls_wrapper, finish_objects,
+	finish_static_storage_duration_function): Adjust calls.
+	* lambda.c (maybe_add_lambda_conv_op, finish_lambda_function):
+	Likewise.
+	* method.c (synthesize_method): Likewise.
+	* optimize.c (maybe_thunk_body, maybe_clone_body): Likewise.
+	* pt.c (instantiate_decl): Likewise.
+	* parser.c (cp_parser_function_definition_after_declarator,
+	cp_parser_late_parsing_for_member, cp_parser_omp_declare_reduction):
+	Likewise.
+	(cp_parser_ctor_initializer_opt,
+	cp_parser_ctor_initializer_opt_and_function_body,
+	cp_parser_function_try_block,
+	cp_parser_function_definition_after_declarator,
+	cp_parser_function_transaction): Return void; adjust declarations.
+
 2017-10-06  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82424
