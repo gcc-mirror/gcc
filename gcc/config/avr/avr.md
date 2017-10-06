@@ -6804,11 +6804,11 @@
 
 
 (define_insn_and_split "*iorhi3.ashift8-ext.zerox"
-  [(set (match_operand:HI 0 "register_operand"                        "=r")
+  [(set (match_operand:HI 0 "register_operand"                        "=r,r")
         (ior:HI (ashift:HI (any_extend:HI
-                            (match_operand:QI 1 "register_operand"     "r"))
+                            (match_operand:QI 1 "register_operand"     "r,r"))
                            (const_int 8))
-                (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
+                (zero_extend:HI (match_operand:QI 2 "register_operand" "0,r"))))]
   "optimize"
   { gcc_unreachable(); }
   "&& reload_completed"

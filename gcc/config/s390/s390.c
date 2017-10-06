@@ -6396,16 +6396,16 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 	  /* UNLT: a u< b -> !(a >= b) */
 	case UNLT: cond = GE; neg_p = true;                break;
 	case UNEQ:
-	  emit_insn (gen_vec_cmpuneqv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpuneq (target, cmp_op1, cmp_op2));
 	  return;
 	case LTGT:
-	  emit_insn (gen_vec_cmpltgtv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpltgt (target, cmp_op1, cmp_op2));
 	  return;
 	case ORDERED:
-	  emit_insn (gen_vec_orderedv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_ordered (target, cmp_op1, cmp_op2));
 	  return;
 	case UNORDERED:
-	  emit_insn (gen_vec_unorderedv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_unordered (target, cmp_op1, cmp_op2));
 	  return;
 	default: break;
 	}
@@ -11359,7 +11359,7 @@ s390_emit_prologue (void)
   /* When probing for stack-clash mitigation, we have to track the distance
      between the stack pointer and closest known reference.
 
-     Most of the time we have to make a worst cast assumption.  The
+     Most of the time we have to make a worst case assumption.  The
      only exception is when TARGET_BACKCHAIN is active, in which case
      we know *sp (offset 0) was written.  */
   HOST_WIDE_INT probe_interval
@@ -15859,6 +15859,14 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 static machine_mode
 s390_preferred_simd_mode (scalar_mode mode)
 {
+  if (TARGET_VXE)
+    switch (mode)
+      {
+      case E_SFmode:
+	return V4SFmode;
+      default:;
+      }
+
   if (TARGET_VX)
     switch (mode)
       {
@@ -15904,6 +15912,15 @@ s390_vector_alignment (const_tree type)
     return TYPE_ALIGN (type);
 
   return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Alignment on even addresses for
+   LARL instruction.  */
+
+static HOST_WIDE_INT
+s390_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return MAX (align, 16);
 }
 
 #ifdef HAVE_AS_MACHINE_MACHINEMODE
@@ -16324,6 +16341,9 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS s390_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT s390_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

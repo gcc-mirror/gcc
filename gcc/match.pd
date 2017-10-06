@@ -358,8 +358,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (div (convert? (bit_and @0 INTEGER_CST@1)) INTEGER_CST@2)
   (if (integer_pow2p (@2)
        && tree_int_cst_sgn (@2) > 0
-       && wi::add (@2, @1) == 0
-       && tree_nop_conversion_p (type, TREE_TYPE (@0)))
+       && tree_nop_conversion_p (type, TREE_TYPE (@0))
+       && wi::add (@2, @1) == 0)
    (rshift (convert @0) { build_int_cst (integer_type_node,
 					 wi::exact_log2 (@2)); }))))
 
@@ -630,17 +630,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TYPE_UNSIGNED (type))
     (bit_and @0 (bit_not (lshift { build_all_ones_cst (type); } @1)))))
 
-/* PR35691: Transform
-   (x == 0 & y == 0) -> (x | typeof(x)(y)) == 0.
-   (x != 0 | y != 0) -> (x | typeof(x)(y)) != 0.  */
 (for bitop (bit_and bit_ior)
      cmp (eq ne)
+ /* PR35691: Transform
+    (x == 0 & y == 0) -> (x | typeof(x)(y)) == 0.
+    (x != 0 | y != 0) -> (x | typeof(x)(y)) != 0.  */
  (simplify
   (bitop (cmp @0 integer_zerop@2) (cmp @1 integer_zerop))
    (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       && INTEGRAL_TYPE_P (TREE_TYPE (@1))
-       && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
-    (cmp (bit_ior @0 (convert @1)) @2))))
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	&& TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
+    (cmp (bit_ior @0 (convert @1)) @2)))
+ /* Transform:
+    (x == -1 & y == -1) -> (x & typeof(x)(y)) == -1.
+    (x != -1 | y != -1) -> (x & typeof(x)(y)) != -1.  */
+ (simplify
+  (bitop (cmp @0 integer_all_onesp@2) (cmp @1 integer_all_onesp))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	&& TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
+    (cmp (bit_and @0 (convert @1)) @2))))
 
 /* Fold (A & ~B) - (A & B) into (A ^ B) - B.  */
 (simplify
@@ -1266,6 +1275,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @1 @0))))
 
+/* Transform:
+ * (X / Y) == 0 -> X < Y if X, Y are unsigned.
+ * (X / Y) != 0 -> X >= Y, if X, Y are unsigned.
+ */
+(for cmp (eq ne)
+     ocmp (lt ge)
+ (simplify
+  (cmp (trunc_div @0 @1) integer_zerop)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && (VECTOR_TYPE_P (type) || !VECTOR_TYPE_P (TREE_TYPE (@0))))
+   (ocmp @0 @1))))
+
 /* X == C - X can never be true if C is odd.  */
 (for cmp (eq ne)
  (simplify
@@ -1862,7 +1883,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         && wi::lt_p (@1, prec, TYPE_SIGN (TREE_TYPE (@1)))
         && wi::ge_p (@2, 0, TYPE_SIGN (TREE_TYPE (@2)))
 	&& wi::lt_p (@2, prec, TYPE_SIGN (TREE_TYPE (@2))))
-    (with { unsigned int low = wi::add (@1, @2).to_uhwi (); }
+    (with { unsigned int low = (tree_to_uhwi (@1)
+				+ tree_to_uhwi (@2)); }
      /* Deal with a OP (c1 + c2) being undefined but (a OP c1) OP c2
         being well defined.  */
      (if (low >= prec)
@@ -2940,7 +2962,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 else
 	   real_trunc (&icst, fmt, cst);
 
-	 bool cst_int_p = real_identical (&icst, cst);
+	 bool cst_int_p = !real_isnan (cst) && real_identical (&icst, cst);
 
 	 bool overflow_p = false;
 	 wide_int icst_val

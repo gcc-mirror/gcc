@@ -1820,6 +1820,20 @@ misalignment value (@var{misalign}).",
  int, (enum vect_cost_for_stmt type_of_cost, tree vectype, int misalign),
  default_builtin_vectorization_cost)
 
+DEFHOOK
+(preferred_vector_alignment,
+ "This hook returns the preferred alignment in bits for accesses to\n\
+vectors of type @var{type} in vectorized code.  This might be less than\n\
+or greater than the ABI-defined value returned by\n\
+@code{TARGET_VECTOR_ALIGNMENT}.  It can be equal to the alignment of\n\
+a single element, in which case the vectorizer will not try to optimize\n\
+for alignment.\n\
+\n\
+The default hook returns @code{TYPE_ALIGN (@var{type})}, which is\n\
+correct for most targets.",
+ HOST_WIDE_INT, (const_tree type),
+ default_preferred_vector_alignment)
+
 /* Return true if vector alignment is reachable (by peeling N
    iterations) for the given scalar type.  */
 DEFHOOK
@@ -1833,7 +1847,7 @@ DEFHOOK
 DEFHOOK
 (vec_perm_const_ok,
  "Return true if a vector created for @code{vec_perm_const} is valid.",
- bool, (machine_mode, const unsigned char *sel),
+ bool, (machine_mode, vec_perm_indices),
  NULL)
 
 /* Return true if the target supports misaligned store/load of a
@@ -3320,6 +3334,21 @@ HOOK_VECTOR_END (addr_space)
 
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
+
+DEFHOOK
+(constant_alignment,
+ "This hook returns the alignment in bits of a constant that is being\n\
+placed in memory.  @var{constant} is the constant and @var{basic_align}\n\
+is the alignment that the object would ordinarily have.\n\
+\n\
+The default definition just returns @var{basic_align}.\n\
+\n\
+The typical use of this hook is to increase alignment for string\n\
+constants to be word aligned so that @code{strcpy} calls that copy\n\
+constants can be done inline.  The function\n\
+@code{constant_alignment_word_strings} provides such a definition.",
+ HOST_WIDE_INT, (const_tree constant, HOST_WIDE_INT basic_align),
+ default_constant_alignment)
 
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all

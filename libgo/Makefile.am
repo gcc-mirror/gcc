@@ -217,7 +217,8 @@ toolexeclibgodebug_DATA = \
 	debug/gosym.gox \
 	debug/macho.gox \
 	debug/pe.gox \
-	debug/plan9obj.gox
+	debug/plan9obj.gox \
+	debug/xcoff.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
@@ -722,6 +723,7 @@ PACKAGES = \
 	debug/macho \
 	debug/pe \
 	debug/plan9obj \
+	debug/xcoff \
 	encoding \
 	encoding/ascii85 \
 	encoding/asn1 \
@@ -1293,6 +1295,7 @@ TEST_PACKAGES = \
 	debug/macho/check \
 	debug/pe/check \
 	debug/plan9obj/check \
+	debug/xcoff/check \
 	encoding/ascii85/check \
 	encoding/asn1/check \
 	encoding/base32/check \

@@ -29,7 +29,7 @@
 with Casing; use Casing;
 with Errout; use Errout;
 with Scng;
-with Style;  use Style;
+with Style;  --  use Style;
 with Types;  use Types;
 
 package Scn is

@@ -69,6 +69,18 @@
 		 (ior (match_test "op == constm1_rtx")
 		      (match_test "op == const1_rtx"))))))
 
+(define_predicate "aarch64_reg_or_orr_imm"
+   (ior (match_operand 0 "register_operand")
+	(and (match_code "const_vector")
+	     (match_test "aarch64_simd_valid_immediate (op, mode, false,
+						NULL, AARCH64_CHECK_ORR)"))))
+
+(define_predicate "aarch64_reg_or_bic_imm"
+   (ior (match_operand 0 "register_operand")
+	(and (match_code "const_vector")
+	     (match_test "aarch64_simd_valid_immediate (op, mode, false,
+						NULL, AARCH64_CHECK_BIC)"))))
+
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_double")

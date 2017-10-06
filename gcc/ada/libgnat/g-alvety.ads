@@ -36,8 +36,6 @@ with GNAT.Altivec.Low_Level_Vectors;
 
 package GNAT.Altivec.Vector_Types is
 
-   use GNAT.Altivec.Low_Level_Vectors;
-
    ---------------------------------------------------
    -- Vector type declarations [PIM-2.1 Data Types] --
    ---------------------------------------------------

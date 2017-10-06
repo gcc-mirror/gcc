@@ -1,3 +1,12 @@
+2017-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Add a note that maintainership also includes web
+	pages, docs, and testsuite related to that area.
+
+2017-09-25  Tom de Vries  <tom@codesourcery.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as nvptx maintainer.
+
 2017-09-18  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* MAINTAINERS: Add myself as a maintainer for the Ada front end.

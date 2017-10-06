@@ -558,21 +558,45 @@
   [(set_attr "type" "neon_fp_abd_<stype><q>")]
 )
 
+;; For AND (vector, register) and BIC (vector, immediate)
 (define_insn "and<mode>3"
-  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-        (and:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		 (match_operand:VDQ_I 2 "register_operand" "w")))]
+  [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
+	(and:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,0")
+		   (match_operand:VDQ_I 2 "aarch64_reg_or_bic_imm" "w,Db")))]
   "TARGET_SIMD"
-  "and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
+  {
+    switch (which_alternative)
+      {
+      case 0:
+	return "and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>";
+      case 1:
+	return aarch64_output_simd_mov_immediate (operands[2],
+	   <MODE>mode, GET_MODE_BITSIZE (<MODE>mode), AARCH64_CHECK_BIC);
+      default:
+	gcc_unreachable ();
+      }
+  }
   [(set_attr "type" "neon_logic<q>")]
 )
 
+;; For ORR (vector, register) and ORR (vector, immediate)
 (define_insn "ior<mode>3"
-  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-        (ior:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		 (match_operand:VDQ_I 2 "register_operand" "w")))]
+  [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
+	(ior:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,0")
+		   (match_operand:VDQ_I 2 "aarch64_reg_or_orr_imm" "w,Do")))]
   "TARGET_SIMD"
-  "orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
+  {
+    switch (which_alternative)
+      {
+      case 0:
+	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>";
+      case 1:
+	return aarch64_output_simd_mov_immediate (operands[2],
+		<MODE>mode, GET_MODE_BITSIZE (<MODE>mode), AARCH64_CHECK_ORR);
+      default:
+	gcc_unreachable ();
+      }
+  }
   [(set_attr "type" "neon_logic<q>")]
 )
 

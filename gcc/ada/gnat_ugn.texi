@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 13, 2017
+GNAT User's Guide for Native Platforms , Sep 29, 2017
 
 AdaCore
 
@@ -3193,7 +3193,7 @@ depend on a file that no longer exists. Such tools include
 If you are using project file, a separate mechanism is provided using
 project attributes.
 
-@c --Comment:
+@c --Comment
 @c See :ref:`Specifying_Configuration_Pragmas` for more details.
 
 @node Generating Object Files,Source Dependencies,Configuration Pragmas,The GNAT Compilation Model
@@ -7925,7 +7925,7 @@ Unique. Recompile at most the main files. It implies -c. Combined with
 -u with a project file and no main has a special meaning.
 @end table
 
-@c --Comment:
+@c --Comment
 @c (See :ref:`Project_Files_and_Main_Subprograms`.)
 
 @geindex -U (gnatmake)
@@ -17654,7 +17654,7 @@ Add @code{dir} at the beginning of the project search dir.
 
 @table @asis
 
-@item @code{--RTS=@emph{rts-path}`}
+@item @code{--RTS=@emph{rts-path}}
 
 Specifies the default location of the runtime library. Same meaning as the
 equivalent @code{gnatmake} flag (@ref{dc,,Switches for gnatmake}).
@@ -22773,7 +22773,7 @@ However, incorrect assignments such as:
 
 @example
 Distance := 5.0;
-Distance := 5.0 * kg:
+Distance := 5.0 * kg;
 @end example
 @end quotation
 
@@ -22854,7 +22854,7 @@ end;
 @end quotation
 
 Here @code{DV(Acc)} = @code{DV(Acceleration)} =
-@code{(Meter=>1, Kilogram=>0, Second => -2, Ampere=>0, Kelvin=>0, Mole=>0, Candela => 0)}.
+@code{(Meter=>1, Kilogram=>0, Second=>-2, Ampere=>0, Kelvin=>0, Mole=>0, Candela=>0)}.
 Symbolically, we can express this as @code{Meter / Second**2}.
 
 The dimension vector of an arithmetic expression is synthesized from the

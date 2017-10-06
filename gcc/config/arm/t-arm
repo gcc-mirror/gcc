@@ -18,8 +18,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += arm-cpu.h
-GTM_H += arm-cpu.h
+GTM_H += arm-cpu.h arm-isa.h
 
 # All md files - except for arm.md.
 # This list should be kept in alphabetical order and updated whenever an md
@@ -86,6 +85,14 @@ s-arm-cpu: $(srcdir)/config/arm/parsecpu.awk \
 		$(srcdir)/config/arm/arm-cpus.in > tmp-arm-cpu.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-arm-cpu.h arm-cpu.h
 	$(STAMP) s-arm-cpu
+
+arm-isa.h: s-arm-isa ; @true
+s-arm-isa: $(srcdir)/config/arm/parsecpu.awk \
+  $(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=isa \
+		$(srcdir)/config/arm/arm-cpus.in > tmp-arm-isa.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-arm-isa.h arm-isa.h
+	$(STAMP) s-arm-isa
 
 arm-cpu-data.h: s-arm-data ; @true
 s-arm-data: $(srcdir)/config/arm/parsecpu.awk \

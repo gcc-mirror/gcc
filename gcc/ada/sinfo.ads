@@ -1372,9 +1372,9 @@ package Sinfo is
    --    up. For nested aggregates the expansion is delayed until the enclosing
    --    aggregate itself is expanded, e.g. in the context of a declaration. To
    --    delay it we set this flag. This is done to avoid creating a temporary
-   --    for each level of a nested aggregates, and also to prevent the
+   --    for each level of a nested aggregate, and also to prevent the
    --    premature generation of constraint checks. This is also a requirement
-   --    if we want to generate the proper attachment to the internal
+   --    if we want to generate the proper attachment to the internal????
    --    finalization lists (for record with controlled components). Top down
    --    expansion of aggregates is also used for in-place array aggregate
    --    assignment or initialization. When the full context is known, the
@@ -1596,7 +1596,7 @@ package Sinfo is
    --    added to the size of the prefix. The flag also prevents the infinite
    --    expansion of the same attribute in the said context.
 
-   --  Hidden_By_Use_Clause (Elist4-Sem)
+   --  Hidden_By_Use_Clause (Elist5-Sem)
    --     An entity list present in use clauses that appear within
    --     instantiations. For the resolution of local entities, entities
    --     introduced by these use clauses have priority over global ones, and
@@ -1720,6 +1720,10 @@ package Sinfo is
    --    for an access discriminant of a dynamically allocated object. The
    --    coextension must be deallocated and finalized at the same time as
    --    the enclosing object.
+
+   --  Is_Effective_Use_Clause (Flag1-Sem)
+   --    Present in both N_Use_Type_Clause and N_Use_Package_Clause to indicate
+   --    a use clause is "used" in the current source.
 
    --  Is_Entry_Barrier_Function (Flag8-Sem)
    --    This flag is set on N_Subprogram_Declaration and N_Subprogram_Body
@@ -2137,6 +2141,11 @@ package Sinfo is
    --    ASIS processing (data decomposition annex) to determine if a field is
    --    present or not.
 
+   --  Prev_Use_Clause (Node1-Sem)
+   --    Present in both N_Use_Package_Clause and N_Use_Type_Clause. Used in
+   --    detection of ineffective use clauses by allowing a chain of related
+   --    clauses together to avoid traversing the current scope stack.
+
    --  Print_In_Hex (Flag13-Sem)
    --    Set on an N_Integer_Literal node to indicate that the value should be
    --    printed in hexadecimal in the sprint listing. Has no effect on
@@ -2338,7 +2347,7 @@ package Sinfo is
    --    initialized. Used to warn if the corresponding actual type is not
    --    a fully initialized type.
 
-   --  Used_Operations (Elist5-Sem)
+   --  Used_Operations (Elist2-Sem)
    --    Present in N_Use_Type_Clause nodes. Holds the list of operations that
    --    are made potentially use-visible by the clause. Simplifies processing
    --    on exit from the scope of the use_type_clause, in particular in the
@@ -2908,7 +2917,7 @@ package Sinfo is
       --  case the front end must generate an extra temporary and initialize
       --  this temporary as required (the temporary itself is not atomic).
 
-      --  Note: there is not node kind for object definition. Instead, the
+      --  Note: there is no node kind for object definition. Instead, the
       --  corresponding field holds a subtype indication, an array type
       --  definition, or (Ada 2005, AI-406) an access definition.
 
@@ -5687,9 +5696,14 @@ package Sinfo is
 
       --  N_Use_Package_Clause
       --  Sloc points to USE
-      --  Names (List2)
+      --  Prev_Use_Clause (Node1-Sem)
+      --  Name (Node2)
       --  Next_Use_Clause (Node3-Sem)
-      --  Hidden_By_Use_Clause (Elist4-Sem)
+      --  Associated_Node (Node4-Sem)
+      --  Hidden_By_Use_Clause (Elist5-Sem)
+      --  Is_Effective_Use_Clause (Flag1)
+      --  More_Ids (Flag5) (set to False if no more identifiers in list)
+      --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
 
       --------------------------
       -- 8.4  Use Type Clause --
@@ -5703,10 +5717,14 @@ package Sinfo is
 
       --  N_Use_Type_Clause
       --  Sloc points to USE
-      --  Subtype_Marks (List2)
+      --  Prev_Use_Clause (Node1-Sem)
+      --  Used_Operations (Elist2-Sem)
       --  Next_Use_Clause (Node3-Sem)
-      --  Hidden_By_Use_Clause (Elist4-Sem)
-      --  Used_Operations (Elist5-Sem)
+      --  Subtype_Mark (Node4)
+      --  Hidden_By_Use_Clause (Elist5-Sem)
+      --  Is_Effective_Use_Clause (Flag1)
+      --  More_Ids (Flag5) (set to False if no more identifiers in list)
+      --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
       --  All_Present (Flag15)
 
       -------------------------------
@@ -9455,7 +9473,7 @@ package Sinfo is
      (N : Node_Id) return Boolean;    -- Flag11
 
    function Hidden_By_Use_Clause
-     (N : Node_Id) return Elist_Id;   -- Elist4
+     (N : Node_Id) return Elist_Id;   -- Elist5
 
    function High_Bound
      (N : Node_Id) return Node_Id;    -- Node2
@@ -9534,6 +9552,9 @@ package Sinfo is
 
    function Is_Dynamic_Coextension
      (N : Node_Id) return Boolean;    -- Flag18
+
+   function Is_Effective_Use_Clause
+     (N : Node_Id) return Boolean;    -- Flag1
 
    function Is_Elsif
      (N : Node_Id) return Boolean;    -- Flag13
@@ -9802,6 +9823,9 @@ package Sinfo is
    function Prev_Ids
      (N : Node_Id) return Boolean;    -- Flag6
 
+   function Prev_Use_Clause
+     (N : Node_Id) return Node_Id;    -- Node1
+
    function Print_In_Hex
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -9995,7 +10019,7 @@ package Sinfo is
      (N : Node_Id) return Node_Id;    -- Node3
 
    function Used_Operations
-     (N : Node_Id) return Elist_Id;   -- Elist5
+     (N : Node_Id) return Elist_Id;   -- Elist2
 
    function Was_Expression_Function
      (N : Node_Id) return Boolean;    -- Flag18
@@ -10511,7 +10535,7 @@ package Sinfo is
      (N : Node_Id; Val : Boolean := True);    -- Flag11
 
    procedure Set_Hidden_By_Use_Clause
-     (N : Node_Id; Val : Elist_Id);           -- Elist4
+     (N : Node_Id; Val : Elist_Id);           -- Elist5
 
    procedure Set_High_Bound
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -10590,6 +10614,9 @@ package Sinfo is
 
    procedure Set_Is_Dynamic_Coextension
      (N : Node_Id; Val : Boolean := True);    -- Flag18
+
+   procedure Set_Is_Effective_Use_Clause
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
 
    procedure Set_Is_Elsif
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -10858,6 +10885,9 @@ package Sinfo is
    procedure Set_Prev_Ids
      (N : Node_Id; Val : Boolean := True);    -- Flag6
 
+   procedure Set_Prev_Use_Clause
+     (N : Node_Id; Val : Node_Id);            -- Node1
+
    procedure Set_Print_In_Hex
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
@@ -11051,7 +11081,7 @@ package Sinfo is
      (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Used_Operations
-     (N : Node_Id; Val : Elist_Id);           -- Elist5
+     (N : Node_Id; Val : Elist_Id);           -- Elist2
 
    procedure Set_Was_Expression_Function
      (N : Node_Id; Val : Boolean := True);    -- Flag18
@@ -12053,18 +12083,18 @@ package Sinfo is
         5 => True),   --  Subtype_Indication (Node5)
 
      N_Use_Package_Clause =>
-       (1 => False,   --  unused
-        2 => True,    --  Names (List2)
+       (1 => False,   --  Prev_Use_Clause (Node1-Sem)
+        2 => True,    --  Name (Node2)
         3 => False,   --  Next_Use_Clause (Node3-Sem)
-        4 => False,   --  Hidden_By_Use_Clause (Elist4-Sem)
-        5 => False),  --  unused
+        4 => False,   --  Associated_Node (Node4-Sem)
+        5 => False),  --  Hidden_By_Use_Clause (Elist5-Sem)
 
      N_Use_Type_Clause =>
-       (1 => False,   --  unused
-        2 => True,    --  Subtype_Marks (List2)
+       (1 => False,   --  Prev_Use_Clause (Node1-Sem)
+        2 => False,   --  Used_Operations (Elist2-Sem)
         3 => False,   --  Next_Use_Clause (Node3-Sem)
-        4 => False,   --  Hidden_By_Use_Clause (Elist4-Sem)
-        5 => False),  --  unused
+        4 => True,    --  Subtype_Mark (Node4)
+        5 => False),  --  Hidden_By_Use_Clause (Elist5-Sem)
 
      N_Object_Renaming_Declaration =>
        (1 => True,    --  Defining_Identifier (Node1)
@@ -13053,6 +13083,7 @@ package Sinfo is
    pragma Inline (Is_Delayed_Aspect);
    pragma Inline (Is_Disabled);
    pragma Inline (Is_Dynamic_Coextension);
+   pragma Inline (Is_Effective_Use_Clause);
    pragma Inline (Is_Elsif);
    pragma Inline (Is_Entry_Barrier_Function);
    pragma Inline (Is_Expanded_Build_In_Place_Call);
@@ -13141,6 +13172,7 @@ package Sinfo is
    pragma Inline (Premature_Use);
    pragma Inline (Present_Expr);
    pragma Inline (Prev_Ids);
+   pragma Inline (Prev_Use_Clause);
    pragma Inline (Print_In_Hex);
    pragma Inline (Private_Declarations);
    pragma Inline (Private_Present);
@@ -13400,6 +13432,7 @@ package Sinfo is
    pragma Inline (Set_Is_Delayed_Aspect);
    pragma Inline (Set_Is_Disabled);
    pragma Inline (Set_Is_Dynamic_Coextension);
+   pragma Inline (Set_Is_Effective_Use_Clause);
    pragma Inline (Set_Is_Elsif);
    pragma Inline (Set_Is_Entry_Barrier_Function);
    pragma Inline (Set_Is_Expanded_Build_In_Place_Call);
@@ -13489,6 +13522,7 @@ package Sinfo is
    pragma Inline (Set_Premature_Use);
    pragma Inline (Set_Present_Expr);
    pragma Inline (Set_Prev_Ids);
+   pragma Inline (Set_Prev_Use_Clause);
    pragma Inline (Set_Print_In_Hex);
    pragma Inline (Set_Private_Declarations);
    pragma Inline (Set_Private_Present);

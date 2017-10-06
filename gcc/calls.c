@@ -1252,9 +1252,8 @@ alloc_max_size (void)
 
 	      if (unit)
 		{
-		  wide_int w = wi::uhwi (limit, HOST_BITS_PER_WIDE_INT + 64);
-		  w *= unit;
-		  if (wi::ltu_p (w, alloc_object_size_limit))
+		  widest_int w = wi::mul (limit, unit);
+		  if (w < wi::to_widest (alloc_object_size_limit))
 		    alloc_object_size_limit = wide_int_to_tree (ssizetype, w);
 		}
 	    }

@@ -1851,8 +1851,7 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 	      || code == ROUND_DIV_EXPR
 	      || code == RSHIFT_EXPR
 	      || code == LSHIFT_EXPR);
-  gcc_assert ((vr0->type == VR_RANGE
-	       || (code == MULT_EXPR && vr0->type == VR_ANTI_RANGE))
+  gcc_assert (vr0->type == VR_RANGE
 	      && vr0->type == vr1->type);
 
   rtype = vr0->type;
@@ -2462,9 +2461,14 @@ extract_range_from_binary_expr_1 (value_range *vr,
       signop sign = TYPE_SIGN (expr_type);
       unsigned int prec = TYPE_PRECISION (expr_type);
 
-      if (range_int_cst_p (&vr0)
-	  && range_int_cst_p (&vr1)
-	  && TYPE_OVERFLOW_WRAPS (expr_type))
+      if (!range_int_cst_p (&vr0)
+	  || !range_int_cst_p (&vr1))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
+      if (TYPE_OVERFLOW_WRAPS (expr_type))
 	{
 	  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) vrp_int;
 	  typedef generic_wide_int

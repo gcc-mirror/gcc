@@ -1440,7 +1440,8 @@ CND(CLOCK_FASTEST, "Fastest clock")
 #endif
 CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 
-#if defined(__FreeBSD__) || (defined(_AIX) && defined(_AIXVERSION_530)) \
+#if defined(__linux__) || defined(__FreeBSD__) \
+ || (defined(_AIX) && defined(_AIXVERSION_530)) \
  || defined(__DragonFly__)
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes

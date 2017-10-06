@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Debug;   use Debug;
-with Osint;   use Osint;
-with Osint.C; use Osint.C;
-with Output;  use Output;
+with Debug;         use Debug;
+with Osint;         use Osint;
+with Osint.C;       use Osint.C;
+with Output;        use Output;
+with System.OS_Lib; use System.OS_Lib;
 
 package body Sinput.D is
 
@@ -38,6 +39,7 @@ package body Sinput.D is
    ------------------------
 
    procedure Close_Debug_Source is
+      FD   : File_Descriptor;
       SFR  : Source_File_Record renames Source_File.Table (Dfile);
       Src  : Source_Buffer_Ptr;
    begin
@@ -48,7 +50,7 @@ package body Sinput.D is
       --  subsequent access.
 
       Read_Source_File
-        (SFR.Full_Debug_Name, SFR.Source_First, SFR.Source_Last, Src);
+        (SFR.Full_Debug_Name, SFR.Source_First, SFR.Source_Last, Src, FD);
       SFR.Source_Text := Src;
       pragma Assert (SFR.Source_Text'First = SFR.Source_First);
       pragma Assert (SFR.Source_Text'Last = SFR.Source_Last);

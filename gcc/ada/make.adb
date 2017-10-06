@@ -23,26 +23,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALI;      use ALI;
-with ALI.Util; use ALI.Util;
+with ALI;       use ALI;
+with ALI.Util;  use ALI.Util;
 with Csets;
 with Debug;
 with Fmap;
 with Fname;     use Fname;
-with Fname.SF;  use Fname.SF;
+with Fname.SF;
 with Fname.UF;  use Fname.UF;
 with Gnatvsn;   use Gnatvsn;
 with Hostparm;  use Hostparm;
 with Makeusg;
 with Make_Util; use Make_Util;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Osint.M;  use Osint.M;
-with Osint;    use Osint;
-with Output;   use Output;
+with Namet;     use Namet;
+with Opt;       use Opt;
+with Osint.M;   use Osint.M;
+with Osint;     use Osint;
+with Output;    use Output;
 with SFN_Scan;
 with Sinput;
-with Snames;   use Snames;
+with Snames;
 with Stringt;
 
 pragma Warnings (Off);
@@ -52,7 +52,7 @@ pragma Warnings (On);
 with Switch;   use Switch;
 with Switch.M; use Switch.M;
 with Table;
-with Targparm; use Targparm;
+with Targparm;
 with Tempdir;
 with Types;    use Types;
 
@@ -1772,7 +1772,7 @@ package body Make is
         (Data : out Compilation_Data;
          OK   : out Boolean)
       is
-         Pid       : Process_Id;
+         Pid : Process_Id;
 
       begin
          pragma Assert (Outstanding_Compiles > 0);
@@ -1790,7 +1790,7 @@ package body Make is
 
          for J in Running_Compile'First .. Outstanding_Compiles loop
             if Pid = Running_Compile (J).Pid then
-               Data    := Running_Compile (J);
+               Data := Running_Compile (J);
                --  If a mapping file was used by this compilation, get its file
                --  name for reuse by a subsequent compilation.
 

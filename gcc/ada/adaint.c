@@ -2551,6 +2551,7 @@ win32_wait (int *status)
   DWORD res;
   int hl_len;
   int found;
+  int pos;
 
  START_WAIT:
 
@@ -2563,7 +2564,15 @@ win32_wait (int *status)
   /* -------------------- critical section -------------------- */
   EnterCS();
 
+  /* ??? We can't wait for more than MAXIMUM_WAIT_OBJECTS due to a Win32
+     limitation */
+  if (plist_length < MAXIMUM_WAIT_OBJECTS)
   hl_len = plist_length;
+  else
+    {
+      errno = EINVAL;
+      return -1;
+    }
 
 #ifdef CERT
   hl = (HANDLE *) xmalloc (sizeof (HANDLE) * hl_len);
@@ -2586,6 +2595,13 @@ win32_wait (int *status)
 
   res = WaitForMultipleObjects (hl_len, hl, FALSE, INFINITE);
 
+  /* If there was an error, exit now */
+  if (res == WAIT_FAILED)
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
   /* if the ProcListEvt has been signaled then the list of processes has been
      updated to add or remove a handle, just loop over */
 
@@ -2596,9 +2612,17 @@ win32_wait (int *status)
       goto START_WAIT;
     }
 
-  h = hl[res - WAIT_OBJECT_0];
+  /* Handle two distinct groups of return codes: finished waits and abandoned
+     waits */
+
+  if (res < WAIT_ABANDONED_0)
+    pos = res - WAIT_OBJECT_0;
+  else
+    pos = res - WAIT_ABANDONED_0;
+
+  h = hl[pos];
   GetExitCodeProcess (h, &exitcode);
-  pid = pidl [res - WAIT_OBJECT_0];
+  pid = pidl [pos];
 
   found = __gnat_win32_remove_handle (h, -1);
 

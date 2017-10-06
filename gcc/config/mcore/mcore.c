@@ -248,6 +248,9 @@ static const struct attribute_spec mcore_attribute_table[] =
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P mcore_modes_tieable_p
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Adjust the stack and return the number of bytes taken to do it.  */

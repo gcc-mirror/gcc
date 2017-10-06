@@ -1,3 +1,20 @@
+2017-08-31  Tony Reix  <tony.reix@atos.net>
+
+	* src/powerpc/aix.S (ffi_call_AIX): Add debugging pseudo-op and
+	labels for EH.
+	(ffi_call_go_AIX): New function.
+	(_GLOBAL__F_libffi_src_powerpc_aix): New EH frame.
+	* src/powerpc/aix_closure.S (ffi_closure_ASM): Add debugging
+	pseudo-op and labels for EH.
+	(ffi_go_closure_ASM): New function.
+	(_GLOBAL__F_libffi_src_powerpc_aix_closure): New EH frame.
+	* src/powrpc/ffi_darwin.c (ffi_call_go): New function.
+	(ffi_prep_go_closure): New function.
+	(ffi_closure_helper_common): Rename from ffi_closure_helper_DARWIN.
+	(ffi_closure_helper_DARWIN): Call ffi_closure_helper_common.
+	(ffi_go_closure_helper_DARWIN): Call ffi_closure_helper_common.
+	* src/powerpc/ffitarget.h (FFI_GO_CLOSURES): Define.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046

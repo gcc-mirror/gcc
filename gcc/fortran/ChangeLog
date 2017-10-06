@@ -1,3 +1,102 @@
+2017-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/60458
+	PR fortran/77296
+	* resolve.c (resolve_assoc_var): Deferred character type
+	associate names must not receive an integer conatant length.
+	* symbol.c (gfc_is_associate_pointer): Deferred character
+	length functions also require an associate pointer.
+	* trans-decl.c (gfc_get_symbol_decl): Deferred character
+	length functions or derived type components require the assoc
+	name to have variable string length.
+	* trans-stmt.c (trans_associate_var): Set the string length of
+	deferred string length associate names. The address expression
+	is not needed for allocatable, pointer or dummy targets. Change
+	the comment about defered string length targets.
+
+2017-10-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io.c (match_wait_element): Correctly match END and EOR tags.
+	* dump-parse-tree.c (show_code_node): Handle EXEC_WAIT.
+
+2017-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82312
+	* resolve.c (gfc_resolve_code): Simplify condition for class
+	pointer assignments becoming regular assignments by asserting
+	that only class valued targets are permitted.
+	* trans-expr.c (trans_class_pointer_fcn): New function using a
+	block of code from gfc_trans_pointer_assignment.
+	(gfc_trans_pointer_assignment): Call the new function. Tidy up
+	a minor whitespace issue.
+
+2017-10-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/61450
+	* parse.c (gfc_global_used): Replace the gfc_internal_error
+	with an error.
+
+2017-09-29  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/25071
+	* interface.c (compare_actual_formal): Change warnings to errors
+	when "Actual argument contains too few elements for dummy
+	argument", unless -std=legacy is used.
+
+2017-09-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt <Wdo-subscript>: End help text with a period.
+
+2017-09-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (do_subscript): Don't do anything
+	if inside an associate list.
+
+2017-09-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* lang.opt:  Add -Wdo-subscript.
+	* frontend-passes.c (do_t): New type.
+	(doloop_list): Use variable of do_type.
+	(if_level): Variable to track if levels.
+	(select_level): Variable to track select levels.
+	(gfc_run_passes): Initialize i_level and select_level.
+	(doloop_code): Record current level of if + select
+	level in doloop_list.  Add seen_goto if there could
+	be a branch outside the loop. Use different type for
+	doloop_list.
+	(doloop_function): Call do_intent and do_subscript; move
+	functionality of checking INTENT to do_intent.
+	(insert_index_t): New type, for callback_insert_index.
+	(callback_insert_index): New function.
+	(insert_index): New function.
+	(do_subscript): New function.
+	(do_intent): New function.
+	(gfc_code_walker): Keep track of if_level and select_level.
+	* invoke.texi: Document -Wdo-subscript.
+
+2017-09-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans.c (gfc_unlikely): Remove unnecessary fold_convert.
+	(gfc_likely): Likewise.
+
+2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80118
+	* expr.c (gfc_get_full_arrayspec_from_expr): If there is
+	no symtree, set array spec to NULL.
+
+2017-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82143
+	* lang.opt: Add the options -fdefault-real-10 and -fdefault-real-16.
+	Rename flag_default_real to flag_default_real_8.
+	* invoke.texi: Add documentation.
+	* module.c (use_iso_fortran_env_module): flag_default_real is renamed.
+	* trans-types.c (gfc_init_kinds): Implement the flags
+	-fdefault-real-10 and -fdefault-real-16. Make -fdefault-double-8 work
+	without -fdefault-real-8.
+
 2017-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52832

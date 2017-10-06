@@ -15348,14 +15348,47 @@ that use the ISA 3.0 instruction set.
 
 @table @code
 @item __float128 __builtin_sqrtf128 (__float128)
-Similar to @code{__builtin_sqrtf}, except the return and input types
-are @code{__float128}.
+Perform a 128-bit IEEE floating point square root operation.
 @findex __builtin_sqrtf128
 
 @item __float128 __builtin_fmaf128 (__float128, __float128, __float128)
-Similar to @code{__builtin_fma}, except the return and input types are
-@code{__float128}.
+Perform a 128-bit IEEE floating point fused multiply and add operation.
 @findex __builtin_fmaf128
+
+@item __float128 __builtin_addf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point add using round to odd as the
+rounding mode.
+@findex __builtin_addf128_round_to_odd
+
+@item __float128 __builtin_subf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point subtract using round to odd as
+the rounding mode.
+@findex __builtin_subf128_round_to_odd
+
+@item __float128 __builtin_mulf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point multiply using round to odd as
+the rounding mode.
+@findex __builtin_mulf128_round_to_odd
+
+@item __float128 __builtin_divf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point divide using round to odd as
+the rounding mode.
+@findex __builtin_divf128_round_to_odd
+
+@item __float128 __builtin_sqrtf128_round_to_odd (__float128)
+Perform a 128-bit IEEE floating point square root using round to odd
+as the rounding mode.
+@findex __builtin_sqrtf128_round_to_odd
+
+@item __float128 __builtin_fmaf128 (__float128, __float128, __float128)
+Perform a 128-bit IEEE floating point fused multiply and add operation
+using round to odd as the rounding mode.
+@findex __builtin_fmaf128_round_to_odd
+
+@item double __builtin_truncf128_round_to_odd (__float128)
+Convert a 128-bit IEEE floating point value to @code{double} using
+round to odd as the rounding mode.
+@findex __builtin_truncf128_round_to_odd
 @end table
 
 The following built-in functions are available for the PowerPC family
@@ -15653,6 +15686,8 @@ vector unsigned short vec_xl_len (unsigned short *addr, size_t len);
 vector double vec_xl_len (double *addr, size_t len);
 vector float vec_xl_len (float *addr, size_t len);
 
+vector unsigned char vec_xl_len_r (unsigned char *addr, size_t len);
+
 void vec_xst_len (vector signed char data, signed char *addr, size_t len);
 void vec_xst_len (vector unsigned char data, unsigned char *addr, size_t len);
 void vec_xst_len (vector signed int data, signed int *addr, size_t len);
@@ -15665,6 +15700,8 @@ void vec_xst_len (vector unsigned short data, unsigned short *addr, size_t len);
 void vec_xst_len (vector signed __int128 data, signed __int128 *addr, size_t len);
 void vec_xst_len (vector double data, double *addr, size_t len);
 void vec_xst_len (vector float data, float *addr, size_t len);
+
+void vec_xst_len_r (vector unsigned char data, unsigned char *addr, size_t len);
 
 signed char vec_xlx (unsigned int index, vector signed char data);
 unsigned char vec_xlx (unsigned int index, vector unsigned char data);

@@ -33,7 +33,7 @@ type Data struct {
 // New returns a new Data object initialized from the given parameters.
 // Rather than calling this function directly, clients should typically use
 // the DWARF method of the File type of the appropriate package debug/elf,
-// debug/macho, or debug/pe.
+// debug/macho, debug/pe, or debug/xcoff.
 //
 // The []byte arguments are the data from the corresponding debug section
 // in the object file; for example, for an ELF object, abbrev is the contents of

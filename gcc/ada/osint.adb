@@ -2565,9 +2565,10 @@ package body Osint is
       Lo  : Source_Ptr;
       Hi  : out Source_Ptr;
       Src : out Source_Buffer_Ptr;
+      FD  : out File_Descriptor;
       T   : File_Type := Source)
    is
-      Source_File_FD : File_Descriptor;
+      --  Source_File_FD : File_Descriptor;
       --  The file descriptor for the current source file. A negative value
       --  indicates failure to open the specified source file.
 
@@ -2594,6 +2595,7 @@ package body Osint is
             Fail ("Cannot find: " & Name_Buffer (1 .. Name_Len));
          end if;
 
+         FD  := Null_FD;
          Src := null;
          Hi  := No_Location;
          return;
@@ -2607,9 +2609,9 @@ package body Osint is
       --  DOS or Unix mode files, and there is no point in wasting time on
       --  text translation when it is not required.
 
-      Source_File_FD := Open_Read (Name_Buffer'Address, Binary);
+      FD := Open_Read (Name_Buffer'Address, Binary);
 
-      if Source_File_FD = Invalid_FD then
+      if FD = Invalid_FD then
          Src := null;
          Hi  := No_Location;
          return;
@@ -2645,7 +2647,7 @@ package body Osint is
 
       --  Prepare to read data from the file
 
-      Len := Integer (File_Length (Source_File_FD));
+      Len := Integer (File_Length (FD));
 
       --  Set Hi so that length is one more than the physical length,
       --  allowing for the extra EOF character at the end of the buffer
@@ -2665,7 +2667,7 @@ package body Osint is
 
          Hi := Lo;
          loop
-            Actual_Len := Read (Source_File_FD, Var_Ptr (Hi)'Address, Len);
+            Actual_Len := Read (FD, Var_Ptr (Hi)'Address, Len);
             Hi := Hi + Source_Ptr (Actual_Len);
             exit when Actual_Len = Len or else Actual_Len <= 0;
          end loop;
@@ -2676,7 +2678,7 @@ package body Osint is
 
       --  Read is complete, get time stamp and close file and we are done
 
-      Close (Source_File_FD, Status);
+      Close (FD, Status);
 
       --  The status should never be False. But, if it is, what can we do?
       --  So, we don't test it.

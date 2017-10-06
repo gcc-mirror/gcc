@@ -39,7 +39,6 @@ with Interfaces.C.Extensions;
 
 package body System.OS_Interface is
    use Interfaces.C;
-   use Interfaces.C.Extensions;
 
    -----------------
    -- To_Duration --

@@ -165,6 +165,7 @@ static bool cris_function_value_regno_p (const unsigned int);
 static void cris_file_end (void);
 static unsigned int cris_hard_regno_nregs (unsigned int, machine_mode);
 static bool cris_hard_regno_mode_ok (unsigned int, machine_mode);
+static HOST_WIDE_INT cris_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
@@ -286,6 +287,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_HARD_REGNO_NREGS cris_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK cris_hard_regno_mode_ok
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT cris_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4323,6 +4327,23 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return ((mode == CCmode || regno != CRIS_CC0_REGNUM)
 	  && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	      || (regno != CRIS_MOF_REGNUM && regno != CRIS_ACR_REGNUM)));
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Note that this hook has the
+   effect of making gcc believe that ALL references to constant stuff
+   (in code segment, like strings) have this alignment.  That is a rather
+   rushed assumption.  Luckily we do not care about the "alignment"
+   operand to builtin memcpy (only place where it counts), so it doesn't
+   affect any bad spots.  */
+
+static HOST_WIDE_INT
+cris_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
+{
+  if (!TARGET_CONST_ALIGN)
+    return basic_align;
+  if (TARGET_ALIGN_BY_32)
+    return MAX (basic_align, 32);
+  return MAX (basic_align, 16);
 }
 
 #if 0

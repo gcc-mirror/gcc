@@ -401,6 +401,7 @@ package Osint is
       Lo  : Source_Ptr;
       Hi  : out Source_Ptr;
       Src : out Source_Buffer_Ptr;
+      FD  : out File_Descriptor;
       T   : File_Type := Source);
    --  Allocates a Source_Buffer of appropriate length and then reads the
    --  entire contents of the source file N into the buffer. The address of

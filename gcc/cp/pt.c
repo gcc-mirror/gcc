@@ -9494,6 +9494,32 @@ in_template_function (void)
   return ret;
 }
 
+/* Returns true iff we are currently within a template other than a generic
+   lambda.  We test this by finding the outermost closure type and checking
+   whether it is dependent.  */
+
+bool
+processing_nonlambda_template (void)
+{
+  if (!processing_template_decl)
+    return false;
+
+  tree outer_closure = NULL_TREE;
+  for (tree t = current_class_type; t;
+       t = decl_type_context (TYPE_MAIN_DECL (t)))
+    {
+      if (LAMBDA_TYPE_P (t))
+	outer_closure = t;
+      else
+	break;
+    }
+
+  if (outer_closure)
+    return dependent_type_p (outer_closure);
+  else
+    return true;
+}
+
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 bool
@@ -12809,14 +12835,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    cp_apply_type_quals_to_decl (cp_type_quals (type), r);
 
 	    if (DECL_C_BIT_FIELD (r))
-	      /* For bit-fields, DECL_INITIAL gives the number of bits.  For
-		 non-bit-fields DECL_INITIAL is a non-static data member
-		 initializer, which gets deferred instantiation.  */
-	      DECL_INITIAL (r)
-		= tsubst_expr (DECL_INITIAL (t), args,
+	      /* For bit-fields, DECL_BIT_FIELD_REPRESENTATIVE gives the
+		 number of bits.  */
+	      DECL_BIT_FIELD_REPRESENTATIVE (r)
+		= tsubst_expr (DECL_BIT_FIELD_REPRESENTATIVE (t), args,
 			       complain, in_decl,
 			       /*integral_constant_expression_p=*/true);
-	    else if (DECL_INITIAL (t))
+	    if (DECL_INITIAL (t))
 	      {
 		/* Set up DECL_TEMPLATE_INFO so that we can get at the
 		   NSDMI in perform_member_init.  Still set DECL_INITIAL
@@ -13017,15 +13042,20 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
-	    tree auto_node = type_uses_auto (type);
-	    int len = TREE_VEC_LENGTH (args);
-	    if (auto_node)
-	      /* Mask off any template args past the variable's context so we
-		 don't replace the auto with an unrelated argument.  */
-	      TREE_VEC_LENGTH (args) = TEMPLATE_TYPE_LEVEL (auto_node) - 1;
-	    type = tsubst (type, args, complain, in_decl);
-	    if (auto_node)
-	      TREE_VEC_LENGTH (args) = len;
+	    tree sub_args = args;
+	    if (tree auto_node = type_uses_auto (type))
+	      {
+		/* Mask off any template args past the variable's context so we
+		   don't replace the auto with an unrelated argument.  */
+		int nouter = TEMPLATE_TYPE_LEVEL (auto_node) - 1;
+		int extra = TMPL_ARGS_DEPTH (args) - nouter;
+		if (extra > 0)
+		  /* This should never happen with the new lambda instantiation
+		     model, but keep the handling just in case.  */
+		  gcc_assert (!CHECKING_P),
+		  sub_args = strip_innermost_template_args (args, extra);
+	      }
+	    type = tsubst (type, sub_args, complain, in_decl);
 	  }
 	if (VAR_P (r))
 	  {
@@ -15986,7 +16016,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  {
 	    /* We're in tsubst_lambda_expr, we've already inserted a new
 	       capture proxy, so look it up and register it.  */
-	    tree inst = lookup_name (DECL_NAME (decl));
+	    tree inst = lookup_name_real (DECL_NAME (decl), 0, 0,
+					  /*block_p=*/true, 0, LOOKUP_HIDDEN);
 	    gcc_assert (inst != decl && is_capture_proxy (inst));
 	    register_local_specialization (inst, decl);
 	    break;
@@ -16906,9 +16937,9 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (nested)
 	push_function_context ();
 
-      tree body = start_lambda_function (fn, r);
-
       local_specialization_stack s (lss_copy);
+
+      tree body = start_lambda_function (fn, r);
 
       register_parameter_specializations (oldfn, fn);
 
@@ -18136,11 +18167,7 @@ tsubst_copy_and_build (tree t,
 	      r = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
 	  }
 	else if (outer_automatic_var_p (r))
-	  {
-	    r = process_outer_var_ref (r, complain);
-	    if (is_capture_proxy (r) && !DECL_PACK_P (t))
-	      register_local_specialization (r, t);
-	  }
+	  r = process_outer_var_ref (r, complain);
 
 	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
 	  /* If the original type was a reference, we'll be wrapped in
@@ -23254,7 +23281,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	DECL_SAVED_TREE (d) = pop_stmt_list (block);
       else
 	{
-	  d = finish_function (0);
+	  d = finish_function (/*inline_p=*/false);
 	  expand_or_defer_fn (d);
 	}
 

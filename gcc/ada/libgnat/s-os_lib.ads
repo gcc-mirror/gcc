@@ -191,6 +191,9 @@ package System.OS_Lib is
    Invalid_FD : constant File_Descriptor := -1;
    --  File descriptor returned when error in opening/creating file
 
+   Null_FD : constant File_Descriptor := -2;
+   --  Uninitialized file descriptor
+
    procedure Close (FD : File_Descriptor; Status : out Boolean);
    --  Close file referenced by FD. Status is False if the underlying service
    --  failed. Reasons for failure include: disk full, disk quotas exceeded

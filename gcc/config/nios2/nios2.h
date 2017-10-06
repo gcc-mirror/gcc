@@ -92,10 +92,6 @@
 #define PREFERRED_STACK_BOUNDARY 32
 #define MAX_FIXED_MODE_SIZE 64
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                          \
-  ((TREE_CODE (EXP) == STRING_CST)                              \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define LABEL_ALIGN(LABEL) nios2_label_align (LABEL)
 
 /* Layout of source language data types.  */

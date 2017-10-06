@@ -508,3 +508,10 @@
     }
   return true;
 })
+
+(define_predicate "const_shift_by_byte_operand"
+  (match_code "const_int")
+{
+  unsigned HOST_WIDE_INT val = INTVAL (op);
+  return val <= 128 && val % 8 == 0;
+})

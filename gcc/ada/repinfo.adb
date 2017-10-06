@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;   use Alloc;
+with Alloc;
 with Atree;   use Atree;
 with Casing;  use Casing;
 with Debug;   use Debug;
@@ -45,7 +45,7 @@ with Sinput;  use Sinput;
 with Snames;  use Snames;
 with Stand;   use Stand;
 with Stringt; use Stringt;
-with Table;   use Table;
+with Table;
 with Uname;   use Uname;
 with Urealp;  use Urealp;
 

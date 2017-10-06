@@ -86,17 +86,9 @@ create_local_binding (cp_binding_level *level, tree name)
 static tree *
 find_namespace_slot (tree ns, tree name, bool create_p = false)
 {
-  tree *slot;
-
-  if (create_p)
-    {
-      bool existed;
-      slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
-      if (!existed)
-	*slot = NULL_TREE;
-    }
-  else
-    slot = DECL_NAMESPACE_BINDINGS (ns)->get (name);
+  tree *slot = DECL_NAMESPACE_BINDINGS (ns)
+    ->find_slot_with_hash (name, name ? IDENTIFIER_HASH_VALUE (name) : 0,
+			   create_p ? INSERT : NO_INSERT);
   return slot;
 }
 
@@ -2255,12 +2247,6 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
       region to refer only to the namespace to which it already
       refers.  */
     ok = false;
-  else if (maybe_remove_implicit_alias (bval))
-    {
-      /* There was a mangling compatibility alias using this mangled name,
-	 but now we have a real decl that wants to use it instead.  */
-      binding->value = decl;
-    }
   else
     {
       if (!error_operand_p (bval))
@@ -2525,9 +2511,9 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   return decl;
 }
 
-/* Map of identifiers to extern C functions (or LISTS thereof).  */
+/* Table of identifiers to extern C functions (or LISTS thereof).  */
 
-static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
+static GTY(()) hash_table<named_decl_hash> *extern_c_fns;
 
 /* DECL has C linkage. If we have an existing instance, make sure it
    has the same exception specification [7.5, 7.6].  If there's no
@@ -2541,17 +2527,15 @@ check_extern_c_conflict (tree decl)
     return;
 
   if (!extern_c_fns)
-    extern_c_fns = hash_map<lang_identifier *,tree>::create_ggc (127);
+    extern_c_fns = hash_table<named_decl_hash>::create_ggc (127);
 
-  bool existed;
-  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
-  if (!existed)
-    *slot = decl;
-  else
+  tree *slot = extern_c_fns
+    ->find_slot_with_hash (DECL_NAME (decl),
+			   IDENTIFIER_HASH_VALUE (DECL_NAME (decl)), INSERT);
+  if (tree old = *slot)
     {
-      tree old = *slot;
-      if (TREE_CODE (old) == TREE_LIST)
-	old = TREE_VALUE (old);
+      if (TREE_CODE (old) == OVERLOAD)
+	old = OVL_FUNCTION (old);
 
       int mismatch = 0;
       if (DECL_CONTEXT (old) == DECL_CONTEXT (decl))
@@ -2577,9 +2561,24 @@ check_extern_c_conflict (tree decl)
 		     "due to different exception specifications");
 	}
       else
-	/* Chain it on for c_linkage_binding's use.  */
-	*slot = tree_cons (NULL_TREE, decl, *slot);
+	{
+	  if (old == *slot)
+	    /* The hash table expects OVERLOADS, so construct one with
+	       OLD as both the function and the chain.  This allocate
+	       an excess OVERLOAD node, but it's rare to have multiple
+	       extern "C" decls of the same name.  And we save
+	       complicating the hash table logic (which is used
+	       elsewhere).  */
+	    *slot = ovl_make (old, old);
+
+	  slot = &OVL_CHAIN (*slot);
+
+	  /* Chain it on for c_linkage_binding's use.  */
+	  *slot = tree_cons (NULL_TREE, decl, *slot);
+	}
     }
+  else
+    *slot = decl;
 }
 
 /* Returns a list of C-linkage decls with the name NAME.  Used in
@@ -2589,8 +2588,15 @@ tree
 c_linkage_bindings (tree name)
 {
   if (extern_c_fns)
-    if (tree *slot = extern_c_fns->get (name))
-      return *slot;
+    if (tree *slot = extern_c_fns
+	->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), NO_INSERT))
+      {
+	tree result = *slot;
+	if (TREE_CODE (result) == OVERLOAD)
+	  result = OVL_CHAIN (result);
+	return result;
+      }
+
   return NULL_TREE;
 }
 
@@ -2722,7 +2728,11 @@ check_local_shadow (tree decl)
       else if (warn_shadow_local)
 	warning_code = OPT_Wshadow_local;
       else if (warn_shadow_compatible_local
-	       && can_convert (TREE_TYPE (old), TREE_TYPE (decl), tf_none))
+	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
+		   || (!dependent_type_p (TREE_TYPE (decl))
+		       && !dependent_type_p (TREE_TYPE (old))
+		       && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
+				       tf_none))))
 	warning_code = OPT_Wshadow_compatible_local;
       else
 	return;
@@ -2956,7 +2966,10 @@ do_pushdecl (tree decl, bool is_friend)
   while (level->kind == sk_class)
     level = level->level_chain;
 
-  if (tree name = DECL_NAME (decl))
+  /* An anonymous namespace has a NULL DECL_NAME, but we still want to
+     insert it.  Other NULL-named decls, not so much.  */
+  tree name = DECL_NAME (decl);
+  if (name || TREE_CODE (decl) == NAMESPACE_DECL)
     {
       cxx_binding *binding = NULL; /* Local scope binding.  */
       tree ns = NULL_TREE; /* Searched namespace.  */
@@ -3778,16 +3791,6 @@ identifier_type_value (tree id)
   ret = identifier_type_value_1 (id);
   timevar_stop (TV_NAME_LOOKUP);
   return ret;
-}
-
-
-/* Return the IDENTIFIER_GLOBAL_VALUE of T, for use in common code, since
-   the definition of IDENTIFIER_GLOBAL_VALUE is different for C and C++.  */
-
-tree
-identifier_global_value	(tree t)
-{
-  return IDENTIFIER_GLOBAL_VALUE (t);
 }
 
 /* Push a definition of struct, union or enum tag named ID.  into
@@ -4845,31 +4848,32 @@ get_namespace_binding (tree ns, tree name)
   return ret;
 }
 
-/* Set value binding of NAME in the global namespace to VAL.  Does not
-   add it to the list of things in the namespace.  */
+/* Push internal DECL into the global namespace.  Does not do the
+   full overload fn handling and does not add it to the list of things
+   in the namespace.  */
 
 void
-set_global_binding (tree name, tree val)
+set_global_binding (tree decl)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
-  tree *slot = find_namespace_slot (global_namespace, name, true);
+  tree *slot = find_namespace_slot (global_namespace, DECL_NAME (decl), true);
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
-    *slot = val;
-  else if (old == val)
+    *slot = decl;
+  else if (old == decl)
     ;
   else if (!STAT_HACK_P (*slot)
-	   && TREE_CODE (val) == TYPE_DECL && DECL_ARTIFICIAL (val))
-    *slot = stat_hack (old, val);
+	   && TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    *slot = stat_hack (old, decl);
   else if (!STAT_HACK_P (*slot)
 	   && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-    *slot = stat_hack (val, old);
+    *slot = stat_hack (decl, old);
   else
     /* The user's placed something in the implementor's
        namespace.  */
-    diagnose_name_conflict (val, old);
+    diagnose_name_conflict (decl, old);
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
@@ -5296,7 +5300,7 @@ qualify_lookup (tree val, int flags)
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return false;
   /* Look through lambda things that we shouldn't be able to see.  */
-  if (is_lambda_ignored_entity (val))
+  if (!(flags & LOOKUP_HIDDEN) && is_lambda_ignored_entity (val))
     return false;
   return true;
 }
@@ -6630,9 +6634,7 @@ do_push_nested_namespace (tree ns)
     {
       do_push_nested_namespace (CP_DECL_CONTEXT (ns));
       gcc_checking_assert
-	(find_namespace_value (current_namespace,
-			       DECL_NAME (ns) ? DECL_NAME (ns)
-			       : anon_identifier) == ns);
+	(find_namespace_value (current_namespace, DECL_NAME (ns)) == ns);
       resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
     }
@@ -6790,10 +6792,7 @@ push_namespace (tree name, bool make_inline)
   /* We should not get here if the global_namespace is not yet constructed
      nor if NAME designates the global namespace:  The global scope is
      constructed elsewhere.  */
-  gcc_assert (global_namespace != NULL && name != global_identifier);
-
-  if (!name)
-    name = anon_identifier;
+  gcc_checking_assert (global_namespace != NULL && name != global_identifier);
 
   tree ns = NULL_TREE;
   {
@@ -6839,11 +6838,9 @@ push_namespace (tree name, bool make_inline)
 	ns = NULL_TREE;
       else
 	{
-	  if (name == anon_identifier)
+	  if (!name)
 	    {
-	      /* Clear DECL_NAME for the benefit of debugging back ends.  */
-	      SET_DECL_ASSEMBLER_NAME (ns, name);
-	      DECL_NAME (ns) = NULL_TREE;
+	      SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
 
 	      if (!make_inline)
 		add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
@@ -6858,7 +6855,7 @@ push_namespace (tree name, bool make_inline)
 	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
 	    }
 
-	  if (name == anon_identifier || make_inline)
+	  if (!name || make_inline)
 	    emit_debug_info_using_namespace (current_namespace, ns, true);
 	}
     }

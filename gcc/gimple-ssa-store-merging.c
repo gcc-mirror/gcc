@@ -357,8 +357,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 			|| !int_mode_for_size (bitlen, 0).exists ());
 
   if (!sub_byte_op_p)
-    return (native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)
-	    != 0);
+    return native_encode_expr (tmp_int, ptr + first_byte, total_bytes) != 0;
 
   /* LITTLE-ENDIAN
      We are writing a non byte-sized quantity or at a position that is not
@@ -408,7 +407,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
      accepted by native_encode_expr.  */
-  if (native_encode_expr (expr, tmpbuf, byte_size - 1, 0) == 0)
+  if (native_encode_expr (expr, tmpbuf, byte_size - 1) == 0)
     gcc_unreachable ();
 
   /* The native_encode_expr machinery uses TYPE_MODE to determine how many
@@ -1326,12 +1325,8 @@ lhs_valid_for_store_merging_p (tree lhs)
 static bool
 rhs_valid_for_store_merging_p (tree rhs)
 {
-  tree type = TREE_TYPE (rhs);
-  if (TREE_CODE_CLASS (TREE_CODE (rhs)) != tcc_constant
-      || !can_native_encode_type_p (type))
-    return false;
-
-  return true;
+  return native_encode_expr (rhs, NULL,
+			     GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs)))) != 0;
 }
 
 /* Entry point for the pass.  Go over each basic block recording chains of
@@ -1357,7 +1352,7 @@ pass_store_merging::execute (function *fun)
 	  if (is_gimple_debug (gsi_stmt (gsi)))
 	    continue;
 
-	  if (++num_statements > 2)
+	  if (++num_statements >= 2)
 	    break;
 	}
 

@@ -8,12 +8,14 @@ package gccgoimporter // import "go/internal/gccgoimporter"
 import (
 	"bytes"
 	"debug/elf"
+	"debug/xcoff"
 	"fmt"
 	"go/types"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -66,11 +68,12 @@ const (
 	gccgov2Magic    = "v2;\n"
 	goimporterMagic = "\n$$ "
 	archiveMagic    = "!<ar"
+	aixbigafMagic   = "<big"
 )
 
-// Opens the export data file at the given path. If this is an ELF file,
+// Opens the export data file at the given path. If this is an object file,
 // searches for and opens the .go_export section. If this is an archive,
-// reads the export data from the first member, which is assumed to be an ELF file.
+// reads the export data from the first member, which is assumed to be an object file.
 // This is intended to replicate the logic in gofrontend.
 func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err error) {
 	f, err := os.Open(fpath)
@@ -90,43 +93,58 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		return
 	}
 
-	var elfreader io.ReaderAt
+	var objreader io.ReaderAt
 	switch string(magic[:]) {
 	case gccgov1Magic, gccgov2Magic, goimporterMagic:
 		// Raw export data.
 		reader = f
 		return
 
-	case archiveMagic:
+	case archiveMagic, aixbigafMagic:
 		// TODO(pcc): Read the archive directly instead of using "ar".
 		f.Close()
 		closer = nil
 
 		cmd := exec.Command("ar", "p", fpath)
+		if runtime.GOOS == "aix" && runtime.GOARCH == "ppc64" {
+			// AIX puts both 32-bit and 64-bit objects in the same archive.
+			// Tell the AIX "ar" command to only care about 64-bit objects.
+			cmd.Env = append(os.Environ(), "OBJECT_MODE=64")
+		}
 		var out []byte
 		out, err = cmd.Output()
 		if err != nil {
 			return
 		}
 
-		elfreader = bytes.NewReader(out)
+		objreader = bytes.NewReader(out)
 
 	default:
-		elfreader = f
+		objreader = f
 	}
 
-	ef, err := elf.NewFile(elfreader)
-	if err != nil {
+	ef, err := elf.NewFile(objreader)
+	if err == nil {
+		sec := ef.Section(".go_export")
+		if sec == nil {
+			err = fmt.Errorf("%s: .go_export section not found", fpath)
+			return
+		}
+		reader = sec.Open()
 		return
 	}
 
-	sec := ef.Section(".go_export")
-	if sec == nil {
-		err = fmt.Errorf("%s: .go_export section not found", fpath)
+	xf, err := xcoff.NewFile(objreader)
+	if err == nil {
+		sdat := xf.CSect(".go_export")
+		if sdat == nil {
+			err = fmt.Errorf("%s: .go_export section not found", fpath)
+			return
+		}
+		reader = bytes.NewReader(sdat)
 		return
 	}
 
-	reader = sec.Open()
 	return
 }
 

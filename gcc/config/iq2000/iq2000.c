@@ -180,6 +180,7 @@ static void iq2000_print_operand_address (FILE *, machine_mode, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 static bool iq2000_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool iq2000_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT iq2000_constant_alignment (const_tree, HOST_WIDE_INT);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -263,6 +264,9 @@ static bool iq2000_modes_tieable_p (machine_mode, machine_mode);
 #define TARGET_HARD_REGNO_MODE_OK	iq2000_hard_regno_mode_ok
 #undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P		iq2000_modes_tieable_p
+
+#undef  TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT	iq2000_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3530,6 +3534,16 @@ iq2000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
 	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
 	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+iq2000_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+    return MAX (align, BITS_PER_WORD);
+  return align;
 }
 
 #include "gt-iq2000.h"

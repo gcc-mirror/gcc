@@ -31,6 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "hash-table.h"
 #include "selftest.h"
+#ifdef GENERATOR_FILE
+#include "errors.h"
+#else
+#include "input.h"
+#include "diagnostic-core.h"
+#endif
 
 /* vNULL is an empty type with a template cast operation that returns
    a zero-initialized vec<T, A, L> instance.  Use this when you want
@@ -189,6 +195,93 @@ dump_vec_loc_statistics (void)
 {
   vec_mem_desc.dump (VEC_ORIGIN);
 }
+
+#if CHECKING_P
+/* Report qsort comparator CMP consistency check failure with P1, P2, P3 as
+   witness elements.  */
+ATTRIBUTE_NORETURN ATTRIBUTE_COLD
+static void
+qsort_chk_error (const void *p1, const void *p2, const void *p3,
+		 int (*cmp) (const void *, const void *))
+{
+  if (!p3)
+    {
+      int r1 = cmp (p1, p2), r2 = cmp (p2, p1);
+      error ("qsort comparator not anti-commutative: %d, %d", r1, r2);
+    }
+  else if (p1 == p2)
+    {
+      int r = cmp (p1, p3);
+      error ("qsort comparator non-negative on sorted output: %d", r);
+    }
+  else
+    {
+      int r1 = cmp (p1, p2), r2 = cmp (p2, p3), r3 = cmp (p1, p3);
+      error ("qsort comparator not transitive: %d, %d, %d", r1, r2, r3);
+    }
+  internal_error ("qsort checking failed");
+}
+
+/* Wrapper around qsort with checking that CMP is consistent on given input.
+
+   Strictly speaking, passing invalid (non-transitive, non-anti-commutative)
+   comparators to libc qsort can result in undefined behavior.  Therefore we
+   should ideally perform consistency checks prior to invoking qsort, but in
+   order to do that optimally we'd need to sort the array ourselves beforehand
+   with a sorting routine known to be "safe".  Instead, we expect that most
+   implementations in practice will still produce some permutation of input
+   array even for invalid comparators, which enables us to perform checks on
+   the output array.  */
+void
+qsort_chk (void *base, size_t n, size_t size,
+	   int (*cmp)(const void *, const void *))
+{
+  (qsort) (base, n, size, cmp);
+#if 0
+#define LIM(n) (n)
+#else
+  /* Limit overall time complexity to O(n log n).  */
+#define LIM(n) ((n) <= 16 ? (n) : 12 + floor_log2 (n))
+#endif
+#define ELT(i) ((const char *) base + (i) * size)
+#define CMP(i, j) cmp (ELT (i), ELT (j))
+#define ERR2(i, j) qsort_chk_error (ELT (i), ELT (j), NULL, cmp)
+#define ERR3(i, j, k) qsort_chk_error (ELT (i), ELT (j), ELT (k), cmp)
+  size_t i1, i2, i, j;
+  /* This outer loop iterates over maximum spans [i1, i2) such that
+     elements within each span compare equal to each other.  */
+  for (i1 = 0; i1 < n; i1 = i2)
+    {
+      /* Position i2 one past last element that compares equal to i1'th.  */
+      for (i2 = i1 + 1; i2 < n; i2++)
+	if (CMP (i1, i2))
+	  break;
+	else if (CMP (i2, i1))
+	  return ERR2 (i1, i2);
+      size_t lim1 = LIM (i2 - i1), lim2 = LIM (n - i2);
+      /* Verify that other pairs within current span compare equal.  */
+      for (i = i1 + 1; i + 1 < i2; i++)
+	for (j = i + 1; j < i1 + lim1; j++)
+	  if (CMP (i, j))
+	    return ERR3 (i, i1, j);
+	  else if (CMP (j, i))
+	    return ERR2 (i, j);
+      /* Verify that elements within this span compare less than
+         elements beyond the span.  */
+      for (i = i1; i < i2; i++)
+	for (j = i2; j < i2 + lim2; j++)
+	  if (CMP (i, j) >= 0)
+	    return ERR3 (i, i1, j);
+	  else if (CMP (j, i) <= 0)
+	    return ERR2 (i, j);
+    }
+#undef ERR3
+#undef ERR2
+#undef CMP
+#undef ELT
+#undef LIM
+}
+#endif /* #if CHECKING_P */
 
 #ifndef GENERATOR_FILE
 #if CHECKING_P

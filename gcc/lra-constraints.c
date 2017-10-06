@@ -6219,6 +6219,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		  && ((cheap = XEXP (cheap, 0)), true)
 		  && (regno = REGNO (cheap)) >= FIRST_PSEUDO_REGISTER
 		  && (hard_regno = reg_renumber[regno]) >= 0
+		  && usage_insns[regno].check == curr_usage_insns_check
 		  /* If there are pending saves/restores, the
 		     optimization is not worth.	 */
 		  && usage_insns[regno].calls_num == calls_num - 1

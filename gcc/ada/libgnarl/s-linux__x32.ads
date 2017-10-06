@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 2013-2017, Free Software Foundation, Inc.      --
+--          Copyright (C) 2013-2017, Free Software Foundation, Inc.         --
 --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
@@ -45,8 +45,9 @@ package System.Linux is
    -- Time --
    ----------
 
-   type time_t       is new Long_Long_Integer;
-   subtype clockid_t is Interfaces.C.int;
+   subtype suseconds_t is Long_Long_Integer;
+   subtype time_t      is Long_Long_Integer;
+   subtype clockid_t   is Interfaces.C.int;
 
    type timespec is record
       tv_sec  : time_t;
@@ -56,7 +57,7 @@ package System.Linux is
 
    type timeval is record
       tv_sec  : time_t;
-      tv_usec : Long_Long_Integer;
+      tv_usec : suseconds_t;
    end record;
    pragma Convention (C, timeval);
 

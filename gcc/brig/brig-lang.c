@@ -51,6 +51,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "brig-c.h"
 #include "brig-builtins.h"
 
+static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_const_attribute (tree *, tree, tree, int, bool *);
+static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
+static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
+
 /* This file is based on Go frontent'd go-lang.c and gogo-tree.cc.  */
 
 /* If -v set.  */
@@ -128,6 +134,8 @@ brig_langhook_init_options_struct (struct gcc_options *opts)
 
   opts->x_flag_finite_math_only = 0;
   opts->x_flag_signed_zeros = 1;
+
+  opts->x_optimize = 3;
 }
 
 /* Handle Brig specific options.  Return 0 if we didn't do anything.  */
@@ -160,7 +168,7 @@ brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
   /* gccbrig casts pointers around like crazy, TBAA produces
-	   broken code if not force disabling it.  */
+     broken code if not force disabling it.  */
   flag_strict_aliasing = 0;
 
   /* Returning false means that the backend should be used.  */
@@ -182,6 +190,8 @@ brig_langhook_parse_file (void)
 {
   brig_to_generic brig_to_gen;
 
+  std::vector <char*> brig_blobs;
+
   for (unsigned int i = 0; i < num_in_fnames; ++i)
     {
 
@@ -194,11 +204,22 @@ brig_langhook_parse_file (void)
 	  error ("could not read the BRIG file");
 	  exit (1);
 	}
-      brig_to_gen.parse (brig_blob);
       fclose (f);
+
+      brig_to_gen.analyze (brig_blob);
+      brig_blobs.push_back (brig_blob);
+    }
+
+  for (size_t i = 0; i < brig_blobs.size(); ++i)
+    {
+      char *brig_blob = brig_blobs.at(i);
+      brig_to_gen.parse (brig_blob);
     }
 
   brig_to_gen.write_globals ();
+
+  for (size_t i = 0; i < brig_blobs.size (); ++i)
+    delete brig_blobs[i];
 }
 
 static tree
@@ -418,6 +439,124 @@ brig_localize_identifier (const char *ident)
 {
   return identifier_to_locale (ident);
 }
+
+/* Define supported attributes and their handlers. Code copied from
+   lto-lang.c */
+
+/* Table of machine-independent attributes supported in GIMPLE.  */
+const struct attribute_spec brig_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       do_diagnostic } */
+  { "leaf",		      0, 0, true,  false, false,
+			      handle_leaf_attribute, false },
+  { "const",                  0, 0, true,  false, false,
+			      handle_const_attribute, false },
+  { "pure",                   0, 0, true,  false, false,
+			      handle_pure_attribute, false },
+  { "nothrow",                0, 0, true,  false, false,
+			      handle_nothrow_attribute, false },
+  { "returns_twice",          0, 0, true,  false, false,
+			      handle_returns_twice_attribute, false },
+  { NULL,                     0, 0, false, false, false, NULL, false }
+};
+
+/* Attribute handlers.  */
+/* Handle a "leaf" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_leaf_attribute (tree *node, tree name,
+		       tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  if (!TREE_PUBLIC (*node))
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute has no effect on unit local functions", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "const" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_const_attribute (tree *node, tree ARG_UNUSED (name),
+			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			bool * ARG_UNUSED (no_add_attrs))
+{
+  tree type = TREE_TYPE (*node);
+
+  /* See FIXME comment on noreturn in c_common_attribute_table.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_READONLY (*node) = 1;
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+    TREE_TYPE (*node)
+      = build_pointer_type
+	(build_type_variant (TREE_TYPE (type), 1,
+			     TREE_THIS_VOLATILE (TREE_TYPE (type))));
+  else
+    gcc_unreachable ();
+
+  return NULL_TREE;
+}
+
+/* Handle a "pure" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_pure_attribute (tree *node, tree ARG_UNUSED (name),
+		       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+		       bool * ARG_UNUSED (no_add_attrs))
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    DECL_PURE_P (*node) = 1;
+  else
+    gcc_unreachable ();
+
+  return NULL_TREE;
+}
+
+/* Handle a "nothrow" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
+			  tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			  bool * ARG_UNUSED (no_add_attrs))
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_NOTHROW (*node) = 1;
+  else
+    gcc_unreachable ();
+
+  return NULL_TREE;
+}
+
+/* Handle a "returns_twice" attribute.  */
+
+static tree
+handle_returns_twice_attribute (tree *node, tree ARG_UNUSED (name),
+				tree ARG_UNUSED (args),
+				int ARG_UNUSED (flags),
+				bool * ARG_UNUSED (no_add_attrs))
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+
+  DECL_IS_RETURNS_TWICE (*node) = 1;
+
+  return NULL_TREE;
+}
+
 
 /* Built-in initialization code cribbed from lto-lang.c which cribbed it
    from c-common.c.  */
@@ -800,6 +939,10 @@ brig_langhook_init (void)
 #define LANG_HOOKS_GETDECLS brig_langhook_getdecls
 #define LANG_HOOKS_GIMPLIFY_EXPR brig_langhook_gimplify_expr
 #define LANG_HOOKS_EH_PERSONALITY brig_langhook_eh_personality
+
+/* Attribute hooks.  */
+#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
+#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE brig_attribute_table
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

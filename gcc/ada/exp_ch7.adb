@@ -4057,7 +4057,7 @@ package body Exp_Ch7 is
 
    --  This procedure is called each time a transient block has to be inserted
    --  that is to say for each call to a function with unconstrained or tagged
-   --  result. It creates a new scope on the stack scope in order to enclose
+   --  result. It creates a new scope on the scope stack in order to enclose
    --  all transient variables generated.
 
    procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean) is

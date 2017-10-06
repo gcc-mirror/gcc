@@ -2264,13 +2264,29 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  --  Construct the attribute definition clause
+                  --  Construct the attribute_definition_clause. The expression
+                  --  in the aspect specification is simply shared with the
+                  --  constructed attribute, because it will be fully analyzed
+                  --  when the attribute is processed. However, in ASIS mode
+                  --  the aspect expression itself is preanalyzed and resolved
+                  --  to catch visibility errors that are otherwise caught
+                  --  later, and we create a separate copy of the expression
+                  --  to prevent analysis of a malformed tree (e.g. a function
+                  --  call with parameter associations).
 
-                  Aitem :=
-                    Make_Attribute_Definition_Clause (Loc,
-                      Name       => Ent,
-                      Chars      => Chars (Id),
-                      Expression => Relocate_Node (Expr));
+                  if ASIS_Mode then
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => New_Copy_Tree (Expr));
+                  else
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => Relocate_Node (Expr));
+                  end if;
 
                   --  If the address is specified, then we treat the entity as
                   --  referenced, to avoid spurious warnings. This is analogous
@@ -5094,8 +5110,8 @@ package body Sem_Ch13 is
                           or else Is_Array_Type (Etype (U_Ent)))
                        and then (Is_Record_Type (Etype (O_Ent))
                                   or else Is_Array_Type (Etype (O_Ent)))
-                       and then Reverse_Storage_Order (Etype (U_Ent))
-                                      /= Reverse_Storage_Order (Etype (O_Ent))
+                       and then Reverse_Storage_Order (Etype (U_Ent)) /=
+                                Reverse_Storage_Order (Etype (O_Ent))
                      then
                         Set_Treat_As_Volatile (U_Ent);
                      end if;
@@ -12797,7 +12813,14 @@ package body Sem_Ch13 is
 
             return Skip;
 
-         elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
+         --  Resolve identifiers that are not selectors in parameter
+         --  associations (these are never resolved by visibility).
+
+         elsif Nkind (N) = N_Identifier
+           and then Chars (N) /= Chars (E)
+           and then (Nkind (Parent (N)) /= N_Parameter_Association
+                      or else N /= Selector_Name (Parent (N)))
+         then
             Find_Direct_Name (N);
 
             --  In ASIS mode we must analyze overloaded identifiers to ensure
@@ -12904,6 +12927,14 @@ package body Sem_Ch13 is
                   when Aspect_Default_Value =>
                      Set_Must_Not_Freeze (Expr);
                      Preanalyze_Spec_Expression (Expr, E);
+
+                  --  Ditto for Storage_Size. Any other aspects that carry
+                  --  expressions that should not freeze ??? This is only
+                  --  relevant to the misuse of deferred constants.
+
+                  when Aspect_Storage_Size =>
+                     Set_Must_Not_Freeze (Expr);
+                     Preanalyze_Spec_Expression (Expr, Any_Integer);
 
                   when others =>
                      if Present (Expr) then

@@ -283,7 +283,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       exp = DECL_INITIAL (exp);
       align = TYPE_ALIGN (TREE_TYPE (exp));
       if (CONSTANT_CLASS_P (exp))
-	align = (unsigned) CONSTANT_ALIGNMENT (exp, align);
+	align = targetm.constant_alignment (exp, align);
 
       known_alignment = true;
     }
@@ -359,7 +359,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
          wrapped inside a CONST_DECL.  */
       align = TYPE_ALIGN (TREE_TYPE (exp));
       if (CONSTANT_CLASS_P (exp))
-	align = (unsigned) CONSTANT_ALIGNMENT (exp, align);
+	align = targetm.constant_alignment (exp, align);
 
       known_alignment = true;
     }

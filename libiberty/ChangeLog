@@ -1,3 +1,11 @@
+2017-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_encoding): Strip return type when name is a
+	LOCAL_NAME.
+	(d_local_name): Strip return type of enclosing TYPED_NAME.
+	* testsuite/demangle-expected: Add and adjust tests.
+
 2017-09-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR demangler/82195

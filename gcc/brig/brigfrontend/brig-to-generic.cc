@@ -60,8 +60,8 @@ tree brig_to_generic::s_fp32_type;
 tree brig_to_generic::s_fp64_type;
 
 brig_to_generic::brig_to_generic ()
-  : m_cf (NULL), m_brig (NULL), m_next_group_offset (0),
-    m_next_private_offset (0)
+  : m_cf (NULL), m_analyzing (true), m_total_group_segment_usage (0),
+    m_brig (NULL), m_next_private_offset (0)
 {
   m_globals = NULL_TREE;
 
@@ -124,33 +124,32 @@ public:
   }
 };
 
-/* Parses the given BRIG blob.  */
+/* Helper struct for pairing a BrigKind and a BrigCodeEntryHandler that
+   should handle its data.  */
+
+struct code_entry_handler_info
+{
+  BrigKind kind;
+  brig_code_entry_handler *handler;
+};
+
+
+/* Finds the BRIG file sections in the currently processed file.  */
 
 void
-brig_to_generic::parse (const char *brig_blob)
+brig_to_generic::find_brig_sections ()
 {
-  m_brig = brig_blob;
-  m_brig_blobs.push_back (brig_blob);
-
-  const BrigModuleHeader *mheader = (const BrigModuleHeader *) brig_blob;
-
-  if (strncmp (mheader->identification, "HSA BRIG", 8) != 0)
-    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
-		 "Unrecognized file format.");
-  if (mheader->brigMajor != 1 || mheader->brigMinor != 0)
-    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
-		 "BRIG version not supported. BRIG 1.0 required.");
-
   m_data = m_code = m_operand = NULL;
+  const BrigModuleHeader *mheader = (const BrigModuleHeader *) m_brig;
 
   /* Find the positions of the different sections.  */
   for (uint32_t sec = 0; sec < mheader->sectionCount; ++sec)
     {
       uint64_t offset
-	= ((const uint64_t *) (brig_blob + mheader->sectionIndex))[sec];
+	= ((const uint64_t *) (m_brig + mheader->sectionIndex))[sec];
 
       const BrigSectionHeader *section_header
-	= (const BrigSectionHeader *) (brig_blob + offset);
+	= (const BrigSectionHeader *) (m_brig + offset);
 
       std::string name ((const char *) (&section_header->name),
 			section_header->nameLength);
@@ -182,6 +181,94 @@ brig_to_generic::parse (const char *brig_blob)
     gcc_unreachable ();
   if (m_operand == NULL)
     gcc_unreachable ();
+
+}
+
+/* Does a first pass over the given BRIG to collect data needed for the
+   actual parsing.  Currently this includes only collecting the
+   group segment variable usage to support the experimental HSA PRM feature
+   where group variables can be declared also in module and function scope
+   (in addition to kernel scope).
+*/
+
+void
+brig_to_generic::analyze (const char *brig_blob)
+{
+  const BrigModuleHeader *mheader = (const BrigModuleHeader *) brig_blob;
+
+  if (strncmp (mheader->identification, "HSA BRIG", 8) != 0)
+    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
+		 "Unrecognized file format.");
+  if (mheader->brigMajor != 1 || mheader->brigMinor != 0)
+    fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE
+		 "BRIG version not supported. BRIG 1.0 required.");
+
+  m_brig = brig_blob;
+
+  find_brig_sections ();
+
+  brig_directive_variable_handler var_handler (*this);
+  brig_directive_fbarrier_handler fbar_handler (*this);
+  brig_directive_function_handler func_handler (*this);
+
+  /* Need this for grabbing the module names for mangling the
+     group variable names.  */
+  brig_directive_module_handler module_handler (*this);
+  skipped_entry_handler skipped_handler (*this);
+
+  const BrigSectionHeader *csection_header = (const BrigSectionHeader *) m_code;
+
+  code_entry_handler_info handlers[]
+    = {{BRIG_KIND_DIRECTIVE_VARIABLE, &var_handler},
+       {BRIG_KIND_DIRECTIVE_FBARRIER, &fbar_handler},
+       {BRIG_KIND_DIRECTIVE_KERNEL, &func_handler},
+       {BRIG_KIND_DIRECTIVE_MODULE, &module_handler},
+       {BRIG_KIND_DIRECTIVE_FUNCTION, &func_handler}};
+
+  m_analyzing = true;
+  for (size_t b = csection_header->headerByteCount; b < m_code_size;)
+    {
+      const BrigBase *entry = (const BrigBase *) (m_code + b);
+
+      brig_code_entry_handler *handler = &skipped_handler;
+
+      if (m_cf != NULL && b >= m_cf->m_brig_def->nextModuleEntry)
+	{
+	  /* The function definition ended.  We can just discard the place
+	     holder function. */
+	  m_total_group_segment_usage += m_cf->m_local_group_variables.size ();
+	  delete m_cf;
+	  m_cf = NULL;
+	}
+
+      /* Find a handler.  */
+      for (size_t i = 0;
+	   i < sizeof (handlers) / sizeof (code_entry_handler_info); ++i)
+	{
+	  if (handlers[i].kind == entry->kind)
+	    handler = handlers[i].handler;
+	}
+      b += (*handler) (entry);
+    }
+
+  if (m_cf != NULL)
+    {
+      m_total_group_segment_usage += m_cf->m_local_group_variables.size ();
+      delete m_cf;
+      m_cf = NULL;
+    }
+
+  m_total_group_segment_usage += m_module_group_variables.size ();
+  m_analyzing = false;
+}
+
+/* Parses the given BRIG blob.  */
+
+void
+brig_to_generic::parse (const char *brig_blob)
+{
+  m_brig = brig_blob;
+  find_brig_sections ();
 
   brig_basic_inst_handler inst_handler (*this);
   brig_branch_inst_handler branch_inst_handler (*this);
@@ -269,7 +356,6 @@ brig_to_generic::parse (const char *brig_blob)
 	    handler = handlers[i].handler;
 	}
       b += (*handler) (entry);
-      continue;
     }
 
   finish_function ();
@@ -519,6 +605,29 @@ brig_to_generic::get_finished_function (tree func_decl)
     return NULL;
 }
 
+/* Adds a group variable to a correct book keeping structure depending
+   on its segment.  */
+
+void
+brig_to_generic::add_group_variable (const std::string &name, size_t size,
+				     size_t alignment, bool function_scope)
+{
+  /* Module and function scope group region variables are an experimental
+     feature.  We implement module scope group variables with a separate
+     book keeping inside brig_to_generic which is populated in the 'analyze()'
+     prepass.  This is to ensure we know the group segment offsets when
+     processing the functions that might refer to them.  */
+  if (!function_scope)
+    {
+      if (!m_module_group_variables.has_variable (name))
+	m_module_group_variables.add (name, size, alignment);
+      return;
+    }
+
+  if (!m_cf->m_local_group_variables.has_variable (name))
+    m_cf->m_local_group_variables.add (name, size, alignment);
+}
+
 /* Finalizes the currently handled function.  Should be called before
    setting a new function.  */
 
@@ -567,50 +676,34 @@ brig_to_generic::start_function (tree f)
   m_cf->m_func_decl = f;
 }
 
-/* Appends a new group variable (or an fbarrier) to the current kernel's
-   group segment.  */
-
-void
-brig_to_generic::append_group_variable (const std::string &name, size_t size,
-					size_t alignment)
-{
-  size_t align_padding = m_next_group_offset % alignment == 0 ?
-    0 : (alignment - m_next_group_offset % alignment);
-  m_next_group_offset += align_padding;
-  m_group_offsets[name] = m_next_group_offset;
-  m_next_group_offset += size;
-}
-
-size_t
-brig_to_generic::group_variable_segment_offset (const std::string &name) const
-{
-  var_offset_table::const_iterator i = m_group_offsets.find (name);
-  gcc_assert (i != m_group_offsets.end ());
-  return (*i).second;
-}
-
-/* The size of the group and private segments required by the currently
-   processed kernel.  Private segment size must be multiplied by the
-   number of work-items in the launch, in case of a work-group function.  */
-
-size_t
-brig_to_generic::group_segment_size () const
-{
-  return m_next_group_offset;
-}
-
-/* Appends a new group variable to the current kernel's private segment.  */
+/* Appends a new variable to the current kernel's private segment.  */
 
 void
 brig_to_generic::append_private_variable (const std::string &name,
 					  size_t size, size_t alignment)
 {
+  /* We need to take care of two cases of alignment with private
+     variables because of the layout where the same variable for
+     each work-item is laid out in successive addresses.
+
+     1) Ensure the first work-item's variable is in an aligned
+     offset:  */
   size_t align_padding = m_next_private_offset % alignment == 0 ?
     0 : (alignment - m_next_private_offset % alignment);
+
+  /* 2) Each successive per-work-item copy should be aligned.
+     If the variable has wider alignment than size then we need
+     to add extra padding to ensure it.  The padding must be
+     included in the size to allow per-work-item offset computation
+     to find their own aligned copy.  */
+
+  size_t per_var_padding = size % alignment == 0 ?
+    0 : (alignment - size % alignment);
+  m_private_data_sizes[name] = size + per_var_padding;
+
   m_next_private_offset += align_padding;
   m_private_offsets[name] = m_next_private_offset;
-  m_next_private_offset += size;
-  m_private_data_sizes[name] = size + align_padding;
+  m_next_private_offset += size + per_var_padding;
 }
 
 size_t
@@ -630,13 +723,6 @@ brig_to_generic::has_private_variable (const std::string &name) const
   return i != m_private_data_sizes.end ();
 }
 
-bool
-brig_to_generic::has_group_variable (const std::string &name) const
-{
-  var_offset_table::const_iterator i = m_group_offsets.find (name);
-  return i != m_group_offsets.end ();
-}
-
 size_t
 brig_to_generic::private_variable_size (const std::string &name) const
 {
@@ -645,6 +731,10 @@ brig_to_generic::private_variable_size (const std::string &name) const
   gcc_assert (i != m_private_data_sizes.end ());
   return (*i).second;
 }
+
+
+/* The size of private segment required by a single work-item executing
+   the currently processed kernel.  */
 
 size_t
 brig_to_generic::private_segment_size () const
@@ -719,10 +809,11 @@ brig_to_generic::write_globals ()
       cgraph_node::finalize_function (f->m_func_decl, true);
 
       f->m_descriptor.is_kernel = 1;
-      /* TODO: analyze the kernel's actual group and private segment usage
-	 using a call graph.  Now the private and group mem sizes are overly
-	 pessimistic in case of multiple kernels in the same module.  */
-      f->m_descriptor.group_segment_size = group_segment_size ();
+      /* TODO: analyze the kernel's actual private and group segment usage
+	 using call graph.  Now the mem size is overly
+	 pessimistic in case of multiple kernels in the same module.
+      */
+      f->m_descriptor.group_segment_size = m_total_group_segment_usage;
       f->m_descriptor.private_segment_size = private_segment_size ();
 
       /* The kernarg size is rounded up to a multiple of 16 according to
@@ -758,8 +849,6 @@ brig_to_generic::write_globals ()
 
   delete[] vec;
 
-  for (size_t i = 0; i < m_brig_blobs.size (); ++i)
-    delete m_brig_blobs[i];
 }
 
 /* Returns an type with unsigned int elements corresponding to the

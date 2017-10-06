@@ -168,6 +168,10 @@ liboffloadmic/configure: liboffloadmic/configure.ac
 liboffloadmic/plugin/aclocal.m4: liboffloadmic/plugin/configure.ac
 liboffloadmic/plugin/Makefile.in: liboffloadmic/plugin/Makefile.am
 liboffloadmic/plugin/configure: liboffloadmic/plugin/configure.ac
+libbacktrace/aclocal.m4: libbacktrace/configure.ac
+libbacktrace/Makefile.in: libbacktrace/Makefile.am libbacktrace/aclocal.m4
+libbacktrace/configure: libbacktrace/configure.ac libbacktrace/aclocal.m4
+libbacktrace/config.h.in: libbacktrace/configure.ac libbacktrace/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4

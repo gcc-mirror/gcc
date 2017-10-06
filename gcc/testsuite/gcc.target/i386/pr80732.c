@@ -34,7 +34,7 @@ static double f2_default(double a, double b, double c)
     return a * b + c;
 }
 
-static void *f2_resolve(void)
+static __typeof__ (f2_fma)* f2_resolve(void)
 {
     __builtin_cpu_init ();
     if (__builtin_cpu_supports("fma"))

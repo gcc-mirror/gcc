@@ -65,8 +65,7 @@ with Ttypes;   use Ttypes;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
-with GNAT.HTable; use GNAT.HTable;
-
+with GNAT.HTable;
 package body Exp_Util is
 
    ---------------------------------------------------------
@@ -650,7 +649,11 @@ package body Exp_Util is
       --  Do not process allocations on / deallocations from the secondary
       --  stack.
 
-      elsif Is_RTE (Pool_Id, RE_SS_Pool) then
+      elsif Is_RTE (Pool_Id, RE_SS_Pool)
+        or else
+          (Nkind (Expr) = N_Allocator
+             and then Is_RTE (Storage_Pool (Expr), RE_SS_Pool))
+      then
          return;
 
       --  Optimize the case where we are using the default Global_Pool_Object,
@@ -7858,6 +7861,8 @@ package body Exp_Util is
             Call := Prefix (Call);
          end if;
 
+         Call := Unqual_Conv (Call);
+
          if Is_Build_In_Place_Function_Call (Call) then
             declare
                Access_Nam : Name_Id := No_Name;
@@ -8680,9 +8685,7 @@ package body Exp_Util is
 
          Param := First (Parameter_Associations (Call));
          while Present (Param) loop
-            if Nkind (Param) = N_Parameter_Association
-              and then Nkind (Selector_Name (Param)) = N_Identifier
-            then
+            if Nkind (Param) = N_Parameter_Association then
                Formal := Selector_Name (Param);
                Actual := Explicit_Actual_Parameter (Param);
 

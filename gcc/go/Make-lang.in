@@ -68,6 +68,7 @@ GO_OBJS = \
 	go/import.o \
 	go/import-archive.o \
 	go/lex.o \
+	go/names.o \
 	go/parse.o \
 	go/runtime.o \
 	go/statements.o \

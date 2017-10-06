@@ -8153,11 +8153,13 @@ annotate_value (tree gnu_size)
 	    {
 	      tree inner_op_op1 = TREE_OPERAND (inner_op, 1);
 	      tree gnu_size_op1 = TREE_OPERAND (gnu_size, 1);
-	      wide_int op1;
+	      widest_int op1;
 	      if (TREE_CODE (gnu_size) == MULT_EXPR)
-		op1 = wi::mul (inner_op_op1, gnu_size_op1);
+		op1 = (wi::to_widest (inner_op_op1)
+		       * wi::to_widest (gnu_size_op1));
 	      else
-		op1 = wi::add (inner_op_op1, gnu_size_op1);
+		op1 = (wi::to_widest (inner_op_op1)
+		       + wi::to_widest (gnu_size_op1));
 	      ops[1] = UI_From_gnu (wide_int_to_tree (sizetype, op1));
 	      ops[0] = annotate_value (TREE_OPERAND (inner_op, 0));
 	    }

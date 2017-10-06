@@ -613,11 +613,6 @@ struct GTY(()) ptrmem_cst {
 };
 typedef struct ptrmem_cst * ptrmem_cst_t;
 
-#define IDENTIFIER_GLOBAL_VALUE(NODE) \
-  get_namespace_binding (NULL_TREE, (NODE))
-#define SET_IDENTIFIER_GLOBAL_VALUE(NODE, VAL) \
-  set_global_binding ((NODE), (VAL))
-
 #define CLEANUP_P(NODE)		TREE_LANG_FLAG_0 (TRY_BLOCK_CHECK (NODE))
 
 #define BIND_EXPR_TRY_BLOCK(NODE) \
@@ -831,6 +826,25 @@ class lkp_iterator : public ovl_iterator
 
     return *this;
   }
+};
+
+/* hash traits for declarations.  Hashes potential overload sets via
+   DECL_NAME.  */
+
+struct named_decl_hash : ggc_remove <tree>
+{
+  typedef tree value_type; /* A DECL or OVERLOAD  */
+  typedef tree compare_type; /* An identifier.  */
+
+  inline static hashval_t hash (const value_type decl);
+  inline static bool equal (const value_type existing, compare_type candidate);
+
+  static inline void mark_empty (value_type &p) {p = NULL_TREE;}
+  static inline bool is_empty (value_type p) {return !p;}
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void mark_deleted (value_type) { gcc_unreachable (); }
 };
 
 struct GTY(()) tree_template_decl {
@@ -2471,10 +2485,12 @@ struct GTY(()) lang_decl_min {
   union lang_decl_u2 {
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
        THUNK_VIRTUAL_OFFSET.
+       In a VAR_DECL for which DECL_HAS_VALUE_EXPR_P holds,
+       this is DECL_CAPTURED_VARIABLE.
        Otherwise this is DECL_ACCESS.  */
     tree GTY ((tag ("0"))) access;
 
-    /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
+    /* For TREE_STATIC VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
     int GTY ((tag ("1"))) discriminator;
   } GTY ((desc ("%0.u.base.u2sel"))) u2;
 };
@@ -2551,10 +2567,10 @@ struct GTY(()) lang_decl_ns {
   vec<tree, va_gc> *usings;
   vec<tree, va_gc> *inlinees;
 
-  /* Map from IDENTIFIER nodes to DECLS.  It'd be nice to have this
-     inline, but as the hash_map has a dtor, we can't then put this
-     struct into a union (until moving to c++11).  */
-  hash_map<lang_identifier *, tree> *bindings;
+  /* Hash table of bound decls. It'd be nice to have this inline, but
+     as the hash_map has a dtor, we can't then put this struct into a
+     union (until moving to c++11).  */
+  hash_table<named_decl_hash> *bindings;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -3239,6 +3255,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define DECL_TEMPLATE_INFO(NODE) \
   (DECL_LANG_SPECIFIC (VAR_TEMPL_TYPE_FIELD_OR_FUNCTION_DECL_CHECK (NODE)) \
    ->u.min.template_info)
+
+/* For a lambda capture proxy, its captured variable.  */
+#define DECL_CAPTURED_VARIABLE(NODE) \
+  (LANG_DECL_U2_CHECK (NODE, 0)->access)
 
 /* For a VAR_DECL, indicates that the variable is actually a
    non-static data member of anonymous union that has been promoted to
@@ -5659,6 +5679,8 @@ struct cp_parameter_declarator {
   tree default_argument;
   /* True iff this is a template parameter pack.  */
   bool template_parameter_pack_p;
+  /* Location within source.  */
+  location_t loc;
 };
 
 /* A declarator.  */
@@ -5668,6 +5690,10 @@ struct cp_declarator {
   /* Whether we parsed an ellipsis (`...') just before the declarator,
      to indicate this is a parameter pack.  */
   BOOL_BITFIELD parameter_pack_p : 1;
+  /* If this declarator is parenthesized, this the open-paren.  It is
+     UNKNOWN_LOCATION when not parenthesized.  */
+  location_t parenthesized;
+
   location_t id_loc; /* Currently only set for cdk_id, cdk_decomp and
 			cdk_function. */
   /* GNU Attributes that apply to this declarator.  If the declarator
@@ -6099,7 +6125,7 @@ extern bool start_function			(cp_decl_specifier_seq *,
 extern tree begin_function_body			(void);
 extern void finish_function_body		(tree);
 extern tree outer_curly_brace_block		(tree);
-extern tree finish_function			(int);
+extern tree finish_function			(bool);
 extern tree grokmethod				(cp_decl_specifier_seq *, const cp_declarator *, tree);
 extern void maybe_register_incomplete_var	(tree);
 extern void maybe_commonize_var			(tree);
@@ -6134,6 +6160,7 @@ extern tree finish_case_label			(location_t, tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
 /* in decl2.c */
+extern void record_mangling			(tree, bool);
 extern void note_mangling_alias			(tree, tree);
 extern void generate_mangling_aliases		(void);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals, cp_ref_qualifier);
@@ -6151,7 +6178,7 @@ extern void check_member_template		(tree);
 extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
 		       tree, bool, tree, tree);
 extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
-			  tree, tree);
+			  tree, tree, tree);
 extern bool any_dependent_type_attributes_p	(tree);
 extern tree cp_reconstruct_complex_type		(tree, tree);
 extern bool attributes_naming_typedef_ok	(tree);
@@ -6241,6 +6268,7 @@ extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
                                                  bool = true);
 extern tree mark_lvalue_use			(tree);
+extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
 extern void mark_exp_read			(tree);
 
@@ -6404,6 +6432,7 @@ extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
+extern bool processing_nonlambda_template	(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern tree fn_type_unification			(tree, tree, tree,
@@ -6712,7 +6741,7 @@ extern tree finish_template_type		(tree, tree, int);
 extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
 extern bool outer_automatic_var_p		(tree);
-extern tree process_outer_var_ref		(tree, tsubst_flags_t);
+extern tree process_outer_var_ref		(tree, tsubst_flags_t, bool force_use = false);
 extern cp_expr finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,
@@ -6791,7 +6820,7 @@ extern tree lambda_function			(tree);
 extern void apply_deduced_return_type           (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
-extern tree build_capture_proxy			(tree);
+extern tree build_capture_proxy			(tree, tree);
 extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);
@@ -7144,7 +7173,6 @@ extern tree add_exception_specifier		(tree, tree, int);
 extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */
-extern bool maybe_remove_implicit_alias		(tree);
 extern void init_mangle				(void);
 extern void mangle_decl				(tree);
 extern const char *mangle_type_string		(tree);
@@ -7359,6 +7387,20 @@ inline bool
 type_unknown_p (const_tree expr)
 {
   return TREE_TYPE (expr) == unknown_type_node;
+}
+
+inline hashval_t
+named_decl_hash::hash (const value_type decl)
+{
+  tree name = OVL_NAME (decl);
+  return name ? IDENTIFIER_HASH_VALUE (name) : 0;
+}
+
+inline bool
+named_decl_hash::equal (const value_type existing, compare_type candidate)
+{
+  tree name = OVL_NAME (existing);
+  return candidate == name;
 }
 
 /* -- end of C++ */

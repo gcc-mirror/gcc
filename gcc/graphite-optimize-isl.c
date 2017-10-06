@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "params.h"
 #include "dumpfile.h"
+#include "tree-vectorizer.h"
 #include "graphite.h"
 
 
@@ -63,7 +64,10 @@ get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
   if (type != isl_schedule_node_leaf)
     return node;
 
-  if (dims <= 1 || !isl_schedule_node_band_get_permutable (node))
+  long tile_size = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
+  if (dims <= 1
+      || tile_size == 0
+      || !isl_schedule_node_band_get_permutable (node))
     {
       if (dump_file && dump_flags)
 	fprintf (dump_file, "not tiled\n");
@@ -73,7 +77,6 @@ get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
   /* Tile loops.  */
   space = isl_schedule_node_band_get_space (node);
   isl_multi_val *sizes = isl_multi_val_zero (space);
-  long tile_size = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
   isl_ctx *ctx = isl_schedule_node_get_ctx (node);
 
   for (unsigned i = 0; i < dims; i++)
@@ -110,6 +113,7 @@ scop_get_domains (scop_p scop)
 static bool
 optimize_isl (scop_p scop)
 {
+  int old_err = isl_options_get_on_error (scop->isl_context);
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
   int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
   if (max_operations)
@@ -149,16 +153,23 @@ optimize_isl (scop_p scop)
   scop->transformed_schedule =
     isl_schedule_map_schedule_node_bottom_up (scop->transformed_schedule,
 					      get_schedule_for_node_st, NULL);
-  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_ABORT);
 
+  isl_options_set_on_error (scop->isl_context, old_err);
   isl_ctx_reset_operations (scop->isl_context);
   isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
   if (!scop->transformed_schedule
-      || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+      || isl_ctx_last_error (scop->isl_context) != isl_error_none)
     {
-      if (dump_file && dump_flags)
-	fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
-		 max_operations);
+      location_t loc = find_loop_location
+	(scop->scop_info->region.entry->dest->loop_father);
+      if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "loop nest not optimized, optimization timed out "
+			 "after %d operations [--param max-isl-operations]\n",
+			 max_operations);
+      else
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "loop nest not optimized, ISL signalled an error\n");
       return false;
     }
 
@@ -171,15 +182,16 @@ optimize_isl (scop_p scop)
 
   if (same_schedule)
     {
+      location_t loc = find_loop_location
+	(scop->scop_info->region.entry->dest->loop_father);
+      dump_printf_loc (MSG_NOTE, loc,
+		       "loop nest not optimized, optimized schedule is "
+		       "identical to original schedule\n");
       if (dump_file)
-	{
-	  fprintf (dump_file, "[scheduler] isl optimized schedule is "
-		   "identical to the original schedule.\n");
-	  print_schedule_ast (dump_file, scop->original_schedule, scop);
-	}
+	print_schedule_ast (dump_file, scop->original_schedule, scop);
       isl_schedule_free (scop->transformed_schedule);
       scop->transformed_schedule = isl_schedule_copy (scop->original_schedule);
-      return false;
+      return flag_graphite_identity || flag_loop_parallelize_all;
     }
 
   return true;

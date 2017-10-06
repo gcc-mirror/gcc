@@ -141,3 +141,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_sync_compare_and_swaphi 1
 #define HAVE_sync_compare_and_swapsi 1
 #define HAVE_sync_compare_and_swapdi 1
+
+#undef NEED_INDICATE_EXEC_STACK
+#define NEED_INDICATE_EXEC_STACK 1

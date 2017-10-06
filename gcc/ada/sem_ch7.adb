@@ -945,6 +945,7 @@ package body Sem_Ch7 is
          Set_Last_Entity  (Spec_Id, Empty);
       end if;
 
+      Update_Use_Clause_Chain;
       End_Package_Scope (Spec_Id);
 
       --  All entities declared in body are not visible
@@ -1795,6 +1796,18 @@ package body Sem_Ch7 is
         and then Comes_From_Source (Id)
       then
          Unit_Requires_Body_Info (Id);
+      end if;
+
+      --  Nested package specs that do not require bodies are not checked for
+      --  ineffective use clauses due to the possbility of subunits. This is
+      --  because at this stage it is impossible to tell whether there will be
+      --  a separate body.
+
+      if not Unit_Requires_Body (Id)
+        and then Is_Compilation_Unit (Id)
+        and then not Is_Private_Descendant (Id)
+      then
+         Update_Use_Clause_Chain;
       end if;
    end Analyze_Package_Specification;
 

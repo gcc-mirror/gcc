@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fopenmp -std=c99" } */
+/* { dg-options "-O2 -std=c99" } */
 
 int q, r, e;
 

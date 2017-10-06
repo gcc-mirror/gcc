@@ -3783,38 +3783,6 @@ get_mangled_id (tree decl)
   return targetm.mangle_decl_assembler_name (decl, id);
 }
 
-/* If DECL is an implicit mangling alias, return its symtab node; otherwise
-   return NULL.  */
-
-static symtab_node *
-decl_implicit_alias_p (tree decl)
-{
-  if (DECL_P (decl) && DECL_ARTIFICIAL (decl)
-      && DECL_IGNORED_P (decl)
-      && (TREE_CODE (decl) == FUNCTION_DECL
-	  || (VAR_P (decl) && TREE_STATIC (decl))))
-    {
-      symtab_node *n = symtab_node::get (decl);
-      if (n && n->cpp_implicit_alias)
-	return n;
-    }
-  return NULL;
-}
-
-/* If DECL is a mangling alias, remove it from the symbol table and return
-   true; otherwise return false.  */
-
-bool
-maybe_remove_implicit_alias (tree decl)
-{
-  if (symtab_node *n = decl_implicit_alias_p (decl))
-    {
-      n->remove();
-      return true;
-    }
-  return false;
-}
-
 /* Create an identifier for the external mangled name of DECL.  */
 
 void
@@ -3871,28 +3839,10 @@ mangle_decl (const tree decl)
 
       if (!DECL_REALLY_EXTERN (decl))
 	{
-	  bool set = false;
-
-	  /* Check IDENTIFIER_GLOBAL_VALUE before setting to avoid redundant
-	     errors from multiple definitions.  */
-	  tree d = IDENTIFIER_GLOBAL_VALUE (id);
-	  if (!d || decl_implicit_alias_p (d))
-	    {
-	      set = true;
-	      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
-	    }
+	  record_mangling (decl, G.need_abi_warning);
 
 	  if (!G.need_abi_warning)
 	    return;
-
-	  /* If the mangling will change in the future, emit an alias with the
-	     future mangled name for forward-compatibility.  */
-	  if (!set)
-	    {
-	      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
-	      inform (DECL_SOURCE_LOCATION (decl), "a later -fabi-version= (or "
-		      "=0) avoids this error with a change in mangling");
-	    }
 
 	  flag_abi_version = flag_abi_compat_version;
 	  id2 = mangle_decl_string (decl);

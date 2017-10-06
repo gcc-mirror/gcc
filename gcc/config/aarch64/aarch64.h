@@ -90,14 +90,6 @@
    port.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
-/* Make strings word-aligned so that strcpy from constants will be
-   faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
-  ((TREE_CODE (EXP) == STRING_CST		\
-    && !optimize_size				\
-    && (ALIGN) < BITS_PER_WORD)			\
-   ? BITS_PER_WORD : ALIGN)
-
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the
@@ -452,6 +444,7 @@ enum reg_class
   POINTER_REGS,
   FP_LO_REGS,
   FP_REGS,
+  POINTER_AND_FP_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
 };
@@ -467,6 +460,7 @@ enum reg_class
   "POINTER_REGS",				\
   "FP_LO_REGS",					\
   "FP_REGS",					\
+  "POINTER_AND_FP_REGS",			\
   "ALL_REGS"					\
 }
 
@@ -479,6 +473,7 @@ enum reg_class
   { 0xffffffff, 0x00000000, 0x00000003 },	/* POINTER_REGS */	\
   { 0x00000000, 0x0000ffff, 0x00000000 },       /* FP_LO_REGS  */	\
   { 0x00000000, 0xffffffff, 0x00000000 },       /* FP_REGS  */		\
+  { 0xffffffff, 0xffffffff, 0x00000003 },	/* POINTER_AND_FP_REGS */\
   { 0xffffffff, 0xffffffff, 0x00000007 }	/* ALL_REGS */		\
 }
 
