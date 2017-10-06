@@ -40,11 +40,12 @@ echo_archives() {
     echo "${gmp}"
     echo "${mpfr}"
     echo "${mpc}"
-    echo "${mpich}"
-    echo "${opencoarrays}"
+    if [ ${fortran} -gt 0 ]; then echo "${mpich}"; fi
+    if [ ${fortran} -gt 0 ]; then echo "${opencoarrays}"; fi
     if [ ${graphite} -gt 0 ]; then echo "${isl}"; fi
 }
 
+fortran=1
 graphite=1
 verify=1
 force=0
@@ -82,6 +83,7 @@ The following options are available:
  --md5            use MD5 checksum to verify package integrity
  --help           show this text and exit
  --version        show version information and exit
+ --no-fortran     do not download Fortran prerequisites
 "
 
 versiontext="${program} ${version}
@@ -152,6 +154,9 @@ do
                 ;;
             --no-force)
                 force=0
+                ;;
+            --no-fortran)
+                fortran=0
                 ;;
             --isl|--graphite)
                 graphite=1
