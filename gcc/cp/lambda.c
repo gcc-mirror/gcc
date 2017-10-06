@@ -1223,7 +1223,7 @@ maybe_add_lambda_conv_op (tree type)
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
 
-  fn = finish_function (/*inline*/2);
+  fn = finish_function (/*inline_p=*/true);
   if (!generic_lambda_p)
     expand_or_defer_fn (fn);
 
@@ -1241,7 +1241,7 @@ maybe_add_lambda_conv_op (tree type)
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
 
-  fn = finish_function (/*inline*/2);
+  fn = finish_function (/*inline_p=*/true);
   if (!generic_lambda_p)
     expand_or_defer_fn (fn);
 
@@ -1362,7 +1362,7 @@ finish_lambda_function (tree body)
   finish_function_body (body);
 
   /* Finish the function and generate code for it if necessary.  */
-  tree fn = finish_function (/*inline*/2);
+  tree fn = finish_function (/*inline_p=*/true);
 
   /* Only expand if the call op is not a template.  */
   if (!DECL_TEMPLATE_INFO (fn))

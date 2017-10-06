@@ -953,7 +953,7 @@ synthesize_method (tree fndecl)
     }
 
   finish_function_body (stmt);
-  expand_or_defer_fn (finish_function (0));
+  expand_or_defer_fn (finish_function (/*inline_p=*/false));
 
   input_location = save_input_location;
 

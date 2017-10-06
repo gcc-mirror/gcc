@@ -6125,7 +6125,7 @@ extern bool start_function			(cp_decl_specifier_seq *,
 extern tree begin_function_body			(void);
 extern void finish_function_body		(tree);
 extern tree outer_curly_brace_block		(tree);
-extern tree finish_function			(int);
+extern tree finish_function			(bool);
 extern tree grokmethod				(cp_decl_specifier_seq *, const cp_declarator *, tree);
 extern void maybe_register_incomplete_var	(tree);
 extern void maybe_commonize_var			(tree);
