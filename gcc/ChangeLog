@@ -1,3 +1,11 @@
+2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82317
+	* config/s390/s390-builtin-types.def: Regenerate.
+	* config/s390/s390-builtins.def (s390_vfmaxdb_4, s390_vfmindb_4):
+	Change flag from B_VXE to B_VX.
+	(s390_vec_min_dbl): Remove B_VXE flag.
+
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
 	* graphite-isl-ast-to-gimple.c: Include ssa.h and tree-ssa.h.
