@@ -1,3 +1,10 @@
+2017-10-06  Thomas Koenig <tkoenig@gcc.gnu.org>
+	    Steven G. Kargl <kargl@gcc.gnu.org>
+
+	Backport from trunk
+	* expr.c (gfc_get_full_arrayspec_from_expr): If there is
+	no symtree, set array spec to NULL.
+
 2017-09-02  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
