@@ -1,3 +1,8 @@
+2017-10-06  Ian Lance Taylor  <iant@golang.org>
+
+	* ztest.c (test_large): Pass unsigned long *, not size_t *, to
+	zlib uncompress function.
+
 2017-10-05  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_zlib_fetch): Change pval argument to uint64_t *.
