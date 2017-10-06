@@ -1,3 +1,16 @@
+2017-10-06  Martin Liska  <mliska@suse.cz>
+
+	* sanopt.c (struct sanopt_tree_triplet_hash): Remove inline
+	keyword for member functions.
+	(struct sanopt_tree_couple): New struct.
+	(struct sanopt_tree_couple_hash): New function.
+	(struct sanopt_ctx): Add new hash_map.
+	(has_dominating_ubsan_ptr_check): New function.
+	(record_ubsan_ptr_check_stmt): Likewise.
+	(maybe_optimize_ubsan_ptr_ifn): Likewise.
+	(sanopt_optimize_walker): Handle IFN_UBSAN_PTR.
+	(pass_sanopt::execute): Handle also SANITIZE_POINTER_OVERFLOW.
+
 2017-10-06  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82440
