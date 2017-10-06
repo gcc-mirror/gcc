@@ -1,3 +1,8 @@
+2017-10-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/82396
+	* haifa-sched.c (ready_sort_real): Disable qsort checking.
+
 2017-10-06  Sebastian Pop  <sebpop@gmail.com>
 
 	* graphite-dependences.c (scop_get_reads): Move code to...
