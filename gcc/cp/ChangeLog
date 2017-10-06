@@ -1,5 +1,17 @@
+2017-10-06  Nathan Sidwell  <nathan@acm.org>
+
+	Use hash_table for namespace bindings
+	* cp-tree.h (struct named_decl_hash): New.
+	(lang_decl_ns): Change type of bindings field.
+	* lex.c (maybe_add_lang_decl_raw): Adjust.
+	* name-lookup.c (find_namespace_slot): Adjust.
+	(do_pushdecl): Push NULL-named namespace.
+	(do_push_nested_namespace): Adjust.
+	(push_namespace): Push anonymous namespace as NULL name.
+
 2017-10-05  Jason Merrill  <jason@redhat.com>
 
+	Pass variadic class objects exactly like named by-value args.
 	* call.c (convert_arg_to_ellipsis): Use the result of force_rvalue.
 
 2017-10-05  Nathan Sidwell  <nathan@acm.org>

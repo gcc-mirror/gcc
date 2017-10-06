@@ -86,17 +86,9 @@ create_local_binding (cp_binding_level *level, tree name)
 static tree *
 find_namespace_slot (tree ns, tree name, bool create_p = false)
 {
-  tree *slot;
-
-  if (create_p)
-    {
-      bool existed;
-      slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
-      if (!existed)
-	*slot = NULL_TREE;
-    }
-  else
-    slot = DECL_NAMESPACE_BINDINGS (ns)->get (name);
+  tree *slot = DECL_NAMESPACE_BINDINGS (ns)
+    ->find_slot_with_hash (name, name ? IDENTIFIER_HASH_VALUE (name) : 0,
+			   create_p ? INSERT : NO_INSERT);
   return slot;
 }
 
@@ -2950,7 +2942,10 @@ do_pushdecl (tree decl, bool is_friend)
   while (level->kind == sk_class)
     level = level->level_chain;
 
-  if (tree name = DECL_NAME (decl))
+  /* An anonymous namespace has a NULL DECL_NAME, but we still want to
+     insert it.  Other NULL-named decls, not so much.  */
+  tree name = DECL_NAME (decl);
+  if (name || TREE_CODE (decl) == NAMESPACE_DECL)
     {
       cxx_binding *binding = NULL; /* Local scope binding.  */
       tree ns = NULL_TREE; /* Searched namespace.  */
@@ -6615,9 +6610,7 @@ do_push_nested_namespace (tree ns)
     {
       do_push_nested_namespace (CP_DECL_CONTEXT (ns));
       gcc_checking_assert
-	(find_namespace_value (current_namespace,
-			       DECL_NAME (ns) ? DECL_NAME (ns)
-			       : anon_identifier) == ns);
+	(find_namespace_value (current_namespace, DECL_NAME (ns)) == ns);
       resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
     }
@@ -6775,10 +6768,7 @@ push_namespace (tree name, bool make_inline)
   /* We should not get here if the global_namespace is not yet constructed
      nor if NAME designates the global namespace:  The global scope is
      constructed elsewhere.  */
-  gcc_assert (global_namespace != NULL && name != global_identifier);
-
-  if (!name)
-    name = anon_identifier;
+  gcc_checking_assert (global_namespace != NULL && name != global_identifier);
 
   tree ns = NULL_TREE;
   {
@@ -6824,11 +6814,9 @@ push_namespace (tree name, bool make_inline)
 	ns = NULL_TREE;
       else
 	{
-	  if (name == anon_identifier)
+	  if (!name)
 	    {
-	      /* Clear DECL_NAME for the benefit of debugging back ends.  */
-	      SET_DECL_ASSEMBLER_NAME (ns, name);
-	      DECL_NAME (ns) = NULL_TREE;
+	      SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
 
 	      if (!make_inline)
 		add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
@@ -6843,7 +6831,7 @@ push_namespace (tree name, bool make_inline)
 	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
 	    }
 
-	  if (name == anon_identifier || make_inline)
+	  if (!name || make_inline)
 	    emit_debug_info_using_namespace (current_namespace, ns, true);
 	}
     }
