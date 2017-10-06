@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_cond_mixed } */
+/* { dg-require-effective-target vect_float } */
 
 #include "tree-vect.h"
 

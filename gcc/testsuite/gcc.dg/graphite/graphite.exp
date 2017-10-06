@@ -57,11 +57,11 @@ set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.c ] ]
 # Tests to be compiled.
 set dg-do-what-default compile
 dg-runtest $scop_files        "" "-O2 -fgraphite -fdump-tree-graphite-all"
-dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
+dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math -fdump-tree-graphite-details"
 
 # Tests to be run.
 set dg-do-what-default run
-dg-runtest $run_id_files      "" "-O2 -fgraphite-identity"
+dg-runtest $run_id_files      "" "-O2 -fgraphite-identity -fdump-tree-graphite-details"
 dg-runtest $opt_files         "" "-O2 -ffast-math -floop-nest-optimize -fdump-tree-graphite-all"
 
 # Vectorizer tests, to be run or compiled, depending on target capabilities.

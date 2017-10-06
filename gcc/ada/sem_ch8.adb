@@ -65,7 +65,7 @@ with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
-with Style;    use Style;
+with Style;
 with Table;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -402,11 +402,6 @@ package body Sem_Ch8 is
    --  The renaming operation is intrinsic because the compiler must in
    --  fact generate a wrapper for it (6.3.1 (10 1/2)).
 
-   function Applicable_Use (Pack_Name : Node_Id) return Boolean;
-   --  Common code to Use_One_Package and Set_Use, to determine whether use
-   --  clause must be processed. Pack_Name is an entity name that references
-   --  the package in question.
-
    procedure Attribute_Renaming (N : Node_Id);
    --  Analyze renaming of attribute as subprogram. The renaming declaration N
    --  is rewritten as a subprogram body that returns the attribute reference
@@ -469,18 +464,20 @@ package body Sem_Ch8 is
    --  but is a reasonable heuristic on the use of nested generics. The
    --  proper solution requires a full renaming model.
 
-   function Has_Implicit_Character_Literal (N : Node_Id) return Boolean;
-   --  Find a type derived from Character or Wide_Character in the prefix of N.
-   --  Used to resolved qualified names whose selector is a character literal.
-
-   function Has_Private_With (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-262): Determines if the current compilation unit has a
-   --  private with on E.
+   function Entity_Of_Unit (U : Node_Id) return Entity_Id;
+   --  Return the appropriate entity for determining which unit has a deeper
+   --  scope: the defining entity for U, unless U is a package instance, in
+   --  which case we retrieve the entity of the instance spec.
 
    procedure Find_Expanded_Name (N : Node_Id);
    --  The input is a selected component known to be an expanded name. Verify
    --  legality of selector given the scope denoted by prefix, and change node
    --  N into a expanded name with a properly set Entity field.
+
+   function Find_Most_Prev (Use_Clause : Node_Id) return Node_Id;
+   --  Find the most previous use clause (that is, the first one to appear in
+   --  the source) by traversing the previous clause chain that exists in both
+   --  N_Use_Package_Clause nodes and N_Use_Type_Clause nodes.
 
    function Find_Renamed_Entity
      (N         : Node_Id;
@@ -492,6 +489,14 @@ package body Sem_Ch8 is
    --  operator, a subprogram, an entry, or a protected operation. Is_Actual
    --  indicates that the renaming is the one generated for an actual subpro-
    --  gram in an instance, for which special visibility checks apply.
+
+   function Has_Implicit_Character_Literal (N : Node_Id) return Boolean;
+   --  Find a type derived from Character or Wide_Character in the prefix of N.
+   --  Used to resolved qualified names whose selector is a character literal.
+
+   function Has_Private_With (E : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-262): Determines if the current compilation unit has a
+   --  private with on E.
 
    function Has_Implicit_Operator (N : Node_Id) return Boolean;
    --  N is an expanded name whose selector is an operator name (e.g. P."+").
@@ -507,30 +512,33 @@ package body Sem_Ch8 is
    --  specification are discarded and replaced with those of the renamed
    --  subprogram, which are then used to recheck the default values.
 
-   function Is_Appropriate_For_Record (T : Entity_Id) return Boolean;
-   --  Prefix is appropriate for record if it is of a record type, or an access
-   --  to such.
-
    function Is_Appropriate_For_Entry_Prefix (T : Entity_Id) return Boolean;
    --  True if it is of a task type, a protected type, or else an access to one
    --  of these types.
 
-   procedure Note_Redundant_Use (Clause : Node_Id);
-   --  Mark the name in a use clause as redundant if the corresponding entity
-   --  is already use-visible. Emit a warning if the use clause comes from
-   --  source and the proper warnings are enabled.
+   function Is_Appropriate_For_Record (T : Entity_Id) return Boolean;
+   --  Prefix is appropriate for record if it is of a record type, or an access
+   --  to such.
+
+   function Most_Descendant_Use_Clause
+     (Clause1 : Entity_Id;
+      Clause2 : Entity_Id) return Entity_Id;
+   --  Determine which use clause parameter is the most descendant in terms of
+   --  scope.
 
    procedure Premature_Usage (N : Node_Id);
    --  Diagnose usage of an entity before it is visible
 
-   procedure Use_One_Package (P : Entity_Id; N : Node_Id);
+   procedure Use_One_Package
+     (N : Node_Id; Pack_Name : Entity_Id := Empty; Force : Boolean := False);
    --  Make visible entities declared in package P potentially use-visible
    --  in the current context. Also used in the analysis of subunits, when
    --  re-installing use clauses of parent units. N is the use_clause that
    --  names P (and possibly other packages).
 
-   procedure Use_One_Type (Id : Node_Id; Installed : Boolean := False);
-   --  Id is the subtype mark from a use type clause. This procedure makes
+   procedure Use_One_Type
+     (Id : Node_Id; Installed : Boolean := False; Force : Boolean := False);
+   --  Id is the subtype mark from a use_type_clause. This procedure makes
    --  the primitive operators of the type potentially use-visible. The
    --  boolean flag Installed indicates that the clause is being reinstalled
    --  after previous analysis, and primitive operations are already chained
@@ -3437,7 +3445,7 @@ package body Sem_Ch8 is
          --  addition the renamed entity may depend on the generic formals of
          --  the enclosing generic.
 
-         if Is_Actual and then not Inside_A_Generic then
+         if Is_Actual and not Inside_A_Generic then
             Freeze_Before (N, Old_S);
             Freeze_Actual_Profile;
             Set_Has_Delayed_Freeze (New_S, False);
@@ -3624,6 +3632,25 @@ package body Sem_Ch8 is
             Analyze (N);
          end if;
       end if;
+
+      --  Check if we are looking at an Ada 2012 defaulted formal subprogram
+      --  and mark any use_package_clauses that affect the visibility of the
+      --  implicit generic actual.
+
+      if From_Default (N)
+           and then Is_Generic_Actual_Subprogram (New_S)
+           and then Present (Alias (New_S))
+      then
+         Mark_Use_Clauses (Alias (New_S));
+
+      --  Check intrinsic operators used as generic actuals since they may
+      --  make a use_type_clause effective.
+
+      elsif Is_Generic_Actual_Subprogram (New_S)
+        and then Is_Intrinsic_Subprogram (New_S)
+      then
+         Mark_Use_Clauses (New_S);
+      end if;
    end Analyze_Subprogram_Renaming;
 
    -------------------------
@@ -3637,11 +3664,78 @@ package body Sem_Ch8 is
    --  use. If the package is an open scope, i.e. if the use clause occurs
    --  within the package itself, ignore it.
 
-   procedure Analyze_Use_Package (N : Node_Id) is
+   procedure Analyze_Use_Package (N : Node_Id; Chain : Boolean := True) is
+
+      procedure Analyze_Package_Name (Clause : Node_Id);
+      --  Perform analysis on a package name from a use_package_clause
+
+      procedure Analyze_Package_Name_List (Head_Clause : Node_Id);
+      --  Similar to Analyze_Package_Name but iterates over all the names
+      --  in a use clause.
+
+      --------------------------
+      -- Analyze_Package_Name --
+      --------------------------
+
+      procedure Analyze_Package_Name (Clause : Node_Id) is
+         Pack : constant Node_Id := Name (Clause);
+         Pref : Node_Id;
+
+      begin
+         pragma Assert (Nkind (Clause) = N_Use_Package_Clause);
+         Analyze (Pack);
+
+         --  Verify that the package standard is not directly named in a
+         --  use_package_clause.
+
+         if Nkind (Parent (Clause)) = N_Compilation_Unit
+           and then Nkind (Pack) = N_Expanded_Name
+         then
+            Pref := Prefix (Pack);
+
+            while Nkind (Pref) = N_Expanded_Name loop
+               Pref := Prefix (Pref);
+            end loop;
+
+            if Entity (Pref) = Standard_Standard then
+               Error_Msg_N
+                 ("predefined package Standard cannot appear in a "
+                  & "context clause", Pref);
+            end if;
+         end if;
+      end Analyze_Package_Name;
+
+      -------------------------------
+      -- Analyze_Package_Name_List --
+      -------------------------------
+
+      procedure Analyze_Package_Name_List (Head_Clause : Node_Id) is
+         Curr : Node_Id;
+
+      begin
+         --  Due to the way source use clauses are split during parsing we are
+         --  forced to simply iterate through all entities in scope until the
+         --  clause representing the last name in the list is found.
+
+         Curr := Head_Clause;
+         while Present (Curr) loop
+            Analyze_Package_Name (Curr);
+
+            --  Stop iterating over the names in the use clause when we are at
+            --  the last one.
+
+            exit when not More_Ids (Curr) and then Prev_Ids (Curr);
+            Next (Curr);
+         end loop;
+      end Analyze_Package_Name_List;
+
+      --  Local variables
+
       Ghost_Id  : Entity_Id := Empty;
       Living_Id : Entity_Id := Empty;
       Pack      : Entity_Id;
-      Pack_Name : Node_Id;
+
+   --  Start of processing for Analyze_Use_Package
 
    begin
       Check_SPARK_05_Restriction ("use clause is not allowed", N);
@@ -3661,107 +3755,90 @@ package body Sem_Ch8 is
          Error_Msg_N ("use clause not allowed in predefined spec", N);
       end if;
 
-      --  Chain clause to list of use clauses in current scope
+      --  Loop through all package names from the original use clause in
+      --  order to analyze referenced packages. A use_package_clause with only
+      --  one name does not have More_Ids or Prev_Ids set, while a clause with
+      --  More_Ids only starts the chain produced by the parser.
 
-      if Nkind (Parent (N)) /= N_Compilation_Unit then
+      if not More_Ids (N) and then not Prev_Ids (N) then
+         Analyze_Package_Name (N);
+      elsif More_Ids (N) and then not Prev_Ids (N) then
+         Analyze_Package_Name_List (N);
+      end if;
+
+      if not Is_Entity_Name (Name (N)) then
+         Error_Msg_N ("& is not a package", Name (N));
+
+         return;
+      end if;
+      Pack := Entity (Name (N));
+
+      if Chain then
          Chain_Use_Clause (N);
       end if;
 
-      --  Loop through package names to identify referenced packages
+      --  There are many cases where scopes are manipulated during analysis, so
+      --  check that Pack's current use clause has not already been chained
+      --  before setting its previous use clause.
 
-      Pack_Name := First (Names (N));
-      while Present (Pack_Name) loop
-         Analyze (Pack_Name);
+      if Ekind (Pack) = E_Package
+        and then Present (Current_Use_Clause (Pack))
+        and then Current_Use_Clause (Pack) /= N
+        and then No (Prev_Use_Clause (N))
+        and then Prev_Use_Clause (Current_Use_Clause (Pack)) /= N
+      then
+         Set_Prev_Use_Clause (N, Current_Use_Clause (Pack));
+      end if;
 
-         if Nkind (Parent (N)) = N_Compilation_Unit
-           and then Nkind (Pack_Name) = N_Expanded_Name
+      --  Mark all entities as potentially use visible.
+
+      if Ekind (Pack) /= E_Package and then Etype (Pack) /= Any_Type then
+         if Ekind (Pack) = E_Generic_Package then
+            Error_Msg_N  -- CODEFIX
+              ("a generic package is not allowed in a use clause",
+               Name (N));
+
+         elsif Ekind_In (Pack, E_Generic_Function, E_Generic_Package)
          then
-            declare
-               Pref : Node_Id;
+            Error_Msg_N  -- CODEFIX
+              ("a generic subprogram is not allowed in a use clause",
+               Name (N));
 
-            begin
-               Pref := Prefix (Pack_Name);
-               while Nkind (Pref) = N_Expanded_Name loop
-                  Pref := Prefix (Pref);
-               end loop;
-
-               if Entity (Pref) = Standard_Standard then
-                  Error_Msg_N
-                    ("predefined package Standard cannot appear in a context "
-                     & "clause", Pref);
-               end if;
-            end;
-         end if;
-
-         Next (Pack_Name);
-      end loop;
-
-      --  Loop through package names to mark all entities as potentially use
-      --  visible.
-
-      Pack_Name := First (Names (N));
-      while Present (Pack_Name) loop
-         if Is_Entity_Name (Pack_Name) then
-            Pack := Entity (Pack_Name);
-
-            if Ekind (Pack) /= E_Package and then Etype (Pack) /= Any_Type then
-               if Ekind (Pack) = E_Generic_Package then
-                  Error_Msg_N  -- CODEFIX
-                    ("a generic package is not allowed in a use clause",
-                     Pack_Name);
-
-               elsif Ekind_In (Pack, E_Generic_Function, E_Generic_Package)
-               then
-                  Error_Msg_N  -- CODEFIX
-                    ("a generic subprogram is not allowed in a use clause",
-                     Pack_Name);
-
-               elsif Ekind_In (Pack, E_Function, E_Procedure, E_Operator) then
-                  Error_Msg_N  -- CODEFIX
-                    ("a subprogram is not allowed in a use clause",
-                     Pack_Name);
-
-               else
-                  Error_Msg_N ("& is not allowed in a use clause", Pack_Name);
-               end if;
-
-            else
-               if Nkind (Parent (N)) = N_Compilation_Unit then
-                  Check_In_Previous_With_Clause (N, Pack_Name);
-               end if;
-
-               if Applicable_Use (Pack_Name) then
-                  Use_One_Package (Pack, N);
-               end if;
-
-               --  Capture the first Ghost package and the first living package
-
-               if Is_Entity_Name (Pack_Name) then
-                  Pack := Entity (Pack_Name);
-
-                  if Is_Ghost_Entity (Pack) then
-                     if No (Ghost_Id) then
-                        Ghost_Id := Pack;
-                     end if;
-
-                  elsif No (Living_Id) then
-                     Living_Id := Pack;
-                  end if;
-               end if;
-            end if;
-
-         --  Report error because name denotes something other than a package
+         elsif Ekind_In (Pack, E_Function, E_Procedure, E_Operator) then
+            Error_Msg_N  -- CODEFIX
+              ("a subprogram is not allowed in a use clause",
+               Name (N));
 
          else
-            Error_Msg_N ("& is not a package", Pack_Name);
+            Error_Msg_N ("& is not allowed in a use clause", Name (N));
          end if;
 
-         Next (Pack_Name);
-      end loop;
+      else
+         if Nkind (Parent (N)) = N_Compilation_Unit then
+            Check_In_Previous_With_Clause (N, Name (N));
+         end if;
+
+         Use_One_Package (N, Name (N));
+
+         --  Capture the first Ghost package and the first living package
+
+         if Is_Entity_Name (Name (N)) then
+            Pack := Entity (Name (N));
+
+            if Is_Ghost_Entity (Pack) then
+               if No (Ghost_Id) then
+                  Ghost_Id := Pack;
+               end if;
+
+            elsif No (Living_Id) then
+               Living_Id := Pack;
+            end if;
+         end if;
+      end if;
 
       --  Detect a mixture of Ghost packages and living packages within the
-      --  same use package clause. Ideally one would split a use package clause
-      --  with multiple names into multiple use package clauses with a single
+      --  same use_package_clause. Ideally one would split a use_package_clause
+      --  with multiple names into multiple use_package_clauses with a single
       --  name, however clients of the front end would have to adapt to this
       --  change.
 
@@ -3783,19 +3860,37 @@ package body Sem_Ch8 is
    -- Analyze_Use_Type --
    ----------------------
 
-   procedure Analyze_Use_Type (N : Node_Id) is
-      E         : Entity_Id;
-      Ghost_Id  : Entity_Id := Empty;
-      Id        : Node_Id;
-      Living_Id : Entity_Id := Empty;
+   procedure Analyze_Use_Type (N : Node_Id; Chain : Boolean := True) is
+      E  : Entity_Id;
+      Id : Node_Id;
 
    begin
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
-      --  Chain clause to list of use clauses in current scope
+      --  Chain clause to list of use clauses in current scope when flagged
 
-      if Nkind (Parent (N)) /= N_Compilation_Unit then
+      if Chain then
          Chain_Use_Clause (N);
+      end if;
+
+      --  Obtain the base type of the type denoted within the use_type_clause's
+      --  subtype mark.
+
+      Id := Subtype_Mark (N);
+      Find_Type (Id);
+      E := Base_Type (Entity (Id));
+
+      --  There are many cases where a use_type_clause may be reanalyzed due to
+      --  manipulation of the scope stack so we much guard against those cases
+      --  here, otherwise, we must add the new use_type_clause to the previous
+      --  use_type_clause chain in order to mark redundant use_type_clauses as
+      --  used.
+
+      if Present (Current_Use_Clause (E))
+        and then Current_Use_Clause (E) /= N
+        and then No (Prev_Use_Clause (N))
+      then
+         Set_Prev_Use_Clause (N, Current_Use_Clause (E));
       end if;
 
       --  If the Used_Operations list is already initialized, the clause has
@@ -3806,15 +3901,10 @@ package body Sem_Ch8 is
 
       if Present (Used_Operations (N)) then
          declare
-            Mark : Node_Id;
             Elmt : Elmt_Id;
 
          begin
-            Mark := First (Subtype_Marks (N));
-            while Present (Mark) loop
-               Use_One_Type (Mark, Installed => True);
-               Next (Mark);
-            end loop;
+            Use_One_Type (Subtype_Mark (N), Installed => True);
 
             Elmt := First_Elmt (Used_Operations (N));
             while Present (Elmt) loop
@@ -3830,132 +3920,68 @@ package body Sem_Ch8 is
       --  made use-visible by the clause.
 
       Set_Used_Operations (N, New_Elmt_List);
-      Id := First (Subtype_Marks (N));
-      while Present (Id) loop
-         Find_Type (Id);
-         E := Entity (Id);
+      E := Entity (Id);
 
-         if E /= Any_Type then
-            Use_One_Type (Id);
+      if E /= Any_Type then
+         Use_One_Type (Id);
 
-            if Nkind (Parent (N)) = N_Compilation_Unit then
-               if Nkind (Id) = N_Identifier then
-                  Error_Msg_N ("type is not directly visible", Id);
+         if Nkind (Parent (N)) = N_Compilation_Unit then
+            if Nkind (Id) = N_Identifier then
+               Error_Msg_N ("type is not directly visible", Id);
 
-               elsif Is_Child_Unit (Scope (E))
-                 and then Scope (E) /= System_Aux_Id
-               then
-                  Check_In_Previous_With_Clause (N, Prefix (Id));
-               end if;
-            end if;
-
-         else
-            --  If the use_type_clause appears in a compilation unit context,
-            --  check whether it comes from a unit that may appear in a
-            --  limited_with_clause, for a better error message.
-
-            if Nkind (Parent (N)) = N_Compilation_Unit
-              and then Nkind (Id) /= N_Identifier
+            elsif Is_Child_Unit (Scope (E))
+              and then Scope (E) /= System_Aux_Id
             then
-               declare
-                  Item : Node_Id;
-                  Pref : Node_Id;
+               Check_In_Previous_With_Clause (N, Prefix (Id));
+            end if;
+         end if;
 
-                  function Mentioned (Nam : Node_Id) return Boolean;
-                  --  Check whether the prefix of expanded name for the type
-                  --  appears in the prefix of some limited_with_clause.
+      else
+         --  If the use_type_clause appears in a compilation unit context,
+         --  check whether it comes from a unit that may appear in a
+         --  limited_with_clause, for a better error message.
 
-                  ---------------
-                  -- Mentioned --
-                  ---------------
+         if Nkind (Parent (N)) = N_Compilation_Unit
+           and then Nkind (Id) /= N_Identifier
+         then
+            declare
+               Item : Node_Id;
+               Pref : Node_Id;
 
-                  function Mentioned (Nam : Node_Id) return Boolean is
-                  begin
-                     return Nkind (Name (Item)) = N_Selected_Component
-                       and then Chars (Prefix (Name (Item))) = Chars (Nam);
-                  end Mentioned;
+               function Mentioned (Nam : Node_Id) return Boolean;
+               --  Check whether the prefix of expanded name for the type
+               --  appears in the prefix of some limited_with_clause.
 
+               ---------------
+               -- Mentioned --
+               ---------------
+
+               function Mentioned (Nam : Node_Id) return Boolean is
                begin
-                  Pref := Prefix (Id);
-                  Item := First (Context_Items (Parent (N)));
-                  while Present (Item) and then Item /= N loop
-                     if Nkind (Item) = N_With_Clause
-                       and then Limited_Present (Item)
-                       and then Mentioned (Pref)
-                     then
-                        Change_Error_Text
-                          (Get_Msg_Id, "premature usage of incomplete type");
-                     end if;
+                  return Nkind (Name (Item)) = N_Selected_Component
+                    and then Chars (Prefix (Name (Item))) = Chars (Nam);
+               end Mentioned;
 
-                     Next (Item);
-                  end loop;
-               end;
-            end if;
+            begin
+               Pref := Prefix (Id);
+               Item := First (Context_Items (Parent (N)));
+               while Present (Item) and then Item /= N loop
+                  if Nkind (Item) = N_With_Clause
+                    and then Limited_Present (Item)
+                    and then Mentioned (Pref)
+                  then
+                     Change_Error_Text
+                       (Get_Msg_Id, "premature usage of incomplete type");
+                  end if;
+
+                  Next (Item);
+               end loop;
+            end;
          end if;
-
-         --  Capture the first Ghost type and the first living type
-
-         if Is_Ghost_Entity (E) then
-            if No (Ghost_Id) then
-               Ghost_Id := E;
-            end if;
-
-         elsif No (Living_Id) then
-            Living_Id := E;
-         end if;
-
-         Next (Id);
-      end loop;
-
-      --  Detect a mixture of Ghost types and living types within the same use
-      --  type clause. Ideally one would split a use type clause with multiple
-      --  marks into multiple use type clauses with a single mark, however
-      --  clients of the front end will have to adapt to this change.
-
-      if Present (Ghost_Id) and then Present (Living_Id) then
-         Error_Msg_N
-           ("use clause cannot mention ghost and non-ghost ghost types", N);
-
-         Error_Msg_Sloc := Sloc (Ghost_Id);
-         Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-         Error_Msg_Sloc := Sloc (Living_Id);
-         Error_Msg_NE ("\& # declared as non-ghost", N, Living_Id);
       end if;
 
       Mark_Ghost_Clause (N);
    end Analyze_Use_Type;
-
-   --------------------
-   -- Applicable_Use --
-   --------------------
-
-   function Applicable_Use (Pack_Name : Node_Id) return Boolean is
-      Pack : constant Entity_Id := Entity (Pack_Name);
-
-   begin
-      if In_Open_Scopes (Pack) then
-         if Warn_On_Redundant_Constructs and then Pack = Current_Scope then
-            Error_Msg_NE -- CODEFIX
-              ("& is already use-visible within itself?r?", Pack_Name, Pack);
-         end if;
-
-         return False;
-
-      elsif In_Use (Pack) then
-         Note_Redundant_Use (Pack_Name);
-         return False;
-
-      elsif Present (Renamed_Object (Pack))
-        and then In_Use (Renamed_Object (Pack))
-      then
-         Note_Redundant_Use (Pack_Name);
-         return False;
-
-      else
-         return True;
-      end if;
-   end Applicable_Use;
 
    ------------------------
    -- Attribute_Renaming --
@@ -4186,21 +4212,27 @@ package body Sem_Ch8 is
       Level : Int := Scope_Stack.Last;
 
    begin
+      --  Common case
+
       if not Is_Compilation_Unit (Current_Scope)
         or else not Is_Child_Unit (Current_Scope)
       then
-         null;   --  Common case
+         null;
 
-      elsif Defining_Entity (Parent (N)) = Current_Scope then
-         null;   --  Common case for compilation unit
+      --  Common case for compilation unit
+
+      elsif Defining_Entity (N               => Parent (N),
+                             Empty_On_Errors => True) = Current_Scope
+      then
+         null;
 
       else
          --  If declaration appears in some other scope, it must be in some
          --  parent unit when compiling a child.
 
-         Pack := Defining_Entity (Parent (N));
+         Pack := Defining_Entity (Parent (N), Empty_On_Errors => True);
          if not In_Open_Scopes (Pack) then
-            null;  --  default as well
+            null;
 
          --  If the use clause appears in an ancestor and we are in the
          --  private part of the immediate parent, the use clauses are
@@ -4547,11 +4579,11 @@ package body Sem_Ch8 is
    ---------------------
 
    procedure End_Use_Clauses (Clause : Node_Id) is
-      U   : Node_Id;
+      U : Node_Id;
 
    begin
-      --  Remove Use_Type clauses first, because they affect the
-      --  visibility of operators in subsequent used packages.
+      --  Remove use_type_clauses first, because they affect the visibility of
+      --  operators in subsequent used packages.
 
       U := Clause;
       while Present (U) loop
@@ -4577,8 +4609,8 @@ package body Sem_Ch8 is
    ---------------------
 
    procedure End_Use_Package (N : Node_Id) is
-      Pack_Name : Node_Id;
       Pack      : Entity_Id;
+      Pack_Name : Node_Id;
       Id        : Entity_Id;
       Elmt      : Elmt_Id;
 
@@ -4603,43 +4635,64 @@ package body Sem_Ch8 is
    --  Start of processing for End_Use_Package
 
    begin
-      Pack_Name := First (Names (N));
-      while Present (Pack_Name) loop
+      Pack_Name := Name (N);
 
-         --  Test that Pack_Name actually denotes a package before processing
+      --  Test that Pack_Name actually denotes a package before processing
 
-         if Is_Entity_Name (Pack_Name)
-           and then Ekind (Entity (Pack_Name)) = E_Package
-         then
-            Pack := Entity (Pack_Name);
+      if Is_Entity_Name (Pack_Name)
+        and then Ekind (Entity (Pack_Name)) = E_Package
+      then
+         Pack := Entity (Pack_Name);
 
-            if In_Open_Scopes (Pack) then
-               null;
+         if In_Open_Scopes (Pack) then
+            null;
 
-            elsif not Redundant_Use (Pack_Name) then
-               Set_In_Use (Pack, False);
-               Set_Current_Use_Clause (Pack, Empty);
+         elsif not Redundant_Use (Pack_Name) then
+            Set_In_Use (Pack, False);
+            Set_Current_Use_Clause (Pack, Empty);
 
-               Id := First_Entity (Pack);
+            Id := First_Entity (Pack);
+            while Present (Id) loop
+
+               --  Preserve use-visibility of operators that are primitive
+               --  operators of a type that is use-visible through an active
+               --  use_type_clause.
+
+               if Nkind (Id) = N_Defining_Operator_Symbol
+                 and then
+                   (Is_Primitive_Operator_In_Use (Id, First_Formal (Id))
+                     or else
+                       (Present (Next_Formal (First_Formal (Id)))
+                         and then
+                           Is_Primitive_Operator_In_Use
+                             (Id, Next_Formal (First_Formal (Id)))))
+               then
+                  null;
+               else
+                  Set_Is_Potentially_Use_Visible (Id, False);
+               end if;
+
+               if Is_Private_Type (Id)
+                 and then Present (Full_View (Id))
+               then
+                  Set_Is_Potentially_Use_Visible (Full_View (Id), False);
+               end if;
+
+               Next_Entity (Id);
+            end loop;
+
+            if Present (Renamed_Object (Pack)) then
+               Set_In_Use (Renamed_Object (Pack), False);
+               Set_Current_Use_Clause (Renamed_Object (Pack), Empty);
+            end if;
+
+            if Chars (Pack) = Name_System
+              and then Scope (Pack) = Standard_Standard
+              and then Present_System_Aux
+            then
+               Id := First_Entity (System_Aux_Id);
                while Present (Id) loop
-
-                  --  Preserve use-visibility of operators that are primitive
-                  --  operators of a type that is use-visible through an active
-                  --  use_type clause.
-
-                  if Nkind (Id) = N_Defining_Operator_Symbol
-                    and then
-                      (Is_Primitive_Operator_In_Use (Id, First_Formal (Id))
-                        or else
-                          (Present (Next_Formal (First_Formal (Id)))
-                            and then
-                              Is_Primitive_Operator_In_Use
-                                (Id, Next_Formal (First_Formal (Id)))))
-                  then
-                     null;
-                  else
-                     Set_Is_Potentially_Use_Visible (Id, False);
-                  end if;
+                  Set_Is_Potentially_Use_Visible (Id, False);
 
                   if Is_Private_Type (Id)
                     and then Present (Full_View (Id))
@@ -4650,38 +4703,12 @@ package body Sem_Ch8 is
                   Next_Entity (Id);
                end loop;
 
-               if Present (Renamed_Object (Pack)) then
-                  Set_In_Use (Renamed_Object (Pack), False);
-                  Set_Current_Use_Clause (Renamed_Object (Pack), Empty);
-               end if;
-
-               if Chars (Pack) = Name_System
-                 and then Scope (Pack) = Standard_Standard
-                 and then Present_System_Aux
-               then
-                  Id := First_Entity (System_Aux_Id);
-                  while Present (Id) loop
-                     Set_Is_Potentially_Use_Visible (Id, False);
-
-                     if Is_Private_Type (Id)
-                       and then Present (Full_View (Id))
-                     then
-                        Set_Is_Potentially_Use_Visible (Full_View (Id), False);
-                     end if;
-
-                     Next_Entity (Id);
-                  end loop;
-
-                  Set_In_Use (System_Aux_Id, False);
-               end if;
-
-            else
-               Set_Redundant_Use (Pack_Name, False);
+               Set_In_Use (System_Aux_Id, False);
             end if;
+         else
+            Set_Redundant_Use (Pack_Name, False);
          end if;
-
-         Next (Pack_Name);
-      end loop;
+      end if;
 
       if Present (Hidden_By_Use_Clause (N)) then
          Elmt := First_Elmt (Hidden_By_Use_Clause (N));
@@ -4714,30 +4741,26 @@ package body Sem_Ch8 is
    ------------------
 
    procedure End_Use_Type (N : Node_Id) is
-      Elmt    : Elmt_Id;
-      Id      : Entity_Id;
-      T       : Entity_Id;
+      Elmt : Elmt_Id;
+      Id   : Entity_Id;
+      T    : Entity_Id;
 
    --  Start of processing for End_Use_Type
 
    begin
-      Id := First (Subtype_Marks (N));
-      while Present (Id) loop
+      Id := Subtype_Mark (N);
 
-         --  A call to Rtsfind may occur while analyzing a use_type clause,
-         --  in which case the type marks are not resolved yet, and there is
-         --  nothing to remove.
+      --  A call to Rtsfind may occur while analyzing a use_type_clause, in
+      --  which case the type marks are not resolved yet, so guard against that
+      --  here.
 
-         if not Is_Entity_Name (Id) or else No (Entity (Id)) then
-            goto Continue;
-         end if;
-
+      if Is_Entity_Name (Id) and then Present (Entity (Id)) then
          T := Entity (Id);
 
          if T = Any_Type or else From_Limited_With (T) then
             null;
 
-         --  Note that the use_type clause may mention a subtype of the type
+         --  Note that the use_type_clause may mention a subtype of the type
          --  whose primitive operations have been made visible. Here as
          --  elsewhere, it is the base type that matters for visibility.
 
@@ -4750,10 +4773,7 @@ package body Sem_Ch8 is
             Set_Current_Use_Clause (T, Empty);
             Set_Current_Use_Clause (Base_Type (T), Empty);
          end if;
-
-         <<Continue>>
-            Next (Id);
-      end loop;
+      end if;
 
       if Is_Empty_Elmt_List (Used_Operations (N)) then
          return;
@@ -4766,6 +4786,21 @@ package body Sem_Ch8 is
          end loop;
       end if;
    end End_Use_Type;
+
+   --------------------
+   -- Entity_Of_Unit --
+   --------------------
+
+   function Entity_Of_Unit (U : Node_Id) return Entity_Id is
+   begin
+      if Nkind (U) = N_Package_Instantiation
+        and then Analyzed (U)
+      then
+         return Defining_Entity (Instance_Spec (U));
+      else
+         return Defining_Entity (U);
+      end if;
+   end Entity_Of_Unit;
 
    ----------------------
    -- Find_Direct_Name --
@@ -5384,6 +5419,17 @@ package body Sem_Ch8 is
             end;
          end if;
 
+         --  Although the marking of use clauses happens at the end of
+         --  Find_Direct_Name, a certain case where a generic actual satisfies
+         --  a use clause must be checked here due to how the generic machinery
+         --  handles the analysis of said actuals.
+
+         if In_Instance
+           and then Nkind (Parent (N)) = N_Generic_Association
+         then
+            Mark_Use_Clauses (Entity (N));
+         end if;
+
          return;
       end if;
 
@@ -5561,7 +5607,7 @@ package body Sem_Ch8 is
                goto Done;
 
             elsif Is_Predefined_Unit (Current_Sem_Unit) then
-               --  A use-clause in the body of a system file creates conflict
+               --  A use clause in the body of a system file creates conflict
                --  with some entity in a user scope, while rtsfind is active.
                --  Keep only the entity coming from another predefined unit.
 
@@ -5842,6 +5888,20 @@ package body Sem_Ch8 is
             end if;
          end if;
       end;
+
+      --  Mark relevant use-type and use-package clauses as effective if the
+      --  node in question is not overloaded and therefore does not require
+      --  resolution.
+      --
+      --  Note: Generic actual subprograms do not follow the normal resolution
+      --  path, so ignore the fact that they are overloaded and mark them
+      --  anyway.
+
+      if Nkind (N) not in N_Subexpr
+        or else not Is_Overloaded (N)
+      then
+         Mark_Use_Clauses (N);
+      end if;
 
    --  Come here with entity set
 
@@ -6460,8 +6520,33 @@ package body Sem_Ch8 is
          Generate_Reference (Id, N);
       end if;
 
+      --  Mark relevant use-type and use-package clauses as effective if the
+      --  node in question is not overloaded and therefore does not require
+      --  resolution.
+
+      if Nkind (N) not in N_Subexpr or else not Is_Overloaded (N) then
+         Mark_Use_Clauses (N);
+      end if;
+
       Check_Restriction_No_Use_Of_Entity (N);
    end Find_Expanded_Name;
+
+   --------------------
+   -- Find_Most_Prev --
+   --------------------
+
+   function Find_Most_Prev (Use_Clause : Node_Id) return Node_Id is
+      Curr : Node_Id;
+   begin
+      --  Loop through the Prev_Use_Clause chain
+
+      Curr := Use_Clause;
+      while Present (Prev_Use_Clause (Curr)) loop
+         Curr := Prev_Use_Clause (Curr);
+      end loop;
+
+      return Curr;
+   end Find_Most_Prev;
 
    -------------------------
    -- Find_Renamed_Entity --
@@ -8039,9 +8124,7 @@ package body Sem_Ch8 is
      (Clause             : Node_Id;
       Force_Installation : Boolean := False)
    is
-      U  : Node_Id;
-      P  : Node_Id;
-      Id : Entity_Id;
+      U : Node_Id;
 
    begin
       U := Clause;
@@ -8050,44 +8133,13 @@ package body Sem_Ch8 is
          --  Case of USE package
 
          if Nkind (U) = N_Use_Package_Clause then
-            P := First (Names (U));
-            while Present (P) loop
-               Id := Entity (P);
-
-               if Ekind (Id) = E_Package then
-                  if In_Use (Id) then
-                     Note_Redundant_Use (P);
-
-                  elsif Present (Renamed_Object (Id))
-                    and then In_Use (Renamed_Object (Id))
-                  then
-                     Note_Redundant_Use (P);
-
-                  elsif Force_Installation or else Applicable_Use (P) then
-                     Use_One_Package (Id, U);
-
-                  end if;
-               end if;
-
-               Next (P);
-            end loop;
+            Use_One_Package (U, Name (U), True);
 
          --  Case of USE TYPE
 
          else
-            P := First (Subtype_Marks (U));
-            while Present (P) loop
-               if not Is_Entity_Name (P)
-                 or else No (Entity (P))
-               then
-                  null;
+            Use_One_Type (Subtype_Mark (U), Force => Force_Installation);
 
-               elsif Entity (P) /= Any_Type then
-                  Use_One_Type (P);
-               end if;
-
-               Next (P);
-            end loop;
          end if;
 
          Next_Use_Clause (U);
@@ -8145,196 +8197,260 @@ package body Sem_Ch8 is
                                and then Has_Components (Designated_Type (T))));
    end Is_Appropriate_For_Record;
 
-   ------------------------
-   -- Note_Redundant_Use --
-   ------------------------
+   ----------------------
+   -- Mark_Use_Clauses --
+   ----------------------
 
-   procedure Note_Redundant_Use (Clause : Node_Id) is
-      Pack_Name : constant Entity_Id := Entity (Clause);
-      Cur_Use   : constant Node_Id   := Current_Use_Clause (Pack_Name);
-      Decl      : constant Node_Id   := Parent (Clause);
+   procedure Mark_Use_Clauses (Id : Node_Or_Entity_Id) is
 
-      Prev_Use   : Node_Id := Empty;
-      Redundant  : Node_Id := Empty;
-      --  The Use_Clause which is actually redundant. In the simplest case it
-      --  is Pack itself, but when we compile a body we install its context
-      --  before that of its spec, in which case it is the use_clause in the
-      --  spec that will appear to be redundant, and we want the warning to be
-      --  placed on the body. Similar complications appear when the redundancy
-      --  is between a child unit and one of its ancestors.
+      procedure Mark_Parameters (Call : Entity_Id);
+      --  Perform use_type_clause marking for all parameters in a subprogram
+      --  or operator call.
+
+      procedure Mark_Use_Package (Pak : Entity_Id);
+      --  Move up the Prev_Use_Clause chain for packages denoted by Pak -
+      --  marking each clause in the chain as effective in the process.
+
+      procedure Mark_Use_Type (E : Entity_Id);
+      --  Similar to Do_Use_Package_Marking except we move up the
+      --  Prev_Use_Clause chain for the type denoted by E.
+
+      ---------------------
+      -- Mark_Parameters --
+      ---------------------
+
+      procedure Mark_Parameters (Call : Entity_Id) is
+         Curr : Node_Id;
+
+      begin
+         --  Move through all of the formals
+
+         Curr := First_Formal (Call);
+         while Present (Curr) loop
+            Mark_Use_Type (Curr);
+
+            Curr := Next_Formal (Curr);
+         end loop;
+
+         --  Handle the return type
+
+         Mark_Use_Type (Call);
+      end Mark_Parameters;
+
+      ----------------------
+      -- Mark_Use_Package --
+      ----------------------
+
+      procedure Mark_Use_Package (Pak : Entity_Id) is
+         Curr : Node_Id;
+
+      begin
+         --  Ignore cases where the scope of the type is not a package
+         --  (e.g. Standard_Standard).
+
+         if Ekind (Pak) /= E_Package then
+            return;
+         end if;
+
+         Curr := Current_Use_Clause (Pak);
+         while Present (Curr)
+            and then not Is_Effective_Use_Clause (Curr)
+         loop
+            --  We need to mark the previous use clauses as effective, but each
+            --  use clause may in turn render other use_package_clauses
+            --  effective. Additionally, it is possible to have a parent
+            --  package renamed as a child of itself so we must check the
+            --  prefix entity is not the same as the package we are marking.
+
+            if Nkind (Name (Curr)) /= N_Identifier
+              and then Present (Prefix (Name (Curr)))
+              and then Entity (Prefix (Name (Curr))) /= Pak
+            then
+               Mark_Use_Package (Entity (Prefix (Name (Curr))));
+
+            --  It is also possible to have a child package without a prefix
+            --  that relies on a previous use_package_clause.
+
+            elsif Nkind (Name (Curr)) = N_Identifier
+              and then Is_Child_Unit (Entity (Name (Curr)))
+            then
+               Mark_Use_Package (Scope (Entity (Name (Curr))));
+            end if;
+
+            --  Mark the use_package_clause as effective and move up the chain
+
+            Set_Is_Effective_Use_Clause (Curr);
+
+            Curr := Prev_Use_Clause (Curr);
+         end loop;
+      end Mark_Use_Package;
+
+      -------------------
+      -- Mark_Use_Type --
+      -------------------
+
+      procedure Mark_Use_Type (E : Entity_Id) is
+         Curr : Node_Id;
+
+      begin
+         --  Ignore void types and unresolved string literals and primitives
+
+         if Nkind (E) = N_String_Literal
+           or else Nkind (Etype (E)) not in N_Entity
+           or else not Is_Type (Etype (E))
+         then
+            return;
+         end if;
+
+         --  The package containing the type or operator function being used
+         --  may be in use as well, so mark any use_package_clauses for it as
+         --  effective. There are also additional sanity checks performed here
+         --  for ignoring previous errors.
+
+         Mark_Use_Package (Scope (Base_Type (Etype (E))));
+         if Nkind (E) in N_Op
+           and then Present (Entity (E))
+           and then Present (Scope (Entity (E)))
+         then
+            Mark_Use_Package (Scope (Entity (E)));
+         end if;
+
+         Curr := Current_Use_Clause (Base_Type (Etype (E)));
+         while Present (Curr)
+            and then not Is_Effective_Use_Clause (Curr)
+         loop
+            --  Current use_type_clause may render other use_package_clauses
+            --  effective.
+
+            if Nkind (Subtype_Mark (Curr)) /= N_Identifier
+              and then Present (Prefix (Subtype_Mark (Curr)))
+            then
+               Mark_Use_Package (Entity (Prefix (Subtype_Mark (Curr))));
+            end if;
+
+            --  Mark the use_type_clause as effective and move up the chain
+
+            Set_Is_Effective_Use_Clause (Curr);
+
+            Curr := Prev_Use_Clause (Curr);
+         end loop;
+      end Mark_Use_Type;
+
+   --  Start of processing for Mark_Use_Clauses
 
    begin
-      Set_Redundant_Use (Clause, True);
+      --  Use clauses in and of themselves do not count as a "use" of a
+      --  package.
 
-      if not Comes_From_Source (Clause)
-        or else In_Instance
-        or else not Warn_On_Redundant_Constructs
-      then
+      if Nkind_In (Parent (Id), N_Use_Type_Clause, N_Use_Package_Clause) then
          return;
       end if;
 
-      if not Is_Compilation_Unit (Current_Scope) then
+      --  Handle entities
 
-         --  If the use_clause is in an inner scope, it is made redundant by
-         --  some clause in the current context, with one exception: If we're
-         --  compiling a nested package body, and the use_clause comes from the
-         --  corresponding spec, the clause is not necessarily fully redundant,
-         --  so we should not warn. If a warning was warranted, it would have
-         --  been given when the spec was processed.
+      if Nkind (Id) in N_Entity then
 
-         if Nkind (Parent (Decl)) = N_Package_Specification then
-            declare
-               Package_Spec_Entity : constant Entity_Id :=
-                                       Defining_Unit_Name (Parent (Decl));
-            begin
-               if In_Package_Body (Package_Spec_Entity) then
-                  return;
-               end if;
-            end;
+         --  Mark the entity's package
+
+         if Is_Potentially_Use_Visible (Id) then
+            Mark_Use_Package (Scope (Id));
          end if;
 
-         Redundant := Clause;
-         Prev_Use  := Cur_Use;
+         --  Mark enumeration literals
 
-      elsif Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body then
-         declare
-            Cur_Unit : constant Unit_Number_Type := Get_Source_Unit (Cur_Use);
-            New_Unit : constant Unit_Number_Type := Get_Source_Unit (Clause);
-            Scop     : Entity_Id;
+         if Ekind (Id) = E_Enumeration_Literal then
+            Mark_Use_Type (Id);
 
-         begin
-            if Cur_Unit = New_Unit then
+         --  Mark primitives
 
-               --  Redundant clause in same body
-
-               Redundant := Clause;
-               Prev_Use  := Cur_Use;
-
-            elsif Cur_Unit = Current_Sem_Unit then
-
-               --  If the new clause is not in the current unit it has been
-               --  analyzed first, and it makes the other one redundant.
-               --  However, if the new clause appears in a subunit, Cur_Unit
-               --  is still the parent, and in that case the redundant one
-               --  is the one appearing in the subunit.
-
-               if Nkind (Unit (Cunit (New_Unit))) = N_Subunit then
-                  Redundant := Clause;
-                  Prev_Use  := Cur_Use;
-
-               --  Most common case: redundant clause in body,
-               --  original clause in spec. Current scope is spec entity.
-
-               elsif
-                 Current_Scope =
-                   Defining_Entity (
-                     Unit (Library_Unit (Cunit (Current_Sem_Unit))))
-               then
-                  Redundant := Cur_Use;
-                  Prev_Use  := Clause;
-
-               else
-                  --  The new clause may appear in an unrelated unit, when
-                  --  the parents of a generic are being installed prior to
-                  --  instantiation. In this case there must be no warning.
-                  --  We detect this case by checking whether the current top
-                  --  of the stack is related to the current compilation.
-
-                  Scop := Current_Scope;
-                  while Present (Scop) and then Scop /= Standard_Standard loop
-                     if Is_Compilation_Unit (Scop)
-                       and then not Is_Child_Unit (Scop)
-                     then
-                        return;
-
-                     elsif Scop = Cunit_Entity (Current_Sem_Unit) then
-                        exit;
-                     end if;
-
-                     Scop := Scope (Scop);
-                  end loop;
-
-                  Redundant := Cur_Use;
-                  Prev_Use  := Clause;
-               end if;
-
-            elsif New_Unit = Current_Sem_Unit then
-               Redundant := Clause;
-               Prev_Use  := Cur_Use;
-
-            else
-               --  Neither is the current unit, so they appear in parent or
-               --  sibling units. Warning will be emitted elsewhere.
-
-               return;
-            end if;
-         end;
-
-      elsif Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration
-        and then Present (Parent_Spec (Unit (Cunit (Current_Sem_Unit))))
-      then
-         --  Use_clause is in child unit of current unit, and the child unit
-         --  appears in the context of the body of the parent, so it has been
-         --  installed first, even though it is the redundant one. Depending on
-         --  their placement in the context, the visible or the private parts
-         --  of the two units, either might appear as redundant, but the
-         --  message has to be on the current unit.
-
-         if Get_Source_Unit (Cur_Use) = Current_Sem_Unit then
-            Redundant := Cur_Use;
-            Prev_Use  := Clause;
-         else
-            Redundant := Clause;
-            Prev_Use  := Cur_Use;
-         end if;
-
-         --  If the new use clause appears in the private part of a parent unit
-         --  it may appear to be redundant w.r.t. a use clause in a child unit,
-         --  but the previous use clause was needed in the visible part of the
-         --  child, and no warning should be emitted.
-
-         if Nkind (Parent (Decl)) = N_Package_Specification
-           and then
-             List_Containing (Decl) = Private_Declarations (Parent (Decl))
+         elsif (Ekind (Id) in Overloadable_Kind
+                 or else Ekind_In
+                   (Ekind (Id), E_Generic_Function, E_Generic_Procedure))
+           and then (Is_Potentially_Use_Visible (Id)
+                      or else Is_Intrinsic_Subprogram (Id))
          then
-            declare
-               Par : constant Entity_Id := Defining_Entity (Parent (Decl));
-               Spec : constant Node_Id  :=
-                        Specification (Unit (Cunit (Current_Sem_Unit)));
-
-            begin
-               if Is_Compilation_Unit (Par)
-                 and then Par /= Cunit_Entity (Current_Sem_Unit)
-                 and then Parent (Cur_Use) = Spec
-                 and then
-                   List_Containing (Cur_Use) = Visible_Declarations (Spec)
-               then
-                  return;
-               end if;
-            end;
+            Mark_Parameters (Id);
          end if;
 
-      --  Finally, if the current use clause is in the context then
-      --  the clause is redundant when it is nested within the unit.
-
-      elsif Nkind (Parent (Cur_Use)) = N_Compilation_Unit
-        and then Nkind (Parent (Parent (Clause))) /= N_Compilation_Unit
-        and then Get_Source_Unit (Cur_Use) = Get_Source_Unit (Clause)
-      then
-         Redundant := Clause;
-         Prev_Use  := Cur_Use;
+      --  Handle nodes
 
       else
-         null;
+         --  Mark operators
+
+         if Nkind (Id) in N_Op then
+
+            --  At this point the left operand may not be resolved if we are
+            --  encountering multiple operators next to eachother in an
+            --  expression.
+
+            if Nkind (Id) in N_Binary_Op
+               and then not (Nkind (Left_Opnd (Id)) in N_Op)
+            then
+               Mark_Use_Type (Left_Opnd (Id));
+            end if;
+
+            Mark_Use_Type (Right_Opnd (Id));
+            Mark_Use_Type (Id);
+
+         --  Mark entity identifiers
+
+         elsif Nkind (Id) in N_Has_Entity
+           and then (Is_Potentially_Use_Visible (Entity (Id))
+                      or else (Is_Generic_Instance (Entity (Id))
+                                and then Is_Immediately_Visible (Entity (Id))))
+         then
+            --  Ignore fully qualified names as they do not count as a "use" of
+            --  a package.
+
+            if Nkind_In (Id, N_Identifier, N_Operator_Symbol)
+              or else (Present (Prefix (Id))
+                         and then Scope (Entity (Id)) /= Entity (Prefix (Id)))
+            then
+               Mark_Use_Clauses (Entity (Id));
+            end if;
+         end if;
+      end if;
+   end Mark_Use_Clauses;
+
+   --------------------------------
+   -- Most_Descendant_Use_Clause --
+   --------------------------------
+
+   function Most_Descendant_Use_Clause
+     (Clause1 : Entity_Id;
+      Clause2 : Entity_Id) return Entity_Id
+   is
+      Scope1, Scope2 : Entity_Id;
+
+   begin
+      if Clause1 = Clause2 then
+         return Clause1;
       end if;
 
-      if Present (Redundant) then
-         Error_Msg_Sloc := Sloc (Prev_Use);
-         Error_Msg_NE -- CODEFIX
-           ("& is already use-visible through previous use clause #??",
-            Redundant, Pack_Name);
+      --  We determine which one is the most descendant by the scope distance
+      --  to the ultimate parent unit.
+
+      Scope1 := Entity_Of_Unit (Unit (Parent (Clause1)));
+      Scope2 := Entity_Of_Unit (Unit (Parent (Clause2)));
+      while Scope1 /= Standard_Standard
+        and then Scope2 /= Standard_Standard
+      loop
+         Scope1 := Scope (Scope1);
+         Scope2 := Scope (Scope2);
+
+         if not Present (Scope1) then
+            return Clause1;
+         elsif not Present (Scope2) then
+            return Clause2;
+         end if;
+      end loop;
+
+      if Scope1 = Standard_Standard then
+         return Clause1;
       end if;
-   end Note_Redundant_Use;
+
+      return Clause2;
+   end Most_Descendant_Use_Clause;
 
    ---------------
    -- Pop_Scope --
@@ -8400,9 +8516,9 @@ package body Sem_Ch8 is
       Scope_Stack.Decrement_Last;
    end Pop_Scope;
 
-   ---------------
+   ----------------
    -- Push_Scope --
-   ---------------
+   ----------------
 
    procedure Push_Scope (S : Entity_Id) is
       E : constant Entity_Id := Scope (S);
@@ -8776,7 +8892,8 @@ package body Sem_Ch8 is
         and then Scope_Stack.Table (SS_Last).Entity /= Standard_Standard
         and then Handle_Use
       then
-         Install_Use_Clauses (Scope_Stack.Table (SS_Last).First_Use_Clause);
+         Install_Use_Clauses (Scope_Stack.Table (SS_Last).First_Use_Clause,
+                               Force_Installation => True);
       end if;
    end Restore_Scope_Stack;
 
@@ -8873,10 +8990,7 @@ package body Sem_Ch8 is
    -------------
 
    procedure Set_Use (L : List_Id) is
-      Decl      : Node_Id;
-      Pack_Name : Node_Id;
-      Pack      : Entity_Id;
-      Id        : Entity_Id;
+      Decl : Node_Id;
 
    begin
       if Present (L) then
@@ -8884,31 +8998,12 @@ package body Sem_Ch8 is
          while Present (Decl) loop
             if Nkind (Decl) = N_Use_Package_Clause then
                Chain_Use_Clause (Decl);
-
-               Pack_Name := First (Names (Decl));
-               while Present (Pack_Name) loop
-                  Pack := Entity (Pack_Name);
-
-                  if Ekind (Pack) = E_Package
-                    and then Applicable_Use (Pack_Name)
-                  then
-                     Use_One_Package (Pack, Decl);
-                  end if;
-
-                  Next (Pack_Name);
-               end loop;
+               Use_One_Package (Decl, Name (Decl));
 
             elsif Nkind (Decl) = N_Use_Type_Clause then
                Chain_Use_Clause (Decl);
+               Use_One_Type (Subtype_Mark (Decl));
 
-               Id := First (Subtype_Marks (Decl));
-               while Present (Id) loop
-                  if Entity (Id) /= Any_Type then
-                     Use_One_Type (Id);
-                  end if;
-
-                  Next (Id);
-               end loop;
             end if;
 
             Next (Decl);
@@ -8916,20 +9011,399 @@ package body Sem_Ch8 is
       end if;
    end Set_Use;
 
+   -----------------------------
+   -- Update_Use_Clause_Chain --
+   -----------------------------
+
+   procedure Update_Use_Clause_Chain is
+
+      procedure Update_Chain_In_Scope (Level : Int);
+      --  Iterate through one level in the scope stack verifying each use-type
+      --  clause within said level is used then reset the Current_Use_Clause
+      --  to a redundant use clause outside of the current ending scope if such
+      --  a clause exists.
+
+      ---------------------------
+      -- Update_Chain_In_Scope --
+      ---------------------------
+
+      procedure Update_Chain_In_Scope (Level : Int) is
+         Curr : Node_Id;
+         N    : Node_Id;
+
+      begin
+         --  Loop through all use clauses within the scope dictated by Level
+
+         Curr := Scope_Stack.Table (Level).First_Use_Clause;
+         while Present (Curr) loop
+
+            --  Retrieve the subtype mark or name within the current current
+            --  use clause.
+
+            if Nkind (Curr) = N_Use_Type_Clause then
+               N := Subtype_Mark (Curr);
+            else
+               N := Name (Curr);
+            end if;
+
+            --  If warnings for unreferenced entities are enabled and the
+            --  current use clause has not been marked effective.
+
+            if Check_Unreferenced
+              and then Comes_From_Source (Curr)
+              and then not Is_Effective_Use_Clause (Curr)
+              and then not In_Instance
+            then
+
+               --  We are dealing with a potentially unused use_package_clause
+
+               if Nkind (Curr) = N_Use_Package_Clause then
+
+                  --  Renamings and formal subprograms may cause the associated
+                  --  to be marked as effective instead of the original.
+
+                  if not (Present (Associated_Node (N))
+                           and then Present
+                             (Current_Use_Clause (Associated_Node (N)))
+                           and then Is_Effective_Use_Clause
+                             (Current_Use_Clause (Associated_Node (N))))
+                  then
+                     Error_Msg_Node_1 := Entity (N);
+                     Error_Msg_NE ("ineffective use clause for package &?",
+                                   Curr, Entity (N));
+                  end if;
+
+               --  We are dealing with an unused use_type_clause
+
+               else
+                  Error_Msg_Node_1 := Etype (N);
+                  Error_Msg_NE ("ineffective use clause for }?",
+                                 Curr, Etype (N));
+               end if;
+            end if;
+
+            --  Verify that we haven't already processed a redundant
+            --  use_type_clause within the same scope before we move the
+            --  current use clause up to a previous one for type T.
+
+            if Present (Prev_Use_Clause (Curr)) then
+               Set_Current_Use_Clause (Entity (N), Prev_Use_Clause (Curr));
+            end if;
+
+            Curr := Next_Use_Clause (Curr);
+         end loop;
+      end Update_Chain_In_Scope;
+
+   --  Start of processing for Update_Use_Clause_Chain
+
+   begin
+      Update_Chain_In_Scope (Scope_Stack.Last);
+
+      --  Deal with use clauses within the context area if the current
+      --  scope is a compilation unit.
+
+      if Is_Compilation_Unit (Current_Scope) then
+
+         pragma Assert (Scope_Stack.Last /= Scope_Stack.First);
+
+         Update_Chain_In_Scope (Scope_Stack.Last - 1);
+      end if;
+   end Update_Use_Clause_Chain;
+
    ---------------------
    -- Use_One_Package --
    ---------------------
 
-   procedure Use_One_Package (P : Entity_Id; N : Node_Id) is
+   procedure Use_One_Package
+     (N         : Node_Id;
+      Pack_Name : Entity_Id := Empty;
+      Force     : Boolean   := False)
+   is
+
+      procedure Note_Redundant_Use (Clause : Node_Id);
+      --  Mark the name in a use clause as redundant if the corresponding
+      --  entity is already use-visible. Emit a warning if the use clause comes
+      --  from source and the proper warnings are enabled.
+
+      ------------------------
+      -- Note_Redundant_Use --
+      ------------------------
+
+      procedure Note_Redundant_Use (Clause : Node_Id) is
+         Pack_Name : constant Entity_Id := Entity (Clause);
+         Decl      : constant Node_Id   := Parent (Clause);
+
+         Cur_Use    : Node_Id := Current_Use_Clause (Pack_Name);
+         Prev_Use   : Node_Id := Empty;
+         Redundant  : Node_Id := Empty;
+         --  The Use_Clause which is actually redundant. In the simplest case
+         --  it is Pack itself, but when we compile a body we install its
+         --  context before that of its spec, in which case it is the
+         --  use_clause in the spec that will appear to be redundant, and we
+         --  want the warning to be placed on the body. Similar complications
+         --  appear when the redundancy is between a child unit and one of its
+         --  ancestors.
+
+      begin
+         --  Could be renamed...
+
+         if No (Cur_Use) then
+            Cur_Use := Current_Use_Clause (Renamed_Entity (Pack_Name));
+         end if;
+
+         Set_Redundant_Use (Clause, True);
+
+         if not Comes_From_Source (Clause)
+           or else In_Instance
+           or else not Warn_On_Redundant_Constructs
+         then
+            return;
+         end if;
+
+         if not Is_Compilation_Unit (Current_Scope) then
+
+            --  If the use_clause is in an inner scope, it is made redundant by
+            --  some clause in the current context, with one exception: If we
+            --  are compiling a nested package body, and the use_clause comes
+            --  from then corresponding spec, the clause is not necessarily
+            --  fully redundant, so we should not warn. If a warning was
+            --  warranted, it would have been given when the spec was
+            --  processed.
+
+            if Nkind (Parent (Decl)) = N_Package_Specification then
+               declare
+                  Package_Spec_Entity : constant Entity_Id :=
+                                          Defining_Unit_Name (Parent (Decl));
+               begin
+                  if In_Package_Body (Package_Spec_Entity) then
+                     return;
+                  end if;
+               end;
+            end if;
+
+            Redundant := Clause;
+            Prev_Use  := Cur_Use;
+
+         elsif Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body then
+            declare
+               Cur_Unit : constant Unit_Number_Type :=
+                 Get_Source_Unit (Cur_Use);
+               New_Unit : constant Unit_Number_Type :=
+                 Get_Source_Unit (Clause);
+               Scop     : Entity_Id;
+
+            begin
+               if Cur_Unit = New_Unit then
+
+                  --  Redundant clause in same body
+
+                  Redundant := Clause;
+                  Prev_Use  := Cur_Use;
+
+               elsif Cur_Unit = Current_Sem_Unit then
+
+                  --  If the new clause is not in the current unit it has been
+                  --  analyzed first, and it makes the other one redundant.
+                  --  However, if the new clause appears in a subunit, Cur_Unit
+                  --  is still the parent, and in that case the redundant one
+                  --  is the one appearing in the subunit.
+
+                  if Nkind (Unit (Cunit (New_Unit))) = N_Subunit then
+                     Redundant := Clause;
+                     Prev_Use  := Cur_Use;
+
+                  --  Most common case: redundant clause in body,
+                  --  original clause in spec. Current scope is spec entity.
+
+                  elsif Current_Scope = Cunit_Entity (Current_Sem_Unit) then
+                     Redundant := Cur_Use;
+                     Prev_Use  := Clause;
+
+                  else
+                     --  The new clause may appear in an unrelated unit, when
+                     --  the parents of a generic are being installed prior to
+                     --  instantiation. In this case there must be no warning.
+                     --  We detect this case by checking whether the current
+                     --  top of the stack is related to the current
+                     --  compilation.
+
+                     Scop := Current_Scope;
+                     while Present (Scop)
+                       and then Scop /= Standard_Standard
+                     loop
+                        if Is_Compilation_Unit (Scop)
+                          and then not Is_Child_Unit (Scop)
+                        then
+                           return;
+
+                        elsif Scop = Cunit_Entity (Current_Sem_Unit) then
+                           exit;
+                        end if;
+
+                        Scop := Scope (Scop);
+                     end loop;
+
+                     Redundant := Cur_Use;
+                     Prev_Use  := Clause;
+                  end if;
+
+               elsif New_Unit = Current_Sem_Unit then
+                  Redundant := Clause;
+                  Prev_Use  := Cur_Use;
+
+               else
+                  --  Neither is the current unit, so they appear in parent or
+                  --  sibling units. Warning will be emitted elsewhere.
+
+                  return;
+               end if;
+            end;
+
+         elsif Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration
+           and then Present (Parent_Spec (Unit (Cunit (Current_Sem_Unit))))
+         then
+            --  Use_clause is in child unit of current unit, and the child unit
+            --  appears in the context of the body of the parent, so it has
+            --  been installed first, even though it is the redundant one.
+            --  Depending on their placement in the context, the visible or the
+            --  private parts of the two units, either might appear as
+            --  redundant, but the message has to be on the current unit.
+
+            if Get_Source_Unit (Cur_Use) = Current_Sem_Unit then
+               Redundant := Cur_Use;
+               Prev_Use  := Clause;
+            else
+               Redundant := Clause;
+               Prev_Use  := Cur_Use;
+            end if;
+
+            --  If the new use clause appears in the private part of a parent
+            --  unit it may appear to be redundant w.r.t. a use clause in a
+            --  child unit, but the previous use clause was needed in the
+            --  visible part of the child, and no warning should be emitted.
+
+            if Nkind (Parent (Decl)) = N_Package_Specification
+              and then
+                List_Containing (Decl) = Private_Declarations (Parent (Decl))
+            then
+               declare
+                  Par : constant Entity_Id := Defining_Entity (Parent (Decl));
+                  Spec : constant Node_Id  :=
+                           Specification (Unit (Cunit (Current_Sem_Unit)));
+
+               begin
+                  if Is_Compilation_Unit (Par)
+                    and then Par /= Cunit_Entity (Current_Sem_Unit)
+                    and then Parent (Cur_Use) = Spec
+                    and then
+                      List_Containing (Cur_Use) = Visible_Declarations (Spec)
+                  then
+                     return;
+                  end if;
+               end;
+            end if;
+
+         --  Finally, if the current use clause is in the context then
+         --  the clause is redundant when it is nested within the unit.
+
+         elsif Nkind (Parent (Cur_Use)) = N_Compilation_Unit
+           and then Nkind (Parent (Parent (Clause))) /= N_Compilation_Unit
+           and then Get_Source_Unit (Cur_Use) = Get_Source_Unit (Clause)
+         then
+            Redundant := Clause;
+            Prev_Use  := Cur_Use;
+
+         end if;
+
+         if Present (Redundant) and then Parent (Redundant) /= Prev_Use then
+            --  Make sure we are looking at most-descendant use_package_clause
+            --  by traversing the chain with Find_Most_Prev and then verifying
+            --  there is no scope manipulation via Most_Descendant_Use_Clause.
+
+            if Nkind (Prev_Use) = N_Use_Package_Clause
+              and then
+                (Nkind (Parent (Prev_Use)) /= N_Compilation_Unit
+                  or else Most_Descendant_Use_Clause
+                    (Prev_Use, Find_Most_Prev (Prev_Use)) /= Prev_Use)
+            then
+               Prev_Use := Find_Most_Prev (Prev_Use);
+            end if;
+
+            Error_Msg_Sloc := Sloc (Prev_Use);
+            Error_Msg_NE -- CODEFIX
+              ("& is already use-visible through previous use clause #??",
+               Redundant, Pack_Name);
+         end if;
+      end Note_Redundant_Use;
+
+      --  Local variables
+
       Id               : Entity_Id;
       Prev             : Entity_Id;
       Current_Instance : Entity_Id := Empty;
       Real_P           : Entity_Id;
       Private_With_OK  : Boolean   := False;
+      P                : Entity_Id;
+
+   --  Start of processing for Use_One_Package
 
    begin
-      if Ekind (P) /= E_Package then
-         return;
+      --  Use_One_Package may have been called recursively to handle an
+      --  implicit use for a auxiliary system package, so set P accordingly
+      --  and skip redundancy checks.
+
+      if No (Pack_Name) and then Present_System_Aux (N) then
+         P := System_Aux_Id;
+
+      --  Check for redundant use_package_clauses
+
+      else
+         --  Ignore cases where we are dealing with a non user defined package
+         --  like Standard_Standard or something other than a valid package.
+
+         if not Is_Entity_Name (Pack_Name)
+           or else No (Entity (Pack_Name))
+           or else Ekind (Entity (Pack_Name)) /= E_Package
+         then
+            return;
+         end if;
+
+         --  When a renaming exists we must check it for redundancy. The
+         --  original package would have already been seen at this point.
+
+         if Present (Renamed_Object (Entity (Pack_Name))) then
+            P := Renamed_Object (Entity (Pack_Name));
+         else
+            P := Entity (Pack_Name);
+         end if;
+
+         --  Check for redundant clauses then set the current use clause for
+         --  P if were are not "forcing" an installation from a scope
+         --  reinstallation that is done throughout analysis for various
+         --  reasons.
+
+         if In_Use (P) then
+            Note_Redundant_Use (Pack_Name);
+            if not Force then
+               Set_Current_Use_Clause (P, N);
+            end if;
+            return;
+
+         --  Warn about detected redundant clauses
+
+         elsif In_Open_Scopes (P) and not Force then
+            if Warn_On_Redundant_Constructs and then P = Current_Scope then
+               Error_Msg_NE -- CODEFIX
+                 ("& is already use-visible within itself?r?",
+                   Pack_Name, P);
+            end if;
+            return;
+         end if;
+
+         --  Set P back to the non-renamed package so that visiblilty of the
+         --  entities within the package can be properly set below.
+
+         P := Entity (Pack_Name);
       end if;
 
       Set_In_Use (P);
@@ -9113,16 +9587,17 @@ package body Sem_Ch8 is
         and then Scope (Real_P) = Standard_Standard
         and then Present_System_Aux (N)
       then
-         Use_One_Package (System_Aux_Id, N);
+         Use_One_Package (N);
       end if;
-
    end Use_One_Package;
 
    ------------------
    -- Use_One_Type --
    ------------------
 
-   procedure Use_One_Type (Id : Node_Id; Installed : Boolean := False) is
+   procedure Use_One_Type
+     (Id : Node_Id; Installed : Boolean := False; Force : Boolean := False)
+   is
       Elmt          : Elmt_Id;
       Is_Known_Used : Boolean;
       Op_List       : Elist_Id;
@@ -9174,8 +9649,8 @@ package body Sem_Ch8 is
          Ent  : Entity_Id;
 
          function Is_Class_Wide_Operation_Of
-        (Op  : Entity_Id;
-         T   : Entity_Id) return Boolean;
+           (Op : Entity_Id;
+            T  : Entity_Id) return Boolean;
          --  Determine whether a subprogram has a class-wide parameter or
          --  result that is T'Class.
 
@@ -9232,19 +9707,26 @@ package body Sem_Ch8 is
    --  Start of processing for Use_One_Type
 
    begin
+      if Entity (Id) = Any_Type then
+         return;
+      end if;
+
       --  It is the type determined by the subtype mark (8.4(8)) whose
       --  operations become potentially use-visible.
 
       T := Base_Type (Entity (Id));
 
-      --  Either the type itself is used, the package where it is declared
-      --  is in use or the entity is declared in the current package, thus
+      --  Either the type itself is used, the package where it is declared is
+      --  in use or the entity is declared in the current package, thus
       --  use-visible.
 
-      Is_Known_Used :=
-        In_Use (T)
-          or else In_Use (Scope (T))
-          or else Scope (T) = Current_Scope;
+      Is_Known_Used := (In_Use (T)
+                         and then ((Present (Current_Use_Clause (T))
+                                     and then All_Present
+                                                (Current_Use_Clause (T)))
+                                    or else not All_Present (Parent (Id))))
+                         or else In_Use (Scope (T))
+                         or else Scope (T) = Current_Scope;
 
       Set_Redundant_Use (Id,
         Is_Known_Used or else Is_Potentially_Use_Visible (T));
@@ -9255,7 +9737,7 @@ package body Sem_Ch8 is
       elsif In_Open_Scopes (Scope (T)) then
          null;
 
-      --  A limited view cannot appear in a use_type clause. However, an access
+      --  A limited view cannot appear in a use_type_clause. However, an access
       --  type whose designated type is limited has the flag but is not itself
       --  a limited view unless we only have a limited view of its enclosing
       --  package.
@@ -9274,13 +9756,28 @@ package body Sem_Ch8 is
       --  even if it is redundant at the place of the instantiation.
 
       elsif Redundant_Use (Id) then
+
+         --  We must avoid incorrectly setting the Current_Use_Clause when we
+         --  are working with a redundant clause that has already been linked
+         --  in the Prev_Use_Clause chain, otherwise the chain will break.
+
+         if Present (Current_Use_Clause (T))
+           and then Present (Prev_Use_Clause (Current_Use_Clause (T)))
+           and then Parent (Id) = Prev_Use_Clause (Current_Use_Clause (T))
+         then
+            null;
+         else
+            Set_Current_Use_Clause (T, Parent (Id));
+         end if;
+
          Set_Used_Operations (Parent (Id), New_Elmt_List);
 
       --  If the subtype mark designates a subtype in a different package,
       --  we have to check that the parent type is visible, otherwise the
-      --  use type clause is a noop. Not clear how to do that???
+      --  use_type_clause is a no-op. Not clear how to do that???
 
       else
+         Set_Current_Use_Clause (T, Parent (Id));
          Set_In_Use (T);
 
          --  If T is tagged, primitive operators on class-wide operands
@@ -9289,8 +9786,6 @@ package body Sem_Ch8 is
          if Is_Tagged_Type (T) then
             Set_In_Use (Class_Wide_Type (T));
          end if;
-
-         Set_Current_Use_Clause (T, Parent (Id));
 
          --  Iterate over primitive operations of the type. If an operation is
          --  already use_visible, it is the result of a previous use_clause,
@@ -9335,7 +9830,8 @@ package body Sem_Ch8 is
 
       --  If warning on redundant constructs, check for unnecessary WITH
 
-      if Warn_On_Redundant_Constructs
+      if not Force
+        and then Warn_On_Redundant_Constructs
         and then Is_Known_Used
 
         --                     with P;         with P; use P;
@@ -9362,39 +9858,19 @@ package body Sem_Ch8 is
 
             if Present (Current_Use_Clause (T)) then
                Use_Clause_Known : declare
-                  Clause1 : constant Node_Id := Parent (Id);
-                  Clause2 : constant Node_Id := Current_Use_Clause (T);
+                  Clause1 : constant Node_Id := Find_Most_Prev
+                                                  (Current_Use_Clause (T));
+                  Clause2 : constant Node_Id := Parent (Id);
                   Ent1    : Entity_Id;
                   Ent2    : Entity_Id;
                   Err_No  : Node_Id;
                   Unit1   : Node_Id;
                   Unit2   : Node_Id;
 
-                  function Entity_Of_Unit (U : Node_Id) return Entity_Id;
-                  --  Return the appropriate entity for determining which unit
-                  --  has a deeper scope: the defining entity for U, unless U
-                  --  is a package instance, in which case we retrieve the
-                  --  entity of the instance spec.
-
-                  --------------------
-                  -- Entity_Of_Unit --
-                  --------------------
-
-                  function Entity_Of_Unit (U : Node_Id) return Entity_Id is
-                  begin
-                     if Nkind (U) = N_Package_Instantiation
-                       and then Analyzed (U)
-                     then
-                        return Defining_Entity (Instance_Spec (U));
-                     else
-                        return Defining_Entity (U);
-                     end if;
-                  end Entity_Of_Unit;
-
                --  Start of processing for Use_Clause_Known
 
                begin
-                  --  If both current use type clause and the use type clause
+                  --  If both current use_type_clause and the use_type_clause
                   --  for the type are at the compilation unit level, one of
                   --  the units must be an ancestor of the other, and the
                   --  warning belongs on the descendant.
@@ -9418,14 +9894,7 @@ package body Sem_Ch8 is
                      --  of the other, or one of them is in a subunit, report
                      --  redundancy on the later one.
 
-                     if Unit1 = Unit2 then
-                        Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
-                        Error_Msg_NE -- CODEFIX
-                          ("& is already use-visible through previous "
-                           & "use_type_clause #??", Clause1, T);
-                        return;
-
-                     elsif Nkind (Unit1) = N_Subunit then
+                     if Unit1 = Unit2 or else Nkind (Unit1) = N_Subunit then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Error_Msg_NE -- CODEFIX
                           ("& is already use-visible through previous "
@@ -9443,7 +9912,7 @@ package body Sem_Ch8 is
                         return;
                      end if;
 
-                     --  There is a redundant use type clause in a child unit.
+                     --  There is a redundant use_type_clause in a child unit.
                      --  Determine which of the units is more deeply nested.
                      --  If a unit is a package instance, retrieve the entity
                      --  and its scope from the instance spec.
@@ -9489,13 +9958,22 @@ package body Sem_Ch8 is
                         end;
                      end if;
 
-                     Error_Msg_NE -- CODEFIX
-                       ("& is already use-visible through previous "
-                        & "use_type_clause #??", Err_No, Id);
+                     if Parent (Id) /= Err_No then
+                        if Most_Descendant_Use_Clause
+                             (Err_No, Parent (Id)) = Parent (Id)
+                        then
+                           Error_Msg_Sloc := Sloc (Err_No);
+                           Err_No := Parent (Id);
+                        end if;
 
-                  --  Case where current use type clause and the use type
-                  --  clause for the type are not both at the compilation unit
-                  --  level. In this case we don't have location information.
+                        Error_Msg_NE -- CODEFIX
+                          ("& is already use-visible through previous "
+                           & "use_type_clause #??", Err_No, Id);
+                     end if;
+
+                  --  Case where current use_type_clause and use_type_clause
+                  --  for the type are not both at the compilation unit level.
+                  --  In this case we don't have location information.
 
                   else
                      Error_Msg_NE -- CODEFIX
@@ -9516,7 +9994,8 @@ package body Sem_Ch8 is
          --  The package where T is declared is already used
 
          elsif In_Use (Scope (T)) then
-            Error_Msg_Sloc := Sloc (Current_Use_Clause (Scope (T)));
+            Error_Msg_Sloc := Sloc (Find_Most_Prev
+                                     (Current_Use_Clause (Scope (T))));
             Error_Msg_NE -- CODEFIX
               ("& is already use-visible through package use clause #??",
                Id, T);

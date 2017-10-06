@@ -1,6 +1,6 @@
 /* PR target/82260 */
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-Os -mtune=generic -masm=att -mtune-ctrl=^partial_reg_dependency" } */
+/* { dg-options "-Os -mtune=generic -masm=att -mtune-ctrl=^partial_reg_dependency -mno-bmi2" } */
 /* { dg-final { scan-assembler-not {\mmovb\t%sil, %cl} } } */
 /* { dg-final { scan-assembler {\mmovl\t%esi, %ecx} } } */
 /* { dg-final { scan-assembler {\mmovb\t%dl, %cl} } } */

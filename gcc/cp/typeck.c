@@ -7044,16 +7044,24 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 /* Return an expression representing static_cast<TYPE>(EXPR).  */
 
 tree
-build_static_cast (tree type, tree expr, tsubst_flags_t complain)
+build_static_cast (tree type, tree oexpr, tsubst_flags_t complain)
 {
+  tree expr = oexpr;
   tree result;
   bool valid_p;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
-  if (processing_template_decl)
+  bool dependent = (dependent_type_p (type)
+		    || type_dependent_expression_p (expr));
+  if (dependent)
     {
+    tmpl:
+      expr = oexpr;
+      if (dependent)
+	/* Handle generic lambda capture.  */
+	expr = mark_lvalue_use (expr);
       expr = build_min (STATIC_CAST_EXPR, type, expr);
       /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (expr) = 1;
@@ -7076,6 +7084,8 @@ build_static_cast (tree type, tree expr, tsubst_flags_t complain)
 	  maybe_warn_about_useless_cast (type, expr, complain);
 	  maybe_warn_about_cast_ignoring_quals (type, complain);
 	}
+      if (processing_template_decl)
+	goto tmpl;
       return result;
     }
 
@@ -8517,7 +8527,10 @@ convert_for_assignment (tree type, tree rhs,
     {
       tree elt = CONSTRUCTOR_ELT (rhs, 0)->value;
       if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
-	rhs = cp_build_c_cast (type, elt, complain);
+	{
+	  warning_sentinel w (warn_useless_cast);
+	  rhs = cp_build_c_cast (type, elt, complain);
+	}
       else
 	rhs = error_mark_node;
     }

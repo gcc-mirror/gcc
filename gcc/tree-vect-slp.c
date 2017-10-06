@@ -1629,14 +1629,20 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
       return true;
     }
 
-  /* For loop vectorization verify we can generate the permutation.  */
+  /* For loop vectorization verify we can generate the permutation.  Be
+     conservative about the vectorization factor, there are permutations
+     that will use three vector inputs only starting from a specific factor
+     and the vectorization factor is not yet final.
+     ???  The SLP instance unrolling factor might not be the maximum one.  */
   unsigned n_perms;
+  unsigned test_vf
+    = least_common_multiple (SLP_INSTANCE_UNROLLING_FACTOR (slp_instn),
+			     LOOP_VINFO_VECT_FACTOR
+			       (STMT_VINFO_LOOP_VINFO (vinfo_for_stmt (stmt))));
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
     if (node->load_permutation.exists ()
-	&& !vect_transform_slp_perm_load
-	      (node, vNULL, NULL,
-	       SLP_INSTANCE_UNROLLING_FACTOR (slp_instn), slp_instn, true,
-	       &n_perms))
+	&& !vect_transform_slp_perm_load (node, vNULL, NULL, test_vf,
+					  slp_instn, true, &n_perms))
       return false;
 
   return true;
@@ -3613,6 +3619,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 				    stmt, 0);
 		}
+	      gcc_assert (analyze_only);
 	      return false;
 	    }
 
@@ -3636,6 +3643,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 			dump_printf (MSG_MISSED_OPTIMIZATION, "%d ", mask[i]);
 		      dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
 		    }
+		  gcc_assert (analyze_only);
 		  return false;
 		}
 

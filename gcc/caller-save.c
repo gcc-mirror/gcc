@@ -1265,7 +1265,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 
 static int
 insert_save (struct insn_chain *chain, int before_p, int regno,
-	     HARD_REG_SET (*to_save), machine_mode *save_mode)
+	     HARD_REG_SET *to_save, machine_mode *save_mode)
 {
   int i;
   unsigned int k;

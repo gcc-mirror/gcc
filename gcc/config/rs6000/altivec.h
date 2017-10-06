@@ -467,6 +467,8 @@
 #ifdef _ARCH_PPC64
 #define vec_xl_len __builtin_vec_lxvl
 #define vec_xst_len __builtin_vec_stxvl
+#define vec_xl_len_r __builtin_vec_xl_len_r
+#define vec_xst_len_r __builtin_vec_xst_len_r
 #endif
 
 #define vec_cmpnez __builtin_vec_vcmpnez

@@ -96,7 +96,6 @@ extern GTY(()) int spu_tune;
    on the stack.  (Except a bug (?) allows some stack objects to be
    unaligned.)  */
 #define DATA_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
-#define CONSTANT_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 #define LOCAL_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 
 #define EMPTY_FIELD_BOUNDARY 32

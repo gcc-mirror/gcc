@@ -119,8 +119,8 @@ by type.  Explanations are in the following sections.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
 -fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
--fdefault-double-8 -fdefault-integer-8 @gol
--fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
+-fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
+-fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
 -fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
@@ -145,8 +145,8 @@ by type.  Explanations are in the following sections.
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
 @gccoptlist{-Waliasing -Wall -Wampersand -Wargument-mismatch -Warray-bounds
--Wc-binding-type -Wcharacter-truncation @gol
--Wconversion -Wfunction-elimination -Wimplicit-interface @gol
+-Wc-binding-type -Wcharacter-truncation -Wconversion @gol
+-Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only -Wintrinsics-std @gol
 -Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
 -Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
@@ -402,6 +402,22 @@ Set the default real type to an 8 byte wide type. This option also affects
 the kind of non-double real constants like @code{1.0}, and does promote
 the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
 @code{-fdefault-double-8} is given, too. Unlike @option{-freal-4-real-8},
+it does not promote variables with explicit kind declaration.
+
+@item -fdefault-real-10
+@opindex @code{fdefault-real-10}
+Set the default real type to a 10 byte wide type. This option also affects
+the kind of non-double real constants like @code{1.0}, and does promote
+the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
+@code{-fdefault-double-8} is given. Unlike @option{-freal-4-real-10},
+it does not promote variables with explicit kind declaration.
+
+@item -fdefault-real-16
+@opindex @code{fdefault-real-16}
+Set the default real type to a 16 byte wide type. This option also affects
+the kind of non-double real constants like @code{1.0}, and does promote
+the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
+@code{-fdefault-double-8} is given. Unlike @option{-freal-4-real-16},
 it does not promote variables with explicit kind declaration.
 
 @item -fdefault-double-8
@@ -891,8 +907,8 @@ option does @emph{not} imply @option{-Wconversion}.
 @cindex extra warnings
 @cindex warnings, extra
 Enables some warning options for usages of language features which
-may be problematic. This currently includes @option{-Wcompare-reals}
-and @option{-Wunused-parameter}.
+may be problematic. This currently includes @option{-Wcompare-reals},
+@option{-Wunused-parameter} and @option{-Wdo-subscript}.
 
 @item -Wimplicit-interface
 @opindex @code{Wimplicit-interface}
@@ -1063,6 +1079,21 @@ target. This option is implied by @option{-Wall}.
 @opindex @code{Wzerotrip}
 Warn if a @code{DO} loop is known to execute zero times at compile
 time.  This option is implied by @option{-Wall}.
+
+@item -Wdo-subscript
+@opindex @code{Wdo-subscript}
+Warn if an array subscript inside a DO loop could lead to an
+out-of-bounds access even if the compiler can not prove that the
+statement is actually executed, in cases like
+@smallexample
+  real a(3)
+  do i=1,4
+    if (condition(i)) then
+      a(i) = 1.2
+    end if
+  end do
+@end smallexample
+This option is implied by @option{-Wextra}.
 
 @item -Werror
 @opindex @code{Werror}

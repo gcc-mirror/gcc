@@ -1908,9 +1908,10 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
     {
       /* 5.5/6: In a .* expression whose object expression is an rvalue, the
 	 program is ill-formed if the second operand is a pointer to member
-	 function with ref-qualifier &. In a .* expression whose object
-	 expression is an lvalue, the program is ill-formed if the second
-	 operand is a pointer to member function with ref-qualifier &&.  */
+	 function with ref-qualifier & (for C++2A: unless its cv-qualifier-seq
+	 is const). In a .* expression whose object expression is an lvalue,
+	 the program is ill-formed if the second operand is a pointer to member
+	 function with ref-qualifier &&.  */
       if (FUNCTION_REF_QUALIFIED (type))
 	{
 	  bool lval = lvalue_p (datum);
@@ -1921,7 +1922,12 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 		       ptrmem_type);
 	      return error_mark_node;
 	    }
-	  else if (!lval && !FUNCTION_RVALUE_QUALIFIED (type))
+	  else if (!lval
+		   && !FUNCTION_RVALUE_QUALIFIED (type)
+		   && (cxx_dialect < cxx2a
+		       || ((type_memfn_quals (type)
+			    & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))
+			   != TYPE_QUAL_CONST)))
 	    {
 	      if (complain & tf_error)
 		error ("pointer-to-member-function type %qT requires an lvalue",

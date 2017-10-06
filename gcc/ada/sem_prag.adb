@@ -13219,7 +13219,7 @@ package body Sem_Prag is
                      Analyze (N);
                      raise Pragma_Exit;
 
-                     --  No other possibilities
+                  --  No other possibilities
 
                   when others =>
                      raise Program_Error;
@@ -27448,7 +27448,7 @@ package body Sem_Prag is
                         --  Stop the compilation, as this leads to a multitude
                         --  of misleading cascaded errors.
 
-                        raise Program_Error;
+                        raise Unrecoverable_Error;
                      end if;
 
                   --  The constituent is a valid state or object

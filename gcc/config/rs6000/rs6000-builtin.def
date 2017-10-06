@@ -608,6 +608,16 @@
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 
+/* Miscellaneous builtins for instructions added prior to ISA 2.04.  These
+   operate on floating point registers.  */
+#define BU_FP_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HARD_FLOAT,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 /* Miscellaneous builtins for instructions added in ISA 2.06.  These
    instructions don't require either the DFP or VSX options, just the basic ISA
    2.06 (popcntd) enablement since they operate on general purpose
@@ -674,6 +684,14 @@
 		    RS6000_BTM_FLOAT128_HW,             /* MASK */      \
 		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
 		     | RS6000_BTC_UNARY),                               \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
+#define BU_FLOAT128_2_HW(ENUM, NAME, ATTR, ICODE)                       \
+  RS6000_BUILTIN_2 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128_HW,             /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_BINARY),                              \
 		    CODE_FOR_ ## ICODE)                 /* ICODE */
 
 #define BU_FLOAT128_3_HW(ENUM, NAME, ATTR, ICODE)                       \
@@ -1863,6 +1881,10 @@ BU_VSX_OVERLOAD_X (XL,	     "xl")
 BU_VSX_OVERLOAD_X (XL_BE,    "xl_be")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 
+/* 1 argument builtins pre ISA 2.04.  */
+BU_FP_MISC_1 (FCTID,		"fctid",	CONST,  lrintdfdi2)
+BU_FP_MISC_1 (FCTIW,		"fctiw",	CONST,	lrintsfsi2)
+
 /* 2 argument CMPB instructions added in ISA 2.05. */
 BU_P6_2 (CMPB_32,        "cmpb_32",	CONST,	cmpbsi3)
 BU_P6_64BIT_2 (CMPB,     "cmpb",	CONST,	cmpbdi3)
@@ -2142,6 +2164,7 @@ BU_P9V_OVERLOAD_2 (VIESP,	"insert_exp_sp")
 
 /* 2 argument vector functions added in ISA 3.0 (power9).  */
 BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		CONST,	lxvl)
+BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	CONST,  xl_len_r)
 
 BU_P9V_AV_2 (VEXTUBLX, "vextublx",		CONST,	vextublx)
 BU_P9V_AV_2 (VEXTUBRX, "vextubrx",		CONST,	vextubrx)
@@ -2158,6 +2181,7 @@ BU_P9V_VSX_3 (VINSERT4B_DI, "vinsert4b_di",	CONST,	vinsert4b_di)
 /* 3 argument vector functions returning void, treated as SPECIAL,
    added in ISA 3.0 (power9).  */
 BU_P9V_64BIT_AV_X (STXVL,	"stxvl",	MISC)
+BU_P9V_64BIT_AV_X (XST_LEN_R,	"xst_len_r",	MISC)
 
 /* 1 argument vector functions added in ISA 3.0 (power9). */
 BU_P9V_AV_1 (VCLZLSBB, "vclzlsbb",		CONST,	vclzlsbb)
@@ -2199,12 +2223,14 @@ BU_P9V_AV_P (VCMPNEZW_P,	"vcmpnezw_p",	CONST,	vector_nez_v4si_p)
 
 /* ISA 3.0 Vector scalar overloaded 2 argument functions */
 BU_P9V_OVERLOAD_2 (LXVL,	"lxvl")
+BU_P9V_OVERLOAD_2 (XL_LEN_R,	"xl_len_r")
 BU_P9V_OVERLOAD_2 (VEXTULX,	"vextulx")
 BU_P9V_OVERLOAD_2 (VEXTURX,	"vexturx")
 BU_P9V_OVERLOAD_2 (VEXTRACT4B,	"vextract4b")
 
 /* ISA 3.0 Vector scalar overloaded 3 argument functions */
 BU_P9V_OVERLOAD_3 (STXVL,	"stxvl")
+BU_P9V_OVERLOAD_3 (XST_LEN_R,	"xst_len_r")
 BU_P9V_OVERLOAD_3 (VINSERT4B,	"vinsert4b")
 
 /* Overloaded CMPNE support was implemented prior to Power 9,
@@ -2347,11 +2373,19 @@ BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)
 BU_FLOAT128_2 (COPYSIGNQ,	"copysignq",   CONST, copysignkf3)
 
-/* 1 and 3 argument IEEE 128-bit floating point functions that require ISA 3.0
-   hardware.  These functions use the new 'f128' suffix.  Eventually these
-   should be folded into the common built-in function handling. */
-BU_FLOAT128_1_HW (SQRTF128,	"sqrtf128",	CONST, sqrtkf2)
-BU_FLOAT128_3_HW (FMAF128,	"fmaf128",	CONST, fmakf4_hw)
+/* 1, 2, and 3 argument IEEE 128-bit floating point functions that require ISA
+   3.0 hardware.  These functions use the new 'f128' suffix.  Eventually the
+   standard functions should be folded into the common built-in function
+   handling. */
+BU_FLOAT128_1_HW (SQRTF128,	 "sqrtf128",		   CONST, sqrtkf2)
+BU_FLOAT128_1_HW (SQRTF128_ODD,	 "sqrtf128_round_to_odd",  CONST, sqrtkf2_odd)
+BU_FLOAT128_1_HW (TRUNCF128_ODD, "truncf128_round_to_odd", CONST, trunckfdf2_odd)
+BU_FLOAT128_2_HW (ADDF128_ODD,	 "addf128_round_to_odd",   CONST, addkf3_odd)
+BU_FLOAT128_2_HW (SUBF128_ODD,	 "subf128_round_to_odd",   CONST, subkf3_odd)
+BU_FLOAT128_2_HW (MULF128_ODD,	 "mulf128_round_to_odd",   CONST, mulkf3_odd)
+BU_FLOAT128_2_HW (DIVF128_ODD,	 "divf128_round_to_odd",   CONST, divkf3_odd)
+BU_FLOAT128_3_HW (FMAF128,	 "fmaf128",		   CONST, fmakf4_hw)
+BU_FLOAT128_3_HW (FMAF128_ODD,	 "fmaf128_round_to_odd",   CONST, fmakf4_odd)
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)

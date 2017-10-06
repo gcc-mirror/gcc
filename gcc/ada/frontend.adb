@@ -38,7 +38,7 @@ with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
-with Lib.Xref; use Lib.Xref;
+with Lib.Xref;
 with Live;     use Live;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -49,21 +49,21 @@ with Prep;
 with Prepcomp;
 with Restrict; use Restrict;
 with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
+with Rtsfind;
 with Snames;   use Snames;
 with Sprint;
 with Scn;      use Scn;
 with Sem;      use Sem;
 with Sem_Aux;
-with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch8;
 with Sem_SCIL;
 with Sem_Elab; use Sem_Elab;
 with Sem_Prag; use Sem_Prag;
-with Sem_Warn; use Sem_Warn;
+with Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
-with SCIL_LL;  use SCIL_LL;
+with SCIL_LL;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
 
@@ -126,7 +126,7 @@ begin
 
    --  Return immediately if the main source could not be found
 
-   if Sinput.Main_Source_File = No_Source_File then
+   if Sinput.Main_Source_File <= No_Source_File then
       return;
    end if;
 
@@ -167,8 +167,7 @@ begin
 
          --  Case of gnat.adc file present
 
-         if Source_gnat_adc /= No_Source_File then
-
+         if Source_gnat_adc > No_Source_File then
             --  Parse the gnat.adc file for configuration pragmas
 
             Initialize_Scanner (No_Unit, Source_gnat_adc);
@@ -214,7 +213,7 @@ begin
 
                   Source_Config_File := Load_Config_File (Config_Name);
 
-                  if Source_Config_File = No_Source_File then
+                  if Source_Config_File <= No_Source_File then
                      Osint.Fail
                        ("cannot find configuration pragmas file "
                         & Config_File_Names (Index).all);

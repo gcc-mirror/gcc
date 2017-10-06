@@ -5761,16 +5761,28 @@ gfc_global_used (gfc_gsymbol *sym, locus *where)
       name = "MODULE";
       break;
     default:
-      gfc_internal_error ("gfc_global_used(): Bad type");
       name = NULL;
     }
 
-  if (sym->binding_label)
-    gfc_error ("Global binding name %qs at %L is already being used as a %s "
-	       "at %L", sym->binding_label, where, name, &sym->where);
+  if (name)
+    {
+      if (sym->binding_label)
+	gfc_error ("Global binding name %qs at %L is already being used "
+		   "as a %s at %L", sym->binding_label, where, name,
+		   &sym->where);
+      else
+	gfc_error ("Global name %qs at %L is already being used as "
+		   "a %s at %L", sym->name, where, name, &sym->where);
+    }
   else
-    gfc_error ("Global name %qs at %L is already being used as a %s at %L",
-	       sym->name, where, name, &sym->where);
+    {
+      if (sym->binding_label)
+	gfc_error ("Global binding name %qs at %L is already being used "
+		   "at %L", sym->binding_label, where, &sym->where);
+      else
+	gfc_error ("Global name %qs at %L is already being used at %L",
+		   sym->name, where, &sym->where);
+    }
 }
 
 

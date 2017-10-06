@@ -37,7 +37,6 @@
 package body System.Interrupt_Management is
 
    use System.OS_Interface;
-   use type Interfaces.C.int;
 
    -----------------------
    -- Local Subprograms --

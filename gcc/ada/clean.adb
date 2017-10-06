@@ -31,7 +31,7 @@ with Osint;     use Osint;
 with Osint.M;   use Osint.M;
 with Switch;    use Switch;
 with Table;
-with Targparm;  use Targparm;
+with Targparm;
 with Types;     use Types;
 
 with Ada.Command_Line;          use Ada.Command_Line;

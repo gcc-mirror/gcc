@@ -373,6 +373,7 @@ if test "$have_fcntl" = "yes"; then
 fi
 
 AC_CHECK_DECLS(strnlen)
+AC_CHECK_FUNCS(lstat readlink)
 
 # Check for getexecname function.
 if test -n "${with_target_subdir}"; then
@@ -386,6 +387,21 @@ fi
 if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
 fi
+
+# Check for the clock_gettime function.
+AC_CHECK_FUNCS(clock_gettime)
+clock_gettime_link=
+# At least for glibc, clock_gettime is in librt.  But don't
+# pull that in if it still doesn't give us the function we want.  This
+# test is copied from libgomp, and modified to not link in -lrt as
+# we're using this for test timing only.
+if test "$ac_cv_func_clock_gettime" = no; then
+  AC_CHECK_LIB(rt, clock_gettime,
+    [CLOCK_GETTIME_LINK=-lrt
+     AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
+	       [Define to 1 if you have the `clock_gettime' function.])])
+fi
+AC_SUBST(CLOCK_GETTIME_LINK)
 
 dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
@@ -403,6 +419,23 @@ fi
 AC_SUBST(PTHREAD_CFLAGS)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$libgo_cv_lib_pthread" = yes)
+
+AC_CHECK_LIB([z], [compress], [])
+if test $ac_cv_lib_z_compress = "yes"; then
+  AC_DEFINE(HAVE_ZLIB, 1, [Define if -lz is available.])
+fi
+AM_CONDITIONAL(HAVE_ZLIB, test "$ac_cv_lib_z_compress" = yes)
+
+dnl Test whether the linker supports the --compress_debug_sections option.
+AC_CACHE_CHECK([whether --compress-debug-sections is supported],
+[libgo_cv_ld_compress],
+[LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zlib-gnu"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
+[libgo_cv_ld_compress=yes],
+[libgo_cv_ld_compress=no])
+LDFLAGS=$LDFLAGS_hold])
+AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG, test "$libgo_cv_ld_compress" = yes)
 
 AC_ARG_VAR(OBJCOPY, [location of objcopy])
 AC_CHECK_PROG(OBJCOPY, objcopy, objcopy,)

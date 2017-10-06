@@ -1642,6 +1642,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   bool need_len_assign;
   bool whole_array = true;
   gfc_ref *ref;
+  symbol_attribute attr;
 
   gcc_assert (sym->assoc);
   e = sym->assoc->target;
@@ -1700,6 +1701,17 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
 
       gfc_conv_expr_descriptor (&se, e);
+
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.deferred
+	  && !sym->attr.select_type_temporary
+	  && VAR_P (sym->ts.u.cl->backend_decl)
+	  && se.string_length != sym->ts.u.cl->backend_decl)
+	{
+	  gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
+			  fold_convert (gfc_charlen_type_node,
+					se.string_length));
+	}
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
@@ -1867,8 +1879,35 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  need_len_assign = need_len_assign && sym->ts.type == BT_CHARACTER;
 	}
 
-      tmp = TREE_TYPE (sym->backend_decl);
-      tmp = gfc_build_addr_expr (tmp, se.expr);
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.deferred
+	  && !sym->attr.select_type_temporary
+	  && VAR_P (sym->ts.u.cl->backend_decl)
+	  && se.string_length != sym->ts.u.cl->backend_decl)
+	{
+	  gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
+			  fold_convert (gfc_charlen_type_node,
+					se.string_length));
+	  if (e->expr_type == EXPR_FUNCTION)
+	    {
+	      tmp = gfc_call_free (sym->backend_decl);
+	      gfc_add_expr_to_block (&se.post, tmp);
+	    }
+	}
+
+      attr = gfc_expr_attr (e);
+      if (sym->ts.type == BT_CHARACTER && e->ts.type == BT_CHARACTER
+	  && (attr.allocatable || attr.pointer || attr.dummy))
+	{
+	  /* These are pointer types already.  */
+	  tmp = fold_convert (TREE_TYPE (sym->backend_decl), se.expr);
+	}
+      else
+	{
+          tmp = TREE_TYPE (sym->backend_decl);
+          tmp = gfc_build_addr_expr (tmp, se.expr);
+	}
+
       gfc_add_modify (&se.pre, sym->backend_decl, tmp);
 
       gfc_add_init_cleanup (block, gfc_finish_block( &se.pre),
@@ -1893,7 +1932,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_init_se (&se, NULL);
       if (e->symtree->n.sym->ts.type == BT_CHARACTER)
 	{
-	  /* What about deferred strings?  */
+	  /* Deferred strings are dealt with in the preceeding.  */
 	  gcc_assert (!e->symtree->n.sym->ts.deferred);
 	  tmp = e->symtree->n.sym->ts.u.cl->backend_decl;
 	}

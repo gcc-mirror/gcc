@@ -42,7 +42,6 @@ package body System.Tasking.Entry_Calls is
    package STPO renames System.Task_Primitives.Operations;
 
    use Parameters;
-   use Task_Primitives;
    use Protected_Objects.Entries;
    use Protected_Objects.Operations;
 

@@ -732,6 +732,18 @@ package body Sem is
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
 
+      --  Mark relevant use-type and use-package clauses as effective using the
+      --  original node, because constant folding may have occurred and removed
+      --  references that need to be examined. If the node in question is
+      --  overloaded then this is deferred until resolution.
+
+      if Nkind (Original_Node (N)) in N_Op
+        and then Present (Entity (Original_Node (N)))
+        and then not Is_Overloaded (Original_Node (N))
+      then
+         Mark_Use_Clauses (Original_Node (N));
+      end if;
+
       --  Now that we have analyzed the node, we call the expander to perform
       --  possible expansion. We skip this for subexpressions, because we don't
       --  have the type yet, and the expander will need to know the type before

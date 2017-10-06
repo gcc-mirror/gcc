@@ -1447,6 +1447,7 @@ package body Sem_Ch9 is
       --  Process the end label, and terminate the scope
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Entry_Name);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  If this is an entry family, remove the loop created to provide
@@ -1851,6 +1852,7 @@ package body Sem_Ch9 is
       Check_Completion (Body_Id);
       Check_References (Spec_Id);
       Process_End_Label (N, 't', Ref_Id);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  When a Lock_Free aspect specification/pragma forces the lock-free
@@ -2991,6 +2993,7 @@ package body Sem_Ch9 is
       end;
 
       Process_End_Label (HSS, 't', Ref_Id);
+      Update_Use_Clause_Chain;
       End_Scope;
    end Analyze_Task_Body;
 

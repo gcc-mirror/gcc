@@ -236,16 +236,6 @@
    this macro is used instead of that alignment to align the object. */
 #define DATA_ALIGNMENT(TYPE,ALIGN) visium_data_alignment (TYPE, ALIGN)
 
-/* `CONSTANT_ALIGNMENT (CONSTANT, BASIC-ALIGN)`
-
-   If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and BASIC-ALIGN is the alignment that the object would ordinarily
-   have.  The value of this macro is used instead of that alignment to
-   align the object. */
-#define CONSTANT_ALIGNMENT(EXP,ALIGN) \
-  visium_data_alignment (TREE_TYPE (EXP), ALIGN)
-
 /* `LOCAL_ALIGNMENT (TYPE, BASIC-ALIGN)`
 
    If defined, a C expression to compute the alignment for a variable

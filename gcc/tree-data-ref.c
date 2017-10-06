@@ -4944,17 +4944,6 @@ loop_nest_has_data_refs (loop_p loop)
 	}
     }
   free (bbs);
-
-  if (loop->inner)
-    {
-      loop = loop->inner;
-      while (loop)
-	{
-	  if (loop_nest_has_data_refs (loop))
-	    return true;
-	  loop = loop->next;
-	}
-    }
   return false;
 }
 

@@ -3084,7 +3084,8 @@ ready_sort_real (struct ready_list *ready)
   if (n_ready_real == 2)
     swap_sort (first, n_ready_real);
   else if (n_ready_real > 2)
-    qsort (first, n_ready_real, sizeof (rtx), rank_for_schedule);
+    /* HACK: Disable qsort checking for now (PR82396).  */
+    (qsort) (first, n_ready_real, sizeof (rtx), rank_for_schedule);
 
   if (sched_verbose >= 4)
     {
@@ -5707,7 +5708,8 @@ autopref_rank_data (autopref_multipass_data_t data1,
 static int
 autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
 {
-  for (int write = 0; write < 2; ++write)
+  int r = 0;
+  for (int write = 0; write < 2 && !r; ++write)
     {
       autopref_multipass_data_t data1
 	= &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
@@ -5716,21 +5718,20 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
 
       if (data1->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
 	autopref_multipass_init (insn1, write);
-      if (data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
-	continue;
 
       if (data2->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
 	autopref_multipass_init (insn2, write);
-      if (data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
-	continue;
 
-      if (!rtx_equal_p (data1->base, data2->base))
-	continue;
+      int irrel1 = data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
+      int irrel2 = data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
 
-      return autopref_rank_data (data1, data2);
+      if (!irrel1 && !irrel2)
+	r = autopref_rank_data (data1, data2);
+      else
+	r = irrel2 - irrel1;
     }
 
-  return 0;
+  return r;
 }
 
 /* True if header of debug dump was printed.  */

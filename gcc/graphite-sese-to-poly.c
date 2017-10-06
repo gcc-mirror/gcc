@@ -86,7 +86,7 @@ extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
   isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
   isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
   isl_local_space *ls = isl_local_space_from_space (space);
-  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e)) - 1;
+  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e));
   isl_aff *loop = isl_aff_set_coefficient_si
     (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
   isl_pw_aff *l = isl_pw_aff_from_aff (loop);
@@ -299,11 +299,18 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       return res;
 
     CASE_CONVERT:
-      res = extract_affine (s, TREE_OPERAND (e, 0), space);
-      /* signed values, even if overflow is undefined, get modulo-reduced.  */
-      if (! TYPE_UNSIGNED (type))
-	res = wrap (res, TYPE_PRECISION (type) - 1);
-      break;
+      {
+	tree itype = TREE_TYPE (TREE_OPERAND (e, 0));
+	res = extract_affine (s, TREE_OPERAND (e, 0), space);
+	/* Signed values, even if overflow is undefined, get modulo-reduced.
+	   But only if not all values of the old type fit in the new.  */
+	if (! TYPE_UNSIGNED (type)
+	    && ((TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (e, 0)))
+		 && TYPE_PRECISION (type) <= TYPE_PRECISION (itype))
+		|| TYPE_PRECISION (type) < TYPE_PRECISION (itype)))
+	  res = wrap (res, TYPE_PRECISION (type) - 1);
+	break;
+      }
 
     case NON_LVALUE_EXPR:
       res = extract_affine (s, TREE_OPERAND (e, 0), space);
@@ -491,25 +498,6 @@ pdr_add_alias_set (isl_map *acc, dr_info &dri)
   return isl_map_add_constraint (acc, c);
 }
 
-/* Add a constrain to the ACCESSES polyhedron for the alias set of
-   data reference DR.  ACCESSP_NB_DIMS is the dimension of the
-   ACCESSES polyhedron, DOM_NB_DIMS is the dimension of the iteration
-   domain.  */
-
-static isl_map *
-add_scalar_version_numbers (isl_map *acc, tree var)
-{
-  isl_constraint *c = isl_equality_alloc
-      (isl_local_space_from_space (isl_map_get_space (acc)));
-  int max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
-  /* Each scalar variables has a unique alias set number starting from
-     max_arrays.  */
-  c = isl_constraint_set_constant_si (c, -max_arrays - SSA_NAME_VERSION (var));
-  c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
-
-  return isl_map_add_constraint (acc, c);
-}
-
 /* Assign the affine expression INDEX to the output dimension POS of
    MAP and return the result.  */
 
@@ -684,13 +672,21 @@ static void
 build_poly_sr_1 (poly_bb_p pbb, gimple *stmt, tree var, enum poly_dr_type kind,
 		 isl_map *acc, isl_set *subscript_sizes)
 {
-  int max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
+  scop_p scop = PBB_SCOP (pbb);
   /* Each scalar variables has a unique alias set number starting from
-     max_arrays.  */
+     the maximum alias set assigned to a dr.  */
+  int alias_set = scop->max_alias_set + SSA_NAME_VERSION (var);
   subscript_sizes = isl_set_fix_si (subscript_sizes, isl_dim_set, 0,
-				    max_arrays + SSA_NAME_VERSION (var));
+				    alias_set);
 
-  new_poly_dr (pbb, stmt, kind, add_scalar_version_numbers (acc, var),
+  /* Add a constrain to the ACCESSES polyhedron for the alias set of
+     data reference DR.  */
+  isl_constraint *c
+    = isl_equality_alloc (isl_local_space_from_space (isl_map_get_space (acc)));
+  c = isl_constraint_set_constant_si (c, -alias_set);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
+
+  new_poly_dr (pbb, stmt, kind, isl_map_add_constraint (acc, c),
 	       subscript_sizes);
 }
 
@@ -767,10 +763,10 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
     return domain;
   const sese_l &region = scop->scop_info->region;
   if (!loop_in_sese_p (loop, region))
-    return domain;
-
-  /* Recursion all the way up to the context loop.  */
-  domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
+    ;
+  else
+    /* Recursion all the way up to the context loop.  */
+    domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
 
   /* Then, build constraints over the loop in post-order: outer to inner.  */
 
@@ -780,6 +776,21 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
 	     "domain for loop_%d.\n", loop->num);
   domain = add_iter_domain_dimension (domain, loop, scop);
   isl_space *space = isl_set_get_space (domain);
+
+  if (!loop_in_sese_p (loop, region))
+    {
+      /* 0 == loop_i */
+      isl_local_space *ls = isl_local_space_from_space (space);
+      isl_constraint *c = isl_equality_alloc (ls);
+      c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, 1);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+	  print_isl_constraint (dump_file, c);
+	}
+      domain = isl_set_add_constraint (domain, c);
+      return domain;
+    }
 
   /* 0 <= loop_i */
   isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
@@ -1244,6 +1255,9 @@ build_original_schedule (scop_p scop)
 bool
 build_poly_scop (scop_p scop)
 {
+  int old_err = isl_options_get_on_error (scop->isl_context);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
+
   build_scop_context (scop);
 
   unsigned i = 0;
@@ -1253,6 +1267,14 @@ build_poly_scop (scop_p scop)
 
   build_scop_drs (scop);
   build_original_schedule (scop);
-  return true;
+
+  enum isl_error err = isl_ctx_last_error (scop->isl_context);
+  isl_ctx_reset_error (scop->isl_context);
+  isl_options_set_on_error (scop->isl_context, old_err);
+  if (err != isl_error_none)
+    dump_printf (MSG_MISSED_OPTIMIZATION,
+		 "ISL error while building poly scop\n");
+
+  return err == isl_error_none;
 }
 #endif  /* HAVE_isl */

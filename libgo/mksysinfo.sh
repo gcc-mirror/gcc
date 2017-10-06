@@ -34,6 +34,7 @@ grep -v '^// ' gen-sysinfo.go | \
   grep -v '^type _timespec ' | \
   grep -v '^type _timestruc_t ' | \
   grep -v '^type _epoll_' | \
+  grep -v '^type _*locale[_ ]' | \
   grep -v 'in6_addr' | \
   grep -v 'sockaddr_in6' | \
   sed -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \

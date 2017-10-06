@@ -1299,28 +1299,12 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
     return context->backend()->var_expression(this->dvar_, VE_rvalue, loc);
 
   Gogo* gogo = context->gogo();
-  std::string var_name;
+  std::string var_name(gogo->function_descriptor_name(no));
   bool is_descriptor = false;
   if (no->is_function_declaration()
       && !no->func_declaration_value()->asm_name().empty()
       && Linemap::is_predeclared_location(no->location()))
-    {
-      if (no->func_declaration_value()->asm_name().substr(0, 8) != "runtime.")
-	var_name = no->func_declaration_value()->asm_name() + "_descriptor";
-      else
-	var_name = no->func_declaration_value()->asm_name() + "$descriptor";
-      is_descriptor = true;
-    }
-  else
-    {
-      if (no->package() == NULL)
-	var_name = gogo->pkgpath_symbol();
-      else
-	var_name = no->package()->pkgpath_symbol();
-      var_name.push_back('.');
-      var_name.append(Gogo::unpack_hidden_name(no->name()));
-      var_name.append("$descriptor");
-    }
+    is_descriptor = true;
 
   Btype* btype = this->type()->get_backend(gogo);
 
@@ -4348,27 +4332,23 @@ Unary_expression::do_get_backend(Translate_context* context)
 	    }
 	}
 
-      static unsigned int counter;
-      char buf[100];
       if (this->is_gc_root_ || this->is_slice_init_)
 	{
+	  std::string var_name;
 	  bool copy_to_heap = false;
 	  if (this->is_gc_root_)
 	    {
 	      // Build a decl for a GC root variable.  GC roots are mutable, so
 	      // they cannot be represented as an immutable_struct in the
 	      // backend.
-	      static unsigned int root_counter;
-	      snprintf(buf, sizeof buf, "gc%u", root_counter);
-	      ++root_counter;
+	      var_name = gogo->gc_root_name();
 	    }
 	  else
 	    {
 	      // Build a decl for a slice value initializer.  An immutable slice
 	      // value initializer may have to be copied to the heap if it
 	      // contains pointers in a non-constant context.
-	      snprintf(buf, sizeof buf, "C%u", counter);
-	      ++counter;
+	      var_name = gogo->initializer_name();
 
 	      Array_type* at = this->expr_->type()->array_type();
 	      go_assert(at != NULL);
@@ -4379,12 +4359,12 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      // read-only, because the program is permitted to change it.
 	      copy_to_heap = context->function() != NULL;
 	    }
-          std::string asm_name(go_selectively_encode_id(buf));
+	  std::string asm_name(go_selectively_encode_id(var_name));
 	  Bvariable* implicit =
-              gogo->backend()->implicit_variable(buf, asm_name,
+              gogo->backend()->implicit_variable(var_name, asm_name,
                                                  btype, true, copy_to_heap,
                                                  false, 0);
-	  gogo->backend()->implicit_variable_set_init(implicit, buf, btype,
+	  gogo->backend()->implicit_variable_set_init(implicit, var_name, btype,
 						      true, copy_to_heap, false,
 						      bexpr);
 	  bexpr = gogo->backend()->var_expression(implicit, VE_rvalue, loc);
@@ -4407,16 +4387,13 @@ Unary_expression::do_get_backend(Translate_context* context)
 		|| this->expr_->string_expression() != NULL)
 	       && this->expr_->is_static_initializer())
         {
-	  // Build a decl for a constant constructor.
-          snprintf(buf, sizeof buf, "C%u", counter);
-          ++counter;
-
-          std::string asm_name(go_selectively_encode_id(buf));
+	  std::string var_name(gogo->initializer_name());
+	  std::string asm_name(go_selectively_encode_id(var_name));
           Bvariable* decl =
-              gogo->backend()->immutable_struct(buf, asm_name,
+              gogo->backend()->immutable_struct(var_name, asm_name,
                                                 true, false, btype, loc);
-          gogo->backend()->immutable_struct_set_init(decl, buf, true, false,
-                                                     btype, loc, bexpr);
+          gogo->backend()->immutable_struct_set_init(decl, var_name, true,
+						     false, btype, loc, bexpr);
           bexpr = gogo->backend()->var_expression(decl, VE_rvalue, loc);
         }
 
@@ -15403,10 +15380,9 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
   const Typed_identifier_list* interface_methods = this->itype_->methods();
   go_assert(!interface_methods->empty());
 
-  std::string mangled_name = ((this->is_pointer_ ? "__go_pimt__" : "__go_imt_")
-			      + this->itype_->mangled_name(gogo)
-			      + "__"
-			      + this->type_->mangled_name(gogo));
+  std::string mangled_name =
+    gogo->interface_method_table_name(this->itype_, this->type_,
+				      this->is_pointer_);
 
   // Set is_public if we are converting a named type to an interface
   // type that is defined in the same package as the named type, and

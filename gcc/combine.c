@@ -1232,6 +1232,12 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
   FOR_EACH_BB_FN (this_basic_block, cfun)
     {
       rtx_insn *last_combined_insn = NULL;
+
+      /* Ignore instruction combination in basic blocks that are going to
+	 be removed as unreachable anyway.  See PR82386.  */
+      if (EDGE_COUNT (this_basic_block->preds) == 0)
+	continue;
+
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;

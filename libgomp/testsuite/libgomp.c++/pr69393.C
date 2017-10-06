@@ -1,6 +1,6 @@
 // { dg-do run }
 // { dg-require-effective-target lto }
-// { dg-options "-flto -g -fopenmp" }
+// { dg-options "-flto -g" }
 
 int e = 5;
 

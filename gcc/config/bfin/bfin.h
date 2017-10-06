@@ -321,11 +321,6 @@ extern const char *bfin_library_id_string;
 
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) bfin_local_alignment ((TYPE), (ALIGN))
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST        \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))    
-
 #define TRAMPOLINE_SIZE (TARGET_FDPIC ? 30 : 18)
 
 /* Definitions for register eliminations.

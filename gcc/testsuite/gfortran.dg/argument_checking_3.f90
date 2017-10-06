@@ -25,12 +25,12 @@ end interface
   call foo(len2) ! { dg-error "Rank mismatch in argument" }
   call foo("ca") ! { dg-error "Rank mismatch in argument" }
   call bar("ca") ! { dg-error "Rank mismatch in argument" }
-  call foobar(len2) ! { dg-warning "contains too few elements" }
+  call foobar(len2) ! { dg-error "contains too few elements" }
   call foobar(len4)
-  call foobar("bar") ! { dg-warning "contains too few elements" }
+  call foobar("bar") ! { dg-error "contains too few elements" }
   call foobar("bar33")
-  call arr(len2) ! { dg-warning "contains too few elements" }
+  call arr(len2) ! { dg-error "contains too few elements" }
   call arr(len4)
-  call arr("bar") ! { dg-warning "contains too few elements" }
+  call arr("bar") ! { dg-error "contains too few elements" }
   call arr("bar33")
 end program test

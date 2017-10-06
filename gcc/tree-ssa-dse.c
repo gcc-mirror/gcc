@@ -468,6 +468,36 @@ maybe_trim_partially_dead_store (ao_ref *ref, sbitmap live, gimple *stmt)
     }
 }
 
+/* Return TRUE if USE_REF reads bytes from LIVE where live is
+   derived from REF, a write reference.
+
+   While this routine may modify USE_REF, it's passed by value, not
+   location.  So callers do not see those modifications.  */
+
+static bool
+live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
+{
+  /* We have already verified that USE_REF and REF hit the same object.
+     Now verify that there's actually an overlap between USE_REF and REF.  */
+  if (ranges_overlap_p (use_ref.offset, use_ref.size, ref->offset, ref->size))
+    {
+      normalize_ref (&use_ref, ref);
+
+      /* If USE_REF covers all of REF, then it will hit one or more
+	 live bytes.   This avoids useless iteration over the bitmap
+	 below.  */
+      if (use_ref.offset <= ref->offset
+	  && use_ref.offset + use_ref.size >= ref->offset + ref->size)
+	return true;
+
+      /* Now check if any of the remaining bits in use_ref are set in LIVE.  */
+      unsigned int start = (use_ref.offset - ref->offset) / BITS_PER_UNIT;
+      unsigned int end  = (use_ref.offset + use_ref.size) / BITS_PER_UNIT;
+      return bitmap_bit_in_range_p (live, start, end);
+    }
+  return true;
+}
+
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT that writes to REF, find a candidate
    statement *USE_STMT that may prove STMT to be dead.
@@ -547,6 +577,31 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 	  /* If the statement is a use the store is not dead.  */
 	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
 	    {
+	      /* Handle common cases where we can easily build an ao_ref
+		 structure for USE_STMT and in doing so we find that the
+		 references hit non-live bytes and thus can be ignored.  */
+	      if (byte_tracking_enabled && (!gimple_vdef (use_stmt) || !temp))
+		{
+		  if (is_gimple_assign (use_stmt))
+		    {
+		      /* Other cases were noted as non-aliasing by
+			 the call to ref_maybe_used_by_stmt_p.  */
+		      ao_ref use_ref;
+		      ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
+		      if (valid_ao_ref_for_dse (&use_ref)
+			  && use_ref.base == ref->base
+			  && use_ref.size == use_ref.max_size
+			  && !live_bytes_read (use_ref, ref, live_bytes))
+			{
+			  /* If this statement has a VDEF, then it is the
+			     first store we have seen, so walk through it.  */
+			  if (gimple_vdef (use_stmt))
+			    temp = use_stmt;
+			  continue;
+			}
+		    }
+		}
+
 	      fail = true;
 	      BREAK_FROM_IMM_USE_STMT (ui);
 	    }

@@ -200,6 +200,9 @@ static void cr16_print_operand_address (FILE *, machine_mode, rtx);
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST 	cr16_memory_move_cost
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT	constant_alignment_word_strings
+
 /* Table of machine attributes.  */
 static const struct attribute_spec cr16_attribute_table[] = {
   /* ISRs have special prologue and epilogue requirements.  */

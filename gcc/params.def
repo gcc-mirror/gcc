@@ -873,14 +873,7 @@ DEFPARAM (PARAM_LOOP_BLOCK_TILE_SIZE,
 DEFPARAM (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS,
 	  "graphite-max-nb-scop-params",
 	  "maximum number of parameters in a SCoP.",
-	  7, 0, 0)
-
-/* Maximal number of basic blocks in the functions analyzed by Graphite.  */
-
-DEFPARAM (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION,
-	  "graphite-max-bbs-per-function",
-	  "maximum number of basic blocks per function to be analyzed by Graphite.",
-	  100, 0, 0)
+	  10, 0, 0)
 
 /* Maximal number of array references in a scop.  */
 
@@ -900,6 +893,12 @@ DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
 	  "max-isl-operations",
 	  "maximum number of isl operations, 0 means unlimited",
 	  350000, 0, 0)
+
+/* For testsuite purposes allow to check for codegen error handling.  */
+DEFPARAM (PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS,
+	  "graphite-allow-codegen-errors",
+	  "whether codegen errors should be ICEs when -fchecking.",
+	  0, 0, 1)
 
 /* Avoid data dependence analysis on very large loops.  */
 DEFPARAM (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS,

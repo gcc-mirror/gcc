@@ -67,7 +67,7 @@ void test01()
   fmt2.imbue(loc);
   InIt ibeg2(fmt2);
   err2 = ios_base::goodbit;
-  mg.get(ibeg2, iend2, intl, fmt2, err2, val2);
+  ibeg2 = mg.get(ibeg2, iend2, intl, fmt2, err2, val2);
   VERIFY( err2 == ios_base::failbit );
   VERIFY( *ibeg2 == '#' );
   VERIFY( val2 == "" );

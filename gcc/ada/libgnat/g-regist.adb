@@ -184,9 +184,6 @@ package body GNAT.Registry is
       Sub_Key  : String;
       Mode     : Key_Mode := Read_Write) return HKEY
    is
-      use type REGSAM;
-      use type DWORD;
-
       REG_OPTION_NON_VOLATILE : constant := 16#0#;
 
       C_Sub_Key : constant String := Sub_Key & ASCII.NUL;
@@ -425,8 +422,6 @@ package body GNAT.Registry is
       Sub_Key  : String;
       Mode     : Key_Mode := Read_Only) return HKEY
    is
-      use type REGSAM;
-
       C_Sub_Key : constant String := Sub_Key & ASCII.NUL;
       C_Mode    : constant REGSAM := To_C_Mode (Mode);
 
@@ -456,7 +451,6 @@ package body GNAT.Registry is
       Expand   : Boolean := False) return String
    is
       use GNAT.Directory_Operations;
-      use type LONG;
       use type ULONG;
 
       Value : String (1 .. Max_Value_Size);

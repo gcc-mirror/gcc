@@ -355,15 +355,25 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   else
     return;
 
+  /* Note that the two operands are from before the usual integer
+     conversions, so their types might not be the same.
+     Use the larger of the two precisions and ignore bits outside
+     of that.  */
+  int prec = MAX (TYPE_PRECISION (TREE_TYPE (cst)),
+		  TYPE_PRECISION (TREE_TYPE (bitopcst)));
+
+  wide_int bitopcstw = wide_int::from (bitopcst, prec, UNSIGNED);
+  wide_int cstw = wide_int::from (cst, prec, UNSIGNED);
+
   wide_int res;
   if (TREE_CODE (bitop) == BIT_AND_EXPR)
-    res = wi::bit_and (bitopcst, cst);
+    res = bitopcstw & cstw;
   else
-    res = wi::bit_or (bitopcst, cst);
+    res = bitopcstw | cstw;
 
   /* For BIT_AND only warn if (CST2 & CST1) != CST1, and
      for BIT_OR only if (CST2 | CST1) != CST1.  */
-  if (res == cst)
+  if (res == cstw)
     return;
 
   if (code == EQ_EXPR)

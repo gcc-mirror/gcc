@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;    use Alloc;
+with Alloc;
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
@@ -1477,10 +1477,10 @@ package body Ghost is
 
    begin
       if Nkind (N) = N_Use_Package_Clause then
-         Nam := First (Names (N));
+         Nam := Name (N);
 
       elsif Nkind (N) = N_Use_Type_Clause then
-         Nam := First (Subtype_Marks (N));
+         Nam := Subtype_Mark (N);
 
       elsif Nkind (N) = N_With_Clause then
          Nam := Name (N);

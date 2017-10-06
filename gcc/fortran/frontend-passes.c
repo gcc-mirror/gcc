@@ -39,6 +39,8 @@ static bool optimize_lexical_comparison (gfc_expr *);
 static void optimize_minmaxloc (gfc_expr **);
 static bool is_empty_string (gfc_expr *e);
 static void doloop_warn (gfc_namespace *);
+static int do_intent (gfc_expr **);
+static int do_subscript (gfc_expr **);
 static void optimize_reduction (gfc_namespace *);
 static int callback_reduction (gfc_expr **, int *, void *);
 static void realloc_strings (gfc_namespace *);
@@ -98,9 +100,19 @@ static int iterator_level;
 
 /* Keep track of DO loop levels.  */
 
-static vec<gfc_code *> doloop_list;
+typedef struct {
+  gfc_code *c;
+  int branch_level;
+  bool seen_goto;
+} do_t;
 
+static vec<do_t> doloop_list;
 static int doloop_level;
+
+/* Keep track of if and select case levels.  */
+
+static int if_level;
+static int select_level;
 
 /* Vector of gfc_expr * to keep track of DO loops.  */
 
@@ -133,6 +145,8 @@ gfc_run_passes (gfc_namespace *ns)
      change.  */
 
   doloop_level = 0;
+  if_level = 0;
+  select_level = 0;
   doloop_warn (ns);
   doloop_list.release ();
   int w, e;
@@ -2231,6 +2245,8 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   gfc_formal_arglist *f;
   gfc_actual_arglist *a;
   gfc_code *cl;
+  do_t loop, *lp;
+  bool seen_goto;
 
   co = *c;
 
@@ -2239,14 +2255,65 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   if ((unsigned) doloop_level < doloop_list.length())
     doloop_list.truncate (doloop_level);
 
+  seen_goto = false;
   switch (co->op)
     {
     case EXEC_DO:
 
       if (co->ext.iterator && co->ext.iterator->var)
-	doloop_list.safe_push (co);
+	loop.c = co;
       else
-	doloop_list.safe_push ((gfc_code *) NULL);
+	loop.c = NULL;
+
+      loop.branch_level = if_level + select_level;
+      loop.seen_goto = false;
+      doloop_list.safe_push (loop);
+      break;
+
+      /* If anything could transfer control away from a suspicious
+	 subscript, make sure to set seen_goto in the current DO loop
+	 (if any).  */
+    case EXEC_GOTO:
+    case EXEC_EXIT:
+    case EXEC_STOP:
+    case EXEC_ERROR_STOP:
+    case EXEC_CYCLE:
+      seen_goto = true;
+      break;
+
+    case EXEC_OPEN:
+      if (co->ext.open->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_CLOSE:
+      if (co->ext.close->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_BACKSPACE:
+    case EXEC_ENDFILE:
+    case EXEC_REWIND:
+    case EXEC_FLUSH:
+
+      if (co->ext.filepos->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_INQUIRE:
+      if (co->ext.filepos->err)
+	seen_goto = true;
+      break;
+
+    case EXEC_READ:
+    case EXEC_WRITE:
+      if (co->ext.dt->err || co->ext.dt->end || co->ext.dt->eor)
+	seen_goto = true;
+      break;
+
+    case EXEC_WAIT:
+      if (co->ext.wait->err || co->ext.wait->end || co->ext.wait->eor)
+	loop.seen_goto = true;
       break;
 
     case EXEC_CALL:
@@ -2265,9 +2332,10 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 
       while (a && f)
 	{
-	  FOR_EACH_VEC_ELT (doloop_list, i, cl)
+	  FOR_EACH_VEC_ELT (doloop_list, i, lp)
 	    {
 	      gfc_symbol *do_sym;
+	      cl = lp->c;
 
 	      if (cl == NULL)
 		break;
@@ -2282,14 +2350,14 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 				   "value inside loop  beginning at %L as "
 				   "INTENT(OUT) argument to subroutine %qs",
 				   do_sym->name, &a->expr->where,
-				   &doloop_list[i]->loc,
+				   &(doloop_list[i].c->loc),
 				   co->symtree->n.sym->name);
 		  else if (f->sym->attr.intent == INTENT_INOUT)
 		    gfc_error_now ("Variable %qs at %L not definable inside "
 				   "loop beginning at %L as INTENT(INOUT) "
 				   "argument to subroutine %qs",
 				   do_sym->name, &a->expr->where,
-				   &doloop_list[i]->loc,
+				   &(doloop_list[i].c->loc),
 				   co->symtree->n.sym->name);
 		}
 	    }
@@ -2301,20 +2369,271 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     default:
       break;
     }
+  if (seen_goto && doloop_level > 0)
+    doloop_list[doloop_level-1].seen_goto = true;
+
   return 0;
 }
 
-/* Callback function for functions checking that we do not pass a DO variable
-   to an INTENT(OUT) or INTENT(INOUT) dummy variable.  */
+/* Callback function to warn about different things within DO loops.  */
 
 static int
 do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	     void *data ATTRIBUTE_UNUSED)
 {
+  do_t *last;
+
+  if (doloop_list.length () == 0)
+    return 0;
+
+  if ((*e)->expr_type == EXPR_FUNCTION)
+    do_intent (e);
+
+  last = &doloop_list.last();
+  if (last->seen_goto && !warn_do_subscript)
+    return 0;
+
+  if ((*e)->expr_type == EXPR_VARIABLE)
+    do_subscript (e);
+
+  return 0;
+}
+
+typedef struct
+{
+  gfc_symbol *sym;
+  mpz_t val;
+} insert_index_t;
+
+/* Callback function - if the expression is the variable in data->sym,
+   replace it with a constant from data->val.  */
+
+static int
+callback_insert_index (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+		       void *data)
+{
+  insert_index_t *d;
+  gfc_expr *ex, *n;
+
+  ex = (*e);
+  if (ex->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  d = (insert_index_t *) data;
+  if (ex->symtree->n.sym != d->sym)
+    return 0;
+
+  n = gfc_get_constant_expr (BT_INTEGER, ex->ts.kind, &ex->where);
+  mpz_set (n->value.integer, d->val);
+
+  gfc_free_expr (ex);
+  *e = n;
+  return 0;
+}
+
+/* In the expression e, replace occurrences of the variable sym with
+   val.  If this results in a constant expression, return true and
+   return the value in ret.  Return false if the expression already
+   is a constant.  Caller has to clear ret in that case.  */
+
+static bool
+insert_index (gfc_expr *e, gfc_symbol *sym, mpz_t val, mpz_t ret)
+{
+  gfc_expr *n;
+  insert_index_t data;
+  bool rc;
+
+  if (e->expr_type == EXPR_CONSTANT)
+    return false;
+
+  n = gfc_copy_expr (e);
+  data.sym = sym;
+  mpz_init_set (data.val, val);
+  gfc_expr_walker (&n, callback_insert_index, (void *) &data);
+  gfc_simplify_expr (n, 0);
+
+  if (n->expr_type == EXPR_CONSTANT)
+    {
+      rc = true;
+      mpz_init_set (ret, n->value.integer);
+    }
+  else
+    rc = false;
+
+  mpz_clear (data.val);
+  gfc_free_expr (n);
+  return rc;
+
+}
+
+/* Check array subscripts for possible out-of-bounds accesses in DO
+   loops with constant bounds.  */
+
+static int
+do_subscript (gfc_expr **e)
+{
+  gfc_expr *v;
+  gfc_array_ref *ar;
+  gfc_ref *ref;
+  int i,j;
+  gfc_code *dl;
+  do_t *lp;
+
+  v = *e;
+  /* Constants are already checked.  */
+  if (v->expr_type == EXPR_CONSTANT)
+    return 0;
+
+  /* Wrong warnings will be generated in an associate list.  */
+  if (in_assoc_list)
+    return 0;
+
+  for (ref = v->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT)
+	{
+	  ar = & ref->u.ar;
+	  FOR_EACH_VEC_ELT (doloop_list, j, lp)
+	    {
+	      gfc_symbol *do_sym;
+	      mpz_t do_start, do_step, do_end;
+	      bool have_do_start, have_do_end;
+	      bool error_not_proven;
+	      int warn;
+
+	      dl = lp->c;
+	      if (dl == NULL)
+		break;
+
+	      /* If we are within a branch, or a goto or equivalent
+		 was seen in the DO loop before, then we cannot prove that
+		 this expression is actually evaluated.  Don't do anything
+		 unless we want to see it all.  */
+	      error_not_proven = lp->seen_goto
+		|| lp->branch_level < if_level + select_level;
+
+	      if (error_not_proven && !warn_do_subscript)
+		break;
+
+	      if (error_not_proven)
+		warn = OPT_Wdo_subscript;
+	      else
+		warn = 0;
+
+	      do_sym = dl->ext.iterator->var->symtree->n.sym;
+	      if (do_sym->ts.type != BT_INTEGER)
+		continue;
+
+	      /* If we do not know about the stepsize, the loop may be zero trip.
+		 Do not warn in this case.  */
+	  
+	      if (dl->ext.iterator->step->expr_type == EXPR_CONSTANT)
+		mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
+	      else
+		continue;
+
+	      if (dl->ext.iterator->start->expr_type == EXPR_CONSTANT)
+		{
+		  have_do_start = true;
+		  mpz_init_set (do_start, dl->ext.iterator->start->value.integer);
+		}
+	      else
+		have_do_start = false;
+
+	  
+	      if (dl->ext.iterator->end->expr_type == EXPR_CONSTANT)
+		{
+		  have_do_end = true;
+		  mpz_init_set (do_end, dl->ext.iterator->end->value.integer);
+		}
+	      else
+		have_do_end = false;
+
+	      if (!have_do_start && !have_do_end)
+		return 0;
+
+	      /* May have to correct the end value if the step does not equal
+		 one.  */
+	      if (have_do_start && have_do_end && mpz_cmp_ui (do_step, 1) != 0)
+		{
+		  mpz_t diff, rem;
+
+		  mpz_init (diff);
+		  mpz_init (rem);
+		  mpz_sub (diff, do_end, do_start);
+		  mpz_tdiv_r (rem, diff, do_step);
+		  mpz_sub (do_end, do_end, rem);
+		  mpz_clear (diff);
+		  mpz_clear (rem);
+		}
+
+	      for (i = 0; i< ar->dimen; i++)
+		{
+		  mpz_t val;
+		  if (ar->dimen_type[i] == DIMEN_ELEMENT && have_do_start
+		      && insert_index (ar->start[i], do_sym, do_start, val))
+		    {
+		      if (ar->as->lower[i]
+			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
+			gfc_warning (warn, "Array reference at %L out of bounds "
+				     "(%ld < %ld) in loop beginning at %L",
+				     &ar->start[i]->where, mpz_get_si (val),
+				     mpz_get_si (ar->as->lower[i]->value.integer),
+				     &doloop_list[j].c->loc);
+
+		      if (ar->as->upper[i]
+			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
+			    gfc_warning (warn, "Array reference at %L out of bounds "
+					 "(%ld > %ld) in loop beginning at %L",
+					 &ar->start[i]->where, mpz_get_si (val),
+					 mpz_get_si (ar->as->upper[i]->value.integer),
+					 &doloop_list[j].c->loc);
+
+		      mpz_clear (val);
+		    }
+
+		  if (ar->dimen_type[i] == DIMEN_ELEMENT && have_do_end
+		      && insert_index (ar->start[i], do_sym, do_end, val))
+		    {
+		      if (ar->as->lower[i]
+			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
+			gfc_warning (warn, "Array reference at %L out of bounds "
+				     "(%ld < %ld) in loop beginning at %L",
+				     &ar->start[i]->where, mpz_get_si (val),
+				     mpz_get_si (ar->as->lower[i]->value.integer),
+				     &doloop_list[j].c->loc);
+
+		      if (ar->as->upper[i]
+			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
+			gfc_warning (warn, "Array reference at %L out of bounds "
+				     "(%ld > %ld) in loop beginning at %L",
+				     &ar->start[i]->where, mpz_get_si (val),
+				     mpz_get_si (ar->as->upper[i]->value.integer),
+				     &doloop_list[j].c->loc);
+
+		      mpz_clear (val);
+		    }
+		}
+	    }
+	}
+    }
+  return 0;
+}
+/* Function for functions checking that we do not pass a DO variable
+   to an INTENT(OUT) or INTENT(INOUT) dummy variable.  */
+
+static int
+do_intent (gfc_expr **e)
+{
   gfc_formal_arglist *f;
   gfc_actual_arglist *a;
   gfc_expr *expr;
   gfc_code *dl;
+  do_t *lp;
   int i;
 
   expr = *e;
@@ -2337,10 +2656,10 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   while (a && f)
     {
-      FOR_EACH_VEC_ELT (doloop_list, i, dl)
+      FOR_EACH_VEC_ELT (doloop_list, i, lp)
 	{
 	  gfc_symbol *do_sym;
-
+	  dl = lp->c;
 	  if (dl == NULL)
 	    break;
 
@@ -2353,13 +2672,13 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 		gfc_error_now ("Variable %qs at %L set to undefined value "
 			       "inside loop beginning at %L as INTENT(OUT) "
 			       "argument to function %qs", do_sym->name,
-			       &a->expr->where, &doloop_list[i]->loc,
+			       &a->expr->where, &doloop_list[i].c->loc,
 			       expr->symtree->n.sym->name);
 	      else if (f->sym->attr.intent == INTENT_INOUT)
 		gfc_error_now ("Variable %qs at %L not definable inside loop"
 			       " beginning at %L as INTENT(INOUT) argument to"
 			       " function %qs", do_sym->name,
-			       &a->expr->where, &doloop_list[i]->loc,
+			       &a->expr->where, &doloop_list[i].c->loc,
 			       expr->symtree->n.sym->name);
 	    }
 	}
@@ -4055,6 +4374,10 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.iterator->step);
 	      break;
 
+	    case EXEC_IF:
+	      if_level ++;
+	      break;
+
 	    case EXEC_WHERE:
 	      in_where = true;
 	      break;
@@ -4073,6 +4396,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	    case EXEC_SELECT:
 	      WALK_SUBEXPR (co->expr1);
+	      select_level ++;
 	      for (b = co->block; b; b = b->block)
 		{
 		  gfc_case *cp;
@@ -4329,6 +4653,12 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  if (co->op == EXEC_DO)
 	    doloop_level --;
 
+	  if (co->op == EXEC_IF)
+	    if_level --;
+
+	  if (co->op == EXEC_SELECT)
+	    select_level --;
+  
 	  in_omp_workshare = saved_in_omp_workshare;
 	  in_where = saved_in_where;
 	}

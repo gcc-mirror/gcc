@@ -126,7 +126,7 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
 
 */
 
-#if defined (WINNT) || defined (__CYGWIN__) || defined(__DJGPP__)
+#if defined (WINNT) || defined (__CYGWIN__) || defined (__DJGPP__)
 
 const char __gnat_text_translation_required = 1;
 
@@ -137,7 +137,7 @@ const char __gnat_text_translation_required = 1;
 #define WIN_SETMODE _setmode
 #endif
 
-#if defined(__DJGPP__)
+#if defined (__DJGPP__)
 #include <io.h>
 #define _setmode setmode
 #endif /* __DJGPP__ */
@@ -154,7 +154,7 @@ __gnat_set_text_mode (int handle)
   WIN_SETMODE (handle, O_TEXT);
 }
 
-#ifdef __DJGPP__
+#if defined (__CYGWIN__) || defined (__DJGPP__)
 void
 __gnat_set_mode (int handle, int mode)
 {
@@ -826,7 +826,7 @@ __gnat_localtime_tzoff (const time_t *timer ATTRIBUTE_UNUSED,
 
 #elif defined (__APPLE__) || defined (__FreeBSD__) || defined (__linux__) \
   || defined (__GLIBC__) || defined (__DragonFly__) || defined (__OpenBSD__) \
-  || defined(__DJGPP__)
+  || defined (__DJGPP__)
 {
   localtime_r (timer, &tp);
   *off = tp.tm_gmtoff;

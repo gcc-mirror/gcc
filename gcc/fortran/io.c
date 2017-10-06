@@ -4641,8 +4641,8 @@ match_wait_element (gfc_wait *wait)
 
   m = match_etag (&tag_unit, &wait->unit);
   RETM m = match_ltag (&tag_err, &wait->err);
-  RETM m = match_ltag (&tag_end, &wait->eor);
-  RETM m = match_ltag (&tag_eor, &wait->end);
+  RETM m = match_ltag (&tag_end, &wait->end);
+  RETM m = match_ltag (&tag_eor, &wait->eor);
   RETM m = match_etag (&tag_iomsg, &wait->iomsg);
   if (m == MATCH_YES && !check_char_variable (wait->iomsg))
     return MATCH_ERROR;

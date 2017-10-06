@@ -27,7 +27,7 @@
 --  about uses of uninitialized variables and unused with's. It also has
 --  some unrelated routines related to the generation of warnings.
 
-with Alloc; use Alloc;
+with Alloc;
 with Table;
 with Types; use Types;
 

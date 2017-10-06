@@ -333,8 +333,7 @@ static machine_mode ia64_get_reg_raw_mode (int regno);
 static section * ia64_hpux_function_section (tree, enum node_frequency,
 					     bool, bool);
 
-static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
-					      const unsigned char *sel);
+static bool ia64_vectorize_vec_perm_const_ok (machine_mode, vec_perm_indices);
 
 static unsigned int ia64_hard_regno_nregs (unsigned int, machine_mode);
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
@@ -672,6 +671,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ia64_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -11824,8 +11826,7 @@ ia64_expand_vec_perm_const (rtx operands[4])
 /* Implement targetm.vectorize.vec_perm_const_ok.  */
 
 static bool
-ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
-				  const unsigned char *sel)
+ia64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
@@ -11837,10 +11838,10 @@ ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
 
   /* Extract the values from the vector CST into the permutation
      array in D.  */
-  memcpy (d.perm, sel, nelt);
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned char e = sel[i];
+      d.perm[i] = e;
       gcc_assert (e < 2 * nelt);
       which |= (e < nelt ? 1 : 2);
     }

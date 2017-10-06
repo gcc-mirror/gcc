@@ -23,36 +23,36 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Back_End; use Back_End;
+with Atree;     use Atree;
+with Back_End;  use Back_End;
 with Checks;
 with Comperr;
-with Csets;    use Csets;
-with Debug;    use Debug;
+with Csets;
+with Debug;     use Debug;
 with Elists;
-with Errout;   use Errout;
+with Errout;    use Errout;
 with Exp_CG;
 with Fmap;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
+with Fname;     use Fname;
+with Fname.UF;  use Fname.UF;
 with Frontend;
-with Ghost;    use Ghost;
-with Gnatvsn;  use Gnatvsn;
+with Ghost;     use Ghost;
+with Gnatvsn;   use Gnatvsn;
 with Inline;
-with Lib;      use Lib;
-with Lib.Writ; use Lib.Writ;
+with Lib;       use Lib;
+with Lib.Writ;  use Lib.Writ;
 with Lib.Xref;
-with Namet;    use Namet;
+with Namet;     use Namet;
 with Nlists;
-with Opt;      use Opt;
-with Osint;    use Osint;
-with Osint.C;  use Osint.C;
-with Output;   use Output;
+with Opt;       use Opt;
+with Osint;     use Osint;
+with Osint.C;   use Osint.C;
+with Output;    use Output;
 with Par_SCO;
 with Prepcomp;
-with Repinfo;  use Repinfo;
+with Repinfo;   use Repinfo;
 with Restrict;
-with Rident;   use Rident;
+with Rident;    use Rident;
 with Rtsfind;
 with SCOs;
 with Sem;
@@ -64,23 +64,23 @@ with Sem_Eval;
 with Sem_SPARK; use Sem_SPARK;
 with Sem_Type;
 with Set_Targ;
-with Sinfo;    use Sinfo;
-with Sinput.L; use Sinput.L;
-with Snames;   use Snames;
-with Sprint;   use Sprint;
+with Sinfo;     use Sinfo;
+with Sinput.L;  use Sinput.L;
+with Snames;    use Snames;
+with Sprint;    use Sprint;
 with Stringt;
-with Stylesw;  use Stylesw;
-with Targparm; use Targparm;
+with Stylesw;   use Stylesw;
+with Targparm;  use Targparm;
 with Tbuild;
 with Tree_Gen;
-with Treepr;   use Treepr;
+with Treepr;    use Treepr;
 with Ttypes;
-with Types;    use Types;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
+with Types;     use Types;
+with Uintp;
+with Uname;     use Uname;
 with Urealp;
 with Usage;
-with Validsw;  use Validsw;
+with Validsw;   use Validsw;
 
 with System.Assertions;
 with System.OS_Lib;
@@ -852,7 +852,7 @@ procedure Gnat1drv is
          --  pragma, to be used this way and to cause the body file to be
          --  ignored in this context).
 
-         if Src_Ind /= No_Source_File
+         if Src_Ind > No_Source_File
            and then Source_File_Is_Body (Src_Ind)
          then
             Errout.Finalize (Last_Call => False);
@@ -1065,6 +1065,11 @@ begin
                  ("fatal error, run-time library not installed correctly");
                Write_Line ("cannot locate file system.ads");
                raise Unrecoverable_Error;
+            elsif S = No_Access_To_Source_File then
+               Write_Line
+                 ("fatal error, run-time library not installed correctly");
+               Write_Line ("no read access for file system.ads");
+               raise Unrecoverable_Error;
 
             --  Read system.ads successfully, remember its source index
 
@@ -1141,7 +1146,7 @@ begin
 
       --  Exit with errors if the main source could not be parsed
 
-      if Sinput.Main_Source_File = No_Source_File then
+      if Sinput.Main_Source_File <= No_Source_File then
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Exit_Program (E_Errors);

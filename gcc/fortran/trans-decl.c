@@ -1700,6 +1700,14 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->ts.type == BT_CHARACTER)
     {
       if (sym->attr.associate_var
+	  && sym->ts.deferred
+	  && sym->assoc && sym->assoc->target
+	  && ((sym->assoc->target->expr_type == EXPR_VARIABLE
+	       && sym->assoc->target->symtree->n.sym->ts.type != BT_CHARACTER)
+	      || sym->assoc->target->expr_type == EXPR_FUNCTION))
+	sym->ts.u.cl->backend_decl = NULL_TREE;
+
+      if (sym->attr.associate_var
 	  && sym->ts.u.cl->backend_decl
 	  && VAR_P (sym->ts.u.cl->backend_decl))
 	length = gfc_index_zero_node;

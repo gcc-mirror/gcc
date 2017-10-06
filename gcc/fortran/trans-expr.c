@@ -8207,6 +8207,39 @@ pointer_assignment_is_proc_pointer (gfc_expr * expr1, gfc_expr * expr2)
 }
 
 
+/* Do everything that is needed for a CLASS function expr2.  */
+
+static tree
+trans_class_pointer_fcn (stmtblock_t *block, gfc_se *lse, gfc_se *rse,
+			 gfc_expr *expr1, gfc_expr *expr2)
+{
+  tree expr1_vptr = NULL_TREE;
+  tree tmp;
+
+  gfc_conv_function_expr (rse, expr2);
+  rse->expr = gfc_evaluate_now (rse->expr, &rse->pre);
+
+  if (expr1->ts.type != BT_CLASS)
+      rse->expr = gfc_class_data_get (rse->expr);
+  else
+    {
+      expr1_vptr = trans_class_vptr_len_assignment (block, expr1,
+						    expr2, rse,
+						    NULL, NULL);
+      gfc_add_block_to_block (block, &rse->pre);
+      tmp = gfc_create_var (TREE_TYPE (rse->expr), "ptrtemp");
+      gfc_add_modify (&lse->pre, tmp, rse->expr);
+
+      gfc_add_modify (&lse->pre, expr1_vptr,
+		      fold_convert (TREE_TYPE (expr1_vptr),
+		      gfc_class_vptr_get (tmp)));
+      rse->expr = gfc_class_data_get (tmp);
+    }
+
+  return expr1_vptr;
+}
+
+
 tree
 gfc_trans_pointer_assign (gfc_code * code)
 {
@@ -8224,6 +8257,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   stmtblock_t block;
   tree desc;
   tree tmp;
+  tree expr1_vptr = NULL_TREE;
   bool scalar, non_proc_pointer_assign;
   gfc_ss *ss;
 
@@ -8257,7 +8291,10 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       gfc_conv_expr (&lse, expr1);
       gfc_init_se (&rse, NULL);
       rse.want_pointer = 1;
-      gfc_conv_expr (&rse, expr2);
+      if (expr2->expr_type == EXPR_FUNCTION && expr2->ts.type == BT_CLASS)
+	trans_class_pointer_fcn (&block, &lse, &rse, expr1, expr2);
+      else
+	gfc_conv_expr (&rse, expr2);
 
       if (non_proc_pointer_assign && expr1->ts.type == BT_CLASS)
 	{
@@ -8269,12 +8306,12 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       if (expr1->symtree->n.sym->attr.proc_pointer
 	  && expr1->symtree->n.sym->attr.dummy)
 	lse.expr = build_fold_indirect_ref_loc (input_location,
-					    lse.expr);
+						lse.expr);
 
       if (expr2->symtree && expr2->symtree->n.sym->attr.proc_pointer
 	  && expr2->symtree->n.sym->attr.dummy)
 	rse.expr = build_fold_indirect_ref_loc (input_location,
-					    rse.expr);
+						rse.expr);
 
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &rse.pre);
@@ -8320,7 +8357,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
     {
       gfc_ref* remap;
       bool rank_remap;
-      tree expr1_vptr = NULL_TREE;
       tree strlen_lhs;
       tree strlen_rhs = NULL_TREE;
 
@@ -8355,26 +8391,8 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  rse.byref_noassign = 1;
 
 	  if (expr2->expr_type == EXPR_FUNCTION && expr2->ts.type == BT_CLASS)
-	    {
-	      gfc_conv_function_expr (&rse, expr2);
-
-	      if (expr1->ts.type != BT_CLASS)
-		rse.expr = gfc_class_data_get (rse.expr);
-	      else
-		{
-		  expr1_vptr = trans_class_vptr_len_assignment (&block, expr1,
-								expr2, &rse,
-								NULL, NULL);
-		  gfc_add_block_to_block (&block, &rse.pre);
-		  tmp = gfc_create_var (TREE_TYPE (rse.expr), "ptrtemp");
-		  gfc_add_modify (&lse.pre, tmp, rse.expr);
-
-		  gfc_add_modify (&lse.pre, expr1_vptr,
-				  fold_convert (TREE_TYPE (expr1_vptr),
-						gfc_class_vptr_get (tmp)));
-		  rse.expr = gfc_class_data_get (tmp);
-		}
-	    }
+	    expr1_vptr = trans_class_pointer_fcn (&block, &lse, &rse,
+						  expr1, expr2);
 	  else if (expr2->expr_type == EXPR_FUNCTION)
 	    {
 	      tree bound[GFC_MAX_DIMENSIONS];

@@ -516,11 +516,18 @@ package body Exp_Ch3 is
    ---------------------------
 
    procedure Build_Array_Init_Proc (A_Type : Entity_Id; Nod : Node_Id) is
-      Comp_Type        : constant Entity_Id  := Component_Type (A_Type);
-      Comp_Type_Simple : constant Boolean :=
+      Comp_Type        : constant Entity_Id := Component_Type (A_Type);
+      Comp_Simple_Init : constant Boolean   :=
         Needs_Simple_Initialization
-          (Comp_Type, Consider_IS =>
+          (T           => Comp_Type,
+           Consider_IS =>
              not (Validity_Check_Copies and Is_Bit_Packed_Array (A_Type)));
+      --  True if the component needs simple initialization, based on its type,
+      --  plus the fact that we do not do simple initialization for components
+      --  of bit-packed arrays when validity checks are enabled, because the
+      --  initialization with deliberately out-of-range values would raise
+      --  Constraint_Error.
+
       Body_Stmts       : List_Id;
       Has_Default_Init : Boolean;
       Index_List       : List_Id;
@@ -561,7 +568,7 @@ package body Exp_Ch3 is
                   Convert_To (Comp_Type,
                     Default_Aspect_Component_Value (First_Subtype (A_Type)))));
 
-         elsif Comp_Type_Simple then
+         elsif Comp_Simple_Init then
             Set_Assignment_OK (Comp);
             return New_List (
               Make_Assignment_Statement (Loc,
@@ -593,7 +600,7 @@ package body Exp_Ch3 is
          --  the dummy Init_Proc needed for Initialize_Scalars processing.
 
          if not Has_Non_Null_Base_Init_Proc (Comp_Type)
-           and then not Comp_Type_Simple
+           and then not Comp_Simple_Init
            and then not Has_Task (Comp_Type)
            and then not Has_Default_Aspect (A_Type)
          then
@@ -683,7 +690,7 @@ package body Exp_Ch3 is
       --  init_proc.
 
       Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
-                            or else Comp_Type_Simple
+                            or else Comp_Simple_Init
                             or else Has_Task (Comp_Type)
                             or else Has_Default_Aspect (A_Type);
 
@@ -1800,6 +1807,7 @@ package body Exp_Ch3 is
 
          function Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
             Val : Node_Id;
+
          begin
             if Is_Entity_Name (N)
               and then Present (Entity (N))
@@ -1807,10 +1815,11 @@ package body Exp_Ch3 is
               and then Present (Discriminal_Link (Entity (N)))
             then
                Val :=
-                  Make_Selected_Component (N_Loc,
-                    Prefix => New_Copy_Tree (Lhs),
-                    Selector_Name => New_Occurrence_Of
-                      (Discriminal_Link (Entity (N)), N_Loc));
+                 Make_Selected_Component (N_Loc,
+                   Prefix        => New_Copy_Tree (Lhs),
+                   Selector_Name =>
+                     New_Occurrence_Of (Discriminal_Link (Entity (N)), N_Loc));
+
                if Present (Val) then
                   Rewrite (N, New_Copy_Tree (Val));
                end if;
@@ -1821,6 +1830,8 @@ package body Exp_Ch3 is
 
          procedure Replace_Discriminant_References is
            new Traverse_Proc (Replace_Discr_Ref);
+
+      --  Start of processing for Build_Assignment
 
       begin
          Lhs :=
@@ -6288,9 +6299,7 @@ package body Exp_Ch3 is
          --  plan to expand the allowed forms of functions that are treated as
          --  build-in-place.
 
-         elsif Ada_Version >= Ada_2005
-           and then Is_Build_In_Place_Function_Call (Expr_Q)
-         then
+         elsif Is_Build_In_Place_Function_Call (Expr_Q) then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
 
             --  The previous call expands the expression initializing the
@@ -6306,9 +6315,7 @@ package body Exp_Ch3 is
          --  in-place object to reference the secondary dispatch table of a
          --  covered interface type.
 
-         elsif Ada_Version >= Ada_2005
-           and then Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
-         then
+         elsif Present (Unqual_BIP_Iface_Function_Call (Expr_Q)) then
             Make_Build_In_Place_Iface_Call_In_Object_Declaration (N, Expr_Q);
 
             --  The previous call expands the expression initializing the
@@ -6606,13 +6613,19 @@ package body Exp_Ch3 is
             --  the target is adjusted after the copy and attached to the
             --  finalization list. However, no adjustment is done in the case
             --  where the object was initialized by a call to a function whose
-            --  result is built in place, since no copy occurred. (Eventually
-            --  we plan to support in-place function results for some cases
-            --  of nonlimited types. ???) Similarly, no adjustment is required
-            --  if we are going to rewrite the object declaration into a
-            --  renaming declaration.
+            --  result is built in place, since no copy occurred. Similarly, no
+            --  adjustment is required if we are going to rewrite the object
+            --  declaration into a renaming declaration.
 
-            if Needs_Finalization (Typ)
+            if Is_Build_In_Place_Result_Type (Typ)
+              and then Nkind (Parent (N)) = N_Extended_Return_Statement
+              and then not Is_Definite_Subtype
+                (Etype (Return_Applies_To
+                         (Return_Statement_Entity (Parent (N)))))
+            then
+               null;
+
+            elsif Needs_Finalization (Typ)
               and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
@@ -6744,9 +6757,9 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         --  Cases where the back end cannot handle the initialization directly
-         --  In such cases, we expand an assignment that will be appropriately
-         --  handled by Expand_N_Assignment_Statement.
+         --  Cases where the back end cannot handle the initialization
+         --  directly. In such cases, we expand an assignment that will
+         --  be appropriately handled by Expand_N_Assignment_Statement.
 
          --  The exclusion of the unconstrained case is wrong, but for now it
          --  is too much trouble ???

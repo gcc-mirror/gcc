@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"container/heap"
 	"debug/elf"
+	"debug/xcoff"
 	"errors"
 	"flag"
 	"fmt"
@@ -745,9 +746,13 @@ func (b *Builder) Init() {
 func readpkglist(shlibpath string) (pkgs []*load.Package) {
 	var stk load.ImportStack
 	if cfg.BuildToolchainName == "gccgo" {
-		f, _ := elf.Open(shlibpath)
-		sect := f.Section(".go_export")
-		data, _ := sect.Data()
+		var data []byte
+		if f, err := elf.Open(shlibpath); err == nil {
+			sect := f.Section(".go_export")
+			data, _ = sect.Data()
+		} else if f, err := xcoff.Open(shlibpath); err == nil {
+			data = f.CSect(".go_export")
+		}
 		scanner := bufio.NewScanner(bytes.NewBuffer(data))
 		for scanner.Scan() {
 			t := scanner.Text()
@@ -1815,6 +1820,7 @@ func (b *Builder) cover(a *Action, dst, src string, perm os.FileMode, varName st
 
 var objectMagic = [][]byte{
 	{'!', '<', 'a', 'r', 'c', 'h', '>', '\n'}, // Package archive
+	{'<', 'b', 'i', 'g', 'a', 'f', '>', '\n'}, // Package archive (AIX format)
 	{'\x7F', 'E', 'L', 'F'},                   // ELF
 	{0xFE, 0xED, 0xFA, 0xCE},                  // Mach-O big-endian 32-bit
 	{0xFE, 0xED, 0xFA, 0xCF},                  // Mach-O big-endian 64-bit
@@ -1824,6 +1830,8 @@ var objectMagic = [][]byte{
 	{0x00, 0x00, 0x01, 0xEB},                  // Plan 9 i386
 	{0x00, 0x00, 0x8a, 0x97},                  // Plan 9 amd64
 	{0x00, 0x00, 0x06, 0x47},                  // Plan 9 arm
+	{0x01, 0xDF},                              // XCOFF32
+	{0x01, 0xF7},                              // XCOFF64
 }
 
 func isObject(s string) bool {
@@ -3308,6 +3316,10 @@ func (b *Builder) gccArchArgs() []string {
 		return []string{"-mabi=64"}
 	case "mips", "mipsle":
 		return []string{"-mabi=32", "-march=mips32"}
+	case "ppc64":
+		if cfg.Goos == "aix" {
+			return []string{"-maix64"}
+		}
 	}
 	return nil
 }

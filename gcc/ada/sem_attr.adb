@@ -47,7 +47,7 @@ with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
-with Sdefault; use Sdefault;
+with Sdefault;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -11089,7 +11089,7 @@ package body Sem_Attr is
                      and then Is_Overloadable (Entity (P)))
               and then not (Nkind (P) = N_Selected_Component
                              and then
-                            Is_Overloadable (Entity (Selector_Name (P))))
+                               Is_Overloadable (Entity (Selector_Name (P))))
               and then not Is_Aliased_View (P)
               and then not In_Instance
               and then not In_Inlined_Body
@@ -11796,6 +11796,15 @@ package body Sem_Attr is
                Check_Restriction (No_Dispatching_Calls, N);
             end if;
       end case;
+
+      --  Mark use clauses of the original prefix if the attribute is applied
+      --  to an entity.
+
+      if Nkind (Original_Node (P)) in N_Has_Entity
+        and then Present (Entity (Original_Node (P)))
+      then
+         Mark_Use_Clauses (Original_Node (P));
+      end if;
 
       --  Normally the Freezing is done by Resolve but sometimes the Prefix
       --  is not resolved, in which case the freezing must be done now.

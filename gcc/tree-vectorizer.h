@@ -790,7 +790,11 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
 struct dataref_aux {
+  /* The misalignment in bytes of the reference, or -1 if not known.  */
   int misalignment;
+  /* The byte alignment that we'd ideally like the reference to have,
+     and the value that misalignment is measured against.  */
+  int target_alignment;
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
   tree base_decl;
@@ -1037,7 +1041,11 @@ dr_misalignment (struct data_reference *dr)
 #define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 #define DR_MISALIGNMENT_UNKNOWN (-1)
 
-/* Return TRUE if the data access is aligned, and FALSE otherwise.  */
+/* Only defined once DR_MISALIGNMENT is defined.  */
+#define DR_TARGET_ALIGNMENT(DR) DR_VECT_AUX (DR)->target_alignment
+
+/* Return true if data access DR is aligned to its target alignment
+   (which may be less than a full vector).  */
 
 static inline bool
 aligned_access_p (struct data_reference *data_ref_info)
@@ -1052,6 +1060,19 @@ static inline bool
 known_alignment_for_access_p (struct data_reference *data_ref_info)
 {
   return (DR_MISALIGNMENT (data_ref_info) != DR_MISALIGNMENT_UNKNOWN);
+}
+
+/* Return the minimum alignment in bytes that the vectorized version
+   of DR is guaranteed to have.  */
+
+static inline unsigned int
+vect_known_alignment_in_bytes (struct data_reference *dr)
+{
+  if (DR_MISALIGNMENT (dr) == DR_MISALIGNMENT_UNKNOWN)
+    return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr)));
+  if (DR_MISALIGNMENT (dr) == 0)
+    return DR_TARGET_ALIGNMENT (dr);
+  return DR_MISALIGNMENT (dr) & -DR_MISALIGNMENT (dr);
 }
 
 /* Return the behavior of DR with respect to the vectorization context
@@ -1093,6 +1114,19 @@ vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 		       % TYPE_VECTOR_SUBPARTS (vectype) == 0);
   return (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 	  / TYPE_VECTOR_SUBPARTS (vectype));
+}
+
+/* Return the size of the value accessed by unvectorized data reference DR.
+   This is only valid once STMT_VINFO_VECTYPE has been calculated for the
+   associated gimple statement, since that guarantees that DR accesses
+   either a scalar or a scalar equivalent.  ("Scalar equivalent" here
+   includes things like V1SI, which can be vectorized in the same way
+   as a plain SI.)  */
+
+inline unsigned int
+vect_get_scalar_dr_size (struct data_reference *dr)
+{
+  return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
 }
 
 /* Source location */

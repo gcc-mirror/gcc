@@ -1,6 +1,7 @@
 ! PR tree-optimization/29581
 ! { dg-do run }
-! { dg-options "-O2 -ftree-loop-linear" }
+! { dg-skip-if "" { *-*-* } { "-O0" } { "" } }
+! { dg-additional-options "-ftree-loop-linear" }
 
       SUBROUTINE FOO (K)
       INTEGER I, J, K, A(5,5), B

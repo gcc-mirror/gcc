@@ -629,6 +629,22 @@ new_string_literal (const char *value)
   return new rvalue (this, t_addr);
 }
 
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector.  */
+
+playback::rvalue *
+playback::context::new_rvalue_from_vector (location *,
+					   type *type,
+					   const auto_vec<rvalue *> &elements)
+{
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, elements.length ());
+  for (unsigned i = 0; i < elements.length (); ++i)
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elements[i]->as_tree ());
+  tree t_ctor = build_constructor (type->as_tree (), v);
+  return new rvalue (this, t_ctor);
+}
+
 /* Coerce a tree expression into a boolean tree expression.  */
 
 tree
@@ -1354,6 +1370,20 @@ new_block (const char *name)
   block *result = new playback::block (this, name);
   m_blocks.safe_push (result);
   return result;
+}
+
+/* Construct a playback::rvalue instance wrapping an ADDR_EXPR for
+   this playback::function.  */
+
+playback::rvalue *
+playback::function::get_address (location *loc)
+{
+  tree t_fndecl = as_fndecl ();
+  tree t_fntype = TREE_TYPE (t_fndecl);
+  tree t_fnptr = build1 (ADDR_EXPR, build_pointer_type (t_fntype), t_fndecl);
+  if (loc)
+    m_ctxt->set_tree_location (t_fnptr, loc);
+  return new rvalue (m_ctxt, t_fnptr);
 }
 
 /* Build a statement list for the function as a whole out of the

@@ -808,8 +808,6 @@ private
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is
      new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
-   use HT_Types;
-
    Empty_Map : constant Map := (Capacity => 0, Modulus => 0, others => <>);
 
 end Ada.Containers.Formal_Hashed_Maps;

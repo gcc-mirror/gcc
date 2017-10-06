@@ -1,3 +1,56 @@
+2017-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/to_chars/1.cc: Add dg-require-string-conversions.
+
+2017-10-04  Petr Ovtchenkov  <ptr@void-ptr.info>
+	    François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/streambuf_iterator.h
+	(istreambuf_iterator<>::operator*()): Do not capture iterator state
+	in Debug assertion.
+	(istreambuf_iterator<>::operator++()): Likewise and remove _M_sbuf check.
+	(istreambuf_iterator<>::operator++(int)): Likewise.
+	(istreambuf_iterator<>::_M_get()): Remove _M_c assignment.
+	(istreambuf_iterator<>::_S_is_eof()): New.
+	(istreambuf_iterator<>::_M_at_eof()): Adapt, use latter.
+	(find(istreambuf_iterator<>, istreambuf_iterator<>, _CharT)):
+	Return an iterator with _M_c set to eof to capture streambuf state
+	on evaluation.
+	(testsuite/24_iterators/istreambuf_iterator/2.cc): Add checks.
+
+2017-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (__unsigned_least_t): Fix number of closing >s for
+	!_GLIBCXX_USE_INT128.
+
+2017-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new <charconv> header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include <charconv>.
+	* include/std/charconv: New file.
+	(to_chars_result, to_chars, from_chars_result, from_chars): Define.
+	* testsuite/20_util/from_chars/1.cc: New test.
+	* testsuite/20_util/from_chars/1_neg.cc: New test.
+	* testsuite/20_util/from_chars/2.cc: New test.
+	* testsuite/20_util/from_chars/requirements.cc: New test.
+	* testsuite/20_util/to_chars/1.cc: New test.
+	* testsuite/20_util/to_chars/1_neg.cc: New test.
+	* testsuite/20_util/to_chars/2.cc: New test.
+	* testsuite/20_util/to_chars/requirements.cc: New test.
+
+2017-09-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/22_locale/money_get/get/char/22131.cc: Make test less
+	istreambuf_iterator implementation dependent.
+	* testsuite/22_locale/money_get/get/wchar_t/22131.cc: Likewise.
+
+2017-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/81854
+	* src/c++98/complex_io.cc (_GLIBCXX_LDBL_COMPAT): Declare alias
+	target as a C++ function with no prototype.
+
 2017-09-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/clamp/1.cc: Fix order of arguments and

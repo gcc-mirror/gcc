@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch6;  use Exp_Ch6;
+with Exp_Ch6;
 with Exp_Imgv; use Exp_Imgv;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;

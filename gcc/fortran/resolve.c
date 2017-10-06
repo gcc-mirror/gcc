@@ -8530,7 +8530,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
-      if (!sym->ts.u.cl->length)
+      if (!sym->ts.u.cl->length && !sym->ts.deferred)
 	sym->ts.u.cl->length
 	  = gfc_get_int_expr (gfc_default_integer_kind,
 			      NULL, target->value.character.length);
@@ -11131,11 +11131,8 @@ start:
 
 	    /* Assigning a class object always is a regular assign.  */
 	    if (code->expr2->ts.type == BT_CLASS
+		&& code->expr1->ts.type == BT_CLASS
 		&& !CLASS_DATA (code->expr2)->attr.dimension
-		&& !(UNLIMITED_POLY (code->expr2)
-		     && code->expr1->ts.type == BT_DERIVED
-		     && (code->expr1->ts.u.derived->attr.sequence
-			 || code->expr1->ts.u.derived->attr.is_bind_c))
 		&& !(gfc_expr_attr (code->expr1).proc_pointer
 		     && code->expr2->expr_type == EXPR_VARIABLE
 		     && code->expr2->symtree->n.sym->attr.flavor

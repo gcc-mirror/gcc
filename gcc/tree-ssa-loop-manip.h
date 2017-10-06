@@ -28,13 +28,13 @@ extern void rewrite_into_loop_closed_ssa_1 (bitmap, unsigned, int,
 					    struct loop *);
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 extern void rewrite_virtuals_into_loop_closed_ssa (struct loop *);
-extern void verify_loop_closed_ssa (bool);
+extern void verify_loop_closed_ssa (bool, struct loop * = NULL);
 
 static inline void
-checking_verify_loop_closed_ssa (bool verify_ssa_p)
+checking_verify_loop_closed_ssa (bool verify_ssa_p, struct loop *loop = NULL)
 {
   if (flag_checking)
-    verify_loop_closed_ssa (verify_ssa_p);
+    verify_loop_closed_ssa (verify_ssa_p, loop);
 }
 
 extern basic_block split_loop_exit_edge (edge);

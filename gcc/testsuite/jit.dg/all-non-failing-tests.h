@@ -71,6 +71,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-returning-function-ptr.c */
+#define create_code create_code_calling_internal_function
+#define verify_code verify_code_calling_internal_function
+#include "test-returning-function-ptr.c"
+#undef create_code
+#undef verify_code
+
 /* test-compound-assignment.c */
 #define create_code create_code_compound_assignment
 #define verify_code verify_code_compound_assignment
@@ -283,6 +290,9 @@ const struct testcase testcases[] = {
   {"calling_function_ptr",
    create_code_calling_function_ptr,
    verify_code_calling_function_ptr},
+  {"calling_internal_function",
+   create_code_calling_internal_function,
+   verify_code_calling_internal_function},
   {"compound_assignment",
    create_code_compound_assignment,
    verify_code_compound_assignment},

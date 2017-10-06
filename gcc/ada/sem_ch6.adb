@@ -568,8 +568,11 @@ package body Sem_Ch6 is
          --  Note that we cannot defer this freezing to the analysis of the
          --  expression itself, because a freeze node might appear in a nested
          --  scope, leading to an elaboration order issue in gigi.
+         --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
-         Freeze_Expr_Types (Def_Id);
+         if not Inside_A_Generic then
+            Freeze_Expr_Types (Def_Id);
+         end if;
 
          --  For navigation purposes, indicate that the function is a body
 
@@ -1498,6 +1501,7 @@ package body Sem_Ch6 is
       end;
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -4357,6 +4361,7 @@ package body Sem_Ch6 is
       --  Deal with end of scope processing for the body
 
       Process_End_Label (HSS, 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  If we are compiling an entry wrapper, remove the enclosing
