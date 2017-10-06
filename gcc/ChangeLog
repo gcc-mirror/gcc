@@ -1,3 +1,10 @@
+2017-10-06  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82440
+	* config/aarch64/predicates.md (aarch64_reg_or_orr_imm): Only call
+	aarch64_simd_valid_immediate on CONST_VECTORs.
+	(aarch64_reg_or_bic_imm): Likewise.
+
 2017-10-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/82396
