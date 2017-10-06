@@ -1,5 +1,10 @@
 2017-10-06  Nathan Sidwell  <nathan@acm.org>
 
+	Use hash_table for extern "C" names
+	* name-lookup.c (extern_c_fns): Use hash_table.
+	(check_extern_c_conflict): Adjust.
+	(c_linkage_bindings): Adjust.
+
 	Use hash_table for namespace bindings
 	* cp-tree.h (struct named_decl_hash): New.
 	(lang_decl_ns): Change type of bindings field.
