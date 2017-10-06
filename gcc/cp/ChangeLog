@@ -1,3 +1,9 @@
+2017-10-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82424
+	* name-lookup.c (check_local_shadow): Don't try and convert
+	dependent types.
+
 2017-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82299
