@@ -8527,7 +8527,10 @@ convert_for_assignment (tree type, tree rhs,
     {
       tree elt = CONSTRUCTOR_ELT (rhs, 0)->value;
       if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
-	rhs = cp_build_c_cast (type, elt, complain);
+	{
+	  warning_sentinel w (warn_useless_cast);
+	  rhs = cp_build_c_cast (type, elt, complain);
+	}
       else
 	rhs = error_mark_node;
     }
