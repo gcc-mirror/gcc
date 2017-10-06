@@ -1,5 +1,7 @@
 2017-10-06  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r253485.
+
 	gcc/cp/
 	* cp-tree.h (struct default_hash_traits <lang_identifier *>):
 	Delete specialization.

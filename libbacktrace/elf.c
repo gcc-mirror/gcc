@@ -1031,11 +1031,12 @@ elf_zlib_failed(void)
 
 static int
 elf_zlib_fetch (const unsigned char **ppin, const unsigned char *pinend,
-		uint32_t *pval, unsigned int *pbits)
+		uint64_t *pval, unsigned int *pbits)
 {
   unsigned int bits;
   const unsigned char *pin;
-  uint32_t val;
+  uint64_t val;
+  uint32_t next;
 
   bits = *pbits;
   if (bits >= 15)
@@ -1043,20 +1044,25 @@ elf_zlib_fetch (const unsigned char **ppin, const unsigned char *pinend,
   pin = *ppin;
   val = *pval;
 
-  if (unlikely (pinend - pin < 2))
+  if (unlikely (pinend - pin < 4))
     {
       elf_zlib_failed ();
       return 0;
     }
-  val |= pin[0] << bits;
-  val |= pin[1] << (bits + 8);
-  bits += 16;
-  pin += 2;
 
-  /* We will need the next two bytes soon.  We ask for high temporal
-     locality because we will need the whole cache line soon.  */
-  __builtin_prefetch (pin, 0, 3);
-  __builtin_prefetch (pin + 1, 0, 3);
+  /* We've ensured that PIN is aligned.  */
+  next = *(const uint32_t *)pin;
+
+#if __BYTE_ORDER == __ORDER_BIG_ENDIAN
+  next = __builtin_bswap32 (next);
+#endif
+
+  val |= (uint64_t)next << bits;
+  bits += 32;
+  pin += 4;
+
+  /* We will need the next four bytes soon.  */
+  __builtin_prefetch (pin, 0, 0);
 
   *ppin = pin;
   *pval = val;
@@ -1566,7 +1572,7 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
   poutend = pout + sout;
   while ((pinend - pin) > 4)
     {
-      uint32_t val;
+      uint64_t val;
       unsigned int bits;
       int last;
 
@@ -1601,10 +1607,19 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 	}
       pin += 2;
 
-      /* Read blocks until one is marked last.  */
+      /* Align PIN to a 32-bit boundary.  */
 
       val = 0;
       bits = 0;
+      while ((((uintptr_t) pin) & 3) != 0)
+	{
+	  val |= (uint64_t)*pin << bits;
+	  bits += 8;
+	  ++pin;
+	}
+
+      /* Read blocks until one is marked last.  */
+
       last = 0;
 
       while (!last)
@@ -1670,6 +1685,14 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 	      memcpy (pout, pin, len);
 	      pout += len;
 	      pin += len;
+
+	      /* Align PIN.  */
+	      while ((((uintptr_t) pin) & 3) != 0)
+		{
+		  val |= (uint64_t)*pin << bits;
+		  bits += 8;
+		  ++pin;
+		}
 
 	      /* Go around to read the next block.  */
 	      continue;

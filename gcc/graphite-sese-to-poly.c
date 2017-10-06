@@ -299,11 +299,18 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       return res;
 
     CASE_CONVERT:
-      res = extract_affine (s, TREE_OPERAND (e, 0), space);
-      /* signed values, even if overflow is undefined, get modulo-reduced.  */
-      if (! TYPE_UNSIGNED (type))
-	res = wrap (res, TYPE_PRECISION (type) - 1);
-      break;
+      {
+	tree itype = TREE_TYPE (TREE_OPERAND (e, 0));
+	res = extract_affine (s, TREE_OPERAND (e, 0), space);
+	/* Signed values, even if overflow is undefined, get modulo-reduced.
+	   But only if not all values of the old type fit in the new.  */
+	if (! TYPE_UNSIGNED (type)
+	    && ((TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (e, 0)))
+		 && TYPE_PRECISION (type) <= TYPE_PRECISION (itype))
+		|| TYPE_PRECISION (type) < TYPE_PRECISION (itype)))
+	  res = wrap (res, TYPE_PRECISION (type) - 1);
+	break;
+      }
 
     case NON_LVALUE_EXPR:
       res = extract_affine (s, TREE_OPERAND (e, 0), space);

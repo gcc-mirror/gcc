@@ -1,3 +1,90 @@
+2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60153
+	* g++.dg/cpp0x/variadic-crash3.C: New.
+
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82434
+	* gcc.dg/store_merging_9.c: New test.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82397
+	* gfortran.dg/pr82397.f: New testcase.
+
+2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82322
+	* gcc.target/s390/zvector/pr82322.c: New test.
+
+2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82317
+	* gcc.target/s390/zvector/pr82317.c: New test.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82422
+	* gcc.dg/graphite/pr82422.c: New testcase.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82421
+	* gcc.dg/graphite/pr82421.c: New testcase.
+
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-c++-common/Wtautological-compare-6.c: New test.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/id-15.c: No longer expect a code generation error.
+	* gcc.dg/graphite/id-16.c: Likewise.
+	* gcc.dg/graphite/pr46168.c: Likewise.
+	* gcc.dg/graphite/pr68756.c: Likewise.
+	* gcc.dg/graphite/pr69728.c: Likewise.
+	* gcc.dg/graphite/pr71575-2.c: Likewise.
+	* gcc.dg/graphite/pr77362.c: Likewise.
+	* gcc.dg/graphite/pr81373.c: Likewise.
+	* gcc.dg/graphite/run-id-pr67700-1.c: Likewise.
+	* gfortran.dg/graphite/interchange-1.f: Likewise.
+	* gfortran.dg/graphite/pr42334-1.f: Likewise.
+	* gfortran.dg/graphite/pr42393-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42393.f90: Likewise.
+	* gfortran.dg/graphite/pr47019.f: Likewise.
+	* gfortran.dg/graphite/id-17.f: Likewise.
+	* gfortran.dg/graphite/id-19.f: Likewise.
+	* gfortran.dg/graphite/run-id-2.f90: Likewise.
+	* gfortran.dg/graphite/pr42326-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42326.f90: Likewise.
+	* gfortran.dg/graphite/pr68550-2.f90: Likewise.
+	* gfortran.dg/graphite/pr29581.f90: Likewise.  No longer expect
+	a code generation error.
+	* gfortran.dg/graphite/run-id-3.f90: Likewise.
+	* gfortran.dg/graphite/pr29832.f90: Likewise.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82436
+	* gcc.dg/vect/pr82436.c: New testcase.
+
+2017-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/Wincompatible-pointer-types-1.c: New test.
+
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/slp-perm-9.c: Use vect_sizes_16B_8B.
+	* lib/target-supports.exp (vect_sizes_16B_8B): New.
+
+2017-10-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-align-1.c: Fix vect_hw_misalign condition.
+	* gcc.dg/vect/vect-align-2.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-1.c: Likewise
+
 2017-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/warn/mvp.C: New.

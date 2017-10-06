@@ -1257,7 +1257,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
 
       Type* td_type = Type::make_type_descriptor_type();
       Btype* td_btype = td_type->get_backend(gogo);
-      const char *name = "__go_tdn_unsafe.Pointer";
+      std::string name = gogo->type_descriptor_name(this, nt);
       std::string asm_name(go_selectively_encode_id(name));
       this->type_descriptor_var_ =
 	  gogo->backend()->immutable_struct_reference(name, asm_name,
@@ -1269,7 +1269,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
       return;
     }
 
-  std::string var_name = this->type_descriptor_var_name(gogo, nt);
+  std::string var_name = gogo->type_descriptor_name(this, nt);
 
   // Build the contents of the type descriptor.
   Expression* initializer = this->do_type_descriptor(gogo, NULL);
@@ -1329,56 +1329,6 @@ Type::make_type_descriptor_var(Gogo* gogo)
 					     var_name, false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
-}
-
-// Return the name of the type descriptor variable.  If NT is not
-// NULL, use it to get the name.  Otherwise this is an unnamed type.
-
-std::string
-Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
-{
-  if (nt == NULL)
-    return "__go_td_" + this->mangled_name(gogo);
-
-  Named_object* no = nt->named_object();
-  unsigned int index;
-  const Named_object* in_function = nt->in_function(&index);
-  std::string ret = "__go_tdn_";
-  if (nt->is_builtin())
-    go_assert(in_function == NULL);
-  else
-    {
-      const std::string& pkgpath(no->package() == NULL
-				 ? gogo->pkgpath_symbol()
-				 : no->package()->pkgpath_symbol());
-      ret.append(pkgpath);
-      ret.append(1, '.');
-      if (in_function != NULL)
-	{
-	  const Typed_identifier* rcvr =
-	    in_function->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    {
-	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
-	      ret.append(Gogo::unpack_hidden_name(rcvr_type->name()));
-	      ret.append(1, '.');
-	    }
-	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
-	  ret.append(1, '.');
-	  if (index > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", index);
-	      ret.append(buf);
-	      ret.append(1, '.');
-	    }
-	}
-    }
-
-  std::string mname(Gogo::mangle_possibly_hidden_name(no->name()));
-  ret.append(mname);
-
-  return ret;
 }
 
 // Return true if this type descriptor is defined in a different
@@ -1967,48 +1917,9 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
       return;
     }
 
-  std::string base_name;
-  if (name == NULL)
-    {
-      // Mangled names can have '.' if they happen to refer to named
-      // types in some way.  That's fine if this is simply a named
-      // type, but otherwise it will confuse the code that builds
-      // function identifiers.  Remove '.' when necessary.
-      base_name = this->mangled_name(gogo);
-      size_t i;
-      while ((i = base_name.find('.')) != std::string::npos)
-	base_name[i] = '$';
-      base_name = gogo->pack_hidden_name(base_name, false);
-    }
-  else
-    {
-      // This name is already hidden or not as appropriate.
-      base_name = name->name();
-      unsigned int index;
-      const Named_object* in_function = name->in_function(&index);
-      if (in_function != NULL)
-	{
-	  base_name.append(1, '$');
-	  const Typed_identifier* rcvr =
-	    in_function->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    {
-	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
-	      base_name.append(Gogo::unpack_hidden_name(rcvr_type->name()));
-	      base_name.append(1, '$');
-	    }
-	  base_name.append(Gogo::unpack_hidden_name(in_function->name()));
-	  if (index > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", index);
-	      base_name += '$';
-	      base_name += buf;
-	    }
-	}
-    }
-  std::string hash_name = base_name + "$hash";
-  std::string equal_name = base_name + "$equal";
+  std::string hash_name;
+  std::string equal_name;
+  gogo->specific_type_function_names(this, name, &hash_name, &equal_name);
 
   Location bloc = Linemap::predeclared_location();
 
@@ -2525,7 +2436,7 @@ Type::make_gc_symbol_var(Gogo* gogo)
       return;
     }
 
-  std::string sym_name = this->type_descriptor_var_name(gogo, nt) + "$gc";
+  std::string sym_name = gogo->gc_symbol_name(this);
 
   // Build the contents of the gc symbol.
   Expression* sym_init = this->gcprog_constructor(gogo, ptrsize, ptrdata);
@@ -2818,7 +2729,8 @@ Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
       // This can happen in error cases.  Just build an empty gcbits.
       go_assert(saw_errors());
     }
-  std::string sym_name = "runtime.gcbits." + ptrmask.symname();
+
+  std::string sym_name = gogo->ptrmask_symbol_name(ptrmask.symname());
   Bvariable* bvnull = NULL;
   std::pair<GC_gcbits_vars::iterator, bool> ins =
     Type::gc_gcbits_vars.insert(std::make_pair(sym_name, bvnull));
@@ -3462,21 +3374,6 @@ Type::reflection(Gogo* gogo) const
   return ret;
 }
 
-// Return a mangled name for the type.
-
-std::string
-Type::mangled_name(Gogo* gogo) const
-{
-  std::string ret;
-
-  // The do_mangled_name virtual function should set RET to the
-  // mangled name.  For a composite type it should append a code for
-  // the composition and then call do_mangled_name on the components.
-  this->do_mangled_name(gogo, &ret);
-
-  return ret;
-}
-
 // Return whether the backend size of the type is known.
 
 bool
@@ -3796,37 +3693,32 @@ Type::import_type(Import* imp)
     }
 }
 
-// A type used to indicate a parsing error.  This exists to simplify
-// later error detection.
+// Class Error_type.
 
-class Error_type : public Type
+// Return the backend representation of an Error type.
+
+Btype*
+Error_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Error_type()
-    : Type(TYPE_ERROR)
-  { }
+  return gogo->backend()->error_type();
+}
 
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return false; }
+// Return an expression for the type descriptor for an error type.
 
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->error_type(); }
 
-  Expression*
-  do_type_descriptor(Gogo*, Named_type*)
-  { return Expression::make_error(Linemap::predeclared_location()); }
+Expression*
+Error_type::do_type_descriptor(Gogo*, Named_type*)
+{
+  return Expression::make_error(Linemap::predeclared_location());
+}
 
-  void
-  do_reflection(Gogo*, std::string*) const
-  { go_assert(saw_errors()); }
+// We should not be asked for the reflection string for an error type.
 
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('E'); }
-};
+void
+Error_type::do_reflection(Gogo*, std::string*) const
+{
+  go_assert(saw_errors());
+}
 
 Type*
 Type::make_error_type()
@@ -3835,36 +3727,15 @@ Type::make_error_type()
   return &singleton_error_type;
 }
 
-// The void type.
+// Class Void_type.
 
-class Void_type : public Type
+// Get the backend representation of a void type.
+
+Btype*
+Void_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Void_type()
-    : Type(TYPE_VOID)
-  { }
-
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return false; }
-
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->void_type(); }
-
-  Expression*
-  do_type_descriptor(Gogo*, Named_type*)
-  { go_unreachable(); }
-
-  void
-  do_reflection(Gogo*, std::string*) const
-  { }
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('v'); }
-};
+  return gogo->backend()->void_type();
+}
 
 Type*
 Type::make_void_type()
@@ -3873,36 +3744,15 @@ Type::make_void_type()
   return &singleton_void_type;
 }
 
-// The boolean type.
+// Class Boolean_type.
 
-class Boolean_type : public Type
+// Return the backend representation of the boolean type.
+
+Btype*
+Boolean_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Boolean_type()
-    : Type(TYPE_BOOLEAN)
-  { }
-
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return true; }
-
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->bool_type(); }
-
-  Expression*
-  do_type_descriptor(Gogo*, Named_type* name);
-
-  // We should not be asked for the reflection string of a basic type.
-  void
-  do_reflection(Gogo*, std::string* ret) const
-  { ret->append("bool"); }
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('b'); }
-};
+  return gogo->backend()->bool_type();
+}
 
 // Make the type descriptor.
 
@@ -4069,19 +3919,6 @@ Integer_type::do_reflection(Gogo*, std::string*) const
   go_assert(saw_errors());
 }
 
-// Mangled name.
-
-void
-Integer_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  char buf[100];
-  snprintf(buf, sizeof buf, "i%s%s%de",
-	   this->is_abstract_ ? "a" : "",
-	   this->is_unsigned_ ? "u" : "",
-	   this->bits_);
-  ret->append(buf);
-}
-
 // Make an integer type.
 
 Named_type*
@@ -4204,18 +4041,6 @@ Float_type::do_reflection(Gogo*, std::string*) const
   go_assert(saw_errors());
 }
 
-// Mangled name.
-
-void
-Float_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  char buf[100];
-  snprintf(buf, sizeof buf, "f%s%de",
-	   this->is_abstract_ ? "a" : "",
-	   this->bits_);
-  ret->append(buf);
-}
-
 // Make a floating point type.
 
 Named_type*
@@ -4331,18 +4156,6 @@ Complex_type::do_reflection(Gogo*, std::string*) const
   go_assert(saw_errors());
 }
 
-// Mangled name.
-
-void
-Complex_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  char buf[100];
-  snprintf(buf, sizeof buf, "c%s%de",
-	   this->is_abstract_ ? "a" : "",
-	   this->bits_);
-  ret->append(buf);
-}
-
 // Make a complex type.
 
 Named_type*
@@ -4426,14 +4239,6 @@ void
 String_type::do_reflection(Gogo*, std::string* ret) const
 {
   ret->append("string");
-}
-
-// Mangled name of a string type.
-
-void
-String_type::do_mangled_name(Gogo*, std::string* ret) const
-{
-  ret->push_back('z');
 }
 
 // Make a string type.
@@ -5082,46 +4887,6 @@ Function_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
 }
 
-// Mangled name.
-
-void
-Function_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('F');
-
-  if (this->receiver_ != NULL)
-    {
-      ret->push_back('m');
-      this->append_mangled_name(this->receiver_->type(), gogo, ret);
-    }
-
-  const Typed_identifier_list* params = this->parameters();
-  if (params != NULL)
-    {
-      ret->push_back('p');
-      for (Typed_identifier_list::const_iterator p = params->begin();
-	   p != params->end();
-	   ++p)
-	this->append_mangled_name(p->type(), gogo, ret);
-      if (this->is_varargs_)
-	ret->push_back('V');
-      ret->push_back('e');
-    }
-
-  const Typed_identifier_list* results = this->results();
-  if (results != NULL)
-    {
-      ret->push_back('r');
-      for (Typed_identifier_list::const_iterator p = results->begin();
-	   p != results->end();
-	   ++p)
-	this->append_mangled_name(p->type(), gogo, ret);
-      ret->push_back('e');
-    }
-
-  ret->push_back('e');
-}
-
 // Export a function type.
 
 void
@@ -5484,13 +5249,6 @@ Pointer_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->to_type_, gogo, ret);
 }
 
-void
-Pointer_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('p');
-  this->append_mangled_name(this->to_type_, gogo, ret);
-}
-
 // Export.
 
 void
@@ -5572,38 +5330,16 @@ Type::finish_pointer_types(Gogo* gogo)
     }
 }
 
-// The nil type.  We use a special type for nil because it is not the
-// same as any other type.  In C term nil has type void*, but there is
-// no such type in Go.
+// Class Nil_type.
 
-class Nil_type : public Type
+// Get the backend representation of a nil type.  FIXME: Is this ever
+// actually called?
+
+Btype*
+Nil_type::do_get_backend(Gogo* gogo)
 {
- public:
-  Nil_type()
-    : Type(TYPE_NIL)
-  { }
-
- protected:
-  bool
-  do_compare_is_identity(Gogo*)
-  { return false; }
-
-  Btype*
-  do_get_backend(Gogo* gogo)
-  { return gogo->backend()->pointer_type(gogo->backend()->void_type()); }
-
-  Expression*
-  do_type_descriptor(Gogo*, Named_type*)
-  { go_unreachable(); }
-
-  void
-  do_reflection(Gogo*, std::string*) const
-  { go_unreachable(); }
-
-  void
-  do_mangled_name(Gogo*, std::string* ret) const
-  { ret->push_back('n'); }
-};
+  return gogo->backend()->pointer_type(gogo->backend()->void_type());
+}
 
 // Make the nil type.
 
@@ -6690,74 +6426,6 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
     ret->push_back(' ');
 
   ret->push_back('}');
-}
-
-// Mangled name.
-
-void
-Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('S');
-
-  const Struct_field_list* fields = this->fields_;
-  if (fields != NULL)
-    {
-      for (Struct_field_list::const_iterator p = fields->begin();
-	   p != fields->end();
-	   ++p)
-	{
-	  if (p->is_anonymous())
-	    ret->append("0_");
-	  else
-            {
-
-              std::string n(Gogo::mangle_possibly_hidden_name(p->field_name()));
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "%u_",
-		       static_cast<unsigned int>(n.length()));
-	      ret->append(buf);
-	      ret->append(n);
-	    }
-
-	  // For an anonymous field with an alias type, the field name
-	  // is the alias name.
-	  if (p->is_anonymous()
-	      && p->type()->named_type() != NULL
-	      && p->type()->named_type()->is_alias())
-	    p->type()->named_type()->append_mangled_type_name(gogo, true, ret);
-	  else
-	    this->append_mangled_name(p->type(), gogo, ret);
-	  if (p->has_tag())
-	    {
-	      const std::string& tag(p->tag());
-	      std::string out;
-	      for (std::string::const_iterator p = tag.begin();
-		   p != tag.end();
-		   ++p)
-		{
-		  if (ISALNUM(*p) || *p == '_')
-		    out.push_back(*p);
-		  else
-		    {
-		      char buf[20];
-		      snprintf(buf, sizeof buf, ".%x.",
-			       static_cast<unsigned int>(*p));
-		      out.append(buf);
-		    }
-		}
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "T%u_",
-		       static_cast<unsigned int>(out.length()));
-	      ret->append(buf);
-	      ret->append(out);
-	    }
-	}
-    }
-
-  if (this->is_struct_incomparable_)
-    ret->push_back('x');
-
-  ret->push_back('e');
 }
 
 // If the offset of field INDEX in the backend implementation can be
@@ -7951,37 +7619,6 @@ Array_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->element_type_, gogo, ret);
 }
 
-// Mangled name.
-
-void
-Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('A');
-  this->append_mangled_name(this->element_type_, gogo, ret);
-  if (this->length_ != NULL)
-    {
-      Numeric_constant nc;
-      if (!this->length_->numeric_constant_value(&nc))
-	{
-	  go_assert(saw_errors());
-	  return;
-	}
-      mpz_t val;
-      if (!nc.to_int(&val))
-	{
-	  go_assert(saw_errors());
-	  return;
-	}
-      char *s = mpz_get_str(NULL, 10, val);
-      ret->append(s);
-      free(s);
-      mpz_clear(val);
-      if (this->is_array_incomparable_)
-	ret->push_back('x');
-    }
-  ret->push_back('e');
-}
-
 // Make an array type.
 
 Array_type*
@@ -8037,8 +7674,8 @@ Map_type::fat_zero_value(Gogo* gogo)
       Array_type* array_type = Type::make_array_type(uint8_type, size);
       array_type->set_is_array_incomparable();
       Variable* var = new Variable(array_type, NULL, true, false, false, bloc);
-      Map_type::zero_value = Named_object::make_variable("go$zerovalue", NULL,
-							 var);
+      std::string name = gogo->map_zero_value_name();
+      Map_type::zero_value = Named_object::make_variable(name, NULL, var);
     }
 
   Expression* z = Expression::make_var_reference(Map_type::zero_value, bloc);
@@ -8582,17 +8219,6 @@ Map_type::do_reflection(Gogo* gogo, std::string* ret) const
   this->append_reflection(this->val_type_, gogo, ret);
 }
 
-// Mangled name for a map.
-
-void
-Map_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('M');
-  this->append_mangled_name(this->key_type_, gogo, ret);
-  ret->append("__");
-  this->append_mangled_name(this->val_type_, gogo, ret);
-}
-
 // Export a map type.
 
 void
@@ -8763,20 +8389,6 @@ Channel_type::do_reflection(Gogo* gogo, std::string* ret) const
     ret->append("<-");
   ret->push_back(' ');
   this->append_reflection(this->element_type_, gogo, ret);
-}
-
-// Mangled name.
-
-void
-Channel_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  ret->push_back('C');
-  this->append_mangled_name(this->element_type_, gogo, ret);
-  if (this->may_send_)
-    ret->push_back('s');
-  if (this->may_receive_)
-    ret->push_back('r');
-  ret->push_back('e');
 }
 
 // Export.
@@ -9700,40 +9312,6 @@ Interface_type::do_reflection(Gogo* gogo, std::string* ret) const
       ret->push_back(' ');
     }
   ret->append("}");
-}
-
-// Mangled name.
-
-void
-Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  go_assert(this->methods_are_finalized_);
-
-  ret->push_back('I');
-
-  const Typed_identifier_list* methods = this->all_methods_;
-  if (methods != NULL && !this->seen_)
-    {
-      this->seen_ = true;
-      for (Typed_identifier_list::const_iterator p = methods->begin();
-	   p != methods->end();
-	   ++p)
-	{
-	  if (!p->name().empty())
-	    {
-	      std::string n(Gogo::mangle_possibly_hidden_name(p->name()));
-	      char buf[20];
-	      snprintf(buf, sizeof buf, "%u_",
-		       static_cast<unsigned int>(n.length()));
-	      ret->append(buf);
-	      ret->append(n);
-	    }
-	  this->append_mangled_name(p->type(), gogo, ret);
-	}
-      this->seen_ = false;
-    }
-
-  ret->push_back('e');
 }
 
 // Export.
@@ -11178,71 +10756,6 @@ Named_type::append_reflection_type_name(Gogo* gogo, bool use_alias,
   ret->append(Gogo::unpack_hidden_name(this->named_object_->name()));
 }
 
-// Get the mangled name.
-
-void
-Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  this->append_mangled_type_name(gogo, false, ret);
-}
-
-// Get the mangled name.  For an alias we normally get the real name,
-// but if USE_ALIAS is true we use the alias name itself.
-
-void
-Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
-				     std::string* ret) const
-{
-  if (this->is_error_)
-    return;
-  if (this->is_alias_ && !use_alias)
-    {
-      if (this->seen_alias_)
-	return;
-      this->seen_alias_ = true;
-      this->append_mangled_name(this->type_, gogo, ret);
-      this->seen_alias_ = false;
-      return;
-    }
-  Named_object* no = this->named_object_;
-  std::string name;
-  if (this->is_builtin())
-    go_assert(this->in_function_ == NULL);
-  else
-    {
-      const std::string& pkgpath(no->package() == NULL
-				 ? gogo->pkgpath_symbol()
-				 : no->package()->pkgpath_symbol());
-      name = pkgpath;
-      name.append(1, '.');
-      if (this->in_function_ != NULL)
-	{
-	  const Typed_identifier* rcvr =
-	    this->in_function_->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    {
-	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
-	      name.append(Gogo::unpack_hidden_name(rcvr_type->name()));
-	      name.append(1, '.');
-	    }
-	  name.append(Gogo::unpack_hidden_name(this->in_function_->name()));
-	  name.append(1, '$');
-	  if (this->in_function_index_ > 0)
-	    {
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "%u", this->in_function_index_);
-	      name.append(buf);
-	      name.append(1, '$');
-	    }
-	}
-    }
-  name.append(Gogo::unpack_hidden_name(no->name()));
-  char buf[20];
-  snprintf(buf, sizeof buf, "N%u_", static_cast<unsigned int>(name.length()));
-  ret->append(buf);
-  ret->append(name);
-}
-
 // Export the type.  This is called to export a global type.
 
 void
@@ -11623,7 +11136,7 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	package = NULL;
       else
 	package = type->named_type()->named_object()->package();
-      std::string stub_name = name + "$stub";
+      std::string stub_name = gogo->stub_method_name(name);
       Named_object* stub;
       if (package != NULL)
 	stub = Named_object::make_function_declaration(stub_name, package,
@@ -12451,31 +11964,6 @@ void
 Forward_declaration_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
   this->append_reflection(this->real_type(), gogo, ret);
-}
-
-// The mangled name.
-
-void
-Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
-{
-  if (this->is_defined())
-    this->append_mangled_name(this->real_type(), gogo, ret);
-  else
-    {
-      const Named_object* no = this->named_object();
-      std::string name;
-      if (no->package() == NULL)
-	name = gogo->pkgpath_symbol();
-      else
-	name = no->package()->pkgpath_symbol();
-      name += '.';
-      name += Gogo::unpack_hidden_name(no->name());
-      char buf[20];
-      snprintf(buf, sizeof buf, "N%u_",
-	       static_cast<unsigned int>(name.length()));
-      ret->append(buf);
-      ret->append(name);
-    }
 }
 
 // Export a forward declaration.  This can happen when a defined type

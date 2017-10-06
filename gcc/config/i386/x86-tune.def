@@ -117,16 +117,6 @@ DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, "fuse_cmp_and_branch_soflags",
 DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
           m_SANDYBRIDGE | m_HASWELL)
 
-/* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
-   during reassociation of integer computation.  */
-DEF_TUNE (X86_TUNE_REASSOC_INT_TO_PARALLEL, "reassoc_int_to_parallel",
-          m_BONNELL)
-
-/* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
-   during reassociation of fp computation.  */
-DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel",
-          m_BONNELL | m_SILVERMONT | m_HASWELL | m_KNL | m_KNM |m_INTEL | m_BDVER1
-	  | m_BDVER2 | m_ZNVER1 | m_GENERIC)
 
 /*****************************************************************************/
 /* Function prologue, epilogue and function calling sequences.               */
@@ -390,11 +380,6 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 /* X86_TUNE_SLOW_SHUFB: Indicates tunings with slow pshufb instruction.  */
 DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
           m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL)
-
-/* X86_TUNE_VECTOR_PARALLEL_EXECUTION: Indicates tunings with ability to
-   execute 2 or more vector instructions in parallel.  */
-DEF_TUNE (X86_TUNE_VECTOR_PARALLEL_EXECUTION, "vec_parallel",
-          m_NEHALEM | m_SANDYBRIDGE | m_HASWELL)
 
 /* X86_TUNE_AVOID_4BYTE_PREFIXES: Avoid instructions requiring 4+ bytes of prefixes.  */
 DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",

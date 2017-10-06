@@ -177,6 +177,7 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   ix86_size_memcpy,
   ix86_size_memset,
   1,					/* scalar_stmt_cost.  */
@@ -253,6 +254,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (22),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (24),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (122),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i386_memcpy,
   i386_memset,
   1,					/* scalar_stmt_cost.  */
@@ -330,6 +332,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (83),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i486_memcpy,
   i486_memset,
   1,					/* scalar_stmt_cost.  */
@@ -405,6 +408,7 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
   1,					/* scalar_stmt_cost.  */
@@ -473,6 +477,7 @@ struct processor_costs lakemont_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
   1,					/* scalar_stmt_cost.  */
@@ -556,6 +561,7 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentiumpro_memcpy,
   pentiumpro_memset,
   1,					/* scalar_stmt_cost.  */
@@ -631,6 +637,7 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   geode_memcpy,
   geode_memset,
   1,					/* scalar_stmt_cost.  */
@@ -708,6 +715,7 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k6_memcpy,
   k6_memset,
   1,					/* scalar_stmt_cost.  */
@@ -785,6 +793,7 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   athlon_memcpy,
   athlon_memset,
   1,					/* scalar_stmt_cost.  */
@@ -871,7 +880,7 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k8_memcpy,
   k8_memset,
   4,					/* scalar_stmt_cost.  */
@@ -965,7 +974,7 @@ struct processor_costs amdfam10_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   amdfam10_memcpy,
   amdfam10_memset,
   4,					/* scalar_stmt_cost.  */
@@ -1060,7 +1069,7 @@ const struct processor_costs bdver1_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver1_memcpy,
   bdver1_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1156,7 +1165,7 @@ const struct processor_costs bdver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver2_memcpy,
   bdver2_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1243,7 +1252,7 @@ struct processor_costs bdver3_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver3_memcpy,
   bdver3_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1329,7 +1338,7 @@ struct processor_costs bdver4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver4_memcpy,
   bdver4_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1412,14 +1421,22 @@ struct processor_costs znver1_cost = {
      to limit number of prefetches at all, as their execution also takes some
      time).  */
   100,					/* number of parallel prefetches.  */
-  2,					/* Branch cost.  */
+  3,					/* Branch cost.  */
   COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+  /* Zen can execute 4 integer operations per cycle. FP operations take 3 cycles
+     and it can execute 2 integer additions and 2 multiplications thus
+     reassociation may make sense up to with of 6.  SPEC2k6 bencharks suggests
+     that 4 works better than 6 probably due to register pressure.
 
+     Integer vector operations are taken by FP unit and execute 3 vector
+     plus/minus operations per cycle but only one multiply.  This is adjusted
+     in ix86_reassociation_width.  */
+  4, 4, 3, 6,				/* reassoc int, fp, vec_int, vec_fp.  */
   znver1_memcpy,
   znver1_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1508,7 +1525,7 @@ const struct processor_costs btver1_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver1_memcpy,
   btver1_memset,
   4,					/* scalar_stmt_cost.  */
@@ -1594,6 +1611,7 @@ const struct processor_costs btver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver2_memcpy,
   btver2_memset,
   4,					/* scalar_stmt_cost.  */
@@ -1670,6 +1688,7 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium4_memcpy,
   pentium4_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1749,6 +1768,7 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   nocona_memcpy,
   nocona_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1826,6 +1846,7 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  2, 2, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   atom_memcpy,
   atom_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1903,6 +1924,7 @@ struct processor_costs slm_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   slm_memcpy,
   slm_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1980,6 +2002,7 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 4, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   intel_memcpy,
   intel_memset,
   1,					/* scalar_stmt_cost.  */
@@ -2067,6 +2090,7 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
   1,					/* scalar_stmt_cost.  */
@@ -2153,6 +2177,7 @@ struct processor_costs core_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 4, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   core_memcpy,
   core_memset,
   1,					/* scalar_stmt_cost.  */
@@ -30736,44 +30761,13 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 static int
 ia32_multipass_dfa_lookahead (void)
 {
-  switch (ix86_tune)
-    {
-    case PROCESSOR_PENTIUM:
-    case PROCESSOR_LAKEMONT:
-      return 2;
-
-    case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_K6:
-      return 1;
-
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
-    case PROCESSOR_BDVER4:
-      /* We use lookahead value 4 for BD both before and after reload
-	 schedules. Plan is to have value 8 included for O3. */
-        return 4;
-
-    case PROCESSOR_CORE2:
-    case PROCESSOR_NEHALEM:
-    case PROCESSOR_SANDYBRIDGE:
-    case PROCESSOR_HASWELL:
-    case PROCESSOR_BONNELL:
-    case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_KNM:
-    case PROCESSOR_INTEL:
-      /* Generally, we want haifa-sched:max_issue() to look ahead as far
-	 as many instructions can be executed on a cycle, i.e.,
-	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
-      if (reload_completed)
-        return ix86_issue_rate ();
-      /* Don't use lookahead for pre-reload schedule to save compile time.  */
-      return 0;
-
-    default:
-      return 0;
-    }
+  /* Generally, we want haifa-sched:max_issue() to look ahead as far
+     as many instructions can be executed on a cycle, i.e.,
+     issue_rate.  */
+  if (reload_completed)
+    return ix86_issue_rate ();
+  /* Don't use lookahead for pre-reload schedule to save compile time.  */
+  return 0;
 }
 
 /* Return true if target platform supports macro-fusion.  */
@@ -51830,34 +51824,47 @@ has_dispatch (rtx_insn *insn, int action)
 /* Implementation of reassociation_width target hook used by
    reassoc phase to identify parallelism level in reassociated
    tree.  Statements tree_code is passed in OPC.  Arguments type
-   is passed in MODE.
-
-   Currently parallel reassociation is enabled for Atom
-   processors only and we set reassociation width to be 2
-   because Atom may issue up to 2 instructions per cycle.
-
-   Return value should be fixed if parallel reassociation is
-   enabled for other processors.  */
+   is passed in MODE.  */
 
 static int
-ix86_reassociation_width (unsigned int, machine_mode mode)
+ix86_reassociation_width (unsigned int op, machine_mode mode)
 {
+  int width = 1;
   /* Vector part.  */
   if (VECTOR_MODE_P (mode))
     {
-      if (TARGET_VECTOR_PARALLEL_EXECUTION)
-	return 2;
-      else
-	return 1;
-    }
+      int div = 1;
+      if (INTEGRAL_MODE_P (mode))
+	width = ix86_cost->reassoc_vec_int;
+      else if (FLOAT_MODE_P (mode))
+	width = ix86_cost->reassoc_vec_fp;
 
+      if (width == 1)
+	return 1;
+
+      /* Integer vector instructions execute in FP unit
+	 and can execute 3 additions and one multiplication per cycle.  */
+      if (ix86_tune == PROCESSOR_ZNVER1 && INTEGRAL_MODE_P (mode)
+	  && op != PLUS && op != MINUS)
+	return 1;
+
+      /* Account for targets that splits wide vectors into multiple parts.  */
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (mode) > 128)
+	div = GET_MODE_BITSIZE (mode) / 128;
+      else if (TARGET_SSE_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 64)
+	div = GET_MODE_BITSIZE (mode) / 64;
+      width = (width + div - 1) / div;
+    }
   /* Scalar part.  */
-  if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
-    return 2;
-  else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)
-    return ((TARGET_64BIT && ix86_tune == PROCESSOR_HASWELL)? 4 : 2);
-  else
-    return 1;
+  else if (INTEGRAL_MODE_P (mode))
+    width = ix86_cost->reassoc_int;
+  else if (FLOAT_MODE_P (mode))
+    width = ix86_cost->reassoc_fp;
+
+  /* Avoid using too many registers in 32bit mode.  */
+  if (!TARGET_64BIT && width > 2)
+    width = 2;
+  return width;
 }
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
