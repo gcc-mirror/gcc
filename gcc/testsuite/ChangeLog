@@ -1,3 +1,8 @@
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82397
+	* gfortran.dg/pr82397.f: New testcase.
+
 2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/82322
