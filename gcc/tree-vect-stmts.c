@@ -5728,10 +5728,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   op = gimple_assign_rhs1 (stmt);
 
-  /* In the case this is a store from a STRING_CST make sure
+  /* In the case this is a store from a constant make sure
      native_encode_expr can handle it.  */
-  if (TREE_CODE (op) == STRING_CST
-      && ! can_native_encode_string_p (op))
+  if (CONSTANT_CLASS_P (op) && native_encode_expr (op, NULL, 64) == 0)
     return false;
 
   if (!vect_is_simple_use (op, vinfo, &def_stmt, &dt, &rhs_vectype))
