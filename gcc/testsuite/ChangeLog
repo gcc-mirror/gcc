@@ -1,3 +1,8 @@
+2017-10-06  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/bic_imm_1.c: New test.
+	* gcc.target/aarch64/orr_imm_1.c: Likewise.
+
 2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60153
