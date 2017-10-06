@@ -1,3 +1,12 @@
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82397
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Do not use
+	operand_equal_p but rely on data_ref_compare_tree for detecting
+	equalities.
+	(vect_analyze_data_ref_accesses): Use data_ref_compare_tree
+	to match up with dr_group_sort_cmp.
+
 2017-10-06  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/82322

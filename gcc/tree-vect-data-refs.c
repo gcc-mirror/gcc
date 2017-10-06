@@ -2727,43 +2727,30 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
     return loopa->num < loopb->num ? -1 : 1;
 
   /* Ordering of DRs according to base.  */
-  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
-    {
-      cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
-				   DR_BASE_ADDRESS (drb));
-      if (cmp != 0)
-        return cmp;
-    }
+  cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
+			       DR_BASE_ADDRESS (drb));
+  if (cmp != 0)
+    return cmp;
 
   /* And according to DR_OFFSET.  */
-  if (!dr_equal_offsets_p (dra, drb))
-    {
-      cmp = data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
-      if (cmp != 0)
-        return cmp;
-    }
+  cmp = data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
+  if (cmp != 0)
+    return cmp;
 
   /* Put reads before writes.  */
   if (DR_IS_READ (dra) != DR_IS_READ (drb))
     return DR_IS_READ (dra) ? -1 : 1;
 
   /* Then sort after access size.  */
-  if (!operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
-			TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0))
-    {
-      cmp = data_ref_compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
-				   TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
-      if (cmp != 0)
-        return cmp;
-    }
+  cmp = data_ref_compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
+			       TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+  if (cmp != 0)
+    return cmp;
 
   /* And after step.  */
-  if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
-    {
-      cmp = data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb));
-      if (cmp != 0)
-        return cmp;
-    }
+  cmp = data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb));
+  if (cmp != 0)
+    return cmp;
 
   /* Then sort after DR_INIT.  In case of identical DRs sort after stmt UID.  */
   cmp = tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb));
@@ -2835,9 +2822,9 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	     and they are both either store or load (not load and store,
 	     not masked loads or stores).  */
 	  if (DR_IS_READ (dra) != DR_IS_READ (drb)
-	      || !operand_equal_p (DR_BASE_ADDRESS (dra),
-				   DR_BASE_ADDRESS (drb), 0)
-	      || !dr_equal_offsets_p (dra, drb)
+	      || data_ref_compare_tree (DR_BASE_ADDRESS (dra),
+					DR_BASE_ADDRESS (drb)) != 0
+	      || data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb)) != 0
 	      || !gimple_assign_single_p (DR_STMT (dra))
 	      || !gimple_assign_single_p (DR_STMT (drb)))
 	    break;
@@ -2851,7 +2838,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	    break;
 
 	  /* Check that the data-refs have the same step.  */
-	  if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
+	  if (data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb)) != 0)
 	    break;
 
 	  /* Do not place the same access in the interleaving chain twice.  */
