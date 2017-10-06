@@ -1,3 +1,9 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	P0704R1 - fixing const-qualified pointers to members
+	* typeck2.c (build_m_component_ref): For -std=c++2a allow
+	pointer to const & qualified method on rvalue.
+
 2017-10-06  Nathan Sidwell  <nathan@acm.org>
 
 	Use hash_table for extern "C" names
