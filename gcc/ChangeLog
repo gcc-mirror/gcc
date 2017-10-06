@@ -1,3 +1,13 @@
+2017-10-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline r253242.
+	2017-09-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71727
+	* config/aarch64/aarch64.c
+	(aarch64_builtin_support_vector_misalignment): Always return false
+	when misalignment is unknown.
+
 2017-10-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82406 - C++ error with noexcept function type
