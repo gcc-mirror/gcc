@@ -1,3 +1,11 @@
+2017-10-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline r253251.
+	2017-09-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71727
+	* gcc.target/aarch64/pr71727-2.c: New test.
+
 2017-10-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
