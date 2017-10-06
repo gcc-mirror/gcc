@@ -1,3 +1,8 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82434
+	* gcc.dg/store_merging_9.c: New test.
+
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82397

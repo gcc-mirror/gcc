@@ -1,3 +1,25 @@
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82434
+	* fold-const.h (can_native_encode_type_p,
+	can_native_encode_string_p): Remove.
+	* fold-const.c (native_encode_int): Formatting fixes.  If ptr is NULL,
+	don't encode anything, just return what would be otherwise returned.
+	(native_encode_fixed, native_encode_complex, native_encode_vector):
+	Likewise.
+	(native_encode_string): Likewise.  Inline by hand
+	can_native_encode_string_p.
+	(can_native_encode_type_p): Remove.
+	(can_native_encode_string_p): Remove.
+	* tree-vect-stmts.c (vectorizable_store): Instead of testing just
+	STRING_CSTs using can_native_encode_string_p, test all
+	CONSTANT_CLASS_P values using native_encode_expr with NULL ptr.
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Remove last
+	argument from native_encode_expr.
+	(rhs_valid_for_store_merging_p): Use native_encode_expr with NULL ptr.
+	(pass_store_merging::execute): Don't unnecessarily look for 3 stmts,
+	but just 2.
+
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82397
