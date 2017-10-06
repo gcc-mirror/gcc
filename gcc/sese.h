@@ -83,6 +83,12 @@ typedef struct sese_info_t
   /* The SESE region.  */
   sese_l region;
 
+  /* Liveout vars.  */
+  bitmap liveout;
+
+  /* Liveout in debug stmts.  */
+  bitmap debug_liveout;
+
   /* Parameters used within the SCOP.  */
   vec<tree> params;
 
@@ -116,6 +122,8 @@ extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern bool scev_analyzable_p (tree, sese_l &);
 extern bool invariant_in_sese_p_rec (tree, const sese_l &, bool *);
+extern void sese_build_liveouts (sese_info_p);
+extern bool sese_trivially_empty_bb_p (basic_block);
 
 /* The number of parameters in REGION. */
 

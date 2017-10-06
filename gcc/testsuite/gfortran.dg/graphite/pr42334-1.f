@@ -1,4 +1,4 @@
-! { dg-options "-O2 -floop-interchange -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
+! { dg-options "-O2 -floop-interchange" }
 
       subroutine linel(icmdl,stre,anisox)
       real*8 stre(6),tkl(3,3),ekl(3,3),anisox(3,3,3,3)
@@ -14,5 +14,3 @@
             enddo
             stre(1)=tkl(1,1)
       end
-
-! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } }

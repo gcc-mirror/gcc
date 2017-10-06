@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -floop-nest-optimize -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" } */
+/* { dg-options "-O3 -floop-nest-optimize" } */
 
 int a[1];
 int b, c, d, e;
@@ -19,5 +19,3 @@ fn1 ()
 	}
     }
 }
-
-/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } } */

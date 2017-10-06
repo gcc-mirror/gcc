@@ -1,4 +1,4 @@
-! { dg-options "-O2 -fgraphite-identity -fno-loop-block -fno-loop-interchange -fno-loop-strip-mine -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
+! { dg-options "-O2 -fgraphite-identity -fno-loop-block -fno-loop-interchange -fno-loop-strip-mine" }
 
 MODULE beta_gamma_psi
   INTEGER, PARAMETER :: dp=KIND(0.0D0)
@@ -22,5 +22,3 @@ CONTAINS
     fn_val = sum
   END FUNCTION basym
 END MODULE beta_gamma_psi
-
-! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } }

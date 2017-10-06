@@ -1,7 +1,7 @@
 ! { dg-do compile { target i?86-*-* x86_64-*-* } }
 ! { dg-require-effective-target ilp32 }
 ! { dg-require-effective-target sse2 }
-! { dg-options "-O2 -floop-strip-mine -fprefetch-loop-arrays -msse2 -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
+! { dg-options "-O2 -floop-strip-mine -fprefetch-loop-arrays -msse2" }
 
 subroutine blts ( ldmx, ldmy, v, tmp1, i, j, k)
   implicit none
@@ -33,5 +33,3 @@ subroutine phasad(t,i,ium)
   enddo
   return
 end subroutine phasad
-
-! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } }

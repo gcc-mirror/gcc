@@ -1,5 +1,32 @@
 2017-10-06  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/graphite/id-15.c: No longer expect a code generation error.
+	* gcc.dg/graphite/id-16.c: Likewise.
+	* gcc.dg/graphite/pr46168.c: Likewise.
+	* gcc.dg/graphite/pr68756.c: Likewise.
+	* gcc.dg/graphite/pr69728.c: Likewise.
+	* gcc.dg/graphite/pr71575-2.c: Likewise.
+	* gcc.dg/graphite/pr77362.c: Likewise.
+	* gcc.dg/graphite/pr81373.c: Likewise.
+	* gcc.dg/graphite/run-id-pr67700-1.c: Likewise.
+	* gfortran.dg/graphite/interchange-1.f: Likewise.
+	* gfortran.dg/graphite/pr42334-1.f: Likewise.
+	* gfortran.dg/graphite/pr42393-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42393.f90: Likewise.
+	* gfortran.dg/graphite/pr47019.f: Likewise.
+	* gfortran.dg/graphite/id-17.f: Likewise.
+	* gfortran.dg/graphite/id-19.f: Likewise.
+	* gfortran.dg/graphite/run-id-2.f90: Likewise.
+	* gfortran.dg/graphite/pr42326-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42326.f90: Likewise.
+	* gfortran.dg/graphite/pr68550-2.f90: Likewise.
+	* gfortran.dg/graphite/pr29581.f90: Likewise.  No longer expect
+	a code generation error.
+	* gfortran.dg/graphite/run-id-3.f90: Likewise.
+	* gfortran.dg/graphite/pr29832.f90: Likewise.
+
+2017-10-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82436
 	* gcc.dg/vect/pr82436.c: New testcase.
 

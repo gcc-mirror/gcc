@@ -1,4 +1,4 @@
-! { dg-options "-O -ftree-pre -fgraphite-identity -fno-tree-copy-prop -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" }
+! { dg-options "-O -ftree-pre -fgraphite-identity -fno-tree-copy-prop" }
 
       subroutine foo (ldmx,ldmy,v)
       integer :: ldmx, ldmy, v, l, m
@@ -10,5 +10,3 @@
         v(m,3,2) = m
       end do
       end
-
-! { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } }

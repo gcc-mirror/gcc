@@ -1,5 +1,3 @@
-/* { dg-additional-options "--param graphite-allow-codegen-errors=1" } */
-
 int transformation[(2*19 - 1) * (2*19 - 1)][8];
 
 const int transformation2[8][2][2] = {
@@ -44,5 +42,3 @@ transformation_init (void)
 	}
     }
 }
-
-/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } } */

@@ -254,21 +254,6 @@ dot_cfg ()
   scops.release ();
 }
 
-/* Return true if BB is empty, contains only DEBUG_INSNs.  */
-
-static bool
-trivially_empty_bb_p (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG
-	&& gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
-      return false;
-
-  return true;
-}
-
 /* Can all ivs be represented by a signed integer?
    As isl might generate negative values in its expressions, signed loop ivs
    are required in the backend.  */
@@ -471,7 +456,7 @@ scop_detection::get_sese (loop_p loop)
      canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
   if (! single_pred_p (scop_end->dest)
       || ! single_succ_p (scop_end->dest)
-      || ! trivially_empty_bb_p (scop_end->dest))
+      || ! sese_trivially_empty_bb_p (scop_end->dest))
     gcc_unreachable ();
   scop_end = single_succ_edge (scop_end->dest);
 
@@ -1346,13 +1331,35 @@ find_scop_parameters (scop_p scop)
   scop_set_nb_params (scop, nbp);
 }
 
+static void
+add_write (vec<tree> *writes, tree def)
+{
+  writes->safe_push (def);
+  DEBUG_PRINT (dp << "Adding scalar write: ";
+	       print_generic_expr (dump_file, def);
+	       dp << "\nFrom stmt: ";
+	       print_gimple_stmt (dump_file,
+				  SSA_NAME_DEF_STMT (def), 0));
+}
+
+static void
+add_read (vec<scalar_use> *reads, tree use, gimple *use_stmt)
+{
+  DEBUG_PRINT (dp << "Adding scalar read: ";
+	       print_generic_expr (dump_file, use);
+	       dp << "\nFrom stmt: ";
+	       print_gimple_stmt (dump_file, use_stmt, 0));
+  reads->safe_push (std::make_pair (use_stmt, use));
+}
+
+
 /* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
 
 static void
 build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
 			     vec<tree> *writes)
 {
-  if (!def || !is_gimple_reg (def))
+  if (!is_gimple_reg (def))
     return;
 
   bool scev_analyzable = scev_analyzable_p (def, scop->scop_info->region);
@@ -1366,16 +1373,9 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
 	 /* But gather SESE liveouts as we otherwise fail to rewrite their
 	    exit PHIs.  */
 	 || ! bb_in_sese_p (gimple_bb (use_stmt), scop->scop_info->region))
-	&& ((def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
-	    /* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
-	    || gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI))
+	&& (def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt)))
       {
-	writes->safe_push (def);
-	DEBUG_PRINT (dp << "Adding scalar write: ";
-		     print_generic_expr (dump_file, def);
-		     dp << "\nFrom stmt: ";
-		     print_gimple_stmt (dump_file,
-					SSA_NAME_DEF_STMT (def), 0));
+	add_write (writes, def);
 	/* This is required by the FOR_EACH_IMM_USE_STMT when we want to break
 	   before all the uses have been visited.  */
 	BREAK_FROM_IMM_USE_STMT (imm_iter);
@@ -1389,7 +1389,6 @@ static void
 build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
 			    vec<scalar_use> *reads)
 {
-  gcc_assert (use);
   if (!is_gimple_reg (use))
     return;
 
@@ -1399,46 +1398,8 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
     return;
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (use);
-  if (gimple_bb (def_stmt) != gimple_bb (use_stmt)
-      /* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
-      || gimple_code (def_stmt) == GIMPLE_PHI)
-    {
-      DEBUG_PRINT (dp << "Adding scalar read: ";
-		   print_generic_expr (dump_file, use);
-		   dp << "\nFrom stmt: ";
-		   print_gimple_stmt (dump_file, use_stmt, 0));
-      reads->safe_push (std::make_pair (use_stmt, use));
-    }
-}
-
-/* Record all scalar variables that are defined and used in different BBs of the
-   SCOP.  */
-
-static void
-graphite_find_cross_bb_scalar_vars (scop_p scop, gimple *stmt,
-				    vec<scalar_use> *reads, vec<tree> *writes)
-{
-  tree def;
-
-  if (gimple_code (stmt) == GIMPLE_ASSIGN)
-    def = gimple_assign_lhs (stmt);
-  else if (gimple_code (stmt) == GIMPLE_CALL)
-    def = gimple_call_lhs (stmt);
-  else if (gimple_code (stmt) == GIMPLE_PHI)
-    def = gimple_phi_result (stmt);
-  else
-    return;
-
-
-  build_cross_bb_scalars_def (scop, def, gimple_bb (stmt), writes);
-
-  ssa_op_iter iter;
-  use_operand_p use_p;
-  FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
-    {
-      tree use = USE_FROM_PTR (use_p);
-      build_cross_bb_scalars_use (scop, use, stmt, reads);
-    }
+  if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
+    add_read (reads, use, use_stmt);
 }
 
 /* Generates a polyhedral black box only if the bb contains interesting
@@ -1467,13 +1428,89 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 	continue;
 
       graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
-      graphite_find_cross_bb_scalar_vars (scop, stmt, &reads, &writes);
+
+      tree def = gimple_get_lhs (stmt);
+      if (def)
+	build_cross_bb_scalars_def (scop, def, gimple_bb (stmt), &writes);
+
+      ssa_op_iter iter;
+      tree use;
+      FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
+	build_cross_bb_scalars_use (scop, use, stmt, &reads);
     }
 
+  /* Handle defs and uses in PHIs.  Those need special treatment given
+     that we have to present ISL with sth that looks like we've rewritten
+     the IL out-of-SSA.  */
   for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
        gsi_next (&psi))
-    if (!virtual_operand_p (gimple_phi_result (psi.phi ())))
-      graphite_find_cross_bb_scalar_vars (scop, psi.phi (), &reads, &writes);
+    {
+      gphi *phi = psi.phi ();
+      tree res = gimple_phi_result (phi);
+      if (virtual_operand_p (res)
+	  || scev_analyzable_p (res, scop->scop_info->region))
+	continue;
+      /* To simulate out-of-SSA the block containing the PHI node has
+         reads of the PHI destination.  And to preserve SSA dependences
+	 we also write to it (the out-of-SSA decl and the SSA result
+	 are coalesced for dependence purposes which is good enough).  */
+      add_read (&reads, res, phi);
+      add_write (&writes, res);
+    }
+  basic_block bb_for_succs = bb;
+  if (bb_for_succs == bb_for_succs->loop_father->latch
+      && bb_in_sese_p (bb_for_succs, scop->scop_info->region)
+      && sese_trivially_empty_bb_p (bb_for_succs))
+    bb_for_succs = NULL;
+  while (bb_for_succs)
+    {
+      basic_block latch = NULL;
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb_for_succs->succs)
+	{
+	  for (gphi_iterator psi = gsi_start_phis (e->dest); !gsi_end_p (psi);
+	       gsi_next (&psi))
+	    {
+	      gphi *phi = psi.phi ();
+	      tree res = gimple_phi_result (phi);
+	      if (virtual_operand_p (res))
+		continue;
+	      /* To simulate out-of-SSA the predecessor of edges into PHI nodes
+		 has a copy from the PHI argument to the PHI destination.  */
+	      if (! scev_analyzable_p (res, scop->scop_info->region))
+		add_write (&writes, res);
+	      tree use = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	      if (TREE_CODE (use) == SSA_NAME
+		  && ! SSA_NAME_IS_DEFAULT_DEF (use)
+		  && gimple_bb (SSA_NAME_DEF_STMT (use)) != bb_for_succs
+		  && ! scev_analyzable_p (use, scop->scop_info->region))
+		add_read (&reads, use, phi);
+	    }
+	  if (e->dest == bb_for_succs->loop_father->latch
+	      && bb_in_sese_p (e->dest, scop->scop_info->region)
+	      && sese_trivially_empty_bb_p (e->dest))
+	    latch = e->dest;
+	}
+      /* Handle empty latch block PHIs here, otherwise we confuse ISL
+	 with extra conditional code where it then peels off the last
+	 iteration just because of that.  It would be simplest if we
+	 just didn't force simple latches (thus remove the forwarder).  */
+      bb_for_succs = latch;
+    }
+
+  /* For the region exit block add reads for all live-out vars.  */
+  if (bb == scop->scop_info->region.exit->src)
+    {
+      sese_build_liveouts (scop->scop_info);
+      unsigned i;
+      bitmap_iterator bi;
+      EXECUTE_IF_SET_IN_BITMAP (scop->scop_info->liveout, 0, i, bi)
+	{
+	  tree use = ssa_name (i);
+	  add_read (&reads, use, NULL);
+	}
+    }
 
   if (drs.is_empty () && writes.is_empty () && reads.is_empty ())
     return NULL;
@@ -1700,6 +1737,10 @@ build_scops (vec<scop_p> *scops)
   sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
     {
+      /* For our out-of-SSA we need a block on s->entry, similar to how
+         we include the LCSSA block in the region.  */
+      s->entry = single_pred_edge (split_edge (s->entry));
+
       scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */
