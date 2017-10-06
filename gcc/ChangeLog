@@ -1,3 +1,11 @@
+2017-10-06  Sebastian Pop  <sebpop@gmail.com>
+
+	* graphite-dependences.c (scop_get_reads): Move code to...
+	(scop_get_must_writes): Move code to...
+	(scop_get_may_writes): Move code to...
+	(scop_get_reads_and_writes): ... here.
+	(scop_get_dependences): Call scop_get_reads_and_writes.
+
 2017-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82434
