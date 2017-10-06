@@ -1,3 +1,8 @@
+2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66690
+	* g++.dg/cpp1y/pr66690.C: New.
+
 2017-10-06  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82424
