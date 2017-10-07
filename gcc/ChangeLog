@@ -1,3 +1,8 @@
+2017-10-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-switch-conversion.c (do_jump_if_equal, emit_cmp_and_jump_insns):
+	Update profile.
+
 2017-10-06  Martin Liska  <mliska@suse.cz>
 
 	* sanopt.c (struct sanopt_tree_triplet_hash): Remove inline
