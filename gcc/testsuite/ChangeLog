@@ -1,3 +1,8 @@
+2017-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80805
+	* g++.dg/cpp0x/pr80805.C: New.
+
 2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/49232
