@@ -1,3 +1,10 @@
+2017-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82375
+	* gfortran.dg/pdt_13.f03 : New test.
+	* gfortran.dg/pdt_14.f03 : New test.
+	* gfortran.dg/pdt_15.f03 : New test.
+
 2017-10-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/cold-1.c: New testcase.

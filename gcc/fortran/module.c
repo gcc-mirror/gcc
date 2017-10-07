@@ -2788,6 +2788,7 @@ mio_component_ref (gfc_component **cp)
 static void mio_namespace_ref (gfc_namespace **nsp);
 static void mio_formal_arglist (gfc_formal_arglist **formal);
 static void mio_typebound_proc (gfc_typebound_proc** proc);
+static void mio_actual_arglist (gfc_actual_arglist **ap, bool pdt);
 
 static void
 mio_component (gfc_component *c, int vtype)
@@ -2818,6 +2819,9 @@ mio_component (gfc_component *c, int vtype)
 
   /* PDT templates store the expression for the kind of a component here.  */
   mio_expr (&c->kind_expr);
+
+  /* PDT types store component specification list here. */
+  mio_actual_arglist (&c->param_list, true);
 
   mio_symbol_attribute (&c->attr);
   if (c->ts.type == BT_CLASS)
@@ -2874,17 +2878,19 @@ mio_component_list (gfc_component **cp, int vtype)
 
 
 static void
-mio_actual_arg (gfc_actual_arglist *a)
+mio_actual_arg (gfc_actual_arglist *a, bool pdt)
 {
   mio_lparen ();
   mio_pool_string (&a->name);
   mio_expr (&a->expr);
+  if (pdt)
+    mio_integer ((int *)&a->spec_type);
   mio_rparen ();
 }
 
 
 static void
-mio_actual_arglist (gfc_actual_arglist **ap)
+mio_actual_arglist (gfc_actual_arglist **ap, bool pdt)
 {
   gfc_actual_arglist *a, *tail;
 
@@ -2893,7 +2899,7 @@ mio_actual_arglist (gfc_actual_arglist **ap)
   if (iomode == IO_OUTPUT)
     {
       for (a = *ap; a; a = a->next)
-	mio_actual_arg (a);
+	mio_actual_arg (a, pdt);
 
     }
   else
@@ -2913,7 +2919,7 @@ mio_actual_arglist (gfc_actual_arglist **ap)
 	    tail->next = a;
 
 	  tail = a;
-	  mio_actual_arg (a);
+	  mio_actual_arg (a, pdt);
 	}
     }
 
@@ -3538,7 +3544,7 @@ mio_expr (gfc_expr **ep)
 
     case EXPR_FUNCTION:
       mio_symtree_ref (&e->symtree);
-      mio_actual_arglist (&e->value.function.actual);
+      mio_actual_arglist (&e->value.function.actual, false);
 
       if (iomode == IO_OUTPUT)
 	{
@@ -4203,7 +4209,7 @@ mio_omp_udr_expr (gfc_omp_udr *udr, gfc_symbol **sym1, gfc_symbol **sym2,
 	  int flag;
 	  mio_name (1, omp_declare_reduction_stmt);
 	  mio_symtree_ref (&ns->code->symtree);
-	  mio_actual_arglist (&ns->code->ext.actual);
+	  mio_actual_arglist (&ns->code->ext.actual, false);
 
 	  flag = ns->code->resolved_isym != NULL;
 	  mio_integer (&flag);
@@ -4245,7 +4251,7 @@ mio_omp_udr_expr (gfc_omp_udr *udr, gfc_symbol **sym1, gfc_symbol **sym2,
 	  int flag;
 	  ns->code = gfc_get_code (EXEC_CALL);
 	  mio_symtree_ref (&ns->code->symtree);
-	  mio_actual_arglist (&ns->code->ext.actual);
+	  mio_actual_arglist (&ns->code->ext.actual, false);
 
 	  mio_integer (&flag);
 	  if (flag)

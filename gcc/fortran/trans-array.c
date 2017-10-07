@@ -8400,6 +8400,19 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
       return tmp;
     }
 
+  if (purpose == DEALLOCATE_ALLOC_COMP && der_type->attr.pdt_type)
+    {
+      tmp = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
+				   DEALLOCATE_PDT_COMP, 0);
+      gfc_add_expr_to_block (&fnblock, tmp);
+    }
+  else if (purpose == ALLOCATE_PDT_COMP && der_type->attr.alloc_comp)
+    {
+      tmp = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
+				   NULLIFY_ALLOC_COMP, 0);
+      gfc_add_expr_to_block (&fnblock, tmp);
+    }
+
   /* Otherwise, act on the components or recursively call self to
      act on a chain of components.  */
   for (c = der_type->components; c; c = c->next)
@@ -9072,7 +9085,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  /* Recurse in to PDT components.  */
 	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type)
+	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
+	      && !(c->attr.pointer || c->attr.allocatable))
 	    {
 	      bool is_deferred = false;
 	      gfc_actual_arglist *tail = c->param_list;
@@ -9106,7 +9120,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  /* Recurse in to PDT components.  */
 	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type)
+	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
+	      && (!c->attr.pointer && !c->attr.allocatable))
 	    {
 	      tmp = gfc_deallocate_pdt_comp (c->ts.u.derived, comp,
 					     c->as ? c->as->rank : 0);
@@ -9116,13 +9131,23 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  if (c->attr.pdt_array)
 	    {
 	      tmp = gfc_conv_descriptor_data_get (comp);
+	      null_cond = fold_build2_loc (input_location, NE_EXPR,
+					   boolean_type_node, tmp,
+					   build_int_cst (TREE_TYPE (tmp), 0));
 	      tmp = gfc_call_free (tmp);
+	      tmp = build3_v (COND_EXPR, null_cond, tmp,
+			      build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	      gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
 	    }
 	  else if (c->attr.pdt_string)
 	    {
+	      null_cond = fold_build2_loc (input_location, NE_EXPR,
+					   boolean_type_node, comp,
+					   build_int_cst (TREE_TYPE (comp), 0));
 	      tmp = gfc_call_free (comp);
+	      tmp = build3_v (COND_EXPR, null_cond, tmp,
+			      build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	      tmp = fold_convert (TREE_TYPE (comp), null_pointer_node);
 	      gfc_add_modify (&fnblock, comp, tmp);
