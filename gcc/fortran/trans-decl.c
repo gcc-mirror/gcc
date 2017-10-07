@@ -4634,6 +4634,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
+	      /* TODO find out why this is necessary to stop double calls to
+		 free.  Somebody is reusing the expression in 'tmp' because
+		 it is being used unititialized.  */
+	      tmp = NULL_TREE;
 	    }
 	}
       else if (sym->ts.type == BT_CHARACTER && sym->ts.deferred)

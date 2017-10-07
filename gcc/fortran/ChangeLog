@@ -1,3 +1,38 @@
+2017-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82375
+	* class.c (gfc_find_derived_vtab): Return NULL for a passed
+	pdt template to prevent bad procedures from being written.
+	* decl.c (gfc_get_pdt_instance): Do not use the default
+	initializer for pointer and allocatable pdt type components. If
+	the component is allocatbale, set the 'alloc_comp' attribute of
+	'instance'.
+	* module.c : Add a prototype for 'mio_actual_arglist'. Add a
+	boolean argument 'pdt'.
+	(mio_component): Call it for the parameter list of pdt type
+	components with 'pdt' set to true.
+	(mio_actual_arg): Add the boolean 'pdt' and, if it is set, call
+	mio_integer for the 'spec_type'.
+	(mio_actual_arglist): Add the boolean 'pdt' and use it in the
+	call to mio_actual_arg.
+	(mio_expr, mio_omp_udr_expr): Call mio_actual_arglist with
+	'pdt' set false.
+	* resolve.c (get_pdt_spec_expr): Add the parameter name to the
+	KIND parameter error.
+	(get_pdt_constructor): Check that cons->expr is non-null.
+	* trans-array.c (structure_alloc_comps): For deallocation of
+	allocatable components, ensure that parameterized components
+	are deallocated first. Likewise, when parameterized components
+	are allocated, nullify allocatable components first. Do not
+	recurse into pointer or allocatable pdt components while
+	allocating or deallocating parameterized components. Test that
+	parameterized arrays or strings are allocated before freeing
+	them.
+	(gfc_trans_pointer_assignment): Call the new function. Tidy up
+	a minor whitespace issue.
+	trans-decl.c (gfc_trans_deferred_vars): Set 'tmp' to NULL_TREE
+	to prevent the expression from being used a second time.
+
 2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/49232
