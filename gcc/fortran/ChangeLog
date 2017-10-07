@@ -1,5 +1,11 @@
 2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/49232
+	* expr.c (gfc_check_pointer_assign): Error
+	for non-contiguous rhs.
+
+2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	* gfortran.h (async_io_dt): Add external reference.
 	* io.c (async_io_dt): Add variable.
 	(compare_to_allowed_values): Add prototyte. Add optional argument
