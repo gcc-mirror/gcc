@@ -1,3 +1,8 @@
+2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49232
+	* gfortran.dg/contiguous_4.f90: New test.
+
 2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66690
