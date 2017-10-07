@@ -1,3 +1,11 @@
+2017-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* invoke.texi (Wsuggest-attribute=cold): Document.
+	* common.opt (Wsuggest-attribute=cold): New
+	* ipa-pure-const.c (warn_function_cold): New function.
+	* predict.c (compute_function_frequency): Use it.
+	* predict.h (warn_function_cold): Declare.
+
 2017-10-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-switch-conversion.c (do_jump_if_equal, emit_cmp_and_jump_insns):

@@ -1,3 +1,7 @@
+2017-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/cold-1.c: New testcase.
+
 2017-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80805

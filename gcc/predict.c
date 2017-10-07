@@ -3613,7 +3613,10 @@ compute_function_frequency (void)
       if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ()
 	  || lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
 	     != NULL)
-        node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+	{
+          node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+	  warn_function_cold (current_function_decl);
+	}
       else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
 	       != NULL)
         node->frequency = NODE_FREQUENCY_HOT;
@@ -3632,7 +3635,10 @@ compute_function_frequency (void)
      Ipa-profile pass will drop functions only called from unlikely
      functions to unlikely and that is most of what we care about.  */
   if (!cfun->after_inlining)
-    node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+    {
+      node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+      warn_function_cold (current_function_decl);
+    }
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (maybe_hot_bb_p (cfun, bb))
