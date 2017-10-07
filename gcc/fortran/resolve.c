@@ -9196,6 +9196,9 @@ resolve_transfer (gfc_code *code)
 		 "an assumed-size array", &code->loc);
       return;
     }
+
+  if (async_io_dt && exp->expr_type == EXPR_VARIABLE)
+    exp->symtree->n.sym->attr.asynchronous = 1;
 }
 
 
@@ -14079,6 +14082,11 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
     }
 
+  if (async_io_dt)
+    {
+      for (nl = sym->namelist; nl; nl = nl->next)
+	nl->sym->attr.asynchronous = 1;
+    }
   return true;
 }
 

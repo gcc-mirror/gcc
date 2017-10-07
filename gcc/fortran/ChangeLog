@@ -1,3 +1,18 @@
+2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.h (async_io_dt): Add external reference.
+	* io.c (async_io_dt): Add variable.
+	(compare_to_allowed_values): Add prototyte. Add optional argument
+	num. If present, set it to the number of the entry that was
+	matched.
+	(check_io_constraints): If this is for an asynchronous I/O
+	statement, set async_io_dt and set the asynchronous flag for
+	a SIZE tag.
+	* resolve.c (resolve_transfer): If async_io_dt is set, set
+	the asynchronous flag on the variable.
+	(resolve_fl_namelist): If async_io_dt is set, set the asynchronous
+	flag on all elements of the namelist.
+
 2017-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/60458

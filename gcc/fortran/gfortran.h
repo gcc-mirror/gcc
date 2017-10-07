@@ -3311,6 +3311,7 @@ void gfc_free_dt (gfc_dt *);
 bool gfc_resolve_dt (gfc_dt *, locus *);
 void gfc_free_wait (gfc_wait *);
 bool gfc_resolve_wait (gfc_wait *);
+extern bool async_io_dt;
 
 /* module.c */
 void gfc_module_init_2 (void);
