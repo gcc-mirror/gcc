@@ -1,3 +1,10 @@
+2017-10-07  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/firstprivate-1.f90 (firstprivate):
+	Remove acc_device_nvidia references.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90 (reduction):
+	Same.
+
 2017-10-05  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c (main): Remove
