@@ -1,3 +1,10 @@
+2017-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins.def (BUILT_IN_SETJMP): Declare as library builtin instead
+	of GCC builtin if DONT_USE_BUILTIN_SETJMP is defined.
+	* except.c (sjlj_emit_function_enter): If DONT_USE_BUILTIN_SETJMP is
+	defined, force the creation of a new block for a dispatch label.
+
 2017-10-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* invoke.texi (Wsuggest-attribute=cold): Document.

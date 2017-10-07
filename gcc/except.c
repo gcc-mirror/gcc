@@ -1209,6 +1209,28 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 	  fn_begin_outside_block = false;
       }
 
+#ifdef DONT_USE_BUILTIN_SETJMP
+  if (dispatch_label)
+    {
+      /* The sequence contains a branch in the middle so we need to force
+	 the creation of a new basic block by means of BB_SUPERBLOCK.  */
+      if (fn_begin_outside_block)
+	{
+	  basic_block bb
+	    = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	  if (JUMP_P (BB_END (bb)))
+	    emit_insn_before (seq, BB_END (bb));
+	  else
+	    emit_insn_after (seq, BB_END (bb));
+	}
+      else
+	emit_insn_after (seq, fn_begin);
+
+      single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun))->flags |= BB_SUPERBLOCK;
+      return;
+    }
+#endif
+
   if (fn_begin_outside_block)
     insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
   else
