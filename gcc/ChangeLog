@@ -1,5 +1,20 @@
 2017-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-outof-ssa.h (ssaexpand): Add partitions_for_undefined_values.
+	(always_initialized_rtx_for_ssa_name_p): New predicate.
+	* tree-outof-ssa.c (remove_ssa_form): Initialize new field of SA.
+	(finish_out_of_ssa): Free new field of SA.
+	* tree-ssa-coalesce.h (get_undefined_value_partitions): Declare.
+	* tree-ssa-coalesce.c: Include tree-ssa.h.
+	(get_parm_default_def_partitions): Remove extern keyword.
+	(get_undefined_value_partitions): New function.
+	* expr.c (expand_expr_real_1) <expand_decl_rtl>: For a SSA_NAME, do
+	not set SUBREG_PROMOTED_VAR_P on the sub-register if it may contain
+	uninitialized bits.
+	* loop-iv.c (iv_get_reaching_def): Disqualify all subregs.
+
+2017-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* builtins.def (BUILT_IN_SETJMP): Revert latest change.
 
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
