@@ -63,7 +63,13 @@ arm_except_unwind_info (struct gcc_options *opts)
 	return UI_TARGET;
     }
 
-  /* ... we use sjlj exceptions for backwards compatibility.  */
+  /* ... honor target configurations requesting DWARF2 EH...  */
+#ifdef DWARF2_UNWIND_INFO
+  if (DWARF2_UNWIND_INFO)
+    return UI_DWARF2;
+#endif
+
+  /* ... or fallback to sjlj exceptions for backwards compatibility.  */
   return UI_SJLJ;
 }
 
