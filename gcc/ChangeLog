@@ -1,5 +1,20 @@
 2017-10-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (conditional branch): Clean up formatting.
+	Remove empty default arguments.  Use a brace block as output
+	statement.
+	(conditional return): Ditto.
+	(jump): Ditto.
+	(indirect_jump): Ditto.  Use b%T0 instead of bctr/blr.
+	(tablejump, tablejumpsi, tablejumpdi, *tablejump<mode>_internal1):
+	Ditto.
+	(group_ending_nop): Ditto.
+	(doloop_end): Ditto.
+	(ctr<mode>, ctr<mode>_internal1, ctr<mode>_internal2): Ditto.
+	(splitters for those): Ditto.
+
+2017-10-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-string.c (expand_strncmp_align_check): Invert
 	a conditional jump (and the compare for it) so that pc_rtx is the
 	last operand.
