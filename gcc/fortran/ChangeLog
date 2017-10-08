@@ -1,3 +1,11 @@
+2017-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82375
+	* module.c : Bump up MOD_VERSION to 15.
+	(mio_component): Edit comment about PDT specification list.
+	(mio_expr, mio_symbol): Include the expression and symbol PDT
+	specification lists in the same way as in mio_component.
+
 2017-10-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump_prase_tree (show_symbol): Output list of variables in

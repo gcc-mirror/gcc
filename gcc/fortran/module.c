@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
-#define MOD_VERSION "14"
+#define MOD_VERSION "15"
 
 
 /* Structure that describes a position within a module file.  */
@@ -2820,7 +2820,7 @@ mio_component (gfc_component *c, int vtype)
   /* PDT templates store the expression for the kind of a component here.  */
   mio_expr (&c->kind_expr);
 
-  /* PDT types store component specification list here. */
+  /* PDT types store the component specification list here. */
   mio_actual_arglist (&c->param_list, true);
 
   mio_symbol_attribute (&c->attr);
@@ -3666,6 +3666,9 @@ mio_expr (gfc_expr **ep)
       break;
     }
 
+  /* PDT types store the expression specification list here. */
+  mio_actual_arglist (&e->param_list, true);
+
   mio_rparen ();
 }
 
@@ -4320,6 +4323,9 @@ mio_symbol (gfc_symbol *sym)
 
   /* Load/save the f2k_derived namespace of a derived-type symbol.  */
   mio_full_f2k_derived (sym);
+
+  /* PDT types store the symbol specification list here. */
+  mio_actual_arglist (&sym->param_list, true);
 
   mio_namelist (sym);
 
