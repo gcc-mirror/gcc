@@ -28947,6 +28947,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
 	move_mode = wider_mode;
 
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (move_mode) > 128)
+	move_mode = TImode;
+
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
       if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
