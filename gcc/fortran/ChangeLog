@@ -1,3 +1,8 @@
+2017-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* check.c (gfc_check_x): Remove function.
+	* intrinsic.c (add_functions): Use gfc_check_fn_r.
+
 2017-10-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82375
