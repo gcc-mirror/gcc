@@ -1,3 +1,7 @@
+2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (has_dispatch): Disable for Ryzen.
+
 2017-10-08  Olivier Hainque  <hainque@adacore.com>
 
 	* config/arm/arm.c (arm_set_return_address): Use MEM_VOLATILE_P
