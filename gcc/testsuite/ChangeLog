@@ -1,3 +1,7 @@
+2017-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20171008-1.c: New test.
+
 2017-10-03  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/stack-check-5.c: Skip with -fstack-protector.
