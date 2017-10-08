@@ -1,3 +1,13 @@
+2017-10-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump_prase_tree (show_symbol): Output list of variables in
+	NAMELIST.
+	(show_code_node): Add new line for ELSE and END DO for DO
+	CONCURRENT.
+	* invoke.texi: Document that the output of
+	-fdump-fortran-original, -fdump-fortran-optimized and
+	-fdump-parse-tree is unsable and may lead to ICEs.
+
 2017-10-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82375
