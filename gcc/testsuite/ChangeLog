@@ -1,3 +1,9 @@
+2017-10-03  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/stack-check-5.c: Skip with -fstack-protector.
+	* gcc.dg/stack-check-6.c: Likewise.
+	* gcc.dg/stack-check-6a.c: Likewise.
+
 2017-10-07  Michael Collison <michael.collison@arm.com>
 
 	* gcc.target/aarch64/var_shift_mask_2.c: New test.
