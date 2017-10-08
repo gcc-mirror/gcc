@@ -1,3 +1,16 @@
+2017-10-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-string.c (expand_strncmp_align_check): Invert
+	a conditional jump (and the compare for it) so that pc_rtx is the
+	last operand.
+	* config/rs6000/rs6000.c (rs6000_legitimate_combined_insn): Adjust
+	for the deleted and renamed ctr<mode>_internal[234] patterns.
+	* config/rs6000/rs6000.md: Delete second conditional branch pattern.
+	Delete second conditional return pattern.
+	(ctr<mode>_internal2): Delete this second bdnz pattern.
+	(ctr<mode>_internal3): Rename to ctr<mode>_internal2.
+	(ctr<mode>_internal4): Delete this second bdz pattern.
+
 2017-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-outof-ssa.h (ssaexpand): Add partitions_for_undefined_values.

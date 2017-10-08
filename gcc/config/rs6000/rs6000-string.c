@@ -674,10 +674,10 @@ expand_strncmp_align_check (rtx strncmp_label, rtx src, HOST_WIDE_INT bytes)
   emit_move_insn (cond, gen_rtx_COMPARE (CCmode, src_check,
 					 GEN_INT (4096 - bytes)));
 
-  rtx cmp_rtx = gen_rtx_LT (VOIDmode, cond, const0_rtx);
+  rtx cmp_rtx = gen_rtx_GE (VOIDmode, cond, const0_rtx);
 
   rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, cmp_rtx,
-				     pc_rtx, lab_ref);
+				     lab_ref, pc_rtx);
   rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
   JUMP_LABEL (j) = strncmp_label;
   LABEL_NUSES (strncmp_label) += 1;

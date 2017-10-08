@@ -9051,11 +9051,7 @@ rs6000_legitimate_combined_insn (rtx_insn *insn)
       && (icode == CODE_FOR_ctrsi_internal1
 	  || icode == CODE_FOR_ctrdi_internal1
 	  || icode == CODE_FOR_ctrsi_internal2
-	  || icode == CODE_FOR_ctrdi_internal2
-	  || icode == CODE_FOR_ctrsi_internal3
-	  || icode == CODE_FOR_ctrdi_internal3
-	  || icode == CODE_FOR_ctrsi_internal4
-	  || icode == CODE_FOR_ctrdi_internal4))
+	  || icode == CODE_FOR_ctrdi_internal2))
     return false;
 
   return true;
