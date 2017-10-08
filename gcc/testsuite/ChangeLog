@@ -1,3 +1,7 @@
+2017-10-07  Michael Collison <michael.collison@arm.com>
+
+	* gcc.target/aarch64/var_shift_mask_2.c: New test.
+
 2017-10-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82375
