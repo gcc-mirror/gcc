@@ -1,3 +1,7 @@
+2017-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins.def (BUILT_IN_SETJMP): Revert latest change.
+
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_expand_set_or_movmem): Disable 512bit loops for targets
