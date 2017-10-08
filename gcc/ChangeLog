@@ -1,5 +1,10 @@
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* i386.c (ix86_expand_set_or_movmem): Disable 512bit loops for targets
+	that preffer 128bit.
+
+2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* i386.c (has_dispatch): Disable for Ryzen.
 
 2017-10-08  Olivier Hainque  <hainque@adacore.com>
