@@ -1,5 +1,12 @@
 2017-10-08  Olivier Hainque  <hainque@adacore.com>
 
+	* config/arm/arm.c (arm_set_return_address): Use MEM_VOLATILE_P
+	on the target mem instead of RTX_FRAME_RELATED_P on the insn to
+	prevent DSE.
+	(thumb_set_return_address): Likewise.
+
+2017-10-08  Olivier Hainque  <hainque@adacore.com>
+
 	* common/config/arm/arm-common.c (arm_except_unwind_info):
 	Handle DWARF2_UNWIND_INFO.
 
