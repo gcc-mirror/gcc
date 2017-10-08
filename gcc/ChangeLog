@@ -1,3 +1,8 @@
+2017-10-08  Olivier Hainque  <hainque@adacore.com>
+
+	* common/config/arm/arm-common.c (arm_except_unwind_info):
+	Handle DWARF2_UNWIND_INFO.
+
 2017-10-07  Michael Collison <michael.collison@arm.com>
 
 	* config/aarch64/aarch64.md (*aarch64_reg_<optab>_minus<mode>3):
