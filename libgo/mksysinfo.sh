@@ -302,9 +302,13 @@ if test "$regs" = ""; then
     upcase_fields "__user_psw_struct" "PtracePsw" >> ${OUT} || true
     upcase_fields "__user_fpregs_struct" "PtraceFpregs" >> ${OUT} || true
     upcase_fields "__user_per_struct" "PtracePer" >> ${OUT} || true
+  else
+    # mips*
+    regs=`grep '^type _pt_regs struct' gen-sysinfo.go || true`
   fi
 fi
 if test "$regs" != ""; then
+  regs=`echo $regs | sed -e 's/type _pt_regs struct//'`
   regs=`echo $regs |
     sed -e 's/type __*user_regs_struct struct //' -e 's/[{}]//g'`
   regs=`echo $regs | sed -e s'/^ *//'`

@@ -1,3 +1,7 @@
+2017-10-09  James Cowgill  <James.Cowgill@imgtec.com>
+
+	* go.test/go-test.exp (go-set-goarch): Update MIPS architecture names.
+
 2017-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82299
