@@ -7688,6 +7688,15 @@ gnat_to_gnu (Node_Id gnat_node)
     /* Added Nodes  */
     /****************/
 
+    /* Call markers are created by the ABE mechanism to capture the target of
+       a call along with other elaboration-related attributes which are either
+       unavailable of expensive to recompute.  Call markers do not have static
+       and runtime semantics, and should be ignored. */
+
+    case N_Call_Marker:
+      gnu_result = alloc_stmt_list ();
+      break;
+
     case N_Expression_With_Actions:
       /* This construct doesn't define a scope so we don't push a binding
 	 level around the statement list, but we wrap it in a SAVE_EXPR to

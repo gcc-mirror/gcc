@@ -1225,6 +1225,15 @@ package body Sprint is
 
             Write_Char (';');
 
+         when N_Call_Marker =>
+            null;
+
+            --  Enable the following code for debugging purposes only
+
+            --  Write_Indent_Str ("#");
+            --  Write_Id (Target (Node));
+            --  Write_Char ('#');
+
          when N_Case_Expression =>
             declare
                Has_Parens : constant Boolean := Paren_Count (Node) > 0;

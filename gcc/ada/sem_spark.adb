@@ -2314,6 +2314,7 @@ package body Sem_SPARK is
          when N_Abstract_Subprogram_Declaration
             | N_At_Clause
             | N_Attribute_Definition_Clause
+            | N_Call_Marker
             | N_Delta_Constraint
             | N_Digits_Constraint
             | N_Empty

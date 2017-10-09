@@ -52,6 +52,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
+with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -1763,9 +1764,12 @@ package body Exp_Util is
 
          --  Perform minor decoration in case the body is not analyzed
 
-         Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
-         Set_Etype (Proc_Body_Id, Standard_Void_Type);
-         Set_Scope (Proc_Body_Id, Current_Scope);
+         Set_Ekind        (Proc_Body_Id, E_Subprogram_Body);
+         Set_Etype        (Proc_Body_Id, Standard_Void_Type);
+         Set_Scope        (Proc_Body_Id, Current_Scope);
+         Set_SPARK_Pragma (Proc_Body_Id, SPARK_Pragma (Proc_Id));
+         Set_SPARK_Pragma_Inherited
+                          (Proc_Body_Id, SPARK_Pragma_Inherited (Proc_Id));
 
          --  Link both spec and body to avoid generating duplicates
 
@@ -1905,17 +1909,19 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Proc_Id, E_Procedure);
-      Set_Etype (Proc_Id, Standard_Void_Type);
-      Set_Scope (Proc_Id, Current_Scope);
+      Set_Ekind                  (Proc_Id, E_Procedure);
+      Set_Etype                  (Proc_Id, Standard_Void_Type);
+      Set_Is_DIC_Procedure       (Proc_Id);
+      Set_Scope                  (Proc_Id, Current_Scope);
+      Set_SPARK_Pragma           (Proc_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Proc_Id);
 
-      Set_Is_DIC_Procedure (Proc_Id);
       Set_DIC_Procedure (Work_Typ, Proc_Id);
 
       --  The DIC procedure requires debug info when the assertion expression
       --  is subject to Source Coverage Obligations.
 
-      if Opt.Generate_SCO then
+      if Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
       end if;
 
@@ -3387,7 +3393,7 @@ package body Exp_Util is
       --  The invariant procedure requires debug info when the invariants are
       --  subject to Source Coverage Obligations.
 
-      if Opt.Generate_SCO then
+      if Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
       end if;
 
@@ -7232,7 +7238,7 @@ package body Exp_Util is
                   null;
                end if;
 
-            --  Another special case, an attribute denoting a procedure call
+            --  Special case: an attribute denoting a procedure call
 
             when N_Attribute_Reference =>
                if Is_Procedure_Attribute_Name (Attribute_Name (P)) then
@@ -7248,6 +7254,14 @@ package body Exp_Util is
 
                else
                   null;
+               end if;
+
+            --  Special case: a call marker
+
+            when N_Call_Marker =>
+               if Is_List_Member (P) then
+                  Insert_List_Before_And_Analyze (P, Ins_Actions);
+                  return;
                end if;
 
             --  A contract node should not belong to the tree
@@ -8834,6 +8848,11 @@ package body Exp_Util is
       if Present (N) then
          Remove_Warning_Messages (N);
 
+         --  Update the internal structures of the ABE mechanism in case the
+         --  dead node is an elaboration scenario.
+
+         Kill_Elaboration_Scenario (N);
+
          --  Generate warning if appropriate
 
          if W then
@@ -9190,43 +9209,42 @@ package body Exp_Util is
       Lo          : constant Node_Id :=
                       New_Copy_Tree (String_Literal_Low_Bound (Literal_Typ));
       Index       : constant Entity_Id := Etype (Lo);
-
-      Hi          : Node_Id;
       Length_Expr : constant Node_Id :=
                       Make_Op_Subtract (Loc,
-                        Left_Opnd =>
+                        Left_Opnd  =>
                           Make_Integer_Literal (Loc,
                             Intval => String_Literal_Length (Literal_Typ)),
-                        Right_Opnd =>
-                          Make_Integer_Literal (Loc, 1));
+                        Right_Opnd => Make_Integer_Literal (Loc, 1));
+
+      Hi : Node_Id;
 
    begin
       Set_Analyzed (Lo, False);
 
-         if Is_Integer_Type (Index) then
-            Hi :=
-              Make_Op_Add (Loc,
-                Left_Opnd  => New_Copy_Tree (Lo),
-                Right_Opnd => Length_Expr);
-         else
-            Hi :=
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Val,
-                Prefix => New_Occurrence_Of (Index, Loc),
-                Expressions => New_List (
-                 Make_Op_Add (Loc,
-                   Left_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Pos,
-                       Prefix => New_Occurrence_Of (Index, Loc),
-                       Expressions => New_List (New_Copy_Tree (Lo))),
-                  Right_Opnd => Length_Expr)));
-         end if;
+      if Is_Integer_Type (Index) then
+         Hi :=
+           Make_Op_Add (Loc,
+             Left_Opnd  => New_Copy_Tree (Lo),
+             Right_Opnd => Length_Expr);
+      else
+         Hi :=
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Val,
+             Prefix         => New_Occurrence_Of (Index, Loc),
+             Expressions    => New_List (
+               Make_Op_Add (Loc,
+                 Left_Opnd  =>
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Pos,
+                     Prefix         => New_Occurrence_Of (Index, Loc),
+                     Expressions    => New_List (New_Copy_Tree (Lo))),
+                 Right_Opnd => Length_Expr)));
+      end if;
 
-         return
-           Make_Range (Loc,
-             Low_Bound  => Lo,
-             High_Bound => Hi);
+      return
+        Make_Range (Loc,
+          Low_Bound  => Lo,
+          High_Bound => Hi);
    end Make_Literal_Range;
 
    --------------------------

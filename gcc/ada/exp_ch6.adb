@@ -7714,7 +7714,7 @@ package body Exp_Ch6 is
       Function_Call : Node_Id)
    is
       Acc_Type          : constant Entity_Id := Etype (Allocator);
-      Loc               : Source_Ptr;
+      Loc               : constant Source_Ptr := Sloc (Function_Call);
       Func_Call         : Node_Id := Function_Call;
       Ref_Func_Call     : Node_Id;
       Function_Id       : Entity_Id;
@@ -7743,8 +7743,6 @@ package body Exp_Ch6 is
 
       pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
-
-      Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
          Function_Id := Entity (Name (Func_Call));
@@ -7801,9 +7799,16 @@ package body Exp_Ch6 is
          Rewrite (Allocator, New_Allocator);
 
          --  Initial value of the temp is the result of the uninitialized
-         --  allocator
+         --  allocator. Unchecked_Convert is needed for T'Input where T is
+         --  derived from a controlled type.
 
          Temp_Init := Relocate_Node (Allocator);
+
+         if Nkind_In
+           (Function_Call, N_Type_Conversion, N_Unchecked_Type_Conversion)
+         then
+            Temp_Init := Unchecked_Convert_To (Acc_Type, Temp_Init);
+         end if;
 
          --  Indicate that caller allocates, and pass in the return object
 
@@ -7869,6 +7874,15 @@ package body Exp_Ch6 is
          Rewrite
            (Ref_Func_Call,
             OK_Convert_To (Acc_Type, Ref_Func_Call));
+
+      --  If the types are incompatible, we need an unchecked conversion. Note
+      --  that the full types will be compatible, but the types not visibly
+      --  compatible.
+
+      elsif Nkind_In
+        (Function_Call, N_Type_Conversion, N_Unchecked_Type_Conversion)
+      then
+         Ref_Func_Call := Unchecked_Convert_To (Acc_Type, Ref_Func_Call);
       end if;
 
       declare
@@ -7880,7 +7894,8 @@ package body Exp_Ch6 is
          --  caller-allocates case, this is overwriting the temp with its
          --  initial value, which has no effect. In the callee-allocates case,
          --  this is setting the temp to point to the object allocated by the
-         --  callee.
+         --  callee. Unchecked_Convert is needed for T'Input where T is derived
+         --  from a controlled type.
 
          Actions : List_Id;
          --  Actions to be inserted. If there are no tasks, this is just the
@@ -7940,7 +7955,7 @@ package body Exp_Ch6 is
    procedure Make_Build_In_Place_Call_In_Anonymous_Context
      (Function_Call : Node_Id)
    is
-      Loc             : Source_Ptr;
+      Loc             : constant Source_Ptr := Sloc (Function_Call);
       Func_Call       : constant Node_Id := Unqual_Conv (Function_Call);
       Function_Id     : Entity_Id;
       Result_Subt     : Entity_Id;
@@ -7961,8 +7976,6 @@ package body Exp_Ch6 is
       --  Mark the call as processed as a build-in-place call
 
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
-
-      Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
          Function_Id := Entity (Name (Func_Call));
@@ -8535,7 +8548,10 @@ package body Exp_Ch6 is
                New_Occurrence_Of (Designated_Type, Obj_Loc),
              Name => Call_Deref));
 
-         Set_Renamed_Object (Obj_Def_Id, Call_Deref);
+         --  At this point, Defining_Identifier (Obj_Decl) is no longer equal
+         --  to Obj_Def_Id.
+
+         Set_Renamed_Object (Defining_Identifier (Obj_Decl), Call_Deref);
 
          --  If the original entity comes from source, then mark the new
          --  entity as needing debug information, even though it's defined
@@ -8544,7 +8560,7 @@ package body Exp_Ch6 is
          --  Debug_Renaming_Declaration is called during analysis.
 
          if Comes_From_Source (Obj_Def_Id) then
-            Set_Debug_Info_Needed (Obj_Def_Id);
+            Set_Debug_Info_Needed (Defining_Identifier (Obj_Decl));
          end if;
 
          Analyze (Obj_Decl);

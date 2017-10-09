@@ -839,6 +839,10 @@ package body Sem_Ch12 is
    --  entity is marked as having a limited_view actual when some actual is
    --  a limited view. This is used to place the instance body properly.
 
+   procedure Provide_Completing_Bodies (N : Node_Id);
+   --  Generate completing bodies for all subprograms found within package or
+   --  subprogram declaration N.
+
    procedure Remove_Parent (In_Body : Boolean := False);
    --  Reverse effect after instantiation of child is complete
 
@@ -3542,6 +3546,14 @@ package body Sem_Ch12 is
       Set_SPARK_Pragma_Inherited     (Id);
       Set_SPARK_Aux_Pragma_Inherited (Id);
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => Id,
+         Checks => True);
+
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
@@ -3670,7 +3682,7 @@ package body Sem_Ch12 is
       Create_Generic_Contract (N);
 
       Spec := Specification (N);
-      Id := Defining_Entity (Spec);
+      Id   := Defining_Entity (Spec);
       Generate_Definition (Id);
 
       if Nkind (Id) = N_Defining_Operator_Symbol then
@@ -3697,13 +3709,26 @@ package body Sem_Ch12 is
 
       Analyze_Generic_Formal_Part (N);
 
-      Formals := Parameter_Specifications (Spec);
-
       if Nkind (Spec) = N_Function_Specification then
          Set_Ekind (Id, E_Generic_Function);
       else
          Set_Ekind (Id, E_Generic_Procedure);
       end if;
+
+      --  Set SPARK_Mode from context
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => Id,
+         Checks => True);
+
+      Formals := Parameter_Specifications (Spec);
 
       if Present (Formals) then
          Process_Formals (Formals, Spec);
@@ -3900,6 +3925,16 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Package_Instantiation
 
    begin
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => N,
+         Checks => True,
+         Level  => True,
+         Modes  => True);
+
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for Text_IO special unit in case we are
@@ -4562,19 +4597,26 @@ package body Sem_Ch12 is
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
             Set_Body_Required (Parent (N), False);
-
-            --  We never need elaboration checks on instantiations, since by
-            --  definition, the body instantiation is elaborated at the same
-            --  time as the spec instantiation.
-
-            Set_Suppress_Elaboration_Warnings (Act_Decl_Id);
-            Set_Kill_Elaboration_Checks       (Act_Decl_Id);
          end if;
 
-         Check_Elab_Instantiation (N);
+         --  Save the scenario for later examination by the ABE Processing
+         --  phase.
 
-         if ABE_Is_Certain (N) and then Needs_Body then
+         Record_Elaboration_Scenario (N);
+
+         --  The instantiation results in a guaranteed ABE
+
+         if Is_Known_Guaranteed_ABE (N) and then Needs_Body then
+
+            --  Do not instantiate the corresponding body because gigi cannot
+            --  handle certain types of premature instantiations.
+
             Pending_Instantiations.Decrement_Last;
+
+            --  Create completing bodies for all subprogram declarations since
+            --  their real bodies will not be instantiated.
+
+            Provide_Completing_Bodies (Instance_Spec (N));
          end if;
 
          Check_Hidden_Child_Unit (N, Gen_Unit, Act_Decl_Id);
@@ -5056,7 +5098,7 @@ package body Sem_Ch12 is
 
         --  No point in inlining if ABE is inevitable
 
-        and then not ABE_Is_Certain (N)
+        and then not Is_Known_Guaranteed_ABE (N)
 
         --  Or if subprogram is eliminated
 
@@ -5242,12 +5284,7 @@ package body Sem_Ch12 is
          Check_Eliminated  (Act_Decl_Id);
          Set_Is_Eliminated (Anon_Id, Is_Eliminated (Act_Decl_Id));
 
-         --  In compilation unit case, kill elaboration checks on the
-         --  instantiation, since they are never needed -- the body is
-         --  instantiated at the same point as the spec.
-
          if Nkind (Parent (N)) = N_Compilation_Unit then
-            Set_Suppress_Elaboration_Warnings (Act_Decl_Id);
             Set_Kill_Elaboration_Checks       (Act_Decl_Id);
             Set_Is_Compilation_Unit (Anon_Id);
 
@@ -5338,6 +5375,16 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Subprogram_Instantiation
 
    begin
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => N,
+         Checks => True,
+         Level  => True,
+         Modes  => True);
+
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for special Text_IO unit in case we are
@@ -5590,8 +5637,17 @@ package body Sem_Ch12 is
             Set_Ignore_SPARK_Mode_Pragmas (Anon_Id);
          end if;
 
-         if not Is_Intrinsic_Subprogram (Gen_Unit) then
-            Check_Elab_Instantiation (N);
+         --  Save the scenario for later examination by the ABE Processing
+         --  phase.
+
+         Record_Elaboration_Scenario (N);
+
+         --  The instantiation results in a guaranteed ABE. Create a completing
+         --  body for the subprogram declaration because the real body will not
+         --  be instantiated.
+
+         if Is_Known_Guaranteed_ABE (N) then
+            Provide_Completing_Bodies (Instance_Spec (N));
          end if;
 
          if Is_Dispatching_Operation (Act_Decl_Id)
@@ -8561,7 +8617,7 @@ package body Sem_Ch12 is
          --  The parent was a premature instantiation. Insert freeze node at
          --  the end the current declarative part.
 
-         if ABE_Is_Certain (Get_Unit_Instantiation_Node (Par)) then
+         if Is_Known_Guaranteed_ABE (Get_Unit_Instantiation_Node (Par)) then
             Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
          --  Handle the following case:
@@ -13990,6 +14046,102 @@ package body Sem_Ch12 is
          Set_Is_Immediately_Visible (Cur, Vis);
       end if;
    end Preanalyze_Actuals;
+
+   -------------------------------
+   -- Provide_Completing_Bodies --
+   -------------------------------
+
+   procedure Provide_Completing_Bodies (N : Node_Id) is
+      procedure Build_Completing_Body (Subp_Decl : Node_Id);
+      --  Generate the completing body for subprogram declaration Subp_Decl
+
+      procedure Provide_Completing_Bodies_In (Decls : List_Id);
+      --  Generating completing bodies for all subprograms found in declarative
+      --  list Decls.
+
+      ---------------------------
+      -- Build_Completing_Body --
+      ---------------------------
+
+      procedure Build_Completing_Body (Subp_Decl : Node_Id) is
+         Loc     : constant Source_Ptr := Sloc (Subp_Decl);
+         Subp_Id : constant Entity_Id  := Defining_Entity (Subp_Decl);
+         Spec    : Node_Id;
+
+      begin
+         --  Nothing to do if the subprogram already has a completing body
+
+         if Present (Corresponding_Body (Subp_Decl)) then
+            return;
+
+         --  Mark the function as having a valid return statement even though
+         --  the body contains a single raise statement.
+
+         elsif Ekind (Subp_Id) = E_Function then
+            Set_Return_Present (Subp_Id);
+         end if;
+
+         --  Clone the specification to obtain new entities and reset the only
+         --  semantic field.
+
+         Spec := Copy_Subprogram_Spec (Specification (Subp_Decl));
+         Set_Generic_Parent (Spec, Empty);
+
+         --  Generate:
+         --    function Func ... return ... is
+         --      <or>
+         --    procedure Proc ... is
+         --    begin
+         --       raise Program_Error with "access before elaboration";
+         --    edn Proc;
+
+         Insert_After_And_Analyze (Subp_Decl,
+           Make_Subprogram_Body (Loc,
+             Specification              => Spec,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Make_Raise_Program_Error (Loc,
+                     Reason => PE_Access_Before_Elaboration)))));
+      end Build_Completing_Body;
+
+      ----------------------------------
+      -- Provide_Completing_Bodies_In --
+      ----------------------------------
+
+      procedure Provide_Completing_Bodies_In (Decls : List_Id) is
+         Decl : Node_Id;
+
+      begin
+         if Present (Decls) then
+            Decl := First (Decls);
+            while Present (Decl) loop
+               Provide_Completing_Bodies (Decl);
+               Next (Decl);
+            end loop;
+         end if;
+      end Provide_Completing_Bodies_In;
+
+      --  Local variables
+
+      Spec : Node_Id;
+
+   --  Start of processing for Provide_Completing_Bodies
+
+   begin
+      if Nkind (N) = N_Package_Declaration then
+         Spec := Specification (N);
+
+         Push_Scope (Defining_Entity (N));
+         Provide_Completing_Bodies_In (Visible_Declarations (Spec));
+         Provide_Completing_Bodies_In (Private_Declarations (Spec));
+         Pop_Scope;
+
+      elsif Nkind (N) = N_Subprogram_Declaration then
+         Build_Completing_Body (N);
+      end if;
+   end Provide_Completing_Bodies;
 
    -------------------
    -- Remove_Parent --

@@ -1144,16 +1144,10 @@ package body Sem_Ch7 is
          end if;
       end if;
 
+      --  Set Body_Required indication on the compilation unit node
+
       if Is_Comp_Unit then
-
-         --  Set Body_Required indication on the compilation unit node, and
-         --  determine whether elaboration warnings may be meaningful on it.
-
          Set_Body_Required (Parent (N), Body_Required);
-
-         if not Body_Required then
-            Set_Suppress_Elaboration_Warnings (Id);
-         end if;
       end if;
 
       End_Package_Scope (Id);
