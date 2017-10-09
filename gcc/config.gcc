@@ -461,6 +461,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} paired.h"
+	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
 		cpu_is_64bit=yes
@@ -2627,7 +2628,7 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers=altivec.h
+	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)

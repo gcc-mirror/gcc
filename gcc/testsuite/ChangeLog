@@ -1,3 +1,8 @@
+2017-10-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/amo1.c: New test.
+	* gcc.target/powerpc/amo2.c: Likewise.
+
 2017-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82449
