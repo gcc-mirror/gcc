@@ -1,3 +1,8 @@
+2017-10-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/82416
+	* testsuite/libgomp.hsa.c/pr82416.c: New test.
+
 2017-10-07  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/firstprivate-1.f90 (firstprivate):
