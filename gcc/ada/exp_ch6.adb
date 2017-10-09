@@ -5024,16 +5024,15 @@ package body Exp_Ch6 is
                --  existing object for use as the return object. If the value
                --  is two, then the return object must be allocated on the
                --  secondary stack. Otherwise, the object must be allocated in
-               --  a storage pool (currently only supported for the global
-               --  heap, user-defined storage pools TBD ???). We generate an
-               --  if statement to test the implicit allocation formal and
-               --  initialize a local access value appropriately, creating
-               --  allocators in the secondary stack and global heap cases.
-               --  The special formal also exists and must be tested when the
-               --  function has a tagged result, even when the result subtype
-               --  is constrained, because in general such functions can be
-               --  called in dispatching contexts and must be handled similarly
-               --  to functions with a class-wide result.
+               --  a storage pool. We generate an if statement to test the
+               --  implicit allocation formal and initialize a local access
+               --  value appropriately, creating allocators in the secondary
+               --  stack and global heap cases.  The special formal also exists
+               --  and must be tested when the function has a tagged result,
+               --  even when the result subtype is constrained, because in
+               --  general such functions can be called in dispatching contexts
+               --  and must be handled similarly to functions with a class-wide
+               --  result.
 
                if not Is_Constrained (Ret_Typ)
                  or else Is_Tagged_Type (Underlying_Type (Ret_Typ))
@@ -8192,7 +8191,28 @@ package body Exp_Ch6 is
      (Obj_Decl      : Node_Id;
       Function_Call : Node_Id)
    is
+      function Get_Function_Id (Func_Call : Node_Id) return Entity_Id;
+      --  Get the value of Function_Id, below
+
+      function Get_Function_Id (Func_Call : Node_Id) return Entity_Id is
+      begin
+         if Is_Entity_Name (Name (Func_Call)) then
+            return Entity (Name (Func_Call));
+
+         elsif Nkind (Name (Func_Call)) = N_Explicit_Dereference then
+            return Etype (Name (Func_Call));
+
+         else
+            raise Program_Error;
+         end if;
+      end Get_Function_Id;
+
+      Func_Call       : constant Node_Id   := Unqual_Conv (Function_Call);
+      Function_Id     : constant Entity_Id := Get_Function_Id (Func_Call);
+      Result_Subt     : constant Entity_Id := Etype (Function_Id);
+
       Obj_Def_Id : constant Entity_Id  := Defining_Identifier (Obj_Decl);
+      Obj_Typ    : constant Entity_Id  := Etype (Obj_Def_Id);
       Encl_Func  : constant Entity_Id  := Enclosing_Subprogram (Obj_Def_Id);
       Loc        : constant Source_Ptr := Sloc (Function_Call);
       Obj_Loc    : constant Source_Ptr := Sloc (Obj_Decl);
@@ -8201,15 +8221,21 @@ package body Exp_Ch6 is
       Caller_Object   : Node_Id;
       Def_Id          : Entity_Id;
       Fmaster_Actual  : Node_Id := Empty;
-      Func_Call       : constant Node_Id := Unqual_Conv (Function_Call);
-      Function_Id     : Entity_Id;
       Pool_Actual     : Node_Id;
       Designated_Type : Entity_Id;
       Ptr_Typ         : Entity_Id;
       Ptr_Typ_Decl    : Node_Id;
       Pass_Caller_Acc : Boolean := False;
       Res_Decl        : Node_Id;
-      Result_Subt     : Entity_Id;
+
+      Definite : constant Boolean :=
+                   Caller_Known_Size (Func_Call, Result_Subt)
+                   and then not Is_Class_Wide_Type (Obj_Typ);
+      --  In the case of "X : T'Class := F(...);", where F returns a
+      --  Caller_Known_Size (specific) tagged type, we treat it as
+      --  indefinite, because the code for the Definite case below sets the
+      --  initialization expression of the object to Empty, which would be
+      --  illegal Ada, and would cause gigi to mis-allocate X.
 
    begin
       --  Mark the call as processed as a build-in-place call
@@ -8217,345 +8243,311 @@ package body Exp_Ch6 is
       pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
-      if Is_Entity_Name (Name (Func_Call)) then
-         Function_Id := Entity (Name (Func_Call));
+      --  Create an access type designating the function's result subtype.
+      --  We use the type of the original call because it may be a call to an
+      --  inherited operation, which the expansion has replaced with the parent
+      --  operation that yields the parent type. Note that this access type
+      --  must be declared before we establish a transient scope, so that it
+      --  receives the proper accessibility level.
 
-      elsif Nkind (Name (Func_Call)) = N_Explicit_Dereference then
-         Function_Id := Etype (Name (Func_Call));
-
+      if Is_Class_Wide_Type (Obj_Typ)
+        and then not Is_Interface (Obj_Typ)
+        and then not Is_Class_Wide_Type (Etype (Function_Call))
+      then
+         Designated_Type := Obj_Typ;
       else
-         raise Program_Error;
+         Designated_Type := Etype (Function_Call);
       end if;
 
-      Result_Subt := Etype (Function_Id);
+      Ptr_Typ := Make_Temporary (Loc, 'A');
+      Ptr_Typ_Decl :=
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Ptr_Typ,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              All_Present        => True,
+              Subtype_Indication =>
+                New_Occurrence_Of (Designated_Type, Loc)));
 
-      declare
-         Definite : constant Boolean :=
-                      Caller_Known_Size (Func_Call, Result_Subt);
+      --  The access type and its accompanying object must be inserted after
+      --  the object declaration in the constrained case, so that the function
+      --  call can be passed access to the object. In the indefinite case, or
+      --  if the object declaration is for a return object, the access type and
+      --  object must be inserted before the object, since the object
+      --  declaration is rewritten to be a renaming of a dereference of the
+      --  access object. Note: we need to freeze Ptr_Typ explicitly, because
+      --  the result object is in a different (transient) scope, so won't cause
+      --  freezing.
 
-      begin
-         --  Create an access type designating the function's result subtype.
-         --  We use the type of the original call because it may be a call to
-         --  an inherited operation, which the expansion has replaced with the
-         --  parent operation that yields the parent type. Note that this
-         --  access type must be declared before we establish a transient
-         --  scope, so that it receives the proper accessibility level.
+      if Definite
+        and then not Is_Return_Object (Obj_Def_Id)
+      then
+         Insert_After_And_Analyze (Obj_Decl, Ptr_Typ_Decl);
+      else
+         Insert_Action (Obj_Decl, Ptr_Typ_Decl);
+      end if;
 
-         if Is_Class_Wide_Type (Etype (Defining_Identifier (Obj_Decl)))
-           and then not Is_Interface (Etype (Defining_Identifier (Obj_Decl)))
-           and then not Is_Class_Wide_Type (Etype (Function_Call))
-         then
-            Designated_Type := Etype (Defining_Identifier (Obj_Decl));
-         else
-            Designated_Type := Etype (Function_Call);
-         end if;
+      --  Force immediate freezing of Ptr_Typ because Res_Decl will be
+      --  elaborated in an inner (transient) scope and thus won't cause
+      --  freezing by itself. It's not an itype, but it needs to be frozen
+      --  inside the current subprogram (see Freeze_Outside in freeze.adb).
 
-         Ptr_Typ := Make_Temporary (Loc, 'A');
-         Ptr_Typ_Decl :=
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Ptr_Typ,
-             Type_Definition     =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present        => True,
-                 Subtype_Indication =>
-                   New_Occurrence_Of (Designated_Type, Loc)));
+      Freeze_Itype (Ptr_Typ, Ptr_Typ_Decl);
 
-         --  The access type and its accompanying object must be inserted after
-         --  the object declaration in the constrained case, so that the
-         --  function call can be passed access to the object. In the
-         --  indefinite case, or if the object declaration is for a return
-         --  object, the access type and object must be inserted before the
-         --  object, since the object declaration is rewritten to be a renaming
-         --  of a dereference of the access object. Note: we need to freeze
-         --  Ptr_Typ explicitly, because the result object is in a different
-         --  (transient) scope, so won't cause freezing.
+      --  If the object is a return object of an enclosing build-in-place
+      --  function, then the implicit build-in-place parameters of the
+      --  enclosing function are simply passed along to the called function.
+      --  (Unfortunately, this won't cover the case of extension aggregates
+      --  where the ancestor part is a build-in-place indefinite function
+      --  call that should be passed along the caller's parameters.
+      --  Currently those get mishandled by reassigning the result of the
+      --  call to the aggregate return object, when the call result should
+      --  really be directly built in place in the aggregate and not in a
+      --  temporary. ???)
 
-         if Definite
-           and then not Is_Return_Object (Defining_Identifier (Obj_Decl))
-         then
-            Insert_After_And_Analyze (Obj_Decl, Ptr_Typ_Decl);
-         else
-            Insert_Action (Obj_Decl, Ptr_Typ_Decl);
-         end if;
+      if Is_Return_Object (Obj_Def_Id) then
+         Pass_Caller_Acc := True;
 
-         --  Force immediate freezing of Ptr_Typ because Res_Decl will be
-         --  elaborated in an inner (transient) scope and thus won't cause
-         --  freezing by itself. It's not an itype, but it needs to be frozen
-         --  inside the current subprogram (see Freeze_Outside in freeze.adb).
+         --  When the enclosing function has a BIP_Alloc_Form formal then we
+         --  pass it along to the callee (such as when the enclosing
+         --  function has an unconstrained or tagged result type).
 
-         Freeze_Itype (Ptr_Typ, Ptr_Typ_Decl);
-
-         --  If the object is a return object of an enclosing build-in-place
-         --  function, then the implicit build-in-place parameters of the
-         --  enclosing function are simply passed along to the called function.
-         --  (Unfortunately, this won't cover the case of extension aggregates
-         --  where the ancestor part is a build-in-place indefinite function
-         --  call that should be passed along the caller's parameters.
-         --  Currently those get mishandled by reassigning the result of the
-         --  call to the aggregate return object, when the call result should
-         --  really be directly built in place in the aggregate and not in a
-         --  temporary. ???)
-
-         if Is_Return_Object (Defining_Identifier (Obj_Decl)) then
-            Pass_Caller_Acc := True;
-
-            --  When the enclosing function has a BIP_Alloc_Form formal then we
-            --  pass it along to the callee (such as when the enclosing
-            --  function has an unconstrained or tagged result type).
-
-            if Needs_BIP_Alloc_Form (Encl_Func) then
-               if RTE_Available (RE_Root_Storage_Pool_Ptr) then
-                  Pool_Actual :=
-                    New_Occurrence_Of
-                      (Build_In_Place_Formal
-                        (Encl_Func, BIP_Storage_Pool), Loc);
-
-               --  The build-in-place pool formal is not built on e.g. ZFP
-
-               else
-                  Pool_Actual := Empty;
-               end if;
-
-               Add_Unconstrained_Actuals_To_Build_In_Place_Call
-                 (Function_Call  => Func_Call,
-                  Function_Id    => Function_Id,
-                  Alloc_Form_Exp =>
-                    New_Occurrence_Of
-                      (Build_In_Place_Formal (Encl_Func, BIP_Alloc_Form), Loc),
-                  Pool_Actual    => Pool_Actual);
-
-            --  Otherwise, if enclosing function has a definite result subtype,
-            --  then caller allocation will be used.
-
-            else
-               Add_Unconstrained_Actuals_To_Build_In_Place_Call
-                 (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-            end if;
-
-            if Needs_BIP_Finalization_Master (Encl_Func) then
-               Fmaster_Actual :=
+         if Needs_BIP_Alloc_Form (Encl_Func) then
+            if RTE_Available (RE_Root_Storage_Pool_Ptr) then
+               Pool_Actual :=
                  New_Occurrence_Of
                    (Build_In_Place_Formal
-                      (Encl_Func, BIP_Finalization_Master), Loc);
+                     (Encl_Func, BIP_Storage_Pool), Loc);
+
+            --  The build-in-place pool formal is not built on e.g. ZFP
+
+            else
+               Pool_Actual := Empty;
             end if;
 
-            --  Retrieve the BIPacc formal from the enclosing function and
-            --  convert it to the access type of the callee's BIP_Object_Access
-            --  formal.
+            Add_Unconstrained_Actuals_To_Build_In_Place_Call
+              (Function_Call  => Func_Call,
+               Function_Id    => Function_Id,
+               Alloc_Form_Exp =>
+                 New_Occurrence_Of
+                   (Build_In_Place_Formal (Encl_Func, BIP_Alloc_Form), Loc),
+               Pool_Actual    => Pool_Actual);
 
-            Caller_Object :=
-              Make_Unchecked_Type_Conversion (Loc,
-                Subtype_Mark =>
-                  New_Occurrence_Of
-                    (Etype
-                       (Build_In_Place_Formal
-                         (Function_Id, BIP_Object_Access)),
-                     Loc),
-                Expression   =>
-                  New_Occurrence_Of
-                    (Build_In_Place_Formal (Encl_Func, BIP_Object_Access),
-                     Loc));
+         --  Otherwise, if enclosing function has a definite result subtype,
+         --  then caller allocation will be used.
 
-         --  In the definite case, add an implicit actual to the function call
-         --  that provides access to the declared object. An unchecked
-         --  conversion to the (specific) result type of the function is
-         --  inserted to handle the case where the object is declared with a
-         --  class-wide type.
-
-         elsif Definite then
-            Caller_Object :=
-               Make_Unchecked_Type_Conversion (Loc,
-                 Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
-                 Expression   => New_Occurrence_Of (Obj_Def_Id, Loc));
-
-            --  When the function has a controlling result, an allocation-form
-            --  parameter must be passed indicating that the caller is
-            --  allocating the result object. This is needed because such a
-            --  function can be called as a dispatching operation and must be
-            --  treated similarly to functions with indefinite result subtypes.
-
+         else
             Add_Unconstrained_Actuals_To_Build_In_Place_Call
               (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-
-         --  The allocation for indefinite library-level objects occurs on the
-         --  heap as opposed to the secondary stack. This accommodates DLLs
-         --  where the secondary stack is destroyed after each library
-         --  unload. This is a hybrid mechanism where a stack-allocated object
-         --  lives on the heap.
-
-         elsif Is_Library_Level_Entity (Defining_Identifier (Obj_Decl))
-           and then not Restriction_Active (No_Implicit_Heap_Allocations)
-         then
-            Add_Unconstrained_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Alloc_Form => Global_Heap);
-            Caller_Object := Empty;
-
-            --  Create a finalization master for the access result type to
-            --  ensure that the heap allocation can properly chain the object
-            --  and later finalize it when the library unit goes out of scope.
-
-            if Needs_Finalization (Etype (Func_Call)) then
-               Build_Finalization_Master
-                 (Typ            => Ptr_Typ,
-                  For_Lib_Level  => True,
-                  Insertion_Node => Ptr_Typ_Decl);
-
-               Fmaster_Actual :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
-                   Attribute_Name => Name_Unrestricted_Access);
-            end if;
-
-         --  In other indefinite cases, pass an indication to do the allocation
-         --  on the secondary stack and set Caller_Object to Empty so that a
-         --  null value will be passed for the caller's object address. A
-         --  transient scope is established to ensure eventual cleanup of the
-         --  result.
-
-         else
-            Add_Unconstrained_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Alloc_Form => Secondary_Stack);
-            Caller_Object := Empty;
-
-            Establish_Transient_Scope (Obj_Decl, Sec_Stack => True);
          end if;
 
-         --  Pass along any finalization master actual, which is needed in the
-         --  case where the called function initializes a return object of an
-         --  enclosing build-in-place function.
-
-         Add_Finalization_Master_Actual_To_Build_In_Place_Call
-           (Func_Call  => Func_Call,
-            Func_Id    => Function_Id,
-            Master_Exp => Fmaster_Actual);
-
-         if Nkind (Parent (Obj_Decl)) = N_Extended_Return_Statement
-           and then Has_Task (Result_Subt)
-         then
-            --  Here we're passing along the master that was passed in to this
-            --  function.
-
-            Add_Task_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id,
-               Master_Actual =>
-                 New_Occurrence_Of
-                   (Build_In_Place_Formal (Encl_Func, BIP_Task_Master), Loc));
-
-         else
-            Add_Task_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Make_Identifier (Loc, Name_uMaster));
+         if Needs_BIP_Finalization_Master (Encl_Func) then
+            Fmaster_Actual :=
+              New_Occurrence_Of
+                (Build_In_Place_Formal
+                   (Encl_Func, BIP_Finalization_Master), Loc);
          end if;
 
-         Add_Access_Actual_To_Build_In_Place_Call
-           (Func_Call,
-            Function_Id,
-            Caller_Object,
-            Is_Access => Pass_Caller_Acc);
+         --  Retrieve the BIPacc formal from the enclosing function and convert
+         --  it to the access type of the callee's BIP_Object_Access formal.
 
-         --  Finally, create an access object initialized to a reference to the
-         --  function call. We know this access value cannot be null, so mark
-         --  the entity accordingly to suppress the access check.
+         Caller_Object :=
+           Make_Unchecked_Type_Conversion (Loc,
+             Subtype_Mark =>
+               New_Occurrence_Of
+                 (Etype
+                    (Build_In_Place_Formal
+                      (Function_Id, BIP_Object_Access)),
+                  Loc),
+             Expression   =>
+               New_Occurrence_Of
+                 (Build_In_Place_Formal (Encl_Func, BIP_Object_Access),
+                  Loc));
 
-         Def_Id := Make_Temporary (Loc, 'R', Func_Call);
-         Set_Etype (Def_Id, Ptr_Typ);
-         Set_Is_Known_Non_Null (Def_Id);
+      --  In the definite case, add an implicit actual to the function call
+      --  that provides access to the declared object. An unchecked conversion
+      --  to the (specific) result type of the function is inserted to handle
+      --  the case where the object is declared with a class-wide type.
 
-         if Nkind (Function_Call) = N_Type_Conversion then
-            Res_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
-                Expression          =>
-                Make_Unchecked_Type_Conversion (Loc,
-                   New_Occurrence_Of (Ptr_Typ, Loc),
-                   Make_Reference (Loc, Relocate_Node (Func_Call))));
-         else
-            Res_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
-                Expression          =>
-                  Make_Reference (Loc, Relocate_Node (Func_Call)));
+      elsif Definite then
+         Caller_Object :=
+            Make_Unchecked_Type_Conversion (Loc,
+              Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
+              Expression   => New_Occurrence_Of (Obj_Def_Id, Loc));
+
+         --  When the function has a controlling result, an allocation-form
+         --  parameter must be passed indicating that the caller is allocating
+         --  the result object. This is needed because such a function can be
+         --  called as a dispatching operation and must be treated similarly to
+         --  functions with indefinite result subtypes.
+
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
+           (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
+
+      --  The allocation for indefinite library-level objects occurs on the
+      --  heap as opposed to the secondary stack. This accommodates DLLs where
+      --  the secondary stack is destroyed after each library unload. This is a
+      --  hybrid mechanism where a stack-allocated object lives on the heap.
+
+      elsif Is_Library_Level_Entity (Obj_Def_Id)
+        and then not Restriction_Active (No_Implicit_Heap_Allocations)
+      then
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
+           (Func_Call, Function_Id, Alloc_Form => Global_Heap);
+         Caller_Object := Empty;
+
+         --  Create a finalization master for the access result type to ensure
+         --  that the heap allocation can properly chain the object and later
+         --  finalize it when the library unit goes out of scope.
+
+         if Needs_Finalization (Etype (Func_Call)) then
+            Build_Finalization_Master
+              (Typ            => Ptr_Typ,
+               For_Lib_Level  => True,
+               Insertion_Node => Ptr_Typ_Decl);
+
+            Fmaster_Actual :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
          end if;
 
-         Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
+      --  In other indefinite cases, pass an indication to do the allocation on
+      --  the secondary stack and set Caller_Object to Empty so that a null
+      --  value will be passed for the caller's object address. A transient
+      --  scope is established to ensure eventual cleanup of the result.
 
-         --  If the result subtype of the called function is definite and is
-         --  not itself the return expression of an enclosing BIP function,
-         --  then mark the object as having no initialization.
+      else
+         Add_Unconstrained_Actuals_To_Build_In_Place_Call
+           (Func_Call, Function_Id, Alloc_Form => Secondary_Stack);
+         Caller_Object := Empty;
 
-         if Definite
-           and then not Is_Return_Object (Defining_Identifier (Obj_Decl))
-         then
-            --  The related object declaration is encased in a transient block
-            --  because the build-in-place function call contains at least one
-            --  nested function call that produces a controlled transient
-            --  temporary:
+         Establish_Transient_Scope (Obj_Decl, Sec_Stack => True);
+      end if;
 
-            --    Obj : ... := BIP_Func_Call (Ctrl_Func_Call);
+      --  Pass along any finalization master actual, which is needed in the
+      --  case where the called function initializes a return object of an
+      --  enclosing build-in-place function.
 
-            --  Since the build-in-place expansion decouples the call from the
-            --  object declaration, the finalization machinery lacks the
-            --  context which prompted the generation of the transient
-            --  block. To resolve this scenario, store the build-in-place call.
+      Add_Finalization_Master_Actual_To_Build_In_Place_Call
+        (Func_Call  => Func_Call,
+         Func_Id    => Function_Id,
+         Master_Exp => Fmaster_Actual);
 
-            if Scope_Is_Transient and then Node_To_Be_Wrapped = Obj_Decl then
-               Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
-            end if;
+      if Nkind (Parent (Obj_Decl)) = N_Extended_Return_Statement
+        and then Has_Task (Result_Subt)
+      then
+         --  Here we're passing along the master that was passed in to this
+         --  function.
 
-            Set_Expression (Obj_Decl, Empty);
-            Set_No_Initialization (Obj_Decl);
+         Add_Task_Actuals_To_Build_In_Place_Call
+           (Func_Call, Function_Id,
+            Master_Actual =>
+              New_Occurrence_Of
+                (Build_In_Place_Formal (Encl_Func, BIP_Task_Master), Loc));
 
-         --  In case of an indefinite result subtype, or if the call is the
-         --  return expression of an enclosing BIP function, rewrite the object
-         --  declaration as an object renaming where the renamed object is a
-         --  dereference of <function_Call>'reference:
-         --
-         --      Obj : Subt renames <function_call>'Ref.all;
+      else
+         Add_Task_Actuals_To_Build_In_Place_Call
+           (Func_Call, Function_Id, Make_Identifier (Loc, Name_uMaster));
+      end if;
 
-         else
-            Call_Deref :=
-              Make_Explicit_Dereference (Obj_Loc,
-                Prefix => New_Occurrence_Of (Def_Id, Obj_Loc));
+      Add_Access_Actual_To_Build_In_Place_Call
+        (Func_Call,
+         Function_Id,
+         Caller_Object,
+         Is_Access => Pass_Caller_Acc);
 
-            Rewrite (Obj_Decl,
-              Make_Object_Renaming_Declaration (Obj_Loc,
-                Defining_Identifier => Make_Temporary (Obj_Loc, 'D'),
-                Subtype_Mark =>
-                  New_Occurrence_Of (Designated_Type, Obj_Loc),
-                Name => Call_Deref));
+      --  Finally, create an access object initialized to a reference to the
+      --  function call. We know this access value cannot be null, so mark the
+      --  entity accordingly to suppress the access check.
 
-            Set_Renamed_Object (Defining_Identifier (Obj_Decl), Call_Deref);
+      Def_Id := Make_Temporary (Loc, 'R', Func_Call);
+      Set_Etype (Def_Id, Ptr_Typ);
+      Set_Is_Known_Non_Null (Def_Id);
 
-            --  If the original entity comes from source, then mark the new
-            --  entity as needing debug information, even though it's defined
-            --  by a generated renaming that does not come from source, so that
-            --  the Materialize_Entity flag will be set on the entity when
-            --  Debug_Renaming_Declaration is called during analysis.
+      if Nkind (Function_Call) = N_Type_Conversion then
+         Res_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Def_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+             Expression          =>
+             Make_Unchecked_Type_Conversion (Loc,
+                New_Occurrence_Of (Ptr_Typ, Loc),
+                Make_Reference (Loc, Relocate_Node (Func_Call))));
+      else
+         Res_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Def_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+             Expression          =>
+               Make_Reference (Loc, Relocate_Node (Func_Call)));
+      end if;
 
-            if Comes_From_Source (Obj_Def_Id) then
-               Set_Debug_Info_Needed (Defining_Identifier (Obj_Decl));
-            end if;
+      Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
-            Analyze (Obj_Decl);
-            Replace_Renaming_Declaration_Id
-              (Obj_Decl, Original_Node (Obj_Decl));
+      --  If the result subtype of the called function is definite and is not
+      --  itself the return expression of an enclosing BIP function, then mark
+      --  the object as having no initialization.
+
+      if Definite
+        and then not Is_Return_Object (Obj_Def_Id)
+      then
+         --  The related object declaration is encased in a transient block
+         --  because the build-in-place function call contains at least one
+         --  nested function call that produces a controlled transient
+         --  temporary:
+
+         --    Obj : ... := BIP_Func_Call (Ctrl_Func_Call);
+
+         --  Since the build-in-place expansion decouples the call from the
+         --  object declaration, the finalization machinery lacks the context
+         --  which prompted the generation of the transient block. To resolve
+         --  this scenario, store the build-in-place call.
+
+         if Scope_Is_Transient and then Node_To_Be_Wrapped = Obj_Decl then
+            Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
          end if;
-      end;
 
-      --  If the object entity has a class-wide Etype, then we need to change
-      --  it to the result subtype of the function call, because otherwise the
-      --  object will be class-wide without an explicit initialization and
-      --  won't be allocated properly by the back end. It seems unclean to make
-      --  such a revision to the type at this point, and we should try to
-      --  improve this treatment when build-in-place functions with class-wide
-      --  results are implemented. ???
+         Set_Expression (Obj_Decl, Empty);
+         Set_No_Initialization (Obj_Decl);
 
-      if Is_Class_Wide_Type (Etype (Defining_Identifier (Obj_Decl))) then
-         Set_Etype (Defining_Identifier (Obj_Decl), Result_Subt);
+      --  In case of an indefinite result subtype, or if the call is the
+      --  return expression of an enclosing BIP function, rewrite the object
+      --  declaration as an object renaming where the renamed object is a
+      --  dereference of <function_Call>'reference:
+      --
+      --      Obj : Subt renames <function_call>'Ref.all;
+
+      else
+         Call_Deref :=
+           Make_Explicit_Dereference (Obj_Loc,
+             Prefix => New_Occurrence_Of (Def_Id, Obj_Loc));
+
+         Rewrite (Obj_Decl,
+           Make_Object_Renaming_Declaration (Obj_Loc,
+             Defining_Identifier => Make_Temporary (Obj_Loc, 'D'),
+             Subtype_Mark =>
+               New_Occurrence_Of (Designated_Type, Obj_Loc),
+             Name => Call_Deref));
+
+         Set_Renamed_Object (Obj_Def_Id, Call_Deref);
+
+         --  If the original entity comes from source, then mark the new
+         --  entity as needing debug information, even though it's defined
+         --  by a generated renaming that does not come from source, so that
+         --  the Materialize_Entity flag will be set on the entity when
+         --  Debug_Renaming_Declaration is called during analysis.
+
+         if Comes_From_Source (Obj_Def_Id) then
+            Set_Debug_Info_Needed (Obj_Def_Id);
+         end if;
+
+         Analyze (Obj_Decl);
+         Replace_Renaming_Declaration_Id
+           (Obj_Decl, Original_Node (Obj_Decl));
       end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
 

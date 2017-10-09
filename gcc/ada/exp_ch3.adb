@@ -6138,6 +6138,19 @@ package body Exp_Ch3 is
          return;
       end if;
 
+      --  No action needed for the internal imported dummy object added by
+      --  Make_DT to compute the offset of the components that reference
+      --  secondary dispatch tables; required to avoid never-ending loop
+      --  processing this internal object declaration.
+
+      if Tagged_Type_Expansion
+        and then Is_Internal (Def_Id)
+        and then Is_Imported (Def_Id)
+        and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
+      then
+         return;
+      end if;
+
       --  First we do special processing for objects of a tagged type where
       --  this is the point at which the type is frozen. The creation of the
       --  dispatch table and the initialization procedure have to be deferred
@@ -8384,10 +8397,13 @@ package body Exp_Ch3 is
          --  Normal case: No discriminants in the parent type
 
          else
-            --  Don't need to set any value if this interface shares the
-            --  primary dispatch table.
+            --  Don't need to set any value if the offset-to-top field is
+            --  statically set or if this interface shares the primary
+            --  dispatch table.
 
-            if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
+            if not Building_Static_Secondary_DT (Typ)
+              and then not Is_Ancestor (Iface, Typ, Use_Full_View => True)
+            then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
                    Iface_Tag    => New_Occurrence_Of (Iface_Tag, Loc),

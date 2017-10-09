@@ -29,6 +29,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Expander; use Expander;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_CG;   use Exp_CG;
@@ -298,6 +299,32 @@ package body Exp_Disp is
 
         and then not Is_CPP_Class (Root_Typ);
    end Building_Static_DT;
+
+   ----------------------------------
+   -- Building_Static_Secondary_DT --
+   ----------------------------------
+
+   function Building_Static_Secondary_DT (Typ : Entity_Id) return Boolean is
+      Full_Typ : Entity_Id := Typ;
+      Root_Typ : Entity_Id := Root_Type (Typ);
+
+   begin
+      --  Handle private types
+
+      if Present (Full_View (Typ)) then
+         Full_Typ := Full_View (Typ);
+      end if;
+
+      if Present (Full_View (Root_Typ)) then
+         Root_Typ := Full_View (Root_Typ);
+      end if;
+
+      return Building_Static_DT (Full_Typ)
+        and then not Is_Interface (Full_Typ)
+        and then Has_Interfaces (Full_Typ)
+        and then (Full_Typ = Root_Typ
+                    or else not Is_Variable_Size_Record (Etype (Full_Typ)));
+   end Building_Static_Secondary_DT;
 
    ----------------------------------
    -- Build_Static_Dispatch_Tables --
@@ -1693,11 +1720,10 @@ package body Exp_Disp is
 
                if From_Limited_With (Actual_Typ) then
 
-                  --  If the type of the actual parameter comes from a
-                  --  limited with-clause and the non-limited view is already
-                  --  available, we replace the anonymous access type by
-                  --  a duplicate declaration whose designated type is the
-                  --  non-limited view.
+                  --  If the type of the actual parameter comes from a limited
+                  --  with_clause and the nonlimited view is already available,
+                  --  we replace the anonymous access type by a duplicate
+                  --  declaration whose designated type is the nonlimited view.
 
                   if Has_Non_Limited_View (Actual_DDT) then
                      Anon := New_Copy (Actual_Typ);
@@ -3755,6 +3781,11 @@ package body Exp_Disp is
       DT_Aggr : constant Elist_Id := New_Elmt_List;
       --  Entities marked with attribute Is_Dispatch_Table_Entity
 
+      Dummy_Object : Entity_Id := Empty;
+      --  Extra nonexistent object of type Typ internally used to compute the
+      --  offset to the components that reference secondary dispatch tables.
+      --  Used to statically allocate secondary dispatch tables.
+
       procedure Check_Premature_Freezing
         (Subp        : Entity_Id;
          Tagged_Type : Entity_Id;
@@ -3783,6 +3814,7 @@ package body Exp_Disp is
       procedure Make_Secondary_DT
         (Typ              : Entity_Id;
          Iface            : Entity_Id;
+         Iface_Comp       : Node_Id;
          Suffix_Index     : Int;
          Num_Iface_Prims  : Nat;
          Iface_DT_Ptr     : Entity_Id;
@@ -3941,6 +3973,7 @@ package body Exp_Disp is
       procedure Make_Secondary_DT
         (Typ              : Entity_Id;
          Iface            : Entity_Id;
+         Iface_Comp       : Node_Id;
          Suffix_Index     : Int;
          Num_Iface_Prims  : Nat;
          Iface_DT_Ptr     : Entity_Id;
@@ -4179,10 +4212,25 @@ package body Exp_Disp is
              Prefix         => New_Occurrence_Of (Predef_Prims, Loc),
              Attribute_Name => Name_Address));
 
-         --  Note: The correct value of Offset_To_Top will be set by the init
-         --  subprogram
+         --  If the location of the component that references this secondary
+         --  dispatch table is variable then we have not declared the internal
+         --  dummy object; the value of Offset_To_Top will be set by the init
+         --  subprogram.
 
-         Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, 0));
+         if No (Dummy_Object) then
+            Append_To (DT_Aggr_List, Make_Integer_Literal (Loc, 0));
+
+         else
+            Append_To (DT_Aggr_List,
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  Make_Selected_Component (Loc,
+                    Prefix        =>
+                      New_Occurrence_Of (Dummy_Object, Loc),
+                    Selector_Name =>
+                      New_Occurrence_Of (Iface_Comp, Loc)),
+                Attribute_Name => Name_Position));
+         end if;
 
          --  Generate the Object Specific Data table required to dispatch calls
          --  through synchronized interfaces.
@@ -4407,15 +4455,16 @@ package body Exp_Disp is
 
          Append_Elmt (New_Node, DT_Aggr);
 
-         --  Note: Secondary dispatch tables cannot be declared constant
-         --  because the component Offset_To_Top is currently initialized
-         --  by the IP routine.
+         --  Note: Secondary dispatch tables are declared constant only if
+         --  we can compute their offset field by means of the extra dummy
+         --  object; otherwise they cannot be declared constant and the
+         --  Offset_To_Top component is initialized by the IP routine.
 
          Append_To (Result,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Iface_DT,
              Aliased_Present     => True,
-             Constant_Present    => False,
+             Constant_Present    => Present (Dummy_Object),
 
              Object_Definition   =>
                Make_Subtype_Indication (Loc,
@@ -4678,6 +4727,93 @@ package body Exp_Disp is
          end;
       end if;
 
+      if Building_Static_Secondary_DT (Typ) then
+         declare
+            Cannot_Have_Null_Disc : Boolean := False;
+            Name_Dummy_Object     : constant Name_Id :=
+                                      New_External_Name (Tname,
+                                        'P', Suffix_Index => -1);
+         begin
+            Dummy_Object := Make_Defining_Identifier (Loc, Name_Dummy_Object);
+
+            --  Define the extra object imported and constant to avoid linker
+            --  errors (since this object is never declared). Required because
+            --  we implement RM 13.3(19) for exported and imported (variable)
+            --  objects by making them volatile.
+
+            Set_Is_Imported      (Dummy_Object);
+            Set_Ekind            (Dummy_Object, E_Constant);
+            Set_Is_True_Constant (Dummy_Object);
+            Set_Related_Type     (Dummy_Object, Typ);
+
+            --  The scope must be set now to call Get_External_Name
+
+            Set_Scope (Dummy_Object, Current_Scope);
+
+            Get_External_Name (Dummy_Object);
+            Set_Interface_Name (Dummy_Object,
+              Make_String_Literal (Loc, Strval => String_From_Name_Buffer));
+
+            --  Ensure proper Sprint output of this implicit importation
+
+            Set_Is_Internal (Dummy_Object);
+
+            if not Has_Discriminants (Typ) then
+               Append_To (Result,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Dummy_Object,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Occurrence_Of (Typ, Loc)));
+            else
+               declare
+                  Constr_List  : constant List_Id := New_List;
+                  Discrim      : Node_Id;
+
+               begin
+                  Discrim := First_Discriminant (Typ);
+                  while Present (Discrim) loop
+                     if Is_Discrete_Type (Etype (Discrim)) then
+                        Append_To (Constr_List,
+                          Make_Attribute_Reference (Loc,
+                            Prefix => New_Occurrence_Of (Etype (Discrim), Loc),
+                            Attribute_Name => Name_First));
+
+                     else
+                        pragma Assert (Is_Access_Type (Etype (Discrim)));
+                        Cannot_Have_Null_Disc :=
+                          Cannot_Have_Null_Disc
+                            or else Can_Never_Be_Null (Etype (Discrim));
+                        Append_To (Constr_List, Make_Null (Loc));
+                     end if;
+
+                     Next_Discriminant (Discrim);
+                  end loop;
+
+                  Append_To (Result,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Dummy_Object,
+                      Constant_Present    => True,
+                      Object_Definition   =>
+                        Make_Subtype_Indication (Loc,
+                          Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                          Constraint   =>
+                            Make_Index_Or_Discriminant_Constraint (Loc,
+                              Constraints => Constr_List))));
+               end;
+            end if;
+
+            --  Given that the dummy object will not be declared at run time,
+            --  analyze its declaration with expansion disabled and warnings
+            --  and error messages ignored.
+
+            Expander_Mode_Save_And_Set (False);
+            Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
+            Analyze (Last (Result), Suppress => All_Checks);
+            Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
+            Expander_Mode_Restore;
+         end;
+      end if;
+
       --  Ada 2005 (AI-251): Build the secondary dispatch tables
 
       if Has_Interfaces (Typ) then
@@ -4704,6 +4840,7 @@ package body Exp_Disp is
              (Typ              => Typ,
               Iface            => Base_Type
                                     (Related_Type (Node (AI_Tag_Comp))),
+              Iface_Comp       => Node (AI_Tag_Comp),
               Suffix_Index     => Suffix_Index,
               Num_Iface_Prims  => UI_To_Int
                                     (DT_Entry_Count (Node (AI_Tag_Comp))),
@@ -4731,6 +4868,7 @@ package body Exp_Disp is
               (Typ              => Typ,
                Iface            => Base_Type
                                      (Related_Type (Node (AI_Tag_Comp))),
+               Iface_Comp       => Node (AI_Tag_Comp),
                Suffix_Index     => -1,
                Num_Iface_Prims  => UI_To_Int
                                      (DT_Entry_Count (Node (AI_Tag_Comp))),

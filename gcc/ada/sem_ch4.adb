@@ -8860,7 +8860,7 @@ package body Sem_Ch4 is
             while Present (Hom) loop
                if Ekind_In (Hom, E_Procedure, E_Function)
                  and then (not Is_Hidden (Hom) or else In_Instance)
-                 and then Scope (Hom) = Scope (Anc_Type)
+                 and then Scope (Hom) = Scope (Base_Type (Anc_Type))
                  and then Present (First_Formal (Hom))
                  and then
                    (Base_Type (Etype (First_Formal (Hom))) = Cls_Type
@@ -8921,8 +8921,13 @@ package body Sem_Ch4 is
                         Success    => Success,
                         Skip_First => True);
 
+                     --  The same operation may be encountered on two homonym
+                     --  traversals, before and after looking at interfaces.
+                     --  Check for this case before reporting a real ambiguity.
+
                      if Present (Valid_Candidate (Success, Call_Node, Hom))
                        and then Nkind (Call_Node) /= N_Function_Call
+                       and then Hom /= Matching_Op
                      then
                         Error_Msg_NE ("ambiguous call to&", N, Hom);
                         Report_Ambiguity (Matching_Op);

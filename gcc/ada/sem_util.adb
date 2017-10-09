@@ -20383,6 +20383,17 @@ package body Sem_Util is
                                     (Nearest_Dynamic_Scope
                                        (Defining_Entity (Node_Par)));
 
+                        --  For a return statement within a function, return
+                        --  the depth of the function itself. This is not just
+                        --  a small optimization, but matters when analyzing
+                        --  the expression in an expression function before
+                        --  the body is created.
+
+                        when N_Simple_Return_Statement =>
+                           if Ekind (Current_Scope) = E_Function then
+                              return Scope_Depth (Current_Scope);
+                           end if;
+
                         when others =>
                            null;
                      end case;

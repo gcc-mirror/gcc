@@ -174,6 +174,11 @@ package Exp_Disp is
    pragma Inline (Building_Static_DT);
    --  Returns true when building statically allocated dispatch tables
 
+   function Building_Static_Secondary_DT (Typ : Entity_Id) return Boolean;
+   pragma Inline (Building_Static_Secondary_DT);
+   --  Returns true when building statically allocated secondary dispatch
+   --  tables
+
    procedure Build_Static_Dispatch_Tables (N : Node_Id);
    --  N is a library level package declaration or package body. Build the
    --  static dispatch table of the tagged types defined at library level. In
