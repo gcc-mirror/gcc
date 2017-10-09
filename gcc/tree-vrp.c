@@ -1769,7 +1769,7 @@ zero_nonzero_bits_from_vr (const tree expr_type,
 	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
 				    may_be_nonzero->get_precision ());
 	  *may_be_nonzero = *may_be_nonzero | mask;
-	  *must_be_nonzero = must_be_nonzero->and_not (mask);
+	  *must_be_nonzero = wi::bit_and_not (*must_be_nonzero, mask);
 	}
     }
 
@@ -2975,8 +2975,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  wide_int result_zero_bits = ((must_be_nonzero0 & must_be_nonzero1)
 				       | ~(may_be_nonzero0 | may_be_nonzero1));
 	  wide_int result_one_bits
-	    = (must_be_nonzero0.and_not (may_be_nonzero1)
-	       | must_be_nonzero1.and_not (may_be_nonzero0));
+	    = (wi::bit_and_not (must_be_nonzero0, may_be_nonzero1)
+	       | wi::bit_and_not (must_be_nonzero1, may_be_nonzero0));
 	  max = wide_int_to_tree (expr_type, ~result_zero_bits);
 	  min = wide_int_to_tree (expr_type, result_one_bits);
 	  /* If the range has all positive or all negative values the
@@ -4877,7 +4877,7 @@ masked_increment (const wide_int &val_in, const wide_int &mask,
       if ((res & bit) == 0)
 	continue;
       res = bit - 1;
-      res = (val + bit).and_not (res);
+      res = wi::bit_and_not (val + bit, res);
       res &= mask;
       if (wi::gtu_p (res, val))
 	return res ^ sgnbit;
@@ -9538,13 +9538,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   switch (gimple_assign_rhs_code (stmt))
     {
     case BIT_AND_EXPR:
-      mask = may_be_nonzero0.and_not (must_be_nonzero1);
+      mask = wi::bit_and_not (may_be_nonzero0, must_be_nonzero1);
       if (mask == 0)
 	{
 	  op = op0;
 	  break;
 	}
-      mask = may_be_nonzero1.and_not (must_be_nonzero0);
+      mask = wi::bit_and_not (may_be_nonzero1, must_be_nonzero0);
       if (mask == 0)
 	{
 	  op = op1;
@@ -9552,13 +9552,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 	}
       break;
     case BIT_IOR_EXPR:
-      mask = may_be_nonzero0.and_not (must_be_nonzero1);
+      mask = wi::bit_and_not (may_be_nonzero0, must_be_nonzero1);
       if (mask == 0)
 	{
 	  op = op1;
 	  break;
 	}
-      mask = may_be_nonzero1.and_not (must_be_nonzero0);
+      mask = wi::bit_and_not (may_be_nonzero1, must_be_nonzero0);
       if (mask == 0)
 	{
 	  op = op0;

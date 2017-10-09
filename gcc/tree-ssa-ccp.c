@@ -569,9 +569,11 @@ get_value_from_alignment (tree expr)
   gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
 
   get_pointer_alignment_1 (expr, &align, &bitpos);
-  val.mask = (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
-	      ? wi::mask <widest_int> (TYPE_PRECISION (type), false)
-	      : -1).and_not (align / BITS_PER_UNIT - 1);
+  val.mask = wi::bit_and_not
+    (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
+     ? wi::mask <widest_int> (TYPE_PRECISION (type), false)
+     : -1,
+     align / BITS_PER_UNIT - 1);
   val.lattice_val
     = wi::sext (val.mask, TYPE_PRECISION (type)) == -1 ? VARYING : CONSTANT;
   if (val.lattice_val == CONSTANT)
@@ -1308,8 +1310,9 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
     case BIT_IOR_EXPR:
       /* The mask is constant where there is a known
 	 set bit, (m1 | m2) & ~((v1 & ~m1) | (v2 & ~m2)).  */
-      *mask = (r1mask | r2mask)
-	      .and_not (r1val.and_not (r1mask) | r2val.and_not (r2mask));
+      *mask = wi::bit_and_not (r1mask | r2mask,
+			       wi::bit_and_not (r1val, r1mask)
+			       | wi::bit_and_not (r2val, r2mask));
       *val = r1val | r2val;
       break;
 
@@ -1395,7 +1398,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
       {
 	/* Do the addition with unknown bits set to zero, to give carry-ins of
 	   zero wherever possible.  */
-	widest_int lo = r1val.and_not (r1mask) + r2val.and_not (r2mask);
+	widest_int lo = (wi::bit_and_not (r1val, r1mask)
+			 + wi::bit_and_not (r2val, r2mask));
 	lo = wi::ext (lo, width, sgn);
 	/* Do the addition with unknown bits set to one, to give carry-ins of
 	   one wherever possible.  */
@@ -1447,7 +1451,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
     case NE_EXPR:
       {
 	widest_int m = r1mask | r2mask;
-	if (r1val.and_not (m) != r2val.and_not (m))
+	if (wi::bit_and_not (r1val, m) != wi::bit_and_not (r2val, m))
 	  {
 	    *mask = 0;
 	    *val = ((code == EQ_EXPR) ? 0 : 1);
@@ -1486,8 +1490,10 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	/* If we know the most significant bits we know the values
 	   value ranges by means of treating varying bits as zero
 	   or one.  Do a cross comparison of the max/min pairs.  */
-	maxmin = wi::cmp (o1val | o1mask, o2val.and_not (o2mask), sgn);
-	minmax = wi::cmp (o1val.and_not (o1mask), o2val | o2mask, sgn);
+	maxmin = wi::cmp (o1val | o1mask,
+			  wi::bit_and_not (o2val, o2mask), sgn);
+	minmax = wi::cmp (wi::bit_and_not (o1val, o1mask),
+			  o2val | o2mask, sgn);
 	if (maxmin < 0)  /* o1 is less than o2.  */
 	  {
 	    *mask = 0;
