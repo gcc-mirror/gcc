@@ -328,19 +328,23 @@ package body Lib.Load is
 
          if Main_Source_File > No_Source_File then
             Version := Source_Checksum (Main_Source_File);
+
          else
             --  To avoid emitting a source location (since there is no file),
             --  we write a custom error message instead of using the machinery
             --  in errout.adb.
 
             Set_Standard_Error;
+
             if Main_Source_File = No_Access_To_Source_File then
-               Write_Str ("no read access for file """
-                          & Get_Name_String (Fname) & """");
+               Write_Str
+                 ("no read access for file """ & Get_Name_String (Fname)
+                  & """");
             else
-               Write_Str ("file """
-                          & Get_Name_String (Fname) & """ not found");
+               Write_Str
+                 ("file """ & Get_Name_String (Fname) & """ not found");
             end if;
+
             Write_Eol;
             Set_Standard_Output;
          end if;
@@ -835,6 +839,7 @@ package body Lib.Load is
                else
                   Write_Str ("  file was not found, load failed");
                end if;
+
                Write_Eol;
             end if;
 
@@ -867,6 +872,7 @@ package body Lib.Load is
 
                else
                   Error_Msg_File_1 := Fname;
+
                   if Src_Ind = No_Access_To_Source_File then
                      Error_Msg ("no read access to file{", Load_Msg_Sloc);
                   else

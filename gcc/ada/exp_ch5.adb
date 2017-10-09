@@ -1577,7 +1577,7 @@ package body Exp_Ch5 is
          --  suppressed in this case). It is unnecessary but harmless in
          --  other cases.
 
-         --  Special case: no copy if the target has no discriminants.
+         --  Special case: no copy if the target has no discriminants
 
          if Has_Discriminants (L_Typ)
            and then Is_Unchecked_Union (Base_Type (L_Typ))

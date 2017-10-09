@@ -169,6 +169,7 @@ begin
          --  Case of gnat.adc file present
 
          if Source_gnat_adc > No_Source_File then
+
             --  Parse the gnat.adc file for configuration pragmas
 
             Initialize_Scanner (No_Unit, Source_gnat_adc);

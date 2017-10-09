@@ -741,6 +741,7 @@ package body Atree is
    begin
       pragma Debug (New_Node_Debugging_Output (Source));
       pragma Debug (New_Node_Debugging_Output (Destination));
+
       Nodes.Table (Destination)         := Nodes.Table (Source);
       Nodes.Table (Destination).In_List := Save_In_List;
       Nodes.Table (Destination).Link    := Save_Link;
@@ -1330,6 +1331,7 @@ package body Atree is
    begin
       pragma Debug (New_Node_Debugging_Output (E1));
       pragma Debug (New_Node_Debugging_Output (E2));
+
       pragma Assert (True
         and then Has_Extension (E1)
         and then Has_Extension (E2)
@@ -1402,8 +1404,10 @@ package body Atree is
 
    begin
       pragma Assert (not (Has_Extension (Node)));
+
       Result := Allocate_Initialize_Node (Node, With_Extension => True);
       pragma Debug (Debug_Extend_Node);
+
       return Result;
    end Extend_Node;
 
@@ -1677,8 +1681,8 @@ package body Atree is
          Current_Error_Node := Ent;
       end if;
 
-      Nodes.Table (Ent).Nkind  := New_Node_Kind;
-      Nodes.Table (Ent).Sloc   := New_Sloc;
+      Nodes.Table (Ent).Nkind := New_Node_Kind;
+      Nodes.Table (Ent).Sloc  := New_Sloc;
       pragma Debug (New_Node_Debugging_Output (Ent));
 
       --  Mark the new entity as Ghost depending on the current Ghost region
@@ -1700,6 +1704,7 @@ package body Atree is
 
    begin
       pragma Assert (New_Node_Kind not in N_Entity);
+
       Nod := Allocate_Initialize_Node (Empty, With_Extension => False);
       Nodes.Table (Nod).Nkind := New_Node_Kind;
       Nodes.Table (Nod).Sloc  := New_Sloc;
@@ -2144,6 +2149,7 @@ package body Atree is
         (not Has_Extension (Old_Node)
           and not Has_Extension (New_Node)
           and not Nodes.Table (New_Node).In_List);
+
       pragma Debug (New_Node_Debugging_Output (Old_Node));
       pragma Debug (New_Node_Debugging_Output (New_Node));
 
@@ -2197,6 +2203,7 @@ package body Atree is
         (not Has_Extension (Old_Node)
           and not Has_Extension (New_Node)
           and not Nodes.Table (New_Node).In_List);
+
       pragma Debug (New_Node_Debugging_Output (Old_Node));
       pragma Debug (New_Node_Debugging_Output (New_Node));
 

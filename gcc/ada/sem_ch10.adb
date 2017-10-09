@@ -163,7 +163,9 @@ package body Sem_Ch10 is
    --  the private declarations of a parent unit.
 
    procedure Install_Parents
-     (Lib_Unit : Node_Id; Is_Private : Boolean; Chain : Boolean := True);
+     (Lib_Unit   : Node_Id;
+      Is_Private : Boolean;
+      Chain      : Boolean := True);
    --  This procedure establishes the context for the compilation of a child
    --  unit. If Lib_Unit is a child library spec then the context of the parent
    --  is installed, and the parent itself made immediately visible, so that
@@ -3390,7 +3392,9 @@ package body Sem_Ch10 is
 
       if Is_Child_Spec (Lib_Unit) then
          Install_Parents
-           (Lib_Unit, Private_Present (Parent (Lib_Unit)), Chain);
+           (Lib_Unit   => Lib_Unit,
+            Is_Private => Private_Present (Parent (Lib_Unit)),
+            Chain      => Chain);
       end if;
 
       Install_Limited_Context_Clauses (N);
@@ -4065,7 +4069,10 @@ package body Sem_Ch10 is
    ---------------------
 
    procedure Install_Parents
-     (Lib_Unit : Node_Id; Is_Private : Boolean; Chain : Boolean := True) is
+     (Lib_Unit   : Node_Id;
+      Is_Private : Boolean;
+      Chain      : Boolean := True)
+   is
       P      : Node_Id;
       E_Name : Entity_Id;
       P_Name : Entity_Id;
@@ -4121,8 +4128,11 @@ package body Sem_Ch10 is
       --  This is the recursive call that ensures all parents are loaded
 
       if Is_Child_Spec (P) then
-         Install_Parents (P,
-           Is_Private or else Private_Present (Parent (Lib_Unit)), Chain);
+         Install_Parents
+           (Lib_Unit   => P,
+            Is_Private =>
+              Is_Private or else Private_Present (Parent (Lib_Unit)),
+            Chain      => Chain);
       end if;
 
       --  Now we can install the context for this parent

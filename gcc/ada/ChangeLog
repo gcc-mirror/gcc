@@ -1,3 +1,16 @@
+2017-10-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb: Rename Uses_Unseen_Priv into
+	Contains_Lib_Incomplete_Type.
+
+2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb, sem_spark.adb, adabkend.adb, exp_ch5.adb, frontend.adb,
+	sem_ch12.adb, fmap.adb, exp_ch6.adb, exp_spark.adb, lib-load.adb,
+	exp_ch9.adb, osint.adb, exp_disp.adb, sem_ch8.adb, sem_ch8.ads,
+	prepcomp.adb, gnat1drv.adb, atree.adb, sinput-l.adb, targparm.adb,
+	sem_ch10.adb, par-ch8.adb: Minor reformatting.
+
 2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb (Is_Suitable_Access): This scenario is now only relevant

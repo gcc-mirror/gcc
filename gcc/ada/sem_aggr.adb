@@ -4144,8 +4144,9 @@ package body Sem_Aggr is
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
                if Nkind (Assoc) = N_Iterated_Component_Association then
-                  Error_Msg_N ("iterated component association can only "
-                    & "appear in an array aggregate", N);
+                  Error_Msg_N
+                    ("iterated component association can only appear in an "
+                     & "array aggregate", N);
                   raise Unrecoverable_Error;
 
                else
