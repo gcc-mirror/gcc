@@ -21991,7 +21991,7 @@ package body Sem_Ch3 is
                   exit;
                end if;
 
-               Next_Component (Comp);
+               Next_Discriminant (Comp);
             end loop;
 
          elsif Nkind (N) = N_Component_Declaration then

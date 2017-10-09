@@ -23257,7 +23257,16 @@ package body Sem_Util is
          return "unknown subprogram";
       end if;
 
-      Append_Entity_Name (Buf, Ent);
+      if Nkind (Ent) = N_Defining_Program_Unit_Name then
+
+         --  If the subprogram is a child unit, use its simple name to
+         --  start the construction of the fully qualified name.
+
+         Append_Entity_Name (Buf, Defining_Identifier (Ent));
+
+      else
+         Append_Entity_Name (Buf, Ent);
+      end if;
       return +Buf;
    end Subprogram_Name;
 

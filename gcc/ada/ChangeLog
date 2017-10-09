@@ -1,3 +1,33 @@
+2017-10-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Replace_Components): Browse the list of discriminants,
+	not components.
+
+2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Static_Elaboration_Checks): Elaboration requirements
+	are verified only in the static model.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification,
+	Check_Reverse_Iteration): Check that the domain of iteration supports
+	reverse iteration when it is a formal container.  This requires the
+	presence of a Previous primitive in the Iterable aspect.
+	* sem_ch13.adb (Resolve_Iterable_Operation): Verify legality of
+	primitives Last and Previous to support reverse iteration over formal
+	containers.
+	(Validate_Iterable_Aspect): Add check for reverse iteration operations.
+	* exp_ch5.adb (Build_Formal_Container_Iteration): Add proper expansion
+	for reverse iteration using primitives Last and Previous in generated
+	loop.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Subprogram_Name): If this is a child unit, use the name
+	of the Defining_Program_Unit_Name, which is an identifier, in order to
+	construct the string for the fully qualified name.
+
 2017-10-09  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch3.adb: Rename Uses_Unseen_Priv into

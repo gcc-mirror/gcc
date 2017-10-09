@@ -1937,12 +1937,19 @@ package body Sem_Ch5 is
 
       procedure Check_Reverse_Iteration (Typ : Entity_Id) is
       begin
-         if Reverse_Present (N)
-           and then not Is_Array_Type (Typ)
-           and then not Is_Reversible_Iterator (Typ)
-         then
-            Error_Msg_NE
-              ("container type does not support reverse iteration", N, Typ);
+         if Reverse_Present (N) then
+            if Is_Array_Type (Typ)
+              or else Is_Reversible_Iterator (Typ)
+              or else
+                  (Present (Find_Aspect (Typ, Aspect_Iterable))
+                    and then Present
+                      (Get_Iterable_Type_Primitive (Typ, Name_Previous)))
+            then
+               null;
+            else
+               Error_Msg_NE
+                 ("container type does not support reverse iteration", N, Typ);
+            end if;
          end if;
       end Check_Reverse_Iteration;
 
@@ -2303,6 +2310,7 @@ package body Sem_Ch5 is
                        ("missing Element primitive for iteration", N);
                   else
                      Set_Etype (Def_Id, Etype (Elt));
+                     Check_Reverse_Iteration (Typ);
                   end if;
                end;
 
