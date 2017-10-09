@@ -70,7 +70,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	  const BrigOperandOffset32_t *operand_ptr
 	    = (const BrigOperandOffset32_t *) data->bytes;
 
-	  vec<tree, va_gc> *&args = i == 0 ? out_args : in_args;
+	  bool out_args_p = i == 0;
 
 	  while (bytes > 0)
 	    {
@@ -85,7 +85,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	      if (brig_var->type & BRIG_TYPE_ARRAY)
 		{
 		  /* Array return values are passed as the first argument.  */
-		  args = in_args;
+		  out_args_p = false;
 		  /* Pass pointer to the element zero and use its element zero
 		     as the base address.  */
 		  tree etype = TREE_TYPE (TREE_TYPE (var));
@@ -97,8 +97,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 		}
 
 	      gcc_assert (var != NULL_TREE);
-	      vec_safe_reserve (args, 1);
-	      vec_safe_push (args, var);
+	      vec_safe_push (out_args_p ? out_args : in_args, var);
 	      ++operand_ptr;
 	      bytes -= 4;
 	    }
