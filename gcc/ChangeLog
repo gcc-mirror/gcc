@@ -1,3 +1,12 @@
+2017-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82449
+	* sese.c (scev_analyzable_p): Check whether the SCEV is linear.
+	* tree-chrec.h (evolution_function_is_constant_p): Adjust to
+	allow constant addresses.
+	* tree-chrec.c (scev_is_linear_expression): Constant evolutions
+	are linear.
+
 2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-builtins.def (vec_nabs, vec_vfi): Fix builtin
