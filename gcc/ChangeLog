@@ -1,3 +1,21 @@
+2017-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cfgrtl.c (rtl_account_profile_record): Replace insn_rtx_cost with
+	insn_cost.
+	* combine.c (uid_insn_cost): Adjust comment.
+	(combine_validate_cost): Adjust comment.  Use pattern_cost instead
+	of insn_rtx_cost
+	(combine_instructions): Use insn_cost instead of insn_rtx_cost.
+	* dse.c (find_shift_sequence): Ditto.
+	* ifcvt.c (cheap_bb_rtx_cost_p): Ditto.
+	(bb_valid_for_noce_process_p): Use pattern_cost.
+	* rtl.h (insn_rtx_cost): Delete.
+	(pattern_cost): New prototype.
+	(insn_cost): New prototype.
+	* rtlanal.c (insn_rtx_cost): Rename to...
+	(pattern_cost): ... this.
+	(insn_cost): New.
+
 2017-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*jcc_2): Remove insn pattern.

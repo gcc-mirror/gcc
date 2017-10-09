@@ -5269,11 +5269,11 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	 ? 1 : bitwidth - floor_log2 (nonzero) - 1;
 }
 
-/* Calculate the rtx_cost of a single instruction.  A return value of
+/* Calculate the rtx_cost of a single instruction pattern.  A return value of
    zero indicates an instruction pattern without a known cost.  */
 
 int
-insn_rtx_cost (rtx pat, bool speed)
+pattern_cost (rtx pat, bool speed)
 {
   int i, cost;
   rtx set;
@@ -5321,6 +5321,15 @@ insn_rtx_cost (rtx pat, bool speed)
 
   cost = set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed);
   return cost > 0 ? cost : COSTS_N_INSNS (1);
+}
+
+/* Calculate the cost of a single instruction.  A return value of zero
+   indicates an instruction pattern without a known cost.  */
+
+int
+insn_cost (rtx_insn *insn, bool speed)
+{
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 /* Returns estimate on cost of computing SEQ.  */
