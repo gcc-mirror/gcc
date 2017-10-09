@@ -13009,7 +13009,7 @@ package Sinfo is
         5 => False),  --  SCIL_Tag_Value (Node5-Sem)
 
      N_Call_Marker =>
-       (1 => True,    --  Target (Node1-Sem)
+       (1 => False,   --  Target (Node1-Sem)
         2 => False,   --  unused
         3 => False,   --  unused
         4 => False,   --  unused

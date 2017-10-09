@@ -281,14 +281,6 @@ package body Sem_Ch7 is
          --  If we haven't already traversed Node, then mark it and traverse
          --  it.
 
-         procedure Scan_Subprogram_Refs (Node : Node_Id) is
-         begin
-            if not Traversed_Table.Get (Node) then
-               Traversed_Table.Set (Node, True);
-               Traverse_And_Scan_Subprogram_Refs (Node);
-            end if;
-         end Scan_Subprogram_Refs;
-
          --------------------
          -- Has_Referencer --
          --------------------
@@ -532,6 +524,18 @@ package body Sem_Ch7 is
 
             return OK;
          end Scan_Subprogram_Ref;
+
+         --------------------------
+         -- Scan_Subprogram_Refs --
+         --------------------------
+
+         procedure Scan_Subprogram_Refs (Node : Node_Id) is
+         begin
+            if not Traversed_Table.Get (Node) then
+               Traversed_Table.Set (Node, True);
+               Traverse_And_Scan_Subprogram_Refs (Node);
+            end if;
+         end Scan_Subprogram_Refs;
 
          --  Local variables
 

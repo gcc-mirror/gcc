@@ -10255,10 +10255,11 @@ package body Sem_Ch3 is
          Set_Is_Limited_Record (Def_Id, Is_Limited_Record (T));
 
          if Has_Discrs
-            and then not Is_Empty_Elmt_List (Elist)
-            and then not For_Access
+           and then not Is_Empty_Elmt_List (Elist)
+           and then not For_Access
          then
             Create_Constrained_Components (Def_Id, Related_Nod, T, Elist);
+
          elsif not For_Access then
             Set_Cloned_Subtype (Def_Id, T);
          end if;
@@ -10288,11 +10289,10 @@ package body Sem_Ch3 is
          --  Add_Global_Declaration in this case. This can happen if we have a
          --  build-in-place library function.
 
-         if (Nkind (Nod) in N_Entity
-               and then Is_Compilation_Unit (Nod))
+         if (Nkind (Nod) in N_Entity and then Is_Compilation_Unit (Nod))
            or else
              (Nkind (Nod) = N_Defining_Program_Unit_Name
-                and then Is_Compilation_Unit (Defining_Identifier (Nod)))
+               and then Is_Compilation_Unit (Defining_Identifier (Nod)))
          then
             Add_Global_Declaration (IR);
          else
@@ -11828,14 +11828,14 @@ package body Sem_Ch3 is
 
                   else
                      Error_Msg_N
-                       ("illegal context for call"
-                          & " to function with limited result", Exp);
+                       ("illegal context for call to function with limited "
+                        & "result", Exp);
                   end if;
 
                else
                   Error_Msg_N
-                    ("initialization of limited object requires aggregate "
-                      & "or function call",  Exp);
+                    ("initialization of limited object requires aggregate or "
+                     & "function call",  Exp);
                end if;
             end if;
          end if;

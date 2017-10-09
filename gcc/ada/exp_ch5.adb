@@ -175,15 +175,16 @@ package body Exp_Ch5 is
       Advance   : out Node_Id;
       New_Loop  : out Node_Id)
    is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Stats    : constant List_Id    := Statements (N);
-      Typ      : constant Entity_Id  := Base_Type (Etype (Container));
+      Loc   : constant Source_Ptr := Sloc (N);
+      Stats : constant List_Id    := Statements (N);
+      Typ   : constant Entity_Id  := Base_Type (Etype (Container));
+
+      Has_Element_Op : constant Entity_Id :=
+                         Get_Iterable_Type_Primitive (Typ, Name_Has_Element);
 
       First_Op : Entity_Id;
       Next_Op  : Entity_Id;
 
-      Has_Element_Op : constant Entity_Id :=
-                   Get_Iterable_Type_Primitive (Typ, Name_Has_Element);
    begin
       --  Use the proper set of primitives depending on the direction of
       --  iteration. The legality of a reverse iteration has been checked
@@ -196,7 +197,6 @@ package body Exp_Ch5 is
       else
          First_Op := Get_Iterable_Type_Primitive (Typ, Name_First);
          Next_Op  := Get_Iterable_Type_Primitive (Typ, Name_Next);
-         null;
       end if;
 
       --  Declaration for Cursor

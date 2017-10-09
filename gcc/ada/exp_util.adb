@@ -651,9 +651,8 @@ package body Exp_Util is
       --  stack.
 
       elsif Is_RTE (Pool_Id, RE_SS_Pool)
-        or else
-          (Nkind (Expr) = N_Allocator
-             and then Is_RTE (Storage_Pool (Expr), RE_SS_Pool))
+        or else (Nkind (Expr) = N_Allocator
+                  and then Is_RTE (Storage_Pool (Expr), RE_SS_Pool))
       then
          return;
 
