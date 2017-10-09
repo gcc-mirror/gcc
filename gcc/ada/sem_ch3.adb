@@ -2231,7 +2231,8 @@ package body Sem_Ch3 is
 
       procedure Resolve_Aspects;
       --  Utility to resolve the expressions of aspects at the end of a list of
-      --  declarations.
+      --  declarations, or before a declaration that freezes previous entities,
+      --  such as in a subprogram body.
 
       function Uses_Unseen_Priv (Pkg : Entity_Id) return Boolean;
       --  Check if a nested package has entities within it that rely on library
@@ -2789,6 +2790,12 @@ package body Sem_Ch3 is
                if Nkind (Next_Decl) = N_Subprogram_Body then
                   Handle_Late_Controlled_Primitive (Next_Decl);
                end if;
+
+            else
+               --  In ASIS mode, if the next declaration is a body, complete
+               --  the analysis of declarations so far.
+
+               Resolve_Aspects;
             end if;
 
             Adjust_Decl;

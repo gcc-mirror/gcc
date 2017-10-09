@@ -4995,10 +4995,26 @@ package body Sem_Elab is
       Subp_Id : Entity_Id;
 
    begin
-      if Nkind (N) /= N_Attribute_Reference then
+      --  This scenario is relevant only when the static model is in effect
+      --  because it is graph-dependent and does not involve any run-time
+      --  checks. Allowing it in the dynamic model would create confusing
+      --  noise.
+
+      if not Static_Elaboration_Checks then
          return False;
 
-      --  Internally-generated attributes are assumed to be ABE safe
+      --  Nothing to do when switch -gnatd.U (ignore 'Access) is in effect
+
+      elsif Debug_Flag_Dot_UU then
+         return False;
+
+      --  Nothing to do when the scenario is not an attribute reference
+
+      elsif Nkind (N) /= N_Attribute_Reference then
+         return False;
+
+      --  Nothing to do for internally-generated attributes because they are
+      --  assumed to be ABE safe.
 
       elsif not Comes_From_Source (N) then
          return False;
@@ -5031,16 +5047,10 @@ package body Sem_Elab is
 
       return
 
-        --  This particular scenario is relevant only in the static model when
-        --  switch -gnatd.U (ignore 'Access) is not in effect.
+        --  The prefix must denote a source entry, operator, or subprogram
+        --  which is not imported.
 
-        Static_Elaboration_Checks
-          and then not Debug_Flag_Dot_UU
-
-          --  The prefix must denote an entry, operator, or subprogram which is
-          --  not imported.
-
-          and then Comes_From_Source (Subp_Id)
+        Comes_From_Source (Subp_Id)
           and then Is_Subprogram_Or_Entry (Subp_Id)
           and then not Is_Bodiless_Subprogram (Subp_Id)
 
@@ -5109,10 +5119,21 @@ package body Sem_Elab is
       Var_Unit_Id : Entity_Id;
 
    begin
-      if Nkind (N) /= N_Assignment_Statement then
+      --  This scenario is relevant only when the static model is in effect
+      --  because it is graph-dependent and does not involve any run-time
+      --  checks. Allowing it in the dynamic model would create confusing
+      --  noise.
+
+      if not Static_Elaboration_Checks then
          return False;
 
-      --  Internally-generated assigments are assumed to be ABE safe
+      --  Nothing to do when the scenario is not an assignment
+
+      elsif Nkind (N) /= N_Assignment_Statement then
+         return False;
+
+      --  Nothing to do for internally-generated assignments because they are
+      --  assumed to be ABE safe.
 
       elsif not Comes_From_Source (N) then
          return False;
@@ -5161,10 +5182,10 @@ package body Sem_Elab is
       --  To qualify, the assignment must meet the following prerequisites:
 
       return
+
+        --  The variable must be a source entity and susceptible to warnings
+
         Comes_From_Source (Var_Id)
-
-          --  The variable must be susceptible to warnings
-
           and then not Has_Warnings_Off (Var_Id)
 
           --  The variable must be declared in the spec of compilation unit U
@@ -5232,14 +5253,23 @@ package body Sem_Elab is
    --  Start of processing for Is_Suitable_Variable_Reference
 
    begin
+      --  This scenario is relevant only when the static model is in effect
+      --  because it is graph-dependent and does not involve any run-time
+      --  checks. Allowing it in the dynamic model would create confusing
+      --  noise.
+
+      if not Static_Elaboration_Checks then
+         return False;
+
       --  Attributes and operator sumbols are not considered to be suitable
       --  references to variables even though they are part of predicate
       --  Is_Entity_Name.
 
-      if not Nkind_In (N, N_Expanded_Name, N_Identifier) then
+      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
          return False;
 
-      --  Internally generated references are assumed to be ABE safe
+      --  Nothing to do for internally-generated references because they are
+      --  assumed to be ABE safe.
 
       elsif not Comes_From_Source (N) then
          return False;
