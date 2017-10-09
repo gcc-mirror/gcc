@@ -444,14 +444,13 @@ scev_analyzable_p (tree def, sese_l &region)
   loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
   scev = scalar_evolution_in_region (region, loop, def);
 
-  return !chrec_contains_undetermined (scev)
-    && (TREE_CODE (scev) != SSA_NAME
-	|| !defined_in_sese_p (scev, region))
-    && (tree_does_not_contain_chrecs (scev)
-	|| evolution_function_is_affine_p (scev))
-    && (! loop
-	|| ! loop_in_sese_p (loop, region)
-	|| ! chrec_contains_symbols_defined_in_loop (scev, loop->num));
+  return (!chrec_contains_undetermined (scev)
+	  && (TREE_CODE (scev) != SSA_NAME
+	      || !defined_in_sese_p (scev, region))
+	  && scev_is_linear_expression (scev)
+	  && (! loop
+	      || ! loop_in_sese_p (loop, region)
+	      || ! chrec_contains_symbols_defined_in_loop (scev, loop->num)));
 }
 
 /* Returns the scalar evolution of T in REGION.  Every variable that

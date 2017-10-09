@@ -1,3 +1,8 @@
+2017-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82449
+	* gfortran.dg/graphite/pr82449.f: New testcase.
+
 2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/82463

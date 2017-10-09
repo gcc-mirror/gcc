@@ -1610,6 +1610,9 @@ operator_is_linear (tree scev)
 bool
 scev_is_linear_expression (tree scev)
 {
+  if (evolution_function_is_constant_p (scev))
+    return true;
+
   if (scev == NULL
       || !operator_is_linear (scev))
     return false;
