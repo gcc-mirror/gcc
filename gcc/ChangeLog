@@ -1,5 +1,11 @@
 2017-10-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82397
+	* tree-data-ref.c (data_ref_compare_tree): Make sure to return
+	equality only for semantically equal trees.
+
+2017-10-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82449
 	* sese.c (scev_analyzable_p): Check whether the SCEV is linear.
 	* tree-chrec.h (evolution_function_is_constant_p): Adjust to
