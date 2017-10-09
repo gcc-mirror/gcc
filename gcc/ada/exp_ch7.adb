@@ -1955,7 +1955,7 @@ package body Exp_Ch7 is
                Insert_After (Finalizer_Insert_Nod, Fin_Body);
             end if;
 
-            Analyze (Fin_Body);
+            Analyze (Fin_Body, Suppress => All_Checks);
          end if;
       end Create_Finalizer;
 
