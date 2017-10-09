@@ -8466,7 +8466,9 @@ package body Exp_Ch6 is
       Set_Etype (Def_Id, Ptr_Typ);
       Set_Is_Known_Non_Null (Def_Id);
 
-      if Nkind (Function_Call) = N_Type_Conversion then
+      if Nkind_In
+        (Function_Call, N_Type_Conversion, N_Unchecked_Type_Conversion)
+      then
          Res_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Def_Id,

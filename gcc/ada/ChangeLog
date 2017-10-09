@@ -1,5 +1,20 @@
 2017-10-09  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb: (Make_Build_In_Place_Call_In_Object_Declaration): Take
+	care of unchecked conversions in addition to regular conversions. This
+	takes care of a case where a type is derived from a private untagged
+	type that is completed by a tagged controlled type.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Build_Class_Wide_Check, Replace_Formals): When
+	rewriting a class-wide condition, handle properly the case where the
+	controlling argument of the operation to which the condition applies is
+	an access to a tagged type, and the condition includes a dispatching
+	call with an implicit dereference.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
 	* exp_ch6.adb: (Make_Build_In_Place_Call_In_Object_Declaration): Remove
 	the code at the end of this procedure that was setting the type of a
 	class-wide object to the specific type returned by a function call.

@@ -736,6 +736,18 @@ package body Exp_Disp is
 
                         if Is_Class_Wide_Type (Etype (F)) then
                            Set_Etype (N, Etype (F));
+
+                        --  Conversely, if this is a controlling argument
+                        --  (in a dispatching call in the condition)
+                        --  that is a dereference, the source is an access to
+                        --  classwide type, so preserve the dispatching nature
+                        --  of the call in the rewritten condition.
+
+                        elsif Nkind (Parent (N)) = N_Explicit_Dereference
+                          and then Is_Controlling_Actual (Parent (N))
+                        then
+                           Set_Controlling_Argument (Parent (Parent (N)),
+                              Parent (N));
                         end if;
 
                         exit;
