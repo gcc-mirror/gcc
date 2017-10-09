@@ -311,7 +311,7 @@ static bool optimize_this_for_speed_p;
 
 static int max_uid_known;
 
-/* The following array records the insn_rtx_cost for every insn
+/* The following array records the insn_cost for every insn
    in the instruction stream.  */
 
 static int *uid_insn_cost;
@@ -841,7 +841,7 @@ do_SUBST_LINK (struct insn_link **into, struct insn_link *newval)
 #define SUBST_LINK(oldval, newval) do_SUBST_LINK (&oldval, newval)
 
 /* Subroutine of try_combine.  Determine whether the replacement patterns
-   NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_rtx_cost
+   NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_cost
    than the original sequence I0, I1, I2, I3 and undobuf.other_insn.  Note
    that I0, I1 and/or NEWI2PAT may be NULL_RTX.  Similarly, NEWOTHERPAT and
    undobuf.other_insn may also both be NULL_RTX.  Return false if the cost
@@ -888,11 +888,11 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
     old_cost -= i1_cost;
 
 
-  /* Calculate the replacement insn_rtx_costs.  */
-  new_i3_cost = insn_rtx_cost (newpat, optimize_this_for_speed_p);
+  /* Calculate the replacement pattern_costs.  */
+  new_i3_cost = pattern_cost (newpat, optimize_this_for_speed_p);
   if (newi2pat)
     {
-      new_i2_cost = insn_rtx_cost (newi2pat, optimize_this_for_speed_p);
+      new_i2_cost = pattern_cost (newi2pat, optimize_this_for_speed_p);
       new_cost = (new_i2_cost > 0 && new_i3_cost > 0)
 		 ? new_i2_cost + new_i3_cost : 0;
     }
@@ -907,7 +907,7 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
       int old_other_cost, new_other_cost;
 
       old_other_cost = INSN_COST (undobuf.other_insn);
-      new_other_cost = insn_rtx_cost (newotherpat, optimize_this_for_speed_p);
+      new_other_cost = pattern_cost (newotherpat, optimize_this_for_speed_p);
       if (old_other_cost > 0 && new_other_cost > 0)
 	{
 	  old_cost += old_other_cost;
@@ -1208,10 +1208,9 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		  set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX,
 						    insn);
 
-	    /* Record the current insn_rtx_cost of this instruction.  */
+	    /* Record the current insn_cost of this instruction.  */
 	    if (NONJUMP_INSN_P (insn))
-	      INSN_COST (insn) = insn_rtx_cost (PATTERN (insn),
-	      					optimize_this_for_speed_p);
+	      INSN_COST (insn) = insn_cost (insn, optimize_this_for_speed_p);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "insn_cost %d for ", INSN_COST (insn));
