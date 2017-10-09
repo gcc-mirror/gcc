@@ -61,13 +61,16 @@ package body Exp_SPARK is
    procedure Expand_SPARK_Indexed_Component (N : Node_Id);
    --  Insert explicit dereference if required
 
+   procedure Expand_SPARK_N_Loop_Statement (N : Node_Id);
+   --  Perform loop statement-specific expansion
+
    procedure Expand_SPARK_N_Object_Declaration (N : Node_Id);
    --  Perform object-declaration-specific expansion
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
 
-   procedure Expand_SPARK_Op_Ne (N : Node_Id);
+   procedure Expand_SPARK_N_Op_Ne (N : Node_Id);
    --  Rewrite operator /= based on operator = when defined explicitly
 
    procedure Expand_SPARK_Selected_Component (N : Node_Id);
@@ -118,17 +121,7 @@ package body Exp_SPARK is
          --  dealt with specially in GNATprove.
 
          when N_Loop_Statement =>
-            declare
-               Scheme : constant Node_Id := Iteration_Scheme (N);
-            begin
-               if Present (Scheme)
-                 and then Present (Iterator_Specification (Scheme))
-                 and then
-                   Is_Iterator_Over_Array (Iterator_Specification (Scheme))
-               then
-                  Expand_Iterator_Loop_Over_Array (N);
-               end if;
-            end;
+            Expand_SPARK_N_Loop_Statement (N);
 
          when N_Object_Declaration =>
             Expand_SPARK_N_Object_Declaration (N);
@@ -137,7 +130,7 @@ package body Exp_SPARK is
             Expand_SPARK_N_Object_Renaming_Declaration (N);
 
          when N_Op_Ne =>
-            Expand_SPARK_Op_Ne (N);
+            Expand_SPARK_N_Op_Ne (N);
 
          when N_Freeze_Entity =>
             if Is_Type (Entity (N)) then
@@ -156,6 +149,21 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
+
+   ------------------------------
+   -- Expand_SPARK_Freeze_Type --
+   ------------------------------
+
+   procedure Expand_SPARK_Freeze_Type (E : Entity_Id) is
+   begin
+      --  When a DIC is inherited by a tagged type, it may need to be
+      --  specialized to the descendant type, hence build a separate DIC
+      --  procedure for it as done during regular expansion for compilation.
+
+      if Has_DIC (E) and then Is_Tagged_Type (E) then
+         Build_DIC_Procedure_Body (E, For_Freeze => True);
+      end if;
+   end Expand_SPARK_Freeze_Type;
 
    ----------------------------------------
    -- Expand_SPARK_N_Attribute_Reference --
@@ -261,20 +269,28 @@ package body Exp_SPARK is
       end if;
    end Expand_SPARK_N_Attribute_Reference;
 
-   ------------------------------
-   -- Expand_SPARK_Freeze_Type --
-   ------------------------------
+   -----------------------------------
+   -- Expand_SPARK_N_Loop_Statement --
+   -----------------------------------
 
-   procedure Expand_SPARK_Freeze_Type (E : Entity_Id) is
+   procedure Expand_SPARK_N_Loop_Statement (N : Node_Id) is
+      Scheme : constant Node_Id := Iteration_Scheme (N);
+
    begin
-      --  When a DIC is inherited by a tagged type, it may need to be
-      --  specialized to the descendant type, hence build a separate DIC
-      --  procedure for it as done during regular expansion for compilation.
+      --  Loop iterations over arrays need to be expanded, to avoid getting
+      --  two names referring to the same object in memory (the array and the
+      --  iterator) in GNATprove, especially since both can be written (thus
+      --  possibly leading to interferences due to aliasing). No such problem
+      --  arises with quantified expressions over arrays, which are dealt with
+      --  specially in GNATprove.
 
-      if Has_DIC (E) and then Is_Tagged_Type (E) then
-         Build_DIC_Procedure_Body (E, For_Freeze => True);
+      if Present (Scheme)
+        and then Present (Iterator_Specification (Scheme))
+        and then Is_Iterator_Over_Array (Iterator_Specification (Scheme))
+      then
+         Expand_Iterator_Loop_Over_Array (N);
       end if;
-   end Expand_SPARK_Freeze_Type;
+   end Expand_SPARK_N_Loop_Statement;
 
    ------------------------------------
    -- Expand_SPARK_Indexed_Component --
@@ -295,9 +311,11 @@ package body Exp_SPARK is
    ---------------------------------------
 
    procedure Expand_SPARK_N_Object_Declaration (N : Node_Id) is
-      Def_Id : constant Entity_Id  := Defining_Identifier (N);
       Loc    : constant Source_Ptr := Sloc (N);
-      Typ    : constant Entity_Id  := Etype (Def_Id);
+      Obj_Id : constant Entity_Id  := Defining_Identifier (N);
+      Typ    : constant Entity_Id  := Etype (Obj_Id);
+
+      Call : Node_Id;
 
    begin
       --  If the object declaration denotes a variable without initialization
@@ -305,12 +323,19 @@ package body Exp_SPARK is
       --  and analyze a dummy call to the DIC procedure of the type in order
       --  to detect potential elaboration issues.
 
-      if Comes_From_Source (Def_Id)
+      if Comes_From_Source (Obj_Id)
+        and then Ekind (Obj_Id) = E_Variable
         and then Has_DIC (Typ)
         and then Present (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
       then
-         Analyze (Build_DIC_Call (Loc, Def_Id, Typ));
+         Call := Build_DIC_Call (Loc, Obj_Id, Typ);
+
+         --  Partially insert the call into the tree by setting its parent
+         --  pointer.
+
+         Set_Parent (Call, N);
+         Analyze (Call);
       end if;
    end Expand_SPARK_N_Object_Declaration;
 
@@ -370,11 +395,11 @@ package body Exp_SPARK is
       end if;
    end Expand_SPARK_N_Object_Renaming_Declaration;
 
-   ------------------------
-   -- Expand_SPARK_Op_Ne --
-   ------------------------
+   --------------------------
+   -- Expand_SPARK_N_Op_Ne --
+   --------------------------
 
-   procedure Expand_SPARK_Op_Ne (N : Node_Id) is
+   procedure Expand_SPARK_N_Op_Ne (N : Node_Id) is
       Typ : constant Entity_Id := Etype (Left_Opnd (N));
 
    begin
@@ -388,7 +413,7 @@ package body Exp_SPARK is
       else
          Exp_Ch4.Expand_N_Op_Ne (N);
       end if;
-   end Expand_SPARK_Op_Ne;
+   end Expand_SPARK_N_Op_Ne;
 
    -------------------------------------
    -- Expand_SPARK_Potential_Renaming --

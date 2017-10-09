@@ -57,6 +57,7 @@ with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -4133,6 +4134,11 @@ package body Sem_Ch8 is
                    Statements => New_List (Attr_Node)));
       end if;
 
+      --  Signal the ABE mechanism that the generated subprogram body has not
+      --  ABE ramifications.
+
+      Set_Was_Attribute_Reference (Body_Node);
+
       --  In case of tagged types we add the body of the generated function to
       --  the freezing actions of the type (because in the general case such
       --  type is still not frozen). We exclude from this processing generic
@@ -4192,15 +4198,6 @@ package body Sem_Ch8 is
          Error_Msg_N
            ("a library unit can only rename another library unit", N);
       end if;
-
-      --  We suppress elaboration warnings for the resulting entity, since
-      --  clearly they are not needed, and more particularly, in the case
-      --  of a generic formal subprogram, the resulting entity can appear
-      --  after the instantiation itself, and thus look like a bogus case
-      --  of access before elaboration.
-
-      Set_Suppress_Elaboration_Warnings (New_S);
-
    end Attribute_Renaming;
 
    ----------------------
@@ -5433,6 +5430,16 @@ package body Sem_Ch8 is
          return;
       end if;
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      if Nkind (N) = N_Identifier then
+         Mark_Elaboration_Attributes
+           (N_Id  => N,
+            Modes => True);
+      end if;
+
       --  Here if Entity pointer was not set, we need full visibility analysis
       --  First we generate debugging output if the debug E flag is set.
 
@@ -5907,6 +5914,10 @@ package body Sem_Ch8 is
 
    <<Done>>
       Check_Restriction_No_Use_Of_Entity (N);
+
+      --  Save the scenario for later examination by the ABE Processing phase
+
+      Record_Elaboration_Scenario (N);
    end Find_Direct_Name;
 
    ------------------------
@@ -6421,6 +6432,14 @@ package body Sem_Ch8 is
 
       Change_Selected_Component_To_Expanded_Name (N);
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id  => N,
+         Modes => True);
+
       --  Set appropriate type
 
       if Is_Type (Id) then
@@ -6529,6 +6548,10 @@ package body Sem_Ch8 is
       end if;
 
       Check_Restriction_No_Use_Of_Entity (N);
+
+      --  Save the scenario for later examination by the ABE Processing phase
+
+      Record_Elaboration_Scenario (N);
    end Find_Expanded_Name;
 
    --------------------

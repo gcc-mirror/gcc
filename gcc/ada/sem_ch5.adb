@@ -379,6 +379,15 @@ package body Sem_Ch5 is
    begin
       Mark_Coextensions (N, Rhs);
 
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => N,
+         Checks => True,
+         Modes  => True);
+
       --  Analyze the target of the assignment first in case the expression
       --  contains references to Ghost entities. The checks that verify the
       --  proper use of a Ghost entity need to know the enclosing context.
@@ -917,11 +926,9 @@ package body Sem_Ch5 is
          Error_Msg_CRT ("composite assignment", N);
       end if;
 
-      --  Check elaboration warning for left side if not in elab code
+      --  Save the scenario for later examination by the ABE Processing phase
 
-      if not In_Subprogram_Or_Concurrent_Unit then
-         Check_Elab_Assign (Lhs);
-      end if;
+      Record_Elaboration_Scenario (N);
 
       --  Set Referenced_As_LHS if appropriate. We only set this flag if the
       --  assignment is a source assignment in the extended main source unit.
@@ -2044,13 +2051,13 @@ package body Sem_Ch5 is
 
             begin
                if No (Iterator) then
-                  null;   --  error reported below.
+                  null;  --  error reported below
 
                elsif not Is_Overloaded (Iterator) then
                   Check_Reverse_Iteration (Etype (Iterator));
 
-               --  If Iterator is overloaded, use reversible iterator if
-               --  one is available.
+               --  If Iterator is overloaded, use reversible iterator if one is
+               --  available.
 
                elsif Is_Overloaded (Iterator) then
                   Get_First_Interp (Iterator, I, It);
@@ -3609,8 +3616,7 @@ package body Sem_Ch5 is
          end if;
 
       else
-
-         --  Pre-Ada2012 for-loops and while loops.
+         --  Pre-Ada2012 for-loops and while loops
 
          Analyze_Statements (Statements (N));
       end if;

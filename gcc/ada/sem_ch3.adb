@@ -4709,6 +4709,20 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Set the SPARK mode from the current context (may be overwritten later
+      --  with explicit pragma).
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => Id,
+         Checks => True);
+
       --  Initialize alignment and size and capture alignment setting
 
       Init_Alignment               (Id);

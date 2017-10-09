@@ -62,7 +62,9 @@ package body Lib is
       Yes_After,  -- S1 is in same extended unit as S2, and appears after it
       No);        -- S2 is not in same extended unit as S2
 
-   function Check_Same_Extended_Unit (S1, S2 : Source_Ptr) return SEU_Result;
+   function Check_Same_Extended_Unit
+     (S1 : Source_Ptr;
+      S2 : Source_Ptr) return SEU_Result;
    --  Used by In_Same_Extended_Unit and Earlier_In_Extended_Unit. Returns
    --  value as described above.
 
@@ -273,7 +275,10 @@ package body Lib is
    -- Check_Same_Extended_Unit --
    ------------------------------
 
-   function Check_Same_Extended_Unit (S1, S2 : Source_Ptr) return SEU_Result is
+   function Check_Same_Extended_Unit
+     (S1 : Source_Ptr;
+      S2 : Source_Ptr) return SEU_Result
+   is
       Max_Iterations : constant Nat := Maximum_Instantiations * 2;
       --  Limit to prevent a potential infinite loop
 
@@ -459,6 +464,7 @@ package body Lib is
          --  Prevent looping forever
 
          if Counter > Max_Iterations then
+
             --  ??? Not quite right, but return a value to be able to generate
             --  SCIL files and hope for the best.
 
@@ -502,9 +508,20 @@ package body Lib is
    -- Earlier_In_Extended_Unit --
    ------------------------------
 
-   function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean is
+   function Earlier_In_Extended_Unit
+     (S1 : Source_Ptr;
+      S2 : Source_Ptr) return Boolean
+   is
    begin
       return Check_Same_Extended_Unit (S1, S2) = Yes_Before;
+   end Earlier_In_Extended_Unit;
+
+   function Earlier_In_Extended_Unit
+     (N1 : Node_Or_Entity_Id;
+      N2 : Node_Or_Entity_Id) return Boolean
+   is
+   begin
+      return Earlier_In_Extended_Unit (Sloc (N1), Sloc (N2));
    end Earlier_In_Extended_Unit;
 
    -----------------------
@@ -747,7 +764,9 @@ package body Lib is
    begin
       return
         Get_Code_Or_Source_Unit
-          (S, Unwind_Instances => True, Unwind_Subunits => False);
+          (S                => S,
+           Unwind_Instances => True,
+           Unwind_Subunits  => False);
    end Get_Source_Unit;
 
    function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
@@ -807,8 +826,7 @@ package body Lib is
       --  Node may be in spec (or subunit etc) of main unit
 
       else
-         return
-           In_Same_Extended_Unit (N, Cunit (Main_Unit));
+         return In_Same_Extended_Unit (N, Cunit (Main_Unit));
       end if;
    end In_Extended_Main_Code_Unit;
 
@@ -828,8 +846,7 @@ package body Lib is
       --  Location may be in spec (or subunit etc) of main unit
 
       else
-         return
-           In_Same_Extended_Unit (Loc, Sloc (Cunit (Main_Unit)));
+         return In_Same_Extended_Unit (Loc, Sloc (Cunit (Main_Unit)));
       end if;
    end In_Extended_Main_Code_Unit;
 

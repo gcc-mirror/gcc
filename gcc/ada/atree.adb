@@ -56,6 +56,9 @@ package body Atree is
    Reporting_Proc : Report_Proc := null;
    --  Record argument to last call to Set_Reporting_Proc
 
+   Rewriting_Proc : Rewrite_Proc := null;
+   --  This soft link captures the procedure invoked during a node rewrite
+
    ---------------
    -- Debugging --
    ---------------
@@ -1306,16 +1309,6 @@ package body Atree is
         Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11);
    end Ekind_In;
 
-   ------------------------
-   -- Set_Reporting_Proc --
-   ------------------------
-
-   procedure Set_Reporting_Proc (P : Report_Proc) is
-   begin
-      pragma Assert (Reporting_Proc = null);
-      Reporting_Proc := P;
-   end Set_Reporting_Proc;
-
    ------------------
    -- Error_Posted --
    ------------------
@@ -2253,6 +2246,12 @@ package body Atree is
       if Reporting_Proc /= null then
          Reporting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
+
+      --  Invoke the rewriting procedure (if available)
+
+      if Rewriting_Proc /= null then
+         Rewriting_Proc.all (Target => Old_Node, Source => New_Node);
+      end if;
    end Rewrite;
 
    ------------------
@@ -2390,6 +2389,16 @@ package body Atree is
       Nodes.Table (N).Link := Union_Id (Val);
    end Set_Parent;
 
+   ------------------------
+   -- Set_Reporting_Proc --
+   ------------------------
+
+   procedure Set_Reporting_Proc (Proc : Report_Proc) is
+   begin
+      pragma Assert (Reporting_Proc = null);
+      Reporting_Proc := Proc;
+   end Set_Reporting_Proc;
+
    --------------
    -- Set_Sloc --
    --------------
@@ -2399,6 +2408,16 @@ package body Atree is
       pragma Assert (not Locked);
       Nodes.Table (N).Sloc := Val;
    end Set_Sloc;
+
+   ------------------------
+   -- Set_Rewriting_Proc --
+   ------------------------
+
+   procedure Set_Rewriting_Proc (Proc : Rewrite_Proc) is
+   begin
+      pragma Assert (Rewriting_Proc = null);
+      Rewriting_Proc := Proc;
+   end Set_Rewriting_Proc;
 
    ----------
    -- Sloc --
