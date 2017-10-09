@@ -1,5 +1,50 @@
 2017-10-09  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb: (Make_Build_In_Place_Call_In_Object_Declaration): Remove
+	the code at the end of this procedure that was setting the type of a
+	class-wide object to the specific type returned by a function call.
+	Treat this case as indefinite instead.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Class_Wide_Operation, Traverse_Homonyms):
+	Suppress spurious ambiguity error when two traversals of the homonym
+	chain (first directly, and then through an examination of relevant
+	interfaces) retrieve the same operation, when other irrelevant homonyms
+	of the operatioh are also present.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Object_Access_Level): If the object is the return
+	statement of an expression function, return the level of the function.
+	This is relevant when the object involves an implicit conversion
+	between access types and the expression function is a completion, which
+	forces the analysis of the expression before rewriting it as a body, so
+	that freeze nodes can appear in the proper scope.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* atree.adb: Make nnd apply to everything "interesting", including
+	Rewrite.  Remove rrd.
+
+2017-10-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Avoid never-ending loop
+	processing the declaration of the dummy object internally created by
+	Make_DT to compute the offset to the top of components referencing
+	secondary dispatch tables.
+	(Initialize_Tag): Do not initialize the offset-to-top field if it has
+	been initialized initialized.
+	* exp_disp.ads (Building_Static_Secondary_DT): New subprogram.
+	* exp_disp.adb (Building_Static_Secondary_DT): New subprogram.
+	(Make_DT): Create a dummy constant object if we can statically build
+	secondary dispatch tables.
+	(Make_Secondary_DT): For statically allocated secondary dispatch tables
+	use the dummy object to compute the offset-to-top field value by means
+	of the attribute 'Position.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
 	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Add self-checking
 	code so if BIPAlloc is not passed in, it will likely raise
 	Program_Error instead of cause miscellaneous chaos.
