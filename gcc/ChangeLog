@@ -1,3 +1,13 @@
+2017-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc_2): Remove insn pattern.
+	(*jcc<mode>_0_r_i387): Ditto.
+	(*jccxf_r_i387): Ditto.
+	(*jcc<mode>_r_i387): Ditto.
+	(*jccu<mode>_r_i387): Ditto.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_r_i387): Ditto.
+	(*jcc): Rename from *jcc_1.
+
 2017-10-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-p8swap.c (rs6000_analyze_swaps): Process
