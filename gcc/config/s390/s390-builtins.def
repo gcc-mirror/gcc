@@ -2843,9 +2843,9 @@ OB_DEF     (s390_vec_nabs,              s390_vec_nabs_flt,  s390_vec_nabs_dbl,  
 OB_DEF_VAR (s390_vec_nabs_flt,          s390_vflnsb,        0,                  0,                  BT_OV_V4SF_V4SF)
 OB_DEF_VAR (s390_vec_nabs_dbl,          s390_vflndb,        B_VX,               0,                  BT_OV_V2DF_V2DF)
 
-OB_DEF     (s390_vec_sqrt,              s390_vec_sqrt_flt,  s390_vec_sqrt_dbl,  B_VXE,              BT_FN_OV4SI_OV4SI)
-OB_DEF_VAR (s390_vec_sqrt_flt,          s390_vfsqsb,        0,                  0,                  BT_OV_V4SF_V4SF)
-OB_DEF_VAR (s390_vec_sqrt_dbl,          s390_vfsqdb,        B_VX,               0,                  BT_OV_V2DF_V2DF)
+OB_DEF     (s390_vec_sqrt,              s390_vec_sqrt_flt,  s390_vec_sqrt_dbl,  B_VX,               BT_FN_OV4SI_OV4SI)
+OB_DEF_VAR (s390_vec_sqrt_flt,          s390_vfsqsb,        B_VXE,              0,                  BT_OV_V4SF_V4SF)
+OB_DEF_VAR (s390_vec_sqrt_dbl,          s390_vfsqdb,        0,                  0,                  BT_OV_V2DF_V2DF)
 
 /* Test data class with boolean result *AND* cc mode.  */
 
