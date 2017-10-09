@@ -5329,6 +5329,9 @@ pattern_cost (rtx pat, bool speed)
 int
 insn_cost (rtx_insn *insn, bool speed)
 {
+  if (targetm.insn_cost)
+    return targetm.insn_cost (insn, speed);
+
   return pattern_cost (PATTERN (insn), speed);
 }
 

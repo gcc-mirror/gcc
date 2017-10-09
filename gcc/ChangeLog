@@ -1,5 +1,12 @@
 2017-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* target.def (insn_cost): New hook.
+	* doc/tm.texi.in (TARGET_INSN_COST): New hook.
+	* doc/tm.texi: Regenerate.
+	* rtlanal.c (insn_cost): Use the new hook.
+
+2017-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (combine_validate_cost): Compute the new insn_cost,
 	not just pattern_cost.
 	(try_combine): Adjust comment.
