@@ -1,3 +1,9 @@
+2010-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (processor_costs): Move to ...
+	* config/rs6000/rs6000.h: ... here.
+	(rs6000_cost): Declare.
+
 2017-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* except.c (setjmp_fn): New global variable.
