@@ -1,5 +1,10 @@
 2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-builtins.def (vec_nabs, vec_vfi): Fix builtin
+	flags.
+
+2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	PR target/82463
 	* config/s390/vecintrin.h (vec_madd, vec_msub): Fix macro
 	definitions.
