@@ -1,3 +1,10 @@
+2017-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* except.c (setjmp_fn): New global variable.
+	(init_eh): Initialize it if DONT_USE_BUILTIN_SETJMP is defined.
+	(sjlj_emit_function_enter): Call it instead of BUILTIN_SETJMP
+	if DONT_USE_BUILTIN_SETJMP is defined.
+
 2017-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* target.def (insn_cost): New hook.

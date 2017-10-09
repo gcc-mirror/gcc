@@ -147,7 +147,9 @@ along with GCC; see the file COPYING3.  If not see
 
 static GTY(()) int call_site_base;
 
-static GTY (()) hash_map<tree_hash, tree> *type_to_runtime_map;
+static GTY(()) hash_map<tree_hash, tree> *type_to_runtime_map;
+
+static GTY(()) tree setjmp_fn;
 
 /* Describe the SjLj_Function_Context structure.  */
 static GTY(()) tree sjlj_fc_type_node;
@@ -331,6 +333,16 @@ init_eh (void)
       sjlj_fc_jbuf_ofs
 	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_jbuf))
 	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_jbuf)) / BITS_PER_UNIT);
+
+#ifdef DONT_USE_BUILTIN_SETJMP
+      tmp = build_function_type_list (integer_type_node, TREE_TYPE (f_jbuf),
+				      NULL);
+      setjmp_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			      get_identifier ("setjmp"), tmp);
+      TREE_PUBLIC (setjmp_fn) = 1;
+      DECL_EXTERNAL (setjmp_fn) = 1;
+      DECL_ASSEMBLER_NAME (setjmp_fn);
+#endif
     }
 }
 
@@ -1176,8 +1188,7 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
       addr = convert_memory_address (ptr_mode, addr);
       tree addr_tree = make_tree (ptr_type_node, addr);
 
-      tree fn = builtin_decl_implicit (BUILT_IN_SETJMP);
-      tree call_expr = build_call_expr (fn, 1, addr_tree);
+      tree call_expr = build_call_expr (setjmp_fn, 1, addr_tree);
       rtx x = expand_call (call_expr, NULL_RTX, false);
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
