@@ -1,5 +1,10 @@
 2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	PR target/82463
+	* gcc.target/s390/zvector/pr82463.c: New test.
+
+2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	PR target/82465
 	* gcc.target/s390/zvector/pr82465.c: New test.
 
