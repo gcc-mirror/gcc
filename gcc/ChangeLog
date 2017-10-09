@@ -1,5 +1,11 @@
 2017-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (combine_validate_cost): Compute the new insn_cost,
+	not just pattern_cost.
+	(try_combine): Adjust comment.
+
+2017-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* cfgrtl.c (rtl_account_profile_record): Replace insn_rtx_cost with
 	insn_cost.
 	* combine.c (uid_insn_cost): Adjust comment.

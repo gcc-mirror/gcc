@@ -856,7 +856,7 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
   int new_i2_cost, new_i3_cost;
   int old_cost, new_cost;
 
-  /* Lookup the original insn_rtx_costs.  */
+  /* Lookup the original insn_costs.  */
   i2_cost = INSN_COST (i2);
   i3_cost = INSN_COST (i3);
 
@@ -888,11 +888,23 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
     old_cost -= i1_cost;
 
 
-  /* Calculate the replacement pattern_costs.  */
-  new_i3_cost = pattern_cost (newpat, optimize_this_for_speed_p);
+  /* Calculate the replacement insn_costs.  */
+  rtx tmp = PATTERN (i3);
+  PATTERN (i3) = newpat;
+  int tmpi = INSN_CODE (i3);
+  INSN_CODE (i3) = -1;
+  new_i3_cost = insn_cost (i3, optimize_this_for_speed_p);
+  PATTERN (i3) = tmp;
+  INSN_CODE (i3) = tmpi;
   if (newi2pat)
     {
-      new_i2_cost = pattern_cost (newi2pat, optimize_this_for_speed_p);
+      tmp = PATTERN (i2);
+      PATTERN (i2) = newi2pat;
+      tmpi = INSN_CODE (i2);
+      INSN_CODE (i2) = -1;
+      new_i2_cost = insn_cost (i2, optimize_this_for_speed_p);
+      PATTERN (i2) = tmp;
+      INSN_CODE (i2) = tmpi;
       new_cost = (new_i2_cost > 0 && new_i3_cost > 0)
 		 ? new_i2_cost + new_i3_cost : 0;
     }
@@ -907,7 +919,14 @@ combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
       int old_other_cost, new_other_cost;
 
       old_other_cost = INSN_COST (undobuf.other_insn);
-      new_other_cost = pattern_cost (newotherpat, optimize_this_for_speed_p);
+      tmp = PATTERN (undobuf.other_insn);
+      PATTERN (undobuf.other_insn) = newotherpat;
+      tmpi = INSN_CODE (undobuf.other_insn);
+      INSN_CODE (undobuf.other_insn) = -1;
+      new_other_cost = insn_cost (undobuf.other_insn,
+				  optimize_this_for_speed_p);
+      PATTERN (undobuf.other_insn) = tmp;
+      INSN_CODE (undobuf.other_insn) = tmpi;
       if (old_other_cost > 0 && new_other_cost > 0)
 	{
 	  old_cost += old_other_cost;
@@ -4080,7 +4099,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	}
     }
 
-  /* Only allow this combination if insn_rtx_costs reports that the
+  /* Only allow this combination if insn_cost reports that the
      replacement instructions are cheaper than the originals.  */
   if (!combine_validate_cost (i0, i1, i2, i3, newpat, newi2pat, other_pat))
     {
