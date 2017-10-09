@@ -1,3 +1,29 @@
+2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Is_Suitable_Access): This scenario is now only relevant
+	in the static model.
+	(Is_Suitable_Variable_Assignment): This scenario is now only relevant
+	in the static model.
+	(Is_Suitable_Variable_Reference): This scenario is now only relevant in
+	the static model.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): In ASIS mode, resolve aspect
+	expressions when the enclosing scope is a subprogram body and the next
+	declaration is a body that freezes entities previously declared in the
+	scope.
+
+2017-10-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Package): Remove checking of mixture between
+	ghost packages and living packages in use clauses.
+	(Use_One_Type, Note_Redundant_Use): Correct warning messages
+
+2017-10-09  Justin Squirek  <squirek@adacore.com>
+
+	* osint.ads: Document new parameter FD for Read_Source_File.
+
 2017-10-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_util.adb (Make_Predicate_Call): If the type of the expression to

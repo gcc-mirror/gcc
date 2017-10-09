@@ -3836,25 +3836,6 @@ package body Sem_Ch8 is
             end if;
          end if;
       end if;
-
-      --  Detect a mixture of Ghost packages and living packages within the
-      --  same use_package_clause. Ideally one would split a use_package_clause
-      --  with multiple names into multiple use_package_clauses with a single
-      --  name, however clients of the front end would have to adapt to this
-      --  change.
-
-      if Present (Ghost_Id) and then Present (Living_Id) then
-         Error_Msg_N
-           ("use clause cannot mention ghost and non-ghost ghost units", N);
-
-         Error_Msg_Sloc := Sloc (Ghost_Id);
-         Error_Msg_NE ("\& # declared as ghost", N, Ghost_Id);
-
-         Error_Msg_Sloc := Sloc (Living_Id);
-         Error_Msg_NE ("\& # declared as non-ghost", N, Living_Id);
-      end if;
-
-      Mark_Ghost_Clause (N);
    end Analyze_Use_Package;
 
    ----------------------
@@ -9354,7 +9335,7 @@ package body Sem_Ch8 is
 
             Error_Msg_Sloc := Sloc (Prev_Use);
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible through previous use clause #??",
+              ("& is already use-visible through previous use_clause #??",
                Redundant, Pack_Name);
          end if;
       end Note_Redundant_Use;
@@ -10001,7 +9982,7 @@ package body Sem_Ch8 is
                   else
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use type clause??", Id, T);
+                        & "use_type_clause??", Id, T);
                   end if;
                end Use_Clause_Known;
 
@@ -10011,7 +9992,7 @@ package body Sem_Ch8 is
             else
                Error_Msg_NE -- CODEFIX
                  ("& is already use-visible through previous "
-                  & "use type clause??", Id, T);
+                  & "use_type_clause??", Id, T);
             end if;
 
          --  The package where T is declared is already used
