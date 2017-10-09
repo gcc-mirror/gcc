@@ -1,5 +1,13 @@
 2017-10-09  Bob Duff  <duff@adacore.com>
 
+	* exp_ch7.adb (Create_Finalizer): Suppress checks within the finalizer.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* freeze.ads: Minor comment fixed.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
 	* exp_ch6.adb: (Make_Build_In_Place_Call_In_Object_Declaration): Take
 	care of unchecked conversions in addition to regular conversions. This
 	takes care of a case where a type is derived from a private untagged
