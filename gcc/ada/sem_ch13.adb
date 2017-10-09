@@ -4415,15 +4415,6 @@ package body Sem_Ch13 is
 
             if Present (Default_Element) then
                Analyze (Default_Element);
-
-               if Is_Entity_Name (Default_Element)
-                 and then not Covers (Entity (Default_Element), Ret_Type)
-                 and then False
-               then
-                  Illegal_Indexing
-                    ("wrong return type for indexing function");
-                  return;
-               end if;
             end if;
 
             --  For variable_indexing the return type must be a reference type
@@ -12670,10 +12661,18 @@ package body Sem_Ch13 is
 
                return Skip;
 
-            --  Otherwise do the replacement and we are done with this node
+            --  Otherwise do the replacement if this is not a qualified
+            --  reference to a homograph of the type itself. Note that the
+            --  current instance could not appear in such a context, e.g.
+            --  the prefix of a type conversion.
 
             else
-               Replace_Type_Reference (N);
+               if Nkind (Parent (N)) /= N_Selected_Component
+                 or else N /= Selector_Name (Parent (N))
+               then
+                  Replace_Type_Reference (N);
+               end if;
+
                return Skip;
             end if;
 
@@ -12682,7 +12681,7 @@ package body Sem_Ch13 is
 
          elsif Nkind (N) = N_Selected_Component then
 
-            --  If selector name is not our type, keeping going (we might still
+            --  If selector name is not our type, keep going (we might still
             --  have an occurrence of the type in the prefix).
 
             if Nkind (Selector_Name (N)) /= N_Identifier

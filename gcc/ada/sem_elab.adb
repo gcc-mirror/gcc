@@ -4199,9 +4199,15 @@ package body Sem_Elab is
       Scop_Id : Entity_Id;
 
    begin
+      --  Nothing to do when compiling for GNATprove because raise statements
+      --  are not supported.
+
+      if GNATprove_Mode then
+         return;
+
       --  Nothing to do when the compilation will not produce an executable
 
-      if Serious_Errors_Detected > 0 then
+      elsif Serious_Errors_Detected > 0 then
          return;
 
       --  Nothing to do for a compilation unit because there is no executable
@@ -4325,9 +4331,15 @@ package body Sem_Elab is
    --  Start for processing for Install_ABE_Check
 
    begin
+      --  Nothing to do when compiling for GNATprove because raise statements
+      --  are not supported.
+
+      if GNATprove_Mode then
+         return;
+
       --  Nothing to do when the compilation will not produce an executable
 
-      if Serious_Errors_Detected > 0 then
+      elsif Serious_Errors_Detected > 0 then
          return;
 
       --  Nothing to do when the target is a protected subprogram because the
@@ -4381,9 +4393,15 @@ package body Sem_Elab is
       Scop_Id : Entity_Id;
 
    begin
+      --  Nothing to do when compiling for GNATprove because raise statements
+      --  are not supported.
+
+      if GNATprove_Mode then
+         return;
+
       --  Nothing to do when the compilation will not produce an executable
 
-      if Serious_Errors_Detected > 0 then
+      elsif Serious_Errors_Detected > 0 then
          return;
 
       --  Do not install an ABE check for a compilation unit because there is

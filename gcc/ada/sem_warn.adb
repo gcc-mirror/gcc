@@ -4285,7 +4285,7 @@ package body Sem_Warn is
                   then
                      if not Has_Pragma_Unmodified_Check_Spec (E) then
                         Error_Msg_N -- CODEFIX
-                          ("?u?variable & is assigned but never read!", E);
+                          ("?m?variable & is assigned but never read!", E);
                      end if;
 
                      Set_Last_Assignment (E, Empty);

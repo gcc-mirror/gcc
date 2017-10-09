@@ -738,10 +738,10 @@ package body Exp_Disp is
                            Set_Etype (N, Etype (F));
 
                         --  Conversely, if this is a controlling argument
-                        --  (in a dispatching call in the condition)
-                        --  that is a dereference, the source is an access to
-                        --  classwide type, so preserve the dispatching nature
-                        --  of the call in the rewritten condition.
+                        --  (in a dispatching call in the condition) that is a
+                        --  dereference, the source is an access-to-class-wide
+                        --  type, so preserve the dispatching nature of the
+                        --  call in the rewritten condition.
 
                         elsif Nkind (Parent (N)) = N_Explicit_Dereference
                           and then Is_Controlling_Actual (Parent (N))

@@ -3178,14 +3178,6 @@ package body Sem_Res is
       --  an instance of the default expression. The insertion is always
       --  a named association.
 
-      procedure Property_Error
-        (Var      : Node_Id;
-         Var_Id   : Entity_Id;
-         Prop_Nam : Name_Id);
-      --  Emit an error concerning variable Var with entity Var_Id that has
-      --  enabled property Prop_Nam when it acts as an actual parameter in a
-      --  call and the corresponding formal parameter is of mode IN.
-
       function Same_Ancestor (T1, T2 : Entity_Id) return Boolean;
       --  Check whether T1 and T2, or their full views, are derived from a
       --  common type. Used to enforce the restrictions on array conversions
@@ -3633,23 +3625,6 @@ package body Sem_Res is
 
          Prev := Actval;
       end Insert_Default;
-
-      --------------------
-      -- Property_Error --
-      --------------------
-
-      procedure Property_Error
-        (Var      : Node_Id;
-         Var_Id   : Entity_Id;
-         Prop_Nam : Name_Id)
-      is
-      begin
-         Error_Msg_Name_1 := Prop_Nam;
-         Error_Msg_NE
-           ("external variable & with enabled property % cannot appear as "
-            & "actual in procedure call (SPARK RM 7.1.3(10))", Var, Var_Id);
-         Error_Msg_N ("\\corresponding formal parameter has mode In", Var);
-      end Property_Error;
 
       -------------------
       -- Same_Ancestor --
@@ -4659,26 +4634,28 @@ package body Sem_Res is
                   Flag_Effectively_Volatile_Objects (A);
                end if;
 
-               --  Detect an external variable with an enabled property that
-               --  does not match the mode of the corresponding formal in a
-               --  procedure call. Functions are not considered because they
-               --  cannot have effectively volatile formal parameters in the
-               --  first place.
+               --  An effectively volatile variable cannot act as an actual
+               --  parameter in a procedure call when the variable has enabled
+               --  property Effective_Reads and the corresponding formal is of
+               --  mode IN (SPARK RM 7.1.3(10)).
 
                if Ekind (Nam) = E_Procedure
                  and then Ekind (F) = E_In_Parameter
                  and then Is_Entity_Name (A)
-                 and then Present (Entity (A))
-                 and then Ekind (Entity (A)) = E_Variable
                then
                   A_Id := Entity (A);
 
-                  if Async_Readers_Enabled (A_Id) then
-                     Property_Error (A, A_Id, Name_Async_Readers);
-                  elsif Effective_Reads_Enabled (A_Id) then
-                     Property_Error (A, A_Id, Name_Effective_Reads);
-                  elsif Effective_Writes_Enabled (A_Id) then
-                     Property_Error (A, A_Id, Name_Effective_Writes);
+                  if Ekind (A_Id) = E_Variable
+                    and then Is_Effectively_Volatile (Etype (A_Id))
+                    and then Effective_Reads_Enabled (A_Id)
+                  then
+                     Error_Msg_NE
+                       ("effectively volatile variable & cannot appear as "
+                        & "actual in procedure call", A, A_Id);
+
+                     Error_Msg_Name_1 := Name_Effective_Reads;
+                     Error_Msg_N ("\\variable has enabled property %", A);
+                     Error_Msg_N ("\\corresponding formal has mode IN", A);
                   end if;
                end if;
             end if;
