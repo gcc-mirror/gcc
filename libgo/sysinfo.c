@@ -102,6 +102,9 @@
 #if defined(HAVE_LINUX_NETLINK_H)
 #include <linux/netlink.h>
 #endif
+#if defined(HAVE_LINUX_PTRACE_H)
+#include <linux/ptrace.h>
+#endif
 #if defined(HAVE_LINUX_RTNETLINK_H)
 #include <linux/rtnetlink.h>
 #endif

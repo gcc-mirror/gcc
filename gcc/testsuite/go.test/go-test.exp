@@ -213,28 +213,26 @@ proc go-set-goarch { } {
 		#error FOO
 		#endif
 	    }] {
-		set goarch "mipso32"
+		set goarch "mips"
 	    } elseif [check_no_compiler_messages mipsn32 assembly {
 		#if _MIPS_SIM != _ABIN32
 		#error FOO
 		#endif
 	    }] {
-		set goarch "mipsn32"
+		set goarch "mips64p32"
 	    } elseif [check_no_compiler_messages mipsn64 assembly {
 		#if _MIPS_SIM != _ABI64
 		#error FOO
 		#endif
 	    }] {
-		set goarch "mipsn64"
-	    } elseif [check_no_compiler_messages mipso64 assembly {
-		#if _MIPS_SIM != _ABIO64
-		#error FOO
-		#endif
-	    }] {
-		set goarch "mipso64"
+		set goarch "mips64"
 	    } else {
 		perror "$target_triplet: unrecognized MIPS ABI"
 		return ""
+	    }
+
+	    if [istarget "mips*el-*-*"] {
+		append goarch "le"
 	    }
 	}
 	"powerpc*-*-*" {

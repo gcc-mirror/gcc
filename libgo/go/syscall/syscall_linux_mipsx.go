@@ -3,10 +3,24 @@
 // license that can be found in the LICENSE file.
 
 // +build linux
-// +build mips mipsle
+// +build mips mipsle mips64 mips64le mips64p32 mips64p32le
 
 package syscall
 
-func (r *PtraceRegs) PC() uint64 { return uint64(r.Regs[64]) }
+import "unsafe"
 
-func (r *PtraceRegs) SetPC(pc uint64) { r.Regs[64] = uint32(pc) }
+func (r *PtraceRegs) PC() uint64 {
+	return r.Cp0_epc
+}
+
+func (r *PtraceRegs) SetPC(pc uint64) {
+	r.Cp0_epc = pc
+}
+
+func PtraceGetRegs(pid int, regsout *PtraceRegs) (err error) {
+	return ptrace(PTRACE_GETREGS, pid, 0, uintptr(unsafe.Pointer(regsout)))
+}
+
+func PtraceSetRegs(pid int, regs *PtraceRegs) (err error) {
+	return ptrace(PTRACE_SETREGS, pid, 0, uintptr(unsafe.Pointer(regs)))
+}
