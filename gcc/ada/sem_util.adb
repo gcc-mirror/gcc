@@ -7929,12 +7929,20 @@ package body Sem_Util is
 
             --  Special cases
 
-            --  Blocks, loops, and return statements have artificial scopes
+            --  Blocks carry either a source or an internally-generated scope,
+            --  unless the block is a byproduct of exception handling.
 
-            when N_Block_Statement
-               | N_Loop_Statement
-            =>
+            when N_Block_Statement =>
+               if not Exception_Junk (Par) then
+                  return Entity (Identifier (Par));
+               end if;
+
+            --  Loops carry an internally-generated scope
+
+            when N_Loop_Statement =>
                return Entity (Identifier (Par));
+
+            --  Extended return statements carry an internally-generated scope
 
             when N_Extended_Return_Statement =>
                return Return_Statement_Entity (Par);
@@ -19511,13 +19519,13 @@ package body Sem_Util is
          N := Next (Actual_Id);
 
          if Nkind (N) = N_Parameter_Association then
+
             --  In case of a build-in-place call, the call will no longer be a
             --  call; it will have been rewritten.
 
-            if Nkind_In (Parent (Actual_Id),
-                         N_Entry_Call_Statement,
-                         N_Function_Call,
-                         N_Procedure_Call_Statement)
+            if Nkind_In (Parent (Actual_Id), N_Entry_Call_Statement,
+                                             N_Function_Call,
+                                             N_Procedure_Call_Statement)
             then
                return First_Named_Actual (Parent (Actual_Id));
             else
@@ -23257,16 +23265,15 @@ package body Sem_Util is
          return "unknown subprogram";
       end if;
 
+      --  If the subprogram is a child unit, use its simple name to start the
+      --  construction of the fully qualified name.
+
       if Nkind (Ent) = N_Defining_Program_Unit_Name then
-
-         --  If the subprogram is a child unit, use its simple name to
-         --  start the construction of the fully qualified name.
-
          Append_Entity_Name (Buf, Defining_Identifier (Ent));
-
       else
          Append_Entity_Name (Buf, Ent);
       end if;
+
       return +Buf;
    end Subprogram_Name;
 

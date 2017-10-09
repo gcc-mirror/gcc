@@ -5451,12 +5451,10 @@ package body Exp_Ch4 is
       Typ   : constant Entity_Id  := Etype (N);
 
       Actions : List_Id;
-      Cnn     : Entity_Id;
       Decl    : Node_Id;
       Expr    : Node_Id;
       New_If  : Node_Id;
       New_N   : Node_Id;
-      Ptr_Typ : Entity_Id;
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -5560,65 +5558,66 @@ package body Exp_Ch4 is
          Process_If_Case_Statements (N, Then_Actions (N));
          Process_If_Case_Statements (N, Else_Actions (N));
 
-         --  Generate:
-         --    type Ann is access all Typ;
+         declare
+            Cnn     : constant Entity_Id := Make_Temporary (Loc, 'C', N);
+            Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+         begin
+            --  Generate:
+            --    type Ann is access all Typ;
 
-         Ptr_Typ := Make_Temporary (Loc, 'A');
+            Insert_Action (N,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ptr_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
 
-         Insert_Action (N,
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Ptr_Typ,
-             Type_Definition     =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present        => True,
-                 Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
+            --  Generate:
+            --    Cnn : Ann;
 
-         --  Generate:
-         --    Cnn : Ann;
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
 
-         Cnn := Make_Temporary (Loc, 'C', N);
+            --  Generate:
+            --    if Cond then
+            --       Cnn := <Thenx>'Unrestricted_Access;
+            --    else
+            --       Cnn := <Elsex>'Unrestricted_Access;
+            --    end if;
 
-         Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Cnn,
-             Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Thenx),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Relocate_Node (Thenx),
+                        Attribute_Name => Name_Unrestricted_Access))),
 
-         --  Generate:
-         --    if Cond then
-         --       Cnn := <Thenx>'Unrestricted_Access;
-         --    else
-         --       Cnn := <Elsex>'Unrestricted_Access;
-         --    end if;
+                Else_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Elsex),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Relocate_Node (Elsex),
+                        Attribute_Name => Name_Unrestricted_Access))));
 
-         New_If :=
-           Make_Implicit_If_Statement (N,
-             Condition       => Relocate_Node (Cond),
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Thenx),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => Relocate_Node (Thenx),
-                     Attribute_Name => Name_Unrestricted_Access))),
+            --  Preserve the original context for which the if statement is
+            --  being generated. This is needed by the finalization machinery
+            --  to prevent the premature finalization of controlled objects
+            --  found within the if statement.
 
-             Else_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Elsex),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                 Expression =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => Relocate_Node (Elsex),
-                     Attribute_Name => Name_Unrestricted_Access))));
+            Set_From_Conditional_Expression (New_If);
 
-         --  Preserve the original context for which the if statement is being
-         --  generated. This is needed by the finalization machinery to prevent
-         --  the premature finalization of controlled objects found within the
-         --  if statement.
-
-         Set_From_Conditional_Expression (New_If);
-
-         New_N :=
-           Make_Explicit_Dereference (Loc,
-             Prefix => New_Occurrence_Of (Cnn, Loc));
+            New_N :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Cnn, Loc));
+         end;
 
       --  If the result is an unconstrained array and the if expression is in a
       --  context other than the initializing expression of the declaration of
@@ -5677,31 +5676,33 @@ package body Exp_Ch4 is
 
             --  and replace the if expression by a reference to Cnn
 
-            Cnn := Make_Temporary (Loc, 'C', N);
+            declare
+               Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+            begin
+               Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Cnn,
+                   Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+               New_If :=
+                 Make_Implicit_If_Statement (N,
+                   Condition       => Relocate_Node (Cond),
 
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
+                   Then_Statements => New_List (
+                     Make_Assignment_Statement (Sloc (Thenx),
+                       Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                       Expression => Relocate_Node (Thenx))),
 
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Thenx),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                    Expression => Relocate_Node (Thenx))),
+                   Else_Statements => New_List (
+                     Make_Assignment_Statement (Sloc (Elsex),
+                       Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                       Expression => Relocate_Node (Elsex))));
 
-                Else_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Elsex),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                    Expression => Relocate_Node (Elsex))));
+               Set_Assignment_OK (Name (First (Then_Statements (New_If))));
+               Set_Assignment_OK (Name (First (Else_Statements (New_If))));
 
-            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
-            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
-
-            New_N := New_Occurrence_Of (Cnn, Loc);
+               New_N := New_Occurrence_Of (Cnn, Loc);
+            end;
 
          --  Regular path using Expression_With_Actions
 

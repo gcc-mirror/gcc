@@ -2251,10 +2251,12 @@ package body Exp_Ch6 is
 
    procedure Expand_Call (N : Node_Id) is
       Post_Call : List_Id;
+
    begin
-      pragma Assert
-        (Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement,
-                      N_Entry_Call_Statement));
+      pragma Assert (Nkind_In (N, N_Entry_Call_Statement,
+                                  N_Function_Call,
+                                  N_Procedure_Call_Statement));
+
       Expand_Call_Helper (N, Post_Call);
       Insert_Post_Call_Actions (N, Post_Call);
    end Expand_Call;
@@ -4333,8 +4335,8 @@ package body Exp_Ch6 is
          if not Is_Build_In_Place_Function_Call (Call_Node)
            and then
              (No (First_Formal (Subp))
-                or else
-                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
+               or else
+                 not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
             Expand_Ctrl_Function_Call (Call_Node);
 
@@ -4343,15 +4345,14 @@ package body Exp_Ch6 is
          --  intermediate result after its use.
 
          elsif Is_Build_In_Place_Function_Call (Call_Node)
-           and then
-             Nkind_In (Parent (Unqual_Conv (Call_Node)),
-                       N_Attribute_Reference,
-                       N_Function_Call,
-                       N_Indexed_Component,
-                       N_Object_Renaming_Declaration,
-                       N_Procedure_Call_Statement,
-                       N_Selected_Component,
-                       N_Slice)
+           and then Nkind_In (Parent (Unqual_Conv (Call_Node)),
+                              N_Attribute_Reference,
+                              N_Function_Call,
+                              N_Indexed_Component,
+                              N_Object_Renaming_Declaration,
+                              N_Procedure_Call_Statement,
+                              N_Selected_Component,
+                              N_Slice)
          then
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
@@ -6447,8 +6448,8 @@ package body Exp_Ch6 is
 
       pragma Assert
         (Comes_From_Extended_Return_Statement (N)
-           or else not Is_Build_In_Place_Function_Call (Exp)
-           or else Is_Build_In_Place_Function (Scope_Id));
+          or else not Is_Build_In_Place_Function_Call (Exp)
+          or else Is_Build_In_Place_Function (Scope_Id));
 
       if not Comes_From_Extended_Return_Statement (N)
         and then Is_Build_In_Place_Function (Scope_Id)
@@ -7325,11 +7326,7 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
-      declare
-         Result : constant Boolean := Is_Build_In_Place_Function (Function_Id);
-      begin
-         return Result;
-      end;
+      return Is_Build_In_Place_Function (Function_Id);
    end Is_Build_In_Place_Function_Call;
 
    -----------------------
@@ -7765,7 +7762,7 @@ package body Exp_Ch6 is
       Return_Obj_Access := Make_Temporary (Loc, 'R');
       Set_Etype (Return_Obj_Access, Acc_Type);
       Set_Can_Never_Be_Null (Acc_Type, False);
-      --  It gets initialized to null, so we can't have that.
+      --  It gets initialized to null, so we can't have that
 
       --  When the result subtype is constrained, the return object is
       --  allocated on the caller side, and access to it is passed to the
@@ -8101,10 +8098,10 @@ package body Exp_Ch6 is
      (Assign        : Node_Id;
       Function_Call : Node_Id)
    is
-      Lhs          : constant Node_Id := Name (Assign);
-      Func_Call    : constant Node_Id := Unqual_Conv (Function_Call);
-      Func_Id      : Entity_Id;
+      Func_Call    : constant Node_Id    := Unqual_Conv (Function_Call);
+      Lhs          : constant Node_Id    := Name (Assign);
       Loc          : constant Source_Ptr := Sloc (Function_Call);
+      Func_Id      : Entity_Id;
       Obj_Decl     : Node_Id;
       Obj_Id       : Entity_Id;
       Ptr_Typ      : Entity_Id;
@@ -8178,8 +8175,9 @@ package body Exp_Ch6 is
       --  Add a conversion if it's the wrong type
 
       if Etype (New_Expr) /= Ptr_Typ then
-         New_Expr := Make_Unchecked_Type_Conversion (Loc,
-           New_Occurrence_Of (Ptr_Typ, Loc), New_Expr);
+         New_Expr :=
+           Make_Unchecked_Type_Conversion (Loc,
+             New_Occurrence_Of (Ptr_Typ, Loc), New_Expr);
       end if;
 
       Obj_Id := Make_Temporary (Loc, 'R', New_Expr);
@@ -8207,6 +8205,10 @@ package body Exp_Ch6 is
       function Get_Function_Id (Func_Call : Node_Id) return Entity_Id;
       --  Get the value of Function_Id, below
 
+      ---------------------
+      -- Get_Function_Id --
+      ---------------------
+
       function Get_Function_Id (Func_Call : Node_Id) return Entity_Id is
       begin
          if Is_Entity_Name (Name (Func_Call)) then
@@ -8220,22 +8222,23 @@ package body Exp_Ch6 is
          end if;
       end Get_Function_Id;
 
-      Func_Call       : constant Node_Id   := Unqual_Conv (Function_Call);
-      Function_Id     : constant Entity_Id := Get_Function_Id (Func_Call);
-      Result_Subt     : constant Entity_Id := Etype (Function_Id);
+      --  Local variables
 
-      Obj_Def_Id : constant Entity_Id  := Defining_Identifier (Obj_Decl);
-      Obj_Typ    : constant Entity_Id  := Etype (Obj_Def_Id);
-      Encl_Func  : constant Entity_Id  := Enclosing_Subprogram (Obj_Def_Id);
-      Loc        : constant Source_Ptr := Sloc (Function_Call);
-      Obj_Loc    : constant Source_Ptr := Sloc (Obj_Decl);
+      Func_Call   : constant Node_Id    := Unqual_Conv (Function_Call);
+      Function_Id : constant Entity_Id  := Get_Function_Id (Func_Call);
+      Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Obj_Loc     : constant Source_Ptr := Sloc (Obj_Decl);
+      Obj_Def_Id  : constant Entity_Id  := Defining_Identifier (Obj_Decl);
+      Obj_Typ     : constant Entity_Id  := Etype (Obj_Def_Id);
+      Encl_Func   : constant Entity_Id  := Enclosing_Subprogram (Obj_Def_Id);
+      Result_Subt : constant Entity_Id  := Etype (Function_Id);
 
       Call_Deref      : Node_Id;
       Caller_Object   : Node_Id;
       Def_Id          : Entity_Id;
+      Designated_Type : Entity_Id;
       Fmaster_Actual  : Node_Id := Empty;
       Pool_Actual     : Node_Id;
-      Designated_Type : Entity_Id;
       Ptr_Typ         : Entity_Id;
       Ptr_Typ_Decl    : Node_Id;
       Pass_Caller_Acc : Boolean := False;
@@ -8243,7 +8246,7 @@ package body Exp_Ch6 is
 
       Definite : constant Boolean :=
                    Caller_Known_Size (Func_Call, Result_Subt)
-                   and then not Is_Class_Wide_Type (Obj_Typ);
+                     and then not Is_Class_Wide_Type (Obj_Typ);
       --  In the case of "X : T'Class := F(...);", where F returns a
       --  Caller_Known_Size (specific) tagged type, we treat it as
       --  indefinite, because the code for the Definite case below sets the
@@ -8300,9 +8303,7 @@ package body Exp_Ch6 is
       --  the result object is in a different (transient) scope, so won't cause
       --  freezing.
 
-      if Definite
-        and then not Is_Return_Object (Obj_Def_Id)
-      then
+      if Definite and then not Is_Return_Object (Obj_Def_Id) then
          Insert_After_And_Analyze (Obj_Decl, Ptr_Typ_Decl);
       else
          Insert_Action (Obj_Decl, Ptr_Typ_Decl);
@@ -8330,8 +8331,8 @@ package body Exp_Ch6 is
          Pass_Caller_Acc := True;
 
          --  When the enclosing function has a BIP_Alloc_Form formal then we
-         --  pass it along to the callee (such as when the enclosing
-         --  function has an unconstrained or tagged result type).
+         --  pass it along to the callee (such as when the enclosing function
+         --  has an unconstrained or tagged result type).
 
          if Needs_BIP_Alloc_Form (Encl_Func) then
             if RTE_Available (RE_Root_Storage_Pool_Ptr) then
@@ -8376,9 +8377,8 @@ package body Exp_Ch6 is
            Make_Unchecked_Type_Conversion (Loc,
              Subtype_Mark =>
                New_Occurrence_Of
-                 (Etype
-                    (Build_In_Place_Formal
-                      (Function_Id, BIP_Object_Access)),
+                 (Etype (Build_In_Place_Formal
+                    (Function_Id, BIP_Object_Access)),
                   Loc),
              Expression   =>
                New_Occurrence_Of
@@ -8487,8 +8487,8 @@ package body Exp_Ch6 is
       Set_Etype (Def_Id, Ptr_Typ);
       Set_Is_Known_Non_Null (Def_Id);
 
-      if Nkind_In
-        (Function_Call, N_Type_Conversion, N_Unchecked_Type_Conversion)
+      if Nkind_In (Function_Call, N_Type_Conversion,
+                                  N_Unchecked_Type_Conversion)
       then
          Res_Decl :=
            Make_Object_Declaration (Loc,
@@ -8496,9 +8496,9 @@ package body Exp_Ch6 is
              Constant_Present    => True,
              Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
              Expression          =>
-             Make_Unchecked_Type_Conversion (Loc,
-                New_Occurrence_Of (Ptr_Typ, Loc),
-                Make_Reference (Loc, Relocate_Node (Func_Call))));
+               Make_Unchecked_Type_Conversion (Loc,
+                 New_Occurrence_Of (Ptr_Typ, Loc),
+                 Make_Reference (Loc, Relocate_Node (Func_Call))));
       else
          Res_Decl :=
            Make_Object_Declaration (Loc,
@@ -8515,9 +8515,8 @@ package body Exp_Ch6 is
       --  itself the return expression of an enclosing BIP function, then mark
       --  the object as having no initialization.
 
-      if Definite
-        and then not Is_Return_Object (Obj_Def_Id)
-      then
+      if Definite and then not Is_Return_Object (Obj_Def_Id) then
+
          --  The related object declaration is encased in a transient block
          --  because the build-in-place function call contains at least one
          --  nested function call that produces a controlled transient
@@ -8552,9 +8551,9 @@ package body Exp_Ch6 is
          Rewrite (Obj_Decl,
            Make_Object_Renaming_Declaration (Obj_Loc,
              Defining_Identifier => Make_Temporary (Obj_Loc, 'D'),
-             Subtype_Mark =>
+             Subtype_Mark        =>
                New_Occurrence_Of (Designated_Type, Obj_Loc),
-             Name => Call_Deref));
+             Name                => Call_Deref));
 
          --  At this point, Defining_Identifier (Obj_Decl) is no longer equal
          --  to Obj_Def_Id.
@@ -9261,7 +9260,7 @@ package body Exp_Ch6 is
          then
             On_Object_Declaration := True;
             return
-               Unqual_BIP_Function_Call (Expression (Parent (Entity (Expr))));
+              Unqual_BIP_Function_Call (Expression (Parent (Entity (Expr))));
 
          --  Recurse to handle calls to displace the pointer to the object to
          --  reference a secondary dispatch table.
@@ -9294,7 +9293,9 @@ package body Exp_Ch6 is
 
    begin
       if Nkind (Expr) = N_Identifier and then No (Entity (Expr)) then
-         --  Can happen for X'Elab_Spec in the binder-generated file.
+
+         --  Can happen for X'Elab_Spec in the binder-generated file
+
          return Empty;
       end if;
 

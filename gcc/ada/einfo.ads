@@ -9470,9 +9470,12 @@ package Einfo is
 
    pragma Inline (Base_Type);
    pragma Inline (Is_Base_Type);
+   pragma Inline (Is_Boolean_Type);
    pragma Inline (Is_Controlled);
+   pragma Inline (Is_Entity_Name);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Packed_Array);
+   pragma Inline (Is_String_Type);
    pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
    pragma Inline (Is_Volatile);
    pragma Inline (Is_Wrapper_Package);

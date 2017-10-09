@@ -1,3 +1,39 @@
+2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_unit.adb (Find_Enclosing_Scope): Do not treat a block statement
+	as a scoping construct when it is byproduct of exception handling.
+
+2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sinfo.ads: Update table Is_Syntactic_Field to reflect the nature of
+	semantic field Target of node N_Call_Marker.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Reject properly an allocator that
+	attempts to copy a limited value, when the allocator is the expression
+	in an expression function.
+
+2017-10-09  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/share/conf.py: Tell the style checker that this is a Python
+	fragment, and therefore that pyflakes should not be run to validate
+	this file.
+
+2017-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Is_Boolean_Type): Add pragma Inline.
+	(Is_Entity_Name): Likewise.
+	(Is_String_Type): Likewise.
+	* sem_type.adb (Full_View_Covers): Do not test Is_Private_Type here
+	and remove useless comparisons on the base types.
+	(Covers): Use simple tests for Standard_Void_Type.  Move up cheap tests
+	on T2.  Always test Is_Private_Type before Full_View_Covers.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb: Minor refactoring.
+
 2017-10-09  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Replace_Components): Browse the list of discriminants,

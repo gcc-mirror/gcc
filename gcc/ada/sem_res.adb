@@ -4834,10 +4834,18 @@ package body Sem_Res is
          --  are explicitly marked as coming from source but do not need to be
          --  checked for limited initialization. To exclude this case, ensure
          --  that the parent of the allocator is a source node.
+         --  The return statement constructed for an Expression_Function does
+         --  not come from source but requires a limited check.
 
          if Is_Limited_Type (Etype (E))
            and then Comes_From_Source (N)
-           and then Comes_From_Source (Parent (N))
+           and then
+             (Comes_From_Source (Parent (N))
+               or else
+                 (Ekind (Current_Scope) = E_Function
+                   and then Nkind
+                     (Original_Node (Unit_Declaration_Node (Current_Scope)))
+                       = N_Expression_Function))
            and then not In_Instance_Body
          then
             if not OK_For_Limited_Init (Etype (E), Expression (E)) then

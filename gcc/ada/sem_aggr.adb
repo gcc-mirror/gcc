@@ -3019,17 +3019,20 @@ package body Sem_Aggr is
          return False;
       end Valid_Ancestor_Type;
 
+      ------------------------------
+      -- Transform_BIP_Assignment --
+      ------------------------------
+
       procedure Transform_BIP_Assignment (Typ : Entity_Id) is
-         Loc : constant Source_Ptr := Sloc (N);
-         Def_Id : constant Entity_Id := Make_Temporary (Loc, 'Y', A);
-         Obj_Decl : constant Node_Id :=
-           Make_Object_Declaration
-             (Loc,
-              Defining_Identifier => Def_Id,
-              Constant_Present => True,
-              Object_Definition => New_Occurrence_Of (Typ, Loc),
-              Expression => A,
-              Has_Init_Expression => True);
+         Loc      : constant Source_Ptr := Sloc (N);
+         Def_Id   : constant Entity_Id  := Make_Temporary (Loc, 'Y', A);
+         Obj_Decl : constant Node_Id    :=
+                      Make_Object_Declaration (Loc,
+                        Defining_Identifier => Def_Id,
+                        Constant_Present    => True,
+                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                        Expression          => A,
+                        Has_Init_Expression => True);
       begin
          Set_Etype (Def_Id, Typ);
          Set_Ancestor_Part (N, New_Occurrence_Of (Def_Id, Loc));

@@ -1712,7 +1712,8 @@ package body Exp_Ch3 is
       Set_Tag   : Entity_Id := Empty;
 
       function Build_Assignment
-        (Id : Entity_Id; Default : Node_Id) return List_Id;
+        (Id      : Entity_Id;
+         Default : Node_Id) return List_Id;
       --  Build an assignment statement that assigns the default expression to
       --  its corresponding record component if defined. The left-hand side of
       --  the assignment is marked Assignment_OK so that initialization of
@@ -1785,10 +1786,11 @@ package body Exp_Ch3 is
       ----------------------
 
       function Build_Assignment
-        (Id : Entity_Id; Default : Node_Id) return List_Id
+        (Id      : Entity_Id;
+         Default : Node_Id) return List_Id
       is
          Default_Loc : constant Source_Ptr := Sloc (Default);
-         Typ   : constant Entity_Id := Underlying_Type (Etype (Id));
+         Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
          Exp      : Node_Id   := Default;
@@ -1871,7 +1873,7 @@ package body Exp_Ch3 is
 
          if Kind = N_Attribute_Reference
            and then Nam_In (Attribute_Name (Default), Name_Unchecked_Access,
-                                                Name_Unrestricted_Access)
+                                                      Name_Unrestricted_Access)
            and then Is_Entity_Name (Prefix (Default))
            and then Is_Type (Entity (Prefix (Default)))
            and then Entity (Prefix (Default)) = Rec_Type
@@ -1915,9 +1917,8 @@ package body Exp_Ch3 is
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
                     New_Occurrence_Of
-                      (Node
-                        (First_Elmt
-                          (Access_Disp_Table (Underlying_Type (Typ)))),
+                      (Node (First_Elmt (Access_Disp_Table (Underlying_Type
+                         (Typ)))),
                        Default_Loc))));
          end if;
 
@@ -6328,7 +6329,7 @@ package body Exp_Ch3 is
          elsif Nkind (Expr_Q) = N_Reference
            and then Is_Build_In_Place_Function_Call (Prefix (Expr_Q))
            and then not Is_Expanded_Build_In_Place_Call
-             (Unqual_Conv (Prefix (Expr_Q)))
+                          (Unqual_Conv (Prefix (Expr_Q)))
          then
             Make_Build_In_Place_Call_In_Anonymous_Context (Prefix (Expr_Q));
 
@@ -6611,7 +6612,8 @@ package body Exp_Ch3 is
                --  allocated in place, delay checks until assignments are
                --  made, because the discriminants are not initialized.
 
-               if Nkind (Expr) = N_Allocator and then No_Initialization (Expr)
+               if Nkind (Expr) = N_Allocator
+                 and then No_Initialization (Expr)
                then
                   null;
 
@@ -6649,9 +6651,9 @@ package body Exp_Ch3 is
 
             if Is_Build_In_Place_Result_Type (Typ)
               and then Nkind (Parent (N)) = N_Extended_Return_Statement
-              and then not Is_Definite_Subtype
-                (Etype (Return_Applies_To
-                         (Return_Statement_Entity (Parent (N)))))
+              and then
+                not Is_Definite_Subtype (Etype (Return_Applies_To
+                      (Return_Statement_Entity (Parent (N)))))
             then
                null;
 

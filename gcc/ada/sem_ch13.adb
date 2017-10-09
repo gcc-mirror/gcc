@@ -13193,17 +13193,16 @@ package body Sem_Ch13 is
            or else No (First_Formal (Entity (N)))
            or else Etype (First_Formal (Entity (N))) /= Typ
          then
-            Error_Msg_N ("iterable primitive must be local function name "
-                         & "whose first formal is an iterable type", N);
+            Error_Msg_N
+              ("iterable primitive must be local function name whose first "
+               & "formal is an iterable type", N);
             return;
          end if;
 
          Ent := Entity (N);
-         F1 := First_Formal (Ent);
+         F1  := First_Formal (Ent);
 
-         if Nam = Name_First
-           or else Nam = Name_Last
-         then
+         if Nam = Name_First or else Nam = Name_Last then
 
             --  First or Last (Container) => Cursor
 
@@ -13242,6 +13241,7 @@ package body Sem_Ch13 is
             --  Has_Element (Container, Cursor) => Boolean
 
             F2 := Next_Formal (F1);
+
             if Etype (F2) /= Cursor
               or else Etype (Ent) /= Standard_Boolean
               or else Present (Next_Formal (F2))
@@ -13258,15 +13258,14 @@ package body Sem_Ch13 is
             then
                Error_Msg_N ("no match for Element iterable primitive", N);
             end if;
-            null;
 
          else
             raise Program_Error;
          end if;
 
       else
-         --  Overloaded case: find subprogram with proper signature.
-         --  Caller will report error if no match is found.
+         --  Overloaded case: find subprogram with proper signature. Caller
+         --  will report error if no match is found.
 
          declare
             I  : Interp_Index;
@@ -14108,10 +14107,8 @@ package body Sem_Ch13 is
       elsif No (Has_Element_Id) then
          Error_Msg_N ("match for Has_Element primitive not found", ASN);
 
-      elsif No (Element_Id)
-        or else No (Last_Id)
-      then
-         null;  --  Optional.
+      elsif No (Element_Id) or else No (Last_Id) then
+         null;  --  optional
       end if;
    end Validate_Iterable_Aspect;
 
