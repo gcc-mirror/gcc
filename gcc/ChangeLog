@@ -1,3 +1,9 @@
+2017-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82464
+	* config/s390/s390-builtins.def (s390_vec_xor_flt_a,
+	s390_vec_xor_flt_b, s390_vec_xor_flt_c): New.
+
 2017-10-09  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* wide-int.h (WI_BINARY_OPERATOR_RESULT): New macro.
