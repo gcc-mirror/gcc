@@ -1,3 +1,7 @@
+2017-10-09  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c (dg-options): Add -fno-short-enums.
+
 2017-10-09  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/cold-1.c (foo1): Fix warning line number.  Make warning line
