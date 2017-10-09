@@ -1,3 +1,41 @@
+2017-10-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/82416
+	* hsa-common.h (hsa_op_with_type): New method extend_int_to_32bit.
+	* hsa-gen.c (hsa_extend_inttype_to_32bit): New function.
+	(hsa_type_for_scalar_tree_type): Use it.  Always force min32int for
+	COMPLEX types.
+	(hsa_fixup_mov_insn_type): New function.
+	(hsa_op_with_type::get_in_type): Use it.
+	(hsa_build_append_simple_mov): Likewise.  Allow sub-32bit
+	immediates in an assert.
+	(hsa_op_with_type::extend_int_to_32bit): New method.
+	(gen_hsa_insns_for_bitfield): Fixup instruction and intermediary
+	types.  Convert to dest type if necessary.
+	(gen_hsa_insns_for_bitfield_load): Fixup load type if necessary.
+	(reg_for_gimple_ssa): Pass false as min32int to
+	hsa_type_for_scalar_tree_type.
+	(gen_hsa_addr): Fixup type when creating addresable temporary.
+	(gen_hsa_cmp_insn_from_gimple): Extend operands if necessary.
+	(gen_hsa_unary_operation): Extend operands and convert to dest type if
+	necessary.  Call hsa_fixup_mov_insn_type.
+	(gen_hsa_binary_operation): Changed operand types to hsa_op_with_type,
+	extend operands and convert to dest type if necessary.
+	(gen_hsa_insns_for_operation_assignment): Extend operands and convert
+	to dest type if necessary.
+	(set_output_in_type): Call hsa_fixup_mov_insn_type.  Just ude dest
+	if conversion nt necessary and size matches.
+	(gen_hsa_insns_for_load): Call hsa_fixup_mov_insn_type, convert
+	to dest type if necessary.
+	(gen_hsa_insns_for_store): Call hsa_fixup_mov_insn_type.
+	(gen_hsa_insns_for_switch_stmt): Likewise. Also extend operands if
+	necessary.
+	(gen_hsa_clrsb): Likewise.
+	(gen_hsa_ffs): Likewise.
+	(gen_hsa_divmod): Extend operands and convert to dest type if
+	necessary.
+	(gen_hsa_atomic_for_builtin): Change type of op to hsa_op_with_type.
+
 2017-10-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (conditional branch): Clean up formatting.
