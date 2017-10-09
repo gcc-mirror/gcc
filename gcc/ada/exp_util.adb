@@ -9305,10 +9305,22 @@ package body Exp_Util is
 
       --  Case of calling normal predicate function
 
-      Call :=
-        Make_Function_Call (Loc,
-          Name                   => New_Occurrence_Of (Func_Id, Loc),
-          Parameter_Associations => New_List (Relocate_Node (Expr)));
+      --  If the type is tagged, the expression may be class-wide, in which
+      --  case it has to be converted to its root type, given that the
+      --  generated predicate function is not dispatching.
+
+      if Is_Tagged_Type (Typ) then
+         Call :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Func_Id, Loc),
+             Parameter_Associations =>
+               New_List (Convert_To (Typ, Relocate_Node (Expr))));
+      else
+         Call :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Func_Id, Loc),
+             Parameter_Associations => New_List (Relocate_Node (Expr)));
+      end if;
 
       Restore_Ghost_Mode (Saved_GM);
 

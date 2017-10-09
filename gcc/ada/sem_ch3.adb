@@ -2233,9 +2233,11 @@ package body Sem_Ch3 is
       --  Utility to resolve the expressions of aspects at the end of a list of
       --  declarations.
 
-      function Uses_Unseen_Lib_Unit_Priv (Pkg : Entity_Id) return Boolean;
-      --  Check if an inner package has entities within it that rely on library
-      --  level private types where the full view has not been seen.
+      function Uses_Unseen_Priv (Pkg : Entity_Id) return Boolean;
+      --  Check if a nested package has entities within it that rely on library
+      --  level private types where the full view has not been seen for the
+      --  purposes of checking if it is acceptable to freeze an expression
+      --  function at the point of declaration.
 
       -----------------
       -- Adjust_Decl --
@@ -2540,11 +2542,11 @@ package body Sem_Ch3 is
          end loop;
       end Resolve_Aspects;
 
-      -------------------------------
-      -- Uses_Unseen_Lib_Unit_Priv --
-      -------------------------------
+      ----------------------
+      -- Uses_Unseen_Priv --
+      ----------------------
 
-      function Uses_Unseen_Lib_Unit_Priv (Pkg : Entity_Id) return Boolean is
+      function Uses_Unseen_Priv (Pkg : Entity_Id) return Boolean is
          Curr : Entity_Id;
 
       begin
@@ -2572,7 +2574,7 @@ package body Sem_Ch3 is
          end if;
 
          return False;
-      end Uses_Unseen_Lib_Unit_Priv;
+      end Uses_Unseen_Priv;
 
       --  Local variables
 
@@ -2753,8 +2755,9 @@ package body Sem_Ch3 is
 
          elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl)
            and then ((Nkind (Next_Decl) /= N_Subprogram_Body
-                      or else not Was_Expression_Function (Next_Decl))
-                     or else not Uses_Unseen_Lib_Unit_Priv (Current_Scope))
+                       or else not Was_Expression_Function (Next_Decl))
+                      or else (not Is_Ignored_Ghost_Entity (Current_Scope)
+                                and then not Uses_Unseen_Priv (Current_Scope)))
          then
             --  When a controlled type is frozen, the expander generates stream
             --  and controlled-type support routines. If the freeze is caused

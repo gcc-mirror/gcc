@@ -8248,12 +8248,20 @@ package body Exp_Ch6 is
       --  Caller_Known_Size (specific) tagged type, we treat it as
       --  indefinite, because the code for the Definite case below sets the
       --  initialization expression of the object to Empty, which would be
-      --  illegal Ada, and would cause gigi to mis-allocate X.
+      --  illegal Ada, and would cause gigi to misallocate X.
+
+   --  Start of processing for Make_Build_In_Place_Call_In_Object_Declaration
 
    begin
+      --  If the call has already been processed to add build-in-place actuals
+      --  then return.
+
+      if Is_Expanded_Build_In_Place_Call (Func_Call) then
+         return;
+      end if;
+
       --  Mark the call as processed as a build-in-place call
 
-      pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
       --  Create an access type designating the function's result subtype.

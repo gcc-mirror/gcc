@@ -1,3 +1,57 @@
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Make_Predicate_Call): If the type of the expression to
+	which the predicate check applies is tagged, convert the expression to
+	that type. This is in most cases a no-op, but is relevant if the
+	expression is clas-swide, because the predicate function being invoked
+	is not a primitive of the type and cannot take a class-wide actual.
+
+2017-10-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+
+2017-10-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Fix typo.
+
+2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Install_ABE_Check): Do not generate an ABE check for
+	GNATprove.
+	(Install_ABE_Failure): Do not generate an ABE failure for GNATprove.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb: (Make_Build_In_Place_Call_In_Object_Declaration): Return
+	immediately if the call has already been processed (by a previous call
+	to Make_Build_In_Place_Call_In_Anonymous_Context).
+	* sem_elab.adb: Minor typo fixes.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Ref): In the expression for a dynamic
+	predicate, do not replace an identifier that matches the type if the
+	identifier is a selector in a selected component, because this
+	indicates a reference to some homograph of the type itself, and  not to
+	the current occurence in the predicate.
+
+2017-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Record_Layout): Tweak formatting.
+	(Write_Val): Remove superfluous spaces in back-end layout mode.
+
+2017-10-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Property_Error): Remove.
+	(Resolve_Actuals): check for SPARK RM 7.1.3(10) rewritten to match the
+	current wording of the rule.
+
+2017-10-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Add check for ghost packages
+	before analyzing a given scope due to an expression function.
+	(Uses_Unseen_Lib_Unit_Priv): Rename to Uses_Unseen_Priv.
+
 2017-10-09  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration): Use
