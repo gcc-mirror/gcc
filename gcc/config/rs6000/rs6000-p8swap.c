@@ -1882,6 +1882,7 @@ rs6000_analyze_swaps (function *fun)
 
   /* Pre-pass to recombine lvx and stvx patterns so we don't lose info.  */
   recombine_lvx_stvx_patterns (fun);
+  df_process_deferred_rescans ();
 
   /* Allocate structure to represent webs of insns.  */
   insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
