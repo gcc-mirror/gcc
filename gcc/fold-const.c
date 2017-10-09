@@ -9888,7 +9888,7 @@ fold_binary_loc (location_t loc,
 				   TYPE_PRECISION (TREE_TYPE (arg1)));
 
 	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
-	  if (msk.and_not (c1 | c2) == 0)
+	  if (wi::bit_and_not (msk, c1 | c2) == 0)
 	    {
 	      tem = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
 	      return fold_build2_loc (loc, BIT_IOR_EXPR, type, tem, arg1);
@@ -9899,12 +9899,13 @@ fold_binary_loc (location_t loc,
 	     mode which allows further optimizations.  */
 	  c1 &= msk;
 	  c2 &= msk;
-	  wide_int c3 = c1.and_not (c2);
+	  wide_int c3 = wi::bit_and_not (c1, c2);
 	  for (w = BITS_PER_UNIT; w <= width; w <<= 1)
 	    {
 	      wide_int mask = wi::mask (w, false,
 					TYPE_PRECISION (type));
-	      if (((c1 | c2) & mask) == mask && c1.and_not (mask) == 0)
+	      if (((c1 | c2) & mask) == mask
+		  && wi::bit_and_not (c1, mask) == 0)
 		{
 		  c3 = mask;
 		  break;

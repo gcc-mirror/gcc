@@ -1,3 +1,30 @@
+2017-10-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* wide-int.h (WI_BINARY_OPERATOR_RESULT): New macro.
+	(WI_BINARY_PREDICATE_RESULT): Likewise.
+	(wi::binary_traits::operator_result): New type.
+	(wi::binary_traits::predicate_result): Likewise.
+	(generic_wide_int::operator~, unary generic_wide_int::operator-)
+	(generic_wide_int::operator==, generic_wide_int::operator!=)
+	(generic_wide_int::operator&, generic_wide_int::and_not)
+	(generic_wide_int::operator|, generic_wide_int::or_not)
+	(generic_wide_int::operator^, generic_wide_int::operator+
+	(binary generic_wide_int::operator-, generic_wide_int::operator*):
+	Delete.
+	(operator~, unary operator-, operator==, operator!=, operator&)
+	(operator|, operator^, operator+, binary operator-, operator*): New
+	functions.
+	* expr.c (get_inner_reference): Use wi::bit_and_not.
+	* fold-const.c (fold_binary_loc): Likewise.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Likewise.
+	* tree-ssa-ccp.c (get_value_from_alignment): Likewise.
+	(bit_value_binop): Likewise.
+	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Likewise.
+	* tree-vrp.c (zero_nonzero_bits_from_vr): Likewise.
+	(extract_range_from_binary_expr_1): Likewise.
+	(masked_increment): Likewise.
+	(simplify_bit_ops_using_ranges): Likewise.
+
 2017-10-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR hsa/82416
