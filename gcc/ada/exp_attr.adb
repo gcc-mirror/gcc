@@ -6512,7 +6512,9 @@ package body Exp_Attr is
          begin
             --  The prefix of attribute 'Valid should always denote an object
             --  reference. The reference is either coming directly from source
-            --  or is produced by validity check expansion.
+            --  or is produced by validity check expansion. The object may be
+            --  wrapped in a conversion in which case the call to Unqual_Conv
+            --  will yield it.
 
             --  If the prefix denotes a variable which captures the value of
             --  an object for validation purposes, use the variable in the
@@ -6523,7 +6525,7 @@ package body Exp_Attr is
             --    if not Temp in ... then
 
             if Is_Validation_Variable_Reference (Pref) then
-               Temp := New_Occurrence_Of (Entity (Pref), Loc);
+               Temp := New_Occurrence_Of (Entity (Unqual_Conv (Pref)), Loc);
 
             --  Otherwise the prefix is either a source object or a constant
             --  produced by validity check expansion. Generate:

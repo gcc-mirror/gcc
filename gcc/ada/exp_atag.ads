@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,7 +147,7 @@ package Exp_Atag is
    --
    --  Generates:
    --    Offset_To_Top_Ptr
-   --      (Address!(Tag_Ptr!(This).all) - Offset_To_Top_Offset)
+   --      (Address!(Tag_Ptr!(This).all) - Offset_To_Top_Offset).all
 
    function Build_Set_Predefined_Prim_Op_Address
      (Loc          : Source_Ptr;

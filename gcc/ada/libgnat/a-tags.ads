@@ -380,12 +380,21 @@ private
       --  Prims_Ptr table.
 
       Offset_To_Top : SSE.Storage_Offset;
-      TSD           : System.Address;
+      --  Offset between the _Tag field and the field that contains the
+      --  reference to this dispatch table. For primary dispatch tables it is
+      --  zero. For secondary dispatch tables: if the parent record type (if
+      --  any) has a compile-time-known size, then Offset_To_Top contains the
+      --  expected value, otherwise it contains SSE.Storage_Offset'Last and the
+      --  actual offset is to be found in the tagged record, right after the
+      --  field that contains the reference to this dispatch table. See the
+      --  implementation of Ada.Tags.Offset_To_Top for the corresponding logic.
+
+      TSD : System.Address;
 
       Prims_Ptr : aliased Address_Array (1 .. Num_Prims);
       --  The size of the Prims_Ptr array actually depends on the tagged type
       --  to which it applies. For each tagged type, the expander computes the
-      --  actual array size, allocates the Dispatch_Table record accordingly.
+      --  actual array size, allocating the Dispatch_Table record accordingly.
    end record;
 
    type Dispatch_Table_Ptr is access all Dispatch_Table_Wrapper;

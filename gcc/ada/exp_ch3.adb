@@ -1711,10 +1711,11 @@ package body Exp_Ch3 is
       Rec_Type  : Entity_Id;
       Set_Tag   : Entity_Id := Empty;
 
-      function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
-      --  Build an assignment statement which assigns the default expression
-      --  to its corresponding record component if defined. The left hand side
-      --  of the assignment is marked Assignment_OK so that initialization of
+      function Build_Assignment
+        (Id : Entity_Id; Default : Node_Id) return List_Id;
+      --  Build an assignment statement that assigns the default expression to
+      --  its corresponding record component if defined. The left-hand side of
+      --  the assignment is marked Assignment_OK so that initialization of
       --  limited private records works correctly. This routine may also build
       --  an adjustment call if the component is controlled.
 
@@ -1783,13 +1784,15 @@ package body Exp_Ch3 is
       -- Build_Assignment --
       ----------------------
 
-      function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id is
-         N_Loc : constant Source_Ptr := Sloc (N);
+      function Build_Assignment
+        (Id : Entity_Id; Default : Node_Id) return List_Id
+      is
+         Default_Loc : constant Source_Ptr := Sloc (Default);
          Typ   : constant Entity_Id := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := N;
-         Kind     : Node_Kind := Nkind (N);
+         Exp      : Node_Id   := Default;
+         Kind     : Node_Kind := Nkind (Default);
          Lhs      : Node_Id;
          Res      : List_Id;
 
@@ -1815,10 +1818,11 @@ package body Exp_Ch3 is
               and then Present (Discriminal_Link (Entity (N)))
             then
                Val :=
-                 Make_Selected_Component (N_Loc,
+                 Make_Selected_Component (Default_Loc,
                    Prefix        => New_Copy_Tree (Lhs),
                    Selector_Name =>
-                     New_Occurrence_Of (Discriminal_Link (Entity (N)), N_Loc));
+                     New_Occurrence_Of
+                       (Discriminal_Link (Entity (N)), Default_Loc));
 
                if Present (Val) then
                   Rewrite (N, New_Copy_Tree (Val));
@@ -1835,9 +1839,9 @@ package body Exp_Ch3 is
 
       begin
          Lhs :=
-           Make_Selected_Component (N_Loc,
+           Make_Selected_Component (Default_Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
-             Selector_Name => New_Occurrence_Of (Id, N_Loc));
+             Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
          if Nkind (Exp) = N_Aggregate
@@ -1866,16 +1870,16 @@ package body Exp_Ch3 is
          --  traversing the expression. ???
 
          if Kind = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (N), Name_Unchecked_Access,
+           and then Nam_In (Attribute_Name (Default), Name_Unchecked_Access,
                                                 Name_Unrestricted_Access)
-           and then Is_Entity_Name (Prefix (N))
-           and then Is_Type (Entity (Prefix (N)))
-           and then Entity (Prefix (N)) = Rec_Type
+           and then Is_Entity_Name (Prefix (Default))
+           and then Is_Type (Entity (Prefix (Default)))
+           and then Entity (Prefix (Default)) = Rec_Type
          then
             Exp :=
-              Make_Attribute_Reference (N_Loc,
+              Make_Attribute_Reference (Default_Loc,
                 Prefix         =>
-                  Make_Identifier (N_Loc, Name_uInit),
+                  Make_Identifier (Default_Loc, Name_uInit),
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
@@ -1899,13 +1903,14 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
             Append_To (Res,
-              Make_Assignment_Statement (N_Loc,
+              Make_Assignment_Statement (Default_Loc,
                 Name       =>
-                  Make_Selected_Component (N_Loc,
+                  Make_Selected_Component (Default_Loc,
                     Prefix        =>
                       New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
-                      New_Occurrence_Of (First_Tag_Component (Typ), N_Loc)),
+                      New_Occurrence_Of
+                        (First_Tag_Component (Typ), Default_Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
@@ -1913,19 +1918,19 @@ package body Exp_Ch3 is
                       (Node
                         (First_Elmt
                           (Access_Disp_Table (Underlying_Type (Typ)))),
-                       N_Loc))));
+                       Default_Loc))));
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
          if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (N));
+            Kind := Nkind (Expression (Default));
          end if;
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Limited_View (Typ)
+           and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
               Make_Adjust_Call
@@ -6301,6 +6306,23 @@ package body Exp_Ch3 is
 
          elsif Is_Build_In_Place_Function_Call (Expr_Q) then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
+
+            --  The previous call expands the expression initializing the
+            --  built-in-place object into further code that will be analyzed
+            --  later. No further expansion needed here.
+
+            return;
+
+         --  This is the same as the previous 'elsif', except that the call has
+         --  been transformed by other expansion activities into something like
+         --  F(...)'Reference.
+
+         elsif Nkind (Expr_Q) = N_Reference
+           and then Is_Build_In_Place_Function_Call (Prefix (Expr_Q))
+           and then not Is_Expanded_Build_In_Place_Call
+             (Unqual_Conv (Prefix (Expr_Q)))
+         then
+            Make_Build_In_Place_Call_In_Anonymous_Context (Prefix (Expr_Q));
 
             --  The previous call expands the expression initializing the
             --  built-in-place object into further code that will be analyzed

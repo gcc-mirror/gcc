@@ -101,13 +101,7 @@ package body Sem_Ch5 is
 
    procedure Analyze_Assignment (N : Node_Id) is
       Lhs : constant Node_Id := Name (N);
-      Rhs : constant Node_Id := Expression (N);
-
-      Decl : Node_Id;
-      T1   : Entity_Id;
-      T2   : Entity_Id;
-
-      Save_Full_Analysis : Boolean := False;  -- initialize to prevent warning
+      Rhs : Node_Id          := Expression (N);
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
@@ -125,6 +119,93 @@ package body Sem_Ch5 is
       --  Opnd is either the Lhs or Rhs of the assignment, and Opnd_Type is the
       --  nominal subtype. This procedure is used to deal with cases where the
       --  nominal subtype must be replaced by the actual subtype.
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id);
+      function Should_Transform_BIP_Assignment
+        (Typ : Entity_Id) return Boolean;
+      --  If the right-hand side of an assignment statement is a build-in-place
+      --  call we cannot build in place, so we insert a temp initialized with
+      --  the call, and transform the assignment statement to copy the temp.
+      --  Transform_BIP_Assignment does the tranformation, and
+      --  Should_Transform_BIP_Assignment determines whether we should.
+      --  The same goes for qualified expressions and conversions whose
+      --  operand is such a call.
+      --
+      --  This is only for nonlimited types; assignment statements are illegal
+      --  for limited types, but are generated internally for aggregates and
+      --  init procs. These limited-type are not really assignment statements
+      --  -- conceptually, they are initializations, so should not be
+      --  transformed.
+      --
+      --  Similarly, for nonlimited types, aggregates and init procs generate
+      --  assignment statements that are really initializations. These are
+      --  marked No_Ctrl_Actions.
+
+      function Should_Transform_BIP_Assignment
+        (Typ : Entity_Id) return Boolean
+      is
+         Result : Boolean;
+      begin
+         if Expander_Active
+           and then not Is_Limited_View (Typ)
+           and then Is_Build_In_Place_Result_Type (Typ)
+           and then not No_Ctrl_Actions (N)
+         then
+            --  This function is called early, before name resolution is
+            --  complete, so we have to deal with things that might turn into
+            --  function calls later. N_Function_Call and N_Op nodes are the
+            --  obvious case. An N_Identifier or N_Expanded_Name is a
+            --  parameterless function call if it denotes a function.
+            --  Finally, an attribute reference can be a function call.
+
+            case Nkind (Unqual_Conv (Rhs)) is
+               when N_Function_Call | N_Op =>
+                  Result := True;
+               when N_Identifier | N_Expanded_Name =>
+                  case Ekind (Entity (Unqual_Conv (Rhs))) is
+                     when E_Function | E_Operator =>
+                        Result := True;
+                     when others =>
+                        Result := False;
+                  end case;
+               when N_Attribute_Reference =>
+                  Result := Attribute_Name (Unqual_Conv (Rhs)) = Name_Input;
+                  --  T'Input will turn into a call whose result type is T
+               when others =>
+                  Result := False;
+            end case;
+         else
+            Result := False;
+         end if;
+         return Result;
+      end Should_Transform_BIP_Assignment;
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id) is
+         --  Tranform "X : [constant] T := F (...);" into:
+         --
+         --     Temp : constant T := F (...);
+         --     X := Temp;
+
+         Loc : constant Source_Ptr := Sloc (N);
+         Def_Id : constant Entity_Id := Make_Temporary (Loc, 'Y', Rhs);
+         Obj_Decl : constant Node_Id :=
+           Make_Object_Declaration
+             (Loc,
+              Defining_Identifier => Def_Id,
+              Constant_Present => True,
+              Object_Definition => New_Occurrence_Of (Typ, Loc),
+              Expression => Rhs,
+              Has_Init_Expression => True);
+      begin
+         Set_Etype (Def_Id, Typ);
+         Set_Expression (N, New_Occurrence_Of (Def_Id, Loc));
+
+         --  At this point, Rhs is no longer equal to Expression (N), so:
+
+         Rhs := Expression (N);
+
+         Insert_Action (N, Obj_Decl);
+      end Transform_BIP_Assignment;
 
       -------------------------------
       -- Diagnose_Non_Variable_Lhs --
@@ -232,6 +313,7 @@ package body Sem_Ch5 is
         (Opnd      : Node_Id;
          Opnd_Type : in out Entity_Id)
       is
+         Decl : Node_Id;
       begin
          Require_Entity (Opnd);
 
@@ -283,6 +365,11 @@ package body Sem_Ch5 is
       end Set_Assignment_Type;
 
       --  Local variables
+
+      T1 : Entity_Id;
+      T2 : Entity_Id;
+
+      Save_Full_Analysis : Boolean;
 
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit
@@ -360,8 +447,9 @@ package body Sem_Ch5 is
                   null;
 
                elsif Has_Compatible_Type (Rhs, It.Typ) then
-                  if T1 /= Any_Type then
-
+                  if T1 = Any_Type then
+                     T1 := It.Typ;
+                  else
                      --  An explicit dereference is overloaded if the prefix
                      --  is. Try to remove the ambiguity on the prefix, the
                      --  error will be posted there if the ambiguity is real.
@@ -412,8 +500,6 @@ package body Sem_Ch5 is
                           ("ambiguous left-hand side in assignment", Lhs);
                         exit;
                      end if;
-                  else
-                     T1 := It.Typ;
                   end if;
                end if;
 
@@ -428,6 +514,15 @@ package body Sem_Ch5 is
             goto Leave;
          end if;
       end if;
+
+      --  Deal with build-in-place calls for nonlimited types.
+      --  We don't do this later, because resolving the rhs
+      --  tranforms it incorrectly for build-in-place.
+
+      if Should_Transform_BIP_Assignment (Typ => T1) then
+         Transform_BIP_Assignment (Typ => T1);
+      end if;
+      pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
 
       --  The resulting assignment type is T1, so now we will resolve the left
       --  hand side of the assignment using this determined type.
@@ -971,6 +1066,8 @@ package body Sem_Ch5 is
          Expander_Mode_Restore;
          Full_Analysis := Save_Full_Analysis;
       end if;
+
+      pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
    end Analyze_Assignment;
 
    -----------------------------

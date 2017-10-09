@@ -19059,7 +19059,18 @@ package body Sem_Util is
          N := Next (Actual_Id);
 
          if Nkind (N) = N_Parameter_Association then
-            return First_Named_Actual (Parent (Actual_Id));
+            --  In case of a build-in-place call, the call will no longer be a
+            --  call; it will have been rewritten.
+
+            if Nkind_In (Parent (Actual_Id),
+                         N_Entry_Call_Statement,
+                         N_Function_Call,
+                         N_Procedure_Call_Statement)
+            then
+               return First_Named_Actual (Parent (Actual_Id));
+            else
+               return Empty;
+            end if;
          else
             return N;
          end if;

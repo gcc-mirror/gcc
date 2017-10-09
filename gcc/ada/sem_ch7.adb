@@ -199,7 +199,7 @@ package body Sem_Ch7 is
    subtype Entity_Header_Num is Integer range 0 .. Entity_Table_Size - 1;
    --  Range of headers in hash table
 
-   function Entity_Hash (Id : Entity_Id) return Entity_Header_Num;
+   function Node_Hash (Id : Entity_Id) return Entity_Header_Num;
    --  Simple hash function for Entity_Ids
 
    package Subprogram_Table is new GNAT.Htable.Simple_HTable
@@ -207,19 +207,29 @@ package body Sem_Ch7 is
       Element    => Boolean,
       No_Element => False,
       Key        => Entity_Id,
-      Hash       => Entity_Hash,
+      Hash       => Node_Hash,
       Equal      => "=");
    --  Hash table to record which subprograms are referenced. It is declared
    --  at library level to avoid elaborating it for every call to Analyze.
 
+   package Traversed_Table is new GNAT.Htable.Simple_HTable
+     (Header_Num => Entity_Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Node_Id,
+      Hash       => Node_Hash,
+      Equal      => "=");
+   --  Hash table to record which nodes we have traversed, so we can avoid
+   --  traversing the same nodes repeatedly.
+
    -----------------
-   -- Entity_Hash --
+   -- Node_Hash --
    -----------------
 
-   function Entity_Hash (Id : Entity_Id) return Entity_Header_Num is
+   function Node_Hash (Id : Entity_Id) return Entity_Header_Num is
    begin
       return Entity_Header_Num (Id mod Entity_Table_Size);
-   end Entity_Hash;
+   end Node_Hash;
 
    ---------------------------------
    -- Analyze_Package_Body_Helper --
@@ -260,12 +270,24 @@ package body Sem_Ch7 is
          function Scan_Subprogram_Ref (N : Node_Id) return Traverse_Result;
          --  Determine whether a node denotes a reference to a subprogram
 
-         procedure Scan_Subprogram_Refs is
+         procedure Traverse_And_Scan_Subprogram_Refs is
            new Traverse_Proc (Scan_Subprogram_Ref);
          --  Subsidiary to routine Has_Referencer. Determine whether a node
          --  contains references to a subprogram and record them.
          --  WARNING: this is a very expensive routine as it performs a full
          --  tree traversal.
+
+         procedure Scan_Subprogram_Refs (Node : Node_Id);
+         --  If we haven't already traversed Node, then mark it and traverse
+         --  it.
+
+         procedure Scan_Subprogram_Refs (Node : Node_Id) is
+         begin
+            if not Traversed_Table.Get (Node) then
+               Traversed_Table.Set (Node, True);
+               Traverse_And_Scan_Subprogram_Refs (Node);
+            end if;
+         end Scan_Subprogram_Refs;
 
          --------------------
          -- Has_Referencer --
@@ -581,6 +603,7 @@ package body Sem_Ch7 is
          --  actual parameters of the instantiations matter here, and they are
          --  present in the declarations list of the instantiated packages.
 
+         Traversed_Table.Reset;
          Subprogram_Table.Reset;
          Discard := Has_Referencer (Decls, Top_Level => True);
       end Hide_Public_Entities;
