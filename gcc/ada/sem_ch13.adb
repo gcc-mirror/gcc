@@ -13200,9 +13200,12 @@ package body Sem_Ch13 is
 
          Ent := Entity (N);
          F1 := First_Formal (Ent);
-         if Nam = Name_First then
 
-            --  First (Container) => Cursor
+         if Nam = Name_First
+           or else Nam = Name_Last
+         then
+
+            --  First or Last (Container) => Cursor
 
             if Etype (Ent) /= Cursor then
                Error_Msg_N ("primitive for First must yield a curosr", N);
@@ -13219,6 +13222,19 @@ package body Sem_Ch13 is
               or else Present (Next_Formal (F2))
             then
                Error_Msg_N ("no match for Next iterable primitive", N);
+            end if;
+
+         elsif Nam = Name_Previous then
+
+            --  Previous (Container, Cursor) => Cursor
+
+            F2 := Next_Formal (F1);
+
+            if Etype (F2) /= Cursor
+              or else Etype (Ent) /= Cursor
+              or else Present (Next_Formal (F2))
+            then
+               Error_Msg_N ("no match for Previous iterable primitive", N);
             end if;
 
          elsif Nam = Name_Has_Element then
@@ -14022,6 +14038,7 @@ package body Sem_Ch13 is
       Cursor : constant Entity_Id := Get_Cursor_Type (ASN, Typ);
 
       First_Id       : Entity_Id;
+      Last_Id        : Entity_Id;
       Next_Id        : Entity_Id;
       Has_Element_Id : Entity_Id;
       Element_Id     : Entity_Id;
@@ -14034,6 +14051,7 @@ package body Sem_Ch13 is
       end if;
 
       First_Id       := Empty;
+      Last_Id        := Empty;
       Next_Id        := Empty;
       Has_Element_Id := Empty;
       Element_Id     := Empty;
@@ -14053,6 +14071,14 @@ package body Sem_Ch13 is
          elsif Chars (Prim) = Name_First then
             Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_First);
             First_Id := Entity (Expr);
+
+         elsif Chars (Prim) = Name_Last then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Last);
+            Last_Id := Entity (Expr);
+
+         elsif Chars (Prim) = Name_Previous then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Previous);
+            Last_Id := Entity (Expr);
 
          elsif Chars (Prim) = Name_Next then
             Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Next);
@@ -14082,7 +14108,9 @@ package body Sem_Ch13 is
       elsif No (Has_Element_Id) then
          Error_Msg_N ("match for Has_Element primitive not found", ASN);
 
-      elsif No (Element_Id) then
+      elsif No (Element_Id)
+        or else No (Last_Id)
+      then
          null;  --  Optional.
       end if;
    end Validate_Iterable_Aspect;

@@ -5516,12 +5516,18 @@ package body Sem_Elab is
 
       Req_Met := False;
 
+      --  Elaboration requirements are verified only when the static model is
+      --  in effect because this diagnostic is graph-dependent.
+
+      if not Static_Elaboration_Checks then
+         return;
+
       --  If the target is within the main unit, either at the source level or
       --  through an instantiation, then there is no real requirement to meet
       --  because the main unit cannot force its own elaboration by means of an
       --  Elaborate[_All] pragma. Treat this case as valid coverage.
 
-      if In_Extended_Main_Code_Unit (Target_Id) then
+      elsif In_Extended_Main_Code_Unit (Target_Id) then
          Req_Met := True;
 
       --  Otherwise the target resides in an external unit

@@ -178,14 +178,27 @@ package body Exp_Ch5 is
       Loc      : constant Source_Ptr := Sloc (N);
       Stats    : constant List_Id    := Statements (N);
       Typ      : constant Entity_Id  := Base_Type (Etype (Container));
-      First_Op : constant Entity_Id  :=
-                   Get_Iterable_Type_Primitive (Typ, Name_First);
-      Next_Op  : constant Entity_Id  :=
-                   Get_Iterable_Type_Primitive (Typ, Name_Next);
+
+      First_Op : Entity_Id;
+      Next_Op  : Entity_Id;
 
       Has_Element_Op : constant Entity_Id :=
                    Get_Iterable_Type_Primitive (Typ, Name_Has_Element);
    begin
+      --  Use the proper set of primitives depending on the direction of
+      --  iteration. The legality of a reverse iteration has been checked
+      --  during analysis.
+
+      if Reverse_Present (Iterator_Specification (Iteration_Scheme (N))) then
+         First_Op := Get_Iterable_Type_Primitive (Typ, Name_Last);
+         Next_Op  := Get_Iterable_Type_Primitive (Typ, Name_Previous);
+
+      else
+         First_Op := Get_Iterable_Type_Primitive (Typ, Name_First);
+         Next_Op  := Get_Iterable_Type_Primitive (Typ, Name_Next);
+         null;
+      end if;
+
       --  Declaration for Cursor
 
       Init :=
@@ -198,7 +211,7 @@ package body Exp_Ch5 is
               Parameter_Associations => New_List (
                 Convert_To_Iterable_Type (Container, Loc))));
 
-      --  Statement that advances cursor in loop
+      --  Statement that advances (in the right direction) cursor in loop
 
       Advance :=
         Make_Assignment_Statement (Loc,
