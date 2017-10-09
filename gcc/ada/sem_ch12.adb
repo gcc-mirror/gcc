@@ -1903,7 +1903,8 @@ package body Sem_Ch12 is
                      --  body.
 
                      Explicit_Freeze_Check : declare
-                        Actual : constant Entity_Id := Entity (Match);
+                        Actual  : constant Entity_Id := Entity (Match);
+                        Gen_Par : Entity_Id;
 
                         Needs_Freezing : Boolean;
                         S              : Entity_Id;
@@ -1912,7 +1913,11 @@ package body Sem_Ch12 is
                         --  The actual may be an instantiation of a unit
                         --  declared in a previous instantiation. If that
                         --  one is also in the current compilation, it must
-                        --  itself be frozen before the actual.
+                        --  itself be frozen before the actual. The actual
+                        --  may be an instantiation of a generic child unit,
+                        --  in which case the same applies to the instance
+                        --  of the parent which must be frozen before the
+                        --  actual.
                         --  Should this itself be recursive ???
 
                         --------------------------
@@ -1920,30 +1925,71 @@ package body Sem_Ch12 is
                         --------------------------
 
                         procedure Check_Generic_Parent is
-                           Par : Entity_Id;
+                           Inst : constant Node_Id :=
+                              Next (Unit_Declaration_Node (Actual));
+                           Par  : Entity_Id;
 
                         begin
-                           if Nkind (Parent (Actual)) =
-                                N_Package_Specification
+                           Par := Empty;
+
+                           if Nkind (Parent (Actual)) = N_Package_Specification
                            then
                               Par := Scope (Generic_Parent (Parent (Actual)));
+                              if Is_Generic_Instance (Par) then
+                                 null;
 
-                              if Is_Generic_Instance (Par)
-                                and then Scope (Par) = Current_Scope
-                                and then
-                                  (No (Freeze_Node (Par))
-                                    or else
-                                      not Is_List_Member (Freeze_Node (Par)))
+                              --  If the actual is a child generic unit, check
+                              --  whether the instantiation of the parent is
+                              --  also local and must also be frozen now.
+                              --  We must retrieve the instance node to locate
+                              --  the parent instance if any.
+
+                              elsif Ekind (Par) = E_Generic_Package
+                                  and then Is_Child_Unit (Gen_Par)
+                                  and then Ekind (Scope (Gen_Par))
+                                     = E_Generic_Package
                               then
-                                 Set_Has_Delayed_Freeze (Par);
-                                 Append_Elmt (Par, Actuals_To_Freeze);
+                                 if Nkind (Inst) = N_Package_Instantiation
+                                   and then
+                                     Nkind (Name (Inst)) = N_Expanded_Name
+                                 then
+
+                                    --  Retrieve entity of psarent instance.
+
+                                    Par := Entity (Prefix (Name (Inst)));
+                                 end if;
+
+                              else
+                                 Par := Empty;
                               end if;
+                           end if;
+
+                           if Present (Par)
+                             and then Is_Generic_Instance (Par)
+                             and then Scope (Par) = Current_Scope
+                             and then
+                               (No (Freeze_Node (Par))
+                                 or else
+                                   not Is_List_Member (Freeze_Node (Par)))
+                           then
+                              Set_Has_Delayed_Freeze (Par);
+                              Append_Elmt (Par, Actuals_To_Freeze);
                            end if;
                         end Check_Generic_Parent;
 
                      --  Start of processing for Explicit_Freeze_Check
 
                      begin
+                        if Present (Renamed_Entity (Actual)) then
+                           Gen_Par :=
+                             Generic_Parent (Specification (
+                               Unit_Declaration_Node (
+                                 Renamed_Entity (Actual))));
+                        else
+                           Gen_Par := Generic_Parent
+                             (Specification (Unit_Declaration_Node (Actual)));
+                        end if;
+
                         if not Expander_Active
                           or else not Has_Completion (Actual)
                           or else not In_Same_Source_Unit (I_Node, Actual)

@@ -5298,16 +5298,39 @@ package body Exp_Ch6 is
                                   Temp_Typ   => Ref_Type,
                                   Func_Id    => Func_Id,
                                   Ret_Typ    => Ret_Obj_Typ,
-                                  Alloc_Expr => Heap_Allocator)))),
+                                  Alloc_Expr => Heap_Allocator))),
+
+                           --  ???If all is well, we can put the following
+                           --  'elsif' in the 'else', but this is a useful
+                           --  self-check in case caller and callee don't agree
+                           --  on whether BIPAlloc and so on should be passed.
+
+                           Make_Elsif_Part (Loc,
+                             Condition =>
+                               Make_Op_Eq (Loc,
+                                 Left_Opnd  =>
+                                   New_Occurrence_Of (Obj_Alloc_Formal, Loc),
+                                 Right_Opnd =>
+                                   Make_Integer_Literal (Loc,
+                                     UI_From_Int (BIP_Allocation_Form'Pos
+                                                    (User_Storage_Pool)))),
+
+                             Then_Statements => New_List (
+                               Pool_Decl,
+                               Build_Heap_Allocator
+                                 (Temp_Id    => Alloc_Obj_Id,
+                                  Temp_Typ   => Ref_Type,
+                                  Func_Id    => Func_Id,
+                                  Ret_Typ    => Ret_Obj_Typ,
+                                  Alloc_Expr => Pool_Allocator)))),
+
+                         --  Raise Program_Error if it's none of the above;
+                         --  this is a compiler bug. ???PE_All_Guards_Closed
+                         --  is bogus; we should have a new code.
 
                          Else_Statements => New_List (
-                           Pool_Decl,
-                           Build_Heap_Allocator
-                             (Temp_Id    => Alloc_Obj_Id,
-                              Temp_Typ   => Ref_Type,
-                              Func_Id    => Func_Id,
-                              Ret_Typ    => Ret_Obj_Typ,
-                              Alloc_Expr => Pool_Allocator)));
+                           Make_Raise_Program_Error (Loc,
+                              Reason => PE_All_Guards_Closed)));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
@@ -7205,6 +7228,10 @@ package body Exp_Ch6 is
 
    function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean is
    begin
+      if not Expander_Active then
+         return False;
+      end if;
+
       --  In Ada 2005 all functions with an inherently limited return type
       --  must be handled using a build-in-place profile, including the case
       --  of a function with a limited interface result, where the function

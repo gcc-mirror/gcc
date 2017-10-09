@@ -4093,9 +4093,8 @@ execution of this erroneous program:
   ``gnatmem`` makes use of the output created by the special version of
   allocation and deallocation routines that record call information. This allows
   it to obtain accurate dynamic memory usage history at a minimal cost to the
-  execution speed. Note however, that ``gnatmem`` is not supported on all
-  platforms (currently, it is supported on AIX, HP-UX, GNU/Linux, Solaris and
-  Windows).
+  execution speed. Note however, that ``gnatmem`` is only supported on
+  GNU/Linux and Windows.
 
   The ``gnatmem`` command has the form
 

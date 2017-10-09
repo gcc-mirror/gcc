@@ -9069,7 +9069,7 @@ package body Sem_Ch8 is
                              (Current_Use_Clause (Associated_Node (N))))
                   then
                      Error_Msg_Node_1 := Entity (N);
-                     Error_Msg_NE ("ineffective use clause for package &?",
+                     Error_Msg_NE ("use clause for package &? has no effect",
                                    Curr, Entity (N));
                   end if;
 
@@ -9077,7 +9077,7 @@ package body Sem_Ch8 is
 
                else
                   Error_Msg_Node_1 := Etype (N);
-                  Error_Msg_NE ("ineffective use clause for }?",
+                  Error_Msg_NE ("use clause for }? has no effect",
                                  Curr, Etype (N));
                end if;
             end if;

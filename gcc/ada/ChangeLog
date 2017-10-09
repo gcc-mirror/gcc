@@ -1,3 +1,78 @@
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Add self-checking
+	code so if BIPAlloc is not passed in, it will likely raise
+	Program_Error instead of cause miscellaneous chaos.
+	(Is_Build_In_Place_Result_Type): Return False if not Expander_Active,
+	as for the other Is_B-I-P... functions.
+	* sem_aggr.adb (Resolve_Extension_Aggregate): For an extension
+	aggregate whose ancestor part is a build-in-place call returning a
+	nonlimited type, transform the assignment to the ancestor part to use a
+	temp.
+	* sem_ch3.adb (Build_Itype_Reference): Handle the case where we're
+	creating an Itype for a library unit entity.
+	(Check_Initialization): Avoid spurious error message on
+	internally-generated call.
+	* sem_ch5.adb (Analyze_Assignment): Handle the case where the
+	right-hand side is a build-in-place call. This didn't happen when b-i-p
+	was only for limited types.
+	* sem_ch6.adb (Create_Extra_Formals): Remove assumption that b-i-p
+	implies >= Ada 2005.
+	* sem_ch7.adb (Scan_Subprogram_Refs): Avoid traversing the same nodes
+	repeatedly.
+	* sem_util.adb (Next_Actual): Handle case of build-in-place call.
+
+2017-10-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Minor edit.
+
+2017-10-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/s-taprob.adb: Minor whitespace fix.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* namet.ads: Minor comment fix.
+
+2017-10-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aux.adb (Unit_Declaration_Node): Detect protected declarations,
+	just like other program units listed in Ada RM 10.1(1).
+
+2017-10-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Update_Chain_In_Scope): Modify warning messages.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations, Check_Generic_Parent): If an
+	actual for a formal package is an instantiation of a child unit, create
+	a freeze node for the instance of the parent if it appears in the same
+	scope and is not frozen yet.
+
+2017-10-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_atag.ads, libgnat/a-tags.adb, libgnat/a-tags.ads: Enhance
+	in-source documentation for tagged types's Offset_To_Top.
+
+2017-10-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Build_Assignment): Parameter name N was somewhat
+	confusing.  Same for N_Loc.  Remove assumption that b-i-p implies
+	limited.  This is for the case of a function call that occurs as the
+	default for a record component.
+	(Expand_N_Object_Declaration): Deal with the case where expansion has
+	created an object declaration initialized with something like
+	F(...)'Reference.
+	* exp_ch3.adb: Minor reformatting.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute_Reference, case 'Valid): The prefix of
+	the attribute is an object, but it may appear within a conversion. The
+	object itself must be retrieved when generating the range test that
+	implements the validity check on a scalar type.
+
 2017-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/82393

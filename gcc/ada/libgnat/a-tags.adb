@@ -842,9 +842,21 @@ package body Ada.Tags is
    begin
       Curr_DT := DT (To_Tag_Ptr (This).all);
 
+      --  See the documentation of Dispatch_Table_Wrapper.Offset_To_Top
+
       if Curr_DT.Offset_To_Top = SSE.Storage_Offset'Last then
+
+         --  The parent record type has variable-size components, so the
+         --  instance-specific offset is stored in the tagged record, right
+         --  after the reference to Curr_DT (which is a secondary dispatch
+         --  table).
+
          return To_Storage_Offset_Ptr (This + Tag_Size).all;
+
       else
+         --  The offset is compile-time known, so it is simply stored in the
+         --  Offset_To_Top field.
+
          return Curr_DT.Offset_To_Top;
       end if;
    end Offset_To_Top;

@@ -10257,7 +10257,22 @@ package body Sem_Ch3 is
          return;
       else
          Set_Itype (IR, Ityp);
-         Insert_After (Nod, IR);
+
+         --  If Nod is a library unit entity, then Insert_After won't work,
+         --  because Nod is not a member of any list. Therefore, we use
+         --  Add_Global_Declaration in this case. This can happen if we have a
+         --  build-in-place library function.
+
+         if (Nkind (Nod) in N_Entity
+               and then Is_Compilation_Unit (Nod))
+           or else
+             (Nkind (Nod) = N_Defining_Program_Unit_Name
+                and then Is_Compilation_Unit (Defining_Identifier (Nod)))
+         then
+            Add_Global_Declaration (IR);
+         else
+            Insert_After (Nod, IR);
+         end if;
       end if;
    end Build_Itype_Reference;
 
@@ -11777,9 +11792,20 @@ package body Sem_Ch3 is
                if Nkind (Exp) = N_Type_Conversion
                  and then Nkind (Expression (Exp)) = N_Function_Call
                then
-                  Error_Msg_N
-                    ("illegal context for call"
-                      & " to function with limited result", Exp);
+                  --  No error for internally-generated object declarations,
+                  --  which can come from build-in-place assignment statements.
+
+                  if Nkind (Parent (Exp)) = N_Object_Declaration
+                    and then not Comes_From_Source
+                                   (Defining_Identifier (Parent (Exp)))
+                  then
+                     null;
+
+                  else
+                     Error_Msg_N
+                       ("illegal context for call"
+                          & " to function with limited result", Exp);
+                  end if;
 
                else
                   Error_Msg_N
