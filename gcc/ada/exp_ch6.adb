@@ -3001,8 +3001,8 @@ package body Exp_Ch6 is
 
             if Prev_Orig /= Prev
               and then Nkind (Prev) = N_Attribute_Reference
-              and then
-                Get_Attribute_Id (Attribute_Name (Prev)) = Attribute_Access
+              and then Get_Attribute_Id (Attribute_Name (Prev)) =
+                         Attribute_Access
               and then Is_Aliased_View (Prev_Orig)
             then
                Prev_Orig := Prev;

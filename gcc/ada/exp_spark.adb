@@ -55,10 +55,10 @@ package body Exp_SPARK is
    --  Replace occurrences of System'To_Address by calls to
    --  System.Storage_Elements.To_Address
 
-   procedure Expand_SPARK_Freeze_Type (E : Entity_Id);
+   procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id);
    --  Build the DIC procedure of a type when needed, if not already done
 
-   procedure Expand_SPARK_Indexed_Component (N : Node_Id);
+   procedure Expand_SPARK_N_Indexed_Component (N : Node_Id);
    --  Insert explicit dereference if required
 
    procedure Expand_SPARK_N_Loop_Statement (N : Node_Id);
@@ -73,7 +73,7 @@ package body Exp_SPARK is
    procedure Expand_SPARK_N_Op_Ne (N : Node_Id);
    --  Rewrite operator /= based on operator = when defined explicitly
 
-   procedure Expand_SPARK_Selected_Component (N : Node_Id);
+   procedure Expand_SPARK_N_Selected_Component (N : Node_Id);
    --  Insert explicit dereference if required
 
    ------------------
@@ -134,14 +134,14 @@ package body Exp_SPARK is
 
          when N_Freeze_Entity =>
             if Is_Type (Entity (N)) then
-               Expand_SPARK_Freeze_Type (Entity (N));
+               Expand_SPARK_N_Freeze_Type (Entity (N));
             end if;
 
          when N_Indexed_Component =>
-            Expand_SPARK_Indexed_Component (N);
+            Expand_SPARK_N_Indexed_Component (N);
 
          when N_Selected_Component =>
-            Expand_SPARK_Selected_Component (N);
+            Expand_SPARK_N_Selected_Component (N);
 
          --  In SPARK mode, no other constructs require expansion
 
@@ -150,11 +150,11 @@ package body Exp_SPARK is
       end case;
    end Expand_SPARK;
 
-   ------------------------------
-   -- Expand_SPARK_Freeze_Type --
-   ------------------------------
+   --------------------------------
+   -- Expand_SPARK_N_Freeze_Type --
+   --------------------------------
 
-   procedure Expand_SPARK_Freeze_Type (E : Entity_Id) is
+   procedure Expand_SPARK_N_Freeze_Type (E : Entity_Id) is
    begin
       --  When a DIC is inherited by a tagged type, it may need to be
       --  specialized to the descendant type, hence build a separate DIC
@@ -163,7 +163,7 @@ package body Exp_SPARK is
       if Has_DIC (E) and then Is_Tagged_Type (E) then
          Build_DIC_Procedure_Body (E, For_Freeze => True);
       end if;
-   end Expand_SPARK_Freeze_Type;
+   end Expand_SPARK_N_Freeze_Type;
 
    ----------------------------------------
    -- Expand_SPARK_N_Attribute_Reference --
@@ -292,19 +292,20 @@ package body Exp_SPARK is
       end if;
    end Expand_SPARK_N_Loop_Statement;
 
-   ------------------------------------
-   -- Expand_SPARK_Indexed_Component --
-   ------------------------------------
+   --------------------------------------
+   -- Expand_SPARK_N_Indexed_Component --
+   --------------------------------------
 
-   procedure Expand_SPARK_Indexed_Component (N : Node_Id) is
-      P   : constant Node_Id    := Prefix (N);
-      T   : constant Entity_Id  := Etype (P);
+   procedure Expand_SPARK_N_Indexed_Component (N : Node_Id) is
+      Pref : constant Node_Id    := Prefix (N);
+      Typ  : constant Entity_Id  := Etype (Pref);
+
    begin
-      if Is_Access_Type (T) then
-         Insert_Explicit_Dereference (P);
-         Analyze_And_Resolve (P, Designated_Type (T));
+      if Is_Access_Type (Typ) then
+         Insert_Explicit_Dereference (Pref);
+         Analyze_And_Resolve (Pref, Designated_Type (Typ));
       end if;
-   end Expand_SPARK_Indexed_Component;
+   end Expand_SPARK_N_Indexed_Component;
 
    ---------------------------------------
    -- Expand_SPARK_N_Object_Declaration --
@@ -496,31 +497,31 @@ package body Exp_SPARK is
       end if;
    end Expand_SPARK_Potential_Renaming;
 
-   -------------------------------------
-   -- Expand_SPARK_Selected_Component --
-   -------------------------------------
+   ---------------------------------------
+   -- Expand_SPARK_N_Selected_Component --
+   ---------------------------------------
 
-   procedure Expand_SPARK_Selected_Component (N : Node_Id) is
-      P    : constant Node_Id   := Prefix (N);
-      Ptyp : constant Entity_Id := Underlying_Type (Etype (P));
+   procedure Expand_SPARK_N_Selected_Component (N : Node_Id) is
+      Pref : constant Node_Id   := Prefix (N);
+      Typ  : constant Entity_Id := Underlying_Type (Etype (Pref));
+
    begin
-      if Present (Ptyp)
-        and then Is_Access_Type (Ptyp)
-      then
+      if Present (Typ) and then Is_Access_Type (Typ) then
+
          --  First set prefix type to proper access type, in case it currently
          --  has a private (non-access) view of this type.
 
-         Set_Etype (P, Ptyp);
+         Set_Etype (Pref, Typ);
 
-         Insert_Explicit_Dereference (P);
-         Analyze_And_Resolve (P, Designated_Type (Ptyp));
+         Insert_Explicit_Dereference (Pref);
+         Analyze_And_Resolve (Pref, Designated_Type (Typ));
 
-         if Ekind (Etype (P)) = E_Private_Subtype
-           and then Is_For_Access_Subtype (Etype (P))
+         if Ekind (Etype (Pref)) = E_Private_Subtype
+           and then Is_For_Access_Subtype (Etype (Pref))
          then
-            Set_Etype (P, Base_Type (Etype (P)));
+            Set_Etype (Pref, Base_Type (Etype (Pref)));
          end if;
       end if;
-   end Expand_SPARK_Selected_Component;
+   end Expand_SPARK_N_Selected_Component;
 
 end Exp_SPARK;

@@ -6041,6 +6041,7 @@ package body Exp_Ch9 is
          --  reference will have been rewritten.
 
          if Expander_Active then
+
             --  The expanded name may have been constant folded in which case
             --  the original node is not necessarily an entity name (e.g. an
             --  indexed component).

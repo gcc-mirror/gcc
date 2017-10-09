@@ -323,7 +323,7 @@ package body Exp_Disp is
         and then not Is_Interface (Full_Typ)
         and then Has_Interfaces (Full_Typ)
         and then (Full_Typ = Root_Typ
-                    or else not Is_Variable_Size_Record (Etype (Full_Typ)));
+                   or else not Is_Variable_Size_Record (Etype (Full_Typ)));
    end Building_Static_Secondary_DT;
 
    ----------------------------------
@@ -4787,7 +4787,8 @@ package body Exp_Disp is
                      if Is_Discrete_Type (Etype (Discrim)) then
                         Append_To (Constr_List,
                           Make_Attribute_Reference (Loc,
-                            Prefix => New_Occurrence_Of (Etype (Discrim), Loc),
+                            Prefix         =>
+                              New_Occurrence_Of (Etype (Discrim), Loc),
                             Attribute_Name => Name_First));
 
                      else
@@ -4850,12 +4851,12 @@ package body Exp_Disp is
 
             Make_Secondary_DT
              (Typ              => Typ,
-              Iface            => Base_Type
-                                    (Related_Type (Node (AI_Tag_Comp))),
+              Iface            =>
+                Base_Type (Related_Type (Node (AI_Tag_Comp))),
               Iface_Comp       => Node (AI_Tag_Comp),
               Suffix_Index     => Suffix_Index,
-              Num_Iface_Prims  => UI_To_Int
-                                    (DT_Entry_Count (Node (AI_Tag_Comp))),
+              Num_Iface_Prims  =>
+                UI_To_Int (DT_Entry_Count (Node (AI_Tag_Comp))),
               Iface_DT_Ptr     => Node (AI_Tag_Elmt),
               Predef_Prims_Ptr => Node (Next_Elmt (AI_Tag_Elmt)),
               Build_Thunks     => True,

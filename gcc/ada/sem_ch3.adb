@@ -2211,6 +2211,12 @@ package body Sem_Ch3 is
       --  contract expression. Full analysis of the expression is done when
       --  the contract is processed.
 
+      function Contains_Lib_Incomplete_Type (Pkg : Entity_Id) return Boolean;
+      --  Check if a nested package has entities within it that rely on library
+      --  level private types where the full view has not been completed for
+      --  the purposes of checking if it is acceptable to freeze an expression
+      --  function at the point of declaration.
+
       procedure Handle_Late_Controlled_Primitive (Body_Decl : Node_Id);
       --  Determine whether Body_Decl denotes the body of a late controlled
       --  primitive (either Initialize, Adjust or Finalize). If this is the
@@ -2233,12 +2239,6 @@ package body Sem_Ch3 is
       --  Utility to resolve the expressions of aspects at the end of a list of
       --  declarations, or before a declaration that freezes previous entities,
       --  such as in a subprogram body.
-
-      function Uses_Unseen_Priv (Pkg : Entity_Id) return Boolean;
-      --  Check if a nested package has entities within it that rely on library
-      --  level private types where the full view has not been seen for the
-      --  purposes of checking if it is acceptable to freeze an expression
-      --  function at the point of declaration.
 
       -----------------
       -- Adjust_Decl --
@@ -2400,6 +2400,40 @@ package body Sem_Ch3 is
          end loop;
       end Check_Entry_Contracts;
 
+      ----------------------------------
+      -- Contains_Lib_Incomplete_Type --
+      ----------------------------------
+
+      function Contains_Lib_Incomplete_Type (Pkg : Entity_Id) return Boolean is
+         Curr : Entity_Id;
+
+      begin
+         --  Avoid looking through scopes that do not meet the precondition of
+         --  Pkg not being within a library unit spec.
+
+         if not Is_Compilation_Unit (Pkg)
+           and then not Is_Generic_Instance (Pkg)
+           and then not In_Package_Body (Enclosing_Lib_Unit_Entity (Pkg))
+         then
+            --  Loop through all entities in the current scope to identify
+            --  an entity that depends on a private type.
+
+            Curr := First_Entity (Pkg);
+            loop
+               if Nkind (Curr) in N_Entity
+                 and then Depends_On_Private (Curr)
+               then
+                  return True;
+               end if;
+
+               exit when Last_Entity (Current_Scope) = Curr;
+               Curr := Next_Entity (Curr);
+            end loop;
+         end if;
+
+         return False;
+      end Contains_Lib_Incomplete_Type;
+
       --------------------------------------
       -- Handle_Late_Controlled_Primitive --
       --------------------------------------
@@ -2542,40 +2576,6 @@ package body Sem_Ch3 is
             Next_Entity (E);
          end loop;
       end Resolve_Aspects;
-
-      ----------------------
-      -- Uses_Unseen_Priv --
-      ----------------------
-
-      function Uses_Unseen_Priv (Pkg : Entity_Id) return Boolean is
-         Curr : Entity_Id;
-
-      begin
-         --  Avoid looking through scopes that do not meet the precondition of
-         --  Pkg not being within a library unit spec.
-
-         if not Is_Compilation_Unit (Pkg)
-           and then not Is_Generic_Instance (Pkg)
-           and then not In_Package_Body (Enclosing_Lib_Unit_Entity (Pkg))
-         then
-            --  Loop through all entities in the current scope to identify
-            --  an entity that depends on a private type.
-
-            Curr := First_Entity (Pkg);
-            loop
-               if Nkind (Curr) in N_Entity
-                 and then Depends_On_Private (Curr)
-               then
-                  return True;
-               end if;
-
-               exit when Last_Entity (Current_Scope) = Curr;
-               Curr := Next_Entity (Curr);
-            end loop;
-         end if;
-
-         return False;
-      end Uses_Unseen_Priv;
 
       --  Local variables
 
@@ -2750,7 +2750,7 @@ package body Sem_Ch3 is
          --  not cause unwanted freezing at that point.
 
          --  It is also necessary to check for a case where both an expression
-         --  function is used and the current scope depends on an unseen
+         --  function is used and the current scope depends on an incomplete
          --  private type from a library unit, otherwise premature freezing of
          --  the private type will occur.
 
@@ -2758,7 +2758,8 @@ package body Sem_Ch3 is
            and then ((Nkind (Next_Decl) /= N_Subprogram_Body
                        or else not Was_Expression_Function (Next_Decl))
                       or else (not Is_Ignored_Ghost_Entity (Current_Scope)
-                                and then not Uses_Unseen_Priv (Current_Scope)))
+                                and then not Contains_Lib_Incomplete_Type
+                                               (Current_Scope)))
          then
             --  When a controlled type is frozen, the expander generates stream
             --  and controlled-type support routines. If the freeze is caused

@@ -1930,7 +1930,7 @@ package body Sem_Ch12 is
 
                         procedure Check_Generic_Parent is
                            Inst : constant Node_Id :=
-                              Next (Unit_Declaration_Node (Actual));
+                                    Next (Unit_Declaration_Node (Actual));
                            Par  : Entity_Id;
 
                         begin
@@ -1939,26 +1939,26 @@ package body Sem_Ch12 is
                            if Nkind (Parent (Actual)) = N_Package_Specification
                            then
                               Par := Scope (Generic_Parent (Parent (Actual)));
+
                               if Is_Generic_Instance (Par) then
                                  null;
 
                               --  If the actual is a child generic unit, check
                               --  whether the instantiation of the parent is
-                              --  also local and must also be frozen now.
-                              --  We must retrieve the instance node to locate
-                              --  the parent instance if any.
+                              --  also local and must also be frozen now. We
+                              --  must retrieve the instance node to locate the
+                              --  parent instance if any.
 
                               elsif Ekind (Par) = E_Generic_Package
-                                  and then Is_Child_Unit (Gen_Par)
-                                  and then Ekind (Scope (Gen_Par))
-                                     = E_Generic_Package
+                                and then Is_Child_Unit (Gen_Par)
+                                and then Ekind (Scope (Gen_Par)) =
+                                           E_Generic_Package
                               then
                                  if Nkind (Inst) = N_Package_Instantiation
-                                   and then
-                                     Nkind (Name (Inst)) = N_Expanded_Name
+                                   and then Nkind (Name (Inst)) =
+                                              N_Expanded_Name
                                  then
-
-                                    --  Retrieve entity of psarent instance.
+                                    --  Retrieve entity of parent instance
 
                                     Par := Entity (Prefix (Name (Inst)));
                                  end if;
@@ -1986,12 +1986,13 @@ package body Sem_Ch12 is
                      begin
                         if Present (Renamed_Entity (Actual)) then
                            Gen_Par :=
-                             Generic_Parent (Specification (
-                               Unit_Declaration_Node (
-                                 Renamed_Entity (Actual))));
+                             Generic_Parent (Specification
+                               (Unit_Declaration_Node
+                                 (Renamed_Entity (Actual))));
                         else
-                           Gen_Par := Generic_Parent
-                             (Specification (Unit_Declaration_Node (Actual)));
+                           Gen_Par :=
+                             Generic_Parent (Specification
+                               (Unit_Declaration_Node (Actual)));
                         end if;
 
                         if not Expander_Active
@@ -2036,12 +2037,13 @@ package body Sem_Ch12 is
                               --  that it is the instance that must be frozen.
 
                               if Nkind (Parent (Actual)) =
-                                N_Package_Renaming_Declaration
+                                   N_Package_Renaming_Declaration
                               then
                                  Set_Has_Delayed_Freeze
                                    (Renamed_Entity (Actual));
                                  Append_Elmt
-                                  (Renamed_Entity (Actual), Actuals_To_Freeze);
+                                   (Renamed_Entity (Actual),
+                                    Actuals_To_Freeze);
                               else
                                  Set_Has_Delayed_Freeze (Actual);
                                  Append_Elmt (Actual, Actuals_To_Freeze);
