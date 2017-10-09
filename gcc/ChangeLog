@@ -1,3 +1,12 @@
+2017-10-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/amo.h: New include file to provide ISA 3.0 atomic
+	memory operation instruction support.
+	* config.gcc (powerpc*-*-*): Include amo.h as an extra header.
+	(rs6000-ibm-aix[789]*): Likewise.
+	* doc/extend.texi (PowerPC Atomic Memory Operation Functions):
+	Document new functions.
+
 2017-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82397
