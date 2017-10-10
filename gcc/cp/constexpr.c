@@ -1268,7 +1268,10 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	  && is_dummy_object (x))
 	{
 	  x = ctx->object;
-	  x = cp_build_addr_expr (x, tf_warning_or_error);
+	  /* We don't use cp_build_addr_expr here because we don't want to
+	     capture the object argument until we've chosen a non-static member
+	     function.  */
+	  x = build_address (x);
 	}
       bool lval = false;
       arg = cxx_eval_constant_expression (ctx, x, lval,
@@ -3642,9 +3645,9 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
 				     non_constant_p, overflow_p);
 
   /* The operand as an rvalue.  */
-  tree val = rvalue (op);
-  val = cxx_eval_constant_expression (ctx, val, false,
-				      non_constant_p, overflow_p);
+  tree val
+    = cxx_eval_constant_expression (ctx, op, false,
+				    non_constant_p, overflow_p);
   /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
      a local array in a constexpr function.  */
   bool ptr = POINTER_TYPE_P (TREE_TYPE (val));
