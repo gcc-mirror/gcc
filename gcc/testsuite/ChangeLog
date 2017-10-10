@@ -1,3 +1,11 @@
+2017-10-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splats-char.c: New.
+	* gcc.target/powerpc/fold-vec-splats-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-splats-int.c: New.
+	* gcc.target/powerpc/fold-vec-splats-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-splats-short.c: New.
+
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82437
