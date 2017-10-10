@@ -1,7 +1,4 @@
-// { dg-do compile { target c++11 } }
-// { dg-options "-Wno-pedantic" }
-
-// Copyright (C) 2012-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,18 +15,38 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// libstdc++/54112
-#include <bits/c++config.h>
+// { dg-options "-std=gnu++11" }
+
+#include <complex.h>
+
+// Should be equivalent to #include <complex>
+template class std::complex<double>;
+
 #if _GLIBCXX_HAVE_COMPLEX_H
-# include <complex.h>
+namespace test
+{
+  using ::cacos;
+  using ::casin;
+  using ::catan;
+  using ::ccos;
+  using ::csin;
+  using ::ctan;
+  using ::ccosh;
+  using ::csinh;
+  using ::ctanh;
+  using ::cexp;
+  using ::clog;
+  using ::cabs;
+  using ::cpow;
+  using ::csqrt;
+  using ::carg;
+  using ::cimag;
+  using ::conj;
+  using ::cproj;
+  using ::creal;
+}
 #endif
 
-int main()
-{
-#if _GLIBCXX_HAVE_COMPLEX_H && !defined(__STRICT_ANSI__)
-  // This is a GNU extension.
-  double _Complex x = .5;
-  double _Complex y = cacos (x);
-  (void)y;
+#ifdef complex
+# error "'complex' is defined as a macro by <complex.h> for -std=gnu++11"
 #endif
-}
