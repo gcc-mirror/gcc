@@ -1,3 +1,10 @@
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79565
+	PR target/82483
+	* gcc.target/i386/pr82483-1.c: New test.
+	* gcc.target/i386/pr82483-2.c: New test.
+
 2017-10-10  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-mult-int128-p8.c: Update options
