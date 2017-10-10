@@ -1,5 +1,10 @@
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (extern_c_fns): Rename to ...
+	(extern_c_decls): ... here.
+	(check_extern_c_conflict, extern_c_linkage_bindings): Update.
+	(do_pushdecl): Check extern-c fns and vars.
+
 	* cp-tree.h (default_hash_traits <lang_identifier *>): Delete
 	specialization.
 
