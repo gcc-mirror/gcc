@@ -1,3 +1,7 @@
+2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* elf.c: Fix typo in the last commit, SFH_COMPRESSED vs SHF_COMPRESSED.
+
 2017-10-10  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/80914
