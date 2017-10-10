@@ -1,3 +1,12 @@
+2017-10-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop): Avoid compacting
+	blocks if SCEV is active.
+	* tree-scalar-evolution.c (analyze_scalar_evolution_1): Remove
+	dead code.
+	(analyze_scalar_evolution): Handle cached evolutions the obvious way.
+	(scev_initialize): Assert we are not yet initialized.
+
 2017-10-10  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-loop-distribution.c (generate_loops_for_partition): Remove
