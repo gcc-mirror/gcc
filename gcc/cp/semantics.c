@@ -410,6 +410,8 @@ maybe_cleanup_point_expr (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
     expr = fold_build_cleanup_point_expr (TREE_TYPE (expr), expr);
+  else
+    expr = do_dependent_capture (expr);
   return expr;
 }
 
@@ -423,6 +425,8 @@ maybe_cleanup_point_expr_void (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
     expr = fold_build_cleanup_point_expr (void_type_node, expr);
+  else
+    expr = do_dependent_capture (expr);
   return expr;
 }
 
@@ -629,6 +633,8 @@ finish_goto_stmt (tree destination)
 	    = fold_build_cleanup_point_expr (TREE_TYPE (destination),
 					     destination);
 	}
+      else
+	destination = do_dependent_capture (destination);
     }
 
   check_goto (destination);
@@ -650,7 +656,7 @@ maybe_convert_cond (tree cond)
 
   /* Wait until we instantiate templates before doing conversion.  */
   if (processing_template_decl)
-    return cond;
+    return do_dependent_capture (cond);
 
   if (warn_sequence_point)
     verify_sequence_points (cond);
@@ -3314,8 +3320,12 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
       /* Check whether we've already built a proxy.  */
-      tree d = retrieve_local_specialization (decl);
-      if (d && is_capture_proxy (d))
+      tree var = decl;
+      while (is_normal_capture_proxy (var))
+	var = DECL_CAPTURED_VARIABLE (var);
+      tree d = retrieve_local_specialization (var);
+
+      if (d && d != decl && is_capture_proxy (d))
 	{
 	  if (DECL_CONTEXT (d) == containing_function)
 	    /* We already have an inner proxy.  */

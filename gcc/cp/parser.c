@@ -11873,6 +11873,8 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
   tree iter_type, begin_expr, end_expr;
   tree condition, expression;
 
+  range_expr = mark_lvalue_use (range_expr);
+
   if (range_decl == error_mark_node || range_expr == error_mark_node)
     /* If an error happened previously do nothing or else a lot of
        unhelpful errors would be issued.  */
