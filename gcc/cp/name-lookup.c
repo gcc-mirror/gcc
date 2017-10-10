@@ -2788,13 +2788,13 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   return decl;
 }
 
-/* Table of identifiers to extern C decls (or LISTS thereof).  */
+/* Map of identifiers to extern C functions (or LISTS thereof).  */
 
-static GTY(()) hash_table<named_decl_hash> *extern_c_decls;
+static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
 
-/* DECL has C linkage. If we have an existing instance, make sure the
-   new one is compatible.  Make sure it has the same exception
-   specification [7.5, 7.6].  Add DECL to the map.  */
+/* DECL has C linkage. If we have an existing instance, make sure it
+   has the same exception specification [7.5, 7.6].  If there's no
+   instance, add DECL to the map.  */
 
 static void
 check_extern_c_conflict (tree decl)
@@ -2803,16 +2803,18 @@ check_extern_c_conflict (tree decl)
   if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
     return;
 
-  if (!extern_c_decls)
-    extern_c_decls = hash_table<named_decl_hash>::create_ggc (127);
+  if (!extern_c_fns)
+    extern_c_fns = hash_map<lang_identifier *,tree>::create_ggc (127);
 
-  tree *slot = extern_c_decls
-    ->find_slot_with_hash (DECL_NAME (decl),
-			   IDENTIFIER_HASH_VALUE (DECL_NAME (decl)), INSERT);
-  if (tree old = *slot)
+  bool existed;
+  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
+  if (!existed)
+    *slot = decl;
+  else
     {
-      if (TREE_CODE (old) == OVERLOAD)
-	old = OVL_FUNCTION (old);
+      tree old = *slot;
+      if (TREE_CODE (old) == TREE_LIST)
+	old = TREE_VALUE (old);
 
       int mismatch = 0;
       if (DECL_CONTEXT (old) == DECL_CONTEXT (decl))
@@ -2820,10 +2822,9 @@ check_extern_c_conflict (tree decl)
 	     about a (possible) mismatch, when inserting the decl.  */
       else if (!decls_match (decl, old))
 	mismatch = 1;
-      else if (DECL_DECLARES_FUNCTION_P (decl)
-	       && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
-				      TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
-				      ce_normal))
+      else if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
+				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
+				   ce_normal))
 	mismatch = -1;
       else if (DECL_ASSEMBLER_NAME_SET_P (old))
 	SET_DECL_ASSEMBLER_NAME (decl, DECL_ASSEMBLER_NAME (old));
@@ -3250,8 +3251,7 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     }
   else if (VAR_P (decl))
     maybe_register_incomplete_var (decl);
-
-  if (DECL_EXTERN_C_P (decl))
+  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
     check_extern_c_conflict (decl);
 }
 
