@@ -593,8 +593,6 @@ struct partition
 {
   /* Statements of the partition.  */
   bitmap stmts;
-  /* Loops of the partition.  */
-  bitmap loops;
   /* True if the partition defines variable which is used outside of loop.  */
   bool reduction_p;
   /* For builtin partition, true if it executes one iteration more than
@@ -619,7 +617,6 @@ partition_alloc (void)
 {
   partition *partition = XCNEW (struct partition);
   partition->stmts = BITMAP_ALLOC (NULL);
-  partition->loops = BITMAP_ALLOC (NULL);
   partition->reduction_p = false;
   partition->kind = PKIND_NORMAL;
   partition->datarefs = BITMAP_ALLOC (NULL);
@@ -632,7 +629,6 @@ static void
 partition_free (partition *partition)
 {
   BITMAP_FREE (partition->stmts);
-  BITMAP_FREE (partition->loops);
   BITMAP_FREE (partition->datarefs);
   free (partition);
 }
@@ -1279,8 +1275,6 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
   FOR_EACH_VEC_ELT (nodes, i, x)
     {
       bitmap_set_bit (partition->stmts, x);
-      bitmap_set_bit (partition->loops,
-		      loop_containing_stmt (RDG_STMT (rdg, x))->num);
 
       for (j = 0; RDG_DATAREFS (rdg, x).iterate (j, &dr); ++j)
 	{
