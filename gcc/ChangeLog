@@ -1,5 +1,11 @@
 2017-10-10  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (generate_loops_for_partition): Remove
+	inner loop's exit stmt by making it always exit the loop, otherwise
+	we would generate an infinite empty loop.
+
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg): Skip
 	renaming variables in new preheader if it's deleted.
 
