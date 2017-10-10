@@ -1,5 +1,8 @@
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/68252
+	* g++.dg/other/pr68252.C: New test.
+
 	PR target/79565
 	PR target/82483
 	* gcc.target/i386/pr82483-1.c: New test.
