@@ -1,3 +1,7 @@
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-27.c: New test.
+
 2017-10-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/amo1.c: New test.

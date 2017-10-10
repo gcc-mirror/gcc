@@ -830,6 +830,10 @@ generate_loops_for_partition (struct loop *loop, partition *partition,
   for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = bbs[i];
+      edge inner_exit = NULL;
+
+      if (loop != bb->loop_father)
+	inner_exit = single_exit (bb->loop_father);
 
       for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);)
 	{
@@ -848,11 +852,17 @@ generate_loops_for_partition (struct loop *loop, partition *partition,
 	      && !is_gimple_debug (stmt)
 	      && !bitmap_bit_p (partition->stmts, gimple_uid (stmt)))
 	    {
-	      /* Choose an arbitrary path through the empty CFG part
-		 that this unnecessary control stmt controls.  */
+	      /* In distribution of loop nest, if bb is inner loop's exit_bb,
+		 we choose its exit edge/path in order to avoid generating
+		 infinite loop.  For all other cases, we choose an arbitrary
+		 path through the empty CFG part that this unnecessary
+		 control stmt controls.  */
 	      if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
 		{
-		  gimple_cond_make_false (cond_stmt);
+		  if (inner_exit && inner_exit->flags & EDGE_TRUE_VALUE)
+		    gimple_cond_make_true (cond_stmt);
+		  else
+		    gimple_cond_make_false (cond_stmt);
 		  update_stmt (stmt);
 		}
 	      else if (gimple_code (stmt) == GIMPLE_SWITCH)
