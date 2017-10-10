@@ -1,3 +1,31 @@
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/79565
+	PR target/82483
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Add
+	OPTION_MASK_ISA_MMX for __builtin_ia32_maskmovq,
+	__builtin_ia32_vec_ext_v4hi and __builtin_ia32_vec_set_v4hi.
+	(ix86_expand_builtin): Treat OPTION_MASK_ISA_MMX similarly
+	to OPTION_MASK_ISA_AVX512VL - builtins that have both
+	OPTION_MASK_ISA_MMX and some other bit set require both
+	mmx and the ISAs without the mmx bit.
+	* config/i386/i386-builtin.def (__builtin_ia32_cvtps2pi,
+	__builtin_ia32_cvttps2pi, __builtin_ia32_cvtpi2ps,
+	__builtin_ia32_pavgb, __builtin_ia32_pavgw, __builtin_ia32_pmulhuw,
+	__builtin_ia32_pmaxub, __builtin_ia32_pmaxsw, __builtin_ia32_pminub,
+	__builtin_ia32_pminsw, __builtin_ia32_psadbw, __builtin_ia32_pmovmskb,
+	__builtin_ia32_pshufw, __builtin_ia32_cvtpd2pi,
+	__builtin_ia32_cvttpd2pi, __builtin_ia32_cvtpi2pd,
+	__builtin_ia32_pmuludq, __builtin_ia32_pabsb, __builtin_ia32_pabsw,
+	__builtin_ia32_pabsd, __builtin_ia32_phaddw, __builtin_ia32_phaddd,
+	__builtin_ia32_phaddsw, __builtin_ia32_phsubw, __builtin_ia32_phsubd,
+	__builtin_ia32_phsubsw, __builtin_ia32_pmaddubsw,
+	__builtin_ia32_pmulhrsw, __builtin_ia32_pshufb, __builtin_ia32_psignb,
+	__builtin_ia32_psignw, __builtin_ia32_psignd, __builtin_ia32_movntq,
+	__builtin_ia32_paddq, __builtin_ia32_psubq, __builtin_ia32_palignr):
+	Add OPTION_MASK_ISA_MMX.
+
 2017-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config.gcc (armv7*-*-freebsd*): New target.

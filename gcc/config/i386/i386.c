@@ -32988,7 +32988,9 @@ ix86_init_mmx_sse_builtins (void)
 		    UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
 
   /* SSE or 3DNow!A */
-  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+	       /* As it uses V4HImode, we have to require -mmmx too.  */
+	       | OPTION_MASK_ISA_MMX,
 	       "__builtin_ia32_maskmovq", VOID_FTYPE_V8QI_V8QI_PCHAR,
 	       IX86_BUILTIN_MASKMOVQ);
 
@@ -33426,7 +33428,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_vec_ext_v8hi",
 		     HI_FTYPE_V8HI_INT, IX86_BUILTIN_VEC_EXT_V8HI);
 
-  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+		     /* As it uses V4HImode, we have to require -mmmx too.  */
+		     | OPTION_MASK_ISA_MMX,
 		     "__builtin_ia32_vec_ext_v4hi",
 		     HI_FTYPE_V4HI_INT, IX86_BUILTIN_VEC_EXT_V4HI);
 
@@ -33450,7 +33454,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_vec_set_v8hi",
 		     V8HI_FTYPE_V8HI_HI_INT, IX86_BUILTIN_VEC_SET_V8HI);
 
-  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+		     /* As it uses V4HImode, we have to require -mmmx too.  */
+		     | OPTION_MASK_ISA_MMX,
 		     "__builtin_ia32_vec_set_v4hi",
 		     V4HI_FTYPE_V4HI_HI_INT, IX86_BUILTIN_VEC_SET_V4HI);
 
@@ -37914,18 +37920,23 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      Originally the builtin was not created if it wasn't applicable to the
      current ISA based on the command line switches.  With function specific
      options, we need to check in the context of the function making the call
-     whether it is supported.  Treat AVX512VL specially.  For other flags,
+     whether it is supported.  Treat AVX512VL and MMX specially.  For other flags,
      if isa includes more than one ISA bit, treat those are requiring any
      of them.  For AVX512VL, require both AVX512VL and the non-AVX512VL
-     ISAs.  Similarly for 64BIT, but we shouldn't be building such builtins
+     ISAs.  Likewise for MMX, require both MMX and the non-MMX ISAs.
+     Similarly for 64BIT, but we shouldn't be building such builtins
      at all, -m64 is a whole TU option.  */
   if (((ix86_builtins_isa[fcode].isa
-	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT))
+	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
+	    | OPTION_MASK_ISA_64BIT))
        && !(ix86_builtins_isa[fcode].isa
-	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT)
+	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
+		| OPTION_MASK_ISA_64BIT)
 	    & ix86_isa_flags))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_MMX)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_MMX))
       || (ix86_builtins_isa[fcode].isa2
 	  && !(ix86_builtins_isa[fcode].isa2 & ix86_isa_flags2)))
     {
