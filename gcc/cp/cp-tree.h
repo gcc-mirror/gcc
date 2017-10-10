@@ -572,30 +572,6 @@ identifier_p (tree t)
   return NULL;
 }
 
-/* Hash trait specialization for lang_identifiers.  This allows
-   PCH-safe maps keyed by DECL_NAME.  If it wasn't for PCH, we could
-   just use a regular tree key.  */
-
-template <>
-struct default_hash_traits <lang_identifier *>
-  : pointer_hash <tree_node>
-{
-  /* Use a regular tree as the type, to make using the hash table
-     simpler.  We'll get dynamic type checking with the hash function
-     itself.  */
-  GTY((skip)) typedef tree value_type;
-  GTY((skip)) typedef tree compare_type;
-
-  static hashval_t hash (const value_type id)
-  {
-    return IDENTIFIER_HASH_VALUE (id);
-  }
-
-  /* Nothing is deletable.  Everything is insertable.  */
-  static bool is_deleted (value_type) { return false; }
-  static void remove (value_type) { gcc_unreachable (); }
-};
-
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 

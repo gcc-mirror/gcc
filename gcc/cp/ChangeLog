@@ -1,5 +1,8 @@
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (default_hash_traits <lang_identifier *>): Delete
+	specialization.
+
 	* decl2.c (struct mangled_decl_hash): New hash traits.
 	(mangled_decls): Make hash_table<mangled_decl_hash>.
 	(generate_mangling_alias, record_mangling): Adjust.
