@@ -38,7 +38,7 @@
 --  content of entities in the tree, so this package is used for routines that
 --  require more than minimal semantic knowledge.
 
-with Alloc; use Alloc;
+with Alloc;
 with Namet; use Namet;
 with Table;
 with Types; use Types;

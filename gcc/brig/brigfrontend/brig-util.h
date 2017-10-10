@@ -22,7 +22,33 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_BRIG_UTIL_H
 #define GCC_BRIG_UTIL_H
 
-#include "brig-to-generic.h"
+#include <map>
+
+#include "config.h"
+#include "system.h"
+#include "ansidecl.h"
+#include "coretypes.h"
+#include "opts.h"
+#include "tree.h"
+
+/* Helper class for keeping book of group variable offsets.  */
+
+class group_variable_offset_index
+{
+public:
+  group_variable_offset_index () : m_next_group_offset (0) {}
+
+  typedef std::map<std::string, size_t> varname_offset_table;
+
+  bool has_variable (const std::string &name) const;
+  void add (const std::string &name, size_t size, size_t alignment);
+  size_t segment_offset (const std::string &name) const;
+  size_t size () const { return m_next_group_offset; }
+
+private:
+  size_t m_next_group_offset;
+  varname_offset_table m_group_offsets;
+};
 
 bool gccbrig_hsa_opcode_op_output_p (BrigOpcode16_t opcode, int opnum);
 

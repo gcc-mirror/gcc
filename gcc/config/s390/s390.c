@@ -6396,16 +6396,16 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 	  /* UNLT: a u< b -> !(a >= b) */
 	case UNLT: cond = GE; neg_p = true;                break;
 	case UNEQ:
-	  emit_insn (gen_vec_cmpuneqv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpuneq (target, cmp_op1, cmp_op2));
 	  return;
 	case LTGT:
-	  emit_insn (gen_vec_cmpltgtv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_cmpltgt (target, cmp_op1, cmp_op2));
 	  return;
 	case ORDERED:
-	  emit_insn (gen_vec_orderedv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_ordered (target, cmp_op1, cmp_op2));
 	  return;
 	case UNORDERED:
-	  emit_insn (gen_vec_unorderedv2df (target, cmp_op1, cmp_op2));
+	  emit_insn (gen_vec_unordered (target, cmp_op1, cmp_op2));
 	  return;
 	default: break;
 	}
@@ -11155,6 +11155,183 @@ pass_s390_early_mach::execute (function *fun)
 
 } // anon namespace
 
+/* Calculate TARGET = REG + OFFSET as s390_emit_prologue would do it.
+   - push too big immediates to the literal pool and annotate the refs
+   - emit frame related notes for stack pointer changes.  */
+
+static rtx
+s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p)
+{
+  rtx insn;
+  rtx orig_offset = offset;
+
+  gcc_assert (REG_P (target));
+  gcc_assert (REG_P (reg));
+  gcc_assert (CONST_INT_P (offset));
+
+  if (offset == const0_rtx)                               /* lr/lgr */
+    {
+      insn = emit_move_insn (target, reg);
+    }
+  else if (DISP_IN_RANGE (INTVAL (offset)))               /* la */
+    {
+      insn = emit_move_insn (target, gen_rtx_PLUS (Pmode, reg,
+						   offset));
+    }
+  else
+    {
+      if (!satisfies_constraint_K (offset)                /* ahi/aghi */
+	  && (!TARGET_EXTIMM
+	      || (!satisfies_constraint_Op (offset)       /* alfi/algfi */
+		  && !satisfies_constraint_On (offset)))) /* slfi/slgfi */
+	offset = force_const_mem (Pmode, offset);
+
+      if (target != reg)
+	{
+	  insn = emit_move_insn (target, reg);
+	  RTX_FRAME_RELATED_P (insn) = frame_related_p ? 1 : 0;
+	}
+
+      insn = emit_insn (gen_add2_insn (target, offset));
+
+      if (!CONST_INT_P (offset))
+	{
+	  annotate_constant_pool_refs (&PATTERN (insn));
+
+	  if (frame_related_p)
+	    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			  gen_rtx_SET (target,
+				       gen_rtx_PLUS (Pmode, target,
+						     orig_offset)));
+	}
+    }
+
+  RTX_FRAME_RELATED_P (insn) = frame_related_p ? 1 : 0;
+
+  /* If this is a stack adjustment and we are generating a stack clash
+     prologue, then add a REG_STACK_CHECK note to signal that this insn
+     should be left alone.  */
+  if (flag_stack_clash_protection && target == stack_pointer_rtx)
+    add_reg_note (insn, REG_STACK_CHECK, const0_rtx);
+
+  return insn;
+}
+
+/* Emit a compare instruction with a volatile memory access as stack
+   probe.  It does not waste store tags and does not clobber any
+   registers apart from the condition code.  */
+static void
+s390_emit_stack_probe (rtx addr)
+{
+  rtx tmp = gen_rtx_MEM (Pmode, addr);
+  MEM_VOLATILE_P (tmp) = 1;
+  s390_emit_compare (EQ, gen_rtx_REG (Pmode, 0), tmp);
+  emit_insn (gen_blockage ());
+}
+
+/* Use a runtime loop if we have to emit more probes than this.  */
+#define MIN_UNROLL_PROBES 3
+
+/* Allocate SIZE bytes of stack space, using TEMP_REG as a temporary
+   if necessary.  LAST_PROBE_OFFSET contains the offset of the closest
+   probe relative to the stack pointer.
+
+   Note that SIZE is negative.
+
+   The return value is true if TEMP_REG has been clobbered.  */
+static bool
+allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
+		      rtx temp_reg)
+{
+  bool temp_reg_clobbered_p = false;
+  HOST_WIDE_INT probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  HOST_WIDE_INT guard_size
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+
+  if (flag_stack_clash_protection)
+    {
+      if (last_probe_offset + -INTVAL (size) < guard_size)
+	dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      else
+	{
+	  rtx offset = GEN_INT (probe_interval - UNITS_PER_LONG);
+	  HOST_WIDE_INT rounded_size = -INTVAL (size) & -probe_interval;
+	  HOST_WIDE_INT num_probes = rounded_size / probe_interval;
+	  HOST_WIDE_INT residual = -INTVAL (size) - rounded_size;
+
+	  if (num_probes < MIN_UNROLL_PROBES)
+	    {
+	      /* Emit unrolled probe statements.  */
+
+	      for (unsigned int i = 0; i < num_probes; i++)
+		{
+		  s390_prologue_plus_offset (stack_pointer_rtx,
+					     stack_pointer_rtx,
+					     GEN_INT (-probe_interval), true);
+		  s390_emit_stack_probe (gen_rtx_PLUS (Pmode,
+						       stack_pointer_rtx,
+						       offset));
+		}
+	      dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
+	    }
+	  else
+	    {
+	      /* Emit a loop probing the pages.  */
+
+	      rtx_code_label *loop_start_label = gen_label_rtx ();
+
+	      /* From now on temp_reg will be the CFA register.  */
+	      s390_prologue_plus_offset (temp_reg, stack_pointer_rtx,
+					 GEN_INT (-rounded_size), true);
+	      emit_label (loop_start_label);
+
+	      s390_prologue_plus_offset (stack_pointer_rtx,
+					 stack_pointer_rtx,
+					 GEN_INT (-probe_interval), false);
+	      s390_emit_stack_probe (gen_rtx_PLUS (Pmode,
+						   stack_pointer_rtx,
+						   offset));
+	      emit_cmp_and_jump_insns (stack_pointer_rtx, temp_reg,
+				       GT, NULL_RTX,
+				       Pmode, 1, loop_start_label);
+
+	      /* Without this make_edges ICEes.  */
+	      JUMP_LABEL (get_last_insn ()) = loop_start_label;
+	      LABEL_NUSES (loop_start_label) = 1;
+
+	      /* That's going to be a NOP since stack pointer and
+		 temp_reg are supposed to be the same here.  We just
+		 emit it to set the CFA reg back to r15.  */
+	      s390_prologue_plus_offset (stack_pointer_rtx, temp_reg,
+					 const0_rtx, true);
+	      temp_reg_clobbered_p = true;
+	      dump_stack_clash_frame_info (PROBE_LOOP, residual != 0);
+	    }
+
+	  /* Handle any residual allocation request.  */
+	  s390_prologue_plus_offset (stack_pointer_rtx,
+				     stack_pointer_rtx,
+				     GEN_INT (-residual), true);
+	  last_probe_offset += residual;
+	  if (last_probe_offset >= probe_interval)
+	    s390_emit_stack_probe (gen_rtx_PLUS (Pmode,
+						 stack_pointer_rtx,
+						 GEN_INT (residual
+							  - UNITS_PER_LONG)));
+
+	  return temp_reg_clobbered_p;
+	}
+    }
+
+  /* Subtract frame size from stack pointer.  */
+  s390_prologue_plus_offset (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     size, true);
+
+  return temp_reg_clobbered_p;
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -11179,6 +11356,19 @@ s390_emit_prologue (void)
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
 
+  /* When probing for stack-clash mitigation, we have to track the distance
+     between the stack pointer and closest known reference.
+
+     Most of the time we have to make a worst case assumption.  The
+     only exception is when TARGET_BACKCHAIN is active, in which case
+     we know *sp (offset 0) was written.  */
+  HOST_WIDE_INT probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  HOST_WIDE_INT last_probe_offset
+    = (TARGET_BACKCHAIN
+       ? (TARGET_PACKED_STACK ? STACK_POINTER_OFFSET - UNITS_PER_LONG : 0)
+       : probe_interval - (STACK_BOUNDARY / UNITS_PER_WORD));
+
   s390_save_gprs_to_fprs ();
 
   /* Save call saved gprs.  */
@@ -11190,6 +11380,14 @@ s390_emit_prologue (void)
 					  - cfun_frame_layout.first_save_gpr_slot),
 			cfun_frame_layout.first_save_gpr,
 			cfun_frame_layout.last_save_gpr);
+
+      /* This is not 100% correct.  If we have more than one register saved,
+	 then LAST_PROBE_OFFSET can move even closer to sp.  */
+      last_probe_offset
+	= (cfun_frame_layout.gprs_offset +
+	   UNITS_PER_LONG * (cfun_frame_layout.first_save_gpr
+			     - cfun_frame_layout.first_save_gpr_slot));
+
       emit_insn (insn);
     }
 
@@ -11206,6 +11404,8 @@ s390_emit_prologue (void)
       if (cfun_fpr_save_p (i))
 	{
 	  save_fpr (stack_pointer_rtx, offset, i);
+	  if (offset < last_probe_offset)
+	    last_probe_offset = offset;
 	  offset += 8;
 	}
       else if (!TARGET_PACKED_STACK || cfun->stdarg)
@@ -11219,6 +11419,8 @@ s390_emit_prologue (void)
       if (cfun_fpr_save_p (i))
 	{
 	  insn = save_fpr (stack_pointer_rtx, offset, i);
+	  if (offset < last_probe_offset)
+	    last_probe_offset = offset;
 	  offset += 8;
 
 	  /* If f4 and f6 are call clobbered they are saved due to
@@ -11241,6 +11443,8 @@ s390_emit_prologue (void)
 	if (cfun_fpr_save_p (i))
 	  {
 	    insn = save_fpr (stack_pointer_rtx, offset, i);
+	    if (offset < last_probe_offset)
+	      last_probe_offset = offset;
 
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	    offset -= 8;
@@ -11260,10 +11464,11 @@ s390_emit_prologue (void)
   if (cfun_frame_layout.frame_size > 0)
     {
       rtx frame_off = GEN_INT (-cfun_frame_layout.frame_size);
-      rtx real_frame_off;
+      rtx_insn *stack_pointer_backup_loc;
+      bool temp_reg_clobbered_p;
 
       if (s390_stack_size)
-  	{
+	{
 	  HOST_WIDE_INT stack_guard;
 
 	  if (s390_stack_guard)
@@ -11329,34 +11534,35 @@ s390_emit_prologue (void)
       if (s390_warn_dynamicstack_p && cfun->calls_alloca)
 	warning (0, "%qs uses dynamic stack allocation", current_function_name ());
 
-      /* Save incoming stack pointer into temp reg.  */
+      /* Save the location where we could backup the incoming stack
+	 pointer.  */
+      stack_pointer_backup_loc = get_last_insn ();
+
+      temp_reg_clobbered_p = allocate_stack_space (frame_off, last_probe_offset,
+						   temp_reg);
+
       if (TARGET_BACKCHAIN || next_fpr)
-	insn = emit_insn (gen_move_insn (temp_reg, stack_pointer_rtx));
-
-      /* Subtract frame size from stack pointer.  */
-
-      if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{
-	  insn = gen_rtx_SET (stack_pointer_rtx,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					    frame_off));
-	  insn = emit_insn (insn);
+	  if (temp_reg_clobbered_p)
+	    {
+	      /* allocate_stack_space had to make use of temp_reg and
+		 we need it to hold a backup of the incoming stack
+		 pointer.  Calculate back that value from the current
+		 stack pointer.  */
+	      s390_prologue_plus_offset (temp_reg, stack_pointer_rtx,
+					 GEN_INT (cfun_frame_layout.frame_size),
+					 false);
+	    }
+	  else
+	    {
+	      /* allocate_stack_space didn't actually required
+		 temp_reg.  Insert the stack pointer backup insn
+		 before the stack pointer decrement code - knowing now
+		 that the value will survive.  */
+	      emit_insn_after (gen_move_insn (temp_reg, stack_pointer_rtx),
+			       stack_pointer_backup_loc);
+	    }
 	}
-      else
-	{
-	  if (!CONST_OK_FOR_K (INTVAL (frame_off)))
-	    frame_off = force_const_mem (Pmode, frame_off);
-
-          insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
-	  annotate_constant_pool_refs (&PATTERN (insn));
-	}
-
-      RTX_FRAME_RELATED_P (insn) = 1;
-      real_frame_off = GEN_INT (-cfun_frame_layout.frame_size);
-      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (stack_pointer_rtx,
-				 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					       real_frame_off)));
 
       /* Set backchain.  */
 
@@ -11381,6 +11587,8 @@ s390_emit_prologue (void)
 	  emit_clobber (addr);
 	}
     }
+  else if (flag_stack_clash_protection)
+    dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
 
   /* Save fprs 8 - 15 (64 bit ABI).  */
 
@@ -15651,6 +15859,14 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 static machine_mode
 s390_preferred_simd_mode (scalar_mode mode)
 {
+  if (TARGET_VXE)
+    switch (mode)
+      {
+      case E_SFmode:
+	return V4SFmode;
+      default:;
+      }
+
   if (TARGET_VX)
     switch (mode)
       {
@@ -15696,6 +15912,15 @@ s390_vector_alignment (const_tree type)
     return TYPE_ALIGN (type);
 
   return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Alignment on even addresses for
+   LARL instruction.  */
+
+static HOST_WIDE_INT
+s390_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return MAX (align, 16);
 }
 
 #ifdef HAVE_AS_MACHINE_MACHINEMODE
@@ -16116,6 +16341,9 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS s390_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT s390_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

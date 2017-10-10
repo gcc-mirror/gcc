@@ -559,7 +559,7 @@ You may specify any of the following switches to ``gnatmake``:
   -f, it is equivalent to calling the compiler directly. Note that using
   -u with a project file and no main has a special meaning.
 
-.. --Comment:
+.. --Comment
   (See :ref:`Project_Files_and_Main_Subprograms`.)
 
 

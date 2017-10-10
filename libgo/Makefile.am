@@ -217,7 +217,8 @@ toolexeclibgodebug_DATA = \
 	debug/gosym.gox \
 	debug/macho.gox \
 	debug/pe.gox \
-	debug/plan9obj.gox
+	debug/plan9obj.gox \
+	debug/xcoff.gox
 
 toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
@@ -394,6 +395,13 @@ toolexeclibgounicodedir = $(toolexeclibgodir)/unicode
 toolexeclibgounicode_DATA = \
 	unicode/utf16.gox \
 	unicode/utf8.gox
+
+# Some packages are only needed for tests, so unlike the other
+# internal packages nothing will explicitly depend on them.
+# Force them to be built.
+noinst_DATA = \
+	internal/testenv.gox \
+	net/internal/socktest.gox
 
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -573,7 +581,7 @@ s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2 runtime.inc.tmp3
 	$(STAMP) $@
 
-noinst_DATA = zstdpkglist.go zdefaultcc.go
+noinst_DATA += zstdpkglist.go zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
@@ -715,6 +723,7 @@ PACKAGES = \
 	debug/macho \
 	debug/pe \
 	debug/plan9obj \
+	debug/xcoff \
 	encoding \
 	encoding/ascii85 \
 	encoding/asn1 \
@@ -923,6 +932,12 @@ GOTOOL_PACKAGES = \
 libgotool_a_SOURCES =
 libgotool_a_DEPENDENCIES = $(addsuffix .lo,$(GOTOOL_PACKAGES))
 libgotool_a_LIBADD = $(addsuffix .o,$(GOTOOL_PACKAGES))
+
+define STATIC_template
+$(subst -,_,$(subst .,_,$(subst /,_,$(1))))_GOCFLAGS = -static
+endef
+
+$(foreach package,$(GOTOOL_PACKAGES),$(eval $(call STATIC_template,$(package).lo)))
 
 # Make sure runtime.inc is built before compiling any .c file.
 $(libgo_la_OBJECTS): runtime.inc
@@ -1280,6 +1295,7 @@ TEST_PACKAGES = \
 	debug/macho/check \
 	debug/pe/check \
 	debug/plan9obj/check \
+	debug/xcoff/check \
 	encoding/ascii85/check \
 	encoding/asn1/check \
 	encoding/base32/check \

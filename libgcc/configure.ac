@@ -506,6 +506,22 @@ if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
 fi
 AC_SUBST(set_use_emutls)
 
+dnl Check if as supports AVX instructions.
+AC_DEFUN([LIBGCC_CHECK_AS_AVX], [
+case "${target}" in
+i[[34567]]86-*-* | x86_64-*-*)
+  AC_CACHE_CHECK([if the assembler supports AVX], libgcc_cv_as_avx, [
+    AC_TRY_COMPILE([], [asm("vzeroupper");],
+		   [libgcc_cv_as_avx=yes], [libgcc_cv_as_avx=no])
+  ])
+  if test x$libgcc_cv_as_avx = xyes; then
+    AC_DEFINE(HAVE_AS_AVX, 1, [Define to 1 if the assembler supports AVX.])
+  fi
+  ;;
+esac])
+LIBGCC_CHECK_AS_AVX
+
+dnl Check if as supports RTM instructions.
 AC_CACHE_CHECK(for init priority support, libgcc_cv_init_priority, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
   [[void ip (void) __attribute__ ((constructor (1)));]])],

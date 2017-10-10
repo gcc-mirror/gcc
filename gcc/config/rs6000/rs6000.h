@@ -950,14 +950,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   rs6000_data_alignment (TYPE, ALIGN, align_both)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                           \
-  (TREE_CODE (EXP) == STRING_CST	                         \
-   && (STRICT_ALIGNMENT || !optimize_size)                       \
-   && (ALIGN) < BITS_PER_WORD                                    \
-   ? BITS_PER_WORD                                               \
-   : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN) \
   rs6000_data_alignment (TYPE, ALIGN, align_opt)
@@ -2072,6 +2064,29 @@ extern scalar_int_mode rs6000_pmode;
 /* Given a condition code and a mode, return the inverse condition.  */
 #define REVERSE_CONDITION(CODE, MODE) rs6000_reverse_condition (MODE, CODE)
 
+
+/* Target cpu costs.  */
+
+struct processor_costs {
+  const int mulsi;	  /* cost of SImode multiplication.  */
+  const int mulsi_const;  /* cost of SImode multiplication by constant.  */
+  const int mulsi_const9; /* cost of SImode mult by short constant.  */
+  const int muldi;	  /* cost of DImode multiplication.  */
+  const int divsi;	  /* cost of SImode division.  */
+  const int divdi;	  /* cost of DImode division.  */
+  const int fp;		  /* cost of simple SFmode and DFmode insns.  */
+  const int dmul;	  /* cost of DFmode multiplication (and fmadd).  */
+  const int sdiv;	  /* cost of SFmode division (fdivs).  */
+  const int ddiv;	  /* cost of DFmode division (fdiv).  */
+  const int cache_line_size;    /* cache line size in bytes. */
+  const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
+  const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
+  const int simultaneous_prefetches; /* number of parallel prefetch
+					operations.  */
+  const int sfdf_convert;	/* cost of SF->DF conversion.  */
+};
+
+extern const struct processor_costs *rs6000_cost;
 
 /* Control the assembler format that we output.  */
 

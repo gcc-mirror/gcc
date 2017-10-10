@@ -2248,10 +2248,12 @@ do_jump_if_equal (basic_block bb, tree op0, tree op1, basic_block label_bb,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
+  false_edge->count = bb->count.apply_probability (false_edge->probability);
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   fix_phi_operands_for_edge (true_edge, phi_mapping);
   true_edge->probability = prob;
+  true_edge->count = bb->count.apply_probability (true_edge->probability);
 
   return false_edge->dest;
 }
@@ -2291,10 +2293,12 @@ emit_cmp_and_jump_insns (basic_block bb, tree op0, tree op1,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
+  false_edge->count = bb->count.apply_probability (false_edge->probability);
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   fix_phi_operands_for_edge (true_edge, phi_mapping);
   true_edge->probability = prob;
+  true_edge->count = bb->count.apply_probability (true_edge->probability);
 
   return false_edge->dest;
 }

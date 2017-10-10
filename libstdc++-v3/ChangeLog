@@ -1,3 +1,164 @@
+2017-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::equal):
+	Update comment about NAD issue.
+
+	PR libstdc++/59087
+	PR libstdc++/82417
+	* include/c_compatibility/complex.h [!C++98 && __STRICT_ANSI__]: Do
+	not include C library's <complex.h>.
+	* testsuite/26_numerics/complex/c99.cc: Depend on __STRICT_ANSI__.
+	* testsuite/26_numerics/headers/complex.h/std_c++11.h: New test.
+	* testsuite/26_numerics/headers/complex.h/std_gnu++11.h: New test.
+	* testsuite/26_numerics/headers/complex.h/std_c++98.h: New test.
+
+2017-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/to_chars/1.cc: Add dg-require-string-conversions.
+
+2017-10-04  Petr Ovtchenkov  <ptr@void-ptr.info>
+	    François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/streambuf_iterator.h
+	(istreambuf_iterator<>::operator*()): Do not capture iterator state
+	in Debug assertion.
+	(istreambuf_iterator<>::operator++()): Likewise and remove _M_sbuf check.
+	(istreambuf_iterator<>::operator++(int)): Likewise.
+	(istreambuf_iterator<>::_M_get()): Remove _M_c assignment.
+	(istreambuf_iterator<>::_S_is_eof()): New.
+	(istreambuf_iterator<>::_M_at_eof()): Adapt, use latter.
+	(find(istreambuf_iterator<>, istreambuf_iterator<>, _CharT)):
+	Return an iterator with _M_c set to eof to capture streambuf state
+	on evaluation.
+	(testsuite/24_iterators/istreambuf_iterator/2.cc): Add checks.
+
+2017-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (__unsigned_least_t): Fix number of closing >s for
+	!_GLIBCXX_USE_INT128.
+
+2017-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new <charconv> header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include <charconv>.
+	* include/std/charconv: New file.
+	(to_chars_result, to_chars, from_chars_result, from_chars): Define.
+	* testsuite/20_util/from_chars/1.cc: New test.
+	* testsuite/20_util/from_chars/1_neg.cc: New test.
+	* testsuite/20_util/from_chars/2.cc: New test.
+	* testsuite/20_util/from_chars/requirements.cc: New test.
+	* testsuite/20_util/to_chars/1.cc: New test.
+	* testsuite/20_util/to_chars/1_neg.cc: New test.
+	* testsuite/20_util/to_chars/2.cc: New test.
+	* testsuite/20_util/to_chars/requirements.cc: New test.
+
+2017-09-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/22_locale/money_get/get/char/22131.cc: Make test less
+	istreambuf_iterator implementation dependent.
+	* testsuite/22_locale/money_get/get/wchar_t/22131.cc: Likewise.
+
+2017-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/81854
+	* src/c++98/complex_io.cc (_GLIBCXX_LDBL_COMPAT): Declare alias
+	target as a C++ function with no prototype.
+
+2017-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/clamp/1.cc: Fix order of arguments and
+	expected results when using predicate defining reverse order.
+	* testsuite/25_algorithms/clamp/constexpr.cc: Likewise.
+
+2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79162
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_If_sv): Remove from the overload set when the
+	argument is derived from basic_string.
+
+	PR libstdc++/79162
+	* include/bits/basic_string.h (basic_string::_If_sv): Remove from the
+	overload set when the argument is derived from basic_string.
+	* testsuite/21_strings/basic_string/cons/char/moveable2_c++17.cc: New
+	test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2_c++17.cc:
+	New test.
+
+	* testsuite/24_iterators/range_access_cpp17.cc: Fix order of dg-do
+	and dg-options directives. Fix invalid test.
+
+	PR libstdc++/81469
+	* libsupc++/exception (uncaught_exception): Deprecate for C++17.
+	* testsuite/18_support/exception_ptr/62258.cc: Add -Wno-deprecated.
+	* testsuite/18_support/uncaught_exception/14026.cc: Likewise.
+
+	* include/bits/c++config (_GLIBCXX17_DEPRECATED): Define.
+	* include/bits/functional_hash.h (__hash_base::result_type)
+	(__hash_base::argument_type): Add _GLIBCXX17_DEPRECATED.
+	* include/std/optional (hash<optional<T>>::result_type)
+	(hash<optional<T>>::argument_type): Add deprecated attribute.
+	(__is_fast_hash<hash<optional<T>>>): Add partial specialization.
+	* include/std/variant (hash<variant<Types...>>::result_type)
+	(hash<variant<Types...>>::argument_type): Add deprecated attribute.
+	(__is_fast_hash<hash<variant<Types...>>>): Add partial specialization.
+
+	* libsupc++/exception_ptr.h (copy_exception): Remove deprecated
+	non-standard function.
+
+	PR libstdc++/82262
+	* include/std/optional (__optional_hash_call_base): Add template
+	parameter for remove_const_t<_Tp> and use it consistently.
+	* testsuite/20_util/optional/hash.cc: Test optional<const T>.
+
+2017-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71500
+	* include/bits/regex_executor.tcc
+	(_Backref_matcher<BidIt, regex_traits<C>>::_M_apply): Use
+	std::__equal4 instead of C++14 4-iterator overloads of std::equal.
+	* include/bits/stl_algobase.h (__equal4): New functions implementing
+	4-iterator overloads of std::equal for use in C++11.
+	(equal(It1, It1, It2, It2), equal(It1, It1, It2, It2, BinaryPred)):
+	Move function bodies to new __equal4 functions.
+	* testsuite/28_regex/simple_c++11.cc: New.
+
+	PR libstdc++/82254
+	* include/std/type_traits (__is_invocable): Add partial specialization
+	for INVOKE<void> case and remove is_void<R> check from partial
+	specialization for INVOKE<R> case.
+	(__is_nt_invocable_impl): New helper for is_nothrow_invocable_r.
+	(is_nothrow_invocable_r): Use __is_nt_invocable_impl.
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Add tests for
+	conversions that can throw or fail to convert. Use static assert
+	strings to explain negative results.
+	* testsuite/20_util/is_nothrow_invocable/value_ext.cc: Use
+	is_nothrow_constructible in is_nt_invocable_conv.
+
+2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81468
+	* testsuite/20_util/duration/cons/dr1177.cc: Fix incorrect test and
+	improve static assertion messages.
+
+	* include/std/utility (_Itup_cat, _Make_integer_sequence): Remove.
+	(_Build_index_tuple, make_integer_sequence): Use built-in to generate
+	pack expansion.
+
+	PR libstdc++/71187
+	* include/std/type_traits (__declval): New function to deduce return
+	type of declval.
+	(__declval_protector::_delegate): Remove.
+	(declval): Use __declval instead of add_rvalue_reference and
+	__declval_protector::__delegate.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	lineno.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx17.cc: Use -std=c++17 or
@@ -319,7 +480,7 @@
 2017-09-11  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/71500
-	* include/bits/regex_executor.tcc: Support icase in regex_tratis<...>
+	* include/bits/regex_executor.tcc: Support icase in regex_traits<...>
 	for back reference matches.
 	* testsuite/28_regex/regression.cc: Test case.
 

@@ -225,7 +225,7 @@ struct common_sched_info_def *common_sched_info;
 #define FEEDS_BACKTRACK_INSN(INSN) (HID (INSN)->feeds_backtrack_insn)
 #define SHADOW_P(INSN) (HID (INSN)->shadow_p)
 #define MUST_RECOMPUTE_SPEC_P(INSN) (HID (INSN)->must_recompute_spec)
-/* Cached cost of the instruction.  Use insn_cost to get cost of the
+/* Cached cost of the instruction.  Use insn_sched_cost to get cost of the
    insn.  -1 here means that the field is not initialized.  */
 #define INSN_COST(INSN)	(HID (INSN)->cost)
 
@@ -1383,7 +1383,7 @@ static rtx_insn *nonscheduled_insns_begin;
    This is the number of cycles between instruction issue and
    instruction results.  */
 int
-insn_cost (rtx_insn *insn)
+insn_sched_cost (rtx_insn *insn)
 {
   int cost;
 
@@ -1470,7 +1470,7 @@ dep_cost_1 (dep_t link, dw_t dw)
     {
       enum reg_note dep_type = DEP_TYPE (link);
 
-      cost = insn_cost (insn);
+      cost = insn_sched_cost (insn);
 
       if (INSN_CODE (insn) >= 0)
 	{
@@ -1608,11 +1608,11 @@ priority (rtx_insn *insn)
 	  INSN_FUSION_PRIORITY (insn) = this_fusion_priority;
 	}
       else if (dep_list_size (insn, SD_LIST_FORW) == 0)
-	/* ??? We should set INSN_PRIORITY to insn_cost when and insn has
-	   some forward deps but all of them are ignored by
+	/* ??? We should set INSN_PRIORITY to insn_sched_cost when and insn
+	   has some forward deps but all of them are ignored by
 	   contributes_to_priority hook.  At the moment we set priority of
 	   such insn to 0.  */
-	this_priority = insn_cost (insn);
+	this_priority = insn_sched_cost (insn);
       else
 	{
 	  rtx_insn *prev_first, *twin;
@@ -1683,7 +1683,7 @@ priority (rtx_insn *insn)
 	{
 	  gcc_assert (this_priority == -1);
 
-	  this_priority = insn_cost (insn);
+	  this_priority = insn_sched_cost (insn);
 	}
 
       INSN_PRIORITY (insn) = this_priority;
@@ -3084,7 +3084,8 @@ ready_sort_real (struct ready_list *ready)
   if (n_ready_real == 2)
     swap_sort (first, n_ready_real);
   else if (n_ready_real > 2)
-    qsort (first, n_ready_real, sizeof (rtx), rank_for_schedule);
+    /* HACK: Disable qsort checking for now (PR82396).  */
+    (qsort) (first, n_ready_real, sizeof (rtx), rank_for_schedule);
 
   if (sched_verbose >= 4)
     {
@@ -5707,7 +5708,8 @@ autopref_rank_data (autopref_multipass_data_t data1,
 static int
 autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
 {
-  for (int write = 0; write < 2; ++write)
+  int r = 0;
+  for (int write = 0; write < 2 && !r; ++write)
     {
       autopref_multipass_data_t data1
 	= &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
@@ -5716,21 +5718,20 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
 
       if (data1->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
 	autopref_multipass_init (insn1, write);
-      if (data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
-	continue;
 
       if (data2->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
 	autopref_multipass_init (insn2, write);
-      if (data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
-	continue;
 
-      if (!rtx_equal_p (data1->base, data2->base))
-	continue;
+      int irrel1 = data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
+      int irrel2 = data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
 
-      return autopref_rank_data (data1, data2);
+      if (!irrel1 && !irrel2)
+	r = autopref_rank_data (data1, data2);
+      else
+	r = irrel2 - irrel1;
     }
 
-  return 0;
+  return r;
 }
 
 /* True if header of debug dump was printed.  */

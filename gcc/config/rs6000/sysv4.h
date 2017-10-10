@@ -160,7 +160,7 @@ do {									\
     {									\
       rs6000_sdata = SDATA_NONE;					\
       error ("%<%s=%s%> and %<%s-%s%> are incompatible",		\
-	     "-msdata", "-mcall", rs6000_sdata_name, rs6000_abi_name);	\
+	     "-msdata", rs6000_sdata_name, "-mcall", rs6000_abi_name);	\
     }									\
 									\
   targetm.have_srodata_section = rs6000_sdata == SDATA_EABI;		\

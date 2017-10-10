@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2016, AdaCore                     --
+--                     Copyright (C) 2001-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -22,6 +22,7 @@
 
 --  This is the version of the Back_End package for back ends written in Ada
 
+with Atree;    use Atree;
 with Debug;
 with Lib;
 with Opt;      use Opt;
@@ -56,6 +57,13 @@ package body Adabkend is
          Write_Eol;
       end if;
 
+      --  The front end leaves the Current_Error_Node at a location that is
+      --  meaningless and confusing when emitting bug boxes from the back end.
+      --  Reset the global variable in order to emit "No source file position
+      --  information available" messages on back end crashes.
+
+      Current_Error_Node := Empty;
+
       Driver (Lib.Cunit (Types.Main_Unit));
    end Call_Back_End;
 
@@ -83,7 +91,7 @@ package body Adabkend is
       --
       --  If the switch is not valid, control will not return. The switches
       --  must still be scanned to skip the "-o" arguments, or internal GCC
-      --  switches, which may be safely ignored by other back-ends.
+      --  switches, which may be safely ignored by other back ends.
 
       ----------------------------
       -- Scan_Back_End_Switches --
@@ -243,7 +251,7 @@ package body Adabkend is
                else
                   Add_Src_Search_Dir (Argv);
 
-                  --  Add directory to lib search so that back-end can take as
+                  --  Add directory to lib search so that back end can take as
                   --  input ALI files if needed. Otherwise this won't have any
                   --  impact on the compiler.
 

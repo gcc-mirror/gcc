@@ -117,25 +117,30 @@ package Exp_Ch6 is
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
 
+   function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-318-02): Returns True if functions returning the type use
+   --  build-in-place protocols. For inherently limited types, this must be
+   --  True in >= Ada 2005, and must be False in Ada 95. For other types, it
+   --  can be True or False, and the decision should be based on efficiency,
+   --  and should be the same for all language versions, so that mixed-dialect
+   --  programs will work.
+   --
+   --  For inherently limited types in Ada 2005, True means that calls will
+   --  actually be build-in-place in all cases. For other types, build-in-place
+   --  will be used when possible, but we need to make a copy at the call site
+   --  in some cases, notably assignment statements.
+
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E denotes a function, generic
-   --  function, or access-to-function type whose result must be built in
-   --  place; otherwise returns False. For Ada 2005, this is currently
-   --  restricted to the set of functions whose result subtype is an inherently
-   --  limited type. In Ada 95, this must be False for inherently limited
-   --  result types (but currently returns False for all Ada 95 functions).
-   --  Eventually we plan to support build-in-place for nonlimited types.
-   --  Build-in-place is usually more efficient for large things, and less
-   --  efficient for small things. However, we never use build-in-place if the
-   --  convention is other than Ada, because that would disturb mixed-language
-   --  programs. Note that for the non-inherently-limited cases, we must make
-   --  the same decision for Ada 95 and 2005, so that mixed-dialect programs
-   --  will work.
+   --  function, or access-to-function type for which
+   --  Is_Build_In_Place_Result_Type is True. However, we never use
+   --  build-in-place if the convention is other than Ada, because that would
+   --  disturb mixed-language programs.
 
    function Is_Build_In_Place_Function_Call (N : Node_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if N denotes a call to a function
-   --  that requires handling as a build-in-place call or is a qualified
-   --  expression applied to such a call; otherwise returns False.
+   --  that requires handling as a build-in-place call (possibly qualified or
+   --  converted).
 
    function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
    --  Predicate to recognize stubbed procedures and null procedures, which
@@ -212,7 +217,7 @@ package Exp_Ch6 is
      (Obj_Decl      : Node_Id;
       Function_Call : Node_Id);
    --  Ada 2005 (AI-318-02): Handle a call to a build-in-place function that
-   --  occurs as the expression initializing an object declaration by passsing
+   --  occurs as the expression initializing an object declaration by passing
    --  access to the declared object as an additional parameter of the function
    --  call. Function_Call must denote an expression containing a BIP function
    --  call and an enclosing call to Ada.Tags.Displace to displace the pointer

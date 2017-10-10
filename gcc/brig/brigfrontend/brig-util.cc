@@ -27,6 +27,34 @@ along with GCC; see the file COPYING3.  If not see
 #include "errors.h"
 #include "diagnostic-core.h"
 
+bool
+group_variable_offset_index::has_variable (const std::string &name) const
+{
+  varname_offset_table::const_iterator i = m_group_offsets.find (name);
+  return i != m_group_offsets.end ();
+}
+
+/* Adds a new group segment variable.  */
+
+void
+group_variable_offset_index::add (const std::string &name, size_t size,
+				  size_t alignment)
+{
+  size_t align_padding = m_next_group_offset % alignment == 0 ?
+    0 : (alignment - m_next_group_offset % alignment);
+  m_next_group_offset += align_padding;
+  m_group_offsets[name] = m_next_group_offset;
+  m_next_group_offset += size;
+}
+
+size_t
+group_variable_offset_index::segment_offset (const std::string &name) const
+{
+  varname_offset_table::const_iterator i = m_group_offsets.find (name);
+  gcc_assert (i != m_group_offsets.end ());
+  return (*i).second;
+}
+
 /* Return true if operand number OPNUM of instruction with OPCODE is an output.
    False if it is an input.  Some code reused from Martin Jambor's gcc-hsa
    tree.  */

@@ -1931,9 +1931,9 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	  unsigned align;
 
 	  get_pointer_alignment_1 (arg, &align, &bitpos);
-	  widest_int mask
-	    = wi::mask<widest_int>(TYPE_PRECISION (TREE_TYPE (arg)), false)
-	    .and_not (align / BITS_PER_UNIT - 1);
+	  widest_int mask = wi::bit_and_not
+	    (wi::mask<widest_int> (TYPE_PRECISION (TREE_TYPE (arg)), false),
+	     align / BITS_PER_UNIT - 1);
 	  widest_int value = bitpos / BITS_PER_UNIT;
 	  ipa_set_jfunc_bits (jfunc, value, mask);
 	}

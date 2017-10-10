@@ -122,7 +122,7 @@ extern tree arm_fp16_type_node;
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
 				 && bitmap_bit_p (arm_active_target.isa, \
-						  isa_bit_VFPv2))
+						  isa_bit_vfpv2))
 #define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
 /* User has permitted use of FP instructions, if they exist for this
    target.  */
@@ -169,10 +169,10 @@ extern tree arm_fp16_type_node;
 #define TARGET_VFPD32 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_d32))
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv3))
+#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv3))
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_FPv5))
+#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_fpv5))
 
 /* FPU only supports VFP single-precision instructions.  */
 #define TARGET_VFP_SINGLE (!TARGET_VFP_DOUBLE)
@@ -194,7 +194,7 @@ extern tree arm_fp16_type_node;
   (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv4))
+#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv4))
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
@@ -591,15 +591,6 @@ extern int arm_arch_cmse;
 #ifdef IN_TARGET_LIBS
 #define BIGGEST_FIELD_ALIGNMENT 64
 #endif
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2)
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
-   ((TREE_CODE (EXP) == STRING_CST				\
-     && !optimize_size						\
-     && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
-    ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
 
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
@@ -2237,9 +2228,12 @@ const char *arm_be8_option (int argc, const char **argv);
   "                     %{mfloat-abi=*: abi %*}"	\
   "                     %<march=*) "
 
+/* Complete set of specs for the driver.  Commas separate the
+   individual rules so that any option suppression (%<opt...)is
+   completed before starting subsequent rules.  */
 #define DRIVER_SELF_SPECS			\
-  MCPU_MTUNE_NATIVE_SPECS			\
-  TARGET_MODE_SPECS				\
+  MCPU_MTUNE_NATIVE_SPECS,			\
+  TARGET_MODE_SPECS,				\
   ARCH_CANONICAL_SPECS
 
 #define TARGET_SUPPORTS_WIDE_INT 1

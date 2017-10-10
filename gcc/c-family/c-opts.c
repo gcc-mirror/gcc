@@ -111,6 +111,7 @@ static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
 static void set_std_cxx14 (int);
 static void set_std_cxx17 (int);
+static void set_std_cxx2a (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
@@ -650,6 +651,12 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	set_std_cxx17 (code == OPT_std_c__17 /* ISO */);
       break;
 
+    case OPT_std_c__2a:
+    case OPT_std_gnu__2a:
+      if (!preprocessing_asm_p)
+	set_std_cxx2a (code == OPT_std_c__2a /* ISO */);
+      break;
+
     case OPT_std_c90:
     case OPT_std_iso9899_199409:
       if (!preprocessing_asm_p)
@@ -951,7 +958,7 @@ c_common_post_options (const char **pfilename)
 	warn_narrowing = 1;
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
-	 for -std=c++{11,14,17} default to -fno-ext-numeric-literals.  */
+	 for -std=c++{11,14,17,2a} default to -fno-ext-numeric-literals.  */
       if (flag_iso && !global_options_set.x_flag_ext_numeric_literals)
 	cpp_opts->ext_numeric_literals = 0;
     }
@@ -1649,7 +1656,7 @@ set_std_cxx14 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++11 includes the C99 standard library.  */
+  /* C++14 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   cxx_dialect = cxx14;
@@ -1664,12 +1671,28 @@ set_std_cxx17 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++11 includes the C99 standard library.  */
+  /* C++17 includes the C11 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
   cxx_dialect = cxx17;
   lang_hooks.name = "GNU C++17";
+}
+
+/* Set the C++ 202a draft standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx2a (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX2A: CLK_GNUCXX2A);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  /* C++17 includes the C11 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
+  flag_isoc11 = 1;
+  cxx_dialect = cxx2a;
+  lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
 }
 
 /* Args to -d specify what to dump.  Silently ignore

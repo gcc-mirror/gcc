@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,51 @@ package body Ch8 is
    -- Local Subprograms --
    -----------------------
 
-   function P_Use_Package_Clause                           return Node_Id;
-   function P_Use_Type_Clause                              return Node_Id;
+   procedure Append_Use_Clause
+     (Item_List : List_Id;
+      Use_Node  : Node_Id;
+      Is_First  : in out Boolean;
+      Is_Last   : in out Boolean);
+   --  Append a use_clause to the Item_List, appropriately setting the Prev_Ids
+   --  and More_Ids flags for each split use node. The flags Is_First and
+   --  Is_Last track position of subtype_marks or names within the original
+   --  use_clause.
+
+   procedure P_Use_Package_Clause (Item_List : List_Id);
+   procedure P_Use_Type_Clause    (Item_List : List_Id);
+
+   -----------------------
+   -- Append_Use_Clause --
+   -----------------------
+
+   procedure Append_Use_Clause
+     (Item_List : List_Id;
+      Use_Node  : Node_Id;
+      Is_First  : in out Boolean;
+      Is_Last   : in out Boolean)
+   is
+   begin
+      if Token /= Tok_Comma then
+         if not Is_First then
+            Set_Prev_Ids (Use_Node);
+         end if;
+
+         Append (Use_Node, Item_List);
+         Is_Last := True;
+
+      else
+         Set_More_Ids (Use_Node);
+
+         if not Is_First then
+            Set_Prev_Ids (Use_Node);
+         else
+            Is_First := False;
+         end if;
+
+         Append (Use_Node, Item_List);
+         Scan; --  Past comma
+      end if;
+   end Append_Use_Clause;
 
    ---------------------
    -- 8.4  Use Clause --
@@ -47,14 +90,14 @@ package body Ch8 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Use_Clause return Node_Id is
+   procedure P_Use_Clause (Item_List : List_Id) is
    begin
       Scan; -- past USE
 
       if Token = Tok_Type or else Token = Tok_All then
-         return P_Use_Type_Clause;
+         P_Use_Type_Clause (Item_List);
       else
-         return P_Use_Package_Clause;
+         P_Use_Package_Clause (Item_List);
       end if;
    end P_Use_Clause;
 
@@ -68,26 +111,32 @@ package body Ch8 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Use_Package_Clause return Node_Id is
+   procedure P_Use_Package_Clause (Item_List : List_Id) is
+      Is_First : Boolean := True;
+      Is_Last  : Boolean := False;
       Use_Node : Node_Id;
+      Use_Sloc : constant Source_Ptr := Prev_Token_Ptr;
 
    begin
-      Use_Node := New_Node (N_Use_Package_Clause, Prev_Token_Ptr);
-      Set_Names (Use_Node, New_List);
-
       if Token = Tok_Package then
          Error_Msg_SC ("PACKAGE should not appear here");
-         Scan; -- past PACKAGE
+         Scan; --  Past PACKAGE
       end if;
 
+      --  Loop through names in a single use_package_clause, generating an
+      --  N_Use_Package_Clause node for each name encountered.
+
       loop
-         Append (P_Qualified_Simple_Name, Names (Use_Node));
-         exit when Token /= Tok_Comma;
-         Scan; -- past comma
+         Use_Node := New_Node (N_Use_Package_Clause, Use_Sloc);
+         Set_Name (Use_Node, P_Qualified_Simple_Name);
+
+         --  Locally chain each name's use-package node
+
+         Append_Use_Clause (Item_List, Use_Node, Is_First, Is_Last);
+         exit when Is_Last;
       end loop;
 
       TF_Semicolon;
-      return Use_Node;
    end P_Use_Package_Clause;
 
    --------------------------
@@ -103,45 +152,54 @@ package body Ch8 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Use_Type_Clause return Node_Id is
-      Use_Node    : Node_Id;
+   procedure P_Use_Type_Clause (Item_List : List_Id) is
+      Use_Sloc : constant Source_Ptr := Prev_Token_Ptr;
+
       All_Present : Boolean;
-      Use_Sloc    : constant Source_Ptr := Prev_Token_Ptr;
+      Is_First    : Boolean := True;
+      Is_Last     : Boolean := False;
+      Use_Node    : Node_Id;
 
    begin
       if Token = Tok_All then
          Error_Msg_Ada_2012_Feature ("|`USE ALL TYPE`", Token_Ptr);
          All_Present := True;
-         Scan; -- past ALL
+         Scan; --  Past ALL
 
          if Token /= Tok_Type then
             Error_Msg_SC ("TYPE expected");
          end if;
 
-      else pragma Assert (Token = Tok_Type);
+      else
+         pragma Assert (Token = Tok_Type);
          All_Present := False;
       end if;
-
-      Use_Node := New_Node (N_Use_Type_Clause, Use_Sloc);
-      Set_All_Present (Use_Node, All_Present);
-      Set_Subtype_Marks (Use_Node, New_List);
-      Set_Used_Operations (Use_Node, No_Elist);
 
       if Ada_Version = Ada_83 then
          Error_Msg_SC ("(Ada 83) use type not allowed!");
       end if;
 
-      Scan; -- past TYPE
+      Scan; --  Past TYPE
+
+      --  Loop through subtype_marks in one use_type_clause, generating a
+      --  separate N_Use_Type_Clause node for each subtype_mark encountered.
 
       loop
-         Append (P_Subtype_Mark, Subtype_Marks (Use_Node));
+         Use_Node := New_Node (N_Use_Type_Clause, Use_Sloc);
+         Set_All_Present (Use_Node, All_Present);
+         Set_Used_Operations (Use_Node, No_Elist);
+
+         Set_Subtype_Mark (Use_Node, P_Subtype_Mark);
+
          No_Constraint;
-         exit when Token /= Tok_Comma;
-         Scan; -- past comma
+
+         --  Locally chain each subtype_mark's use-type node
+
+         Append_Use_Clause (Item_List, Use_Node, Is_First, Is_Last);
+         exit when Is_Last;
       end loop;
 
       TF_Semicolon;
-      return Use_Node;
    end P_Use_Type_Clause;
 
    -------------------------------
@@ -163,9 +221,9 @@ package body Ch8 is
 
    --  Parsed by P_Identifier_Declarations (3.3.1)
 
-   ----------------------------------------
+   -------------------------------------------
    -- 8.5.2  Exception Renaming Declaration --
-   ----------------------------------------
+   -------------------------------------------
 
    --  Parsed by P_Identifier_Declarations (3.3.1)
 

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
@@ -53,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-parloops.h"
 #include "tree-cfgcleanup.h"
 #include "tree-vectorizer.h"
+#include "tree-ssa-loop-manip.h"
 #include "graphite.h"
 
 /* Print global statistics to FILE.  */
@@ -213,17 +215,12 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 /* Initialize graphite: when there are no loops returns false.  */
 
 static bool
-graphite_initialize (isl_ctx *ctx)
+graphite_initialize (void)
 {
   int min_loops = PARAM_VALUE (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION);
-  int max_bbs = PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION);
-  int nbbs = n_basic_blocks_for_fn (cfun);
   int nloops = number_of_loops (cfun);
 
-  if (nloops <= min_loops
-      /* FIXME: This limit on the number of basic blocks of a function
-	 should be removed when the SCOP detection is faster.  */
-      || (nbbs > max_bbs))
+  if (nloops <= min_loops)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -232,20 +229,14 @@ graphite_initialize (isl_ctx *ctx)
 		     "PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION = %d.\n",
 		     min_loops);
 
-	  else if (nbbs > max_bbs)
-	    fprintf (dump_file, "\nFunction has too many basic blocks: "
-		     "PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION = %d.\n", max_bbs);
-
 	  fprintf (dump_file, "\nnumber of SCoPs: 0\n");
 	  print_global_statistics (dump_file);
 	}
 
-      isl_ctx_free (ctx);
       return false;
     }
 
-  scev_reset ();
-  recompute_all_dominators ();
+  calculate_dominance_info (CDI_DOMINATORS);
   initialize_original_copy_tables ();
 
   if (dump_file && dump_flags)
@@ -263,7 +254,6 @@ graphite_initialize (isl_ctx *ctx)
 static void
 graphite_finalize (bool need_cfg_cleanup_p)
 {
-  free_dominance_info (CDI_POST_DOMINATORS);
   if (need_cfg_cleanup_p)
     {
       free_dominance_info (CDI_DOMINATORS);
@@ -294,6 +284,108 @@ free_scops (vec<scop_p> scops)
   scops.release ();
 }
 
+/* Transforms LOOP to the canonical loop closed SSA form.  */
+
+static void
+canonicalize_loop_closed_ssa (loop_p loop)
+{
+  edge e = single_exit (loop);
+  basic_block bb;
+  gphi_iterator psi;
+
+  if (!e || (e->flags & EDGE_COMPLEX))
+    return;
+
+  bb = e->dest;
+
+  /* Make the loop-close PHI node BB contain only PHIs and have a
+     single predecessor.  */
+  if (single_pred_p (bb))
+    {
+      e = split_block_after_labels (bb);
+      bb = e->src;
+    }
+  else
+    {
+      basic_block close = split_edge (e);
+      e = single_succ_edge (close);
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+	{
+	  gphi *phi = psi.phi ();
+	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  tree arg = USE_FROM_PTR (use_p);
+
+	  /* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
+	  if (TREE_CODE (arg) != SSA_NAME
+	      || SSA_NAME_IS_DEFAULT_DEF (arg)
+	      || ! flow_bb_inside_loop_p (loop,
+					  gimple_bb (SSA_NAME_DEF_STMT (arg))))
+	    continue;
+
+	  tree res = copy_ssa_name (arg);
+	  gphi *close_phi = create_phi_node (res, close);
+	  add_phi_arg (close_phi, arg, gimple_phi_arg_edge (close_phi, 0),
+		       UNKNOWN_LOCATION);
+	  SET_USE (use_p, res);
+	}
+      bb = close;
+    }
+
+  /* Eliminate duplicates.  This relies on processing loops from
+     innermost to outer.  */
+  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gphi_iterator gsi = psi;
+      gphi *phi = psi.phi ();
+
+      /* At this point, PHI should be a close phi in normal form.  */
+      gcc_assert (gimple_phi_num_args (phi) == 1);
+
+      /* Iterate over the next phis and remove duplicates.  */
+      gsi_next (&gsi);
+      while (!gsi_end_p (gsi))
+	if (gimple_phi_arg_def (phi, 0) == gimple_phi_arg_def (gsi.phi (), 0))
+	  {
+	    replace_uses_by (gimple_phi_result (gsi.phi ()),
+			     gimple_phi_result (phi));
+	    remove_phi_node (&gsi, true);
+	  }
+	else
+	  gsi_next (&gsi);
+    }
+}
+
+/* Converts the current loop closed SSA form to a canonical form
+   expected by the Graphite code generation.
+
+   The loop closed SSA form has the following invariant: a variable
+   defined in a loop that is used outside the loop appears only in the
+   phi nodes in the destination of the loop exit.  These phi nodes are
+   called close phi nodes.
+
+   The canonical loop closed SSA form contains the extra invariants:
+
+   - when the loop contains only one exit, the close phi nodes contain
+   only one argument.  That implies that the basic block that contains
+   the close phi nodes has only one predecessor, that is a basic block
+   in the loop.
+
+   - the basic block containing the close phi nodes does not contain
+   other statements.
+
+   - there exist only one phi node per definition in the loop.
+*/
+
+static void
+canonicalize_loop_closed_ssa_form (void)
+{
+  loop_p loop;
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+    canonicalize_loop_closed_ssa (loop);
+
+  checking_verify_loop_closed_ssa (true);
+}
+
 isl_ctx *the_isl_ctx;
 
 /* Perform a set of linear transforms on the loops of the current
@@ -313,13 +405,19 @@ graphite_transform_loops (void)
   if (parallelized_function_p (cfun->decl))
     return;
 
-  ctx = isl_ctx_alloc ();
-  isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
-  if (!graphite_initialize (ctx))
+  if (!graphite_initialize ())
     return;
 
+  ctx = isl_ctx_alloc ();
+  isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
   the_isl_ctx = ctx;
+
+  sort_sibling_loops (cfun);
+  canonicalize_loop_closed_ssa_form ();
+
+  calculate_dominance_info (CDI_POST_DOMINATORS);
   build_scops (&scops);
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -337,18 +435,30 @@ graphite_transform_loops (void)
 	if (!apply_poly_transforms (scop))
 	  continue;
 
-	need_cfg_cleanup_p = true;
-	/* When code generation is not successful, do not continue
-	   generating code for the next scops: the IR has to be cleaned up
-	   and could be in an inconsistent state.  */
-	if (!graphite_regenerate_ast_isl (scop))
-	  break;
-
 	location_t loc = find_loop_location
-			   (scop->scop_info->region.entry->dest->loop_father);
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			 "loop nest optimized\n");
+	  (scops[i]->scop_info->region.entry->dest->loop_father);
+
+	need_cfg_cleanup_p = true;
+	if (!graphite_regenerate_ast_isl (scop))
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			   "loop nest not optimized, code generation error\n");
+	else
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			   "loop nest optimized\n");
       }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      loop_p loop;
+      int num_no_dependency = 0;
+
+      FOR_EACH_LOOP (loop, 0)
+	if (loop->can_be_parallel)
+	  num_no_dependency++;
+
+      fprintf (dump_file, "%d loops carried no dependency.\n",
+	       num_no_dependency);
+    }
 
   free_scops (scops);
   graphite_finalize (need_cfg_cleanup_p);

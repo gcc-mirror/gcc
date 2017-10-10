@@ -63,7 +63,13 @@ arm_except_unwind_info (struct gcc_options *opts)
 	return UI_TARGET;
     }
 
-  /* ... we use sjlj exceptions for backwards compatibility.  */
+  /* ... honor target configurations requesting DWARF2 EH...  */
+#ifdef DWARF2_UNWIND_INFO
+  if (DWARF2_UNWIND_INFO)
+    return UI_DWARF2;
+#endif
+
+  /* ... or fallback to sjlj exceptions for backwards compatibility.  */
   return UI_SJLJ;
 }
 
@@ -574,7 +580,7 @@ arm_canon_arch_option (int argc, const char **argv)
 	{
 	  /* The easiest and safest way to remove the default fpu
 	     capabilities is to look for a '+no..' option that removes
-	     the base FPU bit (isa_bit_VFPv2).  If that doesn't exist
+	     the base FPU bit (isa_bit_vfpv2).  If that doesn't exist
 	     then the best we can do is strip out all the bits that
 	     might be part of the most capable FPU we know about,
 	     which is "crypto-neon-fp-armv8".  */
@@ -586,7 +592,7 @@ arm_canon_arch_option (int argc, const char **argv)
 		   ++ext)
 		{
 		  if (ext->remove
-		      && check_isa_bits_for (ext->isa_bits, isa_bit_VFPv2))
+		      && check_isa_bits_for (ext->isa_bits, isa_bit_vfpv2))
 		    {
 		      arm_initialize_isa (fpu_isa, ext->isa_bits);
 		      bitmap_and_compl (target_isa, target_isa, fpu_isa);
@@ -620,7 +626,7 @@ arm_canon_arch_option (int argc, const char **argv)
     {
       /* Clearing the VFPv2 bit is sufficient to stop any extention that
 	 builds on the FPU from matching.  */
-      bitmap_clear_bit (target_isa, isa_bit_VFPv2);
+      bitmap_clear_bit (target_isa, isa_bit_vfpv2);
     }
 
   /* If we don't have a selected architecture by now, something's
@@ -692,8 +698,8 @@ arm_canon_arch_option (int argc, const char **argv)
      capable FPU variant that we do support.  This is sufficient for
      multilib selection.  */
 
-  if (bitmap_bit_p (target_isa_unsatisfied, isa_bit_VFPv2)
-      && bitmap_bit_p (fpu_isa, isa_bit_VFPv2))
+  if (bitmap_bit_p (target_isa_unsatisfied, isa_bit_vfpv2)
+      && bitmap_bit_p (fpu_isa, isa_bit_vfpv2))
     {
       std::list<candidate_extension *>::iterator ipoint = extensions.begin ();
 

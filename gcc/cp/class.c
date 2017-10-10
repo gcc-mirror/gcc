@@ -3231,12 +3231,12 @@ check_bitfield_decl (tree field)
   tree w;
 
   /* Extract the declared width of the bitfield, which has been
-     temporarily stashed in DECL_INITIAL.  */
-  w = DECL_INITIAL (field);
+     temporarily stashed in DECL_BIT_FIELD_REPRESENTATIVE by grokbitfield.  */
+  w = DECL_BIT_FIELD_REPRESENTATIVE (field);
   gcc_assert (w != NULL_TREE);
   /* Remove the bit-field width indicator so that the rest of the
-     compiler does not treat that value as an initializer.  */
-  DECL_INITIAL (field) = NULL_TREE;
+     compiler does not treat that value as a qualifier.  */
+  DECL_BIT_FIELD_REPRESENTATIVE (field) = NULL_TREE;
 
   /* Detect invalid bit-field type.  */
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
@@ -3324,7 +3324,7 @@ check_field_decl (tree field,
     {
       for (tree fields = TYPE_FIELDS (type); fields;
 	   fields = DECL_CHAIN (fields))
-	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
+	if (TREE_CODE (fields) == FIELD_DECL)
 	  any_default_members |= check_field_decl (fields, t,
 						   cant_have_const_ctor,
 						   no_const_asn_ref);
@@ -3571,7 +3571,8 @@ check_field_decls (tree t, tree *access_decls,
 	    DECL_PACKED (x) = 1;
 	}
 
-      if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
+      if (DECL_C_BIT_FIELD (x)
+	  && integer_zerop (DECL_BIT_FIELD_REPRESENTATIVE (x)))
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
@@ -3635,10 +3636,10 @@ check_field_decls (tree t, tree *access_decls,
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
-      if ((! DECL_C_BIT_FIELD (x) || ! check_bitfield_decl (x))
-	  && check_field_decl (x, t,
-			       cant_have_const_ctor_p,
-			       no_const_asn_ref_p))
+      if (DECL_C_BIT_FIELD (x))
+	check_bitfield_decl (x);
+
+      if (check_field_decl (x, t, cant_have_const_ctor_p, no_const_asn_ref_p))
 	{
 	  if (any_default_members
 	      && TREE_CODE (t) == UNION_TYPE)
@@ -5270,9 +5271,9 @@ remove_zero_width_bit_fields (tree t)
     {
       if (TREE_CODE (*fieldsp) == FIELD_DECL
 	  && DECL_C_BIT_FIELD (*fieldsp)
-          /* We should not be confused by the fact that grokbitfield
+	  /* We should not be confused by the fact that grokbitfield
 	     temporarily sets the width of the bit field into
-	     DECL_INITIAL (*fieldsp).
+	     DECL_BIT_FIELD_REPRESENTATIVE (*fieldsp).
 	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
 	     to that width.  */
 	  && (DECL_SIZE (*fieldsp) == NULL_TREE
@@ -8928,7 +8929,7 @@ build_ctor_vtbl_group (tree binfo, tree t)
 
   /* See if we've already created this construction vtable group.  */
   id = mangle_ctor_vtbl_for_type (t, binfo);
-  if (IDENTIFIER_GLOBAL_VALUE (id))
+  if (get_global_binding (id))
     return;
 
   gcc_assert (!SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t));
@@ -9310,7 +9311,7 @@ build_vtbl_initializer (tree binfo,
 	      if (!dvirt_fn)
 		{
 		  tree name = get_identifier ("__cxa_deleted_virtual");
-		  dvirt_fn = IDENTIFIER_GLOBAL_VALUE (name);
+		  dvirt_fn = get_global_binding (name);
 		  if (!dvirt_fn)
 		    dvirt_fn = push_library_fn
 		      (name,

@@ -853,14 +853,10 @@ start_record_layout (tree t)
 tree
 bit_from_pos (tree offset, tree bitpos)
 {
-  if (TREE_CODE (offset) == PLUS_EXPR)
-    offset = size_binop (PLUS_EXPR,
-			 fold_convert (bitsizetype, TREE_OPERAND (offset, 0)),
-			 fold_convert (bitsizetype, TREE_OPERAND (offset, 1)));
-  else
-    offset = fold_convert (bitsizetype, offset);
   return size_binop (PLUS_EXPR, bitpos,
-		     size_binop (MULT_EXPR, offset, bitsize_unit_node));
+		     size_binop (MULT_EXPR,
+				 fold_convert (bitsizetype, offset),
+				 bitsize_unit_node));
 }
 
 /* Return the combined truncated byte position for the byte offset OFFSET and

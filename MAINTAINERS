@@ -37,6 +37,9 @@ Note that while global reviewers can approve changes to any part of
 the compiler or associated libraries, they still need approval for
 their own patches from other maintainers or reviewers.
 
+Also note that maintainership of any area covers changes to web pages,
+docs, and the testsuite related to that.
+
 			CPU Port Maintainers	(CPU alphabetical order)
 
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
@@ -85,6 +88,7 @@ nds32 port		Chung-Ju Wu		<jasonwucj@gmail.com>
 nds32 port		Shiva Chen		<shiva0217@gmail.com>
 nios2 port		Chung-Lin Tang		<cltang@codesourcery.com>
 nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
+nvptx port		Tom de Vries		<tom@codesourcery.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 picochip port		Daniel Towner		<dant@picochip.com>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
@@ -134,7 +138,6 @@ RTEMS Ports		Ralf Corsepius		<ralf.corsepius@rtems.org>
 RTEMS Ports		Sebastian Huber		<sebastian.huber@embedded-brains.de>
 VMS			Douglas Rupp		<douglas.b.rupp@gmail.com>
 VMS			Tristan Gingold		<tgingold@free.fr>
-VxWorks ports		Nathan Sidwell		<nathan@acm.org>
 VxWorks ports		Olivier Hainque		<hainque@adacore.com>
 cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 
@@ -143,6 +146,7 @@ cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 C front end/ISO C99	Joseph Myers		<joseph@codesourcery.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
+Ada front end		Pierre-Marie de Rodat	<derodat@adacore.com>
 BRIG (HSAIL) front end	Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
 BRIG (HSAIL) front end 	Martin Jambor		<mjambor@suse.cz>
 c++			Jason Merrill		<jason@redhat.com>

@@ -1226,6 +1226,8 @@ get_reaching_def (tree var)
   if (currdef == NULL_TREE)
     {
       tree sym = DECL_P (var) ? var : SSA_NAME_VAR (var);
+      if (! sym)
+	sym = create_tmp_reg (TREE_TYPE (var));
       currdef = get_or_create_ssa_default_def (cfun, sym);
     }
 

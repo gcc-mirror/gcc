@@ -2264,13 +2264,29 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  --  Construct the attribute definition clause
+                  --  Construct the attribute_definition_clause. The expression
+                  --  in the aspect specification is simply shared with the
+                  --  constructed attribute, because it will be fully analyzed
+                  --  when the attribute is processed. However, in ASIS mode
+                  --  the aspect expression itself is preanalyzed and resolved
+                  --  to catch visibility errors that are otherwise caught
+                  --  later, and we create a separate copy of the expression
+                  --  to prevent analysis of a malformed tree (e.g. a function
+                  --  call with parameter associations).
 
-                  Aitem :=
-                    Make_Attribute_Definition_Clause (Loc,
-                      Name       => Ent,
-                      Chars      => Chars (Id),
-                      Expression => Relocate_Node (Expr));
+                  if ASIS_Mode then
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => New_Copy_Tree (Expr));
+                  else
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => Relocate_Node (Expr));
+                  end if;
 
                   --  If the address is specified, then we treat the entity as
                   --  referenced, to avoid spurious warnings. This is analogous
@@ -4399,15 +4415,6 @@ package body Sem_Ch13 is
 
             if Present (Default_Element) then
                Analyze (Default_Element);
-
-               if Is_Entity_Name (Default_Element)
-                 and then not Covers (Entity (Default_Element), Ret_Type)
-                 and then False
-               then
-                  Illegal_Indexing
-                    ("wrong return type for indexing function");
-                  return;
-               end if;
             end if;
 
             --  For variable_indexing the return type must be a reference type
@@ -5084,6 +5091,22 @@ package body Sem_Ch13 is
                         Register_Address_Clause_Check
                           (N, U_Ent, No_Uint, O_Ent, Off);
                      end if;
+
+                     --  If the overlay changes the storage order, mark the
+                     --  entity as being volatile to block any optimization
+                     --  for it since the construct is not really supported
+                     --  by the back end.
+
+                     if (Is_Record_Type (Etype (U_Ent))
+                          or else Is_Array_Type (Etype (U_Ent)))
+                       and then (Is_Record_Type (Etype (O_Ent))
+                                  or else Is_Array_Type (Etype (O_Ent)))
+                       and then Reverse_Storage_Order (Etype (U_Ent)) /=
+                                Reverse_Storage_Order (Etype (O_Ent))
+                     then
+                        Set_Treat_As_Volatile (U_Ent);
+                     end if;
+
                   else
                      --  If this is not an overlay, mark a variable as being
                      --  volatile to prevent unwanted optimizations. It's a
@@ -12638,10 +12661,18 @@ package body Sem_Ch13 is
 
                return Skip;
 
-            --  Otherwise do the replacement and we are done with this node
+            --  Otherwise do the replacement if this is not a qualified
+            --  reference to a homograph of the type itself. Note that the
+            --  current instance could not appear in such a context, e.g.
+            --  the prefix of a type conversion.
 
             else
-               Replace_Type_Reference (N);
+               if Nkind (Parent (N)) /= N_Selected_Component
+                 or else N /= Selector_Name (Parent (N))
+               then
+                  Replace_Type_Reference (N);
+               end if;
+
                return Skip;
             end if;
 
@@ -12650,7 +12681,7 @@ package body Sem_Ch13 is
 
          elsif Nkind (N) = N_Selected_Component then
 
-            --  If selector name is not our type, keeping going (we might still
+            --  If selector name is not our type, keep going (we might still
             --  have an occurrence of the type in the prefix).
 
             if Nkind (Selector_Name (N)) /= N_Identifier
@@ -12781,7 +12812,14 @@ package body Sem_Ch13 is
 
             return Skip;
 
-         elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
+         --  Resolve identifiers that are not selectors in parameter
+         --  associations (these are never resolved by visibility).
+
+         elsif Nkind (N) = N_Identifier
+           and then Chars (N) /= Chars (E)
+           and then (Nkind (Parent (N)) /= N_Parameter_Association
+                      or else N /= Selector_Name (Parent (N)))
+         then
             Find_Direct_Name (N);
 
             --  In ASIS mode we must analyze overloaded identifiers to ensure
@@ -12888,6 +12926,14 @@ package body Sem_Ch13 is
                   when Aspect_Default_Value =>
                      Set_Must_Not_Freeze (Expr);
                      Preanalyze_Spec_Expression (Expr, E);
+
+                  --  Ditto for Storage_Size. Any other aspects that carry
+                  --  expressions that should not freeze ??? This is only
+                  --  relevant to the misuse of deferred constants.
+
+                  when Aspect_Storage_Size =>
+                     Set_Must_Not_Freeze (Expr);
+                     Preanalyze_Spec_Expression (Expr, Any_Integer);
 
                   when others =>
                      if Present (Expr) then
@@ -13147,16 +13193,18 @@ package body Sem_Ch13 is
            or else No (First_Formal (Entity (N)))
            or else Etype (First_Formal (Entity (N))) /= Typ
          then
-            Error_Msg_N ("iterable primitive must be local function name "
-                         & "whose first formal is an iterable type", N);
+            Error_Msg_N
+              ("iterable primitive must be local function name whose first "
+               & "formal is an iterable type", N);
             return;
          end if;
 
          Ent := Entity (N);
-         F1 := First_Formal (Ent);
-         if Nam = Name_First then
+         F1  := First_Formal (Ent);
 
-            --  First (Container) => Cursor
+         if Nam = Name_First or else Nam = Name_Last then
+
+            --  First or Last (Container) => Cursor
 
             if Etype (Ent) /= Cursor then
                Error_Msg_N ("primitive for First must yield a curosr", N);
@@ -13175,11 +13223,25 @@ package body Sem_Ch13 is
                Error_Msg_N ("no match for Next iterable primitive", N);
             end if;
 
+         elsif Nam = Name_Previous then
+
+            --  Previous (Container, Cursor) => Cursor
+
+            F2 := Next_Formal (F1);
+
+            if Etype (F2) /= Cursor
+              or else Etype (Ent) /= Cursor
+              or else Present (Next_Formal (F2))
+            then
+               Error_Msg_N ("no match for Previous iterable primitive", N);
+            end if;
+
          elsif Nam = Name_Has_Element then
 
             --  Has_Element (Container, Cursor) => Boolean
 
             F2 := Next_Formal (F1);
+
             if Etype (F2) /= Cursor
               or else Etype (Ent) /= Standard_Boolean
               or else Present (Next_Formal (F2))
@@ -13196,15 +13258,14 @@ package body Sem_Ch13 is
             then
                Error_Msg_N ("no match for Element iterable primitive", N);
             end if;
-            null;
 
          else
             raise Program_Error;
          end if;
 
       else
-         --  Overloaded case: find subprogram with proper signature.
-         --  Caller will report error if no match is found.
+         --  Overloaded case: find subprogram with proper signature. Caller
+         --  will report error if no match is found.
 
          declare
             I  : Interp_Index;
@@ -13976,6 +14037,7 @@ package body Sem_Ch13 is
       Cursor : constant Entity_Id := Get_Cursor_Type (ASN, Typ);
 
       First_Id       : Entity_Id;
+      Last_Id        : Entity_Id;
       Next_Id        : Entity_Id;
       Has_Element_Id : Entity_Id;
       Element_Id     : Entity_Id;
@@ -13988,6 +14050,7 @@ package body Sem_Ch13 is
       end if;
 
       First_Id       := Empty;
+      Last_Id        := Empty;
       Next_Id        := Empty;
       Has_Element_Id := Empty;
       Element_Id     := Empty;
@@ -14007,6 +14070,14 @@ package body Sem_Ch13 is
          elsif Chars (Prim) = Name_First then
             Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_First);
             First_Id := Entity (Expr);
+
+         elsif Chars (Prim) = Name_Last then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Last);
+            Last_Id := Entity (Expr);
+
+         elsif Chars (Prim) = Name_Previous then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Previous);
+            Last_Id := Entity (Expr);
 
          elsif Chars (Prim) = Name_Next then
             Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Next);
@@ -14036,8 +14107,8 @@ package body Sem_Ch13 is
       elsif No (Has_Element_Id) then
          Error_Msg_N ("match for Has_Element primitive not found", ASN);
 
-      elsif No (Element_Id) then
-         null;  --  Optional.
+      elsif No (Element_Id) or else No (Last_Id) then
+         null;  --  optional
       end if;
    end Validate_Iterable_Aspect;
 

@@ -1042,7 +1042,7 @@
 (define_predicate "SImode_address_operand"
   (match_code "subreg,zero_extend,and"))
 
-;; Return true if op if a valid address for LEA, and does not contain
+;; Return true if op is a valid address for LEA, and does not contain
 ;; a segment override.  Defined as a special predicate to allow
 ;; mode-less const_int operands pass to address_operand.
 (define_special_predicate "address_no_seg_operand"

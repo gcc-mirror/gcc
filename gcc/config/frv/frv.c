@@ -523,6 +523,8 @@ static bool frv_modes_tieable_p			(machine_mode, machine_mode);
 #define TARGET_HARD_REGNO_MODE_OK frv_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P frv_modes_tieable_p
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

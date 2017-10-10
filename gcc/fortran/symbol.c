@@ -5054,6 +5054,12 @@ gfc_is_associate_pointer (gfc_symbol* sym)
   if (sym->ts.type == BT_CLASS)
     return true;
 
+  if (sym->ts.type == BT_CHARACTER
+      && sym->ts.deferred
+      && sym->assoc->target
+      && sym->assoc->target->expr_type == EXPR_FUNCTION)
+    return true;
+
   if (!sym->assoc->variable)
     return false;
 

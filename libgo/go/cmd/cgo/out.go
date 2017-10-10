@@ -9,6 +9,7 @@ import (
 	"debug/elf"
 	"debug/macho"
 	"debug/pe"
+	"debug/xcoff"
 	"fmt"
 	"go/ast"
 	"go/printer"
@@ -324,7 +325,25 @@ func dynimport(obj string) {
 		return
 	}
 
-	fatalf("cannot parse %s as ELF, Mach-O or PE", obj)
+	if f, err := xcoff.Open(obj); err == nil {
+		sym, err := f.ImportedSymbols()
+		if err != nil {
+			fatalf("cannot load imported symbols from XCOFF file %s: %v", obj, err)
+		}
+		for _, s := range sym {
+			fmt.Fprintf(stdout, "//go:cgo_import_dynamic %s %s %q\n", s.Name, s.Name, s.Library)
+		}
+		lib, err := f.ImportedLibraries()
+		if err != nil {
+			fatalf("cannot load imported libraries from XCOFF file %s: %v", obj, err)
+		}
+		for _, l := range lib {
+			fmt.Fprintf(stdout, "//go:cgo_import_dynamic _ _ %q\n", l)
+		}
+		return
+	}
+
+	fatalf("cannot parse %s as ELF, Mach-O, PE or XCOFF", obj)
 }
 
 // Construct a gcc struct matching the gc argument frame.

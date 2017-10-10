@@ -175,6 +175,10 @@ package body Exp_Aggr is
    -- Local subprograms for Record Aggregate Expansion --
    ------------------------------------------------------
 
+   function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean;
+   --  True if N is an aggregate (possibly qualified or converted) that is
+   --  being returned from a build-in-place function.
+
    function Build_Record_Aggr_Code
      (N   : Node_Id;
       Typ : Entity_Id;
@@ -186,10 +190,9 @@ package body Exp_Aggr is
    --  types.
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id);
-   --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of the
-   --  aggregate (which can only be a record type, this procedure is only used
-   --  for record types). Transform the given aggregate into a sequence of
-   --  assignments performed component by component.
+   --  Transform a record aggregate into a sequence of assignments performed
+   --  component by component.  N is an N_Aggregate or N_Extension_Aggregate.
+   --  Typ is the type of the record aggregate.
 
    procedure Expand_Record_Aggregate
      (N           : Node_Id;
@@ -762,10 +765,10 @@ package body Exp_Aggr is
       --  Checks 5 (if the component type is tagged, then we may need to do
       --  tag adjustments. Perhaps this should be refined to check for any
       --  component associations that actually need tag adjustment, similar
-      --  to the test in Component_Not_OK_For_Backend for record aggregates
-      --  with tagged components, but not clear whether it's worthwhile ???;
-      --  in the case of virtual machines (no Tagged_Type_Expansion), object
-      --  tags are handled implicitly).
+      --  to the test in Component_OK_For_Backend for record aggregates with
+      --  tagged components, but not clear whether it's worthwhile ???; in the
+      --  case of virtual machines (no Tagged_Type_Expansion), object tags are
+      --  handled implicitly).
 
       if Is_Tagged_Type (Component_Type (Typ))
         and then Tagged_Type_Expansion
@@ -1347,7 +1350,7 @@ package body Exp_Aggr is
 
             In_Place_Expansion :=
               Nkind (Expr) = N_Function_Call
-                and then not Is_Limited_Type (Comp_Typ);
+                and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
             --  The initialization expression is a controlled function call.
             --  Perform in-place removal of side effects to avoid creating a
@@ -2725,7 +2728,6 @@ package body Exp_Aggr is
                           Selector_Name => New_Occurrence_Of (Discr, Loc)),
                       Expression => New_Copy_Tree (Discr_Val));
 
-                  Set_No_Ctrl_Actions (Discr_Init);
                   Append_To (List, Discr_Init);
                end if;
 
@@ -2763,7 +2765,6 @@ package body Exp_Aggr is
                 Name       => Comp_Expr,
                 Expression => New_Copy_Tree (Discriminant_Value));
 
-            Set_No_Ctrl_Actions (Instr);
             Append_To (L, Instr);
 
             Next_Discriminant (Discriminant);
@@ -2795,7 +2796,6 @@ package body Exp_Aggr is
                 Name       => Comp_Expr,
                 Expression => New_Copy_Tree (Discriminant_Value));
 
-            Set_No_Ctrl_Actions (Instr);
             Append_To (L, Instr);
 
             Next_Stored_Discriminant (Discriminant);
@@ -2834,7 +2834,7 @@ package body Exp_Aggr is
 
          In_Place_Expansion :=
            Nkind (Init_Expr) = N_Function_Call
-             and then not Is_Limited_Type (Comp_Typ);
+                and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
          --  The initialization expression is a controlled function call.
          --  Perform in-place removal of side effects to avoid creating a
@@ -2970,7 +2970,10 @@ package body Exp_Aggr is
 
          --    [Deep_]Adjust (Rec_Comp);
 
-         if Finalization_OK and then not Is_Limited_Type (Comp_Typ) then
+         if Finalization_OK
+           and then not Is_Limited_Type (Comp_Typ)
+           and then not Is_Build_In_Place_Function_Call (Init_Expr)
+         then
             Adj_Call :=
               Make_Adjust_Call
                 (Obj_Ref => New_Copy_Tree (Rec_Comp),
@@ -3232,12 +3235,8 @@ package body Exp_Aggr is
             --  Ada 2005 (AI-287): If the ancestor part is an aggregate of
             --  limited type, a recursive call expands the ancestor. Note that
             --  in the limited case, the ancestor part must be either a
-            --  function call (possibly qualified, or wrapped in an unchecked
-            --  conversion) or aggregate (definitely qualified).
-
-            --  The ancestor part can also be a function call (that may be
-            --  transformed into an explicit dereference) or a qualification
-            --  of one such.
+            --  function call (possibly qualified) or aggregate (definitely
+            --  qualified).
 
             elsif Is_Limited_Type (Etype (Ancestor))
               and then Nkind_In (Unqualify (Ancestor), N_Aggregate,
@@ -3333,6 +3332,7 @@ package body Exp_Aggr is
 
                if Needs_Finalization (Etype (Ancestor))
                  and then not Is_Limited_Type (Etype (Ancestor))
+                 and then not Is_Build_In_Place_Function_Call (Ancestor)
                then
                   Adj_Call :=
                     Make_Adjust_Call
@@ -3354,6 +3354,10 @@ package body Exp_Aggr is
                   Check_Ancestor_Discriminants (Init_Typ);
                end if;
             end if;
+
+            pragma Assert (Nkind (N) = N_Extension_Aggregate);
+            pragma Assert
+              (not (Ancestor_Is_Expression and Ancestor_Is_Subtype_Mark));
          end;
 
          --  Generate assignments of hidden discriminants. If the base type is
@@ -4076,10 +4080,7 @@ package body Exp_Aggr is
         and then Ekind (Current_Scope) /= E_Return_Statement
         and then not Is_Limited_Type (Typ)
       then
-         Establish_Transient_Scope
-           (Aggr,
-            Sec_Stack =>
-              Is_Controlled (Typ) or else Has_Controlled_Component (Typ));
+         Establish_Transient_Scope (Aggr, Sec_Stack => False);
       end if;
 
       declare
@@ -4137,6 +4138,7 @@ package body Exp_Aggr is
       Parent_Node : Node_Id;
 
    begin
+      pragma Assert (Nkind_In (N, N_Aggregate, N_Extension_Aggregate));
       pragma Assert (not Is_Static_Dispatch_Table_Aggregate (N));
       pragma Assert (Is_Record_Type (Typ));
 
@@ -4144,10 +4146,9 @@ package body Exp_Aggr is
       Parent_Kind := Nkind (Parent_Node);
 
       if Parent_Kind = N_Qualified_Expression then
-
-         --  Check if we are in a unconstrained declaration because in this
+         --  Check if we are in an unconstrained declaration because in this
          --  case the current delayed expansion mechanism doesn't work when
-         --  the declared object size depend on the initializing expr.
+         --  the declared object size depends on the initializing expr.
 
          Parent_Node := Parent (Parent_Node);
          Parent_Kind := Nkind (Parent_Node);
@@ -4155,8 +4156,10 @@ package body Exp_Aggr is
          if Parent_Kind = N_Object_Declaration then
             Unc_Decl :=
               not Is_Entity_Name (Object_Definition (Parent_Node))
-                or else Has_Discriminants
-                          (Entity (Object_Definition (Parent_Node)))
+                or else (Nkind (N) = N_Aggregate
+                          and then
+                            Has_Discriminants
+                              (Entity (Object_Definition (Parent_Node))))
                 or else Is_Class_Wide_Type
                           (Entity (Object_Definition (Parent_Node)));
          end if;
@@ -4198,11 +4201,7 @@ package body Exp_Aggr is
          --  finalization of the return object (which is built in place
          --  within the caller's scope).
 
-         or else
-           (Is_Limited_View (Typ)
-             and then
-               (Nkind (Parent (Parent_Node)) = N_Extended_Return_Statement
-                 or else Nkind (Parent_Node) = N_Simple_Return_Statement))
+         or else Is_Build_In_Place_Aggregate_Return (N)
       then
          Set_Expansion_Delayed (N);
          return;
@@ -4217,7 +4216,7 @@ package body Exp_Aggr is
       --  Should the condition be more restrictive ???
 
       if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
-         Establish_Transient_Scope (N, Sec_Stack => Needs_Finalization (Typ));
+         Establish_Transient_Scope (N, Sec_Stack => False);
       end if;
 
       --  If the aggregate is nonlimited, create a temporary. If it is limited
@@ -6114,8 +6113,7 @@ package body Exp_Aggr is
       --  for default initialization, e.g. with Initialize_Scalars.
 
       if Requires_Transient_Scope (Typ) then
-         Establish_Transient_Scope
-           (N, Sec_Stack => Has_Controlled_Component (Typ));
+         Establish_Transient_Scope (N, Sec_Stack => False);
       end if;
 
       if Has_Default_Init_Comps (N) then
@@ -6254,7 +6252,7 @@ package body Exp_Aggr is
          if Ekind (Current_Scope) = E_Loop
            and then Nkind (Parent (Parent (N))) = N_Allocator
          then
-            Establish_Transient_Scope (N, False);
+            Establish_Transient_Scope (N, Sec_Stack => False);
          end if;
 
          Insert_Action (N, Tmp_Decl);
@@ -6649,14 +6647,14 @@ package body Exp_Aggr is
 
    --  If the ancestor part is an expression, add a component association for
    --  the parent field. If the type of the ancestor part is not the direct
-   --  parent of the expected type,  build recursively the needed ancestors.
-   --  If the ancestor part is a subtype_mark, replace aggregate with a decla-
-   --  ration for a temporary of the expected type, followed by individual
-   --  assignments to the given components.
+   --  parent of the expected type, build recursively the needed ancestors.
+   --  If the ancestor part is a subtype_mark, replace aggregate with a
+   --  declaration for a temporary of the expected type, followed by
+   --  individual assignments to the given components.
 
    procedure Expand_N_Extension_Aggregate (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc  (N);
       A   : constant Node_Id    := Ancestor_Part (N);
+      Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
 
    begin
@@ -6712,7 +6710,7 @@ package body Exp_Aggr is
       Static_Components : Boolean := True;
       --  Flag to indicate whether all components are compile-time known,
       --  and the aggregate can be constructed statically and handled by
-      --  the back-end.
+      --  the back-end. Set to False by Component_OK_For_Backend.
 
       procedure Build_Back_End_Aggregate;
       --  Build a proper aggregate to be handled by the back-end
@@ -6725,7 +6723,7 @@ package body Exp_Aggr is
       --  This returns true for N_Aggregate with Compile_Time_Known_Aggregate
       --  set and constants whose expression is such an aggregate, recursively.
 
-      function Component_Not_OK_For_Backend return Boolean;
+      function Component_OK_For_Backend return Boolean;
       --  Check for presence of a component which makes it impossible for the
       --  backend to process the aggregate, thus requiring the use of a series
       --  of assignment statements. Cases checked for are a nested aggregate
@@ -6744,6 +6742,9 @@ package body Exp_Aggr is
       --  in order to minimize elaboration code. This is one case where the
       --  semantics of Ada complicate the analysis and lead to anomalies in
       --  the gcc back-end if the aggregate is not expanded into assignments.
+      --
+      --  NOTE: This sets the global Static_Components to False in most, but
+      --  not all, cases when it returns False.
 
       function Has_Per_Object_Constraint (L : List_Id) return Boolean;
       --  Return True if any element of L has Has_Per_Object_Constraint set.
@@ -7046,7 +7047,7 @@ package body Exp_Aggr is
                   --  The ancestor part may be a nested aggregate that has
                   --  delayed expansion: recheck now.
 
-                  if Component_Not_OK_For_Backend then
+                  if not Component_OK_For_Backend then
                      Convert_To_Assignments (N, Typ);
                   end if;
                end;
@@ -7113,17 +7114,17 @@ package body Exp_Aggr is
 
       end Compile_Time_Known_Composite_Value;
 
-      ----------------------------------
-      -- Component_Not_OK_For_Backend --
-      ----------------------------------
+      ------------------------------
+      -- Component_OK_For_Backend --
+      ------------------------------
 
-      function Component_Not_OK_For_Backend return Boolean is
+      function Component_OK_For_Backend return Boolean is
          C      : Node_Id;
          Expr_Q : Node_Id;
 
       begin
          if No (Comps) then
-            return False;
+            return True;
          end if;
 
          C := First (Comps);
@@ -7133,7 +7134,7 @@ package body Exp_Aggr is
             --  and component is not ready for backend.
 
             if Box_Present (C) then
-               return True;
+               return False;
             end if;
 
             if Nkind (Expression (C)) = N_Qualified_Expression then
@@ -7142,7 +7143,7 @@ package body Exp_Aggr is
                Expr_Q := Expression (C);
             end if;
 
-            --  Return true if the aggregate has any associations for tagged
+            --  Return False if the aggregate has any associations for tagged
             --  components that may require tag adjustment.
 
             --  These are cases where the source expression may have a tag that
@@ -7159,36 +7160,36 @@ package body Exp_Aggr is
               and then Tagged_Type_Expansion
             then
                Static_Components := False;
-               return True;
+               return False;
 
             elsif Is_Delayed_Aggregate (Expr_Q) then
                Static_Components := False;
-               return True;
+               return False;
 
             elsif Possible_Bit_Aligned_Component (Expr_Q) then
                Static_Components := False;
-               return True;
+               return False;
 
             elsif Modify_Tree_For_C
               and then Nkind (C) = N_Component_Association
               and then Has_Per_Object_Constraint (Choices (C))
             then
                Static_Components := False;
-               return True;
+               return False;
 
             elsif Modify_Tree_For_C
               and then Nkind (Expr_Q) = N_Identifier
               and then Is_Array_Type (Etype (Expr_Q))
             then
                Static_Components := False;
-               return True;
+               return False;
 
             elsif Modify_Tree_For_C
               and then Nkind (Expr_Q) = N_Type_Conversion
               and then Is_Array_Type (Etype (Expr_Q))
             then
                Static_Components := False;
-               return True;
+               return False;
             end if;
 
             if Is_Elementary_Type (Etype (Expr_Q)) then
@@ -7202,15 +7203,15 @@ package body Exp_Aggr is
                if Is_Private_Type (Etype (Expr_Q))
                  and then Has_Discriminants (Etype (Expr_Q))
                then
-                  return True;
+                  return False;
                end if;
             end if;
 
             Next (C);
          end loop;
 
-         return False;
-      end Component_Not_OK_For_Backend;
+         return True;
+      end Component_OK_For_Backend;
 
       -------------------------------
       -- Has_Per_Object_Constraint --
@@ -7300,7 +7301,7 @@ package body Exp_Aggr is
       --  Ada 2005 (AI-318-2): We need to convert to assignments if components
       --  are build-in-place function calls. The assignments will each turn
       --  into a build-in-place function call. If components are all static,
-      --  we can pass the aggregate to the backend regardless of limitedness.
+      --  we can pass the aggregate to the back end regardless of limitedness.
 
       --  Extension aggregates, aggregates in extended return statements, and
       --  aggregates for C++ imported types must be expanded.
@@ -7317,7 +7318,7 @@ package body Exp_Aggr is
             Convert_To_Assignments (N, Typ);
 
          elsif not Size_Known_At_Compile_Time (Typ)
-           or else Component_Not_OK_For_Backend
+           or else not Component_OK_For_Backend
            or else not Static_Components
          then
             Convert_To_Assignments (N, Typ);
@@ -7352,7 +7353,7 @@ package body Exp_Aggr is
 
       --  Check components
 
-      elsif Component_Not_OK_For_Backend then
+      elsif not Component_OK_For_Backend then
          Convert_To_Assignments (N, Typ);
 
       --  If an ancestor is private, some components are not inherited and we
@@ -7456,6 +7457,33 @@ package body Exp_Aggr is
 
       return False;
    end Has_Default_Init_Comps;
+
+   ----------------------------------------
+   -- Is_Build_In_Place_Aggregate_Return --
+   ----------------------------------------
+
+   function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean is
+      P : Node_Id := Parent (N);
+
+   begin
+      while Nkind (P) = N_Qualified_Expression loop
+         P := Parent (P);
+      end loop;
+
+      if Nkind (P) = N_Simple_Return_Statement then
+         null;
+
+      elsif Nkind (Parent (P)) = N_Extended_Return_Statement then
+         P := Parent (P);
+
+      else
+         return False;
+      end if;
+
+      return
+        Is_Build_In_Place_Function
+          (Return_Applies_To (Return_Statement_Entity (P)));
+   end Is_Build_In_Place_Aggregate_Return;
 
    --------------------------
    -- Is_Delayed_Aggregate --

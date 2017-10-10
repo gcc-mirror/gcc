@@ -4866,7 +4866,9 @@ ep_convert_and_check (location_t loc, tree type, tree expr,
   if (TREE_TYPE (expr) == type)
     return expr;
 
-  if (!semantic_type)
+  /* For C11, integer conversions may have results with excess
+     precision.  */
+  if (flag_isoc11 || !semantic_type)
     return convert_and_check (loc, type, expr);
 
   if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
@@ -4994,7 +4996,31 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code2 == INTEGER_TYPE || code2 == REAL_TYPE
 	       || code2 == COMPLEX_TYPE))
     {
-      result_type = c_common_type (type1, type2);
+      /* In C11, a conditional expression between a floating-point
+	 type and an integer type should convert the integer type to
+	 the evaluation format of the floating-point type, with
+	 possible excess precision.  */
+      tree eptype1 = type1;
+      tree eptype2 = type2;
+      if (flag_isoc11)
+	{
+	  tree eptype;
+	  if (ANY_INTEGRAL_TYPE_P (type1)
+	      && (eptype = excess_precision_type (type2)) != NULL_TREE)
+	    {
+	      eptype2 = eptype;
+	      if (!semantic_result_type)
+		semantic_result_type = c_common_type (type1, type2);
+	    }
+	  else if (ANY_INTEGRAL_TYPE_P (type2)
+		   && (eptype = excess_precision_type (type1)) != NULL_TREE)
+	    {
+	      eptype1 = eptype;
+	      if (!semantic_result_type)
+		semantic_result_type = c_common_type (type1, type2);
+	    }
+	}
+      result_type = c_common_type (eptype1, eptype2);
       if (result_type == error_mark_node)
 	return error_mark_node;
       do_warn_double_promotion (result_type, type1, type2,
@@ -5578,7 +5604,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	}
 
       /* Warn about possible alignment problems.  */
-      if (STRICT_ALIGNMENT
+      if ((STRICT_ALIGNMENT || warn_cast_align == 2)
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
@@ -5587,7 +5613,8 @@ build_c_cast (location_t loc, tree type, tree expr)
 	     restriction is unknown.  */
 	  && !(RECORD_OR_UNION_TYPE_P (TREE_TYPE (otype))
 	       && TYPE_MODE (TREE_TYPE (otype)) == VOIDmode)
-	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
+	  && min_align_of_type (TREE_TYPE (type))
+	     > min_align_of_type (TREE_TYPE (otype)))
 	warning_at (loc, OPT_Wcast_align,
 		    "cast increases required alignment of target type");
 
@@ -6153,6 +6180,50 @@ maybe_warn_string_init (location_t loc, tree type, struct c_expr expr)
 		  "array initialized from parenthesized string constant");
 }
 
+/* Attempt to locate the parameter with the given index within FNDECL,
+   returning DECL_SOURCE_LOCATION (FNDECL) if it can't be found.  */
+
+static location_t
+get_fndecl_argument_location (tree fndecl, int argnum)
+{
+  int i;
+  tree param;
+
+  /* Locate param by index within DECL_ARGUMENTS (fndecl).  */
+  for (i = 0, param = DECL_ARGUMENTS (fndecl);
+       i < argnum && param;
+       i++, param = TREE_CHAIN (param))
+    ;
+
+  /* If something went wrong (e.g. if we have a builtin and thus no arguments),
+     return DECL_SOURCE_LOCATION (FNDECL).  */
+  if (param == NULL)
+    return DECL_SOURCE_LOCATION (fndecl);
+
+  return DECL_SOURCE_LOCATION (param);
+}
+
+/* Issue a note about a mismatching argument for parameter PARMNUM
+   to FUNDECL, for types EXPECTED_TYPE and ACTUAL_TYPE.
+   Attempt to issue the note at the pertinent parameter of the decl;
+   failing that issue it at the location of FUNDECL; failing that
+   issue it at PLOC.  */
+
+static void
+inform_for_arg (tree fundecl, location_t ploc, int parmnum,
+		tree expected_type, tree actual_type)
+{
+  location_t loc;
+  if (fundecl && !DECL_IS_BUILTIN (fundecl))
+    loc = get_fndecl_argument_location (fundecl, parmnum - 1);
+  else
+    loc = ploc;
+
+  inform (loc,
+	  "expected %qT but argument is of type %qT",
+	  expected_type, actual_type);
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
    original type of RHS; this differs from TREE_TYPE (RHS) for enum
@@ -6224,10 +6295,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (PLOC, OPT, AR, parmnum, rname))			 \
-          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-		  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,		 \
-                  "expected %qT but argument is of type %qT",            \
-                  type, rhstype);                                        \
+          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS);                                     \
@@ -6253,10 +6321,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {                                                                  \
       case ic_argpass:                                                   \
         if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		 \
-          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
-		  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,		 \
-                  "expected %qT but argument is of type %qT",            \
-                  type, rhstype);                                        \
+          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS, QUALS);				 \
@@ -6282,10 +6347,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       {                                                                  \
       case ic_argpass:                                                   \
         if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))           \
-          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))                \
-                  ? DECL_SOURCE_LOCATION (fundecl) : PLOC,               \
-                  "expected %qT but argument is of type %qT",            \
-                  type, rhstype);                                        \
+          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);      \
         break;                                                           \
       case ic_assign:                                                    \
         warning_at (LOCATION, OPT, AS, QUALS);                           \
@@ -6837,10 +6899,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      if (pedwarn (expr_loc, OPT_Wincompatible_pointer_types,
 			   "passing argument %d of %qE from incompatible "
 			   "pointer type", parmnum, rname))
-		inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-			? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-			"expected %qT but argument is of type %qT",
-			type, rhstype);
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	      break;
 	    case ic_assign:
 	      pedwarn (location, OPT_Wincompatible_pointer_types,
@@ -6883,10 +6942,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    if (pedwarn (expr_loc, OPT_Wint_conversion,
 			 "passing argument %d of %qE makes pointer from "
 			 "integer without a cast", parmnum, rname))
-	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-		      "expected %qT but argument is of type %qT",
-		      type, rhstype);
+	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	    break;
 	  case ic_assign:
 	    pedwarn (location, OPT_Wint_conversion,
@@ -6917,10 +6973,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  if (pedwarn (expr_loc, OPT_Wint_conversion,
 		       "passing argument %d of %qE makes integer from "
 		       "pointer without a cast", parmnum, rname))
-	    inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-		    ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-		    "expected %qT but argument is of type %qT",
-		    type, rhstype);
+	    inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
 	  break;
 	case ic_assign:
 	  pedwarn (location, OPT_Wint_conversion,
@@ -6958,9 +7011,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     case ic_argpass:
       error_at (expr_loc, "incompatible type for argument %d of %qE", parmnum,
 		rname);
-      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-	      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-	      "expected %qT but argument is of type %qT", type, rhstype);
+      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
       break;
     case ic_assign:
       error_at (location, "incompatible types when assigning to type %qT from "

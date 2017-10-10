@@ -1207,35 +1207,28 @@ data_ref_compare_tree (tree t1, tree t2)
   if (t2 == NULL)
     return 1;
 
-  STRIP_NOPS (t1);
-  STRIP_NOPS (t2);
+  STRIP_USELESS_TYPE_CONVERSION (t1);
+  STRIP_USELESS_TYPE_CONVERSION (t2);
+  if (t1 == t2)
+    return 0;
 
-  if (TREE_CODE (t1) != TREE_CODE (t2))
+  if (TREE_CODE (t1) != TREE_CODE (t2)
+      && ! (CONVERT_EXPR_P (t1) && CONVERT_EXPR_P (t2)))
     return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
 
   code = TREE_CODE (t1);
   switch (code)
     {
-    /* For const values, we can just use hash values for comparisons.  */
     case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
+      return tree_int_cst_compare (t1, t2);
+
     case STRING_CST:
-    case COMPLEX_CST:
-    case VECTOR_CST:
-      {
-	hashval_t h1 = iterative_hash_expr (t1, 0);
-	hashval_t h2 = iterative_hash_expr (t2, 0);
-	if (h1 != h2)
-	  return h1 < h2 ? -1 : 1;
-	break;
-      }
+      if (TREE_STRING_LENGTH (t1) != TREE_STRING_LENGTH (t2))
+	return TREE_STRING_LENGTH (t1) < TREE_STRING_LENGTH (t2) ? -1 : 1;
+      return memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+		     TREE_STRING_LENGTH (t1));
 
     case SSA_NAME:
-      cmp = data_ref_compare_tree (SSA_NAME_VAR (t1), SSA_NAME_VAR (t2));
-      if (cmp != 0)
-	return cmp;
-
       if (SSA_NAME_VERSION (t1) != SSA_NAME_VERSION (t2))
 	return SSA_NAME_VERSION (t1) < SSA_NAME_VERSION (t2) ? -1 : 1;
       break;
@@ -1243,22 +1236,26 @@ data_ref_compare_tree (tree t1, tree t2)
     default:
       tclass = TREE_CODE_CLASS (code);
 
-      /* For var-decl, we could compare their UIDs.  */
+      /* For decls, compare their UIDs.  */
       if (tclass == tcc_declaration)
 	{
 	  if (DECL_UID (t1) != DECL_UID (t2))
 	    return DECL_UID (t1) < DECL_UID (t2) ? -1 : 1;
 	  break;
 	}
-
-      /* For expressions with operands, compare their operands recursively.  */
-      for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
+      /* For expressions, compare their operands recursively.  */
+      else if (IS_EXPR_CODE_CLASS (tclass))
 	{
-	  cmp = data_ref_compare_tree (TREE_OPERAND (t1, i),
-				       TREE_OPERAND (t2, i));
-	  if (cmp != 0)
-	    return cmp;
+	  for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
+	    {
+	      cmp = data_ref_compare_tree (TREE_OPERAND (t1, i),
+					   TREE_OPERAND (t2, i));
+	      if (cmp != 0)
+		return cmp;
+	    }
 	}
+      else
+	gcc_unreachable ();
     }
 
   return 0;
@@ -4944,17 +4941,6 @@ loop_nest_has_data_refs (loop_p loop)
 	}
     }
   free (bbs);
-
-  if (loop->inner)
-    {
-      loop = loop->inner;
-      while (loop)
-	{
-	  if (loop_nest_has_data_refs (loop))
-	    return true;
-	  loop = loop->next;
-	}
-    }
   return false;
 }
 

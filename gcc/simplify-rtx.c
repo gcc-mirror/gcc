@@ -2665,7 +2665,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  HOST_WIDE_INT c1 = INTVAL (XEXP (op0, 1));
 	  HOST_WIDE_INT c2 = INTVAL (trueop1);
 
-	  /* If (C1&C2) == C1, then (X&C1)|C2 becomes X.  */
+	  /* If (C1&C2) == C1, then (X&C1)|C2 becomes C2.  */
 	  if ((c1 & c2) == c1
 	      && !side_effects_p (XEXP (op0, 0)))
 	    return trueop1;
@@ -2673,14 +2673,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
 	  if (((c1|c2) & mask) == mask)
 	    return simplify_gen_binary (IOR, mode, XEXP (op0, 0), op1);
-
-	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2.  */
-	  if (((c1 & ~c2) & mask) != (c1 & mask))
-	    {
-	      tem = simplify_gen_binary (AND, mode, XEXP (op0, 0),
-					 gen_int_mode (c1 & ~c2, mode));
-	      return simplify_gen_binary (IOR, mode, tem, op1);
-	    }
 	}
 
       /* Convert (A & B) | A to A.  */
@@ -2735,23 +2727,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      == GET_MODE_PRECISION (int_mode)))
 	return gen_rtx_ROTATE (int_mode, XEXP (opright, 0),
 			       XEXP (SUBREG_REG (opleft), 1));
-
-      /* If we have (ior (and (X C1) C2)), simplify this by making
-	 C1 as small as possible if C1 actually changes.  */
-      if (CONST_INT_P (op1)
-	  && (HWI_COMPUTABLE_MODE_P (mode)
-	      || INTVAL (op1) > 0)
-	  && GET_CODE (op0) == AND
-	  && CONST_INT_P (XEXP (op0, 1))
-	  && CONST_INT_P (op1)
-	  && (UINTVAL (XEXP (op0, 1)) & UINTVAL (op1)) != 0)
-	{
-	  rtx tmp = simplify_gen_binary (AND, mode, XEXP (op0, 0),
-					 gen_int_mode (UINTVAL (XEXP (op0, 1))
-						       & ~UINTVAL (op1),
-						       mode));
-	  return simplify_gen_binary (IOR, mode, tmp, op1);
-	}
 
       /* If OP0 is (ashiftrt (plus ...) C), it might actually be
          a (sign_extend (plus ...)).  Then check if OP1 is a CONST_INT and

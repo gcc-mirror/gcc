@@ -49,8 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Result, typename _Arg>
     struct __hash_base
     {
-      typedef _Result     result_type;
-      typedef _Arg      argument_type;
+      typedef _Result     result_type _GLIBCXX17_DEPRECATED;
+      typedef _Arg      argument_type _GLIBCXX17_DEPRECATED;
     };
 
   /// Primary class template hash.

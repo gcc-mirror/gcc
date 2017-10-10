@@ -159,18 +159,18 @@ enum nds32_16bit_address_type
 /* This macro is used to return the register number for passing argument.
    We need to obey the following rules:
      1. If it is required MORE THAN one register,
-        we need to further check if it really needs to be
-        aligned on double words.
-          a) If double word alignment is necessary,
-             the register number must be even value.
-          b) Otherwise, the register number can be odd or even value.
+	we need to further check if it really needs to be
+	aligned on double words.
+	  a) If double word alignment is necessary,
+	     the register number must be even value.
+	  b) Otherwise, the register number can be odd or even value.
      2. If it is required ONLY one register,
-        the register number can be odd or even value.  */
-#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type)  \
-  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                     \
-   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)          \
-      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)      \
-      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))                \
+	the register number can be odd or even value.  */
+#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type) \
+  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                    \
+   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)         \
+      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)     \
+      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))               \
    : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))
 
 /* This macro is to check if there are still available registers
@@ -761,13 +761,13 @@ enum reg_class
    The trampoline code for nds32 target must contains following parts:
 
      1. instructions (4 * 4 = 16 bytes):
-          get $pc first
-          load chain_value to static chain register via $pc
-          load nested function address to $r15 via $pc
-          jump to desired nested function via $r15
+	  get $pc first
+	  load chain_value to static chain register via $pc
+	  load nested function address to $r15 via $pc
+	  jump to desired nested function via $r15
      2. data (4 * 2 = 8 bytes):
-          chain_value
-          nested function address
+	  chain_value
+	  nested function address
 
    Please check nds32.c implementation for more information.  */
 #define TRAMPOLINE_SIZE 24
@@ -906,10 +906,10 @@ enum reg_class
   do                                                   \
     {                                                  \
       /* Because our jump table is in text section,    \
-         we need to make sure 2-byte alignment after   \
-         the jump table for instructions fetch.  */    \
+	 we need to make sure 2-byte alignment after   \
+	 the jump table for instructions fetch.  */    \
       if (GET_MODE (PATTERN (table)) == QImode)        \
-        ASM_OUTPUT_ALIGN (stream, 1);                  \
+	ASM_OUTPUT_ALIGN (stream, 1);                  \
       asm_fprintf (stream, "\t! Jump Table End\n");    \
     }  while (0)
 

@@ -2991,11 +2991,20 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
           else if (where)
-	    gfc_warning (OPT_Wargument_mismatch,
-			 "Actual argument contains too few "
-			 "elements for dummy argument %qs (%lu/%lu) at %L",
-			 f->sym->name, actual_size, formal_size,
-			 &a->expr->where);
+	    {
+	      /* Emit a warning for -std=legacy and an error otherwise. */
+	      if (gfc_option.warn_std == 0)
+	        gfc_warning (OPT_Wargument_mismatch,
+			     "Actual argument contains too few "
+			     "elements for dummy argument %qs (%lu/%lu) "
+			     "at %L", f->sym->name, actual_size,
+			     formal_size, &a->expr->where);
+	      else
+	        gfc_error_now ("Actual argument contains too few "
+			       "elements for dummy argument %qs (%lu/%lu) "
+			       "at %L", f->sym->name, actual_size,
+			       formal_size, &a->expr->where);
+	    }
 	  return false;
 	}
 

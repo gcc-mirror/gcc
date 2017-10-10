@@ -52,7 +52,6 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch11; use Sem_Ch11;
-with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -3841,6 +3840,12 @@ package body Exp_Ch9 is
          Set_Original_Protected_Subprogram (New_Id, Def_Id);
       end if;
 
+      --  Link the protected or unprotected version to the original subprogram
+      --  it emulates.
+
+      Set_Ekind (New_Id, Ekind (Def_Id));
+      Set_Protected_Subprogram (New_Id, Def_Id);
+
       --  The unprotected operation carries the user code, and debugging
       --  information must be generated for it, even though this spec does
       --  not come from source. It is also convenient to allow gdb to step
@@ -4751,11 +4756,39 @@ package body Exp_Ch9 is
    --------------------------------
 
    procedure Build_Task_Activation_Call (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
+      function Activation_Call_Loc return Source_Ptr;
+      --  Find a suitable source location for the activation call
+
+      -------------------------
+      -- Activation_Call_Loc --
+      -------------------------
+
+      function Activation_Call_Loc return Source_Ptr is
+      begin
+         --  The activation call must carry the location of the "end" keyword
+         --  when the context is a package declaration.
+
+         if Nkind (N) = N_Package_Declaration then
+            return End_Keyword_Location (N);
+
+         --  Otherwise the activation call must carry the location of the
+         --  "begin" keyword.
+
+         else
+            return Begin_Keyword_Location (N);
+         end if;
+      end Activation_Call_Loc;
+
+      --  Local variables
+
       Chain : Entity_Id;
       Call  : Node_Id;
+      Loc   : Source_Ptr;
       Name  : Node_Id;
-      P     : Node_Id;
+      Owner : Node_Id;
+      Stmt  : Node_Id;
+
+   --  Start of processing for Build_Task_Activation_Call
 
    begin
       --  For sequential elaboration policy, all the tasks will be activated at
@@ -4763,105 +4796,107 @@ package body Exp_Ch9 is
 
       if Partition_Elaboration_Policy = 'S' then
          return;
+
+      --  Do not create an activation call for a package spec if the package
+      --  has a completing body. The activation call will be inserted after
+      --  the "begin" of the body.
+
+      elsif Nkind (N) = N_Package_Declaration
+        and then Present (Corresponding_Body (N))
+      then
+         return;
       end if;
 
-      --  Get the activation chain entity. Except in the case of a package
-      --  body, this is in the node that was passed. For a package body, we
-      --  have to find the corresponding package declaration node.
+      --  Obtain the activation chain entity. Block statements, entry bodies,
+      --  subprogram bodies, and task bodies keep the entity in their nodes.
+      --  Package bodies on the other hand store it in the declaration of the
+      --  corresponding package spec.
 
-      if Nkind (N) = N_Package_Body then
-         P := Corresponding_Spec (N);
-         loop
-            P := Parent (P);
-            exit when Nkind (P) = N_Package_Declaration;
-         end loop;
+      Owner := N;
 
-         Chain := Activation_Chain_Entity (P);
+      if Nkind (Owner) = N_Package_Body then
+         Owner := Unit_Declaration_Node (Corresponding_Spec (Owner));
+      end if;
+
+      Chain := Activation_Chain_Entity (Owner);
+
+      --  Nothing to do when there are no tasks to activate. This is indicated
+      --  by a missing activation chain entity.
+
+      if No (Chain) then
+         return;
+      end if;
+
+      --  The location of the activation call must be as close as possible to
+      --  the intended semantic location of the activation because the ABE
+      --  mechanism relies heavily on accurate locations.
+
+      Loc := Activation_Call_Loc;
+
+      if Restricted_Profile then
+         Name := New_Occurrence_Of (RTE (RE_Activate_Restricted_Tasks), Loc);
+      else
+         Name := New_Occurrence_Of (RTE (RE_Activate_Tasks), Loc);
+      end if;
+
+      Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => Name,
+          Parameter_Associations =>
+            New_List (Make_Attribute_Reference (Loc,
+              Prefix         => New_Occurrence_Of (Chain, Loc),
+              Attribute_Name => Name_Unchecked_Access)));
+
+      if Nkind (N) = N_Package_Declaration then
+         if Present (Private_Declarations (Specification (N))) then
+            Append (Call, Private_Declarations (Specification (N)));
+         else
+            Append (Call, Visible_Declarations (Specification (N)));
+         end if;
 
       else
-         Chain := Activation_Chain_Entity (N);
-      end if;
+         --  The call goes at the start of the statement sequence after the
+         --  start of exception range label if one is present.
 
-      if Present (Chain) then
-         if Restricted_Profile then
-            Name := New_Occurrence_Of
-                      (RTE (RE_Activate_Restricted_Tasks), Loc);
-         else
-            Name := New_Occurrence_Of
-                      (RTE (RE_Activate_Tasks), Loc);
-         end if;
+         if Present (Handled_Statement_Sequence (N)) then
+            Stmt := First (Statements (Handled_Statement_Sequence (N)));
 
-         Call :=
-           Make_Procedure_Call_Statement (Loc,
-             Name                   => Name,
-             Parameter_Associations =>
-               New_List (Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Chain, Loc),
-                 Attribute_Name => Name_Unchecked_Access)));
+            --  A special case, skip exception range label if one is present
+            --  (from front end zcx processing).
 
-         if Nkind (N) = N_Package_Declaration then
-            if Present (Corresponding_Body (N)) then
-               null;
-
-            elsif Present (Private_Declarations (Specification (N))) then
-               Append (Call, Private_Declarations (Specification (N)));
-
-            else
-               Append (Call, Visible_Declarations (Specification (N)));
+            if Nkind (Stmt) = N_Label and then Exception_Junk (Stmt) then
+               Next (Stmt);
             end if;
 
-         else
-            if Present (Handled_Statement_Sequence (N)) then
+            --  Another special case, if the first statement is a block from
+            --  optimization of a local raise to a goto, then the call goes
+            --  inside this block.
 
-               --  The call goes at the start of the statement sequence after
-               --  the start of exception range label if one is present.
-
-               declare
-                  Stm : Node_Id;
-
-               begin
-                  Stm := First (Statements (Handled_Statement_Sequence (N)));
-
-                  --  A special case, skip exception range label if one is
-                  --  present (from front end zcx processing).
-
-                  if Nkind (Stm) = N_Label and then Exception_Junk (Stm) then
-                     Next (Stm);
-                  end if;
-
-                  --  Another special case, if the first statement is a block
-                  --  from optimization of a local raise to a goto, then the
-                  --  call goes inside this block.
-
-                  if Nkind (Stm) = N_Block_Statement
-                    and then Exception_Junk (Stm)
-                  then
-                     Stm :=
-                       First (Statements (Handled_Statement_Sequence (Stm)));
-                  end if;
-
-                  --  Insertion point is after any exception label pushes,
-                  --  since we want it covered by any local handlers.
-
-                  while Nkind (Stm) in N_Push_xxx_Label loop
-                     Next (Stm);
-                  end loop;
-
-                  --  Now we have the proper insertion point
-
-                  Insert_Before (Stm, Call);
-               end;
-
-            else
-               Set_Handled_Statement_Sequence (N,
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Call)));
+            if Nkind (Stmt) = N_Block_Statement
+              and then Exception_Junk (Stmt)
+            then
+               Stmt := First (Statements (Handled_Statement_Sequence (Stmt)));
             end if;
-         end if;
 
-         Analyze (Call);
-         Check_Task_Activation (N);
+            --  Insertion point is after any exception label pushes, since we
+            --  want it covered by any local handlers.
+
+            while Nkind (Stmt) in N_Push_xxx_Label loop
+               Next (Stmt);
+            end loop;
+
+            --  Now we have the proper insertion point
+
+            Insert_Before (Stmt, Call);
+
+         else
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => New_List (Call)));
+         end if;
       end if;
+
+      Analyze (Call);
    end Build_Task_Activation_Call;
 
    -------------------------------
@@ -6000,11 +6035,22 @@ package body Exp_Ch9 is
 
       begin
          --  Check if the name is a component of the protected object. If
-         --  the expander is active, the component has been transformed into
-         --  a renaming of _object.all.component.
+         --  the expander is active, the component has been transformed into a
+         --  renaming of _object.all.component. Original_Node is needed in case
+         --  validity checking is enabled, in which case the simple object
+         --  reference will have been rewritten.
 
          if Expander_Active then
-            Renamed := Renamed_Object (Entity (N));
+
+            --  The expanded name may have been constant folded in which case
+            --  the original node is not necessarily an entity name (e.g. an
+            --  indexed component).
+
+            if not Is_Entity_Name (Original_Node (N)) then
+               return False;
+            end if;
+
+            Renamed := Renamed_Object (Entity (Original_Node (N)));
 
             return
               Present (Renamed)
@@ -10516,6 +10562,11 @@ package body Exp_Ch9 is
             PB_Ent :=
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
+
+            --  Link the acceptor to the original receiving entry
+
+            Set_Ekind           (PB_Ent, E_Procedure);
+            Set_Receiving_Entry (PB_Ent, Eent);
 
             if Comes_From_Source (Alt) then
                Set_Debug_Info_Needed (PB_Ent);

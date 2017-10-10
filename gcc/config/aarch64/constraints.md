@@ -190,6 +190,20 @@
   (and (match_code "const_double")
        (match_test "aarch64_can_const_movi_rtx_p (op, GET_MODE (op))")))
 
+(define_constraint "Do"
+  "@internal
+   A constraint that matches vector of immediates for orr."
+ (and (match_code "const_vector")
+      (match_test "aarch64_simd_valid_immediate (op, mode, false,
+						 NULL, AARCH64_CHECK_ORR)")))
+
+(define_constraint "Db"
+  "@internal
+   A constraint that matches vector of immediates for bic."
+ (and (match_code "const_vector")
+      (match_test "aarch64_simd_valid_immediate (op, mode, false,
+						 NULL, AARCH64_CHECK_BIC)")))
+
 (define_constraint "Dn"
   "@internal
  A constraint that matches vector of immediates."

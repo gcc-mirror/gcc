@@ -3851,6 +3851,14 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  }
     }
 
+  /* Error for assignments of contiguous pointers to targets which is not
+     contiguous.  Be lenient in the definition of what counts as
+     congiguous.  */
+
+  if (lhs_attr.contiguous && !gfc_is_simply_contiguous (rvalue, false, true))
+    gfc_error ("Assignment to contiguous pointer from non-contiguous "
+	       "target at %L", &rvalue->where);
+
   /* Warn if it is the LHS pointer may lives longer than the RHS target.  */
   if (warn_target_lifetime
       && rvalue->expr_type == EXPR_VARIABLE
@@ -4568,7 +4576,11 @@ gfc_get_full_arrayspec_from_expr (gfc_expr *expr)
   if (expr->expr_type == EXPR_VARIABLE
       || expr->expr_type == EXPR_CONSTANT)
     {
-      as = expr->symtree->n.sym->as;
+      if (expr->symtree)
+	as = expr->symtree->n.sym->as;
+      else
+	as = NULL;
+
       for (ref = expr->ref; ref; ref = ref->next)
 	{
 	  switch (ref->type)

@@ -12080,16 +12080,17 @@ mips_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    mips_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					 size - STACK_CHECK_PROTECT);
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    mips_emit_probe_stack_range (get_stack_check_protect (),
+					 size - get_stack_check_protect ());
 	}
       else if (size > 0)
-	mips_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	mips_emit_probe_stack_range (get_stack_check_protect (), size);
     }
 
   /* Save the registers.  Allocate up to MIPS_MAX_FIRST_STACK_STEP
@@ -21469,8 +21470,7 @@ mips_sched_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
 
 static bool
-mips_vectorize_vec_perm_const_ok (machine_mode vmode,
-				  const unsigned char *sel)
+mips_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
@@ -21479,12 +21479,12 @@ mips_vectorize_vec_perm_const_ok (machine_mode vmode,
   d.vmode = vmode;
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
-  memcpy (d.perm, sel, nelt);
 
   /* Categorize the set of elements in the selector.  */
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned char e = sel[i];
+      d.perm[i] = e;
       gcc_assert (e < 2 * nelt);
       which |= (e < nelt ? 1 : 2);
     }
@@ -22336,6 +22336,16 @@ mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 {
   return !TARGET_64BIT || inprec <= 32 || outprec > 32;
 }
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22633,6 +22643,9 @@ mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 
 #undef TARGET_TRULY_NOOP_TRUNCATION
 #define TARGET_TRULY_NOOP_TRUNCATION mips_truly_noop_truncation
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT mips_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

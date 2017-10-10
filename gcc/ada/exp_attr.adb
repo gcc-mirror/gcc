@@ -1753,23 +1753,16 @@ package body Exp_Attr is
 
       --  Ada 2005 (AI-318-02): If attribute prefix is a call to a build-in-
       --  place function, then a temporary return object needs to be created
-      --  and access to it must be passed to the function. Currently we limit
-      --  such functions to those with inherently limited result subtypes, but
-      --  eventually we plan to expand the functions that are treated as
-      --  build-in-place to include other composite result types.
+      --  and access to it must be passed to the function.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Pref)
-      then
+      if Is_Build_In_Place_Function_Call (Pref) then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (Pref))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (Pref)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Pref);
       end if;
 
@@ -6519,7 +6512,9 @@ package body Exp_Attr is
          begin
             --  The prefix of attribute 'Valid should always denote an object
             --  reference. The reference is either coming directly from source
-            --  or is produced by validity check expansion.
+            --  or is produced by validity check expansion. The object may be
+            --  wrapped in a conversion in which case the call to Unqual_Conv
+            --  will yield it.
 
             --  If the prefix denotes a variable which captures the value of
             --  an object for validation purposes, use the variable in the
@@ -6530,7 +6525,7 @@ package body Exp_Attr is
             --    if not Temp in ... then
 
             if Is_Validation_Variable_Reference (Pref) then
-               Temp := New_Occurrence_Of (Entity (Pref), Loc);
+               Temp := New_Occurrence_Of (Entity (Unqual_Conv (Pref)), Loc);
 
             --  Otherwise the prefix is either a source object or a constant
             --  produced by validity check expansion. Generate:

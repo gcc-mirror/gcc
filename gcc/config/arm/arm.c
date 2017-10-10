@@ -287,8 +287,7 @@ static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
 static int arm_cortex_m7_branch_cost (bool, bool);
 
-static bool arm_vectorize_vec_perm_const_ok (machine_mode vmode,
-					     const unsigned char *sel);
+static bool arm_vectorize_vec_perm_const_ok (machine_mode, vec_perm_indices);
 
 static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 
@@ -317,6 +316,7 @@ static opt_scalar_float_mode arm_floatn_mode (int, bool);
 static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -796,6 +796,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS arm_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -3367,22 +3370,22 @@ arm_option_override (void)
 
   /* Initialize boolean versions of the architectural flags, for use
      in the arm.md file.  */
-  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv3m);
-  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv4);
+  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
+  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
   arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5);
-  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5e);
+  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5);
+  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5e);
   arm_arch5te = arm_arch5e
     && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6);
-  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6k);
+  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6);
+  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6k);
   arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
   arm_arch6m = arm_arch6 && !arm_arch_notm;
-  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv7);
-  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv7em);
-  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8);
-  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8_1);
-  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8_2);
+  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7);
+  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7em);
+  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8);
+  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_1);
+  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_2);
   arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
   arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
@@ -3412,9 +3415,9 @@ arm_option_override (void)
 
   /* And finally, set up some quirks.  */
   arm_arch_no_volatile_ce
-    = bitmap_bit_p (arm_active_target.isa, isa_quirk_no_volatile_ce);
-  arm_arch6kz
-    = arm_arch6k && bitmap_bit_p (arm_active_target.isa, isa_quirk_ARMv6kz);
+    = bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_volatile_ce);
+  arm_arch6kz = arm_arch6k && bitmap_bit_p (arm_active_target.isa,
+					    isa_bit_quirk_armv6kz);
 
   /* V5 code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */
@@ -3459,7 +3462,7 @@ arm_option_override (void)
       else if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
-	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv2))
+	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2))
 	    error ("-mfloat-abi=hard: selected processor lacks an FPU");
 	}
       else
@@ -3562,7 +3565,7 @@ arm_option_override (void)
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
     {
-      if (bitmap_bit_p (arm_active_target.isa, isa_quirk_cm3_ldrd))
+      if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_cm3_ldrd))
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;
@@ -3665,6 +3668,11 @@ arm_option_override (void)
 
   if (use_cmse && !arm_arch_cmse)
     error ("target CPU does not support ARMv8-M Security Extensions");
+
+  /* We don't clear D16-D31 VFP registers for cmse_nonsecure_call functions
+     and ARMv8-M Baseline and Mainline do not allow such configuration.  */
+  if (use_cmse && LAST_VFP_REGNUM > LAST_LO_VFP_REGNUM)
+    error ("ARMv8-M Security Extensions incompatible with selected FPU");
 
   /* Disable scheduling fusion by default if it's not armv7 processor
      or doesn't prefer ldrd/strd.  */
@@ -19164,7 +19172,8 @@ arm_compute_static_chain_stack_bytes (void)
   /* See the defining assertion in arm_expand_prologue.  */
   if (IS_NESTED (arm_current_func_type ())
       && ((TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
-	  || (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	       || flag_stack_clash_protection)
 	      && !df_regs_ever_live_p (LR_REGNUM)))
       && arm_r3_live_at_start_p ()
       && crtl->args.pretend_args_size == 0)
@@ -21466,7 +21475,8 @@ arm_expand_prologue (void)
      clobbered when creating the frame, we need to save and restore it.  */
   clobber_ip = IS_NESTED (func_type)
 	       && ((TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
-		   || (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+		   || ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+			|| flag_stack_clash_protection)
 		       && !df_regs_ever_live_p (LR_REGNUM)
 		       && arm_r3_live_at_start_p ()));
 
@@ -21680,7 +21690,8 @@ arm_expand_prologue (void)
      stack checking.  We use IP as the first scratch register, except for the
      non-APCS nested functions if LR or r3 are available (see clobber_ip).  */
   if (!IS_INTERRUPT (func_type)
-      && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || flag_stack_clash_protection))
     {
       unsigned int regno;
 
@@ -21693,13 +21704,13 @@ arm_expand_prologue (void)
 
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    arm_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					size - STACK_CHECK_PROTECT,
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    arm_emit_probe_stack_range (get_stack_check_protect (),
+					size - get_stack_check_protect (),
 					regno, live_regs_mask);
 	}
       else if (size > 0)
-	arm_emit_probe_stack_range (STACK_CHECK_PROTECT, size,
+	arm_emit_probe_stack_range (get_stack_check_protect (), size,
 				    regno, live_regs_mask);
     }
 
@@ -24991,7 +25002,9 @@ thumb1_expand_prologue (void)
     current_function_static_stack_size = size;
 
   /* If we have a frame, then do stack checking.  FIXME: not implemented.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && size)
+  if ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+       || flag_stack_clash_protection)
+      && size)
     sorry ("-fstack-check=specific for Thumb-1");
 
   amount = offsets->outgoing_args - offsets->saved_regs;
@@ -25067,42 +25080,37 @@ thumb1_expand_prologue (void)
 void
 cmse_nonsecure_entry_clear_before_return (void)
 {
-  uint64_t to_clear_mask[2];
+  int regno, maxregno = TARGET_HARD_FLOAT ? LAST_VFP_REGNUM : IP_REGNUM;
   uint32_t padding_bits_to_clear = 0;
   uint32_t * padding_bits_to_clear_ptr = &padding_bits_to_clear;
-  int regno, maxregno = IP_REGNUM;
+  auto_sbitmap to_clear_bitmap (maxregno + 1);
   tree result_type;
   rtx result_rtl;
 
-  to_clear_mask[0] = (1ULL << (NUM_ARG_REGS)) - 1;
-  to_clear_mask[0] |= (1ULL << IP_REGNUM);
+  bitmap_clear (to_clear_bitmap);
+  bitmap_set_range (to_clear_bitmap, R0_REGNUM, NUM_ARG_REGS);
+  bitmap_set_bit (to_clear_bitmap, IP_REGNUM);
 
   /* If we are not dealing with -mfloat-abi=soft we will need to clear VFP
-     registers.  We also check that TARGET_HARD_FLOAT and !TARGET_THUMB1 hold
-     to make sure the instructions used to clear them are present.  */
-  if (TARGET_HARD_FLOAT && !TARGET_THUMB1)
+     registers.  */
+  if (TARGET_HARD_FLOAT)
     {
-      uint64_t float_mask = (1ULL << (D7_VFP_REGNUM + 1)) - 1;
-      maxregno = LAST_VFP_REGNUM;
+      int float_bits = D7_VFP_REGNUM - FIRST_VFP_REGNUM + 1;
 
-      float_mask &= ~((1ULL << FIRST_VFP_REGNUM) - 1);
-      to_clear_mask[0] |= float_mask;
-
-      float_mask = (1ULL << (maxregno - 63)) - 1;
-      to_clear_mask[1] = float_mask;
+      bitmap_set_range (to_clear_bitmap, FIRST_VFP_REGNUM, float_bits);
 
       /* Make sure we don't clear the two scratch registers used to clear the
 	 relevant FPSCR bits in output_return_instruction.  */
       emit_use (gen_rtx_REG (SImode, IP_REGNUM));
-      to_clear_mask[0] &= ~(1ULL << IP_REGNUM);
+      bitmap_clear_bit (to_clear_bitmap, IP_REGNUM);
       emit_use (gen_rtx_REG (SImode, 4));
-      to_clear_mask[0] &= ~(1ULL << 4);
+      bitmap_clear_bit (to_clear_bitmap, 4);
     }
 
   /* If the user has defined registers to be caller saved, these are no longer
      restored by the function before returning and must thus be cleared for
      security purposes.  */
-  for (regno = NUM_ARG_REGS; regno < LAST_VFP_REGNUM; regno++)
+  for (regno = NUM_ARG_REGS; regno <= maxregno; regno++)
     {
       /* We do not touch registers that can be used to pass arguments as per
 	 the AAPCS, since these should never be made callee-saved by user
@@ -25112,29 +25120,45 @@ cmse_nonsecure_entry_clear_before_return (void)
       if (IN_RANGE (regno, IP_REGNUM, PC_REGNUM))
 	continue;
       if (call_used_regs[regno])
-	to_clear_mask[regno / 64] |= (1ULL << (regno % 64));
+	bitmap_set_bit (to_clear_bitmap, regno);
     }
 
   /* Make sure we do not clear the registers used to return the result in.  */
   result_type = TREE_TYPE (DECL_RESULT (current_function_decl));
   if (!VOID_TYPE_P (result_type))
     {
+      uint64_t to_clear_return_mask;
       result_rtl = arm_function_value (result_type, current_function_decl, 0);
 
       /* No need to check that we return in registers, because we don't
 	 support returning on stack yet.  */
-      to_clear_mask[0]
-	&= ~compute_not_to_clear_mask (result_type, result_rtl, 0,
-				       padding_bits_to_clear_ptr);
+      gcc_assert (REG_P (result_rtl));
+      to_clear_return_mask
+	= compute_not_to_clear_mask (result_type, result_rtl, 0,
+				     padding_bits_to_clear_ptr);
+      if (to_clear_return_mask)
+	{
+	  gcc_assert ((unsigned) maxregno < sizeof (long long) * __CHAR_BIT__);
+	  for (regno = R0_REGNUM; regno <= maxregno; regno++)
+	    {
+	      if (to_clear_return_mask & (1ULL << regno))
+		bitmap_clear_bit (to_clear_bitmap, regno);
+	    }
+	}
     }
 
   if (padding_bits_to_clear != 0)
     {
       rtx reg_rtx;
+      auto_sbitmap to_clear_arg_regs_bitmap (R0_REGNUM + NUM_ARG_REGS);
+
       /* Padding bits to clear is not 0 so we know we are dealing with
 	 returning a composite type, which only uses r0.  Let's make sure that
 	 r1-r3 is cleared too, we will use r1 as a scratch register.  */
-      gcc_assert ((to_clear_mask[0] & 0xe) == 0xe);
+      bitmap_clear (to_clear_arg_regs_bitmap);
+      bitmap_set_range (to_clear_arg_regs_bitmap, R0_REGNUM + 1,
+			NUM_ARG_REGS - 1);
+      gcc_assert (bitmap_subset_p (to_clear_arg_regs_bitmap, to_clear_bitmap));
 
       reg_rtx = gen_rtx_REG (SImode, R1_REGNUM);
 
@@ -25156,7 +25180,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 
   for (regno = R0_REGNUM; regno <= maxregno; regno++)
     {
-      if (!(to_clear_mask[regno / 64] & (1ULL << (regno % 64))))
+      if (!bitmap_bit_p (to_clear_bitmap, regno))
 	continue;
 
       if (IS_VFP_REGNUM (regno))
@@ -25165,7 +25189,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 	     be cleared, use vmov.  */
 	  if (TARGET_VFP_DOUBLE
 	      && VFP_REGNO_OK_FOR_DOUBLE (regno)
-	      && to_clear_mask[regno / 64] & (1ULL << ((regno % 64) + 1)))
+	      && bitmap_bit_p (to_clear_bitmap, regno + 1))
 	    {
 	      emit_move_insn (gen_rtx_REG (DFmode, regno),
 			      CONST1_RTX (DFmode));
@@ -26835,7 +26859,7 @@ arm_set_return_address (rtx source, rtx scratch)
 {
   arm_stack_offsets *offsets;
   HOST_WIDE_INT delta;
-  rtx addr;
+  rtx addr, mem;
   unsigned long saved_regs;
 
   offsets = arm_get_frame_offsets ();
@@ -26865,11 +26889,12 @@ arm_set_return_address (rtx source, rtx scratch)
 
 	  addr = plus_constant (Pmode, addr, delta);
 	}
-      /* The store needs to be marked as frame related in order to prevent
-	 DSE from deleting it as dead if it is based on fp.  */
-      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
+
+      /* The store needs to be marked to prevent DSE from deleting
+	 it as dead if it is based on fp.  */
+      mem = gen_frame_mem (Pmode, addr);
+      MEM_VOLATILE_P (mem) = true;
+      emit_move_insn (mem, source);
     }
 }
 
@@ -26881,7 +26906,7 @@ thumb_set_return_address (rtx source, rtx scratch)
   HOST_WIDE_INT delta;
   HOST_WIDE_INT limit;
   int reg;
-  rtx addr;
+  rtx addr, mem;
   unsigned long mask;
 
   emit_use (source);
@@ -26921,11 +26946,11 @@ thumb_set_return_address (rtx source, rtx scratch)
       else
 	addr = plus_constant (Pmode, addr, delta);
 
-      /* The store needs to be marked as frame related in order to prevent
-	 DSE from deleting it as dead if it is based on fp.  */
-      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
+      /* The store needs to be marked to prevent DSE from deleting
+	 it as dead if it is based on fp.  */
+      mem = gen_frame_mem (Pmode, addr);
+      MEM_VOLATILE_P (mem) = true;
+      emit_move_insn (mem, source);
     }
   else
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);
@@ -27871,7 +27896,8 @@ arm_frame_pointer_required (void)
      instruction prior to the stack adjustment and this requires a frame
      pointer if we want to catch the exception using the EABI unwinder.  */
   if (!IS_INTERRUPT (arm_current_func_type ())
-      && flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || flag_stack_clash_protection)
       && arm_except_unwind_info (&global_options) == UI_TARGET
       && cfun->can_throw_non_call_exceptions)
     {
@@ -27886,7 +27912,7 @@ arm_frame_pointer_required (void)
 	{
 	  /* We don't have the final size of the frame so adjust.  */
 	  size += 32 * UNITS_PER_WORD;
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
 	    return true;
 	}
       else
@@ -28651,9 +28677,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 struct expand_vec_perm_d
 {
   rtx target, op0, op1;
-  unsigned char perm[MAX_VECT_LEN];
+  auto_vec_perm_indices perm;
   machine_mode vmode;
-  unsigned char nelt;
   bool one_vector_p;
   bool testing_p;
 };
@@ -28760,7 +28785,7 @@ neon_pair_endian_lane_map (machine_mode mode, int lane)
 static bool
 arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
   rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
@@ -28772,7 +28797,7 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
   /* arm_expand_vec_perm_const_1 () helpfully swaps the operands for the
      big endian pattern on 64 bit vectors, so we correct for that.  */
   swap_nelt = BYTES_BIG_ENDIAN && !d->one_vector_p
-    && GET_MODE_SIZE (d->vmode) == 8 ? d->nelt : 0;
+    && GET_MODE_SIZE (d->vmode) == 8 ? nelt : 0;
 
   first_elem = d->perm[neon_endian_lane_map (d->vmode, 0)] ^ swap_nelt;
 
@@ -28831,7 +28856,7 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 {
-  unsigned int i, high, mask, nelt = d->nelt;
+  unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
   rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
@@ -28906,7 +28931,7 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, nelt = d->nelt;
+  unsigned int i, j, diff, nelt = d->perm.length ();
   rtx (*gen)(rtx, rtx);
 
   if (!d->one_vector_p)
@@ -28982,7 +29007,7 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
   rtx (*gen)(rtx, rtx, rtx, rtx);
 
@@ -29048,7 +29073,7 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 {
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
   rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
@@ -29122,7 +29147,7 @@ arm_evpc_neon_vtbl (struct expand_vec_perm_d *d)
 {
   rtx rperm[MAX_VECT_LEN], sel;
   machine_mode vmode = d->vmode;
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
 
   /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
      numbering of elements for big-endian, we must reverse the order.  */
@@ -29159,11 +29184,10 @@ arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
-  if (d->perm[0] >= d->nelt)
+  unsigned int nelt = d->perm.length ();
+  if (d->perm[0] >= nelt)
     {
-      unsigned i, nelt = d->nelt;
-
-      for (i = 0; i < nelt; ++i)
+      for (unsigned int i = 0; i < nelt; ++i)
 	d->perm[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
 
       std::swap (d->op0, d->op1);
@@ -29198,15 +29222,16 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 
   d.vmode = GET_MODE (target);
   gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = false;
 
+  nelt = GET_MODE_NUNITS (d.vmode);
+  d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
       int ei = INTVAL (e) & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
-      d.perm[i] = ei;
+      d.perm.quick_push (ei);
     }
 
   switch (which)
@@ -29243,22 +29268,21 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
 
 static bool
-arm_vectorize_vec_perm_const_ok (machine_mode vmode,
-				 const unsigned char *sel)
+arm_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
   bool ret;
 
   d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
-  memcpy (d.perm, sel, nelt);
+  d.perm.safe_splice (sel);
 
   /* Categorize the set of elements in the selector.  */
+  nelt = GET_MODE_NUNITS (d.vmode);
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned int e = d.perm[i];
       gcc_assert (e < 2 * nelt);
       which |= (e < nelt ? 1 : 2);
     }
@@ -31273,6 +31297,18 @@ arm_can_change_mode_class (machine_mode from, machine_mode to,
   return true;
 }
 
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Make strings word-aligned so
+   strcpy from constants will be faster.  */
+
+static HOST_WIDE_INT
+arm_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  unsigned int factor = (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2);
+  if (TREE_CODE (exp) == STRING_CST && !optimize_size)
+    return MAX (align, BITS_PER_WORD * factor);
+  return align;
+}
+
 #if CHECKING_P
 namespace selftest {
 
@@ -31358,10 +31394,43 @@ arm_test_cpu_arch_data (void)
     }
 }
 
+/* Scan the static data tables generated by parsecpu.awk looking for
+   potential issues with the data.  Here we check for consistency between the
+   fpu bits, in particular we check that ISA_ALL_FPU_INTERNAL does not contain
+   a feature bit that is not defined by any FPU flag.  */
+static void
+arm_test_fpu_data (void)
+{
+  auto_sbitmap isa_all_fpubits (isa_num_bits);
+  auto_sbitmap fpubits (isa_num_bits);
+  auto_sbitmap tmpset (isa_num_bits);
+
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+  arm_initialize_isa (isa_all_fpubits, fpu_bitlist);
+
+  for (unsigned int i = 0; i < TARGET_FPU_auto; i++)
+  {
+    arm_initialize_isa (fpubits, all_fpus[i].isa_bits);
+    bitmap_and_compl (tmpset, isa_all_fpubits, fpubits);
+    bitmap_clear (isa_all_fpubits);
+    bitmap_copy (isa_all_fpubits, tmpset);
+  }
+
+  if (!bitmap_empty_p (isa_all_fpubits))
+    {
+	fprintf (stderr, "Error: found feature bits in the ALL_FPU_INTERAL"
+			 " group that are not defined by any FPU.\n"
+			 "       Check your arm-cpus.in.\n");
+	ASSERT_TRUE (bitmap_empty_p (isa_all_fpubits));
+    }
+}
+
 static void
 arm_run_selftests (void)
 {
   arm_test_cpu_arch_data ();
+  arm_test_fpu_data ();
 }
 } /* Namespace selftest.  */
 

@@ -1005,32 +1005,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Hash.
 
-  template<typename _Tp, bool
-           = __poison_hash<remove_const_t<_Tp>>::__enable_hash_call>
+  template<typename _Tp, typename _Up = remove_const_t<_Tp>,
+           bool = __poison_hash<_Up>::__enable_hash_call>
     struct __optional_hash_call_base
     {
       size_t
       operator()(const optional<_Tp>& __t) const
-      noexcept(noexcept(hash<_Tp> {}(*__t)))
+      noexcept(noexcept(hash<_Up>{}(*__t)))
       {
         // We pick an arbitrary hash for disengaged optionals which hopefully
         // usual values of _Tp won't typically hash to.
         constexpr size_t __magic_disengaged_hash = static_cast<size_t>(-3333);
-        return __t ? hash<_Tp> {}(*__t) : __magic_disengaged_hash;
+        return __t ? hash<_Up>{}(*__t) : __magic_disengaged_hash;
       }
     };
 
-  template<typename _Tp>
-    struct __optional_hash_call_base<_Tp, false> {};
+  template<typename _Tp, typename _Up>
+    struct __optional_hash_call_base<_Tp, _Up, false> {};
 
   template<typename _Tp>
     struct hash<optional<_Tp>>
     : private __poison_hash<remove_const_t<_Tp>>,
       public __optional_hash_call_base<_Tp>
     {
-      using result_type = size_t;
-      using argument_type = optional<_Tp>;
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = optional<_Tp>;
     };
+
+  template<typename _Tp>
+    struct __is_fast_hash<hash<optional<_Tp>>> : __is_fast_hash<hash<_Tp>>
+    { };
 
   /// @}
 

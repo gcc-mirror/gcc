@@ -1769,7 +1769,7 @@ zero_nonzero_bits_from_vr (const tree expr_type,
 	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
 				    may_be_nonzero->get_precision ());
 	  *may_be_nonzero = *may_be_nonzero | mask;
-	  *must_be_nonzero = must_be_nonzero->and_not (mask);
+	  *must_be_nonzero = wi::bit_and_not (*must_be_nonzero, mask);
 	}
     }
 
@@ -1851,8 +1851,7 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 	      || code == ROUND_DIV_EXPR
 	      || code == RSHIFT_EXPR
 	      || code == LSHIFT_EXPR);
-  gcc_assert ((vr0->type == VR_RANGE
-	       || (code == MULT_EXPR && vr0->type == VR_ANTI_RANGE))
+  gcc_assert (vr0->type == VR_RANGE
 	      && vr0->type == vr1->type);
 
   rtype = vr0->type;
@@ -2462,9 +2461,14 @@ extract_range_from_binary_expr_1 (value_range *vr,
       signop sign = TYPE_SIGN (expr_type);
       unsigned int prec = TYPE_PRECISION (expr_type);
 
-      if (range_int_cst_p (&vr0)
-	  && range_int_cst_p (&vr1)
-	  && TYPE_OVERFLOW_WRAPS (expr_type))
+      if (!range_int_cst_p (&vr0)
+	  || !range_int_cst_p (&vr1))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
+      if (TYPE_OVERFLOW_WRAPS (expr_type))
 	{
 	  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) vrp_int;
 	  typedef generic_wide_int
@@ -2930,9 +2934,11 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		= wi::set_bit_in_zero (TYPE_PRECISION (expr_type) - 1,
 				       TYPE_PRECISION (expr_type));
 	      if (!TYPE_UNSIGNED (expr_type)
-		  && ((value_range_constant_singleton (&vr0)
+		  && ((int_cst_range0
+		       && value_range_constant_singleton (&vr0)
 		       && !wi::cmps (vr0.min, sign_bit))
-		      || (value_range_constant_singleton (&vr1)
+		      || (int_cst_range1
+			  && value_range_constant_singleton (&vr1)
 			  && !wi::cmps (vr1.min, sign_bit))))
 		{
 		  min = TYPE_MIN_VALUE (expr_type);
@@ -2969,8 +2975,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  wide_int result_zero_bits = ((must_be_nonzero0 & must_be_nonzero1)
 				       | ~(may_be_nonzero0 | may_be_nonzero1));
 	  wide_int result_one_bits
-	    = (must_be_nonzero0.and_not (may_be_nonzero1)
-	       | must_be_nonzero1.and_not (may_be_nonzero0));
+	    = (wi::bit_and_not (must_be_nonzero0, may_be_nonzero1)
+	       | wi::bit_and_not (must_be_nonzero1, may_be_nonzero0));
 	  max = wide_int_to_tree (expr_type, ~result_zero_bits);
 	  min = wide_int_to_tree (expr_type, result_one_bits);
 	  /* If the range has all positive or all negative values the
@@ -4518,7 +4524,12 @@ build_assert_expr_for (tree cond, tree v)
      operand of the ASSERT_EXPR.  Create it so the new name and the old one
      are registered in the replacement table so that we can fix the SSA web
      after adding all the ASSERT_EXPRs.  */
-  create_new_def_for (v, assertion, NULL);
+  tree new_def = create_new_def_for (v, assertion, NULL);
+  /* Make sure we preserve abnormalness throughout an ASSERT_EXPR chain
+     given we have to be able to fully propagate those out to re-create
+     valid SSA when removing the asserts.  */
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (v))
+    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_def) = 1;
 
   return assertion;
 }
@@ -4866,7 +4877,7 @@ masked_increment (const wide_int &val_in, const wide_int &mask,
       if ((res & bit) == 0)
 	continue;
       res = bit - 1;
-      res = (val + bit).and_not (res);
+      res = wi::bit_and_not (val + bit, res);
       res &= mask;
       if (wi::gtu_p (res, val))
 	return res ^ sgnbit;
@@ -9527,13 +9538,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   switch (gimple_assign_rhs_code (stmt))
     {
     case BIT_AND_EXPR:
-      mask = may_be_nonzero0.and_not (must_be_nonzero1);
+      mask = wi::bit_and_not (may_be_nonzero0, must_be_nonzero1);
       if (mask == 0)
 	{
 	  op = op0;
 	  break;
 	}
-      mask = may_be_nonzero1.and_not (must_be_nonzero0);
+      mask = wi::bit_and_not (may_be_nonzero1, must_be_nonzero0);
       if (mask == 0)
 	{
 	  op = op1;
@@ -9541,13 +9552,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 	}
       break;
     case BIT_IOR_EXPR:
-      mask = may_be_nonzero0.and_not (must_be_nonzero1);
+      mask = wi::bit_and_not (may_be_nonzero0, must_be_nonzero1);
       if (mask == 0)
 	{
 	  op = op1;
 	  break;
 	}
-      mask = may_be_nonzero1.and_not (must_be_nonzero0);
+      mask = wi::bit_and_not (may_be_nonzero1, must_be_nonzero0);
       if (mask == 0)
 	{
 	  op = op0;

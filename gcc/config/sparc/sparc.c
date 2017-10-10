@@ -684,6 +684,7 @@ static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sparc_modes_tieable_p (machine_mode, machine_mode);
 static bool sparc_can_change_mode_class (machine_mode, machine_mode,
 					 reg_class_t);
+static HOST_WIDE_INT sparc_constant_alignment (const_tree, HOST_WIDE_INT);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -924,6 +925,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS sparc_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT sparc_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5734,16 +5738,17 @@ sparc_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    sparc_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					  size - STACK_CHECK_PROTECT);
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    sparc_emit_probe_stack_range (get_stack_check_protect (),
+					  size - get_stack_check_protect ());
 	}
       else if (size > 0)
-	sparc_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	sparc_emit_probe_stack_range (get_stack_check_protect (), size);
     }
 
   if (size == 0)
@@ -5845,16 +5850,17 @@ sparc_flat_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    sparc_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					  size - STACK_CHECK_PROTECT);
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    sparc_emit_probe_stack_range (get_stack_check_protect (),
+					  size - get_stack_check_protect ());
 	}
       else if (size > 0)
-	sparc_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	sparc_emit_probe_stack_range (get_stack_check_protect (), size);
     }
 
   if (sparc_save_local_in_regs_p)
@@ -13425,6 +13431,16 @@ sparc_can_change_mode_class (machine_mode from, machine_mode to,
       && GET_MODE_SIZE (to) != 4)
     return !reg_classes_intersect_p (rclass, FP_REGS);
   return true;
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+sparc_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, FASTEST_ALIGNMENT);
+  return align;
 }
 
 #include "gt-sparc.h"

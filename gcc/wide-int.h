@@ -262,10 +262,21 @@ along with GCC; see the file COPYING3.  If not see
 #define WI_BINARY_RESULT(T1, T2) \
   typename wi::binary_traits <T1, T2>::result_type
 
+/* Likewise for binary operators, which excludes the case in which neither
+   T1 nor T2 is a wide-int-based type.  */
+#define WI_BINARY_OPERATOR_RESULT(T1, T2) \
+  typename wi::binary_traits <T1, T2>::operator_result
+
 /* The type of result produced by T1 << T2.  Leads to substitution failure
    if the operation isn't supported.  Defined purely for brevity.  */
 #define WI_SIGNED_SHIFT_RESULT(T1, T2) \
   typename wi::binary_traits <T1, T2>::signed_shift_result_type
+
+/* The type of result produced by a sign-agnostic binary predicate on
+   types T1 and T2.  This is bool if wide-int operations make sense for
+   T1 and T2 and leads to substitution failure otherwise.  */
+#define WI_BINARY_PREDICATE_RESULT(T1, T2) \
+  typename wi::binary_traits <T1, T2>::predicate_result
 
 /* The type of result produced by a signed binary predicate on types T1 and T2.
    This is bool if signed comparisons make sense for T1 and T2 and leads to
@@ -382,12 +393,15 @@ namespace wi
   struct binary_traits <T1, T2, FLEXIBLE_PRECISION, FLEXIBLE_PRECISION>
   {
     typedef widest_int result_type;
+    /* Don't define operators for this combination.  */
   };
 
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, FLEXIBLE_PRECISION, VAR_PRECISION>
   {
     typedef wide_int result_type;
+    typedef result_type operator_result;
+    typedef bool predicate_result;
   };
 
   template <typename T1, typename T2>
@@ -397,6 +411,8 @@ namespace wi
        so as not to confuse gengtype.  */
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T2>::precision> > result_type;
+    typedef result_type operator_result;
+    typedef bool predicate_result;
     typedef bool signed_predicate_result;
   };
 
@@ -404,6 +420,8 @@ namespace wi
   struct binary_traits <T1, T2, VAR_PRECISION, FLEXIBLE_PRECISION>
   {
     typedef wide_int result_type;
+    typedef result_type operator_result;
+    typedef bool predicate_result;
   };
 
   template <typename T1, typename T2>
@@ -413,6 +431,8 @@ namespace wi
        so as not to confuse gengtype.  */
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T1>::precision> > result_type;
+    typedef result_type operator_result;
+    typedef bool predicate_result;
     typedef result_type signed_shift_result_type;
     typedef bool signed_predicate_result;
   };
@@ -420,11 +440,13 @@ namespace wi
   template <typename T1, typename T2>
   struct binary_traits <T1, T2, CONST_PRECISION, CONST_PRECISION>
   {
+    STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
     /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
        so as not to confuse gengtype.  */
-    STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
     typedef generic_wide_int < fixed_wide_int_storage
 			       <int_traits <T1>::precision> > result_type;
+    typedef result_type operator_result;
+    typedef bool predicate_result;
     typedef result_type signed_shift_result_type;
     typedef bool signed_predicate_result;
   };
@@ -433,6 +455,8 @@ namespace wi
   struct binary_traits <T1, T2, VAR_PRECISION, VAR_PRECISION>
   {
     typedef wide_int result_type;
+    typedef result_type operator_result;
+    typedef bool predicate_result;
   };
 }
 
@@ -675,18 +699,6 @@ public:
   template <typename T>
   generic_wide_int &operator = (const T &);
 
-#define BINARY_PREDICATE(OP, F) \
-  template <typename T> \
-  bool OP (const T &c) const { return wi::F (*this, c); }
-
-#define UNARY_OPERATOR(OP, F) \
-  WI_UNARY_RESULT (generic_wide_int) OP () const { return wi::F (*this); }
-
-#define BINARY_OPERATOR(OP, F) \
-  template <typename T> \
-    WI_BINARY_RESULT (generic_wide_int, T) \
-    OP (const T &c) const { return wi::F (*this, c); }
-
 #define ASSIGNMENT_OPERATOR(OP, F) \
   template <typename T> \
     generic_wide_int &OP (const T &c) { return (*this = wi::F (*this, c)); }
@@ -699,18 +711,6 @@ public:
 #define INCDEC_OPERATOR(OP, DELTA) \
   generic_wide_int &OP () { *this += DELTA; return *this; }
 
-  UNARY_OPERATOR (operator ~, bit_not)
-  UNARY_OPERATOR (operator -, neg)
-  BINARY_PREDICATE (operator ==, eq_p)
-  BINARY_PREDICATE (operator !=, ne_p)
-  BINARY_OPERATOR (operator &, bit_and)
-  BINARY_OPERATOR (and_not, bit_and_not)
-  BINARY_OPERATOR (operator |, bit_or)
-  BINARY_OPERATOR (or_not, bit_or_not)
-  BINARY_OPERATOR (operator ^, bit_xor)
-  BINARY_OPERATOR (operator +, add)
-  BINARY_OPERATOR (operator -, sub)
-  BINARY_OPERATOR (operator *, mul)
   ASSIGNMENT_OPERATOR (operator &=, bit_and)
   ASSIGNMENT_OPERATOR (operator |=, bit_or)
   ASSIGNMENT_OPERATOR (operator ^=, bit_xor)
@@ -722,9 +722,6 @@ public:
   INCDEC_OPERATOR (operator ++, 1)
   INCDEC_OPERATOR (operator --, -1)
 
-#undef BINARY_PREDICATE
-#undef UNARY_OPERATOR
-#undef BINARY_OPERATOR
 #undef SHIFT_ASSIGNMENT_OPERATOR
 #undef ASSIGNMENT_OPERATOR
 #undef INCDEC_OPERATOR
@@ -3122,6 +3119,45 @@ SIGNED_BINARY_PREDICATE (operator >, gts_p)
 SIGNED_BINARY_PREDICATE (operator >=, ges_p)
 
 #undef SIGNED_BINARY_PREDICATE
+
+#define UNARY_OPERATOR(OP, F) \
+  template<typename T> \
+  WI_UNARY_RESULT (generic_wide_int<T>) \
+  OP (const generic_wide_int<T> &x) \
+  { \
+    return wi::F (x); \
+  }
+
+#define BINARY_PREDICATE(OP, F) \
+  template<typename T1, typename T2> \
+  WI_BINARY_PREDICATE_RESULT (T1, T2) \
+  OP (const T1 &x, const T2 &y) \
+  { \
+    return wi::F (x, y); \
+  }
+
+#define BINARY_OPERATOR(OP, F) \
+  template<typename T1, typename T2> \
+  WI_BINARY_OPERATOR_RESULT (T1, T2) \
+  OP (const T1 &x, const T2 &y) \
+  { \
+    return wi::F (x, y); \
+  }
+
+UNARY_OPERATOR (operator ~, bit_not)
+UNARY_OPERATOR (operator -, neg)
+BINARY_PREDICATE (operator ==, eq_p)
+BINARY_PREDICATE (operator !=, ne_p)
+BINARY_OPERATOR (operator &, bit_and)
+BINARY_OPERATOR (operator |, bit_or)
+BINARY_OPERATOR (operator ^, bit_xor)
+BINARY_OPERATOR (operator +, add)
+BINARY_OPERATOR (operator -, sub)
+BINARY_OPERATOR (operator *, mul)
+
+#undef UNARY_OPERATOR
+#undef BINARY_PREDICATE
+#undef BINARY_OPERATOR
 
 template <typename T1, typename T2>
 inline WI_SIGNED_SHIFT_RESULT (T1, T2)

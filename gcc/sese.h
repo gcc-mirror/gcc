@@ -83,6 +83,12 @@ typedef struct sese_info_t
   /* The SESE region.  */
   sese_l region;
 
+  /* Liveout vars.  */
+  bitmap liveout;
+
+  /* Liveout in debug stmts.  */
+  bitmap debug_liveout;
+
   /* Parameters used within the SCOP.  */
   vec<tree> params;
 
@@ -93,9 +99,6 @@ typedef struct sese_info_t
 
   /* Parameters to be renamed.  */
   parameter_rename_map_t *parameter_rename_map;
-
-  /* Loops completely contained in this SESE.  */
-  vec<loop_p> loop_nest;
 
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
@@ -119,6 +122,8 @@ extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern bool scev_analyzable_p (tree, sese_l &);
 extern bool invariant_in_sese_p_rec (tree, const sese_l &, bool *);
+extern void sese_build_liveouts (sese_info_p);
+extern bool sese_trivially_empty_bb_p (basic_block);
 
 /* The number of parameters in REGION. */
 
@@ -233,7 +238,6 @@ typedef struct ifsese_s {
   sese_info_p false_region;
 } *ifsese;
 
-extern void if_region_set_false_region (ifsese, sese_info_p);
 extern ifsese move_sese_in_condition (sese_info_p);
 extern void set_ifsese_condition (ifsese, tree);
 extern edge get_true_edge_from_guard_bb (basic_block);
@@ -329,8 +333,6 @@ gbb_loop_at_index (gimple_poly_bb_p gbb, sese_l &region, int index)
 
   while (--depth > index)
     loop = loop_outer (loop);
-
-  gcc_assert (loop_in_sese_p (loop, region));
 
   return loop;
 }

@@ -662,7 +662,7 @@ struct GTY(()) cgraph_thunk_info {
      * for this-adjusting thunks, after the FIXED_OFFSET based adjustment is
        done, add to the result the offset found in the vtable at:
 	 vptr + VIRTUAL_VALUE
-     * for result-adjusting thinks, the FIXED_OFFSET adjustment is done after
+     * for result-adjusting thunks, the FIXED_OFFSET adjustment is done after
        the virtual one.  */
   bool virtual_offset_p;
 
@@ -1272,7 +1272,7 @@ public:
 
   /* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
      DECL is a duplicate declaration.  */
-  static void delete_function_version (tree decl);
+  static void delete_function_version_by_decl (tree decl);
 
   /* Add the function FNDECL to the call graph.
      Unlike finalize_function, this function is intended to be used

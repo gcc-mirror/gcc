@@ -892,7 +892,11 @@ cleanup_tree_cfg_noloop (void)
   changed |= cleanup_tree_cfg_1 ();
 
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
-  compact_blocks ();
+
+  /* Do not renumber blocks if the SCEV cache is active, it is indexed by
+     basic-block numbers.  */
+  if (! scev_initialized_p ())
+    compact_blocks ();
 
   checking_verify_flow_info ();
 

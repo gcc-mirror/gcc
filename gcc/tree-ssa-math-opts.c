@@ -2138,7 +2138,7 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
       if (wi::neg_p (bit_offset))
 	{
 	  offset_int mask = wi::mask <offset_int> (LOG2_BITS_PER_UNIT, false);
-	  offset_int tem = bit_offset.and_not (mask);
+	  offset_int tem = wi::bit_and_not (bit_offset, mask);
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;

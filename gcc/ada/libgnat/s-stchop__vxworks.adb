@@ -103,8 +103,6 @@ package body System.Stack_Checking.Operations is
    --------------------------------------
 
    procedure Set_Stack_Limit_For_Current_Task is
-      use Interfaces.C;
-
       type OS_Stack_Info is record
          Size  : Interfaces.C.int;
          Base  : System.Address;

@@ -226,6 +226,20 @@ package body Sem_Ch6 is
 
       Generate_Definition (Subp_Id);
 
+      --  Set the SPARK mode from the current context (may be overwritten later
+      --  with explicit pragma).
+
+      Set_SPARK_Pragma           (Subp_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Subp_Id);
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => Subp_Id,
+         Checks => True);
+
       Set_Is_Abstract_Subprogram (Subp_Id);
       New_Overloaded_Entity (Subp_Id);
       Check_Delayed_Subprogram (Subp_Id);
@@ -568,8 +582,11 @@ package body Sem_Ch6 is
          --  Note that we cannot defer this freezing to the analysis of the
          --  expression itself, because a freeze node might appear in a nested
          --  scope, leading to an elaboration order issue in gigi.
+         --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
-         Freeze_Expr_Types (Def_Id);
+         if not Inside_A_Generic then
+            Freeze_Expr_Types (Def_Id);
+         end if;
 
          --  For navigation purposes, indicate that the function is a body
 
@@ -751,8 +768,8 @@ package body Sem_Ch6 is
         and then Is_Tagged_Type (Etype (Def_Id))
       then
          Check_Dynamically_Tagged_Expression
-           (Expr => Expr,
-            Typ  => Etype (Def_Id),
+           (Expr        => Expr,
+            Typ         => Etype (Def_Id),
             Related_Nod => Original_Node (N));
       end if;
 
@@ -1465,7 +1482,7 @@ package body Sem_Ch6 is
 
          Set_Actual_Subtypes (N, Current_Scope);
 
-         Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma           (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id);
 
          --  Analyze any aspect specifications that appear on the generic
@@ -1498,6 +1515,7 @@ package body Sem_Ch6 is
       end;
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -1765,13 +1783,12 @@ package body Sem_Ch6 is
 
       if Analyzed (N) then
          return;
-      end if;
 
       --  If there is an error analyzing the name (which may have been
       --  rewritten if the original call was in prefix notation) then error
       --  has been emitted already, mark node and return.
 
-      if Error_Posted (N) or else Etype (Name (N)) = Any_Type then
+      elsif Error_Posted (N) or else Etype (Name (N)) = Any_Type then
          Set_Etype (N, Any_Type);
          return;
       end if;
@@ -1845,9 +1862,9 @@ package body Sem_Ch6 is
 
          New_N :=
            Make_Indexed_Component (Loc,
-             Prefix =>
+             Prefix      =>
                Make_Selected_Component (Loc,
-                 Prefix => New_Occurrence_Of (Scope (Entity (P)), Loc),
+                 Prefix        => New_Occurrence_Of (Scope (Entity (P)), Loc),
                  Selector_Name => New_Occurrence_Of (Entity (P), Loc)),
              Expressions => Actuals);
          Set_Name (N, New_N);
@@ -1953,7 +1970,8 @@ package body Sem_Ch6 is
       then
          New_N :=
            Make_Selected_Component (Loc,
-             Prefix => New_Occurrence_Of (Scope (Entity (Prefix (P))), Loc),
+             Prefix        =>
+               New_Occurrence_Of (Scope (Entity (Prefix (P))), Loc),
              Selector_Name => New_Occurrence_Of (Entity (Prefix (P)), Loc));
          Rewrite (Prefix (P), New_N);
          Analyze (P);
@@ -2882,6 +2900,11 @@ package body Sem_Ch6 is
                                New_Copy_Tree (Specification (N)));
 
                begin
+                  --  Link the body and the generated spec
+
+                  Set_Corresponding_Body (Decl, Body_Id);
+                  Set_Corresponding_Spec (N, Subp);
+
                   Set_Defining_Unit_Name (Specification (Decl), Subp);
 
                   --  To ensure proper coverage when body is inlined, indicate
@@ -3233,8 +3256,8 @@ package body Sem_Ch6 is
          --------------------
 
          function Mask_Type_Refs (Node : Node_Id) return Traverse_Result is
-
             procedure Mask_Type (Typ : Entity_Id);
+            --  ??? what does this do?
 
             ---------------
             -- Mask_Type --
@@ -3256,6 +3279,8 @@ package body Sem_Ch6 is
                end if;
             end Mask_Type;
 
+         --  Start of processing for Mask_Type_Refs
+
          begin
             if Is_Entity_Name (Node) and then Present (Entity (Node)) then
                Mask_Type (Etype (Entity (Node)));
@@ -3275,8 +3300,13 @@ package body Sem_Ch6 is
 
          procedure Mask_References is new Traverse_Proc (Mask_Type_Refs);
 
+         --  Local variables
+
          Return_Stmt : constant Node_Id :=
                          First (Statements (Handled_Statement_Sequence (N)));
+
+      --  Start of processing for Mask_Unfrozen_Types
+
       begin
          pragma Assert (Nkind (Return_Stmt) = N_Simple_Return_Statement);
 
@@ -3710,9 +3740,9 @@ package body Sem_Ch6 is
 
          if not Is_Frozen (Spec_Id)
            and then (Expander_Active
-                       or else ASIS_Mode
-                       or else (Operating_Mode = Check_Semantics
-                                  and then Serious_Errors_Detected = 0))
+                      or else ASIS_Mode
+                      or else (Operating_Mode = Check_Semantics
+                                and then Serious_Errors_Detected = 0))
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
@@ -4010,7 +4040,7 @@ package body Sem_Ch6 is
       --  between the spec and body.
 
       elsif No (SPARK_Pragma (Body_Id)) then
-         Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma           (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id);
       end if;
 
@@ -4345,6 +4375,7 @@ package body Sem_Ch6 is
       --  Deal with end of scope processing for the body
 
       Process_End_Label (HSS, 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  If we are compiling an entry wrapper, remove the enclosing
@@ -4454,12 +4485,11 @@ package body Sem_Ch6 is
          Stm : Node_Id;
 
       begin
-         --  Skip initial labels (for one thing this occurs when we are in
-         --  front-end ZCX mode, but in any case it is irrelevant), and also
-         --  initial Push_xxx_Error_Label nodes, which are also irrelevant.
+         --  Skip call markers installed by the ABE mechanism, labels, and
+         --  Push_xxx_Error_Label to find the first real statement.
 
          Stm := First (Statements (HSS));
-         while Nkind (Stm) = N_Label
+         while Nkind_In (Stm, N_Call_Marker, N_Label)
            or else Nkind (Stm) in N_Push_xxx_Label
          loop
             Next (Stm);
@@ -4640,8 +4670,9 @@ package body Sem_Ch6 is
         and then Is_Entry_Barrier_Function (N)
       then
          null;
+
       else
-         Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma           (Designator, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Designator);
       end if;
 
@@ -4653,6 +4684,14 @@ package body Sem_Ch6 is
       if Ignore_SPARK_Mode_Pragmas_In_Instance then
          Set_Ignore_SPARK_Mode_Pragmas (Designator);
       end if;
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => Designator,
+         Checks => True);
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");
@@ -7985,7 +8024,7 @@ package body Sem_Ch6 is
       --  Ada 2005 (AI-318-02): In the case of build-in-place functions, add
       --  appropriate extra formals. See type Exp_Ch6.BIP_Formal_Kind.
 
-      if Ada_Version >= Ada_2005 and then Is_Build_In_Place_Function (E) then
+      if Is_Build_In_Place_Function (E) then
          declare
             Result_Subt : constant Entity_Id := Etype (E);
             Full_Subt   : constant Entity_Id := Available_View (Result_Subt);

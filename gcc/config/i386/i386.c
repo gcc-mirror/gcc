@@ -177,6 +177,7 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   ix86_size_memcpy,
   ix86_size_memset,
   1,					/* scalar_stmt_cost.  */
@@ -253,6 +254,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (22),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (24),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (122),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i386_memcpy,
   i386_memset,
   1,					/* scalar_stmt_cost.  */
@@ -330,6 +332,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (83),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i486_memcpy,
   i486_memset,
   1,					/* scalar_stmt_cost.  */
@@ -405,6 +408,7 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
   1,					/* scalar_stmt_cost.  */
@@ -473,6 +477,7 @@ struct processor_costs lakemont_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
   1,					/* scalar_stmt_cost.  */
@@ -556,6 +561,7 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentiumpro_memcpy,
   pentiumpro_memset,
   1,					/* scalar_stmt_cost.  */
@@ -631,6 +637,7 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   geode_memcpy,
   geode_memset,
   1,					/* scalar_stmt_cost.  */
@@ -708,6 +715,7 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k6_memcpy,
   k6_memset,
   1,					/* scalar_stmt_cost.  */
@@ -785,6 +793,7 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   athlon_memcpy,
   athlon_memset,
   1,					/* scalar_stmt_cost.  */
@@ -871,7 +880,7 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k8_memcpy,
   k8_memset,
   4,					/* scalar_stmt_cost.  */
@@ -965,7 +974,7 @@ struct processor_costs amdfam10_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   amdfam10_memcpy,
   amdfam10_memset,
   4,					/* scalar_stmt_cost.  */
@@ -1060,7 +1069,7 @@ const struct processor_costs bdver1_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver1_memcpy,
   bdver1_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1156,7 +1165,7 @@ const struct processor_costs bdver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver2_memcpy,
   bdver2_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1243,7 +1252,7 @@ struct processor_costs bdver3_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver3_memcpy,
   bdver3_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1329,7 +1338,7 @@ struct processor_costs bdver4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver4_memcpy,
   bdver4_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1412,14 +1421,22 @@ struct processor_costs znver1_cost = {
      to limit number of prefetches at all, as their execution also takes some
      time).  */
   100,					/* number of parallel prefetches.  */
-  2,					/* Branch cost.  */
+  3,					/* Branch cost.  */
   COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+  /* Zen can execute 4 integer operations per cycle. FP operations take 3 cycles
+     and it can execute 2 integer additions and 2 multiplications thus
+     reassociation may make sense up to with of 6.  SPEC2k6 bencharks suggests
+     that 4 works better than 6 probably due to register pressure.
 
+     Integer vector operations are taken by FP unit and execute 3 vector
+     plus/minus operations per cycle but only one multiply.  This is adjusted
+     in ix86_reassociation_width.  */
+  4, 4, 3, 6,				/* reassoc int, fp, vec_int, vec_fp.  */
   znver1_memcpy,
   znver1_memset,
   6,					/* scalar_stmt_cost.  */
@@ -1508,7 +1525,7 @@ const struct processor_costs btver1_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver1_memcpy,
   btver1_memset,
   4,					/* scalar_stmt_cost.  */
@@ -1594,6 +1611,7 @@ const struct processor_costs btver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver2_memcpy,
   btver2_memset,
   4,					/* scalar_stmt_cost.  */
@@ -1670,6 +1688,7 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium4_memcpy,
   pentium4_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1749,6 +1768,7 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
+  1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   nocona_memcpy,
   nocona_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1826,6 +1846,7 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  2, 2, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   atom_memcpy,
   atom_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1903,6 +1924,7 @@ struct processor_costs slm_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   slm_memcpy,
   slm_memset,
   1,					/* scalar_stmt_cost.  */
@@ -1980,6 +2002,7 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 4, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   intel_memcpy,
   intel_memset,
   1,					/* scalar_stmt_cost.  */
@@ -2067,6 +2090,7 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
   1,					/* scalar_stmt_cost.  */
@@ -2153,6 +2177,7 @@ struct processor_costs core_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  1, 4, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   core_memcpy,
   core_memset,
   1,					/* scalar_stmt_cost.  */
@@ -2192,6 +2217,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BONNELL (1U<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (1U<<PROCESSOR_KNL)
+#define m_KNM (1U<<PROCESSOR_KNM)
 #define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_INTEL (1U<<PROCESSOR_INTEL)
 
@@ -2513,7 +2539,7 @@ public:
   static const unsigned MAX_REGS = 18;
   static const unsigned MAX_EXTRA_REGS = MAX_REGS - MIN_REGS;
   static const unsigned VARIANT_COUNT = MAX_EXTRA_REGS + 1;
-  static const unsigned STUB_NAME_MAX_LEN = 16;
+  static const unsigned STUB_NAME_MAX_LEN = 20;
   static const char * const STUB_BASE_NAMES[XLOGUE_STUB_COUNT];
   static const unsigned REG_ORDER[MAX_REGS];
   static const unsigned REG_ORDER_REALIGN[MAX_REGS];
@@ -2536,7 +2562,7 @@ private:
   struct reginfo m_regs[MAX_REGS];
 
   /* Lazy-inited cache of symbol names for stubs.  */
-  static char s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+  static char s_stub_names[2][XLOGUE_STUB_COUNT][VARIANT_COUNT]
 			  [STUB_NAME_MAX_LEN];
 
   static const xlogue_layout s_instances[XLOGUE_SET_COUNT];
@@ -2588,7 +2614,7 @@ const unsigned xlogue_layout::VARIANT_COUNT;
 const unsigned xlogue_layout::STUB_NAME_MAX_LEN;
 
 /* Initialize xlogue_layout::s_stub_names to zero.  */
-char xlogue_layout::s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+char xlogue_layout::s_stub_names[2][XLOGUE_STUB_COUNT][VARIANT_COUNT]
 				[STUB_NAME_MAX_LEN];
 
 /* Instantiates all xlogue_layout instances.  */
@@ -2692,13 +2718,16 @@ const char *
 xlogue_layout::get_stub_name (enum xlogue_stub stub,
 			      unsigned n_extra_regs)
 {
-  char *name = s_stub_names[stub][n_extra_regs];
+  const int have_avx = TARGET_AVX;
+  char *name = s_stub_names[!!have_avx][stub][n_extra_regs];
 
   /* Lazy init */
   if (!*name)
     {
-      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%u",
-			  STUB_BASE_NAMES[stub], MIN_REGS + n_extra_regs);
+      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%s_%u",
+			  (have_avx ? "avx" : "sse"),
+			  STUB_BASE_NAMES[stub],
+			  MIN_REGS + n_extra_regs);
       gcc_checking_assert (res < (int)STUB_NAME_MAX_LEN);
     }
 
@@ -2900,6 +2929,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"bonnell", &atom_cost, 16, 15, 16, 7, 16},
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
+  {"knm", &slm_cost, 16, 15, 16, 7, 16},
   {"skylake-avx512", &core_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
@@ -4753,6 +4783,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
   static struct ix86_target_opts flag2_opts[] =
   {
     { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY },
+    { "-mprefer-avx256",		OPTION_MASK_PREFER_AVX256 },
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (isa2_opts)
@@ -5349,6 +5380,8 @@ ix86_option_override_internal (bool main_args_p,
   (PTA_CORE2 | PTA_MOVBE)
 #define PTA_SILVERMONT \
   (PTA_WESTMERE | PTA_MOVBE)
+#define PTA_KNM \
+  (PTA_KNL | PTA_AVX5124VNNIW | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -5419,6 +5452,7 @@ ix86_option_override_internal (bool main_args_p,
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"slm", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL},
+      {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM},
       {"intel", PROCESSOR_INTEL, CPU_SLM, PTA_NEHALEM},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
@@ -8885,7 +8919,7 @@ ix86_use_pseudo_pic_reg (void)
 
 /* Initialize large model PIC register.  */
 
-static rtx_code_label *
+static void
 ix86_init_large_pic_reg (unsigned int tmp_regno)
 {
   rtx_code_label *label;
@@ -8902,7 +8936,10 @@ ix86_init_large_pic_reg (unsigned int tmp_regno)
   emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
   emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
 			    pic_offset_table_rtx, tmp_reg));
-  return label;
+  const char *name = LABEL_NAME (label);
+  PUT_CODE (label, NOTE);
+  NOTE_KIND (label) = NOTE_INSN_DELETED_LABEL;
+  NOTE_DELETED_LABEL_NAME (label) = name;
 }
 
 /* Create and initialize PIC register if required.  */
@@ -8911,7 +8948,6 @@ ix86_init_pic_reg (void)
 {
   edge entry_edge;
   rtx_insn *seq;
-  rtx_code_label *label = NULL;
 
   if (!ix86_use_pseudo_pic_reg ())
     return;
@@ -8921,7 +8957,7 @@ ix86_init_pic_reg (void)
   if (TARGET_64BIT)
     {
       if (ix86_cmodel == CM_LARGE_PIC)
-	label = ix86_init_large_pic_reg (R11_REG);
+	ix86_init_large_pic_reg (R11_REG);
       else
 	emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
     }
@@ -8945,22 +8981,6 @@ ix86_init_pic_reg (void)
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   insert_insn_on_edge (seq, entry_edge);
   commit_one_edge_insertion (entry_edge);
-
-  if (label)
-    {
-      basic_block bb = BLOCK_FOR_INSN (label);
-      rtx_insn *bb_note = PREV_INSN (label);
-      /* If the note preceding the label starts a basic block, and the
-	 label is a member of the same basic block, interchange the two.  */
-      if (bb_note != NULL_RTX
-	  && NOTE_INSN_BASIC_BLOCK_P (bb_note)
-	  && bb != NULL
-	  && bb == BLOCK_FOR_INSN (bb_note))
-	{
-	  reorder_insns_nobb (bb_note, bb_note, label);
-	  BB_HEAD (bb) = label;
-	}
-    }
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -13558,7 +13578,7 @@ ix86_add_queued_cfa_restore_notes (rtx insn)
    zero if %r11 register is live and cannot be freely used and positive
    otherwise.  */
 
-static void
+static rtx
 pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 			   int style, bool set_cfa)
 {
@@ -13649,6 +13669,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       m->fs.sp_valid = valid;
       m->fs.sp_realigned = realigned;
     }
+  return insn;
 }
 
 /* Find an available register to be used as dynamic realign argument
@@ -13934,6 +13955,155 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
+
+/* Emit code to adjust the stack pointer by SIZE bytes while probing it.
+
+   This differs from the next routine in that it tries hard to prevent
+   attacks that jump the stack guard.  Thus it is never allowed to allocate
+   more than PROBE_INTERVAL bytes of stack space without a suitable
+   probe.  */
+
+static void
+ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
+{
+  struct machine_function *m = cfun->machine;
+
+  /* If this function does not statically allocate stack space, then
+     no probes are needed.  */
+  if (!size)
+    {
+      /* However, the allocation of space via pushes for register
+	 saves could be viewed as allocating space, but without the
+	 need to probe.  */
+      if (m->frame.nregs || m->frame.nsseregs || frame_pointer_needed)
+        dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      else
+	dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
+      return;
+    }
+
+  /* If we are a noreturn function, then we have to consider the
+     possibility that we're called via a jump rather than a call.
+
+     Thus we don't have the implicit probe generated by saving the
+     return address into the stack at the call.  Thus, the stack
+     pointer could be anywhere in the guard page.  The safe thing
+     to do is emit a probe now.
+
+     ?!? This should be revamped to work like aarch64 and s390 where
+     we track the offset from the most recent probe.  Normally that
+     offset would be zero.  For a noreturn function we would reset
+     it to PROBE_INTERVAL - (STACK_BOUNDARY / BITS_PER_UNIT).   Then
+     we just probe when we cross PROBE_INTERVAL.  */
+  if (TREE_THIS_VOLATILE (cfun->decl))
+    {
+      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+				       -GET_MODE_SIZE (word_mode)));
+      emit_insn (gen_blockage ());
+    }
+
+  /* If we allocate less than the size of the guard statically,
+     then no probing is necessary, but we do need to allocate
+     the stack.  */
+  if (size < (1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)))
+    {
+      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+			         GEN_INT (-size), -1,
+			         m->fs.cfa_reg == stack_pointer_rtx);
+      dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      return;
+    }
+
+  /* We're allocating a large enough stack frame that we need to
+     emit probes.  Either emit them inline or in a loop depending
+     on the size.  */
+  HOST_WIDE_INT probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  if (size <= 4 * probe_interval)
+    {
+      HOST_WIDE_INT i;
+      for (i = probe_interval; i <= size; i += probe_interval)
+	{
+	  /* Allocate PROBE_INTERVAL bytes.  */
+	  rtx insn
+	    = pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+					 GEN_INT (-PROBE_INTERVAL), -1,
+					 m->fs.cfa_reg == stack_pointer_rtx);
+	  add_reg_note (insn, REG_STACK_CHECK, const0_rtx);
+
+	  /* And probe at *sp.  */
+	  emit_stack_probe (stack_pointer_rtx);
+	  emit_insn (gen_blockage ());
+	}
+
+      /* We need to allocate space for the residual, but we do not need
+	 to probe the residual.  */
+      HOST_WIDE_INT residual = (i - probe_interval - size);
+      if (residual)
+	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				   GEN_INT (residual), -1,
+				   m->fs.cfa_reg == stack_pointer_rtx);
+      dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
+    }
+  else
+    {
+      struct scratch_reg sr;
+      get_scratch_register_on_entry (&sr);
+
+      /* Step 1: round SIZE down to a multiple of the interval.  */
+      HOST_WIDE_INT rounded_size = size & -probe_interval;
+
+      /* Step 2: compute final value of the loop counter.  Use lea if
+	 possible.  */
+      rtx addr = plus_constant (Pmode, stack_pointer_rtx, -rounded_size);
+      rtx insn;
+      if (address_no_seg_operand (addr, Pmode))
+	insn = emit_insn (gen_rtx_SET (sr.reg, addr));
+      else
+	{
+	  emit_move_insn (sr.reg, GEN_INT (-rounded_size));
+	  insn = emit_insn (gen_rtx_SET (sr.reg,
+					 gen_rtx_PLUS (Pmode, sr.reg,
+						       stack_pointer_rtx)));
+	}
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, sr.reg,
+				       m->fs.cfa_offset + rounded_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      /* Step 3: the loop.  */
+      rtx size_rtx = GEN_INT (rounded_size);
+      insn = emit_insn (ix86_gen_adjust_stack_and_probe (sr.reg, sr.reg,
+							 size_rtx));
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	{
+	  m->fs.cfa_offset += rounded_size;
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx,
+				       m->fs.cfa_offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      m->fs.sp_offset += rounded_size;
+      emit_insn (gen_blockage ());
+
+      /* Step 4: adjust SP if we cannot assert at compile-time that SIZE
+	 is equal to ROUNDED_SIZE.  */
+
+      if (size != rounded_size)
+	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				   GEN_INT (rounded_size - size), -1,
+				   m->fs.cfa_reg == stack_pointer_rtx);
+      dump_stack_clash_frame_info (PROBE_LOOP, size != rounded_size);
+
+      release_scratch_register_on_entry (&sr);
+    }
+
+  /* Make sure nothing is scheduled before we are done.  */
+  emit_insn (gen_blockage ());
+}
 
 /* Emit code to adjust the stack pointer by SIZE bytes while probing it.  */
 
@@ -14257,11 +14427,12 @@ ix86_finalize_stack_frame_flags (void)
   unsigned int incoming_stack_boundary
     = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
        ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
+  unsigned int stack_alignment
+    = (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
+       ? crtl->max_used_stack_slot_alignment
+       : crtl->stack_alignment_needed);
   unsigned int stack_realign
-    = (incoming_stack_boundary
-       < (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
-	  ? crtl->max_used_stack_slot_alignment
-	  : crtl->stack_alignment_needed));
+    = (incoming_stack_boundary < stack_alignment);
   bool recompute_frame_layout_p = false;
 
   if (crtl->stack_realign_finalized)
@@ -14306,7 +14477,9 @@ ix86_finalize_stack_frame_flags (void)
 			   HARD_FRAME_POINTER_REGNUM);
 
       /* The preferred stack alignment is the minimum stack alignment.  */
-      unsigned int stack_alignment = crtl->preferred_stack_boundary;
+      if (stack_alignment > crtl->preferred_stack_boundary)
+	stack_alignment = crtl->preferred_stack_boundary;
+
       bool require_stack_frame = false;
 
       FOR_EACH_BB_FN (bb, cfun)
@@ -14348,6 +14521,10 @@ ix86_finalize_stack_frame_flags (void)
 	      crtl->max_used_stack_slot_alignment
 		= incoming_stack_boundary;
 	      crtl->stack_alignment_needed
+		= incoming_stack_boundary;
+	      /* Also update preferred_stack_boundary for leaf
+	         functions.  */
+	      crtl->preferred_stack_boundary
 		= incoming_stack_boundary;
 	    }
 	}
@@ -14856,12 +15033,19 @@ ix86_expand_prologue (void)
 
   /* The stack has already been decremented by the instruction calling us
      so probe if the size is non-negative to preserve the protection area.  */
-  if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (allocate >= 0
+      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || flag_stack_clash_protection))
     {
       /* We expect the GP registers to be saved when probes are used.  */
       gcc_assert (int_registers_saved);
 
-      if (STACK_CHECK_MOVING_SP)
+      if (flag_stack_clash_protection)
+	{
+	  ix86_adjust_stack_and_probe_stack_clash (allocate);
+	  allocate = 0;
+	}
+      else if (STACK_CHECK_MOVING_SP)
 	{
 	  if (!(crtl->is_leaf && !cfun->calls_alloca
 		&& allocate <= PROBE_INTERVAL))
@@ -14875,7 +15059,7 @@ ix86_expand_prologue (void)
 	  HOST_WIDE_INT size = allocate;
 
 	  if (TARGET_64BIT && size >= HOST_WIDE_INT_C (0x80000000))
-	    size = 0x80000000 - STACK_CHECK_PROTECT - 1;
+	    size = 0x80000000 - get_stack_check_protect () - 1;
 
 	  if (TARGET_STACK_PROBE)
 	    {
@@ -14885,18 +15069,20 @@ ix86_expand_prologue (void)
 		    ix86_emit_probe_stack_range (0, size);
 		}
 	      else
-		ix86_emit_probe_stack_range (0, size + STACK_CHECK_PROTECT);
+		ix86_emit_probe_stack_range (0,
+					     size + get_stack_check_protect ());
 	    }
 	  else
 	    {
 	      if (crtl->is_leaf && !cfun->calls_alloca)
 		{
-		  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-		    ix86_emit_probe_stack_range (STACK_CHECK_PROTECT,
-						 size - STACK_CHECK_PROTECT);
+		  if (size > PROBE_INTERVAL
+		      && size > get_stack_check_protect ())
+		    ix86_emit_probe_stack_range (get_stack_check_protect (),
+						 size - get_stack_check_protect ());
 		}
 	      else
-		ix86_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+		ix86_emit_probe_stack_range (get_stack_check_protect (), size);
 	    }
 	}
     }
@@ -19792,6 +19978,13 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	  code = 'k';
 	}
 
+      /* Since the upper 32 bits of RSP are always zero for x32,
+	 we can encode %esp as %rsp to avoid 0x67 prefix if
+	 there is no index register.  */
+      if (TARGET_X32 && Pmode == SImode
+	  && !index && base && REG_P (base) && REGNO (base) == SP_REG)
+	code = 'q';
+
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
 	  if (disp)
@@ -21759,9 +21952,22 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   switch (mode)
     {
     case E_SImode:
-      gen_divmod4_1 = signed_p ? gen_divmodsi4_1 : gen_udivmodsi4_1;
+      if (GET_MODE (operands[0]) == SImode)
+	{
+	  if (GET_MODE (operands[1]) == SImode)
+	    gen_divmod4_1 = signed_p ? gen_divmodsi4_1 : gen_udivmodsi4_1;
+	  else
+	    gen_divmod4_1
+	      = signed_p ? gen_divmodsi4_zext_2 : gen_udivmodsi4_zext_2;
+	  gen_zero_extend = gen_zero_extendqisi2;
+	}
+      else
+	{
+	  gen_divmod4_1
+	    = signed_p ? gen_divmodsi4_zext_1 : gen_udivmodsi4_zext_1;
+	  gen_zero_extend = gen_zero_extendqidi2;
+	}
       gen_test_ccno_1 = gen_testsi_ccno_1;
-      gen_zero_extend = gen_zero_extendqisi2;
       break;
     case E_DImode:
       gen_divmod4_1 = signed_p ? gen_divmoddi4_1 : gen_udivmoddi4_1;
@@ -21812,24 +22018,32 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 
   if (signed_p)
     {
-      div = gen_rtx_DIV (SImode, operands[2], operands[3]);
-      mod = gen_rtx_MOD (SImode, operands[2], operands[3]);
+      div = gen_rtx_DIV (mode, operands[2], operands[3]);
+      mod = gen_rtx_MOD (mode, operands[2], operands[3]);
     }
   else
     {
-      div = gen_rtx_UDIV (SImode, operands[2], operands[3]);
-      mod = gen_rtx_UMOD (SImode, operands[2], operands[3]);
+      div = gen_rtx_UDIV (mode, operands[2], operands[3]);
+      mod = gen_rtx_UMOD (mode, operands[2], operands[3]);
+    }
+  if (mode == SImode)
+    {
+      if (GET_MODE (operands[0]) != SImode)
+	div = gen_rtx_ZERO_EXTEND (DImode, div);
+      if (GET_MODE (operands[1]) != SImode)
+	mod = gen_rtx_ZERO_EXTEND (DImode, mod);
     }
 
   /* Extract remainder from AH.  */
-  tmp1 = gen_rtx_ZERO_EXTRACT (mode, tmp0, GEN_INT (8), GEN_INT (8));
+  tmp1 = gen_rtx_ZERO_EXTRACT (GET_MODE (operands[1]),
+			       tmp0, GEN_INT (8), GEN_INT (8));
   if (REG_P (operands[1]))
     insn = emit_move_insn (operands[1], tmp1);
   else
     {
       /* Need a new scratch register since the old one has result
 	 of 8bit divide.  */
-      scratch = gen_reg_rtx (mode);
+      scratch = gen_reg_rtx (GET_MODE (operands[1]));
       emit_move_insn (scratch, tmp1);
       insn = emit_move_insn (operands[1], scratch);
     }
@@ -26710,7 +26924,7 @@ ix86_split_long_move (rtx operands[])
 	 Do an lea to the last part and use only one colliding move.  */
       else if (collisions > 1)
 	{
-	  rtx base, addr, tls_base = NULL_RTX;
+	  rtx base, addr;
 
 	  collisions = 1;
 
@@ -26727,44 +26941,13 @@ ix86_split_long_move (rtx operands[])
 	      struct ix86_address parts;
 	      int ok = ix86_decompose_address (addr, &parts);
 	      gcc_assert (ok);
-	      if (parts.seg == DEFAULT_TLS_SEG_REG)
-		{
-		  /* It is not valid to use %gs: or %fs: in
-		     lea though, so we need to remove it from the
-		     address used for lea and add it to each individual
-		     memory loads instead.  */
-		  addr = copy_rtx (addr);
-		  rtx *x = &addr;
-		  while (GET_CODE (*x) == PLUS)
-		    {
-		      for (i = 0; i < 2; i++)
-			{
-			  rtx u = XEXP (*x, i);
-			  if (GET_CODE (u) == ZERO_EXTEND)
-			    u = XEXP (u, 0);
-			  if (GET_CODE (u) == UNSPEC
-			      && XINT (u, 1) == UNSPEC_TP)
-			    {
-			      tls_base = XEXP (*x, i);
-			      *x = XEXP (*x, 1 - i);
-			      break;
-			    }
-			}
-		      if (tls_base)
-			break;
-		      x = &XEXP (*x, 0);
-		    }
-		  gcc_assert (tls_base);
-		}
+	      /* It is not valid to use %gs: or %fs: in lea.  */
+	      gcc_assert (parts.seg == ADDR_SPACE_GENERIC);
 	    }
 	  emit_insn (gen_rtx_SET (base, addr));
-	  if (tls_base)
-	    base = gen_rtx_PLUS (GET_MODE (base), base, tls_base);
 	  part[1][0] = replace_equiv_address (part[1][0], base);
 	  for (i = 1; i < nparts; i++)
 	    {
-	      if (tls_base)
-		base = copy_rtx (base);
 	      tmp = plus_constant (Pmode, base, UNITS_PER_WORD * i);
 	      part[1][i] = replace_equiv_address (part[1][i], tmp);
 	    }
@@ -28764,6 +28947,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
 	move_mode = wider_mode;
 
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (move_mode) > 128)
+	move_mode = TImode;
+
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
       if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
@@ -30164,6 +30350,7 @@ ix86_issue_rate (void)
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
+    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
@@ -30530,6 +30717,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
+    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
       if (!reload_completed)
 	return cost;
@@ -30576,43 +30764,13 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 static int
 ia32_multipass_dfa_lookahead (void)
 {
-  switch (ix86_tune)
-    {
-    case PROCESSOR_PENTIUM:
-    case PROCESSOR_LAKEMONT:
-      return 2;
-
-    case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_K6:
-      return 1;
-
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
-    case PROCESSOR_BDVER4:
-      /* We use lookahead value 4 for BD both before and after reload
-	 schedules. Plan is to have value 8 included for O3. */
-        return 4;
-
-    case PROCESSOR_CORE2:
-    case PROCESSOR_NEHALEM:
-    case PROCESSOR_SANDYBRIDGE:
-    case PROCESSOR_HASWELL:
-    case PROCESSOR_BONNELL:
-    case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_INTEL:
-      /* Generally, we want haifa-sched:max_issue() to look ahead as far
-	 as many instructions can be executed on a cycle, i.e.,
-	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
-      if (reload_completed)
-        return ix86_issue_rate ();
-      /* Don't use lookahead for pre-reload schedule to save compile time.  */
-      return 0;
-
-    default:
-      return 0;
-    }
+  /* Generally, we want haifa-sched:max_issue() to look ahead as far
+     as many instructions can be executed on a cycle, i.e.,
+     issue_rate.  */
+  if (reload_completed)
+    return ix86_issue_rate ();
+  /* Don't use lookahead for pre-reload schedule to save compile time.  */
+  return 0;
 }
 
 /* Return true if target platform supports macro-fusion.  */
@@ -31422,14 +31580,10 @@ ix86_sched_init_global (FILE *, int, int)
 }
 
 
-/* Compute the alignment given to a constant that is being placed in memory.
-   EXP is the constant and ALIGN is the alignment that the object would
-   ordinarily have.
-   The value of this function is used instead of that alignment to align
-   the object.  */
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
 
-int
-ix86_constant_alignment (tree exp, int align)
+static HOST_WIDE_INT
+ix86_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 {
   if (TREE_CODE (exp) == REAL_CST || TREE_CODE (exp) == VECTOR_CST
       || TREE_CODE (exp) == INTEGER_CST)
@@ -33726,6 +33880,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "knl";
 	      priority = P_PROC_AVX512F;
 	      break;
+	    case PROCESSOR_KNM:
+	      arg_str = "knm";
+	      priority = P_PROC_AVX512F;
+	      break;
 	    case PROCESSOR_SILVERMONT:
 	      arg_str = "silvermont";
 	      priority = P_PROC_SSE4_2;
@@ -34408,6 +34566,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_KNL,
     M_AMD_BTVER1,
     M_AMD_BTVER2,    
+    M_AMDFAM17H,
+    M_INTEL_KNM,
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -34451,6 +34611,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},
+      {"knm", M_INTEL_KNM},
       {"amdfam10h", M_AMDFAM10H},
       {"barcelona", M_AMDFAM10H_BARCELONA},
       {"shanghai", M_AMDFAM10H_SHANGHAI},
@@ -34462,6 +34623,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"bdver3", M_AMDFAM15H_BDVER3},
       {"bdver4", M_AMDFAM15H_BDVER4},
       {"btver2", M_AMD_BTVER2},
+      {"amdfam17h", M_AMDFAM17H},
       {"znver1", M_AMDFAM17H_ZNVER1},
     };
 
@@ -49883,8 +50045,7 @@ ix86_expand_vec_perm_const (rtx operands[4])
 /* Implement targetm.vectorize.vec_perm_const_ok.  */
 
 static bool
-ix86_vectorize_vec_perm_const_ok (machine_mode vmode,
-				  const unsigned char *sel)
+ix86_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
@@ -49955,11 +50116,11 @@ ix86_vectorize_vec_perm_const_ok (machine_mode vmode,
 
   /* Extract the values from the vector CST into the permutation
      array in D.  */
-  memcpy (d.perm, sel, nelt);
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned char e = sel[i];
       gcc_assert (e < 2 * nelt);
+      d.perm[i] = e;
       which |= (e < nelt ? 1 : 2);
     }
 
@@ -51640,8 +51801,9 @@ do_dispatch (rtx_insn *insn, int mode)
 static bool
 has_dispatch (rtx_insn *insn, int action)
 {
+  /* Current implementation of dispatch scheduler models buldozer only.  */
   if ((TARGET_BDVER1 || TARGET_BDVER2 || TARGET_BDVER3
-      || TARGET_BDVER4 || TARGET_ZNVER1) && flag_dispatch_scheduler)
+      || TARGET_BDVER4) && flag_dispatch_scheduler)
     switch (action)
       {
       default:
@@ -51666,34 +51828,47 @@ has_dispatch (rtx_insn *insn, int action)
 /* Implementation of reassociation_width target hook used by
    reassoc phase to identify parallelism level in reassociated
    tree.  Statements tree_code is passed in OPC.  Arguments type
-   is passed in MODE.
-
-   Currently parallel reassociation is enabled for Atom
-   processors only and we set reassociation width to be 2
-   because Atom may issue up to 2 instructions per cycle.
-
-   Return value should be fixed if parallel reassociation is
-   enabled for other processors.  */
+   is passed in MODE.  */
 
 static int
-ix86_reassociation_width (unsigned int, machine_mode mode)
+ix86_reassociation_width (unsigned int op, machine_mode mode)
 {
+  int width = 1;
   /* Vector part.  */
   if (VECTOR_MODE_P (mode))
     {
-      if (TARGET_VECTOR_PARALLEL_EXECUTION)
-	return 2;
-      else
-	return 1;
-    }
+      int div = 1;
+      if (INTEGRAL_MODE_P (mode))
+	width = ix86_cost->reassoc_vec_int;
+      else if (FLOAT_MODE_P (mode))
+	width = ix86_cost->reassoc_vec_fp;
 
+      if (width == 1)
+	return 1;
+
+      /* Integer vector instructions execute in FP unit
+	 and can execute 3 additions and one multiplication per cycle.  */
+      if (ix86_tune == PROCESSOR_ZNVER1 && INTEGRAL_MODE_P (mode)
+	  && op != PLUS && op != MINUS)
+	return 1;
+
+      /* Account for targets that splits wide vectors into multiple parts.  */
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (mode) > 128)
+	div = GET_MODE_BITSIZE (mode) / 128;
+      else if (TARGET_SSE_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 64)
+	div = GET_MODE_BITSIZE (mode) / 64;
+      width = (width + div - 1) / div;
+    }
   /* Scalar part.  */
-  if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
-    return 2;
-  else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)
-    return ((TARGET_64BIT && ix86_tune == PROCESSOR_HASWELL)? 4 : 2);
-  else
-    return 1;
+  else if (INTEGRAL_MODE_P (mode))
+    width = ix86_cost->reassoc_int;
+  else if (FLOAT_MODE_P (mode))
+    width = ix86_cost->reassoc_fp;
+
+  /* Avoid using too many registers in 32bit mode.  */
+  if (!TARGET_64BIT && width > 2)
+    width = 2;
+  return width;
 }
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
@@ -51708,20 +51883,39 @@ ix86_preferred_simd_mode (scalar_mode mode)
   switch (mode)
     {
     case E_QImode:
-      return TARGET_AVX512BW ? V64QImode :
-       (TARGET_AVX && !TARGET_PREFER_AVX128) ? V32QImode : V16QImode;
+      if (TARGET_AVX512BW && !TARGET_PREFER_AVX256)
+	return V64QImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V32QImode;
+      else
+	return V16QImode;
+
     case E_HImode:
-      return TARGET_AVX512BW ? V32HImode :
-       (TARGET_AVX && !TARGET_PREFER_AVX128) ? V16HImode : V8HImode;
+      if (TARGET_AVX512BW && !TARGET_PREFER_AVX256)
+	return V32HImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V16HImode;
+      else
+	return V8HImode;
+
     case E_SImode:
-      return TARGET_AVX512F ? V16SImode :
-	(TARGET_AVX && !TARGET_PREFER_AVX128) ? V8SImode : V4SImode;
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
+	return V16SImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V8SImode;
+      else
+	return V4SImode;
+
     case E_DImode:
-      return TARGET_AVX512F ? V8DImode :
-	(TARGET_AVX && !TARGET_PREFER_AVX128) ? V4DImode : V2DImode;
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
+	return V8DImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V4DImode;
+      else
+	return V2DImode;
 
     case E_SFmode:
-      if (TARGET_AVX512F)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V16SFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V8SFmode;
@@ -51729,7 +51923,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V4SFmode;
 
     case E_DFmode:
-      if (TARGET_AVX512F)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V8DFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V4DFmode;
@@ -51749,8 +51943,14 @@ ix86_preferred_simd_mode (scalar_mode mode)
 static unsigned int
 ix86_autovectorize_vector_sizes (void)
 {
-  return TARGET_AVX512F ? 64 | 32 | 16 :
-    (TARGET_AVX && !TARGET_PREFER_AVX128) ? 32 | 16 : 0;
+  unsigned int bytesizes = 0;
+
+  if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
+    bytesizes |= (64 | 32 | 16);
+  else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+    bytesizes |= (32 | 16);
+
+  return bytesizes;
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
@@ -53435,6 +53635,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT ix86_constant_alignment
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

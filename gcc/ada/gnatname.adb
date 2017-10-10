@@ -36,7 +36,7 @@ with Make_Util; use Make_Util;
 with Namet;     use Namet;
 with Opt;
 with Osint;     use Osint;
-with Output;    use Output;
+with Output;
 with Switch;    use Switch;
 with Table;
 with Tempdir;

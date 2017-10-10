@@ -35,19 +35,17 @@ with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Rident;   use Rident;
 with Stringt;  use Stringt;
-with Table;    use Table;
+with Table;
 with Targparm; use Targparm;
 with Types;    use Types;
 
-with System.OS_Lib;  use System.OS_Lib;
+with System.OS_Lib;
 with System.WCh_Con; use System.WCh_Con;
 
 with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
 with GNAT.HTable;
 
 package body Bindgen is
-   use Binde.Unit_Id_Tables;
-
    Statement_Buffer : String (1 .. 1000);
    --  Buffer used for constructing output statements
 

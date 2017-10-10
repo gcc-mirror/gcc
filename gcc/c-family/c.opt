@@ -1829,7 +1829,7 @@ ObjC ObjC++ Var(flag_zero_link)
 Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode.
 
 gen-decls
-ObjC ObjC++ Driver Var(flag_gen_declaration)
+ObjC ObjC++ Driver Var(flag_gen_declaration) RejectNegative
 Dump declarations to a .decl file.
 
 femit-struct-debug-baseonly
@@ -1951,6 +1951,10 @@ std=c++17
 C++ ObjC++
 Conform to the ISO 2017 C++ standard.
 
+std=c++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard (experimental and incomplete support).
+
 std=c11
 C ObjC
 Conform to the ISO 2011 C standard.
@@ -2008,6 +2012,10 @@ Deprecated in favor of -std=gnu++17.
 std=gnu++17
 C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
+
+std=gnu++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC

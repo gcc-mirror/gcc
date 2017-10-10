@@ -1464,7 +1464,7 @@ package body Lib.Writ is
 
             --  Normal case of a unit entry with a source index
 
-            if Sind /= No_Source_File then
+            if Sind > No_Source_File then
                Fname := File_Name (Sind);
 
                --  Ensure that on platforms where the file names are not case

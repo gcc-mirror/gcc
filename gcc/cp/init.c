@@ -2213,7 +2213,6 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	 initializer for the static data member is not processed
 	 until needed; we need it now.  */
       mark_used (decl, tf_none);
-      mark_rvalue_use (decl);
       init = DECL_INITIAL (decl);
       if (init == error_mark_node)
 	{
@@ -2447,7 +2446,7 @@ throw_bad_array_new_length (void)
     {
       tree name = get_identifier ("__cxa_throw_bad_array_new_length");
 
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
 	  (name, build_function_type_list (sizetype, NULL_TREE));

@@ -41,7 +41,7 @@ with Output;   use Output;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
+with Targparm;
 with Uintp;    use Uintp;
 with Widechar; use Widechar;
 

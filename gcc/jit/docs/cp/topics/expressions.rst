@@ -105,6 +105,17 @@ Simple expressions
    Generate an rvalue of type :c:data:`GCC_JIT_TYPE_CONST_CHAR_PTR` for
    the given string.  This is akin to a string literal.
 
+Vector expressions
+******************
+
+.. function:: gccjit::rvalue \
+	      gccjit::context::new_rvalue (gccjit::type vector_type, \
+	                                   std::vector<gccjit::rvalue> elements) const
+
+   Given a vector type, and a vector of scalar rvalue elements, generate a
+   vector rvalue.
+
+   The number of elements needs to match that of the vector type.
 
 Unary Operations
 ****************
@@ -458,6 +469,15 @@ Function calls
 
          /* Add "(void)printf (arg0, arg1);".  */
          block.add_eval (ctxt.new_call (printf_func, arg0, arg1));
+
+Function pointers
+*****************
+
+.. function:: gccjit::rvalue \
+	      gccjit::function::get_address (gccjit::location loc)
+
+   Get the address of a function as an rvalue, of function pointer
+   type.
 
 Type-coercion
 *************

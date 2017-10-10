@@ -534,13 +534,13 @@ Common RejectNegative Warning Alias(Wextra)
 This switch is deprecated; use -Wextra instead.
 
 Wa,
-Driver JoinedOrMissing
+Driver JoinedOrMissing RejectNegative
 
 Wl,
-Driver JoinedOrMissing
+Driver JoinedOrMissing RejectNegative
 
 Wp,
-Driver JoinedOrMissing
+Driver JoinedOrMissing RejectNegative
 
 Waggregate-return
 Common Var(warn_aggregate_return) Warning
@@ -564,6 +564,10 @@ Warn about inappropriate attribute usage.
 
 Wcast-align
 Common Var(warn_cast_align) Warning
+Warn about pointer casts which increase alignment.
+
+Wcast-align=strict
+Common Var(warn_cast_align,2) Warning
 Warn about pointer casts which increase alignment.
 
 Wcpp
@@ -716,6 +720,10 @@ Warn about optimizations that assume that signed overflow is undefined.
 Wstrict-overflow=
 Common Joined RejectNegative UInteger Var(warn_strict_overflow) Warning
 Warn about optimizations that assume that signed overflow is undefined.
+
+Wsuggest-attribute=cold
+Common Var(warn_suggest_attribute_cold) Warning
+Warn about functions which might be candidates for __attribute__((cold)).
 
 Wsuggest-attribute=const
 Common Var(warn_suggest_attribute_const) Warning
@@ -2316,12 +2324,17 @@ Common Report Var(flag_variable_expansion_in_unroller) Optimization
 Apply variable expansion when loops are unrolled.
 
 fstack-check=
-Common Report RejectNegative Joined
+Common Report RejectNegative Joined Optimization
 -fstack-check=[no|generic|specific]	Insert stack checking code into the program.
 
 fstack-check
 Common Alias(fstack-check=, specific, no)
 Insert stack checking code into the program.  Same as -fstack-check=specific.
+
+fstack-clash-protection
+Common Report Var(flag_stack_clash_protection) Optimization
+Insert code to probe each page of stack space as it is allocated to protect
+from stack-clash style attacks.
 
 fstack-limit
 Common Var(common_deferred_options) Defer
@@ -2825,19 +2838,15 @@ Common Report Var(flag_zero_initialized_in_bss) Init(1)
 Put zero initialized data in the bss section.
 
 g
-Common Driver JoinedOrMissing
+Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
 gcoff
 Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format.
 
-gno-column-info
-Common Driver RejectNegative Var(debug_column_info,0) Init(0)
-Don't record DW_AT_decl_column and DW_AT_call_column in DWARF.
-
 gcolumn-info
-Common Driver RejectNegative Var(debug_column_info,1)
+Common Driver Var(debug_column_info,1) Init(0)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
 
 gdwarf
@@ -2852,6 +2861,10 @@ ggdb
 Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
+gno-
+RejectNegative Joined Undocumented
+; Catch the gno- prefix, so it doesn't backtrack to g<level>.
+
 gno-pubnames
 Common Driver Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
 Don't generate DWARF pubnames and pubtypes sections.
@@ -2864,20 +2877,12 @@ ggnu-pubnames
 Common Driver Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
 Generate DWARF pubnames and pubtypes sections with GNU extensions.
 
-gno-record-gcc-switches
-Common Driver RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
-Don't record gcc command line switches in DWARF DW_AT_producer.
-
 grecord-gcc-switches
-Common Driver RejectNegative Var(dwarf_record_gcc_switches,1)
+Common Driver Var(dwarf_record_gcc_switches) Init(1)
 Record gcc command line switches in DWARF DW_AT_producer.
 
-gno-split-dwarf
-Common Driver RejectNegative Var(dwarf_split_debug_info,0) Init(0)
-Don't generate debug information in separate .dwo files.
-
 gsplit-dwarf
-Common Driver RejectNegative Var(dwarf_split_debug_info,1)
+Common Driver Var(dwarf_split_debug_info) Init(0)
 Generate debug information in separate .dwo files.
 
 gstabs
@@ -2888,12 +2893,8 @@ gstabs+
 Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
-gno-strict-dwarf
-Common Driver RejectNegative Var(dwarf_strict,0) Init(0)
-Emit DWARF additions beyond selected version.
-
 gstrict-dwarf
-Common Driver Report RejectNegative Var(dwarf_strict,1)
+Common Driver Report Var(dwarf_strict) Init(0)
 Don't emit DWARF additions beyond selected version.
 
 gtoggle
@@ -2931,7 +2932,7 @@ Common Driver
 Generate compressed debug sections.
 
 gz=
-Common Driver Joined Enum(compressed_debug_sections)
+Common Driver RejectNegative Joined Enum(compressed_debug_sections)
 -gz=<format>	Generate compressed debug sections in format <format>.
 
 h

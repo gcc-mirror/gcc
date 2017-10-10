@@ -40,8 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "common/common-target.h"
 #include "output.h"
+#include "params.h"
 
 static rtx break_out_memory_refs (rtx);
+static void anti_adjust_stack_and_probe_stack_clash (rtx);
 
 
 /* Truncate and perhaps sign-extend C as appropriate for MODE.  */
@@ -1283,6 +1285,29 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
   *psize = size;
 }
 
+/* Return the number of bytes to "protect" on the stack for -fstack-check.
+
+   "protect" in the context of -fstack-check means how many bytes we
+   should always ensure are available on the stack.  More importantly
+   this is how many bytes are skipped when probing the stack.
+
+   On some targets we want to reuse the -fstack-check prologue support
+   to give a degree of protection against stack clashing style attacks.
+
+   In that scenario we do not want to skip bytes before probing as that
+   would render the stack clash protections useless.
+
+   So we never use STACK_CHECK_PROTECT directly.  Instead we indirect though
+   this helper which allows us to provide different values for
+   -fstack-check and -fstack-clash-protection.  */
+HOST_WIDE_INT
+get_stack_check_protect (void)
+{
+  if (flag_stack_clash_protection)
+    return 0;
+ return STACK_CHECK_PROTECT;
+}
+
 /* Return an rtx representing the address of an area of memory dynamically
    pushed on the stack.
 
@@ -1441,7 +1466,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     probe_stack_range (STACK_OLD_CHECK_PROTECT + STACK_CHECK_MAX_FRAME_SIZE,
 		       size);
   else if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
-    probe_stack_range (STACK_CHECK_PROTECT, size);
+    probe_stack_range (get_stack_check_protect (), size);
 
   /* Don't let anti_adjust_stack emit notes.  */
   suppress_reg_args_size = true;
@@ -1494,6 +1519,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
 	anti_adjust_stack_and_probe (size, false);
+      else if (flag_stack_clash_protection)
+	anti_adjust_stack_and_probe_stack_clash (size);
       else
 	anti_adjust_stack (size);
 
@@ -1768,6 +1795,220 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
   /* Make sure nothing is scheduled before we are done.  */
   emit_insn (gen_blockage ());
 }
+
+/* Compute parameters for stack clash probing a dynamic stack
+   allocation of SIZE bytes.
+
+   We compute ROUNDED_SIZE, LAST_ADDR, RESIDUAL and PROBE_INTERVAL.
+
+   Additionally we conditionally dump the type of probing that will
+   be needed given the values computed.  */
+
+void
+compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
+					  rtx *residual,
+					  HOST_WIDE_INT *probe_interval,
+					  rtx size)
+{
+  /* Round SIZE down to STACK_CLASH_PROTECTION_PROBE_INTERVAL */
+  *probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  *rounded_size = simplify_gen_binary (AND, Pmode, size,
+				        GEN_INT (-*probe_interval));
+
+  /* Compute the value of the stack pointer for the last iteration.
+     It's just SP + ROUNDED_SIZE.  */
+  rtx rounded_size_op = force_operand (*rounded_size, NULL_RTX);
+  *last_addr = force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
+					      stack_pointer_rtx,
+					      rounded_size_op),
+			      NULL_RTX);
+
+  /* Compute any residuals not allocated by the loop above.  Residuals
+     are just the ROUNDED_SIZE - SIZE.  */
+  *residual = simplify_gen_binary (MINUS, Pmode, size, *rounded_size);
+
+  /* Dump key information to make writing tests easy.  */
+  if (dump_file)
+    {
+      if (*rounded_size == CONST0_RTX (Pmode))
+	fprintf (dump_file,
+		 "Stack clash skipped dynamic allocation and probing loop.\n");
+      else if (CONST_INT_P (*rounded_size)
+	       && INTVAL (*rounded_size) <= 4 * *probe_interval)
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing inline.\n");
+      else if (CONST_INT_P (*rounded_size))
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing in "
+		 "rotated loop.\n");
+      else
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing in loop.\n");
+
+      if (*residual != CONST0_RTX (Pmode))
+	fprintf (dump_file,
+		 "Stack clash dynamic allocation and probing residuals.\n");
+      else
+	fprintf (dump_file,
+		 "Stack clash skipped dynamic allocation and "
+		 "probing residuals.\n");
+    }
+}
+
+/* Emit the start of an allocate/probe loop for stack
+   clash protection.
+
+   LOOP_LAB and END_LAB are returned for use when we emit the
+   end of the loop.
+
+   LAST addr is the value for SP which stops the loop.  */
+void
+emit_stack_clash_protection_probe_loop_start (rtx *loop_lab,
+					      rtx *end_lab,
+					      rtx last_addr,
+					      bool rotated)
+{
+  /* Essentially we want to emit any setup code, the top of loop
+     label and the comparison at the top of the loop.  */
+  *loop_lab = gen_label_rtx ();
+  *end_lab = gen_label_rtx ();
+
+  emit_label (*loop_lab);
+  if (!rotated)
+    emit_cmp_and_jump_insns (stack_pointer_rtx, last_addr, EQ, NULL_RTX,
+			     Pmode, 1, *end_lab);
+}
+
+/* Emit the end of a stack clash probing loop.
+
+   This consists of just the jump back to LOOP_LAB and
+   emitting END_LOOP after the loop.  */
+
+void
+emit_stack_clash_protection_probe_loop_end (rtx loop_lab, rtx end_loop,
+					    rtx last_addr, bool rotated)
+{
+  if (rotated)
+    emit_cmp_and_jump_insns (stack_pointer_rtx, last_addr, NE, NULL_RTX,
+			     Pmode, 1, loop_lab);
+  else
+    emit_jump (loop_lab);
+
+  emit_label (end_loop);
+
+}
+
+/* Adjust the stack pointer by minus SIZE (an rtx for a number of bytes)
+   while probing it.  This pushes when SIZE is positive.  SIZE need not
+   be constant.
+
+   This is subtly different than anti_adjust_stack_and_probe to try and
+   prevent stack-clash attacks
+
+     1. It must assume no knowledge of the probing state, any allocation
+	must probe.
+
+	Consider the case of a 1 byte alloca in a loop.  If the sum of the
+	allocations is large, then this could be used to jump the guard if
+	probes were not emitted.
+
+     2. It never skips probes, whereas anti_adjust_stack_and_probe will
+	skip probes on the first couple PROBE_INTERVALs on the assumption
+	they're done elsewhere.
+
+     3. It only allocates and probes SIZE bytes, it does not need to
+	allocate/probe beyond that because this probing style does not
+	guarantee signal handling capability if the guard is hit.  */
+
+static void
+anti_adjust_stack_and_probe_stack_clash (rtx size)
+{
+  /* First ensure SIZE is Pmode.  */
+  if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
+    size = convert_to_mode (Pmode, size, 1);
+
+  /* We can get here with a constant size on some targets.  */
+  rtx rounded_size, last_addr, residual;
+  HOST_WIDE_INT probe_interval;
+  compute_stack_clash_protection_loop_data (&rounded_size, &last_addr,
+					    &residual, &probe_interval, size);
+
+  if (rounded_size != CONST0_RTX (Pmode))
+    {
+      if (CONST_INT_P (rounded_size)
+	  && INTVAL (rounded_size) <= 4 * probe_interval)
+	{
+	  for (HOST_WIDE_INT i = 0;
+	       i < INTVAL (rounded_size);
+	       i += probe_interval)
+	    {
+	      anti_adjust_stack (GEN_INT (probe_interval));
+
+	      /* The prologue does not probe residuals.  Thus the offset
+		 here to probe just beyond what the prologue had already
+		 allocated.  */
+	      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					       (probe_interval
+						- GET_MODE_SIZE (word_mode))));
+	      emit_insn (gen_blockage ());
+	    }
+	}
+      else
+	{
+	  rtx loop_lab, end_loop;
+	  bool rotate_loop = CONST_INT_P (rounded_size);
+	  emit_stack_clash_protection_probe_loop_start (&loop_lab, &end_loop,
+							last_addr, rotate_loop);
+
+	  anti_adjust_stack (GEN_INT (probe_interval));
+
+	  /* The prologue does not probe residuals.  Thus the offset here
+	     to probe just beyond what the prologue had already allocated.  */
+	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					   (probe_interval
+					    - GET_MODE_SIZE (word_mode))));
+
+	  emit_stack_clash_protection_probe_loop_end (loop_lab, end_loop,
+						      last_addr, rotate_loop);
+	  emit_insn (gen_blockage ());
+	}
+    }
+
+  if (residual != CONST0_RTX (Pmode))
+    {
+      rtx x = force_reg (Pmode, plus_constant (Pmode, residual,
+					       -GET_MODE_SIZE (word_mode)));
+      anti_adjust_stack (residual);
+      emit_stack_probe (gen_rtx_PLUS (Pmode, stack_pointer_rtx, x));
+      emit_insn (gen_blockage ());
+    }
+
+  /* Some targets make optimistic assumptions in their prologues about
+     how the caller may have probed the stack.  Make sure we honor
+     those assumptions when needed.  */
+  if (size != CONST0_RTX (Pmode)
+      && targetm.stack_clash_protection_final_dynamic_probe (residual))
+    {
+      /* Ideally we would just probe at *sp.  However, if SIZE is not
+	 a compile-time constant, but is zero at runtime, then *sp
+	 might hold live data.  So probe at *sp if we know that
+	 an allocation was made, otherwise probe into the red zone
+	 which is obviously undesirable.  */
+      if (CONST_INT_P (size))
+	{
+	  emit_stack_probe (stack_pointer_rtx);
+	  emit_insn (gen_blockage ());
+	}
+      else
+	{
+	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					   -GET_MODE_SIZE (word_mode)));
+	  emit_insn (gen_blockage ());
+	}
+    }
+}
+
 
 /* Adjust the stack pointer by minus SIZE (an rtx for a number of bytes)
    while probing it.  This pushes when SIZE is positive.  SIZE need not

@@ -138,9 +138,12 @@ package body Sem_Ch10 is
    --  Check that the shadow entity is not already in the homonym chain, for
    --  example through a limited_with clause in a parent unit.
 
-   procedure Install_Context_Clauses (N : Node_Id);
+   procedure Install_Context_Clauses (N : Node_Id; Chain : Boolean := True);
    --  Subsidiary to Install_Context and Install_Parents. Process all with
-   --  and use clauses for current unit and its library unit if any.
+   --  and use clauses for current unit and its library unit if any. The flag
+   --  Chain is used to control the "chaining" or linking together of use-type
+   --  and use-package clauses to avoid circularities with reinstalling
+   --  clauses.
 
    procedure Install_Limited_Context_Clauses (N : Node_Id);
    --  Subsidiary to Install_Context. Process only limited with_clauses for
@@ -159,7 +162,10 @@ package body Sem_Ch10 is
    --  is called when compiling the private part of a package, or installing
    --  the private declarations of a parent unit.
 
-   procedure Install_Parents (Lib_Unit : Node_Id; Is_Private : Boolean);
+   procedure Install_Parents
+     (Lib_Unit   : Node_Id;
+      Is_Private : Boolean;
+      Chain      : Boolean := True);
    --  This procedure establishes the context for the compilation of a child
    --  unit. If Lib_Unit is a child library spec then the context of the parent
    --  is installed, and the parent itself made immediately visible, so that
@@ -168,7 +174,9 @@ package body Sem_Ch10 is
    --  parents are loaded in the nested case. If Lib_Unit is a library body,
    --  the only effect of Install_Parents is to install the private decls of
    --  the parents, because the visible parent declarations will have been
-   --  installed as part of the context of the corresponding spec.
+   --  installed as part of the context of the corresponding spec. The flag
+   --  Chain is used to control the "chaining" or linking of use-type and
+   --  use-package clauses to avoid circularities when installing context.
 
    procedure Install_Siblings (U_Name : Entity_Id; N : Node_Id);
    --  In the compilation of a child unit, a child of any of the  ancestor
@@ -342,53 +350,45 @@ package body Sem_Ch10 is
                then
                   --  Search through use clauses
 
-                  Use_Item := First (Names (Cont_Item));
-                  while Present (Use_Item) and then not Used loop
+                  Use_Item := Name (Cont_Item);
 
-                     --  Case of a direct use of the one we are looking for
+                  --  Case of a direct use of the one we are looking for
 
-                     if Entity (Use_Item) = Nam_Ent then
-                        Used := True;
+                  if Entity (Use_Item) = Nam_Ent then
+                     Used := True;
 
-                     --  Handle nested case, as in "with P; use P.Q.R"
+                  --  Handle nested case, as in "with P; use P.Q.R"
 
-                     else
-                        declare
-                           UE : Node_Id;
+                  else
+                     declare
+                        UE : Node_Id;
 
-                        begin
-                           --  Loop through prefixes looking for match
+                     begin
+                        --  Loop through prefixes looking for match
 
-                           UE := Use_Item;
-                           while Nkind (UE) = N_Expanded_Name loop
-                              if Same_Unit (Prefix (UE), Nam_Ent) then
-                                 Used := True;
-                                 exit;
-                              end if;
+                        UE := Use_Item;
+                        while Nkind (UE) = N_Expanded_Name loop
+                           if Same_Unit (Prefix (UE), Nam_Ent) then
+                              Used := True;
+                              exit;
+                           end if;
 
-                              UE := Prefix (UE);
-                           end loop;
-                        end;
-                     end if;
-
-                     Next (Use_Item);
-                  end loop;
+                           UE := Prefix (UE);
+                        end loop;
+                     end;
+                  end if;
 
                --  USE TYPE clause
 
                elsif Nkind (Cont_Item) = N_Use_Type_Clause
                  and then not Used_Type_Or_Elab
                then
-                  Subt_Mark := First (Subtype_Marks (Cont_Item));
-                  while Present (Subt_Mark)
-                    and then not Used_Type_Or_Elab
-                  loop
-                     if Same_Unit (Prefix (Subt_Mark), Nam_Ent) then
-                        Used_Type_Or_Elab := True;
-                     end if;
-
-                     Next (Subt_Mark);
-                  end loop;
+                  Subt_Mark := Subtype_Mark (Cont_Item);
+                  if not Used_Type_Or_Elab
+                    and then Same_Unit (Prefix (Subt_Mark), Nam_Ent)
+                  then
+                     Used_Type_Or_Elab := True;
+                  end if;
 
                --  Pragma Elaborate or Elaborate_All
 
@@ -426,7 +426,6 @@ package body Sem_Ch10 is
          is
             Nam_Ent   : constant Entity_Id := Entity (Name (Clause));
             Cont_Item : Node_Id;
-            Use_Item  : Node_Id;
 
          begin
             Used := False;
@@ -450,14 +449,9 @@ package body Sem_Ch10 is
                if Nkind (Cont_Item) = N_Use_Package_Clause
                  and then not Used
                then
-                  Use_Item := First (Names (Cont_Item));
-                  while Present (Use_Item) and then not Used loop
-                     if Entity (Use_Item) = Nam_Ent then
-                        Used := True;
-                     end if;
-
-                     Next (Use_Item);
-                  end loop;
+                  if Entity (Name (Cont_Item)) = Nam_Ent then
+                     Used := True;
+                  end if;
 
                --  Package with clause. Avoid processing self, implicitly
                --  generated with clauses or limited with clauses. Note that
@@ -2103,7 +2097,6 @@ package body Sem_Ch10 is
 
       procedure Analyze_Subunit_Context is
          Item      :  Node_Id;
-         Nam       :  Node_Id;
          Unit_Name : Entity_Id;
 
       begin
@@ -2154,18 +2147,10 @@ package body Sem_Ch10 is
                end if;
 
             elsif Nkind (Item) = N_Use_Package_Clause then
-               Nam := First (Names (Item));
-               while Present (Nam) loop
-                  Analyze (Nam);
-                  Next (Nam);
-               end loop;
+               Analyze (Name (Item));
 
             elsif Nkind (Item) = N_Use_Type_Clause then
-               Nam := First (Subtype_Marks (Item));
-               while Present (Nam) loop
-                  Analyze (Nam);
-                  Next (Nam);
-               end loop;
+               Analyze (Subtype_Mark (Item));
             end if;
 
             Next (Item);
@@ -2212,7 +2197,7 @@ package body Sem_Ch10 is
             Re_Install_Parents (Library_Unit (L), Scope (Scop));
          end if;
 
-         Install_Context (L);
+         Install_Context (L, False);
 
          --  If the subunit occurs within a child unit, we must restore the
          --  immediate visibility of any siblings that may occur in context.
@@ -2259,7 +2244,7 @@ package body Sem_Ch10 is
          for J in reverse 1 .. Num_Scopes loop
             U := Use_Clauses (J);
             Scope_Stack.Table (Scope_Stack.Last - J + 1).First_Use_Clause := U;
-            Install_Use_Clauses (U, Force_Installation => True);
+            Install_Use_Clauses (U);
          end loop;
       end Re_Install_Use_Clauses;
 
@@ -2383,7 +2368,7 @@ package body Sem_Ch10 is
          end if;
 
          Re_Install_Use_Clauses;
-         Install_Context (N);
+         Install_Context (N, Chain => False);
 
          --  Restore state of suppress flags for current body
 
@@ -3399,14 +3384,17 @@ package body Sem_Ch10 is
    -- Install_Context --
    ---------------------
 
-   procedure Install_Context (N : Node_Id) is
+   procedure Install_Context (N : Node_Id; Chain : Boolean := True) is
       Lib_Unit : constant Node_Id := Unit (N);
 
    begin
-      Install_Context_Clauses (N);
+      Install_Context_Clauses (N, Chain);
 
       if Is_Child_Spec (Lib_Unit) then
-         Install_Parents (Lib_Unit, Private_Present (Parent (Lib_Unit)));
+         Install_Parents
+           (Lib_Unit   => Lib_Unit,
+            Is_Private => Private_Present (Parent (Lib_Unit)),
+            Chain      => Chain);
       end if;
 
       Install_Limited_Context_Clauses (N);
@@ -3416,7 +3404,7 @@ package body Sem_Ch10 is
    -- Install_Context_Clauses --
    -----------------------------
 
-   procedure Install_Context_Clauses (N : Node_Id) is
+   procedure Install_Context_Clauses (N : Node_Id; Chain : Boolean := True) is
       Lib_Unit      : constant Node_Id := Unit (N);
       Item          : Node_Id;
       Uname_Node    : Entity_Id;
@@ -3567,12 +3555,12 @@ package body Sem_Ch10 is
          --  Case of USE PACKAGE clause
 
          elsif Nkind (Item) = N_Use_Package_Clause then
-            Analyze_Use_Package (Item);
+            Analyze_Use_Package (Item, Chain);
 
          --  Case of USE TYPE clause
 
          elsif Nkind (Item) = N_Use_Type_Clause then
-            Analyze_Use_Type (Item);
+            Analyze_Use_Type (Item, Chain);
 
          --  case of PRAGMA
 
@@ -3602,7 +3590,7 @@ package body Sem_Ch10 is
         or else (Nkind (Lib_Unit) = N_Subprogram_Body
                   and then not Acts_As_Spec (N))
       then
-         Install_Context (Library_Unit (N));
+         Install_Context (Library_Unit (N), Chain);
 
          --  Only install private with-clauses of a spec that comes from
          --  source, excluding specs created for a subprogram body that is
@@ -3716,7 +3704,6 @@ package body Sem_Ch10 is
          Item   : Node_Id;
          Spec   : Node_Id;
          WEnt   : Entity_Id;
-         Nam    : Node_Id;
          E      : Entity_Id;
          E2     : Entity_Id;
 
@@ -3749,43 +3736,36 @@ package body Sem_Ch10 is
 
             if Nkind (Item) = N_Use_Package_Clause then
 
-               --  Traverse the list of packages
+               E := Entity (Name (Item));
 
-               Nam := First (Names (Item));
-               while Present (Nam) loop
-                  E := Entity (Nam);
+               pragma Assert (Present (Parent (E)));
 
-                  pragma Assert (Present (Parent (E)));
+               if Nkind (Parent (E)) = N_Package_Renaming_Declaration
+                 and then Renamed_Entity (E) = WEnt
+               then
+                  --  The unlimited view is visible through use clause and
+                  --  renamings. There is no need to generate the error
+                  --  message here because Is_Visible_Through_Renamings
+                  --  takes care of generating the precise error message.
 
-                  if Nkind (Parent (E)) = N_Package_Renaming_Declaration
-                    and then Renamed_Entity (E) = WEnt
-                  then
-                     --  The unlimited view is visible through use clause and
-                     --  renamings. There is no need to generate the error
-                     --  message here because Is_Visible_Through_Renamings
-                     --  takes care of generating the precise error message.
+                  return;
 
+               elsif Nkind (Parent (E)) = N_Package_Specification then
+
+                  --  The use clause may refer to a local package.
+                  --  Check all the enclosing scopes.
+
+                  E2 := E;
+                  while E2 /= Standard_Standard and then E2 /= WEnt loop
+                     E2 := Scope (E2);
+                  end loop;
+
+                  if E2 = WEnt then
+                     Error_Msg_N
+                       ("unlimited view visible through use clause ", W);
                      return;
-
-                  elsif Nkind (Parent (E)) = N_Package_Specification then
-
-                     --  The use clause may refer to a local package.
-                     --  Check all the enclosing scopes.
-
-                     E2 := E;
-                     while E2 /= Standard_Standard and then E2 /= WEnt loop
-                        E2 := Scope (E2);
-                     end loop;
-
-                     if E2 = WEnt then
-                        Error_Msg_N
-                          ("unlimited view visible through use clause ", W);
-                        return;
-                     end if;
                   end if;
-
-                  Next (Nam);
-               end loop;
+               end if;
             end if;
 
             Next (Item);
@@ -4088,7 +4068,11 @@ package body Sem_Ch10 is
    -- Install_Parents --
    ---------------------
 
-   procedure Install_Parents (Lib_Unit : Node_Id; Is_Private : Boolean) is
+   procedure Install_Parents
+     (Lib_Unit   : Node_Id;
+      Is_Private : Boolean;
+      Chain      : Boolean := True)
+   is
       P      : Node_Id;
       E_Name : Entity_Id;
       P_Name : Entity_Id;
@@ -4144,13 +4128,16 @@ package body Sem_Ch10 is
       --  This is the recursive call that ensures all parents are loaded
 
       if Is_Child_Spec (P) then
-         Install_Parents (P,
-           Is_Private or else Private_Present (Parent (Lib_Unit)));
+         Install_Parents
+           (Lib_Unit   => P,
+            Is_Private =>
+              Is_Private or else Private_Present (Parent (Lib_Unit)),
+            Chain      => Chain);
       end if;
 
       --  Now we can install the context for this parent
 
-      Install_Context_Clauses (Parent_Spec (Lib_Unit));
+      Install_Context_Clauses (Parent_Spec (Lib_Unit), Chain);
       Install_Limited_Context_Clauses (Parent_Spec (Lib_Unit));
       Install_Siblings (P_Name, Parent (Lib_Unit));
 

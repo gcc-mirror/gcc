@@ -1898,8 +1898,8 @@ cpms_in::tag_binding ()
   if (!r.checkpoint ())
     return false;
 
-  return push_module_binding (ns, main_p ? mod_ix : GLOBAL_MODULE_INDEX,
-			      name, value, type);
+  return push_module_binding (ns, name, main_p ? mod_ix : GLOBAL_MODULE_INDEX,
+			      value, type);
 }
 
 /* Stream a function definition.  */
@@ -4233,20 +4233,18 @@ cpms_out::bindings (tree ns)
     }
   dump () && dump ("Walking namespace %N", ns);
 
-  hash_map<lang_identifier *, tree>::iterator end
+  hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_map<lang_identifier *, tree>::iterator iter
+  for (hash_table<named_decl_hash>::iterator iter
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
     {
-      std::pair<tree, tree> binding (*iter);
-
-      tree name = binding.first;
-      tree global = binding.second;
+      tree global = *iter;
       tree inner = NULL_TREE;
 
       if (TREE_CODE (global) == MODULE_VECTOR)
 	{
 	  const module_cluster *cluster = &MODULE_VECTOR_CLUSTER (global, 0);
+	  tree name = MODULE_VECTOR_NAME (global);
 	  global = cluster->slots[GLOBAL_MODULE_INDEX];
 
 	  if (tree main = cluster->slots[THIS_MODULE_INDEX])
@@ -4254,7 +4252,7 @@ cpms_out::bindings (tree ns)
 	}
 
       if (global)
-	if (tree ginner = tag_binding (ns, false, name, global))
+	if (tree ginner = tag_binding (ns, false, OVL_NAME (global), global))
 	  {
 	    gcc_assert (!inner || inner == ginner);
 	    inner = ginner;

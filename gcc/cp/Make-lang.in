@@ -183,7 +183,7 @@ check-c++17:
 
 # Run the testsuite in all standard conformance levels.
 check-c++-all:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,concepts" check-g++
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,2a,concepts" check-g++
 
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:

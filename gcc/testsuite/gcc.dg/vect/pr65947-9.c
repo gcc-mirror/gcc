@@ -10,7 +10,7 @@ extern void abort (void) __attribute__ ((noreturn));
    vectorize because the vectorisation requires a slot for default values.  */
 
 signed char __attribute__((noinline,noclone))
-condition_reduction (char *a, char min_v)
+condition_reduction (signed char *a, signed char min_v)
 {
   signed char last = -72;
 

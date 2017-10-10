@@ -367,7 +367,7 @@ can_vec_perm_p (machine_mode mode, bool variable, vec_perm_indices *sel)
       if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
 	  && (sel == NULL
 	      || targetm.vectorize.vec_perm_const_ok == NULL
-	      || targetm.vectorize.vec_perm_const_ok (mode, &(*sel)[0])))
+	      || targetm.vectorize.vec_perm_const_ok (mode, *sel)))
 	return true;
     }
 

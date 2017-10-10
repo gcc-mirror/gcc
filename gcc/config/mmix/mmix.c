@@ -168,6 +168,7 @@ static void mmix_print_operand (FILE *, rtx, int);
 static void mmix_print_operand_address (FILE *, machine_mode, rtx);
 static bool mmix_print_operand_punct_valid_p (unsigned char);
 static void mmix_conditional_register_usage (void);
+static HOST_WIDE_INT mmix_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -282,6 +283,9 @@ static void mmix_conditional_register_usage (void);
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mmix_option_override
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT mmix_constant_alignment
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Functions that are expansions for target macros.
@@ -334,10 +338,10 @@ mmix_data_alignment (tree type ATTRIBUTE_UNUSED, int basic_align)
   return basic_align;
 }
 
-/* CONSTANT_ALIGNMENT.  */
+/* Implement tARGET_CONSTANT_ALIGNMENT.  */
 
-int
-mmix_constant_alignment (tree constant ATTRIBUTE_UNUSED, int basic_align)
+static HOST_WIDE_INT
+mmix_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
 {
   if (basic_align < 32)
     return 32;

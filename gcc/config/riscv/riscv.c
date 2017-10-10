@@ -3995,6 +3995,17 @@ riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
   return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -4141,6 +4152,9 @@ riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS riscv_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT riscv_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

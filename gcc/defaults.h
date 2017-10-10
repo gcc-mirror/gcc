@@ -1265,10 +1265,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LOAD_EXTEND_OP(M) UNKNOWN
 #endif
 
-#ifndef CONSTANT_ALIGNMENT
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ALIGN
-#endif
-
 #ifndef INITIAL_FRAME_ADDRESS_RTX
 #define INITIAL_FRAME_ADDRESS_RTX NULL
 #endif

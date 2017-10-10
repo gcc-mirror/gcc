@@ -1050,19 +1050,7 @@ must be aligned to 16 byte boundaries.
 If this macro is not defined, then @var{basic-align} is used.
 @end defmac
 
-@defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
-If defined, a C expression to compute the alignment given to a constant
-that is being placed in memory.  @var{constant} is the constant and
-@var{basic-align} is the alignment that the object would ordinarily
-have.  The value of this macro is used instead of that alignment to
-align the object.
-
-The default definition just returns @var{basic-align}.
-
-The typical use of this macro is to increase alignment for string
-constants to be word aligned so that @code{strcpy} calls that copy
-constants can be done inline.
-@end defmac
+@hook TARGET_CONSTANT_ALIGNMENT
 
 @defmac LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
@@ -2847,6 +2835,8 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
+@hook TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE
+
 @need 2000
 @node Frame Registers
 @subsection Registers That Address the Stack Frame
@@ -4086,6 +4076,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 
+@hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
+
 @hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 
 @hook TARGET_VECTORIZE_VEC_PERM_CONST_OK
@@ -4607,6 +4599,8 @@ Define this macro if a non-short-circuit operation produced by
 @hook TARGET_RTX_COSTS
 
 @hook TARGET_ADDRESS_COST
+
+@hook TARGET_INSN_COST
 
 @hook TARGET_MAX_NOCE_IFCVT_SEQ_COST
 

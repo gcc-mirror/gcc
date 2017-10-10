@@ -266,7 +266,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
--Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wcast-align  -Wcast-qual  @gol
+-Wc++-compat  -Wc++11-compat  -Wc++14-compat  @gol
+-Wcast-align  -Wcast-align=strict  -Wcast-qual  @gol
 -Wchar-subscripts  -Wchkp  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
@@ -1193,7 +1194,7 @@ See RS/6000 and PowerPC Options.
 -mincoming-stack-boundary=@var{num} @gol
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 @gol
 -mrecip  -mrecip=@var{opt} @gol
--mvzeroupper  -mprefer-avx128 @gol
+-mvzeroupper  -mprefer-avx128 -mprefer-avx256 @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
@@ -1879,6 +1880,16 @@ The name @samp{c++1z} is deprecated.
 @itemx gnu++1z
 GNU dialect of @option{-std=c++17}.
 The name @samp{gnu++1z} is deprecated.
+
+@item c++2a
+The next revision of the ISO C++ standard, tentatively planned for
+2020.  Support is highly experimental, and will almost certainly
+change in incompatible ways in future releases.
+
+@item gnu++2a
+GNU dialect of @option{-std=c++2a}.  Support is highly experimental,
+and will almost certainly change in incompatible ways in future
+releases.
 @end table
 
 @item -fgnu89-inline
@@ -4587,6 +4598,17 @@ in the @code{?}: operator is a boolean expression, the omitted value is
 always 1.  Often programmers expect it to be a value computed
 inside the conditional expression instead.
 
+For C++ this also warns for some cases of unnecessary parentheses in
+declarations, which can indicate an attempt at a function call instead
+of a declaration:
+@smallexample
+@{
+  // Declares a local variable called mymutex.
+  std::unique_lock<std::mutex> (mymutex);
+  // User meant std::unique_lock<std::mutex> lock (mymutex);
+@}
+@end smallexample
+
 This warning is enabled by @option{-Wall}.
 
 @item -Wsequence-point
@@ -5198,7 +5220,7 @@ whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
 
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
@@ -5250,6 +5272,15 @@ might be appropriate for any function that calls a function like
 @code{vprintf} or @code{vscanf}, but this might not always be the
 case, and some functions for which @code{format} attributes are
 appropriate may not be detected.
+
+@item -Wsuggest-attribute=cold
+@opindex Wsuggest-attribute=cold
+@opindex Wno-suggest-attribute=cold
+
+Warn about functions that might be candidates for @code{cold} attribute.  This
+is based on static detection and generally will only warn about functions which
+always leads to a call to another @code{cold} function such as wrappers of
+C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
 
 @item -Wsuggest-final-types
@@ -5949,6 +5980,12 @@ Warn whenever a pointer is cast such that the required alignment of the
 target is increased.  For example, warn if a @code{char *} is cast to
 an @code{int *} on machines where integers can only be accessed at
 two- or four-byte boundaries.
+
+@item -Wcast-align=strict
+@opindex Wcast-align=strict
+Warn whenever a pointer is cast such that the required alignment of the
+target is increased.  For example, warn if a @code{char *} is cast to
+an @code{int *} regardless of the target machine.
 
 @item -Wwrite-strings
 @opindex Wwrite-strings
@@ -10189,6 +10226,21 @@ compilation without.  The value for compilation with profile feedback
 needs to be more conservative (higher) in order to make tracer
 effective.
 
+@item stack-clash-protection-guard-size
+Specify the size of the operating system provided stack guard as
+2 raised to @var{num} bytes.  The default value is 12 (4096 bytes).
+Acceptable values are between 12 and 30.  Higher values may reduce the
+number of explicit probes, but a value larger than the operating system
+provided guard will leave code vulnerable to stack clash style attacks.
+
+@item stack-clash-protection-probe-interval
+Stack clash protection involves probing stack space as it is allocated.  This
+param controls the maximum distance between probes into the stack as 2 raised
+to @var{num} bytes.  Acceptable values are between 10 and 16 and defaults to
+12.  Higher values may reduce the number of explicit probes, but a value
+larger than the operating system provided guard will leave code vulnerable to
+stack clash style attacks.
+
 @item max-cse-path-length
 
 The maximum number of basic blocks on path that CSE considers.
@@ -10499,13 +10551,9 @@ sequence pairs.  This option only applies when using
 @item graphite-max-nb-scop-params
 To avoid exponential effects in the Graphite loop transforms, the
 number of parameters in a Static Control Part (SCoP) is bounded.  The
-default value is 10 parameters.  A variable whose value is unknown at
-compilation time and defined outside a SCoP is a parameter of the SCoP.
-
-@item graphite-max-bbs-per-function
-To avoid exponential effects in the detection of SCoPs, the size of
-the functions analyzed by Graphite is bounded.  The default value is
-100 basic blocks.
+default value is 10 parameters, a value of zero can be used to lift
+the bound.  A variable whose value is unknown at compilation time and
+defined outside a SCoP is a parameter of the SCoP.
 
 @item loop-block-tile-size
 Loop blocking or strip mining transforms, enabled with
@@ -11414,7 +11462,8 @@ target support in the compiler but comes with the following drawbacks:
 @enumerate
 @item
 Modified allocation strategy for large objects: they are always
-allocated dynamically if their size exceeds a fixed threshold.
+allocated dynamically if their size exceeds a fixed threshold.  Note this
+may change the semantics of some code.
 
 @item
 Fixed limit on the size of the static frame of functions: when it is
@@ -11428,6 +11477,25 @@ generic implementation, code performance is hampered.
 
 Note that old-style stack checking is also the fallback method for
 @samp{specific} if no target support has been added in the compiler.
+
+@samp{-fstack-check=} is designed for Ada's needs to detect infinite recursion
+and stack overflows.  @samp{specific} is an excellent choice when compiling
+Ada code.  It is not generally sufficient to protect against stack-clash
+attacks.  To protect against those you want @samp{-fstack-clash-protection}.
+
+@item -fstack-clash-protection
+@opindex fstack-clash-protection
+Generate code to prevent stack clash style attacks.  When this option is
+enabled, the compiler will only allocate one page of stack space at a time
+and each page is accessed immediately after allocation.  Thus, it prevents
+allocations from jumping over any stack guard page provided by the
+operating system.
+
+Most targets do not fully support stack clash protection.  However, on
+those targets @option{-fstack-clash-protection} will protect dynamic stack
+allocations.  @option{-fstack-clash-protection} may also provide limited
+protection for static stack allocations if the target supports
+@option{-fstack-check=specific}.
 
 @item -fstack-limit-register=@var{reg}
 @itemx -fstack-limit-symbol=@var{sym}
@@ -25064,6 +25132,12 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, AVX512F, AVX512PF, AVX512ER and
 AVX512CD instruction set support.
 
+@item knm
+Intel Knights Mill CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, AVX512F, AVX512PF, AVX512ER, AVX512CD,
+AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction set support.
+
 @item skylake-avx512
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
@@ -25826,6 +25900,11 @@ intrinsics.
 @opindex mprefer-avx128
 This option instructs GCC to use 128-bit AVX instructions instead of
 256-bit AVX instructions in the auto-vectorizer.
+
+@item -mprefer-avx256
+@opindex mprefer-avx256
+This option instructs GCC to use 256-bit AVX instructions instead of
+512-bit AVX instructions in the auto-vectorizer.
 
 @item -mcx16
 @opindex mcx16

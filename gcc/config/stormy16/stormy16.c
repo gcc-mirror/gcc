@@ -2715,6 +2715,9 @@ xstormy16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P xstormy16_modes_tieable_p
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-stormy16.h"

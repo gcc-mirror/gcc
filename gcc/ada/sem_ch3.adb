@@ -2211,6 +2211,12 @@ package body Sem_Ch3 is
       --  contract expression. Full analysis of the expression is done when
       --  the contract is processed.
 
+      function Contains_Lib_Incomplete_Type (Pkg : Entity_Id) return Boolean;
+      --  Check if a nested package has entities within it that rely on library
+      --  level private types where the full view has not been completed for
+      --  the purposes of checking if it is acceptable to freeze an expression
+      --  function at the point of declaration.
+
       procedure Handle_Late_Controlled_Primitive (Body_Decl : Node_Id);
       --  Determine whether Body_Decl denotes the body of a late controlled
       --  primitive (either Initialize, Adjust or Finalize). If this is the
@@ -2231,11 +2237,8 @@ package body Sem_Ch3 is
 
       procedure Resolve_Aspects;
       --  Utility to resolve the expressions of aspects at the end of a list of
-      --  declarations.
-
-      function Uses_Unseen_Lib_Unit_Priv (Pkg : Entity_Id) return Boolean;
-      --  Check if an inner package has entities within it that rely on library
-      --  level private types where the full view has not been seen.
+      --  declarations, or before a declaration that freezes previous entities,
+      --  such as in a subprogram body.
 
       -----------------
       -- Adjust_Decl --
@@ -2397,6 +2400,40 @@ package body Sem_Ch3 is
          end loop;
       end Check_Entry_Contracts;
 
+      ----------------------------------
+      -- Contains_Lib_Incomplete_Type --
+      ----------------------------------
+
+      function Contains_Lib_Incomplete_Type (Pkg : Entity_Id) return Boolean is
+         Curr : Entity_Id;
+
+      begin
+         --  Avoid looking through scopes that do not meet the precondition of
+         --  Pkg not being within a library unit spec.
+
+         if not Is_Compilation_Unit (Pkg)
+           and then not Is_Generic_Instance (Pkg)
+           and then not In_Package_Body (Enclosing_Lib_Unit_Entity (Pkg))
+         then
+            --  Loop through all entities in the current scope to identify
+            --  an entity that depends on a private type.
+
+            Curr := First_Entity (Pkg);
+            loop
+               if Nkind (Curr) in N_Entity
+                 and then Depends_On_Private (Curr)
+               then
+                  return True;
+               end if;
+
+               exit when Last_Entity (Current_Scope) = Curr;
+               Curr := Next_Entity (Curr);
+            end loop;
+         end if;
+
+         return False;
+      end Contains_Lib_Incomplete_Type;
+
       --------------------------------------
       -- Handle_Late_Controlled_Primitive --
       --------------------------------------
@@ -2540,40 +2577,6 @@ package body Sem_Ch3 is
          end loop;
       end Resolve_Aspects;
 
-      -------------------------------
-      -- Uses_Unseen_Lib_Unit_Priv --
-      -------------------------------
-
-      function Uses_Unseen_Lib_Unit_Priv (Pkg : Entity_Id) return Boolean is
-         Curr : Entity_Id;
-
-      begin
-         --  Avoid looking through scopes that do not meet the precondition of
-         --  Pkg not being within a library unit spec.
-
-         if not Is_Compilation_Unit (Pkg)
-           and then not Is_Generic_Instance (Pkg)
-           and then not In_Package_Body (Enclosing_Lib_Unit_Entity (Pkg))
-         then
-            --  Loop through all entities in the current scope to identify
-            --  an entity that depends on a private type.
-
-            Curr := First_Entity (Pkg);
-            loop
-               if Nkind (Curr) in N_Entity
-                 and then Depends_On_Private (Curr)
-               then
-                  return True;
-               end if;
-
-               exit when Last_Entity (Current_Scope) = Curr;
-               Curr := Next_Entity (Curr);
-            end loop;
-         end if;
-
-         return False;
-      end Uses_Unseen_Lib_Unit_Priv;
-
       --  Local variables
 
       Context     : Node_Id   := Empty;
@@ -2666,6 +2669,16 @@ package body Sem_Ch3 is
                   Freeze_From := Last_Entity (Current_Scope);
 
                else
+                  --  For declarations in a subprogram body there is no issue
+                  --  with name resolution in aspect specifications, but in
+                  --  ASIS mode we need to preanalyze aspect specifications
+                  --  that may otherwise only be analyzed during expansion
+                  --  (e.g. during generation of a related subprogram).
+
+                  if ASIS_Mode then
+                     Resolve_Aspects;
+                  end if;
+
                   Freeze_All (First_Entity (Current_Scope), Decl);
                   Freeze_From := Last_Entity (Current_Scope);
                end if;
@@ -2737,14 +2750,16 @@ package body Sem_Ch3 is
          --  not cause unwanted freezing at that point.
 
          --  It is also necessary to check for a case where both an expression
-         --  function is used and the current scope depends on an unseen
+         --  function is used and the current scope depends on an incomplete
          --  private type from a library unit, otherwise premature freezing of
          --  the private type will occur.
 
          elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl)
            and then ((Nkind (Next_Decl) /= N_Subprogram_Body
-                      or else not Was_Expression_Function (Next_Decl))
-                     or else not Uses_Unseen_Lib_Unit_Priv (Current_Scope))
+                       or else not Was_Expression_Function (Next_Decl))
+                      or else (not Is_Ignored_Ghost_Entity (Current_Scope)
+                                and then not Contains_Lib_Incomplete_Type
+                                               (Current_Scope)))
          then
             --  When a controlled type is frozen, the expander generates stream
             --  and controlled-type support routines. If the freeze is caused
@@ -2776,6 +2791,12 @@ package body Sem_Ch3 is
                if Nkind (Next_Decl) = N_Subprogram_Body then
                   Handle_Late_Controlled_Primitive (Next_Decl);
                end if;
+
+            else
+               --  In ASIS mode, if the next declaration is a body, complete
+               --  the analysis of declarations so far.
+
+               Resolve_Aspects;
             end if;
 
             Adjust_Decl;
@@ -4698,6 +4719,20 @@ package body Sem_Ch3 is
             Set_Has_Initial_Value (Id);
          end if;
       end if;
+
+      --  Set the SPARK mode from the current context (may be overwritten later
+      --  with explicit pragma).
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
+
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id   => Id,
+         Checks => True);
 
       --  Initialize alignment and size and capture alignment setting
 
@@ -10220,10 +10255,11 @@ package body Sem_Ch3 is
          Set_Is_Limited_Record (Def_Id, Is_Limited_Record (T));
 
          if Has_Discrs
-            and then not Is_Empty_Elmt_List (Elist)
-            and then not For_Access
+           and then not Is_Empty_Elmt_List (Elist)
+           and then not For_Access
          then
             Create_Constrained_Components (Def_Id, Related_Nod, T, Elist);
+
          elsif not For_Access then
             Set_Cloned_Subtype (Def_Id, T);
          end if;
@@ -10247,7 +10283,21 @@ package body Sem_Ch3 is
          return;
       else
          Set_Itype (IR, Ityp);
-         Insert_After (Nod, IR);
+
+         --  If Nod is a library unit entity, then Insert_After won't work,
+         --  because Nod is not a member of any list. Therefore, we use
+         --  Add_Global_Declaration in this case. This can happen if we have a
+         --  build-in-place library function.
+
+         if (Nkind (Nod) in N_Entity and then Is_Compilation_Unit (Nod))
+           or else
+             (Nkind (Nod) = N_Defining_Program_Unit_Name
+               and then Is_Compilation_Unit (Defining_Identifier (Nod)))
+         then
+            Add_Global_Declaration (IR);
+         else
+            Insert_After (Nod, IR);
+         end if;
       end if;
    end Build_Itype_Reference;
 
@@ -11767,14 +11817,25 @@ package body Sem_Ch3 is
                if Nkind (Exp) = N_Type_Conversion
                  and then Nkind (Expression (Exp)) = N_Function_Call
                then
-                  Error_Msg_N
-                    ("illegal context for call"
-                      & " to function with limited result", Exp);
+                  --  No error for internally-generated object declarations,
+                  --  which can come from build-in-place assignment statements.
+
+                  if Nkind (Parent (Exp)) = N_Object_Declaration
+                    and then not Comes_From_Source
+                                   (Defining_Identifier (Parent (Exp)))
+                  then
+                     null;
+
+                  else
+                     Error_Msg_N
+                       ("illegal context for call to function with limited "
+                        & "result", Exp);
+                  end if;
 
                else
                   Error_Msg_N
-                    ("initialization of limited object requires aggregate "
-                      & "or function call",  Exp);
+                    ("initialization of limited object requires aggregate or "
+                     & "function call",  Exp);
                end if;
             end if;
          end if;
@@ -12745,9 +12806,13 @@ package body Sem_Ch3 is
          end if;
 
          --  A deferred constant is a visible entity. If type has invariants,
-         --  verify that the initial value satisfies them.
+         --  verify that the initial value satisfies them. This is not done in
+         --  GNATprove mode, as GNATprove handles invariant checks itself.
 
-         if Has_Invariants (T) and then Present (Invariant_Procedure (T)) then
+         if Has_Invariants (T)
+           and then Present (Invariant_Procedure (T))
+           and then not GNATprove_Mode
+         then
             Insert_After (N,
               Make_Invariant_Call (New_Occurrence_Of (Prev, Sloc (N))));
          end if;
@@ -13510,6 +13575,7 @@ package body Sem_Ch3 is
          end if;
 
          Constrain_Discriminated_Type (Def_Id, SI, Related_Nod);
+         Set_First_Private_Entity (Def_Id, First_Private_Entity (T_Ent));
 
          Set_Depends_On_Private (Def_Id, Has_Private_Component (Def_Id));
          Set_Corresponding_Record_Type (Def_Id,
@@ -21911,6 +21977,17 @@ package body Sem_Ch3 is
             while Present (Comp) loop
                if Chars (Comp) = Chars (Defining_Identifier (N)) then
                   Set_Defining_Identifier (N, Comp);
+                  exit;
+               end if;
+
+               Next_Discriminant (Comp);
+            end loop;
+
+         elsif Nkind (N) = N_Variant_Part then
+            Comp := First_Discriminant (Typ);
+            while Present (Comp) loop
+               if Chars (Comp) = Chars (Name (N)) then
+                  Set_Entity (Name (N), Comp);
                   exit;
                end if;
 

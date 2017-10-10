@@ -4851,7 +4851,7 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
     {
       int prec = TYPE_PRECISION (etype);
 
-      if (wi::mask (prec - 1, false, prec) == high)
+      if (wi::mask <widest_int> (prec - 1, false) == wi::to_widest (high))
 	{
 	  if (TYPE_UNSIGNED (etype))
 	    {
@@ -6982,11 +6982,15 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
   int byte, offset, word, words;
   unsigned char value;
 
-  if ((off == -1 && total_bytes > len)
-      || off >= total_bytes)
+  if ((off == -1 && total_bytes > len) || off >= total_bytes)
     return 0;
   if (off == -1)
     off = 0;
+
+  if (ptr == NULL)
+    /* Dry run.  */
+    return MIN (len, total_bytes - off);
+
   words = total_bytes / UNITS_PER_WORD;
 
   for (byte = 0; byte < total_bytes; byte++)
@@ -7009,8 +7013,7 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 	}
       else
 	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
-      if (offset >= off
-	  && offset - off < len)
+      if (offset >= off && offset - off < len)
 	ptr[offset - off] = value;
     }
   return MIN (len, total_bytes - off);
@@ -7036,8 +7039,7 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 
   i_type = lang_hooks.types.type_for_size (GET_MODE_BITSIZE (mode), 1);
 
-  if (NULL_TREE == i_type
-      || TYPE_PRECISION (i_type) != total_bytes)
+  if (NULL_TREE == i_type || TYPE_PRECISION (i_type) != total_bytes)
     return 0;
   
   value = TREE_FIXED_CST (expr);
@@ -7065,11 +7067,15 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
      up to 192 bits.  */
   long tmp[6];
 
-  if ((off == -1 && total_bytes > len)
-      || off >= total_bytes)
+  if ((off == -1 && total_bytes > len) || off >= total_bytes)
     return 0;
   if (off == -1)
     off = 0;
+
+  if (ptr == NULL)
+    /* Dry run.  */
+    return MIN (len, total_bytes - off);
+
   words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
 
   real_to_target (tmp, TREE_REAL_CST_PTR (expr), TYPE_MODE (type));
@@ -7123,15 +7129,14 @@ native_encode_complex (const_tree expr, unsigned char *ptr, int len, int off)
 
   part = TREE_REALPART (expr);
   rsize = native_encode_expr (part, ptr, len, off);
-  if (off == -1
-      && rsize == 0)
+  if (off == -1 && rsize == 0)
     return 0;
   part = TREE_IMAGPART (expr);
   if (off != -1)
     off = MAX (0, off - GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (part))));
-  isize = native_encode_expr (part, ptr+rsize, len-rsize, off);
-  if (off == -1
-      && isize != rsize)
+  isize = native_encode_expr (part, ptr ? ptr + rsize : NULL,
+			      len - rsize, off);
+  if (off == -1 && isize != rsize)
     return 0;
   return rsize + isize;
 }
@@ -7161,9 +7166,9 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 	  continue;
 	}
       elem = VECTOR_CST_ELT (expr, i);
-      int res = native_encode_expr (elem, ptr+offset, len-offset, off);
-      if ((off == -1 && res != size)
-	  || res == 0)
+      int res = native_encode_expr (elem, ptr ? ptr + offset : NULL,
+				    len - offset, off);
+      if ((off == -1 && res != size) || res == 0)
 	return 0;
       offset += res;
       if (offset >= len)
@@ -7183,16 +7188,24 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 static int
 native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 {
-  if (! can_native_encode_string_p (expr))
+  tree type = TREE_TYPE (expr);
+
+  /* Wide-char strings are encoded in target byte-order so native
+     encoding them is trivial.  */
+  if (BITS_PER_UNIT != CHAR_BIT
+      || TREE_CODE (type) != ARRAY_TYPE
+      || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
+      || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return 0;
 
   HOST_WIDE_INT total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
-  if ((off == -1 && total_bytes > len)
-      || off >= total_bytes)
+  if ((off == -1 && total_bytes > len) || off >= total_bytes)
     return 0;
   if (off == -1)
     off = 0;
-  if (TREE_STRING_LENGTH (expr) - off < MIN (total_bytes, len))
+  if (ptr == NULL)
+    /* Dry run.  */;
+  else if (TREE_STRING_LENGTH (expr) - off < MIN (total_bytes, len))
     {
       int written = 0;
       if (off < TREE_STRING_LENGTH (expr))
@@ -7211,7 +7224,8 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 
 /* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST,
    REAL_CST, COMPLEX_CST or VECTOR_CST specified by EXPR into the
-   buffer PTR of length LEN bytes.  If OFF is not -1 then start
+   buffer PTR of length LEN bytes.  If PTR is NULL, don't actually store
+   anything, just do a dry run.  If OFF is not -1 then start
    the encoding at byte offset OFF and encode at most LEN bytes.
    Return the number of bytes placed in the buffer, or zero upon failure.  */
 
@@ -7459,43 +7473,6 @@ can_native_interpret_type_p (tree type)
     }
 }
 
-/* Return true iff a constant of type TYPE is accepted by
-   native_encode_expr.  */
-
-bool
-can_native_encode_type_p (tree type)
-{
-  switch (TREE_CODE (type))
-    {
-    case INTEGER_TYPE:
-    case REAL_TYPE:
-    case FIXED_POINT_TYPE:
-    case COMPLEX_TYPE:
-    case VECTOR_TYPE:
-    case POINTER_TYPE:
-      return true;
-    default:
-      return false;
-    }
-}
-
-/* Return true iff a STRING_CST S is accepted by
-   native_encode_expr.  */
-
-bool
-can_native_encode_string_p (const_tree expr)
-{
-  tree type = TREE_TYPE (expr);
-
-  /* Wide-char strings are encoded in target byte-order so native
-     encoding them is trivial.  */
-  if (BITS_PER_UNIT != CHAR_BIT
-      || TREE_CODE (type) != ARRAY_TYPE
-      || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
-      || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
-    return false;
-  return true;
-}
 
 /* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type
    TYPE at compile-time.  If we're unable to perform the conversion
@@ -9911,7 +9888,7 @@ fold_binary_loc (location_t loc,
 				   TYPE_PRECISION (TREE_TYPE (arg1)));
 
 	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
-	  if (msk.and_not (c1 | c2) == 0)
+	  if (wi::bit_and_not (msk, c1 | c2) == 0)
 	    {
 	      tem = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
 	      return fold_build2_loc (loc, BIT_IOR_EXPR, type, tem, arg1);
@@ -9922,12 +9899,13 @@ fold_binary_loc (location_t loc,
 	     mode which allows further optimizations.  */
 	  c1 &= msk;
 	  c2 &= msk;
-	  wide_int c3 = c1.and_not (c2);
+	  wide_int c3 = wi::bit_and_not (c1, c2);
 	  for (w = BITS_PER_UNIT; w <= width; w <<= 1)
 	    {
 	      wide_int mask = wi::mask (w, false,
 					TYPE_PRECISION (type));
-	      if (((c1 | c2) & mask) == mask && c1.and_not (mask) == 0)
+	      if (((c1 | c2) & mask) == mask
+		  && wi::bit_and_not (c1, mask) == 0)
 		{
 		  c3 = mask;
 		  break;

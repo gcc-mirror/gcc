@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ with Snames;
 with Switch;   use Switch;
 with System;   use System;
 with Table;
-with Targparm; use Targparm;
+with Targparm;
 with Types;
 
 with Ada.Command_Line; use Ada.Command_Line;

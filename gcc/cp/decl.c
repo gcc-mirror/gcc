@@ -2575,7 +2575,7 @@ next_arg:;
       DECL_FUNCTION_VERSIONED (newdecl) = 1;
       /* newdecl will be purged after copying to olddecl and is no longer
          a version.  */
-      cgraph_node::delete_function_version (newdecl);
+      cgraph_node::delete_function_version_by_decl (newdecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -3904,47 +3904,47 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
 /* Push the declarations of builtin types into the global namespace.
    RID_INDEX is the index of the builtin type in the array
    RID_POINTERS.  NAME is the name used when looking up the builtin
-   type.  TYPE is the _TYPE node for the builtin type.  */
+   type.  TYPE is the _TYPE node for the builtin type.
+
+   The calls to set_global_binding below should be
+   eliminated.  Built-in types should not be looked up name; their
+   names are keywords that the parser can recognize.  However, there
+   is code in c-common.c that uses identifier_global_value to look up
+   built-in types by name.  */
 
 void
 record_builtin_type (enum rid rid_index,
 		     const char* name,
 		     tree type)
 {
-  tree rname = NULL_TREE, tname = NULL_TREE;
-  tree tdecl = NULL_TREE;
+  tree decl = NULL_TREE;
+
+  if (name)
+    {
+      tree tname = get_identifier (name);
+      tree tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, tname, type);
+      DECL_ARTIFICIAL (tdecl) = 1;
+      set_global_binding (tdecl);
+      decl = tdecl;
+    }
 
   if ((int) rid_index < (int) RID_MAX)
-    rname = ridpointers[(int) rid_index];
-  if (name)
-    tname = get_identifier (name);
-
-  /* The calls to SET_IDENTIFIER_GLOBAL_VALUE below should be
-     eliminated.  Built-in types should not be looked up name; their
-     names are keywords that the parser can recognize.  However, there
-     is code in c-common.c that uses identifier_global_value to look
-     up built-in types by name.  */
-  if (tname)
-    {
-      tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, tname, type);
-      DECL_ARTIFICIAL (tdecl) = 1;
-      SET_IDENTIFIER_GLOBAL_VALUE (tname, tdecl);
-    }
-  if (rname)
-    {
-      if (!tdecl)
+    if (tree rname = ridpointers[(int) rid_index])
+      if (!decl || DECL_NAME (decl) != rname)
 	{
-	  tdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, rname, type);
-	  DECL_ARTIFICIAL (tdecl) = 1;
+	  tree rdecl = build_decl (BUILTINS_LOCATION, TYPE_DECL, rname, type);
+	  DECL_ARTIFICIAL (rdecl) = 1;
+	  set_global_binding (rdecl);
+	  if (!decl)
+	    decl = rdecl;
 	}
-      SET_IDENTIFIER_GLOBAL_VALUE (rname, tdecl);
+
+  if (decl)
+    {
+      if (!TYPE_NAME (type))
+	TYPE_NAME (type) = decl;
+      debug_hooks->type_decl (decl, 0);
     }
-
-  if (!TYPE_NAME (type))
-    TYPE_NAME (type) = tdecl;
-
-  if (tdecl)
-    debug_hooks->type_decl (tdecl, 0);
 }
 
 /* Push a type into the namespace so that the back ends ignore it.  */
@@ -4525,7 +4525,7 @@ build_cp_library_fn_ptr (const char* name, tree type, int ecf_flags)
 }
 
 /* Like build_library_fn, but also pushes the function so that we will
-   be able to find it via IDENTIFIER_GLOBAL_VALUE.  Also, the function
+   be able to find it via get_global_binding.  Also, the function
    may throw exceptions listed in RAISES.  */
 
 tree
@@ -6063,7 +6063,10 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
       tree elt = CONSTRUCTOR_ELT (init, 0)->value;
       type = cv_unqualified (type);
       if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
-	return cp_build_c_cast (type, elt, tf_warning_or_error);
+	{
+	  warning_sentinel w (warn_useless_cast);
+	  return cp_build_c_cast (type, elt, tf_warning_or_error);
+	}
       else
 	return error_mark_node;
     }
@@ -7840,7 +7843,7 @@ start_cleanup_fn (void)
 static void
 end_cleanup_fn (void)
 {
-  expand_or_defer_fn (finish_function (0));
+  expand_or_defer_fn (finish_function (/*inline_p=*/false));
 
   pop_from_top_level ();
 }
@@ -8071,9 +8074,9 @@ expand_static_init (tree decl, tree init)
 	  acquire_name = get_identifier ("__cxa_guard_acquire");
 	  release_name = get_identifier ("__cxa_guard_release");
 	  abort_name = get_identifier ("__cxa_guard_abort");
-	  acquire_fn = identifier_global_value (acquire_name);
-	  release_fn = identifier_global_value (release_name);
-	  abort_fn = identifier_global_value (abort_name);
+	  acquire_fn = get_global_binding (acquire_name);
+	  release_fn = get_global_binding (release_name);
+	  abort_fn = get_global_binding (abort_name);
 	  if (!acquire_fn)
 	    acquire_fn = push_library_fn
 	      (acquire_name, build_function_type_list (integer_type_node,
@@ -9347,7 +9350,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
     {
       tree type = TREE_TYPE (size);
 
-      mark_rvalue_use (size);
+      size = mark_rvalue_use (size);
 
       if (cxx_dialect < cxx11 && TREE_CODE (size) == NOP_EXPR
 	  && TREE_SIDE_EFFECTS (size))
@@ -10144,7 +10147,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    gcc_assert (flags == NO_SPECIAL);
 		    flags = TYPENAME_FLAG;
 		    sfk = sfk_conversion;
-		    tree glob = IDENTIFIER_GLOBAL_VALUE (dname);
+		    tree glob = get_global_binding (dname);
 		    if (glob && TREE_CODE (glob) == TYPE_DECL)
 		      name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		    else
@@ -10825,6 +10828,13 @@ grokdeclarator (const cp_declarator *declarator,
 					    attr_flags);
 	}
 
+      /* We don't want to warn in parmeter context because we don't
+	 yet know if the parse will succeed, and this might turn out
+	 to be a constructor call.  */
+      if (decl_context != PARM
+	  && declarator->parenthesized != UNKNOWN_LOCATION)
+	warning_at (declarator->parenthesized, OPT_Wparentheses,
+		    "unnecessary parentheses in declaration of %qs", name);
       if (declarator->kind == cdk_id || declarator->kind == cdk_decomp)
 	break;
 
@@ -15469,20 +15479,16 @@ maybe_save_function_definition (tree fun)
 
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
-   for the function definition.
-
-   FLAGS is a bitwise or of the following values:
-     2 - INCLASS_INLINE
-       We just finished processing the body of an in-class inline
-       function definition.  (This processing will have taken place
-       after the class definition is complete.)  */
+   for the function definition. INLINE_P is TRUE if we just
+   finished processing the body of an in-class inline function
+   definition.  (This processing will have taken place after the
+   class definition is complete.)  */
 
 tree
-finish_function (int flags)
+finish_function (bool inline_p)
 {
   tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
-  int inclass_inline = (flags & 2) != 0;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -15742,7 +15748,7 @@ finish_function (int flags)
      bindings for the template parameters that we added in
      maybe_begin_member_template_processing when start_function was
      called.  */
-  if (inclass_inline)
+  if (inline_p)
     maybe_end_member_template_processing ();
 
   /* Leave the scope of the class.  */

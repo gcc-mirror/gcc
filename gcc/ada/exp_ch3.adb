@@ -516,7 +516,18 @@ package body Exp_Ch3 is
    ---------------------------
 
    procedure Build_Array_Init_Proc (A_Type : Entity_Id; Nod : Node_Id) is
-      Comp_Type        : constant Entity_Id  := Component_Type (A_Type);
+      Comp_Type        : constant Entity_Id := Component_Type (A_Type);
+      Comp_Simple_Init : constant Boolean   :=
+        Needs_Simple_Initialization
+          (T           => Comp_Type,
+           Consider_IS =>
+             not (Validity_Check_Copies and Is_Bit_Packed_Array (A_Type)));
+      --  True if the component needs simple initialization, based on its type,
+      --  plus the fact that we do not do simple initialization for components
+      --  of bit-packed arrays when validity checks are enabled, because the
+      --  initialization with deliberately out-of-range values would raise
+      --  Constraint_Error.
+
       Body_Stmts       : List_Id;
       Has_Default_Init : Boolean;
       Index_List       : List_Id;
@@ -557,7 +568,7 @@ package body Exp_Ch3 is
                   Convert_To (Comp_Type,
                     Default_Aspect_Component_Value (First_Subtype (A_Type)))));
 
-         elsif Needs_Simple_Initialization (Comp_Type) then
+         elsif Comp_Simple_Init then
             Set_Assignment_OK (Comp);
             return New_List (
               Make_Assignment_Statement (Loc,
@@ -589,7 +600,7 @@ package body Exp_Ch3 is
          --  the dummy Init_Proc needed for Initialize_Scalars processing.
 
          if not Has_Non_Null_Base_Init_Proc (Comp_Type)
-           and then not Needs_Simple_Initialization (Comp_Type)
+           and then not Comp_Simple_Init
            and then not Has_Task (Comp_Type)
            and then not Has_Default_Aspect (A_Type)
          then
@@ -679,7 +690,7 @@ package body Exp_Ch3 is
       --  init_proc.
 
       Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
-                            or else Needs_Simple_Initialization (Comp_Type)
+                            or else Comp_Simple_Init
                             or else Has_Task (Comp_Type)
                             or else Has_Default_Aspect (A_Type);
 
@@ -1700,10 +1711,12 @@ package body Exp_Ch3 is
       Rec_Type  : Entity_Id;
       Set_Tag   : Entity_Id := Empty;
 
-      function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
-      --  Build an assignment statement which assigns the default expression
-      --  to its corresponding record component if defined. The left hand side
-      --  of the assignment is marked Assignment_OK so that initialization of
+      function Build_Assignment
+        (Id      : Entity_Id;
+         Default : Node_Id) return List_Id;
+      --  Build an assignment statement that assigns the default expression to
+      --  its corresponding record component if defined. The left-hand side of
+      --  the assignment is marked Assignment_OK so that initialization of
       --  limited private records works correctly. This routine may also build
       --  an adjustment call if the component is controlled.
 
@@ -1772,22 +1785,82 @@ package body Exp_Ch3 is
       -- Build_Assignment --
       ----------------------
 
-      function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id is
-         N_Loc : constant Source_Ptr := Sloc (N);
-         Typ   : constant Entity_Id := Underlying_Type (Etype (Id));
+      function Build_Assignment
+        (Id      : Entity_Id;
+         Default : Node_Id) return List_Id
+      is
+         Default_Loc : constant Source_Ptr := Sloc (Default);
+         Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := N;
-         Kind     : Node_Kind := Nkind (N);
+         Exp      : Node_Id   := Default;
+         Kind     : Node_Kind := Nkind (Default);
          Lhs      : Node_Id;
          Res      : List_Id;
 
+         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result;
+         --  Analysis of the aggregate has replaced discriminants by their
+         --  corresponding discriminals, but these are irrelevant when the
+         --  component has a mutable type and is initialized with an aggregate.
+         --  Instead, they must be replaced by the values supplied in the
+         --  aggregate, that will be assigned during the expansion of the
+         --  assignment.
+
+         -----------------------
+         -- Replace_Discr_Ref --
+         -----------------------
+
+         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
+            Val : Node_Id;
+
+         begin
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Is_Formal (Entity (N))
+              and then Present (Discriminal_Link (Entity (N)))
+            then
+               Val :=
+                 Make_Selected_Component (Default_Loc,
+                   Prefix        => New_Copy_Tree (Lhs),
+                   Selector_Name =>
+                     New_Occurrence_Of
+                       (Discriminal_Link (Entity (N)), Default_Loc));
+
+               if Present (Val) then
+                  Rewrite (N, New_Copy_Tree (Val));
+               end if;
+            end if;
+
+            return OK;
+         end Replace_Discr_Ref;
+
+         procedure Replace_Discriminant_References is
+           new Traverse_Proc (Replace_Discr_Ref);
+
+      --  Start of processing for Build_Assignment
+
       begin
          Lhs :=
-           Make_Selected_Component (N_Loc,
+           Make_Selected_Component (Default_Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
-             Selector_Name => New_Occurrence_Of (Id, N_Loc));
+             Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
+
+         if Nkind (Exp) = N_Aggregate
+           and then Has_Discriminants (Typ)
+           and then not Is_Constrained (Base_Type (Typ))
+         then
+            --  The aggregate may provide new values for the discriminants
+            --  of the component, and other components may depend on those
+            --  discriminants. Previous analysis of those expressions have
+            --  replaced the discriminants by the formals of the initialization
+            --  procedure for the type, but these are irrelevant in the
+            --  enclosing initialization procedure: those discriminant
+            --  references must be replaced by the values provided in the
+            --  aggregate.
+
+            Replace_Discriminant_References (Exp);
+         end if;
 
          --  Case of an access attribute applied to the current instance.
          --  Replace the reference to the type by a reference to the actual
@@ -1799,16 +1872,16 @@ package body Exp_Ch3 is
          --  traversing the expression. ???
 
          if Kind = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (N), Name_Unchecked_Access,
-                                                Name_Unrestricted_Access)
-           and then Is_Entity_Name (Prefix (N))
-           and then Is_Type (Entity (Prefix (N)))
-           and then Entity (Prefix (N)) = Rec_Type
+           and then Nam_In (Attribute_Name (Default), Name_Unchecked_Access,
+                                                      Name_Unrestricted_Access)
+           and then Is_Entity_Name (Prefix (Default))
+           and then Is_Type (Entity (Prefix (Default)))
+           and then Entity (Prefix (Default)) = Rec_Type
          then
             Exp :=
-              Make_Attribute_Reference (N_Loc,
+              Make_Attribute_Reference (Default_Loc,
                 Prefix         =>
-                  Make_Identifier (N_Loc, Name_uInit),
+                  Make_Identifier (Default_Loc, Name_uInit),
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
@@ -1832,33 +1905,33 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
             Append_To (Res,
-              Make_Assignment_Statement (N_Loc,
+              Make_Assignment_Statement (Default_Loc,
                 Name       =>
-                  Make_Selected_Component (N_Loc,
+                  Make_Selected_Component (Default_Loc,
                     Prefix        =>
                       New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
-                      New_Occurrence_Of (First_Tag_Component (Typ), N_Loc)),
+                      New_Occurrence_Of
+                        (First_Tag_Component (Typ), Default_Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
                     New_Occurrence_Of
-                      (Node
-                        (First_Elmt
-                          (Access_Disp_Table (Underlying_Type (Typ)))),
-                       N_Loc))));
+                      (Node (First_Elmt (Access_Disp_Table (Underlying_Type
+                         (Typ)))),
+                       Default_Loc))));
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
          if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (N));
+            Kind := Nkind (Expression (Default));
          end if;
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Limited_View (Typ)
+           and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
               Make_Adjust_Call
@@ -2649,36 +2722,30 @@ package body Exp_Ch3 is
            and then not Restriction_Active (No_Exception_Propagation)
          then
             declare
-               DF_Call : Node_Id;
-               DF_Id   : Entity_Id;
+               DF_Id : Entity_Id;
 
             begin
                --  Create a local version of Deep_Finalize which has indication
                --  of partial initialization state.
 
-               DF_Id := Make_Temporary (Loc, 'F');
+               DF_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Name_uFinalizer));
 
                Append_To (Decls, Make_Local_Deep_Finalize (Rec_Type, DF_Id));
-
-               DF_Call :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name                   => New_Occurrence_Of (DF_Id, Loc),
-                   Parameter_Associations => New_List (
-                     Make_Identifier (Loc, Name_uInit),
-                     New_Occurrence_Of (Standard_False, Loc)));
-
-               --  Do not emit warnings related to the elaboration order when a
-               --  controlled object is declared before the body of Finalize is
-               --  seen.
-
-               Set_No_Elaboration_Check (DF_Call);
 
                Set_Exception_Handlers (Handled_Stmt_Node, New_List (
                  Make_Exception_Handler (Loc,
                    Exception_Choices => New_List (
                      Make_Others_Choice (Loc)),
                    Statements        => New_List (
-                     DF_Call,
+                     Make_Procedure_Call_Statement (Loc,
+                       Name                   =>
+                         New_Occurrence_Of (DF_Id, Loc),
+                       Parameter_Associations => New_List (
+                         Make_Identifier (Loc, Name_uInit),
+                         New_Occurrence_Of (Standard_False, Loc))),
+
                      Make_Raise_Statement (Loc)))));
             end;
          else
@@ -5742,6 +5809,7 @@ package body Exp_Ch3 is
 
          Aggr_Init  : Node_Id;
          Comp_Init  : List_Id := No_List;
+         Fin_Block  : Node_Id;
          Fin_Call   : Node_Id;
          Init_Stmts : List_Id := No_List;
          Obj_Init   : Node_Id := Empty;
@@ -5884,14 +5952,7 @@ package body Exp_Ch3 is
                  Skip_Self => True);
 
             if Present (Fin_Call) then
-
-               --  Do not emit warnings related to the elaboration order when a
-               --  controlled object is declared before the body of Finalize is
-               --  seen.
-
-               Set_No_Elaboration_Check (Fin_Call);
-
-               Append_To (Init_Stmts,
+               Fin_Block :=
                  Make_Block_Statement (Loc,
                    Declarations               => No_List,
 
@@ -5906,7 +5967,14 @@ package body Exp_Ch3 is
 
                            Statements        => New_List (
                              Fin_Call,
-                             Make_Raise_Statement (Loc)))))));
+                             Make_Raise_Statement (Loc))))));
+
+               --  Signal the ABE mechanism that the block carries out
+               --  initialization actions.
+
+               Set_Is_Initialization_Block (Fin_Block);
+
+               Append_To (Init_Stmts, Fin_Block);
             end if;
 
          --  Otherwise finalization is not required, the initialization calls
@@ -6063,6 +6131,19 @@ package body Exp_Ch3 is
       --  fully expanded, so simply return now.
 
       if Is_Abstract_Type (Typ) then
+         return;
+      end if;
+
+      --  No action needed for the internal imported dummy object added by
+      --  Make_DT to compute the offset of the components that reference
+      --  secondary dispatch tables; required to avoid never-ending loop
+      --  processing this internal object declaration.
+
+      if Tagged_Type_Expansion
+        and then Is_Internal (Def_Id)
+        and then Is_Imported (Def_Id)
+        and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
+      then
          return;
       end if;
 
@@ -6232,10 +6313,25 @@ package body Exp_Ch3 is
          --  plan to expand the allowed forms of functions that are treated as
          --  build-in-place.
 
-         elsif Ada_Version >= Ada_2005
-           and then Is_Build_In_Place_Function_Call (Expr_Q)
-         then
+         elsif Is_Build_In_Place_Function_Call (Expr_Q) then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
+
+            --  The previous call expands the expression initializing the
+            --  built-in-place object into further code that will be analyzed
+            --  later. No further expansion needed here.
+
+            return;
+
+         --  This is the same as the previous 'elsif', except that the call has
+         --  been transformed by other expansion activities into something like
+         --  F(...)'Reference.
+
+         elsif Nkind (Expr_Q) = N_Reference
+           and then Is_Build_In_Place_Function_Call (Prefix (Expr_Q))
+           and then not Is_Expanded_Build_In_Place_Call
+                          (Unqual_Conv (Prefix (Expr_Q)))
+         then
+            Make_Build_In_Place_Call_In_Anonymous_Context (Prefix (Expr_Q));
 
             --  The previous call expands the expression initializing the
             --  built-in-place object into further code that will be analyzed
@@ -6250,9 +6346,7 @@ package body Exp_Ch3 is
          --  in-place object to reference the secondary dispatch table of a
          --  covered interface type.
 
-         elsif Ada_Version >= Ada_2005
-           and then Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
-         then
+         elsif Present (Unqual_BIP_Iface_Function_Call (Expr_Q)) then
             Make_Build_In_Place_Iface_Call_In_Object_Declaration (N, Expr_Q);
 
             --  The previous call expands the expression initializing the
@@ -6518,7 +6612,8 @@ package body Exp_Ch3 is
                --  allocated in place, delay checks until assignments are
                --  made, because the discriminants are not initialized.
 
-               if Nkind (Expr) = N_Allocator and then No_Initialization (Expr)
+               if Nkind (Expr) = N_Allocator
+                 and then No_Initialization (Expr)
                then
                   null;
 
@@ -6550,13 +6645,19 @@ package body Exp_Ch3 is
             --  the target is adjusted after the copy and attached to the
             --  finalization list. However, no adjustment is done in the case
             --  where the object was initialized by a call to a function whose
-            --  result is built in place, since no copy occurred. (Eventually
-            --  we plan to support in-place function results for some cases
-            --  of nonlimited types. ???) Similarly, no adjustment is required
-            --  if we are going to rewrite the object declaration into a
-            --  renaming declaration.
+            --  result is built in place, since no copy occurred. Similarly, no
+            --  adjustment is required if we are going to rewrite the object
+            --  declaration into a renaming declaration.
 
-            if Needs_Finalization (Typ)
+            if Is_Build_In_Place_Result_Type (Typ)
+              and then Nkind (Parent (N)) = N_Extended_Return_Statement
+              and then
+                not Is_Definite_Subtype (Etype (Return_Applies_To
+                      (Return_Statement_Entity (Parent (N)))))
+            then
+               null;
+
+            elsif Needs_Finalization (Typ)
               and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
@@ -6688,9 +6789,9 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         --  Cases where the back end cannot handle the initialization directly
-         --  In such cases, we expand an assignment that will be appropriately
-         --  handled by Expand_N_Assignment_Statement.
+         --  Cases where the back end cannot handle the initialization
+         --  directly. In such cases, we expand an assignment that will
+         --  be appropriately handled by Expand_N_Assignment_Statement.
 
          --  The exclusion of the unconstrained case is wrong, but for now it
          --  is too much trouble ???
@@ -8293,10 +8394,13 @@ package body Exp_Ch3 is
          --  Normal case: No discriminants in the parent type
 
          else
-            --  Don't need to set any value if this interface shares the
-            --  primary dispatch table.
+            --  Don't need to set any value if the offset-to-top field is
+            --  statically set or if this interface shares the primary
+            --  dispatch table.
 
-            if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
+            if not Building_Static_Secondary_DT (Typ)
+              and then not Is_Ancestor (Iface, Typ, Use_Full_View => True)
+            then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
                    Iface_Tag    => New_Occurrence_Of (Iface_Tag, Loc),

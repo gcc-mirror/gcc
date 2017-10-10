@@ -401,10 +401,12 @@ package Osint is
       Lo  : Source_Ptr;
       Hi  : out Source_Ptr;
       Src : out Source_Buffer_Ptr;
+      FD  : out File_Descriptor;
       T   : File_Type := Source);
    --  Allocates a Source_Buffer of appropriate length and then reads the
    --  entire contents of the source file N into the buffer. The address of
-   --  the allocated buffer is returned in Src.
+   --  the allocated buffer is returned in Src. FD is used for extended error
+   --  information in the case the read fails.
    --
    --  Each line of text is terminated by one of the sequences:
    --
@@ -426,7 +428,11 @@ package Osint is
    --  failure to find the file is a fatal error, an error message is output,
    --  and program execution is terminated. Otherwise (for the case of a
    --  subsidiary source loaded directly or indirectly using with), a file
-   --  not found condition causes null to be set as the result value.
+   --  not found condition causes null to be set as the result value and a
+   --  value of No_Source_File (0) to be set as the FD value. In the related
+   --  case of a file with no read permissions the result is the same except FD
+   --  is set to No_Access_To_Source_File (-1). Upon success FD is set to a
+   --  positive Source_File_Index.
    --
    --  Note that the name passed to this function is the simple file name,
    --  without any directory information. The implementation is responsible

@@ -3930,6 +3930,21 @@ package body Sem_Ch4 is
       Set_Etype (N, Any_Type);
       Find_Type (Mark);
       T := Entity (Mark);
+
+      if Nkind_In (Enclosing_Declaration (N), N_Formal_Type_Declaration,
+                                              N_Full_Type_Declaration,
+                                              N_Incomplete_Type_Declaration,
+                                              N_Protected_Type_Declaration,
+                                              N_Private_Extension_Declaration,
+                                              N_Private_Type_Declaration,
+                                              N_Subtype_Declaration,
+                                              N_Task_Type_Declaration)
+        and then T = Defining_Identifier (Enclosing_Declaration (N))
+      then
+         Error_Msg_N ("current instance not allowed", Mark);
+         T := Any_Type;
+      end if;
+
       Set_Etype (N, T);
 
       if T = Any_Type then
@@ -6462,9 +6477,17 @@ package body Sem_Ch4 is
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
-         Bas : constant Entity_Id := Base_Type (T1);
+         Bas : Entity_Id;
 
       begin
+         --  Perform a sanity check in case of previous errors
+
+         if No (T1) then
+            return;
+         end if;
+
+         Bas := Base_Type (T1);
+
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
          --  universal, the context will impose the correct type. An anonymous
@@ -8537,14 +8560,21 @@ package body Sem_Ch4 is
                  ("expect variable in call to&", Prefix (N), Entity (Subprog));
             end if;
 
-         --  Conversely, if the formal is an access parameter and the object
-         --  is not, replace the actual with a 'Access reference. Its analysis
-         --  will check that the object is aliased.
+         --  Conversely, if the formal is an access parameter and the object is
+         --  not an access type or a reference type (i.e. a type with the
+         --  Implicit_Dereference aspect specified), replace the actual with a
+         --  'Access reference. Its analysis will check that the object is
+         --  aliased.
 
          elsif Is_Access_Type (Formal_Type)
            and then not Is_Access_Type (Etype (Obj))
+           and then
+             (not Has_Implicit_Dereference (Etype (Obj))
+               or else
+                 not Is_Access_Type (Designated_Type (Etype
+                       (Get_Reference_Discriminant (Etype (Obj))))))
          then
-            --  A special case: A.all'access is illegal if A is an access to a
+            --  A special case: A.all'Access is illegal if A is an access to a
             --  constant and the context requires an access to a variable.
 
             if not Is_Access_Constant (Formal_Type) then
@@ -8830,7 +8860,7 @@ package body Sem_Ch4 is
             while Present (Hom) loop
                if Ekind_In (Hom, E_Procedure, E_Function)
                  and then (not Is_Hidden (Hom) or else In_Instance)
-                 and then Scope (Hom) = Scope (Anc_Type)
+                 and then Scope (Hom) = Scope (Base_Type (Anc_Type))
                  and then Present (First_Formal (Hom))
                  and then
                    (Base_Type (Etype (First_Formal (Hom))) = Cls_Type
@@ -8891,8 +8921,13 @@ package body Sem_Ch4 is
                         Success    => Success,
                         Skip_First => True);
 
+                     --  The same operation may be encountered on two homonym
+                     --  traversals, before and after looking at interfaces.
+                     --  Check for this case before reporting a real ambiguity.
+
                      if Present (Valid_Candidate (Success, Call_Node, Hom))
                        and then Nkind (Call_Node) /= N_Function_Call
+                       and then Hom /= Matching_Op
                      then
                         Error_Msg_NE ("ambiguous call to&", N, Hom);
                         Report_Ambiguity (Matching_Op);

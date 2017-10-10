@@ -260,12 +260,6 @@
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)	\
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   (TREE_CODE (TYPE) == ARRAY_TYPE					\

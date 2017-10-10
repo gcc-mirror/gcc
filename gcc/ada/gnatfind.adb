@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@ with Opt;
 with Osint;    use Osint;
 with Switch;   use Switch;
 with Types;    use Types;
-with Xr_Tabls; use Xr_Tabls;
+with Xr_Tabls;
 with Xref_Lib; use Xref_Lib;
 
 with Ada.Command_Line;  use Ada.Command_Line;

@@ -1,5 +1,6 @@
 ! { dg-do run }
-! { dg-options "-ffrontend-optimize -floop-nest-optimize" }
+! { dg-skip-if "" { *-*-* } { "-O0" } { "" } }
+! { dg-additional-options "-ffrontend-optimize -floop-nest-optimize" }
 ! PR 56872 - wrong front-end optimization with a single constructor.
 ! Original bug report by Rich Townsend.
   integer :: k

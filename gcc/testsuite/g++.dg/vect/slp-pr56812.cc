@@ -17,4 +17,6 @@ void mydata::Set (float x)
     data[i] = x;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" } } */
+/* For targets without vector loop peeling the loop becomes cheap
+   enough to be vectorized.  */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" { xfail { ! vect_peeling_profitable } } } } */

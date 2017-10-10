@@ -75,7 +75,7 @@ package body Debug is
    --  dI   Inhibit internal name numbering in gnatG listing
    --  dJ   Prepend subprogram name in messages
    --  dK   Kill all error messages
-   --  dL   Output trace information on elaboration checking
+   --  dL   Ignore external calls from instances for elaboration
    --  dM   Assume all variables are modified (no current values)
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
@@ -163,7 +163,7 @@ package body Debug is
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7
    --  d.8
-   --  d.9
+   --  d.9  Enable build-in-place for nonlimited types
 
    --  Debug flags for binder (GNATBIND)
 
@@ -414,10 +414,9 @@ package body Debug is
    --       of all error messages. It is used in regression tests where the
    --       error messages are target dependent and irrelevant.
 
-   --  dL   Output trace information on elaboration checking. This debug
-   --       switch causes output to be generated showing each call or
-   --       instantiation as it is checked, and the progress of the recursive
-   --       trace through elaboration calls at compile time.
+   --  dL   The compiler ignores calls in instances and invoke subprograms
+   --       which are external to the instance for the static elaboration
+   --       model. This switch is orthogonal to d.G.
 
    --  dM   Assume all variables have been modified, and ignore current value
    --       indications. This debug flag disconnects the tracking of constant
@@ -664,7 +663,8 @@ package body Debug is
    --  d.G  Previously the compiler ignored calls via generic formal parameters
    --       when doing the analysis for the static elaboration model. This is
    --       now fixed, but we provide this debug flag to revert to the previous
-   --       situation of ignoring such calls to aid in transition.
+   --       situation of ignoring such calls to aid in transition. This switch
+   --       is orthogonal to dL.
 
    --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
    --       the call to gigi in ASIS_Mode.
@@ -819,6 +819,9 @@ package body Debug is
    --  d.6  By default the C back-end avoids declaring types that are not
    --       referenced by the generated C code. This debug flag restores the
    --       output of all the types.
+
+   --  d.9  Enable build-in-place for function calls returning some nonlimited
+   --       types.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

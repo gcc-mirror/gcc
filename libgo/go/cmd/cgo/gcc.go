@@ -13,6 +13,7 @@ import (
 	"debug/elf"
 	"debug/macho"
 	"debug/pe"
+	"debug/xcoff"
 	"encoding/binary"
 	"errors"
 	"flag"
@@ -1289,6 +1290,10 @@ func (p *Package) gccMachine() []string {
 		return []string{"-mabi=64"}
 	case "mips", "mipsle":
 		return []string{"-mabi=32"}
+	case "ppc64":
+		if goos == "aix" {
+			return []string{"-maix64"}
+		}
 	}
 	return nil
 }
@@ -1616,7 +1621,79 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 		return d, ints, floats, strs
 	}
 
-	fatalf("cannot parse gcc output %s as ELF, Mach-O, PE object", gccTmp())
+	if f, err := xcoff.Open(gccTmp()); err == nil {
+		defer f.Close()
+		d, err := f.DWARF()
+		if err != nil {
+			fatalf("cannot load DWARF output from %s: %v", gccTmp(), err)
+		}
+		bo := binary.BigEndian
+		for _, s := range f.Symbols {
+			switch {
+			case isDebugInts(s.Name):
+				if i := int(s.SectionNumber) - 1; 0 <= i && i < len(f.Sections) {
+					sect := f.Sections[i]
+					if s.Value < sect.Size {
+						if sdat, err := sect.Data(); err == nil {
+							data := sdat[s.Value:]
+							ints = make([]int64, len(data)/8)
+							for i := range ints {
+								ints[i] = int64(bo.Uint64(data[i*8:]))
+							}
+						}
+					}
+				}
+			case isDebugFloats(s.Name):
+				if i := int(s.SectionNumber) - 1; 0 <= i && i < len(f.Sections) {
+					sect := f.Sections[i]
+					if s.Value < sect.Size {
+						if sdat, err := sect.Data(); err == nil {
+							data := sdat[s.Value:]
+							floats = make([]float64, len(data)/8)
+							for i := range floats {
+								floats[i] = math.Float64frombits(bo.Uint64(data[i*8:]))
+							}
+						}
+					}
+				}
+			default:
+				if n := indexOfDebugStr(s.Name); n != -1 {
+					if i := int(s.SectionNumber) - 1; 0 <= i && i < len(f.Sections) {
+						sect := f.Sections[i]
+						if s.Value < sect.Size {
+							if sdat, err := sect.Data(); err == nil {
+								data := sdat[s.Value:]
+								strdata[n] = string(data)
+							}
+						}
+					}
+					break
+				}
+				if n := indexOfDebugStrlen(s.Name); n != -1 {
+					if i := int(s.SectionNumber) - 1; 0 <= i && i < len(f.Sections) {
+						sect := f.Sections[i]
+						if s.Value < sect.Size {
+							if sdat, err := sect.Data(); err == nil {
+								data := sdat[s.Value:]
+								strlen := bo.Uint64(data[:8])
+								if strlen > (1<<(uint(p.IntSize*8)-1) - 1) { // greater than MaxInt?
+									fatalf("string literal too big")
+								}
+								strlens[n] = int(strlen)
+							}
+						}
+					}
+					break
+				}
+			}
+		}
+
+		buildStrings()
+
+		return d, ints, floats, strs
+	}
+
+	fatalf("cannot parse gcc output %s as ELF, Mach-O, PE, XCOFF object", gccTmp())
 	panic("not reached")
 }
 

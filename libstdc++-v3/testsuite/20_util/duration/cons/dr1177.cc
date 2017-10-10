@@ -36,6 +36,6 @@ static_assert(is_constructible<duration<int>, duration<long>>{},
 static_assert(!is_constructible<duration<int>, duration<int, ratio<2,3>>>{},
     "cannot convert duration to one with different period");
 static_assert(is_constructible<duration<float>, duration<int, ratio<2,3>>>{},
-    "unless it has a floating-point representation");
-static_assert(is_constructible<duration<float>, duration<int, ratio<1,3>>>{},
-    "or a period that is an integral multiple of the original");
+    "... unless the result type has a floating-point representation");
+static_assert(is_constructible<duration<int, ratio<1,3>>, duration<int>>{},
+    "... or the original's period is a multiple of the result's period");

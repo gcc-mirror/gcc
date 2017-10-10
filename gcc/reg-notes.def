@@ -224,6 +224,10 @@ REG_NOTE (ARGS_SIZE)
    pseudo reg.  */
 REG_NOTE (RETURNED)
 
+/* Indicates the instruction is a stack check probe that should not
+   be combined with other stack adjustments.  */
+REG_NOTE (STACK_CHECK)
+
 /* Used to mark a call with the function decl called by the call.
    The decl might not be available in the call due to splitting of the call
    insn.  This note is a SYMBOL_REF.  */

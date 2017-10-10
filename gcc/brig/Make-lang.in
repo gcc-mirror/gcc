@@ -93,25 +93,25 @@ brig1$(exeext): $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
 
 # Documentation.
 
-GO_TEXI_FILES = \
+BRIG_TEXI_FILES = \
 	brig/gccbrig.texi \
 	$(gcc_docdir)/include/fdl.texi \
 	$(gcc_docdir)/include/gpl_v3.texi \
 	$(gcc_docdir)/include/gcc-common.texi \
 	gcc-vers.texi
 
-# doc/gccbrig.info: $(BRIG_TEXI_FILES)
-# 	if test "x$(BUILD_INFO)" = xinfo; then \
-# 	  rm -f doc/gccbrig.info*; \
-# 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
-# 		-I $(gcc_docdir)/include -o $@ $<; \
-# 	else true; fi
+doc/gccbrig.info: $(BRIG_TEXI_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/gccbrig.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
 
-# doc/gccbrig.dvi: $(BRIG_TEXI_FILES)
-# 	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+doc/gccbrig.dvi: $(BRIG_TEXI_FILES)
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
-# doc/gccbrig.pdf: $(BRIG_TEXI_FILES)
-# 	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+doc/gccbrig.pdf: $(BRIG_TEXI_FILES)
+	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 $(build_htmldir)/brig/index.html: $(BRIG_TEXI_FILES)
 	$(mkinstalldirs) $(@D)
@@ -119,28 +119,32 @@ $(build_htmldir)/brig/index.html: $(BRIG_TEXI_FILES)
 	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
 		-I $(srcdir)/brig -o $(@D) $<
 
+.INTERMEDIATE: gccbrig.pod
+
+gccbrig.pod: brig/gccbrig.texi
+	-$(TEXI2POD) -D gccbrig < $< > $@
+
 # Build hooks.
 
 brig.all.cross: gccbrig-cross$(exeext)
 brig.start.encap: gccbrig$(exeext)
 brig.rest.encap:
-#brig.info: doc/gccbrig.info
-brig.info:
+brig.info: doc/gccbrig.info
 brig.dvi: doc/gccbrig.dvi
 brig.pdf: doc/gccbrig.pdf
 brig.html: $(build_htmldir)/brig/index.html
-brig.srcinfo: #doc/gccbrig.info
-#	-cp -p $^ $(srcdir)/doc
+brig.srcinfo: doc/gccbrig.info
+	-cp -p $^ $(srcdir)/doc
 
 brig.srcextra:
 brig.tags: force
 	cd $(srcdir)/brig; \
 	etags -o TAGS.sub *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
-brig.man:
 
-#brig.srcman: doc/gccbrig.1
-#	-cp -p $^ $(srcdir)/doc
+brig.man: doc/gccbrig.1
+brig.srcman: doc/gccbrig.1
+	-cp -p $^ $(srcdir)/doc
 
 lang_checks += check-brig
 
@@ -193,13 +197,13 @@ brig.install-html: $(build_htmldir)/brig
 	  fi; \
 	done
 
-brig.install-man: #$(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext)
+brig.install-man: $(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext)
 
-#$(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext): doc/gccbrig.1 \
-#	installdirs
-#	-rm -f $@
-#	-$(INSTALL_DATA) $< $@
-#	-chmod a-x $@
+$(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext): doc/gccbrig.1 \
+	installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 brig.uninstall:
 	rm -rf $(DESTDIR)$(bindir)/$(GCCBRIG_INSTALL_NAME)$(exeext)

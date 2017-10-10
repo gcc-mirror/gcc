@@ -967,8 +967,17 @@ show_symbol (gfc_symbol *sym)
       show_indent ();
       fputs ("PDT parameters", dumpfile);
       show_actual_arglist (sym->param_list);
-
     }
+
+  if (sym->attr.flavor == FL_NAMELIST)
+    {
+      gfc_namelist *nl;
+      show_indent ();
+      fputs ("variables : ", dumpfile);
+      for (nl = sym->namelist; nl; nl = nl->next)
+	fprintf (dumpfile, " %s",nl->sym->name);
+    }
+
   --show_level;
 }
 
@@ -1979,8 +1988,8 @@ show_code_node (int level, gfc_code *c)
       d = d->block;
       for (; d; d = d->block)
 	{
+	  fputs("\n", dumpfile);
 	  code_indent (level, 0);
-
 	  if (d->expr1 == NULL)
 	    fputs ("ELSE", dumpfile);
 	  else
@@ -2170,9 +2179,12 @@ show_code_node (int level, gfc_code *c)
             fputc (',', dumpfile);
         }
       show_expr (c->expr1);
+      ++show_level;
 
       show_code (level + 1, c->block->next);
+      --show_level;
       code_indent (level, c->label1);
+      show_indent ();
       fputs ("END DO", dumpfile);
       break;
 
@@ -2725,6 +2737,41 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, " END=%d", dt->end->value);
       if (dt->eor != NULL)
 	fprintf (dumpfile, " EOR=%d", dt->eor->value);
+      break;
+
+    case EXEC_WAIT:
+      fputs ("WAIT", dumpfile);
+
+      if (c->ext.wait != NULL)
+	{
+	  gfc_wait *wait = c->ext.wait;
+	  if (wait->unit)
+	    {
+	      fputs (" UNIT=", dumpfile);
+	      show_expr (wait->unit);
+	    }
+	  if (wait->iostat)
+	    {
+	      fputs (" IOSTAT=", dumpfile);
+	      show_expr (wait->iostat);
+	    }
+	  if (wait->iomsg)
+	    {
+	      fputs (" IOMSG=", dumpfile);
+	      show_expr (wait->iomsg);
+	    }
+	  if (wait->id)
+	    {
+	      fputs (" ID=", dumpfile);
+	      show_expr (wait->id);
+	    }
+	  if (wait->err)
+	    fprintf (dumpfile, " ERR=%d", wait->err->value);
+	  if (wait->end)
+	    fprintf (dumpfile, " END=%d", wait->end->value);
+	  if (wait->eor)
+	    fprintf (dumpfile, " EOR=%d", wait->eor->value);
+	}
       break;
 
     case EXEC_OACC_PARALLEL_LOOP:

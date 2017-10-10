@@ -2031,8 +2031,7 @@ start_over:
 	 remove unsupported SLP instances which makes the above
 	 SLP kind detection invalid.  */
       unsigned old_size = LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length ();
-      vect_slp_analyze_operations (LOOP_VINFO_SLP_INSTANCES (loop_vinfo),
-				   LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
+      vect_slp_analyze_operations (loop_vinfo);
       if (LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length () != old_size)
 	goto again;
     }
@@ -3663,8 +3662,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	       min_profitable_iters);
 
   /* We want the vectorized loop to execute at least once.  */
-  if (min_profitable_iters < (vf + peel_iters_prologue + peel_iters_epilogue))
-    min_profitable_iters = vf + peel_iters_prologue + peel_iters_epilogue;
+  if (min_profitable_iters < (vf + peel_iters_prologue))
+    min_profitable_iters = vf + peel_iters_prologue;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -7029,11 +7028,6 @@ vectorizable_live_operation (gimple *stmt,
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
-
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
     return false;
 
@@ -7054,6 +7048,11 @@ vectorizable_live_operation (gimple *stmt,
       return true;
     }
 
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = vect_get_num_copies (loop_vinfo, vectype);
+
   if (!vec_stmt)
     /* No transformation required.  */
     return true;
@@ -7066,7 +7065,9 @@ vectorizable_live_operation (gimple *stmt,
 	: gimple_get_lhs (stmt);
   lhs_type = TREE_TYPE (lhs);
 
-  bitsize = TYPE_SIZE (TREE_TYPE (vectype));
+  bitsize = (VECTOR_BOOLEAN_TYPE_P (vectype)
+	     ? bitsize_int (TYPE_PRECISION (TREE_TYPE (vectype)))
+	     : TYPE_SIZE (TREE_TYPE (vectype)));
   vec_bitsize = TYPE_SIZE (vectype);
 
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
@@ -7089,7 +7090,7 @@ vectorizable_live_operation (gimple *stmt,
       vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
 
       /* Get entry to use.  */
-      bitstart = build_int_cst (unsigned_type_node, vec_index);
+      bitstart = bitsize_int (vec_index);
       bitstart = int_const_binop (MULT_EXPR, bitsize, bitstart);
     }
   else

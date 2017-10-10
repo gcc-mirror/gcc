@@ -47,6 +47,7 @@ enum processor_types
   AMD_BTVER1,
   AMD_BTVER2,  
   AMDFAM17H,
+  INTEL_KNM,
   CPU_TYPE_MAX
 };
 

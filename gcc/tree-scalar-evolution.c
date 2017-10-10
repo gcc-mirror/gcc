@@ -281,7 +281,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
 
-static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
+static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
 						     tree var);
 
@@ -2036,18 +2036,19 @@ compute_scalar_evolution_in_loop (struct loop *wrto_loop,
   if (no_evolution_in_loop_p (res, wrto_loop->num, &val) && val)
     return res;
 
-  return analyze_scalar_evolution_1 (wrto_loop, res, chrec_not_analyzed_yet);
+  return analyze_scalar_evolution_1 (wrto_loop, res);
 }
 
 /* Helper recursive function.  */
 
 static tree
-analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
+analyze_scalar_evolution_1 (struct loop *loop, tree var)
 {
   tree type = TREE_TYPE (var);
   gimple *def;
   basic_block bb;
   struct loop *def_loop;
+  tree res;
 
   if (loop == NULL
       || TREE_CODE (type) == VECTOR_TYPE
@@ -2069,18 +2070,9 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
       goto set_and_end;
     }
 
-  if (res != chrec_not_analyzed_yet)
-    {
-      if (loop != bb->loop_father)
-	res = compute_scalar_evolution_in_loop
-	    (find_common_loop (loop, bb->loop_father), bb->loop_father, res);
-
-      goto set_and_end;
-    }
-
   if (loop != def_loop)
     {
-      res = analyze_scalar_evolution_1 (def_loop, var, chrec_not_analyzed_yet);
+      res = analyze_scalar_evolution_1 (def_loop, var);
       res = compute_scalar_evolution_in_loop (loop, def_loop, res);
 
       goto set_and_end;
@@ -2144,7 +2136,8 @@ analyze_scalar_evolution (struct loop *loop, tree var)
     }
 
   res = get_scalar_evolution (block_before_loop (loop), var);
-  res = analyze_scalar_evolution_1 (loop, var, res);
+  if (res == chrec_not_analyzed_yet)
+    res = analyze_scalar_evolution_1 (loop, var);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, ")\n");
@@ -3263,6 +3256,8 @@ void
 scev_initialize (void)
 {
   struct loop *loop;
+
+  gcc_assert (! scev_initialized_p ());
 
   scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 

@@ -86,21 +86,105 @@ cplus_expand_constant (tree cst)
   return cst;
 }
 
+/* We've seen an actual use of EXPR.  Possibly replace an outer variable
+   reference inside with its constant value or a lambda capture.  */
+
+static tree
+mark_use (tree expr, bool rvalue_p, bool read_p,
+	  location_t loc /* = UNKNOWN_LOCATION */,
+	  bool reject_builtin /* = true */)
+{
+#define RECUR(t) mark_use ((t), rvalue_p, read_p, loc, reject_builtin)
+
+  if (reject_builtin && reject_gcc_builtin (expr, loc))
+    return error_mark_node;
+
+  if (read_p)
+    mark_exp_read (expr);
+
+  bool recurse_op[3] = { false, false, false };
+  switch (TREE_CODE (expr))
+    {
+    case VAR_DECL:
+      if (outer_automatic_var_p (expr)
+	  && decl_constant_var_p (expr))
+	{
+	  if (rvalue_p)
+	    {
+	      tree t = maybe_constant_value (expr);
+	      if (TREE_CONSTANT (t))
+		{
+		  expr = t;
+		  break;
+		}
+	    }
+	  expr = process_outer_var_ref (expr, tf_warning_or_error, true);
+	  expr = convert_from_reference (expr);
+	}
+      break;
+    case COMPONENT_REF:
+      recurse_op[0] = true;
+      break;
+    case COMPOUND_EXPR:
+      recurse_op[1] = true;
+      break;
+    case COND_EXPR:
+      recurse_op[2] = true;
+      if (TREE_OPERAND (expr, 1))
+	recurse_op[1] = true;
+      break;
+    case INDIRECT_REF:
+      if (REFERENCE_REF_P (expr))
+	{
+	  /* Try to look through the reference.  */
+	  tree ref = TREE_OPERAND (expr, 0);
+	  tree r = mark_rvalue_use (ref, loc, reject_builtin);
+	  if (r != ref)
+	    {
+	      expr = copy_node (expr);
+	      TREE_OPERAND (expr, 0) = r;
+	    }
+	}
+      break;
+    default:
+      break;
+    }
+
+  bool changed = false;
+  tree ops[3];
+  for (int i = 0; i < 3; ++i)
+    if (recurse_op[i])
+      {
+	tree op = TREE_OPERAND (expr, i);
+	ops[i] = RECUR (op);
+	if (ops[i] != op)
+	  changed = true;
+      }
+
+  if (changed)
+    {
+      expr = copy_node (expr);
+      for (int i = 0; i < 3; ++i)
+	if (recurse_op[i])
+	  TREE_OPERAND (expr, i) = ops[i];
+    }
+
+  return expr;
+#undef RECUR
+}
+
 /* Called whenever the expression EXPR is used in an rvalue context.
    When REJECT_BUILTIN is true the expression is checked to make sure
    it doesn't make it possible to obtain the address of a GCC built-in
    function with no library fallback (or any of its bits, such as in
    a conversion to bool).  */
+
 tree
-mark_rvalue_use (tree expr,
+mark_rvalue_use (tree e,
 		 location_t loc /* = UNKNOWN_LOCATION */,
 		 bool reject_builtin /* = true */)
 {
-  if (reject_builtin && reject_gcc_builtin (expr, loc))
-    return error_mark_node;
-
-  mark_exp_read (expr);
-  return expr;
+  return mark_use (e, true, true, loc, reject_builtin);
 }
 
 /* Called whenever an expression is used in an lvalue context.  */
@@ -108,8 +192,15 @@ mark_rvalue_use (tree expr,
 tree
 mark_lvalue_use (tree expr)
 {
-  mark_exp_read (expr);
-  return expr;
+  return mark_use (expr, false, true, input_location, false);
+}
+
+/* As above, but don't consider this use a read.  */
+
+tree
+mark_lvalue_use_nonread (tree expr)
+{
+  return mark_use (expr, false, false, input_location, false);
 }
 
 /* Called whenever an expression is used in a type use context.  */

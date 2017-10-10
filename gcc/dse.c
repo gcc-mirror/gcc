@@ -1653,7 +1653,7 @@ find_shift_sequence (int access_size,
       cost = 0;
       for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
-	  cost += insn_rtx_cost (PATTERN (insn), speed);
+	  cost += insn_cost (insn, speed);
 
       /* The computation up to here is essentially independent
 	 of the arguments and could be precomputed.  It may

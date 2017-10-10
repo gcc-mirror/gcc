@@ -257,6 +257,13 @@ struct processor_costs {
   const int fsqrt;		/* cost of FSQRT instruction.  */
 				/* Specify what algorithm
 				   to use for stringops on unknown size.  */
+  const int reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp;
+				/* Specify reassociation width for integer,
+				   fp, vector integer and vector fp
+				   operations.  Generally should correspond
+				   to number of instructions executed in
+				   parallel.  See also
+				   ix86_reassociation_width.  */
   struct stringop_algs *memcpy, *memset;
   const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
 				   load and store.  */
@@ -351,6 +358,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
+#define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
@@ -465,8 +473,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_USE_VECTOR_CONVERTS]
 #define TARGET_SLOW_PSHUFB \
 	ix86_tune_features[X86_TUNE_SLOW_PSHUFB]
-#define TARGET_VECTOR_PARALLEL_EXECUTION \
-	ix86_tune_features[X86_TUNE_VECTOR_PARALLEL_EXECUTION]
 #define TARGET_AVOID_4BYTE_PREFIXES \
 	ix86_tune_features[X86_TUNE_AVOID_4BYTE_PREFIXES]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
@@ -487,10 +493,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
 #define TARGET_AVX128_OPTIMAL \
 	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
-#define TARGET_REASSOC_INT_TO_PARALLEL \
-	ix86_tune_features[X86_TUNE_REASSOC_INT_TO_PARALLEL]
-#define TARGET_REASSOC_FP_TO_PARALLEL \
-	ix86_tune_features[X86_TUNE_REASSOC_FP_TO_PARALLEL]
 #define TARGET_GENERAL_REGS_SSE_SPILL \
 	ix86_tune_features[X86_TUNE_GENERAL_REGS_SSE_SPILL]
 #define TARGET_AVOID_MEM_OPND_FOR_CMOVE \
@@ -846,20 +848,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
   x86_field_alignment ((TYPE), (COMPUTED))
 #endif
-
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  EXP is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ix86_constant_alignment ((EXP), (ALIGN))
 
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
@@ -2250,6 +2238,7 @@ enum processor_type
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
+  PROCESSOR_KNM,
   PROCESSOR_SKYLAKE_AVX512,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,

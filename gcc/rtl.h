@@ -2722,6 +2722,7 @@ get_full_set_src_cost (rtx x, machine_mode mode, struct full_rtx_costs *c)
 /* In explow.c */
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, machine_mode);
 extern rtx plus_constant (machine_mode, rtx, HOST_WIDE_INT, bool = false);
+extern HOST_WIDE_INT get_stack_check_protect (void);
 
 /* In rtl.c */
 extern rtx rtx_alloc (RTX_CODE CXX_MEM_STAT_INFO);
@@ -3202,7 +3203,8 @@ extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
 extern bool keep_with_call_p (const rtx_insn *);
 extern bool label_is_jump_target_p (const_rtx, const rtx_insn *);
-extern int insn_rtx_cost (rtx, bool);
+extern int pattern_cost (rtx, bool);
+extern int insn_cost (rtx_insn *, bool);
 extern unsigned seq_cost (const rtx_insn *, bool);
 
 /* Given an insn and condition, return a canonical description of

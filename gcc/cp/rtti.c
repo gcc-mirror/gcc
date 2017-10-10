@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
    type_info objects for static initialization.
 
    The type information VAR_DECL of a type is held on the
-   IDENTIFIER_GLOBAL_VALUE of the type's mangled name. That VAR_DECL
+   get_global_binding of the type's mangled name. That VAR_DECL
    will be the internal type.  It will usually have the correct
    internal type reflecting the kind of type it represents (pointer,
    array, function, class, inherited class, etc).  When the type it
@@ -226,7 +226,7 @@ throw_bad_cast (void)
   if (!fn)
     {
       tree name = get_identifier ("__cxa_bad_cast");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
 	  (name, build_function_type_list (ptr_type_node, NULL_TREE));
@@ -245,7 +245,7 @@ throw_bad_typeid (void)
   if (!fn)
     {
       tree name = get_identifier ("__cxa_bad_typeid");
-      fn = IDENTIFIER_GLOBAL_VALUE (name);
+      fn = get_global_binding (name);
       if (!fn)
 	{
 	  tree t = build_reference_type (const_type_info_type_node);
@@ -446,7 +446,7 @@ get_tinfo_decl (tree type)
 
   name = mangle_typeinfo_for_type (type);
 
-  d = IDENTIFIER_GLOBAL_VALUE (name);
+  d = get_global_binding (name);
   if (!d)
     {
       int ix = get_pseudo_ti_index (type);
