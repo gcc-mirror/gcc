@@ -1123,7 +1123,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	  if (cmp == LT_EXPR)
 	    {
 	      bool overflow;
-	      wide_int alt = wi::sub (larger, 1, TYPE_SIGN (TREE_TYPE (larger)),
+	      wide_int alt = wi::sub (wi::to_wide (larger), 1,
+				      TYPE_SIGN (TREE_TYPE (larger)),
 				      &overflow);
 	      if (! overflow)
 		alt_larger = wide_int_to_tree (TREE_TYPE (larger), alt);
@@ -1131,7 +1132,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	  else
 	    {
 	      bool overflow;
-	      wide_int alt = wi::add (larger, 1, TYPE_SIGN (TREE_TYPE (larger)),
+	      wide_int alt = wi::add (wi::to_wide (larger), 1,
+				      TYPE_SIGN (TREE_TYPE (larger)),
 				      &overflow);
 	      if (! overflow)
 		alt_larger = wide_int_to_tree (TREE_TYPE (larger), alt);
@@ -1149,7 +1151,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	  if (cmp == GT_EXPR)
 	    {
 	      bool overflow;
-	      wide_int alt = wi::add (smaller, 1, TYPE_SIGN (TREE_TYPE (smaller)),
+	      wide_int alt = wi::add (wi::to_wide (smaller), 1,
+				      TYPE_SIGN (TREE_TYPE (smaller)),
 				      &overflow);
 	      if (! overflow)
 		alt_smaller = wide_int_to_tree (TREE_TYPE (smaller), alt);
@@ -1157,7 +1160,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	  else
 	    {
 	      bool overflow;
-	      wide_int alt = wi::sub (smaller, 1, TYPE_SIGN (TREE_TYPE (smaller)),
+	      wide_int alt = wi::sub (wi::to_wide (smaller), 1,
+				      TYPE_SIGN (TREE_TYPE (smaller)),
 				      &overflow);
 	      if (! overflow)
 		alt_smaller = wide_int_to_tree (TREE_TYPE (smaller), alt);

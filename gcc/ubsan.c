@@ -1164,8 +1164,8 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
   unlink_stmt_vdef (stmt);
 
   if (TREE_CODE (off) == INTEGER_CST)
-    g = gimple_build_cond (wi::neg_p (off) ? LT_EXPR : GE_EXPR, ptri,
-			   fold_build1 (NEGATE_EXPR, sizetype, off),
+    g = gimple_build_cond (wi::neg_p (wi::to_wide (off)) ? LT_EXPR : GE_EXPR,
+			   ptri, fold_build1 (NEGATE_EXPR, sizetype, off),
 			   NULL_TREE, NULL_TREE);
   else if (pos_neg != 3)
     g = gimple_build_cond (pos_neg == 1 ? LT_EXPR : GT_EXPR,

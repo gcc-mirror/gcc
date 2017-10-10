@@ -1877,7 +1877,7 @@ msp430_attr (tree * node,
 	  break;
 
 	case INTEGER_CST:
-	  if (wi::gtu_p (value, 63))
+	  if (wi::gtu_p (wi::to_wide (value), 63))
 	    /* Allow the attribute to be added - the linker script
 	       being used may still recognise this value.  */
 	    warning (OPT_Wattributes,

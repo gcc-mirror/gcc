@@ -1,3 +1,11 @@
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* cvt.c (ignore_overflows): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* decl.c (check_array_designated_initializer): Likewise.
+	* mangle.c (write_integer_cst): Likewise.
+	* semantics.c (cp_finish_omp_clause_depend_sink): Likewise.
+
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (set_global_binding): Don't deal with STAT_HACK.

@@ -1060,12 +1060,15 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	  if (TYPE_SIZE_UNIT (TREE_TYPE (ref))
 	      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (ref))) == INTEGER_CST
 	      && !integer_zerop (TYPE_SIZE_UNIT (TREE_TYPE (ref))))
-	    rem = wi::mod_trunc (off, TYPE_SIZE_UNIT (TREE_TYPE (ref)), SIGNED);
+	    rem = wi::mod_trunc
+	      (wi::to_wide (off),
+	       wi::to_wide (TYPE_SIZE_UNIT (TREE_TYPE (ref))),
+	       SIGNED);
 	  else
 	    /* If we can't compute the remainder simply force the initial
 	       condition to zero.  */
-	    rem = off;
-	  off = wide_int_to_tree (ssizetype, wi::sub (off, rem));
+	    rem = wi::to_wide (off);
+	  off = wide_int_to_tree (ssizetype, wi::to_wide (off) - rem);
 	  memoff = wide_int_to_tree (TREE_TYPE (memoff), rem);
 	  /* And finally replace the initial condition.  */
 	  access_fn = chrec_replace_initial_condition
@@ -1485,14 +1488,16 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	    std::swap (*dr_a1, *dr_a2);
 
 	  bool do_remove = false;
-	  wide_int diff = wi::sub (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr));
+	  wide_int diff = (wi::to_wide (DR_INIT (dr_a2->dr))
+			   - wi::to_wide (DR_INIT (dr_a1->dr)));
 	  wide_int min_seg_len_b;
 	  tree new_seg_len;
 
 	  if (TREE_CODE (dr_b1->seg_len) == INTEGER_CST)
-	    min_seg_len_b = wi::abs (dr_b1->seg_len);
+	    min_seg_len_b = wi::abs (wi::to_wide (dr_b1->seg_len));
 	  else
-	    min_seg_len_b = wi::mul (factor, wi::abs (DR_STEP (dr_b1->dr)));
+	    min_seg_len_b
+	      = factor * wi::abs (wi::to_wide (DR_STEP (dr_b1->dr)));
 
 	  /* Now we try to merge alias check dr_a1 & dr_b and dr_a2 & dr_b.
 
@@ -1531,7 +1536,7 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      /* Adjust diff according to access size of both references.  */
 	      tree size_a1 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a1->dr)));
 	      tree size_a2 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a2->dr)));
-	      diff = wi::add (diff, wi::sub (size_a2, size_a1));
+	      diff += wi::to_wide (size_a2) - wi::to_wide (size_a1);
 	      /* Case A.1.  */
 	      if (wi::leu_p (diff, min_seg_len_b)
 		  /* Case A.2 and B combined.  */
@@ -1539,11 +1544,12 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 		{
 		  if (tree_fits_uhwi_p (dr_a1->seg_len)
 		      && tree_fits_uhwi_p (dr_a2->seg_len))
-		    new_seg_len
-		      = wide_int_to_tree (sizetype,
-					  wi::umin (wi::sub (dr_a1->seg_len,
-							     diff),
-						    dr_a2->seg_len));
+		    {
+		      wide_int min_len
+			= wi::umin (wi::to_wide (dr_a1->seg_len) - diff,
+				    wi::to_wide (dr_a2->seg_len));
+		      new_seg_len = wide_int_to_tree (sizetype, min_len);
+		    }
 		  else
 		    new_seg_len
 		      = size_binop (MINUS_EXPR, dr_a2->seg_len,
@@ -1562,11 +1568,12 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 		{
 		  if (tree_fits_uhwi_p (dr_a1->seg_len)
 		      && tree_fits_uhwi_p (dr_a2->seg_len))
-		    new_seg_len
-		      = wide_int_to_tree (sizetype,
-					  wi::umax (wi::add (dr_a2->seg_len,
-							     diff),
-						    dr_a1->seg_len));
+		    {
+		      wide_int max_len
+			= wi::umax (wi::to_wide (dr_a2->seg_len) + diff,
+				    wi::to_wide (dr_a1->seg_len));
+		      new_seg_len = wide_int_to_tree (sizetype, max_len);
+		    }
 		  else
 		    new_seg_len
 		      = size_binop (PLUS_EXPR, dr_a2->seg_len,

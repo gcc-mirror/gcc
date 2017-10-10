@@ -951,8 +951,9 @@ ccp_finalize (bool nonzero_p)
       else
 	{
 	  unsigned int precision = TYPE_PRECISION (TREE_TYPE (val->value));
-	  wide_int nonzero_bits = wide_int::from (val->mask, precision,
-						  UNSIGNED) | val->value;
+	  wide_int nonzero_bits
+	    = (wide_int::from (val->mask, precision, UNSIGNED)
+	       | wi::to_wide (val->value));
 	  nonzero_bits &= get_nonzero_bits (name);
 	  set_nonzero_bits (name, nonzero_bits);
 	}
@@ -1972,9 +1973,10 @@ evaluate_stmt (gimple *stmt)
 	    }
 	  else
 	    {
-	      if (wi::bit_and_not (val.value, nonzero_bits) != 0)
+	      if (wi::bit_and_not (wi::to_wide (val.value), nonzero_bits) != 0)
 		val.value = wide_int_to_tree (TREE_TYPE (lhs),
-					      nonzero_bits & val.value);
+					      nonzero_bits
+					      & wi::to_wide (val.value));
 	      if (nonzero_bits == 0)
 		val.mask = 0;
 	      else

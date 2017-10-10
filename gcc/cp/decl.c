@@ -5298,7 +5298,7 @@ check_array_designated_initializer (constructor_elt *ce,
 	      == INTEGER_CST))
 	{
 	  /* A C99 designator is OK if it matches the current index.  */
-	  if (wi::eq_p (ce_index, index))
+	  if (wi::to_wide (ce_index) == index)
 	    return true;
 	  else
 	    sorry ("non-trivial designated initializers not supported");

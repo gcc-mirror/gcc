@@ -949,7 +949,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	*walk_subtrees = 0;
 
       else if (TREE_CODE (*tp) == INTEGER_CST)
-	*tp = wide_int_to_tree (new_type, *tp);
+	*tp = wide_int_to_tree (new_type, wi::to_wide (*tp));
       else
 	{
 	  *tp = copy_node (*tp);
@@ -1133,7 +1133,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	*walk_subtrees = 0;
 
       else if (TREE_CODE (*tp) == INTEGER_CST)
-	*tp = wide_int_to_tree (new_type, *tp);
+	*tp = wide_int_to_tree (new_type, wi::to_wide (*tp));
       else
 	{
 	  *tp = copy_node (*tp);

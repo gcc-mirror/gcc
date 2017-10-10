@@ -1,3 +1,8 @@
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc-interface/decl.c (annotate_value): Use wi::to_wide when
+	operating on trees as wide_ints.
+
 2017-10-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_unit.adb (Find_Enclosing_Scope): Do not treat a block statement

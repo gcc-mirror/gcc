@@ -5761,7 +5761,7 @@ cp_finish_omp_clause_depend_sink (tree sink_clause)
       if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
 	{
 	  tree offset = TREE_PURPOSE (t);
-	  bool neg = wi::neg_p ((wide_int) offset);
+	  bool neg = wi::neg_p (wi::to_wide (offset));
 	  offset = fold_unary (ABS_EXPR, TREE_TYPE (offset), offset);
 	  decl = mark_rvalue_use (decl);
 	  decl = convert_from_reference (decl);

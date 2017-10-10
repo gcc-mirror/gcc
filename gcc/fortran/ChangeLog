@@ -1,3 +1,13 @@
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target-memory.c (gfc_interpret_logical): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* trans-const.c (gfc_conv_tree_to_mpz): Likewise.
+	* trans-expr.c (gfc_conv_cst_int_power): Likewise.
+	* trans-intrinsic.c (trans_this_image): Likewise.
+	(gfc_conv_intrinsic_bound): Likewise.
+	(conv_intrinsic_cobound): Likewise.
+
 2017-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* check.c (gfc_check_x): Remove function.

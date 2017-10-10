@@ -150,15 +150,23 @@ along with GCC; see the file COPYING3.  If not see
    and in wider precisions.
 
    There are constructors to create the various forms of wide_int from
-   trees, rtl and constants.  For trees you can simply say:
+   trees, rtl and constants.  For trees the options are:
 
 	     tree t = ...;
-	     wide_int x = t;
+	     wi::to_wide (t)     // Treat T as a wide_int
+	     wi::to_offset (t)   // Treat T as an offset_int
+	     wi::to_widest (t)   // Treat T as a widest_int
 
-   However, a little more syntax is required for rtl constants since
-   they do not have an explicit precision.  To make an rtl into a
-   wide_int, you have to pair it with a mode.  The canonical way to do
-   this is with rtx_mode_t as in:
+   All three are light-weight accessors that should have no overhead
+   in release builds.  If it is useful for readability reasons to
+   store the result in a temporary variable, the preferred method is:
+
+	     wi::tree_to_wide_ref twide = wi::to_wide (t);
+	     wi::tree_to_offset_ref toffset = wi::to_offset (t);
+	     wi::tree_to_widest_ref twidest = wi::to_widest (t);
+
+   To make an rtx into a wide_int, you have to pair it with a mode.
+   The canonical way to do this is with rtx_mode_t as in:
 
 	     rtx r = ...
 	     wide_int x = rtx_mode_t (r, mode);
@@ -175,23 +183,22 @@ along with GCC; see the file COPYING3.  If not see
 	     offset_int x = (int) c;          // sign-extend C
 	     widest_int x = (unsigned int) c; // zero-extend C
 
-   It is also possible to do arithmetic directly on trees, rtxes and
+   It is also possible to do arithmetic directly on rtx_mode_ts and
    constants.  For example:
 
-	     wi::add (t1, t2);	  // add equal-sized INTEGER_CSTs t1 and t2
-	     wi::add (t1, 1);     // add 1 to INTEGER_CST t1
-	     wi::add (r1, r2);    // add equal-sized rtx constants r1 and r2
+	     wi::add (r1, r2);    // add equal-sized rtx_mode_ts r1 and r2
+	     wi::add (r1, 1);     // add 1 to rtx_mode_t r1
 	     wi::lshift (1, 100); // 1 << 100 as a widest_int
 
    Many binary operations place restrictions on the combinations of inputs,
    using the following rules:
 
-   - {tree, rtx, wide_int} op {tree, rtx, wide_int} -> wide_int
+   - {rtx, wide_int} op {rtx, wide_int} -> wide_int
        The inputs must be the same precision.  The result is a wide_int
        of the same precision
 
-   - {tree, rtx, wide_int} op (un)signed HOST_WIDE_INT -> wide_int
-     (un)signed HOST_WIDE_INT op {tree, rtx, wide_int} -> wide_int
+   - {rtx, wide_int} op (un)signed HOST_WIDE_INT -> wide_int
+     (un)signed HOST_WIDE_INT op {rtx, wide_int} -> wide_int
        The HOST_WIDE_INT is extended or truncated to the precision of
        the other input.  The result is a wide_int of the same precision
        as that input.
@@ -316,7 +323,9 @@ typedef generic_wide_int <wide_int_storage> wide_int;
 typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) offset_int;
 typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION) widest_int;
 
-template <bool SE>
+/* wi::storage_ref can be a reference to a primitive type,
+   so this is the conservatively-correct setting.  */
+template <bool SE, bool HDP = true>
 struct wide_int_ref_storage;
 
 typedef generic_wide_int <wide_int_ref_storage <false> > wide_int_ref;
@@ -330,7 +339,8 @@ typedef generic_wide_int <wide_int_ref_storage <false> > wide_int_ref;
    to use those.  */
 #define WIDE_INT_REF_FOR(T) \
   generic_wide_int \
-    <wide_int_ref_storage <wi::int_traits <T>::is_sign_extended> >
+    <wide_int_ref_storage <wi::int_traits <T>::is_sign_extended, \
+			   wi::int_traits <T>::host_dependent_precision> >
 
 namespace wi
 {
@@ -929,7 +939,7 @@ decompose (HOST_WIDE_INT *, unsigned int precision,
 /* Provide the storage for a wide_int_ref.  This acts like a read-only
    wide_int, with the optimization that VAL is normally a pointer to
    another integer's storage, so that no array copy is needed.  */
-template <bool SE>
+template <bool SE, bool HDP>
 struct wide_int_ref_storage : public wi::storage_ref
 {
 private:
@@ -948,8 +958,8 @@ public:
 };
 
 /* Create a reference from an existing reference.  */
-template <bool SE>
-inline wide_int_ref_storage <SE>::
+template <bool SE, bool HDP>
+inline wide_int_ref_storage <SE, HDP>::
 wide_int_ref_storage (const wi::storage_ref &x)
   : storage_ref (x)
 {}
@@ -957,32 +967,30 @@ wide_int_ref_storage (const wi::storage_ref &x)
 /* Create a reference to integer X in its natural precision.  Note
    that the natural precision is host-dependent for primitive
    types.  */
-template <bool SE>
+template <bool SE, bool HDP>
 template <typename T>
-inline wide_int_ref_storage <SE>::wide_int_ref_storage (const T &x)
+inline wide_int_ref_storage <SE, HDP>::wide_int_ref_storage (const T &x)
   : storage_ref (wi::int_traits <T>::decompose (scratch,
 						wi::get_precision (x), x))
 {
 }
 
 /* Create a reference to integer X in precision PRECISION.  */
-template <bool SE>
+template <bool SE, bool HDP>
 template <typename T>
-inline wide_int_ref_storage <SE>::wide_int_ref_storage (const T &x,
-							unsigned int precision)
+inline wide_int_ref_storage <SE, HDP>::
+wide_int_ref_storage (const T &x, unsigned int precision)
   : storage_ref (wi::int_traits <T>::decompose (scratch, precision, x))
 {
 }
 
 namespace wi
 {
-  template <bool SE>
-  struct int_traits <wide_int_ref_storage <SE> >
+  template <bool SE, bool HDP>
+  struct int_traits <wide_int_ref_storage <SE, HDP> >
   {
     static const enum precision_type precision_type = VAR_PRECISION;
-    /* wi::storage_ref can be a reference to a primitive type,
-       so this is the conservatively-correct setting.  */
-    static const bool host_dependent_precision = true;
+    static const bool host_dependent_precision = HDP;
     static const bool is_sign_extended = SE;
   };
 }

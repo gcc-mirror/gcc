@@ -582,7 +582,7 @@ ignore_overflows (tree expr, tree orig)
     {
       gcc_assert (!TREE_OVERFLOW (orig));
       /* Ensure constant sharing.  */
-      expr = wide_int_to_tree (TREE_TYPE (expr), expr);
+      expr = wide_int_to_tree (TREE_TYPE (expr), wi::to_wide (expr));
     }
   return expr;
 }
