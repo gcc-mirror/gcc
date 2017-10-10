@@ -1,3 +1,8 @@
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Rename PHI nodes
+	when copying loop nest with only one inner loop.
+
 2017-10-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop): Avoid compacting
