@@ -1,5 +1,8 @@
 2017-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::equal):
+	Update comment about NAD issue.
+
 	PR libstdc++/59087
 	PR libstdc++/82417
 	* include/c_compatibility/complex.h [!C++98 && __STRICT_ANSI__]: Do
