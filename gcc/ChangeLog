@@ -1,3 +1,11 @@
+2017-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backported from mainline r253602
+	2017-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: (armv7*-*-freebsd*): New target.
+	(armv6*-*-freebsd*): Remove obsolete TARGET_FREEBSD_ARMv6 define.
+
 2017-10-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline r253242.
