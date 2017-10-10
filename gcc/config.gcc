@@ -1077,10 +1077,13 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	case $target in
 	armv6*-*-freebsd*)
 	    target_cpu_cname="arm1176jzfs"
-	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
             if test $fbsd_major -ge 11; then
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
             fi
+	    ;;
+	armv7*-*-freebsd*)
+	    target_cpu_cname="genericv7a"
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
 	    ;;
 	*)
 	    target_cpu_cname="arm9"
