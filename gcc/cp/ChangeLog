@@ -1,3 +1,9 @@
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (struct mangled_decl_hash): New hash traits.
+	(mangled_decls): Make hash_table<mangled_decl_hash>.
+	(generate_mangling_alias, record_mangling): Adjust.
+
 2017-10-10  Jason Merrill  <jason@redhat.com>
 
 	More delayed lambda capture fixes.
