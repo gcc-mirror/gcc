@@ -1,3 +1,8 @@
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/82506
+	* macro.c (cpp_quote_string): Escape raw LFs.
+
 2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

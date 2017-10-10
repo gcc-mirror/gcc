@@ -1,3 +1,8 @@
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/82506
+	* g++.dg/cpp/string-3.C: New.
+
 2017-10-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-splat-16.c: New
