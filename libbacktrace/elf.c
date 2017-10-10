@@ -103,6 +103,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
+#undef SFH_COMPRESSED
 #undef STT_OBJECT
 #undef STT_FUNC
 
@@ -194,6 +195,8 @@ typedef struct {
 #define SHT_SYMTAB 2
 #define SHT_STRTAB 3
 #define SHT_DYNSYM 11
+
+#define SHF_COMPRESSED 0x800
 
 #if BACKTRACE_ELF_SIZE == 32
 
@@ -700,7 +703,8 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
 
       for (j = 0; j < (int) DEBUG_MAX; ++j)
 	{
-	  if (strcmp (name, debug_section_names[j]) == 0)
+	  if (strcmp (name, debug_section_names[j]) == 0
+              && (shdr->sh_flags & SHF_COMPRESSED) == 0)
 	    {
 	      sections[j].offset = shdr->sh_offset;
 	      sections[j].size = shdr->sh_size;
