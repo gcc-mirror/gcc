@@ -1,3 +1,10 @@
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-loop-distribution.c (struct partition): Remove unused field
+	loops of the structure.
+	(partition_alloc, partition_free): Ditto.
+	(build_rdg_partition_for_vertex): Ditto.
+
 2017-10-09  Jeff Law  <law@redhat.com>
 
 	* targhooks.c (default_stack_clash_protection_final_dynamic_probe): Fix
