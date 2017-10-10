@@ -2,6 +2,20 @@
 
 	* gcc.dg/tree-ssa/ldist-27.c: New test.
 
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/class_wide4.adb, gnat.dg/class_wide4_pkg.ads,
+	gnat.dg/class_wide4_pkg2.ads: New testcase.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/class_wide3.adb, gnat.dg/class_wide3_pkg.ads: New testcase.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/validity_check2.adb, gnat.dg/validity_check2_pkg.ads:
+	New testcase.
+
 2017-10-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/amo1.c: New test.
