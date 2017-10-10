@@ -1,5 +1,8 @@
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/77578
+	* g++.dg/gomp/pr77578.C: New test.
+
 	PR middle-end/70100
 	* g++.dg/opt/pr70100.C: New test.
 
