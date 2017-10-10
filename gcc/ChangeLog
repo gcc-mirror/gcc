@@ -1,3 +1,8 @@
+2017-10-09  Jeff Law  <law@redhat.com>
+
+	* targhooks.c (default_stack_clash_protection_final_dynamic_probe): Fix
+	return type to match prototype and documentation.
+
 2010-10-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (processor_costs): Move to ...
