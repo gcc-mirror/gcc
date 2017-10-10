@@ -1,3 +1,8 @@
+2017-10-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, X86_TUNE_ADJUST_UNROLL,
+	X86_TUNE_ONE_IF_CONV_INSN): Move to right spot in the file.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* wide-int.h (wide_int_ref_storage): Make host_dependent_precision
@@ -359,6 +364,7 @@
 
 	* builtins.def (BUILT_IN_SETJMP): Revert latest change.
 
+2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_expand_set_or_movmem): Disable 512bit loops for targets
