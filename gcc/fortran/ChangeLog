@@ -1,3 +1,7 @@
+2017-10-10  Release Manager
+
+	* GCC 5.5.0 released.
+
 2017-09-02  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk

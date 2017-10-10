@@ -1,3 +1,7 @@
+2017-10-10  Release Manager
+
+	* GCC 5.5.0 released.
+
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80294 - ICE with constexpr and inheritance.

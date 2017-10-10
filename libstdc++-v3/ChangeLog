@@ -1,3 +1,7 @@
+2017-10-10  Release Manager
+
+	* GCC 5.5.0 released.
+
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/reference_wrapper/80504.cc: Do not use invalid
