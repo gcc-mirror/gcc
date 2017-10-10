@@ -117,8 +117,6 @@ rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
 		      || single_pred (e->src) != outer_loop->header)
 		    continue;
 		}
-	      else
-		continue;
 	    }
 	}
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);

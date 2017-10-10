@@ -1,5 +1,9 @@
 2017-10-10  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.dg/tree-ssa/ldist-34.c: New test.
+
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
 	* gcc.dg/tree-ssa/ldist-27.c: New test.
 
 2017-10-09  Ed Schonberg  <schonberg@adacore.com>
