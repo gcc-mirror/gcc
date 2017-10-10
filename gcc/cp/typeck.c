@@ -5603,8 +5603,9 @@ tree
 condition_conversion (tree expr)
 {
   tree t;
-  if (processing_template_decl)
-    return expr;
+  /* Anything that might happen in a template should go through
+     maybe_convert_cond.  */
+  gcc_assert (!processing_template_decl);
   t = perform_implicit_conversion_flags (boolean_type_node, expr,
 					 tf_warning_or_error, LOOKUP_NORMAL);
   t = fold_build_cleanup_point_expr (boolean_type_node, t);
