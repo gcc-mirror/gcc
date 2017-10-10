@@ -1,5 +1,10 @@
 2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/78006
+	* g++.dg/cpp1y/auto-fn40.C: New.
+
+2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/81032
 	* g++.dg/cpp1y/lambda-generic-ice6.C: New.
 
