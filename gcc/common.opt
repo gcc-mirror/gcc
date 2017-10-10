@@ -721,6 +721,10 @@ Wstrict-overflow=
 Common Joined RejectNegative UInteger Var(warn_strict_overflow) Warning
 Warn about optimizations that assume that signed overflow is undefined.
 
+Wsuggest-attribute=cold
+Common Var(warn_suggest_attribute_cold) Warning
+Warn about functions which might be candidates for __attribute__((cold)).
+
 Wsuggest-attribute=const
 Common Var(warn_suggest_attribute_const) Warning
 Warn about functions which might be candidates for __attribute__((const)).

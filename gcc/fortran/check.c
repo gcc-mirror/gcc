@@ -2262,6 +2262,7 @@ gfc_check_fn_c (gfc_expr *a)
   return true;
 }
 
+
 /* A single real argument.  */
 
 bool
@@ -5506,19 +5507,6 @@ gfc_check_ttynam (gfc_expr *unit)
     return false;
 
   if (!type_check (unit, 0, BT_INTEGER))
-    return false;
-
-  return true;
-}
-
-
-/* Common check function for the half a dozen intrinsics that have a
-   single real argument.  */
-
-bool
-gfc_check_x (gfc_expr *x)
-{
-  if (!type_check (x, 0, BT_REAL))
     return false;
 
   return true;

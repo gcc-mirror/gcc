@@ -1,3 +1,17 @@
+2017-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::equal):
+	Update comment about NAD issue.
+
+	PR libstdc++/59087
+	PR libstdc++/82417
+	* include/c_compatibility/complex.h [!C++98 && __STRICT_ANSI__]: Do
+	not include C library's <complex.h>.
+	* testsuite/26_numerics/complex/c99.cc: Depend on __STRICT_ANSI__.
+	* testsuite/26_numerics/headers/complex.h/std_c++11.h: New test.
+	* testsuite/26_numerics/headers/complex.h/std_gnu++11.h: New test.
+	* testsuite/26_numerics/headers/complex.h/std_c++98.h: New test.
+
 2017-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/to_chars/1.cc: Add dg-require-string-conversions.

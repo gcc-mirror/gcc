@@ -281,7 +281,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
 
-static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
+static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
 						     tree var);
 
@@ -2036,18 +2036,19 @@ compute_scalar_evolution_in_loop (struct loop *wrto_loop,
   if (no_evolution_in_loop_p (res, wrto_loop->num, &val) && val)
     return res;
 
-  return analyze_scalar_evolution_1 (wrto_loop, res, chrec_not_analyzed_yet);
+  return analyze_scalar_evolution_1 (wrto_loop, res);
 }
 
 /* Helper recursive function.  */
 
 static tree
-analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
+analyze_scalar_evolution_1 (struct loop *loop, tree var)
 {
   tree type = TREE_TYPE (var);
   gimple *def;
   basic_block bb;
   struct loop *def_loop;
+  tree res;
 
   if (loop == NULL
       || TREE_CODE (type) == VECTOR_TYPE
@@ -2069,18 +2070,9 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
       goto set_and_end;
     }
 
-  if (res != chrec_not_analyzed_yet)
-    {
-      if (loop != bb->loop_father)
-	res = compute_scalar_evolution_in_loop
-	    (find_common_loop (loop, bb->loop_father), bb->loop_father, res);
-
-      goto set_and_end;
-    }
-
   if (loop != def_loop)
     {
-      res = analyze_scalar_evolution_1 (def_loop, var, chrec_not_analyzed_yet);
+      res = analyze_scalar_evolution_1 (def_loop, var);
       res = compute_scalar_evolution_in_loop (loop, def_loop, res);
 
       goto set_and_end;
@@ -2144,7 +2136,8 @@ analyze_scalar_evolution (struct loop *loop, tree var)
     }
 
   res = get_scalar_evolution (block_before_loop (loop), var);
-  res = analyze_scalar_evolution_1 (loop, var, res);
+  if (res == chrec_not_analyzed_yet)
+    res = analyze_scalar_evolution_1 (loop, var);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     fprintf (dump_file, ")\n");
@@ -3264,6 +3257,8 @@ scev_initialize (void)
 {
   struct loop *loop;
 
+  gcc_assert (! scev_initialized_p ());
+
   scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 
   initialize_scalar_evolutions_analyzer ();
@@ -3329,7 +3324,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     return false;
 
   if (TREE_CODE (base) == INTEGER_CST)
-    base_min = base_max = base;
+    base_min = base_max = wi::to_wide (base);
   else if (TREE_CODE (base) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (base))
 	   && get_range_info (base, &base_min, &base_max) == VR_RANGE)
@@ -3338,7 +3333,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     return true;
 
   if (TREE_CODE (step) == INTEGER_CST)
-    step_min = step_max = step;
+    step_min = step_max = wi::to_wide (step);
   else if (TREE_CODE (step) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (step))
 	   && get_range_info (step, &step_min, &step_max) == VR_RANGE)
@@ -3598,7 +3593,8 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
       extreme = wi::max_value (type);
     }
   overflow = false;
-  extreme = wi::sub (extreme, iv->step, TYPE_SIGN (type), &overflow);
+  extreme = wi::sub (extreme, wi::to_wide (iv->step),
+		     TYPE_SIGN (type), &overflow);
   if (overflow)
     return true;
   e = fold_build2 (code, boolean_type_node, base,

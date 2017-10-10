@@ -7153,7 +7153,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       if (wi::neg_p (bit_offset) || !wi::fits_shwi_p (bit_offset))
         {
 	  offset_int mask = wi::mask <offset_int> (LOG2_BITS_PER_UNIT, false);
-	  offset_int tem = bit_offset.and_not (mask);
+	  offset_int tem = wi::bit_and_not (bit_offset, mask);
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;
@@ -9909,24 +9909,43 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && GET_MODE (decl_rtl) != dmode)
 	{
 	  machine_mode pmode;
+	  bool always_initialized_rtx;
 
 	  /* Get the signedness to be used for this variable.  Ensure we get
 	     the same mode we got when the variable was declared.  */
 	  if (code != SSA_NAME)
-	    pmode = promote_decl_mode (exp, &unsignedp);
+	    {
+	      pmode = promote_decl_mode (exp, &unsignedp);
+	      always_initialized_rtx = true;
+	    }
 	  else if ((g = SSA_NAME_DEF_STMT (ssa_name))
 		   && gimple_code (g) == GIMPLE_CALL
 		   && !gimple_call_internal_p (g))
-	    pmode = promote_function_mode (type, mode, &unsignedp,
-					   gimple_call_fntype (g),
-					   2);
+	    {
+	      pmode = promote_function_mode (type, mode, &unsignedp,
+					    gimple_call_fntype (g), 2);
+	      always_initialized_rtx
+		= always_initialized_rtx_for_ssa_name_p (ssa_name);
+	    }
 	  else
-	    pmode = promote_ssa_mode (ssa_name, &unsignedp);
+	    {
+	      pmode = promote_ssa_mode (ssa_name, &unsignedp);
+	      always_initialized_rtx
+		= always_initialized_rtx_for_ssa_name_p (ssa_name);
+	    }
+
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
-	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_SET (temp, unsignedp);
+
+	  /* We cannot assume anything about an existing extension if the
+	     register may contain uninitialized bits.  */
+	  if (always_initialized_rtx)
+	    {
+	      SUBREG_PROMOTED_VAR_P (temp) = 1;
+	      SUBREG_PROMOTED_SET (temp, unsignedp);
+	    }
+
 	  return temp;
 	}
 
@@ -11769,7 +11788,7 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i) = immed_wide_int_const (elt, inner);
+	RTVEC_ELT (v, i) = immed_wide_int_const (wi::to_wide (elt), inner);
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);

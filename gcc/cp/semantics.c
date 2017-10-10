@@ -410,6 +410,8 @@ maybe_cleanup_point_expr (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
     expr = fold_build_cleanup_point_expr (TREE_TYPE (expr), expr);
+  else
+    expr = do_dependent_capture (expr);
   return expr;
 }
 
@@ -423,6 +425,8 @@ maybe_cleanup_point_expr_void (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
     expr = fold_build_cleanup_point_expr (void_type_node, expr);
+  else
+    expr = do_dependent_capture (expr);
   return expr;
 }
 
@@ -629,6 +633,8 @@ finish_goto_stmt (tree destination)
 	    = fold_build_cleanup_point_expr (TREE_TYPE (destination),
 					     destination);
 	}
+      else
+	destination = do_dependent_capture (destination);
     }
 
   check_goto (destination);
@@ -650,7 +656,7 @@ maybe_convert_cond (tree cond)
 
   /* Wait until we instantiate templates before doing conversion.  */
   if (processing_template_decl)
-    return cond;
+    return do_dependent_capture (cond);
 
   if (warn_sequence_point)
     verify_sequence_points (cond);
@@ -3265,6 +3271,8 @@ outer_var_p (tree decl)
 {
   return ((VAR_P (decl) || TREE_CODE (decl) == PARM_DECL)
 	  && DECL_FUNCTION_SCOPE_P (decl)
+	  /* Don't get confused by temporaries.  */
+	  && DECL_NAME (decl)
 	  && (DECL_CONTEXT (decl) != current_function_decl
 	      || parsing_nsdmi ()));
 }
@@ -3312,8 +3320,12 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
       /* Check whether we've already built a proxy.  */
-      tree d = retrieve_local_specialization (decl);
-      if (d && is_capture_proxy (d))
+      tree var = decl;
+      while (is_normal_capture_proxy (var))
+	var = DECL_CAPTURED_VARIABLE (var);
+      tree d = retrieve_local_specialization (var);
+
+      if (d && d != decl && is_capture_proxy (d))
 	{
 	  if (DECL_CONTEXT (d) == containing_function)
 	    /* We already have an inner proxy.  */
@@ -5761,7 +5773,7 @@ cp_finish_omp_clause_depend_sink (tree sink_clause)
       if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
 	{
 	  tree offset = TREE_PURPOSE (t);
-	  bool neg = wi::neg_p ((wide_int) offset);
+	  bool neg = wi::neg_p (wi::to_wide (offset));
 	  offset = fold_unary (ABS_EXPR, TREE_TYPE (offset), offset);
 	  decl = mark_rvalue_use (decl);
 	  decl = convert_from_reference (decl);
@@ -6213,8 +6225,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				      "positive");
 			  t = integer_one_node;
 			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_OPERAND (c, 1) = t;
 	    }
@@ -7095,8 +7107,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				    "integral constant");
 			  remove = true;
 			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 
 		/* Update list item.  */

@@ -14495,7 +14495,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             break;
           }
 
-        tmap = wide_int_to_tree (map_type, arg[0]);
+        tmap = wide_int_to_tree (map_type, wi::to_wide (arg[0]));
         map = TREE_INT_CST_LOW (tmap);
 
         if (TREE_CODE (tval) != INTEGER_CST

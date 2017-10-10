@@ -28947,6 +28947,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
 	move_mode = wider_mode;
 
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (move_mode) > 128)
+	move_mode = TImode;
+
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
       if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
@@ -31667,12 +31670,12 @@ ix86_data_alignment (tree type, int align, bool opt)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
     {
-      if (wi::geu_p (TYPE_SIZE (type), max_align_compat)
+      if (wi::geu_p (wi::to_wide (TYPE_SIZE (type)), max_align_compat)
 	  && align < max_align_compat)
 	align = max_align_compat;
-       if (wi::geu_p (TYPE_SIZE (type), max_align)
-	   && align < max_align)
-	 align = max_align;
+      if (wi::geu_p (wi::to_wide (TYPE_SIZE (type)), max_align)
+	  && align < max_align)
+	align = max_align;
     }
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
@@ -31682,7 +31685,7 @@ ix86_data_alignment (tree type, int align, bool opt)
       if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && wi::geu_p (wi::to_wide (TYPE_SIZE (type)), 128)
 	  && align < 128)
 	return 128;
     }
@@ -31801,7 +31804,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
 		  != TYPE_MAIN_VARIANT (va_list_type_node)))
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && wi::geu_p (wi::to_wide (TYPE_SIZE (type)), 128)
 	  && align < 128)
 	return 128;
     }
@@ -32985,7 +32988,9 @@ ix86_init_mmx_sse_builtins (void)
 		    UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
 
   /* SSE or 3DNow!A */
-  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+	       /* As it uses V4HImode, we have to require -mmmx too.  */
+	       | OPTION_MASK_ISA_MMX,
 	       "__builtin_ia32_maskmovq", VOID_FTYPE_V8QI_V8QI_PCHAR,
 	       IX86_BUILTIN_MASKMOVQ);
 
@@ -33423,7 +33428,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_vec_ext_v8hi",
 		     HI_FTYPE_V8HI_INT, IX86_BUILTIN_VEC_EXT_V8HI);
 
-  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+		     /* As it uses V4HImode, we have to require -mmmx too.  */
+		     | OPTION_MASK_ISA_MMX,
 		     "__builtin_ia32_vec_ext_v4hi",
 		     HI_FTYPE_V4HI_INT, IX86_BUILTIN_VEC_EXT_V4HI);
 
@@ -33447,7 +33454,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_vec_set_v8hi",
 		     V8HI_FTYPE_V8HI_HI_INT, IX86_BUILTIN_VEC_SET_V8HI);
 
-  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+		     /* As it uses V4HImode, we have to require -mmmx too.  */
+		     | OPTION_MASK_ISA_MMX,
 		     "__builtin_ia32_vec_set_v4hi",
 		     V4HI_FTYPE_V4HI_HI_INT, IX86_BUILTIN_VEC_SET_V4HI);
 
@@ -37911,18 +37920,23 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      Originally the builtin was not created if it wasn't applicable to the
      current ISA based on the command line switches.  With function specific
      options, we need to check in the context of the function making the call
-     whether it is supported.  Treat AVX512VL specially.  For other flags,
+     whether it is supported.  Treat AVX512VL and MMX specially.  For other flags,
      if isa includes more than one ISA bit, treat those are requiring any
      of them.  For AVX512VL, require both AVX512VL and the non-AVX512VL
-     ISAs.  Similarly for 64BIT, but we shouldn't be building such builtins
+     ISAs.  Likewise for MMX, require both MMX and the non-MMX ISAs.
+     Similarly for 64BIT, but we shouldn't be building such builtins
      at all, -m64 is a whole TU option.  */
   if (((ix86_builtins_isa[fcode].isa
-	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT))
+	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
+	    | OPTION_MASK_ISA_64BIT))
        && !(ix86_builtins_isa[fcode].isa
-	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT)
+	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
+		| OPTION_MASK_ISA_64BIT)
 	    & ix86_isa_flags))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_MMX)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_MMX))
       || (ix86_builtins_isa[fcode].isa2
 	  && !(ix86_builtins_isa[fcode].isa2 & ix86_isa_flags2)))
     {
@@ -51798,8 +51812,9 @@ do_dispatch (rtx_insn *insn, int mode)
 static bool
 has_dispatch (rtx_insn *insn, int action)
 {
+  /* Current implementation of dispatch scheduler models buldozer only.  */
   if ((TARGET_BDVER1 || TARGET_BDVER2 || TARGET_BDVER3
-      || TARGET_BDVER4 || TARGET_ZNVER1) && flag_dispatch_scheduler)
+      || TARGET_BDVER4) && flag_dispatch_scheduler)
     switch (action)
       {
       default:

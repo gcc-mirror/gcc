@@ -284,6 +284,22 @@ DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
           m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
 	  | m_LAKEMONT | m_AMD_MULTIPLE | m_GENERIC)
 
+/* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
+   for bit-manipulation instructions.  */
+DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",
+	  m_SANDYBRIDGE | m_HASWELL | m_GENERIC)
+
+/* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
+   on hardware capabilities. Bdver3 hardware has a loop buffer which makes
+   unrolling small loop less important. For, such architectures we adjust
+   the unroll factor so that the unrolled loop fits the loop buffer.  */
+DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
+
+/* X86_TUNE_ONE_IF_CONV_INSNS: Restrict a number of cmov insns in
+   if-converted sequence to one.  */
+DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
+	  m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_CORE_ALL | m_GENERIC)
+
 /*****************************************************************************/
 /* 387 instruction selection tuning                                          */
 /*****************************************************************************/
@@ -503,11 +519,6 @@ DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode", m_K6)
 DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
           m_K8)
 
-/* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
-   for bit-manipulation instructions.  */
-DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",
-	  m_SANDYBRIDGE | m_HASWELL | m_GENERIC)
-
 /*****************************************************************************/
 /* This never worked well before.                                            */
 /*****************************************************************************/
@@ -525,14 +536,3 @@ DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0U)
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
 DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0U)
-
-/* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
-   on hardware capabilities. Bdver3 hardware has a loop buffer which makes
-   unrolling small loop less important. For, such architectures we adjust
-   the unroll factor so that the unrolled loop fits the loop buffer.  */
-DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
-
-/* X86_TUNE_ONE_IF_CONV_INSNS: Restrict a number of cmov insns in
-   if-converted sequence to one.  */
-DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
-	  m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_CORE_ALL | m_GENERIC)

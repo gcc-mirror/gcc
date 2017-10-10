@@ -2578,7 +2578,6 @@ check_extern_c_conflict (tree decl)
 	  /* Chain it on for c_linkage_binding's use.  */
 	  *slot = tree_cons (NULL_TREE, decl, *slot);
 	}
-      
     }
   else
     *slot = decl;
@@ -2731,7 +2730,11 @@ check_local_shadow (tree decl)
       else if (warn_shadow_local)
 	warning_code = OPT_Wshadow_local;
       else if (warn_shadow_compatible_local
-	       && can_convert (TREE_TYPE (old), TREE_TYPE (decl), tf_none))
+	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
+		   || (!dependent_type_p (TREE_TYPE (decl))
+		       && !dependent_type_p (TREE_TYPE (old))
+		       && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
+				       tf_none))))
 	warning_code = OPT_Wshadow_compatible_local;
       else
 	return;

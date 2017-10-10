@@ -4020,21 +4020,25 @@ compute_avail (void)
 			{
 			  ref->set = set;
 			  if (ref1->opcode == MEM_REF)
-			    ref1->op0 = wide_int_to_tree (TREE_TYPE (ref2->op0),
-							  ref1->op0);
+			    ref1->op0
+			      = wide_int_to_tree (TREE_TYPE (ref2->op0),
+						  wi::to_wide (ref1->op0));
 			  else
-			    ref1->op2 = wide_int_to_tree (TREE_TYPE (ref2->op2),
-							  ref1->op2);
+			    ref1->op2
+			      = wide_int_to_tree (TREE_TYPE (ref2->op2),
+						  wi::to_wide (ref1->op2));
 			}
 		      else
 			{
 			  ref->set = 0;
 			  if (ref1->opcode == MEM_REF)
-			    ref1->op0 = wide_int_to_tree (ptr_type_node,
-							  ref1->op0);
+			    ref1->op0
+			      = wide_int_to_tree (ptr_type_node,
+						  wi::to_wide (ref1->op0));
 			  else
-			    ref1->op2 = wide_int_to_tree (ptr_type_node,
-							  ref1->op2);
+			    ref1->op2
+			      = wide_int_to_tree (ptr_type_node,
+						  wi::to_wide (ref1->op2));
 			}
 		      operands.release ();
 

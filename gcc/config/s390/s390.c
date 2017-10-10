@@ -1102,11 +1102,11 @@ s390_handle_hotpatch_attribute (tree *node, tree name, tree args,
     err = 1;
   else if (TREE_CODE (expr) != INTEGER_CST
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	   || wi::gtu_p (expr, s390_hotpatch_hw_max))
+	   || wi::gtu_p (wi::to_wide (expr), s390_hotpatch_hw_max))
     err = 1;
   else if (TREE_CODE (expr2) != INTEGER_CST
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr2))
-	   || wi::gtu_p (expr2, s390_hotpatch_hw_max))
+	   || wi::gtu_p (wi::to_wide (expr2), s390_hotpatch_hw_max))
     err = 1;
   else
     err = 0;

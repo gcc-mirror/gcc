@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 110 istreambuf_iterator::equal not const
-      // NB: there is also number 111 (NAD, Future) pending on this function.
+      // NB: there is also number 111 (NAD) relevant to this function.
       /// Return true both iterators are end or both are not end.
       bool
       equal(const istreambuf_iterator& __b) const

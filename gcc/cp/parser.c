@@ -2257,7 +2257,7 @@ static cp_expr cp_parser_braced_list
 static vec<constructor_elt, va_gc> *cp_parser_initializer_list
   (cp_parser *, bool *);
 
-static bool cp_parser_ctor_initializer_opt_and_function_body
+static void cp_parser_ctor_initializer_opt_and_function_body
   (cp_parser *, bool);
 
 static tree cp_parser_late_parsing_omp_declare_simd
@@ -2310,7 +2310,7 @@ static tree cp_parser_conversion_type_id
   (cp_parser *);
 static cp_declarator *cp_parser_conversion_declarator_opt
   (cp_parser *);
-static bool cp_parser_ctor_initializer_opt
+static void cp_parser_ctor_initializer_opt
   (cp_parser *);
 static void cp_parser_mem_initializer_list
   (cp_parser *);
@@ -2353,7 +2353,7 @@ static void cp_parser_explicit_specialization
 
 static tree cp_parser_try_block
   (cp_parser *);
-static bool cp_parser_function_try_block
+static void cp_parser_function_try_block
   (cp_parser *);
 static void cp_parser_handler_seq
   (cp_parser *);
@@ -2438,7 +2438,7 @@ static tree cp_parser_transaction
   (cp_parser *, cp_token *);
 static tree cp_parser_transaction_expression
   (cp_parser *, enum rid);
-static bool cp_parser_function_transaction
+static void cp_parser_function_transaction
   (cp_parser *, enum rid);
 static tree cp_parser_transaction_cancel
   (cp_parser *);
@@ -11873,6 +11873,8 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
   tree iter_type, begin_expr, end_expr;
   tree condition, expression;
 
+  range_expr = mark_lvalue_use (range_expr);
+
   if (range_decl == error_mark_node || range_expr == error_mark_node)
     /* If an error happened previously do nothing or else a lot of
        unhelpful errors would be issued.  */
@@ -14253,11 +14255,9 @@ cp_parser_conversion_declarator_opt (cp_parser* parser)
 /* Parse an (optional) ctor-initializer.
 
    ctor-initializer:
-     : mem-initializer-list
+     : mem-initializer-list  */
 
-   Returns TRUE iff the ctor-initializer was actually present.  */
-
-static bool
+static void
 cp_parser_ctor_initializer_opt (cp_parser* parser)
 {
   /* If the next token is not a `:', then there is no
@@ -14267,16 +14267,13 @@ cp_parser_ctor_initializer_opt (cp_parser* parser)
       /* Do default initialization of any bases and members.  */
       if (DECL_CONSTRUCTOR_P (current_function_decl))
 	finish_mem_initializers (NULL_TREE);
-
-      return false;
+      return;
     }
 
   /* Consume the `:' token.  */
   cp_lexer_consume_token (parser->lexer);
   /* And the mem-initializer-list.  */
   cp_parser_mem_initializer_list (parser);
-
-  return true;
 }
 
 /* Parse a mem-initializer-list.
@@ -21701,12 +21698,11 @@ cp_parser_function_body (cp_parser *parser, bool in_function_try_block)
    true if a ctor-initializer was present.  When IN_FUNCTION_TRY_BLOCK
    is true we are parsing a function-try-block.  */
 
-static bool
+static void
 cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
 						  bool in_function_try_block)
 {
   tree body, list;
-  bool ctor_initializer_p;
   const bool check_body_p =
      DECL_CONSTRUCTOR_P (current_function_decl)
      && DECL_DECLARED_CONSTEXPR_P (current_function_decl);
@@ -21715,7 +21711,7 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
   /* Begin the function body.  */
   body = begin_function_body ();
   /* Parse the optional ctor-initializer.  */
-  ctor_initializer_p = cp_parser_ctor_initializer_opt (parser);
+  cp_parser_ctor_initializer_opt (parser);
 
   /* If we're parsing a constexpr constructor definition, we need
      to check that the constructor body is indeed empty.  However,
@@ -21735,8 +21731,6 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
     check_constexpr_ctor_body (last, list, /*complain=*/true);
   /* Finish the function body.  */
   finish_function_body (body);
-
-  return ctor_initializer_p;
 }
 
 /* Parse an initializer.
@@ -24364,20 +24358,19 @@ cp_parser_try_block (cp_parser* parser)
    function-try-block:
      try ctor-initializer [opt] function-body handler-seq  */
 
-static bool
+static void
 cp_parser_function_try_block (cp_parser* parser)
 {
   tree compound_stmt;
   tree try_block;
-  bool ctor_initializer_p;
 
   /* Look for the `try' keyword.  */
   if (!cp_parser_require_keyword (parser, RID_TRY, RT_TRY))
-    return false;
+    return;
   /* Let the rest of the front end know where we are.  */
   try_block = begin_function_try_block (&compound_stmt);
   /* Parse the function-body.  */
-  ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
+  cp_parser_ctor_initializer_opt_and_function_body
     (parser, /*in_function_try_block=*/true);
   /* We're done with the `try' part.  */
   finish_function_try_block (try_block);
@@ -24385,8 +24378,6 @@ cp_parser_function_try_block (cp_parser* parser)
   cp_parser_handler_seq (parser);
   /* We're done with the handlers.  */
   finish_function_handler_sequence (try_block, compound_stmt);
-
-  return ctor_initializer_p;
 }
 
 /* Parse a handler-seq.
@@ -26561,7 +26552,6 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
 						bool inline_p)
 {
   tree fn;
-  bool ctor_initializer_p = false;
   bool saved_in_unbraced_linkage_specification_p;
   bool saved_in_function_body;
   unsigned saved_num_template_parameter_lists;
@@ -26619,21 +26609,18 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
      or function-transaction-block.  Note that all of these include the
      function-body.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TRANSACTION_ATOMIC))
-    ctor_initializer_p = cp_parser_function_transaction (parser,
-	RID_TRANSACTION_ATOMIC);
+    cp_parser_function_transaction (parser, RID_TRANSACTION_ATOMIC);
   else if (cp_lexer_next_token_is_keyword (parser->lexer,
       RID_TRANSACTION_RELAXED))
-    ctor_initializer_p = cp_parser_function_transaction (parser,
-	RID_TRANSACTION_RELAXED);
+    cp_parser_function_transaction (parser, RID_TRANSACTION_RELAXED);
   else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TRY))
-    ctor_initializer_p = cp_parser_function_try_block (parser);
+    cp_parser_function_try_block (parser);
   else
-    ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
+    cp_parser_ctor_initializer_opt_and_function_body
       (parser, /*in_function_try_block=*/false);
 
   /* Finish the function.  */
-  fn = finish_function ((ctor_initializer_p ? 1 : 0) |
-			(inline_p ? 2 : 0));
+  fn = finish_function (inline_p);
   /* Generate code for it, if necessary.  */
   expand_or_defer_fn (fn);
   /* Restore the saved values.  */
@@ -27504,7 +27491,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 	{
 	  parser->lexer->in_pragma = true;
 	  cp_parser_omp_declare_reduction_exprs (member_function, parser);
-	  finish_function (/*inline*/2);
+	  finish_function (/*inline_p=*/true);
 	  cp_check_omp_declare_reduction (member_function);
 	}
       else
@@ -37692,7 +37679,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       if (!cp_parser_omp_declare_reduction_exprs (fndecl, parser))
 	{
 	  if (!block_scope)
-	    finish_function (0);
+	    finish_function (/*inline_p=*/false);
 	  else
 	    DECL_CONTEXT (fndecl) = current_function_decl;
 	  if (cp)
@@ -37702,7 +37689,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       if (cp)
 	cp_parser_pop_lexer (parser);
       if (!block_scope)
-	finish_function (0);
+	finish_function (/*inline_p=*/false);
       else
 	{
 	  DECL_CONTEXT (fndecl) = current_function_decl;
@@ -38397,13 +38384,12 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
      __transaction_relaxed function-try-block
 */
 
-static bool
+static void
 cp_parser_function_transaction (cp_parser *parser, enum rid keyword)
 {
   unsigned char old_in = parser->in_transaction;
   unsigned char new_in = 1;
   tree compound_stmt, stmt, attrs;
-  bool ctor_initializer_p;
   cp_token *token;
 
   gcc_assert (keyword == RID_TRANSACTION_ATOMIC
@@ -38427,16 +38413,14 @@ cp_parser_function_transaction (cp_parser *parser, enum rid keyword)
   parser->in_transaction = new_in;
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TRY))
-    ctor_initializer_p = cp_parser_function_try_block (parser);
+    cp_parser_function_try_block (parser);
   else
-    ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
+    cp_parser_ctor_initializer_opt_and_function_body
       (parser, /*in_function_try_block=*/false);
 
   parser->in_transaction = old_in;
 
   finish_transaction_stmt (stmt, compound_stmt, new_in, NULL_TREE);
-
-  return ctor_initializer_p;
 }
 
 /* Parse a __transaction_cancel statement.

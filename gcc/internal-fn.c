@@ -485,7 +485,7 @@ get_min_precision (tree arg, signop sign)
 	  p = wi::min_precision (w, sign);
 	}
       else
-	p = wi::min_precision (arg, sign);
+	p = wi::min_precision (wi::to_wide (arg), sign);
       return MIN (p, prec);
     }
   while (CONVERT_EXPR_P (arg)

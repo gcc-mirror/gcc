@@ -481,12 +481,19 @@ package Lib is
    --  avoid registering switches added automatically by the gcc driver at the
    --  end of the command line.
 
-   function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
+   function Earlier_In_Extended_Unit
+     (S1 : Source_Ptr;
+      S2 : Source_Ptr) return Boolean;
    --  Given two Sloc values for which In_Same_Extended_Unit is true, determine
    --  if S1 appears before S2. Returns True if S1 appears before S2, and False
    --  otherwise. The result is undefined if S1 and S2 are not in the same
    --  extended unit. Note: this routine will not give reliable results if
    --  called after Sprint has been called with -gnatD set.
+
+   function Earlier_In_Extended_Unit
+     (N1 : Node_Or_Entity_Id;
+      N2 : Node_Or_Entity_Id) return Boolean;
+   --  Same as above, but the inputs denote nodes or entities
 
    procedure Enable_Switch_Storing;
    --  Enable registration of switches by Store_Compilation_Switch. Used to

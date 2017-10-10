@@ -1161,8 +1161,8 @@ get_pdt_spec_expr (gfc_component *c, gfc_expr *expr)
       param_tail->spec_type = SPEC_ASSUMED;
       if (c->attr.pdt_kind)
 	{
-	  gfc_error ("The KIND parameter in the PDT constructor "
-		     "at %C has no value");
+	  gfc_error ("The KIND parameter %qs in the PDT constructor "
+		     "at %C has no value", param->name);
 	  return false;
 	}
     }
@@ -1188,7 +1188,8 @@ get_pdt_constructor (gfc_expr *expr, gfc_constructor **constr,
 
   for (; comp && cons; comp = comp->next, cons = gfc_constructor_next (cons))
     {
-      if (cons->expr->expr_type == EXPR_STRUCTURE
+      if (cons->expr
+	  && cons->expr->expr_type == EXPR_STRUCTURE
 	  && comp->ts.type == BT_DERIVED)
 	{
 	  t = get_pdt_constructor (cons->expr, NULL, comp->ts.u.derived);
@@ -9196,6 +9197,9 @@ resolve_transfer (gfc_code *code)
 		 "an assumed-size array", &code->loc);
       return;
     }
+
+  if (async_io_dt && exp->expr_type == EXPR_VARIABLE)
+    exp->symtree->n.sym->attr.asynchronous = 1;
 }
 
 
@@ -14079,6 +14083,11 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
     }
 
+  if (async_io_dt)
+    {
+      for (nl = sym->namelist; nl; nl = nl->next)
+	nl->sym->attr.asynchronous = 1;
+    }
   return true;
 }
 

@@ -118,7 +118,7 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
 	fprintf (file, " overflow");
 
       fprintf (file, " ");
-      print_dec (node, file, TYPE_SIGN (TREE_TYPE (node)));
+      print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
     }
   if (TREE_CODE (node) == REAL_CST)
     {
@@ -721,7 +721,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    fprintf (file, " overflow");
 
 	  fprintf (file, " ");
-	  print_dec (node, file, TYPE_SIGN (TREE_TYPE (node)));
+	  print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
 	  break;
 
 	case REAL_CST:

@@ -1,3 +1,197 @@
+2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81032
+	* g++.dg/cpp1y/lambda-generic-ice6.C: New.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68205
+	* gcc.c-torture/execute/20040709-3.c: New test.
+
+	PR c++/67625
+	* g++.dg/cpp0x/pr67625.C: New test.
+
+	PR middle-end/70887
+	* g++.dg/cpp0x/pr70887.C: New test.
+
+	PR c++/70338
+	* g++.dg/cpp0x/pr70338.C: New test.
+
+	PR c++/77786
+	* g++.dg/cpp1y/pr77786.C: New test.
+
+	PR c++/71875
+	* g++.dg/cpp1y/pr71875.C: New test.
+
+	PR c++/77578
+	* g++.dg/gomp/pr77578.C: New test.
+
+	PR middle-end/70100
+	* g++.dg/opt/pr70100.C: New test.
+
+	PR c++/68252
+	* g++.dg/other/pr68252.C: New test.
+
+	PR target/79565
+	PR target/82483
+	* gcc.target/i386/pr82483-1.c: New test.
+	* gcc.target/i386/pr82483-2.c: New test.
+
+2017-10-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-mult-int128-p8.c: Update options
+	* gcc.target/powerpc/fold-vec-mult-int128-p9.c: Update expected
+	instruction list.
+
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/82506
+	* g++.dg/cpp/string-3.C: New.
+
+2017-10-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-16.c: New
+	* gcc.target/powerpc/fold-vec-splat-32.c: New.
+	* gcc.target/powerpc/fold-vec-splat-8.c: New.
+
+2017-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/82233
+	* gfortran.dg/execute_command_line_3.f90: New test.
+
+2017-10-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-16.c: New
+	* gcc.target/powerpc/fold-vec-splat-32.c: New.
+	* gcc.target/powerpc/fold-vec-splat-8.c: New.
+
+2017-10-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splats-char.c: New.
+	* gcc.target/powerpc/fold-vec-splats-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-splats-int.c: New.
+	* gcc.target/powerpc/fold-vec-splats-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-splats-short.c: New.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-c++-common/Wtautological-compare-7.c: New test.
+
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-34.c: New test.
+
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-27.c: New test.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/class_wide4.adb, gnat.dg/class_wide4_pkg.ads,
+	gnat.dg/class_wide4_pkg2.ads: New testcase.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/class_wide3.adb, gnat.dg/class_wide3_pkg.ads: New testcase.
+
+2017-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/validity_check2.adb, gnat.dg/validity_check2_pkg.ads:
+	New testcase.
+
+2017-10-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/amo1.c: New test.
+	* gcc.target/powerpc/amo2.c: Likewise.
+
+2017-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82449
+	* gfortran.dg/graphite/pr82449.f: New testcase.
+
+2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82463
+	* gcc.target/s390/zvector/pr82463.c: New test.
+
+2017-10-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82465
+	* gcc.target/s390/zvector/pr82465.c: New test.
+
+2017-10-09  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c (dg-options): Add -fno-short-enums.
+
+2017-10-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cold-1.c (foo1): Fix warning line number.  Make warning line
+	number relative.
+	(abort): Declare.
+
+2017-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20171008-1.c: New test.
+
+2017-10-03  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/stack-check-5.c: Skip with -fstack-protector.
+	* gcc.dg/stack-check-6.c: Likewise.
+	* gcc.dg/stack-check-6a.c: Likewise.
+
+2017-10-07  Michael Collison <michael.collison@arm.com>
+
+	* gcc.target/aarch64/var_shift_mask_2.c: New test.
+
+2017-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82375
+	* gfortran.dg/pdt_13.f03 : New test.
+	* gfortran.dg/pdt_14.f03 : New test.
+	* gfortran.dg/pdt_15.f03 : New test.
+
+2017-10-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/cold-1.c: New testcase.
+
+2017-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80805
+	* g++.dg/cpp0x/pr80805.C: New.
+
+2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49232
+	* gfortran.dg/contiguous_4.f90: New test.
+
+2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66690
+	* g++.dg/cpp1y/pr66690.C: New.
+
+2017-10-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82424
+	* g++.dg/warn/pr82424.C: New.
+
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82299
+	* g++.dg/cpp0x/pr82299.C: New test.
+
+	P0704R1 - fixing const-qualified pointers to members
+	* g++.dg/cpp2a/ptrmem1.C: New test.
+
+2017-10-06  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/ptr-overflow-sanitization-1.c: New test.
+
+2017-10-06  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/bic_imm_1.c: New test.
+	* gcc.target/aarch64/orr_imm_1.c: Likewise.
+
 2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60153

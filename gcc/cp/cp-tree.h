@@ -6101,7 +6101,7 @@ extern bool start_function			(cp_decl_specifier_seq *,
 extern tree begin_function_body			(void);
 extern void finish_function_body		(tree);
 extern tree outer_curly_brace_block		(tree);
-extern tree finish_function			(int);
+extern tree finish_function			(bool);
 extern tree grokmethod				(cp_decl_specifier_seq *, const cp_declarator *, tree);
 extern void maybe_register_incomplete_var	(tree);
 extern void maybe_commonize_var			(tree);
@@ -6246,6 +6246,7 @@ extern tree mark_rvalue_use			(tree,
 extern tree mark_lvalue_use			(tree);
 extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
+extern tree mark_discarded_use			(tree);
 extern void mark_exp_read			(tree);
 
 /* friend.c */
@@ -6408,6 +6409,7 @@ extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
+extern bool need_generic_capture		(void);
 extern bool processing_nonlambda_template	(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
@@ -6809,6 +6811,7 @@ extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
 extern bool generic_lambda_fn_p			(tree);
+extern tree do_dependent_capture		(tree, bool = false);
 extern bool lambda_fn_in_template_p		(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);

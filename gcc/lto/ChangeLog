@@ -1,3 +1,8 @@
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lto.c (compare_tree_sccs_1): Use wi::to_wide when
+	operating on trees as wide_ints.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

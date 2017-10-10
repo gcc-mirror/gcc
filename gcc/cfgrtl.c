@@ -5039,14 +5039,13 @@ rtl_account_profile_record (basic_block bb, int after_pass,
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
-	record->size[after_pass]
-	  += insn_rtx_cost (PATTERN (insn), false);
+	record->size[after_pass] += insn_cost (insn, false);
 	if (bb->count.initialized_p ())
 	  record->time[after_pass]
-	    += insn_rtx_cost (PATTERN (insn), true) * bb->count.to_gcov_type ();
+	    += insn_cost (insn, true) * bb->count.to_gcov_type ();
 	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	  record->time[after_pass]
-	    += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
+	    += insn_cost (insn, true) * bb->frequency;
       }
 }
 

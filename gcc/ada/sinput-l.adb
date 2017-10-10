@@ -355,10 +355,10 @@ package body Sinput.L is
       T : Osint.File_Type) return Source_File_Index
    is
       FD  : File_Descriptor;
+      Hi  : Source_Ptr;
+      Lo  : Source_Ptr;
       Src : Source_Buffer_Ptr;
       X   : Source_File_Index;
-      Lo  : Source_Ptr;
-      Hi  : Source_Ptr;
 
       Preprocessing_Needed : Boolean := False;
 

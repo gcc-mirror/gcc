@@ -5398,8 +5398,10 @@ package body Checks is
          elsif Checks_May_Be_Suppressed (E) then
             if Is_Check_Suppressed (E, Elaboration_Check) then
                return True;
+
             elsif Dynamic_Elaboration_Checks then
                return Is_Check_Suppressed (E, All_Checks);
+
             else
                return False;
             end if;
@@ -5408,8 +5410,10 @@ package body Checks is
 
       if Scope_Suppress.Suppress (Elaboration_Check) then
          return True;
+
       elsif Dynamic_Elaboration_Checks then
          return Scope_Suppress.Suppress (All_Checks);
+
       else
          return False;
       end if;
@@ -7927,7 +7931,7 @@ package body Checks is
 
       Flag_Id :=
         Make_Defining_Identifier (Loc,
-          Chars => New_External_Name (Chars (Subp_Id), 'F', -1));
+          Chars => New_External_Name (Chars (Subp_Id), 'E', -1));
       Set_Is_Frozen (Flag_Id);
 
       --  Insert the declaration of the elaboration flag in front of the
@@ -7936,7 +7940,7 @@ package body Checks is
       Push_Scope (Scope (Subp_Id));
 
       --  Generate:
-      --    F : Boolean := False;
+      --    E : Boolean := False;
 
       Insert_Action (Subp_Decl,
         Make_Object_Declaration (Loc,
@@ -7986,7 +7990,7 @@ package body Checks is
       end if;
 
       --  Generate:
-      --    F := True;
+      --    E := True;
 
       Insert_After_And_Analyze (Set_Ins,
         Make_Assignment_Statement (Loc,
@@ -8060,12 +8064,14 @@ package body Checks is
       --  since it clearly was not overridden at any point). For a predefined
       --  check, we test the specific flag. For a user defined check, we check
       --  the All_Checks flag. The Overflow flag requires special handling to
-      --  deal with the General vs Assertion case
+      --  deal with the General vs Assertion case.
 
       if C = Overflow_Check then
          return Overflow_Checks_Suppressed (Empty);
+
       elsif C in Predefined_Check_Id then
          return Scope_Suppress.Suppress (C);
+
       else
          return Scope_Suppress.Suppress (All_Checks);
       end if;

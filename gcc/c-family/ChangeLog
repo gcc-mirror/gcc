@@ -1,3 +1,19 @@
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-ada-spec.c (dump_generic_ada_node): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* c-common.c (pointer_int_sum): Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+	* c-warn.c (match_case_to_enum_1): Likewise.
+	(c_do_switch_warnings): Likewise.
+	(maybe_warn_shift_overflow): Likewise.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-warn.c (warn_tautological_bitwise_comparison): Use wi::to_wide
+	instead of wide_int::from.
+
 2017-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82437

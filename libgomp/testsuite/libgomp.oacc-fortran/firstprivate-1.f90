@@ -5,7 +5,7 @@ program firstprivate
   integer :: a, b(Nupper), c, d, n
   include "openacc_lib.h"
 
-  if (acc_get_device_type () .eq. acc_device_nvidia) then
+  if (acc_get_device_type () .ne. acc_device_host) then
      n = Nupper
   else
      n = 1

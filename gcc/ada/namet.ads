@@ -477,7 +477,7 @@ package Namet is
    --  Sets the Int value associated with the given name
 
    function Is_Internal_Name (Id : Name_Id) return Boolean;
-   --  Returns True if the name is an internal name (i.e. contains a character
+   --  Returns True if the name is an internal name, i.e. contains a character
    --  for which Is_OK_Internal_Letter is true, or if the name starts or ends
    --  with an underscore.
    --

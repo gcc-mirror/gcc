@@ -4971,8 +4971,8 @@ ipcp_store_vr_results (void)
 	    {
 	      vr.known = true;
 	      vr.type = plats->m_value_range.m_vr.type;
-	      vr.min = plats->m_value_range.m_vr.min;
-	      vr.max = plats->m_value_range.m_vr.max;
+	      vr.min = wi::to_wide (plats->m_value_range.m_vr.min);
+	      vr.max = wi::to_wide (plats->m_value_range.m_vr.max);
 	    }
 	  else
 	    {

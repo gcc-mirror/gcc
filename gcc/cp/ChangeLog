@@ -1,5 +1,122 @@
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (struct mangled_decl_hash): New hash traits.
+	(mangled_decls): Make hash_table<mangled_decl_hash>.
+	(generate_mangling_alias, record_mangling): Adjust.
+
+2017-10-10  Jason Merrill  <jason@redhat.com>
+
+	More delayed lambda capture fixes.
+	* call.c (add_function_candidate): Use build_address.
+	(build_op_call_1): Call mark_lvalue_use early.
+	(build_over_call): Handle error from build_this.
+	* constexpr.c (cxx_bind_parameters_in_call): Use build_address.
+	(cxx_eval_increment_expression): Don't use rvalue().
+	* cvt.c (convert_to_void): Use mark_discarded_use.
+	* expr.c (mark_use): Handle PARM_DECL, NON_DEPENDENT_EXPR.  Fix
+	reference handling.  Don't copy the expression.
+	(mark_discarded_use): New.
+	* lambda.c (insert_capture_proxy): Add some sanity checking.
+	(maybe_add_lambda_conv_op): Set cp_unevaluated_operand.
+	* pt.c (register_local_specialization): Add sanity check.
+	* semantics.c (process_outer_var_ref): Fix check for existing proxy.
+	* typeck.c (cp_build_addr_expr_1): Handle error from
+	mark_lvalue_use.
+	(cp_build_modify_expr): Call mark_lvalue_use_nonread, handle error
+	from rvalue.
+
+	Handle generic lambda capture in dependent expressions.
+	* lambda.c (need_generic_capture, dependent_capture_r)
+	(do_dependent_capture): New.
+	* pt.c (processing_nonlambda_template): Use need_generic_capture.
+	* semantics.c (maybe_cleanup_point_expr)
+	(maybe_cleanup_point_expr_void, finish_goto_stmt)
+	(maybe_convert_cond): Call do_dependent_capture.
+	* typeck.c (build_static_cast): Remove dependent capture handling.
+
+	* typeck.c (condition_conversion): Assert !processing_template_decl.
+	* semantics.c (finish_omp_clauses): Don't
+	fold_build_cleanup_point_expr if processing_template_decl.
+	(outer_var_p): A temporary can't be from an outer scope.
+	* pt.c (type_dependent_expression_p): Fix dependency checking of
+	functions without DECL_TEMPLATE_INFO.
+	(instantiate_decl): Use lss_copy.
+	* constexpr.c (is_valid_constexpr_fn): Fix lambdas before C++17.
+
+	* typeck.c (check_return_expr): Check non-dependent conversion in
+	templates.
+	* constraint.cc (check_function_concept): Don't complain about an
+	empty concept if seen_error.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* cvt.c (ignore_overflows): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* decl.c (check_array_designated_initializer): Likewise.
+	* mangle.c (write_integer_cst): Likewise.
+	* semantics.c (cp_finish_omp_clause_depend_sink): Likewise.
+
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (set_global_binding): Don't deal with STAT_HACK.
+
+2017-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47791
+	* decl.c (finish_function): Take a bool intead of an int; adjust.
+	* cp-tree.h (finish_function): Adjust declaration.
+	* decl2.c (generate_tls_wrapper, finish_objects,
+	finish_static_storage_duration_function): Adjust calls.
+	* lambda.c (maybe_add_lambda_conv_op, finish_lambda_function):
+	Likewise.
+	* method.c (synthesize_method): Likewise.
+	* optimize.c (maybe_thunk_body, maybe_clone_body): Likewise.
+	* pt.c (instantiate_decl): Likewise.
+	* parser.c (cp_parser_function_definition_after_declarator,
+	cp_parser_late_parsing_for_member, cp_parser_omp_declare_reduction):
+	Likewise.
+	(cp_parser_ctor_initializer_opt,
+	cp_parser_ctor_initializer_opt_and_function_body,
+	cp_parser_function_try_block,
+	cp_parser_function_definition_after_declarator,
+	cp_parser_function_transaction): Return void; adjust declarations.
+
+2017-10-06  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82424
+	* name-lookup.c (check_local_shadow): Don't try and convert
+	dependent types.
+
+2017-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82299
+	* decl.c (reshape_init): Suppress warn_useless_cast for direct enum
+	init.
+	* typeck.c (convert_for_assignment): Likewise.
+
+	P0704R1 - fixing const-qualified pointers to members
+	* typeck2.c (build_m_component_ref): For -std=c++2a allow
+	pointer to const & qualified method on rvalue.
+
+2017-10-06  Nathan Sidwell  <nathan@acm.org>
+
+	Use hash_table for extern "C" names
+	* name-lookup.c (extern_c_fns): Use hash_table.
+	(check_extern_c_conflict): Adjust.
+	(c_linkage_bindings): Adjust.
+
+	Use hash_table for namespace bindings
+	* cp-tree.h (struct named_decl_hash): New.
+	(lang_decl_ns): Change type of bindings field.
+	* lex.c (maybe_add_lang_decl_raw): Adjust.
+	* name-lookup.c (find_namespace_slot): Adjust.
+	(do_pushdecl): Push NULL-named namespace.
+	(do_push_nested_namespace): Adjust.
+	(push_namespace): Push anonymous namespace as NULL name.
+
 2017-10-05  Jason Merrill  <jason@redhat.com>
 
+	Pass variadic class objects exactly like named by-value args.
 	* call.c (convert_arg_to_ellipsis): Use the result of force_rvalue.
 
 2017-10-05  Nathan Sidwell  <nathan@acm.org>

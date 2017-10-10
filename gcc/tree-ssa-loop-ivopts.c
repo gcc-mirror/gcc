@@ -2160,8 +2160,8 @@ constant_multiple_of (tree top, tree bot, widest_int *mul)
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = widest_int::from (top, SIGNED);
-      p1 = widest_int::from (bot, SIGNED);
+      p0 = widest_int::from (wi::to_wide (top), SIGNED);
+      p1 = widest_int::from (wi::to_wide (bot), SIGNED);
       if (p1 == 0)
 	return false;
       *mul = wi::sext (wi::divmod_trunc (p0, p1, SIGNED, &res), precision);

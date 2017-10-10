@@ -683,6 +683,10 @@ package Sem is
    --  This function returns True if an explicit pragma Suppress for check C
    --  is present in the package defining E.
 
+   function Preanalysis_Active return Boolean;
+   pragma Inline (Preanalysis_Active);
+   --  Determine whether preanalysis is active at the point of invocation
+
    procedure Preanalyze (N : Node_Id);
    --  Performs a pre-analysis of node N. During pre-analysis no expansion is
    --  carried out for N or its children. For more info on pre-analysis read

@@ -916,9 +916,9 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     pp_unsigned_wide_integer (pp, tree_to_uhwi (i));
   else
     {
-      wide_int wi = i;
+      wide_int wi = wi::to_wide (i);
 
-      if (wi::lt_p (i, 0, TYPE_SIGN (TREE_TYPE (i))))
+      if (wi::lt_p (wi::to_wide (i), 0, TYPE_SIGN (TREE_TYPE (i))))
 	{
 	  pp_minus (pp);
 	  wi = -wi;

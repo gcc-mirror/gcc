@@ -71,13 +71,15 @@
 
 (define_predicate "aarch64_reg_or_orr_imm"
    (ior (match_operand 0 "register_operand")
-	(match_test "aarch64_simd_valid_immediate (op, mode, false,
-						   NULL, AARCH64_CHECK_ORR)")))
+	(and (match_code "const_vector")
+	     (match_test "aarch64_simd_valid_immediate (op, mode, false,
+						NULL, AARCH64_CHECK_ORR)"))))
 
 (define_predicate "aarch64_reg_or_bic_imm"
    (ior (match_operand 0 "register_operand")
-	(match_test "aarch64_simd_valid_immediate (op, mode, false,
-						   NULL, AARCH64_CHECK_BIC)")))
+	(and (match_code "const_vector")
+	     (match_test "aarch64_simd_valid_immediate (op, mode, false,
+						NULL, AARCH64_CHECK_BIC)"))))
 
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")

@@ -637,30 +637,9 @@ mode_supports_vsx_dform_quad (machine_mode mode)
 }
 
 
-/* Target cpu costs.  */
-
-struct processor_costs {
-  const int mulsi;	  /* cost of SImode multiplication.  */
-  const int mulsi_const;  /* cost of SImode multiplication by constant.  */
-  const int mulsi_const9; /* cost of SImode mult by short constant.  */
-  const int muldi;	  /* cost of DImode multiplication.  */
-  const int divsi;	  /* cost of SImode division.  */
-  const int divdi;	  /* cost of DImode division.  */
-  const int fp;		  /* cost of simple SFmode and DFmode insns.  */
-  const int dmul;	  /* cost of DFmode multiplication (and fmadd).  */
-  const int sdiv;	  /* cost of SFmode division (fdivs).  */
-  const int ddiv;	  /* cost of DFmode division (fdiv).  */
-  const int cache_line_size;    /* cache line size in bytes. */
-  const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
-  const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
-  const int simultaneous_prefetches; /* number of parallel prefetch
-					operations.  */
-  const int sfdf_convert;	/* cost of SF->DF conversion.  */
-};
+/* Processor costs (relative to an add) */
 
 const struct processor_costs *rs6000_cost;
-
-/* Processor costs (relative to an add) */
 
 /* Instruction size costs on 32bit processors.  */
 static const
@@ -9051,11 +9030,7 @@ rs6000_legitimate_combined_insn (rtx_insn *insn)
       && (icode == CODE_FOR_ctrsi_internal1
 	  || icode == CODE_FOR_ctrdi_internal1
 	  || icode == CODE_FOR_ctrsi_internal2
-	  || icode == CODE_FOR_ctrdi_internal2
-	  || icode == CODE_FOR_ctrsi_internal3
-	  || icode == CODE_FOR_ctrdi_internal3
-	  || icode == CODE_FOR_ctrsi_internal4
-	  || icode == CODE_FOR_ctrdi_internal4))
+	  || icode == CODE_FOR_ctrdi_internal2))
     return false;
 
   return true;
@@ -10983,7 +10958,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11013,7 +10989,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11045,7 +11022,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -15116,14 +15094,15 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Check whether the 2nd and 3rd arguments are integer constants and in
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
+      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (wi::to_wide (arg1), 2))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return CONST0_RTX (tmode);
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg2, 16))
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || wi::geu_p (wi::to_wide (arg2), 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return CONST0_RTX (tmode);

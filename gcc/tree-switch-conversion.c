@@ -655,8 +655,7 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
   for (i = 2; i < branch_num; i++)
     {
       tree elt = gimple_switch_label (swtch, i);
-      wide_int w = last;
-      if (w + 1 != CASE_LOW (elt))
+      if (wi::to_wide (last) + 1 != wi::to_wide (CASE_LOW (elt)))
 	{
 	  info->contiguous_range = false;
 	  break;
@@ -1065,7 +1064,7 @@ array_value_type (gswitch *swtch, tree type, int num,
       if (TREE_CODE (elt->value) != INTEGER_CST)
 	return type;
 
-      cst = elt->value;
+      cst = wi::to_wide (elt->value);
       while (1)
 	{
 	  unsigned int prec = GET_MODE_BITSIZE (mode);
@@ -1778,11 +1777,12 @@ dump_case_nodes (FILE *f, case_node *root, int indent_step, int indent_level)
 
   fputs (";; ", f);
   fprintf (f, "%*s", indent_step * indent_level, "");
-  print_dec (root->low, f, TYPE_SIGN (TREE_TYPE (root->low)));
+  print_dec (wi::to_wide (root->low), f, TYPE_SIGN (TREE_TYPE (root->low)));
   if (!tree_int_cst_equal (root->low, root->high))
     {
       fprintf (f, " ... ");
-      print_dec (root->high, f, TYPE_SIGN (TREE_TYPE (root->high)));
+      print_dec (wi::to_wide (root->high), f,
+		 TYPE_SIGN (TREE_TYPE (root->high)));
     }
   fputs ("\n", f);
 
@@ -2113,7 +2113,7 @@ try_switch_expansion (gswitch *stmt)
 	 original type.  Make sure to drop overflow flags.  */
       low = fold_convert (index_type, low);
       if (TREE_OVERFLOW (low))
-	low = wide_int_to_tree (index_type, low);
+	low = wide_int_to_tree (index_type, wi::to_wide (low));
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
@@ -2122,7 +2122,7 @@ try_switch_expansion (gswitch *stmt)
 	high = low;
       high = fold_convert (index_type, high);
       if (TREE_OVERFLOW (high))
-	high = wide_int_to_tree (index_type, high);
+	high = wide_int_to_tree (index_type, wi::to_wide (high));
 
       basic_block case_bb = label_to_block_fn (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);
@@ -2248,10 +2248,12 @@ do_jump_if_equal (basic_block bb, tree op0, tree op1, basic_block label_bb,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
+  false_edge->count = bb->count.apply_probability (false_edge->probability);
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   fix_phi_operands_for_edge (true_edge, phi_mapping);
   true_edge->probability = prob;
+  true_edge->count = bb->count.apply_probability (true_edge->probability);
 
   return false_edge->dest;
 }
@@ -2291,10 +2293,12 @@ emit_cmp_and_jump_insns (basic_block bb, tree op0, tree op1,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
+  false_edge->count = bb->count.apply_probability (false_edge->probability);
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   fix_phi_operands_for_edge (true_edge, phi_mapping);
   true_edge->probability = prob;
+  true_edge->count = bb->count.apply_probability (true_edge->probability);
 
   return false_edge->dest;
 }
