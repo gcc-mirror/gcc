@@ -362,8 +362,8 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   int prec = MAX (TYPE_PRECISION (TREE_TYPE (cst)),
 		  TYPE_PRECISION (TREE_TYPE (bitopcst)));
 
-  wide_int bitopcstw = wide_int::from (bitopcst, prec, UNSIGNED);
-  wide_int cstw = wide_int::from (cst, prec, UNSIGNED);
+  wide_int bitopcstw = wi::to_wide (bitopcst, prec);
+  wide_int cstw = wi::to_wide (cst, prec);
 
   wide_int res;
   if (TREE_CODE (bitop) == BIT_AND_EXPR)
