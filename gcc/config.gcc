@@ -1072,6 +1072,10 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
             fi
 	    ;;
+	armv7*-*-freebsd*)
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv7=1"
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
+	    ;;
 	esac
 	with_tls=${with_tls:-gnu}
 	;;

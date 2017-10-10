@@ -1,3 +1,10 @@
+2017-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc: (armv7*-*-freebsd*): New target.
+	Define TARGET_FREEBSD_ARMv7
+	* config/arm/freebsd.h: Use TARGET_FREEBSD_ARMv7 to define the
+	default cpu for armv7*-*-freebsd*.
+
 2017-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
