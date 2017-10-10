@@ -1,3 +1,8 @@
+2017-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config.gcc (armv7*-*-freebsd*): New target.
+	(armv6*-*-freebsd*): Remove obsolete TARGET_FREEBSD_ARMv6 define.
+
 2017-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, X86_TUNE_ADJUST_UNROLL,
