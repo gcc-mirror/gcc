@@ -1,5 +1,8 @@
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/70887
+	* g++.dg/cpp0x/pr70887.C: New test.
+
 	PR c++/70338
 	* g++.dg/cpp0x/pr70338.C: New test.
 
