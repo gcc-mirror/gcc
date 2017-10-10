@@ -1,5 +1,14 @@
 2017-10-10  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (condition_conversion): Assert !processing_template_decl.
+	* semantics.c (finish_omp_clauses): Don't
+	fold_build_cleanup_point_expr if processing_template_decl.
+	(outer_var_p): A temporary can't be from an outer scope.
+	* pt.c (type_dependent_expression_p): Fix dependency checking of
+	functions without DECL_TEMPLATE_INFO.
+	(instantiate_decl): Use lss_copy.
+	* constexpr.c (is_valid_constexpr_fn): Fix lambdas before C++17.
+
 	* typeck.c (check_return_expr): Check non-dependent conversion in
 	templates.
 	* constraint.cc (check_function_concept): Don't complain about an

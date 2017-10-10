@@ -196,7 +196,14 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	  }
     }
 
-  if (!DECL_CONSTRUCTOR_P (fun))
+  if (LAMBDA_TYPE_P (CP_DECL_CONTEXT (fun)) && cxx_dialect < cxx17)
+    {
+      ret = false;
+      if (complain)
+	inform (DECL_SOURCE_LOCATION (fun),
+		"lambdas are implicitly constexpr only in C++17 and later");
+    }
+  else if (!DECL_CONSTRUCTOR_P (fun))
     {
       tree rettype = TREE_TYPE (TREE_TYPE (fun));
       if (!literal_type_p (rettype))

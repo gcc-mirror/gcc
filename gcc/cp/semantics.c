@@ -3265,6 +3265,8 @@ outer_var_p (tree decl)
 {
   return ((VAR_P (decl) || TREE_CODE (decl) == PARM_DECL)
 	  && DECL_FUNCTION_SCOPE_P (decl)
+	  /* Don't get confused by temporaries.  */
+	  && DECL_NAME (decl)
 	  && (DECL_CONTEXT (decl) != current_function_decl
 	      || parsing_nsdmi ()));
 }
@@ -6213,8 +6215,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				      "positive");
 			  t = integer_one_node;
 			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_OPERAND (c, 1) = t;
 	    }
@@ -7095,8 +7097,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				    "integral constant");
 			  remove = true;
 			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 
 		/* Update list item.  */
