@@ -103,7 +103,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
-#undef SFH_COMPRESSED
+#undef SHF_COMPRESSED
 #undef STT_OBJECT
 #undef STT_FUNC
 
