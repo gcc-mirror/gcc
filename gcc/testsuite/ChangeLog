@@ -1,5 +1,8 @@
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/71875
+	* g++.dg/cpp1y/pr71875.C: New test.
+
 	PR c++/77578
 	* g++.dg/gomp/pr77578.C: New test.
 
