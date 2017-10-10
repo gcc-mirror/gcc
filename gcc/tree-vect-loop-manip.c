@@ -496,7 +496,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 			       loop_preheader_edge (new_loop)->src);
     }
 
-  for (unsigned i = 0; i < scalar_loop->num_nodes + 1; i++)
+  /* Skip new preheader since it's deleted if copy loop is added at entry.  */
+  for (unsigned i = (at_exit ? 0 : 1); i < scalar_loop->num_nodes + 1; i++)
     rename_variables_in_bb (new_bbs[i], duplicate_outer_loop);
 
   if (scalar_loop != loop)
