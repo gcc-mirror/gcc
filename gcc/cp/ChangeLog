@@ -1,3 +1,10 @@
+2017-10-10  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (check_return_expr): Check non-dependent conversion in
+	templates.
+	* constraint.cc (check_function_concept): Don't complain about an
+	empty concept if seen_error.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* cvt.c (ignore_overflows): Use wi::to_wide when

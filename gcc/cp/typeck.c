@@ -8957,10 +8957,14 @@ check_return_expr (tree retval, bool *no_warning)
       if (check_for_bare_parameter_packs (retval))
 	return error_mark_node;
 
-      if (WILDCARD_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl)))
+      /* If one of the types might be void, we can't tell whether we're
+	 returning a value.  */
+      if ((WILDCARD_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl)))
+	   && !current_function_auto_return_pattern)
 	  || (retval != NULL_TREE
-	      && type_dependent_expression_p (retval)))
-        return retval;
+	      && (TREE_TYPE (retval) == NULL_TREE
+		  || WILDCARD_TYPE_P (TREE_TYPE (retval)))))
+	goto dependent;
     }
 
   functype = TREE_TYPE (TREE_TYPE (current_function_decl));
@@ -9098,8 +9102,10 @@ check_return_expr (tree retval, bool *no_warning)
 	warning (OPT_Weffc__, "%<operator=%> should return a reference to %<*this%>");
     }
 
-  if (processing_template_decl)
+  if (dependent_type_p (functype)
+      || type_dependent_expression_p (retval))
     {
+    dependent:
       /* We should not have changed the return value.  */
       gcc_assert (retval == saved_retval);
       return retval;
@@ -9126,6 +9132,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   named_return_value_okay_p = 
     (retval != NULL_TREE
+     && !processing_template_decl
      /* Must be a local, automatic variable.  */
      && VAR_P (retval)
      && DECL_CONTEXT (retval) == current_function_decl
@@ -9221,6 +9228,9 @@ check_return_expr (tree retval, bool *no_warning)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));
     }
+
+  if (processing_template_decl)
+    return saved_retval;
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
