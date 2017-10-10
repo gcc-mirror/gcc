@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline void
 tree_int_to_gmp (tree t, mpz_t res)
 {
-  wi::to_mpz (t, res, TYPE_SIGN (TREE_TYPE (t)));
+  wi::to_mpz (wi::to_wide (t), res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 /* Return an isl identifier for the polyhedral basic block PBB.  */

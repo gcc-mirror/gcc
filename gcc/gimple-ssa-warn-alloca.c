@@ -194,7 +194,8 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
 	      // degrade into "if (N > Y) alloca(N)".
 	      if (cond_code == GT_EXPR || cond_code == GE_EXPR)
 		rhs = integer_zero_node;
-	      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, rhs);
+	      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
+					    wi::to_wide (rhs));
 	    }
 	}
       else
@@ -294,7 +295,8 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   if (TREE_CODE (len) == INTEGER_CST)
     {
       if (tree_to_uhwi (len) > max_size)
-	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE, len);
+	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE,
+				      wi::to_wide (len));
       if (integer_zerop (len))
 	return alloca_type_and_limit (ALLOCA_ARG_IS_ZERO);
       ret = alloca_type_and_limit (ALLOCA_OK);

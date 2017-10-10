@@ -7712,11 +7712,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      if (group_gap_adj != 0 && ! slp_perm
 		  && group_elt == group_size - group_gap_adj)
 		{
-		  bool ovf;
-		  tree bump
-		    = wide_int_to_tree (sizetype,
-					wi::smul (TYPE_SIZE_UNIT (elem_type),
-						  group_gap_adj, &ovf));
+		  wide_int bump_val = (wi::to_wide (TYPE_SIZE_UNIT (elem_type))
+				       * group_gap_adj);
+		  tree bump = wide_int_to_tree (sizetype, bump_val);
 		  dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 						 stmt, bump);
 		  group_elt = 0;
@@ -7726,11 +7724,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	     elements loaded for a permuted SLP load.  */
 	  if (group_gap_adj != 0 && slp_perm)
 	    {
-	      bool ovf;
-	      tree bump
-		= wide_int_to_tree (sizetype,
-				    wi::smul (TYPE_SIZE_UNIT (elem_type),
-					      group_gap_adj, &ovf));
+	      wide_int bump_val = (wi::to_wide (TYPE_SIZE_UNIT (elem_type))
+				   * group_gap_adj);
+	      tree bump = wide_int_to_tree (sizetype, bump_val);
 	      dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					     stmt, bump);
 	    }

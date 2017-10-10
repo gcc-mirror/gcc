@@ -31670,12 +31670,12 @@ ix86_data_alignment (tree type, int align, bool opt)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
     {
-      if (wi::geu_p (TYPE_SIZE (type), max_align_compat)
+      if (wi::geu_p (wi::to_wide (TYPE_SIZE (type)), max_align_compat)
 	  && align < max_align_compat)
 	align = max_align_compat;
-       if (wi::geu_p (TYPE_SIZE (type), max_align)
-	   && align < max_align)
-	 align = max_align;
+      if (wi::geu_p (wi::to_wide (TYPE_SIZE (type)), max_align)
+	  && align < max_align)
+	align = max_align;
     }
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
@@ -31685,7 +31685,7 @@ ix86_data_alignment (tree type, int align, bool opt)
       if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && wi::geu_p (wi::to_wide (TYPE_SIZE (type)), 128)
 	  && align < 128)
 	return 128;
     }
@@ -31804,7 +31804,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
 		  != TYPE_MAIN_VARIANT (va_list_type_node)))
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && wi::geu_p (wi::to_wide (TYPE_SIZE (type)), 128)
 	  && align < 128)
 	return 128;
     }

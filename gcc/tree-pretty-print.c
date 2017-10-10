@@ -1710,7 +1710,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	pp_unsigned_wide_integer (pp, tree_to_uhwi (node));
       else
 	{
-	  wide_int val = node;
+	  wide_int val = wi::to_wide (node);
 
 	  if (wi::neg_p (val, TYPE_SIGN (TREE_TYPE (node))))
 	    {

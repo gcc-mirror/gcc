@@ -3324,7 +3324,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     return false;
 
   if (TREE_CODE (base) == INTEGER_CST)
-    base_min = base_max = base;
+    base_min = base_max = wi::to_wide (base);
   else if (TREE_CODE (base) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (base))
 	   && get_range_info (base, &base_min, &base_max) == VR_RANGE)
@@ -3333,7 +3333,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     return true;
 
   if (TREE_CODE (step) == INTEGER_CST)
-    step_min = step_max = step;
+    step_min = step_max = wi::to_wide (step);
   else if (TREE_CODE (step) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (step))
 	   && get_range_info (step, &step_min, &step_max) == VR_RANGE)
@@ -3593,7 +3593,8 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
       extreme = wi::max_value (type);
     }
   overflow = false;
-  extreme = wi::sub (extreme, iv->step, TYPE_SIGN (type), &overflow);
+  extreme = wi::sub (extreme, wi::to_wide (iv->step),
+		     TYPE_SIGN (type), &overflow);
   if (overflow)
     return true;
   e = fold_build2 (code, boolean_type_node, base,

@@ -626,7 +626,7 @@ cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 
   /* Make sure that if VIRTUAL_OFFSET is in sync with VIRTUAL_VALUE.  */
   gcc_checking_assert (virtual_offset
-		       ? wi::eq_p (virtual_offset, virtual_value)
+		       ? virtual_value == wi::to_wide (virtual_offset)
 		       : virtual_value == 0);
 
   node->thunk.fixed_offset = fixed_offset;

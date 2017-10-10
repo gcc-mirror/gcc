@@ -19820,7 +19820,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	   the precision of its type.  The precision and signedness
 	   of the type will be necessary to re-interpret it
 	   unambiguously.  */
-	add_AT_wide (die, attr, value);
+	add_AT_wide (die, attr, wi::to_wide (value));
       return;
     }
 
@@ -21236,7 +21236,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	    /* Enumeration constants may be wider than HOST_WIDE_INT.  Handle
 	       that here.  TODO: This should be re-worked to use correct
 	       signed/unsigned double tags for all cases.  */
-	    add_AT_wide (enum_die, DW_AT_const_value, value);
+	    add_AT_wide (enum_die, DW_AT_const_value, wi::to_wide (value));
 	}
 
       add_gnat_descriptive_type_attribute (type_die, type, context_die);

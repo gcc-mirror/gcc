@@ -92,14 +92,14 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
 
       *var = op0;
       /* Always sign extend the offset.  */
-      wi::to_mpz (op1, offset, SIGNED);
+      wi::to_mpz (wi::to_wide (op1), offset, SIGNED);
       if (negate)
 	mpz_neg (offset, offset);
       break;
 
     case INTEGER_CST:
       *var = build_int_cst_type (type, 0);
-      wi::to_mpz (expr, offset, TYPE_SIGN (type));
+      wi::to_mpz (wi::to_wide (expr), offset, TYPE_SIGN (type));
       break;
 
     default:
@@ -164,7 +164,7 @@ refine_value_range_using_guard (tree type, tree var,
 
 	  /* Case of comparing VAR with its below/up bounds.  */
 	  mpz_init (valc1);
-	  wi::to_mpz (c1, valc1, TYPE_SIGN (type));
+	  wi::to_mpz (wi::to_wide (c1), valc1, TYPE_SIGN (type));
 	  if (mpz_cmp (valc1, below) == 0)
 	    cmp = GT_EXPR;
 	  if (mpz_cmp (valc1, up) == 0)
@@ -178,9 +178,9 @@ refine_value_range_using_guard (tree type, tree var,
 	  wide_int min = wi::min_value (type);
 	  wide_int max = wi::max_value (type);
 
-	  if (wi::eq_p (c1, min))
+	  if (wi::to_wide (c1) == min)
 	    cmp = GT_EXPR;
-	  if (wi::eq_p (c1, max))
+	  if (wi::to_wide (c1) == max)
 	    cmp = LT_EXPR;
 	}
 
@@ -221,8 +221,8 @@ refine_value_range_using_guard (tree type, tree var,
   /* Setup range information for varc1.  */
   if (integer_zerop (varc1))
     {
-      wi::to_mpz (integer_zero_node, minc1, TYPE_SIGN (type));
-      wi::to_mpz (integer_zero_node, maxc1, TYPE_SIGN (type));
+      wi::to_mpz (0, minc1, TYPE_SIGN (type));
+      wi::to_mpz (0, maxc1, TYPE_SIGN (type));
     }
   else if (TREE_CODE (varc1) == SSA_NAME
 	   && INTEGRAL_TYPE_P (type)
@@ -903,7 +903,8 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
   if (integer_onep (s)
       || (TREE_CODE (c) == INTEGER_CST
 	  && TREE_CODE (s) == INTEGER_CST
-	  && wi::mod_trunc (c, s, TYPE_SIGN (type)) == 0)
+	  && wi::mod_trunc (wi::to_wide (c), wi::to_wide (s),
+			    TYPE_SIGN (type)) == 0)
       || (TYPE_OVERFLOW_UNDEFINED (type)
 	  && multiple_of_p (type, c, s)))
     {
@@ -922,7 +923,8 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
      the whole # of iterations analysis will fail).  */
   if (!no_overflow)
     {
-      max = wi::mask <widest_int> (TYPE_PRECISION (type) - wi::ctz (s), false);
+      max = wi::mask <widest_int> (TYPE_PRECISION (type)
+				   - wi::ctz (wi::to_wide (s)), false);
       wi::to_mpz (max, bnd, UNSIGNED);
       return;
     }
@@ -938,13 +940,13 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
       /* ... then we can strengthen this to C / S, and possibly we can use
 	 the upper bound on C given by BNDS.  */
       if (TREE_CODE (c) == INTEGER_CST)
-	wi::to_mpz (c, bnd, UNSIGNED);
+	wi::to_mpz (wi::to_wide (c), bnd, UNSIGNED);
       else if (bnds_u_valid)
 	mpz_set (bnd, bnds->up);
     }
 
   mpz_init (d);
-  wi::to_mpz (s, d, UNSIGNED);
+  wi::to_mpz (wi::to_wide (s), d, UNSIGNED);
   mpz_fdiv_q (bnd, bnd, d);
   mpz_clear (d);
 }
@@ -1157,7 +1159,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   tmod = fold_convert (type1, mod);
 
   mpz_init (mmod);
-  wi::to_mpz (mod, mmod, UNSIGNED);
+  wi::to_mpz (wi::to_wide (mod), mmod, UNSIGNED);
   mpz_neg (mmod, mmod);
 
   /* If the induction variable does not overflow and the exit is taken,
@@ -1543,7 +1545,7 @@ number_of_iterations_lt (struct loop *loop, tree type, affine_iv *iv0,
 
   mpz_init (mstep);
   mpz_init (tmp);
-  wi::to_mpz (step, mstep, UNSIGNED);
+  wi::to_mpz (wi::to_wide (step), mstep, UNSIGNED);
   mpz_add (tmp, bnds->up, mstep);
   mpz_sub_ui (tmp, tmp, 1);
   mpz_fdiv_q (tmp, tmp, mstep);
@@ -3178,7 +3180,7 @@ get_cst_init_from_scev (tree var, wide_int *init, bool is_min)
   if (is_min == tree_int_cst_sign_bit (iv.step))
     return false;
 
-  *init = iv.base;
+  *init = wi::to_wide (iv.base);
   return true;
 }
 
@@ -3225,7 +3227,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
 	  && (get_range_info (orig_base, &min, &max) == VR_RANGE
 	      || get_cst_init_from_scev (orig_base, &max, false))
-	  && wi::gts_p (high, max))
+	  && wi::gts_p (wi::to_wide (high), max))
 	base = wide_int_to_tree (unsigned_type, max);
       else if (TREE_CODE (base) != INTEGER_CST
 	       && dominated_by_p (CDI_DOMINATORS,
@@ -3243,7 +3245,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
 	  && (get_range_info (orig_base, &min, &max) == VR_RANGE
 	      || get_cst_init_from_scev (orig_base, &min, true))
-	  && wi::gts_p (min, low))
+	  && wi::gts_p (min, wi::to_wide (low)))
 	base = wide_int_to_tree (unsigned_type, min);
       else if (TREE_CODE (base) != INTEGER_CST
 	       && dominated_by_p (CDI_DOMINATORS,
@@ -4499,19 +4501,15 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
        MIN - type_MIN >= |step| ; if step < 0.
 
      Or VAR must take value outside of value range, which is not true.  */
-  step_wi = step;
+  step_wi = wi::to_wide (step);
   type = TREE_TYPE (var);
   if (tree_int_cst_sign_bit (step))
     {
-      diff = lower_bound_in_type (type, type);
-      diff = minv - diff;
+      diff = minv - wi::to_wide (lower_bound_in_type (type, type));
       step_wi = - step_wi;
     }
   else
-    {
-      diff = upper_bound_in_type (type, type);
-      diff = diff - maxv;
-    }
+    diff = wi::to_wide (upper_bound_in_type (type, type)) - maxv;
 
   return (wi::geu_p (diff, step_wi));
 }

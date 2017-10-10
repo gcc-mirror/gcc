@@ -1,3 +1,110 @@
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* wide-int.h (wide_int_ref_storage): Make host_dependent_precision
+	a template parameter.
+	(WIDE_INT_REF_FOR): Update accordingly.
+	* tree.h (wi::int_traits <const_tree>): Delete.
+	(wi::tree_to_widest_ref, wi::tree_to_offset_ref): New typedefs.
+	(wi::to_widest, wi::to_offset): Use them.  Expand commentary.
+	(wi::tree_to_wide_ref): New typedef.
+	(wi::to_wide): New function.
+	* calls.c (get_size_range): Use wi::to_wide when operating on
+	trees as wide_ints.
+	* cgraph.c (cgraph_node::create_thunk): Likewise.
+	* config/i386/i386.c (ix86_data_alignment): Likewise.
+	(ix86_local_alignment): Likewise.
+	* dbxout.c (stabstr_O): Likewise.
+	* dwarf2out.c (add_scalar_info, gen_enumeration_type_die): Likewise.
+	* expr.c (const_vector_from_tree): Likewise.
+	* fold-const-call.c (host_size_t_cst_p, fold_const_call_1): Likewise.
+	* fold-const.c (may_negate_without_overflow_p, negate_expr_p)
+	(fold_negate_expr_1, int_const_binop_1, const_binop)
+	(fold_convert_const_int_from_real, optimize_bit_field_compare)
+	(all_ones_mask_p, sign_bit_p, unextend, extract_muldiv_1)
+	(fold_div_compare, fold_single_bit_test, fold_plusminus_mult_expr)
+	(pointer_may_wrap_p, expr_not_equal_to, fold_binary_loc)
+	(fold_ternary_loc, multiple_of_p, fold_negate_const, fold_abs_const)
+	(fold_not_const, round_up_loc): Likewise.
+	* gimple-fold.c (gimple_fold_indirect_ref): Likewise.
+	* gimple-ssa-warn-alloca.c (alloca_call_type_by_arg): Likewise.
+	(alloca_call_type): Likewise.
+	* gimple.c (preprocess_case_label_vec_for_gimple): Likewise.
+	* godump.c (go_output_typedef): Likewise.
+	* graphite-sese-to-poly.c (tree_int_to_gmp): Likewise.
+	* internal-fn.c (get_min_precision): Likewise.
+	* ipa-cp.c (ipcp_store_vr_results): Likewise.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Likewise.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	* match.pd: Likewise.
+	* omp-low.c (scan_omp_1_op, lower_omp_ordered_clauses): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* stmt.c (expand_case): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* tree-affine.c (tree_to_aff_combination): Likewise.
+	* tree-cfg.c (group_case_labels_stmt): Likewise.
+	* tree-data-ref.c (dr_analyze_indices): Likewise.
+	(prune_runtime_alias_test_list): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-inline.c (remap_gimple_op_r, copy_tree_body_r): Likewise.
+	* tree-predcom.c (is_inv_store_elimination_chain): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-scalar-evolution.c (iv_can_overflow_p): Likewise.
+	(simple_iv_with_niters): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	* tree-ssa-ccp.c (ccp_finalize, evaluate_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (constant_multiple_of): Likewise.
+	* tree-ssa-loop-niter.c (split_to_var_and_offset)
+	(refine_value_range_using_guard, number_of_iterations_ne_max)
+	(number_of_iterations_lt_to_ne, number_of_iterations_lt)
+	(get_cst_init_from_scev, record_nonwrapping_iv)
+	(scev_var_range_cant_overflow): Likewise.
+	* tree-ssa-phiopt.c (minmax_replacement): Likewise.
+	* tree-ssa-pre.c (compute_avail): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Likewise.
+	(vn_reference_maybe_forwprop_address, valueized_wider_op): Likewise.
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Likewise.
+	* tree-ssa-uninit.c (is_pred_expr_subset_of): Likewise.
+	* tree-ssanames.c (set_nonzero_bits, get_nonzero_bits): Likewise.
+	* tree-switch-conversion.c (collect_switch_conv_info, array_value_type)
+	(dump_case_nodes, try_switch_expansion): Likewise.
+	* tree-vect-loop-manip.c (vect_gen_vector_loop_niters): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	* tree-vrp.c (compare_values_warnv, vrp_int_const_binop): Likewise.
+	(zero_nonzero_bits_from_vr, ranges_from_anti_range): Likewise.
+	(extract_range_from_binary_expr_1, adjust_range_with_scev): Likewise.
+	(overflow_comparison_p_1, register_edge_assert_for_2): Likewise.
+	(is_masked_range_test, find_switch_asserts, maybe_set_nonzero_bits)
+	(vrp_evaluate_conditional_warnv_with_ops, intersect_ranges): Likewise.
+	(range_fits_type_p, two_valued_val_range_p, vrp_finalize): Likewise.
+	(evrp_dom_walker::before_dom_children): Likewise.
+	* tree.c (cache_integer_cst, real_value_from_int_cst, integer_zerop)
+	(integer_all_onesp, integer_pow2p, integer_nonzerop, tree_log2)
+	(tree_floor_log2, tree_ctz, mem_ref_offset, tree_int_cst_sign_bit)
+	(tree_int_cst_sgn, get_unwidened, int_fits_type_p): Likewise.
+	(get_type_static_bounds, num_ending_zeros, drop_tree_overflow)
+	(get_range_pos_neg): Likewise.
+	* ubsan.c (ubsan_expand_ptr_ifn): Likewise.
+	* config/darwin.c (darwin_mergeable_constant_section): Likewise.
+	* config/aarch64/aarch64.c (aapcs_vfp_sub_candidate): Likewise.
+	* config/arm/arm.c (aapcs_vfp_sub_candidate): Likewise.
+	* config/avr/avr.c (avr_fold_builtin): Likewise.
+	* config/bfin/bfin.c (bfin_local_alignment): Likewise.
+	* config/msp430/msp430.c (msp430_attr): Likewise.
+	* config/nds32/nds32.c (nds32_insert_attributes): Likewise.
+	* config/powerpcspe/powerpcspe-c.c
+	(altivec_resolve_overloaded_builtin): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_aggregate_candidate)
+	(rs6000_expand_ternop_builtin): Likewise.
+	* config/rs6000/rs6000-c.c
+	(altivec_resolve_overloaded_builtin): Likewise.
+	* config/rs6000/rs6000.c (rs6000_aggregate_candidate): Likewise.
+	(rs6000_expand_ternop_builtin): Likewise.
+	* config/s390/s390.c (s390_handle_hotpatch_attribute): Likewise.
+
 2017-10-10  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop-manip.c (rename_variables_in_bb): Rename PHI nodes

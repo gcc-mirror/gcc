@@ -17832,7 +17832,7 @@ c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses,
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
   
     error_at (loc, "vectorlength must be an integer constant");  
-  else if (wi::exact_log2 (expr) == -1)
+  else if (wi::exact_log2 (wi::to_wide (expr)) == -1)
     error_at (loc, "vectorlength must be a power of 2");
   else
     {

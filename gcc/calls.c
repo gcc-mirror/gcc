@@ -1293,8 +1293,6 @@ get_size_range (tree exp, tree range[2])
 
   tree exptype = TREE_TYPE (exp);
   unsigned expprec = TYPE_PRECISION (exptype);
-  wide_int wzero = wi::zero (expprec);
-  wide_int wmaxval = wide_int (TYPE_MAX_VALUE (exptype));
 
   bool signed_p = !TYPE_UNSIGNED (exptype);
 
@@ -1302,7 +1300,7 @@ get_size_range (tree exp, tree range[2])
     {
       if (signed_p)
 	{
-	  if (wi::les_p (max, wzero))
+	  if (wi::les_p (max, 0))
 	    {
 	      /* EXP is not in a strictly negative range.  That means
 		 it must be in some (not necessarily strictly) positive
@@ -1310,24 +1308,24 @@ get_size_range (tree exp, tree range[2])
 		 conversions negative values end up converted to large
 		 positive values, and otherwise they are not valid sizes,
 		 the resulting range is in both cases [0, TYPE_MAX].  */
-	      min = wzero;
-	      max = wmaxval;
+	      min = wi::zero (expprec);
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
 	    }
-	  else if (wi::les_p (min - 1, wzero))
+	  else if (wi::les_p (min - 1, 0))
 	    {
 	      /* EXP is not in a negative-positive range.  That means EXP
 		 is either negative, or greater than max.  Since negative
 		 sizes are invalid make the range [MAX + 1, TYPE_MAX].  */
 	      min = max + 1;
-	      max = wmaxval;
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
 	    }
 	  else
 	    {
 	      max = min - 1;
-	      min = wzero;
+	      min = wi::zero (expprec);
 	    }
 	}
-      else if (wi::eq_p (wzero, min - 1))
+      else if (wi::eq_p (0, min - 1))
 	{
 	  /* EXP is unsigned and not in the range [1, MAX].  That means
 	     it's either zero or greater than MAX.  Even though 0 would
@@ -1335,12 +1333,12 @@ get_size_range (tree exp, tree range[2])
 	     [MAX, TYPE_MAX] so that when MAX is greater than the limit
 	     the whole range is diagnosed.  */
 	  min = max + 1;
-	  max = wmaxval;
+	  max = wi::to_wide (TYPE_MAX_VALUE (exptype));
 	}
       else
 	{
 	  max = min - 1;
-	  min = wzero;
+	  min = wi::zero (expprec);
 	}
     }
 

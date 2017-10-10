@@ -3158,7 +3158,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 			      convert (TREE_TYPE (intop), size_exp));
     intop = convert (sizetype, t);
     if (TREE_OVERFLOW_P (intop) && !TREE_OVERFLOW (t))
-      intop = wide_int_to_tree (TREE_TYPE (intop), intop);
+      intop = wide_int_to_tree (TREE_TYPE (intop), wi::to_wide (intop));
   }
 
   /* Create the sum or difference.  */

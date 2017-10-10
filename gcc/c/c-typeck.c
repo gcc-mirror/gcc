@@ -5684,7 +5684,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	    }
 	  else if (TREE_OVERFLOW (value))
 	    /* Reset VALUE's overflow flags, ensuring constant sharing.  */
-	    value = wide_int_to_tree (TREE_TYPE (value), value);
+	    value = wide_int_to_tree (TREE_TYPE (value), wi::to_wide (value));
 	}
     }
 
@@ -13504,7 +13504,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
 		    {
 		      tree offset = TREE_PURPOSE (t);
-		      bool neg = wi::neg_p ((wide_int) offset);
+		      bool neg = wi::neg_p (wi::to_wide (offset));
 		      offset = fold_unary (ABS_EXPR, TREE_TYPE (offset), offset);
 		      tree t2 = pointer_int_sum (OMP_CLAUSE_LOCATION (c),
 						 neg ? MINUS_EXPR : PLUS_EXPR,
@@ -14237,7 +14237,7 @@ c_tree_equal (tree t1, tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return wi::eq_p (t1, t2);
+      return wi::to_wide (t1) == wi::to_wide (t2);
 
     case REAL_CST:
       return real_equal (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));

@@ -1655,7 +1655,8 @@ is_inv_store_elimination_chain (struct loop *loop, chain_p chain)
   /* If loop iterates for unknown times or fewer times than chain->lenght,
      we still need to setup root variable and propagate it with PHI node.  */
   tree niters = number_of_latch_executions (loop);
-  if (TREE_CODE (niters) != INTEGER_CST || wi::leu_p (niters, chain->length))
+  if (TREE_CODE (niters) != INTEGER_CST
+      || wi::leu_p (wi::to_wide (niters), chain->length))
     return false;
 
   /* Check stores in chain for elimination if they only store loop invariant
