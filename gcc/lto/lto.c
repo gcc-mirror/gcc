@@ -591,7 +591,7 @@ mentions_vars_p_decl_with_vis (tree t)
     return true;
 
   /* Accessor macro has side-effects, use field-name here. */
-  CHECK_NO_VAR (t->decl_with_vis.assembler_name);
+  CHECK_NO_VAR (DECL_ASSEMBLER_NAME_RAW (t));
   return false;
 }
 
@@ -2557,7 +2557,7 @@ lto_fixup_prevailing_decls (tree t)
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
 	{
-	  LTO_NO_PREVAIL (t->decl_with_vis.assembler_name);
+	  LTO_NO_PREVAIL (DECL_ASSEMBLER_NAME_RAW (t));
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
 	{
