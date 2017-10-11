@@ -1,3 +1,8 @@
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81299
+	* g++.dg/cpp1y/lambda-generic-ice7.C: New.
+
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/extern-c-redecl6.C: New.
