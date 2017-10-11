@@ -1943,7 +1943,8 @@ build_partition_graph (struct graph *rdg,
   return pg;
 }
 
-/* Sort partitions in PG by post order and store them in PARTITIONS.  */
+/* Sort partitions in PG in descending post order and store them in
+   PARTITIONS.  */
 
 static void
 sort_partitions_by_post_order (struct graph *pg,
@@ -1952,7 +1953,7 @@ sort_partitions_by_post_order (struct graph *pg,
   int i;
   struct pg_vdata *data;
 
-  /* Now order the remaining nodes in postorder.  */
+  /* Now order the remaining nodes in descending postorder.  */
   qsort (pg->vertices, pg->n_vertices, sizeof (vertex), pgcmp);
   partitions->truncate (0);
   for (i = 0; i < pg->n_vertices; ++i)
@@ -2048,7 +2049,7 @@ break_alias_scc_partitions (struct graph *rdg,
 			    vec<struct partition *> *partitions,
 			    vec<ddr_p> *alias_ddrs)
 {
-  int i, j, num_sccs, num_sccs_no_alias;
+  int i, j, k, num_sccs, num_sccs_no_alias;
   /* Build partition dependence graph.  */
   graph *pg = build_partition_graph (rdg, partitions, false);
 
@@ -2121,18 +2122,26 @@ break_alias_scc_partitions (struct graph *rdg,
 	  for (j = 0; partitions->iterate (j, &first); ++j)
 	    if (cbdata.vertices_component[j] == i)
 	      break;
-	  for (++j; partitions->iterate (j, &partition); ++j)
+	  for (k = j + 1; partitions->iterate (k, &partition); ++k)
 	    {
 	      struct pg_vdata *data;
 
-	      if (cbdata.vertices_component[j] != i)
+	      if (cbdata.vertices_component[k] != i)
 		continue;
 
+	      /* Update postorder number so that merged reduction partition is
+		 sorted after other partitions.  */
+	      if (!partition_reduction_p (first)
+		  && partition_reduction_p (partition))
+		{
+		  gcc_assert (pg->vertices[k].post < pg->vertices[j].post);
+		  pg->vertices[j].post = pg->vertices[k].post;
+		}
 	      partition_merge_into (NULL, first, partition, FUSE_SAME_SCC);
-	      (*partitions)[j] = NULL;
+	      (*partitions)[k] = NULL;
 	      partition_free (partition);
-	      data = (struct pg_vdata *)pg->vertices[j].data;
-	      gcc_assert (data->id == j);
+	      data = (struct pg_vdata *)pg->vertices[k].data;
+	      gcc_assert (data->id == k);
 	      data->partition = NULL;
 	    }
 	}
