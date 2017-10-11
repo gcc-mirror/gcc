@@ -1,3 +1,18 @@
+2017-10-11  Liu Hao  <lh_mouse@126.com>
+
+	* pretty-print.c [_WIN32] (colorize_init): Remove.  Use
+	the generic version below instead.
+	(should_colorize): Recognize Windows consoles as terminals
+	for MinGW targets.
+	* pretty-print.c [__MINGW32__] (write_all): New function.
+	[__MINGW32__] (find_esc_head): Likewise.
+	[__MINGW32__] (find_esc_terminator): Likewise.
+	[__MINGW32__] (eat_esc_sequence): Likewise.
+	[__MINGW32__] (mingw_ansi_fputs): New function that handles
+	ANSI escape codes.
+	(pp_write_text_to_stream): Use mingw_ansi_fputs instead of fputs
+	for MinGW targets.
+
 2017-10-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop-niter.c (infer_loop_bounds_from_pointer_arith):
