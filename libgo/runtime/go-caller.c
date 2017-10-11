@@ -159,7 +159,7 @@ syminfo_callback (void *data, uintptr_t pc __attribute__ ((unused)),
 /* Set *VAL to the value of the symbol for PC.  */
 
 static _Bool
-__go_symbol_value (uintptr_t pc, uintptr_t *val)
+__go_symbol_value (uintptr pc, uintptr *val)
 {
   *val = 0;
   backtrace_syminfo (__go_get_backtrace_state (), pc, syminfo_callback,
