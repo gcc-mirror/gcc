@@ -1,3 +1,8 @@
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/ptr-overflow-sanitization-1.c: Scan
+	optimized dump rather than assembly.
+
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp/string-3.C: Fix dg-final.
