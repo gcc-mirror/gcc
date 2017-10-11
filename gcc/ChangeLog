@@ -1,3 +1,8 @@
+2017-10-11  Adhemerval Zanella  <adhemerval.zanella@linaro.org>
+
+	* config.gcc (default_gnu_indirect_function): Default to yes for
+	arm*-*-linux* with glibc.
+
 2017-10-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-scalar-evolution.c (get_scalar_evolution): Handle
