@@ -118,7 +118,7 @@ static void set_std_c11 (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
-static void add_prefixed_path (const char *, size_t);
+static void add_prefixed_path (const char *, incpath_e);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
@@ -316,7 +316,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_I:
       if (strcmp (arg, "-"))
-	add_path (xstrdup (arg), BRACKET, 0, true);
+	add_path (xstrdup (arg), INC_BRACKET, 0, true);
       else
 	{
 	  if (quote_chain_split)
@@ -550,7 +550,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_idirafter:
-      add_path (xstrdup (arg), AFTER, 0, true);
+      add_path (xstrdup (arg), INC_AFTER, 0, true);
       break;
 
     case OPT_imacros:
@@ -567,7 +567,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_iquote:
-      add_path (xstrdup (arg), QUOTE, 0, true);
+      add_path (xstrdup (arg), INC_QUOTE, 0, true);
       break;
 
     case OPT_isysroot:
@@ -575,15 +575,15 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_isystem:
-      add_path (xstrdup (arg), SYSTEM, 0, true);
+      add_path (xstrdup (arg), INC_SYSTEM, 0, true);
       break;
 
     case OPT_iwithprefix:
-      add_prefixed_path (arg, SYSTEM);
+      add_prefixed_path (arg, INC_SYSTEM);
       break;
 
     case OPT_iwithprefixbefore:
-      add_prefixed_path (arg, BRACKET);
+      add_prefixed_path (arg, INC_BRACKET);
       break;
 
     case OPT_lang_asm:
@@ -1326,7 +1326,7 @@ sanitize_cpp_opts (void)
 
 /* Add include path with a prefix at the front of its name.  */
 static void
-add_prefixed_path (const char *suffix, size_t chain)
+add_prefixed_path (const char *suffix, incpath_e chain)
 {
   char *path;
   const char *prefix;

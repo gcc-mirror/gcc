@@ -1,5 +1,26 @@
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* incpath.h (enum incpath_e): Name enum, prefix values.
+	(add_path, add_cpp_dir_path, get_added_cpp_dirs): Use incpath_e type.
+	* incpath.c (heads, tails): Use INC_MAX.
+	(add_env_var_paths, add_standard_paths): Use incpath_e type.
+	(merge_include_chains, split_quote_chain,
+	register_include_chains): Update incpath_e names.
+	(add_cpp_dir_path, add_path, get_added_cpp_dirs): Use incpath_e type.
+	* config/darwin-c.c (add_system_framework_path): Update incpath_e
+	names.
+	(add_framework_path, darwin_register_objc_includes ): Likewise.
+	* config/vms/vms-c.c (vms_c_register_includes): Likewise.
+
+	gcc/fortran/
+	* cpp.c (gfc_cpp_add_include_path): Update incpath_e names.
+	(gfc_cpp_add_include_path_after): Likewise.
+
+	gcc/c-family/
+	* c-opts.c (add_prefixed_path): Change chain to incpath_e type.
+	(c_common_handle_option): Update incpath_e names.
+
 	Merge trunk r253623
 
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
