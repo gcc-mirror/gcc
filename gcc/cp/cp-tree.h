@@ -580,30 +580,6 @@ identifier_p (tree t)
   return NULL;
 }
 
-/* Hash trait specialization for lang_identifiers.  This allows
-   PCH-safe maps keyed by DECL_NAME.  If it wasn't for PCH, we could
-   just use a regular tree key.  */
-
-template <>
-struct default_hash_traits <lang_identifier *>
-  : pointer_hash <tree_node>
-{
-  /* Use a regular tree as the type, to make using the hash table
-     simpler.  We'll get dynamic type checking with the hash function
-     itself.  */
-  GTY((skip)) typedef tree value_type;
-  GTY((skip)) typedef tree compare_type;
-
-  static hashval_t hash (const value_type id)
-  {
-    return IDENTIFIER_HASH_VALUE (id);
-  }
-
-  /* Nothing is deletable.  Everything is insertable.  */
-  static bool is_deleted (value_type) { return false; }
-  static void remove (value_type) { gcc_unreachable (); }
-};
-
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 
@@ -6346,6 +6322,7 @@ extern tree mark_rvalue_use			(tree,
 extern tree mark_lvalue_use			(tree);
 extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
+extern tree mark_discarded_use			(tree);
 extern void mark_exp_read			(tree);
 
 /* friend.c */
@@ -6525,6 +6502,7 @@ extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
+extern bool need_generic_capture		(void);
 extern bool processing_nonlambda_template	(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
@@ -6928,6 +6906,7 @@ extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
 extern bool generic_lambda_fn_p			(tree);
+extern tree do_dependent_capture		(tree, bool = false);
 extern bool lambda_fn_in_template_p		(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);

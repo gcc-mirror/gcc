@@ -6784,7 +6784,7 @@ gimple_fold_indirect_ref (tree t)
 	  || DECL_P (TREE_OPERAND (addr, 0)))
 	return fold_build2 (MEM_REF, type,
 			    addr,
-			    wide_int_to_tree (ptype, off));
+			    wide_int_to_tree (ptype, wi::to_wide (off)));
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */

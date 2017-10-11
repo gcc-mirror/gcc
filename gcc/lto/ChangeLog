@@ -1,3 +1,14 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* lto.c (mentions_vars_p_decl_with_vis): Use
+	DECL_ASSEMBLER_NAME_RAW.
+	(lto_fixup_prevailing_decls): Likewise.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lto.c (compare_tree_sccs_1): Use wi::to_wide when
+	operating on trees as wide_ints.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

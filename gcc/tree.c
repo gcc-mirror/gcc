@@ -671,7 +671,7 @@ decl_assembler_name (tree decl)
 {
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
     lang_hooks.set_decl_assembler_name (decl);
-  return DECL_WITH_VIS_CHECK (decl)->decl_with_vis.assembler_name;
+  return DECL_ASSEMBLER_NAME_RAW (decl);
 }
 
 /* When the target supports COMDAT groups, this indicates which group the
@@ -1584,7 +1584,7 @@ cache_integer_cst (tree t)
     case BOOLEAN_TYPE:
       /* Cache false or true.  */
       limit = 2;
-      if (wi::ltu_p (t, 2))
+      if (wi::ltu_p (wi::to_wide (t), 2))
 	ix = TREE_INT_CST_ELT (t, 0);
       break;
 
@@ -1603,7 +1603,7 @@ cache_integer_cst (tree t)
 	      if (tree_to_uhwi (t) < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
 		ix = tree_to_uhwi (t);
 	    }
-	  else if (wi::ltu_p (t, INTEGER_SHARE_LIMIT))
+	  else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
 	    ix = tree_to_uhwi (t);
 	}
       else
@@ -1613,14 +1613,14 @@ cache_integer_cst (tree t)
 
 	  if (integer_minus_onep (t))
 	    ix = 0;
-	  else if (!wi::neg_p (t))
+	  else if (!wi::neg_p (wi::to_wide (t)))
 	    {
 	      if (prec < HOST_BITS_PER_WIDE_INT)
 		{
 		  if (tree_to_shwi (t) < INTEGER_SHARE_LIMIT)
 		    ix = tree_to_shwi (t) + 1;
 		}
-	      else if (wi::ltu_p (t, INTEGER_SHARE_LIMIT))
+	      else if (wi::ltu_p (wi::to_wide (t), INTEGER_SHARE_LIMIT))
 		ix = tree_to_shwi (t) + 1;
 	    }
 	}
@@ -1652,7 +1652,7 @@ cache_integer_cst (tree t)
       /* If there is already an entry for the number verify it's the
          same.  */
       if (*slot)
-	gcc_assert (wi::eq_p (tree (*slot), t));
+	gcc_assert (wi::to_wide (tree (*slot)) == wi::to_wide (t));
       else
 	/* Otherwise insert this one into the hash table.  */
 	*slot = t;
@@ -1969,7 +1969,7 @@ real_value_from_int_cst (const_tree type, const_tree i)
      bitwise comparisons to see if two values are the same.  */
   memset (&d, 0, sizeof d);
 
-  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode, i,
+  real_from_integer (&d, type ? TYPE_MODE (type) : VOIDmode, wi::to_wide (i),
 		     TYPE_SIGN (TREE_TYPE (i)));
   return d;
 }
@@ -2331,7 +2331,7 @@ integer_zerop (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      return wi::eq_p (expr, 0);
+      return wi::to_wide (expr) == 0;
     case COMPLEX_CST:
       return (integer_zerop (TREE_REALPART (expr))
 	      && integer_zerop (TREE_IMAGPART (expr)));
@@ -2410,7 +2410,8 @@ integer_all_onesp (const_tree expr)
   else if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
 
-  return wi::max_value (TYPE_PRECISION (TREE_TYPE (expr)), UNSIGNED) == expr;
+  return (wi::max_value (TYPE_PRECISION (TREE_TYPE (expr)), UNSIGNED)
+	  == wi::to_wide (expr));
 }
 
 /* Return 1 if EXPR is the integer constant minus one.  */
@@ -2439,7 +2440,7 @@ integer_pow2p (const_tree expr)
   if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
 
-  return wi::popcount (expr) == 1;
+  return wi::popcount (wi::to_wide (expr)) == 1;
 }
 
 /* Return 1 if EXPR is an integer constant other than zero or a
@@ -2449,7 +2450,7 @@ int
 integer_nonzerop (const_tree expr)
 {
   return ((TREE_CODE (expr) == INTEGER_CST
-	   && !wi::eq_p (expr, 0))
+	   && wi::to_wide (expr) != 0)
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && (integer_nonzerop (TREE_REALPART (expr))
 		  || integer_nonzerop (TREE_IMAGPART (expr)))));
@@ -2485,7 +2486,7 @@ tree_log2 (const_tree expr)
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
-  return wi::exact_log2 (expr);
+  return wi::exact_log2 (wi::to_wide (expr));
 }
 
 /* Similar, but return the largest integer Y such that 2 ** Y is less
@@ -2497,7 +2498,7 @@ tree_floor_log2 (const_tree expr)
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
-  return wi::floor_log2 (expr);
+  return wi::floor_log2 (wi::to_wide (expr));
 }
 
 /* Return number of known trailing zero bits in EXPR, or, if the value of
@@ -2514,7 +2515,7 @@ tree_ctz (const_tree expr)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      ret1 = wi::ctz (expr);
+      ret1 = wi::ctz (wi::to_wide (expr));
       return MIN (ret1, prec);
     case SSA_NAME:
       ret1 = wi::ctz (get_nonzero_bits (expr));
@@ -4679,7 +4680,7 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
 offset_int
 mem_ref_offset (const_tree t)
 {
-  return offset_int::from (TREE_OPERAND (t, 1), SIGNED);
+  return offset_int::from (wi::to_wide (TREE_OPERAND (t, 1)), SIGNED);
 }
 
 /* Return an invariant ADDR_EXPR of type TYPE taking the address of BASE
@@ -6614,7 +6615,7 @@ tree_int_cst_sign_bit (const_tree t)
 {
   unsigned bitno = TYPE_PRECISION (TREE_TYPE (t)) - 1;
 
-  return wi::extract_uhwi (t, bitno, 1);
+  return wi::extract_uhwi (wi::to_wide (t), bitno, 1);
 }
 
 /* Return an indication of the sign of the integer constant T.
@@ -6624,11 +6625,11 @@ tree_int_cst_sign_bit (const_tree t)
 int
 tree_int_cst_sgn (const_tree t)
 {
-  if (wi::eq_p (t, 0))
+  if (wi::to_wide (t) == 0)
     return 0;
   else if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return 1;
-  else if (wi::neg_p (t))
+  else if (wi::neg_p (wi::to_wide (t)))
     return -1;
   else
     return 1;
@@ -8291,7 +8292,7 @@ get_unwidened (tree op, tree for_type)
   if (TREE_CODE (win) == INTEGER_CST)
     {
       tree wtype = TREE_TYPE (win);
-      unsigned prec = wi::min_precision (win, TYPE_SIGN (wtype));
+      unsigned prec = wi::min_precision (wi::to_wide (win), TYPE_SIGN (wtype));
       if (for_type)
 	prec = MAX (prec, final_prec);
       if (prec < TYPE_PRECISION (wtype))
@@ -8412,7 +8413,7 @@ int_fits_type_p (const_tree c, const_tree type)
   /* Non-standard boolean types can have arbitrary precision but various
      transformations assume that they can only take values 0 and +/-1.  */
   if (TREE_CODE (type) == BOOLEAN_TYPE)
-    return wi::fits_to_boolean_p (c, type);
+    return wi::fits_to_boolean_p (wi::to_wide (c), type);
 
 retry:
   type_low_bound = TYPE_MIN_VALUE (type);
@@ -8455,7 +8456,7 @@ retry:
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
-  if (TYPE_UNSIGNED (type) && sgn_c == SIGNED && wi::neg_p (c))
+  if (TYPE_UNSIGNED (type) && sgn_c == SIGNED && wi::neg_p (wi::to_wide (c)))
     return false;
 
   /* Second, narrower types always fit in wider ones.  */
@@ -8474,10 +8475,10 @@ retry:
 	     possible that the value will not fit.  The test below
 	     fails if any bit is set between the sign bit of the
 	     underlying mode and the top bit of the type.  */
-	  if (wi::ne_p (wi::zext (c, prec - 1), c))
+	  if (wi::zext (wi::to_wide (c), prec - 1) != wi::to_wide (c))
 	    return false;
 	}
-      else if (wi::neg_p (c))
+      else if (wi::neg_p (wi::to_wide (c)))
 	return false;
     }
 
@@ -8493,7 +8494,7 @@ retry:
     }
 
   /* Or to fits_to_tree_p, if nothing else.  */
-  return wi::fits_to_tree_p (c, type);
+  return wi::fits_to_tree_p (wi::to_wide (c), type);
 }
 
 /* Stores bounds of an integer TYPE in MIN and MAX.  If TYPE has non-constant
@@ -8506,7 +8507,7 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
 {
   if (!POINTER_TYPE_P (type) && TYPE_MIN_VALUE (type)
       && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
-    wi::to_mpz (TYPE_MIN_VALUE (type), min, TYPE_SIGN (type));
+    wi::to_mpz (wi::to_wide (TYPE_MIN_VALUE (type)), min, TYPE_SIGN (type));
   else
     {
       if (TYPE_UNSIGNED (type))
@@ -8520,7 +8521,7 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
 
   if (!POINTER_TYPE_P (type) && TYPE_MAX_VALUE (type)
       && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
-    wi::to_mpz (TYPE_MAX_VALUE (type), max, TYPE_SIGN (type));
+    wi::to_mpz (wi::to_wide (TYPE_MAX_VALUE (type)), max, TYPE_SIGN (type));
   else
     {
       wide_int mn = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
@@ -10931,7 +10932,7 @@ operand_equal_for_phi_arg_p (const_tree arg0, const_tree arg1)
 tree
 num_ending_zeros (const_tree x)
 {
-  return build_int_cst (TREE_TYPE (x), wi::ctz (x));
+  return build_int_cst (TREE_TYPE (x), wi::ctz (wi::to_wide (x)));
 }
 
 
@@ -12355,7 +12356,7 @@ drop_tree_overflow (tree t)
 
   /* For tree codes with a sharing machinery re-build the result.  */
   if (TREE_CODE (t) == INTEGER_CST)
-    return wide_int_to_tree (TREE_TYPE (t), t);
+    return wide_int_to_tree (TREE_TYPE (t), wi::to_wide (t));
 
   /* Otherwise, as all tcc_constants are possibly shared, copy the node
      and drop the flag.  */
@@ -13528,7 +13529,7 @@ get_range_pos_neg (tree arg)
   int cnt = 0;
   if (TREE_CODE (arg) == INTEGER_CST)
     {
-      wide_int w = wi::sext (arg, prec);
+      wide_int w = wi::sext (wi::to_wide (arg), prec);
       if (wi::neg_p (w))
 	return 2;
       else

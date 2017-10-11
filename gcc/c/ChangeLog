@@ -1,3 +1,14 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (grokdeclarator): Check HAS_DECL_ASSEMBLER_NAME_P too.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-parser.c (c_parser_cilk_clause_vectorlength): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* c-typeck.c (build_c_cast, c_finish_omp_clauses): Likewise.
+	(c_tree_equal): Likewise.
+
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (push_parm_decl): Store c_parm's location into the

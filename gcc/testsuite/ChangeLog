@@ -1,3 +1,159 @@
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/387-ficom-1.c: New test.
+
+2017-10-11  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/struct-layout-1_generate.c (generate_fields): Fix typo in
+	address computation of end of complex_attrib_array_types.
+
+2017-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/Wstrict-overflow-7.c: Xfail.
+	* gcc.dg/pragma-diag-3.c: Likewise.
+
+2017-10-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82472
+	* gcc.dg/tree-ssa/pr82472.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82490
+	* c-c++-common/ubsan/attrib-5.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	Revert r253637:
+
+	PR sanitizer/82484
+	* gcc.dg/asan/pr82484.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82484
+	* gcc.dg/asan/pr82484.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/ptr-overflow-sanitization-1.c: Scan
+	optimized dump rather than assembly.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp/string-3.C: Fix dg-final.
+
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80412
+	* g++.dg/cpp1z/class-deduction44.C: New.
+
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82230
+	* g++.dg/cpp1y/lambda-generic-ice8.C: New.
+
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81299
+	* g++.dg/cpp1y/lambda-generic-ice7.C: New.
+
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/extern-c-redecl6.C: New.
+	* g++.dg/lookup/extern-c-hidden.C: Adjust diagnostics.
+	* g++.dg/lookup/extern-c-redecl.C: Likewise.
+	* g++.old-deja/g++.other/using9.C: Likewise.
+
+2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78006
+	* g++.dg/cpp1y/auto-fn40.C: New.
+
+2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81032
+	* g++.dg/cpp1y/lambda-generic-ice6.C: New.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68205
+	* gcc.c-torture/execute/20040709-3.c: New test.
+
+	PR c++/67625
+	* g++.dg/cpp0x/pr67625.C: New test.
+
+	PR middle-end/70887
+	* g++.dg/cpp0x/pr70887.C: New test.
+
+	PR c++/70338
+	* g++.dg/cpp0x/pr70338.C: New test.
+
+	PR c++/77786
+	* g++.dg/cpp1y/pr77786.C: New test.
+
+	PR c++/71875
+	* g++.dg/cpp1y/pr71875.C: New test.
+
+	PR c++/77578
+	* g++.dg/gomp/pr77578.C: New test.
+
+	PR middle-end/70100
+	* g++.dg/opt/pr70100.C: New test.
+
+	PR c++/68252
+	* g++.dg/other/pr68252.C: New test.
+
+	PR target/79565
+	PR target/82483
+	* gcc.target/i386/pr82483-1.c: New test.
+	* gcc.target/i386/pr82483-2.c: New test.
+
+2017-10-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-mult-int128-p8.c: Update options
+	* gcc.target/powerpc/fold-vec-mult-int128-p9.c: Update expected
+	instruction list.
+
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/82506
+	* g++.dg/cpp/string-3.C: New.
+
+2017-10-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-16.c: New
+	* gcc.target/powerpc/fold-vec-splat-32.c: New.
+	* gcc.target/powerpc/fold-vec-splat-8.c: New.
+
+2017-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/82233
+	* gfortran.dg/execute_command_line_3.f90: New test.
+
+2017-10-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-16.c: New
+	* gcc.target/powerpc/fold-vec-splat-32.c: New.
+	* gcc.target/powerpc/fold-vec-splat-8.c: New.
+
+2017-10-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splats-char.c: New.
+	* gcc.target/powerpc/fold-vec-splats-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-splats-int.c: New.
+	* gcc.target/powerpc/fold-vec-splats-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-splats-short.c: New.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-c++-common/Wtautological-compare-7.c: New test.
+
+2017-10-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-34.c: New test.
+
 2017-10-10  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/ldist-27.c: New test.

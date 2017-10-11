@@ -981,6 +981,9 @@ struct GTY(()) tree_base {
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
 
+    /* CHREC_VARIABLE.  This field is only used with POLYNOMIAL_CHREC.  */
+    unsigned int chrec_var;
+
     /* Internal function code.  */
     enum internal_fn ifn;
 

@@ -11788,7 +11788,7 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i) = immed_wide_int_const (elt, inner);
+	RTVEC_ELT (v, i) = immed_wide_int_const (wi::to_wide (elt), inner);
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);

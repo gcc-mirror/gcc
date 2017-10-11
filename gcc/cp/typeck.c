@@ -5603,8 +5603,9 @@ tree
 condition_conversion (tree expr)
 {
   tree t;
-  if (processing_template_decl)
-    return expr;
+  /* Anything that might happen in a template should go through
+     maybe_convert_cond.  */
+  gcc_assert (!processing_template_decl);
   t = perform_implicit_conversion_flags (boolean_type_node, expr,
 					 tf_warning_or_error, LOOKUP_NORMAL);
   t = fold_build_cleanup_point_expr (boolean_type_node, t);
@@ -5653,6 +5654,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     return error_mark_node;
 
   arg = mark_lvalue_use (arg);
+  if (error_operand_p (arg))
+    return error_mark_node;
+
   argtype = lvalue_type (arg);
 
   gcc_assert (!(identifier_p (arg) && IDENTIFIER_ANY_OP_P (arg)));
@@ -7058,11 +7062,7 @@ build_static_cast (tree type, tree oexpr, tsubst_flags_t complain)
   if (dependent)
     {
     tmpl:
-      expr = oexpr;
-      if (dependent)
-	/* Handle generic lambda capture.  */
-	expr = mark_lvalue_use (expr);
-      expr = build_min (STATIC_CAST_EXPR, type, expr);
+      expr = build_min (STATIC_CAST_EXPR, type, oexpr);
       /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (expr) = 1;
       return convert_from_reference (expr);
@@ -7701,6 +7701,8 @@ tree
 cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 		      tree rhs, tsubst_flags_t complain)
 {
+  lhs = mark_lvalue_use_nonread (lhs);
+
   tree result = NULL_TREE;
   tree newrhs = rhs;
   tree lhstype = TREE_TYPE (lhs);
@@ -7923,6 +7925,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	     operator. -- end note ]  */
 	  lhs = cp_stabilize_reference (lhs);
 	  rhs = rvalue (rhs);
+	  if (rhs == error_mark_node)
+	    return error_mark_node;
 	  rhs = stabilize_expr (rhs, &init);
 	  newrhs = cp_build_binary_op (loc, modifycode, lhs, rhs, complain);
 	  if (newrhs == error_mark_node)
@@ -8957,10 +8961,14 @@ check_return_expr (tree retval, bool *no_warning)
       if (check_for_bare_parameter_packs (retval))
 	return error_mark_node;
 
-      if (WILDCARD_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl)))
+      /* If one of the types might be void, we can't tell whether we're
+	 returning a value.  */
+      if ((WILDCARD_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl)))
+	   && !current_function_auto_return_pattern)
 	  || (retval != NULL_TREE
-	      && type_dependent_expression_p (retval)))
-        return retval;
+	      && (TREE_TYPE (retval) == NULL_TREE
+		  || WILDCARD_TYPE_P (TREE_TYPE (retval)))))
+	goto dependent;
     }
 
   functype = TREE_TYPE (TREE_TYPE (current_function_decl));
@@ -9098,11 +9106,13 @@ check_return_expr (tree retval, bool *no_warning)
 	warning (OPT_Weffc__, "%<operator=%> should return a reference to %<*this%>");
     }
 
-  if (processing_template_decl)
+  if (dependent_type_p (functype)
+      || type_dependent_expression_p (retval))
     {
+    dependent:
       /* We should not have changed the return value.  */
       gcc_assert (retval == saved_retval);
-      return retval;
+      return do_dependent_capture (retval, /*force*/true);
     }
 
   /* The fabled Named Return Value optimization, as per [class.copy]/15:
@@ -9126,6 +9136,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   named_return_value_okay_p = 
     (retval != NULL_TREE
+     && !processing_template_decl
      /* Must be a local, automatic variable.  */
      && VAR_P (retval)
      && DECL_CONTEXT (retval) == current_function_decl
@@ -9221,6 +9232,9 @@ check_return_expr (tree retval, bool *no_warning)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));
     }
+
+  if (processing_template_decl)
+    return saved_retval;
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)

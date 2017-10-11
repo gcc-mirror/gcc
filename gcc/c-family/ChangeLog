@@ -1,3 +1,30 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (add_prefixed_path): Change chain to incpath_kind.
+	(c_common_handle_option): Update incpath_kind names.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82490
+	* c-attribs.c (handle_no_sanitize_attribute): Report directly
+	Wattributes warning.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-ada-spec.c (dump_generic_ada_node): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* c-common.c (pointer_int_sum): Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+	* c-warn.c (match_case_to_enum_1): Likewise.
+	(c_do_switch_warnings): Likewise.
+	(maybe_warn_shift_overflow): Likewise.
+
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82437
+	* c-warn.c (warn_tautological_bitwise_comparison): Use wi::to_wide
+	instead of wide_int::from.
+
 2017-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82437

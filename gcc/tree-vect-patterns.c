@@ -3714,7 +3714,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
          vectorized matches the vector type of the result in
 	 size and number of elements.  */
       unsigned prec
-	= wi::udiv_trunc (TYPE_SIZE (vectype),
+	= wi::udiv_trunc (wi::to_wide (TYPE_SIZE (vectype)),
 			  TYPE_VECTOR_SUBPARTS (vectype)).to_uhwi ();
       tree type
 	= build_nonstandard_integer_type (prec,

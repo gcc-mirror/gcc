@@ -1241,10 +1241,9 @@ extern void protected_set_expr_location (tree, location_t);
 #define COND_EXPR_ELSE(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 2))
 
 /* Accessors for the chains of recurrences.  */
-#define CHREC_VAR(NODE)           TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 0)
-#define CHREC_LEFT(NODE)          TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 1)
-#define CHREC_RIGHT(NODE)         TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 2)
-#define CHREC_VARIABLE(NODE)      TREE_INT_CST_LOW (CHREC_VAR (NODE))
+#define CHREC_LEFT(NODE)          TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 0)
+#define CHREC_RIGHT(NODE)         TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 1)
+#define CHREC_VARIABLE(NODE)      POLYNOMIAL_CHREC_CHECK (NODE)->base.u.chrec_var
 
 /* LABEL_EXPR accessor. This gives access to the label associated with
    the given label expression.  */
@@ -2722,6 +2721,10 @@ extern void decl_value_expr_insert (tree, tree);
    LTO compilation and C++.  */
 #define DECL_ASSEMBLER_NAME(NODE) decl_assembler_name (NODE)
 
+/* Raw accessor for DECL_ASSEMBLE_NAME.  */
+#define DECL_ASSEMBLER_NAME_RAW(NODE) \
+  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.assembler_name)
+
 /* Return true if NODE is a NODE that can contain a DECL_ASSEMBLER_NAME.
    This is true of all DECL nodes except FIELD_DECL.  */
 #define HAS_DECL_ASSEMBLER_NAME_P(NODE) \
@@ -2731,12 +2734,11 @@ extern void decl_value_expr_insert (tree, tree);
    the NODE might still have a DECL_ASSEMBLER_NAME -- it just hasn't been set
    yet.  */
 #define DECL_ASSEMBLER_NAME_SET_P(NODE) \
-  (HAS_DECL_ASSEMBLER_NAME_P (NODE) \
-   && DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.assembler_name != NULL_TREE)
+  (DECL_ASSEMBLER_NAME_RAW (NODE) != NULL_TREE)
 
 /* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
 #define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.assembler_name = (NAME))
+  (DECL_ASSEMBLER_NAME_RAW (NODE) = (NAME))
 
 /* Copy the DECL_ASSEMBLER_NAME from DECL1 to DECL2.  Note that if DECL1's
    DECL_ASSEMBLER_NAME has not yet been set, using this macro will not cause
@@ -2748,10 +2750,7 @@ extern void decl_value_expr_insert (tree, tree);
    which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
 
 #define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
-  (DECL_ASSEMBLER_NAME_SET_P (DECL1)					\
-   ? (void) SET_DECL_ASSEMBLER_NAME (DECL2,				\
-				     DECL_ASSEMBLER_NAME (DECL1))	\
-   : (void) 0)
+  SET_DECL_ASSEMBLER_NAME (DECL2, DECL_ASSEMBLER_NAME_RAW (DECL1))
 
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
@@ -5120,20 +5119,6 @@ extern bool anon_aggrname_p (const_tree);
 /* The tree and const_tree overload templates.   */
 namespace wi
 {
-  template <>
-  struct int_traits <const_tree>
-  {
-    static const enum precision_type precision_type = VAR_PRECISION;
-    static const bool host_dependent_precision = false;
-    static const bool is_sign_extended = false;
-    static unsigned int get_precision (const_tree);
-    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
-				      const_tree);
-  };
-
-  template <>
-  struct int_traits <tree> : public int_traits <const_tree> {};
-
   template <int N>
   class extended_tree
   {
@@ -5157,40 +5142,113 @@ namespace wi
     static const unsigned int precision = N;
   };
 
-  generic_wide_int <extended_tree <WIDE_INT_MAX_PRECISION> >
-  to_widest (const_tree);
+  typedef const generic_wide_int <extended_tree <WIDE_INT_MAX_PRECISION> >
+    tree_to_widest_ref;
+  typedef const generic_wide_int <extended_tree <ADDR_MAX_PRECISION> >
+    tree_to_offset_ref;
+  typedef const generic_wide_int<wide_int_ref_storage<false, false> >
+    tree_to_wide_ref;
 
-  generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > to_offset (const_tree);
-
+  tree_to_widest_ref to_widest (const_tree);
+  tree_to_offset_ref to_offset (const_tree);
+  tree_to_wide_ref to_wide (const_tree);
   wide_int to_wide (const_tree, unsigned int);
 }
 
-inline unsigned int
-wi::int_traits <const_tree>::get_precision (const_tree tcst)
-{
-  return TYPE_PRECISION (TREE_TYPE (tcst));
-}
+/* Refer to INTEGER_CST T as though it were a widest_int.
 
-/* Convert the tree_cst X into a wide_int of PRECISION.  */
-inline wi::storage_ref
-wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
-					unsigned int precision, const_tree x)
-{
-  gcc_checking_assert (precision == TYPE_PRECISION (TREE_TYPE (x)));
-  return wi::storage_ref (&TREE_INT_CST_ELT (x, 0), TREE_INT_CST_NUNITS (x),
-			  precision);
-}
+   This function gives T's actual numerical value, influenced by the
+   signedness of its type.  For example, a signed byte with just the
+   top bit set would be -128 while an unsigned byte with the same
+   bit pattern would be 128.
 
-inline generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION> >
+   This is the right choice when operating on groups of INTEGER_CSTs
+   that might have different signedness or precision.  It is also the
+   right choice in code that specifically needs an approximation of
+   infinite-precision arithmetic instead of normal modulo arithmetic.
+
+   The approximation of infinite precision is good enough for realistic
+   numbers of additions and subtractions of INTEGER_CSTs (where
+   "realistic" includes any number less than 1 << 31) but it cannot
+   represent the result of multiplying the two largest supported
+   INTEGER_CSTs.  The overflow-checking form of wi::mul provides a way
+   of multiplying two arbitrary INTEGER_CSTs and checking that the
+   result is representable as a widest_int.
+
+   Note that any overflow checking done on these values is relative to
+   the range of widest_int rather than the range of a TREE_TYPE.
+
+   Calling this function should have no overhead in release builds,
+   so it is OK to call it several times for the same tree.  If it is
+   useful for readability reasons to reduce the number of calls,
+   it is more efficient to use:
+
+     wi::tree_to_widest_ref wt = wi::to_widest (t);
+
+   instead of:
+
+     widest_int wt = wi::to_widest (t).  */
+
+inline wi::tree_to_widest_ref
 wi::to_widest (const_tree t)
 {
   return t;
 }
 
-inline generic_wide_int <wi::extended_tree <ADDR_MAX_PRECISION> >
+/* Refer to INTEGER_CST T as though it were an offset_int.
+
+   This function is an optimisation of wi::to_widest for cases
+   in which T is known to be a bit or byte count in the range
+   (-(2 ^ (N + BITS_PER_UNIT)), 2 ^ (N + BITS_PER_UNIT)), where N is
+   the target's address size in bits.
+
+   This is the right choice when operating on bit or byte counts as
+   untyped numbers rather than M-bit values.  The wi::to_widest comments
+   about addition, subtraction and multiplication apply here: sequences
+   of 1 << 31 additions and subtractions do not induce overflow, but
+   multiplying the largest sizes might.  Again,
+
+     wi::tree_to_offset_ref wt = wi::to_offset (t);
+
+   is more efficient than:
+
+     offset_int wt = wi::to_offset (t).  */
+
+inline wi::tree_to_offset_ref
 wi::to_offset (const_tree t)
 {
   return t;
+}
+
+/* Refer to INTEGER_CST T as though it were a wide_int.
+
+   In contrast to the approximation of infinite-precision numbers given
+   by wi::to_widest and wi::to_offset, this function treats T as a
+   signless collection of N bits, where N is the precision of T's type.
+   As with machine registers, signedness is determined by the operation
+   rather than the operands; for example, there is a distinction between
+   signed and unsigned division.
+
+   This is the right choice when operating on values with the same type
+   using normal modulo arithmetic.  The overflow-checking forms of things
+   like wi::add check whether the result can be represented in T's type.
+
+   Calling this function should have no overhead in release builds,
+   so it is OK to call it several times for the same tree.  If it is
+   useful for readability reasons to reduce the number of calls,
+   it is more efficient to use:
+
+     wi::tree_to_wide_ref wt = wi::to_wide (t);
+
+   instead of:
+
+     wide_int wt = wi::to_wide (t).  */
+
+inline wi::tree_to_wide_ref
+wi::to_wide (const_tree t)
+{
+  return wi::storage_ref (&TREE_INT_CST_ELT (t, 0), TREE_INT_CST_NUNITS (t),
+			  TYPE_PRECISION (TREE_TYPE (t)));
 }
 
 /* Convert INTEGER_CST T to a wide_int of precision PREC, extending or
@@ -5200,7 +5258,7 @@ wi::to_offset (const_tree t)
 inline wide_int
 wi::to_wide (const_tree t, unsigned int prec)
 {
-  return wide_int::from (t, prec, TYPE_SIGN (TREE_TYPE (t)));
+  return wide_int::from (wi::to_wide (t), prec, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 template <int N>

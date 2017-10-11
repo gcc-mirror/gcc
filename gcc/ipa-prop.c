@@ -397,9 +397,9 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  fprintf (f, "         VR  ");
 	  fprintf (f, "%s[",
 		   (jump_func->m_vr->type == VR_ANTI_RANGE) ? "~" : "");
-	  print_decs (jump_func->m_vr->min, f);
+	  print_decs (wi::to_wide (jump_func->m_vr->min), f);
 	  fprintf (f, ", ");
-	  print_decs (jump_func->m_vr->max, f);
+	  print_decs (wi::to_wide (jump_func->m_vr->max), f);
 	  fprintf (f, "]\n");
 	}
       else
@@ -4373,7 +4373,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 		  if (TYPE_ALIGN (type) > align)
 		    align = TYPE_ALIGN (type);
 		}
-	      misalign += (offset_int::from (off, SIGNED).to_short_addr ()
+	      misalign += (offset_int::from (wi::to_wide (off),
+					     SIGNED).to_short_addr ()
 			   * BITS_PER_UNIT);
 	      misalign = misalign & (align - 1);
 	      if (misalign != 0)

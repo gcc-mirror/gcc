@@ -982,8 +982,8 @@ DEFTREECODE (SCEV_KNOWN, "scev_known", tcc_expression, 0)
 DEFTREECODE (SCEV_NOT_KNOWN, "scev_not_known", tcc_expression, 0)
 
 /* Polynomial chains of recurrences.
-   Under the form: cr = {CHREC_LEFT (cr), +, CHREC_RIGHT (cr)}.  */
-DEFTREECODE (POLYNOMIAL_CHREC, "polynomial_chrec", tcc_expression, 3)
+   cr = {CHREC_LEFT (cr), +, CHREC_RIGHT (cr)}_CHREC_VARIABLE (cr).  */
+DEFTREECODE (POLYNOMIAL_CHREC, "polynomial_chrec", tcc_expression, 2)
 
 /* Used to chain children of container statements together.
    Use the interface in tree-iterator.h to access this node.  */

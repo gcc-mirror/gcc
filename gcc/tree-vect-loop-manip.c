@@ -117,8 +117,6 @@ rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
 		      || single_pred (e->src) != outer_loop->header)
 		    continue;
 		}
-	      else
-		continue;
 	    }
 	}
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
@@ -1234,9 +1232,11 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
       /* Peeling algorithm guarantees that vector loop bound is at least ONE,
 	 we set range information to make niters analyzer's life easier.  */
       if (stmts != NULL)
-	set_range_info (niters_vector, VR_RANGE, build_int_cst (type, 1),
-			fold_build2 (RSHIFT_EXPR, type,
-				     TYPE_MAX_VALUE (type), log_vf));
+	set_range_info (niters_vector, VR_RANGE,
+			wi::to_wide (build_int_cst (type, 1)),
+			wi::to_wide (fold_build2 (RSHIFT_EXPR, type,
+						  TYPE_MAX_VALUE (type),
+						  log_vf)));
     }
   *niters_vector_ptr = niters_vector;
 
@@ -1789,7 +1789,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 least VF, so set range information for newly generated var.  */
       if (new_var_p)
 	set_range_info (niters, VR_RANGE,
-			build_int_cst (type, vf), TYPE_MAX_VALUE (type));
+			wi::to_wide (build_int_cst (type, vf)),
+			wi::to_wide (TYPE_MAX_VALUE (type)));
 
       /* Prolog iterates at most bound_prolog times, latch iterates at
 	 most bound_prolog - 1 times.  */

@@ -52,7 +52,7 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
   int direct_import;	/* Direct import/rexport of main module.  */
-  /* Don't need to record the module's index, yet.  */
+  unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
   unsigned HOST_WIDE_INT stamp;	/* Timestamp we saw reading it in.  */
 
@@ -69,6 +69,30 @@ struct GTY(()) module_state {
   void dump (FILE *, bool);
 };
 
+/* Hash module state by name.  */
+
+struct module_state_hash : ggc_remove <module_state *>
+{
+  typedef module_state *value_type;
+  typedef tree compare_type; /* An identifier.  */
+
+  static hashval_t hash (const value_type m)
+  {
+    return IDENTIFIER_HASH_VALUE (m->name);
+  }
+  static bool equal (const value_type existing, compare_type candidate)
+  {
+    return existing->name == candidate;
+  }
+
+  static inline void mark_empty (value_type &p) {p = NULL;}
+  static inline bool is_empty (value_type p) {return !p;}
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
 /* Vector of module state.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
 
@@ -77,11 +101,11 @@ static GTY(()) vec<module_state *, va_gc> *modules;
 static GTY(()) module_state *this_module;
 
 /* Map from identifier to module index. */
-static GTY(()) hash_map<lang_identifier *, unsigned> *module_map;
+static GTY(()) hash_table<module_state_hash> *module_hash;
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL), direct_import (0),
+    name (NULL_TREE), name_parts (NULL), direct_import (0), mod (~0u),
     crc (0), stamp (0)
 {
 }
@@ -97,6 +121,7 @@ void module_state::freeze (const module_state *other)
 void
 module_state::set_index (unsigned index)
 {
+  gcc_checking_assert (mod == ~0u);
   bitmap_set_bit (imports, index);
   bitmap_set_bit (exports, index);
 }
@@ -182,8 +207,7 @@ module_context (tree decl)
 }
 
 /* We've just directly imported INDEX.  Update our import/export
-   bitmaps.  TOP is true, if we're the main module.  IS_EXPORT is true
-   if we're reexporting the module.  */
+   bitmaps.  IS_EXPORT is true if we're reexporting the module.  */
 
 void
 module_state::do_import (unsigned index, bool is_export)
@@ -1053,7 +1077,8 @@ cpm_stream::dump (const char *format, ...)
 	    tree t = va_arg (args, tree);
 	    if (t && TYPE_P (t))
 	      t = TYPE_NAME (t);
-	    if (t && DECL_ASSEMBLER_NAME_SET_P (t))
+	    if (t && HAS_DECL_ASSEMBLER_NAME_P (t)
+		&& DECL_ASSEMBLER_NAME_SET_P (t))
 	      {
 		fputc ('(', d);
 		fputs (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t)), d);
@@ -4485,9 +4510,9 @@ unsigned
 do_module_import (location_t loc, tree name, import_kind kind,
 		  unsigned HOST_WIDE_INT stamp, unsigned crc, cpms_in *from)
 {
-  if (!module_map)
+  if (!module_hash)
     {
-      module_map = hash_map<lang_identifier *, unsigned>::create_ggc (31);
+      module_hash = hash_table<module_state_hash>::create_ggc (31);
       vec_safe_reserve (modules, IMPORTED_MODULE_BASE);
       this_module = new (ggc_alloc <module_state> ()) module_state ();
       for (unsigned ix = IMPORTED_MODULE_BASE; ix--;)
@@ -4498,13 +4523,14 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	(*modules)[GLOBAL_MODULE_INDEX] = this_module;
     }
 
-  bool existed;
-  unsigned *val = &module_map->get_or_insert (name, &existed);
+  module_state **slot
+    = module_hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
+					INSERT);
   unsigned index = GLOBAL_MODULE_INDEX;
-  module_state *state = NULL;
+  module_state *state = *slot;
 
-  if (existed)
-    switch (*val)
+  if (state)
+    switch (state->mod)
       {
       case ~0U:
 	error_at (loc, "circular dependency of module %qE", name);
@@ -4521,8 +4547,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	    error_at (loc, "module %qE already imported", name);
 	    return GLOBAL_MODULE_INDEX;
 	  }
-	index = *val;
-	state = (*modules)[index];
+	index = state->mod;
 	if (stamp && stamp != state->stamp)
 	  {
 	    timestamp_mismatch (name, stamp, state->stamp);
@@ -4538,8 +4563,6 @@ do_module_import (location_t loc, tree name, import_kind kind,
     }
   else
     {
-      *val = ~0U;
-
       if (kind >= ik_interface)
 	{
 	  state = this_module;
@@ -4550,6 +4573,9 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	state = new (ggc_alloc<module_state> ()) module_state ();
 
       state->set_name (name);
+
+      *slot = state;
+
       if (kind == ik_interface)
 	index = THIS_MODULE_INDEX;
       else
@@ -4580,7 +4606,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	      gcc_assert (global_namespace == current_scope ());
 	      index = read_module (stream, fname, state, stamp, from);
 	      fclose (stream);
-	      gcc_assert (*val == ~0U);
+	      gcc_assert (state->mod == ~0U);
 	    }
           free (fname_free);
 	}
@@ -4592,7 +4618,8 @@ do_module_import (location_t loc, tree name, import_kind kind,
       index = GLOBAL_MODULE_INDEX;
     }
 
-  *val = index;
+  state->mod = index;
+
   return index;
 }
 
@@ -4706,7 +4733,7 @@ finish_module ()
     error ("-fmodule-output specified for non-module interface compilation");
 
   /* GC can clean up the detritus.  */
-  module_map = NULL;
+  module_hash = NULL;
   this_module = NULL;
 }
 

@@ -408,8 +408,8 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 		&& get_range_info (op0, &minv, &maxv) == VR_RANGE)
 	      {
 		if (icode == PLUS_EXPR)
-		  op1 = wide_int_to_tree (itype, wi::neg (op1));
-		if (wi::geu_p (minv, op1))
+		  op1 = wide_int_to_tree (itype, -wi::to_wide (op1));
+		if (wi::geu_p (minv, wi::to_wide (op1)))
 		  {
 		    op0 = fold_convert (otype, op0);
 		    op1 = fold_convert (otype, op1);

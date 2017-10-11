@@ -941,7 +941,7 @@ expand_case (gswitch *stmt)
 	 original type.  Make sure to drop overflow flags.  */
       low = fold_convert (index_type, low);
       if (TREE_OVERFLOW (low))
-	low = wide_int_to_tree (index_type, low);
+	low = wide_int_to_tree (index_type, wi::to_wide (low));
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
@@ -950,7 +950,7 @@ expand_case (gswitch *stmt)
 	high = low;
       high = fold_convert (index_type, high);
       if (TREE_OVERFLOW (high))
-	high = wide_int_to_tree (index_type, high);
+	high = wide_int_to_tree (index_type, wi::to_wide (high));
 
       case_list.safe_push (simple_case_node (low, high, lab));
     }

@@ -564,22 +564,30 @@ get_scalar_evolution (basic_block instantiated_below, tree scalar)
 	nb_get_scev++;
     }
 
-  switch (TREE_CODE (scalar))
-    {
-    case SSA_NAME:
-      res = *find_var_scev_info (instantiated_below, scalar);
-      break;
+  if (VECTOR_TYPE_P (TREE_TYPE (scalar))
+      || TREE_CODE (TREE_TYPE (scalar)) == COMPLEX_TYPE)
+    /* For chrec_dont_know we keep the symbolic form.  */
+    res = scalar;
+  else
+    switch (TREE_CODE (scalar))
+      {
+      case SSA_NAME:
+        if (SSA_NAME_IS_DEFAULT_DEF (scalar))
+	  res = scalar;
+	else
+	  res = *find_var_scev_info (instantiated_below, scalar);
+	break;
 
-    case REAL_CST:
-    case FIXED_CST:
-    case INTEGER_CST:
-      res = scalar;
-      break;
+      case REAL_CST:
+      case FIXED_CST:
+      case INTEGER_CST:
+	res = scalar;
+	break;
 
-    default:
-      res = chrec_not_analyzed_yet;
-      break;
-    }
+      default:
+	res = chrec_not_analyzed_yet;
+	break;
+      }
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
@@ -1628,19 +1636,7 @@ interpret_loop_phi (struct loop *loop, gphi *loop_phi_node)
   struct loop *phi_loop = loop_containing_stmt (loop_phi_node);
   tree init_cond;
 
-  if (phi_loop != loop)
-    {
-      struct loop *subloop;
-      tree evolution_fn = analyze_scalar_evolution
-	(phi_loop, PHI_RESULT (loop_phi_node));
-
-      /* Dive one level deeper.  */
-      subloop = superloop_at_depth (phi_loop, loop_depth (loop) + 1);
-
-      /* Interpret the subloop.  */
-      res = compute_overall_effect_of_inner_loop (subloop, evolution_fn);
-      return res;
-    }
+  gcc_assert (phi_loop == loop);
 
   /* Otherwise really interpret the loop phi.  */
   init_cond = analyze_initial_condition (loop_phi_node);
@@ -2016,54 +2012,24 @@ interpret_gimple_assign (struct loop *loop, gimple *stmt)
    - instantiate_parameters.
 */
 
-/* Compute and return the evolution function in WRTO_LOOP, the nearest
-   common ancestor of DEF_LOOP and USE_LOOP.  */
-
-static tree
-compute_scalar_evolution_in_loop (struct loop *wrto_loop,
-				  struct loop *def_loop,
-				  tree ev)
-{
-  bool val;
-  tree res;
-
-  if (def_loop == wrto_loop)
-    return ev;
-
-  def_loop = superloop_at_depth (def_loop, loop_depth (wrto_loop) + 1);
-  res = compute_overall_effect_of_inner_loop (def_loop, ev);
-
-  if (no_evolution_in_loop_p (res, wrto_loop->num, &val) && val)
-    return res;
-
-  return analyze_scalar_evolution_1 (wrto_loop, res);
-}
-
 /* Helper recursive function.  */
 
 static tree
 analyze_scalar_evolution_1 (struct loop *loop, tree var)
 {
-  tree type = TREE_TYPE (var);
   gimple *def;
   basic_block bb;
   struct loop *def_loop;
   tree res;
-
-  if (loop == NULL
-      || TREE_CODE (type) == VECTOR_TYPE
-      || TREE_CODE (type) == COMPLEX_TYPE)
-    return chrec_dont_know;
 
   if (TREE_CODE (var) != SSA_NAME)
     return interpret_expr (loop, NULL, var);
 
   def = SSA_NAME_DEF_STMT (var);
   bb = gimple_bb (def);
-  def_loop = bb ? bb->loop_father : NULL;
+  def_loop = bb->loop_father;
 
-  if (bb == NULL
-      || !flow_bb_inside_loop_p (loop, bb))
+  if (!flow_bb_inside_loop_p (loop, bb))
     {
       /* Keep symbolic form, but look through obvious copies for constants.  */
       res = follow_copies_to_constant (var);
@@ -2073,8 +2039,11 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var)
   if (loop != def_loop)
     {
       res = analyze_scalar_evolution_1 (def_loop, var);
-      res = compute_scalar_evolution_in_loop (loop, def_loop, res);
-
+      struct loop *loop_to_skip = superloop_at_depth (def_loop,
+						      loop_depth (loop) + 1);
+      res = compute_overall_effect_of_inner_loop (loop_to_skip, res);
+      if (chrec_contains_symbols_defined_in_loop (res, loop->num))
+	res = analyze_scalar_evolution_1 (loop, res);
       goto set_and_end;
     }
 
@@ -3324,7 +3293,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     return false;
 
   if (TREE_CODE (base) == INTEGER_CST)
-    base_min = base_max = base;
+    base_min = base_max = wi::to_wide (base);
   else if (TREE_CODE (base) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (base))
 	   && get_range_info (base, &base_min, &base_max) == VR_RANGE)
@@ -3333,7 +3302,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     return true;
 
   if (TREE_CODE (step) == INTEGER_CST)
-    step_min = step_max = step;
+    step_min = step_max = wi::to_wide (step);
   else if (TREE_CODE (step) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (step))
 	   && get_range_info (step, &step_min, &step_max) == VR_RANGE)
@@ -3593,7 +3562,8 @@ simple_iv_with_niters (struct loop *wrto_loop, struct loop *use_loop,
       extreme = wi::max_value (type);
     }
   overflow = false;
-  extreme = wi::sub (extreme, iv->step, TYPE_SIGN (type), &overflow);
+  extreme = wi::sub (extreme, wi::to_wide (iv->step),
+		     TYPE_SIGN (type), &overflow);
   if (overflow)
     return true;
   e = fold_build2 (code, boolean_type_node, base,
