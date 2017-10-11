@@ -416,6 +416,8 @@ extern gimple_opt_pass *make_pass_diagnose_omp_blocks (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_target_link (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_loop_designation (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_gimple_workers (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_oacc_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_omp_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);

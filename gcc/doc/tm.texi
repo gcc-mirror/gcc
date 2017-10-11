@@ -6218,6 +6218,16 @@ handle this VAR_DECL, and normal RTL expanding is resumed.
 Tweak variable declaration for a gang-private variable.
 @end deftypefn
 
+@deftypevr {Target Hook} bool TARGET_GOACC_WORKER_PARTITIONING
+Use gimple transformation for worker neutering/broadcasting.
+@end deftypevr
+
+@deftypefn {Target Hook} tree TARGET_GOACC_CREATE_PROPAGATION_RECORD (tree @var{rec}, bool @var{sender}, const char *@var{name})
+Create a record used to propagate local-variable state from an active
+worker to other workers.  A possible implementation might adjust the type
+of REC to place the new variable in shared GPU memory.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_GOACC_EXPLODE_ARGS (void)
 Define this hook to TRUE if arguments to offload regions should be
 exploded, i.e. passed as true arguments rather than in an argument array.

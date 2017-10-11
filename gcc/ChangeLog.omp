@@ -1,5 +1,37 @@
 2019-09-05  Julian Brown  <julian@codesourcery.com>
 
+	* Makefile.in (OBJS): Add omp-sese.o.
+	* omp-builtins.def (BUILT_IN_GOACC_BARRIER, BUILT_IN_GOACC_SINGLE_START,
+        BUILT_IN_GOACC_SINGLE_COPY_START, BUILT_IN_GOACC_SINGLE_COPY_END): New
+	builtins.
+	* omp-offload.c (omp-sese.h): Include header.
+	(oacc_loop_xform_head_tail): Call update_stmt for modified builtin
+	calls.
+	(oacc_loop_process): Likewise.
+	(default_goacc_create_propagation_record): New default implementation
+	for TARGET_GOACC_CREATE_PROPAGATION_RECORD hook.
+	(execute_oacc_loop_designation): New.  Split out of oacc_device_lower.
+	(execute_oacc_gimple_workers): New.  Likewise.
+	(execute_oacc_device_lower): Recreate dims array.
+	(pass_data_oacc_loop_designation, pass_data_oacc_gimple_workers): New.
+	(pass_oacc_loop_designation, pass_oacc_gimple_workers): New.
+	(make_pass_oacc_loop_designation, make_pass_oacc_gimple_workers): New.
+	* omp-offload.h (oacc_fn_attrib_level): Add prototype.
+	* omp-sese.c: New file.
+	* omp-sese.h: New file.
+	* passes.def (pass_oacc_loop_designation, pass_oacc_gimple_workers):
+	Add passes.
+	* target.def (worker_partitioning, create_propagation_record): Add
+	target hooks.
+	* targhooks.h (default_goacc_create_propagation_record): Add prototype.
+	* tree-pass.h (make_pass_oacc_loop_designation,
+	make_pass_oacc_gimple_workers): Add prototypes.
+	* doc/tm.texi.in (TARGET_GOACC_WORKER_PARTITIONING,
+	TARGET_GOACC_CREATE_PROPAGATION_RECORD): Add documentation hooks.
+	* doc/tm.texi: Regenerate.
+
+2019-09-05  Julian Brown  <julian@codesourcery.com>
+
 	* omp-offload.c (convert.h): Include.
 	(struct addr_expr_rewrite_info): Add struct.
 	(rewrite_addr_expr): New function.

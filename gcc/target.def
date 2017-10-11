@@ -1751,11 +1751,24 @@ void, (tree var),
 NULL)
 
 DEFHOOK
+(create_propagation_record,
+"Create a record used to propagate local-variable state from an active\n\
+worker to other workers.  A possible implementation might adjust the type\n\
+of REC to place the new variable in shared GPU memory.",
+tree, (tree rec, bool sender, const char *name),
+default_goacc_create_propagation_record)
+
+DEFHOOK
 (explode_args,
 "Define this hook to TRUE if arguments to offload regions should be\n\
 exploded, i.e. passed as true arguments rather than in an argument array.",
 bool, (void),
 hook_bool_void_false)
+
+DEFHOOKPOD
+(worker_partitioning,
+"Use gimple transformation for worker neutering/broadcasting.",
+bool, false)
 
 HOOK_VECTOR_END (goacc)
 

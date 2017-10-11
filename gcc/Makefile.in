@@ -1463,6 +1463,7 @@ OBJS = \
 	omp-expand.o \
 	omp-general.o \
 	omp-grid.o \
+	omp-sese.o \
 	omp-low.o \
 	omp-oacc-kernels.o \
 	omp-simd-clone.o \

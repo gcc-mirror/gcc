@@ -1,7 +1,6 @@
-/* Bits of OpenMP and OpenACC handling that is specific to device offloading
-   and a lowering pass for OpenACC device directives.
+/* Find single-entry, single-exit regions for OpenACC.
 
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,17 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_OMP_DEVICE_H
-#define GCC_OMP_DEVICE_H
+#ifndef GCC_OMP_SESE_H
+#define GCC_OMP_SESE_H
 
-extern int oacc_get_default_dim (int dim);
-extern int oacc_get_min_dim (int dim);
-extern int oacc_fn_attrib_level (tree attr);
+extern void oacc_do_neutering (void);
 
-extern GTY(()) vec<tree, va_gc> *offload_funcs;
-extern GTY(()) vec<tree, va_gc> *offload_vars;
-
-extern int oacc_fn_attrib_level (tree attr);
-extern void omp_finish_file (void);
-
-#endif /* GCC_OMP_DEVICE_H */
+#endif
