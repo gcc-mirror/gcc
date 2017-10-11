@@ -1,3 +1,8 @@
+2017-10-11  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR target/81422
+      	* gcc.target/aarch64/pr81422.C: New test.
+
 2017-10-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR sanitizer/82353
