@@ -1,3 +1,10 @@
+2017-10-10  Jim Wilson  <wilson@tuliptree.org>
+
+	PR rtl-optimization/81434
+	* haifa-sched.c (prune_ready_list): Init min_cost_group to 0.  Update
+	comment for main loop.  In sched_group_found if, also add checks for
+	pass and min_cost_group.
+
 2017-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (TARGET_INSN_COST): New.
