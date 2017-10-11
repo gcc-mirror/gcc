@@ -1,3 +1,9 @@
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82490
+	* c-attribs.c (handle_no_sanitize_attribute): Report directly
+	Wattributes warning.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* c-ada-spec.c (dump_generic_ada_node): Use wi::to_wide when
