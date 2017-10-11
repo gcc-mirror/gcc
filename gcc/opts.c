@@ -1700,11 +1700,10 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 }
 
 /* Parse string values of no_sanitize attribute passed in VALUE.
-   Values are separated with comma.  Wrong argument is stored to
-   WRONG_ARGUMENT variable.  */
+   Values are separated with comma.  */
 
 unsigned int
-parse_no_sanitize_attribute (char *value, char **wrong_argument)
+parse_no_sanitize_attribute (char *value)
 {
   unsigned int flags = 0;
   unsigned int i;
@@ -1722,7 +1721,8 @@ parse_no_sanitize_attribute (char *value, char **wrong_argument)
 	  }
 
       if (sanitizer_opts[i].name == NULL)
-	*wrong_argument = q;
+	warning (OPT_Wattributes,
+		 "%<%s%> attribute directive ignored", q);
 
       q = strtok (NULL, ",");
     }

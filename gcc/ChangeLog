@@ -1,5 +1,12 @@
 2017-10-11  Martin Liska  <mliska@suse.cz>
 
+	PR sanitizer/82490
+	* opts.c (parse_no_sanitize_attribute): Do not use error_value
+	variable.
+	* opts.h (parse_no_sanitize_attribute): Remove last argument.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
 	* print-rtl.c (print_insn): Move declaration of idbuf
 	to same scope as name.
 
