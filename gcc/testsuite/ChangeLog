@@ -1,3 +1,54 @@
+2017-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/Wstrict-overflow-7.c: Xfail.
+	* gcc.dg/pragma-diag-3.c: Likewise.
+
+2017-10-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82472
+	* gcc.dg/tree-ssa/pr82472.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82490
+	* c-c++-common/ubsan/attrib-5.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	Revert r253637:
+
+	PR sanitizer/82484
+	* gcc.dg/asan/pr82484.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82484
+	* gcc.dg/asan/pr82484.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/ptr-overflow-sanitization-1.c: Scan
+	optimized dump rather than assembly.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp/string-3.C: Fix dg-final.
+
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80412
+	* g++.dg/cpp1z/class-deduction44.C: New.
+
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82230
+	* g++.dg/cpp1y/lambda-generic-ice8.C: New.
+
+2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81299
+	* g++.dg/cpp1y/lambda-generic-ice7.C: New.
+
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/extern-c-redecl6.C: New.

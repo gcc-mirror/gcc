@@ -1,3 +1,212 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (DECL_ASSEMBLER_NAME_SET_P): Don't check
+	HAS_DECL_ASSEMBLER_NAME_P.
+	* gimple-expr.c (gimple_decl_printable_name: Check
+	HAS_DECL_ASSEMBLER_NAME_P too.
+	* ipa-utils.h (type_in_anonymous_namespace_p): Check
+	DECL_ASSEMBLER_NAME_SET_P of TYPE_NAME.
+	(odr_type_p): No need to assert TYPE_NAME is a TYPE_DECL.
+	* passes.c (rest_of_decl_compilation): Check
+	HAS_DECL_ASSEMBLER_NAME_P too.
+	* recog.c (verify_changes): Likewise.
+	* tree-pretty-print.c (dump_decl_name): Likewise.
+	* tree-ssa-structalias.c (alias_get_name): Likewise.  Reimplement.
+
+	* tree.h (DECL_ASSEMBLER_NAME_RAW): New.
+	(SET_DECL_ASSEMBLER_NAME): Use it.
+	(DECL_ASSEMBLER_NAME_SET_P): Likewise.
+	(COPY_DECL_ASSEMBLER_NAME): Likewise.
+	* tree.c (decl_assembler_name): Use DECL_ASSEMBLER_NAME_RAW.
+
+2017-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config.gcc (i386, x86_64): Add extra objects.
+	* i386/i386-protos.h (ix86_rip_relative_addr_p): Declare.
+	(ix86_min_insn_size): Declare.
+	(ix86_issue_rate): Declare.
+	(ix86_adjust_cost): Declare.
+	(ia32_multipass_dfa_lookahead): Declare.
+	(ix86_macro_fusion_p): Declare.
+	(ix86_macro_fusion_pair_p): Declare.
+	(ix86_bd_has_dispatch): Declare.
+	(ix86_bd_do_dispatch): Declare.
+	(ix86_core2i7_init_hooks): Declare.
+	(ix86_atom_sched_reorder): Declare.
+	* i386/i386.c Move all CPU cost tables to x86-tune-costs.h.
+	(COSTS_N_BYTES): Move to x86-tune-costs.h.
+	(DUMMY_STRINGOP_ALGS):x86-tune-costs.h.
+	(rip_relative_addr_p): Rename to ...
+	(ix86_rip_relative_addr_p): ... this one; export.
+	(memory_address_length): Update.
+	(ix86_issue_rate): Move to x86-tune-sched.c.
+	(ix86_flags_dependent): Move to x86-tune-sched.c.
+	(ix86_agi_dependent): Move to x86-tune-sched.c.
+	(exact_dependency_1): Move to x86-tune-sched.c.
+	(exact_store_load_dependency): Move to x86-tune-sched.c.
+	(ix86_adjust_cost): Move to x86-tune-sched.c.
+	(ia32_multipass_dfa_lookahead): Move to x86-tune-sched.c.
+	(ix86_macro_fusion_p): Move to x86-tune-sched.c.
+	(ix86_macro_fusion_pair_p): Move to x86-tune-sched.c.
+	(do_reorder_for_imul): Move to x86-tune-sched-atom.c.
+	(swap_top_of_ready_list): Move to x86-tune-sched-atom.c.
+	(ix86_sched_reorder): Move to x86-tune-sched-atom.c.
+	(core2i7_first_cycle_multipass_init): Move to x86-tune-sched-core.c.
+	(core2i7_dfa_post_advance_cycle): Move to x86-tune-sched-core.c.
+	(min_insn_size): Rename to ...
+	(ix86_min_insn_size): ... this one; export.
+	(core2i7_first_cycle_multipass_begin): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_issue): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_backtrack): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_end): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_fini): Move to x86-tune-sched-core.c.
+	(ix86_sched_init_global): Break up logic to ix86_core2i7_init_hooks.
+	(ix86_avoid_jump_mispredicts): Update.
+	(TARGET_SCHED_DISPATCH): Move to ix86-tune-sched-bd.c.
+	(TARGET_SCHED_DISPATCH_DO): Move to ix86-tune-sched-bd.c.
+	(TARGET_SCHED_REORDER): Move to ix86-tune-sched-bd.c.
+	(DISPATCH_WINDOW_SIZE): Move to ix86-tune-sched-bd.c.
+	(MAX_DISPATCH_WINDOWS): Move to ix86-tune-sched-bd.c.
+	(MAX_INSN): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM_SIZE): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM_32): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM_64): Move to ix86-tune-sched-bd.c.
+	(MAX_LOAD): Move to ix86-tune-sched-bd.c.
+	(MAX_STORE): Move to ix86-tune-sched-bd.c.
+	(BIG): Move to ix86-tune-sched-bd.c.
+	(enum dispatch_group): Move to ix86-tune-sched-bd.c.
+	(enum insn_path): Move to ix86-tune-sched-bd.c.
+	(get_mem_group): Move to ix86-tune-sched-bd.c.
+	(is_cmp): Move to ix86-tune-sched-bd.c.
+	(dispatch_violation): Move to ix86-tune-sched-bd.c.
+	(is_branch): Move to ix86-tune-sched-bd.c.
+	(is_prefetch): Move to ix86-tune-sched-bd.c.
+	(init_window): Move to ix86-tune-sched-bd.c.
+	(allocate_window): Move to ix86-tune-sched-bd.c.
+	(init_dispatch_sched): Move to ix86-tune-sched-bd.c.
+	(is_end_basic_block): Move to ix86-tune-sched-bd.c.
+	(process_end_window): Move to ix86-tune-sched-bd.c.
+	(allocate_next_window): Move to ix86-tune-sched-bd.c.
+	(find_constant): Move to ix86-tune-sched-bd.c.
+	(get_num_immediates): Move to ix86-tune-sched-bd.c.
+	(has_immediate): Move to ix86-tune-sched-bd.c.
+	(get_insn_path): Move to ix86-tune-sched-bd.c.
+	(get_insn_group): Move to ix86-tune-sched-bd.c.
+	(count_num_restricted): Move to ix86-tune-sched-bd.c.
+	(fits_dispatch_window): Move to ix86-tune-sched-bd.c.
+	(add_insn_window): Move to ix86-tune-sched-bd.c.
+	(add_to_dispatch_window): Move to ix86-tune-sched-bd.c.
+	(debug_dispatch_window_file): Move to ix86-tune-sched-bd.c.
+	(debug_dispatch_window): Move to ix86-tune-sched-bd.c.
+	(debug_insn_dispatch_info_file): Move to ix86-tune-sched-bd.c.
+	(debug_ready_dispatch): Move to ix86-tune-sched-bd.c.
+	(do_dispatch): Move to ix86-tune-sched-bd.c.
+	(has_dispatch): Move to ix86-tune-sched-bd.c.
+	* i386/t-i386: Add new object files.
+	* i386/x86-tune-costs.h: New file.
+	* i386/x86-tune-sched-atom.c: New file.
+	* i386/x86-tune-sched-bd.c: New file.
+	* i386/x86-tune-sched-core.c: New file.
+	* i386/x86-tune-sched.c: New file.
+
+2017-10-11  Liu Hao  <lh_mouse@126.com>
+
+	* pretty-print.c [_WIN32] (colorize_init): Remove.  Use
+	the generic version below instead.
+	(should_colorize): Recognize Windows consoles as terminals
+	for MinGW targets.
+	* pretty-print.c [__MINGW32__] (write_all): New function.
+	[__MINGW32__] (find_esc_head): Likewise.
+	[__MINGW32__] (find_esc_terminator): Likewise.
+	[__MINGW32__] (eat_esc_sequence): Likewise.
+	[__MINGW32__] (mingw_ansi_fputs): New function that handles
+	ANSI escape codes.
+	(pp_write_text_to_stream): Use mingw_ansi_fputs instead of fputs
+	for MinGW targets.
+
+2017-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_pointer_arith):
+	Properly call analyze_scalar_evolution with the loop of the stmt.
+
+2017-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree.def (POLYNOMIAL_CHREC): Remove CHREC_VARIABLE tree operand.
+	* tree-core.h (tree_base): Add chrec_var union member.
+	* tree.h (CHREC_VAR): Remove.
+	(CHREC_LEFT, CHREC_RIGHT, CHREC_VARIABLE): Adjust.
+	* tree-chrec.h (build_polynomial_chrec): Adjust.
+	* tree-chrec.c (reset_evolution_in_loop): Use build_polynomial_chrec.
+	* tree-pretty-print.c (dump_generic_node): Use CHREC_VARIABLE.
+
+2017-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_loc) [X +- Y CMP X]: Move ...
+	* match.pd: ... here.
+	((T) X == (T) Y): Relax condition.
+
+2017-10-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82472
+	* tree-loop-distribution.c (sort_partitions_by_post_order): Refine
+	comment.
+	(break_alias_scc_partitions): Update postorder number.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82490
+	* opts.c (parse_no_sanitize_attribute): Do not use error_value
+	variable.
+	* opts.h (parse_no_sanitize_attribute): Remove last argument.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	* print-rtl.c (print_insn): Move declaration of idbuf
+	to same scope as name.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	Revert r253637:
+
+	PR sanitizer/82484
+	* sanopt.c (sanitize_rewrite_addressable_params): Do not handle
+	volatile arguments.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82484
+	* sanopt.c (sanitize_rewrite_addressable_params): Do not handle
+	volatile arguments.
+
+2017-10-11  Adhemerval Zanella  <adhemerval.zanella@linaro.org>
+
+	* config.gcc (default_gnu_indirect_function): Default to yes for
+	arm*-*-linux* with glibc.
+
+2017-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.c (get_scalar_evolution): Handle
+	default-defs and types we do not want to analyze.
+	(interpret_loop_phi): Replace unreachable code with an assert.
+	(compute_scalar_evolution_in_loop): Remove and inline ...
+	(analyze_scalar_evolution_1): ... here, replacing condition with
+	what makes the intent clearer.  Remove handling of cases
+	get_scalar_evolution now handles.
+
+2017-10-10  Jim Wilson  <wilson@tuliptree.org>
+
+	PR rtl-optimization/81434
+	* haifa-sched.c (prune_ready_list): Init min_cost_group to 0.  Update
+	comment for main loop.  In sched_group_found if, also add checks for
+	pass and min_cost_group.
+
+2017-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (TARGET_INSN_COST): New.
+	(rs6000_insn_cost): New function.
+	* config/rs6000/rs6000.md (cost): New attribute.
+
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -33,8 +242,9 @@
 
 2017-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, X86_TUNE_ADJUST_UNROLL,
-	X86_TUNE_ONE_IF_CONV_INSN): Move to right spot in the file.
+	* x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI,
+	X86_TUNE_ADJUST_UNROLL, X86_TUNE_ONE_IF_CONV_INSN): Move to right
+	spot in the file.
 
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 

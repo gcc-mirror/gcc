@@ -360,6 +360,7 @@ i[34567]86-*-*)
 	cpu_type=i386
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
+	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
@@ -384,6 +385,7 @@ x86_64-*-*)
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	extra_options="${extra_options} fused-madd.opt"
+	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
 		       nmmintrin.h bmmintrin.h fma4intrin.h wmmintrin.h
@@ -3108,7 +3110,7 @@ case ${target} in
         ;;
 *-*-linux*)
 	case ${target} in
-	aarch64*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
+	aarch64*-* | arm*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
 		default_gnu_indirect_function=yes
 		;;
 	esac

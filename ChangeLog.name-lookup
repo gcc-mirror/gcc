@@ -1,5 +1,7 @@
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r253649.
+
 	gcc/
 	* incpath.h (enum incpath_e): Name enum, prefix values.
 	(add_path, add_cpp_dir_path, get_added_cpp_dirs): Use incpath_e type.

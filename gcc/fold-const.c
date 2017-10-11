@@ -10502,40 +10502,6 @@ fold_binary_loc (location_t loc,
 	  && code == NE_EXPR)
         return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
-      /* Transform comparisons of the form X +- Y CMP X to Y CMP 0.  */
-      if ((TREE_CODE (arg0) == PLUS_EXPR
-	   || TREE_CODE (arg0) == POINTER_PLUS_EXPR
-	   || TREE_CODE (arg0) == MINUS_EXPR)
-	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg0,
-									0)),
-			      arg1, 0)
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
-	      || POINTER_TYPE_P (TREE_TYPE (arg0))))
-	{
-	  tree val = TREE_OPERAND (arg0, 1);
-	  val = fold_build2_loc (loc, code, type, val,
-				 build_int_cst (TREE_TYPE (val), 0));
-	  return omit_two_operands_loc (loc, type, val,
-					TREE_OPERAND (arg0, 0), arg1);
-	}
-
-      /* Transform comparisons of the form X CMP X +- Y to Y CMP 0.  */
-      if ((TREE_CODE (arg1) == PLUS_EXPR
-	   || TREE_CODE (arg1) == POINTER_PLUS_EXPR
-	   || TREE_CODE (arg1) == MINUS_EXPR)
-	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg1,
-									0)),
-			      arg0, 0)
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
-	      || POINTER_TYPE_P (TREE_TYPE (arg1))))
-	{
-	  tree val = TREE_OPERAND (arg1, 1);
-	  val = fold_build2_loc (loc, code, type, val,
-				 build_int_cst (TREE_TYPE (val), 0));
-	  return omit_two_operands_loc (loc, type, val,
-					TREE_OPERAND (arg1, 0), arg0);
-	}
-
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
@@ -10918,130 +10884,38 @@ fold_binary_loc (location_t loc,
       /* Transform comparisons of the form X +- C CMP X.  */
       if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
-	  && ((TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
-	       && !HONOR_SNANS (arg0))
-	      || (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))))
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
+	  && !HONOR_SNANS (arg0))
 	{
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 	  enum tree_code code0 = TREE_CODE (arg0);
-	  int is_positive;
-
-	  if (TREE_CODE (arg01) == REAL_CST)
-	    is_positive = REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg01)) ? -1 : 1;
-	  else
-	    is_positive = tree_int_cst_sgn (arg01);
+	  int is_positive = REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg01)) ? -1 : 1;
 
 	  /* (X - c) > X becomes false.  */
 	  if (code == GT_EXPR
 	      && ((code0 == MINUS_EXPR && is_positive >= 0)
 		  || (code0 == PLUS_EXPR && is_positive <= 0)))
-	    {
-	      if (TREE_CODE (arg01) == INTEGER_CST
-		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		fold_overflow_warning (("assuming signed overflow does not "
-					"occur when assuming that (X - c) > X "
-					"is always false"),
-				       WARN_STRICT_OVERFLOW_ALL);
-	      return constant_boolean_node (0, type);
-	    }
+	    return constant_boolean_node (0, type);
 
 	  /* Likewise (X + c) < X becomes false.  */
 	  if (code == LT_EXPR
 	      && ((code0 == PLUS_EXPR && is_positive >= 0)
 		  || (code0 == MINUS_EXPR && is_positive <= 0)))
-	    {
-	      if (TREE_CODE (arg01) == INTEGER_CST
-		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		fold_overflow_warning (("assuming signed overflow does not "
-					"occur when assuming that "
-					"(X + c) < X is always false"),
-				       WARN_STRICT_OVERFLOW_ALL);
-	      return constant_boolean_node (0, type);
-	    }
+	    return constant_boolean_node (0, type);
 
 	  /* Convert (X - c) <= X to true.  */
 	  if (!HONOR_NANS (arg1)
 	      && code == LE_EXPR
 	      && ((code0 == MINUS_EXPR && is_positive >= 0)
 		  || (code0 == PLUS_EXPR && is_positive <= 0)))
-	    {
-	      if (TREE_CODE (arg01) == INTEGER_CST
-		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		fold_overflow_warning (("assuming signed overflow does not "
-					"occur when assuming that "
-					"(X - c) <= X is always true"),
-				       WARN_STRICT_OVERFLOW_ALL);
-	      return constant_boolean_node (1, type);
-	    }
+	    return constant_boolean_node (1, type);
 
 	  /* Convert (X + c) >= X to true.  */
 	  if (!HONOR_NANS (arg1)
 	      && code == GE_EXPR
 	      && ((code0 == PLUS_EXPR && is_positive >= 0)
 		  || (code0 == MINUS_EXPR && is_positive <= 0)))
-	    {
-	      if (TREE_CODE (arg01) == INTEGER_CST
-		  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		fold_overflow_warning (("assuming signed overflow does not "
-					"occur when assuming that "
-					"(X + c) >= X is always true"),
-				       WARN_STRICT_OVERFLOW_ALL);
-	      return constant_boolean_node (1, type);
-	    }
-
-	  if (TREE_CODE (arg01) == INTEGER_CST)
-	    {
-	      /* Convert X + c > X and X - c < X to true for integers.  */
-	      if (code == GT_EXPR
-	          && ((code0 == PLUS_EXPR && is_positive > 0)
-		      || (code0 == MINUS_EXPR && is_positive < 0)))
-		{
-		  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		    fold_overflow_warning (("assuming signed overflow does "
-					    "not occur when assuming that "
-					    "(X + c) > X is always true"),
-					   WARN_STRICT_OVERFLOW_ALL);
-		  return constant_boolean_node (1, type);
-		}
-
-	      if (code == LT_EXPR
-	          && ((code0 == MINUS_EXPR && is_positive > 0)
-		      || (code0 == PLUS_EXPR && is_positive < 0)))
-		{
-		  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		    fold_overflow_warning (("assuming signed overflow does "
-					    "not occur when assuming that "
-					    "(X - c) < X is always true"),
-					   WARN_STRICT_OVERFLOW_ALL);
-		  return constant_boolean_node (1, type);
-		}
-
-	      /* Convert X + c <= X and X - c >= X to false for integers.  */
-	      if (code == LE_EXPR
-	          && ((code0 == PLUS_EXPR && is_positive > 0)
-		      || (code0 == MINUS_EXPR && is_positive < 0)))
-		{
-		  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		    fold_overflow_warning (("assuming signed overflow does "
-					    "not occur when assuming that "
-					    "(X + c) <= X is always false"),
-					   WARN_STRICT_OVERFLOW_ALL);
-		  return constant_boolean_node (0, type);
-		}
-
-	      if (code == GE_EXPR
-	          && ((code0 == MINUS_EXPR && is_positive > 0)
-		      || (code0 == PLUS_EXPR && is_positive < 0)))
-		{
-		  if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg1)))
-		    fold_overflow_warning (("assuming signed overflow does "
-					    "not occur when assuming that "
-					    "(X - c) >= X is always false"),
-					   WARN_STRICT_OVERFLOW_ALL);
-		  return constant_boolean_node (0, type);
-		}
-	    }
+	    return constant_boolean_node (1, type);
 	}
 
       /* If we are comparing an ABS_EXPR with a constant, we can

@@ -1241,10 +1241,9 @@ extern void protected_set_expr_location (tree, location_t);
 #define COND_EXPR_ELSE(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 2))
 
 /* Accessors for the chains of recurrences.  */
-#define CHREC_VAR(NODE)           TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 0)
-#define CHREC_LEFT(NODE)          TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 1)
-#define CHREC_RIGHT(NODE)         TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 2)
-#define CHREC_VARIABLE(NODE)      TREE_INT_CST_LOW (CHREC_VAR (NODE))
+#define CHREC_LEFT(NODE)          TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 0)
+#define CHREC_RIGHT(NODE)         TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 1)
+#define CHREC_VARIABLE(NODE)      POLYNOMIAL_CHREC_CHECK (NODE)->base.u.chrec_var
 
 /* LABEL_EXPR accessor. This gives access to the label associated with
    the given label expression.  */
@@ -2735,8 +2734,7 @@ extern void decl_value_expr_insert (tree, tree);
    the NODE might still have a DECL_ASSEMBLER_NAME -- it just hasn't been set
    yet.  */
 #define DECL_ASSEMBLER_NAME_SET_P(NODE) \
-  (HAS_DECL_ASSEMBLER_NAME_P (NODE) \
-   && DECL_ASSEMBLER_NAME_RAW (NODE) != NULL_TREE)
+  (DECL_ASSEMBLER_NAME_RAW (NODE) != NULL_TREE)
 
 /* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
 #define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \
@@ -2752,10 +2750,7 @@ extern void decl_value_expr_insert (tree, tree);
    which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
 
 #define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
-  (DECL_ASSEMBLER_NAME_SET_P (DECL1)					\
-   ? (void) SET_DECL_ASSEMBLER_NAME (DECL2,				\
-				     DECL_ASSEMBLER_NAME (DECL1))	\
-   : (void) 0)
+  SET_DECL_ASSEMBLER_NAME (DECL2, DECL_ASSEMBLER_NAME_RAW (DECL1))
 
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */

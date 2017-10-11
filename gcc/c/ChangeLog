@@ -1,3 +1,7 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (grokdeclarator): Check HAS_DECL_ASSEMBLER_NAME_P too.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* c-parser.c (c_parser_cilk_clause_vectorlength): Use wi::to_wide when

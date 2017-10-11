@@ -157,8 +157,9 @@ build_polynomial_chrec (unsigned loop_num,
   if (chrec_zerop (right))
     return left;
 
-  return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left),
-		 build_int_cst (NULL_TREE, loop_num), left, right);
+  tree chrec = build2 (POLYNOMIAL_CHREC, TREE_TYPE (left), left, right);
+  CHREC_VARIABLE (chrec) = loop_num;
+  return chrec;
 }
 
 /* Determines whether the expression CHREC is a constant.  */

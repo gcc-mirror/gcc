@@ -613,15 +613,8 @@ handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
-  char *error_value = NULL;
   char *string = ASTRDUP (TREE_STRING_POINTER (id));
-  unsigned int flags = parse_no_sanitize_attribute (string, &error_value);
-
-  if (error_value)
-    {
-      error ("wrong argument: \"%s\"", error_value);
-      return NULL_TREE;
-    }
+  unsigned int flags = parse_no_sanitize_attribute (string);
 
   add_no_sanitize_value (*node, flags);
 

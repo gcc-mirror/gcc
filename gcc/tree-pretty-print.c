@@ -249,8 +249,10 @@ dump_decl_name (pretty_printer *pp, tree node, dump_flags_t flags)
 {
   if (DECL_NAME (node))
     {
-      if ((flags & TDF_ASMNAME) && DECL_ASSEMBLER_NAME_SET_P (node))
-	pp_tree_identifier (pp, DECL_ASSEMBLER_NAME (node));
+      if ((flags & TDF_ASMNAME)
+	  && HAS_DECL_ASSEMBLER_NAME_P (node)
+	  && DECL_ASSEMBLER_NAME_SET_P (node))
+	pp_tree_identifier (pp, DECL_ASSEMBLER_NAME_RAW (node));
       /* For DECL_NAMELESS names look for embedded uids in the
 	 names and sanitize them for TDF_NOUID.  */
       else if ((flags & TDF_NOUID) && DECL_NAMELESS (node))
@@ -2819,8 +2821,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, CHREC_LEFT (node), spc, flags, false);
       pp_string (pp, ", +, ");
       dump_generic_node (pp, CHREC_RIGHT (node), spc, flags, false);
-      pp_string (pp, "}_");
-      dump_generic_node (pp, CHREC_VAR (node), spc, flags, false);
+      pp_printf (pp, "}_%u", CHREC_VARIABLE (node));
       is_stmt = false;
       break;
 
