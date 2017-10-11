@@ -1,3 +1,8 @@
+2017-10-11  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/struct-layout-1_generate.c (generate_fields): Fix typo in
+	address computation of end of complex_attrib_array_types.
+
 2017-10-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/Wstrict-overflow-7.c: Xfail.
