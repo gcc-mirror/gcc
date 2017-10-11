@@ -1,5 +1,8 @@
 2017-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80421
+	* gcc.c-torture/execute/pr80421.c: New test.
+
 	PR tree-optimization/78558
 	* gcc.dg/vect/pr78558.c: New test.
 
