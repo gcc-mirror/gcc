@@ -1,3 +1,7 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp/string-3.C: Fix dg-final.
+
 2017-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80412
