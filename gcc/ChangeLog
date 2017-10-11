@@ -1,3 +1,9 @@
+2017-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (TARGET_INSN_COST): New.
+	(rs6000_insn_cost): New function.
+	* config/rs6000/rs6000.md (cost): New attribute.
+
 2017-10-10  Jakub Jelinek  <jakub@redhat.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
