@@ -1280,6 +1280,44 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @1 @0))))
 
+/* X + Y < Y is the same as X < 0 when there is no overflow.  */
+(for op (lt le gt ge)
+ (simplify
+  (op:c (plus:c@2 @0 @1) @1)
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+       && (CONSTANT_CLASS_P (@0) || single_use (@2)))
+   (op @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+/* For equality, this is also true with wrapping overflow.  */
+(for op (eq ne)
+ (simplify
+  (op:c (nop_convert@3 (plus:c@2 @0 (convert1? @1))) (convert2? @1))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+       && (CONSTANT_CLASS_P (@0) || (single_use (@2) && single_use (@3)))
+       && tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@2))
+       && tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@1)))
+   (op @0 { build_zero_cst (TREE_TYPE (@0)); })))
+ (simplify
+  (op:c (nop_convert@3 (pointer_plus@2 (convert1? @0) @1)) (convert2? @0))
+  (if (tree_nop_conversion_p (TREE_TYPE (@2), TREE_TYPE (@0))
+       && tree_nop_conversion_p (TREE_TYPE (@3), TREE_TYPE (@0))
+       && (CONSTANT_CLASS_P (@1) || (single_use (@2) && single_use (@3))))
+   (op @1 { build_zero_cst (TREE_TYPE (@1)); }))))
+
+/* X - Y < X is the same as Y > 0 when there is no overflow.
+   For equality, this is also true with wrapping overflow.  */
+(for op (simple_comparison)
+ (simplify
+  (op:c @0 (minus@2 @0 @1))
+  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	   || ((op == EQ_EXPR || op == NE_EXPR)
+	       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
+       && (CONSTANT_CLASS_P (@1) || single_use (@2)))
+   (op @1 { build_zero_cst (TREE_TYPE (@1)); }))))
+
 /* Transform:
  * (X / Y) == 0 -> X < Y if X, Y are unsigned.
  * (X / Y) != 0 -> X >= Y, if X, Y are unsigned.
@@ -3125,7 +3163,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (op (abs @0) zerop@1)
   (op @0 @1)))
 
-/* From fold_sign_changed_comparison and fold_widened_comparison.  */
+/* From fold_sign_changed_comparison and fold_widened_comparison.
+   FIXME: the lack of symmetry is disturbing.  */
 (for cmp (simple_comparison)
  (simplify
   (cmp (convert@0 @00) (convert?@1 @10))
@@ -3138,11 +3177,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && single_use (@0))
    (if (TYPE_PRECISION (TREE_TYPE (@00)) == TYPE_PRECISION (TREE_TYPE (@0))
 	&& (TREE_CODE (@10) == INTEGER_CST
-	    || (@1 != @10 && types_match (TREE_TYPE (@10), TREE_TYPE (@00))))
+	    || @1 != @10)
 	&& (TYPE_UNSIGNED (TREE_TYPE (@00)) == TYPE_UNSIGNED (TREE_TYPE (@0))
 	    || cmp == NE_EXPR
 	    || cmp == EQ_EXPR)
-	&& (POINTER_TYPE_P (TREE_TYPE (@00)) == POINTER_TYPE_P (TREE_TYPE (@0))))
+	&& !POINTER_TYPE_P (TREE_TYPE (@00)))
     /* ???  The special-casing of INTEGER_CST conversion was in the original
        code and here to avoid a spurious overflow flag on the resulting
        constant which fold_convert produces.  */
