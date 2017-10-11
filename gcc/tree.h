@@ -2734,8 +2734,7 @@ extern void decl_value_expr_insert (tree, tree);
    the NODE might still have a DECL_ASSEMBLER_NAME -- it just hasn't been set
    yet.  */
 #define DECL_ASSEMBLER_NAME_SET_P(NODE) \
-  (HAS_DECL_ASSEMBLER_NAME_P (NODE) \
-   && DECL_ASSEMBLER_NAME_RAW (NODE) != NULL_TREE)
+  (DECL_ASSEMBLER_NAME_RAW (NODE) != NULL_TREE)
 
 /* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
 #define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \

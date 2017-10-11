@@ -1,5 +1,18 @@
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	* tree.h (DECL_ASSEMBLER_NAME_SET_P): Don't check
+	HAS_DECL_ASSEMBLER_NAME_P.
+	* gimple-expr.c (gimple_decl_printable_name: Check
+	HAS_DECL_ASSEMBLER_NAME_P too.
+	* ipa-utils.h (type_in_anonymous_namespace_p): Check
+	DECL_ASSEMBLER_NAME_SET_P of TYPE_NAME.
+	(odr_type_p): No need to assert TYPE_NAME is a TYPE_DECL.
+	* passes.c (rest_of_decl_compilation): Check
+	HAS_DECL_ASSEMBLER_NAME_P too.
+	* recog.c (verify_changes): Likewise.
+	* tree-pretty-print.c (dump_decl_name): Likewise.
+	* tree-ssa-structalias.c (alias_get_name): Likewise.  Reimplement.
+
 	* tree.h (DECL_ASSEMBLER_NAME_RAW): New.
 	(SET_DECL_ASSEMBLER_NAME): Use it.
 	(DECL_ASSEMBLER_NAME_SET_P): Likewise.
