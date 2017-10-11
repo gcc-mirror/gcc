@@ -683,14 +683,14 @@ gfc_cpp_add_include_path (char *path, bool user_supplied)
      include path. Fortran does not define any system include paths.  */
   int cxx_aware = 0;
 
-  add_path (path, BRACKET, cxx_aware, user_supplied);
+  add_path (path, INC_BRACKET, cxx_aware, user_supplied);
 }
 
 void
 gfc_cpp_add_include_path_after (char *path, bool user_supplied)
 {
   int cxx_aware = 0;
-  add_path (path, AFTER, cxx_aware, user_supplied);
+  add_path (path, INC_AFTER, cxx_aware, user_supplied);
 }
 
 void
