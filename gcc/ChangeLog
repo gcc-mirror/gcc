@@ -1,3 +1,20 @@
+2017-10-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (zero_constant, all_ones_constant):
+	Move up in file.
+	(reg_or_cint_operand): Fix comment.
+	(reg_or_zero_operand): New predicate.
+	* config/rs6000/rs6000-protos.h (output_isel): Delete.
+	* config/rs6000/rs6000.c (output_isel): Delete.
+	* config/rs6000/rs6000.md (isel_signed_<mode>): Use reg_or_zero_operand
+	instead of reg_or_cint_operand.  Output instruction directly (not via
+	output_isel).
+	(isel_unsigned_<mode>): Ditto.
+	(*isel_reversed_signed_<mode>): Use reg_or_zero_operand instead of
+	gpc_reg_operand.  Add an instruction alternative for this.  Output
+	instruction directly.
+	(*isel_reversed_unsigned_<mode>): Ditto.
+
 2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_canonicalize_comparison): New function.
