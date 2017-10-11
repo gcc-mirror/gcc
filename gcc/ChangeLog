@@ -1,3 +1,12 @@
+2017-10-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR sanitizer/82353
+	* lra.c (collect_non_operand_hard_regs): Don't ignore operator
+	locations.
+	* lra-lives.c (bb_killed_pseudos, bb_gen_pseudos): Move up.
+	(make_hard_regno_born, make_hard_regno_dead): Update
+	bb_killed_pseudos and bb_gen_pseudos.
+
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* incpath.h (enum incpath_kind): Name enum, prefix values.
