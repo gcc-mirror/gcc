@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "data-streamer.h"
 #include "cgraph.h"
+#include "wide-int.h"
 
 /* Dump THIS to F.  */
 
@@ -193,4 +194,22 @@ profile_probability::stream_out (struct lto_output_stream *ob)
 {
   streamer_write_uhwi_stream (ob, m_val);
   streamer_write_uhwi_stream (ob, m_quality);
+}
+
+/* Compute RES=(a*b + c/2)/c capping and return false if overflow happened.  */
+
+bool
+slow_safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
+{
+  FIXED_WIDE_INT (128) tmp = a;
+  bool overflow;
+  tmp = wi::udiv_floor (wi::umul (tmp, b, &overflow) + (c / 2), c);
+  gcc_checking_assert (!overflow);
+  if (wi::fits_uhwi_p (tmp))
+    {
+      *res = tmp.to_uhwi ();
+      return true;
+    }
+  *res = (uint64_t) -1;
+  return false;
 }

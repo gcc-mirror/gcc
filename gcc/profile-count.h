@@ -43,6 +43,35 @@ enum profile_quality {
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 
+bool slow_safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res);
+
+/* Compute RES=(a*b + c/2)/c capping and return false if overflow happened.  */
+
+inline bool
+safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
+{
+#if (GCC_VERSION >= 5000)
+  uint64_t tmp;
+  if (!__builtin_mul_overflow (a, b, &tmp)
+      && !__builtin_add_overflow (tmp, c/2, &tmp))
+    {
+      *res = tmp / c;
+      return true;
+    }
+  if (c == 1)
+    {
+      *res = (uint64_t) -1;
+      return false;
+    }
+#else
+  if (a < ((uint64_t)1 << 31)
+      && b < ((uint64_t)1 << 31)
+      && c < ((uint64_t)1 << 31))
+    return (a * b + (c / 2)) / c;
+#endif
+  return slow_safe_scale_64bit (a, b, c, res);
+}
+
 /* Data type to hold probabilities.  It implements fixed point arithmetics
    with capping so probability is always in range [0,1] and scaling requiring
    values greater than 1 needs to be represented otherwise.
@@ -87,7 +116,8 @@ class GTY((user)) profile_probability
 
   static const int n_bits = 30;
   static const uint32_t max_probability = REG_BR_PROB_BASE;
-  static const uint32_t uninitialized_probability = ((uint32_t) 1 << n_bits) - 1;
+  static const uint32_t uninitialized_probability
+		 = ((uint32_t) 1 << (n_bits - 1)) - 1;
 
   uint32_t m_val : 30;
   enum profile_quality m_quality : 2;
@@ -171,7 +201,7 @@ public:
   /* Return true if value can be trusted.  */
   bool reliable_p () const
     {
-      return initialized_p ();
+      return m_quality >= profile_adjusted;
     }
 
   /* Conversion from and to REG_BR_PROB_BASE integer fixpoint arithmetics.
@@ -535,11 +565,6 @@ class GTY(()) profile_count
 
   uint64_t m_val : n_bits;
   enum profile_quality m_quality : 2;
-
-  /* Assume numbers smaller than this to multiply.  This is set to make
-     testsuite pass, in future we may implement precise multiplication in higer
-     rangers.  */
-  static const uint64_t max_safe_multiplier = 131072;
 public:
 
   /* Used for counters which are expected to be never executed.  */
@@ -595,7 +620,7 @@ public:
   /* Return true if value can be trusted.  */
   bool reliable_p () const
     {
-      return initialized_p ();
+      return m_quality >= profile_adjusted;
     }
 
   /* When merging basic blocks, the two different profile counts are unified.
@@ -790,12 +815,9 @@ public:
 	return *this;
 
       profile_count ret;
-      /* Take care for overflows!  */
-      if (num.m_val < max_safe_multiplier || m_val < max_safe_multiplier)
-	ret.m_val = RDIV (m_val * num.m_val, den.m_val);
-      else
-	ret.m_val = RDIV (m_val * RDIV (num.m_val * max_safe_multiplier,
-					den.m_val), max_safe_multiplier);
+      uint64_t val;
+      safe_scale_64bit (m_val, num.m_val, den.m_val, &val);
+      ret.m_val = MIN (val, max_count);
       ret.m_quality = MIN (m_quality, profile_adjusted);
       return ret;
     }

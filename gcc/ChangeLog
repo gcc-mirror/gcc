@@ -1,3 +1,11 @@
+2017-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.h (slow_safe_scale_64bit): New function.
+	(safe_scale_64bit): New inline.
+	(profile_count::max_safe_multiplier): Remove; use safe_scale_64bit.
+	* profile-count.c: Include wide-int.h
+	(slow_safe_scale_64bit): New.
+
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (DECL_ASSEMBLER_NAME_SET_P): Don't check
