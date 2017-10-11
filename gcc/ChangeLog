@@ -1,3 +1,23 @@
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmp<X87MODEF:mode>_<SWI24:mode>_i387):
+	Do not use float_operator operator predicate.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_cc_i387): Ditto.
+	* config/i386/predicates.md (float_operator): Remove predicate.
+
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc<mode>_0_i387): Remove insn pattern.
+	(*jccxf_i387): Ditto.
+	(*jcc<mode>_i387): Ditto.
+	(*jccu<mode>_i387): Ditto.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_i387): Ditto.
+	(*jcc_*_i387 splitters): Remove.
+	* config/i386/i386-protos.h (ix86_split_fp_branch): Remove prototype.
+	* config/i386/i386.c (ix86_split_fp_branch): Remove.
+	* config/i386/predicates.md (ix86_swapped_fp_comparison_operator):
+	Remove predicate.
+
 2017-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile-count.h (slow_safe_scale_64bit): New function.
@@ -43,7 +63,7 @@
 	(ix86_atom_sched_reorder): Declare.
 	* i386/i386.c Move all CPU cost tables to x86-tune-costs.h.
 	(COSTS_N_BYTES): Move to x86-tune-costs.h.
-	(DUMMY_STRINGOP_ALGS):x86-tune-costs.h.
+	(DUMMY_STRINGOP_ALGS):Move to x86-tune-costs.h.
 	(rip_relative_addr_p): Rename to ...
 	(ix86_rip_relative_addr_p): ... this one; export.
 	(memory_address_length): Update.

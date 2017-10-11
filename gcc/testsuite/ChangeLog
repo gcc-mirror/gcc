@@ -1,3 +1,7 @@
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/387-ficom-1.c: New test.
+
 2017-10-11  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/struct-layout-1_generate.c (generate_fields): Fix typo in
