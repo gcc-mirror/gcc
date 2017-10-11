@@ -1502,6 +1502,7 @@ OBJS = \
 	omp-offload.o \
 	omp-expand.o \
 	omp-general.o \
+	omp-sese.o \
 	omp-low.o \
 	omp-oacc-kernels-decompose.o \
 	omp-simd-clone.o \
