@@ -1,5 +1,12 @@
 2017-10-11  Martin Liska  <mliska@suse.cz>
 
+	Revert r253637:
+
+	PR sanitizer/82484
+	* gcc.dg/asan/pr82484.c: New test.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/82484
 	* gcc.dg/asan/pr82484.c: New test.
 

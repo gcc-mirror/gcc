@@ -1140,9 +1140,7 @@ sanitize_rewrite_addressable_params (function *fun)
        arg; arg = DECL_CHAIN (arg))
     {
       tree type = TREE_TYPE (arg);
-      if (TREE_ADDRESSABLE (arg)
-	  && !TREE_ADDRESSABLE (type)
-	  && !TREE_THIS_VOLATILE (arg)
+      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  TREE_ADDRESSABLE (arg) = 0;

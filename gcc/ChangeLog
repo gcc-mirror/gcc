@@ -1,5 +1,13 @@
 2017-10-11  Martin Liska  <mliska@suse.cz>
 
+	Revert r253637:
+
+	PR sanitizer/82484
+	* sanopt.c (sanitize_rewrite_addressable_params): Do not handle
+	volatile arguments.
+
+2017-10-11  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/82484
 	* sanopt.c (sanitize_rewrite_addressable_params): Do not handle
 	volatile arguments.
