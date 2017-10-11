@@ -22259,31 +22259,6 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
     }
 }
 
-/* Split branch based on floating point condition.  */
-void
-ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
-		      rtx target1, rtx target2, rtx tmp)
-{
-  rtx condition;
-  rtx_insn *i;
-
-  if (target2 != pc_rtx)
-    {
-      std::swap (target1, target2);
-      code = reverse_condition_maybe_unordered (code);
-    }
-
-  condition = ix86_expand_fp_compare (code, op1, op2,
-				      tmp);
-
-  i = emit_jump_insn (gen_rtx_SET
-		      (pc_rtx,
-		       gen_rtx_IF_THEN_ELSE (VOIDmode,
-					     condition, target1, target2)));
-  if (split_branch_probability.initialized_p ())
-    add_reg_br_prob_note (i, split_branch_probability);
-}
-
 void
 ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 {
