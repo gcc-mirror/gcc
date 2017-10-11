@@ -1,3 +1,13 @@
+2017-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree.def (POLYNOMIAL_CHREC): Remove CHREC_VARIABLE tree operand.
+	* tree-core.h (tree_base): Add chrec_var union member.
+	* tree.h (CHREC_VAR): Remove.
+	(CHREC_LEFT, CHREC_RIGHT, CHREC_VARIABLE): Adjust.
+	* tree-chrec.h (build_polynomial_chrec): Adjust.
+	* tree-chrec.c (reset_evolution_in_loop): Use build_polynomial_chrec.
+	* tree-pretty-print.c (dump_generic_node): Use CHREC_VARIABLE.
+
 2017-10-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_binary_loc) [X +- Y CMP X]: Move ...
