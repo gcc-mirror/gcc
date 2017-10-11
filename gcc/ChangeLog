@@ -1,3 +1,8 @@
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_canonicalize_comparison): New function.
+	(TARGET_CANONICALIZE_COMPARISON): Define.
+
 2017-10-11  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR target/81422
@@ -114,7 +119,8 @@
 	(ix86_min_insn_size): ... this one; export.
 	(core2i7_first_cycle_multipass_begin): Move to x86-tune-sched-core.c.
 	(core2i7_first_cycle_multipass_issue): Move to x86-tune-sched-core.c.
-	(core2i7_first_cycle_multipass_backtrack): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_backtrack): Move to
+	x86-tune-sched-core.c.
 	(core2i7_first_cycle_multipass_end): Move to x86-tune-sched-core.c.
 	(core2i7_first_cycle_multipass_fini): Move to x86-tune-sched-core.c.
 	(ix86_sched_init_global): Break up logic to ix86_core2i7_init_hooks.
@@ -665,7 +671,6 @@
 	* builtins.def (BUILT_IN_SETJMP): Revert latest change.
 
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
-2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_expand_set_or_movmem): Disable 512bit loops for targets
 	that preffer 128bit.
@@ -892,7 +897,8 @@
 	(znver1_cost): Set scalar reassoc width to 4 and vector to 3 and 6
 	for int and fp.
 	(atom_cost): Set reassociation width to 2.
-	(slm_cost, generic_cost): Set fp reassociation width to 2 and 1 otherwise.
+	(slm_cost, generic_cost): Set fp reassociation width
+	to 2 and 1 otherwise.
 	(intel_cost): Set fp reassociation width to 4 and 1 otherwise.
 	(core_cost): Set fp reassociation width to 4 and vector to 2.
 	(ix86_reassociation_width): Rewrite using cost table; special case
@@ -1158,7 +1164,7 @@
 	(class dom_opt_dom_walker): Initialize m_dummy_cond member in the
 	class ctor.
 	(pass_dominator:execute): Build the dummy_cond here and pass it
-	to the dom_opt_dom_walker ctor. 
+	to the dom_opt_dom_walker ctor.
 	(test_for_singularity): New function.
 
 2017-09-30  Krister Walfridsson  <krister.walfridsson@gmail.com>
@@ -1603,7 +1609,7 @@
 	* rs6000.md (allocate_stack): Handle -fstack-clash-protection.
 	(probe_stack_range<P:mode>): Operand 0 is now early-clobbered.
 	Add additional operand and pass it to output_probe_stack_range.
-    
+
 2017-09-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82163
@@ -2035,7 +2041,7 @@
 
 2017-09-22  Sergey Shalnov  <sergey.shalnov@intel.com>
 
-        * config/i386/sse.md ("mov<mode>_internal"): Use <sseinsnmode>
+	* config/i386/sse.md ("mov<mode>_internal"): Use <sseinsnmode>
 	mode attribute for TARGET_AVX512VL.
 
 2017-09-21  Sergey Shalnov  <sergey.shalnov@intel.com>
@@ -2314,9 +2320,9 @@
 	(ix86_expand_prologue): Dump stack clash info as needed.
 	Call ix86_adjust_stack_and_probe_stack_clash as needed.
 
-        * function.c (dump_stack_clash_frame_info): New function.
-        * function.h (dump_stack_clash_frame_info): Prototype.
-        (enum stack_clash_probes): New enum.
+	* function.c (dump_stack_clash_frame_info): New function.
+	* function.h (dump_stack_clash_frame_info): Prototype.
+	(enum stack_clash_probes): New enum.
 
 	* config/alpha/alpha.c (alpha_expand_prologue): Also check
 	flag_stack_clash_protection.

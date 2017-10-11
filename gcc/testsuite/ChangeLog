@@ -1,3 +1,7 @@
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/387-ficom-2.c: New test.
+
 2017-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80421
@@ -18,7 +22,7 @@
 2017-10-11  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR target/81422
-      	* gcc.target/aarch64/pr81422.C: New test.
+	* gcc.target/aarch64/pr81422.C: New test.
 
 2017-10-11  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -1084,7 +1088,7 @@
 
 2017-09-22  Sergey Shalnov  <sergey.shalnov@intel.com>
 
-        * gcc.target/i386/avx512f-constant-set.c: New test.
+	* gcc.target/i386/avx512f-constant-set.c: New test.
 
 2017-09-21  Sergey Shalnov  <sergey.shalnov@intel.com>
 
@@ -2653,7 +2657,7 @@
 
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
-        PR target/81921
+	PR target/81921
 	* gcc.target/i386/pr81921.c: New testcase.
 
 2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
@@ -2734,8 +2738,8 @@
 
 2017-08-22  Yvan Roux  <yvan.roux@linaro.org>
 
-        PR c++/80287
-        * g++.dg/pr80287.C: New test.
+	PR c++/80287
+	* g++.dg/pr80287.C: New test.
 
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
