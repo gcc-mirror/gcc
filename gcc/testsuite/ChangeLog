@@ -1,5 +1,8 @@
 2017-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/78558
+	* gcc.dg/vect/pr78558.c: New test.
+
 	PR c++/82414
 	* g++.dg/lto/pr82414_0.C: New test.
 
