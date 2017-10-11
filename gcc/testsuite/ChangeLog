@@ -1,3 +1,15 @@
+2017-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/extern-c-redecl6.C: New.
+	* g++.dg/lookup/extern-c-hidden.C: Adjust diagnostics.
+	* g++.dg/lookup/extern-c-redecl.C: Likewise.
+	* g++.old-deja/g++.other/using9.C: Likewise.
+
+2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78006
+	* g++.dg/cpp1y/auto-fn40.C: New.
+
 2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81032

@@ -347,8 +347,4 @@ extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 
-// FIXME: class symbol handling.  In transition
-// FIXME: RESTRICTED is temporary hack to avoid regressing performance
-// during transition
-
 #endif /* GCC_CP_NAME_LOOKUP_H */

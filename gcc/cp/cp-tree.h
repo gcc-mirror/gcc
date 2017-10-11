@@ -572,7 +572,7 @@ identifier_p (tree t)
   return NULL;
 }
 
-#define LANG_IDENTIFIER_CAST(NODE)				\
+#define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 
 struct GTY(()) template_parm_index {

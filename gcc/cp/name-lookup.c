@@ -2513,13 +2513,13 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   return decl;
 }
 
-/* Table of identifiers to extern C functions (or LISTS thereof).  */
+/* Table of identifiers to extern C declarations (or LISTS thereof).  */
 
-static GTY(()) hash_table<named_decl_hash> *extern_c_fns;
+static GTY(()) hash_table<named_decl_hash> *extern_c_decls;
 
-/* DECL has C linkage. If we have an existing instance, make sure it
-   has the same exception specification [7.5, 7.6].  If there's no
-   instance, add DECL to the map.  */
+/* DECL has C linkage. If we have an existing instance, make sure the
+   new one is compatible.  Make sure it has the same exception
+   specification [7.5, 7.6].  Add DECL to the map.  */
 
 static void
 check_extern_c_conflict (tree decl)
@@ -2528,10 +2528,10 @@ check_extern_c_conflict (tree decl)
   if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
     return;
 
-  if (!extern_c_fns)
-    extern_c_fns = hash_table<named_decl_hash>::create_ggc (127);
+  if (!extern_c_decls)
+    extern_c_decls = hash_table<named_decl_hash>::create_ggc (127);
 
-  tree *slot = extern_c_fns
+  tree *slot = extern_c_decls
     ->find_slot_with_hash (DECL_NAME (decl),
 			   IDENTIFIER_HASH_VALUE (DECL_NAME (decl)), INSERT);
   if (tree old = *slot)
@@ -2545,9 +2545,10 @@ check_extern_c_conflict (tree decl)
 	     about a (possible) mismatch, when inserting the decl.  */
       else if (!decls_match (decl, old))
 	mismatch = 1;
-      else if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
-				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
-				   ce_normal))
+      else if (TREE_CODE (decl) == FUNCTION_DECL
+	       && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
+				      TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
+				      ce_normal))
 	mismatch = -1;
       else if (DECL_ASSEMBLER_NAME_SET_P (old))
 	SET_DECL_ASSEMBLER_NAME (decl, DECL_ASSEMBLER_NAME (old));
@@ -2555,12 +2556,12 @@ check_extern_c_conflict (tree decl)
       if (mismatch)
 	{
 	  pedwarn (input_location, 0,
-		   "declaration of %q#D with C language linkage", decl);
-	  pedwarn (DECL_SOURCE_LOCATION (old), 0,
-		   "conflicts with previous declaration %q#D", old);
+		   "conflicting C language linkage declaration %q#D", decl);
+	  inform (DECL_SOURCE_LOCATION (old),
+		  "previous declaration %q#D", old);
 	  if (mismatch < 0)
-	    pedwarn (input_location, 0,
-		     "due to different exception specifications");
+	    inform (input_location,
+		    "due to different exception specifications");
 	}
       else
 	{
@@ -2589,8 +2590,8 @@ check_extern_c_conflict (tree decl)
 tree
 c_linkage_bindings (tree name)
 {
-  if (extern_c_fns)
-    if (tree *slot = extern_c_fns
+  if (extern_c_decls)
+    if (tree *slot = extern_c_decls
 	->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), NO_INSERT))
       {
 	tree result = *slot;
@@ -3032,9 +3033,8 @@ do_pushdecl (tree decl, bool is_friend)
 		    else
 		      *slot = head;
 		  }
-		if (TREE_CODE (match) == FUNCTION_DECL
-		    && DECL_EXTERN_C_P (match))
-		  /* We need to check and register the fn now.  */
+		if (DECL_EXTERN_C_P (match))
+		  /* We need to check and register the decl now.  */
 		  check_extern_c_conflict (match);
 	      }
 	    return match;
@@ -3115,7 +3115,9 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
-      else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
+
+      if ((VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
+	  && DECL_EXTERN_C_P (decl))
 	check_extern_c_conflict (decl);
     }
   else

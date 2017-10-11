@@ -2145,10 +2145,10 @@ extern machine_mode vector_type_mode (const_tree);
    allocated.  */
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) \
   (ARRAY_TYPE_CHECK (ARRAY_TYPE)->type_non_common.maxval)
+#define TYPE_MAX_VALUE_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
 /* For record and union types, information about this type, as a base type
    for itself.  */
 #define TYPE_BINFO(NODE) (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)
-#define TYPE_MAX_VALUE_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
 
 /* For types, used in a language-dependent way.  */
 #define TYPE_LANG_SLOT_1(NODE) \
