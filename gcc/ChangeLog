@@ -1,3 +1,13 @@
+2017-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.c (get_scalar_evolution): Handle
+	default-defs and types we do not want to analyze.
+	(interpret_loop_phi): Replace unreachable code with an assert.
+	(compute_scalar_evolution_in_loop): Remove and inline ...
+	(analyze_scalar_evolution_1): ... here, replacing condition with
+	what makes the intent clearer.  Remove handling of cases
+	get_scalar_evolution now handles.
+
 2017-10-10  Jim Wilson  <wilson@tuliptree.org>
 
 	PR rtl-optimization/81434
