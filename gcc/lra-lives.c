@@ -220,6 +220,9 @@ lra_intersected_live_ranges_p (lra_live_range_t r1, lra_live_range_t r2)
   return false;
 }
 
+/* The corresponding bitmaps of BB currently being processed.  */
+static bitmap bb_killed_pseudos, bb_gen_pseudos;
+
 /* The function processing birth of hard register REGNO.  It updates
    living hard regs, START_LIVING, and conflict hard regs for living
    pseudos.  Conflict hard regs for the pic pseudo is not updated if
@@ -243,6 +246,7 @@ make_hard_regno_born (int regno, bool check_pic_pseudo_p ATTRIBUTE_UNUSED)
 	|| i != REGNO (pic_offset_table_rtx))
 #endif
       SET_HARD_REG_BIT (lra_reg_info[i].conflict_hard_regs, regno);
+  bitmap_set_bit (bb_gen_pseudos, regno);
 }
 
 /* Process the death of hard register REGNO.  This updates
@@ -255,6 +259,8 @@ make_hard_regno_dead (int regno)
     return;
   sparseset_set_bit (start_dying, regno);
   CLEAR_HARD_REG_BIT (hard_regs_live, regno);
+  bitmap_clear_bit (bb_gen_pseudos, regno);
+  bitmap_set_bit (bb_killed_pseudos, regno);
 }
 
 /* Mark pseudo REGNO as living at program point POINT, update conflicting
@@ -298,9 +304,6 @@ mark_pseudo_dead (int regno, int point)
       p->finish = point;
     }
 }
-
-/* The corresponding bitmaps of BB currently being processed.  */
-static bitmap bb_killed_pseudos, bb_gen_pseudos;
 
 /* Mark register REGNO (pseudo or hard register) in MODE as live at
    program point POINT.  Update BB_GEN_PSEUDOS.

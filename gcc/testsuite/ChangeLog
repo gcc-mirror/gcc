@@ -1,3 +1,9 @@
+2017-10-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR sanitizer/82353
+	* gcc.target/i386/i386.exp (tests): Permit '.C' extension.
+	* gcc.target/i386/pr82353.C: New.
+
 2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/387-ficom-1.c: New test.
