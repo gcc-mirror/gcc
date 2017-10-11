@@ -3444,7 +3444,8 @@ infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple *stmt)
   if (TYPE_PRECISION (type) != TYPE_PRECISION (TREE_TYPE (var)))
     return;
 
-  scev = instantiate_parameters (loop, analyze_scalar_evolution (loop, def));
+  struct loop *uloop = loop_containing_stmt (stmt);
+  scev = instantiate_parameters (loop, analyze_scalar_evolution (uloop, def));
   if (chrec_contains_undetermined (scev))
     return;
 
