@@ -1,3 +1,94 @@
+2017-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config.gcc (i386, x86_64): Add extra objects.
+	* i386/i386-protos.h (ix86_rip_relative_addr_p): Declare.
+	(ix86_min_insn_size): Declare.
+	(ix86_issue_rate): Declare.
+	(ix86_adjust_cost): Declare.
+	(ia32_multipass_dfa_lookahead): Declare.
+	(ix86_macro_fusion_p): Declare.
+	(ix86_macro_fusion_pair_p): Declare.
+	(ix86_bd_has_dispatch): Declare.
+	(ix86_bd_do_dispatch): Declare.
+	(ix86_core2i7_init_hooks): Declare.
+	(ix86_atom_sched_reorder): Declare.
+	* i386/i386.c Move all CPU cost tables to x86-tune-costs.h.
+	(COSTS_N_BYTES): Move to x86-tune-costs.h.
+	(DUMMY_STRINGOP_ALGS):x86-tune-costs.h.
+	(rip_relative_addr_p): Rename to ...
+	(ix86_rip_relative_addr_p): ... this one; export.
+	(memory_address_length): Update.
+	(ix86_issue_rate): Move to x86-tune-sched.c.
+	(ix86_flags_dependent): Move to x86-tune-sched.c.
+	(ix86_agi_dependent): Move to x86-tune-sched.c.
+	(exact_dependency_1): Move to x86-tune-sched.c.
+	(exact_store_load_dependency): Move to x86-tune-sched.c.
+	(ix86_adjust_cost): Move to x86-tune-sched.c.
+	(ia32_multipass_dfa_lookahead): Move to x86-tune-sched.c.
+	(ix86_macro_fusion_p): Move to x86-tune-sched.c.
+	(ix86_macro_fusion_pair_p): Move to x86-tune-sched.c.
+	(do_reorder_for_imul): Move to x86-tune-sched-atom.c.
+	(swap_top_of_ready_list): Move to x86-tune-sched-atom.c.
+	(ix86_sched_reorder): Move to x86-tune-sched-atom.c.
+	(core2i7_first_cycle_multipass_init): Move to x86-tune-sched-core.c.
+	(core2i7_dfa_post_advance_cycle): Move to x86-tune-sched-core.c.
+	(min_insn_size): Rename to ...
+	(ix86_min_insn_size): ... this one; export.
+	(core2i7_first_cycle_multipass_begin): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_issue): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_backtrack): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_end): Move to x86-tune-sched-core.c.
+	(core2i7_first_cycle_multipass_fini): Move to x86-tune-sched-core.c.
+	(ix86_sched_init_global): Break up logic to ix86_core2i7_init_hooks.
+	(ix86_avoid_jump_mispredicts): Update.
+	(TARGET_SCHED_DISPATCH): Move to ix86-tune-sched-bd.c.
+	(TARGET_SCHED_DISPATCH_DO): Move to ix86-tune-sched-bd.c.
+	(TARGET_SCHED_REORDER): Move to ix86-tune-sched-bd.c.
+	(DISPATCH_WINDOW_SIZE): Move to ix86-tune-sched-bd.c.
+	(MAX_DISPATCH_WINDOWS): Move to ix86-tune-sched-bd.c.
+	(MAX_INSN): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM_SIZE): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM_32): Move to ix86-tune-sched-bd.c.
+	(MAX_IMM_64): Move to ix86-tune-sched-bd.c.
+	(MAX_LOAD): Move to ix86-tune-sched-bd.c.
+	(MAX_STORE): Move to ix86-tune-sched-bd.c.
+	(BIG): Move to ix86-tune-sched-bd.c.
+	(enum dispatch_group): Move to ix86-tune-sched-bd.c.
+	(enum insn_path): Move to ix86-tune-sched-bd.c.
+	(get_mem_group): Move to ix86-tune-sched-bd.c.
+	(is_cmp): Move to ix86-tune-sched-bd.c.
+	(dispatch_violation): Move to ix86-tune-sched-bd.c.
+	(is_branch): Move to ix86-tune-sched-bd.c.
+	(is_prefetch): Move to ix86-tune-sched-bd.c.
+	(init_window): Move to ix86-tune-sched-bd.c.
+	(allocate_window): Move to ix86-tune-sched-bd.c.
+	(init_dispatch_sched): Move to ix86-tune-sched-bd.c.
+	(is_end_basic_block): Move to ix86-tune-sched-bd.c.
+	(process_end_window): Move to ix86-tune-sched-bd.c.
+	(allocate_next_window): Move to ix86-tune-sched-bd.c.
+	(find_constant): Move to ix86-tune-sched-bd.c.
+	(get_num_immediates): Move to ix86-tune-sched-bd.c.
+	(has_immediate): Move to ix86-tune-sched-bd.c.
+	(get_insn_path): Move to ix86-tune-sched-bd.c.
+	(get_insn_group): Move to ix86-tune-sched-bd.c.
+	(count_num_restricted): Move to ix86-tune-sched-bd.c.
+	(fits_dispatch_window): Move to ix86-tune-sched-bd.c.
+	(add_insn_window): Move to ix86-tune-sched-bd.c.
+	(add_to_dispatch_window): Move to ix86-tune-sched-bd.c.
+	(debug_dispatch_window_file): Move to ix86-tune-sched-bd.c.
+	(debug_dispatch_window): Move to ix86-tune-sched-bd.c.
+	(debug_insn_dispatch_info_file): Move to ix86-tune-sched-bd.c.
+	(debug_ready_dispatch): Move to ix86-tune-sched-bd.c.
+	(do_dispatch): Move to ix86-tune-sched-bd.c.
+	(has_dispatch): Move to ix86-tune-sched-bd.c.
+	* i386/t-i386: Add new object files.
+	* i386/x86-tune-costs.h: New file.
+	* i386/x86-tune-sched-atom.c: New file.
+	* i386/x86-tune-sched-bd.c: New file.
+	* i386/x86-tune-sched-core.c: New file.
+	* i386/x86-tune-sched.c: New file.
+
 2017-10-11  Liu Hao  <lh_mouse@126.com>
 
 	* pretty-print.c [_WIN32] (colorize_init): Remove.  Use
