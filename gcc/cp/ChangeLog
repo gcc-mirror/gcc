@@ -1,3 +1,8 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (struct mangled_decl_hash): Use DECL_ASSEMBLER_NAME_RAW.
+	(record_mangling): Likewise.
+
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (extern_c_fns): Rename to ...

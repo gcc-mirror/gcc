@@ -671,7 +671,7 @@ decl_assembler_name (tree decl)
 {
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
     lang_hooks.set_decl_assembler_name (decl);
-  return DECL_WITH_VIS_CHECK (decl)->decl_with_vis.assembler_name;
+  return DECL_ASSEMBLER_NAME_RAW (decl);
 }
 
 /* When the target supports COMDAT groups, this indicates which group the

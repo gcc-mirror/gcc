@@ -103,7 +103,7 @@ static GTY(()) vec<tree, va_gc> *no_linkage_decls;
 static GTY(()) vec<tree, va_gc> *mangling_aliases;
 
 /* hash traits for declarations.  Hashes single decls via
-   DECL_ASSEMBLER_NAME.  */
+   DECL_ASSEMBLER_NAME_RAW.  */
 
 struct mangled_decl_hash : ggc_remove <tree>
 {
@@ -112,11 +112,11 @@ struct mangled_decl_hash : ggc_remove <tree>
 
   static hashval_t hash (const value_type decl)
   {
-    return IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (decl));
+    return IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME_RAW (decl));
   }
   static bool equal (const value_type existing, compare_type candidate)
   {
-    tree name = DECL_ASSEMBLER_NAME (existing);
+    tree name = DECL_ASSEMBLER_NAME_RAW (existing);
     return candidate == name;
   }
 
@@ -4399,7 +4399,7 @@ record_mangling (tree decl, bool need_warning)
     mangled_decls = hash_table<mangled_decl_hash>::create_ggc (499);
 
   gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-  tree id = DECL_ASSEMBLER_NAME (decl);
+  tree id = DECL_ASSEMBLER_NAME_RAW (decl);
   tree *slot
     = mangled_decls->find_slot_with_hash (id, IDENTIFIER_HASH_VALUE (id),
 					  INSERT);

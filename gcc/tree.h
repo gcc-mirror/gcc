@@ -2721,6 +2721,10 @@ extern void decl_value_expr_insert (tree, tree);
    LTO compilation and C++.  */
 #define DECL_ASSEMBLER_NAME(NODE) decl_assembler_name (NODE)
 
+/* Raw accessor for DECL_ASSEMBLE_NAME.  */
+#define DECL_ASSEMBLER_NAME_RAW(NODE) \
+  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.assembler_name)
+
 /* Return true if NODE is a NODE that can contain a DECL_ASSEMBLER_NAME.
    This is true of all DECL nodes except FIELD_DECL.  */
 #define HAS_DECL_ASSEMBLER_NAME_P(NODE) \
@@ -2731,11 +2735,11 @@ extern void decl_value_expr_insert (tree, tree);
    yet.  */
 #define DECL_ASSEMBLER_NAME_SET_P(NODE) \
   (HAS_DECL_ASSEMBLER_NAME_P (NODE) \
-   && DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.assembler_name != NULL_TREE)
+   && DECL_ASSEMBLER_NAME_RAW (NODE) != NULL_TREE)
 
 /* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
 #define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.assembler_name = (NAME))
+  (DECL_ASSEMBLER_NAME_RAW (NODE) = (NAME))
 
 /* Copy the DECL_ASSEMBLER_NAME from DECL1 to DECL2.  Note that if DECL1's
    DECL_ASSEMBLER_NAME has not yet been set, using this macro will not cause
@@ -2747,10 +2751,7 @@ extern void decl_value_expr_insert (tree, tree);
    which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
 
 #define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
-  (DECL_ASSEMBLER_NAME_SET_P (DECL1)					\
-   ? (void) SET_DECL_ASSEMBLER_NAME (DECL2,				\
-				     DECL_ASSEMBLER_NAME (DECL1))	\
-   : (void) 0)
+  SET_DECL_ASSEMBLER_NAME (DECL2, DECL_ASSEMBLER_NAME_RAW (DECL1))
 
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */

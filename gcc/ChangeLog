@@ -1,3 +1,11 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (DECL_ASSEMBLER_NAME_RAW): New.
+	(SET_DECL_ASSEMBLER_NAME): Use it.
+	(DECL_ASSEMBLER_NAME_SET_P): Likewise.
+	(COPY_DECL_ASSEMBLER_NAME): Likewise.
+	* tree.c (decl_assembler_name): Use DECL_ASSEMBLER_NAME_RAW.
+
 2017-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config.gcc (i386, x86_64): Add extra objects.
@@ -221,8 +229,9 @@
 
 2017-10-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, X86_TUNE_ADJUST_UNROLL,
-	X86_TUNE_ONE_IF_CONV_INSN): Move to right spot in the file.
+	* x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI,
+	X86_TUNE_ADJUST_UNROLL, X86_TUNE_ONE_IF_CONV_INSN): Move to right
+	spot in the file.
 
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
