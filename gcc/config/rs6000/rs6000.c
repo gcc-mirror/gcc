@@ -23255,24 +23255,6 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   return 1;
 }
 
-const char *
-output_isel (rtx *operands)
-{
-  enum rtx_code code;
-
-  code = GET_CODE (operands[1]);
-
-  if (code == GE || code == GEU || code == LE || code == LEU || code == NE)
-    {
-      gcc_assert (GET_CODE (operands[2]) == REG
-		  && GET_CODE (operands[3]) == REG);
-      PUT_CODE (operands[1], reverse_condition (code));
-      return "isel %0,%3,%2,%j1";
-    }
-
-  return "isel %0,%2,%3,%j1";
-}
-
 void
 rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 {
