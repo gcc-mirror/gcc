@@ -1,5 +1,10 @@
 2017-10-11  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_pointer_arith):
+	Properly call analyze_scalar_evolution with the loop of the stmt.
+
+2017-10-11  Richard Biener  <rguenther@suse.de>
+
 	* tree.def (POLYNOMIAL_CHREC): Remove CHREC_VARIABLE tree operand.
 	* tree-core.h (tree_base): Add chrec_var union member.
 	* tree.h (CHREC_VAR): Remove.
