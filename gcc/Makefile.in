@@ -4135,8 +4135,7 @@ TAGS: lang.tags
 	      ../include/*.h ../libiberty/*.c \
 	      ../libcpp/*.c ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
-	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\).*(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def \
-	      --language=none --regex="/DEFTIMEVAR (\([A-Za-z_0-9]+\)/\1/" timevar.def \
+	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\|DEFTIMEVAR\|DEFPARAM\|DEFPARAMENUM5\)[ ]?(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def timevar.def params.def \
 		; \
 	etags --include TAGS.sub $$incs)
 
