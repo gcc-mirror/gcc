@@ -1,3 +1,9 @@
+2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82498
+	* gcc.target/i386/pr82498-1.c: New test.
+	* gcc.target/i386/pr82498-2.c: New test.
+
 2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/predict-13.c: Update template for probaility change.
