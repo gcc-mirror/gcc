@@ -1,3 +1,9 @@
+2017-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69728
+	* gcc.dg/graphite/pr69728.c: Adjust to reflect we can handle
+	the loop now.  Remove unrelated undefined behavior.
+
 2017-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82159
