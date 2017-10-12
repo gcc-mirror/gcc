@@ -1,5 +1,11 @@
 2017-10-12  David Malcolm  <dmalcolm@redhat.com>
 
+	* parser.c (get_required_cpp_ttype): New function.
+	(cp_parser_error_1): Call it, using the result to call
+	maybe_suggest_missing_token_insertion.
+
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
 	* parser.c (get_matching_symbol): Move to before...
 	(cp_parser_error): Split out into...
 	(cp_parser_error_1): ...this new function, merging in content
