@@ -1,3 +1,11 @@
+2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82498
+	* config/i386/i386.md (*ashl<mode>3_mask_1,
+	*<shift_insn><mode>3_mask_1, *<rotate_insn><mode>3_mask_1,
+	*<btsc><mode>_mask_1, *btr<mode>_mask_1): New define_insn_and_split
+	patterns.
+
 2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile-count.h (safe_scale_64bit): Fix GCC4.x path.
