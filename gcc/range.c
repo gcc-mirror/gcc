@@ -30,6 +30,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "selftest.h"
 
+/* Subtract 1 from X and set OVERFLOW if the operation overflows.  */
+
+static wide_int inline
+subtract_one (const wide_int &x, const_tree type, bool &overflow)
+{
+  /* A signed 1-bit bit-field, has a range of [-1,0] so subtracting +1
+     overflows, since +1 is unrepresentable.  This is why we have an
+     addition of -1 here.  */
+  if (TYPE_SIGN (type) == SIGNED)
+    return wi::add (x, -1 , SIGNED, &overflow);
+  else
+    return wi::sub (x, 1, UNSIGNED, &overflow);
+}
+
 /* Set range from a TYPE and some bounds (LBOUND and UBOUND).
 
    RT is PLAIN if it is a normal range, or INVERSE if it is an inverse
@@ -61,7 +75,7 @@ irange::set_range (const_tree typ, const wide_int &lbound,
       if (lbound != min)
 	{
 	  bounds[nitems++] = min;
-	  bounds[nitems++] = wi::sub (lbound, 1, TYPE_SIGN (type), &ovf);
+	  bounds[nitems++] = subtract_one (lbound, type, ovf);
 	  if (ovf)
 	    nitems = 0;
 	}
@@ -827,8 +841,7 @@ irange::invert ()
   if (min != orig_range.bounds[i])
     {
       bounds[nitems++] = min;
-      bounds[nitems++]
-	= wi::sub (orig_range.bounds[i], 1, TYPE_SIGN (type), &ovf);
+      bounds[nitems++] = subtract_one (orig_range.bounds[i], type, ovf);
       if (ovf)
 	nitems = 0;
     }
@@ -844,7 +857,7 @@ irange::invert ()
 	  bounds[nitems++]
 	    = wi::add (orig_range.bounds[j], 1, TYPE_SIGN (type), &ovf);
 	  bounds[nitems++]
-	    = wi::sub (orig_range.bounds[j + 1], 1, TYPE_SIGN (type), &ovf);
+	    = subtract_one (orig_range.bounds[j + 1], type, ovf);
 	  if (ovf)
 	    nitems -= 2;
 	}
