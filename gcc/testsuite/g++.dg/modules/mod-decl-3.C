@@ -2,7 +2,7 @@
 export void Foo (); // { dg-error "after an interface module" }
 
 export module bob;
-// { dg-module-if "!bob" }
+// { dg-module-bmi "!bob" }
 
 export
 export // { dg-error "occur once" }

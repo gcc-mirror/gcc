@@ -1,5 +1,5 @@
 export module Baz;
-// { dg-module-if "Baz" }
+// { dg-module-bmi "Baz" }
 
 void Quux (void);
 

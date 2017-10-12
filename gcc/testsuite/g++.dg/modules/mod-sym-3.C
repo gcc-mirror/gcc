@@ -1,5 +1,5 @@
 export module bob;
-// { dg-module-if "bob" }
+// { dg-module-bmi "bob" }
 
 namespace X
 {

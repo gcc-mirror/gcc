@@ -24,7 +24,7 @@
 # be optionally linked and optionally executed.  Grouping is indicated by
 # naming files '*_[a-z].C'
 
-# { dg-module-if "[!]module-name" } # an interface file is (not) expected
+# { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
 # { dg-module-do [link|run] [xfail] } # link [and run]
 
 load_lib g++-dg.exp
@@ -54,8 +54,8 @@ proc decode_mod_spec { spec } {
 }
 
 # Register a module interface leading '!' to expect it to NOT be present
-# dg-module-if SPEC WHEN
-proc dg-module-if { args } {
+# dg-module-bmi SPEC WHEN
+proc dg-module-bmi { args } {
     if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
 	return

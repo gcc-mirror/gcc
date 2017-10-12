@@ -1,7 +1,7 @@
 inline void Foo () {}
 
 export module okely.dokely;
-// { dg-module-if "okely.dokely" }
+// { dg-module-bmi "okely.dokely" }
 
 namespace One {
   namespace Two {

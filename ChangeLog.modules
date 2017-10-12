@@ -1,5 +1,31 @@
 2017-10-12  Nathan Sidwell  <nathan@acm.org>
 
+	Module name can be a string const (-fmodules++)
+	gcc/cp/
+	* cp-tree.h (cp_expr): Add constant operator* and operator->.
+	(validate_module_name): New.
+	(declare_module, import_module): Take cp_expr.
+	* error.c (dump_module_suffix): Adjust.
+	* module.c (module_state): Add name_hash.  Adjust.
+	(module_state_hash): Allow string consts.
+	(module_state::set_name): Likewise.
+	(cpm_{writer,reader}::module_name): New.
+	(dump_nested_name): Name can be a string const.
+	(cpms_{out,in}::header): Adjust.
+	(cpms_{out,in}::tag_import): Adjust.
+	(validate_module_name): New.
+	(module_to_filename): Allow string consts.
+	(make_module_file): Adjust.
+	(do_module_import): Adjust.
+	(import_module, declare_module): Adjust.
+	* parser.c (cp_parser_module_name): Return cp_expr, allow
+	string-cst.
+	(cp_parser_module_declaration, cp_parser_import_declaration,
+	cp_parser_module_proclamation): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp (dg-module-bmi): Renamed.
+	* g++.dg/modules/mod++-decl-3_[ab].C: New.
+
 	Add -fmodule-path, -fmodule-root.
 	gcc/
 	* incpath.h (INC_CXX_MPATH): New.

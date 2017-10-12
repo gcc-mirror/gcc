@@ -3,7 +3,7 @@
 // { dg-final { scan-lang-dump "Writing export import Bar" "module" } }
 
 export module Foo;
-// { dg-module-if "Foo" }
+// { dg-module-bmi "Foo" }
 
 export import Bar;
 export

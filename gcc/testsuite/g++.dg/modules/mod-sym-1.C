@@ -1,5 +1,5 @@
 export module linkage;
-// { dg-module-if "linkage" }
+// { dg-module-bmi "linkage" }
 
 inline void Foo () {}
 

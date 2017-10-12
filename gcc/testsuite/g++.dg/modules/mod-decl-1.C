@@ -1,7 +1,7 @@
 module;  // { dg-error "expected" }
 
 export module frist;
-// { dg-module-if "!frist" }
+// { dg-module-bmi "!frist" }
 
 module foo.second; // { dg-error "already declared" }
 

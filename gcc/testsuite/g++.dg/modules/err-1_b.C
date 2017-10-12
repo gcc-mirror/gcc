@@ -1,4 +1,4 @@
 export module Bar;
-// { dg-module-if "Bar" }
+// { dg-module-bmi "Bar" }
 
 export int Frob (long, int, int);

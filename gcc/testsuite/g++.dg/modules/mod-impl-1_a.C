@@ -1,7 +1,7 @@
 // { dg-module-do "run" }
 
 export module baz;
-// { dg-module-if "baz" }
+// { dg-module-bmi "baz" }
 
 export int Square (int);
 

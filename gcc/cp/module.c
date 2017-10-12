@@ -53,6 +53,7 @@ struct GTY(()) module_state {
   bitmap exports;	/* Subset of that, that we're exporting.  */
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
+  hashval_t name_hash;  /* Name hash. */
   int direct_import;	/* Direct import/rexport of main module.  */
   unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
@@ -64,7 +65,7 @@ struct GTY(()) module_state {
  public:
   void freeze (const module_state *);
   void set_index (unsigned index);
-  void set_name (tree name);
+  void set_name (tree name, hashval_t);
   void do_import (unsigned index, bool is_export);
 
  public:
@@ -80,11 +81,20 @@ struct module_state_hash : ggc_remove <module_state *>
 
   static hashval_t hash (const value_type m)
   {
-    return IDENTIFIER_HASH_VALUE (m->name);
+    return m->name_hash;
   }
   static bool equal (const value_type existing, compare_type candidate)
   {
-    return existing->name == candidate;
+    if (TREE_CODE (candidate) != TREE_CODE (existing->name))
+      return false;
+    else if (identifier_p (candidate))
+      return existing->name == candidate;
+    else
+      return (TREE_STRING_LENGTH (existing->name)
+	      == TREE_STRING_LENGTH (candidate))
+	&& !memcmp (TREE_STRING_POINTER (existing->name),
+		    TREE_STRING_POINTER (candidate),
+		    TREE_STRING_LENGTH (candidate));
   }
 
   static inline void mark_empty (value_type &p) {p = NULL;}
@@ -110,6 +120,8 @@ static cpp_dir *module_path;
 
 /* Longest module path.  */
 static size_t module_path_max;
+
+static int validate_module_name (bool, const char *, size_t);
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
@@ -138,27 +150,99 @@ module_state::set_index (unsigned index)
    already been checked for well-formedness.  */
 
 void
-module_state::set_name (tree name_)
+module_state::set_name (tree name_, hashval_t hash_)
 {
   name = name_;
-  size_t len = IDENTIFIER_LENGTH (name);
-  const char *ptr = IDENTIFIER_POINTER (name);
-  const char *dot;
+  name_hash = hash_;
 
+  size_t len;
+  const char *ptr;
+  char sep;
+  char *buffer = NULL;
+
+  if (identifier_p (name))
+    {
+      len = IDENTIFIER_LENGTH (name);
+      ptr = IDENTIFIER_POINTER (name);
+      sep = '.';
+    }
+  else
+    {
+      len = TREE_STRING_LENGTH (name) - 1;
+      ptr = TREE_STRING_POINTER (name);
+      sep = DIR_SEPARATOR;
+    }
+
+  const char *dot;
   do
     {
-      dot = (const char *)memchr (ptr, '.', len);
+      dot = (const char *)memchr (ptr, sep, len);
       size_t l = dot ? dot - ptr : len;
+
+      gcc_assert (l);
+
+      size_t id_l = l;
+      const char *id_p = ptr;
+
+      if (sep != '.')
+	{
+	  /* Look for identfier-veboten characters and escape them.
+	     That is leading digits, non-alphanumeric chars and _.
+	     Escape as _<esc>
+	       0x21-0x2f (14) _A->_O
+	       0x30-0x3a (11) _P->_Z
+	       0x3b-0x3f (5)  _g->_k
+	       0x40	 (1)  _l
+	       0x5B-0x5f (5)  _m->_q
+	       0x60	 (1)  _r
+	       0x7b-0x7f (5)  _s->_w
+	     Notice _0-_9, _a-_f are not used.	  */
+	  bool escape = ISDIGIT (*ptr);
+	  for (size_t frag = l; !escape && frag--;)
+	    if (!ISALNUM (ptr[frag]))
+	      escape = true;
+	  if (escape)
+	    {
+	      if (!buffer)
+		buffer = XNEWVEC (char, len * 2);
+	      id_p = buffer;
+	      id_l = 0;
+	      for (size_t frag = 0; frag != l; frag++)
+		{
+		  unsigned char c = ptr[frag];
+		  if (!(ISALPHA (c) || (frag && ISDIGIT (c))))
+		    {
+		      if (c >= 0x21 && c <= 0x2f)
+			c = 'A' + (c - 0x21);
+		      else if (c >= 0x30 && c <= 0x3a)
+			c = 'P' + (c - 0x30);
+		      else if (c >= 0x3b && c <= 0x40)
+			c = 'g' + (c - 0x3b);
+		      else if (c >= 0x5b && c <= 0x60)
+			c = 'm' + (c - 0x5b);
+		      else if (c >= 0x7b && c <= 0x7f)
+			c = 's' + (c - 0x7b);
+		      else
+			gcc_unreachable ();
+		      buffer[id_l++] = '_';
+		    }
+		  buffer[id_l++] = c;
+		}
+	    }
+	}
+
       vec_safe_reserve (name_parts,
 			vec_safe_length (name_parts) + 1,
 			!name_parts && !dot);
-      name_parts->quick_push (get_identifier_with_length (ptr, l));
+      name_parts->quick_push (get_identifier_with_length (id_p, id_l));
       if (dot)
 	l++;
       ptr += l;
       len -= l;
     }
   while (dot);
+
+  XDELETEVEC (buffer);
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -380,6 +464,7 @@ public:
   void wi (HOST_WIDE_INT);
   void wu (unsigned HOST_WIDE_INT);
   void str (const char *, size_t);
+  void module_name (tree);
   void buf (const char *, size_t);
 };
 
@@ -427,6 +512,7 @@ public:
   HOST_WIDE_INT wi ();
   unsigned HOST_WIDE_INT wu ();
   const char *str (size_t * = NULL);
+  tree module_name ();
   const char *buf (size_t);
 };
 
@@ -815,6 +901,51 @@ cpm_reader::str (size_t *len_p)
 }
 
 void
+cpm_writer::module_name (tree name)
+{
+  size_t len;
+  const char *ptr;
+  if (identifier_p (name))
+    {
+      ptr = IDENTIFIER_POINTER (name);
+      len = IDENTIFIER_LENGTH (name);
+    }
+  else
+    {
+      ptr = TREE_STRING_POINTER (name);
+      len = TREE_STRING_LENGTH (name);
+    }
+  str (ptr, len);
+}
+
+tree
+cpm_reader::module_name ()
+{
+  size_t l;
+  const char *mod = str (&l);
+
+  /* If it ends in NUL, it was a string name.  */
+  bool ident_name = l ? mod[l-1] : flag_modules == 1;
+  int code = validate_module_name (ident_name, mod, l);
+  if (code > -2)
+    {
+      ::error ("module name %qs is malformed", mod);
+      return NULL_TREE;
+    }
+
+  tree name;
+  if (ident_name)
+    name = get_identifier_with_length (mod, l);
+  else
+    {
+      name = build_string (l, mod);
+      TREE_TYPE (name) = char_array_type_node;
+      name = fix_string_type (name);
+    }
+  return name;
+}
+
+void
 cpm_writer::flush ()
 {
   size_t bytes = fwrite (buffer, 1, pos, stream);
@@ -1015,6 +1146,13 @@ dump_nested_name (tree t, FILE *d)
       fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), d);
       return true;
     }
+
+  if (t && TREE_CODE (t) == STRING_CST)
+    {
+      fwrite (TREE_STRING_POINTER (t), 1, TREE_STRING_LENGTH (t) - 1, d);
+      return true;
+    }
+
   return false;
 }
 
@@ -1430,7 +1568,7 @@ cpms_out::header (tree name)
   dump () && dump ("Writing \"%s\" version=%V stamp=%U",
 		   id, v, (unsigned long)now);
 
-  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+  w.module_name (name);
 }
 
 static char *
@@ -1519,12 +1657,13 @@ cpms_in::header ()
     }
 
   /* Check module name.  */
-  size_t l;
-  const char *n = r.str (&l);
-  if (l != IDENTIFIER_LENGTH (state->name)
-      || memcmp (n, IDENTIFIER_POINTER (state->name), l))
+  tree name = r.module_name ();
+  if (!name)
+    return false;
+  if (!module_state_hash::equal (state, name))
     {
-      error ("%qs is module %qs, expected module %qE", r.name, n, state->name);
+      error ("%qs is module %qE, expected module %qE",
+	     r.name, name, state->name);
       return false;
     }
 
@@ -1750,7 +1889,7 @@ cpms_out::tag_import (unsigned ix, const module_state *state)
   w.u (state->direct_import);
   w.u (state->crc);
   w.wu (state->stamp);
-  w.str (IDENTIFIER_POINTER (state->name), IDENTIFIER_LENGTH (state->name));
+  w.module_name (state->name);
   w.checkpoint ();
 }
 
@@ -1776,35 +1915,18 @@ cpms_in::tag_import ()
   unsigned direct = r.u ();
   unsigned crc = r.u ();
   unsigned HOST_WIDE_INT stamp = r.wu ();
-  size_t l;
-  const char *mod = r.str (&l);
+  tree imp = r.module_name ();
 
-  /* Validate name.  Dotted sequence of identifiers.  */
-  size_t dot = 0;
-  for (size_t ix = 0; ix != l; ix++)
-    if (ISALPHA (mod[ix]) || mod[ix] == '_')
-      continue;
-    else if (dot == ix)
-      goto bad;
-    else if (mod[ix] == '.')
-      dot = ix + 1;
-    else if (!ISDIGIT (mod[ix]))
-      goto bad;
-  if (!l || dot == l)
-    {
-      bad:
-      error ("module name %qs is malformed", mod);
-      return false;
-    }
+  if (!imp)
+    return false;
 
-  tree imp = get_identifier_with_length (mod, l);
   if (!r.checkpoint ())
     return false;
 
   /* Not designed to import after having assigned our number. */
   if (mod_ix)
     {
-      error ("misordered import %qs", mod);
+      error ("misordered import %qE", imp);
       return false;
     }
   if (!alloc_remap_vec (ix))
@@ -4487,25 +4609,108 @@ read_module (FILE *stream, const char *fname, module_state *state,
   return ok;
 }
 
+static int
+validate_module_name (bool from_ident, const char *ptr, size_t len)
+{
+  char sep = from_ident ? '.' : DIR_SEPARATOR;
+  len += from_ident;
+
+  for (size_t frag = 0; len--; ptr++)
+    if (!len || *ptr == sep)
+      {
+	if (!frag)
+	  return -1;
+	frag = 0;
+      }
+    else if (!ISGRAPH (*ptr))
+      return (unsigned char)*ptr;
+    else if (from_ident
+	     && !(ISALPHA (*ptr) || *ptr == '_' || (frag && ISDIGIT (*ptr))))
+      return (unsigned char)*ptr;
+    else
+      frag++;
+  return -2;
+}
+
+/* Validate that the name is ok.  */
+
+tree
+validate_module_name (const cp_expr &name)
+{
+  tree id = *name;
+
+  if (!id)
+    ;
+  else if (identifier_p (id))
+    ;
+  else if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (id)))
+	   != TYPE_PRECISION (char_type_node))
+    {
+      error_at (name.get_location (),
+		"module name is not a simple string literal");
+      id = NULL_TREE;
+    }
+  else if (TREE_STRING_LENGTH (id) > FILENAME_MAX)
+    {
+      error_at (name.get_location (), "module name is too long");
+      id = NULL_TREE;
+    }
+  else
+    {
+      int code = validate_module_name (false, TREE_STRING_POINTER (id),
+				       TREE_STRING_LENGTH (id));
+      if (code >= 0)
+	{
+	  error_at (name.get_location (),
+		      "module name contains %qc> character", code);
+	  id = NULL_TREE;
+	}
+      else if (code == -1)
+	{
+	  error_at (name.get_location (),
+		    "module name contains empty component");
+	  id = NULL_TREE;
+	}
+    }
+
+  return id;
+}
+
 /* Convert a module name into a file name.  The name is malloced.
  */
 
 static char *
 module_to_filename (tree id, size_t &len)
 {
-  size_t id_len = IDENTIFIER_LENGTH (id);
+  size_t id_len;
+  const char *id_chars;
+
+  if (identifier_p (id))
+    {
+      id_len = IDENTIFIER_LENGTH (id);
+      id_chars = IDENTIFIER_POINTER (id);
+    }
+  else
+    {
+      id_len = TREE_STRING_LENGTH (id) - 1;
+      id_chars = TREE_STRING_POINTER (id);
+    }
+
   size_t sfx_len = strlen (MOD_FNAME_SFX);
   len = id_len + sfx_len;
 
   char *buffer = XNEWVEC (char, id_len + sfx_len + 1);
-  memcpy (buffer, IDENTIFIER_POINTER (id), id_len);
+  memcpy (buffer, id_chars, id_len);
   memcpy (buffer + id_len, MOD_FNAME_SFX, sfx_len + 1);
-  
-  char dot = module_path ? DIR_SEPARATOR : MOD_FNAME_DOT;
-  if (dot != '.')
-    for (char *ptr = buffer; id_len--; ptr++)
-      if (*ptr == '.')
-	*ptr = dot;
+
+  if (identifier_p (id))
+    {
+      char dot = module_path ? DIR_SEPARATOR : MOD_FNAME_DOT;
+      if (dot != '.')
+	for (char *ptr = buffer; id_len--; ptr++)
+	  if (*ptr == '.')
+	    *ptr = dot;
+    }
 
   return buffer;
 }
@@ -4562,9 +4767,7 @@ make_module_file (char *&name, size_t name_len)
     }
 
   FILE *stream = fopen (name, "wb");
-  int x = errno;
-  if (!stream && root_len
-      && (errno == ENOTDIR || errno == ENOENT))
+  if (!stream && root_len && errno == ENOENT)
     {
       /* Try and create the missing directories.  */
       char *base = name + root_len + 1;
@@ -4580,9 +4783,9 @@ make_module_file (char *&name, size_t name_len)
 	  *base = 0;
 	  int failed = mkdir (name, S_IRWXU | S_IRWXG | S_IRWXO);
 	  *base = DIR_SEPARATOR;
-	  int y = errno;
 	  if (failed
-	      /* Maybe racing with another creator.  */
+	      /* Maybe racing with another creator (of a *different*
+		 submodule).  */
 	      && errno != EEXIST)
 	    return NULL;
 	}
@@ -4614,9 +4817,13 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	(*modules)[GLOBAL_MODULE_INDEX] = this_module;
     }
 
-  module_state **slot
-    = module_hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
-					INSERT);
+  hashval_t hash;
+  if (identifier_p (name))
+    hash = IDENTIFIER_HASH_VALUE (name);
+  else
+    hash = hashval_t (crc32_string (TREE_STRING_LENGTH (name),
+				    TREE_STRING_POINTER (name)));
+  module_state **slot = module_hash->find_slot_with_hash (name, hash, INSERT);
   unsigned index = GLOBAL_MODULE_INDEX;
   module_state *state = *slot;
 
@@ -4663,7 +4870,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
 
-      state->set_name (name);
+      state->set_name (name, hash);
 
       *slot = state;
 
@@ -4673,16 +4880,19 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	{
           /* First look in the module file map. If not found, fall back to the
              default mapping. */
-          char *fname;
+          char *fname = NULL;
 	  size_t fname_len;
 
-          if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
+	  if (!identifier_p (name))
+	    ;
+	  else if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
 	    {
 	      fname_len = strlen (*slot);
 	      fname = XNEWVEC (char, fname_len + 1);
 	      memcpy (fname, *slot, fname_len + 1);
 	    }
-          else
+
+          if (!fname)
             fname = module_to_filename (name, fname_len);
 
 	  if (FILE *stream = search_module_path (fname, fname_len))
@@ -4713,10 +4923,11 @@ do_module_import (location_t loc, tree name, import_kind kind,
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
 void
-import_module (location_t loc, tree name, tree)
+import_module (const cp_expr &name, tree)
 {
   gcc_assert (global_namespace == current_scope ());
-  unsigned index = do_module_import (loc, name, ik_direct, 0, 0);
+  unsigned index = do_module_import (name.get_location (),
+				     *name, ik_direct, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
     this_module->do_import (index, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
@@ -4726,18 +4937,18 @@ import_module (location_t loc, tree name, tree)
    determine if this is the interface or not.  */
 
 void
-declare_module (location_t loc, tree name, bool inter, tree)
+declare_module (const cp_expr &name, bool inter, tree)
 {
   if (this_module && this_module->name)
     {
-      error_at (loc, "module %qE already declared", name);
+      error_at (name.get_location (), "module %qE already declared", *name);
       inform (module_loc, "existing declaration");
       return;
     }
 
   gcc_assert (global_namespace == current_scope ());
 
-  module_loc = loc;
+  module_loc = name.get_location ();
 
   module_state *frozen = NULL;
   if (modules)
@@ -4749,7 +4960,8 @@ declare_module (location_t loc, tree name, bool inter, tree)
     }
 
   unsigned index = do_module_import
-    (loc, name, inter ? ik_interface : ik_implementation, 0, 0);
+    (name.get_location (), *name,
+     inter ? ik_interface : ik_implementation, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
     {
       gcc_assert (index == THIS_MODULE_INDEX);

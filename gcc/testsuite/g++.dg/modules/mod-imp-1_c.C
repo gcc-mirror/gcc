@@ -4,6 +4,6 @@
 // { dg-final { scan-lang-dump "Writing import Foo" "module" } }
 
 export module Baz;
-// { dg-module-if "Baz" }
+// { dg-module-bmi "Baz" }
 
 import Foo;

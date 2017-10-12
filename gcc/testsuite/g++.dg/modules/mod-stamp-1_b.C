@@ -1,6 +1,6 @@
 
 export module Bar;
-// { dg-module-if "Bar" }
+// { dg-module-bmi "Bar" }
 
 import Foo;
 

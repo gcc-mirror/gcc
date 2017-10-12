@@ -1,6 +1,6 @@
 
 export module Foo;
-// { dg-module-if "Foo" }
+// { dg-module-bmi "Foo" }
 
 export int bob ();
 

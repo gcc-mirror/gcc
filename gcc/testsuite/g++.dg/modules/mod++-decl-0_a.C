@@ -1,5 +1,5 @@
 // { dg-options "-fmodules++" }
-// { dg-module-if "thing" }
+// { dg-module-bmi "thing" }
 
 export module thing;
 module 

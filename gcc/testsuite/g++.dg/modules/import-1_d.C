@@ -1,5 +1,5 @@
 export module Foop;
-// { dg-module-if "Foop" }
+// { dg-module-bmi "Foop" }
 
 import Bar;
 

@@ -12558,15 +12558,22 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    identifier
    module-name . identifier
 
-   Returns an identifer, concatenating the components,  or NULL.
+   Returns an identifer, concatenating the components, or NULL.
+
+   As an extension, permit a string-literal.
 
    If it turns out that flattening the module names this way is too
    expensive, we'll have to use a vector of identifiers, and a trie to
    hash the imported set.  */
 
-static tree
+static cp_expr
 cp_parser_module_name (cp_parser *parser)
 {
+  if (flag_modules == 2
+      && cp_parser_is_string_literal (cp_lexer_peek_token (parser->lexer)))
+    /* Accept a string literal under -fmodules++.  */
+    return cp_parser_string_literal (parser, false, false);
+
   cp_token *token = cp_parser_require (parser, CPP_NAME, RT_NAME);
   if (!token)
     return NULL;
@@ -12601,7 +12608,7 @@ cp_parser_module_name (cp_parser *parser)
       buffer.quick_push (0);
       name = get_identifier_with_length (&buffer[0], len);
     }
-  return name;
+  return cp_expr (name, token->location);
 }
 
 /* Emit an error if we're not at the outermost level.  */
@@ -12628,12 +12635,13 @@ static void
 cp_parser_module_declaration (cp_parser *parser, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  tree name = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
     return;
-  if (!name)
+  *name = validate_module_name (name);
+  if (!*name)
     return;
 
   if (flag_modules == 2
@@ -12652,7 +12660,7 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting)
 	}
     }
 
-  declare_module (token->location, name, exporting, attrs);
+  declare_module (name, exporting, attrs);
 }
 
 /* Import-declaration
@@ -12664,16 +12672,17 @@ cp_parser_import_declaration (cp_parser *parser)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
 
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  tree name = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  if (!name)
+  *name = validate_module_name (name);
+  if (!*name)
     ;
   else if (!check_module_outermost (token, "module-import"))
     ;
   else
-    import_module (token->location, name, attrs);
+    import_module (name, attrs);
 }
 
 /*  export-declaration.
@@ -12726,13 +12735,15 @@ cp_parser_module_proclamation (cp_parser *parser)
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   cp_lexer_consume_token (parser->lexer);
 
-  tree name = cp_parser_module_name (parser);
+  cp_expr name = cp_parser_module_name (parser);
   
   if (!cp_parser_require (parser, CPP_COLON, RT_COLON)
       || !check_module_outermost (token, "proclaimed-ownership"))
-    name = NULL;
+    *name = NULL;
 
-  int prev = push_module_export (true, name);
+  *name = validate_module_name (name);
+
+  int prev = push_module_export (true, *name);
   cp_parser_declaration (parser);
   pop_module_export (prev);
 }

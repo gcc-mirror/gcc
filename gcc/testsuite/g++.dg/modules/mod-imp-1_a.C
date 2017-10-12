@@ -2,4 +2,4 @@
 // { dg-final { scan-lang-dump "Writing module Foo" "module" } }
 
 export module Foo;
-// { dg-module-if "Foo" }
+// { dg-module-bmi "Foo" }

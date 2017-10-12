@@ -1,3 +1,3 @@
 
 export module thing.baz;
-// { dg-module-if "thing.baz" }
+// { dg-module-bmi "thing.baz" }
