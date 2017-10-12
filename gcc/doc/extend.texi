@@ -8802,7 +8802,7 @@ registers:
 asm volatile ("movc3 %0, %1, %2"
                    : /* No outputs. */
                    : "g" (from), "g" (to), "g" (count)
-                   : "r0", "r1", "r2", "r3", "r4", "r5");
+                   : "r0", "r1", "r2", "r3", "r4", "r5", "memory");
 @end example
 
 Also, there are two special clobber arguments:
@@ -8833,14 +8833,72 @@ Note that this clobber does not prevent the @emph{processor} from doing
 speculative reads past the @code{asm} statement. To prevent that, you need 
 processor-specific fence instructions.
 
-Flushing registers to memory has performance implications and may be an issue 
-for time-sensitive code.  You can use a trick to avoid this if the size of 
-the memory being accessed is known at compile time. For example, if accessing 
-ten bytes of a string, use a memory input like: 
-
-@code{@{"m"( (@{ struct @{ char x[10]; @} *p = (void *)ptr ; *p; @}) )@}}.
-
 @end table
+
+Flushing registers to memory has performance implications and may be
+an issue for time-sensitive code.  You can provide better information
+to GCC to avoid this, as shown in the following examples.  At a
+minimum, aliasing rules allow GCC to know what memory @emph{doesn't}
+need to be flushed.
+
+Here is a fictitious sum of squares instruction, that takes two
+pointers to floating point values in memory and produces a floating
+point register output.
+Notice that @code{x}, and @code{y} both appear twice in the @code{asm}
+parameters, once to specify memory accessed, and once to specify a
+base register used by the @code{asm}.  You won't normally be wasting a
+register by doing this as GCC can use the same register for both
+purposes.  However, it would be foolish to use both @code{%1} and
+@code{%3} for @code{x} in this @code{asm} and expect them to be the
+same.  In fact, @code{%3} may well not be a register.  It might be a
+symbolic memory reference to the object pointed to by @code{x}.
+
+@smallexample
+asm ("sumsq %0, %1, %2"
+     : "+f" (result)
+     : "r" (x), "r" (y), "m" (*x), "m" (*y));
+@end smallexample
+
+Here is a fictitious @code{*z++ = *x++ * *y++} instruction.
+Notice that the @code{x}, @code{y} and @code{z} pointer registers
+must be specified as input/output because the @code{asm} modifies
+them.
+
+@smallexample
+asm ("vecmul %0, %1, %2"
+     : "+r" (z), "+r" (x), "+r" (y), "=m" (*z)
+     : "m" (*x), "m" (*y));
+@end smallexample
+
+An x86 example where the string memory argument is of unknown length.
+
+@smallexample
+asm("repne scasb"
+    : "=c" (count), "+D" (p)
+    : "m" (*(const char (*)[]) p), "0" (-1), "a" (0));
+@end smallexample
+
+If you know the above will only be reading a ten byte array then you
+could instead use a memory input like:
+@code{"m" (*(const char (*)[10]) p)}.
+
+Here is an example of a PowerPC vector scale implemented in assembly,
+complete with vector and condition code clobbers, and some initialized
+offset registers that are unchanged by the @code{asm}.
+
+@smallexample
+void
+dscal (size_t n, double *x, double alpha)
+@{
+  asm ("/* lots of asm here */"
+       : "+m" (*(double (*)[n]) x), "+&r" (n), "+b" (x)
+       : "d" (alpha), "b" (32), "b" (48), "b" (64),
+         "b" (80), "b" (96), "b" (112)
+       : "cr0",
+         "vs32","vs33","vs34","vs35","vs36","vs37","vs38","vs39",
+         "vs40","vs41","vs42","vs43","vs44","vs45","vs46","vs47");
+@}
+@end smallexample
 
 @anchor{GotoLabels}
 @subsubsection Goto Labels
