@@ -1,3 +1,10 @@
+2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82353
+	* gcc.target/i386/i386.exp (tests): Revert the '.C' extension change.
+	* gcc.target/i386/pr82353.C: Moved to ...
+	* g++.dg/ubsan/pr82353.C: ... here.  Restrict to i?86/x86_64 && lp64.
+
 2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/387-ficom-2.c: New test.
