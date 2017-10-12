@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
+#include "cpplib.h"
+#include "incpath.h"
 
 /* Id for dumping the class heirarchy.  */
 int module_dump_id;
@@ -102,6 +104,12 @@ static GTY(()) module_state *this_module;
 
 /* Map from identifier to module index. */
 static GTY(()) hash_table<module_state_hash> *module_hash;
+
+/* Module search path.  */
+static cpp_dir *module_path;
+
+/* Longest module path.  */
+static size_t module_path_max;
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
@@ -1370,7 +1378,7 @@ cpms_in::cpms_in (FILE *s, const char *n,
 
 cpms_in::~cpms_in ()
 {
-  free (remap_vec);
+  XDELETE (remap_vec);
 }
 
 unsigned
@@ -1455,8 +1463,8 @@ timestamp_mismatch (tree name, unsigned HOST_WIDE_INT expected,
 	 name, e_str, a_str);
 
 
-  free (e_str);
-  free (a_str);
+  XDELETE (e_str);
+  XDELETE (a_str);
 }
 
 bool
@@ -4291,7 +4299,6 @@ cpms_out::bindings (tree ns)
 }
 
 /* Mangling for module files.  */
-#define MOD_FNAME_PFX "g++-"
 #define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
 #define MOD_FNAME_DOT '-'
 
@@ -4442,29 +4449,6 @@ module_interface_p ()
   return this_module && this_module->direct_import;
 }
 
-/* Convert a module name into a file name.  The name is malloced.
-
-   (for the moment) this replaces '.' with '-' adds a prefix and
-   suffix.
-
-   FIXME: Add host-applicable hooks.  */
-
-static char *
-module_to_filename (tree id)
-{
-  char *name = concat (MOD_FNAME_PFX, IDENTIFIER_POINTER (id),
-		       MOD_FNAME_SFX, NULL);
-  char *ptr = name + strlen (MOD_FNAME_PFX);
-  size_t len = IDENTIFIER_LENGTH (id);
-
-  if (MOD_FNAME_DOT != '.')
-    for (; len--; ptr++)
-      if (*ptr == '.')
-	*ptr = MOD_FNAME_DOT;
-
-  return name;
-}
-
 /* Read a module NAME file name FNAME on STREAM.  Returns its module
    index, or 0 */
 
@@ -4501,6 +4485,113 @@ read_module (FILE *stream, const char *fname, module_state *state,
 		 "failed to read module %qE (%qs)", state->name, fname);
 
   return ok;
+}
+
+/* Convert a module name into a file name.  The name is malloced.
+ */
+
+static char *
+module_to_filename (tree id, size_t &len)
+{
+  size_t id_len = IDENTIFIER_LENGTH (id);
+  size_t sfx_len = strlen (MOD_FNAME_SFX);
+  len = id_len + sfx_len;
+
+  char *buffer = XNEWVEC (char, id_len + sfx_len + 1);
+  memcpy (buffer, IDENTIFIER_POINTER (id), id_len);
+  memcpy (buffer + id_len, MOD_FNAME_SFX, sfx_len + 1);
+  
+  char dot = module_path ? DIR_SEPARATOR : MOD_FNAME_DOT;
+  if (dot != '.')
+    for (char *ptr = buffer; id_len--; ptr++)
+      if (*ptr == '.')
+	*ptr = dot;
+
+  return buffer;
+}
+
+/* Search the module path for a binary module file called NAME.
+   Updates NAME with path found.  */
+
+static FILE *
+search_module_path (char *&name, size_t name_len)
+{
+  char *buffer = XNEWVEC (char, module_path_max + name_len + 2);
+  FILE *stream;
+
+  for (const cpp_dir *dir = module_path; dir; dir = dir->next)
+    {
+      memcpy (buffer, dir->name, dir->len);
+      buffer[dir->len] = DIR_SEPARATOR;
+      memcpy (buffer + dir->len + 1, name, name_len + 1);
+
+      stream = fopen (buffer, "rb");
+      if (stream)
+	{
+	  XDELETE (name);
+	  name = buffer;
+	  return stream;
+	}
+    }
+
+  stream = fopen (name, "rb");
+
+  if (!stream)
+    {
+      // FIXME: flag_module_hook
+    }
+
+  return stream;
+}
+
+static FILE *
+make_module_file (char *&name, size_t name_len)
+{
+  size_t root_len = 0;
+  if (flag_module_root)
+    {
+      root_len = strlen (flag_module_root);
+
+      char *buffer = XNEWVEC (char, root_len + name_len + 2);
+      memcpy (buffer, flag_module_root, root_len);
+      buffer[root_len] = DIR_SEPARATOR;
+      memcpy (buffer + root_len + 1, name, name_len + 1);
+
+      XDELETE (name);
+      name = buffer;
+    }
+
+  FILE *stream = fopen (name, "wb");
+  int x = errno;
+  if (!stream && root_len
+      && (errno == ENOTDIR || errno == ENOENT))
+    {
+      /* Try and create the missing directories.  */
+      char *base = name + root_len + 1;
+      char *end = base + name_len;
+
+      for (;; base++)
+	{
+	  /* There can only be one dir separator!  */
+	  base = (char *)memchr (base, DIR_SEPARATOR, end - base);
+	  if (!base)
+	    break;
+
+	  *base = 0;
+	  int failed = mkdir (name, S_IRWXU | S_IRWXG | S_IRWXO);
+	  *base = DIR_SEPARATOR;
+	  int y = errno;
+	  if (failed
+	      /* Maybe racing with another creator.  */
+	      && errno != EEXIST)
+	    return NULL;
+	}
+
+      /* Have another go.  */
+      stream = fopen (name, "wb");
+    }
+
+  return stream;
 }
 
 /* Import the module NAME into the current TU.  This includes the
@@ -4580,35 +4671,31 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	index = THIS_MODULE_INDEX;
       else
 	{
-          // FIXME: Path search along the -I path? Note that here we are
-          //        searching for the binary module interface, not source,
-          //        which may have to be built with "our" options, etc. So
-          //        it's not clear searching, say, in /usr/include, makes
-          //        much sense.
-          //
-          // FIXME: Think about make dependency generation.
-
           /* First look in the module file map. If not found, fall back to the
              default mapping. */
-          const char *fname = NULL;
-          char *fname_free = NULL;
+          char *fname;
+	  size_t fname_len;
+
           if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
-            fname = *slot;
+	    {
+	      fname_len = strlen (*slot);
+	      fname = XNEWVEC (char, fname_len + 1);
+	      memcpy (fname, *slot, fname_len + 1);
+	    }
           else
-            fname = fname_free = module_to_filename (name);
+            fname = module_to_filename (name, fname_len);
 
-	  FILE *stream = fopen (fname, "rb");
-
-	  if (!stream)
-	    error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
-	  else
+	  if (FILE *stream = search_module_path (fname, fname_len))
 	    {
 	      gcc_assert (global_namespace == current_scope ());
 	      index = read_module (stream, fname, state, stamp, from);
 	      fclose (stream);
 	      gcc_assert (state->mod == ~0U);
 	    }
-          free (fname_free);
+	  else
+	    error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
+
+          XDELETE (fname);
 	}
     }
 
@@ -4700,6 +4787,17 @@ write_module (FILE *stream, const char *fname, tree name)
   out.instrument ();
 }
 
+/* Convert the module search path.  */
+
+void
+init_module_processing ()
+{
+  module_path = get_added_cpp_dirs (INC_CXX_MPATH);
+  for (const cpp_dir *path = module_path; path; path = path->next)
+    if (path->len > module_path_max)
+      module_path_max = path->len;
+}
+
 /* Finalize the module at end of parsing.  */
 
 void
@@ -4707,27 +4805,33 @@ finish_module ()
 {
   if (this_module && this_module->direct_import)
     {
-      char *fname_free = NULL;
-      const char *fname = module_output
-        ? module_output
-        : (fname_free = module_to_filename (this_module->name));
+      char *fname;
+      size_t fname_len;
 
-      if (!errorcount)
+      if (module_output)
 	{
-	  FILE *stream = fopen (fname, "wb");
-
-	  if (!stream)
-	    error_at (module_loc, "cannot open module interface %qE (%qs): %m",
-		      this_module->name, fname);
-	  else
-	    {
-	      write_module (stream, fname, this_module->name);
-	      fclose (stream);
-	    }
+	  fname_len = strlen (module_output);
+	  fname = XNEWVEC (char, fname_len + 1);
+	  memcpy (fname, module_output, fname_len + 1);
 	}
+      else
+	fname = module_to_filename (this_module->name, fname_len);
+
+      if (errorcount)
+	;
+      else if (FILE *stream = make_module_file (fname, fname_len))
+	{
+	  write_module (stream, fname, this_module->name);
+	  fclose (stream);
+	}
+      else
+	error_at (module_loc, "cannot open module interface %qE (%qs): %m",
+		  this_module->name, fname);
+
       if (errorcount)
 	unlink (fname);
-      free (fname_free);
+
+      XDELETE (fname);
     }
   else if (module_output)
     error ("-fmodule-output specified for non-module interface compilation");

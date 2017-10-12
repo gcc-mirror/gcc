@@ -611,6 +611,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       flag_modules = 2;
       break;
 
+    case OPT_fmodule_path_:
+      add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
+      break;
+
     case OPT_fmodule_output_:
       module_output = arg;
       break;
@@ -787,6 +791,9 @@ c_common_post_options (const char **pfilename)
      language-specific options.  */
   C_COMMON_OVERRIDE_OPTIONS;
 #endif
+
+  if (flag_modules)
+    clean_cxx_module_path (parse_in, flag_module_root, verbose);
 
   /* Excess precision other than "fast" requires front-end
      support.  */

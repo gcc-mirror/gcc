@@ -49,7 +49,7 @@ proc decode_mod_spec { spec } {
 	set spec [string range $spec 1 end]
 	set not 1
     }
-    set file "g++-[regsub -all {\.} $spec {-}].nms"
+    set file "[regsub -all {\.} $spec {-}].nms"
     return [list $not $file]
 }
 

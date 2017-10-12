@@ -1,3 +1,27 @@
+2017-10-12  Nathan Sidwell  <nathan@acm.org>
+
+	Add -fmodule-path, -fmodule-root.
+	gcc/
+	* incpath.h (INC_CXX_MPATH): New.
+	(clean_cxx_module_path): Declare.
+	* incpath.c (clean_cxx_module_path): New.
+	gcc/cp/
+	* cp-tree.h (init_module_processing): Declare.
+	* decl.c (cxx_init_decl_processing): Call init_module_processing.
+	* module.c (module_path, module_path_max): New vars.
+	(MOD_FNAME_PFX): Delete.
+	(module_to_filename): Reimplement.
+	(search_module_path, make_module_file): New.
+	(do_module_import): Adjust.
+	(init_module_processing): New.
+	(finish_module): Adjust.
+	gcc/c-family/
+	* c-opts.c (c_common_handle_option): Process OPT_fmodule_path_.
+	(c_common_post_options): Clean module path.
+	* c.opt (fmodule-root=, fmodule-path=, fmodule-hook=): New.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Adjust module name logic.
+
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r253654.

@@ -1493,7 +1493,7 @@ Allow implicit conversions between vectors with differing numbers of subparts an
 
 fmodules
 C++ ObjC++ Var(flag_modules) Uinteger
-Enable C++ modules (experimental, 2=more experimental).
+Enable C++ modules (experimental).
 
 fmodules++
 C++ ObjC++ Var(flag_modules) Uinteger
@@ -1501,6 +1501,19 @@ Enable C++ modules (more experimental).
 
 fmodules-ts
 C++ ObjC++ Alias(fmodules)
+
+fmodule-root=
+C++ ObjC++ Joined Var(flag_module_root)
+-fmodule-root=<directory>  Emit binary module interfaces under <directory>
+
+; perhaps steal -J?
+fmodule-path=
+C++ ObjC++ Joined Defer VAR(flag_module_path)
+-fmodule-path=<directory>
+
+fmodule-hook=
+C++ ObjC++ Joined Var(flag_module_hook)
+-fmodule-hook=<program> Invoke <program> for missing binary module interface
 
 fmodule-output=
 C++ ObjC++ Joined MissingArgError(missing filename after %qs)

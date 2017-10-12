@@ -22,8 +22,9 @@
 enum incpath_kind {
   INC_QUOTE = 0, /* include "foo" */
   INC_BRACKET,   /* include <foo> */
-  INC_SYSTEM,    /* sysinclude */
-  INC_AFTER,	/* post-sysinclude.  */
+  INC_SYSTEM,    /* sys-include */
+  INC_AFTER,	 /* post-sysinclude  */
+  INC_CXX_MPATH, /* C++ module path */
   INC_MAX
 };
 
@@ -34,6 +35,7 @@ extern void register_include_chains (cpp_reader *, const char *,
 				     int, int, int);
 extern void add_cpp_dir_path (struct cpp_dir *, incpath_kind);
 extern struct cpp_dir *get_added_cpp_dirs (incpath_kind);
+extern void clean_cxx_module_path (cpp_reader *, const char *, bool);
 
 struct target_c_incpath_s {
   /* Do extra includes processing.  STDINC is false iff -nostdinc was given.  */

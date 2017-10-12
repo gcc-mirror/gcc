@@ -6434,6 +6434,7 @@ extern void decl_set_module (tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
 extern void declare_module (location_t, tree, bool, tree);
+extern void init_module_processing ();
 extern void finish_module ();
 extern void import_module (location_t, tree, tree);
 extern tree module_name (unsigned);

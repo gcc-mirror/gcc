@@ -509,6 +509,27 @@ get_added_cpp_dirs (incpath_kind chain)
   return heads[chain];
 }
 
+/* Clean out duplicates from the module include path.  Prepend ROOT,
+   if it is non-null.  */
+
+void
+clean_cxx_module_path (cpp_reader *pfile, const char *root, bool verbose)
+{
+  cpp_dir *path = heads[INC_CXX_MPATH];
+  
+  if (root)
+    {
+      /* Prepend the root to the path.  */
+      tails[INC_CXX_MPATH] = heads[INC_CXX_MPATH] = NULL;
+      add_path (xstrdup (root), INC_CXX_MPATH, true, true);
+      tails[INC_CXX_MPATH]->next = path;
+      path = heads[INC_CXX_MPATH];
+    }
+
+  path = remove_duplicates (pfile, path, NULL, NULL, verbose);
+  heads[INC_CXX_MPATH] = path;
+}
+
 #if !(defined TARGET_EXTRA_INCLUDES) || !(defined TARGET_EXTRA_PRE_INCLUDES)
 static void hook_void_charptr_charptr_int (const char *sysroot ATTRIBUTE_UNUSED,
 					   const char *iprefix ATTRIBUTE_UNUSED,
