@@ -8122,7 +8122,7 @@ A comma-separated list of C expressions read by the instructions in the
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
-An empty list is permitted.  @xref{Clobbers}.
+An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
@@ -8482,7 +8482,7 @@ The enclosing parentheses are a required part of the syntax.
 
 When the compiler selects the registers to use to 
 represent the output operands, it does not use any of the clobbered registers 
-(@pxref{Clobbers}).
+(@pxref{Clobbers and Scratch Registers}).
 
 Output operand expressions must be lvalues. The compiler cannot check whether 
 the operands have data types that are reasonable for the instruction being 
@@ -8718,7 +8718,8 @@ as input.  The enclosing parentheses are a required part of the syntax.
 @end table
 
 When the compiler selects the registers to use to represent the input 
-operands, it does not use any of the clobbered registers (@pxref{Clobbers}).
+operands, it does not use any of the clobbered registers
+(@pxref{Clobbers and Scratch Registers}).
 
 If there are no output operands but there are input operands, place two 
 consecutive colons where the output operands would go:
@@ -8769,9 +8770,10 @@ asm ("cmoveq %1, %2, %[result]"
    : "r" (test), "r" (new), "[result]" (old));
 @end example
 
-@anchor{Clobbers}
-@subsubsection Clobbers
+@anchor{Clobbers and Scratch Registers}
+@subsubsection Clobbers and Scratch Registers
 @cindex @code{asm} clobbers
+@cindex @code{asm} scratch registers
 
 While the compiler is aware of changes to entries listed in the output 
 operands, the inline @code{asm} code may modify more than just the outputs. For 
@@ -8897,6 +8899,75 @@ dscal (size_t n, double *x, double alpha)
        : "cr0",
          "vs32","vs33","vs34","vs35","vs36","vs37","vs38","vs39",
          "vs40","vs41","vs42","vs43","vs44","vs45","vs46","vs47");
+@}
+@end smallexample
+
+Rather than allocating fixed registers via clobbers to provide scratch
+registers for an @code{asm} statement, an alternative is to define a
+variable and make it an early-clobber output as with @code{a2} and
+@code{a3} in the example below.  This gives the compiler register
+allocator more freedom.  You can also define a variable and make it an
+output tied to an input as with @code{a0} and @code{a1}, tied
+respectively to @code{ap} and @code{lda}.  Of course, with tied
+outputs your @code{asm} can't use the input value after modifying the
+output register since they are one and the same register.  What's
+more, if you omit the early-clobber on the output, it is possible that
+GCC might allocate the same register to another of the inputs if GCC
+could prove they had the same value on entry to the @code{asm}.  This
+is why @code{a1} has an early-clobber.  Its tied input, @code{lda}
+might conceivably be known to have the value 16 and without an
+early-clobber share the same register as @code{%11}.  On the other
+hand, @code{ap} can't be the same as any of the other inputs, so an
+early-clobber on @code{a0} is not needed.  It is also not desirable in
+this case.  An early-clobber on @code{a0} would cause GCC to allocate
+a separate register for the @code{"m" (*(const double (*)[]) ap)}
+input.  Note that tying an input to an output is the way to set up an
+initialized temporary register modified by an @code{asm} statement.
+An input not tied to an output is assumed by GCC to be unchanged, for
+example @code{"b" (16)} below sets up @code{%11} to 16, and GCC might
+use that register in following code if the value 16 happened to be
+needed.  You can even use a normal @code{asm} output for a scratch if
+all inputs that might share the same register are consumed before the
+scratch is used.  The VSX registers clobbered by the @code{asm}
+statement could have used this technique except for GCC's limit on the
+number of @code{asm} parameters.
+
+@smallexample
+static void
+dgemv_kernel_4x4 (long n, const double *ap, long lda,
+                  const double *x, double *y, double alpha)
+@{
+  double *a0;
+  double *a1;
+  double *a2;
+  double *a3;
+
+  __asm__
+    (
+     /* lots of asm here */
+     "#n=%1 ap=%8=%12 lda=%13 x=%7=%10 y=%0=%2 alpha=%9 o16=%11\n"
+     "#a0=%3 a1=%4 a2=%5 a3=%6"
+     :
+       "+m" (*(double (*)[n]) y),
+       "+&r" (n),	// 1
+       "+b" (y),	// 2
+       "=b" (a0),	// 3
+       "=&b" (a1),	// 4
+       "=&b" (a2),	// 5
+       "=&b" (a3)	// 6
+     :
+       "m" (*(const double (*)[n]) x),
+       "m" (*(const double (*)[]) ap),
+       "d" (alpha),	// 9
+       "r" (x),		// 10
+       "b" (16),	// 11
+       "3" (ap),	// 12
+       "4" (lda)	// 13
+     :
+       "cr0",
+       "vs32","vs33","vs34","vs35","vs36","vs37",
+       "vs40","vs41","vs42","vs43","vs44","vs45","vs46","vs47"
+     );
 @}
 @end smallexample
 
