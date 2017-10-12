@@ -1,5 +1,12 @@
 2017-10-12  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.dg/tree-ssa/ldist-28.c: New test.
+	* gcc.dg/tree-ssa/ldist-29.c: New test.
+	* gcc.dg/tree-ssa/ldist-30.c: New test.
+	* gcc.dg/tree-ssa/ldist-31.c: New test.
+
+2017-10-12  Bin Cheng  <bin.cheng@arm.com>
+
 	* gcc.dg/tree-ssa/ldist-7.c: Adjust test string.
 	* gcc.dg/tree-ssa/ldist-16.c: Ditto.
 	* gcc.dg/tree-ssa/ldist-25.c: Ditto.
