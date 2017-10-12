@@ -83,8 +83,8 @@ along with GCC; see the file COPYING3.  If not see
 	loops and recover to the original one.
 
    TODO:
-     1) We only distribute innermost loops now.  This pass should handle loop
-	nests in the future.
+     1) We only distribute innermost two-level loop nest now.  We should
+	extend it for arbitrary loop nests in the future.
      2) We only fuse partitions in SCC now.  A better fusion algorithm is
 	desired to minimize loop overhead, maximize parallelism and maximize
 	data reuse.  */
@@ -117,6 +117,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MAX_DATAREFS_NUM \
 	((unsigned) PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
+
+/* Threshold controlling number of distributed partitions.  Given it may
+   be unnecessary if a memory stream cost model is invented in the future,
+   we define it as a temporary macro, rather than a parameter.  */
+#define NUM_PARTITION_THRESHOLD (4)
 
 /* Hashtable helpers.  */
 
@@ -714,9 +719,11 @@ ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
     {
-      gimple *use_stmt = USE_STMT (use_p);
-      if (!is_gimple_debug (use_stmt)
-	  && loop != loop_containing_stmt (use_stmt))
+      if (is_gimple_debug (USE_STMT (use_p)))
+	continue;
+
+      basic_block use_bb = gimple_bb (USE_STMT (use_p));
+      if (!flow_bb_inside_loop_p (loop, use_bb))
 	return true;
     }
 
@@ -1414,6 +1421,22 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
   if (!single_store)
     return;
 
+  /* TODO: We don't support memset/memcpy distribution for loop nest yet.  */
+  if (loop->inner)
+    {
+      basic_block bb = gimple_bb (DR_STMT (single_store));
+
+      if (bb->loop_father != loop)
+	return;
+
+      if (single_load)
+	{
+	  bb = gimple_bb (DR_STMT (single_load));
+	  if (bb->loop_father != loop)
+	    return;
+	}
+    }
+
   nb_iter = number_of_latch_executions (loop);
   gcc_assert (nb_iter && nb_iter != chrec_dont_know);
   if (dominated_by_p (CDI_DOMINATORS, single_exit (loop)->src,
@@ -1965,16 +1988,18 @@ sort_partitions_by_post_order (struct graph *pg,
 }
 
 /* Given reduced dependence graph RDG merge strong connected components
-   of PARTITIONS.  In this function, data dependence caused by possible
-   alias between references is ignored, as if it doesn't exist at all.  */
+   of PARTITIONS.  If IGNORE_ALIAS_P is true, data dependence caused by
+   possible alias between references is ignored, as if it doesn't exist
+   at all; otherwise all depdendences are considered.  */
 
 static void
 merge_dep_scc_partitions (struct graph *rdg,
-			  vec<struct partition *> *partitions)
+			  vec<struct partition *> *partitions,
+			  bool ignore_alias_p)
 {
   struct partition *partition1, *partition2;
   struct pg_vdata *data;
-  graph *pg = build_partition_graph (rdg, partitions, true);
+  graph *pg = build_partition_graph (rdg, partitions, ignore_alias_p);
   int i, j, num_sccs = graphds_scc (pg, NULL);
 
   /* Strong connected compoenent means dependence cycle, we cannot distribute
@@ -2340,38 +2365,49 @@ version_for_distribution_p (vec<struct partition *> *partitions,
   return (alias_ddrs->length () > 0);
 }
 
-/* Fuse all partitions if necessary before finalizing distribution.  */
+/* Fuse PARTITIONS of LOOP if necessary before finalizing distribution.
+   ALIAS_DDRS contains ddrs which need runtime alias check.  */
 
 static void
-finalize_partitions (vec<struct partition *> *partitions,
+finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
 		     vec<ddr_p> *alias_ddrs)
 {
   unsigned i;
-  struct partition *a, *partition;
+  struct partition *partition, *a;
 
   if (partitions->length () == 1
       || alias_ddrs->length () > 0)
     return;
 
-  a = (*partitions)[0];
-  if (a->kind != PKIND_NORMAL)
-    return;
-
-  for (i = 1; partitions->iterate (i, &partition); ++i)
+  unsigned num_builtin = 0, num_normal = 0;
+  bool same_type_p = true;
+  enum partition_type type = ((*partitions)[0])->type;
+  for (i = 0; partitions->iterate (i, &partition); ++i)
     {
-      /* Don't fuse if partition has different type or it is a builtin.  */
-      if (partition->type != a->type
-	  || partition->kind != PKIND_NORMAL)
-	return;
+      same_type_p &= (type == partition->type);
+      if (partition->kind != PKIND_NORMAL)
+	num_builtin++;
+      else
+	num_normal++;
     }
 
-  /* Fuse all partitions.  */
-  for (i = 1; partitions->iterate (i, &partition); ++i)
+  /* Don't distribute current loop into too many loops given we don't have
+     memory stream cost model.  Be even more conservative in case of loop
+     nest distribution.  */
+  if ((same_type_p && num_builtin == 0)
+      || (loop->inner != NULL
+	  && i >= NUM_PARTITION_THRESHOLD && num_normal > 1)
+      || (loop->inner == NULL
+	  && i >= NUM_PARTITION_THRESHOLD && num_normal > num_builtin))
     {
-      partition_merge_into (NULL, a, partition, FUSE_FINALIZE);
-      partition_free (partition);
+      a = (*partitions)[0];
+      for (i = 1; partitions->iterate (i, &partition); ++i)
+	{
+	  partition_merge_into (NULL, a, partition, FUSE_FINALIZE);
+	  partition_free (partition);
+	}
+      partitions->truncate (1);
     }
-  partitions->truncate (1);
 }
 
 /* Distributes the code from LOOP in such a way that producer statements
@@ -2524,16 +2560,23 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	i--;
     }
 
-  /* Build the partition dependency graph.  */
+  /* Build the partition dependency graph and fuse partitions in strong
+     connected component.  */
   if (partitions.length () > 1)
     {
-      merge_dep_scc_partitions (rdg, &partitions);
-      alias_ddrs.truncate (0);
-      if (partitions.length () > 1)
-	break_alias_scc_partitions (rdg, &partitions, &alias_ddrs);
+      /* Don't support loop nest distribution under runtime alias check
+	 since it's not likely to enable many vectorization opportunities.  */
+      if (loop->inner)
+	merge_dep_scc_partitions (rdg, &partitions, false);
+      else
+	{
+	  merge_dep_scc_partitions (rdg, &partitions, true);
+	  if (partitions.length () > 1)
+	    break_alias_scc_partitions (rdg, &partitions, &alias_ddrs);
+	}
     }
 
-  finalize_partitions (&partitions, &alias_ddrs);
+  finalize_partitions (loop, &partitions, &alias_ddrs);
 
   nbp = partitions.length ();
   if (nbp == 0
@@ -2614,6 +2657,86 @@ public:
 
 }; // class pass_loop_distribution
 
+
+/* Given LOOP, this function records seed statements for distribution in
+   WORK_LIST.  Return false if there is nothing for distribution.  */
+
+static bool
+find_seed_stmts_for_distribution (struct loop *loop, vec<gimple *> *work_list)
+{
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+
+  /* Initialize the worklist with stmts we seed the partitions with.  */
+  for (unsigned i = 0; i < loop->num_nodes; ++i)
+    {
+      for (gphi_iterator gsi = gsi_start_phis (bbs[i]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  if (virtual_operand_p (gimple_phi_result (phi)))
+	    continue;
+	  /* Distribute stmts which have defs that are used outside of
+	     the loop.  */
+	  if (!stmt_has_scalar_dependences_outside_loop (loop, phi))
+	    continue;
+	  work_list->safe_push (phi);
+	}
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  /* If there is a stmt with side-effects bail out - we
+	     cannot and should not distribute this loop.  */
+	  if (gimple_has_side_effects (stmt))
+	    {
+	      free (bbs);
+	      return false;
+	    }
+
+	  /* Distribute stmts which have defs that are used outside of
+	     the loop.  */
+	  if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
+	    ;
+	  /* Otherwise only distribute stores for now.  */
+	  else if (!gimple_vdef (stmt))
+	    continue;
+
+	  work_list->safe_push (stmt);
+	}
+    }
+  free (bbs);
+  return work_list->length () > 0;
+}
+
+/* Given innermost LOOP, return the outermost enclosing loop that forms a
+   perfect loop nest.  */
+
+static struct loop *
+prepare_perfect_loop_nest (struct loop *loop)
+{
+  struct loop *outer = loop_outer (loop);
+  tree niters = number_of_latch_executions (loop);
+
+  /* TODO: We only support the innermost 2-level loop nest distribution
+     because of compilation time issue for now.  This should be relaxed
+     in the future.  */
+  while (loop->inner == NULL
+	 && loop_outer (outer)
+	 && outer->inner == loop && loop->next == NULL
+	 && single_exit (outer)
+	 && optimize_loop_for_speed_p (outer)
+	 && !chrec_contains_symbols_defined_in_loop (niters, outer->num)
+	 && (niters = number_of_latch_executions (outer)) != NULL_TREE
+	 && niters != chrec_dont_know)
+    {
+      loop = outer;
+      outer = loop_outer (loop);
+    }
+
+  return loop;
+}
+
 unsigned int
 pass_loop_distribution::execute (function *fun)
 {
@@ -2656,18 +2779,9 @@ pass_loop_distribution::execute (function *fun)
      walking to innermost loops.  */
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
-      auto_vec<gimple *> work_list;
-      basic_block *bbs;
-      int num = loop->num;
-      unsigned int i;
-
-      /* If the loop doesn't have a single exit we will fail anyway,
-	 so do that early.  */
-      if (!single_exit (loop))
-	continue;
-
-      /* Only optimize hot loops.  */
-      if (!optimize_loop_for_speed_p (loop))
+      /* Don't distribute multiple exit edges loop, or cold loop.  */
+      if (!single_exit (loop)
+	  || !optimize_loop_for_speed_p (loop))
 	continue;
 
       /* Don't distribute loop if niters is unknown.  */
@@ -2675,56 +2789,16 @@ pass_loop_distribution::execute (function *fun)
       if (niters == NULL_TREE || niters == chrec_dont_know)
 	continue;
 
-      /* Initialize the worklist with stmts we seed the partitions with.  */
-      bbs = get_loop_body_in_dom_order (loop);
-      for (i = 0; i < loop->num_nodes; ++i)
+      /* Get the perfect loop nest for distribution.  */
+      loop = prepare_perfect_loop_nest (loop);
+      for (; loop; loop = loop->inner)
 	{
-	  for (gphi_iterator gsi = gsi_start_phis (bbs[i]);
-	       !gsi_end_p (gsi);
-	       gsi_next (&gsi))
-	    {
-	      gphi *phi = gsi.phi ();
-	      if (virtual_operand_p (gimple_phi_result (phi)))
-		continue;
-	      /* Distribute stmts which have defs that are used outside of
-		 the loop.  */
-	      if (!stmt_has_scalar_dependences_outside_loop (loop, phi))
-		continue;
-	      work_list.safe_push (phi);
-	    }
-	  for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
-	       !gsi_end_p (gsi);
-	       gsi_next (&gsi))
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
+	  auto_vec<gimple *> work_list;
+	  if (!find_seed_stmts_for_distribution (loop, &work_list))
+	    break;
 
-	      /* If there is a stmt with side-effects bail out - we
-		 cannot and should not distribute this loop.  */
-	      if (gimple_has_side_effects (stmt))
-		{
-		  work_list.truncate (0);
-		  goto out;
-		}
-
-	      /* Distribute stmts which have defs that are used outside of
-		 the loop.  */
-	      if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
-		;
-	      /* Otherwise only distribute stores for now.  */
-	      else if (!gimple_vdef (stmt))
-		continue;
-
-	      work_list.safe_push (stmt);
-	    }
-	}
-out:
-      free (bbs);
-
-      int nb_generated_loops = 0;
-      int nb_generated_calls = 0;
-      location_t loc = find_loop_location (loop);
-      if (work_list.length () > 0)
-	{
+	  const char *str = loop->inner ? " nest" : "";
+	  location_t loc = find_loop_location (loop);
 	  if (!cd)
 	    {
 	      calculate_dominance_info (CDI_DOMINATORS);
@@ -2732,24 +2806,29 @@ out:
 	      cd = new control_dependences ();
 	      free_dominance_info (CDI_POST_DOMINATORS);
 	    }
+
 	  bool destroy_p;
+	  int nb_generated_loops, nb_generated_calls;
 	  nb_generated_loops = distribute_loop (loop, work_list, cd,
 						&nb_generated_calls,
 						&destroy_p);
 	  if (destroy_p)
 	    loops_to_be_destroyed.safe_push (loop);
-	}
 
-      if (nb_generated_loops + nb_generated_calls > 0)
-	{
-	  changed = true;
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
-			   loc, "Loop %d distributed: split to %d loops "
-			   "and %d library calls.\n",
-			   num, nb_generated_loops, nb_generated_calls);
+	  if (nb_generated_loops + nb_generated_calls > 0)
+	    {
+	      changed = true;
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS,
+			       loc, "Loop%s %d distributed: split to %d loops "
+			       "and %d library calls.\n", str, loop->num,
+			       nb_generated_loops, nb_generated_calls);
+
+	      break;
+	    }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Loop%s %d not distributed.\n", str, loop->num);
 	}
-      else if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Loop %d is the same.\n", num);
     }
 
   if (cd)

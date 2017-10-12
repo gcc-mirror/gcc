@@ -1,3 +1,10 @@
+2017-10-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-7.c: Adjust test string.
+	* gcc.dg/tree-ssa/ldist-16.c: Ditto.
+	* gcc.dg/tree-ssa/ldist-25.c: Ditto.
+	* gcc.dg/tree-ssa/ldist-33.c: New test.
+
 2017-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69728
