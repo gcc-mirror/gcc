@@ -1,3 +1,10 @@
+2017-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_split_conditional_move):
+	Use std::swap instead of manually swapping.
+	(alpha_stdarg_optimize_hook): Ditto.
+	(alpha_canonicalize_comparison): Ditto.
+
 2017-10-12  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-loop-distribution.c (struct builtin_info): New struct.
