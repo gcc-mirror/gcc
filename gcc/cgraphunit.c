@@ -1296,6 +1296,93 @@ analyze_functions (bool first_time)
   input_location = saved_loc;
 }
 
+/* Check declaration of the type of ALIAS for compatibility with its TARGET
+   (which may be an ifunc resolver) and issue a diagnostic when they are
+   not compatible according to language rules (plus a C++ extension for
+   non-static member functions).  */
+
+static void
+maybe_diag_incompatible_alias (tree alias, tree target)
+{
+  tree altype = TREE_TYPE (alias);
+  tree targtype = TREE_TYPE (target);
+
+  bool ifunc = lookup_attribute ("ifunc", DECL_ATTRIBUTES (alias));
+  tree funcptr = altype;
+
+  if (ifunc)
+    {
+      /* Handle attribute ifunc first.  */
+      if (TREE_CODE (altype) == METHOD_TYPE)
+	{
+	  /* Set FUNCPTR to the type of the alias target.  If the type
+	     is a non-static member function of class C, construct a type
+	     of an ordinary function taking C* as the first argument,
+	     followed by the member function argument list, and use it
+	     instead to check for incompatibility.  This conversion is
+	     not defined by the language but an extension provided by
+	     G++.  */
+
+	  tree rettype = TREE_TYPE (altype);
+	  tree args = TYPE_ARG_TYPES (altype);
+	  altype = build_function_type (rettype, args);
+	  funcptr = altype;
+	}
+
+      targtype = TREE_TYPE (targtype);
+
+      if (POINTER_TYPE_P (targtype))
+	{
+	  targtype = TREE_TYPE (targtype);
+
+	  /* Only issue Wattribute-alias for conversions to void* with
+	     -Wextra.  */
+	  if (VOID_TYPE_P (targtype) && !extra_warnings)
+	    return;
+
+	  /* Proceed to handle incompatible ifunc resolvers below.  */
+	}
+      else
+	{
+	  funcptr = build_pointer_type (funcptr);
+
+	  error_at (DECL_SOURCE_LOCATION (target),
+		    "%<ifunc%> resolver for %qD must return %qT",
+		 alias, funcptr);
+	  inform (DECL_SOURCE_LOCATION (alias),
+		  "resolver indirect function declared here");
+	  return;
+	}
+    }
+
+  if ((!FUNC_OR_METHOD_TYPE_P (targtype)
+       || (prototype_p (altype)
+	   && prototype_p (targtype)
+	   && !types_compatible_p (altype, targtype))))
+    {
+      /* Warn for incompatibilities.  Avoid warning for functions
+	 without a prototype to make it possible to declare aliases
+	 without knowing the exact type, as libstdc++ does.  */
+      if (ifunc)
+	{
+	  funcptr = build_pointer_type (funcptr);
+
+	  if (warning_at (DECL_SOURCE_LOCATION (target),
+			  OPT_Wattribute_alias,
+			  "%<ifunc%> resolver for %qD should return %qT",
+			  alias, funcptr))
+	    inform (DECL_SOURCE_LOCATION (alias),
+		    "resolver indirect function declared here");
+	}
+      else if (warning_at (DECL_SOURCE_LOCATION (alias),
+			   OPT_Wattribute_alias,
+			   "%qD alias between functions of incompatible "
+			   "types %qT and %qT", alias, altype, targtype))
+	inform (DECL_SOURCE_LOCATION (target),
+		"aliased declaration here");
+    }
+}
+
 /* Translate the ugly representation of aliases as alias pairs into nice
    representation in callgraph.  We don't handle all cases yet,
    unfortunately.  */
@@ -1305,7 +1392,7 @@ handle_alias_pairs (void)
 {
   alias_pair *p;
   unsigned i;
-  
+
   for (i = 0; alias_pairs && alias_pairs->iterate (i, &p);)
     {
       symtab_node *target_node = symtab_node::get_for_asmname (p->target);
@@ -1352,65 +1439,7 @@ handle_alias_pairs (void)
       if (TREE_CODE (p->decl) == FUNCTION_DECL
           && target_node && is_a <cgraph_node *> (target_node))
 	{
-	  tree t1 = TREE_TYPE (p->decl);
-	  tree t2 = TREE_TYPE (target_node->decl);
-
-	  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (p->decl)))
-	    {
-	      t2 = TREE_TYPE (t2);
-	      if (POINTER_TYPE_P (t2))
-		{
-		  t2 = TREE_TYPE (t2);
-		  if (!FUNC_OR_METHOD_TYPE_P (t2))
-		    {
-		      if (warning_at (DECL_SOURCE_LOCATION (p->decl),
-				      OPT_Wattributes,
-				      "%q+D %<ifunc%> resolver should return "
-				      "a function pointer",
-				      p->decl))
-			inform (DECL_SOURCE_LOCATION (target_node->decl),
-				"resolver declaration here");
-
-		      t2 = NULL_TREE;
-		    }
-		}
-	      else
-		{
-		  /* Deal with static member function pointers.  */
-		  if (TREE_CODE (t2) == RECORD_TYPE
-		      && TYPE_FIELDS (t2)
-		      && TREE_CODE (TREE_TYPE (TYPE_FIELDS (t2))) == POINTER_TYPE
-		      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (t2))))
-			  == METHOD_TYPE))
-		    t2 = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (t2)));
-		  else
-		    {
-		      error ("%q+D %<ifunc%> resolver must return a function "
-			     "pointer",
-			     p->decl);
-		      inform (DECL_SOURCE_LOCATION (target_node->decl),
-			      "resolver declaration here");
-
-		      t2 = NULL_TREE;
-		    }
-		}
-	    }
-
-	  if (t2
-	      && (!FUNC_OR_METHOD_TYPE_P (t2)
-		  || (prototype_p (t1)
-		      && prototype_p (t2)
-		      && !types_compatible_p (t1, t2))))
-	    {
-	      /* Warn for incompatibilities.  Avoid warning for functions
-		 without a prototype to make it possible to declare aliases
-		 without knowing the exact type, as libstdc++ does.  */
-	      if (warning_at (DECL_SOURCE_LOCATION (p->decl), OPT_Wattributes,
-			      "%q+D alias between functions of incompatible "
-			      "types %qT and %qT", p->decl, t1, t2))
-		inform (DECL_SOURCE_LOCATION (target_node->decl),
-			"aliased declaration here");
-	    }
+	  maybe_diag_incompatible_alias (p->decl, target_node->decl);
 
 	  cgraph_node *src_node = cgraph_node::get (p->decl);
 	  if (src_node && src_node->definition)

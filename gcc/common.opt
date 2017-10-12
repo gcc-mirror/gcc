@@ -562,6 +562,10 @@ Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
 
+Wattribute-alias
+Common Var(warn_attributes) Init(1) Warning
+Warn about type safety and similar errors in attribute alias and related.
+
 Wcast-align
 Common Var(warn_cast_align) Warning
 Warn about pointer casts which increase alignment.

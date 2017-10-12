@@ -1,3 +1,19 @@
+2017-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR other/82301
+	PR c/82435
+	* g++.dg/ext/attr-ifunc-1.C: Update.
+	* g++.dg/ext/attr-ifunc-2.C: Same.
+	* g++.dg/ext/attr-ifunc-3.C: Same.
+	* g++.dg/ext/attr-ifunc-4.C: Same.
+	* g++.dg/ext/attr-ifunc-5.C: Same.
+	* g++.dg/ext/attr-ifunc-6.C: New test.
+	* g++.old-deja/g++.abi/vtable2.C: Update.
+	* gcc.dg/attr-ifunc-6.c: New test.
+	* gcc.dg/attr-ifunc-7.c: New test.
+	* gcc.dg/pr81854.c: Update.
+	* lib/target-supports.exp: Update.
+
 2017-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/parse/pragma2.C: Update to reflect reinstatement of the

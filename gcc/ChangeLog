@@ -1,3 +1,13 @@
+2017-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR other/82301
+	PR c/82435
+	* cgraphunit.c (maybe_diag_incompatible_alias): New function.
+	(handle_alias_pairs): Call it.
+	* common.opt (-Wattribute-alias): New option.
+	* doc/extend.texi (ifunc attribute): Discuss C++ specifics.
+	* doc/invoke.texi (-Wattribute-alias): Document.
+
 2017-10-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Revert

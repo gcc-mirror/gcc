@@ -5402,6 +5402,11 @@ pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
 
+@item -Wattribute-alias
+Warn about declarations using the @code{alias} and similar attributes whose
+target is incompatible with the type of the alias.  @xref{Function Attributes,
+,Declaring Attributes of Functions}.
+
 @item -Wbool-compare
 @opindex Wno-bool-compare
 @opindex Wbool-compare
