@@ -1,5 +1,8 @@
 2017-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/82159
+	* g++.dg/opt/pr82159-2.C: New test.
+
 	PR target/82353
 	* gcc.target/i386/i386.exp (tests): Revert the '.C' extension change.
 	* gcc.target/i386/pr82353.C: Moved to ...
