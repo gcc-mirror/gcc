@@ -171,6 +171,7 @@ extern const char *path_to_selftest_files;
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void bitmap_c_tests ();
+extern void sbitmap_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void edit_context_c_tests ();
