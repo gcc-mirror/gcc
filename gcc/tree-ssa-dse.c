@@ -131,6 +131,7 @@ valid_ao_ref_for_dse (ao_ref *ref)
 	  && ref->max_size != -1
 	  && ref->size != 0
 	  && ref->max_size == ref->size
+	  && ref->offset >= 0
 	  && (ref->offset % BITS_PER_UNIT) == 0
 	  && (ref->size % BITS_PER_UNIT) == 0
 	  && (ref->size != -1));
