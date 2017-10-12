@@ -1,3 +1,14 @@
+2017-10-12  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82493
+	* sbitmap.c (bitmap_bit_in_range_p): Fix the implementation.
+	(test_range_functions): New function.
+	(sbitmap_c_tests): Likewise.
+	* selftest-run-tests.c (selftest::run_tests): Run new tests.
+	* selftest.h (sbitmap_c_tests): New function.
+
+	* tree-ssa-dse.c (live_bytes_read): Fix thinko.
+
 2017-10-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/amo.h: Fix spacing issue.
