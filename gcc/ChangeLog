@@ -1,3 +1,12 @@
+2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.h (safe_scale_64bit): Fix GCC4.x path.
+	(profile_probability): Set max_probability
+	to (uint32_t) 1 << (n_bits - 2) and update accessors to avoid overlfows
+	in temporaries.
+	* profile-count.c (profile_probability::differs_from_p): Do not
+	rely on max_probaiblity == 10000
+
 2017-10-12  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dse.c (valid_ao_ref_for_dse): Reject ao_refs with
