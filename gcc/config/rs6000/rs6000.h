@@ -565,8 +565,6 @@ extern int rs6000_vector_align[];
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_LDBRX (TARGET_POPCNTD || rs6000_cpu == PROCESSOR_CELL)
 
-#define TARGET_ISEL64 (TARGET_ISEL && TARGET_POWERPC64)
-
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines or
    XILINX.  */
