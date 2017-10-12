@@ -1,3 +1,11 @@
+2017-10-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (TARGET_ISEL64): Delete.
+	* config/rs6000/rs6000.md (sel): Delete mode attribute.
+	(mov<mode>cc, isel_signed_<mode>, isel_unsigned_<mode>,
+	*isel_reversed_signed_<mode>, *isel_reversed_unsigned_<mode>): Use
+	TARGET_ISEL instead of TARGET_ISEL<sel>.
+
 2017-10-11  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c
