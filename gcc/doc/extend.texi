@@ -2801,7 +2801,7 @@ void *my_memcpy (void *dst, const void *src, size_t len)
 
 static void * (*resolve_memcpy (void))(void *, const void *, size_t)
 @{
-  return my_memcpy; // we'll just always select this routine
+  return my_memcpy; // we will just always select this routine
 @}
 @end smallexample
 
@@ -2814,13 +2814,54 @@ extern void *memcpy (void *, const void *, size_t);
 @end smallexample
 
 @noindent
-allowing the user to call this as a regular function, unaware of the
-implementation.  Finally, the indirect function needs to be defined in
-the same translation unit as the resolver function:
+allowing the user to call @code{memcpy} as a regular function, unaware of
+the actual implementation.  Finally, the indirect function needs to be
+defined in the same translation unit as the resolver function:
 
 @smallexample
 void *memcpy (void *, const void *, size_t)
      __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+In C++, the @code{ifunc} attribute takes a string that is the mangled name
+of the resolver function.  A C++ resolver for a non-static member function
+of class @code{C} should be declared to return a pointer to a non-member
+function taking pointer to @code{C} as the first argument, followed by
+the same arguments as of the implementation function.  G++ checks
+the signatures of the two functions and issues
+a @option{-Wattribute-alias} warning for mismatches.  To suppress a warning
+for the necessary cast from a pointer to the implementation member function
+to the type of the corresponding non-member function use
+the @option{-Wno-pmf-conversions} option.  For example:
+
+@smallexample
+class S
+@{
+private:
+  int debug_impl (int);
+  int optimized_impl (int);
+
+  typedef int Func (S*, int);
+
+  static Func* resolver ();
+public:
+
+  int interface (int);
+@};
+
+int S::debug_impl (int) @{ /* @r{@dots{}} */ @}
+int S::optimized_impl (int) @{ /* @r{@dots{}} */ @}
+
+S::Func* S::resolver ()
+@{
+  int (S::*pimpl) (int)
+    = getenv ("DEBUG") ? &S::debug_impl : &S::optimized_impl;
+
+  // Cast triggers -Wno-pmf-conversions.
+  return reinterpret_cast<Func*>(pimpl);
+@}
+
+int S::interface (int) __attribute__ ((ifunc ("_ZN1S8resolverEv")));
 @end smallexample
 
 Indirect functions cannot be weak.  Binutils version 2.20.1 or higher
