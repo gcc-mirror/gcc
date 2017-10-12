@@ -1,3 +1,10 @@
+2017-10-12  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (cp_expr): Add const operator * and operator->
+	accessors.
+	(cp_tree_node_structure_enum): Delete TS_CP_BINDING,
+	TS_CP_WRAPPER, LAST_TS_CP_ENUM.
+
 2017-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (get_required_cpp_ttype): New function.
