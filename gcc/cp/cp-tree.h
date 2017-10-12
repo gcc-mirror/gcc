@@ -65,7 +65,9 @@ public:
   /* Implicit conversions to tree.  */
   operator tree () const { return m_value; }
   tree & operator* () { return m_value; }
+  tree operator* () const { return m_value; }
   tree & operator-> () { return m_value; }
+  tree operator-> () const { return m_value; }
 
   tree get_value () const { return m_value; }
   location_t get_location () const { return m_loc; }
@@ -1467,11 +1469,9 @@ enum cp_tree_node_structure_enum {
   TS_CP_IDENTIFIER,
   TS_CP_TPI,
   TS_CP_PTRMEM,
-  TS_CP_BINDING,
   TS_CP_OVERLOAD,
   TS_CP_BASELINK,
   TS_CP_TEMPLATE_DECL,
-  TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
   TS_CP_DEFERRED_NOEXCEPT,
   TS_CP_STATIC_ASSERT,
@@ -1480,8 +1480,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_LAMBDA_EXPR,
   TS_CP_TEMPLATE_INFO,
   TS_CP_CONSTRAINT_INFO,
-  TS_CP_USERDEF_LITERAL,
-  LAST_TS_CP_ENUM
+  TS_CP_USERDEF_LITERAL
 };
 
 /* The resulting tree type.  */
