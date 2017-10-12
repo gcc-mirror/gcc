@@ -1,3 +1,32 @@
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/cilk-plus/AN/parser_errors.c: Update expected
+	output to reflect changes to reported locations of missing
+	symbols.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c: Likewise.
+	* c-c++-common/cilk-plus/AN/pr61191.c: Likewise.
+	* c-c++-common/gomp/pr63326.c: Likewise.
+	* c-c++-common/missing-close-symbol.c: Likewise, also update for
+	new fix-it hints.
+	* c-c++-common/missing-symbol.c: Likewise, also add test coverage
+	for missing colon in ternary operator.
+	* g++.dg/cpp1y/digit-sep-neg.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/missing-symbol-2.C: New test case.
+	* g++.dg/other/do1.C: Update expected output to reflect
+	changes to reported locations of missing symbols.
+	* g++.dg/parse/error11.C: Likewise.
+	* g++.dg/template/error11.C: Likewise.
+	* gcc.dg/missing-symbol-2.c: New test case.
+	* gcc.dg/missing-symbol-3.c: New test case.
+	* gcc.dg/noncompile/940112-1.c: Update expected output to reflect
+	changes to reported locations of missing symbols.
+	* gcc.dg/noncompile/971104-1.c: Likewise.
+	* obj-c++.dg/exceptions-6.mm: Likewise.
+	* obj-c++.dg/pr48187.mm: Likewise.
+	* objc.dg/exceptions-6.m: Likewise.
+
 2017-10-12  Martin Sebor  <msebor@redhat.com>
 
 	PR other/82301

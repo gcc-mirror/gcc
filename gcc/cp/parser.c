@@ -2788,6 +2788,40 @@ get_matching_symbol (required_token token_desc)
     }
 }
 
+/* Attempt to convert TOKEN_DESC from a required_token to an
+   enum cpp_ttype, returning CPP_EOF if there is no good conversion.  */
+
+static enum cpp_ttype
+get_required_cpp_ttype (required_token token_desc)
+{
+  switch (token_desc)
+    {
+    case RT_SEMICOLON:
+      return CPP_SEMICOLON;
+    case RT_OPEN_PAREN:
+      return CPP_OPEN_PAREN;
+    case RT_CLOSE_BRACE:
+      return CPP_CLOSE_BRACE;
+    case RT_OPEN_BRACE:
+      return CPP_OPEN_BRACE;
+    case RT_CLOSE_SQUARE:
+      return CPP_CLOSE_SQUARE;
+    case RT_OPEN_SQUARE:
+      return CPP_OPEN_SQUARE;
+    case RT_COMMA:
+      return CPP_COMMA;
+    case RT_COLON:
+      return CPP_COLON;
+    case RT_CLOSE_PAREN:
+      return CPP_CLOSE_PAREN;
+
+    default:
+      /* Use CPP_EOF as a "no completions possible" code.  */
+      return CPP_EOF;
+    }
+}
+
+
 /* Subroutine of cp_parser_error and cp_parser_required_error.
 
    Issue a diagnostic of the form
@@ -2799,9 +2833,12 @@ get_matching_symbol (required_token token_desc)
    This bypasses the check for tentative passing, and potentially
    adds material needed by cp_parser_required_error.
 
-   If MISSING_TOKEN_DESC is not RT_NONE, and MATCHING_LOCATION is not
-   UNKNOWN_LOCATION, then we have an unmatched symbol at
-   MATCHING_LOCATION; highlight this secondary location.  */
+   If MISSING_TOKEN_DESC is not RT_NONE, then potentially add fix-it hints
+   suggesting insertion of the missing token.
+
+   Additionally, if MATCHING_LOCATION is not UNKNOWN_LOCATION, then we
+   have an unmatched symbol at MATCHING_LOCATION; highlight this secondary
+   location.  */
 
 static void
 cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
@@ -2840,6 +2877,14 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 
   if (missing_token_desc != RT_NONE)
     {
+      /* Potentially supply a fix-it hint, suggesting to add the
+	 missing token immediately after the *previous* token.
+	 This may move the primary location within richloc.  */
+      enum cpp_ttype ttype = get_required_cpp_ttype (missing_token_desc);
+      location_t prev_token_loc
+	= cp_lexer_previous_token (parser->lexer)->location;
+      maybe_suggest_missing_token_insertion (&richloc, ttype, prev_token_loc);
+
       /* If matching_location != UNKNOWN_LOCATION, highlight it.
 	 Attempt to consolidate diagnostics by printing it as a
 	secondary range within the main diagnostic.  */
