@@ -1,3 +1,8 @@
+2017-10-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-loop-distribution.c (break_alias_scc_partitions): Add comment
+	and set PTYPE_SEQUENTIAL for merged partition.
+
 2017-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69728
