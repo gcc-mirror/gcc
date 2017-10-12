@@ -1,3 +1,8 @@
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/parse/pragma2.C: Update to reflect reinstatement of the
+	"#pragma is not allowed here" error.
+
 2017-10-12  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/ldist-28.c: New test.

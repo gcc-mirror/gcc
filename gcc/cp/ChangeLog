@@ -1,3 +1,13 @@
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (get_matching_symbol): Move to before...
+	(cp_parser_error): Split out into...
+	(cp_parser_error_1): ...this new function, merging in content
+	from...
+	(cp_parser_required_error): ...here.  Eliminate partial duplicate
+	of body of cp_parser_error in favor of a call to the new
+	cp_parser_error_1 helper function.
+
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* decl2.c (struct mangled_decl_hash): Use DECL_ASSEMBLER_NAME_RAW.
