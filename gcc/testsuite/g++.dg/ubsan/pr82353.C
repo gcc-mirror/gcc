@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-options "-O2 -std=c++11 -fsanitize=undefined -fno-sanitize-recover=undefined -w -fdump-rtl-reload" } */
 
 extern unsigned long tf_2_var_1, tf_2_var_21;

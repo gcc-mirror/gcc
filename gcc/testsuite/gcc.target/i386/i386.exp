@@ -445,7 +445,7 @@ if [runtest_file_p $runtests $srcdir/$subdir/vect-args.c] {
 }
 
 # Everything else.
-set tests [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]]
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]]
 set tests [prune $tests $srcdir/$subdir/vect-args.c]
 
 # Main loop.
