@@ -1,5 +1,23 @@
 2017-10-12  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c: Adjust the general comment.
+	(NUM_PARTITION_THRESHOLD): New macro.
+	(ssa_name_has_uses_outside_loop_p): Support loop nest distribution.
+	(classify_partition): Skip builtin pattern of loop nest's inner loop.
+	(merge_dep_scc_partitions): New parameter ignore_alias_p and use it
+	in call to build_partition_graph.
+	(finalize_partitions): New parameter.  Make loop distribution more
+	conservative by fusing more partitions.
+	(distribute_loop): Don't do runtime alias check in case of loop nest
+	distribution.
+	(find_seed_stmts_for_distribution): New function.
+	(prepare_perfect_loop_nest): New function.
+	(pass_loop_distribution::execute): Refactor code finding seed stmts
+	and loop nest into above functions.  Support loop nest distribution.
+	Adjust dump information accordingly.
+
+2017-10-12  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-loop-distribution.c (break_alias_scc_partitions): Add comment
 	and set PTYPE_SEQUENTIAL for merged partition.
 
