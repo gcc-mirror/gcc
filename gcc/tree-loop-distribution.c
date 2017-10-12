@@ -2066,7 +2066,7 @@ break_alias_scc_partitions (struct graph *rdg,
       auto_vec<enum partition_type> scc_types;
       struct partition *partition, *first;
 
-      /* If all paritions in a SCC has the same type, we can simply merge the
+      /* If all partitions in a SCC have the same type, we can simply merge the
 	 SCC.  This loop finds out such SCCS and record them in bitmap.  */
       bitmap_set_range (sccs_to_merge, 0, (unsigned) num_sccs);
       for (i = 0; i < num_sccs; ++i)
@@ -2079,6 +2079,10 @@ break_alias_scc_partitions (struct graph *rdg,
 	      if (pg->vertices[j].component != i)
 		continue;
 
+	      /* Note we Merge partitions of parallel type on purpose, though
+		 the result partition is sequential.  The reason is vectorizer
+		 can do more accurate runtime alias check in this case.  Also
+		 it results in more conservative distribution.  */
 	      if (first->type != partition->type)
 		{
 		  bitmap_clear_bit (sccs_to_merge, i);
@@ -2100,7 +2104,7 @@ break_alias_scc_partitions (struct graph *rdg,
       if (bitmap_count_bits (sccs_to_merge) != (unsigned) num_sccs)
 	{
 	  /* Run SCC finding algorithm again, with alias dependence edges
-	     skipped.  This is to topologically sort paritions according to
+	     skipped.  This is to topologically sort partitions according to
 	     compilation time known dependence.  Note the topological order
 	     is stored in the form of pg's post order number.  */
 	  num_sccs_no_alias = graphds_scc (pg, NULL, pg_skip_alias_edge);
@@ -2143,6 +2147,8 @@ break_alias_scc_partitions (struct graph *rdg,
 	      data = (struct pg_vdata *)pg->vertices[k].data;
 	      gcc_assert (data->id == k);
 	      data->partition = NULL;
+	      /* The result partition of merged SCC must be sequential.  */
+	      first->type = PTYPE_SEQUENTIAL;
 	    }
 	}
     }
