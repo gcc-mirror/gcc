@@ -2770,6 +2770,103 @@ cp_lexer_peek_conflict_marker (cp_lexer *lexer, enum cpp_ttype tok1_kind,
   return true;
 }
 
+/* Get a description of the matching symbol to TOKEN_DESC e.g. "(" for
+   RT_CLOSE_PAREN.  */
+
+static const char *
+get_matching_symbol (required_token token_desc)
+{
+  switch (token_desc)
+    {
+    default:
+      gcc_unreachable ();
+      return "";
+    case RT_CLOSE_BRACE:
+      return "{";
+    case RT_CLOSE_PAREN:
+      return "(";
+    }
+}
+
+/* Subroutine of cp_parser_error and cp_parser_required_error.
+
+   Issue a diagnostic of the form
+      FILE:LINE: MESSAGE before TOKEN
+   where TOKEN is the next token in the input stream.  MESSAGE
+   (specified by the caller) is usually of the form "expected
+   OTHER-TOKEN".
+
+   This bypasses the check for tentative passing, and potentially
+   adds material needed by cp_parser_required_error.
+
+   If MISSING_TOKEN_DESC is not RT_NONE, and MATCHING_LOCATION is not
+   UNKNOWN_LOCATION, then we have an unmatched symbol at
+   MATCHING_LOCATION; highlight this secondary location.  */
+
+static void
+cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
+		   required_token missing_token_desc,
+		   location_t matching_location)
+{
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  /* This diagnostic makes more sense if it is tagged to the line
+     of the token we just peeked at.  */
+  cp_lexer_set_source_position_from_token (token);
+
+  if (token->type == CPP_PRAGMA)
+    {
+      error_at (token->location,
+		"%<#pragma%> is not allowed here");
+      cp_parser_skip_to_pragma_eol (parser, token);
+      return;
+    }
+
+  /* If this is actually a conflict marker, report it as such.  */
+  if (token->type == CPP_LSHIFT
+      || token->type == CPP_RSHIFT
+      || token->type == CPP_EQ_EQ)
+    {
+      location_t loc;
+      if (cp_lexer_peek_conflict_marker (parser->lexer, token->type, &loc))
+	{
+	  error_at (loc, "version control conflict marker in file");
+	  return;
+	}
+    }
+
+  gcc_rich_location richloc (input_location);
+
+  bool added_matching_location = false;
+
+  if (missing_token_desc != RT_NONE)
+    {
+      /* If matching_location != UNKNOWN_LOCATION, highlight it.
+	 Attempt to consolidate diagnostics by printing it as a
+	secondary range within the main diagnostic.  */
+      if (matching_location != UNKNOWN_LOCATION)
+	added_matching_location
+	  = richloc.add_location_if_nearby (matching_location);
+    }
+
+  /* Actually emit the error.  */
+  c_parse_error (gmsgid,
+		 /* Because c_parser_error does not understand
+		    CPP_KEYWORD, keywords are treated like
+		    identifiers.  */
+		 (token->type == CPP_KEYWORD ? CPP_NAME : token->type),
+		 token->u.value, token->flags, &richloc);
+
+  if (missing_token_desc != RT_NONE)
+    {
+      /* If we weren't able to consolidate matching_location, then
+	 print it as a secondary diagnostic.  */
+      if (matching_location != UNKNOWN_LOCATION
+	  && !added_matching_location)
+	inform (matching_location, "to match this %qs",
+		get_matching_symbol (missing_token_desc));
+    }
+}
+
 /* If not parsing tentatively, issue a diagnostic of the form
       FILE:LINE: MESSAGE before TOKEN
    where TOKEN is the next token in the input stream.  MESSAGE
@@ -2780,41 +2877,7 @@ static void
 cp_parser_error (cp_parser* parser, const char* gmsgid)
 {
   if (!cp_parser_simulate_error (parser))
-    {
-      cp_token *token = cp_lexer_peek_token (parser->lexer);
-      /* This diagnostic makes more sense if it is tagged to the line
-	 of the token we just peeked at.  */
-      cp_lexer_set_source_position_from_token (token);
-
-      if (token->type == CPP_PRAGMA)
-	{
-	  error_at (token->location,
-		    "%<#pragma%> is not allowed here");
-	  cp_parser_skip_to_pragma_eol (parser, token);
-	  return;
-	}
-
-      /* If this is actually a conflict marker, report it as such.  */
-      if (token->type == CPP_LSHIFT
-	  || token->type == CPP_RSHIFT
-	  || token->type == CPP_EQ_EQ)
-	{
-	  location_t loc;
-	  if (cp_lexer_peek_conflict_marker (parser->lexer, token->type, &loc))
-	    {
-	      error_at (loc, "version control conflict marker in file");
-	      return;
-	    }
-	}
-
-      rich_location richloc (line_table, input_location);
-      c_parse_error (gmsgid,
-		     /* Because c_parser_error does not understand
-			CPP_KEYWORD, keywords are treated like
-			identifiers.  */
-		     (token->type == CPP_KEYWORD ? CPP_NAME : token->type),
-		     token->u.value, token->flags, &richloc);
-    }
+    cp_parser_error_1 (parser, gmsgid, RT_NONE, UNKNOWN_LOCATION);
 }
 
 /* Issue an error about name-lookup failing.  NAME is the
@@ -28081,24 +28144,6 @@ cp_parser_friend_p (const cp_decl_specifier_seq *decl_specifiers)
   return decl_spec_seq_has_spec_p (decl_specifiers, ds_friend);
 }
 
-/* Get a description of the matching symbol to TOKEN_DESC e.g. "(" for
-   RT_CLOSE_PAREN.  */
-
-static const char *
-get_matching_symbol (required_token token_desc)
-{
-  switch (token_desc)
-    {
-    default:
-      gcc_unreachable ();
-      return "";
-    case RT_CLOSE_BRACE:
-      return "{";
-    case RT_CLOSE_PAREN:
-      return "(";
-    }
-}
-
 /* Issue an error message indicating that TOKEN_DESC was expected.
    If KEYWORD is true, it indicated this function is called by
    cp_parser_require_keword and the required token can only be
@@ -28276,31 +28321,7 @@ cp_parser_required_error (cp_parser *parser,
     }
 
   if (gmsgid)
-    {
-      /* Emulate rest of cp_parser_error.  */
-      cp_token *token = cp_lexer_peek_token (parser->lexer);
-      cp_lexer_set_source_position_from_token (token);
-
-      gcc_rich_location richloc (input_location);
-
-      /* If matching_location != UNKNOWN_LOCATION, highlight it.
-	 Attempt to consolidate diagnostics by printing it as a
-	secondary range within the main diagnostic.  */
-      bool added_matching_location = false;
-      if (matching_location != UNKNOWN_LOCATION)
-	added_matching_location
-	  = richloc.add_location_if_nearby (matching_location);
-
-      c_parse_error (gmsgid,
-		     (token->type == CPP_KEYWORD ? CPP_NAME : token->type),
-		     token->u.value, token->flags, &richloc);
-
-      /* If we weren't able to consolidate matching_location, then
-	 print it as a secondary diagnostic.  */
-      if (matching_location != UNKNOWN_LOCATION && !added_matching_location)
-	inform (matching_location, "to match this %qs",
-		get_matching_symbol (token_desc));
-    }
+    cp_parser_error_1 (parser, gmsgid, token_desc, matching_location);
 }
 
 
