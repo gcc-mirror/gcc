@@ -1,3 +1,8 @@
+2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/predict-13.c: Update template for probaility change.
+	* gcc.dg/predict-8.c: Likewise.
+
 2017-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/cilk-plus/AN/parser_errors.c: Update expected

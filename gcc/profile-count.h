@@ -67,7 +67,10 @@ safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
   if (a < ((uint64_t)1 << 31)
       && b < ((uint64_t)1 << 31)
       && c < ((uint64_t)1 << 31))
-    return (a * b + (c / 2)) / c;
+    {
+      *res = (a * b + (c / 2)) / c;
+      return true;
+    }
 #endif
   return slow_safe_scale_64bit (a, b, c, res);
 }
@@ -111,11 +114,10 @@ safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
 
 class GTY((user)) profile_probability
 {
-  /* For now use values in range 0...REG_BR_PROB_BASE.  Later we can use full
-     precision of 30 bits available.  */
-
   static const int n_bits = 30;
-  static const uint32_t max_probability = REG_BR_PROB_BASE;
+  /* We can technically use ((uint32_t) 1 << (n_bits - 1)) - 2 but that
+     will lead to harder multiplication sequences.  */
+  static const uint32_t max_probability = (uint32_t) 1 << (n_bits - 2);
   static const uint32_t uninitialized_probability
 		 = ((uint32_t) 1 << (n_bits - 1)) - 1;
 
@@ -210,14 +212,14 @@ public:
     {
       profile_probability ret;
       gcc_checking_assert (v >= 0 && v <= REG_BR_PROB_BASE);
-      ret.m_val = RDIV (v * max_probability, REG_BR_PROB_BASE);
+      ret.m_val = RDIV (v * (uint64_t) max_probability, REG_BR_PROB_BASE);
       ret.m_quality = profile_guessed;
       return ret;
     }
   int to_reg_br_prob_base () const
     {
       gcc_checking_assert (initialized_p ());
-      return RDIV (m_val * REG_BR_PROB_BASE, max_probability);
+      return RDIV (m_val * (uint64_t) REG_BR_PROB_BASE, max_probability);
     }
 
   /* Conversion to and from RTL representation of profile probabilities.  */
@@ -246,7 +248,12 @@ public:
       if (val1 > val2)
 	ret.m_val = max_probability;
       else
-	ret.m_val = RDIV (val1 * max_probability, val2);
+	{
+	  uint64_t tmp;
+	  safe_scale_64bit (val1, max_probability, val2, &tmp);
+	  gcc_checking_assert (tmp <= max_probability);
+	  ret.m_val = tmp;
+	}
       ret.m_quality = profile_precise;
       return ret;
     }
@@ -443,8 +450,9 @@ public:
       if (!initialized_p ())
 	return profile_probability::uninitialized ();
       profile_probability ret;
-      ret.m_val = MIN (RDIV (m_val * num, den),
-		       max_probability);
+      uint64_t tmp;
+      safe_scale_64bit (m_val, num, den, &tmp);
+      ret.m_val = MIN (tmp, max_probability);
       ret.m_quality = MIN (m_quality, profile_adjusted);
       return ret;
     }
@@ -482,7 +490,7 @@ public:
       if (m_val == uninitialized_probability)
 	return m_quality == profile_guessed;
       else
-	return m_val <= REG_BR_PROB_BASE;
+	return m_val <= max_probability;
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
@@ -781,8 +789,10 @@ public:
       if (!initialized_p ())
 	return profile_count::uninitialized ();
       profile_count ret;
-      ret.m_val = RDIV (m_val * prob.m_val,
-			profile_probability::max_probability);
+      uint64_t tmp;
+      safe_scale_64bit (m_val, prob.m_val, profile_probability::max_probability,
+			&tmp);
+      ret.m_val = tmp;
       ret.m_quality = MIN (m_quality, prob.m_quality);
       return ret;
     }
@@ -794,11 +804,11 @@ public:
       if (!initialized_p ())
 	return profile_count::uninitialized ();
       profile_count ret;
+      uint64_t tmp;
+
       gcc_checking_assert (num >= 0 && den > 0);
-      /* FIXME: shrink wrapping violates this sanity check.  */
-      gcc_checking_assert ((num <= REG_BR_PROB_BASE
-			    || den <= REG_BR_PROB_BASE) || 1);
-      ret.m_val = RDIV (m_val * num, den);
+      safe_scale_64bit (m_val, num, den, &tmp);
+      ret.m_val = MIN (tmp, max_count);
       ret.m_quality = MIN (m_quality, profile_adjusted);
       return ret;
     }
