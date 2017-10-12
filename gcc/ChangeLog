@@ -1,3 +1,18 @@
+2017-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69728
+	Revert
+	2017-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69728
+	* graphite-sese-to-poly.c (schedule_error): New global.
+	(add_loop_schedule): Handle empty domain by failing the
+	schedule.
+	(build_original_schedule): Handle schedule_error.
+
+	* graphite-sese-to-poly.c (add_loop_schedule): Handle empty
+	domain by returning an unchanged schedule.
+
 2017-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* genrecog.c (validate_pattern): For VEC_SELECT verify that
