@@ -1,5 +1,13 @@
 2017-10-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (TS_CP_BINDING, TS_CP_WRAPPER, LAST_TS_CP_ENUM): Delete.
+	(union lang_tree_node): Adjust GTY desc.
+	(cp_tree_node_structure): Take a tree_code.
+	* decl.c (cp_tree_node_structure): Take a tree_code.
+	* module.c (cpms_{out,in}::core_vals): Order clauses from
+	tree-core.h, use cp_tree_node_structure for C++.
+
 	Module name can be a string const (-fmodules++)
 	gcc/cp/
 	* cp-tree.h (cp_expr): Add constant operator* and operator->.

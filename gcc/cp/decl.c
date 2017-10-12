@@ -16081,9 +16081,9 @@ revert_static_member_fn (tree decl)
    one of the language-independent trees.  */
 
 enum cp_tree_node_structure_enum
-cp_tree_node_structure (union lang_tree_node * t)
+cp_tree_node_structure (tree_code code)
 {
-  switch (TREE_CODE (&t->generic))
+  switch (code)
     {
     case DEFAULT_ARG:		return TS_CP_DEFAULT_ARG;
     case DEFERRED_NOEXCEPT:	return TS_CP_DEFERRED_NOEXCEPT;

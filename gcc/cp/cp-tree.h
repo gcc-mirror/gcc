@@ -1538,12 +1538,10 @@ enum cp_tree_node_structure_enum {
   TS_CP_IDENTIFIER,
   TS_CP_TPI,
   TS_CP_PTRMEM,
-  TS_CP_BINDING,
   TS_CP_OVERLOAD,
   TS_CP_MODULE_VECTOR,
   TS_CP_BASELINK,
   TS_CP_TEMPLATE_DECL,
-  TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
   TS_CP_DEFERRED_NOEXCEPT,
   TS_CP_STATIC_ASSERT,
@@ -1552,12 +1550,11 @@ enum cp_tree_node_structure_enum {
   TS_CP_LAMBDA_EXPR,
   TS_CP_TEMPLATE_INFO,
   TS_CP_CONSTRAINT_INFO,
-  TS_CP_USERDEF_LITERAL,
-  LAST_TS_CP_ENUM
+  TS_CP_USERDEF_LITERAL
 };
 
 /* The resulting tree type.  */
-union GTY((desc ("cp_tree_node_structure (&%h)"),
+union GTY((desc ("cp_tree_node_structure (TREE_CODE (&%h.generic))"),
        chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node {
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
@@ -6119,8 +6116,7 @@ extern tree current_decl_namespace		(void);
 /* decl.c */
 extern tree poplevel				(int, int, int);
 extern void cxx_init_decl_processing		(void);
-enum cp_tree_node_structure_enum cp_tree_node_structure
-						(union lang_tree_node *);
+enum cp_tree_node_structure_enum cp_tree_node_structure (tree_code);
 extern void finish_scope			(void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);

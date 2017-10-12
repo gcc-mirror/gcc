@@ -1,6 +1,6 @@
 /* -*- C++ -*- modules.  Experimental!
    Copyright (C) 2017 Free Software Foundation, Inc.
-   Written by Nathan Sidwell <nathan@acm.org>
+   Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
 
@@ -3239,21 +3239,16 @@ cpms_out::core_vals (tree t)
       break;
     }
 
+  /* The ordering here is that in tree-core.h & cp-tree.h.  */
+  if (CODE_CONTAINS_STRUCT (code, TS_BASE))
+    { /* Nothing to do.  */ }
+
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     WT (t->typed.type);
 
-  /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
     {
-      WT (t->list.purpose);
-      WT (t->list.value);
-      WT (t->list.common.chain);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    {
-      gcc_unreachable (); // FIXME
+      /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
@@ -3264,31 +3259,96 @@ cpms_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    {
-      gcc_unreachable (); // FIXME
-    }
+    gcc_unreachable (); // FIXME
   
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
+    gcc_unreachable (); // FIXME
+  
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    gcc_unreachable (); // FIXME
+
+  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
+    gcc_unreachable (); // FIXME
+
+  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
+    gcc_unreachable (); // FIXME
+
+  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
+    gcc_unreachable (); /* Should never meet.  */
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
-      gcc_unreachable (); // FIXME
+      /* decl_minimal.name & decl_minimal.context already read in.  */
+      loc (t->decl_minimal.locus);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      WT (t->binfo.offset);
-      WT (t->binfo.vtable);
-      WT (t->binfo.virtuals);
-      WT (t->binfo.vptr_field);
-      WT (t->binfo.inheritance);
-      WT (t->binfo.vtt_subvtt);
-      WT (t->binfo.vtt_vptr);
-      gcc_assert (BINFO_N_BASE_BINFOS (t)
-		  == vec_safe_length (BINFO_BASE_ACCESSES (t)));
-      tree_vec (BINFO_BASE_ACCESSES (t));
-      if (unsigned num = BINFO_N_BASE_BINFOS (t))
-	for (unsigned ix = 0; ix != num; ix++)
-	  WT (BINFO_BASE_BINFO (t, ix));
+      WU (t->decl_common.mode);
+      WU (t->decl_common.off_align);
+      WU (t->decl_common.align);
+
+      WT (t->decl_common.size_unit);
+      WT (t->decl_common.attributes);
+      switch (code)
+	{
+	default:
+	  break;
+	case PARM_DECL:
+	  WT (t->decl_common.initial);
+	  break;
+	}
+      /* decl_common.initial, decl_common.abstract_origin.  */
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
+    {
+      /* decl_non_common.result. */
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      WT (t->decl_with_vis.assembler_name);
+      WU (t->decl_with_vis.visibility);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VAR_DECL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
+    {
+      WT (t->field_decl.offset);
+      WT (t->field_decl.bit_field_type);
+      WT (t->field_decl.qualifier);
+      WT (t->field_decl.bit_offset);
+      WT (t->field_decl.fcontext);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
+    {
+      WU (t->label_decl.label_decl_uid);
+      WU (t->label_decl.eh_landing_pad_nr);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_RESULT_DECL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONST_DECL))
+    gcc_unreachable (); // FIXME
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      chained_decls (t->function_decl.arguments);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    gcc_unreachable (); /* Should never meet.  */
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
@@ -3314,6 +3374,9 @@ cpms_out::core_vals (tree t)
 
       WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_WITH_LANG_SPECIFIC))
+    { /* Nothing to do.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
@@ -3347,68 +3410,28 @@ cpms_out::core_vals (tree t)
 	}
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     {
-      /* decl_minimal.name & decl_minimal.context already read in.  */
-      loc (t->decl_minimal.locus);
+      WT (t->list.purpose);
+      WT (t->list.value);
+      WT (t->list.common.chain);
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
-    {
-      WU (t->decl_common.mode);
-      WU (t->decl_common.off_align);
-      WU (t->decl_common.align);
+  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
+    gcc_unreachable (); // FIXME
 
-      WT (t->decl_common.size_unit);
-      WT (t->decl_common.attributes);
-      switch (code)
-	{
-	default:
-	  break;
-	case PARM_DECL:
-	  WT (t->decl_common.initial);
-	  break;
-	}
-      /* decl_common.initial, decl_common.abstract_origin.  */
-    }
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
+      WT (TREE_OPERAND (t, ix));
+  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+	   /* For some reason, some tcc_expression nodes do not claim
+	      to contain TS_EXP.  */
+	   || TREE_CODE_CLASS (code) == tcc_expression)
+    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
+      WT (TREE_OPERAND (t, ix));
 
-  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
-    {
-      WU (t->label_decl.label_decl_uid);
-      WU (t->label_decl.eh_landing_pad_nr);
-    }
-
-  /* TS_DECL_WITH_RTL.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
-    {
-      WT (t->field_decl.offset);
-      WT (t->field_decl.bit_field_type);
-      WT (t->field_decl.qualifier);
-      WT (t->field_decl.bit_offset);
-      WT (t->field_decl.fcontext);
-    }
-
-  /* TS_RESULT_DECL. */
-  /* TS_CONST_DECL.  */
-  /* TS_PARM_DECL.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
-    {
-      WT (t->decl_with_vis.assembler_name);
-      WU (t->decl_with_vis.visibility);
-    }
-  /* TS_VAR_DECL. */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
-    {
-      /* decl_non_common.result. */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-    {
-      chained_decls (t->function_decl.arguments);
-    }
+  if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
+    gcc_unreachable (); /* Should not see.  */
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     {
@@ -3418,6 +3441,32 @@ cpms_out::core_vals (tree t)
       // FIXME nonlocalized_vars, fragment_origin, fragment_chain
       WT (t->block.subblocks);
       WT (t->block.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      WT (t->binfo.offset);
+      WT (t->binfo.vtable);
+      WT (t->binfo.virtuals);
+      WT (t->binfo.vptr_field);
+      WT (t->binfo.inheritance);
+      WT (t->binfo.vtt_subvtt);
+      WT (t->binfo.vtt_vptr);
+      gcc_assert (BINFO_N_BASE_BINFOS (t)
+		  == vec_safe_length (BINFO_BASE_ACCESSES (t)));
+      tree_vec (BINFO_BASE_ACCESSES (t));
+      if (unsigned num = BINFO_N_BASE_BINFOS (t))
+	for (unsigned ix = 0; ix != num; ix++)
+	  WT (BINFO_BASE_BINFO (t, ix));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
+    {
+      for (tree_stmt_iterator iter = tsi_start (t);
+	   !tsi_end_p (iter); tsi_next (&iter))
+	if (tree stmt = tsi_stmt (iter))
+	  WT (stmt);
+      WT (NULL_TREE);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -3434,38 +3483,87 @@ cpms_out::core_vals (tree t)
 	  }
     }
 
-  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
-    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
-      WT (TREE_OPERAND (t, ix));
-  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   /* For some reason, some tcc_expression nodes do not claim
-	      to contain TS_EXP.  */
-	   || TREE_CODE_CLASS (code) == tcc_expression)
-    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
-      WT (TREE_OPERAND (t, ix));
+  if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
+    gcc_unreachable (); // FIXME
 
-  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
-    {
-      for (tree_stmt_iterator iter = tsi_start (t);
-	   !tsi_end_p (iter); tsi_next (&iter))
-	if (tree stmt = tsi_stmt (iter))
-	  WT (stmt);
-      WT (NULL_TREE);
-    }
+  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
+    gcc_unreachable (); // FIXME
 
-  switch (code)
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+    gcc_unreachable (); // FIXME
+
+  /* Now the C++-specific nodes.  These are disjoint. While we could
+     use CODE directly, going via cp_tree_node_structure makes it
+     easy to see whether we're missing cases.  */
+  switch (cp_tree_node_structure (code))
     {
-    case OVERLOAD:
+    case TS_CP_GENERIC:
+      break;
+
+    case TS_CP_TPI:
+      gcc_unreachable (); // FIXME
+      break;
+      
+    case TS_CP_PTRMEM:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_OVERLOAD:
       WT (((lang_tree_node *)t)->overload.function);
       WT (t->common.chain);
       break;
+      
+    case TS_CP_MODULE_VECTOR:
+      gcc_unreachable (); /* Should never see.  */
+      break;
 
-    case DEFERRED_NOEXCEPT:
+    case TS_CP_BASELINK:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_TEMPLATE_DECL:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_DEFAULT_ARG:
+      gcc_unreachable (); /* Should never see.  */
+      break;
+
+    case TS_CP_DEFERRED_NOEXCEPT:
       WT (((lang_tree_node *)t)->deferred_noexcept.pattern);
       WT (((lang_tree_node *)t)->deferred_noexcept.args);
       break;
 
-    default:
+    case TS_CP_IDENTIFIER:
+      gcc_unreachable (); /* Should never see.  */
+      break;
+
+    case TS_CP_STATIC_ASSERT:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_ARGUMENT_PACK_SELECT:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_TRAIT_EXPR:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_LAMBDA_EXPR:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_TEMPLATE_INFO:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_CONSTRAINT_INFO:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_USERDEF_LITERAL:
+      gcc_unreachable (); // FIXME
       break;
     }
 
@@ -3500,21 +3598,16 @@ cpms_in::core_vals (tree t)
       break;
     }
 
+  /* The ordering here is that in tree-core.h & cp-tree.h.  */
+  if (CODE_CONTAINS_STRUCT (code, TS_BASE))
+    { /* Nothing to do.  */ }
+
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     RT (t->typed.type);
 
-  /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
     {
-      RT (t->list.purpose);
-      RT (t->list.value);
-      RT (t->list.common.chain);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    {
-      gcc_unreachable (); // FIXME
+      /* Whether TREE_CHAIN is dumped depends on who's containing it.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
@@ -3525,76 +3618,22 @@ cpms_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    {
-      gcc_unreachable (); // FIXME
-    }
+    gcc_unreachable (); // FIXME
   
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    {
-      gcc_unreachable (); // FIXME
-    }
+    gcc_unreachable (); // FIXME
 
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      RT (t->binfo.offset);
-      RT (t->binfo.vtable);
-      RT (t->binfo.virtuals);
-      RT (t->binfo.vptr_field);
-      RT (t->binfo.inheritance);
-      RT (t->binfo.vtt_subvtt);
-      RT (t->binfo.vtt_vptr);
-      BINFO_BASE_ACCESSES (t) = tree_vec ();
-      if (BINFO_BASE_ACCESSES (t))
-	{
-	  unsigned num = BINFO_BASE_ACCESSES (t)->length ();
-	  for (unsigned ix = 0; ix != num; ix++)
-	    BINFO_BASE_APPEND (t, tree_node ());
-	}
-    }
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    gcc_unreachable (); // FIXME
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
-    {
-      RT (t->type_common.main_variant);
-      RT (t->type_common.canonical);
+  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
+    gcc_unreachable (); // FIXME
 
-      /* type_common.next_variant is internally manipulated.  */
-      /* type_common.pointer_to, type_common.reference_to.  */
+  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
+    gcc_unreachable (); // FIXME
 
-      RU (t->type_common.precision);
-      RU (t->type_common.contains_placeholder_bits);
-      RUC (machine_mode, t->type_common.mode);
-      RU (t->type_common.align);
-
-      RT (t->type_common.size);
-      RT (t->type_common.size_unit);
-      RT (t->type_common.attributes);
-      RT (t->type_common.name);
-      RT (t->type_common.context);
-
-      RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
-    {
-      /* Records and unions hold FIELDS, VFIELD & BINFO on these
-	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code))
-	{
-	  RT (t->type_non_common.values);
-	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
-	     store a marker there to indicate whether we're on the
-	     referred to type's pointer/reference to list.  */
-	  RT (t->type_non_common.minval);
-	  if (POINTER_TYPE_P (t) && t->type_non_common.minval
-	      && t->type_non_common.minval != t)
-	    {
-	      t->type_non_common.minval = NULL_TREE;
-	      r.bad ();
-	    }
-	  RT (t->type_non_common.maxval);
-	  RT (t->type_non_common.lang_1);
-	}
-    }
+  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
+    return false; /* Should never meet.  */
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
@@ -3624,13 +3663,25 @@ cpms_in::core_vals (tree t)
       /* decl_common.initial, decl_common.abstract_origin.  */
     }
 
-  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
     {
-      RU (t->label_decl.label_decl_uid);
-      RU (t->label_decl.eh_landing_pad_nr);
+      /* decl_non_common.result. */
     }
 
-  /* TS_DECL_WITH_RTL.  */
+  if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      RT (t->decl_with_vis.assembler_name);
+      RUC (symbol_visibility, t->decl_with_vis.visibility);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VAR_DECL))
+    {} // FIXME?
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
     {
@@ -3641,25 +3692,93 @@ cpms_in::core_vals (tree t)
       RT (t->field_decl.fcontext);
     }
 
-  /* TS_RESULT_DECL. */
-  /* TS_CONST_DECL.  */
-  /* TS_PARM_DECL.  */
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+  if (CODE_CONTAINS_STRUCT (code, TS_LABEL_DECL))
     {
-      RT (t->decl_with_vis.assembler_name);
-      RUC (symbol_visibility, t->decl_with_vis.visibility);
+      RU (t->label_decl.label_decl_uid);
+      RU (t->label_decl.eh_landing_pad_nr);
     }
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
-    {
-      /* decl_non_common.result. */
-    }
+  if (CODE_CONTAINS_STRUCT (code, TS_RESULT_DECL))
+    {} // FIXME?
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONST_DECL))
+    gcc_unreachable (); // FIXME
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
       t->function_decl.arguments = chained_decls ();
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    return false;
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    {
+      RT (t->type_common.main_variant);
+      RT (t->type_common.canonical);
+
+      /* type_common.next_variant is internally manipulated.  */
+      /* type_common.pointer_to, type_common.reference_to.  */
+
+      RU (t->type_common.precision);
+      RU (t->type_common.contains_placeholder_bits);
+      RUC (machine_mode, t->type_common.mode);
+      RU (t->type_common.align);
+
+      RT (t->type_common.size);
+      RT (t->type_common.size_unit);
+      RT (t->type_common.attributes);
+      RT (t->type_common.name);
+      RT (t->type_common.context);
+
+      RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_WITH_LANG_SPECIFIC))
+    { /* Nothing to do.  */ }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    {
+      /* Records and unions hold FIELDS, VFIELD & BINFO on these
+	 things.  */
+      if (!RECORD_OR_UNION_CODE_P (code))
+	{
+	  RT (t->type_non_common.values);
+	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
+	     store a marker there to indicate whether we're on the
+	     referred to type's pointer/reference to list.  */
+	  RT (t->type_non_common.minval);
+	  if (POINTER_TYPE_P (t) && t->type_non_common.minval
+	      && t->type_non_common.minval != t)
+	    {
+	      t->type_non_common.minval = NULL_TREE;
+	      r.bad ();
+	    }
+	  RT (t->type_non_common.maxval);
+	  RT (t->type_non_common.lang_1);
+	}
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+    {
+      RT (t->list.purpose);
+      RT (t->list.value);
+      RT (t->list.common.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
+    gcc_unreachable (); // FIXME
+
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
+      RT (TREE_OPERAND (t, ix));
+  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
+	   || TREE_CODE_CLASS (code) == tcc_expression)
+    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
+      RT (TREE_OPERAND (t, ix));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
+    return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     {
@@ -3669,6 +3788,32 @@ cpms_in::core_vals (tree t)
       // FIXME nonlocalized_vars, fragment_origin, fragment_chain
       RT (t->block.subblocks);
       RT (t->block.chain);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      RT (t->binfo.offset);
+      RT (t->binfo.vtable);
+      RT (t->binfo.virtuals);
+      RT (t->binfo.vptr_field);
+      RT (t->binfo.inheritance);
+      RT (t->binfo.vtt_subvtt);
+      RT (t->binfo.vtt_vptr);
+      BINFO_BASE_ACCESSES (t) = tree_vec ();
+      if (BINFO_BASE_ACCESSES (t))
+	{
+	  unsigned num = BINFO_BASE_ACCESSES (t)->length ();
+	  for (unsigned ix = 0; ix != num; ix++)
+	    BINFO_BASE_APPEND (t, tree_node ());
+	}
+    }
+
+
+  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
+    {
+      tree_stmt_iterator iter = tsi_start (t);
+      for (tree stmt; RT (stmt);)
+	tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -3687,36 +3832,87 @@ cpms_in::core_vals (tree t)
 	}
     }
 
-  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
-    for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
-      RT (TREE_OPERAND (t, ix));
-  else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   || TREE_CODE_CLASS (code) == tcc_expression)
-    for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
-      RT (TREE_OPERAND (t, ix));
+  if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
+    gcc_unreachable (); // FIXME
 
-  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
+  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
+    gcc_unreachable (); // FIXME
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+    gcc_unreachable (); // FIXME
+
+  /* Now the C++-specific nodes.  These are disjoint. While we could
+     use CODE directly, going via cp_tree_node_structure makes it
+     easy to see whether we're missing cases.  */
+  switch (cp_tree_node_structure (code))
     {
-      tree_stmt_iterator iter = tsi_start (t);
-      for (tree stmt; RT (stmt);)
-	tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
-    }
+    case TS_CP_GENERIC:
+      break;
+
+    case TS_CP_TPI:
+      gcc_unreachable (); // FIXME
+      break;
       
-  switch (code)
-    {
-    case OVERLOAD:
+    case TS_CP_PTRMEM:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_OVERLOAD:
       RT (((lang_tree_node *)t)->overload.function);
       RT (t->common.chain);
       break;
 
-    case DEFERRED_NOEXCEPT:
+    case TS_CP_MODULE_VECTOR:
+      return false;
+
+    case TS_CP_BASELINK:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_TEMPLATE_DECL:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_DEFAULT_ARG:
+      return false;
+
+    case TS_CP_DEFERRED_NOEXCEPT:
       RT (((lang_tree_node *)t)->deferred_noexcept.pattern);
       RT (((lang_tree_node *)t)->deferred_noexcept.args);
       break;
 
-    default:
+    case TS_CP_IDENTIFIER:
+      return false; /* Should never see.  */
+
+    case TS_CP_STATIC_ASSERT:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_ARGUMENT_PACK_SELECT:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_TRAIT_EXPR:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_LAMBDA_EXPR:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_TEMPLATE_INFO:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_CONSTRAINT_INFO:
+      gcc_unreachable (); // FIXME
+      break;
+
+    case TS_CP_USERDEF_LITERAL:
+      gcc_unreachable (); // FIXME
       break;
     }
+
 #undef RT
 #undef RM
 #undef RU
