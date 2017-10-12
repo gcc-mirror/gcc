@@ -1,3 +1,8 @@
+2017-10-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c
+	(rs6000_xcoff_asm_output_aligned_decl_common): Test for NULL decl.
+
 2017-10-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/predicates.md (zero_constant, all_ones_constant):
