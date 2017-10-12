@@ -352,7 +352,6 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
     case PROCESSOR_BDVER2:
     case PROCESSOR_BDVER3:
     case PROCESSOR_BDVER4:
-    case PROCESSOR_ZNVER1:
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
     case PROCESSOR_GENERIC:
@@ -384,6 +383,35 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	    loadcost = 3;
 	  else
 	    loadcost = TARGET_ATHLON ? 2 : 0;
+
+	  if (cost >= loadcost)
+	    cost -= loadcost;
+	  else
+	    cost = 0;
+	}
+      break;
+
+    case PROCESSOR_ZNVER1:
+      /* Stack engine allows to execute push&pop instructions in parall.  */
+      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
+	return 0;
+
+      memory = get_attr_memory (insn);
+
+      /* Show ability of reorder buffer to hide latency of load by executing
+	 in parallel with previous instruction in case
+	 previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependent (dep_insn, insn))
+	{
+	  enum attr_unit unit = get_attr_unit (insn);
+	  int loadcost;
+
+	  if (unit == UNIT_INTEGER || unit == UNIT_UNKNOWN)
+	    loadcost = 4;
+	  else
+	    loadcost = 7;
 
 	  if (cost >= loadcost)
 	    cost -= loadcost;

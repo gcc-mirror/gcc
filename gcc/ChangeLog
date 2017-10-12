@@ -1,3 +1,7 @@
+2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune-sched.c (ix86_adjust_cost): Fix Zen support.
+
 2017-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_split_conditional_move):
