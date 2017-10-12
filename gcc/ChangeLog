@@ -1,5 +1,12 @@
 2017-10-13  Alan Modra  <amodra@gmail.com>
 
+	* doc/extend.texi (Extended Asm <Clobbers>): Rename to
+	"Clobbers and Scratch Registers".  Add paragraph on
+	alternative to clobbers for scratch registers and OpenBLAS
+	example.
+
+2017-10-13  Alan Modra  <amodra@gmail.com>
+
 	* doc/extend.texi (Clobbers): Correct vax example.  Delete old
 	example of a memory input for a string of known length.  Move
 	commentary out of table.  Add a number of new examples
