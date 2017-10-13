@@ -1,3 +1,9 @@
+2017-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82481
+	* include/std/mutex (call_once): Suppress clang-tidy warnings about
+	dangling references.
+
 2017-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/streambuf_iterator.h (istreambuf_iterator::equal):
