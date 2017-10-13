@@ -1,3 +1,8 @@
+2017-10-13  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Remove
+	TARGET_P9_VECTOR code for unaligned_load case.
+
 2017-10-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfghooks.c (verify_flow_info): Check that edge probabilities are
