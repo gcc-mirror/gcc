@@ -58,15 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "graphite.h"
 
-/* We always try to use signed 128 bit types, but fall back to smaller types
-   in case a platform does not provide types of these sizes. In the future we
-   should use isl to derive the optimal type for each subexpression.  */
-
-static int max_mode_int_precision =
-  GET_MODE_PRECISION (int_mode_for_size (MAX_FIXED_MODE_SIZE, 0).require ());
-static int graphite_expression_type_precision = 128 <= max_mode_int_precision ?
-						128 : max_mode_int_precision;
-
 struct ast_build_info
 {
   ast_build_info()
@@ -143,8 +134,7 @@ enum phi_node_kind
 class translate_isl_ast_to_gimple
 {
  public:
-  translate_isl_ast_to_gimple (sese_info_p r)
-    : region (r), codegen_error (false) { }
+  translate_isl_ast_to_gimple (sese_info_p r);
   edge translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
 			  edge next_e, ivs_params &ip);
   edge translate_isl_ast_node_for (loop_p context_loop,
@@ -235,7 +225,23 @@ private:
 
   /* A vector of all the edges at if_condition merge points.  */
   auto_vec<edge, 2> merge_points;
+
+  tree graphite_expr_type;
 };
+
+translate_isl_ast_to_gimple::translate_isl_ast_to_gimple (sese_info_p r)
+  : region (r), codegen_error (false)
+{
+  /* We always try to use signed 128 bit types, but fall back to smaller types
+     in case a platform does not provide types of these sizes. In the future we
+     should use isl to derive the optimal type for each subexpression.  */
+  int max_mode_int_precision
+    = GET_MODE_PRECISION (int_mode_for_size (MAX_FIXED_MODE_SIZE, 0).require ());
+  int graphite_expr_type_precision
+    = 128 <= max_mode_int_precision ?  128 : max_mode_int_precision;
+  graphite_expr_type
+    = build_nonstandard_integer_type (graphite_expr_type_precision, 0);
+}
 
 /* Return the tree variable that corresponds to the given isl ast identifier
    expression (an isl_ast_expr of type isl_ast_expr_id).
@@ -702,8 +708,7 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 			    edge next_e, ivs_params &ip)
 {
   gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_for);
-  tree type
-    = build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+  tree type = graphite_expr_type;
 
   isl_ast_expr *for_init = isl_ast_node_for_get_init (node);
   tree lb = gcc_expression_from_isl_expression (type, for_init, ip);
@@ -742,8 +747,7 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
   for (i = 1; i < isl_ast_expr_get_op_n_arg (user_expr); i++)
     {
       arg_expr = isl_ast_expr_get_op_arg (user_expr, i);
-      tree type =
-	build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+      tree type = graphite_expr_type;
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
 
       /* To fail code generation, we generate wrong code until we discard it.  */
@@ -841,8 +845,7 @@ edge translate_isl_ast_to_gimple::
 graphite_create_new_guard (edge entry_edge, __isl_take isl_ast_expr *if_cond,
 			   ivs_params &ip)
 {
-  tree type =
-    build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+  tree type = graphite_expr_type;
   tree cond_expr = gcc_expression_from_isl_expression (type, if_cond, ip);
 
   /* To fail code generation, we generate wrong code until we discard it.  */

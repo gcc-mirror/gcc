@@ -1,3 +1,16 @@
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (max_mode_int_precision,
+	graphite_expression_type_precision): Avoid global constructor
+	by moving ...
+	(translate_isl_ast_to_gimple::translate_isl_ast_to_gimple): Here.
+	(translate_isl_ast_to_gimple::graphite_expr_type): Add type
+	member.
+	(translate_isl_ast_to_gimple::translate_isl_ast_node_for): Use it.
+	(translate_isl_ast_to_gimple::build_iv_mapping): Likewise.
+	(translate_isl_ast_to_gimple::graphite_create_new_guard): Likewise.
+	* graphite-sese-to-poly.c (build_original_schedule): Return nothing.
+
 2017-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82499
