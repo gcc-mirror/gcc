@@ -254,28 +254,6 @@ dot_cfg ()
   scops.release ();
 }
 
-/* Can all ivs be represented by a signed integer?
-   As isl might generate negative values in its expressions, signed loop ivs
-   are required in the backend.  */
-
-static bool
-loop_ivs_can_be_represented (loop_p loop)
-{
-  unsigned type_long_long = TYPE_PRECISION (long_long_integer_type_node);
-  for (gphi_iterator psi = gsi_start_phis (loop->header); !gsi_end_p (psi);
-       gsi_next (&psi))
-    {
-      gphi *phi = psi.phi ();
-      tree res = PHI_RESULT (phi);
-      tree type = TREE_TYPE (res);
-
-      if (TYPE_UNSIGNED (type) && TYPE_PRECISION (type) >= type_long_long)
-	return false;
-    }
-
-  return true;
-}
-
 /* Returns a COND_EXPR statement when BB has a single predecessor, the
    edge between BB and its predecessor is not a loop exit edge, and
    the last statement of the single predecessor is a COND_EXPR.  */
@@ -403,7 +381,7 @@ public:
 
      Something like "i * n" or "n * m" is not allowed.  */
 
-  static bool graphite_can_represent_scev (tree scev);
+  static bool graphite_can_represent_scev (sese_l scop, tree scev);
 
   /* Return true when EXPR can be represented in the polyhedral model.
 
@@ -822,13 +800,6 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	  return true;
 	}
 
-      if (! loop_ivs_can_be_represented (loop))
-	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		       << "IV cannot be represented.\n");
-	  return true;
-	}
-
       /* Check if all loop nests have at least one data reference.
 	 ???  This check is expensive and loops premature at this point.
 	 If important to retain we can pre-compute this for all innermost
@@ -963,17 +934,9 @@ scop_detection::graphite_can_represent_init (tree e)
    Something like "i * n" or "n * m" is not allowed.  */
 
 bool
-scop_detection::graphite_can_represent_scev (tree scev)
+scop_detection::graphite_can_represent_scev (sese_l scop, tree scev)
 {
   if (chrec_contains_undetermined (scev))
-    return false;
-
-  /* We disable the handling of pointer types, because it’s currently not
-     supported by Graphite with the isl AST generator. SSA_NAME nodes are
-     the only nodes, which are disabled in case they are pointers to object
-     types, but this can be changed.  */
-
-  if (POINTER_TYPE_P (TREE_TYPE (scev)) && TREE_CODE (scev) == SSA_NAME)
     return false;
 
   switch (TREE_CODE (scev))
@@ -982,13 +945,13 @@ scop_detection::graphite_can_represent_scev (tree scev)
     case BIT_NOT_EXPR:
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0));
+      return graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0));
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0))
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
+      return graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case MULT_EXPR:
       return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
@@ -996,18 +959,20 @@ scop_detection::graphite_can_represent_scev (tree scev)
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
 	&& graphite_can_represent_init (scev)
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0))
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case POLYNOMIAL_CHREC:
       /* Check for constant strides.  With a non constant stride of
 	 'n' we would have a value of 'iv * n'.  Also check that the
 	 initial value can represented: for example 'n * m' cannot be
 	 represented.  */
+      gcc_assert (loop_in_sese_p (get_loop (cfun,
+					    CHREC_VARIABLE (scev)), scop));
       if (!evolution_function_right_is_integer_cst (scev)
 	  || !graphite_can_represent_init (scev))
 	return false;
-      return graphite_can_represent_scev (CHREC_LEFT (scev));
+      return graphite_can_represent_scev (scop, CHREC_LEFT (scev));
 
     default:
       break;
@@ -1031,7 +996,7 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 					     tree expr)
 {
   tree scev = scalar_evolution_in_region (scop, loop, expr);
-  return graphite_can_represent_scev (scev);
+  return graphite_can_represent_scev (scop, scev);
 }
 
 /* Return true if the data references of STMT can be represented by Graphite.
@@ -1040,12 +1005,15 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  loop_p nest;
+  edge nest;
   loop_p loop = loop_containing_stmt (stmt);
   if (!loop_in_sese_p (loop, scop))
-    nest = loop;
+    {
+      nest = scop.entry;
+      loop = NULL;
+    }
   else
-    nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
+    nest = loop_preheader_edge (outermost_loop_in_sese (scop, gimple_bb (stmt)));
 
   auto_vec<data_reference_p> drs;
   if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
@@ -1056,7 +1024,7 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
       for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
-	if (! graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
+	if (! graphite_can_represent_scev (scop, DR_ACCESS_FN (dr, i)))
 	  return false;
     }
 
@@ -1413,12 +1381,15 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
-  loop_p nest;
+  edge nest;
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
-    nest = loop;
+    {
+      nest = region.entry;
+      loop = NULL;
+    }
   else
-    nest = outermost_loop_in_sese (region, bb);
+    nest = loop_preheader_edge (outermost_loop_in_sese (region, bb));
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))

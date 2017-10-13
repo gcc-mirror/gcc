@@ -166,9 +166,6 @@ extern void ix86_asm_output_function_label (FILE *, const char *, tree);
 extern void ix86_call_abi_override (const_tree);
 extern int ix86_reg_parm_stack_space (const_tree);
 
-extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
-				  rtx, rtx, rtx);
-
 extern bool ix86_libc_has_function (enum function_class fn_class);
 
 extern void x86_order_regs_for_local_alloc (void);

@@ -2475,6 +2475,12 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
   if (!REG_P (x))
     return false;
 
+  /* Don't change between modes with different underlying register sizes,
+     since this could lead to invalid subregs.  */
+  if (REGMODE_NATURAL_SIZE (mode)
+      != REGMODE_NATURAL_SIZE (GET_MODE (x)))
+    return false;
+
   regno = REGNO (x);
   /* Allow hard registers if the new mode is legal, and occupies no more
      registers than the old mode.  */
@@ -6304,7 +6310,8 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	SUBST (XEXP (x, 1),
 	       force_to_mode (XEXP (x, 1), GET_MODE (XEXP (x, 1)),
 			      (HOST_WIDE_INT_1U
-			       << exact_log2 (GET_MODE_BITSIZE (GET_MODE (x))))
+			       << exact_log2 (GET_MODE_UNIT_BITSIZE
+					      (GET_MODE (x))))
 			      - 1,
 			      0));
       break;
@@ -11618,8 +11625,6 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
   if (MEM_P (x))
     {
-      int offset = 0;
-
       /* Refuse to work on a volatile memory ref or one with a mode-dependent
 	 address.  */
       if (MEM_VOLATILE_P (x)
@@ -11632,14 +11637,7 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
       if (paradoxical_subreg_p (omode, imode))
 	return gen_rtx_SUBREG (omode, x, 0);
 
-      if (WORDS_BIG_ENDIAN)
-	offset = MAX (isize, UNITS_PER_WORD) - MAX (osize, UNITS_PER_WORD);
-
-      /* Adjust the address so that the address-after-the-data is
-	 unchanged.  */
-      if (BYTES_BIG_ENDIAN)
-	offset -= MIN (UNITS_PER_WORD, osize) - MIN (UNITS_PER_WORD, isize);
-
+      HOST_WIDE_INT offset = byte_lowpart_offset (omode, imode);
       return adjust_address_nv (x, omode, offset);
     }
 

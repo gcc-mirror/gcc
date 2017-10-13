@@ -1041,13 +1041,21 @@ get_matching_symbol (enum cpp_ttype type)
    If MATCHING_LOCATION is not UNKNOWN_LOCATION, then highlight it
    within any error as the location of an "opening" token matching
    the close token TYPE (e.g. the location of the '(' when TYPE is
-   CPP_CLOSE_PAREN).  */
+   CPP_CLOSE_PAREN).
+
+   If TYPE_IS_UNIQUE is true (the default) then msgid describes exactly
+   one type (e.g. "expected %<)%>") and thus it may be reasonable to
+   attempt to generate a fix-it hint for the problem.
+   Otherwise msgid describes multiple token types (e.g.
+   "expected %<;%>, %<,%> or %<)%>"), and thus we shouldn't attempt to
+   generate a fix-it hint.  */
 
 bool
 c_parser_require (c_parser *parser,
 		  enum cpp_ttype type,
 		  const char *msgid,
-		  location_t matching_location)
+		  location_t matching_location,
+		  bool type_is_unique)
 {
   if (c_parser_next_token_is (parser, type))
     {
@@ -1058,6 +1066,13 @@ c_parser_require (c_parser *parser,
     {
       location_t next_token_loc = c_parser_peek_token (parser)->location;
       gcc_rich_location richloc (next_token_loc);
+
+      /* Potentially supply a fix-it hint, suggesting to add the
+	 missing token immediately after the *previous* token.
+	 This may move the primary location within richloc.  */
+      if (!parser->error && type_is_unique)
+	maybe_suggest_missing_token_insertion (&richloc, type,
+					       parser->last_token_location);
 
       /* If matching_location != UNKNOWN_LOCATION, highlight it.
 	 Attempt to consolidate diagnostics by printing it as a
@@ -3975,7 +3990,8 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr)
 	    return get_parm_info (false, expr);
 	}
       if (!c_parser_require (parser, CPP_COMMA,
-			     "expected %<;%>, %<,%> or %<)%>"))
+			     "expected %<;%>, %<,%> or %<)%>",
+			     UNKNOWN_LOCATION, false))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	  return NULL;
@@ -6429,7 +6445,8 @@ c_parser_asm_statement (c_parser *parser)
       if (!c_parser_require (parser, CPP_COLON,
 			     is_goto
 			     ? G_("expected %<:%>")
-			     : G_("expected %<:%> or %<)%>")))
+			     : G_("expected %<:%> or %<)%>"),
+			     UNKNOWN_LOCATION, is_goto))
 	goto error_close_paren;
 
       /* Once past any colon, we're no longer a simple asm.  */

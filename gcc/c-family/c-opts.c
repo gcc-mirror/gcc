@@ -118,7 +118,7 @@ static void set_std_c11 (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
-static void add_prefixed_path (const char *, incpath_e);
+static void add_prefixed_path (const char *, incpath_kind);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
@@ -1326,7 +1326,7 @@ sanitize_cpp_opts (void)
 
 /* Add include path with a prefix at the front of its name.  */
 static void
-add_prefixed_path (const char *suffix, incpath_e chain)
+add_prefixed_path (const char *suffix, incpath_kind chain)
 {
   char *path;
   const char *prefix;

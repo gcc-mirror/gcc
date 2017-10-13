@@ -4792,6 +4792,30 @@ ix86_conditional_register_usage (void)
       fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+
+static void
+ix86_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			      bool op0_preserve_value)
+{
+  /* The order of operands in x87 ficom compare is forced by combine in
+     simplify_comparison () function. Float operator is treated as RTX_OBJ
+     with a precedence over other operators and is always put in the first
+     place. Swap condition and operands to match ficom instruction.  */
+  if (!op0_preserve_value
+      && GET_CODE (*op0) == FLOAT && MEM_P (XEXP (*op0, 0)) && REG_P (*op1))
+    {
+      enum rtx_code scode = swap_condition ((enum rtx_code) *code);
+
+      /* We are called only for compares that are split to SAHF instruction.
+	 Ensure that we have setcc/jcc insn for the swapped condition.  */
+      if (ix86_fp_compare_code_to_integer (scode) != UNKNOWN)
+	{
+	  std::swap (*op0, *op1);
+	  *code = (int) scode;
+	}
+    }
+}
 
 /* Save the current options */
 
@@ -22257,31 +22281,6 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
       gcc_assert (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC);
       goto simple;
     }
-}
-
-/* Split branch based on floating point condition.  */
-void
-ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
-		      rtx target1, rtx target2, rtx tmp)
-{
-  rtx condition;
-  rtx_insn *i;
-
-  if (target2 != pc_rtx)
-    {
-      std::swap (target1, target2);
-      code = reverse_condition_maybe_unordered (code);
-    }
-
-  condition = ix86_expand_fp_compare (code, op1, op2,
-				      tmp);
-
-  i = emit_jump_insn (gen_rtx_SET
-		      (pc_rtx,
-		       gen_rtx_IF_THEN_ELSE (VOIDmode,
-					     condition, target1, target2)));
-  if (split_branch_probability.initialized_p ())
-    add_reg_br_prob_note (i, split_branch_probability);
 }
 
 void
@@ -49673,6 +49672,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE ix86_conditional_register_usage
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON ix86_canonicalize_comparison
 
 #undef TARGET_LOOP_UNROLL_ADJUST
 #define TARGET_LOOP_UNROLL_ADJUST ix86_loop_unroll_adjust

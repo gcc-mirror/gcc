@@ -147,7 +147,8 @@ extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __rold (unsigned int __X, int __C)
 {
-  return (__X << __C) | (__X >> (32 - __C));
+  __C &= 31;
+  return (__X << __C) | (__X >> (-__C & 31));
 }
 
 /* 8bit ror */
@@ -171,7 +172,8 @@ extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __rord (unsigned int __X, int __C)
 {
-  return (__X >> __C) | (__X << (32 - __C));
+  __C &= 31;
+  return (__X >> __C) | (__X << (-__C & 31));
 }
 
 /* Pause */
@@ -239,7 +241,8 @@ extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __rolq (unsigned long long __X, int __C)
 {
-  return (__X << __C) | (__X >> (64 - __C));
+  __C &= 63;
+  return (__X << __C) | (__X >> (-__C & 63));
 }
 
 /* 64bit ror */
@@ -247,7 +250,8 @@ extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __rorq (unsigned long long __X, int __C)
 {
-  return (__X >> __C) | (__X << (64 - __C));
+  __C &= 63;
+  return (__X >> __C) | (__X << (-__C & 63));
 }
 
 /* Read flags register */

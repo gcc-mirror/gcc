@@ -957,15 +957,14 @@ access_fn_component_p (tree op)
 }
 
 /* Determines the base object and the list of indices of memory reference
-   DR, analyzed in LOOP and instantiated in loop nest NEST.  */
+   DR, analyzed in LOOP and instantiated before NEST.  */
 
 static void
-dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
+dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
 {
   vec<tree> access_fns = vNULL;
   tree ref, op;
   tree base, off, access_fn;
-  basic_block before_loop;
 
   /* If analyzing a basic-block there are no indices to analyze
      and thus no access functions.  */
@@ -977,7 +976,6 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     }
 
   ref = DR_REF (dr);
-  before_loop = block_before_loop (nest);
 
   /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
      into a two element array with a constant index.  The base is
@@ -1002,7 +1000,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	{
 	  op = TREE_OPERAND (ref, 1);
 	  access_fn = analyze_scalar_evolution (loop, op);
-	  access_fn = instantiate_scev (before_loop, loop, access_fn);
+	  access_fn = instantiate_scev (nest, loop, access_fn);
 	  access_fns.safe_push (access_fn);
 	}
       else if (TREE_CODE (ref) == COMPONENT_REF
@@ -1034,7 +1032,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     {
       op = TREE_OPERAND (ref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
-      access_fn = instantiate_scev (before_loop, loop, access_fn);
+      access_fn = instantiate_scev (nest, loop, access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
 	  tree orig_type;
@@ -1139,7 +1137,7 @@ free_data_ref (data_reference_p dr)
    in which the data reference should be analyzed.  */
 
 struct data_reference *
-create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
+create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
 		 bool is_read, bool is_conditional_in_stmt)
 {
   struct data_reference *dr;
@@ -4970,7 +4968,8 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
-      dr = create_data_ref (nest, loop_containing_stmt (stmt), ref->ref,
+      dr = create_data_ref (nest ? loop_preheader_edge (nest) : NULL,
+			    loop_containing_stmt (stmt), ref->ref,
 			    stmt, ref->is_read, ref->is_conditional_in_stmt);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
@@ -4986,7 +4985,7 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
    should be analyzed.  */
 
 bool
-graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
+graphite_find_data_references_in_stmt (edge nest, loop_p loop, gimple *stmt,
 				       vec<data_reference_p> *datarefs)
 {
   unsigned i;

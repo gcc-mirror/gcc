@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "sbitmap.h"
+#include "selftest.h"
 
 typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
@@ -322,29 +323,22 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
 bool
 bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
 {
+  gcc_checking_assert (start <= end);
   unsigned int start_word = start / SBITMAP_ELT_BITS;
   unsigned int start_bitno = start % SBITMAP_ELT_BITS;
-
-  /* Testing within a word, starting at the beginning of a word.  */
-  if (start_bitno == 0 && (end - start) < SBITMAP_ELT_BITS)
-    {
-      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << (end - start)) - 1;
-      return (bmap->elms[start_word] & mask) != 0;
-    }
 
   unsigned int end_word = end / SBITMAP_ELT_BITS;
   unsigned int end_bitno = end % SBITMAP_ELT_BITS;
 
-  /* Testing starts somewhere in the middle of a word.  Test up to the
-     end of the word or the end of the requested region, whichever comes
-     first.  */
+  /* Check beginning of first word if different from zero.  */
   if (start_bitno != 0)
     {
-      unsigned int nbits = ((start_word == end_word)
-			    ? end_bitno - start_bitno
-			    : SBITMAP_ELT_BITS - start_bitno);
-      SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << nbits) - 1;
-      mask <<= start_bitno;
+      SBITMAP_ELT_TYPE high_mask = ~(SBITMAP_ELT_TYPE)0;
+      if (start_word == end_word && end_bitno + 1 < SBITMAP_ELT_BITS)
+	high_mask = ((SBITMAP_ELT_TYPE)1 << (end_bitno + 1)) - 1;
+
+      SBITMAP_ELT_TYPE low_mask = ((SBITMAP_ELT_TYPE)1 << start_bitno) - 1;
+      SBITMAP_ELT_TYPE mask = high_mask - low_mask;
       if (bmap->elms[start_word] & mask)
 	return true;
       start_word++;
@@ -364,8 +358,9 @@ bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
     }
 
   /* Now handle residuals in the last word.  */
-  SBITMAP_ELT_TYPE mask
-    = ((SBITMAP_ELT_TYPE)1 << (SBITMAP_ELT_BITS - end_bitno)) - 1;
+  SBITMAP_ELT_TYPE mask = ~(SBITMAP_ELT_TYPE)0;
+  if (end_bitno + 1 < SBITMAP_ELT_BITS)
+    mask = ((SBITMAP_ELT_TYPE)1 << (end_bitno + 1)) - 1;
   return (bmap->elms[start_word] & mask) != 0;
 }
 
@@ -821,3 +816,92 @@ dump_bitmap_vector (FILE *file, const char *title, const char *subtitle,
 
   fprintf (file, "\n");
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for sbitmaps.  */
+
+
+/* Verify range functions for sbitmap.  */
+
+static void
+test_range_functions ()
+{
+  sbitmap s = sbitmap_alloc (1024);
+  bitmap_clear (s);
+
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 512, 1023));
+  bitmap_set_bit (s, 100);
+
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 512, 1023));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 99));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 101, 1023));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 100));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 64, 100));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 100, 100));
+  ASSERT_TRUE (bitmap_bit_p (s, 100));
+
+  s = sbitmap_alloc (64);
+  bitmap_clear (s);
+  bitmap_set_bit (s, 63);
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 63, 63));
+  ASSERT_TRUE (bitmap_bit_p (s, 63));
+
+  s = sbitmap_alloc (1024);
+  bitmap_clear (s);
+  bitmap_set_bit (s, 128);
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 127));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 129, 1023));
+
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 128));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 128));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 128, 255));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 128, 254));
+  ASSERT_TRUE (bitmap_bit_p (s, 128));
+
+  bitmap_clear (s);
+  bitmap_set_bit (s, 8);
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 8));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 12));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 127));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 8, 8));
+  ASSERT_TRUE (bitmap_bit_p (s, 8));
+
+  bitmap_clear (s);
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 0));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 8));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 63));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 1, 63));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 256));
+
+  bitmap_set_bit (s, 0);
+  bitmap_set_bit (s, 16);
+  bitmap_set_bit (s, 32);
+  bitmap_set_bit (s, 48);
+  bitmap_set_bit (s, 64);
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 0));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 16));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 48, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 64, 64));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 1, 15));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 17, 31));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 49, 63));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 65, 1023));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+sbitmap_c_tests ()
+{
+  test_range_functions ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P */

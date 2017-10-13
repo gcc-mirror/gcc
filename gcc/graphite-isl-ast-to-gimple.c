@@ -58,15 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "graphite.h"
 
-/* We always try to use signed 128 bit types, but fall back to smaller types
-   in case a platform does not provide types of these sizes. In the future we
-   should use isl to derive the optimal type for each subexpression.  */
-
-static int max_mode_int_precision =
-  GET_MODE_PRECISION (int_mode_for_size (MAX_FIXED_MODE_SIZE, 0).require ());
-static int graphite_expression_type_precision = 128 <= max_mode_int_precision ?
-						128 : max_mode_int_precision;
-
 struct ast_build_info
 {
   ast_build_info()
@@ -143,8 +134,7 @@ enum phi_node_kind
 class translate_isl_ast_to_gimple
 {
  public:
-  translate_isl_ast_to_gimple (sese_info_p r)
-    : region (r), codegen_error (false) { }
+  translate_isl_ast_to_gimple (sese_info_p r);
   edge translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
 			  edge next_e, ivs_params &ip);
   edge translate_isl_ast_node_for (loop_p context_loop,
@@ -177,6 +167,7 @@ class translate_isl_ast_to_gimple
   tree gcc_expression_from_isl_ast_expr_id (tree type,
 					    __isl_keep isl_ast_expr *expr_id,
 					    ivs_params &ip);
+  widest_int widest_int_from_isl_expr_int (__isl_keep isl_ast_expr *expr);
   tree gcc_expression_from_isl_expr_int (tree type,
 					 __isl_take isl_ast_expr *expr);
   tree gcc_expression_from_isl_expr_op (tree type,
@@ -198,7 +189,6 @@ class translate_isl_ast_to_gimple
   __isl_give isl_ast_node * scop_to_isl_ast (scop_p scop);
 
   tree get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
-			     basic_block new_bb, basic_block old_bb,
 			     vec<tree> iv_map);
   bool graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				       vec<tree> iv_map);
@@ -234,7 +224,23 @@ private:
 
   /* A vector of all the edges at if_condition merge points.  */
   auto_vec<edge, 2> merge_points;
+
+  tree graphite_expr_type;
 };
+
+translate_isl_ast_to_gimple::translate_isl_ast_to_gimple (sese_info_p r)
+  : region (r), codegen_error (false)
+{
+  /* We always try to use signed 128 bit types, but fall back to smaller types
+     in case a platform does not provide types of these sizes. In the future we
+     should use isl to derive the optimal type for each subexpression.  */
+  int max_mode_int_precision
+    = GET_MODE_PRECISION (int_mode_for_size (MAX_FIXED_MODE_SIZE, 0).require ());
+  int graphite_expr_type_precision
+    = 128 <= max_mode_int_precision ?  128 : max_mode_int_precision;
+  graphite_expr_type
+    = build_nonstandard_integer_type (graphite_expr_type_precision, 0);
+}
 
 /* Return the tree variable that corresponds to the given isl ast identifier
    expression (an isl_ast_expr of type isl_ast_expr_id).
@@ -265,29 +271,46 @@ gcc_expression_from_isl_ast_expr_id (tree type,
   return fold_convert (type, *val);
 }
 
-/* Converts an isl_ast_expr_int expression E to a GCC expression tree of
-   type TYPE.  */
+/* Converts an isl_ast_expr_int expression E to a widest_int.
+   Raises a code generation error when the constant doesn't fit.  */
 
-tree translate_isl_ast_to_gimple::
-gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
+widest_int translate_isl_ast_to_gimple::
+widest_int_from_isl_expr_int (__isl_keep isl_ast_expr *expr)
 {
   gcc_assert (isl_ast_expr_get_type (expr) == isl_ast_expr_int);
   isl_val *val = isl_ast_expr_get_val (expr);
   size_t n = isl_val_n_abs_num_chunks (val, sizeof (HOST_WIDE_INT));
   HOST_WIDE_INT *chunks = XALLOCAVEC (HOST_WIDE_INT, n);
-  tree res;
-  if (isl_val_get_abs_num_chunks (val, sizeof (HOST_WIDE_INT), chunks) == -1)
-    res = NULL_TREE;
-  else
+  if (n > WIDE_INT_MAX_ELTS
+      || isl_val_get_abs_num_chunks (val, sizeof (HOST_WIDE_INT), chunks) == -1)
     {
-      widest_int wi = widest_int::from_array (chunks, n, true);
-      if (isl_val_is_neg (val))
-	wi = -wi;
-      res = wide_int_to_tree (type, wi);
+      isl_val_free (val);
+      set_codegen_error ();
+      return 0;
     }
+  widest_int wi = widest_int::from_array (chunks, n, true);
+  if (isl_val_is_neg (val))
+    wi = -wi;
   isl_val_free (val);
+  return wi;
+}
+
+/* Converts an isl_ast_expr_int expression E to a GCC expression tree of
+   type TYPE.  Raises a code generation error when the constant doesn't fit.  */
+
+tree translate_isl_ast_to_gimple::
+gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
+{
+  widest_int wi = widest_int_from_isl_expr_int (expr);
   isl_ast_expr_free (expr);
-  return res;
+  if (codegen_error_p ())
+    return NULL_TREE;
+  if (wi::min_precision (wi, TYPE_SIGN (type)) > TYPE_PRECISION (type))
+    {
+      set_codegen_error ();
+      return NULL_TREE;
+    }
+  return wide_int_to_tree (type, wi);
 }
 
 /* Converts a binary isl_ast_expr_op expression E to a GCC expression tree of
@@ -296,14 +319,25 @@ gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
 tree translate_isl_ast_to_gimple::
 binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
+  enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree tree_lhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 1);
-  tree tree_rhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
-
-  enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr_free (expr);
 
+  /* From our constraint generation we may get modulo operations that
+     we cannot represent explicitely but that are no-ops for TYPE.
+     Elide those.  */
+  if (expr_type == isl_ast_op_pdiv_r
+      && isl_ast_expr_get_type (arg_expr) == isl_ast_expr_int
+      && (wi::exact_log2 (widest_int_from_isl_expr_int (arg_expr))
+	  >= TYPE_PRECISION (type)))
+    {
+      isl_ast_expr_free (arg_expr);
+      return tree_lhs_expr;
+    }
+
+  tree tree_rhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   if (codegen_error_p ())
     return NULL_TREE;
 
@@ -319,44 +353,16 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
       return fold_build2 (MULT_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_div:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_pdiv_q:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_zdiv_r:
     case isl_ast_op_pdiv_r:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_fdiv_q:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_and:
@@ -701,8 +707,7 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 			    edge next_e, ivs_params &ip)
 {
   gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_for);
-  tree type
-    = build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+  tree type = graphite_expr_type;
 
   isl_ast_expr *for_init = isl_ast_node_for_get_init (node);
   tree lb = gcc_expression_from_isl_expression (type, for_init, ip);
@@ -741,18 +746,15 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
   for (i = 1; i < isl_ast_expr_get_op_n_arg (user_expr); i++)
     {
       arg_expr = isl_ast_expr_get_op_arg (user_expr, i);
-      tree type =
-	build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+      tree type = graphite_expr_type;
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
 
       /* To fail code generation, we generate wrong code until we discard it.  */
       if (codegen_error_p ())
 	t = integer_zero_node;
 
-      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 2);
-      /* Record sth only for real loops.  */
-      if (loop_in_sese_p (old_loop, region))
-	iv_map[old_loop->num] = t;
+      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
+      iv_map[old_loop->num] = t;
     }
 }
 
@@ -842,8 +844,7 @@ edge translate_isl_ast_to_gimple::
 graphite_create_new_guard (edge entry_edge, __isl_take isl_ast_expr *if_cond,
 			   ivs_params &ip)
 {
-  tree type =
-    build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+  tree type = graphite_expr_type;
   tree cond_expr = gcc_expression_from_isl_expression (type, if_cond, ip);
 
   /* To fail code generation, we generate wrong code until we discard it.  */
@@ -1082,7 +1083,6 @@ gsi_insert_earliest (gimple_seq seq)
 
 tree translate_isl_ast_to_gimple::
 get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
-		      basic_block new_bb, basic_block,
 		      vec<tree> iv_map)
 {
   tree scev = scalar_evolution_in_region (region->region, loop, old_name);
@@ -1109,16 +1109,6 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
     {
       set_codegen_error ();
       return build_zero_cst (TREE_TYPE (old_name));
-    }
-
-  if (TREE_CODE (new_expr) == SSA_NAME)
-    {
-      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
-      if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
-	{
-	  set_codegen_error ();
-	  return build_zero_cst (TREE_TYPE (old_name));
-	}
     }
 
   /* Replace the old_name with the new_expr.  */
@@ -1243,8 +1233,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	      {
 		gimple_seq stmts = NULL;
 		new_name = get_rename_from_scev (old_name, &stmts,
-						 bb->loop_father,
-						 new_bb, bb, iv_map);
+						 bb->loop_father, iv_map);
 		if (! codegen_error_p ())
 		  gsi_insert_earliest (stmts);
 		new_expr = &new_name;
@@ -1359,7 +1348,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 		  gimple_seq stmts = NULL;
 		  tree new_name = get_rename_from_scev (arg, &stmts,
 							bb->loop_father,
-							new_bb, bb, iv_map);
+							iv_map);
 		  if (! codegen_error_p ())
 		    gsi_insert_earliest (stmts);
 		  arg = new_name;
@@ -1565,11 +1554,6 @@ graphite_regenerate_ast_isl (scop_p scop)
 				     if_region->true_region->region.exit);
       if (dump_file)
 	fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
-
-      mark_virtual_operands_for_renaming (cfun);
-      update_ssa (TODO_update_ssa);
-      checking_verify_ssa (true, true);
-      rewrite_into_loop_closed_ssa (NULL, 0);
     }
 
   if (t.codegen_error_p ())
@@ -1579,9 +1563,6 @@ graphite_regenerate_ast_isl (scop_p scop)
 		 "reverting back to the original code.\n");
       set_ifsese_condition (if_region, integer_zero_node);
 
-      /* We registered new names, scrap that.  */
-      if (need_ssa_update_p (cfun))
-	delete_update_ssa ();
       /* Remove the unreachable region.  */
       remove_edge_and_dominated_blocks (if_region->true_region->region.entry);
       basic_block ifb = if_region->false_region->region.entry->src;
@@ -1597,9 +1578,11 @@ graphite_regenerate_ast_isl (scop_p scop)
 	  delete_loop (loop);
     }
 
-  /* Verifies properties that GRAPHITE should maintain during translation.  */
-  checking_verify_loop_structure ();
-  checking_verify_loop_closed_ssa (true);
+  /* We are delaying SSA update to after code-generating all SCOPs.
+     This is because we analyzed DRs and parameters on the unmodified
+     IL and thus rely on SSA update to pick up new dominating definitions
+     from for example SESE liveout PHIs.  This is also for efficiency
+     as SSA update does work depending on the size of the function.  */
 
   free (if_region->true_region);
   free (if_region->region);

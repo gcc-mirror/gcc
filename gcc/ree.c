@@ -428,7 +428,8 @@ transform_ifelse (ext_cand *cand, rtx_insn *def_insn)
   srcreg2 = XEXP (SET_SRC (set_insn), 2);
   /* If the conditional move already has the right or wider mode,
      there is nothing to do.  */
-  if (GET_MODE_SIZE (GET_MODE (dstreg)) >= GET_MODE_SIZE (cand->mode))
+  if (GET_MODE_UNIT_SIZE (GET_MODE (dstreg))
+      >= GET_MODE_UNIT_SIZE (cand->mode))
     return true;
 
   map_srcreg = gen_rtx_REG (cand->mode, REGNO (srcreg));
@@ -718,8 +719,8 @@ merge_def_and_ext (ext_cand *cand, rtx_insn *def_insn, ext_state *state)
 	      && state->modified[INSN_UID (def_insn)].mode
 		 == ext_src_mode)))
     {
-      if (GET_MODE_SIZE (GET_MODE (SET_DEST (*sub_rtx)))
-	  >= GET_MODE_SIZE (cand->mode))
+      if (GET_MODE_UNIT_SIZE (GET_MODE (SET_DEST (*sub_rtx)))
+	  >= GET_MODE_UNIT_SIZE (cand->mode))
 	return true;
       /* If def_insn is already scheduled to be deleted, don't attempt
 	 to modify it.  */
@@ -926,7 +927,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	  || (set = single_set (cand->insn)) == NULL_RTX)
 	return false;
       mode = GET_MODE (SET_DEST (set));
-      gcc_assert (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (cand->mode));
+      gcc_assert (GET_MODE_UNIT_SIZE (mode)
+		  >= GET_MODE_UNIT_SIZE (cand->mode));
       cand->mode = mode;
     }
 

@@ -1,3 +1,15 @@
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (enum missing_token_insertion_kind): New enum.
+	(get_missing_token_insertion_kind): New function.
+	(maybe_suggest_missing_token_insertion): New function.
+	* c-common.h (maybe_suggest_missing_token_insertion): New decl.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (add_prefixed_path): Change chain to incpath_kind.
+	(c_common_handle_option): Update incpath_kind names.
+
 2017-10-11  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82490

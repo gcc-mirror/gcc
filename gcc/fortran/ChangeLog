@@ -1,3 +1,8 @@
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cpp.c (gfc_cpp_add_include_path): Update incpath_e names.
+	(gfc_cpp_add_include_path_after): Likewise.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* target-memory.c (gfc_interpret_logical): Use wi::to_wide when

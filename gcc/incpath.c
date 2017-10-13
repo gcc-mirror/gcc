@@ -46,7 +46,7 @@
 
 static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
-static void add_env_var_paths (const char *, incpath_e);
+static void add_env_var_paths (const char *, incpath_kind);
 static void add_standard_paths (const char *, const char *, const char *, int);
 static void free_path (struct cpp_dir *, int);
 static void merge_include_chains (const char *, cpp_reader *, int);
@@ -93,7 +93,7 @@ free_path (struct cpp_dir *path, int reason)
 /* Read ENV_VAR for a PATH_SEPARATOR-separated list of file names; and
    append all the names to the search path CHAIN.  */
 static void
-add_env_var_paths (const char *env_var, incpath_e chain)
+add_env_var_paths (const char *env_var, incpath_kind chain)
 {
   char *p, *q, *path;
 
@@ -417,7 +417,7 @@ split_quote_chain (void)
 /* Add P to the chain specified by CHAIN.  */
 
 void
-add_cpp_dir_path (cpp_dir *p, incpath_e chain)
+add_cpp_dir_path (cpp_dir *p, incpath_kind chain)
 {
   if (tails[chain])
     tails[chain]->next = p;
@@ -429,7 +429,7 @@ add_cpp_dir_path (cpp_dir *p, incpath_e chain)
 /* Add PATH to the include chain CHAIN. PATH must be malloc-ed and
    NUL-terminated.  */
 void
-add_path (char *path, incpath_e chain, int cxx_aware, bool user_supplied_p)
+add_path (char *path, incpath_kind chain, int cxx_aware, bool user_supplied_p)
 {
   cpp_dir *p;
 
@@ -504,7 +504,7 @@ register_include_chains (cpp_reader *pfile, const char *sysroot,
 /* Return the current chain of cpp dirs.  */
 
 struct cpp_dir *
-get_added_cpp_dirs (incpath_e chain)
+get_added_cpp_dirs (incpath_kind chain)
 {
   return heads[chain];
 }

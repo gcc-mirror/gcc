@@ -86,7 +86,7 @@ extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
   isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
   isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
   isl_local_space *ls = isl_local_space_from_space (space);
-  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e));
+  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e)) - 1;
   isl_aff *loop = isl_aff_set_coefficient_si
     (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
   isl_pw_aff *l = isl_pw_aff_from_aff (loop);
@@ -763,10 +763,10 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
     return domain;
   const sese_l &region = scop->scop_info->region;
   if (!loop_in_sese_p (loop, region))
-    ;
-  else
-    /* Recursion all the way up to the context loop.  */
-    domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
+    return domain;
+
+  /* Recursion all the way up to the context loop.  */
+  domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
 
   /* Then, build constraints over the loop in post-order: outer to inner.  */
 
@@ -776,21 +776,6 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
 	     "domain for loop_%d.\n", loop->num);
   domain = add_iter_domain_dimension (domain, loop, scop);
   isl_space *space = isl_set_get_space (domain);
-
-  if (!loop_in_sese_p (loop, region))
-    {
-      /* 0 == loop_i */
-      isl_local_space *ls = isl_local_space_from_space (space);
-      isl_constraint *c = isl_equality_alloc (ls);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, 1);
-      if (dump_file)
-	{
-	  fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
-	  print_isl_constraint (dump_file, c);
-	}
-      domain = isl_set_add_constraint (domain, c);
-      return domain;
-    }
 
   /* 0 <= loop_i */
   isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
@@ -1066,8 +1051,6 @@ outer_projection_mupa (__isl_take isl_union_set *set, int n)
   return isl_multi_union_pw_aff_from_union_pw_multi_aff (data.res);
 }
 
-static bool schedule_error;
-
 /* Embed SCHEDULE in the constraints of the LOOP domain.  */
 
 static isl_schedule *
@@ -1082,11 +1065,9 @@ add_loop_schedule (__isl_take isl_schedule *schedule, loop_p loop,
     return empty < 0 ? isl_schedule_free (schedule) : schedule;
 
   isl_union_set *domain = isl_schedule_get_domain (schedule);
-  /* We cannot apply an empty domain to pbbs in this loop so fail.
-     ??? Somehow drop pbbs in the loop instead.  */
+  /* We cannot apply an empty domain to pbbs in this loop so return early.  */
   if (isl_union_set_is_empty (domain))
     {
-      schedule_error = true;
       isl_union_set_free (domain);
       return schedule;
     }
@@ -1213,11 +1194,9 @@ build_schedule_loop_nest (scop_p scop, int *index, loop_p context_loop)
 
 /* Build the schedule of the SCOP.  */
 
-static bool
+static void
 build_original_schedule (scop_p scop)
 {
-  schedule_error = false;
-
   int i = 0;
   int n = scop->pbbs.length ();
   while (i < n)
@@ -1232,22 +1211,11 @@ build_original_schedule (scop_p scop)
       scop->original_schedule = add_in_sequence (scop->original_schedule, s);
     }
 
-  if (schedule_error)
-    {
-      if (dump_file)
-	fprintf (dump_file, "[sese-to-poly] failed to build "
-		 "original schedule\n");
-      return false;
-    }
-
   if (dump_file)
     {
       fprintf (dump_file, "[sese-to-poly] original schedule:\n");
       print_isl_schedule (dump_file, scop->original_schedule);
     }
-  if (!scop->original_schedule)
-    return false;
-  return true;
 }
 
 /* Builds the polyhedral representation for a SESE region.  */

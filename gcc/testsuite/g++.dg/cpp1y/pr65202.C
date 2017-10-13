@@ -22,5 +22,5 @@ struct bar;
 int main()
 {
     foo<ns::bar> f;
-    adl::swap(f, f)
-} // { dg-error "" }
+    adl::swap(f, f) // { dg-error "expected ';'" }
+} // { dg-error "expected '.'" "expected end of namespace" }

@@ -4117,7 +4117,6 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  tree type = rettype;
 	  int unsignedp = TYPE_UNSIGNED (type);
-	  int offset = 0;
 	  machine_mode pmode;
 
 	  /* Ensure we promote as expected, and get the new unsignedness.  */
@@ -4125,18 +4124,8 @@ expand_call (tree exp, rtx target, int ignore)
 					 funtype, 1);
 	  gcc_assert (GET_MODE (target) == pmode);
 
-	  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	      && (GET_MODE_SIZE (GET_MODE (target))
-		  > GET_MODE_SIZE (TYPE_MODE (type))))
-	    {
-	      offset = GET_MODE_SIZE (GET_MODE (target))
-	        - GET_MODE_SIZE (TYPE_MODE (type));
-	      if (! BYTES_BIG_ENDIAN)
-	        offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-	      else if (! WORDS_BIG_ENDIAN)
-	        offset %= UNITS_PER_WORD;
-	    }
-
+	  unsigned int offset = subreg_lowpart_offset (TYPE_MODE (type),
+						       GET_MODE (target));
 	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
 	  SUBREG_PROMOTED_SET (target, unsignedp);

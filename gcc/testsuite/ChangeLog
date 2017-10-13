@@ -1,3 +1,183 @@
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/pr35356-3.c: XFAIL again.
+	* gcc.dg/graphite/pr81373-2.c: Copy from gcc.dg/graphite/pr81373.c
+	with alternate flags.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/scop-10.c: Enlarge array to avoid undefined
+	behavior.
+	* gcc.dg/graphite/scop-7.c: Likewise.
+	* gcc.dg/graphite/scop-8.c: Likewise.
+
+2017-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82499
+	* gcc.target/i386/pr82499-1.c: New file.
+	* gcc.target/i386/pr82499-2.c: Likewise.
+	* gcc.target/i386/pr82499-3.c: Likewise.
+
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82524
+	* gcc.c-torture/execute/pr82524.c: New test.
+
+	PR target/82498
+	* gcc.dg/tree-ssa/pr82498.c: New test.
+
+	PR target/82498
+	* gcc.dg/ubsan/pr82498.c: New test.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82451
+	* gcc.dg/graphite/pr82451.c: New testcase.
+	* gfortran.dg/graphite/id-27.f90: Likewise.
+	* gfortran.dg/graphite/pr82451.f: Likewise.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82525
+	* gcc.dg/graphite/id-30.c: New testcase.
+	* gfortran.dg/graphite/id-28.f90: Likewise.
+
+2017-10-13  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/i386/asm-mem.c: New test.
+
+2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82498
+	* gcc.target/i386/pr82498-1.c: New test.
+	* gcc.target/i386/pr82498-2.c: New test.
+
+2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/predict-13.c: Update template for probaility change.
+	* gcc.dg/predict-8.c: Likewise.
+
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/cilk-plus/AN/parser_errors.c: Update expected
+	output to reflect changes to reported locations of missing
+	symbols.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c: Likewise.
+	* c-c++-common/cilk-plus/AN/pr61191.c: Likewise.
+	* c-c++-common/gomp/pr63326.c: Likewise.
+	* c-c++-common/missing-close-symbol.c: Likewise, also update for
+	new fix-it hints.
+	* c-c++-common/missing-symbol.c: Likewise, also add test coverage
+	for missing colon in ternary operator.
+	* g++.dg/cpp1y/digit-sep-neg.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/missing-symbol-2.C: New test case.
+	* g++.dg/other/do1.C: Update expected output to reflect
+	changes to reported locations of missing symbols.
+	* g++.dg/parse/error11.C: Likewise.
+	* g++.dg/template/error11.C: Likewise.
+	* gcc.dg/missing-symbol-2.c: New test case.
+	* gcc.dg/missing-symbol-3.c: New test case.
+	* gcc.dg/noncompile/940112-1.c: Update expected output to reflect
+	changes to reported locations of missing symbols.
+	* gcc.dg/noncompile/971104-1.c: Likewise.
+	* obj-c++.dg/exceptions-6.mm: Likewise.
+	* obj-c++.dg/pr48187.mm: Likewise.
+	* objc.dg/exceptions-6.m: Likewise.
+
+2017-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR other/82301
+	PR c/82435
+	* g++.dg/ext/attr-ifunc-1.C: Update.
+	* g++.dg/ext/attr-ifunc-2.C: Same.
+	* g++.dg/ext/attr-ifunc-3.C: Same.
+	* g++.dg/ext/attr-ifunc-4.C: Same.
+	* g++.dg/ext/attr-ifunc-5.C: Same.
+	* g++.dg/ext/attr-ifunc-6.C: New test.
+	* g++.old-deja/g++.abi/vtable2.C: Update.
+	* gcc.dg/attr-ifunc-6.c: New test.
+	* gcc.dg/attr-ifunc-7.c: New test.
+	* gcc.dg/pr81854.c: Update.
+	* lib/target-supports.exp: Update.
+
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/parse/pragma2.C: Update to reflect reinstatement of the
+	"#pragma is not allowed here" error.
+
+2017-10-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-28.c: New test.
+	* gcc.dg/tree-ssa/ldist-29.c: New test.
+	* gcc.dg/tree-ssa/ldist-30.c: New test.
+	* gcc.dg/tree-ssa/ldist-31.c: New test.
+
+2017-10-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ldist-7.c: Adjust test string.
+	* gcc.dg/tree-ssa/ldist-16.c: Ditto.
+	* gcc.dg/tree-ssa/ldist-25.c: Ditto.
+	* gcc.dg/tree-ssa/ldist-33.c: New test.
+
+2017-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69728
+	* gcc.dg/graphite/pr69728.c: Adjust to reflect we can handle
+	the loop now.  Remove unrelated undefined behavior.
+
+2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82159
+	* g++.dg/opt/pr82159-2.C: New test.
+
+	PR target/82353
+	* gcc.target/i386/i386.exp (tests): Revert the '.C' extension change.
+	* gcc.target/i386/pr82353.C: Moved to ...
+	* g++.dg/ubsan/pr82353.C: ... here.  Restrict to i?86/x86_64 && lp64.
+
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/387-ficom-2.c: New test.
+
+2017-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80421
+	* gcc.c-torture/execute/pr80421.c: New test.
+
+	PR tree-optimization/78558
+	* gcc.dg/vect/pr78558.c: New test.
+
+	PR c++/82414
+	* g++.dg/lto/pr82414_0.C: New test.
+
+	PR c++/78523
+	* g++.dg/cpp1y/pr78523.C: New test.
+
+	PR c++/80194
+	* g++.dg/cpp1y/pr80194.C: New test.
+
+2017-10-11  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR target/81422
+	* gcc.target/aarch64/pr81422.C: New test.
+
+2017-10-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR sanitizer/82353
+	* gcc.target/i386/i386.exp (tests): Permit '.C' extension.
+	* gcc.target/i386/pr82353.C: New.
+
+2017-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/387-ficom-1.c: New test.
+
+2017-10-11  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/struct-layout-1_generate.c (generate_fields): Fix typo in
+	address computation of end of complex_attrib_array_types.
+
 2017-10-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/Wstrict-overflow-7.c: Xfail.
@@ -1047,7 +1227,7 @@
 
 2017-09-22  Sergey Shalnov  <sergey.shalnov@intel.com>
 
-        * gcc.target/i386/avx512f-constant-set.c: New test.
+	* gcc.target/i386/avx512f-constant-set.c: New test.
 
 2017-09-21  Sergey Shalnov  <sergey.shalnov@intel.com>
 
@@ -2616,7 +2796,7 @@
 
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
-        PR target/81921
+	PR target/81921
 	* gcc.target/i386/pr81921.c: New testcase.
 
 2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
@@ -2697,8 +2877,8 @@
 
 2017-08-22  Yvan Roux  <yvan.roux@linaro.org>
 
-        PR c++/80287
-        * g++.dg/pr80287.C: New test.
+	PR c++/80287
+	* g++.dg/pr80287.C: New test.
 
 2017-08-22  Richard Biener  <rguenther@suse.de>
 

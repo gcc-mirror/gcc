@@ -440,8 +440,8 @@ proc check_ifunc_available { } {
 	extern "C" {
 	#endif
 	typedef void F (void);
-	F* g() {}
-	void f() __attribute__((ifunc("g")));
+	F* g (void) {}
+	void f () __attribute__ ((ifunc ("g")));
 	#ifdef __cplusplus
 	}
 	#endif

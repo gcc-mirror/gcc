@@ -19077,12 +19077,11 @@ rtl_for_decl_location (tree decl)
   else if (VAR_P (decl)
 	   && rtl
 	   && MEM_P (rtl)
-	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
-	   && BYTES_BIG_ENDIAN)
+	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl)))
     {
       machine_mode addr_mode = get_address_mode (rtl);
-      int rsize = GET_MODE_SIZE (GET_MODE (rtl));
-      int dsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)));
+      HOST_WIDE_INT offset = byte_lowpart_offset (TYPE_MODE (TREE_TYPE (decl)),
+						  GET_MODE (rtl));
 
       /* If a variable is declared "register" yet is smaller than
 	 a register, then if we store the variable to memory, it
@@ -19090,10 +19089,9 @@ rtl_for_decl_location (tree decl)
 	 fact we are not.  We need to adjust the offset of the
 	 storage location to reflect the actual value's bytes,
 	 else gdb will not be able to display it.  */
-      if (rsize > dsize)
+      if (offset != 0)
 	rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
-			   plus_constant (addr_mode, XEXP (rtl, 0),
-					  rsize - dsize));
+			   plus_constant (addr_mode, XEXP (rtl, 0), offset));
     }
 
   /* A variable with no DECL_RTL but a DECL_INITIAL is a compile-time constant,

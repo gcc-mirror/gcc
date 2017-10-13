@@ -334,6 +334,8 @@ gbb_loop_at_index (gimple_poly_bb_p gbb, sese_l &region, int index)
   while (--depth > index)
     loop = loop_outer (loop);
 
+  gcc_assert (loop_in_sese_p (loop, region));
+
   return loop;
 }
 

@@ -131,6 +131,7 @@ valid_ao_ref_for_dse (ao_ref *ref)
 	  && ref->max_size != -1
 	  && ref->size != 0
 	  && ref->max_size == ref->size
+	  && ref->offset >= 0
 	  && (ref->offset % BITS_PER_UNIT) == 0
 	  && (ref->size % BITS_PER_UNIT) == 0
 	  && (ref->size != -1));
@@ -492,7 +493,7 @@ live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
 
       /* Now check if any of the remaining bits in use_ref are set in LIVE.  */
       unsigned int start = (use_ref.offset - ref->offset) / BITS_PER_UNIT;
-      unsigned int end  = (use_ref.offset + use_ref.size) / BITS_PER_UNIT;
+      unsigned int end  = ((use_ref.offset + use_ref.size) / BITS_PER_UNIT) - 1;
       return bitmap_bit_in_range_p (live, start, end);
     }
   return true;

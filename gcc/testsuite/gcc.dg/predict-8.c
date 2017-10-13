@@ -1,5 +1,5 @@
 /* { dg-do compile { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-options "-O2 -fdump-rtl-expand" } */
+/* { dg-options "-O2 -fdump-rtl-expand-details-blocks" } */
 
 int foo(float a, float b) {
   if (a == b)
@@ -8,4 +8,4 @@ int foo(float a, float b) {
     return 2;
 }
 
-/* { dg-final { scan-rtl-dump-times "REG_BR_PROB 400 " 1 "expand"} } */
+/* { dg-final { scan-rtl-dump-times "99.0. .guessed" 2 "expand"} } */
