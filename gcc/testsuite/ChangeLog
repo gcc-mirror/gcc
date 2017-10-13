@@ -1,3 +1,9 @@
+2017-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/69078
+	* g++.dg/cpp1y/lambda-generic-69078-1.C: New.
+	* g++.dg/cpp1y/lambda-generic-69078-2.C: Likewise.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82274
