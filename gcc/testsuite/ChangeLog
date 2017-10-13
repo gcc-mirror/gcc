@@ -1,5 +1,11 @@
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/graphite/pr35356-3.c: XFAIL again.
+	* gcc.dg/graphite/pr81373-2.c: Copy from gcc.dg/graphite/pr81373.c
+	with alternate flags.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/graphite/scop-10.c: Enlarge array to avoid undefined
 	behavior.
 	* gcc.dg/graphite/scop-7.c: Likewise.
