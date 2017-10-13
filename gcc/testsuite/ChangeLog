@@ -1,3 +1,10 @@
+2017-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82499
+	* gcc.target/i386/pr82499-1.c: New file.
+	* gcc.target/i386/pr82499-2.c: Likewise.
+	* gcc.target/i386/pr82499-3.c: Likewise.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82524
