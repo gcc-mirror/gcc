@@ -1,3 +1,8 @@
+2017-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81048
+	* gfortran.dg/derived_init_4.f90 : New test.
+
 2017-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69078

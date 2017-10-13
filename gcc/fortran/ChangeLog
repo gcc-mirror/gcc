@@ -1,3 +1,9 @@
+2017-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81048
+	* resolve.c (resolve_symbol): Ensure that derived type array
+	results get default initialization.
+
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* cpp.c (gfc_cpp_add_include_path): Update incpath_e names.
