@@ -1713,11 +1713,18 @@ loop_preheader_edge (const struct loop *loop)
   edge e;
   edge_iterator ei;
 
-  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS));
+  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
+	      && ! loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES));
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
       break;
+
+  if (! e)
+    {
+      gcc_assert (! loop_outer (loop));
+      return single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+    }
 
   return e;
 }

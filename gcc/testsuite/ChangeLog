@@ -1,5 +1,12 @@
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82451
+	* gcc.dg/graphite/pr82451.c: New testcase.
+	* gfortran.dg/graphite/id-27.f90: Likewise.
+	* gfortran.dg/graphite/pr82451.f: Likewise.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82525
 	* gcc.dg/graphite/id-30.c: New testcase.
 	* gfortran.dg/graphite/id-28.f90: Likewise.

@@ -750,10 +750,8 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
       if (codegen_error_p ())
 	t = integer_zero_node;
 
-      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 2);
-      /* Record sth only for real loops.  */
-      if (loop_in_sese_p (old_loop, region))
-	iv_map[old_loop->num] = t;
+      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
+      iv_map[old_loop->num] = t;
     }
 }
 
@@ -1571,6 +1569,12 @@ graphite_regenerate_ast_isl (scop_p scop)
       update_ssa (TODO_update_ssa);
       checking_verify_ssa (true, true);
       rewrite_into_loop_closed_ssa (NULL, 0);
+      /* We analyzed evolutions of all SCOPs during SCOP detection
+         which cached evolutions.  Now we've introduced PHIs for
+	 liveouts which causes those cached solutions to be invalid
+	 for code-generation purposes given we'd insert references
+	 to SSA names not dominating their new use.  */
+      scev_reset ();
     }
 
   if (t.codegen_error_p ())
