@@ -1272,10 +1272,9 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       if ((GET_CODE (op) == FLOAT_TRUNCATE
 	   && flag_unsafe_math_optimizations)
 	  || GET_CODE (op) == FLOAT_EXTEND)
-	return simplify_gen_unary (GET_MODE_SIZE (GET_MODE (XEXP (op,
-							    0)))
-				   > GET_MODE_SIZE (mode)
-				   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
+	return simplify_gen_unary (GET_MODE_UNIT_SIZE (GET_MODE (XEXP (op, 0)))
+	  			   > GET_MODE_UNIT_SIZE (mode)
+	  			   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
 				   mode,
 				   XEXP (op, 0), mode);
 
