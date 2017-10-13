@@ -76,64 +76,43 @@ as_internal_fn (combined_fn code)
 
 /* Macros for initializing `tree_contains_struct'.  */
 #define MARK_TS_BASE(C)					\
-  do {							\
-    tree_contains_struct[C][TS_BASE] = 1;		\
-  } while (0)
+  (tree_contains_struct[C][TS_BASE] = true)
 
 #define MARK_TS_TYPED(C)				\
-  do {							\
-    MARK_TS_BASE (C);					\
-    tree_contains_struct[C][TS_TYPED] = 1;		\
-  } while (0)
+  (MARK_TS_BASE (C),					\
+   tree_contains_struct[C][TS_TYPED] = true)
 
 #define MARK_TS_COMMON(C)				\
-  do {							\
-    MARK_TS_TYPED (C);					\
-    tree_contains_struct[C][TS_COMMON] = 1;		\
-  } while (0)
+  (MARK_TS_TYPED (C),					\
+   tree_contains_struct[C][TS_COMMON] = true)
 
 #define MARK_TS_TYPE_COMMON(C)				\
-  do {							\
-    MARK_TS_COMMON (C);					\
-    tree_contains_struct[C][TS_TYPE_COMMON] = 1;	\
-  } while (0)
+  (MARK_TS_COMMON (C),					\
+   tree_contains_struct[C][TS_TYPE_COMMON] = true)
 
 #define MARK_TS_TYPE_WITH_LANG_SPECIFIC(C)		\
-  do {							\
-    MARK_TS_TYPE_COMMON (C);				\
-    tree_contains_struct[C][TS_TYPE_WITH_LANG_SPECIFIC] = 1;	\
-  } while (0)
+  (MARK_TS_TYPE_COMMON (C),				\
+   tree_contains_struct[C][TS_TYPE_WITH_LANG_SPECIFIC] = true)
 
 #define MARK_TS_DECL_MINIMAL(C)				\
-  do {							\
-    MARK_TS_COMMON (C);					\
-    tree_contains_struct[C][TS_DECL_MINIMAL] = 1;	\
-  } while (0)
+  (MARK_TS_COMMON (C),					\
+   tree_contains_struct[C][TS_DECL_MINIMAL] = true)
 
 #define MARK_TS_DECL_COMMON(C)				\
-  do {							\
-    MARK_TS_DECL_MINIMAL (C);				\
-    tree_contains_struct[C][TS_DECL_COMMON] = 1;	\
-  } while (0)
+  (MARK_TS_DECL_MINIMAL (C),				\
+   tree_contains_struct[C][TS_DECL_COMMON] = true)
 
 #define MARK_TS_DECL_WRTL(C)				\
-  do {							\
-    MARK_TS_DECL_COMMON (C);				\
-    tree_contains_struct[C][TS_DECL_WRTL] = 1;		\
-  } while (0)
+  (MARK_TS_DECL_COMMON (C),				\
+   tree_contains_struct[C][TS_DECL_WRTL] = true)
 
 #define MARK_TS_DECL_WITH_VIS(C)			\
-  do {							\
-    MARK_TS_DECL_WRTL (C);				\
-    tree_contains_struct[C][TS_DECL_WITH_VIS] = 1;	\
-  } while (0)
+  (MARK_TS_DECL_WRTL (C),				\
+   tree_contains_struct[C][TS_DECL_WITH_VIS] = true)
 
 #define MARK_TS_DECL_NON_COMMON(C)			\
-  do {							\
-    MARK_TS_DECL_WITH_VIS (C);				\
-    tree_contains_struct[C][TS_DECL_NON_COMMON] = 1;	\
-  } while (0)
-
+  (MARK_TS_DECL_WITH_VIS (C),				\
+   tree_contains_struct[C][TS_DECL_NON_COMMON] = true)
 
 /* Returns the string representing CLASS.  */
 

@@ -2058,7 +2058,7 @@ struct floatn_type_info {
                                 Global variables
 ---------------------------------------------------------------------------*/
 /* Matrix describing the structures contained in a given tree code.  */
-extern unsigned char tree_contains_struct[MAX_TREE_CODES][64];
+extern bool tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Class of tree given its code.  */
 extern const enum tree_code_class tree_code_type[];
