@@ -1,5 +1,17 @@
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82525
+	* graphite-isl-ast-to-gimple.c
+	(translate_isl_ast_to_gimple::widest_int_from_isl_expr_int): Split
+	out from ...
+	(translate_isl_ast_to_gimple::gcc_expression_from_isl_expr_int): Here.
+	Fail code generation when we cannot represent the isl integer.
+	(binary_op_to_tree): Elide modulo operations that are no-ops
+	in the type we code generate.  Remove now superfluous code
+	generation errors.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
 	* graphite-scop-detection.c (loop_ivs_can_be_represented): Remove.
 	(scop_detection::harmful_loop_in_region): Remove premature
 	IV type restriction.

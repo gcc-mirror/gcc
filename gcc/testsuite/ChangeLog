@@ -1,3 +1,9 @@
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82525
+	* gcc.dg/graphite/id-30.c: New testcase.
+	* gfortran.dg/graphite/id-28.f90: Likewise.
+
 2017-10-13  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/i386/asm-mem.c: New test.
