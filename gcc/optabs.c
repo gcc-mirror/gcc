@@ -138,8 +138,8 @@ add_equal_note (rtx_insn *insns, rtx target, enum rtx_code code, rtx op0, rtx op
 	if (GET_MODE (op0) != VOIDmode && GET_MODE (target) != GET_MODE (op0))
 	  {
 	    note = gen_rtx_fmt_e (code, GET_MODE (op0), copy_rtx (op0));
-	    if (GET_MODE_SIZE (GET_MODE (op0))
-		> GET_MODE_SIZE (GET_MODE (target)))
+	    if (GET_MODE_UNIT_SIZE (GET_MODE (op0))
+		> GET_MODE_UNIT_SIZE (GET_MODE (target)))
 	      note = simplify_gen_unary (TRUNCATE, GET_MODE (target),
 					 note, GET_MODE (op0));
 	    else
@@ -173,12 +173,12 @@ widened_mode (machine_mode to_mode, rtx op0, rtx op1)
 
   if (m0 == VOIDmode && m1 == VOIDmode)
     return to_mode;
-  else if (m0 == VOIDmode || GET_MODE_SIZE (m0) < GET_MODE_SIZE (m1))
+  else if (m0 == VOIDmode || GET_MODE_UNIT_SIZE (m0) < GET_MODE_UNIT_SIZE (m1))
     result = m1;
   else
     result = m0;
 
-  if (GET_MODE_SIZE (result) > GET_MODE_SIZE (to_mode))
+  if (GET_MODE_UNIT_SIZE (result) > GET_MODE_UNIT_SIZE (to_mode))
     return to_mode;
 
   return result;
@@ -2977,9 +2977,9 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       else
 	{
 	  eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
-	  if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
+	  if (GET_MODE_UNIT_SIZE (outmode) < GET_MODE_UNIT_SIZE (mode))
 	    eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
-	  else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
+	  else if (GET_MODE_UNIT_SIZE (outmode) > GET_MODE_UNIT_SIZE (mode))
 	    eq_value = simplify_gen_unary (ZERO_EXTEND,
 					   outmode, eq_value, mode);
 	}

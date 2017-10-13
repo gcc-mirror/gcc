@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.c (add_equal_note): Use GET_MODE_UNIT_SIZE.
+	(widened_mode): Likewise.
+	(expand_unop): Likewise.
+	* ree.c (transform_ifelse): Likewise.
+	(merge_def_and_ext): Likewise.
+	(combine_reaching_defs): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
+2017-10-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* caller-save.c (replace_reg_with_saved_mem): Use byte_lowpart_offset.
 	* combine.c (gen_lowpart_for_combine): Likewise.
 	* dwarf2out.c (rtl_for_decl_location): Likewise.
