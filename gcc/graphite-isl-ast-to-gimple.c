@@ -189,7 +189,6 @@ class translate_isl_ast_to_gimple
   __isl_give isl_ast_node * scop_to_isl_ast (scop_p scop);
 
   tree get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
-			     basic_block new_bb, basic_block old_bb,
 			     vec<tree> iv_map);
   bool graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				       vec<tree> iv_map);
@@ -1084,7 +1083,6 @@ gsi_insert_earliest (gimple_seq seq)
 
 tree translate_isl_ast_to_gimple::
 get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
-		      basic_block new_bb, basic_block,
 		      vec<tree> iv_map)
 {
   tree scev = scalar_evolution_in_region (region->region, loop, old_name);
@@ -1111,16 +1109,6 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
     {
       set_codegen_error ();
       return build_zero_cst (TREE_TYPE (old_name));
-    }
-
-  if (TREE_CODE (new_expr) == SSA_NAME)
-    {
-      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
-      if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
-	{
-	  set_codegen_error ();
-	  return build_zero_cst (TREE_TYPE (old_name));
-	}
     }
 
   /* Replace the old_name with the new_expr.  */
@@ -1245,8 +1233,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	      {
 		gimple_seq stmts = NULL;
 		new_name = get_rename_from_scev (old_name, &stmts,
-						 bb->loop_father,
-						 new_bb, bb, iv_map);
+						 bb->loop_father, iv_map);
 		if (! codegen_error_p ())
 		  gsi_insert_earliest (stmts);
 		new_expr = &new_name;
@@ -1361,7 +1348,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 		  gimple_seq stmts = NULL;
 		  tree new_name = get_rename_from_scev (arg, &stmts,
 							bb->loop_father,
-							new_bb, bb, iv_map);
+							iv_map);
 		  if (! codegen_error_p ())
 		    gsi_insert_earliest (stmts);
 		  arg = new_name;
@@ -1567,17 +1554,6 @@ graphite_regenerate_ast_isl (scop_p scop)
 				     if_region->true_region->region.exit);
       if (dump_file)
 	fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
-
-      mark_virtual_operands_for_renaming (cfun);
-      update_ssa (TODO_update_ssa);
-      checking_verify_ssa (true, true);
-      rewrite_into_loop_closed_ssa (NULL, 0);
-      /* We analyzed evolutions of all SCOPs during SCOP detection
-         which cached evolutions.  Now we've introduced PHIs for
-	 liveouts which causes those cached solutions to be invalid
-	 for code-generation purposes given we'd insert references
-	 to SSA names not dominating their new use.  */
-      scev_reset ();
     }
 
   if (t.codegen_error_p ())
@@ -1587,9 +1563,6 @@ graphite_regenerate_ast_isl (scop_p scop)
 		 "reverting back to the original code.\n");
       set_ifsese_condition (if_region, integer_zero_node);
 
-      /* We registered new names, scrap that.  */
-      if (need_ssa_update_p (cfun))
-	delete_update_ssa ();
       /* Remove the unreachable region.  */
       remove_edge_and_dominated_blocks (if_region->true_region->region.entry);
       basic_block ifb = if_region->false_region->region.entry->src;
@@ -1605,9 +1578,11 @@ graphite_regenerate_ast_isl (scop_p scop)
 	  delete_loop (loop);
     }
 
-  /* Verifies properties that GRAPHITE should maintain during translation.  */
-  checking_verify_loop_structure ();
-  checking_verify_loop_closed_ssa (true);
+  /* We are delaying SSA update to after code-generating all SCOPs.
+     This is because we analyzed DRs and parameters on the unmodified
+     IL and thus rely on SSA update to pick up new dominating definitions
+     from for example SESE liveout PHIs.  This is also for efficiency
+     as SSA update does work depending on the size of the function.  */
 
   free (if_region->true_region);
   free (if_region->region);
