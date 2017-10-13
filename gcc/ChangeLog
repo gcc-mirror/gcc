@@ -1,3 +1,14 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82524
+	* config/i386/i386.md (addqi_ext_1, andqi_ext_1,
+	*andqi_ext_1_cc, *<code>qi_ext_1, *xorqi_ext_1_cc): Change
+	=Q constraints to +Q and into insn condition add check
+	that operands[0] and operands[1] are equal.
+	(*addqi_ext_2, *andqi_ext_2, *<code>qi_ext_2): Change
+	=Q constraints to +Q and into insn condition add check
+	that operands[0] is equal to either operands[1] or operands[2].
+
 2017-10-10  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backported from mainline r253602
