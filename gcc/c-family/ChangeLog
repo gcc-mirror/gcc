@@ -1,3 +1,8 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-gimplify.c (c_gimplify_expr): Handle [LR]ROTATE_EXPR like
+	[LR]SHIFT_EXPR.
+
 2017-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (enum missing_token_insertion_kind): New enum.
