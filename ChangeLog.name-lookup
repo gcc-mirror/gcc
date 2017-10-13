@@ -1,5 +1,7 @@
 2017-10-13  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk rr253733
+
 	gcc/
 	* tree.c (tree_code_size): Reformat.  Punt to lang hook for unknown
 	TYPE nodes.

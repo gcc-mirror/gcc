@@ -5419,9 +5419,6 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case unaligned_load:
-	if (TARGET_P9_VECTOR)
-	  return 3;
-
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
