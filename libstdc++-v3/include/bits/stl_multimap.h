@@ -526,12 +526,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  thus multiple pairs with the same key can be inserted.
        *
        *  Insertion requires logarithmic time.
+       *  @{
        */
       iterator
       insert(const value_type& __x)
       { return _M_t._M_insert_equal(__x); }
 
 #if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(value_type&& __x)
+      { return _M_t._M_insert_equal(std::move(__x)); }
+
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
@@ -539,6 +546,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	insert(_Pair&& __x)
 	{ return _M_t._M_insert_equal(std::forward<_Pair>(__x)); }
 #endif
+      // @}
 
       /**
        *  @brief Inserts a std::pair into the %multimap.
@@ -559,6 +567,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
        *
        *  Insertion requires logarithmic time (if the hint is not taken).
+       * @{
        */
       iterator
 #if __cplusplus >= 201103L
@@ -569,6 +578,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_t._M_insert_equal_(__position, __x); }
 
 #if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      { return _M_t._M_insert_equal_(__position, std::move(__x)); }
+
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
@@ -577,6 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ return _M_t._M_insert_equal_(__position,
 				       std::forward<_Pair>(__x)); }
 #endif
+      // @}
 
       /**
        *  @brief A template function that attempts to insert a range

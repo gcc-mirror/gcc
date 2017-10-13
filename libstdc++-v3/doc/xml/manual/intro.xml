@@ -988,6 +988,12 @@ requirements of the license of GCC.
     <listitem><para>Add deleted constructors.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2354"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2354">2332</link>:
+       <emphasis>Unnecessary copying when inserting into maps with braced-init syntax</emphasis>
+    </term>
+    <listitem><para>Add overloads of <code>insert</code> taking <code>value_type&amp;&amp;</code> rvalues.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2399"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2399">2399</link>:
 	<emphasis><code>shared_ptr</code>'s constructor from <code>unique_ptr</code> should be constrained</emphasis>
     </term>
