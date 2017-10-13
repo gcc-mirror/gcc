@@ -5910,7 +5910,7 @@ reassociate_bb (basic_block bb)
 		     move it to the front.  This helps ensure that we generate
 		     (X & Y) & C rather than (X & C) & Y.  The former will
 		     often match a canonical bit test when we get to RTL.  */
-		  if (ops.length () != 2
+		  if (ops.length () > 2
 		      && (rhs_code == BIT_AND_EXPR
 		          || rhs_code == BIT_IOR_EXPR
 		          || rhs_code == BIT_XOR_EXPR)

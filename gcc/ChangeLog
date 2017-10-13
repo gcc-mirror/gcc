@@ -1,3 +1,7 @@
+2017-10-13  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-reassoc.c (reassociate_bb): Clarify code slighly.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82274
