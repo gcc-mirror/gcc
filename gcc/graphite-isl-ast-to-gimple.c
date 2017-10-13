@@ -177,6 +177,7 @@ class translate_isl_ast_to_gimple
   tree gcc_expression_from_isl_ast_expr_id (tree type,
 					    __isl_keep isl_ast_expr *expr_id,
 					    ivs_params &ip);
+  widest_int widest_int_from_isl_expr_int (__isl_keep isl_ast_expr *expr);
   tree gcc_expression_from_isl_expr_int (tree type,
 					 __isl_take isl_ast_expr *expr);
   tree gcc_expression_from_isl_expr_op (tree type,
@@ -265,29 +266,46 @@ gcc_expression_from_isl_ast_expr_id (tree type,
   return fold_convert (type, *val);
 }
 
-/* Converts an isl_ast_expr_int expression E to a GCC expression tree of
-   type TYPE.  */
+/* Converts an isl_ast_expr_int expression E to a widest_int.
+   Raises a code generation error when the constant doesn't fit.  */
 
-tree translate_isl_ast_to_gimple::
-gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
+widest_int translate_isl_ast_to_gimple::
+widest_int_from_isl_expr_int (__isl_keep isl_ast_expr *expr)
 {
   gcc_assert (isl_ast_expr_get_type (expr) == isl_ast_expr_int);
   isl_val *val = isl_ast_expr_get_val (expr);
   size_t n = isl_val_n_abs_num_chunks (val, sizeof (HOST_WIDE_INT));
   HOST_WIDE_INT *chunks = XALLOCAVEC (HOST_WIDE_INT, n);
-  tree res;
-  if (isl_val_get_abs_num_chunks (val, sizeof (HOST_WIDE_INT), chunks) == -1)
-    res = NULL_TREE;
-  else
+  if (n > WIDE_INT_MAX_ELTS
+      || isl_val_get_abs_num_chunks (val, sizeof (HOST_WIDE_INT), chunks) == -1)
     {
-      widest_int wi = widest_int::from_array (chunks, n, true);
-      if (isl_val_is_neg (val))
-	wi = -wi;
-      res = wide_int_to_tree (type, wi);
+      isl_val_free (val);
+      set_codegen_error ();
+      return 0;
     }
+  widest_int wi = widest_int::from_array (chunks, n, true);
+  if (isl_val_is_neg (val))
+    wi = -wi;
   isl_val_free (val);
+  return wi;
+}
+
+/* Converts an isl_ast_expr_int expression E to a GCC expression tree of
+   type TYPE.  Raises a code generation error when the constant doesn't fit.  */
+
+tree translate_isl_ast_to_gimple::
+gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
+{
+  widest_int wi = widest_int_from_isl_expr_int (expr);
   isl_ast_expr_free (expr);
-  return res;
+  if (codegen_error_p ())
+    return NULL_TREE;
+  if (wi::min_precision (wi, TYPE_SIGN (type)) > TYPE_PRECISION (type))
+    {
+      set_codegen_error ();
+      return NULL_TREE;
+    }
+  return wide_int_to_tree (type, wi);
 }
 
 /* Converts a binary isl_ast_expr_op expression E to a GCC expression tree of
@@ -296,14 +314,25 @@ gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
 tree translate_isl_ast_to_gimple::
 binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
+  enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree tree_lhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 1);
-  tree tree_rhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
-
-  enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr_free (expr);
 
+  /* From our constraint generation we may get modulo operations that
+     we cannot represent explicitely but that are no-ops for TYPE.
+     Elide those.  */
+  if (expr_type == isl_ast_op_pdiv_r
+      && isl_ast_expr_get_type (arg_expr) == isl_ast_expr_int
+      && (wi::exact_log2 (widest_int_from_isl_expr_int (arg_expr))
+	  >= TYPE_PRECISION (type)))
+    {
+      isl_ast_expr_free (arg_expr);
+      return tree_lhs_expr;
+    }
+
+  tree tree_rhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   if (codegen_error_p ())
     return NULL_TREE;
 
@@ -319,44 +348,16 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
       return fold_build2 (MULT_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_div:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_pdiv_q:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_zdiv_r:
     case isl_ast_op_pdiv_r:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_fdiv_q:
-      /* As isl operates on arbitrary precision numbers, we may end up with
-	 division by 2^64 that is folded to 0.  */
-      if (integer_zerop (tree_rhs_expr))
-	{
-	  set_codegen_error ();
-	  return NULL_TREE;
-	}
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_and:
