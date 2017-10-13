@@ -3612,7 +3612,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
 		    canon_const_arg1 = GEN_INT (INTVAL (const_arg1)
-						& (GET_MODE_BITSIZE (mode)
+						& (GET_MODE_UNIT_BITSIZE (mode)
 						   - 1));
 		  else
 		    break;
@@ -3661,7 +3661,8 @@ fold_rtx (rtx x, rtx_insn *insn)
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
 		    inner_const = GEN_INT (INTVAL (inner_const)
-					   & (GET_MODE_BITSIZE (mode) - 1));
+					   & (GET_MODE_UNIT_BITSIZE (mode)
+					      - 1));
 		  else
 		    break;
 		}
@@ -3691,7 +3692,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		  /* As an exception, we can turn an ASHIFTRT of this
 		     form into a shift of the number of bits - 1.  */
 		  if (code == ASHIFTRT)
-		    new_const = GEN_INT (GET_MODE_BITSIZE (mode) - 1);
+		    new_const = GEN_INT (GET_MODE_UNIT_BITSIZE (mode) - 1);
 		  else if (!side_effects_p (XEXP (y, 0)))
 		    return CONST0_RTX (mode);
 		  else
