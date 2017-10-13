@@ -3455,7 +3455,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define PACK_EXPANSION_PATTERN(NODE)                            \
-  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION? TREE_TYPE (NODE)    \
+  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION ? TREE_TYPE (NODE)    \
    : TREE_OPERAND (NODE, 0))
 
 /* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or

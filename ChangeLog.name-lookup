@@ -1,5 +1,15 @@
 2017-10-13  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* tree.c (tree_code_size): Reformat.  Punt to lang hook for unknown
+	TYPE nodes.
+	gcc/cp/
+	* cp-objcp-common.c (cp_tree_size): Reformat.  Adjust returns size
+	of TYPE nodes.
+	* cp-tree.h (PACK_EXPANSION_PATTERN): Correct formatting.
+	gcc/objc/
+	* objc-act.c (objc_common_tree_size): Return size of TYPE nodes.
+
 	Merge trunk r253723.
 
 2017-10-11  Nathan Sidwell  <nathan@acm.org>
