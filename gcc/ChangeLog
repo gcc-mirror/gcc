@@ -1,3 +1,12 @@
+2017-10-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* calls.c (expand_call): Use subreg_lowpart_offset.
+	* cse.c (cse_insn): Likewise.
+	* regcprop.c (copy_value): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82524

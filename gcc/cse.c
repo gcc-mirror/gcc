@@ -5977,7 +5977,6 @@ cse_insn (rtx_insn *insn)
 		rtx new_src = 0;
 		unsigned src_hash;
 		struct table_elt *src_elt;
-		int byte = 0;
 
 		/* Ignore invalid entries.  */
 		if (!REG_P (elt->exp)
@@ -5990,13 +5989,8 @@ cse_insn (rtx_insn *insn)
 		  new_src = elt->exp;
 		else
 		  {
-		    /* Calculate big endian correction for the SUBREG_BYTE.
-		       We have already checked that M1 (GET_MODE (dest))
-		       is not narrower than M2 (new_mode).  */
-		    if (BYTES_BIG_ENDIAN)
-		      byte = (GET_MODE_SIZE (GET_MODE (dest))
-			      - GET_MODE_SIZE (new_mode));
-
+		    unsigned int byte
+		      = subreg_lowpart_offset (new_mode, GET_MODE (dest));
 		    new_src = simplify_gen_subreg (new_mode, elt->exp,
 					           GET_MODE (dest), byte);
 		  }
