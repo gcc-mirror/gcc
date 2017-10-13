@@ -152,12 +152,20 @@ verify_flow_info (void)
 		 bb->index, bb->frequency);
 	  err = 1;
 	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (last_visited [e->dest->index] == bb)
 	    {
 	      error ("verify_flow_info: Duplicate edge %i->%i",
 		     e->src->index, e->dest->index);
+	      err = 1;
+	    }
+	  if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
+	      && !e->probability.initialized_p ())
+	    {
+	      error ("Uninitialized probability of edge %i->%i", e->src->index,
+		     e->dest->index);
 	      err = 1;
 	    }
 	  if (!e->probability.verify ())

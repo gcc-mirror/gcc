@@ -1,3 +1,8 @@
+2017-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfghooks.c (verify_flow_info): Check that edge probabilities are
+	set.
+
 2017-10-13  Nathan Sidwell  <nathan@acm.org>
 
 	* tree-core.h (tree_contains_struct): Make bool.
