@@ -1,3 +1,8 @@
+2017-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82357 - bit-field in template
+	* tree.c (cp_stabilize_reference): Just return a NON_DEPENDENT_EXPR.
+
 2017-10-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-tree.h (maybe_show_extern_c_location): New decl.
