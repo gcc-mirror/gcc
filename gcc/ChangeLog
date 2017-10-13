@@ -1,6 +1,12 @@
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82498
+	* fold-const.c (fold_binary_loc) <bit_rotate>: Code cleanups,
+	instead of handling MINUS_EXPR twice (once for each argument),
+	canonicalize operand order and handle just once, use rtype where
+	possible.  Handle (A << B) | (A >> (-B & (Z - 1))).
+
+	PR target/82498
 	* config/i386/ia32intrin.h (__rold, __rord, __rolq, __rorq): Allow
 	any values of __C while still being pattern recognizable as a simple
 	rotate instruction.
