@@ -1,3 +1,10 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82274
+	* internal-fn.c (expand_mul_overflow): If both operands have
+	the same highpart of -1 or 0 and the topmost bit of lowpart
+	is different, overflow is if res <= 0 rather than res < 0.
+
 2017-10-13  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Remove
