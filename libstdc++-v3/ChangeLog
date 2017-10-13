@@ -1,5 +1,22 @@
 2017-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/82522
+	* doc/xml/manual/intro.xml: Document LWG 2354 changes.
+	* include/bits/stl_map.h (map::insert(value_type&&))
+	(map::insert(const_iterator, value_type&&)): Add overload for rvalues.
+	* include/bits/stl_multimap.h (multimap::insert(value_type&&))
+	(multimap::insert(const_iterator, value_type&&)): Likewise.
+	* include/bits/unordered_map.h (unordered_map::insert(value_type&&))
+	(unordered_map::insert(const_iterator, value_type&&))
+	(unordered_multimap::insert(value_type&&))
+	(unordered_multimap::insert(const_iterator, value_type&&)): Likewise.
+	* testsuite/23_containers/map/modifiers/insert/dr2354.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/dr2354.cc: New
+	test.
+	* testsuite/23_containers/unordered_map/insert/dr2354.cc: New test.
+	* testsuite/23_containers/unordered_multimap/insert/dr2354.cc: New
+	test.
+
 	PR libstdc++/82481
 	* include/std/mutex (call_once): Suppress clang-tidy warnings about
 	dangling references.
