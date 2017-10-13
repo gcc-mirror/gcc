@@ -1,3 +1,9 @@
+2017-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80873
+	* g++.dg/cpp1y/auto-fn41.C: New.
+	* g++.dg/cpp1y/auto-fn42.C: Likewise.
+
 2017-10-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/cpp0x/udlit-extern-c.C: New test case.
