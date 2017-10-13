@@ -1,5 +1,8 @@
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82524
+	* gcc.c-torture/execute/pr82524.c: New test.
+
 	PR target/82498
 	* gcc.dg/tree-ssa/pr82498.c: New test.
 
