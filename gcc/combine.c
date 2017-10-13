@@ -11618,8 +11618,6 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
   if (MEM_P (x))
     {
-      int offset = 0;
-
       /* Refuse to work on a volatile memory ref or one with a mode-dependent
 	 address.  */
       if (MEM_VOLATILE_P (x)
@@ -11632,14 +11630,7 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
       if (paradoxical_subreg_p (omode, imode))
 	return gen_rtx_SUBREG (omode, x, 0);
 
-      if (WORDS_BIG_ENDIAN)
-	offset = MAX (isize, UNITS_PER_WORD) - MAX (osize, UNITS_PER_WORD);
-
-      /* Adjust the address so that the address-after-the-data is
-	 unchanged.  */
-      if (BYTES_BIG_ENDIAN)
-	offset -= MIN (UNITS_PER_WORD, osize) - MIN (UNITS_PER_WORD, isize);
-
+      HOST_WIDE_INT offset = byte_lowpart_offset (omode, imode);
       return adjust_address_nv (x, omode, offset);
     }
 

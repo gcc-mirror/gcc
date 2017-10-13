@@ -3199,14 +3199,7 @@ alter_subreg (rtx *xp, bool final_p)
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
       if (paradoxical_subreg_p (x))
-        {
-          int difference = GET_MODE_SIZE (GET_MODE (y))
-			   - GET_MODE_SIZE (GET_MODE (x));
-          if (WORDS_BIG_ENDIAN)
-            offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-          if (BYTES_BIG_ENDIAN)
-            offset += difference % UNITS_PER_WORD;
-        }
+	offset = byte_lowpart_offset (GET_MODE (x), GET_MODE (y));
 
       if (final_p)
 	*xp = adjust_address (y, GET_MODE (x), offset);
