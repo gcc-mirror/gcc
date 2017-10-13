@@ -229,6 +229,8 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
     {
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
       {
 	/* We used to convert the right operand of a shift-expression
 	   to an integer_type_node in the FEs.  But it is unnecessary
