@@ -254,28 +254,6 @@ dot_cfg ()
   scops.release ();
 }
 
-/* Can all ivs be represented by a signed integer?
-   As isl might generate negative values in its expressions, signed loop ivs
-   are required in the backend.  */
-
-static bool
-loop_ivs_can_be_represented (loop_p loop)
-{
-  unsigned type_long_long = TYPE_PRECISION (long_long_integer_type_node);
-  for (gphi_iterator psi = gsi_start_phis (loop->header); !gsi_end_p (psi);
-       gsi_next (&psi))
-    {
-      gphi *phi = psi.phi ();
-      tree res = PHI_RESULT (phi);
-      tree type = TREE_TYPE (res);
-
-      if (TYPE_UNSIGNED (type) && TYPE_PRECISION (type) >= type_long_long)
-	return false;
-    }
-
-  return true;
-}
-
 /* Returns a COND_EXPR statement when BB has a single predecessor, the
    edge between BB and its predecessor is not a loop exit edge, and
    the last statement of the single predecessor is a COND_EXPR.  */
@@ -822,13 +800,6 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	  return true;
 	}
 
-      if (! loop_ivs_can_be_represented (loop))
-	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		       << "IV cannot be represented.\n");
-	  return true;
-	}
-
       /* Check if all loop nests have at least one data reference.
 	 ???  This check is expensive and loops premature at this point.
 	 If important to retain we can pre-compute this for all innermost
@@ -966,14 +937,6 @@ bool
 scop_detection::graphite_can_represent_scev (tree scev)
 {
   if (chrec_contains_undetermined (scev))
-    return false;
-
-  /* We disable the handling of pointer types, because it’s currently not
-     supported by Graphite with the isl AST generator. SSA_NAME nodes are
-     the only nodes, which are disabled in case they are pointers to object
-     types, but this can be changed.  */
-
-  if (POINTER_TYPE_P (TREE_TYPE (scev)) && TREE_CODE (scev) == SSA_NAME)
     return false;
 
   switch (TREE_CODE (scev))
