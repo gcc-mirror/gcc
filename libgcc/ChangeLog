@@ -1,3 +1,10 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82274
+	* libgcc2.c (__mulvDI3): If both operands have
+	the same highpart of -1 and the topmost bit of lowpart is 0,
+	multiplication overflows even if both lowparts are 0.
+
 2017-09-28  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	Backport from mainline
