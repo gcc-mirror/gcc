@@ -1194,7 +1194,7 @@ build_schedule_loop_nest (scop_p scop, int *index, loop_p context_loop)
 
 /* Build the schedule of the SCOP.  */
 
-static bool
+static void
 build_original_schedule (scop_p scop)
 {
   int i = 0;
@@ -1216,9 +1216,6 @@ build_original_schedule (scop_p scop)
       fprintf (dump_file, "[sese-to-poly] original schedule:\n");
       print_isl_schedule (dump_file, scop->original_schedule);
     }
-  if (!scop->original_schedule)
-    return false;
-  return true;
 }
 
 /* Builds the polyhedral representation for a SESE region.  */
