@@ -461,7 +461,6 @@ scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 {
   gimple *def;
   struct loop *def_loop;
-  basic_block before = region.entry->src;
 
   /* SCOP parameters.  */
   if (TREE_CODE (t) == SSA_NAME
@@ -472,7 +471,7 @@ scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
       || loop_in_sese_p (loop, region))
     /* FIXME: we would need instantiate SCEV to work on a region, and be more
        flexible wrt. memory loads that may be invariant in the region.  */
-    return instantiate_scev (before, loop,
+    return instantiate_scev (region.entry, loop,
 			     analyze_scalar_evolution (loop, t));
 
   def = SSA_NAME_DEF_STMT (t);
@@ -494,7 +493,7 @@ scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
   if (has_vdefs)
     return chrec_dont_know;
 
-  return instantiate_scev (before, loop, t);
+  return instantiate_scev (region.entry, loop, t);
 }
 
 /* Return true if BB is empty, contains only DEBUG_INSNs.  */

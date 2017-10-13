@@ -1,5 +1,76 @@
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82451
+	Revert
+	2017-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82355
+	* graphite-isl-ast-to-gimple.c (build_iv_mapping): Also build
+	a mapping for the enclosing loop but avoid generating one for
+	the loop tree root.
+	(copy_bb_and_scalar_dependences): Remove premature codegen
+	error on PHIs in blocks duplicated into multiple places.
+	* graphite-scop-detection.c
+	(scop_detection::stmt_has_simple_data_refs_p): For a loop not
+	in the region use it as loop and nest to analyze the DR in.
+	(try_generate_gimple_bb): Likewise.
+	* graphite-sese-to-poly.c (extract_affine_chrec): Adjust.
+	(add_loop_constraints): For blocks in a loop not in the region
+	create a dimension with a single iteration.
+	* sese.h (gbb_loop_at_index): Remove assert.
+
+	* cfgloop.c (loop_preheader_edge): For the loop tree root
+	return the single successor of the entry block.
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
+	Reset the SCEV hashtable and niters.
+	* graphite-scop-detection.c
+	(scop_detection::graphite_can_represent_scev): Add SCOP parameter,
+	assert that we only have POLYNOMIAL_CHREC that vary in loops
+	contained in the region.
+	(scop_detection::graphite_can_represent_expr): Adjust.
+	(scop_detection::stmt_has_simple_data_refs_p): For loops
+	not in the region set loop to NULL.  The nest is now the
+	entry edge to the region.
+	(try_generate_gimple_bb): Likewise.
+	* sese.c (scalar_evolution_in_region): Adjust for
+	instantiate_scev change.
+	* tree-data-ref.h (graphite_find_data_references_in_stmt):
+	Make nest parameter the edge into the region.
+	(create_data_ref): Likewise.
+	* tree-data-ref.c (dr_analyze_indices): Make nest parameter an
+	entry edge into a region and adjust instantiate_scev calls.
+	(create_data_ref): Likewise.
+	(graphite_find_data_references_in_stmt): Likewise.
+	(find_data_references_in_stmt): Pass the loop preheader edge
+	from the nest argument.
+	* tree-scalar-evolution.h (instantiate_scev): Make instantiate_below
+	parameter the edge into the region.
+	(instantiate_parameters): Use the loop preheader edge as entry.
+	* tree-scalar-evolution.c (analyze_scalar_evolution): Handle
+	NULL loop.
+	(get_instantiated_value_entry): Make instantiate_below parameter
+	the edge into the region.
+	(instantiate_scev_name): Likewise.  Adjust dominance checks,
+	when we cannot use loop-based instantiation instantiate by
+	walking use-def chains.
+	(instantiate_scev_poly): Adjust.
+	(instantiate_scev_binary): Likewise.
+	(instantiate_scev_convert): Likewise.
+	(instantiate_scev_not): Likewise.
+	(instantiate_array_ref): Remove.
+	(instantiate_scev_3): Likewise.
+	(instantiate_scev_2): Likewise.
+	(instantiate_scev_1): Likewise.
+	(instantiate_scev_r): Do not blindly handle N-operand trees.
+	Do not instantiate array-refs.  Handle all constants and invariants.
+	(instantiate_scev): Make instantiate_below parameter
+	the edge into the region.
+	(resolve_mixers): Use the loop preheader edge for the region
+	parameter to instantiate_scev_r.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Adjust.
+
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82525
 	* graphite-isl-ast-to-gimple.c
 	(translate_isl_ast_to_gimple::widest_int_from_isl_expr_int): Split

@@ -381,7 +381,7 @@ public:
 
      Something like "i * n" or "n * m" is not allowed.  */
 
-  static bool graphite_can_represent_scev (tree scev);
+  static bool graphite_can_represent_scev (sese_l scop, tree scev);
 
   /* Return true when EXPR can be represented in the polyhedral model.
 
@@ -934,7 +934,7 @@ scop_detection::graphite_can_represent_init (tree e)
    Something like "i * n" or "n * m" is not allowed.  */
 
 bool
-scop_detection::graphite_can_represent_scev (tree scev)
+scop_detection::graphite_can_represent_scev (sese_l scop, tree scev)
 {
   if (chrec_contains_undetermined (scev))
     return false;
@@ -945,13 +945,13 @@ scop_detection::graphite_can_represent_scev (tree scev)
     case BIT_NOT_EXPR:
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0));
+      return graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0));
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0))
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
+      return graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case MULT_EXPR:
       return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
@@ -959,18 +959,20 @@ scop_detection::graphite_can_represent_scev (tree scev)
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
 	&& graphite_can_represent_init (scev)
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0))
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case POLYNOMIAL_CHREC:
       /* Check for constant strides.  With a non constant stride of
 	 'n' we would have a value of 'iv * n'.  Also check that the
 	 initial value can represented: for example 'n * m' cannot be
 	 represented.  */
+      gcc_assert (loop_in_sese_p (get_loop (cfun,
+					    CHREC_VARIABLE (scev)), scop));
       if (!evolution_function_right_is_integer_cst (scev)
 	  || !graphite_can_represent_init (scev))
 	return false;
-      return graphite_can_represent_scev (CHREC_LEFT (scev));
+      return graphite_can_represent_scev (scop, CHREC_LEFT (scev));
 
     default:
       break;
@@ -994,7 +996,7 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 					     tree expr)
 {
   tree scev = scalar_evolution_in_region (scop, loop, expr);
-  return graphite_can_represent_scev (scev);
+  return graphite_can_represent_scev (scop, scev);
 }
 
 /* Return true if the data references of STMT can be represented by Graphite.
@@ -1003,12 +1005,15 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  loop_p nest;
+  edge nest;
   loop_p loop = loop_containing_stmt (stmt);
   if (!loop_in_sese_p (loop, scop))
-    nest = loop;
+    {
+      nest = scop.entry;
+      loop = NULL;
+    }
   else
-    nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
+    nest = loop_preheader_edge (outermost_loop_in_sese (scop, gimple_bb (stmt)));
 
   auto_vec<data_reference_p> drs;
   if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
@@ -1019,7 +1024,7 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
       for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
-	if (! graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
+	if (! graphite_can_represent_scev (scop, DR_ACCESS_FN (dr, i)))
 	  return false;
     }
 
@@ -1376,12 +1381,15 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
-  loop_p nest;
+  edge nest;
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
-    nest = loop;
+    {
+      nest = region.entry;
+      loop = NULL;
+    }
   else
-    nest = outermost_loop_in_sese (region, bb);
+    nest = loop_preheader_edge (outermost_loop_in_sese (region, bb));
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
