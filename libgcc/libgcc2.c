@@ -375,7 +375,8 @@ __mulvDI3 (DWtype u, DWtype v)
 		}
 	      else
 		{
-		  if (uu.s.high == (Wtype) -1 && vv.s.high == (Wtype) - 1)
+		  if ((uu.s.high & vv.s.high) == (Wtype) -1
+		      && (uu.s.low | vv.s.low) != 0)
 		    {
 		      DWunion ww = {.ll = (UDWtype) (UWtype) uu.s.low
 				    * (UDWtype) (UWtype) vv.s.low};
