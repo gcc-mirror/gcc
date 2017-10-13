@@ -1,3 +1,11 @@
+2017-10-13  Richard Biener  <rguenther@suse.de>
+
+	* graphite-scop-detection.c (loop_ivs_can_be_represented): Remove.
+	(scop_detection::harmful_loop_in_region): Remove premature
+	IV type restriction.
+	(scop_detection::graphite_can_represent_scev): We can handle
+	pointer IVs just fine.
+
 2017-10-13  Alan Modra  <amodra@gmail.com>
 
 	* doc/extend.texi (Extended Asm <Clobbers>): Rename to
