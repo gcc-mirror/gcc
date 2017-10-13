@@ -1,3 +1,8 @@
+2017-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfghooks.c (verify_flow_info): Disable check that all probabilities
+	are set correctly.
+
 2017-10-13  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-reassoc.c (reassociate_bb): Clarify code slighly.
