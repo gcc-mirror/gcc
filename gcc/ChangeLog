@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* cfgexpand.c (expand_debug_expr): Use GET_MODE_UNIT_BITSIZE.
+	(expand_debug_source_expr): Likewise.
+	* combine.c (combine_simplify_rtx): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* fwprop.c (canonicalize_address): Likewise.
+	* targhooks.c (default_shift_truncation_mask): Likewise.
+
+2017-10-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs.c (add_equal_note): Use GET_MODE_UNIT_SIZE.
 	(widened_mode): Likewise.
 	(expand_unop): Likewise.
