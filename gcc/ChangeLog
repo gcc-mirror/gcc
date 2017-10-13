@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* caller-save.c (replace_reg_with_saved_mem): Use byte_lowpart_offset.
+	* combine.c (gen_lowpart_for_combine): Likewise.
+	* dwarf2out.c (rtl_for_decl_location): Likewise.
+	* final.c (alter_subreg): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	(gen_lowpart_if_possible): Likewise.
+
+2017-10-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* calls.c (expand_call): Use subreg_lowpart_offset.
 	* cse.c (cse_insn): Likewise.
 	* regcprop.c (copy_value): Likewise.
