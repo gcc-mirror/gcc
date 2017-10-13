@@ -4066,29 +4066,23 @@ build_template_parm_index (int index,
    parameter.  Returns the canonical type parameter, which may be TYPE
    if no such parameter existed.  */
 
-static tree
+tree
 canonical_type_parameter (tree type)
 {
-  tree list;
   int idx = TEMPLATE_TYPE_IDX (type);
-  if (!canonical_template_parms)
-    vec_alloc (canonical_template_parms, idx + 1);
 
-  if (canonical_template_parms->length () <= (unsigned) idx)
+  if (!canonical_template_parms
+      || canonical_template_parms->length () <= (unsigned) idx)
     vec_safe_grow_cleared (canonical_template_parms, idx + 1);
 
-  list = (*canonical_template_parms)[idx];
-  while (list && !comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
-    list = TREE_CHAIN (list);
+  tree list = (*canonical_template_parms)[idx];
+  for (; list; list = TREE_CHAIN (list))
+    if (comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
+      return TREE_VALUE (list);
 
-  if (list)
-    return TREE_VALUE (list);
-  else
-    {
-      (*canonical_template_parms)[idx]
-	= tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
-      return type;
-    }
+  (*canonical_template_parms)[idx]
+    = tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
+  return type;
 }
 
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
@@ -5577,6 +5571,9 @@ push_template_decl_real (tree decl, bool is_friend)
 
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   TREE_TYPE (tmpl) = TREE_TYPE (decl);
+  DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
+  if (MAYBE_DECL_MODULE_INDEX (decl))
+    DECL_MODULE_INDEX (tmpl) = DECL_MODULE_INDEX (decl);
 
   /* Push template declarations for global functions and types.  Note
      that we do not try to push a global template friend declared in a

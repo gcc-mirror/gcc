@@ -1,3 +1,26 @@
+2017-10-13  Nathan Sidwell  <nathan@acm.org>
+
+	Templates!
+	gcc/
+	* tree.h (MARK_TS_TYPE_NON_COMMON): New.
+	gcc/cp/
+	* cp-objcp-common.c (cp_common_init_ts): Fix
+	TEMPLATE_TEMPLATE_PARM, TEMPLATE_TYPE_PARM,
+	BOUND_TEMPLATE_TEMPLATE_PARM marking.
+	* cp-tree.h (canonical_type_parameter): Declare.
+	* module.c (cpms_{in,out}::define_function): Add maybe_template
+	parm, adjust.
+	(cpms_out::maybe_tag_definition): Allow function templates.
+	(cpms_{in,out}:tag_definition): Allow templates.
+	(cpms_{in,out}::core_vals): Stream more nodes.
+	(cpms_{in,out}::lang_decl_vals): Stream more nodes.
+	(cpms_in::finish_type): Deal with TEMPLATE_TYPE_PARM,
+	TEMPLATE_TEMPLATE_PARM.
+	* pt.c (canonical_type_parameter): Make extern, simplify.
+	(push_template_decl_real): Propagate exportednes.
+	gcc/testsuite/
+	* g++.dg/modules/mod-tpl-1_[ab].C: New.
+
 2017-10-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

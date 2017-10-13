@@ -1386,7 +1386,7 @@ private:
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
-  void define_function (tree);
+  void define_function (tree, tree);
   void define_class (tree);
   void ident_imported_decl (tree ctx, unsigned mod, tree decl);
 
@@ -1497,7 +1497,7 @@ private:
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
-  tree define_function (tree);
+  tree define_function (tree, tree);
   tree define_class (tree);
   tree ident_imported_decl (tree ctx, unsigned mod, tree name);
 
@@ -2060,7 +2060,7 @@ cpms_in::tag_binding ()
 /* Stream a function definition.  */
 
 void
-cpms_out::define_function (tree decl)
+cpms_out::define_function (tree decl, tree)
 {
   tree_node (DECL_RESULT (decl));
   tree_node (DECL_INITIAL (decl));
@@ -2068,7 +2068,7 @@ cpms_out::define_function (tree decl)
 }
 
 tree
-cpms_in::define_function (tree decl)
+cpms_in::define_function (tree decl, tree maybe_template)
 {
   tree result = tree_node ();
   tree initial = tree_node ();
@@ -2077,9 +2077,9 @@ cpms_in::define_function (tree decl)
   if (r.error ())
     return NULL_TREE;
 
-  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+  if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
     {
-      unsigned mod = MAYBE_DECL_MODULE_INDEX (decl);
+      unsigned mod = MAYBE_DECL_MODULE_INDEX (maybe_template);
       if (mod == GLOBAL_MODULE_INDEX
 	  && DECL_SAVED_TREE (decl))
 	return decl; // FIXME check same
@@ -2095,15 +2095,19 @@ cpms_in::define_function (tree decl)
   DECL_INITIAL (decl) = initial;
   DECL_SAVED_TREE (decl) = saved;
 
-  comdat_linkage (decl);
-  note_vague_linkage_fn (decl);
   current_function_decl = decl;
   allocate_struct_function (decl, false);
   cfun->language = ggc_cleared_alloc<language_function> ();
   cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
   set_cfun (NULL);
   current_function_decl = NULL_TREE;
-  cgraph_node::finalize_function (decl, false);
+
+  if (maybe_template == decl)
+    {
+      comdat_linkage (decl);
+      note_vague_linkage_fn (decl);
+      cgraph_node::finalize_function (decl, false);
+    }
 
   return decl;
 }
@@ -2372,6 +2376,17 @@ cpms_out::maybe_tag_definition (tree t)
 	return;
       if (DECL_CLONED_FUNCTION_P (t))
 	return;
+      break;
+
+    case TEMPLATE_DECL:
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == FUNCTION_DECL)
+	{
+	  if (!DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (t)))
+	    return;
+	}
+      else
+	return; // FIXME deal with non-functions
+      break;
     }
 
   tag_definition (t);
@@ -2387,12 +2402,16 @@ cpms_out::tag_definition (tree t)
   tag (rt_definition);
   tree_node (t);
 
+  tree maybe_template = t;
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    t = DECL_TEMPLATE_RESULT (t);
+
   switch (TREE_CODE (t))
     {
     default:
       gcc_unreachable ();
     case FUNCTION_DECL:
-      define_function (t);
+      define_function (t, maybe_template);
       break;
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -2410,6 +2429,10 @@ cpms_in::tag_definition ()
   if (r.error ())
     return NULL_TREE;
 
+  tree maybe_template = t;
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    t = DECL_TEMPLATE_RESULT (t);
+
   switch (TREE_CODE (t))
     {
     default:
@@ -2418,7 +2441,7 @@ cpms_in::tag_definition ()
       break;
 
     case FUNCTION_DECL:
-      t = define_function (t);
+      t = define_function (t, maybe_template);
       if (t && maybe_clone_body (t) && !DECL_DECLARED_CONSTEXPR_P (t))
 	DECL_SAVED_TREE (t) = NULL_TREE;
       break;
@@ -3418,7 +3441,8 @@ cpms_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    gcc_unreachable (); // FIXME
+    for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+      WT (TREE_VEC_ELT (t, ix));
 
   if (TREE_CODE_CLASS (code) == tcc_vl_exp)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
@@ -3501,7 +3525,10 @@ cpms_out::core_vals (tree t)
       break;
 
     case TS_CP_TPI:
-      gcc_unreachable (); // FIXME
+      WU (((lang_tree_node *)t)->tpi.index);
+      WU (((lang_tree_node *)t)->tpi.level);
+      WU (((lang_tree_node *)t)->tpi.orig_level);
+      WT (((lang_tree_node *)t)->tpi.decl);
       break;
       
     case TS_CP_PTRMEM:
@@ -3522,7 +3549,8 @@ cpms_out::core_vals (tree t)
       break;
 
     case TS_CP_TEMPLATE_DECL:
-      gcc_unreachable (); // FIXME
+      WT (((lang_tree_node *)t)->template_decl.arguments);
+      WT (((lang_tree_node *)t)->template_decl.result);
       break;
 
     case TS_CP_DEFAULT_ARG:
@@ -3555,7 +3583,9 @@ cpms_out::core_vals (tree t)
       break;
 
     case TS_CP_TEMPLATE_INFO:
-      gcc_unreachable (); // FIXME
+      // TI_TEMPLATE -> TYPE
+      WT (t->common.chain); // TI_ARGS
+      // FIXME typedefs_needing_access_checking
       break;
 
     case TS_CP_CONSTRAINT_INFO:
@@ -3767,7 +3797,8 @@ cpms_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    gcc_unreachable (); // FIXME
+    for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+      RT (TREE_VEC_ELT (t, ix));
 
   if (TREE_CODE_CLASS (code) == tcc_vl_exp)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
@@ -3850,9 +3881,12 @@ cpms_in::core_vals (tree t)
       break;
 
     case TS_CP_TPI:
-      gcc_unreachable (); // FIXME
+      RU (((lang_tree_node *)t)->tpi.index);
+      RU (((lang_tree_node *)t)->tpi.level);
+      RU (((lang_tree_node *)t)->tpi.orig_level);
+      RT (((lang_tree_node *)t)->tpi.decl);
       break;
-      
+
     case TS_CP_PTRMEM:
       gcc_unreachable (); // FIXME
       break;
@@ -3870,7 +3904,8 @@ cpms_in::core_vals (tree t)
       break;
 
     case TS_CP_TEMPLATE_DECL:
-      gcc_unreachable (); // FIXME
+      RT (((lang_tree_node *)t)->template_decl.arguments);
+      RT (((lang_tree_node *)t)->template_decl.result);
       break;
 
     case TS_CP_DEFAULT_ARG:
@@ -3901,7 +3936,9 @@ cpms_in::core_vals (tree t)
       break;
 
     case TS_CP_TEMPLATE_INFO:
-      gcc_unreachable (); // FIXME
+      // TI_TEMPLATE -> TYPE
+      RT (t->common.chain); // TI_ARGS
+      // FIXME typedefs_needing_access_checking
       break;
 
     case TS_CP_CONSTRAINT_INFO:
@@ -3936,8 +3973,7 @@ cpms_out::lang_decl_vals (tree t)
 	WT (lang->u.fn.u5.cloned_function);
       /* FALLTHROUGH.  */
     case lds_min:  /* lang_decl_min.  */
-      // FIXME: no templates yet
-      gcc_assert (!lang->u.min.template_info);
+      WT (lang->u.min.template_info);
       if (lang->u.base.u2sel)
 	WU (lang->u.min.u2.discriminator);
       else
@@ -3946,6 +3982,8 @@ cpms_out::lang_decl_vals (tree t)
     case lds_ns:  /* lang_decl_ns.  */
       break;
     case lds_parm:  /* lang_decl_parm.  */
+      WU (lang->u.parm.level);
+      WU (lang->u.parm.index);
       break;
     default:
       gcc_unreachable ();
@@ -3977,8 +4015,7 @@ cpms_in::lang_decl_vals (tree t)
       }
       /* FALLTHROUGH.  */
     case lds_min:  /* lang_decl_min.  */
-      // FIXME: no templates yet
-      gcc_assert (!lang->u.min.template_info);
+      RT (lang->u.min.template_info);
       if (lang->u.base.u2sel)
 	RU (lang->u.min.u2.discriminator);
       else
@@ -3987,6 +4024,8 @@ cpms_in::lang_decl_vals (tree t)
     case lds_ns:  /* lang_decl_ns.  */
       break;
     case lds_parm:  /* lang_decl_parm.  */
+      RU (lang->u.parm.level);
+      RU (lang->u.parm.index);
       break;
     default:
       gcc_unreachable ();
@@ -4685,6 +4724,17 @@ cpms_in::finish_type (tree type)
          correctly already us.  FIXME:Are we sure about this?  */
     found_variant:;
     }
+  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+	   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+    {
+      tree canon = canonical_type_parameter (type);
+      if (TYPE_CANONICAL (type) == type)
+	type = canon;
+      else
+	TYPE_CANONICAL (type) = canon;
+      dump () && dump ("Adding template type %p with canonical %p",
+		       (void *)type, (void *)canon);
+    }
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
 	   && !TYPE_NAME (type))
     {
@@ -4743,6 +4793,7 @@ decl_set_module (tree decl)
 {
   if (export_depth)
     DECL_MODULE_EXPORT_P (decl) = true;
+
   if (this_module && this_module->name)
     {
       retrofit_lang_decl (decl);

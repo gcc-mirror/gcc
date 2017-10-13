@@ -6452,6 +6452,7 @@ extern void inject_this_parameter (tree, cp_cv_quals);
 extern location_t defarg_location (tree);
 
 /* in pt.c */
+extern tree canonical_type_parameter		(tree);
 extern bool check_template_shadow		(tree);
 extern tree get_innermost_template_args		(tree, int);
 extern void maybe_begin_member_template_processing (tree);
