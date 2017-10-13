@@ -1,3 +1,10 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/82353
+	* g++.dg/ubsan/pr82353-2.C: New test.
+	* g++.dg/ubsan/pr82353-2-aux.cc: New file.
+	* g++.dg/ubsan/pr82353-2.h: New file.
+
 2017-10-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/81048
