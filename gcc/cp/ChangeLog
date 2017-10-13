@@ -1,3 +1,21 @@
+2017-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h (maybe_show_extern_c_location): New decl.
+	* decl.c (grokfndecl): When complaining about literal operators
+	with C linkage, issue a note giving the location of the
+	extern "C".
+	* parser.c (cp_parser_new): Initialize new field
+	"innermost_linkage_specification_location".
+	(cp_parser_linkage_specification): Store the location
+	of the linkage specification within the cp_parser.
+	(cp_parser_explicit_specialization): When complaining about
+	template specializations with C linkage, issue a note giving the
+	location of the extern "C".
+	(cp_parser_explicit_template_declaration): Likewise for templates.
+	(maybe_show_extern_c_location): New function.
+	* parser.h (struct cp_parser): New field
+	"innermost_linkage_specification_location".
+
 2017-10-12  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (cp_expr): Add const operator * and operator->

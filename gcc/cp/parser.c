@@ -3937,6 +3937,9 @@ cp_parser_new (void)
   /* Allow constrained-type-specifiers. */
   parser->prevent_constrained_type_specifiers = 0;
 
+  /* We haven't yet seen an 'extern "C"'.  */
+  parser->innermost_linkage_specification_location = UNKNOWN_LOCATION;
+
   return parser;
 }
 
@@ -13848,9 +13851,11 @@ cp_parser_linkage_specification (cp_parser* parser)
   tree linkage;
 
   /* Look for the `extern' keyword.  */
-  cp_parser_require_keyword (parser, RID_EXTERN, RT_EXTERN);
+  cp_token *extern_token
+    = cp_parser_require_keyword (parser, RID_EXTERN, RT_EXTERN);
 
   /* Look for the string-literal.  */
+  cp_token *string_token = cp_lexer_peek_token (parser->lexer);
   linkage = cp_parser_string_literal (parser, false, false);
 
   /* Transform the literal into an identifier.  If the literal is a
@@ -13868,6 +13873,20 @@ cp_parser_linkage_specification (cp_parser* parser)
 
   /* We're now using the new linkage.  */
   push_lang_context (linkage);
+
+  /* Preserve the location of the the innermost linkage specification,
+     tracking the locations of nested specifications via a local.  */
+  location_t saved_location
+    = parser->innermost_linkage_specification_location;
+  /* Construct a location ranging from the start of the "extern" to
+     the end of the string-literal, with the caret at the start, e.g.:
+       extern "C" {
+       ^~~~~~~~~~
+  */
+  parser->innermost_linkage_specification_location
+    = make_location (extern_token->location,
+		     extern_token->location,
+		     get_finish (string_token->location));
 
   /* If the next token is a `{', then we're using the first
      production.  */
@@ -13899,6 +13918,9 @@ cp_parser_linkage_specification (cp_parser* parser)
 
   /* We're done with the linkage-specification.  */
   pop_lang_context ();
+
+  /* Restore location of parent linkage specification, if any.  */
+  parser->innermost_linkage_specification_location = saved_location;
 }
 
 /* Parse a static_assert-declaration.
@@ -16643,6 +16665,7 @@ cp_parser_explicit_specialization (cp_parser* parser)
   if (current_lang_name == lang_name_c)
     {
       error_at (token->location, "template specialization with C linkage");
+      maybe_show_extern_c_location ();
       /* Give it C++ linkage to avoid confusing other parts of the
 	 front end.  */
       push_lang_context (lang_name_cplusplus);
@@ -26979,6 +27002,7 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
   if (current_lang_name == lang_name_c)
     {
       error_at (location, "template with C linkage");
+      maybe_show_extern_c_location ();
       /* Give it C++ linkage to avoid confusing other parts of the
          front end.  */
       push_lang_context (lang_name_cplusplus);
@@ -39550,6 +39574,19 @@ finish_fully_implicit_template (cp_parser *parser, tree member_decl_opt)
   --parser->num_template_parameter_lists;
 
   return member_decl_opt;
+}
+
+/* Helper function for diagnostics that have complained about things
+   being used with 'extern "C"' linkage.
+
+   Attempt to issue a note showing where the 'extern "C"' linkage began.  */
+
+void
+maybe_show_extern_c_location (void)
+{
+  if (the_parser->innermost_linkage_specification_location != UNKNOWN_LOCATION)
+    inform (the_parser->innermost_linkage_specification_location,
+	    "%<extern \"C\"%> linkage started here");
 }
 
 #include "gt-cp-parser.h"

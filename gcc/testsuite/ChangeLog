@@ -1,3 +1,10 @@
+2017-10-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/cpp0x/udlit-extern-c.C: New test case.
+	* g++.dg/diagnostic/unclosed-extern-c.C: Add example of a template
+	erroneously covered by an unclosed extern "C".
+	* g++.dg/template/extern-c.C: New test case.
+
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/graphite/pr35356-3.c: XFAIL again.
