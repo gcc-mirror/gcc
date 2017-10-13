@@ -161,7 +161,10 @@ irange::set_range (const_tree ssa)
   tree t = TREE_TYPE (ssa);
   gcc_assert (TREE_CODE (ssa) == SSA_NAME && (INTEGRAL_TYPE_P (t)
 					      || POINTER_TYPE_P (t)));
-  if (!SSA_NAME_RANGE_INFO (ssa))
+  if (!SSA_NAME_RANGE_INFO (ssa)
+      /* Pointers do not have range info in SSA_NAME_RANGE_INFO, so
+	 just return range_for_type in this case.  */
+      || POINTER_TYPE_P (t))
     {
       set_range_for_type (t);
       return;
