@@ -259,7 +259,7 @@ tree integer_types[itk_none];
 bool int_n_enabled_p[NUM_INT_N_ENTS];
 struct int_n_trees_t int_n_trees [NUM_INT_N_ENTS];
 
-unsigned char tree_contains_struct[MAX_TREE_CODES][64];
+bool tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Number of operands for each OpenMP clause.  */
 unsigned const char omp_clause_num_ops[] =

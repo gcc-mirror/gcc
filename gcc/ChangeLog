@@ -1,3 +1,13 @@
+2017-10-13  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-core.h (tree_contains_struct): Make bool.
+	* tree.c (tree_contains_struct): Likewise.
+	* tree.h (MARK_TS_BASE): Remove do ... while (0) idiom.
+	(MARK_TS_TYPED, MARK_TS_COMMON, MARK_TS_TYPE_COMMON,
+	MARK_TS_TYPE_WITH_LANG_SPECIFIC, MARK_TS_DECL_MINIMAL,
+	MARK_TS_DECL_COMMON, MARK_TS_DECL_WRTL, MARK_TS_DECL_WITH_VIS,
+	MARK_TS_DECL_NON_COMMON): Likewise, use comma operator.
+
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
 	* graphite-isl-ast-to-gimple.c
