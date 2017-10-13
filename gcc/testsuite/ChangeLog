@@ -1,3 +1,8 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82498
+	* gcc.dg/ubsan/pr82498.c: New test.
+
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82451

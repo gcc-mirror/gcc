@@ -1,3 +1,10 @@
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82498
+	* config/i386/ia32intrin.h (__rold, __rord, __rolq, __rorq): Allow
+	any values of __C while still being pattern recognizable as a simple
+	rotate instruction.
+
 2017-10-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82451
