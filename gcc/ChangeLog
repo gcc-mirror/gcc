@@ -1,3 +1,10 @@
+2017-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82499
+	* config/i386/i386.h (ix86_red_zone_size): New.
+	* config/i386/i386.md (push peephole2s): Replace
+	"!ix86_using_red_zone ()" with "ix86_red_zone_size == 0".
+
 2017-10-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
