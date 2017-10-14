@@ -1808,7 +1808,7 @@ package body Sem_Elab is
          --  be on another machine.
 
          if Ekind (Body_Id) = E_Package_Body
-           and then Ekind (Spec_Id) = E_Package
+           and then Ekind_In (Spec_Id, E_Generic_Package, E_Package)
            and then (Is_Remote_Call_Interface (Spec_Id)
                       or else Is_Remote_Types (Spec_Id))
          then

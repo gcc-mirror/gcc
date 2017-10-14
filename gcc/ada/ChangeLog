@@ -1,3 +1,9 @@
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (In_Preelaborated_Context): A generic package subject to
+	Remote_Call_Interface is not a suitable preelaboratd context when the
+	call appears in the package body.
+
 2017-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* layout.ads (Set_Elem_Alignment): Add Align parameter defaulted to 0.
