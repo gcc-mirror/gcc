@@ -509,7 +509,7 @@ package body Sem_Warn is
             end if;
 
             --  If the condition contains a function call, we consider it may
-            --  be modified by side-effects from a procedure call. Otherwise,
+            --  be modified by side effects from a procedure call. Otherwise,
             --  we consider the condition may not be modified, although that
             --  might happen if Variable is itself a by-reference parameter,
             --  and the procedure called modifies the global object referred to

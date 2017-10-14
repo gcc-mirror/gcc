@@ -1,3 +1,39 @@
+2017-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.ads (Set_Elem_Alignment): Add Align parameter defaulted to 0.
+	* layout.adb (Set_Elem_Alignment): Likewise.  Use M name as maximum
+	alignment for consistency.  If Align is non-zero, use the minimum of
+	Align and M for the alignment.
+	* cstand.adb (Build_Float_Type): Use Set_Elem_Alignment instead of
+	setting the alignment directly.
+
+2017-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Check): Defer evaluation of the
+	optional string in an Assert pragma until the expansion of the pragma
+	has rewritten it as a conditional statement, so that the string
+	argument is only evaluaed if the assertion fails. This is mandated by
+	RM 11.4.2.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Switch -gnatd.v and associated flag are now used to
+	enforce the SPARK rules for elaboration in SPARK code.
+	* sem_elab.adb: Describe switch -gnatd.v.
+	(Process_Call): Verify the SPARK rules only when -gnatd.v is in effect.
+	(Process_Instantiation): Verify the SPARK rules only when -gnatd.v is
+	in effect.
+	(Process_Variable_Assignment): Clarify why variable assignments are
+	processed reglardless of whether -gnatd.v is in effect.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update the
+	sections on elaboration code and compilation switches.
+	* gnat_ugn.texi: Regenerate.
+
+2017-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb, freeze.adb, sem_aggr.adb, sem_util.ads, sem_util.adb,
+	sem_warn.adb: Minor reformattings.
+
 2017-10-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_aspects.rst: Add documentation

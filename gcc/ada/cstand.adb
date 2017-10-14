@@ -212,7 +212,7 @@ package body CStand is
       Init_Digits_Value              (E, Digs);
       Set_Float_Rep                  (E, Rep);
       Init_Size                      (E, Siz);
-      Set_Alignment                  (E, UI_From_Int (Align));
+      Set_Elem_Alignment             (E, Align);
       Set_Float_Bounds               (E);
       Set_Is_Frozen                  (E);
       Set_Is_Public                  (E);

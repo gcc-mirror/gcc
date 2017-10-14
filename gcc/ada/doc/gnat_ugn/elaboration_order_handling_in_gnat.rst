@@ -133,8 +133,43 @@ Elaboration Order
 =================
 
 The sequence by which the elaboration code of all units within a partition is
-executed is referred to as **elaboration order**. The elaboration order depends
-on the following factors:
+executed is referred to as **elaboration order**.
+
+Within a single unit, elaboration code is executed in sequential order.
+
+::
+
+   package body Client is
+      Result : ... := Server.Func;
+
+      procedure Proc is
+         package Inst is new Server.Gen;
+      begin
+         Inst.Eval (Result);
+      end Proc;
+   begin
+      Proc;
+   end Client;
+
+In the example above, the elaboration order within package body ``Client`` is
+as follows:
+
+1. The object declaration of ``Result`` is elaborated.
+
+   * Function ``Server.Func`` is invoked.
+
+2. The subprogram body of ``Proc`` is elaborated.
+
+3. Procedure ``Proc`` is invoked.
+
+   * Generic unit ``Server.Gen`` is instantiated as ``Inst``.
+
+   * Instance ``Inst`` is elaborated.
+
+   * Procedure ``Inst.Eval`` is invoked.
+
+The elaboration order of all units within a partition depends on the following
+factors:
 
 * |withed| units
 
@@ -571,7 +606,7 @@ elaboration order and to diagnose elaboration problems.
   a partition is elaboration code. GNAT performs very few diagnostics and
   generates run-time checks to verify the elaboration order of a program. This
   behavior is identical to that specified by the Ada Reference Manual. The
-  dynamic model is enabled with compilation switch :switch:`-gnatE`.
+  dynamic model is enabled with compiler switch :switch:`-gnatE`.
 
 .. index:: Static elaboration model
 
@@ -860,7 +895,7 @@ SPARK Elaboration Model in GNAT
 The SPARK model is identical to the static model in its handling of internal
 targets. The SPARK model, however, requires explicit ``Elaborate`` or
 ``Elaborate_All`` pragmas to be present in the program when a target is
-external, and emits hard errors instead of warnings:
+external, and compiler switch :switch:`-gnatd.v` is in effect.
 
 ::
 
@@ -987,7 +1022,7 @@ available.
 * *Switch to more permissive elaboration model*
 
   If the compilation was performed using the static model, enable the dynamic
-  model with compilation switch :switch:`-gnatE`. GNAT will no longer generate
+  model with compiler switch :switch:`-gnatE`. GNAT will no longer generate
   implicit ``Elaborate`` and ``Elaborate_All`` pragmas, resulting in a behavior
   identical to that specified by the Ada Reference Manual. The binder will
   generate an executable program that may or may not raise ``Program_Error``,
@@ -1504,6 +1539,17 @@ the elaboration order chosen by the binder.
   When this switch is in effect, GNAT will ignore ``'Access`` of an entry,
   operator, or subprogram when the static model is in effect.
 
+.. index:: -gnatd.v  (gnat)
+
+:switch:`-gnatd.v`
+  Enforce SPARK elaboration rules in SPARK code
+
+  When this switch is in effect, GNAT will enforce the SPARK rules of
+  elaboration as defined in the SPARK Reference Manual, section 7.7. As a
+  result, constructs which violate the SPARK elaboration rules are no longer
+  accepted, even if GNAT is able to statically ensure that these constructs
+  will not lead to ABE problems.
+
 .. index:: -gnatd.y  (gnat)
 
 :switch:`-gnatd.y`
@@ -1558,7 +1604,7 @@ the elaboration order chosen by the binder.
   - *SPARK model*
 
     GNAT will indicate how an elaboration requirement is met by the context of
-    a unit.
+    a unit. This diagnostic requires compiler switch :switch:`-gnatd.v`.
 
     ::
 
@@ -1612,8 +1658,8 @@ none of the binder or compiler switches. If the binder succeeds in finding an
 elaboration order, then apart from possible cases involing dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
 If it is important for the program to be portable to compilers other than GNAT,
-then the programmer should use compilation switch :switch:`-gnatel` and
-consider the messages about missing or implicitly created ``Elaborate`` and
+then the programmer should use compiler switch :switch:`-gnatel` and consider
+the messages about missing or implicitly created ``Elaborate`` and
 ``Elaborate_All`` pragmas.
 
 If the binder reports an elaboration circularity, the programmer has several
