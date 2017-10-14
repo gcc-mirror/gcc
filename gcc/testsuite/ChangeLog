@@ -1,3 +1,10 @@
+2017-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/81423
+	* gcc.c-torture/execute/pr81423.c (foo): Add missing cast.  Change L
+	suffixes to LL.
+	(main): Punt if either long long isn't 64-bit or int isn't 32-bit.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/82353
