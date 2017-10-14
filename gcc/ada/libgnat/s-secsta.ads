@@ -31,41 +31,27 @@
 
 pragma Compiler_Unit_Warning;
 
+with System.Parameters;
 with System.Storage_Elements;
 
 package System.Secondary_Stack is
+   pragma Preelaborate;
 
+   package SP renames System.Parameters;
    package SSE renames System.Storage_Elements;
 
-   Default_Secondary_Stack_Size : Natural := 10 * 1024;
-   --  Default size of a secondary stack. May be modified by binder -D switch
-   --  which causes the binder to generate an appropriate assignment in the
-   --  binder generated file.
+   type SS_Stack (Size : SP.Size_Type) is private;
+   --  Data structure for secondary stacks
 
-   function Minimum_Secondary_Stack_Size return Natural;
-   --  The minimum size of the secondary stack so that the internal
-   --  requirements of the stack are met.
+   type SS_Stack_Ptr is access all SS_Stack;
+   --  Pointer to secondary stack objects
 
    procedure SS_Init
-     (Stk  : in out Address;
-      Size : Natural := Default_Secondary_Stack_Size);
-   --  Initialize the secondary stack with a main stack of the given Size.
-   --
-   --  If System.Parameters.Sec_Stack_Percentage equals Dynamic, Stk is really
-   --  an OUT parameter that will be allocated on the heap. Then all further
-   --  allocations which do not overflow the main stack will not generate
-   --  dynamic (de)allocation calls. If the main Stack overflows, a new
-   --  chuck of at least the same size will be allocated and linked to the
-   --  previous chunk.
-   --
-   --  Otherwise (Sec_Stack_Percentage between 0 and 100), Stk is an IN
-   --  parameter that is already pointing to a Stack_Id. The secondary stack
-   --  in this case is fixed, and any attempt to allocate more than the initial
-   --  size will result in a Storage_Error being raised.
-   --
-   --  Note: the reason that Stk is passed is that SS_Init is called before
-   --  the proper interface is established to obtain the address of the
-   --  stack using System.Soft_Links.Get_Sec_Stack_Addr.
+     (Stack : in out SS_Stack_Ptr;
+      Size  : SP.Size_Type := SP.Unspecified_Size);
+   --  Initialize the secondary stack Stack. If Stack is null allocate a stack
+   --  from the heap or from the default-sized secondary stack pool if the
+   --  pool exists and the requested size is Unspecified_Size.
 
    procedure SS_Allocate
      (Addr         : out Address;
@@ -73,10 +59,9 @@ package System.Secondary_Stack is
    --  Allocate enough space for a 'Storage_Size' bytes object with Maximum
    --  alignment. The address of the allocated space is returned in Addr.
 
-   procedure SS_Free (Stk : in out Address);
-   --  Release the memory allocated for the Secondary Stack. That is
-   --  to say, all the allocated chunks. Upon return, Stk will be set
-   --  to System.Null_Address.
+   procedure SS_Free (Stack : in out SS_Stack_Ptr);
+   --  Release the memory allocated for the Stack. If the stack was statically
+   --  allocated the SS_Stack record is not freed.
 
    type Mark_Id is private;
    --  Type used to mark the stack for mark/release processing
@@ -85,17 +70,11 @@ package System.Secondary_Stack is
    --  Return the Mark corresponding to the current state of the stack
 
    procedure SS_Release (M : Mark_Id);
-   --  Restore the state of the stack corresponding to the mark M. If an
-   --  additional chunk have been allocated, it will never be freed during a
-   --  ??? missing comment here
+   --  Restore the state of the stack corresponding to the mark M
 
    function SS_Get_Max return Long_Long_Integer;
-   --  Return maximum used space in storage units for the current secondary
-   --  stack. For a dynamically allocated secondary stack, the returned
-   --  result is always -1. For a statically allocated secondary stack,
-   --  the returned value shows the largest amount of space allocated so
-   --  far during execution of the program to the current secondary stack,
-   --  i.e. the secondary stack for the current task.
+   --  Return the high water mark of the secondary stack for the current
+   --  secondary stack in bytes.
 
    generic
       with procedure Put_Line (S : String);
@@ -109,15 +88,142 @@ private
    --  Unused entity that is just present to ease the sharing of the pool
    --  mechanism for specific allocation/deallocation in the compiler
 
-   type SS_Ptr is new SSE.Integer_Address;
-   --  Stack pointer value for secondary stack
+   -------------------------------------
+   -- Secondary Stack Data Structures --
+   -------------------------------------
+
+   --  This package provides fixed and dynamically sized secondary stack
+   --  implementations centered around a common data structure SS_Stack. This
+   --  record contains an initial secondary stack allocation of the requested
+   --  size, and markers for the current top of the stack and the high-water
+   --  mark of the stack. A SS_Stack can be either pre-allocated outside the
+   --  package or SS_Init can allocate a stack from the heap or the
+   --  default-sized secondary stack from a pool generated by the binder.
+
+   --  For dynamically allocated secondary stacks, the stack can grow via a
+   --  linked list of stack chunks allocated from the heap. New chunks are
+   --  allocated once the initial static allocation and any existing chunks are
+   --  exhausted. The following diagram illustrated the data structures used
+   --  for a dynamically allocated secondary stack:
+   --
+   --                                       +------------------+
+   --                                       |       Next       |
+   --                                       +------------------+
+   --                                       |                  | Last (300)
+   --                                       |                  |
+   --                                       |                  |
+   --                                       |                  |
+   --                                       |                  |
+   --                                       |                  |
+   --                                       |                  | First (201)
+   --                                       +------------------+
+   --    +-----------------+       +------> |          |       |
+   --    |                 | (100) |        +--------- | ------+
+   --    |                 |       |                ^  |
+   --    |                 |       |                |  |
+   --    |                 |       |                |  V
+   --    |                 |       |        +------ | ---------+
+   --    |                 |       |        |       |          |
+   --    |                 |       |        +------------------+
+   --    |                 |       |        |                  | Last (200)
+   --    |                 |       |        |         C        |
+   --    |                 | (1)   |        |         H        |
+   --    +-----------------+       |  +---->|         U        |
+   --    |  Current_Chunk ---------+  |     |         N        |
+   --    +-----------------+          |     |         K        |
+   --    |       Top      ------------+     |                  | First (101)
+   --    +-----------------+                +------------------+
+   --    |       Size      |                |       Prev       |
+   --    +-----------------+                +------------------+
+   --
+   --  The implementation used by the runtime is controlled via the constant
+   --  System.Parameter.Sec_Stack_Dynamic. If True, the implementation is
+   --  permitted to grow the secondary stack at runtime. The implementation is
+   --  designed for the compiler to include only code to support the desired
+   --  secondary stack behavior.
+
+   subtype SS_Ptr is SP.Size_Type;
+   --  Stack pointer value for the current position within the secondary stack.
+   --  Size_Type is used as the base type since the Size discriminate of
+   --  SS_Stack forms the bounds of the internal memory array.
+
+   type Memory is array (SS_Ptr range <>) of SSE.Storage_Element;
+   for Memory'Alignment use Standard'Maximum_Alignment;
+   --  The region of memory that holds the stack itself. Requires maximum
+   --  alignment for efficient stack operations.
+
+   --  Chunk_Id
+
+   --  Chunk_Id is a contiguous block of dynamically allocated stack. First
+   --  and Last indicate the range of secondary stack addresses present in the
+   --  chunk. Chunk_Ptr points to a Chunk_Id block.
+
+   type Chunk_Id (First, Last : SS_Ptr);
+   type Chunk_Ptr is access all Chunk_Id;
+
+   type Chunk_Id (First, Last : SS_Ptr) is record
+      Prev, Next : Chunk_Ptr;
+      Mem        : Memory (First .. Last);
+   end record;
+
+   --  Secondary stack data structure
+
+   type SS_Stack (Size : SP.Size_Type) is record
+      Top : SS_Ptr;
+      --  Index of next available location in the stack. Initialized to 1 and
+      --  then incremented on Allocate and decremented on Release.
+
+      Max : SS_Ptr;
+      --  Contains the high-water mark of Top. Initialized to 1 and then
+      --  may be incremented on Allocate but never decremented. Since
+      --  Top = Size + 1 represents a fully used stack, Max - 1 indicates
+      --  the size of the stack used in bytes.
+
+      Current_Chunk : Chunk_Ptr;
+      --  A link to the chunk containing the highest range of the stack
+
+      Freeable : Boolean;
+      --  Indicates if an object of this type can be freed
+
+      Internal_Chunk : aliased Chunk_Id (1, Size);
+      --  Initial memory allocation of the secondary stack
+   end record;
 
    type Mark_Id is record
-      Sstk : System.Address;
-      Sptr : SS_Ptr;
+      Sec_Stack : SS_Stack_Ptr;
+      Sptr      : SS_Ptr;
    end record;
-   --  A mark value contains the address of the secondary stack structure,
-   --  as returned by System.Soft_Links.Get_Sec_Stack_Addr, and a stack
-   --  pointer value corresponding to the point of the mark call.
+   --  Contains the pointer to the secondary stack object and the stack pointer
+   --  value corresponding to the top of the stack at the time of the mark
+   --  call.
+
+   ------------------------------------
+   -- Binder Allocated Stack Support --
+   ------------------------------------
+
+   --  When the No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
+   --  restrictions are in effect the binder statically generates secondary
+   --  stacks for tasks who are using default-sized secondary stack. Assignment
+   --  of these stacks to tasks is handled by SS_Init. The following variables
+   --  assist SS_Init and are defined here so the runtime does not depend on
+   --  the binder.
+
+   Binder_SS_Count : Natural;
+   pragma Export (Ada, Binder_SS_Count, "__gnat_binder_ss_count");
+   --  The number of default sized secondary stacks allocated by the binder
+
+   Default_SS_Size : SP.Size_Type;
+   pragma Export (Ada, Default_SS_Size, "__gnat_default_ss_size");
+   --  The default size for secondary stacks. Defined here and not in init.c/
+   --  System.Init because these locations are not present on ZFP or
+   --  Ravenscar-SFP run-times.
+
+   Default_Sized_SS_Pool : System.Address;
+   pragma Export (Ada, Default_Sized_SS_Pool, "__gnat_default_ss_pool");
+   --  Address to the secondary stack pool generated by the binder that
+   --  contains default sized stacks.
+
+   Num_Of_Assigned_Stacks : Natural := 0;
+   --  The number of currently allocated secondary stacks
 
 end System.Secondary_Stack;

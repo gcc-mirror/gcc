@@ -370,6 +370,20 @@ package Lib is
    --      This is a character field containing L if Optimize_Alignment mode
    --      was set locally, and O/T/S for Off/Time/Space default if not.
 
+   --    Primary_Stack_Count
+   --      The number of primary stacks belonging to tasks defined within the
+   --      unit that have no Storage_Size specified when the either restriction
+   --      No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations is
+   --      active. Only used by the binder to generate stacks for these tasks
+   --      at bind time.
+
+   --    Sec_Stack_Count
+   --      The number of secondary stacks belonging to tasks defined within the
+   --      unit that have no Secondary_Stack_Size specified when the either
+   --      the No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
+   --      restrictions are active. Only used by the binder to generate stacks
+   --      for these tasks at bind time.
+
    --    Serial_Number
    --      This field holds a serial number used by New_Internal_Name to
    --      generate unique temporary numbers on a unit by unit basis. The
@@ -450,6 +464,8 @@ package Lib is
    function Munit_Index      (U : Unit_Number_Type) return Nat;
    function No_Elab_Code_All (U : Unit_Number_Type) return Boolean;
    function OA_Setting       (U : Unit_Number_Type) return Character;
+   function Primary_Stack_Count (U : Unit_Number_Type) return Int;
+   function Sec_Stack_Count  (U : Unit_Number_Type) return Int;
    function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
    function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
@@ -662,6 +678,13 @@ package Lib is
    --  source unit, the criterion being that Get_Source_Unit yields the
    --  same value for each argument.
 
+   procedure Increment_Primary_Stack_Count (Increment : Int);
+   --  Increment the Primary_Stack_Count field for the current unit by
+   --  Increment.
+
+   procedure Increment_Sec_Stack_Count (Increment : Int);
+   --  Increment the Sec_Stack_Count field for the current unit by Increment
+
    function Increment_Serial_Number return Nat;
    --  Increment Serial_Number field for current unit, and return the
    --  incremented value.
@@ -794,6 +817,8 @@ private
    pragma Inline (Fatal_Error);
    pragma Inline (Generate_Code);
    pragma Inline (Has_RACW);
+   pragma Inline (Increment_Primary_Stack_Count);
+   pragma Inline (Increment_Sec_Stack_Count);
    pragma Inline (Increment_Serial_Number);
    pragma Inline (Loading);
    pragma Inline (Main_CPU);
@@ -809,6 +834,8 @@ private
    pragma Inline (Is_Predefined_Renaming);
    pragma Inline (Is_Internal_Unit);
    pragma Inline (Is_Predefined_Unit);
+   pragma Inline (Primary_Stack_Count);
+   pragma Inline (Sec_Stack_Count);
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
@@ -822,28 +849,30 @@ private
    --  The Units Table
 
    type Unit_Record is record
-      Unit_File_Name    : File_Name_Type;
-      Unit_Name         : Unit_Name_Type;
-      Munit_Index       : Nat;
-      Expected_Unit     : Unit_Name_Type;
-      Source_Index      : Source_File_Index;
-      Cunit             : Node_Id;
-      Cunit_Entity      : Entity_Id;
-      Dependency_Num    : Int;
-      Ident_String      : Node_Id;
-      Main_Priority     : Int;
-      Main_CPU          : Int;
-      Serial_Number     : Nat;
-      Version           : Word;
-      Error_Location    : Source_Ptr;
-      Fatal_Error       : Fatal_Type;
-      Generate_Code     : Boolean;
-      Has_RACW          : Boolean;
-      Dynamic_Elab      : Boolean;
-      No_Elab_Code_All  : Boolean;
-      Filler            : Boolean;
-      Loading           : Boolean;
-      OA_Setting        : Character;
+      Unit_File_Name         : File_Name_Type;
+      Unit_Name              : Unit_Name_Type;
+      Munit_Index            : Nat;
+      Expected_Unit          : Unit_Name_Type;
+      Source_Index           : Source_File_Index;
+      Cunit                  : Node_Id;
+      Cunit_Entity           : Entity_Id;
+      Dependency_Num         : Int;
+      Ident_String           : Node_Id;
+      Main_Priority          : Int;
+      Main_CPU               : Int;
+      Primary_Stack_Count    : Int;
+      Sec_Stack_Count        : Int;
+      Serial_Number          : Nat;
+      Version                : Word;
+      Error_Location         : Source_Ptr;
+      Fatal_Error            : Fatal_Type;
+      Generate_Code          : Boolean;
+      Has_RACW               : Boolean;
+      Dynamic_Elab           : Boolean;
+      No_Elab_Code_All       : Boolean;
+      Filler                 : Boolean;
+      Loading                : Boolean;
+      OA_Setting             : Character;
 
       Is_Predefined_Renaming : Boolean;
       Is_Internal_Unit       : Boolean;
@@ -856,36 +885,38 @@ private
    --  written by Tree_Gen, we do not write uninitialized values to the file.
 
    for Unit_Record use record
-      Unit_File_Name    at  0 range 0 .. 31;
-      Unit_Name         at  4 range 0 .. 31;
-      Munit_Index       at  8 range 0 .. 31;
-      Expected_Unit     at 12 range 0 .. 31;
-      Source_Index      at 16 range 0 .. 31;
-      Cunit             at 20 range 0 .. 31;
-      Cunit_Entity      at 24 range 0 .. 31;
-      Dependency_Num    at 28 range 0 .. 31;
-      Ident_String      at 32 range 0 .. 31;
-      Main_Priority     at 36 range 0 .. 31;
-      Main_CPU          at 40 range 0 .. 31;
-      Serial_Number     at 44 range 0 .. 31;
-      Version           at 48 range 0 .. 31;
-      Error_Location    at 52 range 0 .. 31;
-      Fatal_Error       at 56 range 0 ..  7;
-      Generate_Code     at 57 range 0 ..  7;
-      Has_RACW          at 58 range 0 ..  7;
-      Dynamic_Elab      at 59 range 0 ..  7;
-      No_Elab_Code_All  at 60 range 0 ..  7;
-      Filler            at 61 range 0 ..  7;
-      OA_Setting        at 62 range 0 ..  7;
-      Loading           at 63 range 0 ..  7;
+      Unit_File_Name         at  0 range 0 .. 31;
+      Unit_Name              at  4 range 0 .. 31;
+      Munit_Index            at  8 range 0 .. 31;
+      Expected_Unit          at 12 range 0 .. 31;
+      Source_Index           at 16 range 0 .. 31;
+      Cunit                  at 20 range 0 .. 31;
+      Cunit_Entity           at 24 range 0 .. 31;
+      Dependency_Num         at 28 range 0 .. 31;
+      Ident_String           at 32 range 0 .. 31;
+      Main_Priority          at 36 range 0 .. 31;
+      Main_CPU               at 40 range 0 .. 31;
+      Primary_Stack_Count    at 44 range 0 .. 31;
+      Sec_Stack_Count        at 48 range 0 .. 31;
+      Serial_Number          at 52 range 0 .. 31;
+      Version                at 56 range 0 .. 31;
+      Error_Location         at 60 range 0 .. 31;
+      Fatal_Error            at 64 range 0 ..  7;
+      Generate_Code          at 65 range 0 ..  7;
+      Has_RACW               at 66 range 0 ..  7;
+      Dynamic_Elab           at 67 range 0 ..  7;
+      No_Elab_Code_All       at 68 range 0 ..  7;
+      Filler                 at 69 range 0 ..  7;
+      OA_Setting             at 70 range 0 ..  7;
+      Loading                at 71 range 0 ..  7;
 
-      Is_Predefined_Renaming at 64 range 0 .. 7;
-      Is_Internal_Unit       at 65 range 0 .. 7;
-      Is_Predefined_Unit     at 66 range 0 .. 7;
-      Filler2                at 67 range 0 .. 7;
+      Is_Predefined_Renaming at 72 range 0 .. 7;
+      Is_Internal_Unit       at 73 range 0 .. 7;
+      Is_Predefined_Unit     at 74 range 0 .. 7;
+      Filler2                at 75 range 0 .. 7;
    end record;
 
-   for Unit_Record'Size use 68 * 8;
+   for Unit_Record'Size use 76 * 8;
    --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (

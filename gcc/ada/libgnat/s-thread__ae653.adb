@@ -37,14 +37,10 @@ pragma Restrictions (No_Tasking);
 --  will be checked by the binder.
 
 with System.OS_Versions; use System.OS_Versions;
-with System.Secondary_Stack;
-pragma Elaborate_All (System.Secondary_Stack);
 
 package body System.Threads is
 
    use Interfaces.C;
-
-   package SSS renames System.Secondary_Stack;
 
    package SSL renames System.Soft_Links;
 
@@ -94,17 +90,16 @@ package body System.Threads is
    procedure Install_Handler;
    pragma Import (C, Install_Handler, "__gnat_install_handler");
 
-   function  Get_Sec_Stack_Addr return  Address;
+   function  Get_Sec_Stack return SST.SS_Stack_Ptr;
 
-   procedure Set_Sec_Stack_Addr (Addr : Address);
+   procedure Set_Sec_Stack (Stack : SST.SS_Stack_Ptr);
 
    -----------------------
    -- Thread_Body_Enter --
    -----------------------
 
    procedure Thread_Body_Enter
-     (Sec_Stack_Address    : System.Address;
-      Sec_Stack_Size       : Natural;
+     (Sec_Stack_Ptr        : SST.SS_Stack_Ptr;
       Process_ATSD_Address : System.Address)
    is
       --  Current_ATSD must already be a taskVar of taskIdSelf.
@@ -115,8 +110,8 @@ package body System.Threads is
 
    begin
 
-      TSD.Sec_Stack_Addr := Sec_Stack_Address;
-      SSS.SS_Init (TSD.Sec_Stack_Addr, Sec_Stack_Size);
+      TSD.Sec_Stack_Ptr := Sec_Stack_Ptr;
+      SST.SS_Init (TSD.Sec_Stack_Ptr);
       Current_ATSD := Process_ATSD_Address;
 
       Install_Handler;
@@ -166,23 +161,23 @@ package body System.Threads is
       pragma Assert (Result /= ERROR);
 
    begin
-      Main_ATSD.Sec_Stack_Addr := SSL.Get_Sec_Stack_Addr_NT;
+      Main_ATSD.Sec_Stack_Ptr := SSL.Get_Sec_Stack_NT;
       Current_ATSD := Main_ATSD'Address;
       Install_Handler;
-      SSL.Get_Sec_Stack_Addr := Get_Sec_Stack_Addr'Access;
-      SSL.Set_Sec_Stack_Addr := Set_Sec_Stack_Addr'Access;
+      SSL.Get_Sec_Stack := Get_Sec_Stack'Access;
+      SSL.Set_Sec_Stack := Set_Sec_Stack'Access;
    end Init_RTS;
 
-   ------------------------
-   -- Get_Sec_Stack_Addr --
-   ------------------------
+   -------------------
+   -- Get_Sec_Stack --
+   -------------------
 
-   function  Get_Sec_Stack_Addr return  Address is
+   function  Get_Sec_Stack return SST.SS_Stack_Ptr is
       CTSD : constant ATSD_Access := From_Address (Current_ATSD);
    begin
       pragma Assert (CTSD /= null);
-      return CTSD.Sec_Stack_Addr;
-   end Get_Sec_Stack_Addr;
+      return CTSD.Sec_Stack_Ptr;
+   end Get_Sec_Stack;
 
    --------------
    -- Register --
@@ -229,16 +224,16 @@ package body System.Threads is
       return Result;
    end Register;
 
-   ------------------------
-   -- Set_Sec_Stack_Addr --
-   ------------------------
+   -------------------
+   -- Set_Sec_Stack --
+   -------------------
 
-   procedure Set_Sec_Stack_Addr (Addr : Address) is
+   procedure Set_Sec_Stack (Stack : SST.SS_Stack_Ptr) is
       CTSD : constant ATSD_Access := From_Address (Current_ATSD);
    begin
       pragma Assert (CTSD /= null);
-      CTSD.Sec_Stack_Addr := Addr;
-   end Set_Sec_Stack_Addr;
+      CTSD.Sec_Stack_Ptr := Stack;
+   end Set_Sec_Stack;
 
 begin
    --  Initialize run-time library

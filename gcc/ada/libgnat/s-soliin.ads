@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . T H R E A D S                        --
+--          S Y S T E M . S O F T _ L I N K S . I N I T I A L I Z E         --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--            Copyright (C) 2017, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,64 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides facilities to register a thread to the runtime,
---  and allocate its task specific datas.
+--  This package exists to initialize the TSD record of the main task and in
+--  the process, allocate and initialize the secondary stack for the main task.
+--  The initialization routine is contained within its own package because
+--  System.Soft_Links and System.Secondary_Stack are both Preelaborate packages
+--  that are the parents to other Preelaborate System packages.
 
---  This package is currently implemented for:
+--  Ideally, the secondary stack would be set up via __gnat_runtime_initialize
+--  to have the secondary stack active as early as possible and to remove the
+--  awkwardness of System.Soft_Links depending on a non-Preelaborate package.
+--  However, as this procedure only exists from 2014, for bootstrapping
+--  purposes the elaboration mechanism is used instead to perform these
+--  functions.
 
---    VxWorks AE653 rts-cert
---    VxWorks AE653 rts-full (not rts-kernel)
-
-with Ada.Exceptions;
-with Ada.Unchecked_Conversion;
-
-with Interfaces.C;
-
-with System.Secondary_Stack;
-with System.Soft_Links;
-
-package System.Threads is
-
-   package SST renames System.Secondary_Stack;
-
-   type ATSD is limited private;
-   --  Type of the Ada thread specific data. It contains datas needed
-   --  by the GNAT runtime.
-
-   type ATSD_Access is access ATSD;
-   function From_Address is
-     new Ada.Unchecked_Conversion (Address, ATSD_Access);
-
-   subtype STATUS is Interfaces.C.int;
-   --  Equivalent of the C type STATUS
-
-   type t_id is new Interfaces.C.long;
-   subtype Thread_Id is t_id;
-
-   function Register (T : Thread_Id) return STATUS;
-   --  Create the task specific data necessary for Ada language support
-
-   --------------------------
-   -- Thread Body Handling --
-   --------------------------
-
-   --  The subprograms in this section are called from the process body
-   --  wrapper in the APEX process registration package.
-
-   procedure Thread_Body_Enter
-     (Sec_Stack_Ptr        : SST.SS_Stack_Ptr;
-      Process_ATSD_Address : System.Address);
-   --  Enter thread body, see above for details
-
-   procedure Thread_Body_Leave;
-   --  Leave thread body (normally), see above for details
-
-   procedure Thread_Body_Exceptional_Exit
-     (EO : Ada.Exceptions.Exception_Occurrence);
-   --  Leave thread body (abnormally on exception), see above for details
-
-private
-
-   type ATSD is new System.Soft_Links.TSD;
-
-end System.Threads;
+package System.Soft_Links.Initialize is
+   pragma Elaborate_Body;
+   --  Allow this package to have a body
+end System.Soft_Links.Initialize;

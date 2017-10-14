@@ -7240,7 +7240,37 @@ package body Exp_Ch6 is
       if Is_Limited_View (Typ) then
          return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
       else
-         return Debug_Flag_Dot_9;
+--         if Debug_Flag_Dot_9 then
+         if True then
+            return False; -- ???disable bip for nonlimited types
+         end if;
+
+         if Has_Interfaces (Typ) then
+            return False;
+         end if;
+
+         --  For T'Class, return True if it's True for the corresponding
+         --  specific type. This is necessary because a class-wide function
+         --  might say "return F (...)", where F returns the corresponding
+         --  specific type.
+
+         if Is_Class_Wide_Type (Typ) then
+            return Is_Build_In_Place_Result_Type (Etype (Typ));
+         end if;
+
+         declare
+            T : Entity_Id := Typ;
+         begin
+            if Present (Underlying_Type (Typ)) then
+               T := Underlying_Type (Typ);
+            end if;
+
+            declare
+               Result : constant Boolean := Is_Controlled (T);
+            begin
+               return Result;
+            end;
+         end;
       end if;
    end Is_Build_In_Place_Result_Type;
 
@@ -7326,7 +7356,12 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
-      return Is_Build_In_Place_Function (Function_Id);
+      declare
+         Result : constant Boolean := Is_Build_In_Place_Function (Function_Id);
+         --  So we can stop here in the debugger
+      begin
+         return Result;
+      end;
    end Is_Build_In_Place_Function_Call;
 
    -----------------------

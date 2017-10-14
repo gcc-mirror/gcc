@@ -390,6 +390,7 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/s-restri.o	\
  ada/libgnat/s-secsta.o	\
  ada/libgnat/s-soflin.o	\
+ ada/libgnat/s-soliin.o	\
  ada/libgnat/s-sopco3.o	\
  ada/libgnat/s-sopco4.o	\
  ada/libgnat/s-sopco5.o	\
@@ -579,6 +580,7 @@ GNATBIND_OBJS = \
  ada/libgnat/s-restri.o   \
  ada/libgnat/s-secsta.o   \
  ada/libgnat/s-soflin.o   \
+ ada/libgnat/s-soliin.o   \
  ada/libgnat/s-sopco3.o   \
  ada/libgnat/s-sopco4.o   \
  ada/libgnat/s-sopco5.o   \

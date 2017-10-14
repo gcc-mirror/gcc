@@ -5186,7 +5186,7 @@ package body Sem_Elab is
         --  The variable must be a source entity and susceptible to warnings
 
         Comes_From_Source (Var_Id)
-          and then not Has_Warnings_Off (Var_Id)
+          and then not Warnings_Off (Var_Id)
 
           --  The variable must be declared in the spec of compilation unit U
 
