@@ -1,5 +1,20 @@
 2017-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sync.md (FILD_ATOMIC/FIST_ATOMIC FP load peephole2):
+	Use any_fp_register_operand as operand[3] predicate.  Simplify
+	equality test for operands[2] and operands[4] memory location.
+	(LDX_ATOMIC/STX_ATOMIC FP load peephole2): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP load peephole2 with mem blockage): New.
+	(LDX_ATOMIC/LDX_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2): Use
+	any_fp_register_operand as operand[1] predicate.  Simplify
+	equality test for operands[0] and operands[3] memory location.
+	(LDX_ATOMIC/STX_ATOMIC FP store peephole2): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2 with mem blockage): New.
+	(LDX_ATOMIC/LDX_ATOMIC FP storepeephole2 with mem blockage): Ditto.
+
+2017-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
 	* target-insns.def: Add memory_blockage.
 	* optabs.c (expand_memory_blockage): New function.
 	(expand_asm_memory_barrier): Rename ...
