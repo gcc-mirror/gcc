@@ -1,3 +1,9 @@
+2017-10-13  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.c (rl78_emit_libcall): New function.
+	* config/rl78/rl78-protos.h (rl78_emit_libcall): New function.
+	* config/rl78/rl78.md: New define_expand "adddi3".
+
 2017-10-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfghooks.c (verify_flow_info): Disable check that all probabilities
