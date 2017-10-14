@@ -2,6 +2,11 @@
 
 	PR middle-end/62263
 	PR middle-end/82498
+	* tree-ssa-phiopt.c (value_replacement): Comment fix.  Handle
+	up to 2 preparation statements for ASSIGN in MIDDLE_BB.
+
+	PR middle-end/62263
+	PR middle-end/82498
 	* tree-ssa-forwprop.c (simplify_rotate): Allow def_arg1[N]
 	to be any operand_equal_p operands.  For & (B - 1) require
 	B to be power of 2.  Recognize
