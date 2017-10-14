@@ -1,3 +1,17 @@
+2017-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* target-insns.def: Add memory_blockage.
+	* optabs.c (expand_memory_blockage): New function.
+	(expand_asm_memory_barrier): Rename ...
+	(expand_asm_memory_blockage): ... to this.
+	(expand_mem_thread_fence): Call expand_memory_blockage
+	instead of expand_asm_memory_barrier.
+	(expand_mem_singnal_fence): Ditto.
+	(expand_atomic_load): Ditto.
+	(expand_atomic_store): Ditto.
+	* doc/md.texi (Standard Pattern Names For Generation):
+	Document memory_blockage instruction pattern.
+
 2017-10-13  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.c (rl78_emit_libcall): New function.
@@ -27,8 +41,7 @@
 
 2017-10-13  Jan Hubicka  <hubicka@ucw.cz>
 
-	* cfghooks.c (verify_flow_info): Check that edge probabilities are
-	set.
+	* cfghooks.c (verify_flow_info): Check that edge probabilities are set.
 
 2017-10-13  Nathan Sidwell  <nathan@acm.org>
 
@@ -63,8 +76,7 @@
 	graphite_expression_type_precision): Avoid global constructor
 	by moving ...
 	(translate_isl_ast_to_gimple::translate_isl_ast_to_gimple): Here.
-	(translate_isl_ast_to_gimple::graphite_expr_type): Add type
-	member.
+	(translate_isl_ast_to_gimple::graphite_expr_type): Add type member.
 	(translate_isl_ast_to_gimple::translate_isl_ast_node_for): Use it.
 	(translate_isl_ast_to_gimple::build_iv_mapping): Likewise.
 	(translate_isl_ast_to_gimple::graphite_create_new_guard): Likewise.
