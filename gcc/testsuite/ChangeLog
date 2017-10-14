@@ -1,3 +1,8 @@
+2017-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Michael Collison <michael.collison@arm.com>
+
+	* gcc.target/aarch64/cmpelim_mult_uses_1.c: New test.
+
 2017-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80908
