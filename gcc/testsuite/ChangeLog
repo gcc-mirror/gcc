@@ -1,5 +1,10 @@
 2017-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/80908
+	* g++.dg/cpp1z/noexcept-type18.C: New.
+
+2017-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/81016
 	* g++.dg/cpp1z/pr81016.C: New.
 
