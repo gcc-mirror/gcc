@@ -54,3 +54,13 @@ void		rl78_output_aligned_common (FILE *, tree, const char *,
 					    int, int, int);
 
 int		rl78_one_far_p (rtx *operands, int num_operands);
+
+#ifdef RTX_CODE
+#ifdef HAVE_MACHINE_MODES
+
+rtx rl78_emit_libcall (const char*, enum rtx_code,
+                       enum machine_mode, enum machine_mode,
+                       int, rtx*);
+
+#endif
+#endif
