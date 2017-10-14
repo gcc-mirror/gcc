@@ -3644,19 +3644,16 @@ package body Sem_Ch8 is
       --  and mark any use_package_clauses that affect the visibility of the
       --  implicit generic actual.
 
-      if From_Default (N)
-        and then Is_Generic_Actual_Subprogram (New_S)
-        and then Present (Alias (New_S))
-      then
-         Mark_Use_Clauses (Alias (New_S));
-
-      --  Check intrinsic operators used as generic actuals since they may
-      --  make a use_type_clause effective.
-
-      elsif Is_Generic_Actual_Subprogram (New_S)
-        and then Is_Intrinsic_Subprogram (New_S)
+      if Is_Generic_Actual_Subprogram (New_S)
+        and then (Is_Intrinsic_Subprogram (New_S) or else From_Default (N))
       then
          Mark_Use_Clauses (New_S);
+
+         --  Handle overloaded subprograms
+
+         if Present (Alias (New_S)) then
+            Mark_Use_Clauses (Alias (New_S));
+         end if;
       end if;
    end Analyze_Subprogram_Renaming;
 

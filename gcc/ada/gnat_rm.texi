@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 29, 2017
+GNAT Reference Manual , Oct 14, 2017
 
 AdaCore
 
@@ -9413,11 +9413,20 @@ that it is separately controllable using pragma @code{Assertion_Policy}.
 This aspect provides a light-weight mechanism for loops and quantified
 expressions over container types, without the overhead imposed by the tampering
 checks of standard Ada 2012 iterators. The value of the aspect is an aggregate
-with four named components: @code{First}, @code{Next}, @code{Has_Element}, and @code{Element} (the
-last one being optional). When only 3 components are specified, only the
-@code{for .. in} form of iteration over cursors is available. When all 4 components
-are specified, both this form and the @code{for .. of} form of iteration over
-elements are available. The following is a typical example of use:
+with six named components, or which the last three are optional: @code{First},
+
+@quotation
+
+@code{Next}, @code{Has_Element},`@w{`}Element`@w{`}, @code{Last}, and @code{Previous}.
+@end quotation
+
+When only the first three components are specified, only the
+@code{for .. in} form of iteration over cursors is available. When @code{Element}
+is specified, both this form and the @code{for .. of} form of iteration over
+elements are available. If the last two components are specified, reverse
+iterations over the container can be specified (analogous to what can be done
+over predefined containers that support the Reverse_Iterator interface).
+The following is a typical example of use:
 
 @example
 type List is private with

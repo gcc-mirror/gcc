@@ -1,3 +1,50 @@
+2017-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst: Add documentation
+	for reverse iteration over formal containers.
+	* gnat_rm.texi: Regenerate.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Ensure_Dynamic_Prior_Elaboration): Renamed to
+	Ensure_Prior_Elaboration_Dynamic for consistency reasons.
+	(Ensure_Static_Prior_Elaboration): Renamed to
+	Ensure_Prior_Elaboration_Static for consistency reasons.
+	(Info_Variable_Reference): Renamed to Info_Variable_Read in order to
+	reflect its new purpose.
+	(Is_Initialized): New routine.
+	(Is_Suitable_Variable_Reference): Renamed to Is_Suitable_Variable_Read
+	in order to reflect its new purpose.
+	(Is_Variable_Read): New routine.
+	(Output_Variable_Reference): Renamed to Output_Variable_Read in order
+	to reflect its new purpose.
+	(Process_Variable_Assignment): This routine now acts as a top level
+	dispatcher for variable assignments.
+	(Process_Variable_Assignment_Ada): New routine.
+	(Process_Variable_Assignment_SPARK): New routine.
+	(Process_Variable_Reference): Renamed to Process_Variable_Read in order
+	to reflects its new purpose. A reference to a variable is now suitable
+	for ABE processing only when it is a read. The logic in the routine now
+	reflects the latest SPARK elaboration rules.
+
+2017-10-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Modify condition that
+	triggers marking on formal subprograms.
+
+2017-10-14  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Ensure_Valid): Do not skip adding the validity check on
+	renamings of objects that come from the sources.
+
+2017-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cstand.adb (Build_Float_Type): Move down Siz parameter, add Align
+	parameter and set the alignment of the type to Align.
+	(Copy_Float_Type): Adjust call to Build_Float_Type.
+	(Register_Float_Type): Add pragma Unreferenced for Precision.  Adjust
+	call to Build_Float_Type and do not set RM_Size and Alignment.
+
 2017-10-14  Patrick Bernardi  <bernardi@adacore.com>
 
 	* Makefile.rtl (GNATRTL_NONTASKING_OBJ): Add s-soliin to
