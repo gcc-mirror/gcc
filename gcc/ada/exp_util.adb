@@ -11249,7 +11249,7 @@ package body Exp_Util is
          --  Exp_Ch2.Expand_Renaming). Otherwise the temporary must be
          --  elaborated by gigi, and is of course not to be replaced in-line
          --  by the expression it renames, which would defeat the purpose of
-         --  removing the side-effect.
+         --  removing the side effect.
 
          if Nkind_In (Exp, N_Selected_Component, N_Indexed_Component)
            and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
@@ -12650,7 +12650,7 @@ package body Exp_Util is
            and then Variable_Ref
          then
             --  Exception is a prefix that is the result of a previous removal
-            --  of side-effects.
+            --  of side effects.
 
             return Is_Entity_Name (Prefix (N))
               and then not Comes_From_Source (Prefix (N))

@@ -361,6 +361,13 @@ package body Sem_Elab is
    --           entries, operators, and subprograms. As a result, the scenarios
    --           are not recorder or processed.
    --
+   --  -gnatd.v enforce SPARK elaboration rules in SPARK code
+   --
+   --           The ABE mechanism applies some of the SPARK elaboration rules
+   --           defined in the SPARK reference manual, chapter 7.7. Note that
+   --           certain rules are always enforced, regardless of whether the
+   --           switch is active.
+   --
    --  -gnatd.y disable implicit pragma Elaborate_All on task bodies
    --
    --           The ABE mechanism does not generate implicit Elaborate_All when
@@ -6891,16 +6898,18 @@ package body Sem_Elab is
       elsif Is_Up_Level_Target (Target_Attrs.Spec_Decl) then
          return;
 
-      --  The SPARK rules are in effect
+      --  The SPARK rules are verified only when -gnatd.v (enforce SPARK
+      --  elaboration rules in SPARK code) is in effect.
 
-      elsif SPARK_Rules_On then
+      elsif SPARK_Rules_On and Debug_Flag_Dot_V then
          Process_Call_SPARK
            (Call         => Call,
             Call_Attrs   => Call_Attrs,
             Target_Id    => Target_Id,
             Target_Attrs => Target_Attrs);
 
-      --  Otherwise the Ada rules are in effect
+      --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
+      --  violate the SPARK rules.
 
       else
          Process_Call_Ada
@@ -7459,9 +7468,10 @@ package body Sem_Elab is
       elsif Is_Up_Level_Target (Gen_Attrs.Spec_Decl) then
          return;
 
-      --  The SPARK rules are in effect
+      --  The SPARK rules are verified only when -gnatd.v (enforce SPARK
+      --  elaboration rules in SPARK code) is in effect.
 
-      elsif SPARK_Rules_On then
+      elsif SPARK_Rules_On and Debug_Flag_Dot_V then
          Process_Instantiation_SPARK
            (Exp_Inst   => Exp_Inst,
             Inst       => Inst,
@@ -7469,7 +7479,8 @@ package body Sem_Elab is
             Gen_Id     => Gen_Id,
             Gen_Attrs  => Gen_Attrs);
 
-      --  Otherwise the Ada rules are in effect
+      --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
+      --  violate the SPARK rules.
 
       else
          Process_Instantiation_Ada
@@ -7869,7 +7880,10 @@ package body Sem_Elab is
             In_SPARK => SPARK_Rules_On);
       end if;
 
-      --  The SPARK rules are in effect
+      --  The SPARK rules are in effect. These rules are applied regardless of
+      --  whether -gnatd.v (enforce SPARK elaboration rules in SPARK code) is
+      --  in effect because the static model cannot ensure safe assignment of
+      --  variables.
 
       if SPARK_Rules_On then
          Process_Variable_Assignment_SPARK
