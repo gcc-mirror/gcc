@@ -178,6 +178,16 @@ package body Lib is
       return Units.Table (U).OA_Setting;
    end OA_Setting;
 
+   function Primary_Stack_Count (U : Unit_Number_Type) return Int is
+   begin
+      return Units.Table (U).Primary_Stack_Count;
+   end Primary_Stack_Count;
+
+   function Sec_Stack_Count  (U : Unit_Number_Type) return Int is
+   begin
+      return Units.Table (U).Sec_Stack_Count;
+   end Sec_Stack_Count;
+
    function Source_Index (U : Unit_Number_Type) return Source_File_Index is
    begin
       return Units.Table (U).Source_Index;
@@ -1026,6 +1036,26 @@ package body Lib is
 
       return Get_Source_Unit (N1) = Get_Source_Unit (N2);
    end In_Same_Source_Unit;
+
+   -----------------------------------
+   -- Increment_Primary_Stack_Count --
+   -----------------------------------
+
+   procedure Increment_Primary_Stack_Count (Increment : Int) is
+      PSC : Int renames Units.Table (Current_Sem_Unit).Primary_Stack_Count;
+   begin
+      PSC := PSC + Increment;
+   end Increment_Primary_Stack_Count;
+
+   -------------------------------
+   -- Increment_Sec_Stack_Count --
+   -------------------------------
+
+   procedure Increment_Sec_Stack_Count (Increment : Int) is
+      SSC : Int renames Units.Table (Current_Sem_Unit).Sec_Stack_Count;
+   begin
+      SSC := SSC + Increment;
+   end Increment_Sec_Stack_Count;
 
    -----------------------------
    -- Increment_Serial_Number --

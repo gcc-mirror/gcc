@@ -2818,10 +2818,16 @@ package body Sem_Prag is
                                              E_Constant,
                                              E_Variable)
                then
+                  --  When the initialization item is undefined, it appears as
+                  --  Any_Id. Do not continue with the analysis of the item.
+
+                  if Item_Id = Any_Id then
+                     null;
+
                   --  The state or variable must be declared in the visible
                   --  declarations of the package (SPARK RM 7.1.5(7)).
 
-                  if not Contains (States_And_Objs, Item_Id) then
+                  elsif not Contains (States_And_Objs, Item_Id) then
                      Error_Msg_Name_1 := Chars (Pack_Id);
                      SPARK_Msg_NE
                        ("initialization item & must appear in the visible "

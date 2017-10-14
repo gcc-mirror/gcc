@@ -20584,6 +20584,51 @@ package body Sem_Util is
       return False;
    end Null_To_Null_Address_Convert_OK;
 
+   ---------------------------------
+   -- Number_Of_Elements_In_Array --
+   ---------------------------------
+
+   function Number_Of_Elements_In_Array (T : Entity_Id) return Int is
+      Indx : Node_Id;
+      Typ  : Entity_Id;
+      Low  : Node_Id;
+      High : Node_Id;
+      Num  : Int := 1;
+
+   begin
+      pragma Assert (Is_Array_Type (T));
+
+      Indx := First_Index (T);
+      while Present (Indx) loop
+         Typ := Underlying_Type (Etype (Indx));
+
+         --  Never look at junk bounds of a generic type
+
+         if Is_Generic_Type (Typ) then
+            return 0;
+         end if;
+
+         --  Check the array bounds are known at compile time and return zero
+         --  if they are not.
+
+         Low  := Type_Low_Bound (Typ);
+         High := Type_High_Bound (Typ);
+
+         if not Compile_Time_Known_Value (Low) then
+            return 0;
+         elsif not Compile_Time_Known_Value (High) then
+            return 0;
+         else
+            Num :=
+              Num * UI_To_Int ((Expr_Value (High) - Expr_Value (Low) + 1));
+         end if;
+
+         Next_Index (Indx);
+      end loop;
+
+      return Num;
+   end Number_Of_Elements_In_Array;
+
    -------------------------
    -- Object_Access_Level --
    -------------------------
