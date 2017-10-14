@@ -1,3 +1,10 @@
+2017-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/82548
+	* config.gcc (*-*-solaris2*, i[34567]86-*-cygwin*,
+	x86_64-*-cygwin*, i[34567]86-*-mingw* | x86_64-*-mingw*): Append
+	objects to extra_objs instead of overwriting it.
+
 2017-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (FILD_ATOMIC/FIST_ATOMIC FP load peephole2):
@@ -341,7 +348,7 @@
 
 2017-10-12  Jan Hubicka  <hubicka@ucw.cz>
 
-	* x86-tune-sched.c (ix86_adjust_cost): Fix Zen support.
+	* config/i386/x86-tune-sched.c (ix86_adjust_cost): Fix Zen support.
 
 2017-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -541,7 +548,7 @@
 2017-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config.gcc (i386, x86_64): Add extra objects.
-	* i386/i386-protos.h (ix86_rip_relative_addr_p): Declare.
+	* config/i386/i386-protos.h (ix86_rip_relative_addr_p): Declare.
 	(ix86_min_insn_size): Declare.
 	(ix86_issue_rate): Declare.
 	(ix86_adjust_cost): Declare.
@@ -552,7 +559,7 @@
 	(ix86_bd_do_dispatch): Declare.
 	(ix86_core2i7_init_hooks): Declare.
 	(ix86_atom_sched_reorder): Declare.
-	* i386/i386.c Move all CPU cost tables to x86-tune-costs.h.
+	* config/i386/i386.c Move all CPU cost tables to x86-tune-costs.h.
 	(COSTS_N_BYTES): Move to x86-tune-costs.h.
 	(DUMMY_STRINGOP_ALGS):Move to x86-tune-costs.h.
 	(rip_relative_addr_p): Rename to ...
@@ -623,12 +630,12 @@
 	(debug_ready_dispatch): Move to ix86-tune-sched-bd.c.
 	(do_dispatch): Move to ix86-tune-sched-bd.c.
 	(has_dispatch): Move to ix86-tune-sched-bd.c.
-	* i386/t-i386: Add new object files.
-	* i386/x86-tune-costs.h: New file.
-	* i386/x86-tune-sched-atom.c: New file.
-	* i386/x86-tune-sched-bd.c: New file.
-	* i386/x86-tune-sched-core.c: New file.
-	* i386/x86-tune-sched.c: New file.
+	* config/i386/t-i386: Add new object files.
+	* config/i386/x86-tune-costs.h: New file.
+	* config/i386/x86-tune-sched-atom.c: New file.
+	* config/i386/x86-tune-sched-bd.c: New file.
+	* config/i386/x86-tune-sched-core.c: New file.
+	* config/i386/x86-tune-sched.c: New file.
 
 2017-10-11  Liu Hao  <lh_mouse@126.com>
 
@@ -1129,12 +1136,12 @@
 
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	* i386.c (ix86_expand_set_or_movmem): Disable 512bit loops for targets
-	that preffer 128bit.
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Disable 512bit loops
+	for targets that preffer 128bit.
 
 2017-10-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	* i386.c (has_dispatch): Disable for Ryzen.
+	* config/i386/i386.c (has_dispatch): Disable for Ryzen.
 
 2017-10-08  Olivier Hainque  <hainque@adacore.com>
 
@@ -1331,8 +1338,8 @@
 
 2017-10-05  Jan Hubicka <hubicka@ucw.cz>
 
-	* i386.c (ia32_multipass_dfa_lookahead): Default to issue rate
-	for post-reload scheduling.
+	* config/i386/i386.c (ia32_multipass_dfa_lookahead): Default to issue
+	rate for post-reload scheduling.
 
 2017-10-05  Tamar Christina  <tamar.christina@arm.com>
 
@@ -1340,13 +1347,13 @@
 
 2017-10-05  Jan Hubicka <hubicka@ucw.cz>
 
-	* i386.c (znver1_cost): Set branch_cost to 3 (instead of 2)
+	* config/i386/i386.c (znver1_cost): Set branch_cost to 3 (instead of 2)
 	to improve monte carlo in scimark.
 
 2017-10-05  Jan Hubicka <hubicka@ucw.cz>
 
-	* i386.c (ix86_size_cost, i386_cost, i486_cost, pentium_cost,
-	lakemont_cost, pentiumpro_cost, geode_cost, k6_cost,
+	* config/i386/i386.c (ix86_size_cost, i386_cost, i486_cost,
+	pentium_cost, lakemont_cost, pentiumpro_cost, geode_cost, k6_cost,
 	athlon_cost, k8_cost, amdfam10_cost, btver1_cost, btver2_cost,
 	pentium4_cost, nocona_cost): Set reassociation width to 1.
 	(bdver1_cost, bdver2_cost, bdver3_cost, bdver4_cost): Set reassociation
@@ -1361,7 +1368,7 @@
 	(ix86_reassociation_width): Rewrite using cost table; special case
 	plus/minus on Zen; honor X86_TUNE_SSE_SPLIT_REGS
 	and TARGET_AVX128_OPTIMAL.
-	* i386.h (processor_costs): Add
+	* config/i386/i386.h (processor_costs): Add
 	reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp.
 	(TARGET_VECTOR_PARALLEL_EXECUTION, TARGET_REASSOC_INT_TO_PARALLEL,
 	TARGET_REASSOC_FP_TO_PARALLEL): Remove.
