@@ -6298,7 +6298,7 @@ static void
 expand_memory_blockage (void)
 {
   if (targetm.have_memory_blockage)
-    emit_insn (gen_memory_blockage ());
+    emit_insn (targetm.gen_memory_blockage ());
   else
     expand_asm_memory_blockage ();
 }
