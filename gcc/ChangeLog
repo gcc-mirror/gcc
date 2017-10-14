@@ -1,3 +1,12 @@
+2017-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/62263
+	PR middle-end/82498
+	* tree-ssa-forwprop.c (simplify_rotate): Allow def_arg1[N]
+	to be any operand_equal_p operands.  For & (B - 1) require
+	B to be power of 2.  Recognize
+	(X << (Y & (B - 1))) | (X >> ((-Y) & (B - 1))) and similar patterns.
+
 2017-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/82553

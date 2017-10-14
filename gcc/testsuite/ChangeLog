@@ -1,3 +1,19 @@
+2017-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/62263
+	PR middle-end/82498
+	* c-c++-common/rotate-5.c (f2): New function.  Move old
+	function to ...
+	(f4): ... this.  Use 127 instead of 128.
+	(f3, f5, f6): New functions.
+	(main): Test all f[1-6] functions, with both 0 and 1 as
+	second arguments.
+	* c-c++-common/rotate-6.c: New test.
+	* c-c++-common/rotate-6a.c: New test.
+	* c-c++-common/rotate-7.c: New test.
+	* c-c++-common/rotate-7a.c: New test.
+	* c-c++-common/rotate-8.c: New test.
+
 2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/remote_call_iface.ads, gnat.dg/remote_call_iface.adb: New
