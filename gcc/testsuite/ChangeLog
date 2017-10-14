@@ -2,6 +2,10 @@
 
 	PR middle-end/62263
 	PR middle-end/82498
+	* c-c++-common/rotate-8.c: Expect no PHIs in optimized dump.
+
+	PR middle-end/62263
+	PR middle-end/82498
 	* c-c++-common/rotate-5.c (f2): New function.  Move old
 	function to ...
 	(f4): ... this.  Use 127 instead of 128.
