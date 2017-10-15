@@ -1,3 +1,11 @@
+2017-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82372
+	* fortran/scanner.c (last_error_char):  New global variable.
+	(gfc_scanner_init_1): Set last_error_char to NULL.
+	(gfc_gobble_whitespace): If a character not printable or
+	not newline, issue an error.
+
 2017-10-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/81048

@@ -80,6 +80,7 @@ static struct gfc_file_change
 size_t file_changes_cur, file_changes_count;
 size_t file_changes_allocated;
 
+static gfc_char_t *last_error_char;
 
 /* Functions dealing with our wide characters (gfc_char_t) and
    sequences of such characters.  */
@@ -269,6 +270,7 @@ gfc_scanner_init_1 (void)
   continue_line = 0;
 
   end_flag = 0;
+  last_error_char = NULL;
 }
 
 
@@ -1699,6 +1701,14 @@ gfc_gobble_whitespace (void)
 	}
     }
   while (gfc_is_whitespace (c));
+
+  if (!ISPRINT(c) && c != '\n' && last_error_char != gfc_current_locus.nextc)
+    {
+      char buf[20];
+      last_error_char = gfc_current_locus.nextc;
+      snprintf (buf, 20, "%2.2X", c);
+      gfc_error_now ("Invalid character 0x%s at %C", buf);
+    }
 
   gfc_current_locus = old_loc;
 }
