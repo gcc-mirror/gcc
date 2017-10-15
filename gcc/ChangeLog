@@ -1,5 +1,12 @@
 2017-10-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* i386.c (ix86_vec_cost): New function.
+	(ix86_rtx_costs): Handle vector operations better.
+	* i386.h (struct processor_costs): Add sse_op, fmasd, fmass.
+	* x86-tune-costs.h: Add new costs to all tables.
+
+2017-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* i386.c (ix86_rtx_costs): Make difference between x87 and SSE
 	operations.
 	* i386.h (struct processor_costs): Add addss, mulss, mulsd, divss,

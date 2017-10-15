@@ -38799,6 +38799,27 @@ ix86_set_reg_reg_cost (machine_mode mode)
   return COSTS_N_INSNS (CEIL (GET_MODE_SIZE (mode), units));
 }
 
+/* Return cost of vector operation in MODE given that scalar version has
+   COST.  If PARALLEL is true assume that CPU has more than one unit
+   performing the operation.  */
+
+static int
+ix86_vec_cost (machine_mode mode, int cost, bool parallel)
+{
+  if (!VECTOR_MODE_P (mode))
+    return cost;
+ 
+  if (!parallel)
+    return cost * GET_MODE_NUNITS (mode);
+  if (GET_MODE_BITSIZE (mode) == 128
+      && TARGET_SSE_SPLIT_REGS)
+    return cost * 2;
+  if (GET_MODE_BITSIZE (mode) > 128
+      && TARGET_AVX128_OPTIMAL)
+    return cost * GET_MODE_BITSIZE (mode) / 128;
+  return cost;
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -38959,19 +38980,20 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 		     shift with one insn set the cost to prefer paddb.  */
 		  if (CONSTANT_P (XEXP (x, 1)))
 		    {
-		      *total = (cost->fabs
+		      *total = ix86_vec_cost (mode,
+				cost->sse_op
 				+ rtx_cost (XEXP (x, 0), mode, code, 0, speed)
-				+ (speed ? 2 : COSTS_N_BYTES (16)));
+				+ (speed ? 2 : COSTS_N_BYTES (16)), true);
 		      return true;
 		    }
 		  count = 3;
 		}
 	      else if (TARGET_SSSE3)
 		count = 7;
-	      *total = cost->fabs * count;
+	      *total = ix86_vec_cost (mode, cost->sse_op * count, true);
 	    }
 	  else
-	    *total = cost->fabs;
+	    *total = ix86_vec_cost (mode, cost->sse_op, true);
 	}
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	{
@@ -39013,9 +39035,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
         gcc_assert (FLOAT_MODE_P (mode));
         gcc_assert (TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F);
 
-        /* ??? SSE scalar/vector cost should be used here.  */
-        /* ??? Bald assumption that fma has the same cost as fmul.  */
-        *total = mode == SFmode ? cost->mulss : cost->mulsd;
+        *total = ix86_vec_cost (mode,
+				mode == SFmode ? cost->fmass : cost->fmasd,
+				true);
 	*total += rtx_cost (XEXP (x, 1), mode, FMA, 1, speed);
 
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
@@ -39044,8 +39066,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* ??? SSE vector cost should be used here.  */
-	  *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
+	  *total = ix86_vec_cost (mode,
+				  inner_mode == DFmode
+				  ? cost->mulsd : cost->mulss, true);
 	  return false;
 	}
       else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
@@ -39058,22 +39081,29 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 		extra = 5;
 	      else if (TARGET_SSSE3)
 		extra = 6;
-	      *total = cost->fmul * 2 + cost->fabs * extra;
+	      *total = ix86_vec_cost (mode,
+				      cost->mulss * 2 + cost->sse_op * extra,
+				      true);
 	    }
 	  /* V*DImode is emulated with 5-8 insns.  */
 	  else if (mode == V2DImode || mode == V4DImode)
 	    {
 	      if (TARGET_XOP && mode == V2DImode)
-		*total = cost->fmul * 2 + cost->fabs * 3;
+		*total = ix86_vec_cost (mode,
+					cost->mulss * 2 + cost->sse_op * 3,
+					true);
 	      else
-		*total = cost->fmul * 3 + cost->fabs * 5;
+		*total = ix86_vec_cost (mode,
+					cost->mulss * 3 + cost->sse_op * 5,
+					true);
 	    }
 	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
 	     insns, including two PMULUDQ.  */
 	  else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
-	    *total = cost->fmul * 2 + cost->fabs * 5;
+	    *total = ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5,
+				    true);
 	  else
-	    *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
+	    *total = ix86_vec_cost (mode, cost->mulss, true);
 	  return false;
 	}
       else
@@ -39131,8 +39161,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fdiv;
       else if (FLOAT_MODE_P (mode))
-	/* ??? SSE vector cost should be used here.  */
-	*total = inner_mode == DFmode ? cost->divsd : cost->divss;
+	*total = ix86_vec_cost (mode,
+			        inner_mode == DFmode ? cost->divsd : cost->divss,
+				true);
       else
 	*total = cost->divide[MODE_INDEX (mode)];
       return false;
@@ -39221,8 +39252,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* We should account if registers are split.  */
-	  *total = cost->addss;
+	  *total = ix86_vec_cost (mode, cost->addss, true);
 	  return false;
 	}
       /* FALLTHRU */
@@ -39245,8 +39275,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case NEG:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
-	  /* ??? SSE cost should be used here.  */
-	  *total = cost->fchs;
+	  *total = cost->sse_op;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
@@ -39256,20 +39285,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* ??? SSE vector cost should be used here.  */
-	  *total = cost->fchs;
+	  *total = ix86_vec_cost (mode, cost->sse_op, true);
 	  return false;
 	}
       /* FALLTHRU */
 
     case NOT:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	{
-	  /* ??? Should be SSE vector operation cost.  */
-	  /* At least for published AMD latencies, this really is the same
-	     as the latency for a simple fpu operation like fabs.  */
-	  *total = cost->fabs;
-	}
+	*total = ix86_vec_cost (mode, cost->sse_op, true);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
       else
@@ -39302,17 +39325,27 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case FLOAT_EXTEND:
       if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
 	*total = 0;
+      else
+        *total = ix86_vec_cost (mode, cost->addss, true);
+      return false;
+
+    case FLOAT_TRUNCATE:
+      if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
+	*total = cost->fadd;
+      else
+        *total = ix86_vec_cost (mode, cost->addss, true);
       return false;
 
     case ABS:
+      /* SSE requires memory load for the constant operand. It may make
+	 sense to account for this.  Of course the constant operand may or
+	 may not be reused. */
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	/* ??? SSE cost should be used here.  */
-	*total = cost->fabs;
+	*total = cost->sse_op;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fabs;
       else if (FLOAT_MODE_P (mode))
-	/* ??? SSE vector cost should be used here.  */
-	*total = cost->fabs;
+	*total = ix86_vec_cost (mode, cost->sse_op, true);
       return false;
 
     case SQRT:
@@ -39321,8 +39354,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fsqrt;
       else if (FLOAT_MODE_P (mode))
-	/* ??? SSE vector cost should be used here.  */
-	*total = mode == SFmode ? cost->sqrtss : cost->sqrtsd;
+	*total = ix86_vec_cost (mode,
+				mode == SFmode ? cost->sqrtss : cost->sqrtsd,
+				true);
       return false;
 
     case UNSPEC:
@@ -39336,7 +39370,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* ??? Assume all of these vector manipulation patterns are
 	 recognizable.  In which case they all pretty much have the
 	 same cost.  */
-     *total = cost->fabs;
+     *total = cost->sse_op;
      return true;
     case VEC_MERGE:
       mask = XEXP (x, 2);
@@ -39345,7 +39379,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
 	*total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed);
       else
-	*total = cost->fabs;
+	*total = cost->sse_op;
       return true;
 
     default:
