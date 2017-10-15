@@ -295,17 +295,8 @@ upcase_fields () {
 # _user_regs_struct.
 regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go || true`
 if test "$regs" = ""; then
-  # s390
-  regs=`grep '^type __user_regs_struct struct' gen-sysinfo.go || true`
-  if test "$regs" != ""; then
-    # Substructures of __user_regs_struct on s390
-    upcase_fields "__user_psw_struct" "PtracePsw" >> ${OUT} || true
-    upcase_fields "__user_fpregs_struct" "PtraceFpregs" >> ${OUT} || true
-    upcase_fields "__user_per_struct" "PtracePer" >> ${OUT} || true
-  else
-    # mips*
-    regs=`grep '^type _pt_regs struct' gen-sysinfo.go || true`
-  fi
+  # mips*
+  regs=`grep '^type _pt_regs struct' gen-sysinfo.go || true`
 fi
 if test "$regs" != ""; then
   regs=`echo $regs | sed -e 's/type _pt_regs struct//'`
