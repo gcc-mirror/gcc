@@ -1,3 +1,12 @@
+2017-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (ix86_rtx_costs): Make difference between x87 and SSE
+	operations.
+	* i386.h (struct processor_costs): Add addss, mulss, mulsd, divss,
+	divsd, sqrtss and sqrtsd
+	* x86-tune-costs.h: Add new entries to all costs.
+	(znver1_cost): Fix to match real instruction latencies.
+
 2017-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 	    Michael Collison <michael.collison@arm.com>
 

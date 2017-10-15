@@ -38812,6 +38812,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
   int src_cost;
+  machine_mode inner_mode = mode;
+  if (VECTOR_MODE_P (mode))
+    inner_mode = GET_MODE_INNER (mode);
 
   switch (code)
     {
@@ -39012,7 +39015,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
         /* ??? SSE scalar/vector cost should be used here.  */
         /* ??? Bald assumption that fma has the same cost as fmul.  */
-        *total = cost->fmul;
+        *total = mode == SFmode ? cost->mulss : cost->mulsd;
 	*total += rtx_cost (XEXP (x, 1), mode, FMA, 1, speed);
 
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
@@ -39031,8 +39034,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case MULT:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
-	  /* ??? SSE scalar cost should be used here.  */
-	  *total = cost->fmul;
+	  *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
@@ -39043,7 +39045,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (FLOAT_MODE_P (mode))
 	{
 	  /* ??? SSE vector cost should be used here.  */
-	  *total = cost->fmul;
+	  *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
 	  return false;
 	}
       else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
@@ -39071,7 +39073,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
 	    *total = cost->fmul * 2 + cost->fabs * 5;
 	  else
-	    *total = cost->fmul;
+	    *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
 	  return false;
 	}
       else
@@ -39125,13 +39127,12 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case MOD:
     case UMOD:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	/* ??? SSE cost should be used here.  */
-	*total = cost->fdiv;
+	*total = inner_mode == DFmode ? cost->divsd : cost->divss;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fdiv;
       else if (FLOAT_MODE_P (mode))
 	/* ??? SSE vector cost should be used here.  */
-	*total = cost->fdiv;
+	*total = inner_mode == DFmode ? cost->divsd : cost->divss;
       else
 	*total = cost->divide[MODE_INDEX (mode)];
       return false;
@@ -39210,8 +39211,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
-	  /* ??? SSE cost should be used here.  */
-	  *total = cost->fadd;
+	  *total = cost->addss;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
@@ -39221,8 +39221,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* ??? SSE vector cost should be used here.  */
-	  *total = cost->fadd;
+	  /* We should account if registers are split.  */
+	  *total = cost->addss;
 	  return false;
 	}
       /* FALLTHRU */
@@ -39317,13 +39317,12 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
     case SQRT:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	/* ??? SSE cost should be used here.  */
-	*total = cost->fsqrt;
+	*total = mode == SFmode ? cost->sqrtss : cost->sqrtsd;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fsqrt;
       else if (FLOAT_MODE_P (mode))
 	/* ??? SSE vector cost should be used here.  */
-	*total = cost->fsqrt;
+	*total = mode == SFmode ? cost->sqrtss : cost->sqrtsd;
       return false;
 
     case UNSPEC:
