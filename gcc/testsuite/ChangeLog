@@ -1,3 +1,8 @@
+2017-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54090
+	* g++.dg/template/crash128.C: New.
+
 2017-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82372
