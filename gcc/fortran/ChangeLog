@@ -1,3 +1,8 @@
+2017-10-16  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/82511
+	* trans-io.c (transfer_expr): Treat BT_UNION as BT_DERIVED.
+
 2017-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82372

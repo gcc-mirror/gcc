@@ -1,3 +1,8 @@
+2017-10-16  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/82511
+	* gfortran.dg/dec_structure_22.f90: New testcase.
+
 2017-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64931
