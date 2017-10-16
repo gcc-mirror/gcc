@@ -1,5 +1,3 @@
-! { dg-do run  { target openacc_nvidia_accel_selected } }
-
 module globalvars
   implicit none
   integer a
