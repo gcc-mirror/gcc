@@ -823,11 +823,64 @@ namespace selftest {
 
 /* Selftests for sbitmaps.  */
 
+/* Checking function that uses both bitmap_bit_in_range_p and
+   loop of bitmap_bit_p and verifies consistent results.  */
 
-/* Verify range functions for sbitmap.  */
+static bool
+bitmap_bit_in_range_p_checking (sbitmap s, unsigned int start,
+				unsigned end)
+{
+  bool r1 = bitmap_bit_in_range_p (s, start, end);
+  bool r2 = false;
+
+  for (unsigned int i = start; i <= end; i++)
+    if (bitmap_bit_p (s, i))
+      {
+	r2 = true;
+	break;
+      }
+
+  ASSERT_EQ (r1, r2);
+  return r1;
+}
+
+/* Verify bitmap_set_range functions for sbitmap.  */
 
 static void
-test_range_functions ()
+test_set_range ()
+{
+  sbitmap s = sbitmap_alloc (16);
+  bitmap_clear (s);
+
+  bitmap_set_range (s, 0, 1);
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 0, 0));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 15));
+  bitmap_set_range (s, 15, 1);
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 14));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 15, 15));
+
+  s = sbitmap_alloc (1024);
+  bitmap_clear (s);
+  bitmap_set_range (s, 512, 1);
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 0, 511));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 513, 1023));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 508, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 508, 513));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 508, 511));
+
+  bitmap_clear (s);
+  bitmap_set_range (s, 512, 64);
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 0, 511));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 512 + 64, 1023));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512 + 63, 512 + 63));
+}
+
+/* Verify bitmap_bit_in_range_p functions for sbitmap.  */
+
+static void
+test_bit_in_range ()
 {
   sbitmap s = sbitmap_alloc (1024);
   bitmap_clear (s);
@@ -900,7 +953,8 @@ test_range_functions ()
 void
 sbitmap_c_tests ()
 {
-  test_range_functions ();
+  test_set_range ();
+  test_bit_in_range ();
 }
 
 } // namespace selftest
