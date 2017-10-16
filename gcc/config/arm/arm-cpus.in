@@ -156,6 +156,8 @@ define feature crypto
 # FP16 data processing (half-precision float).
 define feature fp16
 
+# Dot Product instructions extension to ARMv8.2-a.
+define feature dotprod
 
 # ISA Quirks (errata?).  Don't forget to add this to the fgroup
 # ALL_QUIRKS below.
@@ -173,6 +175,17 @@ define feature quirk_cm3_ldrd
 define feature smallmul
 
 # Feature groups.  Conventionally all (or mostly) upper case.
+# ALL_FPU lists all the feature bits associated with the floating-point
+# unit; these will all be removed if the floating-point unit is disabled
+# (eg -mfloat-abi=soft).  ALL_FPU_INTERNAL must ONLY contain features that
+# form part of a named -mfpu option; it is used to map the capabilities
+# back to a named FPU for the benefit of the assembler.
+#
+# ALL_SIMD_INTERNAL and ALL_SIMD are similarly defined to help with the
+# construction of ALL_FPU and ALL_FPU_INTERNAL; they describe the SIMD
+# extensions that are either part of a named FPU or optional extensions
+# respectively.
+
 
 # List of all cryptographic extensions to stripout if crypto is
 # disabled.  Currently, that's trivial, but we define it anyway for
@@ -182,11 +195,12 @@ define fgroup ALL_CRYPTO	crypto
 # List of all SIMD bits to strip out if SIMD is disabled.  This does
 # strip off 32 D-registers, but does not remove support for
 # double-precision FP.
-define fgroup ALL_SIMD	fp_d32 neon ALL_CRYPTO
+define fgroup ALL_SIMD_INTERNAL	fp_d32 neon ALL_CRYPTO
+define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod
 
 # List of all FPU bits to strip out if -mfpu is used to override the
 # default.  fp16 is deliberately missing from this list.
-define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD
+define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD_INTERNAL
 
 # Similarly, but including fp16 and other extensions that aren't part of
 # -mfpu support.
@@ -239,6 +253,7 @@ define fgroup FP_D32	FP_DBL fp_d32
 define fgroup FP_ARMv8	FPv5 FP_D32
 define fgroup NEON	FP_D32 neon
 define fgroup CRYPTO	NEON crypto
+define fgroup DOTPROD	NEON dotprod
 
 # List of all quirk bits to strip out when comparing CPU features with
 # architectures.
@@ -561,6 +576,7 @@ begin arch armv8.2-a
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option dotprod add FP_ARMv8 DOTPROD
 end arch armv8.2-a
 
 begin arch armv8-m.base
@@ -1473,7 +1489,7 @@ begin cpu cortex-a55
  cname cortexa55
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8.2-a+fp16
+ architecture armv8.2-a+fp16+dotprod
  fpu neon-fp-armv8
  option crypto add FP_ARMv8 CRYPTO
  option nofp remove ALL_FP
@@ -1484,7 +1500,7 @@ begin cpu cortex-a75
  cname cortexa75
  tune for cortex-a57
  tune flags LDSCHED
- architecture armv8.2-a+fp16
+ architecture armv8.2-a+fp16+dotprod
  fpu neon-fp-armv8
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
@@ -1496,7 +1512,7 @@ begin cpu cortex-a75.cortex-a55
  cname cortexa75cortexa55
  tune for cortex-a53
  tune flags LDSCHED
- architecture armv8.2-a+fp16
+ architecture armv8.2-a+fp16+dotprod
  fpu neon-fp-armv8
  option crypto add FP_ARMv8 CRYPTO
  costs cortex_a73
