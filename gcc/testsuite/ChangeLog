@@ -1,3 +1,10 @@
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-qi.h: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-s8.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-u8.c: New.
+
 2017-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/53574
