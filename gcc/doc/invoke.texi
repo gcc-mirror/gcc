@@ -14382,6 +14382,8 @@ Enable FP16 extension.  This also enables floating-point instructions.
 Enable the RcPc extension.  This does not change code generation from GCC,
 but is passed on to the assembler, enabling inline asm statements to use
 instructions from the RcPc extension.
+@item dotprod
+Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
 
 @end table
 

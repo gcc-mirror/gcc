@@ -1,5 +1,15 @@
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/aarch64/aarch64.h (AARCH64_FL_DOTPROD): New.
+	(AARCH64_ISA_DOTPROD, TARGET_DOTPROD): New.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add TARGET_DOTPROD.
+	* config/aarch64/aarch64-option-extensions.def (dotprod): New.
+	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75): Enable TARGET_DOTPROD.
+	(cortex-a75.cortex-a55): Likewise.
+	* doc/invoke.texi (aarch64-feature-modifiers): Document dotprod.
+
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/arm/arm-builtins.c (arm_unsigned_uternop_qualifiers): New.
 	(UTERNOP_QUALIFIERS, arm_umac_lane_qualifiers, UMAC_LANE_QUALIFIERS): New.
 	* config/arm/arm_neon_builtins.def (sdot, udot, sdot_lane, udot_lane): new.
