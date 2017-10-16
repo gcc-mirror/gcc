@@ -1,5 +1,17 @@
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/arm/arm-builtins.c (arm_unsigned_uternop_qualifiers): New.
+	(UTERNOP_QUALIFIERS, arm_umac_lane_qualifiers, UMAC_LANE_QUALIFIERS): New.
+	* config/arm/arm_neon_builtins.def (sdot, udot, sdot_lane, udot_lane): new.
+	* config/arm/iterators.md (DOTPROD, VSI2QI, vsi2qi): New.
+	(UNSPEC_DOT_S, UNSPEC_DOT_U, opsuffix): New.
+	* config/arm/neon.md (neon_<sup>dot<vsi2qi>): New.
+	(neon_<sup>dot_lane<vsi2qi>, <sup>dot_prod<vsi2qi>): New.
+	* config/arm/types.md (neon_dot, neon_dot_q): New.
+	* config/arm/unspecs.md (sup): Add UNSPEC_DOT_S, UNSPEC_DOT_U.
+
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/arm/arm.h (TARGET_DOTPROD): New.
 	* config/arm/arm.c (arm_arch_dotprod): New.
 	(arm_option_reconfigure_globals): Add arm_arch_dotprod.
