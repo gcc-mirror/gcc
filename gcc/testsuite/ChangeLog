@@ -1,3 +1,8 @@
+2017-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/82442
+	* gcc.dg/vect/pr31699.c: Fix testcase.
+
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-qi.h: New.
