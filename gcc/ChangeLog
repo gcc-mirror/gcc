@@ -1,3 +1,11 @@
+2017-10-16  Martin Liska  <mliska@suse.cz>
+
+	* sbitmap.c (bitmap_bit_in_range_p_checking): New function.
+	(test_set_range): Likewise.
+	(test_range_functions): Rename to ...
+	(test_bit_in_range): ... this.
+	(sbitmap_c_tests): Add new test.
+
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32): New.
