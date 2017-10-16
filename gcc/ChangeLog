@@ -1,3 +1,7 @@
+2017-10-16  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (live_bytes_read): Fix thinko.
+
 2017-10-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune-costs.h (znver1_cost): Fix move cost tables.
