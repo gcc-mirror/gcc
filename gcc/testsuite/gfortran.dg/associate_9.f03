@@ -1,8 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-std=f2003 -fall-intrinsics" }
 
-! FIXME: Change into run test and remove excess error expectation.
-
 ! PR fortran/38936
 ! Association to derived-type, where the target type is not know
 ! during parsing (only resolution).
@@ -46,5 +44,3 @@ PROGRAM main
     IF (x%comp /= 10) CALL abort ()
   END ASSOCIATE
 END PROGRAM main
-
-! { dg-excess-errors "Syntex error in IF" }

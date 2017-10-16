@@ -1890,6 +1890,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   gfc_ref *substring, *tail, *tmp;
   gfc_component *component;
   gfc_symbol *sym = primary->symtree->n.sym;
+  gfc_expr *tgt_expr = NULL;
   match m;
   bool unknown;
   char sep;
@@ -1918,6 +1919,9 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	}
     }
 
+  if (sym->assoc && sym->assoc->target)
+    tgt_expr = sym->assoc->target;
+
   /* For associate names, we may not yet know whether they are arrays or not.
      If the selector expression is unambiguously an array; eg. a full array
      or an array section, then the associate name must be an array and we can
@@ -1929,25 +1933,42 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       && sym->ts.type != BT_CLASS
       && !sym->attr.dimension)
     {
-      if ((!sym->assoc->dangling
-	   && sym->assoc->target
-	   && sym->assoc->target->ref
-	   && sym->assoc->target->ref->type == REF_ARRAY
-	   && (sym->assoc->target->ref->u.ar.type == AR_FULL
-	       || sym->assoc->target->ref->u.ar.type == AR_SECTION))
-	  ||
-	   (!(sym->assoc->dangling || sym->ts.type == BT_CHARACTER)
-	    && sym->assoc->st
-	   && sym->assoc->st->n.sym
-	    && sym->assoc->st->n.sym->attr.dimension == 0))
+      gfc_ref *ref = NULL;
+
+      if (!sym->assoc->dangling && tgt_expr)
 	{
-    sym->attr.dimension = 1;
-	  if (sym->as == NULL && sym->assoc
+	   if (tgt_expr->expr_type == EXPR_VARIABLE)
+	     gfc_resolve_expr (tgt_expr);
+
+	   ref = tgt_expr->ref;
+	   for (; ref; ref = ref->next)
+	      if (ref->type == REF_ARRAY
+		  && (ref->u.ar.type == AR_FULL
+		      || ref->u.ar.type == AR_SECTION))
+		break;
+	}
+
+      if (ref || (!(sym->assoc->dangling || sym->ts.type == BT_CHARACTER)
+		  && sym->assoc->st
+		  && sym->assoc->st->n.sym
+		  && sym->assoc->st->n.sym->attr.dimension == 0))
+	{
+	  sym->attr.dimension = 1;
+	  if (sym->as == NULL
 	      && sym->assoc->st
 	      && sym->assoc->st->n.sym
 	      && sym->assoc->st->n.sym->as)
 	    sym->as = gfc_copy_array_spec (sym->assoc->st->n.sym->as);
 	}
+    }
+  else if (sym->ts.type == BT_CLASS
+	   && tgt_expr
+	   && tgt_expr->expr_type == EXPR_VARIABLE
+	   && sym->ts.u.derived != tgt_expr->ts.u.derived)
+    {
+      gfc_resolve_expr (tgt_expr);
+      if (tgt_expr->rank)
+	sym->ts.u.derived = tgt_expr->ts.u.derived;
     }
 
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
@@ -2008,10 +2029,31 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
     gfc_set_default_type (sym, 0, sym->ns);
 
+  /* See if there is a usable typespec in the "no IMPLICIT type" error.  */
   if (sym->ts.type == BT_UNKNOWN && m == MATCH_YES)
     {
-      gfc_error ("Symbol %qs at %C has no IMPLICIT type", sym->name);
-      return MATCH_ERROR;
+      bool permissible;
+
+      /* These target expressions can ge resolved at any time.  */
+      permissible = tgt_expr && tgt_expr->symtree && tgt_expr->symtree->n.sym
+		    && (tgt_expr->symtree->n.sym->attr.use_assoc
+			|| tgt_expr->symtree->n.sym->attr.host_assoc
+			|| tgt_expr->symtree->n.sym->attr.if_source
+								== IFSRC_DECL);
+      permissible = permissible
+		    || (tgt_expr && tgt_expr->expr_type == EXPR_OP);
+
+      if (permissible)
+	{
+	  gfc_resolve_expr (tgt_expr);
+	  sym->ts = tgt_expr->ts;
+	}
+
+      if (sym->ts.type == BT_UNKNOWN)
+	{
+	  gfc_error ("Symbol %qs at %C has no IMPLICIT type", sym->name);
+	  return MATCH_ERROR;
+	}
     }
   else if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
            && m == MATCH_YES)
@@ -2948,7 +2990,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
      expression here.  */
   if (gfc_in_match_data ())
     gfc_reduce_init_expr (e);
- 
+
   *result = e;
   return MATCH_YES;
 }
@@ -3662,7 +3704,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	implicit_ns = gfc_current_ns;
       else
 	implicit_ns = sym->ns;
-	
+
       old_loc = gfc_current_locus;
       if (gfc_match_member_sep (sym) == MATCH_YES
 	  && sym->ts.type == BT_UNKNOWN
