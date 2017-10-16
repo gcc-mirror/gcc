@@ -1,3 +1,9 @@
+2017-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/82558
+	* include/bits/stl_bvector.h (fill): Add iterator offset check.
+	* testsuite/23_containers/vector/bool/82558.cc: New.
+
 2017-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/82522
