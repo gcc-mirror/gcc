@@ -1,5 +1,19 @@
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_quadopu_lane_qualifiers): New.
+	(TYPES_QUADOPU_LANE): New.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>dot<vsi2qi>): New.
+	(<sur>dot_prod<vsi2qi>, aarch64_<sur>dot_lane<vsi2qi>): New.
+	(aarch64_<sur>dot_laneq<vsi2qi>): New.
+	* config/aarch64/aarch64-simd-builtins.def (sdot, udot): New.
+	(sdot_lane, udot_lane, sdot_laneq, udot_laneq): New.
+	* config/aarch64/iterators.md (sur): Add UNSPEC_SDOT, UNSPEC_UDOT.
+	(Vdottype, DOTPROD): New.
+	(sur): Add SDOT and UDOT.
+
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/aarch64/aarch64.h (AARCH64_FL_DOTPROD): New.
 	(AARCH64_ISA_DOTPROD, TARGET_DOTPROD): New.
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add TARGET_DOTPROD.
