@@ -1455,29 +1455,34 @@ struct processor_costs znver1_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
   9,					/* MOVE_RATIO.  */
-  4,					/* cost for loading QImode using
+
+  /* reg-reg moves are done by renaming and thus they are even cheaper than
+     1 cycle. Becuase reg-reg move cost is 2 and the following tables correspond
+     to doubles of latencies, we do not model this correctly.  It does not
+     seem to make practical difference to bump prices up even more.  */
+  6,					/* cost for loading QImode using
 					   movzbl.  */
-  {5, 5, 4},				/* cost of loading integer registers
+  {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer
+  {8, 8, 8},				/* cost of storing integer
 					   registers.  */
   2,					/* cost of reg,reg fld/fst.  */
-  {5, 5, 12},				/* cost of loading fp registers
+  {6, 6, 16},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode.  */
-  {4, 4, 8},				/* cost of storing fp registers
+  {8, 8, 16},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode.  */
   2,					/* cost of moving MMX register.  */
-  {4, 4},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode.  */
-  {4, 4},				/* cost of storing MMX registers
+  {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode.  */
   2,					/* cost of moving SSE register.  */
-  {4, 4, 4},				/* cost of loading SSE registers
+  {6, 6, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode.  */
-  {4, 4, 4},				/* cost of storing SSE registers
+  {8, 8, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode.  */
-  2,					/* MMX or SSE register to integer.  */
+  6,					/* MMX or SSE register to integer.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
