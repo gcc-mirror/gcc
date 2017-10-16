@@ -15813,6 +15813,9 @@ Permissible names for this option are the same as those for
 The following extension options are common to the listed CPUs:
 
 @table @samp
+@item +nodsp
+Disable the DSP instructions on @samp{cortex-m33}.
+
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},

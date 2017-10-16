@@ -1532,6 +1532,7 @@ begin cpu cortex-m33
  architecture armv8-m.main+dsp
  fpu fpv5-sp-d16
  option nofp remove ALL_FP
+ option nodsp remove armv7em
  costs v7m
 end cpu cortex-m33
 
