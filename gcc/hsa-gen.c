@@ -233,11 +233,6 @@ hsa_function_representation::hsa_function_representation (hsa_internal_fn *fn)
 
 hsa_function_representation::~hsa_function_representation ()
 {
-  /* Kernel names are deallocated at the end of BRIG output when deallocating
-     hsa_decl_kernel_mapping.  */
-  if (!m_kern_p || m_seen_error)
-    free (m_name);
-
   for (unsigned i = 0; i < m_input_args.length (); i++)
     delete m_input_args[i];
   m_input_args.release ();
@@ -952,7 +947,9 @@ get_symbol_for_decl (tree decl)
 }
 
 /* For a given HSA function declaration, return a host
-   function declaration.  */
+   function declaration, NULL if the declaration is an HSA-only
+   function.
+*/
 
 tree
 hsa_get_host_function (tree decl)
@@ -960,7 +957,10 @@ hsa_get_host_function (tree decl)
   hsa_function_summary *s
     = hsa_summaries->get (cgraph_node::get_create (decl));
   gcc_assert (s->m_kind != HSA_NONE);
-  gcc_assert (s->m_gpu_implementation_p);
+  gcc_assert (s->m_hsa_implementation_p);
+
+  if (s->m_kind == HSA_KERNEL)
+    return NULL;
 
   return s->m_bound_function ? s->m_bound_function->decl : NULL;
 }
@@ -974,7 +974,7 @@ get_brig_function_name (tree decl)
 
   hsa_function_summary *s = hsa_summaries->get (cgraph_node::get_create (d));
   if (s->m_kind != HSA_NONE
-      && s->m_gpu_implementation_p
+      && s->m_hsa_implementation_p
       && s->m_bound_function)
     d = s->m_bound_function->decl;
 
@@ -5877,7 +5877,7 @@ init_prologue (void)
   hsa_bb *prologue = hsa_bb_for_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* Create a magic number that is going to be printed by libgomp.  */
-  unsigned index = hsa_get_number_decl_kernel_mappings ();
+  unsigned index = hsa_get_number_decl_function_mappings ();
 
   /* Emit store to debug argument.  */
   if (PARAM_VALUE (PARAM_HSA_GEN_DEBUG_STORES) > 0)
@@ -6549,14 +6549,10 @@ generate_hsa (bool kernel)
   if (hsa_cfun->m_kernel_dispatch_count)
     init_hsa_num_threads ();
 
-  if (hsa_cfun->m_kern_p)
-    {
-      hsa_function_summary *s
-	= hsa_summaries->get (cgraph_node::get (hsa_cfun->m_decl));
-      hsa_add_kern_decl_mapping (current_function_decl, hsa_cfun->m_name,
+  hsa_add_function_decl_mapping (current_function_decl, hsa_cfun->m_name,
 				 hsa_cfun->m_maximum_omp_data_size,
-				 s->m_gridified_kernel_p);
-    }
+				 hsa_summaries->get
+				 (cgraph_node::get (hsa_cfun->m_decl)));
 
   if (flag_checking)
     {

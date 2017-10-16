@@ -47,29 +47,31 @@ along with GCC; see the file COPYING3.  If not see
    function.  */
 class hsa_function_representation *hsa_cfun;
 
-/* Element of the mapping vector between a host decl and an HSA kernel.  */
+/* Element of the mapping vector between a host decl and an HSA function.  */
 
-struct GTY(()) hsa_decl_kernel_map_element
+struct GTY(()) hsa_decl_function_map_element
 {
   /* The decl of the host function.  */
   tree decl;
-  /* Name of the HSA kernel in BRIG.  */
+  /* Name of the HSA function in BRIG.  */
   char * GTY((skip)) name;
   /* Size of OMP data, if the kernel contains a kernel dispatch.  */
   unsigned omp_data_size;
-  /* True if the function is gridified kernel.  */
+  /* True if the function is a host-callable kernel.  */
+  bool kernel_p;
+  /* True if the function is a gridified kernel.  */
   bool gridified_kernel_p;
 };
 
 /* Mapping between decls and corresponding HSA kernels in this compilation
    unit.  */
 
-static GTY (()) vec<hsa_decl_kernel_map_element, va_gc>
-  *hsa_decl_kernel_mapping;
+static GTY (()) vec<hsa_decl_function_map_element, va_gc>
+  *hsa_decl_function_mapping;
 
 /* Mapping between decls and corresponding HSA kernels
    called by the function.  */
-hash_map <tree, vec <const char *> *> *hsa_decl_kernel_dependencies;
+hash_map <tree, vec <const char *> *> *hsa_decl_function_dependencies;
 
 /* Hash function to lookup a symbol for a decl.  */
 hash_table <hsa_noop_symbol_hasher> *hsa_global_variable_symbols;
@@ -649,87 +651,97 @@ hsa_destroy_operand (hsa_op_base *op)
     op->~hsa_op_base ();
 }
 
-/* Create a mapping between the original function DECL and kernel name NAME.  */
+/* Create a mapping between the original function DECL and HSA function
+   named NAME.  */
 
 void
-hsa_add_kern_decl_mapping (tree decl, char *name, unsigned omp_data_size,
-			   bool gridified_kernel_p)
+hsa_add_function_decl_mapping (tree decl, char *name, unsigned omp_data_size,
+			       struct hsa_function_summary *s)
 {
-  hsa_decl_kernel_map_element dkm;
+  hsa_decl_function_map_element dkm;
   dkm.decl = decl;
   dkm.name = name;
   dkm.omp_data_size = omp_data_size;
-  dkm.gridified_kernel_p = gridified_kernel_p;
-  vec_safe_push (hsa_decl_kernel_mapping, dkm);
+  dkm.kernel_p = s->m_kind == HSA_KERNEL;
+  dkm.gridified_kernel_p = s->m_gridified_kernel_p;
+  vec_safe_push (hsa_decl_function_mapping, dkm);
 }
 
-/* Return the number of kernel decl name mappings.  */
+/* Return the number of function decl name mappings.  */
 
 unsigned
-hsa_get_number_decl_kernel_mappings (void)
+hsa_get_number_decl_function_mappings (void)
 {
-  return vec_safe_length (hsa_decl_kernel_mapping);
+  return vec_safe_length (hsa_decl_function_mapping);
 }
 
-/* Return the decl in the Ith kernel decl name mapping.  */
+/* Return the decl in the Ith function decl name mapping.  */
 
 tree
-hsa_get_decl_kernel_mapping_decl (unsigned i)
+hsa_get_decl_function_mapping_decl (unsigned i)
 {
-  return (*hsa_decl_kernel_mapping)[i].decl;
+  return (*hsa_decl_function_mapping)[i].decl;
 }
 
-/* Return the name in the Ith kernel decl name mapping.  */
+/* Return the name in the Ith function decl name mapping.  */
 
 char *
-hsa_get_decl_kernel_mapping_name (unsigned i)
+hsa_get_decl_function_mapping_name (unsigned i)
 {
-  return (*hsa_decl_kernel_mapping)[i].name;
+  return (*hsa_decl_function_mapping)[i].name;
 }
 
-/* Return maximum OMP size for kernel decl name mapping.  */
+/* Return maximum OMP size for function decl name mapping.  */
 
 unsigned
 hsa_get_decl_kernel_mapping_omp_size (unsigned i)
 {
-  return (*hsa_decl_kernel_mapping)[i].omp_data_size;
+  return (*hsa_decl_function_mapping)[i].omp_data_size;
 }
 
-/* Return if the function is gridified kernel in decl name mapping.  */
+/* Return if the function is a gridified kernel in decl name mapping.  */
 
 bool
-hsa_get_decl_kernel_mapping_gridified (unsigned i)
+hsa_get_decl_function_mapping_gridified_p (unsigned i)
 {
-  return (*hsa_decl_kernel_mapping)[i].gridified_kernel_p;
+  return (*hsa_decl_function_mapping)[i].gridified_kernel_p;
 }
 
-/* Free the mapping between original decls and kernel names.  */
+/* Return true if the function is a host-callable kernel.  */
+
+bool
+hsa_get_decl_function_mapping_kernel_p (unsigned i)
+{
+  return (*hsa_decl_function_mapping)[i].kernel_p;
+}
+
+/* Free the mapping between original decls and function names.  */
 
 void
-hsa_free_decl_kernel_mapping (void)
+hsa_free_decl_function_mapping (void)
 {
-  if (hsa_decl_kernel_mapping == NULL)
+  if (hsa_decl_function_mapping == NULL)
     return;
 
-  for (unsigned i = 0; i < hsa_decl_kernel_mapping->length (); ++i)
-    free ((*hsa_decl_kernel_mapping)[i].name);
-  ggc_free (hsa_decl_kernel_mapping);
+  for (unsigned i = 0; i < hsa_decl_function_mapping->length (); ++i)
+    free ((*hsa_decl_function_mapping)[i].name);
+  ggc_free (hsa_decl_function_mapping);
 }
 
-/* Add new kernel dependency.  */
+/* Add new function dependency.  */
 
 void
-hsa_add_kernel_dependency (tree caller, const char *called_function)
+hsa_add_function_dependency (tree caller, const char *called_function)
 {
-  if (hsa_decl_kernel_dependencies == NULL)
-    hsa_decl_kernel_dependencies = new hash_map<tree, vec<const char *> *> ();
+  if (hsa_decl_function_dependencies == NULL)
+    hsa_decl_function_dependencies = new hash_map<tree, vec<const char *> *> ();
 
   vec <const char *> *s = NULL;
-  vec <const char *> **slot = hsa_decl_kernel_dependencies->get (caller);
+  vec <const char *> **slot = hsa_decl_function_dependencies->get (caller);
   if (slot == NULL)
     {
       s = new vec <const char *> ();
-      hsa_decl_kernel_dependencies->put (caller, s);
+      hsa_decl_function_dependencies->put (caller, s);
     }
   else
     s = *slot;
@@ -816,8 +828,8 @@ hsa_summary_t::link_functions (cgraph_node *gpu, cgraph_node *host,
   gpu_summary->m_kind = kind;
   host_summary->m_kind = kind;
 
-  gpu_summary->m_gpu_implementation_p = true;
-  host_summary->m_gpu_implementation_p = false;
+  gpu_summary->m_hsa_implementation_p = true;
+  host_summary->m_hsa_implementation_p = false;
 
   gpu_summary->m_gridified_kernel_p = gridified_kernel_p;
   host_summary->m_gridified_kernel_p = gridified_kernel_p;
@@ -827,32 +839,45 @@ hsa_summary_t::link_functions (cgraph_node *gpu, cgraph_node *host,
 
   process_gpu_implementation_attributes (gpu->decl);
 
-  /* Create reference between a kernel and a corresponding host implementation
-     to quarantee LTO streaming to a same LTRANS.  */
-  if (kind == HSA_KERNEL)
-    gpu->create_reference (host, IPA_REF_ADDR);
+  /* Create reference between an HSA function and a corresponding host
+     implementation to quarantee LTO streaming to a same LTRANS.  */
+  gpu->create_reference (host, IPA_REF_ADDR);
+}
+
+void
+hsa_summary_t::mark_hsa_only_implementation (cgraph_node *node,
+					     hsa_function_kind kind)
+{
+  hsa_function_summary *gpu_summary = get (node);
+  gpu_summary->m_kind = kind;
+  gpu_summary->m_hsa_implementation_p = true;
+  gcc_assert (!gpu_summary->m_bound_function);
+  process_gpu_implementation_attributes (node->decl);
 }
 
 /* Add a HOST function to HSA summaries.  */
 
 void
-hsa_register_kernel (cgraph_node *host)
+hsa_register_function (cgraph_node *host, bool kernel_p)
 {
   if (hsa_summaries == NULL)
     hsa_summaries = new hsa_summary_t (symtab);
   hsa_function_summary *s = hsa_summaries->get (host);
-  s->m_kind = HSA_KERNEL;
+  s->m_kind = kernel_p ? HSA_KERNEL : HSA_FUNCTION;
 }
 
 /* Add a pair of functions to HSA summaries.  GPU is an HSA implementation of
    a HOST function.  */
 
 void
-hsa_register_kernel (cgraph_node *gpu, cgraph_node *host)
+hsa_register_function (cgraph_node *gpu, cgraph_node *host, bool kernel_p)
 {
   if (hsa_summaries == NULL)
     hsa_summaries = new hsa_summary_t (symtab);
-  hsa_summaries->link_functions (gpu, host, HSA_KERNEL, true);
+  if (kernel_p)
+    hsa_summaries->link_functions (gpu, host, HSA_KERNEL, true);
+  else
+    hsa_summaries->link_functions (gpu, host, HSA_FUNCTION, true);
 }
 
 /* Return true if expansion of the current HSA function has already failed.  */

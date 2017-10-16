@@ -724,7 +724,7 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
       && parallel_needs_hsa_kernel_p (region))
     {
       cgraph_node *child_cnode = cgraph_node::get (child_fndecl);
-      hsa_register_kernel (child_cnode);
+      hsa_register_function (child_cnode, true);
     }
 }
 
@@ -7770,7 +7770,7 @@ grid_expand_target_grid_body (struct omp_region *target)
 				    OMP_CLAUSE__GRIDDIM_));
       cgraph_node *n = cgraph_node::get (orig_child_fndecl);
 
-      hsa_register_kernel (n);
+      hsa_register_function (n, true);
       return;
     }
 
@@ -7886,7 +7886,7 @@ grid_expand_target_grid_body (struct omp_region *target)
   kcn->mark_force_output ();
   cgraph_node *orig_child = cgraph_node::get (orig_child_fndecl);
 
-  hsa_register_kernel (kcn, orig_child);
+  hsa_register_function (kcn, orig_child, true);
 
   cgraph_node::add_new_function (kern_fndecl, true);
   push_cfun (kern_cfun);
