@@ -1,3 +1,8 @@
+2017-10-16  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/attrib-5.c (float_cast2): Fix warning scan
+	so that it will work for both C and C++ FEs.
+
 2017-10-16  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/82511
