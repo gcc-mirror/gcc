@@ -3437,11 +3437,18 @@ if test x$with_cpu = x ; then
       esac
       ;;
     powerpc*-*-*spe*)
+      # For SPE, start with 8540, then upgrade to 8548 if
+      # --enable-e500-double was requested explicitly or if we were
+      # configured for e500v2.
+      with_cpu=8540
       if test x$enable_e500_double = xyes; then
-         with_cpu=8548
-      else
-         with_cpu=8540
-      fi       
+        with_cpu=8548
+      fi
+      case ${target_noncanonical} in
+        e500v2*)
+          with_cpu=8548
+          ;;
+      esac
       ;;
     sparc*-*-*)
       case ${target} in
