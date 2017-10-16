@@ -1,3 +1,9 @@
+2017-10-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/81048
+	* gfortran.dg/derived_init_4.f90 : New test.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82274
@@ -126,7 +132,7 @@
 
 	Backported from mainline
 	2017-09-14  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/81325
 	* g++.dg/cpp0x/pr81325.C: New test.
 
@@ -615,7 +621,7 @@
 	* gfortran.dg/pr81175.f: New testcase.
 
 	2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
- 
+
  	* gcc.dg/tree-ssa/addadd.c: Un-XFAIL.
  	* gcc.dg/tree-ssa/addadd-2.c: New file.
 
@@ -823,7 +829,7 @@
 	* c-c++-common/ubsan/sanitize-recover-7.c (dg-options): Add -w.
 
 2017-06-24  Marek Polacek  <polacek@redhat.com>
-	
+
 	Backport from mainline
 	2017-05-04  Marek Polacek  <polacek@redhat.com>
 
