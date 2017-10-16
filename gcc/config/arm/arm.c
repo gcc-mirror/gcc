@@ -971,6 +971,9 @@ int arm_condexec_masklen = 0;
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 int arm_arch_crc = 0;
 
+/* Nonzero if chip supports the AdvSIMD Dot Product instructions.  */
+int arm_arch_dotprod = 0;
+
 /* Nonzero if chip supports the ARMv8-M security extensions.  */
 int arm_arch_cmse = 0;
 

@@ -1,3 +1,15 @@
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.h (TARGET_DOTPROD): New.
+	* config/arm/arm.c (arm_arch_dotprod): New.
+	(arm_option_reconfigure_globals): Add arm_arch_dotprod.
+	* config/arm/arm-c.c (__ARM_FEATURE_DOTPROD): New.
+	* config/arm/arm-cpus.in (armv8.2-a): Enabled +dotprod.
+	(feature dotprod, group dotprod, ALL_SIMD_INTERNAL): New.
+	(ALL_FPU_INTERNAL): Use ALL_SIMD_INTERNAL.
+	* config/arm/t-multilib (v8_2_a_simd_variants): Add dotprod.
+	* doc/invoke.texi (armv8.2-a): Document dotprod
+
 2017-10-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_vec_cost): New function.

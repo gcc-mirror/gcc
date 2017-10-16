@@ -15622,6 +15622,9 @@ The ARMv8.1 Advanced SIMD and floating-point instructions.
 The cryptographic instructions.  This also enables the Advanced SIMD and
 floating-point instructions.
 
+@item +dotprod
+Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
+
 @item +nocrypto
 Disable the cryptographic extension.
 
