@@ -1,5 +1,11 @@
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
+	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32): New.
+	(vdot_lane_u32, vdot_laneq_u32, vdotq_lane_u32, vdotq_laneq_u32): New.
+	(vdot_lane_s32, vdot_laneq_s32, vdotq_lane_s32, vdotq_laneq_s32): New.
+
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_types_quadopu_lane_qualifiers): New.
 	(TYPES_QUADOPU_LANE): New.
