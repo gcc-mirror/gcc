@@ -1,3 +1,8 @@
+2017-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61323
+	* g++.dg/cpp0x/constexpr-61323.C: New.
+
 2017-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54090
