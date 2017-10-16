@@ -1,3 +1,9 @@
+2017-10-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-m33): Add nodsp option.
+	* doc/invoke.texi: Document +nodsp as a valid extension for
+	-mcpu=cortex-m33.
+
 2017-10-16  Martin Liska  <mliska@suse.cz>
 
 	* sbitmap.c (bitmap_bit_in_range_p_checking): New function.
