@@ -1,5 +1,23 @@
 2017-10-16  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/78512
+	* gfortran.dg/associate_9.f03 : Remove XFAIL.
+	* gfortran.dg/associate_26.f90 : New test.
+
+	PR fortran/80120
+	* gfortran.dg/associate_27.f90 : New test.
+
+	PR fortran/81903
+	* gfortran.dg/associate_28.f90 : New test.
+
+	PR fortran/82121
+	* gfortran.dg/associate_29.f90 : New test.
+
+	PR fortran/67543
+	* gfortran.dg/associate_30.f90 : New test.
+
+2017-10-16  Paul Thomas  <pault@gcc.gnu.org>
+
 	Backport from trunk
 	PR fortran/81048
 	* gfortran.dg/derived_init_4.f90 : New test.
