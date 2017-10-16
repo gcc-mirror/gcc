@@ -1,3 +1,11 @@
+2017-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add unique-ptr-tests.o.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::unique_ptr_tests_cc_tests.
+	* selftest.h (selftest::unique_ptr_tests_cc_tests): New decl.
+	* unique-ptr-tests.cc: New file.
+
 2017-10-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR sanitizer/82353
