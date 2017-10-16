@@ -1,3 +1,8 @@
+2017-10-16  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc/config.gcc (powerpc*-*-*spe*): Pick 8548 as the default
+	with_cpu if we were configured for an e500v2 target cpu name.
+
 2017-10-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm-cpus.in (cortex-m33): Add nodsp option.
