@@ -1,3 +1,8 @@
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82560
+	* g++.dg/cpp0x/pr82560.C: New.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82549
