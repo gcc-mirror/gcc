@@ -1,3 +1,8 @@
+2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71368
+	* g++.dg/concepts/pr71368.C: New.
+
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82560
