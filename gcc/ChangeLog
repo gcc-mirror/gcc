@@ -1,3 +1,9 @@
+2017-10-17  Qing Zhao <qing.zhao@oracle.com>
+	    Wilco Dijkstra <wilco.dijkstra@arm.com>
+
+        * builtins.c (expand_builtin_update_setjmp_buf): Add a
+        converstion to Pmode from the buf_addr.
+
 2017-10-17  Richard Biener  <rguenther@suse.de>
 
 	* graphite-dependences.c (scop_get_reads_and_writes): Change
