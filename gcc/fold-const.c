@@ -4040,21 +4040,20 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 		      size_int (nbitsize - lbitsize - lbitpos));
 
   if (! const_p)
-    /* If not comparing with constant, just rework the comparison
-       and return.  */
-    return fold_build2_loc (loc, code, compare_type,
-			fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type,
-				     make_bit_field_ref (loc, linner, lhs,
-							 unsigned_type,
-							 nbitsize, nbitpos,
-							 1, lreversep),
-				     mask),
-			fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type,
-				     make_bit_field_ref (loc, rinner, rhs,
-							 unsigned_type,
-							 nbitsize, nbitpos,
-							 1, rreversep),
-				     mask));
+    {
+      if (nbitpos < 0)
+	return 0;
+
+      /* If not comparing with constant, just rework the comparison
+	 and return.  */
+      tree t1 = make_bit_field_ref (loc, linner, lhs, unsigned_type,
+				    nbitsize, nbitpos, 1, lreversep);
+      t1 = fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type, t1, mask);
+      tree t2 = make_bit_field_ref (loc, rinner, rhs, unsigned_type,
+				    nbitsize, nbitpos, 1, rreversep);
+      t2 = fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type, t2, mask);
+      return fold_build2_loc (loc, code, compare_type, t1, t2);
+    }
 
   /* Otherwise, we are handling the constant case.  See if the constant is too
      big for the field.  Warn and return a tree for 0 (false) if so.  We do
@@ -4084,6 +4083,9 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 	  return constant_boolean_node (code == NE_EXPR, compare_type);
 	}
     }
+
+  if (nbitpos < 0)
+    return 0;
 
   /* Single-bit compares should always be against zero.  */
   if (lbitsize == 1 && ! integer_zerop (rhs))
@@ -5858,7 +5860,10 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	 results.  */
       ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask);
       lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask);
-      if (lnbitsize == rnbitsize && xll_bitpos == xlr_bitpos)
+      if (lnbitsize == rnbitsize
+	  && xll_bitpos == xlr_bitpos
+	  && lnbitpos >= 0
+	  && rnbitpos >= 0)
 	{
 	  lhs = make_bit_field_ref (loc, ll_inner, ll_arg,
 				    lntype, lnbitsize, lnbitpos,
@@ -5882,10 +5887,14 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	 Note that we still must mask the lhs/rhs expressions.  Furthermore,
 	 the mask must be shifted to account for the shift done by
 	 make_bit_field_ref.  */
-      if ((ll_bitsize + ll_bitpos == rl_bitpos
-	   && lr_bitsize + lr_bitpos == rr_bitpos)
-	  || (ll_bitpos == rl_bitpos + rl_bitsize
-	      && lr_bitpos == rr_bitpos + rr_bitsize))
+      if (((ll_bitsize + ll_bitpos == rl_bitpos
+	    && lr_bitsize + lr_bitpos == rr_bitpos)
+	   || (ll_bitpos == rl_bitpos + rl_bitsize
+	       && lr_bitpos == rr_bitpos + rr_bitsize))
+	  && ll_bitpos >= 0
+	  && rl_bitpos >= 0
+	  && lr_bitpos >= 0
+	  && rr_bitpos >= 0)
 	{
 	  tree type;
 
@@ -5953,6 +5962,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	  return constant_boolean_node (false, truth_type);
 	}
     }
+
+  if (lnbitpos < 0)
+    return 0;
 
   /* Construct the expression we will return.  First get the component
      reference we will make.  Unless the mask is all ones the width of
