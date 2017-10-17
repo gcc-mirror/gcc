@@ -1,3 +1,18 @@
+17-10-2017  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512dq-vreducesd-1.c (_mm_mask_reduce_sd,
+	_mm_maskz_reduce_sd): Test new intrinsics.
+	* gcc.target/i386/avx512dq-vreducesd-2.c: New.
+	* gcc.target/i386/avx512dq-vreducess-1.c (_mm_mask_reduce_ss,
+	_mm_maskz_reduce_ss): Test new intrinsics.
+	* gcc.target/i386/avx512dq-vreducess-2.c: New.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_reducesd,
+	__builtin_ia32_reducess): Remove builtin.
+	(__builtin_ia32_reducesd_mask,
+	__builtin_ia32_reducess_mask): Test new builtin.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2017-10-16  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/ubsan/attrib-5.c (float_cast2): Fix warning scan

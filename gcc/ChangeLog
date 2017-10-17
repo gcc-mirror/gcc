@@ -1,3 +1,18 @@
+17-10-2017  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512dqintrin.h (_mm_mask_reduce_sd,
+	_mm_maskz_reduce_sd, _mm_mask_reduce_ss,=20
+	_mm_maskz_reduce_ss): New.
+	* config/i386/i386-builtin.def (__builtin_ia32_reducesd_mask,
+	__builtin_ia32_reducess_mask): Ditto..
+	(__builtin_ia32_reducesd, __builtin_ia32_reducess): Remove.
+	* config/i386/sse.md (reduces<mode>): Renamed to ...
+	(reduces<mode><mask_scalar_name>): ... this.
+	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}): Changed
+	to ...
+	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0<mask_scalar_operand4>|
+	%0<mask_scalar_operand4>, %1, %2, %3}): ... this.
+
 2017-10-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add unique-ptr-tests.o.
