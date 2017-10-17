@@ -1,5 +1,8 @@
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/82560
+	* g++.dg/cpp0x/pr82560.C: New.
+
 	PR middle-end/82577
 	* g++.dg/opt/pr82577.C: New.
 
