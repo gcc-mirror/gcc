@@ -1,3 +1,5 @@
+! { dg-do run }
+
 module globalvars
   implicit none
   integer a

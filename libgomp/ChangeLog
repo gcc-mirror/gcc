@@ -1,3 +1,12 @@
+2017-10-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: Restore "dg-do
+	run" directive.
+	* testsuite/libgomp.oacc-fortran/declare-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Likewise.
+
 2017-10-16  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/declare-1.c: Don't require
