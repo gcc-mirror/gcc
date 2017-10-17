@@ -1,3 +1,8 @@
+2017-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82563
+	* gcc.dg/graphite/pr82563.c: New testcase.
+
 2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67831

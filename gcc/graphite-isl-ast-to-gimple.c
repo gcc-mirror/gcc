@@ -1501,6 +1501,35 @@ copy_internal_parameters (sese_info_p region, sese_info_p to_region)
     }
 }
 
+/* Generate out-of-SSA copies for the entry edge FALSE_ENTRY/TRUE_ENTRY
+   in REGION.  */
+
+static void
+generate_entry_out_of_ssa_copies (edge false_entry,
+				  edge true_entry,
+				  sese_info_p region)
+{
+  gimple_stmt_iterator gsi_tgt = gsi_start_bb (true_entry->dest);
+  for (gphi_iterator psi = gsi_start_phis (false_entry->dest);
+       !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gphi *phi = psi.phi ();
+      tree res = gimple_phi_result (phi);
+      if (virtual_operand_p (res))
+	continue;
+      /* When there's no out-of-SSA var registered do not bother
+         to create one.  */
+      vec <tree> *renames = region->rename_map->get (res);
+      if (! renames || renames->is_empty ())
+	continue;
+      tree new_phi_def = (*renames)[0];
+      gassign *ass = gimple_build_assign (new_phi_def,
+					  PHI_ARG_DEF_FROM_EDGE (phi,
+								 false_entry));
+      gsi_insert_after (&gsi_tgt, ass, GSI_NEW_STMT);
+    }
+}
+
 /* GIMPLE Loop Generator: generates loops in GIMPLE form for the given SCOP.
    Return true if code generation succeeded.  */
 
@@ -1548,6 +1577,9 @@ graphite_regenerate_ast_isl (scop_p scop)
   t.translate_isl_ast (context_loop, root_node, e, ip);
   if (! t.codegen_error_p ())
     {
+      generate_entry_out_of_ssa_copies (if_region->false_region->region.entry,
+					if_region->true_region->region.entry,
+					region);
       sese_insert_phis_for_liveouts (region,
 				     if_region->region->region.exit->src,
 				     if_region->false_region->region.exit,
