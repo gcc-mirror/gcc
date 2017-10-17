@@ -1,5 +1,9 @@
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
+	PR middle-end/82577
+	* alias.c (compare_base_decls): Check HAS_DECL_ASSEMBLER_NAME_P,
+	use DECL_ASSEMBLER_NAME_RAW.
+
 	PR middle-end/82546
 	* tree.c (tree_code_size): Reformat.  Punt to lang hook for unknown
 	TYPE nodes.
