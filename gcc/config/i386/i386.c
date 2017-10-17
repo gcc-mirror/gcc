@@ -18879,120 +18879,65 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
    should be used.  UNORDERED_P is true when fucom should be used.  */
 
 const char *
-output_fp_compare (rtx_insn *insn, rtx *operands, bool eflags_p, bool unordered_p)
+output_fp_compare (rtx_insn *insn, rtx *operands,
+		   bool eflags_p, bool unordered_p)
 {
-  int stack_top_dies;
-  rtx cmp_op0, cmp_op1;
-  int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]);
+  rtx *xops = eflags_p ? &operands[0] : &operands[1];
+  bool stack_top_dies;
+
+  static char buf[40];
+  const char *p, *r;
+ 
+  gcc_assert (STACK_TOP_P (xops[0]));
+
+  stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG);
 
   if (eflags_p)
     {
-      cmp_op0 = operands[0];
-      cmp_op1 = operands[1];
-    }
-  else
-    {
-      cmp_op0 = operands[1];
-      cmp_op1 = operands[2];
-    }
+      p = unordered_p ? "fucomi" : "fcomi";
+      strcpy (buf, p);
 
-  if (is_sse)
-    {
-      if (GET_MODE (operands[0]) == SFmode)
-	if (unordered_p)
-	  return "%vucomiss\t{%1, %0|%0, %1}";
-	else
-	  return "%vcomiss\t{%1, %0|%0, %1}";
-      else
-	if (unordered_p)
-	  return "%vucomisd\t{%1, %0|%0, %1}";
-	else
-	  return "%vcomisd\t{%1, %0|%0, %1}";
+      r = "p\t{%y1, %0|%0, %y1}";
+      strcat (buf, r + !stack_top_dies);
+
+      return buf;
     }
 
-  gcc_assert (STACK_TOP_P (cmp_op0));
-
-  stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
-
-  if (cmp_op1 == CONST0_RTX (GET_MODE (cmp_op1)))
-    {
-      if (stack_top_dies)
-	{
-	  output_asm_insn ("ftst\n\tfnstsw\t%0", operands);
-	  return output_387_ffreep (operands, 1);
-	}
-      else
-	return "ftst\n\tfnstsw\t%0";
-    }
-
-  if (STACK_REG_P (cmp_op1)
+  if (STACK_REG_P (xops[1])
       && stack_top_dies
-      && find_regno_note (insn, REG_DEAD, REGNO (cmp_op1))
-      && REGNO (cmp_op1) != FIRST_STACK_REG)
+      && find_regno_note (insn, REG_DEAD, FIRST_STACK_REG + 1))
     {
-      /* If both the top of the 387 stack dies, and the other operand
-	 is also a stack register that dies, then this must be a
-	 `fcompp' float compare */
+      gcc_assert (REGNO (xops[1]) == FIRST_STACK_REG + 1);
 
-      if (eflags_p)
-	{
-	  /* There is no double popping fcomi variant.  Fortunately,
-	     eflags is immune from the fstp's cc clobbering.  */
-	  if (unordered_p)
-	    output_asm_insn ("fucomip\t{%y1, %0|%0, %y1}", operands);
-	  else
-	    output_asm_insn ("fcomip\t{%y1, %0|%0, %y1}", operands);
-	  return output_387_ffreep (operands, 0);
-	}
-      else
-	{
-	  if (unordered_p)
-	    return "fucompp\n\tfnstsw\t%0";
-	  else
-	    return "fcompp\n\tfnstsw\t%0";
-	}
+      /* If both the top of the 387 stack die, and the other operand
+	 is also a stack register that dies, then this must be a
+	 `fcompp' float compare.  */
+      p = unordered_p ? "fucompp" : "fcompp";
+      strcpy (buf, p);
+    }
+  else if (const0_operand (xops[1], VOIDmode))
+    {
+      gcc_assert (!unordered_p);
+      strcpy (buf, "ftst");
     }
   else
     {
-      /* Encoded here as eflags_p | intmode | unordered_p | stack_top_dies.  */
+      if (GET_MODE_CLASS (GET_MODE (xops[1])) == MODE_INT)
+	{
+	  gcc_assert (!unordered_p);
+	  p = "ficom";
+	}
+      else
+	p = unordered_p ? "fucom" : "fcom";
 
-      static const char * const alt[16] =
-      {
-	"fcom%Z2\t%y2\n\tfnstsw\t%0",
-	"fcomp%Z2\t%y2\n\tfnstsw\t%0",
-	"fucom%Z2\t%y2\n\tfnstsw\t%0",
-	"fucomp%Z2\t%y2\n\tfnstsw\t%0",
+      strcpy (buf, p);
 
-	"ficom%Z2\t%y2\n\tfnstsw\t%0",
-	"ficomp%Z2\t%y2\n\tfnstsw\t%0",
-	NULL,
-	NULL,
-
-	"fcomi\t{%y1, %0|%0, %y1}",
-	"fcomip\t{%y1, %0|%0, %y1}",
-	"fucomi\t{%y1, %0|%0, %y1}",
-	"fucomip\t{%y1, %0|%0, %y1}",
-
-	NULL,
-	NULL,
-	NULL,
-	NULL
-      };
-
-      int mask;
-      const char *ret;
-
-      mask  = eflags_p << 3;
-      mask |= (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_INT) << 2;
-      mask |= unordered_p << 1;
-      mask |= stack_top_dies;
-
-      gcc_assert (mask < 16);
-      ret = alt[mask];
-      gcc_assert (ret);
-
-      return ret;
+      r = "p%Z2\t%y2";
+      strcat (buf, r + !stack_top_dies);
     }
+
+  output_asm_insn (buf, operands);
+  return "fnstsw\t%0";
 }
 
 void
