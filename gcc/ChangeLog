@@ -1,4 +1,11 @@
-17-10-2017  Olga Makhotina  <olga.makhotina@intel.com>
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82549
+	* fold-const.c (optimize_bit_field_compare, fold_truth_andor_1):
+	Formatting fixes.  Instead of calling make_bit_field_ref with negative
+	bitpos return 0.
+
+2017-10-17  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* config/i386/avx512dqintrin.h (_mm_mask_reduce_sd,
 	_mm_maskz_reduce_sd, _mm_mask_reduce_ss,=20
