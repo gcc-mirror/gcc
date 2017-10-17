@@ -3796,47 +3796,6 @@ invert_truthvalue_loc (location_t loc, tree arg)
 			       : TRUTH_NOT_EXPR,
 			  type, arg);
 }
-
-/* Knowing that ARG0 and ARG1 are both RDIV_EXPRs, simplify a binary operation
-   with code CODE.  This optimization is unsafe.  */
-static tree
-distribute_real_division (location_t loc, enum tree_code code, tree type,
-			  tree arg0, tree arg1)
-{
-  bool mul0 = TREE_CODE (arg0) == MULT_EXPR;
-  bool mul1 = TREE_CODE (arg1) == MULT_EXPR;
-
-  /* (A / C) +- (B / C) -> (A +- B) / C.  */
-  if (mul0 == mul1
-      && operand_equal_p (TREE_OPERAND (arg0, 1),
-		       TREE_OPERAND (arg1, 1), 0))
-    return fold_build2_loc (loc, mul0 ? MULT_EXPR : RDIV_EXPR, type,
-			fold_build2_loc (loc, code, type,
-				     TREE_OPERAND (arg0, 0),
-				     TREE_OPERAND (arg1, 0)),
-			TREE_OPERAND (arg0, 1));
-
-  /* (A / C1) +- (A / C2) -> A * (1 / C1 +- 1 / C2).  */
-  if (operand_equal_p (TREE_OPERAND (arg0, 0),
-		       TREE_OPERAND (arg1, 0), 0)
-      && TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
-      && TREE_CODE (TREE_OPERAND (arg1, 1)) == REAL_CST)
-    {
-      REAL_VALUE_TYPE r0, r1;
-      r0 = TREE_REAL_CST (TREE_OPERAND (arg0, 1));
-      r1 = TREE_REAL_CST (TREE_OPERAND (arg1, 1));
-      if (!mul0)
-	real_arithmetic (&r0, RDIV_EXPR, &dconst1, &r0);
-      if (!mul1)
-        real_arithmetic (&r1, RDIV_EXPR, &dconst1, &r1);
-      real_arithmetic (&r0, code, &r0, &r1);
-      return fold_build2_loc (loc, MULT_EXPR, type,
-			  TREE_OPERAND (arg0, 0),
-			  build_real (type, r0));
-    }
-
-  return NULL_TREE;
-}
 
 /* Return a BIT_FIELD_REF of type TYPE to refer to BITSIZE bits of INNER
    starting at BITPOS.  The field is unsigned if UNSIGNEDP is nonzero
@@ -9395,12 +9354,6 @@ fold_binary_loc (location_t loc,
 		}
 	    }
 
-	  if (flag_unsafe_math_optimizations
-	      && (TREE_CODE (arg0) == RDIV_EXPR || TREE_CODE (arg0) == MULT_EXPR)
-	      && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
-	      && (tem = distribute_real_division (loc, code, type, arg0, arg1)))
-	    return tem;
-
           /* Convert a + (b*c + d*e) into (a + b*c) + d*e.
              We associate floats only if the user has specified
              -fassociative-math.  */
@@ -9799,13 +9752,6 @@ fold_binary_loc (location_t loc,
 	  if (tem)
 	    return tem;
 	}
-
-      if (FLOAT_TYPE_P (type)
-	  && flag_unsafe_math_optimizations
-	  && (TREE_CODE (arg0) == RDIV_EXPR || TREE_CODE (arg0) == MULT_EXPR)
-	  && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
-	  && (tem = distribute_real_division (loc, code, type, arg0, arg1)))
-	return tem;
 
       /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the same or
 	 one.  Make sure the type is not saturating and has the signedness of
