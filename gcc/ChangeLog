@@ -1,3 +1,9 @@
+2017-10-17  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR 71026/tree-optimization
+	* fold-const.c (distribute_real_division): Removed.
+	(fold_binary_loc): Remove calls to distribute_real_divison.
+
 2017-10-17  Richard Biener  <rguenther@suse.de>
 
 	* graphite-scop-detection.c
