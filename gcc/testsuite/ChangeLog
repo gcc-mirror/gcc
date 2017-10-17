@@ -1,3 +1,9 @@
+2017-10-17  Martin Liska  <mliska@suse.cz>
+
+	* lib/scanasm.exp: Print how many times a regex pattern is
+	found.
+	* lib/scandump.exp: Likewise.
+
 17-10-2017  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* gcc.target/i386/avx512dq-vreducesd-1.c (_mm_mask_reduce_sd,
