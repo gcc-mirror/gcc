@@ -1,26 +1,31 @@
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82549
+	* gcc.c-torture/compile/pr82549.c: New test.
+
 2017-10-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78512
-	* gfortran.dg/associate_9.f03 : Remove XFAIL.
-	* gfortran.dg/associate_26.f90 : New test.
+	* gfortran.dg/associate_9.f03: Remove XFAIL.
+	* gfortran.dg/associate_26.f90: New test.
 
 	PR fortran/80120
-	* gfortran.dg/associate_27.f90 : New test.
+	* gfortran.dg/associate_27.f90: New test.
 
 	PR fortran/81903
-	* gfortran.dg/associate_28.f90 : New test.
+	* gfortran.dg/associate_28.f90: New test.
 
 	PR fortran/82121
-	* gfortran.dg/associate_29.f90 : New test.
+	* gfortran.dg/associate_29.f90: New test.
 
 	PR fortran/67543
-	* gfortran.dg/associate_30.f90 : New test.
+	* gfortran.dg/associate_30.f90: New test.
 
 2017-10-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/81048
-	* gfortran.dg/derived_init_4.f90 : New test.
+	* gfortran.dg/derived_init_4.f90: New test.
 
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2762,7 +2767,7 @@
 
 	PR fortran/80156
 	PR fortran/79382
-	* gfortran.dg/dtio_23.f90 : Remove the dg-error and add the
+	* gfortran.dg/dtio_23.f90: Remove the dg-error and add the
 	testcase for PR80156. Add a main programme that tests that
 	the typebound generic is accessible.
 
@@ -3098,13 +3103,13 @@
 2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79676
-	* gfortran.dg/submodule_28.f08 : New test.
+	* gfortran.dg/submodule_28.f08: New test.
 
 2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71838
-	* gfortran.dg/submodule_26.f08 : New test.
-	* gfortran.dg/submodule_27.f08 : New test.
+	* gfortran.dg/submodule_26.f08: New test.
+	* gfortran.dg/submodule_27.f08: New test.
 
 2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
 
