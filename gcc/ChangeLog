@@ -1,3 +1,9 @@
+2017-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.c (visium_select_cc_mode): Return CCmode for
+	any RTX present on the RHS of a SET.
+	* compare-elim.c (try_eliminate_compare): Restore comment.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* langhooks.h (struct lang_hooks): Document that tree_size langhook
