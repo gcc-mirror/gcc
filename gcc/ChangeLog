@@ -12,6 +12,7 @@
 	* rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Likewise.
 	* s390/s390.c (s390_builtin_vectorization_cost): Likewise.
 	* spu/spu.c (spu_builtin_vectorization_cost): Likewise.
+	* i386/i386.c (x86_builtin_vectorization_cost): Likewise.
 
 2017-10-17  Uros Bizjak  <ubizjak@gmail.com>
 

@@ -44043,6 +44043,8 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case unaligned_load:
       case unaligned_store:
+      case vector_gather_load:
+      case vector_scatter_store:
         return ix86_cost->vec_unalign_load_cost;
 
       case cond_branch_taken:
