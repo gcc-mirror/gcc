@@ -1708,10 +1708,6 @@ build_scops (vec<scop_p> *scops)
   sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
     {
-      /* For our out-of-SSA we need a block on s->entry, similar to how
-         we include the LCSSA block in the region.  */
-      s->entry = single_pred_edge (split_edge (s->entry));
-
       scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */

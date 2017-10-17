@@ -1,3 +1,11 @@
+2017-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82563
+	* graphite-isl-ast-to-gimple.c (generate_entry_out_of_ssa_copies):
+	New function.
+	(graphite_regenerate_ast_isl): Call it.
+	* graphite-scop-detection.c (build_scops): Remove entry edge split.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82549
