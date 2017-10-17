@@ -1,3 +1,8 @@
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82549
+	* gcc.c-torture/compile/pr82549.c: New test.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82274
@@ -402,7 +407,7 @@
 
 2017-07-06  Andrew Pinski  <apinski@cavium.com>
 
-	* gcc.target/aarch64/pr71112.c : New Testcase.
+	* gcc.target/aarch64/pr71112.c: New Testcase.
 
 2017-07-04  Release Manager
 
@@ -1018,14 +1023,14 @@
 
 	Backport from trunk
 	PR fortran/71838
-	* gfortran.dg/submodule_26.f08 : New test.
-	* gfortran.dg/submodule_27.f08 : New test.
+	* gfortran.dg/submodule_26.f08: New test.
+	* gfortran.dg/submodule_27.f08: New test.
 
 2017-04-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/79676
-	* gfortran.dg/submodule_28.f08 : New test.
+	* gfortran.dg/submodule_28.f08: New test.
 
 2017-03-31  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -1095,7 +1100,7 @@
 
 	Backport from trunk
 	PR fortran/79434
-	* gfortran.dg/submodule_25.f08 : New test.
+	* gfortran.dg/submodule_25.f08: New test.
 
 2017-03-24  Tom de Vries  <tom@codesourcery.com>
 
@@ -3249,7 +3254,7 @@
 
 	Backport from trunk
 	PR fortran/71883
-	* gfortran.dg/pr71883.f90 : New test.
+	* gfortran.dg/pr71883.f90: New test.
 
 2016-07-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -6967,7 +6972,7 @@
 2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69423
-	* gfortran.dg/deferred_character_15.f90 : New test.
+	* gfortran.dg/deferred_character_15.f90: New test.
 
 2016-02-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
 

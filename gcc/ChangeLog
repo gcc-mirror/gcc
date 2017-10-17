@@ -1,3 +1,10 @@
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82549
+	* fold-const.c (optimize_bit_field_compare, fold_truth_andor_1):
+	Formatting fixes.  Instead of calling make_bit_field_ref with negative
+	bitpos return 0.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82274
