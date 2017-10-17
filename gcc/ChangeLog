@@ -1,3 +1,17 @@
+2017-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.c (compare_for_stack_reg): Add bool argument.
+	Detect FTST instruction and handle its register pops.  Only pop
+	second operand if can_pop_second_op is true.
+	(subst_stack_regs_pat) <case COMPARE>: Detect FCOMI instruction to
+	set can_pop_second_op to false in the compare_for_stack_reg call.
+
+	* config/i386/i386.md (*cmpi<FPCMP:unord><MODEF:mode>): Only call
+	output_fp_compare for stack register operands.
+	* config/i386/i386.c (output_fp_compare): Do not output SSE compare
+	instructions here.  Do not emit stack register pops here.  Assert
+	that FCOMPP pops next to top stack register.  Rewrite function.
+
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR middle-end/82577
