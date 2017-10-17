@@ -1,3 +1,7 @@
+2017-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/attr-alloc_size-11.c: UnXFAIL for visium-*-*.
+
 2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71821
