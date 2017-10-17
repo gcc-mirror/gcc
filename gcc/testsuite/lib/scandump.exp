@@ -86,6 +86,7 @@ proc scan-dump-times { args } {
     }
 
     set testcase [testname-for-summary]
+    set times [lindex $args 2]
     set suf [dump-suffix [lindex $args 3]]
     set printable_pattern [make_pattern_printable [lindex $args 1]]
     set testname "$testcase scan-[lindex $args 0]-dump-times $suf \"$printable_pattern\" [lindex $args 2]"
@@ -101,10 +102,11 @@ proc scan-dump-times { args } {
     set text [read $fd]
     close $fd
 
-    if { [llength [regexp -inline -all -- [lindex $args 1] $text]] == [lindex $args 2]} {
+    set result_count [llength [regexp -inline -all -- [lindex $args 1] $text]]
+    if {$result_count == $times} {
         pass "$testname"
     } else {
-        fail "$testname"
+        fail "$testname (found $result_count times)"
     }
 }
 
