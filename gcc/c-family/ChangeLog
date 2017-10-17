@@ -1,3 +1,13 @@
+2017-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (format_warning_at_char): Pass UNKNOWN_LOCATION
+	rather than NULL to format_warning_va.
+	(check_format_types): Likewise when calling format_type_warning.
+	Remove code to extract source_ranges and source_range * in favor
+	of just a location_t.
+	(format_type_warning): Convert source_range * param to a
+	location_t.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-gimplify.c (c_gimplify_expr): Handle [LR]ROTATE_EXPR like

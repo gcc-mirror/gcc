@@ -583,7 +583,7 @@ get_format_string (tree format, location_t *ploc)
 /* For convenience and brevity.  */
 
 static bool
-  (* const fmtwarn) (const substring_loc &, const source_range *,
+  (* const fmtwarn) (const substring_loc &, location_t,
 		     const char *, int, const char *, ...)
   = format_warning_at_substring;
 
@@ -2418,7 +2418,7 @@ should_warn_p (const pass_sprintf_length::call_info &info,
    Return true if a warning has been issued.  */
 
 static bool
-maybe_warn (substring_loc &dirloc, source_range *pargrange,
+maybe_warn (substring_loc &dirloc, location_t argloc,
 	    const pass_sprintf_length::call_info &info,
 	    const result_range &avail_range, const result_range &res,
 	    const directive &dir)
@@ -2476,8 +2476,8 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		  : G_("%qE writing a terminating nul past the end "
 		       "of the destination")));
 
-	  return fmtwarn (dirloc, NULL, NULL, info.warnopt (), fmtstr,
-			  info.func);
+	  return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (),
+			  fmtstr, info.func);
 	}
 
       if (res.min == res.max)
@@ -2500,7 +2500,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 			  "%wu bytes into a region of size %wu"))
 		  : G_("%<%.*s%> directive writing %wu bytes "
 		       "into a region of size %wu")));
-	  return fmtwarn (dirloc, pargrange, NULL,
+	  return fmtwarn (dirloc, argloc, NULL,
 			  info.warnopt (), fmtstr, dir.len,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  res.min, navail);
@@ -2517,7 +2517,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		       "up to %wu bytes into a region of size %wu"))
 	       : G_("%<%.*s%> directive writing up to %wu bytes "
 		    "into a region of size %wu"));
-	  return fmtwarn (dirloc, pargrange, NULL,
+	  return fmtwarn (dirloc, argloc, NULL,
 			  info.warnopt (), fmtstr, dir.len,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  res.max, navail);
@@ -2537,7 +2537,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		       "likely %wu or more bytes into a region of size %wu"))
 	       : G_("%<%.*s%> directive writing likely %wu or more bytes "
 		    "into a region of size %wu"));
-	  return fmtwarn (dirloc, pargrange, NULL,
+	  return fmtwarn (dirloc, argloc, NULL,
 			  info.warnopt (), fmtstr, dir.len,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  res.likely, navail);
@@ -2554,7 +2554,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		       "between %wu and %wu bytes into a region of size %wu"))
 	       : G_("%<%.*s%> directive writing between %wu and "
 		    "%wu bytes into a region of size %wu"));
-	  return fmtwarn (dirloc, pargrange, NULL,
+	  return fmtwarn (dirloc, argloc, NULL,
 			  info.warnopt (), fmtstr, dir.len,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  res.min, res.max, navail);
@@ -2569,7 +2569,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		   "%wu or more bytes into a region of size %wu"))
 	   : G_("%<%.*s%> directive writing %wu or more bytes "
 		"into a region of size %wu"));
-      return fmtwarn (dirloc, pargrange, NULL,
+      return fmtwarn (dirloc, argloc, NULL,
 		      info.warnopt (), fmtstr, dir.len,
 		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.min, navail);
@@ -2603,7 +2603,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	      : G_("%qE writing a terminating nul past the end "
 		   "of the destination")));
 
-      return fmtwarn (dirloc, NULL, NULL, info.warnopt (), fmtstr,
+      return fmtwarn (dirloc, UNKNOWN_LOCATION, NULL, info.warnopt (), fmtstr,
 		      info.func);
     }
 
@@ -2628,7 +2628,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	      : G_("%<%.*s%> directive writing %wu bytes "
 		   "into a region of size between %wu and %wu")));
 
-      return fmtwarn (dirloc, pargrange, NULL,
+      return fmtwarn (dirloc, argloc, NULL,
 		      info.warnopt (), fmtstr, dir.len,
 		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.min, avail_range.min, avail_range.max);
@@ -2647,7 +2647,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		   "%wu and %wu"))
 	   : G_("%<%.*s%> directive writing up to %wu bytes "
 		"into a region of size between %wu and %wu"));
-      return fmtwarn (dirloc, pargrange, NULL,
+      return fmtwarn (dirloc, argloc, NULL,
 		      info.warnopt (), fmtstr, dir.len,
 		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.max, avail_range.min, avail_range.max);
@@ -2669,7 +2669,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		   "%wu and %wu"))
 	   : G_("%<%.*s%> directive writing likely %wu or more bytes "
 		"into a region of size between %wu and %wu"));
-      return fmtwarn (dirloc, pargrange, NULL,
+      return fmtwarn (dirloc, argloc, NULL,
 		      info.warnopt (), fmtstr, dir.len,
 		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.likely, avail_range.min, avail_range.max);
@@ -2688,7 +2688,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		   "between %wu and %wu"))
 	   : G_("%<%.*s%> directive writing between %wu and "
 		"%wu bytes into a region of size between %wu and %wu"));
-      return fmtwarn (dirloc, pargrange, NULL,
+      return fmtwarn (dirloc, argloc, NULL,
 		      info.warnopt (), fmtstr, dir.len,
 		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.min, res.max, avail_range.min, avail_range.max);
@@ -2705,7 +2705,7 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	       "%wu and %wu"))
        : G_("%<%.*s%> directive writing %wu or more bytes "
 	    "into a region of size between %wu and %wu"));
-  return fmtwarn (dirloc, pargrange, NULL,
+  return fmtwarn (dirloc, argloc, NULL,
 		  info.warnopt (), fmtstr, dir.len,
 		  target_to_host (hostdir, sizeof hostdir, dir.beg),
 		  res.min, avail_range.min, avail_range.max);
@@ -2730,17 +2730,11 @@ format_directive (const pass_sprintf_length::call_info &info,
   substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
 			offset, start, length);
 
-  /* Also create a location range for the argument if possible.
+  /* Also get the location of the argument if possible.
      This doesn't work for integer literals or function calls.  */
-  source_range argrange;
-  source_range *pargrange;
-  if (dir.arg && CAN_HAVE_LOCATION_P (dir.arg))
-    {
-      argrange = EXPR_LOCATION_RANGE (dir.arg);
-      pargrange = &argrange;
-    }
-  else
-    pargrange = NULL;
+  location_t argloc = UNKNOWN_LOCATION;
+  if (dir.arg)
+    argloc = EXPR_LOCATION (dir.arg);
 
   /* Bail when there is no function to compute the output length,
      or when minimum length checking has been disabled.   */
@@ -2797,7 +2791,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 
   if (fmtres.nullp)
     {
-      fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
+      fmtwarn (dirloc, argloc, NULL, info.warnopt (),
 	       "%<%.*s%> directive argument is null",
 	       dirlen, target_to_host (hostdir, sizeof hostdir, dir.beg));
 
@@ -2816,7 +2810,7 @@ format_directive (const pass_sprintf_length::call_info &info,
   bool warned = res->warned;
 
   if (!warned)
-    warned = maybe_warn (dirloc, pargrange, info, avail_range,
+    warned = maybe_warn (dirloc, argloc, info, avail_range,
 			 fmtres.range, dir);
 
   /* Bump up the total maximum if it isn't too big.  */
@@ -2862,7 +2856,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 	 (like Glibc does under some conditions).  */
 
       if (fmtres.range.min == fmtres.range.max)
-	warned = fmtwarn (dirloc, pargrange, NULL,
+	warned = fmtwarn (dirloc, argloc, NULL,
 			  info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes exceeds "
 			  "minimum required size of 4095",
@@ -2878,7 +2872,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 	       : G_("%<%.*s%> directive output between %wu and %wu "
 		    "bytes exceeds minimum required size of 4095"));
 
-	  warned = fmtwarn (dirloc, pargrange, NULL,
+	  warned = fmtwarn (dirloc, argloc, NULL,
 			    info.warnopt (), fmtstr, dirlen,
 			    target_to_host (hostdir, sizeof hostdir, dir.beg),
 			    fmtres.range.min, fmtres.range.max);
@@ -2906,7 +2900,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 	 to exceed INT_MAX bytes.  */
 
       if (fmtres.range.min == fmtres.range.max)
-	warned = fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
+	warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes causes "
 			  "result to exceed %<INT_MAX%>",
 			  dirlen,
@@ -2920,7 +2914,7 @@ format_directive (const pass_sprintf_length::call_info &info,
 		     "bytes causes result to exceed %<INT_MAX%>")
 	       : G_ ("%<%.*s%> directive output between %wu and %wu "
 		     "bytes may cause result to exceed %<INT_MAX%>"));
-	  warned = fmtwarn (dirloc, pargrange, NULL,
+	  warned = fmtwarn (dirloc, argloc, NULL,
 			    info.warnopt (), fmtstr, dirlen,
 			    target_to_host (hostdir, sizeof hostdir, dir.beg),
 			    fmtres.range.min, fmtres.range.max);
@@ -3351,7 +3345,7 @@ parse_directive (pass_sprintf_length::call_info &info,
 	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
 				caret, begin, end);
 
-	  fmtwarn (dirloc, NULL, NULL,
+	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL,
 		   info.warnopt (), "%<%.*s%> directive width out of range",
 		   dir.len, target_to_host (hostdir, sizeof hostdir, dir.beg));
 	}
@@ -3385,7 +3379,7 @@ parse_directive (pass_sprintf_length::call_info &info,
 	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
 				caret, begin, end);
 
-	  fmtwarn (dirloc, NULL, NULL,
+	  fmtwarn (dirloc, UNKNOWN_LOCATION, NULL,
 		   info.warnopt (), "%<%.*s%> directive precision out of range",
 		   dir.len, target_to_host (hostdir, sizeof hostdir, dir.beg));
 	}

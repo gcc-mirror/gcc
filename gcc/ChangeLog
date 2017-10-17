@@ -1,3 +1,19 @@
+2017-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-ssa-sprintf.c (fmtwarn): Update for changed signature of
+	format_warning_at_substring.
+	(maybe_warn): Convert source_range * param to a location_t.  Pass
+	UNKNOWN_LOCATION rather than NULL to fmtwarn.
+	(format_directive): Remove code to extract source_ranges and
+	source_range * in favor of just a location_t.
+	(parse_directive): Pass UNKNOWN_LOCATION rather than NULL to
+	fmtwarn.
+	* substring-locations.c (format_warning_va): Convert
+	source_range * param to a location_t.
+	(format_warning_at_substring): Likewise.
+	* substring-locations.h (format_warning_va): Likewise.
+	(format_warning_at_substring): Likewise.
+
 2017-10-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* target.h (enum vect_cost_for_stmt): Add vec_gather_load and
