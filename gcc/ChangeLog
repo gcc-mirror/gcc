@@ -1,3 +1,18 @@
+2017-10-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* target.h (enum vect_cost_for_stmt): Add vec_gather_load and
+	vec_scatter_store
+	* tree-vect-stmts.c (record_stmt_cost): Make difference between normal
+	and scatter/gather ops.
+
+	* aarch64/aarch64.c (aarch64_builtin_vectorization_cost): Add
+	vec_gather_load and vec_scatter_store.
+	* arm/arm.c (arm_builtin_vectorization_cost): Likewise.
+	* powerpcspe/powerpcspe.c (rs6000_builtin_vectorization_cost): Likewise.
+	* rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Likewise.
+	* s390/s390.c (s390_builtin_vectorization_cost): Likewise.
+	* spu/spu.c (spu_builtin_vectorization_cost): Likewise.
+
 2017-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (compare_for_stack_reg): Add bool argument.

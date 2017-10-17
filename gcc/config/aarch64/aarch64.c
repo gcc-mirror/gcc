@@ -8559,9 +8559,11 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return costs->scalar_to_vec_cost;
 
       case unaligned_load:
+      case vector_gather_load:
 	return costs->vec_unalign_load_cost;
 
       case unaligned_store:
+      case vector_scatter_store:
 	return costs->vec_unalign_store_cost;
 
       case cond_branch_taken:
