@@ -763,40 +763,53 @@ tree_code_size (enum tree_code code)
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_declaration:  /* A decl node */
-      {
-	switch (code)
-	  {
-	  case FIELD_DECL:
-	    return sizeof (struct tree_field_decl);
-	  case PARM_DECL:
-	    return sizeof (struct tree_parm_decl);
-	  case VAR_DECL:
-	    return sizeof (struct tree_var_decl);
-	  case LABEL_DECL:
-	    return sizeof (struct tree_label_decl);
-	  case RESULT_DECL:
-	    return sizeof (struct tree_result_decl);
-	  case CONST_DECL:
-	    return sizeof (struct tree_const_decl);
-	  case TYPE_DECL:
-	    return sizeof (struct tree_type_decl);
-	  case FUNCTION_DECL:
-	    return sizeof (struct tree_function_decl);
-	  case DEBUG_EXPR_DECL:
-	    return sizeof (struct tree_decl_with_rtl);
-	  case TRANSLATION_UNIT_DECL:
-	    return sizeof (struct tree_translation_unit_decl);
-	  case NAMESPACE_DECL:
-	  case IMPORTED_DECL:
-	  case NAMELIST_DECL:
-	    return sizeof (struct tree_decl_non_common);
-	  default:
-	    return lang_hooks.tree_size (code);
-	  }
-      }
+      switch (code)
+	{
+	case FIELD_DECL:	return sizeof (tree_field_decl);
+	case PARM_DECL:		return sizeof (tree_parm_decl);
+	case VAR_DECL:		return sizeof (tree_var_decl);
+	case LABEL_DECL:	return sizeof (tree_label_decl);
+	case RESULT_DECL:	return sizeof (tree_result_decl);
+	case CONST_DECL:	return sizeof (tree_const_decl);
+	case TYPE_DECL:		return sizeof (tree_type_decl);
+	case FUNCTION_DECL:	return sizeof (tree_function_decl);
+	case DEBUG_EXPR_DECL:	return sizeof (tree_decl_with_rtl);
+	case TRANSLATION_UNIT_DECL: return sizeof (tree_translation_unit_decl);
+	case NAMESPACE_DECL:
+	case IMPORTED_DECL:
+	case NAMELIST_DECL:	return sizeof (tree_decl_non_common);
+	default:
+	  gcc_checking_assert (code >= NUM_TREE_CODES);
+	  return lang_hooks.tree_size (code);
+	}
 
     case tcc_type:  /* a type node */
-      return sizeof (struct tree_type_non_common);
+      switch (code)
+	{
+	case OFFSET_TYPE:
+	case ENUMERAL_TYPE:
+	case BOOLEAN_TYPE:
+	case INTEGER_TYPE:
+	case REAL_TYPE:
+	case POINTER_TYPE:
+	case REFERENCE_TYPE:
+	case NULLPTR_TYPE:
+	case FIXED_POINT_TYPE:
+	case COMPLEX_TYPE:
+	case VECTOR_TYPE:
+	case ARRAY_TYPE:
+	case RECORD_TYPE:
+	case UNION_TYPE:
+	case QUAL_UNION_TYPE:
+	case VOID_TYPE:
+	case POINTER_BOUNDS_TYPE:
+	case FUNCTION_TYPE:
+	case METHOD_TYPE:
+	case LANG_TYPE:		return sizeof (tree_type_non_common);
+	default:
+	  gcc_checking_assert (code >= NUM_TREE_CODES);
+	  return lang_hooks.tree_size (code);
+	}
 
     case tcc_reference:   /* a reference */
     case tcc_expression:  /* an expression */
@@ -810,14 +823,15 @@ tree_code_size (enum tree_code code)
     case tcc_constant:  /* a constant */
       switch (code)
 	{
-	case VOID_CST:		return sizeof (struct tree_typed);
+	case VOID_CST:		return sizeof (tree_typed);
 	case INTEGER_CST:	gcc_unreachable ();
-	case REAL_CST:		return sizeof (struct tree_real_cst);
-	case FIXED_CST:		return sizeof (struct tree_fixed_cst);
-	case COMPLEX_CST:	return sizeof (struct tree_complex);
-	case VECTOR_CST:	return sizeof (struct tree_vector);
+	case REAL_CST:		return sizeof (tree_real_cst);
+	case FIXED_CST:		return sizeof (tree_fixed_cst);
+	case COMPLEX_CST:	return sizeof (tree_complex);
+	case VECTOR_CST:	return sizeof (tree_vector);
 	case STRING_CST:	gcc_unreachable ();
 	default:
+	  gcc_checking_assert (code >= NUM_TREE_CODES);
 	  return lang_hooks.tree_size (code);
 	}
 
@@ -825,23 +839,24 @@ tree_code_size (enum tree_code code)
       switch (code)
 	{
 	case IDENTIFIER_NODE:	return lang_hooks.identifier_size;
-	case TREE_LIST:		return sizeof (struct tree_list);
+	case TREE_LIST:		return sizeof (tree_list);
 
 	case ERROR_MARK:
-	case PLACEHOLDER_EXPR:	return sizeof (struct tree_common);
+	case PLACEHOLDER_EXPR:	return sizeof (tree_common);
 
-	case TREE_VEC:
+	case TREE_VEC:		gcc_unreachable ();
 	case OMP_CLAUSE:	gcc_unreachable ();
 
-	case SSA_NAME:		return sizeof (struct tree_ssa_name);
+	case SSA_NAME:		return sizeof (tree_ssa_name);
 
-	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
+	case STATEMENT_LIST:	return sizeof (tree_statement_list);
 	case BLOCK:		return sizeof (struct tree_block);
-	case CONSTRUCTOR:	return sizeof (struct tree_constructor);
-	case OPTIMIZATION_NODE: return sizeof (struct tree_optimization_option);
-	case TARGET_OPTION_NODE: return sizeof (struct tree_target_option);
+	case CONSTRUCTOR:	return sizeof (tree_constructor);
+	case OPTIMIZATION_NODE: return sizeof (tree_optimization_option);
+	case TARGET_OPTION_NODE: return sizeof (tree_target_option);
 
 	default:
+	  gcc_checking_assert (code >= NUM_TREE_CODES);
 	  return lang_hooks.tree_size (code);
 	}
 
