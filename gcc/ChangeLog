@@ -1,3 +1,8 @@
+2017-10-17  Richard Biener  <rguenther@suse.de>
+
+	* graphite-dependences.c (scop_get_reads_and_writes): Change
+	output parameters to references.
+
 2017-10-17  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR 71026/tree-optimization
