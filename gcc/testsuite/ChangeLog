@@ -1,3 +1,8 @@
+2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82570
+	* g++.dg/cpp1z/constexpr-lambda18.C: New.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82549
