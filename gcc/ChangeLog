@@ -1,3 +1,9 @@
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR middle-end/82546
+	* tree.c (tree_code_size): Reformat.  Punt to lang hook for unknown
+	TYPE nodes.
+
 2017-10-17  Qing Zhao <qing.zhao@oracle.com>
 	    Wilco Dijkstra <wilco.dijkstra@arm.com>
 
