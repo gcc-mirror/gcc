@@ -459,41 +459,16 @@ scev_analyzable_p (tree def, sese_l &region)
 tree
 scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 {
-  gimple *def;
-  struct loop *def_loop;
-
   /* SCOP parameters.  */
   if (TREE_CODE (t) == SSA_NAME
       && !defined_in_sese_p (t, region))
     return t;
 
-  if (TREE_CODE (t) != SSA_NAME
-      || loop_in_sese_p (loop, region))
-    /* FIXME: we would need instantiate SCEV to work on a region, and be more
-       flexible wrt. memory loads that may be invariant in the region.  */
-    return instantiate_scev (region.entry, loop,
-			     analyze_scalar_evolution (loop, t));
+  if (!loop_in_sese_p (loop, region))
+    loop = NULL;
 
-  def = SSA_NAME_DEF_STMT (t);
-  def_loop = loop_containing_stmt (def);
-
-  if (loop_in_sese_p (def_loop, region))
-    {
-      t = analyze_scalar_evolution (def_loop, t);
-      def_loop = superloop_at_depth (def_loop, loop_depth (loop) + 1);
-      t = compute_overall_effect_of_inner_loop (def_loop, t);
-      return t;
-    }
-
-  bool has_vdefs = false;
-  if (invariant_in_sese_p_rec (t, region, &has_vdefs))
-    return t;
-
-  /* T variates in REGION.  */
-  if (has_vdefs)
-    return chrec_dont_know;
-
-  return instantiate_scev (region.entry, loop, t);
+  return instantiate_scev (region.entry, loop,
+			   analyze_scalar_evolution (loop, t));
 }
 
 /* Return true if BB is empty, contains only DEBUG_INSNs.  */

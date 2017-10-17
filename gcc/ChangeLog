@@ -1,5 +1,16 @@
 2017-10-17  Richard Biener  <rguenther@suse.de>
 
+	* graphite-scop-detection.c
+	(scop_detection::stmt_has_simple_data_refs_p): Always use
+	the full nest as region.
+	(try_generate_gimple_bb): Likewise.
+	* sese.c (scalar_evolution_in_region): Simplify now that
+	SCEV can handle instantiation in regions.
+	* tree-scalar-evolution.c (instantiate_scev_name): Also instantiate
+	in the non-loop part of a function if requested.
+
+2017-10-17  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82563
 	* graphite-isl-ast-to-gimple.c (generate_entry_out_of_ssa_copies):
 	New function.
