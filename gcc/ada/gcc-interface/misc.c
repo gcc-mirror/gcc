@@ -343,6 +343,23 @@ internal_error_function (diagnostic_context *context, const char *msgid,
   Compiler_Abort (sp, sp_loc, true);
 }
 
+/* lang_hooks.tree_size: Determine the size of a tree with code C,
+   which is a language-specific tree code in category tcc_constant,
+   tcc_exceptional or tcc_type.  The default expects never to be called.  */
+
+static size_t
+gnat_tree_size (enum tree_code code)
+{
+  gcc_checking_assert (code >= NUM_TREE_CODES);
+  switch (code)
+    {
+    case UNCONSTRAINED_ARRAY_TYPE:
+      return sizeof (tree_type_non_common);
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Perform all the initialization steps that are language-specific.  */
 
 static bool
@@ -1387,6 +1404,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_NAME			"GNU Ada"
 #undef  LANG_HOOKS_IDENTIFIER_SIZE
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct tree_identifier)
+#undef  LANG_HOOKS_TREE_SIZE
+#define LANG_HOOKS_TREE_SIZE		gnat_tree_size
 #undef  LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT			gnat_init
 #undef  LANG_HOOKS_OPTION_LANG_MASK

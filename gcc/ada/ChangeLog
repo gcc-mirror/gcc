@@ -1,3 +1,8 @@
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/misc.c (gnat_tree_size): New function.
+	(LANG_HOOKS_TREE_SIZE): Redefine.
+
 2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb (In_Preelaborated_Context): A generic package subject to

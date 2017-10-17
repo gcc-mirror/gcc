@@ -1,3 +1,9 @@
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* langhooks.h (struct lang_hooks): Document that tree_size langhook
+	may be also called on tcc_type nodes.
+	* langhooks.c (lhd_tree_size): Likewise.
+
 2017-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gimple-ssa-sprintf.c (fmtwarn): Update for changed signature of
