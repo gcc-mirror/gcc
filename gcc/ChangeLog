@@ -1,3 +1,15 @@
+2017-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82580
+	* config/i386/i386-modes.def (CCGZ): New CC mode.
+	* config/i386/i386.md (sub<mode>3_carry_ccgz): New insn pattern.
+	* config/i386/predicates.md (ix86_comparison_operator):
+	Handle CCGZmode.
+	* config/i386/i386.c (ix86_expand_branch) <case E_TImode>:
+	Emulate LE, LEU, GT, GTU, LT, LTU, GE and GEU double-word comparisons
+	with double-word subtraction.
+	(put_condition_code): Handle CCGZmode.
+
 2017-10-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* wide-int.cc (debug) [const wide_int &]: New.
@@ -195,8 +207,8 @@
 2017-10-17  Qing Zhao <qing.zhao@oracle.com>
 	    Wilco Dijkstra <wilco.dijkstra@arm.com>
 
-        * builtins.c (expand_builtin_update_setjmp_buf): Add a
-        converstion to Pmode from the buf_addr.
+	* builtins.c (expand_builtin_update_setjmp_buf): Add a
+	converstion to Pmode from the buf_addr.
 
 2017-10-17  Richard Biener  <rguenther@suse.de>
 
