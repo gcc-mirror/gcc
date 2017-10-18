@@ -1,3 +1,13 @@
+2017-10-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (NUM_SIDES): New variable.
+	(LONGRUNNING_THRESHOLD): New variable.
+	(LATENCY_FACTOR): New variable.
+	(s390_sched_score): Decrease score for long-running instructions on
+	wrong side.
+	(s390_sched_variable_issue): Perform bookkeeping for long-running
+	instructions.
+
 2017-10-18  Richard Biener  <rguenther@suse.de>
 
 	* graphite-isl-ast-to-gimple.c (gcc_expression_from_isl_ast_expr_id):
