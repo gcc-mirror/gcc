@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
-typedef hash_map<tree, tree> parameter_rename_map_t;
 typedef hash_map<basic_block, vec<basic_block> > bb_map_t;
 typedef hash_map<tree, vec<tree> > rename_map_t;
 typedef struct ifsese_s *ifsese;
@@ -97,14 +96,8 @@ typedef struct sese_info_t
      dominator.  */
   rename_map_t *rename_map;
 
-  /* Parameters to be renamed.  */
-  parameter_rename_map_t *parameter_rename_map;
-
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
-
-  /* Copied basic blocks indexed by the original bb.  */
-  bb_map_t *copied_bb_map;
 
   /* A vector of phi nodes to be updated when all arguments are available.  The
      pair contains first the old_phi and second the new_phi.  */

@@ -264,11 +264,9 @@ gcc_expression_from_isl_ast_expr_id (tree type,
 	      "Could not map isl_id to tree expression");
   isl_ast_expr_free (expr_id);
   tree t = res->second;
-  tree *val = region->parameter_rename_map->get(t);
-
-  if (!val)
-   val = &t;
-  return fold_convert (type, *val);
+  if (useless_type_conversion_p (type, TREE_TYPE (t)))
+    return t;
+  return fold_convert (type, t);
 }
 
 /* Converts an isl_ast_expr_int expression E to a widest_int.
@@ -953,13 +951,6 @@ set_rename (tree old_name, tree expr)
       r.safe_push (expr);
       region->rename_map->put (old_name, r);
     }
-
-  tree t;
-  int i;
-  /* For a parameter of a scop we don't want to rename it.  */
-  FOR_EACH_VEC_ELT (region->params, i, t)
-    if (old_name == t)
-      region->parameter_rename_map->put(old_name, expr);
 }
 
 /* Return an iterator to the instructions comes last in the execution order.
@@ -1138,14 +1129,6 @@ should_copy_to_new_region (gimple *stmt, sese_info_p region)
       && scev_analyzable_p (lhs, region->region))
     return false;
 
-  /* Do not copy parameters that have been generated in the header of the
-     scop.  */
-  if (is_gimple_assign (stmt)
-      && (lhs = gimple_assign_lhs (stmt))
-      && TREE_CODE (lhs) == SSA_NAME
-      && region->parameter_rename_map->get(lhs))
-    return false;
-
   return true;
 }
 
@@ -1214,7 +1197,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
       if (codegen_error_p ())
 	return false;
 
-      /* For each SSA_NAME in the parameter_rename_map rename their usage.  */
+      /* For each SCEV analyzable SSA_NAME, rename their usage.  */
       ssa_op_iter iter;
       use_operand_p use_p;
       if (!is_gimple_debug (copy))
@@ -1223,26 +1206,16 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	    tree old_name = USE_FROM_PTR (use_p);
 
 	    if (TREE_CODE (old_name) != SSA_NAME
-		|| SSA_NAME_IS_DEFAULT_DEF (old_name))
+		|| SSA_NAME_IS_DEFAULT_DEF (old_name)
+		|| ! scev_analyzable_p (old_name, region->region))
 	      continue;
 
-	    tree *new_expr = region->parameter_rename_map->get (old_name);
-	    tree new_name;
-	    if (!new_expr
-		&& scev_analyzable_p (old_name, region->region))
-	      {
-		gimple_seq stmts = NULL;
-		new_name = get_rename_from_scev (old_name, &stmts,
-						 bb->loop_father, iv_map);
-		if (! codegen_error_p ())
-		  gsi_insert_earliest (stmts);
-		new_expr = &new_name;
-	      }
-
-	    if (!new_expr)
-	      continue;
-
-	    replace_exp (use_p, *new_expr);
+	    gimple_seq stmts = NULL;
+	    tree new_name = get_rename_from_scev (old_name, &stmts,
+						  bb->loop_father, iv_map);
+	    if (! codegen_error_p ())
+	      gsi_insert_earliest (stmts);
+	    replace_exp (use_p, new_name);
 	  }
 
       update_stmt (copy);
@@ -1286,17 +1259,6 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
       gassign *ass = gimple_build_assign (NULL_TREE, new_phi_def);
       create_new_def_for (res, ass, NULL);
       gsi_insert_after (&gsi_tgt, ass, GSI_NEW_STMT);
-    }
-
-  vec <basic_block> *copied_bbs = region->copied_bb_map->get (bb);
-  if (copied_bbs)
-    copied_bbs->safe_push (new_bb);
-  else
-    {
-      vec<basic_block> bbs;
-      bbs.create (2);
-      bbs.safe_push (new_bb);
-      region->copied_bb_map->put (bb, bbs);
     }
 
   if (!graphite_copy_stmts_from_block (bb, new_bb, iv_map))
@@ -1437,70 +1399,6 @@ scop_to_isl_ast (scop_p scop)
   return ast_isl;
 }
 
-/* Copy def from sese REGION to the newly created TO_REGION. TR is defined by
-   DEF_STMT. GSI points to entry basic block of the TO_REGION.  */
-
-static void
-copy_def (tree tr, gimple *def_stmt, sese_info_p region, sese_info_p to_region,
-	  gimple_stmt_iterator *gsi)
-{
-  if (!defined_in_sese_p (tr, region->region))
-    return;
-
-  ssa_op_iter iter;
-  use_operand_p use_p;
-  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
-    {
-      tree use_tr = USE_FROM_PTR (use_p);
-
-      /* Do not copy parameters that have been generated in the header of the
-	 scop.  */
-      if (region->parameter_rename_map->get(use_tr))
-	continue;
-
-      gimple *def_of_use = SSA_NAME_DEF_STMT (use_tr);
-      if (!def_of_use)
-	continue;
-
-      copy_def (use_tr, def_of_use, region, to_region, gsi);
-    }
-
-  gimple *copy = gimple_copy (def_stmt);
-  gsi_insert_after (gsi, copy, GSI_NEW_STMT);
-
-  /* Create new names for all the definitions created by COPY and
-     add replacement mappings for each new name.  */
-  def_operand_p def_p;
-  ssa_op_iter op_iter;
-  FOR_EACH_SSA_DEF_OPERAND (def_p, copy, op_iter, SSA_OP_ALL_DEFS)
-    {
-      tree old_name = DEF_FROM_PTR (def_p);
-      tree new_name = create_new_def_for (old_name, copy, def_p);
-      region->parameter_rename_map->put(old_name, new_name);
-    }
-
-  update_stmt (copy);
-}
-
-static void
-copy_internal_parameters (sese_info_p region, sese_info_p to_region)
-{
-  /* For all the parameters which definitino is in the if_region->false_region,
-     insert code on true_region (if_region->true_region->entry). */
-
-  int i;
-  tree tr;
-  gimple_stmt_iterator gsi = gsi_start_bb(to_region->region.entry->dest);
-
-  FOR_EACH_VEC_ELT (region->params, i, tr)
-    {
-      // If def is not in region.
-      gimple *def_stmt = SSA_NAME_DEF_STMT (tr);
-      if (def_stmt)
-	copy_def (tr, def_stmt, region, to_region, &gsi);
-    }
-}
-
 /* Generate out-of-SSA copies for the entry edge FALSE_ENTRY/TRUE_ENTRY
    in REGION.  */
 
@@ -1564,10 +1462,6 @@ graphite_regenerate_ast_isl (scop_p scop)
   region->if_region = if_region;
 
   loop_p context_loop = region->region.entry->src->loop_father;
-
-  /* Copy all the parameters which are defined in the region.  */
-  copy_internal_parameters(if_region->false_region, if_region->true_region);
-
   edge e = single_succ_edge (if_region->true_region->region.entry->dest);
   basic_block bb = split_edge (e);
 

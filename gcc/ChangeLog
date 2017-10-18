@@ -1,3 +1,27 @@
+2017-10-18  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (gcc_expression_from_isl_ast_expr_id):
+	Simplify with removal of the parameter rename map.
+	(set_rename): Likewise.
+	(should_copy_to_new_region): Likewise.
+	(graphite_copy_stmts_from_block): Likewise.
+	(copy_bb_and_scalar_dependences): Remove initialization of
+	unused copied_bb_map.
+	(copy_def): Remove.
+	(copy_internal_parameters): Likewise.
+	(graphite_regenerate_ast_isl): Do not call copy_internal_parameters.
+	* graphite-scop-detection.c (scop_detection::stmt_simple_for_scop_p):
+	Use INTEGRAL_TYPE_P.
+	(parameter_index_in_region_1): Rename to ...
+	(assign_parameter_index_in_region): ... this.  Assert we have
+	a parameter we handle.
+	(scan_tree_for_params): Adjust.
+	* sese.h (parameter_rename_map_t): Remove.
+	(struct sese_info_t): Remove unused parameter_rename_map and
+	copied_bb_map members.
+	* sese.c (new_sese_info): Adjust.
+	(free_sese_info): Likewise.
+
 2017-10-18  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82545
