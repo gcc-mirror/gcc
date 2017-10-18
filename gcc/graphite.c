@@ -378,16 +378,14 @@ graphite_transform_loops (void)
 	if (!apply_poly_transforms (scop))
 	  continue;
 
-	location_t loc = find_loop_location
-	  (scops[i]->scop_info->region.entry->dest->loop_father);
-
 	changed = true;
-	if (!graphite_regenerate_ast_isl (scop))
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			   "loop nest not optimized, code generation error\n");
-	else
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			   "loop nest optimized\n");
+	if (graphite_regenerate_ast_isl (scop))
+	  {
+	    location_t loc = find_loop_location
+	      (scops[i]->scop_info->region.entry->dest->loop_father);
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			     "loop nest optimized\n");
+	  }
       }
 
   if (changed)

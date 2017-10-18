@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "value-prof.h"
 #include "tree-ssa.h"
+#include "tree-vectorizer.h"
 #include "graphite.h"
 
 struct ast_build_info
@@ -1350,6 +1351,13 @@ ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
 __isl_give isl_ast_node *translate_isl_ast_to_gimple::
 scop_to_isl_ast (scop_p scop)
 {
+  int old_err = isl_options_get_on_error (scop->isl_context);
+  int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
+  int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
+  if (max_operations)
+    isl_ctx_set_max_operations (scop->isl_context, max_operations);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
+
   gcc_assert (scop->transformed_schedule);
 
   /* Set the separate option to reduce control flow overhead.  */
@@ -1368,6 +1376,27 @@ scop_to_isl_ast (scop_p scop)
   isl_ast_node *ast_isl = isl_ast_build_node_from_schedule
     (context_isl, schedule);
   isl_ast_build_free (context_isl);
+
+  isl_options_set_on_error (scop->isl_context, old_err);
+  isl_ctx_reset_operations (scop->isl_context);
+  isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
+  if (isl_ctx_last_error (scop->isl_context) != isl_error_none)
+    {
+      location_t loc = find_loop_location
+	(scop->scop_info->region.entry->dest->loop_father);
+      if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "loop nest not optimized, AST generation timed out "
+			 "after %d operations [--param max-isl-operations]\n",
+			 max_operations);
+      else
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "loop nest not optimized, ISL AST generation "
+			 "signalled an error\n");
+      isl_ast_node_free (ast_isl);
+      return NULL;
+    }
+
   return ast_isl;
 }
 
@@ -1416,6 +1445,12 @@ graphite_regenerate_ast_isl (scop_p scop)
   timevar_push (TV_GRAPHITE_CODE_GEN);
   t.add_parameters_to_ivs_params (scop, ip);
   root_node = t.scop_to_isl_ast (scop);
+  if (! root_node)
+    {
+      ivs_params_clear (ip);
+      timevar_pop (TV_GRAPHITE_CODE_GEN);
+      return false;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1456,10 +1491,10 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   if (t.codegen_error_p ())
     {
-      if (dump_file)
-	fprintf (dump_file, "codegen error: "
-		 "reverting back to the original code.\n");
-      set_ifsese_condition (if_region, integer_zero_node);
+      location_t loc = find_loop_location
+	(scop->scop_info->region.entry->dest->loop_father);
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+		       "loop nest not optimized, code generation error\n");
 
       /* Remove the unreachable region.  */
       remove_edge_and_dominated_blocks (if_region->true_region->region.entry);
