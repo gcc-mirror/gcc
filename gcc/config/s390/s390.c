@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "sched-int.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -14618,6 +14619,28 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
   ready[0] = tmp;
 }
 
+/* Returns TRUE if BB is entered via a fallthru edge and all other
+   incoming edges are less than unlikely.  */
+static bool
+s390_bb_fallthru_entry_likely (basic_block bb)
+{
+  edge e, fallthru_edge;
+  edge_iterator ei;
+
+  if (!bb)
+    return false;
+
+  fallthru_edge = find_fallthru_edge (bb->preds);
+  if (!fallthru_edge)
+    return false;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e != fallthru_edge
+	&& e->probability >= profile_probability::unlikely ())
+      return false;
+
+  return true;
+}
 
 /* The s390_sched_state variable tracks the state of the current or
    the last instruction group.
@@ -14626,7 +14649,7 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
    3     the last group is complete - normal insns
    4     the last group was a cracked/expanded insn */
 
-static int s390_sched_state;
+static int s390_sched_state = 0;
 
 #define S390_SCHED_STATE_NORMAL  3
 #define S390_SCHED_STATE_CRACKED 4
@@ -15036,7 +15059,21 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 {
   last_scheduled_insn = NULL;
   memset (last_scheduled_unit_distance, 0, MAX_SCHED_UNITS * sizeof (int));
-  s390_sched_state = 0;
+
+  /* If the next basic block is most likely entered via a fallthru edge
+     we keep the last sched state.  Otherwise we start a new group.
+     The scheduler traverses basic blocks in "instruction stream" ordering
+     so if we see a fallthru edge here, s390_sched_state will be of its
+     source block.
+
+     current_sched_info->prev_head is the insn before the first insn of the
+     block of insns to be scheduled.
+     */
+  rtx_insn *insn = current_sched_info->prev_head
+    ? NEXT_INSN (current_sched_info->prev_head) : NULL;
+  basic_block bb = insn ? BLOCK_FOR_INSN (insn) : NULL;
+  if (s390_tune < PROCESSOR_2964_Z13 || !s390_bb_fallthru_entry_likely (bb))
+    s390_sched_state = 0;
 }
 
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates
