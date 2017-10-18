@@ -1,3 +1,10 @@
+2017-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82550
+	* trans_decl.c (gfc_get_symbol_decl): Procedure symbols that
+	have the 'used_in_submodule' attribute should be processed by
+	'gfc_get_extern_function_decl'.
+
 2017-10-16  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/82511
