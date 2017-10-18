@@ -15,10 +15,9 @@ character(len=:), allocatable :: command
    if (j /= 3 .or. msg /= "Invalid command line" ) call abort
    msg = ''
    call execute_command_line(command , wait=.false., exitstat=i,            cmdmsg=msg )
-   print *,msg
-   if (msg /= '') call abort
-   call execute_command_line(command ,               exitstat=i, cmdstat=j             )
    if (j /= 3) call abort
    call execute_command_line(command , wait=.false., exitstat=i                        )
+   if (msg /= '') call abort
+   call execute_command_line(command ,               exitstat=i, cmdstat=j             )
 
 end program boom
