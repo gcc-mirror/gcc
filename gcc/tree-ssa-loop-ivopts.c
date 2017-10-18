@@ -1550,9 +1550,6 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   bitmap_set_bit (data->relevant, SSA_NAME_VERSION (op));
 }
 
-static tree
-strip_offset (tree expr, unsigned HOST_WIDE_INT *offset);
-
 /* Record a group of TYPE.  */
 
 static struct iv_group *
@@ -2863,7 +2860,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
-static tree
+tree
 strip_offset (tree expr, unsigned HOST_WIDE_INT *offset)
 {
   HOST_WIDE_INT off;

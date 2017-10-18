@@ -1,5 +1,12 @@
 2017-10-18  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.dg/tree-ssa/ldist-17.c: Adjust test string.
+	* gcc.dg/tree-ssa/ldist-32.c: New test.
+	* gcc.dg/tree-ssa/ldist-35.c: New test.
+	* gcc.dg/tree-ssa/ldist-36.c: New test.
+
+2017-10-18  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/82574
 	* gcc.dg/tree-ssa/pr82574.c: New test.
 
