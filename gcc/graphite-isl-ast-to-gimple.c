@@ -195,7 +195,6 @@ class translate_isl_ast_to_gimple
   edge copy_bb_and_scalar_dependences (basic_block bb, edge next_e,
 				       vec<tree> iv_map);
   void set_rename (tree old_name, tree expr);
-  void set_rename_for_each_def (gimple *stmt);
   void gsi_insert_earliest (gimple_seq seq);
   bool codegen_error_p () const { return codegen_error; }
 
@@ -932,25 +931,12 @@ set_rename (tree old_name, tree expr)
     {
       fprintf (dump_file, "[codegen] setting rename: old_name = ");
       print_generic_expr (dump_file, old_name);
-      fprintf (dump_file, ", new_name = ");
+      fprintf (dump_file, ", new decl = ");
       print_generic_expr (dump_file, expr);
       fprintf (dump_file, "\n");
     }
-
-  if (old_name == expr)
-    return;
-
-  vec <tree> *renames = region->rename_map->get (old_name);
-
-  if (renames)
-    renames->safe_push (expr);
-  else
-    {
-      vec<tree> r;
-      r.create (2);
-      r.safe_push (expr);
-      region->rename_map->put (old_name, r);
-    }
+  bool res = region->rename_map->put (old_name, expr);
+  gcc_assert (! res);
 }
 
 /* Return an iterator to the instructions comes last in the execution order.
@@ -1132,21 +1118,6 @@ should_copy_to_new_region (gimple *stmt, sese_info_p region)
   return true;
 }
 
-/* Create new names for all the definitions created by COPY and add replacement
-   mappings for each new name.  */
-
-void translate_isl_ast_to_gimple::
-set_rename_for_each_def (gimple *stmt)
-{
-  def_operand_p def_p;
-  ssa_op_iter op_iter;
-  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_ALL_DEFS)
-    {
-      tree old_name = DEF_FROM_PTR (def_p);
-      create_new_def_for (old_name, stmt, def_p);
-    }
-}
-
 /* Duplicates the statements of basic block BB into basic block NEW_BB
    and compute the new induction variables according to the IV_MAP.  */
 
@@ -1192,7 +1163,13 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
       gimple_duplicate_stmt_histograms (cfun, copy, cfun, stmt);
 
       /* Crete new names for each def in the copied stmt.  */
-      set_rename_for_each_def (copy);
+      def_operand_p def_p;
+      ssa_op_iter op_iter;
+      FOR_EACH_SSA_DEF_OPERAND (def_p, copy, op_iter, SSA_OP_ALL_DEFS)
+	{
+	  tree old_name = DEF_FROM_PTR (def_p);
+	  create_new_def_for (old_name, copy, def_p);
+	}
 
       if (codegen_error_p ())
 	return false;
@@ -1244,17 +1221,14 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 	continue;
 
       tree new_phi_def;
-      vec <tree> *renames = region->rename_map->get (res);
-      if (! renames || renames->is_empty ())
+      tree *rename = region->rename_map->get (res);
+      if (! rename)
 	{
 	  new_phi_def = create_tmp_reg (TREE_TYPE (res));
 	  set_rename (res, new_phi_def);
 	}
       else
-	{
-	  gcc_assert (renames->length () == 1);
-	  new_phi_def = (*renames)[0];
-	}
+	new_phi_def = *rename;
 
       gassign *ass = gimple_build_assign (NULL_TREE, new_phi_def);
       create_new_def_for (res, ass, NULL);
@@ -1291,17 +1265,14 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 		continue;
 
 	      tree new_phi_def;
-	      vec <tree> *renames = region->rename_map->get (res);
-	      if (! renames || renames->is_empty ())
+	      tree *rename = region->rename_map->get (res);
+	      if (! rename)
 		{
 		  new_phi_def = create_tmp_reg (TREE_TYPE (res));
 		  set_rename (res, new_phi_def);
 		}
 	      else
-		{
-		  gcc_assert (renames->length () == 1);
-		  new_phi_def = (*renames)[0];
-		}
+		new_phi_def = *rename;
 
 	      tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	      if (TREE_CODE (arg) == SSA_NAME
@@ -1336,13 +1307,14 @@ add_parameters_to_ivs_params (scop_p scop, ivs_params &ip)
 {
   sese_info_p region = scop->scop_info;
   unsigned nb_parameters = isl_set_dim (scop->param_context, isl_dim_param);
-  gcc_assert (nb_parameters == region->params.length ());
+  gcc_assert (nb_parameters == sese_nb_params (region));
   unsigned i;
-  for (i = 0; i < nb_parameters; i++)
+  tree param;
+  FOR_EACH_VEC_ELT (region->params, i, param)
     {
       isl_id *tmp_id = isl_set_get_dim_id (scop->param_context,
 					   isl_dim_param, i);
-      ip[tmp_id] = region->params[i];
+      ip[tmp_id] = param;
     }
 }
 
@@ -1417,10 +1389,10 @@ generate_entry_out_of_ssa_copies (edge false_entry,
 	continue;
       /* When there's no out-of-SSA var registered do not bother
          to create one.  */
-      vec <tree> *renames = region->rename_map->get (res);
-      if (! renames || renames->is_empty ())
+      tree *rename = region->rename_map->get (res);
+      if (! rename)
 	continue;
-      tree new_phi_def = (*renames)[0];
+      tree new_phi_def = *rename;
       gassign *ass = gimple_build_assign (new_phi_def,
 					  PHI_ARG_DEF_FROM_EDGE (phi,
 								 false_entry));
