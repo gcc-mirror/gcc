@@ -1,3 +1,7 @@
+2017-10-18  Martin Liska  <mliska@suse.cz>
+
+	* combine.c (simplify_compare_const): Add gcc_fallthrough.
+
 2017-10-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_bb_fallthru_entry_likely): New function.
