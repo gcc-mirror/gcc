@@ -156,10 +156,8 @@ new_sese_info (edge entry, edge exit)
   region->liveout = NULL;
   region->debug_liveout = NULL;
   region->params.create (3);
-  region->rename_map = new rename_map_t;
+  region->rename_map = new hash_map <tree, tree>;
   region->bbs.create (3);
-  region->incomplete_phis.create (3);
-
 
   return region;
 }
@@ -173,14 +171,9 @@ free_sese_info (sese_info_p region)
   BITMAP_FREE (region->liveout);
   BITMAP_FREE (region->debug_liveout);
 
-  for (rename_map_t::iterator it = region->rename_map->begin ();
-       it != region->rename_map->end (); ++it)
-    (*it).second.release ();
-
   delete region->rename_map;
   region->rename_map = NULL;
   region->bbs.release ();
-  region->incomplete_phis.release ();
 
   XDELETE (region);
 }
