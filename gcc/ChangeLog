@@ -1,3 +1,11 @@
+2017-10-18  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82574
+	* tree-loop-distribution.c (find_single_drs): New parameter.  Check
+	that data reference must be executed exactly once per iteration
+	against the outermost loop in nest.
+	(classify_partition): Update call to above function.
+
 2017-10-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82591

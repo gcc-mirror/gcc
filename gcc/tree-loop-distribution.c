@@ -1283,12 +1283,12 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
   return partition;
 }
 
-/* Given PARTITION of RDG, record single load/store data references for
-   builtin partition in SRC_DR/DST_DR, return false if there is no such
+/* Given PARTITION of LOOP and RDG, record single load/store data references
+   for builtin partition in SRC_DR/DST_DR, return false if there is no such
    data references.  */
 
 static bool
-find_single_drs (struct graph *rdg, partition *partition,
+find_single_drs (struct loop *loop, struct graph *rdg, partition *partition,
 		 data_reference_p *dst_dr, data_reference_p *src_dr)
 {
   unsigned i;
@@ -1344,10 +1344,12 @@ find_single_drs (struct graph *rdg, partition *partition,
       && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (single_st), 1)))
     return false;
 
-  /* Data reference must be executed exactly once per iteration.  */
+  /* Data reference must be executed exactly once per iteration of each
+     loop in the loop nest.  We only need to check dominance information
+     against the outermost one in a perfect loop nest because a bb can't
+     dominate outermost loop's latch without dominating inner loop's.  */
   basic_block bb_st = gimple_bb (DR_STMT (single_st));
-  struct loop *inner = bb_st->loop_father;
-  if (!dominated_by_p (CDI_DOMINATORS, inner->latch, bb_st))
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_st))
     return false;
 
   if (single_ld)
@@ -1365,14 +1367,16 @@ find_single_drs (struct graph *rdg, partition *partition,
 
       /* Load and store must be in the same loop nest.  */
       basic_block bb_ld = gimple_bb (DR_STMT (single_ld));
-      if (inner != bb_ld->loop_father)
+      if (bb_st->loop_father != bb_ld->loop_father)
 	return false;
 
-      /* Data reference must be executed exactly once per iteration.  */
-      if (!dominated_by_p (CDI_DOMINATORS, inner->latch, bb_ld))
+      /* Data reference must be executed exactly once per iteration.
+	 Same as single_st, we only need to check against the outermost
+	 loop.  */
+      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_ld))
 	return false;
 
-      edge e = single_exit (inner);
+      edge e = single_exit (bb_st->loop_father);
       bool dom_ld = dominated_by_p (CDI_DOMINATORS, e->src, bb_ld);
       bool dom_st = dominated_by_p (CDI_DOMINATORS, e->src, bb_st);
       if (dom_ld != dom_st)
@@ -1611,7 +1615,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
     return;
 
   /* Find single load/store data references for builtin partition.  */
-  if (!find_single_drs (rdg, partition, &single_st, &single_ld))
+  if (!find_single_drs (loop, rdg, partition, &single_st, &single_ld))
     return;
 
   /* Classify the builtin kind.  */
