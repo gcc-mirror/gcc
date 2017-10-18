@@ -1,3 +1,8 @@
+2017-10-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/82556
+	* gcc.target/i386/pr82556.c: New.
+
 2017-10-18  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/ldist-17.c: Adjust test string.
