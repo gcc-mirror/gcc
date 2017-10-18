@@ -1,3 +1,10 @@
+2017-10-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/switch-case-2.c: Scan IPA profile dump
+	file instead of expand. Reason is that switch statement is
+	not yet expanded as decision tree, which also contains a BB
+	with count == 2000.
+
 017-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82550
