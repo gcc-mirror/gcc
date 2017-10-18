@@ -1,3 +1,8 @@
+2017-10-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* doc/invoke.texi (ffunction-sections and fdata-sections):
+	Update.
+
 2017-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (add_autoinc_candidates): Bail out only if
