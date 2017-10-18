@@ -1,3 +1,10 @@
+2017-10-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.cc (debug) [const wide_int &]: New.
+	(debug) [const wide_int *]: New.
+	(debug) [const widest_int &]: New.
+	(debug) [const widest_int *]: New.
+
 2017-10-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/82556
