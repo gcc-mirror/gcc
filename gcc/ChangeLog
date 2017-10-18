@@ -1,5 +1,11 @@
 2017-10-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_bb_fallthru_entry_likely): New function.
+	(s390_sched_init): Do not reset s390_sched_state if we entered the
+	current basic block via a fallthru edge and all others are unlikely.
+
+2017-10-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (NUM_SIDES): New variable.
 	(LONGRUNNING_THRESHOLD): New variable.
 	(LATENCY_FACTOR): New variable.
