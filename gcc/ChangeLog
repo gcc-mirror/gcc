@@ -1,5 +1,14 @@
 2017-10-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82591
+	* graphite.c (graphite_transform_loops): Move code gen message
+	printing ...
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
+	Here.  Handle scop_to_isl_ast failing.
+	(scop_to_isl_ast): Limit the number of ISL operations.
+
+2017-10-18  Richard Biener  <rguenther@suse.de>
+
 	* graphite-isl-ast-to-gimple.c
 	(translate_isl_ast_to_gimple::set_rename): Simplify.
 	(translate_isl_ast_to_gimple::set_rename_for_each_def): Inline...
