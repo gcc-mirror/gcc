@@ -14403,7 +14403,23 @@ resolve_symbol (gfc_symbol *sym)
 
   if (as)
     {
-      gcc_assert (as->type != AS_IMPLIED_SHAPE);
+      /* If AS_IMPLIED_SHAPE makes it to here, it must be a bad
+	 specification expression.  */
+      if (as->type == AS_IMPLIED_SHAPE)
+	{
+	  int i;
+	  for (i=0; i<as->rank; i++)
+	    {
+	      if (as->lower[i] != NULL && as->upper[i] == NULL)
+		{
+		  gfc_error ("Bad specification for assumed size array at %L",
+			     &as->lower[i]->where);
+		  return;
+		}
+	    }
+	  gcc_unreachable();
+	}
+
       if (((as->type == AS_ASSUMED_SIZE && !as->cp_was_assumed)
 	   || as->type == AS_ASSUMED_SHAPE)
 	  && !sym->attr.dummy && !sym->attr.select_type_temporary)

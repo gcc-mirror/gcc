@@ -1,3 +1,9 @@
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79795
+	* resolve.c (resovle_symbol): Change gcc_assert to
+	sensible error message.
+
 2017-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82550

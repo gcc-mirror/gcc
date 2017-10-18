@@ -1,3 +1,8 @@
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79795
+	* gfortran.dg/assumed_size_2.f90: New test.
+
 2017-10-18  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
