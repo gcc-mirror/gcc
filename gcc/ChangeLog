@@ -1,3 +1,8 @@
+2017-10-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/82602
+	* ira.c (rtx_moveable_p): Return false for volatile asm.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82549

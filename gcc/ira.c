@@ -4405,6 +4405,12 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 	 for a reason.  */
       return false;
 
+    case ASM_OPERANDS:
+      /* The same is true for volatile asm: it has unknown side effects, it
+         cannot be moved at will.  */
+      if (MEM_VOLATILE_P (x))
+	return false;
+
     default:
       break;
     }
