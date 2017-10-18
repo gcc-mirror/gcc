@@ -1,3 +1,9 @@
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/82233
+	* gfortran.dg/execute_command_line_3.f90:  Remove unneeded output.
+	Move test with wait=.false. before the last test.
+
 2017-10-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/82556
