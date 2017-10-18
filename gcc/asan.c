@@ -3400,6 +3400,10 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 	      {
 		edge e = gimple_phi_arg_edge (phi, i);
 
+		/* Do not insert on an edge we can't split.  */
+		if (e->flags & EDGE_ABNORMAL)
+		  continue;
+
 		if (call_to_insert == NULL)
 		  call_to_insert = gimple_copy (call);
 

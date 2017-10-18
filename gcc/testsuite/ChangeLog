@@ -1,3 +1,8 @@
+2017-10-18  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82545
+	* gcc.dg/asan/pr82545.c: New test.
+
 2017-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69057

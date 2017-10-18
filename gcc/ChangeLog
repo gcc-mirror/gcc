@@ -1,3 +1,9 @@
+2017-10-18  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82545
+	* asan.c (asan_expand_poison_ifn): Do not put gimple stmt
+	on an abnormal edge.
+
 2017-10-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* doc/invoke.texi (ffunction-sections and fdata-sections):
