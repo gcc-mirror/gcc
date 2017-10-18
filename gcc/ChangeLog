@@ -1,3 +1,9 @@
+2017-10-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/82556
+	* lra-constraints.c (curr_insn_transform): Use non-input operand
+	instead of output one for matched reload.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82549
