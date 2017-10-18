@@ -339,6 +339,14 @@ package body Exp_Ch9 is
    --  same parameter names and the same resolved types, but with new entities
    --  for the formals.
 
+   function Create_Secondary_Stack_For_Task (T : Node_Id) return Boolean;
+   --  Return whether a secondary stack for the task T should be created by the
+   --  expander. The secondary stack for a task will be created by the expander
+   --  if the size of the stack has been specified by the Secondary_Stack_Size
+   --  representation aspect and either the No_Implicit_Heap_Allocations or
+   --  No_Implicit_Task_Allocations restrictions are in effect and the
+   --  No_Secondary_Stack restriction is not.
+
    procedure Debug_Private_Data_Declarations (Decls : List_Id);
    --  Decls is a list which may contain the declarations created by Install_
    --  Private_Data_Declarations. All generated entities are marked as needing
@@ -5413,6 +5421,20 @@ package body Exp_Ch9 is
              (Corresponding_Record_Type (Typ), New_Copy_Tree (N));
       end if;
    end Convert_Concurrent;
+
+   -------------------------------------
+   -- Create_Secondary_Stack_For_Task --
+   -------------------------------------
+
+   function Create_Secondary_Stack_For_Task (T : Node_Id) return Boolean is
+   begin
+      return
+        (Restriction_Active (No_Implicit_Heap_Allocations)
+          or else Restriction_Active (No_Implicit_Task_Allocations))
+        and then not Restriction_Active (No_Secondary_Stack)
+        and then Has_Rep_Item (T, Name_Secondary_Stack_Size,
+                               Check_Parents => False);
+   end Create_Secondary_Stack_For_Task;
 
    -------------------------------------
    -- Debug_Private_Data_Declarations --
@@ -11712,6 +11734,7 @@ package body Exp_Ch9 is
       Body_Decl  : Node_Id;
       Cdecls     : List_Id;
       Decl_Stack : Node_Id;
+      Decl_SS    : Node_Id;
       Elab_Decl  : Node_Id;
       Ent_Stack  : Entity_Id;
       Proc_Spec  : Node_Id;
@@ -11937,6 +11960,57 @@ package body Exp_Ch9 is
          --  The appropriate alignment for the stack is ensured by the run-time
          --  code in charge of task creation.
 
+      end if;
+
+      --  Declare a static secondary stack if the conditions for a statically
+      --  generated stack are met.
+
+      if Create_Secondary_Stack_For_Task (TaskId) then
+         declare
+            Ritem     : Node_Id;
+            Size_Expr : Node_Id;
+
+         begin
+            --  First extract the secondary stack size from the task type's
+            --  representation aspect.
+
+            Ritem :=
+              Get_Rep_Item
+                (TaskId, Name_Secondary_Stack_Size, Check_Parents => False);
+
+            --  Get Secondary_Stack_Size expression. Can be a pragma or
+            --  aspect.
+
+            if Nkind (Ritem) = N_Pragma then
+               Size_Expr :=
+                 Expression
+                   (First (Pragma_Argument_Associations (Ritem)));
+            else
+               Size_Expr := Expression (Ritem);
+            end if;
+
+            pragma Assert (Compile_Time_Known_Value (Size_Expr));
+
+            --  Create the secondary stack for the task
+
+            Decl_SS := Make_Component_Declaration (Loc,
+              Defining_Identifier  =>
+                Make_Defining_Identifier (Loc, Name_uSecondary_Stack),
+
+              Component_Definition =>
+                Make_Component_Definition (Loc,
+                  Aliased_Present     => True,
+                  Subtype_Indication  => Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                       New_Occurrence_Of (RTE (RE_SS_Stack), Loc),
+                    Constraint   =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints  => New_List (
+                          Make_Integer_Literal (Loc,
+                            Expr_Value (Size_Expr)))))));
+
+            Append_To (Cdecls, Decl_SS);
+         end;
       end if;
 
       --  Add components for entry families
@@ -14136,11 +14210,33 @@ package body Exp_Ch9 is
            New_Occurrence_Of (Storage_Size_Variable (Ttyp), Loc));
       end if;
 
-      --  Secondary_Stack_Size parameter. Set Default_Secondary_Stack_Size
-      --  unless there is a Secondary_Stack_Size rep item, in which case we
-      --  take the value from the rep item. If the restriction
-      --  No_Secondary_Stack is active then a size of 0 is passed regardless
-      --  to prevent the allocation of the unused stack.
+      --  Secondary_Stack parameter used for restricted profiles
+
+      if Restricted_Profile then
+
+         --  If the secondary stack has been allocated by the expander then
+         --  pass its access pointer. Otherwise, pass null.
+
+         if Create_Secondary_Stack_For_Task (Ttyp) then
+            Append_To (Args,
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => Make_Identifier (Loc, Name_uInit),
+                      Selector_Name =>
+                        Make_Identifier (Loc, Name_uSecondary_Stack)),
+                Attribute_Name => Name_Unrestricted_Access));
+
+         else
+            Append_To (Args, Make_Null (Loc));
+         end if;
+      end if;
+
+      --  Secondary_Stack_Size parameter. Set RE_Unspecified_Size unless there
+      --  is a Secondary_Stack_Size rep item, in which case take the value from
+      --  the rep item. If the restriction No_Secondary_Stack is active then a
+      --  size of 0 is passed regardless to prevent the allocation of the
+      --  unused stack.
 
       if Restriction_Active (No_Secondary_Stack) then
          Append_To (Args, Make_Integer_Literal (Loc, 0));

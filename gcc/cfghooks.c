@@ -161,8 +161,10 @@ verify_flow_info (void)
 		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
+	  /* FIXME: Graphite and SLJL and target code still tends to produce
+	     edges with no probablity.  */
 	  if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
-	      && !e->probability.initialized_p ())
+	      && !e->probability.initialized_p () && 0)
 	    {
 	      error ("Uninitialized probability of edge %i->%i", e->src->index,
 		     e->dest->index);

@@ -43,6 +43,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -5580,6 +5581,15 @@ package body Exp_Ch3 is
       --  arithmetic might yield a meaningless value for the length of the
       --  array, or its corresponding attribute.
 
+      procedure Count_Default_Sized_Task_Stacks
+        (Typ         : Entity_Id;
+         Pri_Stacks  : out Int;
+         Sec_Stacks  : out Int);
+      --  Count the number of default-sized primary and secondary task stacks
+      --  required for task objects contained within type Typ. If the number of
+      --  task objects contained within the type is not known at compile time
+      --  the procedure will return the stack counts of zero.
+
       procedure Default_Initialize_Object (After : Node_Id);
       --  Generate all default initialization actions for object Def_Id. Any
       --  new code is inserted after node After.
@@ -5771,6 +5781,116 @@ package body Exp_Ch3 is
             end if;
          end if;
       end Check_Large_Modular_Array;
+
+      -------------------------------------
+      -- Count_Default_Sized_Task_Stacks --
+      -------------------------------------
+
+      procedure Count_Default_Sized_Task_Stacks
+        (Typ         : Entity_Id;
+         Pri_Stacks  : out Int;
+         Sec_Stacks  : out Int)
+      is
+         Component : Entity_Id;
+      begin
+         --  To calculate the number of default-sized task stacks required for
+         --  an object of Typ, a depth-first recursive traversal of the AST
+         --  from the Typ entity node is undertaken. Only type nodes containing
+         --  task objects are visited.
+
+         Pri_Stacks := 0;
+         Sec_Stacks := 0;
+
+         if not Has_Task (Typ) then
+            return;
+         end if;
+
+         case Ekind (Typ) is
+            when E_Task_Type
+               | E_Task_Subtype
+            =>
+               --  A task type is found marking the bottom of the descent. If
+               --  the type has no representation aspect for the corresponding
+               --  stack then that stack is using the default size.
+
+               if Present (Get_Rep_Item (Typ, Name_Storage_Size)) then
+                  Pri_Stacks := 0;
+               else
+                  Pri_Stacks := 1;
+               end if;
+
+               if Present (Get_Rep_Item (Typ, Name_Secondary_Stack_Size)) then
+                  Sec_Stacks := 0;
+               else
+                  Sec_Stacks := 1;
+               end if;
+
+            when E_Array_Type
+               | E_Array_Subtype
+            =>
+               --  First find the number of default stacks contained within an
+               --  array component.
+
+               Count_Default_Sized_Task_Stacks
+                 (Component_Type (Typ),
+                  Pri_Stacks,
+                  Sec_Stacks);
+
+               --  Then multiply the result by the size of the array
+
+               declare
+                  Quantity : constant Int := Number_Of_Elements_In_Array (Typ);
+                  --  Number_Of_Elements_In_Array is non-trival, consequently
+                  --  its result is captured as an optimization.
+
+               begin
+                  Pri_Stacks := Pri_Stacks * Quantity;
+                  Sec_Stacks := Sec_Stacks * Quantity;
+               end;
+
+            when E_Record_Type
+               | E_Record_Subtype
+               | E_Protected_Type
+               | E_Protected_Subtype
+            =>
+               Component := First_Component_Or_Discriminant (Typ);
+
+               --  Recursively descend each component of the composite type
+               --  looking for tasks, but only if the component is marked as
+               --  having a task.
+
+               while Present (Component) loop
+                  if Has_Task (Etype (Component)) then
+                     declare
+                        P, S : Int;
+                     begin
+                        Count_Default_Sized_Task_Stacks
+                          (Etype (Component), P, S);
+                        Pri_Stacks := Pri_Stacks + P;
+                        Sec_Stacks := Sec_Stacks + S;
+                     end;
+                  end if;
+
+                  Next_Component_Or_Discriminant (Component);
+               end loop;
+
+            when E_Limited_Private_Type
+               | E_Limited_Private_Subtype
+               | E_Record_Type_With_Private
+               | E_Record_Subtype_With_Private
+            =>
+               --  Switch to the full view of the private type to continue
+               --  search.
+
+               Count_Default_Sized_Task_Stacks
+                 (Full_View (Typ), Pri_Stacks, Sec_Stacks);
+
+            --  Other types should not contain tasks
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Count_Default_Sized_Task_Stacks;
 
       -------------------------------
       -- Default_Initialize_Object --
@@ -6197,6 +6317,37 @@ package body Exp_Ch3 is
       end if;
 
       Check_Large_Modular_Array;
+
+      --  If No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
+      --  restrictions are active then default-sized secondary stacks are
+      --  generated by the binder and allocated by SS_Init. To provide the
+      --  binder the number of stacks to generate, the number of default-sized
+      --  stacks required for task objects contained within the object
+      --  declaration N is calculated here as it is at this point where
+      --  unconstrained types become constrained. The result is stored in the
+      --  enclosing unit's Unit_Record.
+
+      --  Note if N is an array object declaration that has an initialization
+      --  expression, a second object declaration for the initialization
+      --  expression is created by the compiler. To prevent double counting
+      --  of the stacks in this scenario, the stacks of the first array are
+      --  not counted.
+
+      if Has_Task (Typ)
+        and then not Restriction_Active (No_Secondary_Stack)
+        and then (Restriction_Active (No_Implicit_Heap_Allocations)
+          or else Restriction_Active (No_Implicit_Task_Allocations))
+        and then not (Ekind_In (Ekind (Typ), E_Array_Type, E_Array_Subtype)
+                      and then (Has_Init_Expression (N)))
+      then
+         declare
+            PS_Count, SS_Count : Int := 0;
+         begin
+            Count_Default_Sized_Task_Stacks (Typ, PS_Count, SS_Count);
+            Increment_Primary_Stack_Count (PS_Count);
+            Increment_Sec_Stack_Count (SS_Count);
+         end;
+      end if;
 
       --  Default initialization required, and no expression present
 

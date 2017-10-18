@@ -1199,6 +1199,7 @@ void
 expand_builtin_update_setjmp_buf (rtx buf_addr)
 {
   machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  buf_addr = convert_memory_address (Pmode, buf_addr);
   rtx stack_save
     = gen_rtx_MEM (sa_mode,
 		   memory_address

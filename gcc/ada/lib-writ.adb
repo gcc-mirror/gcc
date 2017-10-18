@@ -96,6 +96,8 @@ package body Lib.Writ is
          Main_CPU               => -1,
          Munit_Index            => 0,
          No_Elab_Code_All       => False,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
          Serial_Number          => 0,
          Version                => 0,
          Error_Location         => No_Location,
@@ -157,6 +159,8 @@ package body Lib.Writ is
          Main_CPU               => -1,
          Munit_Index            => 0,
          No_Elab_Code_All       => False,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
          Serial_Number          => 0,
          Version                => 0,
          Error_Location         => No_Location,
@@ -615,6 +619,19 @@ package body Lib.Writ is
          end if;
 
          Write_With_Lines;
+
+         --  Generate task stack lines
+
+         if Primary_Stack_Count (Unit_Num) > 0
+           or else Sec_Stack_Count (Unit_Num) > 0
+         then
+            Write_Info_Initiate ('T');
+            Write_Info_Char (' ');
+            Write_Info_Int (Primary_Stack_Count (Unit_Num));
+            Write_Info_Char (' ');
+            Write_Info_Int (Sec_Stack_Count (Unit_Num));
+            Write_Info_EOL;
+         end if;
 
          --  Generate the linker option lines
 

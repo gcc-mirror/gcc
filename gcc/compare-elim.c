@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "emit-rtl.h"
 #include "cfgrtl.h"
 #include "tree-pass.h"
 #include "domwalk.h"
@@ -579,6 +580,143 @@ equivalent_reg_at_start (rtx reg, rtx_insn *end, rtx_insn *start)
   return reg;
 }
 
+/* Return true if it is okay to merge the comparison CMP_INSN with
+   the instruction ARITH_INSN.  Both instructions are assumed to be in the
+   same basic block with ARITH_INSN appearing before CMP_INSN.  This checks
+   that there are no uses or defs of the condition flags or control flow
+   changes between the two instructions.  */
+
+static bool
+can_merge_compare_into_arith (rtx_insn *cmp_insn, rtx_insn *arith_insn)
+{
+  for (rtx_insn *insn = PREV_INSN (cmp_insn);
+       insn && insn != arith_insn;
+       insn = PREV_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      /* Bail if there are jumps or calls in between.  */
+      if (!NONJUMP_INSN_P (insn))
+	return false;
+
+      /* Bail on old-style asm statements because they lack
+	 data flow information.  */
+      if (GET_CODE (PATTERN (insn)) == ASM_INPUT)
+	return false;
+
+      df_ref ref;
+      /* Find a USE of the flags register.  */
+      FOR_EACH_INSN_USE (ref, insn)
+	if (DF_REF_REGNO (ref) == targetm.flags_regnum)
+	  return false;
+
+      /* Find a DEF of the flags register.  */
+      FOR_EACH_INSN_DEF (ref, insn)
+	if (DF_REF_REGNO (ref) == targetm.flags_regnum)
+	  return false;
+    }
+  return true;
+}
+
+/* Given two SET expressions, SET_A and SET_B determine whether they form
+   a recognizable pattern when emitted in parallel.  Return that parallel
+   if so.  Otherwise return NULL.  */
+
+static rtx
+try_validate_parallel (rtx set_a, rtx set_b)
+{
+  rtx par
+    = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set_a, set_b));
+
+  rtx_insn *insn;
+  insn = gen_rtx_INSN (VOIDmode, 0, 0, 0, par, 0, -1, 0);
+
+  return recog_memoized (insn) > 0 ? par : NULL_RTX;
+}
+
+/* For a comparison instruction described by CMP check if it compares a
+   register with zero i.e. it is of the form CC := CMP R1, 0.
+   If it is, find the instruction defining R1 (say I1) and try to create a
+   PARALLEL consisting of I1 and the comparison, representing a flag-setting
+   arithmetic instruction.  Example:
+   I1: R1 := R2 + R3
+   <instructions that don't read the condition register>
+   I2: CC := CMP R1 0
+   I2 can be merged with I1 into:
+   I1: { R1 := R2 + R3 ; CC := CMP (R2 + R3) 0 }
+   This catches cases where R1 is used between I1 and I2 and therefore
+   combine and other RTL optimisations will not try to propagate it into
+   I2.  Return true if we succeeded in merging CMP.  */
+
+static bool
+try_merge_compare (struct comparison *cmp)
+{
+  rtx_insn *cmp_insn = cmp->insn;
+
+  if (!REG_P (cmp->in_a) || cmp->in_b != const0_rtx)
+    return false;
+  rtx in_a = cmp->in_a;
+  df_ref use;
+
+  FOR_EACH_INSN_USE (use, cmp_insn)
+    if (DF_REF_REGNO (use) == REGNO (in_a))
+      break;
+  if (!use)
+    return false;
+
+  /* Validate the data flow information before attempting to
+     find the instruction that defines in_a.  */
+
+  struct df_link *ref_chain;
+  ref_chain = DF_REF_CHAIN (use);
+  if (!ref_chain || !ref_chain->ref
+      || !DF_REF_INSN_INFO (ref_chain->ref) || ref_chain->next != NULL)
+    return false;
+
+  rtx_insn *def_insn = DF_REF_INSN (ref_chain->ref);
+  /* We found the insn that defines in_a.  Only consider the cases where
+     it is in the same block as the comparison.  */
+  if (BLOCK_FOR_INSN (cmp_insn) != BLOCK_FOR_INSN (def_insn))
+    return false;
+
+  rtx set = single_set (def_insn);
+  if (!set)
+    return false;
+
+  if (!can_merge_compare_into_arith (cmp_insn, def_insn))
+    return false;
+
+  rtx src = SET_SRC (set);
+  rtx flags = maybe_select_cc_mode (cmp, src, CONST0_RTX (GET_MODE (src)));
+  if (!flags)
+    {
+    /* We may already have a change group going through maybe_select_cc_mode.
+       Discard it properly.  */
+      cancel_changes (0);
+      return false;
+    }
+
+  rtx flag_set
+    = gen_rtx_SET (flags, gen_rtx_COMPARE (GET_MODE (flags),
+					   copy_rtx (src),
+					   CONST0_RTX (GET_MODE (src))));
+  rtx arith_set = copy_rtx (PATTERN (def_insn));
+  rtx par = try_validate_parallel (flag_set, arith_set);
+  if (!par)
+    {
+      /* We may already have a change group going through maybe_select_cc_mode.
+	 Discard it properly.  */
+      cancel_changes (0);
+      return false;
+    }
+  if (!apply_change_group ())
+    return false;
+  emit_insn_after (par, def_insn);
+  delete_insn (def_insn);
+  delete_insn (cmp->insn);
+  return true;
+}
+
 /* Attempt to replace a comparison with a prior arithmetic insn that can
    compute the same flags value as the comparison itself.  Return true if
    successful, having made all rtl modifications necessary.  */
@@ -587,6 +725,9 @@ static bool
 try_eliminate_compare (struct comparison *cmp)
 {
   rtx flags, in_a, in_b, cmp_src;
+
+  if (try_merge_compare (cmp))
+    return true;
 
   /* We must have found an interesting "clobber" preceding the compare.  */
   if (cmp->prev_clobber == NULL)
@@ -714,6 +855,7 @@ try_eliminate_compare (struct comparison *cmp)
 static unsigned int
 execute_compare_elim_after_reload (void)
 {
+  df_chain_add_problem (DF_UD_CHAIN + DF_DU_CHAIN);
   df_analyze ();
 
   gcc_checking_assert (!all_compares.exists ());

@@ -3140,7 +3140,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
      statement.  */
   if (use_bb->loop_father != data->current_loop
       || !dominated_by_p (CDI_DOMINATORS, data->current_loop->latch, use_bb)
-      || stmt_could_throw_p (use->stmt)
+      || stmt_can_throw_internal (use->stmt)
       || !cst_and_fits_in_hwi (step))
     return;
 

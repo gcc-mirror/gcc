@@ -1,5 +1,7 @@
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r253836.
+
 	gcc/cp/
 	* name-lookup.c (get_member_vec_index): New. Broken out of ...
 	(member_vec_binary_search): ... here.  Use it.

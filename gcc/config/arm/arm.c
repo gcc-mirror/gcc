@@ -971,6 +971,9 @@ int arm_condexec_masklen = 0;
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 int arm_arch_crc = 0;
 
+/* Nonzero if chip supports the AdvSIMD Dot Product instructions.  */
+int arm_arch_dotprod = 0;
+
 /* Nonzero if chip supports the ARMv8-M security extensions.  */
 int arm_arch_cmse = 0;
 
@@ -11250,9 +11253,11 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return current_tune->vec_costs->scalar_to_vec_cost;
 
       case unaligned_load:
+      case vector_gather_load:
         return current_tune->vec_costs->vec_unalign_load_cost;
 
       case unaligned_store:
+      case vector_scatter_store:
         return current_tune->vec_costs->vec_unalign_store_cost;
 
       case cond_branch_taken:

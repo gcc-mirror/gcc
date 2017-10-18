@@ -1,3 +1,18 @@
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82560
+	* call.c (build_over_call): Don't pass tf_no_cleanup to nested
+	calls.
+
+	PR middle-end/82546
+	* cp-objcp-common.c (cp_tree_size): Reformat.  Adjust returns size
+	of TYPE nodes.
+
+2017-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82357 - bit-field in template
+	* tree.c (cp_stabilize_reference): Just return a NON_DEPENDENT_EXPR.
+
 2017-10-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-tree.h (maybe_show_extern_c_location): New decl.

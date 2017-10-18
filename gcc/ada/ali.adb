@@ -58,6 +58,7 @@ package body ALI is
       'Z'    => True,   -- implicit with from instantiation
       'C'    => True,   -- SCO information
       'F'    => True,   -- SPARK cross-reference information
+      'T'    => True,   -- task stack information
       others => False);
 
    --------------------
@@ -842,7 +843,7 @@ package body ALI is
 
       if Read_Xref then
          Ignore :=
-           ('U' | 'W' | 'Y' | 'Z' | 'D' | 'X' => False, others => True);
+           ('T' | 'U' | 'W' | 'Y' | 'Z' | 'D' | 'X' => False, others => True);
 
       --  Read_Lines parameter given
 
@@ -1744,6 +1745,8 @@ package body ALI is
             UL.Elaborate_Body_Desirable := False;
             UL.Optimize_Alignment       := 'O';
             UL.Has_Finalizer            := False;
+            UL.Primary_Stack_Count      := 0;
+            UL.Sec_Stack_Count          := 0;
 
             if Debug_Flag_U then
                Write_Str (" ----> reading unit ");
@@ -2095,6 +2098,28 @@ package body ALI is
 
          Units.Table (Units.Last).Last_With := Withs.Last;
          Units.Table (Units.Last).Last_Arg  := Args.Last;
+
+         --  Scan out task stack information for the unit if present
+
+         Check_Unknown_Line;
+
+         if C = 'T' then
+            if Ignore ('T') then
+               Skip_Line;
+
+            else
+               Checkc (' ');
+               Skip_Space;
+
+               Units.Table (Units.Last).Primary_Stack_Count := Get_Nat;
+               Skip_Space;
+               Units.Table (Units.Last).Sec_Stack_Count := Get_Nat;
+               Skip_Space;
+               Skip_Eol;
+            end if;
+
+            C := Getc;
+         end if;
 
          --  If there are linker options lines present, scan them
 

@@ -1,3 +1,254 @@
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/misc.c (gnat_tree_size): New function.
+	(LANG_HOOKS_TREE_SIZE): Redefine.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (In_Preelaborated_Context): A generic package subject to
+	Remote_Call_Interface is not a suitable preelaboratd context when the
+	call appears in the package body.
+
+2017-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.ads (Set_Elem_Alignment): Add Align parameter defaulted to 0.
+	* layout.adb (Set_Elem_Alignment): Likewise.  Use M name as maximum
+	alignment for consistency.  If Align is non-zero, use the minimum of
+	Align and M for the alignment.
+	* cstand.adb (Build_Float_Type): Use Set_Elem_Alignment instead of
+	setting the alignment directly.
+
+2017-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Check): Defer evaluation of the
+	optional string in an Assert pragma until the expansion of the pragma
+	has rewritten it as a conditional statement, so that the string
+	argument is only evaluaed if the assertion fails. This is mandated by
+	RM 11.4.2.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Switch -gnatd.v and associated flag are now used to
+	enforce the SPARK rules for elaboration in SPARK code.
+	* sem_elab.adb: Describe switch -gnatd.v.
+	(Process_Call): Verify the SPARK rules only when -gnatd.v is in effect.
+	(Process_Instantiation): Verify the SPARK rules only when -gnatd.v is
+	in effect.
+	(Process_Variable_Assignment): Clarify why variable assignments are
+	processed reglardless of whether -gnatd.v is in effect.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update the
+	sections on elaboration code and compilation switches.
+	* gnat_ugn.texi: Regenerate.
+
+2017-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb, freeze.adb, sem_aggr.adb, sem_util.ads, sem_util.adb,
+	sem_warn.adb: Minor reformattings.
+
+2017-10-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst: Add documentation
+	for reverse iteration over formal containers.
+	* gnat_rm.texi: Regenerate.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Ensure_Dynamic_Prior_Elaboration): Renamed to
+	Ensure_Prior_Elaboration_Dynamic for consistency reasons.
+	(Ensure_Static_Prior_Elaboration): Renamed to
+	Ensure_Prior_Elaboration_Static for consistency reasons.
+	(Info_Variable_Reference): Renamed to Info_Variable_Read in order to
+	reflect its new purpose.
+	(Is_Initialized): New routine.
+	(Is_Suitable_Variable_Reference): Renamed to Is_Suitable_Variable_Read
+	in order to reflect its new purpose.
+	(Is_Variable_Read): New routine.
+	(Output_Variable_Reference): Renamed to Output_Variable_Read in order
+	to reflect its new purpose.
+	(Process_Variable_Assignment): This routine now acts as a top level
+	dispatcher for variable assignments.
+	(Process_Variable_Assignment_Ada): New routine.
+	(Process_Variable_Assignment_SPARK): New routine.
+	(Process_Variable_Reference): Renamed to Process_Variable_Read in order
+	to reflects its new purpose. A reference to a variable is now suitable
+	for ABE processing only when it is a read. The logic in the routine now
+	reflects the latest SPARK elaboration rules.
+
+2017-10-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Modify condition that
+	triggers marking on formal subprograms.
+
+2017-10-14  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Ensure_Valid): Do not skip adding the validity check on
+	renamings of objects that come from the sources.
+
+2017-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cstand.adb (Build_Float_Type): Move down Siz parameter, add Align
+	parameter and set the alignment of the type to Align.
+	(Copy_Float_Type): Adjust call to Build_Float_Type.
+	(Register_Float_Type): Add pragma Unreferenced for Precision.  Adjust
+	call to Build_Float_Type and do not set RM_Size and Alignment.
+
+2017-10-14  Patrick Bernardi  <bernardi@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJ): Add s-soliin to
+	GNATRTL_NONTASKING_OBJ.
+
+2017-10-14  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Result_Type): Include code for
+	enabling b-i-p for nonlimited controlled types (but disabled).
+
+2017-10-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_elab.adb (Is_Suitable_Variable_Assignment): Replace call to
+	Has_Warnings_Off with Warnings_Off.
+
+2017-10-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sinfo.ads (Generic_Parent): Remove wrong (possibly obsolete) comment.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Analyze the contract of an
+	enclosing package at the end of the visible declarations.
+	* sem_prag.adb (Analyze_Initialization_Item): Suppress the analysis of
+	an initialization item which is undefined due to some illegality.
+
+2017-10-14  Patrick Bernardi  <bernardi@adacore.com>
+
+	* ali.adb: Add new ALI line 'T' to read the number of tasks contain
+	within each unit that require a default-sized primary and secondary
+	stack to be generated by the binder.
+	(Scan_ALI): Scan new 'T' lines.
+	* ali.ads: Add Primary_Stack_Count and Sec_Stack_Count to Unit_Record.
+	* bindgen.adb (Gen_Output_File): Count the number of default-sized
+	stacks within the closure that are to be created by the binder.
+	(Gen_Adainit, Gen_Output_File_Ada): Generate default-sized secondary
+	stacks and record these in System.Secodnary_Stack.
+	(Resolve_Binder_Options): Check if System.Secondary_Stack is in the
+	closure of the program being bound.
+	* bindusg.adb (Display): Add "-Q" switch. Remove rouge "--RTS" comment.
+	* exp_ch3.adb (Count_Default_Sized_Task_Stacks): New routine.
+	(Expand_N_Object_Declaration): Count the number of default-sized stacks
+	used by task objects contained within the object whose declaration is
+	being expanded.  Only performed when either the restrictions
+	No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations are in
+	effect.
+	* exp_ch9.adb (Create_Secondary_Stack_For_Task): New routine.
+	(Expand_N_Task_Type_Declaration): Create a secondary stack as part of
+	the expansion of a task type if the size of the stack is known at
+	run-time and the restrictions No_Implicit_Heap_Allocations or
+	No_Implicit_Task_Allocations are in effect.
+	(Make_Task_Create_Call): If using a restricted profile provide
+	secondary stack parameter: either the statically created stack or null.
+	* lib-load.adb (Create_Dummy_Package_Unit, Load_Unit,
+	Load_Main_Source): Include Primary_Stack_Count and Sec_Stack_Count in
+	Unit_Record initialization expressions.
+	* lib-writ.adb (Add_Preprocessing_Dependency,
+	Ensure_System_Dependency): Include Primary_Stack_Count and
+	Sec_Stack_Count in Unit_Record initialization expression.
+	(Write_ALI): Write T lines.
+	(Write_Unit_Information): Do not output 'T' lines if there are no
+	stacks for the binder to generate.
+	* lib-writ.ads: Updated library information documentation to include
+	new T line entry.
+	* lib.adb (Increment_Primary_Stack_Count): New routine.
+	(Increment_Sec_Stack_Count): New routine.
+	(Primary_Stack_Count): New routine.
+	(Sec_Stack_Count): New routine.
+	* lib.ads: Add Primary_Stack_Count and Sec_Stack_Count components to
+	Unit_Record and updated documentation.
+	(Increment_Primary_Stack_Count): New routine along with pragma Inline.
+	(Increment_Sec_Stack_Count): New routine along with pragma Inline.
+	(Primary_Stack_Count): New routine along with pragma Inline.
+	(Sec_Stack_Count): New routine along with pragma Inline.
+	* opt.ads: New constant No_Stack_Size.	Flag Default_Stack_Size
+	redefined.  New flag Default_Sec_Stack_Size and
+	Quantity_Of_Default_Size_Sec_Stacks.
+	* rtfinal.c Fixed erroneous comment.
+	* rtsfind.ads: Moved RE_Default_Secondary_Stack_Size from
+	System.Secondary_Stack to System.Parameters.  Add RE_SS_Stack.
+	* sem_util.adb (Number_Of_Elements_In_Array): New routine.
+	* sem_util.ads (Number_Of_Elements_In_Array): New routine.
+	* switch-b.adb (Scan_Binder_Switches): Scan "-Q" switch.
+	* libgnarl/s-solita.adb (Get_Sec_Stack_Addr): Removed routine.
+	(Set_Sec_Stack_Addr): Removed routine.
+	(Get_Sec_Stack): New routine.
+	(Set_Sec_Stack): New routine.
+	(Init_Tasking_Soft_Links): Update System.Soft_Links reference to
+	reflect new procedure and global names.
+	* libgnarl/s-taprop__linux.adb, libgnarl/s-taprop__mingw.adb,
+	libgnarl/s-taprop__posix.adb, libgnarl/s-taprop__solaris.adb,
+	libgnarl/s-taprop__vxworks.adb (Register_Foreign_Thread): Update
+	parameter profile to allow the secondary stack size to be specified.
+	* libgnarl/s-tarest.adb (Create_Restricted_Task): Update the parameter
+	profile to include Sec_Stack_Address.  Update Tasking.Initialize_ATCB
+	call to remove Secondary_Stack_Size reference.  Add secondary stack
+	address and size to SSL.Create_TSD call.
+	(Task_Wrapper): Remove secondary stack creation.
+	* libgnarl/s-tarest.ads (Create_Restricted_Task,
+	Create_Restricted_Task_Sequential): Update parameter profile to include
+	Sec_Stack_Address and clarify the Size parameter.
+	* libgnarl/s-taskin.adb (Initialize_ATCB): Remove Secondary_Stack_Size
+	from profile and body.
+	(Initialize): Remove Secondary_Stack_Size from Initialize_ATCB call.
+	* libgnarl/s-taskin.ads: Removed component Secondary_Stack_Size from
+	Common_ATCB.
+	(Initialize_ATCB): Update the parameter profile to remove
+	Secondary_Stack_Size.
+	* libgnarl/s-tassta.adb (Create_Task): Updated parameter profile and
+	call to Initialize_ATCB.  Add secondary stack address and size to
+	SSL.Create_TSD call, and catch any storage exception from the call.
+	(Finalize_Global_Tasks): Update System.Soft_Links references to reflect
+	new subprogram and component names.
+	(Task_Wrapper): Remove secondary stack creation.
+	(Vulnerable_Complete_Master): Update to reflect TSD changes.
+	* libgnarl/s-tassta.ads: Reformat comments.
+	(Create_Task): Update parameter profile.
+	* libgnarl/s-tporft.adb (Register_Foreign_Thread): Update parameter
+	profile to include secondary stack size. Remove secondary size
+	parameter from Initialize_ATCB call and add it to Create_TSD call.
+	* libgnat/s-parame.adb, libgnat/s-parame__rtems.adb,
+	libgnat/s-parame__vxworks.adb (Default_Sec_Stack_Size): New routine.
+	* libgnat/s-parame.ads, libgnat/s-parame__ae653.ads,
+	libgnat/s-parame__hpux.ads, libgnat/s-parame__vxworks.ads: Remove type
+	Percentage.  Remove constants Dynamic, Sec_Stack_Percentage and
+	Sec_Stack_Dynamic.  Add constant Runtime_Default_Sec_Stack_Size and
+	Sec_Stack_Dynamic.
+	(Default_Sec_Stack_Size): New routine.
+	* libgnat/s-secsta.adb, libgnat/s-secsta.ads: New implementation. Is
+	now Preelaborate.
+	* libgnat/s-soflin.adb: Removed unused with-clauses.  With
+	System.Soft_Links.Initialize to initialize non-tasking TSD.
+	(Create_TSD): Update parameter profile. Initialize the TSD and
+	unconditionally call SS_Init.
+	(Destroy_TSD): Update SST.SS_Free call.
+	(Get_Sec_Stack_Addr_NT, Get_Sec_Stack_Addr_Soft, Set_Sec_Stack_Addr_NT,
+	Set_Sec_Stack_Addr_Soft): Remove routines.
+	(Get_Sec_Stack_NT, Get_Sec_Stack_Soft, Set_Sec_Stack_NT,
+	Set_Sec_Stack_Soft): Add routines.
+	(NT_TSD): Move to private part of package specification.
+	* libgnat/s-soflin.ads: New types Get_Stack_Call and Set_Stack_Call
+	with suppressed access checks.  Renamed *_Sec_Stack_Addr_* routines and
+	objects to *_Sec_Stack_*.  TSD: removed warning suppression and
+	component intialization. Changed Sec_Stack_Addr to Sec_Stack_Ptr.
+	(Create_TSD): Update parameter profile.
+	(NT_TSD): Move to private section from body.
+	* libgnat/s-soliin.adb, libgnat/s-soliin.ads: New files.
+	* libgnat/s-thread.ads (Thread_Body_Enter): Update parameter profile.
+	* libgnat/s-thread__ae653.adb (Get_Sec_Stack_Addr, Set_Sec_Stack_Addr):
+	Remove routine.
+	(Get_Sec_Stack, Set_Sec_Stack): Add routine.
+	(Thread_Body_Enter): Update parameter profile and body to adapt to new
+	System.Secondary_Stack.
+	(Init_RTS): Update body for new System.Soft_Links names.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS, GNATBIND_OBJS): Add
+	s-soliin.o.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc-interface/decl.c (annotate_value): Use wi::to_wide when

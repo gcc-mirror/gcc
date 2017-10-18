@@ -168,6 +168,11 @@ aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
       qualifier_none, qualifier_lane_index };
 #define TYPES_QUADOP_LANE (aarch64_types_quadop_lane_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_quadopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_lane_index };
+#define TYPES_QUADOPU_LANE (aarch64_types_quadopu_lane_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]

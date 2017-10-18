@@ -1472,10 +1472,7 @@ package Sinfo is
    --  Generic_Parent (Node5-Sem)
    --    Generic_Parent is defined on declaration nodes that are instances. The
    --    value of Generic_Parent is the generic entity from which the instance
-   --    is obtained. Generic_Parent is also defined for the renaming
-   --    declarations and object declarations created for the actuals in an
-   --    instantiation. The generic parent of such a declaration is the
-   --    corresponding generic association in the Instantiation node.
+   --    is obtained.
 
    --  Generic_Parent_Type (Node4-Sem)
    --    Generic_Parent_Type is defined on Subtype_Declaration nodes for the

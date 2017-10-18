@@ -1,3 +1,190 @@
+2017-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/attr-alloc_size-11.c: UnXFAIL for visium-*-*.
+
+2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71821
+	* g++.dg/cpp0x/alignas12.C: New.
+
+2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71368
+	* g++.dg/concepts/pr71368.C: New.
+
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82560
+	* g++.dg/cpp0x/pr82560.C: New.
+
+	PR middle-end/82577
+	* g++.dg/opt/pr82577.C: New.
+
+2017-10-17  Qing Zhao <qing.zhao@oracle.com>
+	    Wilco Dijkstra <wilco.dijkstra@arm.com>
+
+        PR middle-end/80295
+        * gcc.target/aarch64/pr80295.c: New test.
+
+2017-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82563
+	* gcc.dg/graphite/pr82563.c: New testcase.
+
+2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67831
+	* g++.dg/cpp0x/constexpr-ice18.C: New.
+
+2017-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82570
+	* g++.dg/cpp1z/constexpr-lambda18.C: New.
+
+2017-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82549
+	* gcc.c-torture/compile/pr82549.c: New test.
+
+2017-10-17  Martin Liska  <mliska@suse.cz>
+
+	* lib/scanasm.exp: Print how many times a regex pattern is
+	found.
+	* lib/scandump.exp: Likewise.
+
+2017-10-17  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512dq-vreducesd-1.c (_mm_mask_reduce_sd,
+	_mm_maskz_reduce_sd): Test new intrinsics.
+	* gcc.target/i386/avx512dq-vreducesd-2.c: New.
+	* gcc.target/i386/avx512dq-vreducess-1.c (_mm_mask_reduce_ss,
+	_mm_maskz_reduce_ss): Test new intrinsics.
+	* gcc.target/i386/avx512dq-vreducess-2.c: New.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_reducesd,
+	__builtin_ia32_reducess): Remove builtin.
+	(__builtin_ia32_reducesd_mask,
+	__builtin_ia32_reducess_mask): Test new builtin.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2017-10-16  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/attrib-5.c (float_cast2): Fix warning scan
+	so that it will work for both C and C++ FEs.
+
+2017-10-16  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/82511
+	* gfortran.dg/dec_structure_22.f90: New testcase.
+
+2017-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64931
+	* g++.dg/cpp1y/auto-fn43.C: New.
+
+2017-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/82442
+	* gcc.dg/vect/pr31699.c: Fix testcase.
+
+2017-10-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-qi.h: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-s8.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-u8.c: New.
+
+2017-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53574
+	* g++.dg/other/pr53574.C: New test.
+
+2017-10-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61323
+	* g++.dg/cpp0x/constexpr-61323.C: New.
+
+2017-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54090
+	* g++.dg/template/crash128.C: New.
+
+2017-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82372
+	* gfortran.dg/illegal_char.f90: New test.
+
+2017-10-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Michael Collison <michael.collison@arm.com>
+
+	* gcc.target/aarch64/cmpelim_mult_uses_1.c: New test.
+
+2017-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80908
+	* g++.dg/cpp1z/noexcept-type18.C: New.
+
+2017-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81016
+	* g++.dg/cpp1z/pr81016.C: New.
+
+2017-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/62263
+	PR middle-end/82498
+	* c-c++-common/rotate-8.c: Expect no PHIs in optimized dump.
+
+	PR middle-end/62263
+	PR middle-end/82498
+	* c-c++-common/rotate-5.c (f2): New function.  Move old
+	function to ...
+	(f4): ... this.  Use 127 instead of 128.
+	(f3, f5, f6): New functions.
+	(main): Test all f[1-6] functions, with both 0 and 1 as
+	second arguments.
+	* c-c++-common/rotate-6.c: New test.
+	* c-c++-common/rotate-6a.c: New test.
+	* c-c++-common/rotate-7.c: New test.
+	* c-c++-common/rotate-7a.c: New test.
+	* c-c++-common/rotate-8.c: New test.
+
+2017-10-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/remote_call_iface.ads, gnat.dg/remote_call_iface.adb: New
+	testcase.
+
+2017-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/81423
+	* gcc.c-torture/execute/pr81423.c (foo): Add missing cast.  Change L
+	suffixes to LL.
+	(main): Punt if either long long isn't 64-bit or int isn't 32-bit.
+
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/82353
+	* g++.dg/ubsan/pr82353-2.C: New test.
+	* g++.dg/ubsan/pr82353-2-aux.cc: New file.
+	* g++.dg/ubsan/pr82353-2.h: New file.
+
+2017-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81048
+	* gfortran.dg/derived_init_4.f90 : New test.
+
+2017-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/69078
+	* g++.dg/cpp1y/lambda-generic-69078-1.C: New.
+	* g++.dg/cpp1y/lambda-generic-69078-2.C: Likewise.
+
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82274
+	* gcc.dg/pr82274-1.c: New test.
+	* gcc.dg/pr82274-2.c: New test.
+
 2017-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80873
