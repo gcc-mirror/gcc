@@ -1,5 +1,13 @@
 2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/82567
+	* frontend-passes.c (combine_array_constructor): If an array
+	constructor is all constants and has more elements than a small
+	constant, don't convert a*[b,c] to [a*b,a*c] to reduce compilation
+	times.
+
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/79795
 	* resolve.c (resovle_symbol): Change gcc_assert to
 	sensible error message.
