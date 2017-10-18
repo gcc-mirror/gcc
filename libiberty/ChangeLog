@@ -1,3 +1,12 @@
+2017-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/82598
+	* simple-object.c (handle_lto_debug_sections): Copy over also
+	.note.GNU-stack section with unchanged name.
+	* simple-object-elf.c (SHF_EXECINSTR): Define.
+	(simple_object_elf_copy_lto_debug_section): Drop SHF_EXECINSTR bit
+	on .note.GNU-stack section.
+
 2017-09-25  Nathan Sidwell  <nathan@acm.org>
 
 	PR demangler/82195
