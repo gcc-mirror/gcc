@@ -1,6 +1,15 @@
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (get_member_vec_index): New. Broken out of ...
+	(member_vec_binary_search): ... here.  Use it.
+	(member_vec_linear_search): Delete.
+	(fields_linear_search, get_class_binding_direct): Adjust.
+	(get_member_slot): Use get_member_vec_index, reorganize.
+
 2017-10-13  Nathan Sidwell  <nathan@acm.org>
 
-	Merge trunk rr253733
+	Merge trunk r253733
 
 	gcc/
 	* tree.c (tree_code_size): Reformat.  Punt to lang hook for unknown

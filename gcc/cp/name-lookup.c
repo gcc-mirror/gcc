@@ -1107,15 +1107,27 @@ extract_conversion_operator (tree fns, tree type)
   return convs;
 }
 
-/* Binary search of (ordered) MEMBER_VEC for NAME.  */
+/* Binary search of MEMBER_VEC for NAME.  Returns >= slot index if it
+   is present.  Returns -1-slot index of where to insert it if it is
+   not present.  */
 
-static tree
-member_vec_binary_search (vec<tree, va_gc> *member_vec, tree name)
+static int
+get_member_vec_index (vec<tree, va_gc> *member_vec, tree name)
 {
-  for (unsigned lo = 0, hi = member_vec->length (); lo < hi;)
+  unsigned lo = 0;
+  unsigned hi = member_vec->length ();
+
+  while (lo != hi)
     {
       unsigned mid = (lo + hi) / 2;
       tree binding = (*member_vec)[mid];
+
+      /* We can get a NULL binding during insertion of a new method
+	 name, because the identifier_binding machinery performs a
+	 lookup.  If we find such a NULL slot, that's the thing we were
+	 looking for, so we might as well bail out immediately.  */
+      if (!binding)
+	break;
       tree binding_name = OVL_NAME (binding);
 
       if (binding_name > name)
@@ -1123,31 +1135,20 @@ member_vec_binary_search (vec<tree, va_gc> *member_vec, tree name)
       else if (binding_name < name)
 	lo = mid + 1;
       else
-	return binding;
+	return mid;
     }
 
-  return NULL_TREE;
+  return -1 - int (lo);
 }
 
-/* Linear search of (unordered) MEMBER_VEC for NAME.  */
+/* Binary search of (ordered) MEMBER_VEC for NAME.  */
 
 static tree
-member_vec_linear_search (vec<tree, va_gc> *member_vec, tree name)
+member_vec_binary_search (vec<tree, va_gc> *member_vec, tree name)
 {
-  for (int ix = member_vec->length (); ix--;)
-    /* We can get a NULL binding during insertion of a new method
-       name, because the identifier_binding machinery performs a
-       lookup.  If we find such a NULL slot, that's the thing we were
-       looking for, so we might as well bail out immediately.  */
-    if (tree binding = (*member_vec)[ix])
-      {
-	if (OVL_NAME (binding) == name)
-	  return binding;
-      }
-    else
-      break;
+  int ix = get_member_vec_index (member_vec, name);
 
-  return NULL_TREE;
+  return ix >= 0 ? (*member_vec)[ix] : NULL_TREE;
 }
 
 /* Linear search of (partially ordered) fields of KLASS for NAME.  */
@@ -1168,7 +1169,7 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	  tree temp;
 	  
 	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
-	    temp = member_vec_linear_search (member_vec, name);
+	    temp = member_vec_binary_search (member_vec, name);
 	  else
 	    temp = fields_linear_search (anon, name, want_type);
 
@@ -1249,7 +1250,7 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
   else
     {
       if (member_vec && type_or_fns <= 0)
-	val = member_vec_linear_search (member_vec, lookup);
+	val = member_vec_binary_search (member_vec, lookup);
 
       if (type_or_fns < 0)
 	/* Don't bother looking for field.  We don't want it.  */;
@@ -1315,21 +1316,18 @@ get_class_binding (tree klass, tree name, int type_or_fns)
 
 /* Find the slot containing overloads called 'NAME'.  If there is no
    such slot, create an empty one.  KLASS might be complete at this
-   point, in which case we need to preserve ordering.  Deals with
-   conv_op marker handling.  */
+   point.  Deals with conv_op marker handling.  */
 
 tree *
 get_member_slot (tree klass, tree name)
 {
-  bool complete_p = COMPLETE_TYPE_P (klass);
-  
   vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
   if (!member_vec)
     {
       vec_alloc (member_vec, 8);
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      if (complete_p)
-	{
+      if (COMPLETE_TYPE_P (klass))
+  	{
 	  /* If the class is complete but had no member_vec, we need
 	     to add the TYPE_FIELDS into it.  We're also most likely
 	     to be adding ctors & dtors, so ask for 6 spare slots (the
@@ -1342,54 +1340,35 @@ get_member_slot (tree klass, tree name)
   if (IDENTIFIER_CONV_OP_P (name))
     name = conv_op_identifier;
 
-  unsigned ix, length = member_vec->length ();
-  for (ix = 0; ix < length; ix++)
+  int ix = get_member_vec_index (member_vec, name);
+  if (ix < 0)
     {
-      tree *slot = &(*member_vec)[ix];
-      tree fn_name = OVL_NAME (*slot);
-
-      if (fn_name == name)
-	{
-	  /* If we found an existing slot, it must be a function set.
-	     Even with insertion after completion, because those only
-	     happen with artificial fns that have unspellable names.
-	     This means we do not have to deal with the stat hack
-	     either.  */
-	  gcc_checking_assert (OVL_P (*slot));
-	  if (name == conv_op_identifier)
-	    {
-	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
-	      /* Skip the conv-op marker. */
-	      slot = &OVL_CHAIN (*slot);
-	    }
-	  return slot;
-	}
-
-      if (complete_p && fn_name > name)
-	break;
-    }
-
-  /* No slot found.  Create one at IX.  We know in this case that our
-     caller will succeed in adding the function.  */
-  if (complete_p)
-    {
+      /* No slot found.  Create one at -1-IX.  We know in this case
+         that our caller will succeed in adding the function.  */
+      ix = -1 - ix;
       /* Do exact allocation when complete, as we don't expect to add
 	 many.  */
-      vec_safe_reserve_exact (member_vec, 1);
+      vec_safe_reserve (member_vec, 1, COMPLETE_TYPE_P (klass));
+      CLASSTYPE_MEMBER_VEC (klass) = member_vec;
       member_vec->quick_insert (ix, NULL_TREE);
     }
-  else
-    {
-      gcc_checking_assert (ix == length);
-      vec_safe_push (member_vec, NULL_TREE);
-    }
-  CLASSTYPE_MEMBER_VEC (klass) = member_vec;
 
   tree *slot = &(*member_vec)[ix];
+
+  /* If we found an existing slot, it must be a function set.
+     Even with insertion after completion, because those only
+     happen with artificial fns that have unspellable names.
+     This means we do not have to deal with the stat hack
+     either.  */
+  gcc_checking_assert (!*slot || OVL_P (*slot));
   if (name == conv_op_identifier)
     {
-      /* Install the marker prefix.  */
-      *slot = ovl_make (conv_op_marker, NULL_TREE);
+      /* Check or install the conv-op marker.  */
+      if (*slot)
+	gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
+      else
+	*slot =  ovl_make (conv_op_marker, NULL_TREE);
+      /* Skip the conv-op marker. */
       slot = &OVL_CHAIN (*slot);
     }
 
