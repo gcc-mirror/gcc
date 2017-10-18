@@ -1,3 +1,8 @@
+017-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82550
+	* gfortran.dg/submodule_30.f08 : New test.
+
 2017-10-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/zvector/vec-cmp-2.c
