@@ -1,5 +1,10 @@
 2017-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/69057
+	* g++.dg/cpp1y/auto-fn45.C: New.
+
+2017-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/68884
 	* g++.dg/cpp0x/variadic-crash4.C: New.
 
