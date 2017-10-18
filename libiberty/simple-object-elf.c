@@ -196,6 +196,7 @@ typedef struct {
 
 /* Values for sh_flags field.  */
 
+#define SHF_EXECINSTR	0x00000004	/* Executable section.  */
 #define SHF_EXCLUDE	0x80000000	/* Link editor is to exclude this
 					   section from executable and
 					   shared library that it builds
@@ -1403,7 +1404,14 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       flags = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 			       shdr, sh_flags, Elf_Addr);
       if (ret == 0)
-	flags &= ~SHF_EXCLUDE;
+	{
+	  /* The debugobj doesn't contain any code, thus no trampolines.
+	     Even when the original object needs trampolines, debugobj
+	     doesn't.  */
+	  if (strcmp (name, ".note.GNU-stack") == 0)
+	    flags &= ~SHF_EXECINSTR;
+	  flags &= ~SHF_EXCLUDE;
+	}
       else if (ret == -1)
 	flags = SHF_EXCLUDE;
       ELF_SET_FIELD (type_functions, ei_class, Shdr,
