@@ -16732,6 +16732,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
   switch (code)
     {
     case EQ:
+      gcc_assert (mode != CCGZmode);
       switch (mode)
 	{
 	case E_CCAmode:
@@ -16755,6 +16756,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	}
       break;
     case NE:
+      gcc_assert (mode != CCGZmode);
       switch (mode)
 	{
 	case E_CCAmode:
@@ -16799,6 +16801,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 
 	case E_CCmode:
 	case E_CCGCmode:
+	case E_CCGZmode:
 	  suffix = "l";
 	  break;
 
@@ -16807,7 +16810,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	}
       break;
     case LTU:
-      if (mode == CCmode)
+      if (mode == CCmode || mode == CCGZmode)
 	suffix = "b";
       else if (mode == CCCmode)
 	suffix = fp ? "b" : "c";
@@ -16824,6 +16827,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 
 	case E_CCmode:
 	case E_CCGCmode:
+	case E_CCGZmode:
 	  suffix = "ge";
 	  break;
 
@@ -16832,7 +16836,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	}
       break;
     case GEU:
-      if (mode == CCmode)
+      if (mode == CCmode || mode == CCGZmode)
 	suffix = "nb";
       else if (mode == CCCmode)
 	suffix = fp ? "nb" : "nc";
@@ -18887,7 +18891,7 @@ output_fp_compare (rtx_insn *insn, rtx *operands,
 
   static char buf[40];
   const char *p, *r;
- 
+
   gcc_assert (STACK_TOP_P (xops[0]));
 
   stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG);
@@ -21469,6 +21473,8 @@ ix86_match_ccmode (rtx insn, machine_mode req_mode)
     case E_CCZmode:
       break;
 
+    case E_CCGZmode:
+
     case E_CCAmode:
     case E_CCCmode:
     case E_CCOmode:
@@ -22176,6 +22182,52 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	    default:
 	      break;
 	    }
+
+	/* Emulate comparisons that do not depend on Zero flag with
+	   double-word subtraction.  Note that only Overflow, Sign
+	   and Carry flags are valid, so swap arguments and condition
+	   of comparisons that would otherwise test Zero flag.  */
+
+	switch (code)
+	  {
+	  case LE: case LEU: case GT: case GTU:
+	    std::swap (lo[0], lo[1]);
+	    std::swap (hi[0], hi[1]);
+	    code = swap_condition (code);
+	    /* FALLTHRU */
+
+	  case LT: case LTU: case GE: case GEU:
+	    {
+	      rtx (*cmp_insn) (rtx, rtx);
+	      rtx (*sbb_insn) (rtx, rtx, rtx);
+
+	      if (TARGET_64BIT)
+		cmp_insn = gen_cmpdi_1, sbb_insn = gen_subdi3_carry_ccgz;
+	      else
+		cmp_insn = gen_cmpsi_1, sbb_insn = gen_subsi3_carry_ccgz;
+
+	      if (!nonimmediate_operand (lo[0], submode))
+		lo[0] = force_reg (submode, lo[0]);
+	      if (!x86_64_general_operand (lo[1], submode))
+		lo[1] = force_reg (submode, lo[1]);
+
+	      if (!register_operand (hi[0], submode))
+		hi[0] = force_reg (submode, hi[0]);
+	      if (!x86_64_general_operand (hi[1], submode))
+		hi[1] = force_reg (submode, hi[1]);
+
+	      emit_insn (cmp_insn (lo[0], lo[1]));
+	      emit_insn (sbb_insn (gen_rtx_SCRATCH (submode), hi[0], hi[1]));
+
+	      tmp = gen_rtx_REG (CCGZmode, FLAGS_REG);
+
+	      ix86_expand_branch (code, tmp, const0_rtx, label);
+	      return;
+	    }
+
+	  default:
+	    break;
+	  }
 
 	/* Otherwise, we need two or three jumps.  */
 

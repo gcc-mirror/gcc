@@ -1329,14 +1329,20 @@
   switch (code)
     {
     case EQ: case NE:
+      if (inmode == CCGZmode)
+	return false;
       return true;
-    case LT: case GE:
+    case GE: case LT:
       if (inmode == CCmode || inmode == CCGCmode
-	  || inmode == CCGOCmode || inmode == CCNOmode)
+	  || inmode == CCGOCmode || inmode == CCNOmode || inmode == CCGZmode)
 	return true;
       return false;
-    case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCCmode)
+    case GEU: case LTU:
+      if (inmode == CCGZmode)
+	return true;
+      /* FALLTHRU */
+    case GTU: case LEU:
+      if (inmode == CCmode || inmode == CCCmode || inmode == CCGZmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:

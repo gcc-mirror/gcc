@@ -1,3 +1,9 @@
+2017-10-18  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82580
+	* gcc.target/i386/pr82580.c: New test.
+
 2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/82233
@@ -91,8 +97,8 @@
 2017-10-17  Qing Zhao <qing.zhao@oracle.com>
 	    Wilco Dijkstra <wilco.dijkstra@arm.com>
 
-        PR middle-end/80295
-        * gcc.target/aarch64/pr80295.c: New test.
+	PR middle-end/80295
+	* gcc.target/aarch64/pr80295.c: New test.
 
 2017-10-17  Richard Biener  <rguenther@suse.de>
 
