@@ -1,5 +1,10 @@
 2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/82567
+	* gfortran.dg/array_constructor_51.f90: New test.
+
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/79795
 	* gfortran.dg/assumed_size_2.f90: New test.
 
