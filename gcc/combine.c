@@ -11791,6 +11791,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
 	  const_op -= 1;
 	  code = LEU;
 	  /* ... fall through ...  */
+	  gcc_fallthrough ();
 	}
       /* (unsigned) < 0x80000000 is equivalent to >= 0.  */
       else if (is_a <scalar_int_mode> (mode, &int_mode)
@@ -11828,6 +11829,7 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
 	  const_op -= 1;
 	  code = GTU;
 	  /* ... fall through ...  */
+	  gcc_fallthrough ();
 	}
 
       /* (unsigned) >= 0x80000000 is equivalent to < 0.  */
