@@ -1,5 +1,19 @@
 2017-10-18  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-loop-distribution.c (INCLUDE_ALGORITHM): New header file.
+	(tree-ssa-loop-ivopts.h): New header file.
+	(struct builtin_info): New fields.
+	(classify_builtin_1): Compute and record base and offset parts for
+	memset builtin partition by calling strip_offset.
+	(offset_cmp, fuse_memset_builtins): New functions.
+	(finalize_partitions): Fuse adjacent memset partitions by calling
+	above function.
+	* tree-ssa-loop-ivopts.c (strip_offset): Delete static declaration.
+	Expose the interface.
+	* tree-ssa-loop-ivopts.h (strip_offset): New declaration.
+
+2017-10-18  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/82574
 	* tree-loop-distribution.c (find_single_drs): New parameter.  Check
 	that data reference must be executed exactly once per iteration
