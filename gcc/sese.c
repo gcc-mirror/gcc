@@ -157,8 +157,6 @@ new_sese_info (edge entry, edge exit)
   region->debug_liveout = NULL;
   region->params.create (3);
   region->rename_map = new rename_map_t;
-  region->parameter_rename_map = new parameter_rename_map_t;
-  region->copied_bb_map = new bb_map_t;
   region->bbs.create (3);
   region->incomplete_phis.create (3);
 
@@ -179,18 +177,8 @@ free_sese_info (sese_info_p region)
        it != region->rename_map->end (); ++it)
     (*it).second.release ();
 
-  for (bb_map_t::iterator it = region->copied_bb_map->begin ();
-       it != region->copied_bb_map->end (); ++it)
-    (*it).second.release ();
-
   delete region->rename_map;
-  delete region->parameter_rename_map;
-  delete region->copied_bb_map;
-
   region->rename_map = NULL;
-  region->parameter_rename_map = NULL;
-  region->copied_bb_map = NULL;
-
   region->bbs.release ();
   region->incomplete_phis.release ();
 
