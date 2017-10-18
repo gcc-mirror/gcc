@@ -1,3 +1,16 @@
+2017-10-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/zvector/vec-cmp-2.c
+	(all_eq_double, all_ne_double, all_gt_double)
+	(all_lt_double, all_ge_double, all_le_double)
+	(any_eq_double, any_ne_double, any_gt_double)
+	(any_lt_double, any_ge_double, any_le_double)
+	(all_eq_int, all_ne_int, all_gt_int)
+	(all_lt_int, all_ge_int, all_le_int)
+	(any_eq_int, any_ne_int, any_gt_int)
+	(any_lt_int, any_ge_int, any_le_int): Set global variable instead
+	of calling foo().  Fix return type.
+
 2017-10-18  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82545
