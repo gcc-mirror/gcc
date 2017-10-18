@@ -3595,6 +3595,10 @@ max_size (tree exp, bool max_p)
     case tcc_constant:
       return exp;
 
+    case tcc_exceptional:
+      gcc_assert (code == SSA_NAME);
+      return exp;
+
     case tcc_vl_exp:
       if (code == CALL_EXPR)
 	{
