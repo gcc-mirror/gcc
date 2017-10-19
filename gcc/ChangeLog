@@ -1,3 +1,8 @@
+2017-10-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82596
+	* tree.c (array_at_struct_end_p): Handle STRING_CST.
+
 2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* asan.c (handle_builtin_alloca): Deal with all alloca variants.
