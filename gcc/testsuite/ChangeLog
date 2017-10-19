@@ -1,3 +1,16 @@
+2017-10-19  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-stack-size): New proc.
+	* gcc.c-torture/execute/20030209-1.c: Use dg-require-stack-size.
+	* gcc.c-torture/execute/20040805-1.c: Same.
+	* gcc.c-torture/execute/920410-1.c: Same.
+	* gcc.c-torture/execute/921113-1.c: Same.
+	* gcc.c-torture/execute/921208-2.c: Same.
+	* gcc.c-torture/execute/comp-goto-1.c: Same.
+	* gcc.c-torture/execute/pr20621-1.c: Same.
+	* gcc.c-torture/execute/pr28982b.c: Same.
+	* gcc.dg/tree-prof/comp-goto-1.c: Same.
+
 2017-10-19  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82517
