@@ -7240,34 +7240,58 @@ package body Exp_Ch6 is
       if Is_Limited_View (Typ) then
          return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
       else
---         if Debug_Flag_Dot_9 then
-         if True then
-            return False; -- ???disable bip for nonlimited types
-         end if;
-
          if Has_Interfaces (Typ) then
             return False;
-         end if;
-
-         --  For T'Class, return True if it's True for the corresponding
-         --  specific type. This is necessary because a class-wide function
-         --  might say "return F (...)", where F returns the corresponding
-         --  specific type.
-
-         if Is_Class_Wide_Type (Typ) then
-            return Is_Build_In_Place_Result_Type (Etype (Typ));
          end if;
 
          declare
             T : Entity_Id := Typ;
          begin
-            if Present (Underlying_Type (Typ)) then
+            --  For T'Class, return True if it's True for T. This is necessary
+            --  because a class-wide function might say "return F (...)", where
+            --  F returns the corresponding specific type.
+
+            if Is_Class_Wide_Type (Typ) then
+               T := Etype (Typ);
+            end if;
+
+            --  If this is a generic formal type in an instance, return True if
+            --  it's True for the generic actual type.
+
+            if Nkind (Parent (Typ)) = N_Subtype_Declaration
+              and then Present (Generic_Parent_Type (Parent (Typ)))
+            then
+               T := Entity (Subtype_Indication (Parent (Typ)));
+
+               if Present (Full_View (T)) then
+                  T := Full_View (T);
+               end if;
+
+            elsif Present (Underlying_Type (Typ)) then
                T := Underlying_Type (Typ);
             end if;
 
             declare
-               Result : constant Boolean := Is_Controlled (T);
+               Result : Boolean;
             begin
+               --  ???For now, enable build-in-place for a very narrow set of
+               --  controlled types. Change "if True" to "if False" to
+               --  experiment more controlled types. Eventually, we would
+               --  like to enable build-in-place for all tagged types, all
+               --  types that need finalization, and all caller-unknown-size
+               --  types. We will eventually use Debug_Flag_Dot_9 to disable
+               --  build-in-place for nonlimited types.
+
+--         if Debug_Flag_Dot_9 then
+               if True then
+                  Result := Is_Controlled (T)
+                    and then Present (Enclosing_Subprogram (T))
+                    and then not Is_Compilation_Unit (Enclosing_Subprogram (T))
+                    and then Ekind (Enclosing_Subprogram (T)) = E_Procedure;
+               else
+                  Result := Is_Controlled (T);
+               end if;
+
                return Result;
             end;
          end;
