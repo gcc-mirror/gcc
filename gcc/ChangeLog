@@ -1,3 +1,9 @@
+2017-10-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*call_indirect_aix<mode>,
+	*call_value_indirect_aix<mode>, *call_indirect_elfv2<mode>,
+	*call_value_indirect_elfv2<mode>): Add correct mode to the unspec.
+
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82580
