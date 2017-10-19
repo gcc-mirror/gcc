@@ -1,5 +1,7 @@
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/ubsan/builtin-1.c: New test.
+
 	* c-c++-common/ubsan/float-cast-overflow-1.c: Drop value keyword
 	from expected output regexps.
 	* c-c++-common/ubsan/float-cast-overflow-2.c: Likewise.
