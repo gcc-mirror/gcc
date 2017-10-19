@@ -64,7 +64,7 @@ void
 conversion_to_integral_128 (void)
 {
   #undef MAXVAL
-  #define MAXVAL LONG_LONG_MAX
+  #define MAXVAL __LONG_LONG_MAX__
   decimal128 a, b (1), c (-1), d (MAXVAL), e (-MAXVAL);
   long long ll;
 
