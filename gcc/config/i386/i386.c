@@ -18149,8 +18149,49 @@ output_387_binary_op (rtx_insn *insn, rtx *operands)
 {
   static char buf[40];
   const char *p;
-  const char *ssep;
-  int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]);
+  bool is_sse
+    = (SSE_REG_P (operands[0])
+       || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]));
+
+  if (is_sse)
+    p = "%v";
+  else if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
+	   || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
+    p = "fi";
+  else
+    p = "f";
+
+  strcpy (buf, p);
+
+  switch (GET_CODE (operands[3]))
+    {
+    case PLUS:
+      p = "add"; break;
+    case MINUS:
+      p = "sub"; break;
+    case MULT:
+      p = "mul"; break;
+    case DIV:
+      p = "div"; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  strcat (buf, p);
+
+  if (is_sse)
+   {
+     p = (GET_MODE (operands[0]) == SFmode) ? "ss" : "sd";
+     strcat (buf, p);
+
+     if (TARGET_AVX)
+       p = "\t{%2, %1, %0|%0, %1, %2}";
+     else
+       p = "\t{%2, %0|%0, %2}";
+
+     strcat (buf, p);
+     return buf;
+   }
 
   /* Even if we do not want to check the inputs, this documents input
      constraints.  Which helps in understanding the following code.  */
@@ -18166,72 +18207,8 @@ output_387_binary_op (rtx_insn *insn, rtx *operands)
 	  && (STACK_TOP_P (operands[1]) || STACK_TOP_P (operands[2])))
 	; /* ok */
       else
-	gcc_assert (is_sse);
+	gcc_unreachable ();
     }
-
-  switch (GET_CODE (operands[3]))
-    {
-    case PLUS:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fiadd";
-      else
-	p = "fadd";
-      ssep = "vadd";
-      break;
-
-    case MINUS:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fisub";
-      else
-	p = "fsub";
-      ssep = "vsub";
-      break;
-
-    case MULT:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fimul";
-      else
-	p = "fmul";
-      ssep = "vmul";
-      break;
-
-    case DIV:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fidiv";
-      else
-	p = "fdiv";
-      ssep = "vdiv";
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (is_sse)
-   {
-     if (TARGET_AVX)
-       {
-	 strcpy (buf, ssep);
-	 if (GET_MODE (operands[0]) == SFmode)
-	   strcat (buf, "ss\t{%2, %1, %0|%0, %1, %2}");
-	 else
-	   strcat (buf, "sd\t{%2, %1, %0|%0, %1, %2}");
-       }
-     else
-       {
-	 strcpy (buf, ssep + 1);
-	 if (GET_MODE (operands[0]) == SFmode)
-	   strcat (buf, "ss\t{%2, %0|%0, %2}");
-	 else
-	   strcat (buf, "sd\t{%2, %0|%0, %2}");
-       }
-      return buf;
-   }
-  strcpy (buf, p);
 
   switch (GET_CODE (operands[3]))
     {
@@ -18820,9 +18797,12 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
 const char *
 output_fix_trunc (rtx_insn *insn, rtx *operands, bool fisttp)
 {
-  int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
-  int dimode_p = GET_MODE (operands[0]) == DImode;
+  bool stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG);
+  bool dimode_p = GET_MODE (operands[0]) == DImode;
   int round_mode = get_attr_i387_cw (insn);
+
+  static char buf[40];
+  const char *p;
 
   /* Jump through a hoop or two for DImode, since the hardware has no
      non-popping instruction.  We used to do this a different way, but
@@ -18835,18 +18815,20 @@ output_fix_trunc (rtx_insn *insn, rtx *operands, bool fisttp)
   gcc_assert (GET_MODE (operands[1]) != TFmode);
 
   if (fisttp)
-      output_asm_insn ("fisttp%Z0\t%0", operands);
-  else
-    {
-      if (round_mode != I387_CW_ANY)
-	output_asm_insn ("fldcw\t%3", operands);
-      if (stack_top_dies || dimode_p)
-	output_asm_insn ("fistp%Z0\t%0", operands);
-      else
-	output_asm_insn ("fist%Z0\t%0", operands);
-      if (round_mode != I387_CW_ANY)
-	output_asm_insn ("fldcw\t%2", operands);
-    }
+    return "fisttp%Z0\t%0";
+
+  strcpy (buf, "fist");
+
+  if (round_mode != I387_CW_ANY)
+    output_asm_insn ("fldcw\t%3", operands);
+
+  p = "p%Z0\t%0";
+  strcat (buf, p + !(stack_top_dies || dimode_p));
+
+  output_asm_insn (buf, operands);
+
+  if (round_mode != I387_CW_ANY)
+    output_asm_insn ("fldcw\t%2", operands);
 
   return "";
 }
@@ -18890,7 +18872,7 @@ output_fp_compare (rtx_insn *insn, rtx *operands,
   bool stack_top_dies;
 
   static char buf[40];
-  const char *p, *r;
+  const char *p;
 
   gcc_assert (STACK_TOP_P (xops[0]));
 
@@ -18901,8 +18883,8 @@ output_fp_compare (rtx_insn *insn, rtx *operands,
       p = unordered_p ? "fucomi" : "fcomi";
       strcpy (buf, p);
 
-      r = "p\t{%y1, %0|%0, %y1}";
-      strcat (buf, r + !stack_top_dies);
+      p = "p\t{%y1, %0|%0, %y1}";
+      strcat (buf, p + !stack_top_dies);
 
       return buf;
     }
@@ -18936,8 +18918,8 @@ output_fp_compare (rtx_insn *insn, rtx *operands,
 
       strcpy (buf, p);
 
-      r = "p%Z2\t%y2";
-      strcat (buf, r + !stack_top_dies);
+      p = "p%Z2\t%y2";
+      strcat (buf, p + !stack_top_dies);
     }
 
   output_asm_insn (buf, operands);
@@ -21763,7 +21745,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
   rtx op0 = *pop0, op1 = *pop1;
   machine_mode op_mode = GET_MODE (op0);
-  int is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
+  bool is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
 
   /* All of the unordered compare instructions only work on registers.
      The same is true of the fcomi compare instructions.  The XFmode
