@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_prefer_ldrd_strd } */
-/* { dg-options "-O2" }  */
+/* { dg-options "-O2 -mno-unaligned-access" }  */
 int foo(int a, int b, int* p, int *q)
 {
   a = p[2] + p[3];
@@ -8,4 +8,4 @@ int foo(int a, int b, int* p, int *q)
   *p = a;
   return a;
 }
-/* { dg-final { scan-assembler "ldrd\\t" } } */
+/* { dg-final { scan-assembler-not "ldrd\\t" } } */
