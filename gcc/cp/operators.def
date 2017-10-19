@@ -51,9 +51,9 @@ along with GCC; see the file COPYING3.  If not see
      for `operator ()'.)  Postincrement and postdecrement operators
      are marked as binary.
 
-   ASSN_P
+   OP_KIND
 
-     A boolean value.  If nonzero, this is an assignment operator.
+     The cp_operator_kind_t.
 
    Before including this file, you should define DEF_OPERATOR
    to take these arguments.
@@ -64,17 +64,17 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Use DEF_SIMPLE_OPERATOR to define a non-assignment operator.  Its
    arguments are as for DEF_OPERATOR, but there is no need to provide
-   an ASSIGNMENT_P argument; it is always zero.  */
+   a KIND argument; it is always cik_simple_op.  */
 
 #define DEF_SIMPLE_OPERATOR(NAME, CODE, MANGLING, ARITY) \
   DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, cik_simple_op)
 
 /* Use DEF_ASSN_OPERATOR to define an assignment operator.  Its
    arguments are as for DEF_OPERATOR, but there is no need to provide
-   an ASSIGNMENT_P argument; it is always one.  */
+   ARITY (always 2) or KIND (always cik_assign_op).  */
 
-#define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING, ARITY) \
-  DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, cik_assign_op)
+#define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) \
+  DEF_OPERATOR(NAME, CODE, MANGLING, 2, cik_assign_op)
 
 /* Memory allocation operators.  */
 DEF_OPERATOR ("new", NEW_EXPR, "nw", -1, cik_newdel_op)
@@ -134,17 +134,17 @@ DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", 2)
 DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", 2)
 
 /* Assignment operators.  */
-DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS", 2)
-DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL", 2)
-DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI", 2)
-DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL", 2)
-DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV", 2)
-DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM", 2)
-DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN", 2)
-DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR", 2)
-DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO", 2)
-DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS", 2)
-DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS", 2)
+DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS")
+DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL")
+DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI")
+DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL")
+DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV")
+DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM")
+DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN")
+DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR")
+DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO")
+DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS")
+DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS")
 
 /* Ternary operators.  */
 DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", 3)
@@ -158,3 +158,6 @@ DEF_SIMPLE_OPERATOR ("... +", UNARY_LEFT_FOLD_EXPR, "fl", 2)
 DEF_SIMPLE_OPERATOR ("+ ...", UNARY_RIGHT_FOLD_EXPR, "fr", 2)
 DEF_SIMPLE_OPERATOR ("+ ... +", BINARY_LEFT_FOLD_EXPR, "fL", 3)
 DEF_SIMPLE_OPERATOR ("+ ... +", BINARY_RIGHT_FOLD_EXPR, "fR", 3)
+
+#undef DEF_SIMPLE_OPERATOR
+#undef DEF_ASSN_OPERATOR

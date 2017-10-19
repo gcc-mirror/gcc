@@ -1,3 +1,12 @@
+2017-10-19  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* lex.c (get_identifier_kind_name): Fix names.
+	(init_operators): Nuke extraneous operators.
+	* operators.def (DEF_OPERATOR): Fix documentation.
+	(DEF_ASSN_OPERATOR): Lose ARITY.
+	(DEF_SIMPLE_OPERATOR, DEF_ASSN_OPERATOR): Undef at end.
+
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r253836.
