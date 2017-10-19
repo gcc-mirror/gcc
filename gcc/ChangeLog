@@ -1,3 +1,9 @@
+2017-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (output_387_binary_op): Rewrite SSE part.
+	(ix86_emit_mode_set): Rewrite insn mnemonic construction.
+	(ix86_prepare_fp_compare_args): Redefine is_sse as bool.
+
 2017-10-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82596
