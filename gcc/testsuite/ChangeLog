@@ -1,3 +1,10 @@
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82580
+	* gcc.target/i386/pr82580.c: Use {\msbb} instead of "sbb" in
+	scan-assembler-times.  Check that there are no movzb* instructions
+	if lp64.
+
 2017-10-19  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tree-ssa/ldist-27.c: Use dg-require-stack-size.
