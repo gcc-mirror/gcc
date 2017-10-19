@@ -1,3 +1,8 @@
+2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/decimal/conversion-to-integral.cc: Use predefined macro
+	instead of non-standard glibc one.
+
 2017-10-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/82558
