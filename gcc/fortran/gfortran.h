@@ -2796,6 +2796,17 @@ void gfc_done_2 (void);
 
 int get_c_kind (const char *, CInteropKind_t *);
 
+const char *gfc_closest_fuzzy_match (const char *, char **);
+static inline void
+vec_push (char **&optr, size_t &osz, const char *elt)
+{
+  /* {auto,}vec.safe_push () replacement.  Don't ask..  */
+  // if (strlen (elt) < 4) return; premature optimization: eliminated by cutoff
+  optr = XRESIZEVEC (char *, optr, osz + 2);
+  optr[osz] = CONST_CAST (char *, elt);
+  optr[++osz] = NULL;
+}
+
 /* options.c */
 unsigned int gfc_option_lang_mask (void);
 void gfc_init_options_struct (struct gcc_options *);
@@ -3228,6 +3239,7 @@ bool gfc_type_is_extensible (gfc_symbol *);
 bool gfc_resolve_intrinsic (gfc_symbol *, locus *);
 bool gfc_explicit_interface_required (gfc_symbol *, char *, int);
 extern int gfc_do_concurrent_flag;
+const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
 
 
 /* array.c */
