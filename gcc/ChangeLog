@@ -1,3 +1,20 @@
+2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/82509
+	* dwarf2out.c (new_die_raw): New static inline function.
+	(new_die): Use it to create the DIE.
+	(add_AT_external_die_ref): Likewise.
+	(clone_die): Likewise.
+	(clone_as_declaration): Likewise.
+	(dwarf2out_vms_debug_main_pointer): Likewise.
+	(base_type_die): Likewise.  Remove early return for corner cases.
+	Do not call add_pubtype on the DIE here.
+	(is_base_type): Remove ERROR_MARK and return 0 for VOID_TYPE.
+	(modified_type_die): Adjust the lookup for reverse order DIEs.  Skip
+	typedefs for base types with DW_AT_endianity.  Make sure a DIE with
+	native order exists for base types, attach the DIE manually and call
+	add_pubtype on it.  Do not equate a reverse order DIE to the type.
+
 2017-10-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm.c (align_ok_ldrd_strd): New function.

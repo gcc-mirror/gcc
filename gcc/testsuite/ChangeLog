@@ -1,3 +1,10 @@
+2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/debug/dwarf2/sso.c: Rename into...
+	* gcc.dg/debug/dwarf2/sso-1.c: ...this.
+	* gcc.dg/debug/dwarf2/sso-2.c: New test.
+	* gcc.dg/debug/dwarf2/sso-3.c: Likewise.
+
 2017-10-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/82445
