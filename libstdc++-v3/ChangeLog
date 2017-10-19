@@ -1,5 +1,8 @@
 2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update references to C++17
+	section numbers.
+
 	* testsuite/decimal/conversion-to-integral.cc: Use predefined macro
 	instead of non-standard glibc one.
 
