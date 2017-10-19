@@ -1,3 +1,10 @@
+2017-10-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/82233
+	* intrinsics/execute_command_line.c (execute_command_line):
+	No call to runtime_error if cmdstat is present.
+
 2017-09-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
