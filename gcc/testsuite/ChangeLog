@@ -1,3 +1,9 @@
+2017-10-18  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82618
+	* gcc.target/i386/pr82618.c: New test.
+
 2017-10-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82596

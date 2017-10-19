@@ -1,3 +1,8 @@
+2017-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82618
+	* config/i386/i386.md (sub to cmp): New peephole2 pattern.
+
 2017-10-19  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/82395
