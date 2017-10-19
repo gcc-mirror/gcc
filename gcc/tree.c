@@ -12549,6 +12549,9 @@ array_at_struct_end_p (tree ref)
   else
     return false;
 
+  if (TREE_CODE (ref) == STRING_CST)
+    return false;
+
   while (handled_component_p (ref))
     {
       /* If the reference chain contains a component reference to a

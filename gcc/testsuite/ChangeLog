@@ -1,3 +1,8 @@
+2017-10-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82596
+	* gcc/testsuite/gcc.dg/pr82596.c: New test.
+
 2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/Walloca-15.c: New test.
