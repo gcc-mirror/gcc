@@ -10817,8 +10817,14 @@ package body Exp_Util is
                Analyze (Block);
             end if;
 
-         when others =>
+         --  Could be e.g. a loop that was transformed into a block or null
+         --  statement. Do nothing for terminate alternatives.
+
+         when N_Block_Statement | N_Null_Statement | N_Terminate_Alternative =>
             null;
+
+         when others =>
+            raise Program_Error;
       end case;
    end Process_Statements_For_Controlled_Objects;
 
