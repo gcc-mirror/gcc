@@ -853,16 +853,15 @@ hoist_guard (struct loop *loop, edge guard)
      same average number of iterations regardless outcome of guard.  */
   new_edge->probability = guard->probability;
   profile_count skip_count = guard->src->count > 0
-		   ? guard->count.apply_scale (pre_header->count,
+		   ? guard->count ().apply_scale (pre_header->count,
 					       guard->src->count)
-		   : guard->count.apply_probability (new_edge->probability);
+		   : guard->count ().apply_probability (new_edge->probability);
 
-  if (skip_count > e->count)
+  if (skip_count > e->count ())
     {
       fprintf (dump_file, "  Capping count; expect profile inconsistency\n");
-      skip_count = e->count;
+      skip_count = e->count ();
     }
-  new_edge->count = skip_count;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  Estimated probability of skipping loop is ");
@@ -874,19 +873,14 @@ hoist_guard (struct loop *loop, edge guard)
 
      First decrease count of path from newly hoisted loop guard
      to loop header...  */
-  e->count -= skip_count;
   e->probability = new_edge->probability.invert ();
-  e->dest->count = e->count;
+  e->dest->count = e->count ();
   e->dest->frequency = EDGE_FREQUENCY (e);
 
   /* ... now update profile to represent that original guard will be optimized
      away ...  */
   guard->probability = profile_probability::never ();
-  guard->count = profile_count::zero ();
   not_guard->probability = profile_probability::always ();
-  /* This count is wrong (frequency of not_guard does not change),
-     but will be scaled later.  */
-  not_guard->count = guard->src->count;
 
   /* ... finally scale everything in the loop except for guarded basic blocks
      where profile does not change.  */

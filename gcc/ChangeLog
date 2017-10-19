@@ -1,3 +1,138 @@
+2017-10-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* asan.c (create_cond_insert_point): Do not update edge count.
+	* auto-profile.c (afdo_propagate_edge): Update for edge count removal.
+	(afdo_propagate_circuit): Likewise.
+	(afdo_calculate_branch_prob): Likewise.
+	(afdo_annotate_cfg): Likewise.
+	* basic-block.h (struct edge_def): Remove count.
+	(edge_def::count): New accessor.
+	* bb-reorder.c (rotate_loop): Update.
+	(find_traces_1_round): Update.
+	(connect_traces): Update.
+	(sanitize_hot_paths): Update.
+	* cfg.c (unchecked_make_edge): Update.
+	(make_single_succ_edge): Update.
+	(check_bb_profile): Update.
+	(dump_edge_info): Update.
+	(update_bb_profile_for_threading): Update.
+	(scale_bbs_frequencies_int): Update.
+	(scale_bbs_frequencies_gcov_type): Update.
+	(scale_bbs_frequencies_profile_count): Update.
+	(scale_bbs_frequencies): Update.
+	* cfganal.c (connect_infinite_loops_to_exit): Update.
+	* cfgbuild.c (compute_outgoing_frequencies): Update.
+	(find_many_sub_basic_blocks): Update.
+	* cfgcleanup.c (try_forward_edges): Update.
+	(try_crossjump_to_edge): Update
+	* cfgexpand.c (expand_gimple_cond): Update
+	(expand_gimple_tailcall): Update
+	(construct_exit_block): Update
+	* cfghooks.c (verify_flow_info): Update
+	(redirect_edge_succ_nodup): Update
+	(split_edge): Update
+	(make_forwarder_block): Update
+	(duplicate_block): Update
+	(account_profile_record): Update
+	* cfgloop.c (find_subloop_latch_edge_by_profile): Update.
+	* cfgloopanal.c (expected_loop_iterations_unbounded): Update.
+	* cfgloopmanip.c (scale_loop_profile): Update.
+	(loopify): Update.
+	(lv_adjust_loop_entry_edge): Update.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Update.
+	(force_nonfallthru_and_redirect): Update.
+	(purge_dead_edges): Update.
+	(rtl_flow_call_edges_add): Update.
+	* cgraphunit.c (init_lowered_empty_function): Update.
+	(cgraph_node::expand_thunk): Update.
+	* gimple-pretty-print.c (dump_probability): Update.
+	(dump_edge_probability): Update.
+	* gimple-ssa-isolate-paths.c (isolate_path): Update.
+	* haifa-sched.c (sched_create_recovery_edges): Update.
+	* hsa-gen.c (convert_switch_statements): Update.
+	* ifcvt.c (dead_or_predicable): Update.
+	* ipa-inline-transform.c (inline_transform): Update.
+	* ipa-split.c (split_function): Update.
+	* ipa-utils.c (ipa_merge_profiles): Update.
+	* loop-doloop.c (add_test): Update.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Update.
+	* lto-streamer-in.c (input_cfg): Update.
+	(input_function): Update.
+	* lto-streamer-out.c (output_cfg): Update.
+	* modulo-sched.c (sms_schedule): Update.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Update.
+	* predict.c (maybe_hot_edge_p): Update.
+	(unlikely_executed_edge_p): Update.
+	(probably_never_executed_edge_p): Update.
+	(dump_prediction): Update.
+	(drop_profile): Update.
+	(propagate_unlikely_bbs_forward): Update.
+	(determine_unlikely_bbs): Update.
+	(force_edge_cold): Update.
+	* profile.c (compute_branch_probabilities): Update.
+	* reg-stack.c (better_edge): Update.
+	* shrink-wrap.c (handle_simple_exit): Update.
+	* tracer.c (better_p): Update.
+	* trans-mem.c (expand_transaction): Update.
+	(split_bb_make_tm_edge): Update.
+	* tree-call-cdce.c: Update.
+	* tree-cfg.c (gimple_find_sub_bbs): Update.
+	(gimple_split_edge): Update.
+	(gimple_duplicate_sese_region): Update.
+	(gimple_duplicate_sese_tail): Update.
+	(gimple_flow_call_edges_add): Update.
+	(insert_cond_bb): Update.
+	(execute_fixup_cfg): Update.
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Update.
+	* tree-complex.c (expand_complex_div_wide): Update.
+	* tree-eh.c (lower_resx): Update.
+	(unsplit_eh): Update.
+	(cleanup_empty_eh_move_lp): Update.
+	* tree-inline.c (copy_edges_for_bb): Update.
+	(freqs_to_counts): Update.
+	(copy_cfg_body): Update.
+	* tree-ssa-dce.c (remove_dead_stmt): Update.
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Update.
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Update.
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Update.
+	(unloop_loops): Update.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Update.
+	* tree-ssa-loop-split.c (connect_loops): Update.
+	(split_loop): Update.
+	* tree-ssa-loop-unswitch.c (hoist_guard): Update.
+	* tree-ssa-phionlycprop.c (propagate_rhs_into_lhs): Update.
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Update.
+	* tree-ssa-reassoc.c (branch_fixup): Update.
+	* tree-ssa-tail-merge.c (replace_block_by): Update.
+	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges): Update.
+	(compute_path_counts): Update.
+	(update_profile): Update.
+	(recompute_probabilities): Update.
+	(update_joiner_offpath_counts): Update.
+	(estimated_freqs_path): Update.
+	(freqs_to_counts_path): Update.
+	(clear_counts_path): Update.
+	(ssa_fix_duplicate_block_edges): Update.
+	(duplicate_thread_path): Update.
+	* tree-switch-conversion.c (hoist_edge_and_branch_if_true): Update.
+	(case_bit_test_cmp): Update.
+	(collect_switch_conv_info): Update.
+	(gen_inbound_check): Update.
+	(do_jump_if_equal): Update.
+	(emit_cmp_and_jump_insns): Update.
+	* tree-tailcall.c (decrease_profile): Update.
+	(eliminate_tail_call): Update.
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Update.
+	(vect_do_peeling): Update.
+	* tree-vect-loop.c (scale_profile_for_vect_loop): Update.
+	* ubsan.c (ubsan_expand_null_ifn): Update.
+	(ubsan_expand_ptr_ifn): Update.
+	* value-prof.c (gimple_divmod_fixed_value): Update.
+	(gimple_mod_pow2): Update.
+	(gimple_mod_subtract): Update.
+	(gimple_ic): Update.
+	(gimple_stringop_fixed_value): Update.
+
 2017-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82618

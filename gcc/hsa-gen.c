@@ -6269,7 +6269,7 @@ convert_switch_statements (void)
 	    tree label = gimple_switch_label (s, i);
 	    basic_block label_bb = label_to_block_fn (func, CASE_LABEL (label));
 	    edge e = find_edge (bb, label_bb);
-	    edge_counts.safe_push (e->count);
+	    edge_counts.safe_push (e->count ());
 	    edge_probabilities.safe_push (e->probability);
 	    gphi_iterator phi_gsi;
 
@@ -6359,7 +6359,6 @@ convert_switch_statements (void)
 	    if (prob_sum.initialized_p ())
 	      new_edge->probability = edge_probabilities[i] / prob_sum;
 
-	    new_edge->count = edge_counts[i];
 	    new_edges.safe_push (new_edge);
 
 	    if (i < labels - 1)
@@ -6375,9 +6374,6 @@ convert_switch_statements (void)
 
 		edge next_edge = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
 		next_edge->probability = new_edge->probability.invert ();
-		next_edge->count = edge_counts[0]
-		  + sum_slice <profile_count> (edge_counts, i, labels,
-					       profile_count::zero ());
 		next_bb->frequency = EDGE_FREQUENCY (next_edge);
 		cur_bb = next_bb;
 	      }
@@ -6386,7 +6382,6 @@ convert_switch_statements (void)
 	      {
 		edge e = make_edge (cur_bb, default_label_bb, EDGE_FALSE_VALUE);
 		e->probability = new_edge->probability.invert ();
-		e->count = edge_counts[0];
 		new_edges.safe_insert (0, e);
 	      }
 	  }

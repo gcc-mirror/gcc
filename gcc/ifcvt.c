@@ -5283,8 +5283,6 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
       if (reversep)
 	{
-	  std::swap (BRANCH_EDGE (test_bb)->count,
-		     FALLTHRU_EDGE (test_bb)->count);
 	  std::swap (BRANCH_EDGE (test_bb)->probability,
 		     FALLTHRU_EDGE (test_bb)->probability);
 	  update_br_prob_note (test_bb);

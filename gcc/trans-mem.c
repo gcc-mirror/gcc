@@ -2938,10 +2938,8 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       ei->probability = profile_probability::always ();
       et->probability = profile_probability::likely ();
       ef->probability = profile_probability::unlikely ();
-      et->count = test_bb->count.apply_probability (et->probability);
-      ef->count = test_bb->count.apply_probability (ef->probability);
 
-      code_bb->count = et->count;
+      code_bb->count = et->count ();
       code_bb->frequency = EDGE_FREQUENCY (et);
 
       transaction_bb = join_bb;
@@ -2975,15 +2973,11 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       redirect_edge_pred (fallthru_edge, test_bb);
       fallthru_edge->flags = EDGE_FALSE_VALUE;
       fallthru_edge->probability = profile_probability::very_likely ();
-      fallthru_edge->count = test_bb->count.apply_probability
-				(fallthru_edge->probability);
 
       // Abort/over edge.
       redirect_edge_pred (abort_edge, test_bb);
       abort_edge->flags = EDGE_TRUE_VALUE;
       abort_edge->probability = profile_probability::unlikely ();
-      abort_edge->count = test_bb->count.apply_probability
-				(abort_edge->probability);
 
       transaction_bb = test_bb;
     }
@@ -3011,7 +3005,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       // out of the fallthru edge.
       edge e = make_edge (transaction_bb, test_bb, fallthru_edge->flags);
       e->probability = fallthru_edge->probability;
-      test_bb->count = e->count = fallthru_edge->count;
+      test_bb->count = fallthru_edge->count ();
       test_bb->frequency = EDGE_FREQUENCY (e);
 
       // Now update the edges to the inst/uninist implementations.
@@ -3022,14 +3016,10 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       redirect_edge_pred (inst_edge, test_bb);
       inst_edge->flags = EDGE_FALSE_VALUE;
       inst_edge->probability = profile_probability::even ();
-      inst_edge->count
-	= test_bb->count.apply_probability (inst_edge->probability);
 
       redirect_edge_pred (uninst_edge, test_bb);
       uninst_edge->flags = EDGE_TRUE_VALUE;
       uninst_edge->probability = profile_probability::even ();
-      uninst_edge->count
-	= test_bb->count.apply_probability (uninst_edge->probability);
     }
 
   // If we have no previous special cases, and we have PHIs at the beginning
@@ -3214,10 +3204,7 @@ split_bb_make_tm_edge (gimple *stmt, basic_block dest_bb,
     }
   edge e = make_edge (bb, dest_bb, EDGE_ABNORMAL);
   if (e)
-    {
-      e->probability = profile_probability::guessed_never ();
-      e->count = profile_count::guessed_zero ();
-    }
+    e->probability = profile_probability::guessed_never ();
 
   // Record the need for the edge for the benefit of the rtl passes.
   if (cfun->gimple_df->tm_restart == NULL)

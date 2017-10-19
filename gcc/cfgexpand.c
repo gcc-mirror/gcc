@@ -2507,7 +2507,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   dest = false_edge->dest;
   redirect_edge_succ (false_edge, new_bb);
   false_edge->flags |= EDGE_FALLTHRU;
-  new_bb->count = false_edge->count;
+  new_bb->count = false_edge->count ();
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
   loop_p loop = find_common_loop (bb->loop_father, dest->loop_father);
   add_bb_to_loop (new_bb, loop);
@@ -3817,7 +3817,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
      the exit block.  */
 
   probability = profile_probability::never ();
-  profile_count count = profile_count::zero ();
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
@@ -3825,12 +3824,10 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 	{
 	  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
-	      e->dest->count -= e->count;
 	      e->dest->frequency -= EDGE_FREQUENCY (e);
 	      if (e->dest->frequency < 0)
 		e->dest->frequency = 0;
 	    }
-	  count += e->count;
 	  probability += e->probability;
 	  remove_edge (e);
 	}
@@ -3860,7 +3857,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_ABNORMAL
 		 | EDGE_SIBCALL);
   e->probability = probability;
-  e->count = count;
   BB_END (bb) = last;
   update_bb_for_insn (bb);
 
@@ -5930,8 +5926,7 @@ construct_exit_block (void)
   FOR_EACH_EDGE (e2, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e2 != e)
       {
-	e->count -= e2->count;
-	exit_block->count -= e2->count;
+	exit_block->count -= e2->count ();
 	exit_block->frequency -= EDGE_FREQUENCY (e2);
       }
   if (exit_block->frequency < 0)

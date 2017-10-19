@@ -813,7 +813,6 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
   /* Set up the fallthrough basic block.  */
   e = find_edge (cond_bb, fallthru_bb);
   e->flags = EDGE_FALSE_VALUE;
-  e->count = cond_bb->count;
   e->probability = profile_probability::very_likely ();
 
   /* Update dominance info for the newly created then_bb; note that
@@ -884,7 +883,6 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 	  /* Set up the fallthrough basic block.  */
 	  e = find_edge (cond1_bb, cond2_bb);
 	  e->flags = EDGE_FALSE_VALUE;
-	  e->count = cond1_bb->count;
 	  e->probability = profile_probability::very_likely ();
 
 	  /* Update dominance info.  */
@@ -1075,7 +1073,6 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
   e->flags = EDGE_FALSE_VALUE;
   if (pos_neg != 3)
     {
-      e->count = cond_bb->count;
       e->probability = profile_probability::very_likely ();
 
       /* Connect 'then block' with the 'else block'.  This is needed
@@ -1091,14 +1088,11 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
     }
   else
     {
-      profile_count count = cond_bb->count.apply_probability (PROB_EVEN);
-      e->count = count;
       e->probability = profile_probability::even ();
 
       e = split_block (fallthru_bb, (gimple *) NULL);
       cond_neg_bb = e->src;
       fallthru_bb = e->dest;
-      e->count = count;
       e->probability = profile_probability::very_likely ();
       e->flags = EDGE_FALSE_VALUE;
 
@@ -1109,14 +1103,12 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
       add_bb_to_loop (cond_pos_bb, cond_bb->loop_father);
 
       e = make_edge (cond_bb, cond_pos_bb, EDGE_TRUE_VALUE);
-      e->count = count;
       e->probability = profile_probability::even ();
 
       e = make_edge (cond_pos_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();
 
       e = make_edge (cond_pos_bb, fallthru_bb, EDGE_FALSE_VALUE);
-      e->count = count;
       e->probability = profile_probability::very_likely ();
 
       make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);

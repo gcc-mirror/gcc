@@ -599,12 +599,12 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
 
   FOR_EACH_VEC_ELT (latches, i, e)
     {
-      if (e->count > mcount)
+      if (e->count ()> mcount)
 	{
 	  me = e;
-	  mcount = e->count;
+	  mcount = e->count();
 	}
-      tcount += e->count;
+      tcount += e->count();
     }
 
   if (!tcount.initialized_p () || tcount < HEAVY_EDGE_MIN_SAMPLES

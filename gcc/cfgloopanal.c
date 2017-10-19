@@ -253,9 +253,9 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 
       FOR_EACH_EDGE (e, ei, loop->header->preds)
 	if (e->src == loop->latch)
-	  count_latch = e->count;
+	  count_latch = e->count ();
 	else
-	  count_in += e->count;
+	  count_in += e->count ();
 
       if (!count_latch.initialized_p ())
 	;

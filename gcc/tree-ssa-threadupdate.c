@@ -303,7 +303,6 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
       else
 	{
 	  e->probability = profile_probability::always ();
-	  e->count = bb->count;
 	  ei_next (&ei);
 	}
     }
@@ -741,7 +740,7 @@ compute_path_counts (struct redirection_data *rd,
 	     same last path edge in the case where the last edge has a nocopy
 	     source block.  */
 	  gcc_assert (ein_path->last ()->e == elast);
-	  path_in_count += ein->count;
+	  path_in_count += ein->count ();
 	  path_in_freq += EDGE_FREQUENCY (ein);
 	}
       else if (!ein_path)
@@ -749,7 +748,7 @@ compute_path_counts (struct redirection_data *rd,
 	  /* Keep track of the incoming edges that are not on any jump-threading
 	     path.  These counts will still flow out of original path after all
 	     jump threading is complete.  */
-	    nonpath_count += ein->count;
+	    nonpath_count += ein->count ();
 	}
     }
 
@@ -789,7 +788,7 @@ compute_path_counts (struct redirection_data *rd,
   for (unsigned int i = 1; i < path->length (); i++)
     {
       edge epath = (*path)[i]->e;
-      profile_count cur_count = epath->count;
+      profile_count cur_count = epath->count ();
       if ((*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
 	{
 	  has_joiner = true;
@@ -809,13 +808,13 @@ compute_path_counts (struct redirection_data *rd,
 		     they are redirected by an invocation of this routine.  */
 		  && !bitmap_bit_p (local_info->duplicate_blocks,
 				    ein->src->index))
-		nonpath_count += ein->count;
+		nonpath_count += ein->count ();
 	    }
 	}
       if (cur_count < path_out_count)
 	path_out_count = cur_count;
-      if (epath->count < min_path_count)
-	min_path_count = epath->count;
+      if (epath->count () < min_path_count)
+	min_path_count = epath->count ();
     }
 
   /* We computed path_out_count above assuming that this path targeted
@@ -830,12 +829,12 @@ compute_path_counts (struct redirection_data *rd,
      (since any path through the joiner with a different elast will not
      include a copy of this elast in its duplicated path).
      So ensure that this path's path_out_count is at least the
-     difference between elast->count and nonpath_count.  Otherwise the edge
+     difference between elast->count () and nonpath_count.  Otherwise the edge
      counts after threading will not be sane.  */
   if (local_info->need_profile_correction
-      && has_joiner && path_out_count < elast->count - nonpath_count)
+      && has_joiner && path_out_count < elast->count () - nonpath_count)
     {
-      path_out_count = elast->count - nonpath_count;
+      path_out_count = elast->count () - nonpath_count;
       /* But neither can we go above the minimum count along the path
 	 we are duplicating.  This can be an issue due to profile
 	 insanities coming in to this pass.  */
@@ -858,16 +857,53 @@ static void
 update_profile (edge epath, edge edup, profile_count path_in_count,
 		profile_count path_out_count, int path_in_freq)
 {
+  if (!(path_in_count > 0))
+    return;
 
   /* First update the duplicated block's count / frequency.  */
   if (edup)
     {
       basic_block dup_block = edup->src;
-      gcc_assert (!dup_block->count.initialized_p ());
+
+      /* Edup's count is reduced by path_out_count.  We need to redistribute
+         probabilities to the remaining edges.  */
+
+      edge esucc;
+      edge_iterator ei;
+      profile_probability edup_prob
+	 = path_out_count.probability_in (path_in_count);
+
+      /* Either scale up or down the remaining edges.
+	 probabilities are always in range <0,1> and thus we can't do
+	 both by same loop.  */
+      if (edup->probability > edup_prob)
+	{
+	   profile_probability rev_scale
+	     = (profile_probability::always () - edup->probability)
+	       / (profile_probability::always () - edup_prob);
+	   FOR_EACH_EDGE (esucc, ei, dup_block->succs)
+	     if (esucc != edup)
+	       esucc->probability /= rev_scale;
+	}
+      else if (edup->probability < edup_prob)
+	{
+	   profile_probability scale
+	     = (profile_probability::always () - edup_prob)
+	       / (profile_probability::always () - edup->probability);
+	  FOR_EACH_EDGE (esucc, ei, dup_block->succs)
+	    if (esucc != edup)
+	      esucc->probability *= scale;
+	}
+      edup->probability = edup_prob;
+
+      /* FIXME once freqs_to_counts is dropped re-enable this check.  */
+      gcc_assert (!dup_block->count.initialized_p () || 1);
       gcc_assert (dup_block->frequency == 0);
       dup_block->count = path_in_count;
       dup_block->frequency = path_in_freq;
     }
+
+  profile_count final_count = epath->count () - path_out_count;
 
   /* Now update the original block's count and frequency in the
      opposite manner - remove the counts/freq that will flow
@@ -883,107 +919,31 @@ update_profile (edge epath, edge edup, profile_count path_in_count,
      out of it (in the joiner case this is the count along the duplicated path
      out of the duplicated joiner).  This count can then be removed from the
      original path edge.  */
-  if (edup)
-    edup->count = path_out_count;
-  epath->count -= path_out_count;
-  /* FIXME: can epath->count be legally uninitialized here?  */
-}
-
-
-/* The duplicate and original joiner blocks may end up with different
-   probabilities (different from both the original and from each other).
-   Recompute the probabilities here once we have updated the edge
-   counts and frequencies.  */
-
-static void
-recompute_probabilities (basic_block bb)
-{
-  edge esucc;
-  edge_iterator ei;
-  FOR_EACH_EDGE (esucc, ei, bb->succs)
+  if (epath->src->count > 0)
     {
-      if (!(bb->count > 0))
-	continue;
+      edge esucc;
+      edge_iterator ei;
+      profile_probability epath_prob = final_count.probability_in (epath->src->count);
 
-      /* Prevent overflow computation due to insane profiles.  */
-      if (esucc->count < bb->count)
-	esucc->probability = esucc->count.probability_in (bb->count).guessed ();
-      else
-	/* Can happen with missing/guessed probabilities, since we
-	   may determine that more is flowing along duplicated
-	   path than joiner succ probabilities allowed.
-	   Counts and freqs will be insane after jump threading,
-	   at least make sure probability is sane or we will
-	   get a flow verification error.
-	   Not much we can do to make counts/freqs sane without
-	   redoing the profile estimation.  */
-	esucc->probability = profile_probability::guessed_always ();
-    }
-}
-
-
-/* Update the counts of the original and duplicated edges from a joiner
-   that go off path, given that we have already determined that the
-   duplicate joiner DUP_BB has incoming count PATH_IN_COUNT and
-   outgoing count along the path PATH_OUT_COUNT.  The original (on-)path
-   edge from joiner is EPATH.  */
-
-static void
-update_joiner_offpath_counts (edge epath, basic_block dup_bb,
-			      profile_count path_in_count,
-			      profile_count path_out_count)
-{
-  /* Compute the count that currently flows off path from the joiner.
-     In other words, the total count of joiner's out edges other than
-     epath.  Compute this by walking the successors instead of
-     subtracting epath's count from the joiner bb count, since there
-     are sometimes slight insanities where the total out edge count is
-     larger than the bb count (possibly due to rounding/truncation
-     errors).  */
-  profile_count total_orig_off_path_count = profile_count::zero ();
-  edge enonpath;
-  edge_iterator ei;
-  FOR_EACH_EDGE (enonpath, ei, epath->src->succs)
-    {
-      if (enonpath == epath)
-	continue;
-      total_orig_off_path_count += enonpath->count;
-    }
-
-  /* For the path that we are duplicating, the amount that will flow
-     off path from the duplicated joiner is the delta between the
-     path's cumulative in count and the portion of that count we
-     estimated above as flowing from the joiner along the duplicated
-     path.  */
-  profile_count total_dup_off_path_count = path_in_count - path_out_count;
-
-  /* Now do the actual updates of the off-path edges.  */
-  FOR_EACH_EDGE (enonpath, ei, epath->src->succs)
-    {
-      /* Look for edges going off of the threading path.  */
-      if (enonpath == epath)
-	continue;
-
-      /* Find the corresponding edge out of the duplicated joiner.  */
-      edge enonpathdup = find_edge (dup_bb, enonpath->dest);
-      gcc_assert (enonpathdup);
-
-      /* We can't use the original probability of the joiner's out
-	 edges, since the probabilities of the original branch
-	 and the duplicated branches may vary after all threading is
-	 complete.  But apportion the duplicated joiner's off-path
-	 total edge count computed earlier (total_dup_off_path_count)
-	 among the duplicated off-path edges based on their original
-	 ratio to the full off-path count (total_orig_off_path_count).
-	 */
-      profile_probability scale
-		 = enonpath->count.probability_in (total_orig_off_path_count);
-      /* Give the duplicated offpath edge a portion of the duplicated
-	 total.  */
-      enonpathdup->count = total_dup_off_path_count.apply_probability (scale);
-      /* Now update the original offpath edge count, handling underflow
-	 due to rounding errors.  */
-      enonpath->count -= enonpathdup->count;
+      if (epath->probability > epath_prob)
+	{
+	   profile_probability rev_scale
+	     = (profile_probability::always () - epath->probability)
+	       / (profile_probability::always () - epath_prob);
+	   FOR_EACH_EDGE (esucc, ei, epath->src->succs)
+	     if (esucc != epath)
+	       esucc->probability /= rev_scale;
+	}
+      else if (epath->probability < epath_prob)
+	{
+	   profile_probability scale
+	     = (profile_probability::always () - epath_prob)
+	       / (profile_probability::always () - epath->probability);
+	  FOR_EACH_EDGE (esucc, ei, epath->src->succs)
+	    if (esucc != epath)
+	      esucc->probability *= scale;
+	}
+      epath->probability = epath_prob;
     }
 }
 
@@ -1002,7 +962,7 @@ estimated_freqs_path (struct redirection_data *rd)
   bool non_zero_freq = false;
   FOR_EACH_EDGE (ein, ei, e->dest->preds)
     {
-      if (ein->count > 0)
+      if (ein->count () > 0)
 	return false;
       non_zero_freq |= ein->src->frequency != 0;
     }
@@ -1016,7 +976,7 @@ estimated_freqs_path (struct redirection_data *rd)
       edge esucc;
       FOR_EACH_EDGE (esucc, ei, epath->src->succs)
 	{
-	  if (esucc->count > 0)
+	  if (esucc->count () > 0)
 	    return false;
 	  non_zero_freq |= esucc->src->frequency != 0;
 	}
@@ -1042,34 +1002,19 @@ freqs_to_counts_path (struct redirection_data *rd)
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
   edge ein;
   edge_iterator ei;
-  FOR_EACH_EDGE (ein, ei, e->dest->preds)
-    {
-      /* Scale up the frequency by REG_BR_PROB_BASE, to avoid rounding
-	 errors applying the probability when the frequencies are very
-	 small.  */
-      if (ein->probability.initialized_p ())
-        ein->count = profile_count::from_gcov_type
-		  (apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
-				        ein->probability
-					  .to_reg_br_prob_base ())).guessed ();
-      else
-	/* FIXME: this is hack; we should track uninitialized values.  */
-	ein->count = profile_count::zero ();
-    }
 
+  FOR_EACH_EDGE (ein, ei, e->dest->preds)
+    ein->src->count = profile_count::from_gcov_type
+	  (ein->src->frequency * REG_BR_PROB_BASE);
   for (unsigned int i = 1; i < path->length (); i++)
     {
       edge epath = (*path)[i]->e;
-      edge esucc;
       /* Scale up the frequency by REG_BR_PROB_BASE, to avoid rounding
 	 errors applying the edge probability when the frequencies are very
 	 small.  */
       epath->src->count = 
 	profile_count::from_gcov_type
 	  (epath->src->frequency * REG_BR_PROB_BASE);
-      FOR_EACH_EDGE (esucc, ei, epath->src->succs)
-	esucc->count = 
-	   esucc->src->count.apply_probability (esucc->probability);
     }
 }
 
@@ -1086,21 +1031,20 @@ clear_counts_path (struct redirection_data *rd)
 {
   edge e = rd->incoming_edges->e;
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
-  edge ein, esucc;
-  edge_iterator ei;
   profile_count val = profile_count::uninitialized ();
   if (profile_status_for_fn (cfun) == PROFILE_READ)
     val = profile_count::zero ();
 
+  edge ein;
+  edge_iterator ei;
+
   FOR_EACH_EDGE (ein, ei, e->dest->preds)
-    ein->count = val;
+    ein->src->count = val;
 
   /* First clear counts along original path.  */
   for (unsigned int i = 1; i < path->length (); i++)
     {
       edge epath = (*path)[i]->e;
-      FOR_EACH_EDGE (esucc, ei, epath->src->succs)
-	esucc->count = val;
       epath->src->count = val;
     }
   /* Also need to clear the counts along duplicated path.  */
@@ -1109,8 +1053,6 @@ clear_counts_path (struct redirection_data *rd)
       basic_block dup = rd->dup_blocks[i];
       if (!dup)
 	continue;
-      FOR_EACH_EDGE (esucc, ei, dup->succs)
-	esucc->count = val;
       dup->count = val;
     }
 }
@@ -1230,17 +1172,6 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	  update_profile (epath, e2, path_in_count, path_out_count,
 			  path_in_freq);
 
-	  /* Next we need to update the counts of the original and duplicated
-	     edges from the joiner that go off path.  */
-	  update_joiner_offpath_counts (epath, e2->src, path_in_count,
-					path_out_count);
-
-	  /* Finally, we need to set the probabilities on the duplicated
-	     edges out of the duplicated joiner (e2->src).  The probabilities
-	     along the original path will all be updated below after we finish
-	     processing the whole path.  */
-	  recompute_probabilities (e2->src);
-
 	  /* Record the frequency flowing to the downstream duplicated
 	     path blocks.  */
 	  cur_path_freq = EDGE_FREQUENCY (e2);
@@ -1263,8 +1194,7 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	     been updated at the end of that handling to the edge frequency
 	     along the duplicated joiner path edge.  */
 	  update_profile (epath, EDGE_SUCC (rd->dup_blocks[count], 0),
-			  path_out_count, path_out_count,
-			  cur_path_freq);
+			  path_out_count, path_out_count, cur_path_freq);
 	}
       else
 	{
@@ -1292,14 +1222,6 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
 	{
 	  count++;
 	}
-    }
-
-  /* Now walk orig blocks and update their probabilities, since the
-     counts and freqs should be updated properly by above loop.  */
-  for (unsigned int i = 1; i < path->length (); i++)
-    {
-      edge epath = (*path)[i]->e;
-      recompute_probabilities (epath->src);
     }
 
   /* Done with all profile and frequency updates, clear counts if they
@@ -2247,7 +2169,7 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
      invalidating the property that is propagated by executing all the blocks of
      the jump-thread path in order.  */
 
-  curr_count = entry->count;
+  curr_count = entry->count ();
   curr_freq = EDGE_FREQUENCY (entry);
 
   for (i = 0; i < n_region; i++)
@@ -2300,7 +2222,7 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
 	  if (i + 1 != n_region)
 	    {
 	      curr_freq = EDGE_FREQUENCY (single_succ_edge (bb));
-	      curr_count = single_succ_edge (bb)->count;
+	      curr_count = single_succ_edge (bb)->count ();
 	    }
 	  continue;
 	}
@@ -2331,7 +2253,7 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
 	else
 	  {
 	    curr_freq = EDGE_FREQUENCY (e);
-	    curr_count = e->count;
+	    curr_count = e->count ();
 	  }
     }
 
@@ -2353,7 +2275,6 @@ duplicate_thread_path (edge entry, edge exit, basic_block *region,
     {
       rescan_loop_exit (e, true, false);
       e->probability = profile_probability::always ();
-      e->count = region_copy[n_region - 1]->count;
     }
 
   /* Redirect the entry and add the phi node arguments.  */
