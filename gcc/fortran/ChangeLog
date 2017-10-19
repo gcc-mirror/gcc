@@ -1,3 +1,21 @@
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/82568
+	* gfortran.h (gfc_resolve_do_iterator): Add a bool arg.
+	(gfc_resolve_omp_local_vars): New declaration.
+	* openmp.c (omp_current_ctx): Make static.
+	(gfc_resolve_omp_parallel_blocks): Handle EXEC_OMP_TASKLOOP
+	and EXEC_OMP_TASKLOOP_SIMD.
+	(gfc_resolve_do_iterator): Add ADD_CLAUSE argument, if false,
+	don't actually add any clause.  Move omp_current_ctx test
+	earlier.
+	(handle_local_var, gfc_resolve_omp_local_vars): New functions.
+	* resolve.c (gfc_resolve_code): Call gfc_resolve_omp_parallel_blocks
+	instead of just gfc_resolve_omp_do_blocks for EXEC_OMP_TASKLOOP
+	and EXEC_OMP_TASKLOOP_SIMD.
+	(gfc_resolve_code): Adjust gfc_resolve_do_iterator caller.
+	(resolve_codes): Call gfc_resolve_omp_local_vars.
+
 2017-10-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* gfortran.h (gfc_lookup_function_fuzzy): New declaration.
