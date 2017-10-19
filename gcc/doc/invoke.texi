@@ -11149,6 +11149,15 @@ to verify the referenced object has the correct dynamic type.
 This option enables instrumentation of pointer arithmetics.  If the pointer
 arithmetics overflows, a run-time error is issued.
 
+@item -fsanitize=builtin
+@opindex fsanitize=builtin
+
+This option enables instrumentation of arguments to selected builtin
+functions.  If an invalid value is passed to such arguments, a run-time
+error is issued.  E.g.@ passing 0 as the argument to @code{__builtin_ctz}
+or @code{__builtin_clz} invokes undefined behavior and is diagnosed
+by this option.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,

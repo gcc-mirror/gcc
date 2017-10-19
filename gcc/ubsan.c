@@ -2221,6 +2221,72 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 }
 
+/* Instrument values passed to builtin functions.  */
+
+static void
+instrument_builtin (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  location_t loc = gimple_location (stmt);
+  tree arg;
+  enum built_in_function fcode
+    = DECL_FUNCTION_CODE (gimple_call_fndecl (stmt));
+  int kind = 0;
+  switch (fcode)
+    {
+    CASE_INT_FN (BUILT_IN_CLZ):
+      kind = 1;
+      gcc_fallthrough ();
+    CASE_INT_FN (BUILT_IN_CTZ):
+      arg = gimple_call_arg (stmt, 0);
+      if (!integer_nonzerop (arg))
+	{
+	  gimple *g;
+	  if (!is_gimple_val (arg))
+	    {
+	      g = gimple_build_assign (make_ssa_name (TREE_TYPE (arg)), arg);
+	      gimple_set_location (g, loc);
+	      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	      arg = gimple_assign_lhs (g);
+	    }
+
+	  basic_block then_bb, fallthru_bb;
+	  *gsi = create_cond_insert_point (gsi, true, false, true,
+					   &then_bb, &fallthru_bb);
+	  g = gimple_build_cond (EQ_EXPR, arg,
+				 build_zero_cst (TREE_TYPE (arg)),
+				 NULL_TREE, NULL_TREE);
+	  gimple_set_location (g, loc);
+	  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+
+	  *gsi = gsi_after_labels (then_bb);
+	  if (flag_sanitize_undefined_trap_on_error)
+	    g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+	  else
+	    {
+	      tree t = build_int_cst (unsigned_char_type_node, kind);
+	      tree data = ubsan_create_data ("__ubsan_builtin_data",
+					     1, &loc, NULL_TREE, t, NULL_TREE);
+	      data = build_fold_addr_expr_loc (loc, data);
+	      enum built_in_function bcode
+		= (flag_sanitize_recover & SANITIZE_BUILTIN)
+		  ? BUILT_IN_UBSAN_HANDLE_INVALID_BUILTIN
+		  : BUILT_IN_UBSAN_HANDLE_INVALID_BUILTIN_ABORT;
+	      tree fn = builtin_decl_explicit (bcode);
+
+	      g = gimple_build_call (fn, 1, data);
+	    }
+	  gimple_set_location (g, loc);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  ubsan_create_edge (g);
+	}
+      *gsi = gsi_for_stmt (stmt);
+      break;
+    default:
+      break;
+    }
+}
+
 namespace {
 
 const pass_data pass_data_ubsan =
@@ -2252,7 +2318,8 @@ public:
 				| SANITIZE_NONNULL_ATTRIBUTE
 				| SANITIZE_RETURNS_NONNULL_ATTRIBUTE
 				| SANITIZE_OBJECT_SIZE
-				| SANITIZE_POINTER_OVERFLOW));
+				| SANITIZE_POINTER_OVERFLOW
+				| SANITIZE_BUILTIN));
     }
 
   virtual unsigned int execute (function *);
@@ -2314,6 +2381,13 @@ pass_ubsan::execute (function *fun)
 	      && !gimple_call_internal_p (stmt))
 	    {
 	      instrument_nonnull_arg (&gsi);
+	      bb = gimple_bb (stmt);
+	    }
+
+	  if (sanitize_flags_p (SANITIZE_BUILTIN, fun->decl)
+	      && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+	    {
+	      instrument_builtin (&gsi);
 	      bb = gimple_bb (stmt);
 	    }
 

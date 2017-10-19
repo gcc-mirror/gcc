@@ -1,5 +1,15 @@
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* flag-types.h (enum sanitize_code): Add SANITIZE_BUILTIN.  Or
+	SANITIZE_BUILTIN into SANITIZE_UNDEFINED.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_INVALID_BUILTIN,
+	BUILT_IN_UBSAN_HANDLE_INVALID_BUILTIN_ABORT): New builtins.
+	* opts.c (sanitizer_opts): Add builtin.
+	* ubsan.c (instrument_builtin): New function.
+	(pass_ubsan::execute): Call it.
+	(pass_ubsan::gate): Enable even for SANITIZE_BUILTIN.
+	* doc/invoke.texi: Document -fsanitize=builtin.
+
 	* ubsan.c (ubsan_expand_null_ifn): Use _v1 suffixed type mismatch
 	builtins, store max (log2 (align), 0) into uchar field instead of
 	align into uptr field.
