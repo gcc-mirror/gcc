@@ -1,3 +1,9 @@
+2017-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/81048
+	* gfortran.dg/derived_init_4.f90 : New test.
+
 2017-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82549
@@ -10,11 +16,11 @@
 	* gcc.dg/pr82274-2.c: New test.
 
 2017-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
-            Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
-        Backport from trunk
-        PR fortran/80118
-        * gfortran.dg/zero_sized_7.f90: New test.
+	Backport from trunk
+	PR fortran/80118
+	* gfortran.dg/zero_sized_7.f90: New test.
 
 2017-10-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -38,7 +44,7 @@
 	* g++.dg/other/pr81355.C: New test.
 
 2017-09-18  Richard Biener  <rguenther@suse.de>
- 
+
 	Backport from mainline
 	2017-04-07  Richard Biener  <rguenther@suse.de>
 
@@ -51,7 +57,7 @@
 	* gcc.dg/torture/pr80281.c: New testcase.
 
 2017-09-18  Richard Biener  <rguenther@suse.de>
- 
+
 	Backport from mainline
 	2017-08-28  Richard Biener  <rguenther@suse.de>
 
@@ -920,7 +926,7 @@
 	2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79639
-	* g++.dg/cpp1y/constexpr-79639.C: New test. 
+	* g++.dg/cpp1y/constexpr-79639.C: New test.
 
 	PR target/79570
 	* gcc.dg/pr79570.c: New test.
