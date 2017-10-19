@@ -715,8 +715,7 @@ make_new_block (struct function *fn, unsigned int index)
 
 static void
 input_cfg (struct lto_input_block *ib, struct data_in *data_in,
-	   struct function *fn,
-	   int count_materialization_scale)
+	   struct function *fn)
 {
   unsigned int bb_count;
   basic_block p_bb;
@@ -756,13 +755,10 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 	  unsigned int edge_flags;
 	  basic_block dest;
 	  profile_probability probability;
-	  profile_count count;
 	  edge e;
 
 	  dest_index = streamer_read_uhwi (ib);
 	  probability = profile_probability::stream_in (ib);
-	  count = profile_count::stream_in (ib).apply_scale
-			 (count_materialization_scale, REG_BR_PROB_BASE);
 	  edge_flags = streamer_read_uhwi (ib);
 
 	  dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
@@ -772,7 +768,6 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 
 	  e = make_edge (bb, dest, edge_flags);
 	  e->probability = probability;
-	  e->count = count;
 	}
 
       index = streamer_read_hwi (ib);
@@ -1070,7 +1065,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   if (!node)
     node = cgraph_node::create (fn_decl);
   input_struct_function_base (fn, data_in, ib);
-  input_cfg (ib_cfg, data_in, fn, node->count_materialization_scale);
+  input_cfg (ib_cfg, data_in, fn);
 
   /* Read all the SSA names.  */
   input_ssa_names (ib, data_in, fn);

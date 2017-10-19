@@ -46,8 +46,9 @@ struct GTY((user)) edge_def {
 
   int flags;			/* see cfg-flags.def */
   profile_probability probability;
-  profile_count count;		/* Expected number of executions calculated
-				   in profile.c  */
+
+  /* Return count of edge E.  */
+  inline profile_count count () const;
 };
 
 /* Masks for edge.flags.  */
@@ -637,6 +638,12 @@ has_abnormal_call_or_eh_pred_edge_p (basic_block bb)
       return true;
 
   return false;
+}
+
+/* Return count of edge E.  */
+inline profile_count edge_def::count () const
+{
+  return src->count.apply_probability (probability);
 }
 
 #endif /* GCC_BASIC_BLOCK_H */

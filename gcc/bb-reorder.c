@@ -374,11 +374,11 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 		{
 		  /* The current edge E is also preferred.  */
 		  int freq = EDGE_FREQUENCY (e);
-		  if (freq > best_freq || e->count > best_count)
+		  if (freq > best_freq || e->count () > best_count)
 		    {
 		      best_freq = freq;
-		      if (e->count.initialized_p ())
-		        best_count = e->count;
+		      if (e->count ().initialized_p ())
+		        best_count = e->count ();
 		      best_edge = e;
 		      best_bb = bb;
 		    }
@@ -392,17 +392,17 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 		  /* The current edge E is preferred.  */
 		  is_preferred = true;
 		  best_freq = EDGE_FREQUENCY (e);
-		  best_count = e->count;
+		  best_count = e->count ();
 		  best_edge = e;
 		  best_bb = bb;
 		}
 	      else
 		{
 		  int freq = EDGE_FREQUENCY (e);
-		  if (!best_edge || freq > best_freq || e->count > best_count)
+		  if (!best_edge || freq > best_freq || e->count () > best_count)
 		    {
 		      best_freq = freq;
-		      best_count = e->count;
+		      best_count = e->count ();
 		      best_edge = e;
 		      best_bb = bb;
 		    }
@@ -571,7 +571,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		  || !prob.initialized_p ()
 		  || ((prob.to_reg_br_prob_base () < branch_th
 		       || EDGE_FREQUENCY (e) < exec_th
-		      || e->count < count_th) && (!for_size)))
+		      || e->count () < count_th) && (!for_size)))
 		continue;
 
 	      /* If partitioning hot/cold basic blocks, don't consider edges
@@ -656,7 +656,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		      || !prob.initialized_p ()
 		      || prob.to_reg_br_prob_base () < branch_th
 		      || freq < exec_th
-		      || e->count < count_th)
+		      || e->count () < count_th)
 		    {
 		      /* When partitioning hot/cold basic blocks, make sure
 			 the cold blocks (and only the cold blocks) all get
@@ -1285,7 +1285,7 @@ connect_traces (int n_traces, struct trace *traces)
 				&& !connected[bbd[di].start_of_trace]
 				&& BB_PARTITION (e2->dest) == current_partition
 				&& EDGE_FREQUENCY (e2) >= freq_threshold
-				&& e2->count >= count_threshold
+				&& e2->count () >= count_threshold
 				&& (!best2
 				    || e2->probability > best2->probability
 				    || (e2->probability == best2->probability
@@ -1311,8 +1311,8 @@ connect_traces (int n_traces, struct trace *traces)
 		  && copy_bb_p (best->dest,
 				optimize_edge_for_speed_p (best)
 				&& EDGE_FREQUENCY (best) >= freq_threshold
-				&& (!best->count.initialized_p ()
-				    || best->count >= count_threshold)))
+				&& (!best->count ().initialized_p ()
+				    || best->count () >= count_threshold)))
 		{
 		  basic_block new_bb;
 
@@ -1528,7 +1528,7 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
 
 	  /* Do not expect profile insanities when profile was not adjusted.  */
 	  if (e->probability == profile_probability::never ()
-	      || e->count == profile_count::zero ())
+	      || e->count () == profile_count::zero ())
 	    continue;
 
           if (BB_PARTITION (reach_bb) != BB_COLD_PARTITION)
@@ -1539,8 +1539,8 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           /* The following loop will look for the hottest edge via
              the edge count, if it is non-zero, then fallback to the edge
              frequency and finally the edge probability.  */
-          if (!highest_count.initialized_p () || e->count > highest_count)
-            highest_count = e->count;
+          if (!highest_count.initialized_p () || e->count () > highest_count)
+            highest_count = e->count ();
           int edge_freq = EDGE_FREQUENCY (e);
           if (edge_freq > highest_freq)
             highest_freq = edge_freq;
@@ -1563,14 +1563,14 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
             continue;
 	  /* Do not expect profile insanities when profile was not adjusted.  */
 	  if (e->probability == profile_probability::never ()
-	      || e->count == profile_count::zero ())
+	      || e->count () == profile_count::zero ())
 	    continue;
           /* Select the hottest edge using the edge count, if it is non-zero,
              then fallback to the edge frequency and finally the edge
              probability.  */
           if (highest_count > 0)
             {
-              if (e->count < highest_count)
+              if (e->count () < highest_count)
                 continue;
             }
           else if (highest_freq)

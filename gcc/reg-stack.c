@@ -2961,9 +2961,9 @@ better_edge (edge e1, edge e2)
   if (EDGE_FREQUENCY (e1) < EDGE_FREQUENCY (e2))
     return e2;
 
-  if (e1->count > e2->count)
+  if (e1->count () > e2->count ())
     return e1;
-  if (e1->count < e2->count)
+  if (e1->count () < e2->count ())
     return e2;
 
   /* Prefer critical edges to minimize inserting compensation code on

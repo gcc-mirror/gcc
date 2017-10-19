@@ -1051,7 +1051,6 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	}
       gcc_assert (e);
       e->probability = profile_probability::always ();
-      e->count = bb->count;
 
       /* The edge is no longer associated with a conditional, so it does
 	 not have TRUE/FALSE flags.

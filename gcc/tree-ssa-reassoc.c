@@ -6033,12 +6033,10 @@ branch_fixup (void)
 
       edge etrue = make_edge (cond_bb, merge_bb, EDGE_TRUE_VALUE);
       etrue->probability = profile_probability::even ();
-      etrue->count = cond_bb->count.apply_scale (1, 2);
       edge efalse = find_edge (cond_bb, then_bb);
       efalse->flags = EDGE_FALSE_VALUE;
       efalse->probability -= etrue->probability;
-      efalse->count -= etrue->count;
-      then_bb->count -= etrue->count;
+      then_bb->count -= etrue->count ();
 
       tree othervar = NULL_TREE;
       if (gimple_assign_rhs1 (use_stmt) == var)

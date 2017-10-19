@@ -1883,7 +1883,6 @@ output_cfg (struct output_block *ob, struct function *fn)
 	{
 	  streamer_write_uhwi (ob, e->dest->index);
 	  e->probability.stream_out (ob);
-	  e->count.stream_out (ob);
 	  streamer_write_uhwi (ob, e->flags);
 	}
     }

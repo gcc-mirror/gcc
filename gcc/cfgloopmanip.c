@@ -546,16 +546,12 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 
 	  /* Probability of exit must be 1/iterations.  */
 	  freq_delta = EDGE_FREQUENCY (e);
+	  count_delta = e->count ();
 	  e->probability = profile_probability::always ()
 				.apply_scale (1, iteration_bound);
 	  other_e->probability = e->probability.invert ();
 	  freq_delta -= EDGE_FREQUENCY (e);
-
-	  /* Adjust counts accordingly.  */
-	  count_delta = e->count;
-	  e->count = e->src->count.apply_probability (e->probability);
-	  other_e->count = e->src->count.apply_probability (other_e->probability);
-	  count_delta -= e->count;
+	  count_delta -= e->count ();
 
 	  /* If latch exists, change its frequency and count, since we changed
 	     probability of exit.  Theoretically we should update everything from
@@ -582,7 +578,7 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 
 	  FOR_EACH_EDGE (e, ei, loop->header->preds)
 	    if (e->src != loop->latch)
-	      count_in += e->count;
+	      count_in += e->count ();
 
 	  if (count_in > profile_count::zero () )
 	    {
@@ -872,14 +868,12 @@ loopify (edge latch_edge, edge header_edge,
   struct loop *outer = loop_outer (succ_bb->loop_father);
   int freq;
   profile_count cnt;
-  edge e;
-  edge_iterator ei;
 
   loop->header = header_edge->dest;
   loop->latch = latch_edge->src;
 
   freq = EDGE_FREQUENCY (header_edge);
-  cnt = header_edge->count;
+  cnt = header_edge->count ();
 
   /* Redirect edges.  */
   loop_redirect_edge (latch_edge, loop->header);
@@ -912,10 +906,6 @@ loopify (edge latch_edge, edge header_edge,
     {
       switch_bb->frequency = freq;
       switch_bb->count = cnt;
-      FOR_EACH_EDGE (e, ei, switch_bb->succs)
-	{
-	  e->count = switch_bb->count.apply_probability (e->probability);
-	}
     }
   scale_loop_frequencies (loop, false_scale);
   scale_loop_frequencies (succ_bb->loop_father, true_scale);
@@ -1650,8 +1640,6 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
 		  current_ir_type () == IR_GIMPLE ? EDGE_TRUE_VALUE : 0);
   e1->probability = then_prob;
   e->probability = else_prob;
-  e1->count = e->count.apply_probability (e1->probability);
-  e->count = e->count.apply_probability (e->probability);
 
   set_immediate_dominator (CDI_DOMINATORS, first_head, new_head);
   set_immediate_dominator (CDI_DOMINATORS, second_head, new_head);

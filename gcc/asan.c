@@ -1807,7 +1807,6 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
   /* Set up the fallthrough basic block.  */
   e = find_edge (cond_bb, fallthru_bb);
   e->flags = EDGE_FALSE_VALUE;
-  e->count = cond_bb->count;
   e->probability = fallthrough_probability;
 
   /* Update dominance info for the newly created then_bb; note that
