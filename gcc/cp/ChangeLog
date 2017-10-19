@@ -1,3 +1,9 @@
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82600
+	* typeck.c (check_return_expr): Don't call
+	maybe_warn_about_returning_address_of_local in templates.
+
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82560

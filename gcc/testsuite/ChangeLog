@@ -1,3 +1,8 @@
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82600
+	* g++.dg/warn/Wreturn-local-addr-4.C: New test.
+
 2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/debug/dwarf2/sso.c: Rename into...
