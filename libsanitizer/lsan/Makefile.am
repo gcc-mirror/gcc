@@ -16,11 +16,15 @@ endif
 
 sanitizer_lsan_files = \
 	lsan_common.cc \
-	lsan_common_linux.cc
+	lsan_common_linux.cc \
+	lsan_common_mac.cc
 
 lsan_files = \
 	$(sanitizer_lsan_files) \
 	lsan.cc \
+	lsan_linux.cc \
+	lsan_mac.cc \
+	lsan_malloc_mac.cc \
 	lsan_allocator.cc \
 	lsan_interceptors.cc \
 	lsan_preinit.cc \

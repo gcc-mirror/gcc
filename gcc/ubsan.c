@@ -830,15 +830,17 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
       enum built_in_function bcode
 	= (flag_sanitize_recover & ((check_align ? SANITIZE_ALIGNMENT : 0)
 				    | (check_null ? SANITIZE_NULL : 0)))
-	  ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH
-	  : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
+	  ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1
+	  : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1_ABORT;
       tree fn = builtin_decl_implicit (bcode);
+      int align_log = tree_log2 (align);
       tree data
 	= ubsan_create_data ("__ubsan_null_data", 1, &loc,
 			     ubsan_type_descriptor (TREE_TYPE (ckind),
 						    UBSAN_PRINT_POINTER),
 			     NULL_TREE,
-			     align,
+			     build_int_cst (unsigned_char_type_node,
+					    MAX (align_log, 0)),
 			     fold_convert (unsigned_char_type_node, ckind),
 			     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
@@ -1001,14 +1003,14 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
 				 ubsan_type_descriptor (TREE_TYPE (ptr),
 							UBSAN_PRINT_POINTER),
 				 NULL_TREE,
-				 build_zero_cst (pointer_sized_int_node),
+				 build_zero_cst (unsigned_char_type_node),
 				 ckind,
 				 NULL_TREE);
 	  data = build_fold_addr_expr_loc (loc, data);
 	  enum built_in_function bcode
 	    = (flag_sanitize_recover & SANITIZE_OBJECT_SIZE)
-	      ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH
-	      : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
+	      ? BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1
+	      : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1_ABORT;
 	  tree p = make_ssa_name (pointer_sized_int_node);
 	  g = gimple_build_assign (p, NOP_EXPR, ptr);
 	  gimple_set_location (g, loc);
@@ -2024,15 +2026,18 @@ instrument_nonnull_return (gimple_stmt_iterator *gsi)
       else
 	{
 	  tree data = ubsan_create_data ("__ubsan_nonnull_return_data",
-					 2, loc, NULL_TREE, NULL_TREE);
+					 1, &loc[1], NULL_TREE, NULL_TREE);
 	  data = build_fold_addr_expr_loc (loc[0], data);
+	  tree data2 = ubsan_create_data ("__ubsan_nonnull_return_data",
+					  1, &loc[0], NULL_TREE, NULL_TREE);
+	  data2 = build_fold_addr_expr_loc (loc[0], data2);
 	  enum built_in_function bcode
 	    = (flag_sanitize_recover & SANITIZE_RETURNS_NONNULL_ATTRIBUTE)
-	      ? BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN
-	      : BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_ABORT;
+	      ? BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_V1
+	      : BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_V1_ABORT;
 	  tree fn = builtin_decl_explicit (bcode);
 
-	  g = gimple_build_call (fn, 1, data);
+	  g = gimple_build_call (fn, 2, data, data2);
 	}
       gimple_set_location (g, loc[0]);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);

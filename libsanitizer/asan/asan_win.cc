@@ -25,6 +25,8 @@
 #include "asan_mapping.h"
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_mutex.h"
+#include "sanitizer_common/sanitizer_win.h"
+#include "sanitizer_common/sanitizer_win_defs.h"
 
 using namespace __asan;  // NOLINT
 
@@ -40,35 +42,50 @@ uptr __asan_get_shadow_memory_dynamic_address() {
   __asan_init();
   return __asan_shadow_memory_dynamic_address;
 }
-
-// -------------------- A workaround for the absence of weak symbols ----- {{{
-// We don't have a direct equivalent of weak symbols when using MSVC, but we can
-// use the /alternatename directive to tell the linker to default a specific
-// symbol to a specific value, which works nicely for allocator hooks and
-// __asan_default_options().
-void __sanitizer_default_malloc_hook(void *ptr, uptr size) { }
-void __sanitizer_default_free_hook(void *ptr) { }
-const char* __asan_default_default_options() { return ""; }
-const char* __asan_default_default_suppressions() { return ""; }
-void __asan_default_on_error() {}
-// 64-bit msvc will not prepend an underscore for symbols.
-#ifdef _WIN64
-#pragma comment(linker, "/alternatename:__sanitizer_malloc_hook=__sanitizer_default_malloc_hook")  // NOLINT
-#pragma comment(linker, "/alternatename:__sanitizer_free_hook=__sanitizer_default_free_hook")      // NOLINT
-#pragma comment(linker, "/alternatename:__asan_default_options=__asan_default_default_options")    // NOLINT
-#pragma comment(linker, "/alternatename:__asan_default_suppressions=__asan_default_default_suppressions")    // NOLINT
-#pragma comment(linker, "/alternatename:__asan_on_error=__asan_default_on_error")                  // NOLINT
-#else
-#pragma comment(linker, "/alternatename:___sanitizer_malloc_hook=___sanitizer_default_malloc_hook")  // NOLINT
-#pragma comment(linker, "/alternatename:___sanitizer_free_hook=___sanitizer_default_free_hook")      // NOLINT
-#pragma comment(linker, "/alternatename:___asan_default_options=___asan_default_default_options")    // NOLINT
-#pragma comment(linker, "/alternatename:___asan_default_suppressions=___asan_default_default_suppressions")    // NOLINT
-#pragma comment(linker, "/alternatename:___asan_on_error=___asan_default_on_error")                  // NOLINT
-#endif
-// }}}
 }  // extern "C"
 
 // ---------------------- Windows-specific interceptors ---------------- {{{
+static LPTOP_LEVEL_EXCEPTION_FILTER default_seh_handler;
+static LPTOP_LEVEL_EXCEPTION_FILTER user_seh_handler;
+
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+long __asan_unhandled_exception_filter(EXCEPTION_POINTERS *info) {
+  EXCEPTION_RECORD *exception_record = info->ExceptionRecord;
+  CONTEXT *context = info->ContextRecord;
+
+  // FIXME: Handle EXCEPTION_STACK_OVERFLOW here.
+
+  SignalContext sig(exception_record, context);
+  ReportDeadlySignal(sig);
+  UNREACHABLE("returned from reporting deadly signal");
+}
+
+// Wrapper SEH Handler. If the exception should be handled by asan, we call
+// __asan_unhandled_exception_filter, otherwise, we execute the user provided
+// exception handler or the default.
+static long WINAPI SEHHandler(EXCEPTION_POINTERS *info) {
+  DWORD exception_code = info->ExceptionRecord->ExceptionCode;
+  if (__sanitizer::IsHandledDeadlyException(exception_code))
+    return __asan_unhandled_exception_filter(info);
+  if (user_seh_handler)
+    return user_seh_handler(info);
+  // Bubble out to the default exception filter.
+  if (default_seh_handler)
+    return default_seh_handler(info);
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+
+INTERCEPTOR_WINAPI(LPTOP_LEVEL_EXCEPTION_FILTER, SetUnhandledExceptionFilter,
+    LPTOP_LEVEL_EXCEPTION_FILTER ExceptionFilter) {
+  CHECK(REAL(SetUnhandledExceptionFilter));
+  if (ExceptionFilter == &SEHHandler)
+    return REAL(SetUnhandledExceptionFilter)(ExceptionFilter);
+  // We record the user provided exception handler to be called for all the
+  // exceptions unhandled by asan.
+  Swap(ExceptionFilter, user_seh_handler);
+  return ExceptionFilter;
+}
+
 INTERCEPTOR_WINAPI(void, RtlRaiseException, EXCEPTION_RECORD *ExceptionRecord) {
   CHECK(REAL(RtlRaiseException));
   // This is a noreturn function, unless it's one of the exceptions raised to
@@ -141,6 +158,7 @@ namespace __asan {
 
 void InitializePlatformInterceptors() {
   ASAN_INTERCEPT_FUNC(CreateThread);
+  ASAN_INTERCEPT_FUNC(SetUnhandledExceptionFilter);
 
 #ifdef _WIN64
   ASAN_INTERCEPT_FUNC(__C_specific_handler);
@@ -195,6 +213,18 @@ void *AsanDoesNotSupportStaticLinkage() {
 #error Please build the runtime with a non-debug CRT: /MD or /MT
 #endif
   return 0;
+}
+
+uptr FindDynamicShadowStart() {
+  uptr granularity = GetMmapGranularity();
+  uptr alignment = 8 * granularity;
+  uptr left_padding = granularity;
+  uptr space_size = kHighShadowEnd + left_padding;
+  uptr shadow_start =
+      FindAvailableMemoryRange(space_size, alignment, granularity, nullptr);
+  CHECK_NE((uptr)0, shadow_start);
+  CHECK(IsAligned(shadow_start, alignment));
+  return shadow_start;
 }
 
 void AsanCheckDynamicRTPrereqs() {}
@@ -257,52 +287,8 @@ void InitializePlatformExceptionHandlers() {
 #endif
 }
 
-static LPTOP_LEVEL_EXCEPTION_FILTER default_seh_handler;
-
-// Check based on flags if we should report this exception.
-static bool ShouldReportDeadlyException(unsigned code) {
-  switch (code) {
-    case EXCEPTION_ACCESS_VIOLATION:
-    case EXCEPTION_IN_PAGE_ERROR:
-      return common_flags()->handle_segv;
-    case EXCEPTION_BREAKPOINT:
-    case EXCEPTION_ILLEGAL_INSTRUCTION: {
-      return common_flags()->handle_sigill;
-    }
-  }
-  return false;
-}
-
-// Return the textual name for this exception.
-const char *DescribeSignalOrException(int signo) {
-  unsigned code = signo;
-  // Get the string description of the exception if this is a known deadly
-  // exception.
-  switch (code) {
-    case EXCEPTION_ACCESS_VIOLATION:
-      return "access-violation";
-    case EXCEPTION_IN_PAGE_ERROR:
-      return "in-page-error";
-    case EXCEPTION_BREAKPOINT:
-      return "breakpoint";
-    case EXCEPTION_ILLEGAL_INSTRUCTION:
-      return "illegal-instruction";
-  }
-  return nullptr;
-}
-
-static long WINAPI SEHHandler(EXCEPTION_POINTERS *info) {
-  EXCEPTION_RECORD *exception_record = info->ExceptionRecord;
-  CONTEXT *context = info->ContextRecord;
-
-  if (ShouldReportDeadlyException(exception_record->ExceptionCode)) {
-    SignalContext sig = SignalContext::Create(exception_record, context);
-    ReportDeadlySignal(exception_record->ExceptionCode, sig);
-  }
-
-  // FIXME: Handle EXCEPTION_STACK_OVERFLOW here.
-
-  return default_seh_handler(info);
+bool IsSystemHeapAddress(uptr addr) {
+  return ::HeapValidate(GetProcessHeap(), 0, (void*)addr) != FALSE;
 }
 
 // We want to install our own exception handler (EH) to print helpful reports
@@ -341,10 +327,25 @@ int __asan_set_seh_filter() {
 // immediately after the CRT runs. This way, our exception filter is called
 // first and we can delegate to their filter if appropriate.
 #pragma section(".CRT$XCAB", long, read)  // NOLINT
-__declspec(allocate(".CRT$XCAB"))
-    int (*__intercept_seh)() = __asan_set_seh_filter;
+__declspec(allocate(".CRT$XCAB")) int (*__intercept_seh)() =
+    __asan_set_seh_filter;
+
+// Piggyback on the TLS initialization callback directory to initialize asan as
+// early as possible. Initializers in .CRT$XL* are called directly by ntdll,
+// which run before the CRT. Users also add code to .CRT$XLC, so it's important
+// to run our initializers first.
+static void NTAPI asan_thread_init(void *module, DWORD reason, void *reserved) {
+  if (reason == DLL_PROCESS_ATTACH) __asan_init();
+}
+
+#pragma section(".CRT$XLAB", long, read)  // NOLINT
+__declspec(allocate(".CRT$XLAB")) void (NTAPI *__asan_tls_init)(void *,
+    unsigned long, void *) = asan_thread_init;
 #endif
+
+WIN_FORCE_LINK(__asan_dso_reg_hook)
+
 // }}}
 }  // namespace __asan
 
-#endif  // _WIN32
+#endif  // SANITIZER_WINDOWS
