@@ -3005,14 +3005,13 @@ allocno_priority_compare_func (const void *v1p, const void *v2p)
 {
   ira_allocno_t a1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t a2 = *(const ira_allocno_t *) v2p;
-  int pri1, pri2;
+  int pri1, pri2, diff;
 
   /* Assign hard reg to static chain pointer pseudo first when
      non-local goto is used.  */
-  if (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a1)))
-    return 1;
-  else if (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a2)))
-    return -1;
+  if ((diff = (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a2))
+	       - non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a1)))) != 0)
+    return diff;
   pri1 = allocno_priorities[ALLOCNO_NUM (a1)];
   pri2 = allocno_priorities[ALLOCNO_NUM (a2)];
   if (pri2 != pri1)

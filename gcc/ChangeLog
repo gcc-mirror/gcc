@@ -1,3 +1,9 @@
+2017-10-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/82395
+	* ira-color.c (allocno_priority_compare_func): Fix comparison step
+	based on non_spilled_static_chain_regno_p.
+
 2017-10-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (output_387_binary_op): Rewrite SSE part.
