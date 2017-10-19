@@ -1656,6 +1656,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	  && TREE_ADDRESSABLE (decl)
 	  && !TREE_STATIC (decl)
 	  && !DECL_HAS_VALUE_EXPR_P (decl)
+	  && DECL_ALIGN (decl) <= MAX_SUPPORTED_STACK_ALIGNMENT
 	  && dbg_cnt (asan_use_after_scope))
 	{
 	  asan_poisoned_variables->add (decl);
@@ -6505,7 +6506,9 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
 	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }
-	  if (asan_poisoned_variables && dbg_cnt (asan_use_after_scope))
+	  if (asan_poisoned_variables
+	      && DECL_ALIGN (temp) <= MAX_SUPPORTED_STACK_ALIGNMENT
+	      && dbg_cnt (asan_use_after_scope))
 	    {
 	      tree asan_cleanup = build_asan_poison_call_expr (temp);
 	      if (asan_cleanup)
