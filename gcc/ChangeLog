@@ -1,3 +1,10 @@
+2017-10-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (align_ok_ldrd_strd): New function.
+	(mem_ok_for_ldrd_strd): New parameter align.  Extract the alignment of
+	the mem into it.
+	(gen_operands_ldrd_strd): Validate the alignment of the accesses.
+
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* flag-types.h (enum sanitize_code): Add SANITIZE_BUILTIN.  Or
