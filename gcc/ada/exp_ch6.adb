@@ -7249,26 +7249,28 @@ package body Exp_Ch6 is
          begin
             --  For T'Class, return True if it's True for T. This is necessary
             --  because a class-wide function might say "return F (...)", where
-            --  F returns the corresponding specific type.
+            --  F returns the corresponding specific type. We need a loop in
+            --  case T is a subtype of a class-wide type.
 
-            if Is_Class_Wide_Type (Typ) then
-               T := Etype (Typ);
-            end if;
+            while Is_Class_Wide_Type (T) loop
+               T := Etype (T);
+            end loop;
 
             --  If this is a generic formal type in an instance, return True if
             --  it's True for the generic actual type.
 
-            if Nkind (Parent (Typ)) = N_Subtype_Declaration
-              and then Present (Generic_Parent_Type (Parent (Typ)))
+            if Nkind (Parent (T)) = N_Subtype_Declaration
+              and then Present (Generic_Parent_Type (Parent (T)))
             then
-               T := Entity (Subtype_Indication (Parent (Typ)));
+               T := Entity (Subtype_Indication (Parent (T)));
 
                if Present (Full_View (T)) then
                   T := Full_View (T);
                end if;
+            end if;
 
-            elsif Present (Underlying_Type (Typ)) then
-               T := Underlying_Type (Typ);
+            if Present (Underlying_Type (T)) then
+               T := Underlying_Type (T);
             end if;
 
             declare
