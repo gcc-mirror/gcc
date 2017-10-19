@@ -1,5 +1,10 @@
 2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/fs_path.h (path::iterator++(int))
+	(path::iterator--(int)): Fix for paths with only one component.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Test
+	post-increment and post-decrement.
+
 	* doc/xml/manual/status_cxx2017.xml: Update references to C++17
 	section numbers.
 
