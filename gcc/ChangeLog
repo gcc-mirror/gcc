@@ -1,5 +1,10 @@
 2017-10-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	* x86-tune-costs.h (generic_cost, core_cost): Correct costs
+	of x87 and SSE instructions.
+
+2017-10-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* asan.c (create_cond_insert_point): Do not update edge count.
 	* auto-profile.c (afdo_propagate_edge): Update for edge count removal.
 	(afdo_propagate_circuit): Likewise.
