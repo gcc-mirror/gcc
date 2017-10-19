@@ -1,5 +1,10 @@
 2017-10-19  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb (Is_Build_In_Place_Result_Type): Fix silly bug -- "Typ"
+	should be "T".  Handle case of a subtype of a class-wide type.
+
+2017-10-19  Bob Duff  <duff@adacore.com>
+
 	* exp_util.adb: (Process_Statements_For_Controlled_Objects): Clarify
 	which node kinds can legitimately be ignored, and raise Program_Error
 	for others.
