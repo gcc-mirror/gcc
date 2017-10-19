@@ -1,3 +1,11 @@
+2017-10-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/82445
+	* gcc.target/arm/peep-ldrd-1.c: Tighten test scan pattern.
+	* gcc.target/arm/peep-strd-1.c: Likewise.
+	* gcc.target/arm/peep-ldrd-2.c: New test.
+	* gcc.target/arm/peep-strd-2.c: New test.
+
 2017-10-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/82556
