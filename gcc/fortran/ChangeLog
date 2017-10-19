@@ -1,3 +1,9 @@
+2017-10-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* interface.c (check_sym_interfaces, check_uop_interfaces,
+	gfc_check_interfaces): Base interface_name buffer off
+	GFC_MAX_SYMBOL_LEN.
+
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/82568

@@ -1918,7 +1918,7 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 static void
 check_sym_interfaces (gfc_symbol *sym)
 {
-  char interface_name[100];
+  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("generic interface ''")];
   gfc_interface *p;
 
   if (sym->ns != gfc_current_ns)
@@ -1955,7 +1955,7 @@ check_sym_interfaces (gfc_symbol *sym)
 static void
 check_uop_interfaces (gfc_user_op *uop)
 {
-  char interface_name[100];
+  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("operator interface ''")];
   gfc_user_op *uop2;
   gfc_namespace *ns;
 
@@ -2032,7 +2032,7 @@ void
 gfc_check_interfaces (gfc_namespace *ns)
 {
   gfc_namespace *old_ns, *ns2;
-  char interface_name[100];
+  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("intrinsic '' operator")];
   int i;
 
   old_ns = gfc_current_ns;
