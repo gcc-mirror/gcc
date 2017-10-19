@@ -1,6 +1,28 @@
 2017-10-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (LAMBDA_FUNCTION_P): Use
+	DECL_OVERLOADED_OPERATOR_IS.
+	(DECL_OVERLOADED_OPERATOR_P): Just be a predicate.
+	(DECL_VERLOADED_OPERATOR_IS): New.
+	(DECL_OVERLOADED_OPERAT_CODE): New.
+	* call.c (add_function_candidate): Use
+	DECL_OVERLOADED_OPERATOR_IS.
+	(build_op_call_1, build_over_call): Likewise.
+	* decl.c (duplicate_decls): Adjust DECL_OVERLOADED_OPERATOR_P,
+	USE_DECL_OVERLOADED_OPERATOR_CODE.
+	(start_preparsed_function): Use DECL_OVERLOADED_OPERATOR_IS.
+	* decl2.c (mark_used): Likwise.
+	* dump.c (dump_op): Delete.
+	(cp_dump_tree): Don't call it.
+	* mangle.c (wite_unqualified_name): Use
+	DECL_OVERLOADED_OPERATOR_CODE.
+	* method.c (synthesize_method): Use DECL_OVERLOADED_OPERATOR_IS.
+	(defaultable_fn_check): LIkewise.
+	* tree.c (special_function_p): Likewise.
+	* typeck.c (check_return_expr): Use IDENTIFIER_NEWDEL_OP_P.
+
+	gcc/cp/
 	* lex.c (get_identifier_kind_name): Fix names.
 	(init_operators): Nuke extraneous operators.
 	* operators.def (DEF_OPERATOR): Fix documentation.

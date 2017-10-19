@@ -929,7 +929,8 @@ synthesize_method (tree fndecl)
   start_preparsed_function (fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   stmt = begin_function_body ();
 
-  if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
+  if (DECL_ASSIGNMENT_OPERATOR_P (fndecl)
+      && DECL_OVERLOADED_OPERATOR_IS (fndecl, NOP_EXPR))
     {
       do_build_copy_assign (fndecl);
       need_body = false;
@@ -2318,7 +2319,7 @@ defaultable_fn_check (tree fn)
   else if (DECL_DESTRUCTOR_P (fn))
     kind = sfk_destructor;
   else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
-	   && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR)
+	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR))
     {
       if (copy_fn_p (fn))
 	kind = sfk_copy_assignment;

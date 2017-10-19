@@ -5101,7 +5101,8 @@ mark_used (tree decl, tsubst_flags_t complain)
       && DECL_DELETED_FN (decl))
     {
       if (DECL_ARTIFICIAL (decl)
-	  && DECL_OVERLOADED_OPERATOR_P (decl) == TYPE_EXPR
+	  && DECL_OVERLOADED_OPERATOR_P (decl)
+	  && DECL_OVERLOADED_OPERATOR_IS (decl, TYPE_EXPR)
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
 	/* We mark a lambda conversion op as deleted if we can't
 	   generate it properly; see maybe_add_lambda_conv_op.  */

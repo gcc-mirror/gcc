@@ -71,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Use DEF_ASSN_OPERATOR to define an assignment operator.  Its
    arguments are as for DEF_OPERATOR, but there is no need to provide
-   ARITY (always 2) or KIND (always cik_assign_op).  */
+   ARITY (always 2), or KIND (always cik_assign_op).  */
 
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) \
   DEF_OPERATOR(NAME, CODE, MANGLING, 2, cik_assign_op)

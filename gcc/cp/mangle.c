@@ -1351,7 +1351,7 @@ write_unqualified_name (tree decl)
 	  else
 	    oni = operator_name_info;
 
-	  write_string (oni[DECL_OVERLOADED_OPERATOR_P (decl)].mangled_name);
+	  write_string (oni[DECL_OVERLOADED_OPERATOR_CODE (decl)].mangled_name);
 	}
       else if (UDLIT_OPER_P (DECL_NAME (decl)))
 	write_literal_operator_name (DECL_NAME (decl));

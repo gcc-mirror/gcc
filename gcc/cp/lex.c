@@ -146,6 +146,10 @@ init_operators (void)
 
 #include "operators.def"
 #undef DEF_OPERATOR
+
+  /* TYPE_EXPR is used for conversion operators, even though they're
+     mangled as CAST_EXPR.  */
+  operator_name_info[(int) TYPE_EXPR] = operator_name_info[(int) CAST_EXPR];  
 }
 
 /* Initialize the reserved words.  */
