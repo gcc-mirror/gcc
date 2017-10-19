@@ -1,6 +1,14 @@
 2017-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/79402
+	* resolve.c (fixup_unique_dummy): New function.
+	(gfc_resolve_expr): Call it for dummy variables with a unique
+	symtree name.
+
+2017-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/81048
 	* resolve.c (resolve_symbol): Ensure that derived type array
 	results get default initialization.

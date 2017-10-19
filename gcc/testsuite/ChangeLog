@@ -1,3 +1,9 @@
+2017-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/79402
+	* gfortran.dg/submodule_23.f90: New test.
+
 2017-10-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/82445
