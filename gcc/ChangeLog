@@ -1,3 +1,10 @@
+2017-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82517
+	* gimplify.c (gimplify_decl_expr): Do not instrument variables
+	that have a large alignment.
+	(gimplify_target_expr): Likewise.
+
 2017-10-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/82602
