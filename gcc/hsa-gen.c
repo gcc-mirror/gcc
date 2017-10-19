@@ -4238,12 +4238,11 @@ gen_hsa_alloca (gcall *call, hsa_bb *hbb)
 
   built_in_function fn = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
 
-  gcc_checking_assert (fn == BUILT_IN_ALLOCA
-		       || fn == BUILT_IN_ALLOCA_WITH_ALIGN);
+  gcc_checking_assert (ALLOCA_FUNCTION_CODE_P (fn));
 
   unsigned bit_alignment = 0;
 
-  if (fn == BUILT_IN_ALLOCA_WITH_ALIGN)
+  if (fn != BUILT_IN_ALLOCA)
     {
       tree alignment_tree = gimple_call_arg (call, 1);
       if (TREE_CODE (alignment_tree) != INTEGER_CST)
@@ -5656,8 +5655,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 
 	break;
       }
-    case BUILT_IN_ALLOCA:
-    case BUILT_IN_ALLOCA_WITH_ALIGN:
+    CASE_BUILT_IN_ALLOCA:
       {
 	gen_hsa_alloca (call, hbb);
 	break;

@@ -628,10 +628,9 @@ handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
   tree ptr_type = gimple_call_lhs (call) ? TREE_TYPE (gimple_call_lhs (call))
 					 : ptr_type_node;
   tree partial_size = NULL_TREE;
-  bool alloca_with_align
-    = DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA_WITH_ALIGN;
   unsigned int align
-    = alloca_with_align ? tree_to_uhwi (gimple_call_arg (call, 1)) : 0;
+    = DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
+      ? 0 : tree_to_uhwi (gimple_call_arg (call, 1));
 
   /* If ALIGN > ASAN_RED_ZONE_SIZE, we embed left redzone into first ALIGN
      bytes of allocated space.  Otherwise, align alloca to ASAN_RED_ZONE_SIZE
@@ -793,8 +792,7 @@ get_mem_refs_of_builtin_call (gcall *call,
       handle_builtin_stack_restore (call, iter);
       break;
 
-    case BUILT_IN_ALLOCA_WITH_ALIGN:
-    case BUILT_IN_ALLOCA:
+    CASE_BUILT_IN_ALLOCA:
       handle_builtin_alloca (call, iter);
       break;
     /* And now the __atomic* and __sync builtins.

@@ -9975,6 +9975,13 @@ build_common_builtin_nodes (void)
 			"__builtin_alloca_with_align",
 			alloca_flags);
 
+  ftype = build_function_type_list (ptr_type_node, size_type_node,
+				    size_type_node, size_type_node, NULL_TREE);
+  local_define_builtin ("__builtin_alloca_with_align_and_max", ftype,
+			BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX,
+			"__builtin_alloca_with_align_and_max",
+			alloca_flags);
+
   ftype = build_function_type_list (void_type_node,
 				    ptr_type_node, ptr_type_node,
 				    ptr_type_node, NULL_TREE);
@@ -10713,6 +10720,33 @@ maybe_build_call_expr_loc (location_t loc, combined_fn fn, tree type,
       if (!fndecl)
 	return NULL_TREE;
       return build_call_expr_loc_array (loc, fndecl, n, argarray);
+    }
+}
+
+/* Return a function call to the appropriate builtin alloca variant.
+
+   SIZE is the size to be allocated.  ALIGN, if non-zero, is the requested
+   alignment of the allocated area.  MAX_SIZE, if non-negative, is an upper
+   bound for SIZE in case it is not a fixed value.  */
+
+tree
+build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
+{
+  if (max_size >= 0)
+    {
+      tree t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX);
+      return
+	build_call_expr (t, 3, size, size_int (align), size_int (max_size));
+    }
+  else if (align > 0)
+    {
+      tree t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
+      return build_call_expr (t, 2, size, size_int (align));
+    }
+  else
+    {
+      tree t = builtin_decl_explicit (BUILT_IN_ALLOCA);
+      return build_call_expr (t, 1, size);
     }
 }
 

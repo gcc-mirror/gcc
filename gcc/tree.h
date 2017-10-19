@@ -2396,6 +2396,18 @@ extern machine_mode vector_type_mode (const_tree);
 #define DECL_FUNCTION_CODE(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.function_code)
 
+/* Test if FCODE is a function code for an alloca operation.  */
+#define ALLOCA_FUNCTION_CODE_P(FCODE)				\
+  ((FCODE) == BUILT_IN_ALLOCA					\
+   || (FCODE) == BUILT_IN_ALLOCA_WITH_ALIGN			\
+   || (FCODE) == BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX)
+
+/* Generate case for an alloca operation.  */
+#define CASE_BUILT_IN_ALLOCA			\
+  case BUILT_IN_ALLOCA:				\
+  case BUILT_IN_ALLOCA_WITH_ALIGN:		\
+  case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX
+
 #define DECL_FUNCTION_PERSONALITY(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.personality)
 
@@ -4050,6 +4062,7 @@ extern tree build_call_expr_internal_loc_array (location_t, enum internal_fn,
 						tree, int, const tree *);
 extern tree maybe_build_call_expr_loc (location_t, combined_fn, tree,
 				       int, ...);
+extern tree build_alloca_call_expr (tree, unsigned int, HOST_WIDE_INT);
 extern tree build_string_literal (int, const char *);
 
 /* Construct various nodes representing data types.  */

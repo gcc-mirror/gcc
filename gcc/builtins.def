@@ -921,6 +921,7 @@ DEF_BUILTIN_STUB (BUILT_IN_SETJMP_RECEIVER, "__builtin_setjmp_receiver")
 DEF_BUILTIN_STUB (BUILT_IN_STACK_SAVE, "__builtin_stack_save")
 DEF_BUILTIN_STUB (BUILT_IN_STACK_RESTORE, "__builtin_stack_restore")
 DEF_BUILTIN_STUB (BUILT_IN_ALLOCA_WITH_ALIGN, "__builtin_alloca_with_align")
+DEF_BUILTIN_STUB (BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX, "__builtin_alloca_with_align_and_max")
 
 /* An internal version of memcmp, used when the result is only tested for
    equality with zero.  */

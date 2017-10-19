@@ -10869,6 +10869,7 @@ in the Cilk Plus language manual which can be found at
 @cindex built-in functions
 @findex __builtin_alloca
 @findex __builtin_alloca_with_align
+@findex __builtin_alloca_with_align_and_max
 @findex __builtin_call_with_static_chain
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
@@ -11513,6 +11514,16 @@ Variable Length Arrays offer the same functionality under
 a portable, more convenient, and safer interface they are recommended
 instead, in both C99 and C++ programs where GCC provides them as
 an extension.  @xref{Variable Length}, for details.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void *__builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)
+Similar to @code{__builtin_alloca_with_align} but takes an extra argument
+specifying an upper bound for @var{size} in case its value cannot be computed
+at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
+and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
+expression, it has no effect on code generation and no attempt is made to
+check its compatibility with @var{size}.
 
 @end deftypefn
 

@@ -1609,7 +1609,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
      arguments to the outgoing arguments address.  We can pass TRUE
      as the 4th argument because we just saved the stack pointer
      and will restore it right after the call.  */
-  allocate_dynamic_stack_space (argsize, 0, BIGGEST_ALIGNMENT, true);
+  allocate_dynamic_stack_space (argsize, 0, BIGGEST_ALIGNMENT, -1, true);
 
   /* Set DRAP flag to true, even though allocate_dynamic_stack_space
      may have already set current_function_calls_alloca to true.
@@ -4858,19 +4858,22 @@ expand_builtin_alloca (tree exp)
   rtx result;
   unsigned int align;
   tree fndecl = get_callee_fndecl (exp);
-  bool alloca_with_align = (DECL_FUNCTION_CODE (fndecl)
-			    == BUILT_IN_ALLOCA_WITH_ALIGN);
+  HOST_WIDE_INT max_size;
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   bool alloca_for_var = CALL_ALLOCA_FOR_VAR_P (exp);
   bool valid_arglist
-    = (alloca_with_align
-       ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE)
-       : validate_arglist (exp, INTEGER_TYPE, VOID_TYPE));
+    = (fcode == BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX
+       ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, INTEGER_TYPE,
+			   VOID_TYPE)
+       : fcode == BUILT_IN_ALLOCA_WITH_ALIGN
+	 ? validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE)
+	 : validate_arglist (exp, INTEGER_TYPE, VOID_TYPE));
 
   if (!valid_arglist)
     return NULL_RTX;
 
-  if ((alloca_with_align && !warn_vla_limit)
-      || (!alloca_with_align && !warn_alloca_limit))
+  if ((alloca_for_var && !warn_vla_limit)
+      || (!alloca_for_var && !warn_alloca_limit))
     {
       /* -Walloca-larger-than and -Wvla-larger-than settings override
 	 the more general -Walloc-size-larger-than so unless either of
@@ -4885,13 +4888,19 @@ expand_builtin_alloca (tree exp)
   op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
   /* Compute the alignment.  */
-  align = (alloca_with_align
-	   ? TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1))
-	   : BIGGEST_ALIGNMENT);
+  align = (fcode == BUILT_IN_ALLOCA
+	   ? BIGGEST_ALIGNMENT
+	   : TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1)));
+
+  /* Compute the maximum size.  */
+  max_size = (fcode == BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX
+              ? TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 2))
+              : -1);
 
   /* Allocate the desired space.  If the allocation stems from the declaration
      of a variable-sized object, it cannot accumulate.  */
-  result = allocate_dynamic_stack_space (op0, 0, align, alloca_for_var);
+  result
+    = allocate_dynamic_stack_space (op0, 0, align, max_size, alloca_for_var);
   result = convert_memory_address (ptr_mode, result);
 
   return result;
@@ -6482,8 +6491,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       && fcode != BUILT_IN_EXECLE
       && fcode != BUILT_IN_EXECVP
       && fcode != BUILT_IN_EXECVE
-      && fcode != BUILT_IN_ALLOCA
-      && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
+      && !ALLOCA_FUNCTION_CODE_P (fcode)
       && fcode != BUILT_IN_FREE
       && fcode != BUILT_IN_CHKP_SET_PTR_BOUNDS
       && fcode != BUILT_IN_CHKP_INIT_PTR_BOUNDS
@@ -6712,8 +6720,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       else
 	return XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);
 
-    case BUILT_IN_ALLOCA:
-    case BUILT_IN_ALLOCA_WITH_ALIGN:
+    CASE_BUILT_IN_ALLOCA:
       target = expand_builtin_alloca (exp);
       if (target)
 	return target;
@@ -10425,8 +10432,7 @@ is_inexpensive_builtin (tree decl)
     switch (DECL_FUNCTION_CODE (decl))
       {
       case BUILT_IN_ABS:
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
       case BUILT_IN_BSWAP16:
       case BUILT_IN_BSWAP32:
       case BUILT_IN_BSWAP64:
