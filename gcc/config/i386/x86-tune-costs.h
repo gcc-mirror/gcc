@@ -2196,8 +2196,7 @@ static stringop_algs generic_memset[2] = {
 static const
 struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
-  /* On all chips taken into consideration lea is 2 cycles and more.  With
-     this cost however our current implementation of synth_mult results in
+  /* Setting cost to 2 makes our current implementation of synth_mult result in
      use of unnecessary temporary registers causing regression on several
      SPECfp benchmarks.  */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -2246,23 +2245,23 @@ struct processor_costs generic_cost = {
   /* Benchmarks shows large regressions on K8 sixtrack benchmark when this
      value is increased to perhaps more appropriate value of 5.  */
   3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
 
-  COSTS_N_INSNS (8),			/* cost of cheap SSE instruction.  */
-  COSTS_N_INSNS (8),			/* cost of ADDSS/SD SUBSS/SD insns.  */
-  COSTS_N_INSNS (8),			/* cost of MULSS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of MULSD instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FMA SS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FMA SD instruction.  */
-  COSTS_N_INSNS (20),			/* cost of DIVSS instruction.  */
-  COSTS_N_INSNS (20),			/* cost of DIVSD instruction.  */
-  COSTS_N_INSNS (40),			/* cost of SQRTSS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of SQRTSD instruction.  */
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (18),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (32),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (30),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (58),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
@@ -2344,12 +2343,12 @@ struct processor_costs core_cost = {
   6,					/* number of parallel prefetches */
   /* FIXME perhaps more appropriate value is 5.  */
   3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (24),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (24),			/* cost of FSQRT instruction.  */
 
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
