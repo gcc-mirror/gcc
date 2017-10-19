@@ -1,5 +1,13 @@
 2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Ensure that error_code arguments are
+	cleared when required.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Remove redundant check.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Ensure that error_code argument is cleared when required.
+
 	* include/experimental/bits/fs_path.h (path::iterator++(int))
 	(path::iterator--(int)): Fix for paths with only one component.
 	* testsuite/experimental/filesystem/path/itr/traversal.cc: Test
