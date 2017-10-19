@@ -1,3 +1,22 @@
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan.c (ubsan_expand_null_ifn): Use _v1 suffixed type mismatch
+	builtins, store max (log2 (align), 0) into uchar field instead of
+	align into uptr field.
+	(ubsan_expand_objsize_ifn): Use _v1 suffixed type mismatch builtins,
+	store uchar 0 field instead of uptr 0 field.
+	(instrument_nonnull_return): Use _v1 suffixed nonnull return builtin,
+	instead of passing one address of struct with 2 locations pass
+	two addresses of structs with 1 location each.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH,
+	BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_ABORT): Removed.
+	(BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1,
+	BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_V1_ABORT,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_V1,
+	BUILT_IN_UBSAN_HANDLE_NONNULL_RETURN_V1_ABORT): New builtins.
+
 2017-10-19  Martin Liska  <mliska@suse.cz>
 
 	PR driver/81829

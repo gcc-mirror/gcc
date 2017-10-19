@@ -16,6 +16,7 @@
 
 #include <sanitizer_common/sanitizer_internal_defs.h>
 using __sanitizer::uptr;
+using __sanitizer::tid_t;
 
 // This header should NOT include any other headers.
 // All functions in this header are extern "C" and start with __tsan_.
@@ -29,6 +30,8 @@ extern "C" {
 // This function should be called at the very beginning of the process,
 // before any instrumented code is executed and before any call to malloc.
 SANITIZER_INTERFACE_ATTRIBUTE void __tsan_init();
+
+SANITIZER_INTERFACE_ATTRIBUTE void __tsan_flush_memory();
 
 SANITIZER_INTERFACE_ATTRIBUTE void __tsan_read1(void *addr);
 SANITIZER_INTERFACE_ATTRIBUTE void __tsan_read2(void *addr);
@@ -70,6 +73,20 @@ void __tsan_vptr_update(void **vptr_p, void *new_val);
 
 SANITIZER_INTERFACE_ATTRIBUTE void __tsan_func_entry(void *call_pc);
 SANITIZER_INTERFACE_ATTRIBUTE void __tsan_func_exit();
+
+SANITIZER_INTERFACE_ATTRIBUTE void __tsan_ignore_thread_begin();
+SANITIZER_INTERFACE_ATTRIBUTE void __tsan_ignore_thread_end();
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void *__tsan_external_register_tag(const char *object_type);
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_external_register_header(void *tag, const char *header);
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_external_assign_tag(void *addr, void *tag);
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_external_read(void *addr, void *caller_pc, void *tag);
+SANITIZER_INTERFACE_ATTRIBUTE
+void __tsan_external_write(void *addr, void *caller_pc, void *tag);
 
 SANITIZER_INTERFACE_ATTRIBUTE
 void __tsan_read_range(void *addr, unsigned long size);  // NOLINT
@@ -116,6 +133,10 @@ int __tsan_get_report_loc(void *report, uptr idx, const char **type,
                           int *fd, int *suppressable, void **trace,
                           uptr trace_size);
 
+SANITIZER_INTERFACE_ATTRIBUTE
+int __tsan_get_report_loc_object_type(void *report, uptr idx,
+                                      const char **object_type);
+
 // Returns information about mutexes included in the report.
 SANITIZER_INTERFACE_ATTRIBUTE
 int __tsan_get_report_mutex(void *report, uptr idx, uptr *mutex_id, void **addr,
@@ -123,13 +144,24 @@ int __tsan_get_report_mutex(void *report, uptr idx, uptr *mutex_id, void **addr,
 
 // Returns information about threads included in the report.
 SANITIZER_INTERFACE_ATTRIBUTE
-int __tsan_get_report_thread(void *report, uptr idx, int *tid, uptr *os_id,
+int __tsan_get_report_thread(void *report, uptr idx, int *tid, tid_t *os_id,
                              int *running, const char **name, int *parent_tid,
                              void **trace, uptr trace_size);
 
 // Returns information about unique thread IDs included in the report.
 SANITIZER_INTERFACE_ATTRIBUTE
 int __tsan_get_report_unique_tid(void *report, uptr idx, int *tid);
+
+// Returns the type of the pointer (heap, stack, global, ...) and if possible
+// also the starting address (e.g. of a heap allocation) and size.
+SANITIZER_INTERFACE_ATTRIBUTE
+const char *__tsan_locate_address(uptr addr, char *name, uptr name_size,
+                                  uptr *region_address, uptr *region_size);
+
+// Returns the allocation stack for a heap pointer.
+SANITIZER_INTERFACE_ATTRIBUTE
+int __tsan_get_alloc_stack(uptr addr, uptr *trace, uptr size, int *thread_id,
+                           tid_t *os_id);
 
 #endif  // SANITIZER_GO
 

@@ -19,13 +19,16 @@ ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libsanitizer_common.la
 
 sanitizer_common_files = \
+	sancov_flags.cc \
 	sanitizer_allocator.cc \
+	sanitizer_allocator_checks.cc \
 	sanitizer_common.cc \
 	sanitizer_common_libcdep.cc \
-	sanitizer_coverage_libcdep.cc \
-	sanitizer_coverage_mapping_libcdep.cc \
+	sanitizer_coverage_libcdep_new.cc \
 	sanitizer_deadlock_detector1.cc \
 	sanitizer_deadlock_detector2.cc \
+	sanitizer_errno.cc \
+	sanitizer_file.cc \
 	sanitizer_flags.cc \
 	sanitizer_flag_parser.cc \
 	sanitizer_libc.cc \
@@ -34,6 +37,7 @@ sanitizer_common_files = \
 	sanitizer_linux_libcdep.cc \
 	sanitizer_linux_s390.cc \
 	sanitizer_mac.cc \
+	sanitizer_mac_libcdep.cc \
 	sanitizer_persistent_allocator.cc \
 	sanitizer_platform_limits_linux.cc \
 	sanitizer_platform_limits_posix.cc \
@@ -50,6 +54,7 @@ sanitizer_common_files = \
 	sanitizer_symbolizer_mac.cc \
 	sanitizer_stacktrace_printer.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
+	sanitizer_stoptheworld_mac.cc \
 	sanitizer_suppressions.cc \
 	sanitizer_symbolizer.cc \
 	sanitizer_symbolizer_libbacktrace.cc \

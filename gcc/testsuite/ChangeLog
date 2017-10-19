@@ -1,5 +1,22 @@
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/ubsan/float-cast-overflow-1.c: Drop value keyword
+	from expected output regexps.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-3.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-5.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-6.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-9.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: Likewise.
+	* g++.dg/ubsan/float-cast-overflow-bf.C: Likewise.
+	* gcc.dg/ubsan/float-cast-overflow-bf.c: Likewise.
+	* g++.dg/asan/default-options-1.C (__asan_default_options): Add
+	used attribute.
+	* g++.dg/asan/asan_test.C: Run with ASAN_OPTIONS=handle_segv=2
+	in the environment.
+
 	PR target/82580
 	* gcc.target/i386/pr82580.c: Use {\msbb} instead of "sbb" in
 	scan-assembler-times.  Check that there are no movzb* instructions

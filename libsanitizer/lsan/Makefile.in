@@ -107,9 +107,10 @@ liblsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
 	$(am__append_1) $(am__DEPENDENCIES_1)
-am__objects_1 = lsan_common.lo lsan_common_linux.lo
-am__objects_2 = $(am__objects_1) lsan.lo lsan_allocator.lo \
-	lsan_interceptors.lo lsan_preinit.lo lsan_thread.lo
+am__objects_1 = lsan_common.lo lsan_common_linux.lo lsan_common_mac.lo
+am__objects_2 = $(am__objects_1) lsan.lo lsan_linux.lo lsan_mac.lo \
+	lsan_malloc_mac.lo lsan_allocator.lo lsan_interceptors.lo \
+	lsan_preinit.lo lsan_thread.lo
 am_liblsan_la_OBJECTS = $(am__objects_2)
 liblsan_la_OBJECTS = $(am_liblsan_la_OBJECTS)
 liblsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -299,11 +300,15 @@ noinst_LTLIBRARIES = libsanitizer_lsan.la
 @LSAN_SUPPORTED_TRUE@toolexeclib_LTLIBRARIES = liblsan.la
 sanitizer_lsan_files = \
 	lsan_common.cc \
-	lsan_common_linux.cc
+	lsan_common_linux.cc \
+	lsan_common_mac.cc
 
 lsan_files = \
 	$(sanitizer_lsan_files) \
 	lsan.cc \
+	lsan_linux.cc \
+	lsan_mac.cc \
+	lsan_malloc_mac.cc \
 	lsan_allocator.cc \
 	lsan_interceptors.cc \
 	lsan_preinit.cc \
@@ -446,7 +451,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_common_linux.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_common_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_interceptors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_linux.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_malloc_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_preinit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_thread.Plo@am__quote@
 
