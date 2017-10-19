@@ -236,8 +236,10 @@ typedef struct
 
 #define STB_LOCAL	0	/* Local symbol */
 #define STB_GLOBAL	1	/* Global symbol */
+#define STB_WEAK	2	/* Weak global */
 
 #define STV_DEFAULT	0	/* Visibility is specified by binding type */
+#define STV_HIDDEN	2	/* Can only be seen inside currect component */
 
 /* Functions to fetch and store different ELF types, depending on the
    endianness and size.  */
@@ -1365,18 +1367,25 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 		    {
 		      /* Make discarded symbols undefined and unnamed
 		         in case it is local.  */
-		      if (ELF_ST_BIND (*st_info) == STB_LOCAL)
-			ELF_SET_FIELD (type_functions, ei_class, Sym,
-				       ent, st_name, Elf_Word, 0);
+		      int bind = ELF_ST_BIND (*st_info);
+		      if (bind == STB_LOCAL)
+			{
+			  ELF_SET_FIELD (type_functions, ei_class, Sym,
+					 ent, st_name, Elf_Word, 0);
+			  *st_other = STV_DEFAULT;
+			}
+		      else
+			{
+			  bind = STB_WEAK;
+			  *st_other = STV_HIDDEN;
+			}
+		      *st_info = ELF_ST_INFO (bind, STT_NOTYPE);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_value, Elf_Addr, 0);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_size, Elf_Word, 0);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_shndx, Elf_Half, SHN_UNDEF);
-		      *st_info = ELF_ST_INFO (ELF_ST_BIND (*st_info),
-					      STT_NOTYPE);
-		      *st_other = STV_DEFAULT;
 		    }
 		}
 	      XDELETEVEC (strings);
