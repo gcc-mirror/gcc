@@ -1,5 +1,9 @@
 2017-10-19  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/tree-ssa/ldist-27.c: Use dg-require-stack-size.
+
+2017-10-19  Tom de Vries  <tom@codesourcery.com>
+
 	* lib/target-supports-dg.exp (dg-require-stack-size): New proc.
 	* gcc.c-torture/execute/20030209-1.c: Use dg-require-stack-size.
 	* gcc.c-torture/execute/20040805-1.c: Same.

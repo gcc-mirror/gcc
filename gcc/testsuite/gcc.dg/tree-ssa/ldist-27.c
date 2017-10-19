@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
+/* { dg-require-stack-size "(300 + 200 + 300 * 200) * 8" } */
 
 #define M (300)
 #define N (200)
