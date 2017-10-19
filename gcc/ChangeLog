@@ -40,15 +40,13 @@
 	* explow.c (allocate_dynamic_stack_space): Add MAX_SIZE parameter and
 	use it for the stack usage computation.
 	* explow.h (allocate_dynamic_stack_space): Adjust prototype.
-	* function.c (gimplify_parameters): Turn BUILT_IN_ALLOCA_WITH_ALIGN
-	into BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX and pass maximum size.
+	* function.c (gimplify_parameters): Call build_alloca_call_expr.
 	* gimple-ssa-warn-alloca.c (alloca_call_type): Simplify control flow.
 	Take into account 3rd argument of __builtin_alloca_with_align_and_max.
 	(in_loop_p): Remove first argument and useless check.
 	(pass_walloca::execute): Remove useless test and adjust call to above.
 	* gimple.c (gimple_build_call_from_tree): Deal with all alloc variants
-	* gimplify.c (gimplify_vla_decl): Turn BUILT_IN_ALLOCA_WITH_ALIGN into
-	BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX and pass maximum size.
+	* gimplify.c (gimplify_vla_decl): Call build_alloca_call_expr.
 	(gimplify_call_expr): Deal with all alloca variants.
 	* hsa-gen.c (gen_hsa_alloca): Likewise.
 	(gen_hsa_insns_for_call): Likewise.
@@ -66,8 +64,10 @@
 	(eliminate_unnecessary_stmts): Likewise.
 	* tree.c (build_common_builtin_nodes): Build
 	BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX.
+	(build_alloca_call_expr): New function.
 	* tree.h (ALLOCA_FUNCTION_CODE_P): New macro.
 	(CASE_BUILT_IN_ALLOCA): Likewise.
+	(build_alloca_call_expr): Declare.
 	* varasm.c (incorporeal_function_p): Deal with all alloca variants.
 
 2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
