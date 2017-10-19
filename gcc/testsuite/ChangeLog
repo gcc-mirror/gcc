@@ -1,3 +1,9 @@
+2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/Walloca-15.c: New test.
+	* gnat.dg/stack_usage4.adb: Likewise.
+	* gnat.dg/stack_usage4_pkg.ads: New helper.
+
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82600
