@@ -2801,6 +2801,43 @@ resolve_specific_f (gfc_expr *expr)
   return true;
 }
 
+/* Recursively append candidate SYM to CANDIDATES.  Store the number of
+   candidates in CANDIDATES_LEN.  */
+
+static void
+lookup_function_fuzzy_find_candidates (gfc_symtree *sym,
+				       char **&candidates,
+				       size_t &candidates_len)
+{
+  gfc_symtree *p;
+
+  if (sym == NULL)
+    return;
+  if ((sym->n.sym->ts.type != BT_UNKNOWN || sym->n.sym->attr.external)
+      && sym->n.sym->attr.flavor == FL_PROCEDURE)
+    vec_push (candidates, candidates_len, sym->name);
+
+  p = sym->left;
+  if (p)
+    lookup_function_fuzzy_find_candidates (p, candidates, candidates_len);
+
+  p = sym->right;
+  if (p)
+    lookup_function_fuzzy_find_candidates (p, candidates, candidates_len);
+}
+
+
+/* Lookup function FN fuzzily, taking names in SYMROOT into account.  */
+
+const char*
+gfc_lookup_function_fuzzy (const char *fn, gfc_symtree *symroot)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_function_fuzzy_find_candidates (symroot, candidates, candidates_len);
+  return gfc_closest_fuzzy_match (fn, candidates);
+}
+
 
 /* Resolve a procedure call not known to be generic nor specific.  */
 
@@ -2851,8 +2888,15 @@ set_type:
 
       if (ts->type == BT_UNKNOWN)
 	{
-	  gfc_error ("Function %qs at %L has no IMPLICIT type",
-		     sym->name, &expr->where);
+	  const char *guessed
+	    = gfc_lookup_function_fuzzy (sym->name, sym->ns->sym_root);
+	  if (guessed)
+	    gfc_error ("Function %qs at %L has no IMPLICIT type"
+		       "; did you mean %qs?",
+		       sym->name, &expr->where, guessed);
+	  else
+	    gfc_error ("Function %qs at %L has no IMPLICIT type",
+		       sym->name, &expr->where);
 	  return false;
 	}
       else
@@ -3713,6 +3757,46 @@ logical_to_bitwise (gfc_expr *e)
   return e;
 }
 
+/* Recursively append candidate UOP to CANDIDATES.  Store the number of
+   candidates in CANDIDATES_LEN.  */
+static void
+lookup_uop_fuzzy_find_candidates (gfc_symtree *uop,
+				  char **&candidates,
+				  size_t &candidates_len)
+{
+  gfc_symtree *p;
+
+  if (uop == NULL)
+    return;
+
+  /* Not sure how to properly filter here.  Use all for a start.
+     n.uop.op is NULL for empty interface operators (is that legal?) disregard
+     these as i suppose they don't make terribly sense.  */
+
+  if (uop->n.uop->op != NULL)
+    vec_push (candidates, candidates_len, uop->name);
+
+  p = uop->left;
+  if (p)
+    lookup_uop_fuzzy_find_candidates (p, candidates, candidates_len);
+
+  p = uop->right;
+  if (p)
+    lookup_uop_fuzzy_find_candidates (p, candidates, candidates_len);
+}
+
+/* Lookup user-operator OP fuzzily, taking names in UOP into account.  */
+
+static const char*
+lookup_uop_fuzzy (const char *op, gfc_symtree *uop)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_uop_fuzzy_find_candidates (uop, candidates, candidates_len);
+  return gfc_closest_fuzzy_match (op, candidates);
+}
+
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -3935,8 +4019,16 @@ resolve_operator (gfc_expr *e)
 
     case INTRINSIC_USER:
       if (e->value.op.uop->op == NULL)
-	sprintf (msg, _("Unknown operator %%<%s%%> at %%L"),
-		 e->value.op.uop->name);
+	{
+	  const char *name = e->value.op.uop->name;
+	  const char *guessed;
+	  guessed = lookup_uop_fuzzy (name, e->value.op.uop->ns->uop_root);
+	  if (guessed)
+	    sprintf (msg, _("Unknown operator %%<%s%%> at %%L; did you mean '%s'?"),
+		name, guessed);
+	  else
+	    sprintf (msg, _("Unknown operator %%<%s%%> at %%L"), name);
+	}
       else if (op2 == NULL)
 	sprintf (msg, _("Operand of user operator %%<%s%%> at %%L is %s"),
 		 e->value.op.uop->name, gfc_typename (&op1->ts));

@@ -1,3 +1,28 @@
+2017-10-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gfortran.h (gfc_lookup_function_fuzzy): New declaration.
+	(gfc_closest_fuzzy_match): New declaration.
+	(vec_push): New definition.
+	* misc.c (gfc_closest_fuzzy_match): New definition.
+	* resolve.c: Include spellcheck.h.
+	(lookup_function_fuzzy_find_candidates): New static function.
+	(lookup_uop_fuzzy_find_candidates): Likewise.
+	(lookup_uop_fuzzy): Likewise.
+	(resolve_operator) <INTRINSIC_USER>: Call lookup_uop_fuzzy.
+	(gfc_lookup_function_fuzzy): New definition.
+	(resolve_unknown_f): Call gfc_lookup_function_fuzzy.
+	* interface.c (check_interface0): Likewise.
+	(lookup_arg_fuzzy_find_candidates): New static function.
+	(lookup_arg_fuzzy ): Likewise.
+	(compare_actual_formal): Call lookup_arg_fuzzy.
+	* symbol.c: Include spellcheck.h.
+	(lookup_symbol_fuzzy_find_candidates): New static function.
+	(lookup_symbol_fuzzy): Likewise.
+	(gfc_set_default_type): Call lookup_symbol_fuzzy.
+	(lookup_component_fuzzy_find_candidates): New static function.
+	(lookup_component_fuzzy): Likewise.
+	(gfc_find_component): Call lookup_component_fuzzy.
+
 2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82567
