@@ -1,3 +1,8 @@
+2017-10-19  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Test Directives, Variants of
+	dg-require-support): Add dg-require-stack-size.
+
 2017-10-19  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82517
