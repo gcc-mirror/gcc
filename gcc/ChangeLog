@@ -1,3 +1,9 @@
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82580
+	* config/i386/i386.md (setcc + movzbl to xor + setcc): New peephole2.
+	(setcc + and to xor + setcc): New peephole2.
+
 2017-10-19  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Test Directives, Variants of

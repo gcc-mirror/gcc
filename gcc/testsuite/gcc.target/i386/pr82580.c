@@ -35,4 +35,5 @@ void f21 (S x, S y) { if (x >= y) bar (); }
 void f22 (S x, S y) { if (x < y) bar (); }
 void f23 (S x, S y) { if (x <= y) bar (); }
 
-/* { dg-final { scan-assembler-times "sbb" 16 } } */
+/* { dg-final { scan-assembler-times {\msbb} 16 } } */
+/* { dg-final { scan-assembler-not {\mmovzb} { target lp64 } } } */
