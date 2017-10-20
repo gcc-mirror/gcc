@@ -1,3 +1,7 @@
+2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune-costs.h (intel_cost, generic_cost): Fix move costs.
+
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (isa): Remove fma_avx512f.
