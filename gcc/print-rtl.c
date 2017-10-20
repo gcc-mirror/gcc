@@ -1792,11 +1792,11 @@ print_insn (pretty_printer *pp, const rtx_insn *x, int verbose)
     case DEBUG_INSN:
       {
 	const char *name = "?";
+	char idbuf[32];
 
 	if (DECL_P (INSN_VAR_LOCATION_DECL (x)))
 	  {
 	    tree id = DECL_NAME (INSN_VAR_LOCATION_DECL (x));
-	    char idbuf[32];
 	    if (id)
 	      name = IDENTIFIER_POINTER (id);
 	    else if (TREE_CODE (INSN_VAR_LOCATION_DECL (x))

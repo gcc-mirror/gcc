@@ -30,44 +30,44 @@ main (void)
   return 0;
 }
 
-/* { dg-output "runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value nan is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -?nan is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value inf is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -inf is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -5 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -1.5 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -1 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value nan is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -?nan is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value inf is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -inf is outside the range of representable values of type '__int128 unsigned'" } */
+/* { dg-output "runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 1.70141e\\\+38 is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: nan is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -?nan is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: inf is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -inf is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: 3.40282e\\\+38 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -5 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -1.5 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -1 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: nan is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -?nan is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: inf is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: -inf is outside the range of representable values of type '__int128 unsigned'" } */

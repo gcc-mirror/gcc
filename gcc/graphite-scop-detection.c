@@ -254,28 +254,6 @@ dot_cfg ()
   scops.release ();
 }
 
-/* Can all ivs be represented by a signed integer?
-   As isl might generate negative values in its expressions, signed loop ivs
-   are required in the backend.  */
-
-static bool
-loop_ivs_can_be_represented (loop_p loop)
-{
-  unsigned type_long_long = TYPE_PRECISION (long_long_integer_type_node);
-  for (gphi_iterator psi = gsi_start_phis (loop->header); !gsi_end_p (psi);
-       gsi_next (&psi))
-    {
-      gphi *phi = psi.phi ();
-      tree res = PHI_RESULT (phi);
-      tree type = TREE_TYPE (res);
-
-      if (TYPE_UNSIGNED (type) && TYPE_PRECISION (type) >= type_long_long)
-	return false;
-    }
-
-  return true;
-}
-
 /* Returns a COND_EXPR statement when BB has a single predecessor, the
    edge between BB and its predecessor is not a loop exit edge, and
    the last statement of the single predecessor is a COND_EXPR.  */
@@ -403,7 +381,7 @@ public:
 
      Something like "i * n" or "n * m" is not allowed.  */
 
-  static bool graphite_can_represent_scev (tree scev);
+  static bool graphite_can_represent_scev (sese_l scop, tree scev);
 
   /* Return true when EXPR can be represented in the polyhedral model.
 
@@ -822,13 +800,6 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	  return true;
 	}
 
-      if (! loop_ivs_can_be_represented (loop))
-	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		       << "IV cannot be represented.\n");
-	  return true;
-	}
-
       /* Check if all loop nests have at least one data reference.
 	 ???  This check is expensive and loops premature at this point.
 	 If important to retain we can pre-compute this for all innermost
@@ -963,17 +934,9 @@ scop_detection::graphite_can_represent_init (tree e)
    Something like "i * n" or "n * m" is not allowed.  */
 
 bool
-scop_detection::graphite_can_represent_scev (tree scev)
+scop_detection::graphite_can_represent_scev (sese_l scop, tree scev)
 {
   if (chrec_contains_undetermined (scev))
-    return false;
-
-  /* We disable the handling of pointer types, because it’s currently not
-     supported by Graphite with the isl AST generator. SSA_NAME nodes are
-     the only nodes, which are disabled in case they are pointers to object
-     types, but this can be changed.  */
-
-  if (POINTER_TYPE_P (TREE_TYPE (scev)) && TREE_CODE (scev) == SSA_NAME)
     return false;
 
   switch (TREE_CODE (scev))
@@ -982,13 +945,13 @@ scop_detection::graphite_can_represent_scev (tree scev)
     case BIT_NOT_EXPR:
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0));
+      return graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0));
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0))
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
+      return graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case MULT_EXPR:
       return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
@@ -996,18 +959,20 @@ scop_detection::graphite_can_represent_scev (tree scev)
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
 	&& graphite_can_represent_init (scev)
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0))
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case POLYNOMIAL_CHREC:
       /* Check for constant strides.  With a non constant stride of
 	 'n' we would have a value of 'iv * n'.  Also check that the
 	 initial value can represented: for example 'n * m' cannot be
 	 represented.  */
+      gcc_assert (loop_in_sese_p (get_loop (cfun,
+					    CHREC_VARIABLE (scev)), scop));
       if (!evolution_function_right_is_integer_cst (scev)
 	  || !graphite_can_represent_init (scev))
 	return false;
-      return graphite_can_represent_scev (CHREC_LEFT (scev));
+      return graphite_can_represent_scev (scop, CHREC_LEFT (scev));
 
     default:
       break;
@@ -1031,7 +996,7 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 					     tree expr)
 {
   tree scev = scalar_evolution_in_region (scop, loop, expr);
-  return graphite_can_represent_scev (scev);
+  return graphite_can_represent_scev (scop, scev);
 }
 
 /* Return true if the data references of STMT can be represented by Graphite.
@@ -1040,12 +1005,10 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  loop_p nest;
+  edge nest = scop.entry;;
   loop_p loop = loop_containing_stmt (stmt);
   if (!loop_in_sese_p (loop, scop))
-    nest = loop;
-  else
-    nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
+    loop = NULL;
 
   auto_vec<data_reference_p> drs;
   if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
@@ -1056,7 +1019,7 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
       for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
-	if (! graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
+	if (! graphite_can_represent_scev (scop, DR_ACCESS_FN (dr, i)))
 	  return false;
     }
 
@@ -1140,7 +1103,7 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
 	    tree op = gimple_op (stmt, i);
 	    if (!graphite_can_represent_expr (scop, loop, op)
 		/* We can only constrain on integer type.  */
-		|| (TREE_CODE (TREE_TYPE (op)) != INTEGER_TYPE))
+		|| ! INTEGRAL_TYPE_P (TREE_TYPE (op)))
 	      {
 		DEBUG_PRINT (dp << "[scop-detection-fail] "
 				<< "Graphite cannot represent stmt:\n";
@@ -1183,49 +1146,23 @@ scop_detection::nb_pbbs_in_loops (scop_p scop)
   return res;
 }
 
-/* When parameter NAME is in REGION, returns its index in SESE_PARAMS.
-   Otherwise returns -1.  */
+/* Assigns the parameter NAME an index in REGION.  */
 
-static inline int
-parameter_index_in_region_1 (tree name, sese_info_p region)
+static void
+assign_parameter_index_in_region (tree name, sese_info_p region)
 {
+  gcc_assert (TREE_CODE (name) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (name))
+	      && ! defined_in_sese_p (name, region->region));
+
   int i;
   tree p;
-
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
   FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
-      return i;
-
-  return -1;
-}
-
-/* When the parameter NAME is in REGION, returns its index in
-   SESE_PARAMS.  Otherwise this function inserts NAME in SESE_PARAMS
-   and returns the index of NAME.  */
-
-static int
-parameter_index_in_region (tree name, sese_info_p region)
-{
-  int i;
-
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
-  /* Cannot constrain on anything else than INTEGER_TYPE parameters.  */
-  if (TREE_CODE (TREE_TYPE (name)) != INTEGER_TYPE)
-    return -1;
-
-  if (!invariant_in_sese_p_rec (name, region->region, NULL))
-    return -1;
-
-  i = parameter_index_in_region_1 (name, region);
-  if (i != -1)
-    return i;
+      return;
 
   i = region->params.length ();
   region->params.safe_push (name);
-  return i;
 }
 
 /* In the context of sese S, scan the expression E and translate it to
@@ -1267,7 +1204,7 @@ scan_tree_for_params (sese_info_p s, tree e)
       break;
 
     case SSA_NAME:
-      parameter_index_in_region (e, s);
+      assign_parameter_index_in_region (e, s);
       break;
 
     case INTEGER_CST:
@@ -1413,12 +1350,10 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
-  loop_p nest;
+  edge nest = region.entry;
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
-    nest = loop;
-  else
-    nest = outermost_loop_in_sese (region, bb);
+    loop = NULL;
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
@@ -1737,10 +1672,6 @@ build_scops (vec<scop_p> *scops)
   sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
     {
-      /* For our out-of-SSA we need a block on s->entry, similar to how
-         we include the LCSSA block in the region.  */
-      s->entry = single_pred_edge (split_edge (s->entry));
-
       scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */

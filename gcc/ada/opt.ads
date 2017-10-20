@@ -462,18 +462,21 @@ package Opt is
    --    otherwise:   "pragma Default_Storage_Pool (X);" applies, and
    --                 this points to the name X.
    --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this value.
-   Default_Stack_Size : Int := -1;
-   --  GNATBIND
-   --  Set to default primary stack size in units of bytes. Set by
-   --  the -dnnn switch for the binder. A value of -1 indicates that no
-   --  default was set by the binder.
 
-   Default_Sec_Stack_Size : Int := -1;
+   No_Stack_Size : constant := -1;
+
+   Default_Stack_Size : Int := No_Stack_Size;
    --  GNATBIND
-   --  Set to default secondary stack size in units of bytes. Set by
-   --  the -Dnnn switch for the binder. A value of -1 indicates that no
-   --  default was set by the binder, and that the default should be the
-   --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
+   --  Set to default primary stack size in units of bytes. Set by the -dnnn
+   --  switch for the binder. A value of No_Stack_Size indicates that
+   --  no default was set by the binder.
+
+   Default_Sec_Stack_Size : Int := No_Stack_Size;
+   --  GNATBIND
+   --  Set to default secondary stack size in units of bytes. Set by the -Dnnn
+   --  switch for the binder. A value of No_Stack_Size indicates that no
+   --  default was set by the binder and the run-time value should be used
+   --  instead.
 
    Default_SSO : Character := ' ';
    --  GNAT
@@ -1312,6 +1315,13 @@ package Opt is
    --  GNAT
    --  Indicates if a project file is used or not. Set to In_Use by the first
    --  SFNP pragma.
+
+   Quantity_Of_Default_Size_Sec_Stacks : Int := -1;
+   --  GNATBIND
+   --  The number of default sized secondary stacks that the binder should
+   --  generate. Allows ZFP users to have the binder generate extra stacks if
+   --  needed to support multithreaded applications. A value of -1 indicates
+   --  that no size was set by the binder.
 
    Queuing_Policy : Character := ' ';
    --  GNAT, GNATBIND

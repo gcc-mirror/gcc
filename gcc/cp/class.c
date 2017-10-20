@@ -5992,8 +5992,6 @@ layout_class_type (tree t, tree *virtuals_p)
   bool last_field_was_bitfield = false;
   /* The location at which the next field should be inserted.  */
   tree *next_field;
-  /* T, as a base class.  */
-  tree base_t;
 
   /* Keep track of the first non-static data member.  */
   non_static_data_members = TYPE_FIELDS (t);
@@ -6218,15 +6216,11 @@ layout_class_type (tree t, tree *virtuals_p)
      that the type is laid out they are no longer important.  */
   remove_zero_width_bit_fields (t);
 
-  /* Create the version of T used for virtual bases.  We do not use
-     make_class_type for this version; this is an artificial type.  For
-     a POD type, we just reuse T.  */
   if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
-      base_t = make_node (TREE_CODE (t));
-
-      /* Set the size and alignment for the new type.  */
-      tree eoc;
+      /* T needs a different layout as a base (eliding virtual bases
+	 or whatever).  Create that version.  */
+      tree base_t = make_node (TREE_CODE (t));
 
       /* If the ABI version is not at least two, and the last
 	 field was a bit-field, RLI may not be on a byte
@@ -6235,7 +6229,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	 indicates the total number of bits used.  Therefore,
 	 rli_size_so_far, rather than rli_size_unit_so_far, is
 	 used to compute TYPE_SIZE_UNIT.  */
-      eoc = end_of_class (t, /*include_virtuals_p=*/0);
+      tree eoc = end_of_class (t, /*include_virtuals_p=*/0);
       TYPE_SIZE_UNIT (base_t)
 	= size_binop (MAX_EXPR,
 		      fold_convert (sizetype,
@@ -6252,7 +6246,8 @@ layout_class_type (tree t, tree *virtuals_p)
       SET_TYPE_ALIGN (base_t, rli->record_align);
       TYPE_USER_ALIGN (base_t) = TYPE_USER_ALIGN (t);
 
-      /* Copy the fields from T.  */
+      /* Copy the non-static data members of T. This will include its
+	 direct non-virtual bases & vtable.  */
       next_field = &TYPE_FIELDS (base_t);
       for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
@@ -6263,9 +6258,14 @@ layout_class_type (tree t, tree *virtuals_p)
 	  }
       *next_field = NULL_TREE;
 
+      /* We use the base type for trivial assignments, and hence it
+	 needs a mode.  */
+      compute_record_mode (base_t);
+
+      TYPE_CONTEXT (base_t) = t;
+
       /* Record the base version of the type.  */
       CLASSTYPE_AS_BASE (t) = base_t;
-      TYPE_CONTEXT (base_t) = t;
     }
   else
     CLASSTYPE_AS_BASE (t) = t;
@@ -6821,11 +6821,6 @@ finish_struct_1 (tree t)
   /* COMPLETE_TYPE_P is now true.  */
 
   set_class_bindings (t);
-
-  if (CLASSTYPE_AS_BASE (t) != t)
-    /* We use the base type for trivial assignments, and hence it
-       needs a mode.  */
-    compute_record_mode (CLASSTYPE_AS_BASE (t));
 
   /* With the layout complete, check for flexible array members and
      zero-length arrays that might overlap other members in the final

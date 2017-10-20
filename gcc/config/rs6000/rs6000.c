@@ -637,30 +637,9 @@ mode_supports_vsx_dform_quad (machine_mode mode)
 }
 
 
-/* Target cpu costs.  */
-
-struct processor_costs {
-  const int mulsi;	  /* cost of SImode multiplication.  */
-  const int mulsi_const;  /* cost of SImode multiplication by constant.  */
-  const int mulsi_const9; /* cost of SImode mult by short constant.  */
-  const int muldi;	  /* cost of DImode multiplication.  */
-  const int divsi;	  /* cost of SImode division.  */
-  const int divdi;	  /* cost of DImode division.  */
-  const int fp;		  /* cost of simple SFmode and DFmode insns.  */
-  const int dmul;	  /* cost of DFmode multiplication (and fmadd).  */
-  const int sdiv;	  /* cost of SFmode division (fdivs).  */
-  const int ddiv;	  /* cost of DFmode division (fdiv).  */
-  const int cache_line_size;    /* cache line size in bytes. */
-  const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
-  const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
-  const int simultaneous_prefetches; /* number of parallel prefetch
-					operations.  */
-  const int sfdf_convert;	/* cost of SF->DF conversion.  */
-};
+/* Processor costs (relative to an add) */
 
 const struct processor_costs *rs6000_cost;
-
-/* Processor costs (relative to an add) */
 
 /* Instruction size costs on 32bit processors.  */
 static const
@@ -1749,6 +1728,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_RTX_COSTS rs6000_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST rs6000_insn_cost
 
 #undef TARGET_INIT_DWARF_REG_SIZES_EXTRA
 #define TARGET_INIT_DWARF_REG_SIZES_EXTRA rs6000_init_dwarf_reg_sizes_extra
@@ -5438,9 +5419,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case unaligned_load:
-	if (TARGET_P9_VECTOR)
-	  return 3;
-
+      case vector_gather_load:
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -5479,6 +5458,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_store:
+      case vector_scatter_store:
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -9051,11 +9031,7 @@ rs6000_legitimate_combined_insn (rtx_insn *insn)
       && (icode == CODE_FOR_ctrsi_internal1
 	  || icode == CODE_FOR_ctrdi_internal1
 	  || icode == CODE_FOR_ctrsi_internal2
-	  || icode == CODE_FOR_ctrdi_internal2
-	  || icode == CODE_FOR_ctrsi_internal3
-	  || icode == CODE_FOR_ctrdi_internal3
-	  || icode == CODE_FOR_ctrsi_internal4
-	  || icode == CODE_FOR_ctrdi_internal4))
+	  || icode == CODE_FOR_ctrdi_internal2))
     return false;
 
   return true;
@@ -10983,7 +10959,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11013,7 +10990,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11045,7 +11023,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -15116,14 +15095,15 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Check whether the 2nd and 3rd arguments are integer constants and in
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
+      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (wi::to_wide (arg1), 2))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return CONST0_RTX (tmode);
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg2, 16))
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || wi::geu_p (wi::to_wide (arg2), 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return CONST0_RTX (tmode);
@@ -23272,24 +23252,6 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   emit_insn (isel_func (dest, condition_rtx, true_cond, false_cond, cr));
 
   return 1;
-}
-
-const char *
-output_isel (rtx *operands)
-{
-  enum rtx_code code;
-
-  code = GET_CODE (operands[1]);
-
-  if (code == GE || code == GEU || code == LE || code == LEU || code == NE)
-    {
-      gcc_assert (GET_CODE (operands[2]) == REG
-		  && GET_CODE (operands[3]) == REG);
-      PUT_CODE (operands[1], reverse_condition (code));
-      return "isel %0,%3,%2,%j1";
-    }
-
-  return "isel %0,%2,%3,%j1";
 }
 
 void
@@ -34412,7 +34374,8 @@ rs6000_xcoff_asm_output_aligned_decl_common (FILE *stream,
 	   size, align2);
 
 #ifdef HAVE_GAS_HIDDEN
-  fputs (rs6000_xcoff_visibility (decl), stream);
+  if (decl != NULL)
+    fputs (rs6000_xcoff_visibility (decl), stream);
 #endif
   putc ('\n', stream);
 }
@@ -34955,6 +34918,88 @@ rs6000_debug_rtx_costs (rtx x, machine_mode mode, int outer_code,
   debug_rtx (x);
 
   return ret;
+}
+
+static int
+rs6000_insn_cost (rtx_insn *insn, bool speed)
+{
+  if (recog_memoized (insn) < 0)
+    return 0;
+
+  if (!speed)
+    return get_attr_length (insn);
+
+  int cost = get_attr_cost (insn);
+  if (cost > 0)
+    return cost;
+
+  int n = get_attr_length (insn) / 4;
+  enum attr_type type = get_attr_type (insn);
+
+  switch (type)
+    {
+    case TYPE_LOAD:
+    case TYPE_FPLOAD:
+    case TYPE_VECLOAD:
+      cost = COSTS_N_INSNS (n + 1);
+      break;
+
+    case TYPE_MUL:
+      switch (get_attr_size (insn))
+	{
+	case SIZE_8:
+	  cost = COSTS_N_INSNS (n - 1) + rs6000_cost->mulsi_const9;
+	  break;
+	case SIZE_16:
+	  cost = COSTS_N_INSNS (n - 1) + rs6000_cost->mulsi_const;
+	  break;
+	case SIZE_32:
+	  cost = COSTS_N_INSNS (n - 1) + rs6000_cost->mulsi;
+	  break;
+	case SIZE_64:
+	  cost = COSTS_N_INSNS (n - 1) + rs6000_cost->muldi;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+    case TYPE_DIV:
+      switch (get_attr_size (insn))
+	{
+	case SIZE_32:
+	  cost = COSTS_N_INSNS (n - 1) + rs6000_cost->divsi;
+	  break;
+	case SIZE_64:
+	  cost = COSTS_N_INSNS (n - 1) + rs6000_cost->divdi;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
+    case TYPE_FP:
+      cost = n * rs6000_cost->fp;
+      break;
+    case TYPE_DMUL:
+      cost = n * rs6000_cost->dmul;
+      break;
+    case TYPE_SDIV:
+      cost = n * rs6000_cost->sdiv;
+      break;
+    case TYPE_DDIV:
+      cost = n * rs6000_cost->ddiv;
+      break;
+
+    case TYPE_SYNC:
+    case TYPE_LOAD_L:
+      cost = COSTS_N_INSNS (n + 2);
+      break;
+
+    default:
+      cost = COSTS_N_INSNS (n);
+    }
+
+  return cost;
 }
 
 /* Debug form of ADDRESS_COST that is selected if -mdebug=cost.  */

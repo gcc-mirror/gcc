@@ -8450,7 +8450,7 @@ package body Freeze is
             --  The analysis of the expression may generate insert actions,
             --  which of course must not be executed. We wrap those actions
             --  in a procedure that is not called, and later on eliminated.
-            --  The following cases have no side-effects, and are analyzed
+            --  The following cases have no side effects, and are analyzed
             --  directly.
 
             if Nkind (Dcopy) = N_Identifier

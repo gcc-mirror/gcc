@@ -2160,7 +2160,10 @@ add_function_candidate (struct z_candidate **candidates,
 	      else
 		{
 		  parmtype = build_pointer_type (parmtype);
-		  arg = build_this (arg);
+		  /* We don't use build_this here because we don't want to
+		     capture the object argument until we've chosen a
+		     non-static member function.  */
+		  arg = build_address (arg);
 		  argtype = lvalue_type (arg);
 		}
 	    }
@@ -4446,13 +4449,16 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, first_mem_arg = NULL_TREE;
-  tree type = TREE_TYPE (obj);
   bool any_viable_p;
   tree result = NULL_TREE;
   void *p;
 
+  obj = mark_lvalue_use (obj);
+
   if (error_operand_p (obj))
     return error_mark_node;
+
+  tree type = TREE_TYPE (obj);
 
   obj = prep_operand (obj);
 
@@ -7711,8 +7717,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   /* N3276 magic doesn't apply to nested calls.  */
-  int decltype_flag = (complain & tf_decltype);
+  tsubst_flags_t decltype_flag = (complain & tf_decltype);
   complain &= ~tf_decltype;
+  /* No-Cleanup doesn't apply to nested calls either.  */
+  tsubst_flags_t no_cleanup_complain = complain;
+  complain &= ~tf_no_cleanup;
 
   /* Find maximum size of vector to hold converted arguments.  */
   parmlen = list_length (parm);
@@ -7771,6 +7780,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree argtype = TREE_TYPE (arg);
       tree converted_arg;
       tree base_binfo;
+
+      if (arg == error_mark_node)
+	return error_mark_node;
 
       if (convs[i]->bad_p)
 	{
@@ -7907,7 +7919,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (flags & LOOKUP_NO_CONVERSION)
 	conv->user_conv_p = true;
 
-      tsubst_flags_t arg_complain = complain & (~tf_no_cleanup);
+      tsubst_flags_t arg_complain = complain;
       if (!conversion_warning)
 	arg_complain &= ~tf_warning;
 
@@ -8155,7 +8167,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       else if (default_ctor_p (fn))
 	{
 	  if (is_dummy_object (argarray[0]))
-	    return force_target_expr (DECL_CONTEXT (fn), void_node, complain);
+	    return force_target_expr (DECL_CONTEXT (fn), void_node,
+				      no_cleanup_complain);
 	  else
 	    return cp_build_indirect_ref (argarray[0], RO_NULL, complain);
 	}
@@ -9052,7 +9065,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   /* Consider the object argument to be used even if we end up selecting a
      static member function.  */
   instance = mark_type_use (instance);
-
 
   /* Figure out whether to skip the first argument for the error
      message we will display to users if an error occurs.  We don't

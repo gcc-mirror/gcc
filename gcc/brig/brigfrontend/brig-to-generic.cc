@@ -248,7 +248,12 @@ brig_to_generic::analyze (const char *brig_blob)
 	  if (handlers[i].kind == entry->kind)
 	    handler = handlers[i].handler;
 	}
-      b += (*handler) (entry);
+
+      int bytes_processed = (*handler) (entry);
+      if (bytes_processed == 0)
+	fatal_error (UNKNOWN_LOCATION, PHSA_ERROR_PREFIX_CORRUPTED_MODULE
+		     "Element with 0 bytes.");
+      b += bytes_processed;
     }
 
   if (m_cf != NULL)
@@ -335,7 +340,10 @@ brig_to_generic::parse (const char *brig_blob)
        /* There are no supported pragmas at this moment.  */
        {BRIG_KIND_DIRECTIVE_PRAGMA, &skipped_handler},
        {BRIG_KIND_DIRECTIVE_CONTROL, &control_handler},
-       {BRIG_KIND_DIRECTIVE_EXTENSION, &skipped_handler}};
+       {BRIG_KIND_DIRECTIVE_EXTENSION, &skipped_handler},
+       /* BRIG_KIND_NONE entries are valid anywhere.  They can be used
+	  for patching BRIGs before finalization.  */
+       {BRIG_KIND_NONE, &skipped_handler}};
 
   const BrigSectionHeader *csection_header = (const BrigSectionHeader *) m_code;
 

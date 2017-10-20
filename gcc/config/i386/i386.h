@@ -103,6 +103,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SGX_P(x)	TARGET_ISA_SGX_P(x)
 #define TARGET_RDPID	TARGET_ISA_RDPID
 #define TARGET_RDPID_P(x)	TARGET_ISA_RDPID_P(x)
+#define TARGET_GFNI	TARGET_ISA_GFNI
+#define TARGET_GFNI_P(x)	TARGET_ISA_GFNI_P(x)
 #define TARGET_BMI	TARGET_ISA_BMI
 #define TARGET_BMI_P(x)	TARGET_ISA_BMI_P(x)
 #define TARGET_BMI2	TARGET_ISA_BMI2
@@ -257,6 +259,16 @@ struct processor_costs {
   const int fsqrt;		/* cost of FSQRT instruction.  */
 				/* Specify what algorithm
 				   to use for stringops on unknown size.  */
+  const int sse_op;		/* cost of cheap SSE instruction.  */
+  const int addss;		/* cost of ADDSS/SD SUBSS/SD instructions.  */
+  const int mulss;		/* cost of MULSS instructions.  */
+  const int mulsd;		/* cost of MULSD instructions.  */
+  const int fmass;		/* cost of FMASS instructions.  */
+  const int fmasd;		/* cost of FMASD instructions.  */
+  const int divss;		/* cost of DIVSS instructions.  */
+  const int divsd;		/* cost of DIVSD instructions.  */
+  const int sqrtss;		/* cost of SQRTSS instructions.  */
+  const int sqrtsd;		/* cost of SQRTSD instructions.  */
   const int reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp;
 				/* Specify reassociation width for integer,
 				   fp, vector integer and vector fp
@@ -2603,6 +2615,7 @@ struct GTY(()) machine_function {
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
 #define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
+#define ix86_red_zone_size (cfun->machine->frame.red_zone_size)
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false

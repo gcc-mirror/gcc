@@ -149,11 +149,16 @@ package body System.Task_Primitives.Operations is
    -- Support for foreign threads --
    ---------------------------------
 
-   function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
-   --  Allocate and Initialize a new ATCB for the current Thread
+   function Register_Foreign_Thread
+     (Thread         : Thread_Id;
+      Sec_Stack_Size : Size_Type := Unspecified_Size) return Task_Id;
+   --  Allocate and initialize a new ATCB for the current Thread. The size of
+   --  the secondary stack can be optionally specified.
 
    function Register_Foreign_Thread
-     (Thread : Thread_Id) return Task_Id is separate;
+     (Thread         : Thread_Id;
+      Sec_Stack_Size : Size_Type := Unspecified_Size)
+     return Task_Id is separate;
 
    -----------------------
    -- Local Subprograms --

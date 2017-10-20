@@ -109,7 +109,7 @@ dump_profile (int frequency, profile_count &count)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_probability (profile_probability probability, profile_count &count)
+dump_probability (profile_probability probability)
 {
   float minimum = 0.01f;
   float fvalue = -1;
@@ -122,13 +122,10 @@ dump_probability (profile_probability probability, profile_count &count)
     }
 
   char *buf;
-  if (count.initialized_p ())
-    buf = xasprintf ("[%.2f%%] [count: %" PRId64 "]", fvalue,
-		     count.to_gcov_type ());
-  else if (probability.initialized_p ())
-    buf = xasprintf ("[%.2f%%] [count: INV]", fvalue);
+  if (probability.initialized_p ())
+    buf = xasprintf ("[%.2f%%]", fvalue);
   else
-    buf = xasprintf ("[INV] [count: INV]");
+    buf = xasprintf ("[INV]");
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
@@ -141,7 +138,7 @@ dump_probability (profile_probability probability, profile_count &count)
 static void
 dump_edge_probability (pretty_printer *buffer, edge e)
 {
-  pp_scalar (buffer, " %s", dump_probability (e->probability, e->count));
+  pp_scalar (buffer, " %s", dump_probability (e->probability));
 }
 
 /* Print GIMPLE statement G to FILE using SPC indentation spaces and

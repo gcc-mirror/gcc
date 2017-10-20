@@ -820,7 +820,8 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
   const char *fmt = GET_RTX_FORMAT (code);
 
   for (i = 0; i < data->insn_static_data->n_operands; i++)
-    if (x == data->operand_loc[i])
+    if (! data->insn_static_data->operand[i].is_operator
+	&& x == data->operand_loc[i])
       /* It is an operand loc. Stop here.  */
       return list;
   for (i = 0; i < data->insn_static_data->n_dups; i++)

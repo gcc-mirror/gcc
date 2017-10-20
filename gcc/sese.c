@@ -156,12 +156,8 @@ new_sese_info (edge entry, edge exit)
   region->liveout = NULL;
   region->debug_liveout = NULL;
   region->params.create (3);
-  region->rename_map = new rename_map_t;
-  region->parameter_rename_map = new parameter_rename_map_t;
-  region->copied_bb_map = new bb_map_t;
+  region->rename_map = new hash_map <tree, tree>;
   region->bbs.create (3);
-  region->incomplete_phis.create (3);
-
 
   return region;
 }
@@ -175,24 +171,9 @@ free_sese_info (sese_info_p region)
   BITMAP_FREE (region->liveout);
   BITMAP_FREE (region->debug_liveout);
 
-  for (rename_map_t::iterator it = region->rename_map->begin ();
-       it != region->rename_map->end (); ++it)
-    (*it).second.release ();
-
-  for (bb_map_t::iterator it = region->copied_bb_map->begin ();
-       it != region->copied_bb_map->end (); ++it)
-    (*it).second.release ();
-
   delete region->rename_map;
-  delete region->parameter_rename_map;
-  delete region->copied_bb_map;
-
   region->rename_map = NULL;
-  region->parameter_rename_map = NULL;
-  region->copied_bb_map = NULL;
-
   region->bbs.release ();
-  region->incomplete_phis.release ();
 
   XDELETE (region);
 }
@@ -444,14 +425,13 @@ scev_analyzable_p (tree def, sese_l &region)
   loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
   scev = scalar_evolution_in_region (region, loop, def);
 
-  return !chrec_contains_undetermined (scev)
-    && (TREE_CODE (scev) != SSA_NAME
-	|| !defined_in_sese_p (scev, region))
-    && (tree_does_not_contain_chrecs (scev)
-	|| evolution_function_is_affine_p (scev))
-    && (! loop
-	|| ! loop_in_sese_p (loop, region)
-	|| ! chrec_contains_symbols_defined_in_loop (scev, loop->num));
+  return (!chrec_contains_undetermined (scev)
+	  && (TREE_CODE (scev) != SSA_NAME
+	      || !defined_in_sese_p (scev, region))
+	  && scev_is_linear_expression (scev)
+	  && (! loop
+	      || ! loop_in_sese_p (loop, region)
+	      || ! chrec_contains_symbols_defined_in_loop (scev, loop->num)));
 }
 
 /* Returns the scalar evolution of T in REGION.  Every variable that
@@ -460,42 +440,16 @@ scev_analyzable_p (tree def, sese_l &region)
 tree
 scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 {
-  gimple *def;
-  struct loop *def_loop;
-  basic_block before = region.entry->src;
-
   /* SCOP parameters.  */
   if (TREE_CODE (t) == SSA_NAME
       && !defined_in_sese_p (t, region))
     return t;
 
-  if (TREE_CODE (t) != SSA_NAME
-      || loop_in_sese_p (loop, region))
-    /* FIXME: we would need instantiate SCEV to work on a region, and be more
-       flexible wrt. memory loads that may be invariant in the region.  */
-    return instantiate_scev (before, loop,
-			     analyze_scalar_evolution (loop, t));
+  if (!loop_in_sese_p (loop, region))
+    loop = NULL;
 
-  def = SSA_NAME_DEF_STMT (t);
-  def_loop = loop_containing_stmt (def);
-
-  if (loop_in_sese_p (def_loop, region))
-    {
-      t = analyze_scalar_evolution (def_loop, t);
-      def_loop = superloop_at_depth (def_loop, loop_depth (loop) + 1);
-      t = compute_overall_effect_of_inner_loop (def_loop, t);
-      return t;
-    }
-
-  bool has_vdefs = false;
-  if (invariant_in_sese_p_rec (t, region, &has_vdefs))
-    return t;
-
-  /* T variates in REGION.  */
-  if (has_vdefs)
-    return chrec_dont_know;
-
-  return instantiate_scev (before, loop, t);
+  return instantiate_scev (region.entry, loop,
+			   analyze_scalar_evolution (loop, t));
 }
 
 /* Return true if BB is empty, contains only DEBUG_INSNs.  */

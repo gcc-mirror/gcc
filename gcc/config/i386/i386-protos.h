@@ -27,6 +27,7 @@ extern bool ix86_handle_option (struct gcc_options *opts,
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);
+extern bool ix86_rip_relative_addr_p (struct ix86_address *parts);
 
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
 extern void ix86_expand_prologue (void);
@@ -164,9 +165,6 @@ extern bool ix86_function_arg_regno_p (int);
 extern void ix86_asm_output_function_label (FILE *, const char *, tree);
 extern void ix86_call_abi_override (const_tree);
 extern int ix86_reg_parm_stack_space (const_tree);
-
-extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
-				  rtx, rtx, rtx);
 
 extern bool ix86_libc_has_function (enum function_class fn_class);
 
@@ -314,6 +312,21 @@ extern enum attr_cpu ix86_schedule;
 extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
 extern bool ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 						machine_mode mode);
+extern int ix86_min_insn_size (rtx_insn *);
+
+extern int ix86_issue_rate (void);
+extern int ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+			     int cost, unsigned int);
+extern int ia32_multipass_dfa_lookahead (void);
+extern bool ix86_macro_fusion_p (void);
+extern bool ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp);
+
+extern bool ix86_bd_has_dispatch (rtx_insn *insn, int action);
+extern void ix86_bd_do_dispatch (rtx_insn *insn, int mode);
+
+extern void ix86_core2i7_init_hooks (void);
+
+extern int ix86_atom_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

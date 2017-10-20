@@ -430,8 +430,7 @@ alloc_object_size (const gcall *call, int object_size_type)
 	arg2 = 1;
 	/* fall through */
       case BUILT_IN_MALLOC:
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
 	arg1 = 0;
       default:
 	break;

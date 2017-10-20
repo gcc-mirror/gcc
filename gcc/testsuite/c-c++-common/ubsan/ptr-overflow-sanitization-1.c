@@ -1,5 +1,4 @@
-/* { dg-require-effective-target lp64 } */
-/* { dg-options "-O -fsanitize=pointer-overflow" } */
+/* { dg-options "-O -fsanitize=pointer-overflow -fdump-tree-optimized" } */
 /* { dg-skip-if "" { *-*-* } "-flto" } */
 
 #define SMAX   __PTRDIFF_MAX__
@@ -76,5 +75,4 @@ void negative_to_negative (char *ptr)
   p2 += 5;
 }
 
-
-/* { dg-final { scan-assembler-times "call\\s+__ubsan_handle_pointer_overflow" 17 } } */
+/* { dg-final { scan-tree-dump-times "__ubsan_handle_pointer_overflow" 17 "optimized" } } */

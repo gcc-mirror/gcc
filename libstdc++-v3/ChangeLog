@@ -1,3 +1,72 @@
+2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef: Define __cpp_lib_byte feature-test macro.
+	* testsuite/18_support/byte/requirements.cc: Check macro.
+
+2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Ensure that error_code arguments are
+	cleared when required.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Remove redundant check.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Ensure that error_code argument is cleared when required.
+
+	* include/experimental/bits/fs_path.h (path::iterator++(int))
+	(path::iterator--(int)): Fix for paths with only one component.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Test
+	post-increment and post-decrement.
+
+	* doc/xml/manual/status_cxx2017.xml: Update references to C++17
+	section numbers.
+
+	* testsuite/decimal/conversion-to-integral.cc: Use predefined macro
+	instead of non-standard glibc one.
+
+2017-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/82558
+	* include/bits/stl_bvector.h (fill): Add iterator offset check.
+	* testsuite/23_containers/vector/bool/82558.cc: New.
+
+2017-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82522
+	* doc/xml/manual/intro.xml: Document LWG 2354 changes.
+	* include/bits/stl_map.h (map::insert(value_type&&))
+	(map::insert(const_iterator, value_type&&)): Add overload for rvalues.
+	* include/bits/stl_multimap.h (multimap::insert(value_type&&))
+	(multimap::insert(const_iterator, value_type&&)): Likewise.
+	* include/bits/unordered_map.h (unordered_map::insert(value_type&&))
+	(unordered_map::insert(const_iterator, value_type&&))
+	(unordered_multimap::insert(value_type&&))
+	(unordered_multimap::insert(const_iterator, value_type&&)): Likewise.
+	* testsuite/23_containers/map/modifiers/insert/dr2354.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/dr2354.cc: New
+	test.
+	* testsuite/23_containers/unordered_map/insert/dr2354.cc: New test.
+	* testsuite/23_containers/unordered_multimap/insert/dr2354.cc: New
+	test.
+
+	PR libstdc++/82481
+	* include/std/mutex (call_once): Suppress clang-tidy warnings about
+	dangling references.
+
+2017-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::equal):
+	Update comment about NAD issue.
+
+	PR libstdc++/59087
+	PR libstdc++/82417
+	* include/c_compatibility/complex.h [!C++98 && __STRICT_ANSI__]: Do
+	not include C library's <complex.h>.
+	* testsuite/26_numerics/complex/c99.cc: Depend on __STRICT_ANSI__.
+	* testsuite/26_numerics/headers/complex.h/std_c++11.h: New test.
+	* testsuite/26_numerics/headers/complex.h/std_gnu++11.h: New test.
+	* testsuite/26_numerics/headers/complex.h/std_c++98.h: New test.
+
 2017-10-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/to_chars/1.cc: Add dg-require-string-conversions.

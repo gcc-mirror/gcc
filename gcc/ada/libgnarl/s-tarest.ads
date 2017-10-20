@@ -43,8 +43,9 @@
 --  The restricted GNARLI is also composed of System.Protected_Objects and
 --  System.Protected_Objects.Single_Entry
 
-with System.Task_Info;
 with System.Parameters;
+with System.Secondary_Stack;
+with System.Task_Info;
 
 package System.Tasking.Restricted.Stages is
    pragma Elaborate_Body;
@@ -128,33 +129,38 @@ package System.Tasking.Restricted.Stages is
    --  by the binder generated code, before calling elaboration code.
 
    procedure Create_Restricted_Task
-     (Priority             : Integer;
-      Stack_Address        : System.Address;
-      Size                 : System.Parameters.Size_Type;
-      Secondary_Stack_Size : System.Parameters.Size_Type;
-      Task_Info            : System.Task_Info.Task_Info_Type;
-      CPU                  : Integer;
-      State                : Task_Procedure_Access;
-      Discriminants        : System.Address;
-      Elaborated           : Access_Boolean;
-      Chain                : in out Activation_Chain;
-      Task_Image           : String;
-      Created_Task         : Task_Id);
+     (Priority          : Integer;
+      Stack_Address     : System.Address;
+      Stack_Size        : System.Parameters.Size_Type;
+      Sec_Stack_Address : System.Secondary_Stack.SS_Stack_Ptr;
+      Sec_Stack_Size    : System.Parameters.Size_Type;
+      Task_Info         : System.Task_Info.Task_Info_Type;
+      CPU               : Integer;
+      State             : Task_Procedure_Access;
+      Discriminants     : System.Address;
+      Elaborated        : Access_Boolean;
+      Chain             : in out Activation_Chain;
+      Task_Image        : String;
+      Created_Task      : Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task, when the partition
    --  elaboration policy is not specified (or is concurrent).
    --
    --  Priority is the task's priority (assumed to be in the
-   --  System.Any_Priority'Range)
+   --  System.Any_Priority'Range).
    --
    --  Stack_Address is the start address of the stack associated to the task,
    --  in case it has been preallocated by the compiler; it is equal to
    --  Null_Address when the stack needs to be allocated by the underlying
    --  operating system.
    --
-   --  Size is the stack size of the task to create
+   --  Stack_Size is the stack size of the task to create.
    --
-   --  Secondary_Stack_Size is the secondary stack size of the task to create
+   --  Sec_Stack_Address is the pointer to the secondary stack created by the
+   --  compiler. If null, the secondary stack is either allocated by the binder
+   --  or the run-time.
+   --
+   --  Secondary_Stack_Size is the secondary stack size of the task to create.
    --
    --  Task_Info is the task info associated with the created task, or
    --  Unspecified_Task_Info if none.
@@ -164,7 +170,7 @@ package System.Tasking.Restricted.Stages is
    --   checks are performed when analyzing the pragma, and dynamic ones are
    --   performed before setting the affinity at run time.
    --
-   --  State is the compiler generated task's procedure body
+   --  State is the compiler generated task's procedure body.
    --
    --  Discriminants is a pointer to a limited record whose discriminants are
    --  those of the task to create. This parameter should be passed as the
@@ -182,20 +188,21 @@ package System.Tasking.Restricted.Stages is
    --
    --  Created_Task is the resulting task.
    --
-   --  This procedure can raise Storage_Error if the task creation fails
+   --  This procedure can raise Storage_Error if the task creation fails.
 
    procedure Create_Restricted_Task_Sequential
-     (Priority             : Integer;
-      Stack_Address        : System.Address;
-      Size                 : System.Parameters.Size_Type;
-      Secondary_Stack_Size : System.Parameters.Size_Type;
-      Task_Info            : System.Task_Info.Task_Info_Type;
-      CPU                  : Integer;
-      State                : Task_Procedure_Access;
-      Discriminants        : System.Address;
-      Elaborated           : Access_Boolean;
-      Task_Image           : String;
-      Created_Task         : Task_Id);
+     (Priority          : Integer;
+      Stack_Address     : System.Address;
+      Stack_Size        : System.Parameters.Size_Type;
+      Sec_Stack_Address : System.Secondary_Stack.SS_Stack_Ptr;
+      Sec_Stack_Size    : System.Parameters.Size_Type;
+      Task_Info         : System.Task_Info.Task_Info_Type;
+      CPU               : Integer;
+      State             : Task_Procedure_Access;
+      Discriminants     : System.Address;
+      Elaborated        : Access_Boolean;
+      Task_Image        : String;
+      Created_Task      : Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task, when the sequential partition
    --  elaboration policy is used.

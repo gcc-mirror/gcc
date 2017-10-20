@@ -1160,16 +1160,63 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_reduce_sd (__m128d __A, __m128d __B, int __C)
 {
-  return (__m128d) __builtin_ia32_reducesd ((__v2df) __A,
-						 (__v2df) __B, __C);
+  return (__m128d) __builtin_ia32_reducesd_mask ((__v2df) __A,
+						 (__v2df) __B, __C,
+						 (__v2df) _mm_setzero_pd (),
+						 (__mmask8) -1);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_sd (__m128d __W,  __mmask8 __U, __m128d __A,
+		    __m128d __B, int __C)
+{
+  return (__m128d) __builtin_ia32_reducesd_mask ((__v2df) __A,
+						 (__v2df) __B, __C,
+						 (__v2df) __W,
+						 (__mmask8) __U);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_reduce_sd (__mmask8 __U, __m128d __A, __m128d __B, int __C)
+{
+  return (__m128d) __builtin_ia32_reducesd_mask ((__v2df) __A,
+						 (__v2df) __B, __C,
+						 (__v2df) _mm_setzero_pd (),
+						 (__mmask8) __U);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_reduce_ss (__m128 __A, __m128 __B, int __C)
 {
-  return (__m128) __builtin_ia32_reducess ((__v4sf) __A,
-						(__v4sf) __B, __C);
+  return (__m128) __builtin_ia32_reducess_mask ((__v4sf) __A,
+						(__v4sf) __B, __C,
+						(__v4sf) _mm_setzero_ps (),
+						(__mmask8) -1);
+}
+
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_reduce_ss (__m128 __W,  __mmask8 __U, __m128 __A,
+		    __m128 __B, int __C)
+{
+  return (__m128) __builtin_ia32_reducess_mask ((__v4sf) __A,
+						(__v4sf) __B, __C,
+						(__v4sf) __W,
+						(__mmask8) __U);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_reduce_ss (__mmask8 __U, __m128 __A, __m128 __B, int __C)
+{
+  return (__m128) __builtin_ia32_reducess_mask ((__v4sf) __A,
+						(__v4sf) __B, __C,
+						(__v4sf) _mm_setzero_ps (),
+						(__mmask8) __U);
 }
 
 extern __inline __m128d
@@ -2449,12 +2496,34 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 						 (int) (c),(__mmask8)-1))
 
 #define _mm_reduce_sd(A, B, C)						\
-  ((__m128d) __builtin_ia32_reducesd ((__v2df)(__m128d)(A),	\
-    (__v2df)(__m128d)(B), (int)(C)))					\
+  ((__m128d) __builtin_ia32_reducesd_mask ((__v2df)(__m128d)(A),	\
+    (__v2df)(__m128d)(B), (int)(C), (__v2df) _mm_setzero_pd (),		\
+    (__mmask8)-1))
+
+#define _mm_mask_reduce_sd(W, U, A, B, C)				\
+  ((__m128d) __builtin_ia32_reducesd_mask ((__v2df)(__m128d)(A),	\
+    (__v2df)(__m128d)(B), (int)(C), (__v2df)(__m128d)(W), (__mmask8)(U)))
+
+#define _mm_maskz_reduce_sd(U, A, B, C)					\
+  ((__m128d) __builtin_ia32_reducesd_mask ((__v2df)(__m128d)(A),	\
+    (__v2df)(__m128d)(B), (int)(C), (__v2df) _mm_setzero_pd (),		\
+    (__mmask8)(U)))
 
 #define _mm_reduce_ss(A, B, C)						\
-  ((__m128) __builtin_ia32_reducess ((__v4sf)(__m128)(A),		\
-    (__v4sf)(__m128)(A), (int)(C)))					\
+  ((__m128) __builtin_ia32_reducess_mask ((__v4sf)(__m128)(A),		\
+    (__v4sf)(__m128)(B), (int)(C), (__v4sf) _mm_setzero_ps (),		\
+    (__mmask8)-1))
+
+#define _mm_mask_reduce_ss(W, U, A, B, C)				\
+  ((__m128) __builtin_ia32_reducess_mask ((__v4sf)(__m128)(A),		\
+    (__v4sf)(__m128)(B), (int)(C), (__v4sf)(__m128)(W), (__mmask8)(U)))
+
+#define _mm_maskz_reduce_ss(U, A, B, C)					\
+  ((__m128) __builtin_ia32_reducess_mask ((__v4sf)(__m128)(A),		\
+    (__v4sf)(__m128)(B), (int)(C), (__v4sf) _mm_setzero_ps (),		\
+    (__mmask8)(U)))
+
+
 
 #endif
 

@@ -388,11 +388,19 @@ package ALI is
       --  together as possible.
 
       Optimize_Alignment : Character;
-      --  Optimize_Alignment setting. Set to L/S/T/O for OL/OS/OT/OO present
+      --  Optimize_Alignment setting. Set to L/S/T/O for OL/OS/OT/OO present.
 
       Has_Finalizer : Boolean;
       --  Indicates whether a package body or a spec has a library-level
       --  finalization routine.
+
+      Primary_Stack_Count : Int;
+      --  Indicates the number of task objects declared in this unit that have
+      --  default sized primary stacks.
+
+      Sec_Stack_Count : Int;
+      --  Indicates the number of task objects declared in this unit that have
+      --  default sized secondary stacks.
    end record;
 
    package Units is new Table.Table (

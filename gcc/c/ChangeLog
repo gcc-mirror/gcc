@@ -1,3 +1,24 @@
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_require): Add "type_is_unique" param and
+	use it to guard calls to maybe_suggest_missing_token_insertion.
+	(c_parser_parms_list_declarator): Override default value of new
+	"type_is_unique" param to c_parser_require.
+	(c_parser_asm_statement): Likewise.
+	* c-parser.h (c_parser_require): Add "type_is_unique" param,
+	defaulting to true.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (grokdeclarator): Check HAS_DECL_ASSEMBLER_NAME_P too.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-parser.c (c_parser_cilk_clause_vectorlength): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* c-typeck.c (build_c_cast, c_finish_omp_clauses): Likewise.
+	(c_tree_equal): Likewise.
+
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (push_parm_decl): Store c_parm's location into the

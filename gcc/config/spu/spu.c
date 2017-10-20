@@ -6640,6 +6640,8 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_load:
+      case vector_gather_load:
+      case vector_scatter_store:
         return 2;
 
       case cond_branch_taken:

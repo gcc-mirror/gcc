@@ -52,7 +52,7 @@ void func(void)
   Foo[:B> k1;       // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" } 
 // { dg-error "6:missing template arguments before" "template" { target *-*-* } 51 }
 // { dg-error "9:expected primary-expression before ':' token" "primary" { target *-*-* } 51 }
-// { dg-error "9:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
+// { dg-error "8:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
 // { dg-error "6:missing template arguments before" "template" { target *-*-* } 52 }
 // { dg-error "7:expected primary-expression before ':' token" "primary" { target *-*-* } 52 }
 // { dg-error "7:expected '\]' before ':' token" "backslash" { target *-*-* } 52 }

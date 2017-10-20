@@ -562,6 +562,10 @@ Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
 
+Wattribute-alias
+Common Var(warn_attributes) Init(1) Warning
+Warn about type safety and similar errors in attribute alias and related.
+
 Wcast-align
 Common Var(warn_cast_align) Warning
 Warn about pointer casts which increase alignment.
@@ -720,6 +724,10 @@ Warn about optimizations that assume that signed overflow is undefined.
 Wstrict-overflow=
 Common Joined RejectNegative UInteger Var(warn_strict_overflow) Warning
 Warn about optimizations that assume that signed overflow is undefined.
+
+Wsuggest-attribute=cold
+Common Var(warn_suggest_attribute_cold) Warning
+Warn about functions which might be candidates for __attribute__((cold)).
 
 Wsuggest-attribute=const
 Common Var(warn_suggest_attribute_const) Warning
@@ -1611,6 +1619,29 @@ Common RejectNegative Joined UInteger
 finline-atomics
 Common Report Var(flag_inline_atomics) Init(1) Optimization
 Inline __atomic operations when a lock free instruction sequence is available.
+
+fcf-protection
+Common RejectNegative Alias(fcf-protection=,full)
+
+fcf-protection=
+Common Report Joined RejectNegative Enum(cf_protection_level) Var(flag_cf_protection) Init(CF_NONE)
+-fcf-protection=[full|branch|return|none]	Instrument functions with checks to verify jump/call/return control-flow transfer
+instructions have valid targets.
+
+Enum
+Name(cf_protection_level) Type(enum cf_protection_level) UnknownError(unknown Cotrol-Flow Protection Level %qs)
+
+EnumValue
+Enum(cf_protection_level) String(full) Value(CF_FULL)
+
+EnumValue
+Enum(cf_protection_level) String(branch) Value(CF_BRANCH)
+
+EnumValue
+Enum(cf_protection_level) String(return) Value(CF_RETURN)
+
+EnumValue
+Enum(cf_protection_level) String(none) Value(CF_NONE)
 
 finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)

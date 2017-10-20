@@ -565,8 +565,6 @@ extern int rs6000_vector_align[];
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_LDBRX (TARGET_POPCNTD || rs6000_cpu == PROCESSOR_CELL)
 
-#define TARGET_ISEL64 (TARGET_ISEL && TARGET_POWERPC64)
-
 /* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
    Enable 32-bit fcfid's on any of the switches for newer ISA machines or
    XILINX.  */
@@ -2064,6 +2062,29 @@ extern scalar_int_mode rs6000_pmode;
 /* Given a condition code and a mode, return the inverse condition.  */
 #define REVERSE_CONDITION(CODE, MODE) rs6000_reverse_condition (MODE, CODE)
 
+
+/* Target cpu costs.  */
+
+struct processor_costs {
+  const int mulsi;	  /* cost of SImode multiplication.  */
+  const int mulsi_const;  /* cost of SImode multiplication by constant.  */
+  const int mulsi_const9; /* cost of SImode mult by short constant.  */
+  const int muldi;	  /* cost of DImode multiplication.  */
+  const int divsi;	  /* cost of SImode division.  */
+  const int divdi;	  /* cost of DImode division.  */
+  const int fp;		  /* cost of simple SFmode and DFmode insns.  */
+  const int dmul;	  /* cost of DFmode multiplication (and fmadd).  */
+  const int sdiv;	  /* cost of SFmode division (fdivs).  */
+  const int ddiv;	  /* cost of DFmode division (fdiv).  */
+  const int cache_line_size;    /* cache line size in bytes. */
+  const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
+  const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
+  const int simultaneous_prefetches; /* number of parallel prefetch
+					operations.  */
+  const int sfdf_convert;	/* cost of SF->DF conversion.  */
+};
+
+extern const struct processor_costs *rs6000_cost;
 
 /* Control the assembler format that we output.  */
 

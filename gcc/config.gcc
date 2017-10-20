@@ -360,6 +360,7 @@ i[34567]86-*-*)
 	cpu_type=i386
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
+	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
@@ -384,6 +385,7 @@ x86_64-*-*)
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	extra_options="${extra_options} fused-madd.opt"
+	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
 		       nmmintrin.h bmmintrin.h fma4intrin.h wmmintrin.h
@@ -461,6 +463,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} paired.h"
+	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
 		cpu_is_64bit=yes
@@ -871,7 +874,7 @@ case ${target} in
   tmake_file="${tmake_file} t-sol2 t-slibgcc"
   c_target_objs="${c_target_objs} sol2-c.o"
   cxx_target_objs="${cxx_target_objs} sol2-c.o sol2-cxx.o"
-  extra_objs="sol2.o sol2-stubs.o"
+  extra_objs="${extra_objs} sol2.o sol2-stubs.o"
   extra_options="${extra_options} sol2.opt"
   case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
     "":yes:* | yes:yes:* )
@@ -1093,10 +1096,13 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	case $target in
 	armv6*-*-freebsd*)
 	    target_cpu_cname="arm1176jzf-s"
-	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
             if test $fbsd_major -ge 11; then
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
             fi
+	    ;;
+	armv7*-*-freebsd*)
+	    target_cpu_cname="generic-armv7-a"
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
 	    ;;
 	*)
 	    target_cpu_cname="arm9"
@@ -1686,7 +1692,7 @@ i[34567]86-*-cygwin*)
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
@@ -1702,7 +1708,7 @@ x86_64-*-cygwin*)
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
@@ -1777,7 +1783,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 		*)
 			;;
 	esac
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	gas=yes
@@ -2627,7 +2633,7 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers=altivec.h
+	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
@@ -3104,7 +3110,7 @@ case ${target} in
         ;;
 *-*-linux*)
 	case ${target} in
-	aarch64*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
+	aarch64*-* | arm*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
 		default_gnu_indirect_function=yes
 		;;
 	esac
@@ -3431,11 +3437,18 @@ if test x$with_cpu = x ; then
       esac
       ;;
     powerpc*-*-*spe*)
+      # For SPE, start with 8540, then upgrade to 8548 if
+      # --enable-e500-double was requested explicitly or if we were
+      # configured for e500v2.
+      with_cpu=8540
       if test x$enable_e500_double = xyes; then
-         with_cpu=8548
-      else
-         with_cpu=8540
-      fi       
+        with_cpu=8548
+      fi
+      case ${target_noncanonical} in
+        e500v2*)
+          with_cpu=8548
+          ;;
+      esac
       ;;
     sparc*-*-*)
       case ${target} in

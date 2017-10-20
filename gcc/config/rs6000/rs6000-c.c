@@ -6253,7 +6253,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  /* If the second argument is an integer constant, if the value is in
 	     the expected range, generate the built-in code if we can.  We need
 	     64-bit and direct move to extract the small integer vectors.  */
-	  if (TREE_CODE (arg2) == INTEGER_CST && wi::ltu_p (arg2, nunits))
+	  if (TREE_CODE (arg2) == INTEGER_CST
+	      && wi::ltu_p (wi::to_wide (arg2), nunits))
 	    {
 	      switch (mode)
 		{
@@ -6415,7 +6416,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       mode = TYPE_MODE (arg1_type);
       if ((mode == V2DFmode || mode == V2DImode) && VECTOR_UNIT_VSX_P (mode)
 	  && TREE_CODE (arg2) == INTEGER_CST
-	  && wi::ltu_p (arg2, 2))
+	  && wi::ltu_p (wi::to_wide (arg2), 2))
 	{
 	  tree call = NULL_TREE;
 
@@ -6431,7 +6432,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	}
       else if (mode == V1TImode && VECTOR_UNIT_VSX_P (mode)
 	       && TREE_CODE (arg2) == INTEGER_CST
-	       && wi::eq_p (arg2, 0))
+	       && wi::eq_p (wi::to_wide (arg2), 0))
 	{
 	  tree call = rs6000_builtin_decls[VSX_BUILTIN_VEC_SET_V1TI];
 

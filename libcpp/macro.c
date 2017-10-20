@@ -502,13 +502,21 @@ cpp_quote_string (uchar *dest, const uchar *src, unsigned int len)
     {
       uchar c = *src++;
 
-      if (c == '\\' || c == '"')
+      switch (c)
 	{
+	case '\n':
+	  /* Naked LF can appear in raw string literals  */
+	  c = 'n';
+	  /* FALLTHROUGH */
+
+	case '\\':
+	case '"':
 	  *dest++ = '\\';
+	  /* FALLTHROUGH */
+
+	default:
 	  *dest++ = c;
 	}
-      else
-	  *dest++ = c;
     }
 
   return dest;

@@ -96,16 +96,21 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 {
 #define RECUR(t) mark_use ((t), rvalue_p, read_p, loc, reject_builtin)
 
+  if (expr == NULL_TREE || expr == error_mark_node)
+    return expr;
+
   if (reject_builtin && reject_gcc_builtin (expr, loc))
     return error_mark_node;
 
   if (read_p)
     mark_exp_read (expr);
 
+  tree oexpr = expr;
   bool recurse_op[3] = { false, false, false };
   switch (TREE_CODE (expr))
     {
     case VAR_DECL:
+    case PARM_DECL:
       if (outer_automatic_var_p (expr)
 	  && decl_constant_var_p (expr))
 	{
@@ -119,10 +124,13 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 		}
 	    }
 	  expr = process_outer_var_ref (expr, tf_warning_or_error, true);
-	  expr = convert_from_reference (expr);
+	  if (!(TREE_TYPE (oexpr)
+		&& TREE_CODE (TREE_TYPE (oexpr)) == REFERENCE_TYPE))
+	    expr = convert_from_reference (expr);
 	}
       break;
     case COMPONENT_REF:
+    case NON_DEPENDENT_EXPR:
       recurse_op[0] = true;
       break;
     case COMPOUND_EXPR:
@@ -140,34 +148,22 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	  tree ref = TREE_OPERAND (expr, 0);
 	  tree r = mark_rvalue_use (ref, loc, reject_builtin);
 	  if (r != ref)
-	    {
-	      expr = copy_node (expr);
-	      TREE_OPERAND (expr, 0) = r;
-	    }
+	    expr = convert_from_reference (r);
 	}
       break;
     default:
       break;
     }
 
-  bool changed = false;
-  tree ops[3];
   for (int i = 0; i < 3; ++i)
     if (recurse_op[i])
       {
 	tree op = TREE_OPERAND (expr, i);
-	ops[i] = RECUR (op);
-	if (ops[i] != op)
-	  changed = true;
+	op = RECUR (op);
+	if (op == error_mark_node)
+	  return error_mark_node;
+	TREE_OPERAND (expr, i) = op;
       }
-
-  if (changed)
-    {
-      expr = copy_node (expr);
-      for (int i = 0; i < 3; ++i)
-	if (recurse_op[i])
-	  TREE_OPERAND (expr, i) = ops[i];
-    }
 
   return expr;
 #undef RECUR
@@ -185,6 +181,52 @@ mark_rvalue_use (tree e,
 		 bool reject_builtin /* = true */)
 {
   return mark_use (e, true, true, loc, reject_builtin);
+}
+
+/* Called when expr appears as a discarded-value expression.  */
+
+tree
+mark_discarded_use (tree expr)
+{
+  /* The lvalue-to-rvalue conversion (7.1) is applied if and only if the
+     expression is a glvalue of volatile-qualified type and it is one of the
+     following:
+     * ( expression ), where expression is one of these expressions,
+     * id-expression (8.1.4),
+     * subscripting (8.2.1),
+     * class member access (8.2.5),
+     * indirection (8.3.1),
+     * pointer-to-member operation (8.5),
+     * conditional expression (8.16) where both the second and the third
+       operands are one of these expressions, or
+     * comma expression (8.19) where the right operand is one of these
+       expressions.  */
+  if (expr == NULL_TREE)
+    return expr;
+
+  switch (TREE_CODE (expr))
+    {
+    case COND_EXPR:
+      TREE_OPERAND (expr, 2) = mark_discarded_use (TREE_OPERAND (expr, 2));
+      gcc_fallthrough ();
+    case COMPOUND_EXPR:
+      TREE_OPERAND (expr, 1) = mark_discarded_use (TREE_OPERAND (expr, 1));
+      return expr;
+
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case INDIRECT_REF:
+    case MEMBER_REF:
+      break;
+    default:
+      if (DECL_P (expr))
+	break;
+      else
+	return expr;
+    }
+
+  /* Like mark_rvalue_use, but don't reject built-ins.  */
+  return mark_use (expr, true, true, input_location, false);
 }
 
 /* Called whenever an expression is used in an lvalue context.  */

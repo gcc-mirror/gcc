@@ -971,6 +971,9 @@ int arm_condexec_masklen = 0;
 /* Nonzero if chip supports the ARMv8 CRC instructions.  */
 int arm_arch_crc = 0;
 
+/* Nonzero if chip supports the AdvSIMD Dot Product instructions.  */
+int arm_arch_dotprod = 0;
+
 /* Nonzero if chip supports the ARMv8-M security extensions.  */
 int arm_arch_cmse = 0;
 
@@ -5883,7 +5886,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -5913,7 +5917,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -5945,7 +5950,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11247,9 +11253,11 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return current_tune->vec_costs->scalar_to_vec_cost;
 
       case unaligned_load:
+      case vector_gather_load:
         return current_tune->vec_costs->vec_unalign_load_cost;
 
       case unaligned_store:
+      case vector_scatter_store:
         return current_tune->vec_costs->vec_unalign_store_cost;
 
       case cond_branch_taken:
@@ -15288,12 +15296,23 @@ operands_ok_ldrd_strd (rtx rt, rtx rt2, rtx rn, HOST_WIDE_INT offset,
   return true;
 }
 
+/* Return true if a 64-bit access with alignment ALIGN and with a
+   constant offset OFFSET from the base pointer is permitted on this
+   architecture.  */
+static bool
+align_ok_ldrd_strd (HOST_WIDE_INT align, HOST_WIDE_INT offset)
+{
+  return (unaligned_access
+	  ? (align >= BITS_PER_WORD && (offset & 3) == 0)
+	  : (align >= 2 * BITS_PER_WORD && (offset & 7) == 0));
+}
+
 /* Helper for gen_operands_ldrd_strd.  Returns true iff the memory
    operand MEM's address contains an immediate offset from the base
-   register and has no side effects, in which case it sets BASE and
-   OFFSET accordingly.  */
+   register and has no side effects, in which case it sets BASE,
+   OFFSET and ALIGN accordingly.  */
 static bool
-mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset)
+mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset, HOST_WIDE_INT *align)
 {
   rtx addr;
 
@@ -15312,6 +15331,7 @@ mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset)
   gcc_assert (MEM_P (mem));
 
   *offset = const0_rtx;
+  *align = MEM_ALIGN (mem);
 
   addr = XEXP (mem, 0);
 
@@ -15352,7 +15372,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
                         bool const_store, bool commute)
 {
   int nops = 2;
-  HOST_WIDE_INT offsets[2], offset;
+  HOST_WIDE_INT offsets[2], offset, align[2];
   rtx base = NULL_RTX;
   rtx cur_base, cur_offset, tmp;
   int i, gap;
@@ -15364,7 +15384,8 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
      registers, and the corresponding memory offsets.  */
   for (i = 0; i < nops; i++)
     {
-      if (!mem_ok_for_ldrd_strd (operands[nops+i], &cur_base, &cur_offset))
+      if (!mem_ok_for_ldrd_strd (operands[nops+i], &cur_base, &cur_offset,
+				 &align[i]))
         return false;
 
       if (i == 0)
@@ -15478,6 +15499,7 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
       /* Swap the instructions such that lower memory is accessed first.  */
       std::swap (operands[0], operands[1]);
       std::swap (operands[2], operands[3]);
+      std::swap (align[0], align[1]);
       if (const_store)
         std::swap (operands[4], operands[5]);
     }
@@ -15489,6 +15511,9 @@ gen_operands_ldrd_strd (rtx *operands, bool load,
 
   /* Make sure accesses are to consecutive memory locations.  */
   if (gap != 4)
+    return false;
+
+  if (!align_ok_ldrd_strd (align[0], offset))
     return false;
 
   /* Make sure we generate legal instructions.  */
@@ -26859,7 +26884,7 @@ arm_set_return_address (rtx source, rtx scratch)
 {
   arm_stack_offsets *offsets;
   HOST_WIDE_INT delta;
-  rtx addr;
+  rtx addr, mem;
   unsigned long saved_regs;
 
   offsets = arm_get_frame_offsets ();
@@ -26889,11 +26914,12 @@ arm_set_return_address (rtx source, rtx scratch)
 
 	  addr = plus_constant (Pmode, addr, delta);
 	}
-      /* The store needs to be marked as frame related in order to prevent
-	 DSE from deleting it as dead if it is based on fp.  */
-      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
+
+      /* The store needs to be marked to prevent DSE from deleting
+	 it as dead if it is based on fp.  */
+      mem = gen_frame_mem (Pmode, addr);
+      MEM_VOLATILE_P (mem) = true;
+      emit_move_insn (mem, source);
     }
 }
 
@@ -26905,7 +26931,7 @@ thumb_set_return_address (rtx source, rtx scratch)
   HOST_WIDE_INT delta;
   HOST_WIDE_INT limit;
   int reg;
-  rtx addr;
+  rtx addr, mem;
   unsigned long mask;
 
   emit_use (source);
@@ -26945,11 +26971,11 @@ thumb_set_return_address (rtx source, rtx scratch)
       else
 	addr = plus_constant (Pmode, addr, delta);
 
-      /* The store needs to be marked as frame related in order to prevent
-	 DSE from deleting it as dead if it is based on fp.  */
-      rtx insn = emit_move_insn (gen_frame_mem (Pmode, addr), source);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (Pmode, LR_REGNUM));
+      /* The store needs to be marked to prevent DSE from deleting
+	 it as dead if it is based on fp.  */
+      mem = gen_frame_mem (Pmode, addr);
+      MEM_VOLATILE_P (mem) = true;
+      emit_move_insn (mem, source);
     }
   else
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);

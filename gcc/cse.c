@@ -3612,7 +3612,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
 		    canon_const_arg1 = GEN_INT (INTVAL (const_arg1)
-						& (GET_MODE_BITSIZE (mode)
+						& (GET_MODE_UNIT_BITSIZE (mode)
 						   - 1));
 		  else
 		    break;
@@ -3661,7 +3661,8 @@ fold_rtx (rtx x, rtx_insn *insn)
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
 		    inner_const = GEN_INT (INTVAL (inner_const)
-					   & (GET_MODE_BITSIZE (mode) - 1));
+					   & (GET_MODE_UNIT_BITSIZE (mode)
+					      - 1));
 		  else
 		    break;
 		}
@@ -3691,7 +3692,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		  /* As an exception, we can turn an ASHIFTRT of this
 		     form into a shift of the number of bits - 1.  */
 		  if (code == ASHIFTRT)
-		    new_const = GEN_INT (GET_MODE_BITSIZE (mode) - 1);
+		    new_const = GEN_INT (GET_MODE_UNIT_BITSIZE (mode) - 1);
 		  else if (!side_effects_p (XEXP (y, 0)))
 		    return CONST0_RTX (mode);
 		  else
@@ -5977,7 +5978,6 @@ cse_insn (rtx_insn *insn)
 		rtx new_src = 0;
 		unsigned src_hash;
 		struct table_elt *src_elt;
-		int byte = 0;
 
 		/* Ignore invalid entries.  */
 		if (!REG_P (elt->exp)
@@ -5990,13 +5990,8 @@ cse_insn (rtx_insn *insn)
 		  new_src = elt->exp;
 		else
 		  {
-		    /* Calculate big endian correction for the SUBREG_BYTE.
-		       We have already checked that M1 (GET_MODE (dest))
-		       is not narrower than M2 (new_mode).  */
-		    if (BYTES_BIG_ENDIAN)
-		      byte = (GET_MODE_SIZE (GET_MODE (dest))
-			      - GET_MODE_SIZE (new_mode));
-
+		    unsigned int byte
+		      = subreg_lowpart_offset (new_mode, GET_MODE (dest));
 		    new_src = simplify_gen_subreg (new_mode, elt->exp,
 					           GET_MODE (dest), byte);
 		  }

@@ -1670,7 +1670,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       /* Catch functions. Only used for actual parameters,
 	 procedure pointers and procptr initialization targets.  */
-      if (sym->attr.use_assoc || sym->attr.intrinsic
+      if (sym->attr.use_assoc
+	  || sym->attr.used_in_submodule
+	  || sym->attr.intrinsic
 	  || sym->attr.if_source != IFSRC_DECL)
 	{
 	  decl = gfc_get_extern_function_decl (sym);
@@ -4634,6 +4636,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
+	      /* TODO find out why this is necessary to stop double calls to
+		 free.  Somebody is reusing the expression in 'tmp' because
+		 it is being used unititialized.  */
+	      tmp = NULL_TREE;
 	    }
 	}
       else if (sym->ts.type == BT_CHARACTER && sym->ts.deferred)

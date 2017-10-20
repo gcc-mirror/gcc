@@ -4271,7 +4271,13 @@ curr_insn_transform (bool check_only_p)
 	}
       else if (curr_static_id->operand[i].type == OP_IN
 	       && (curr_static_id->operand[goal_alt_matched[i][0]].type
-		   == OP_OUT))
+		   == OP_OUT
+		   || (curr_static_id->operand[goal_alt_matched[i][0]].type
+		       == OP_INOUT
+		       && (operands_match_p
+			   (*curr_id->operand_loc[i],
+			    *curr_id->operand_loc[goal_alt_matched[i][0]],
+			    -1)))))
 	{
 	  /* generate reloads for input and matched outputs.  */
 	  match_inputs[0] = i;
@@ -4282,9 +4288,14 @@ curr_insn_transform (bool check_only_p)
 			[goal_alt_number * n_operands + goal_alt_matched[i][0]]
 			.earlyclobber);
 	}
-      else if (curr_static_id->operand[i].type == OP_OUT
+      else if ((curr_static_id->operand[i].type == OP_OUT
+		|| (curr_static_id->operand[i].type == OP_INOUT
+		    && (operands_match_p
+			(*curr_id->operand_loc[i],
+			 *curr_id->operand_loc[goal_alt_matched[i][0]],
+			 -1))))
 	       && (curr_static_id->operand[goal_alt_matched[i][0]].type
-		   == OP_IN))
+		    == OP_IN))
 	/* Generate reloads for output and matched inputs.  */
 	match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
 		      &after, curr_static_id->operand_alternative

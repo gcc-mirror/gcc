@@ -1,3 +1,18 @@
+2017-10-09  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-to-generic.cc: Support BRIG_KIND_NONE
+	directives.  These directives are legal everywhere.  They
+	can be used to patch away BRIG entries at the binary level.
+	Also add extra error detection for zeroed regions: make sure
+	the byteCount field is never zero.
+	* brig/brigfrontend/phsa.h: Added a new error prefix for
+	errors which are due to corrupted BRIG modules.
+
+2017-10-09  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc: The call code
+	still failed a few test cases. Now all PRM cases pass again.
+
 2017-10-03  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	* brigfrontend/brig-branch-inst-handler.cc: Fix (more) crash with

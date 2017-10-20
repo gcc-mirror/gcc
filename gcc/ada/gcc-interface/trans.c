@@ -211,9 +211,9 @@ typedef struct loop_info_d *loop_info;
 static GTY(()) vec<loop_info, va_gc> *gnu_loop_stack;
 
 /* The stacks for N_{Push,Pop}_*_Label.  */
-static GTY(()) vec<tree, va_gc> *gnu_constraint_error_label_stack;
-static GTY(()) vec<tree, va_gc> *gnu_storage_error_label_stack;
-static GTY(()) vec<tree, va_gc> *gnu_program_error_label_stack;
+static vec<Entity_Id> gnu_constraint_error_label_stack;
+static vec<Entity_Id> gnu_storage_error_label_stack;
+static vec<Entity_Id> gnu_program_error_label_stack;
 
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
@@ -226,7 +226,6 @@ static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void add_cleanup (tree, Node_Id);
 static void add_stmt_list (List_Id);
-static void push_exception_label_stack (vec<tree, va_gc> **, Entity_Id);
 static tree build_stmt_group (List_Id, bool);
 static inline bool stmt_group_may_fallthru (void);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
@@ -647,9 +646,10 @@ gigi (Node_Id gnat_root,
   gnat_install_builtins ();
 
   vec_safe_push (gnu_except_ptr_stack, NULL_TREE);
-  vec_safe_push (gnu_constraint_error_label_stack, NULL_TREE);
-  vec_safe_push (gnu_storage_error_label_stack, NULL_TREE);
-  vec_safe_push (gnu_program_error_label_stack, NULL_TREE);
+
+  gnu_constraint_error_label_stack.safe_push (Empty);
+  gnu_storage_error_label_stack.safe_push (Empty);
+  gnu_program_error_label_stack.safe_push (Empty);
 
   /* Process any Pragma Ident for the main unit.  */
   if (Present (Ident_String (Main_Unit)))
@@ -5614,7 +5614,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
   const bool with_extra_info
     = Exception_Extra_Info
       && !No_Exception_Handlers_Set ()
-      && !get_exception_label (kind);
+      && No (get_exception_label (kind));
   tree gnu_result = NULL_TREE, gnu_cond = NULL_TREE;
 
   /* The following processing is not required for correctness.  Its purpose is
@@ -7271,8 +7271,9 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Goto_Statement:
-      gnu_result
-	= build1 (GOTO_EXPR, void_type_node, gnat_to_gnu (Name (gnat_node)));
+      gnu_expr = gnat_to_gnu (Name (gnat_node));
+      gnu_result = build1 (GOTO_EXPR, void_type_node, gnu_expr);
+      TREE_USED (gnu_expr) = 1;
       break;
 
     /***************************/
@@ -7492,30 +7493,36 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Push_Constraint_Error_Label:
-      push_exception_label_stack (&gnu_constraint_error_label_stack,
-				  Exception_Label (gnat_node));
+      gnu_constraint_error_label_stack.safe_push (Exception_Label (gnat_node));
       break;
 
     case N_Push_Storage_Error_Label:
-      push_exception_label_stack (&gnu_storage_error_label_stack,
-				  Exception_Label (gnat_node));
+      gnu_storage_error_label_stack.safe_push (Exception_Label (gnat_node));
       break;
 
     case N_Push_Program_Error_Label:
-      push_exception_label_stack (&gnu_program_error_label_stack,
-				  Exception_Label (gnat_node));
+      gnu_program_error_label_stack.safe_push (Exception_Label (gnat_node));
       break;
 
     case N_Pop_Constraint_Error_Label:
-      gnu_constraint_error_label_stack->pop ();
+      gnat_temp = gnu_constraint_error_label_stack.pop ();
+      if (Present (gnat_temp)
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Storage_Error_Label:
-      gnu_storage_error_label_stack->pop ();
+      gnat_temp = gnu_storage_error_label_stack.pop ();
+      if (Present (gnat_temp)
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Program_Error_Label:
-      gnu_program_error_label_stack->pop ();
+      gnat_temp = gnu_program_error_label_stack.pop ();
+      if (Present (gnat_temp)
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     /******************************/
@@ -7687,6 +7694,15 @@ gnat_to_gnu (Node_Id gnat_node)
     /****************/
     /* Added Nodes  */
     /****************/
+
+    /* Call markers are created by the ABE mechanism to capture the target of
+       a call along with other elaboration-related attributes which are either
+       unavailable of expensive to recompute.  Call markers do not have static
+       and runtime semantics, and should be ignored. */
+
+    case N_Call_Marker:
+      gnu_result = alloc_stmt_list ();
+      break;
 
     case N_Expression_With_Actions:
       /* This construct doesn't define a scope so we don't push a binding
@@ -8018,20 +8034,6 @@ gnat_to_gnu_external (Node_Id gnat_node)
     SET_EXPR_LOCATION (gnu_result, UNKNOWN_LOCATION);
 
   return gnu_result;
-}
-
-/* Subroutine of above to push the exception label stack.  GNU_STACK is
-   a pointer to the stack to update and GNAT_LABEL, if present, is the
-   label to push onto the stack.  */
-
-static void
-push_exception_label_stack (vec<tree, va_gc> **gnu_stack, Entity_Id gnat_label)
-{
-  tree gnu_label = (Present (gnat_label)
-		    ? gnat_to_gnu_entity (gnat_label, NULL_TREE, false)
-		    : NULL_TREE);
-
-  vec_safe_push (*gnu_stack, gnu_label);
 }
 
 /* Return true if the statement list STMT_LIST is empty.  */
@@ -10217,28 +10219,28 @@ post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent, tree t,
   post_error_ne_tree (msg, node, ent, t);
 }
 
-/* Return a label to branch to for the exception type in KIND or NULL_TREE
+/* Return a label to branch to for the exception type in KIND or Empty
    if none.  */
 
-tree
+Entity_Id
 get_exception_label (char kind)
 {
   switch (kind)
     {
     case N_Raise_Constraint_Error:
-      return gnu_constraint_error_label_stack->last ();
+      return gnu_constraint_error_label_stack.last ();
 
     case N_Raise_Storage_Error:
-      return gnu_storage_error_label_stack->last ();
+      return gnu_storage_error_label_stack.last ();
 
     case N_Raise_Program_Error:
-      return gnu_program_error_label_stack->last ();
+      return gnu_program_error_label_stack.last ();
 
     default:
-      break;
+      return Empty;
     }
 
-  return NULL_TREE;
+  gcc_unreachable ();
 }
 
 /* Return the decl for the current elaboration procedure.  */

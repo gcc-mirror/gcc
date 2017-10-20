@@ -2276,8 +2276,7 @@ chkp_build_returned_bound (gcall *call)
      it separately.  */
   if (fndecl
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA
-	  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA_WITH_ALIGN))
+      && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
     {
       tree size = gimple_call_arg (call, 0);
       gimple_stmt_iterator iter = gsi_for_stmt (call);

@@ -1132,17 +1132,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	{
 	  /* This is gen_lowpart_if_possible(), but without validating
 	     the newly-formed address.  */
-	  int offset = 0;
-
-	  if (WORDS_BIG_ENDIAN)
-	    offset = (MAX (GET_MODE_SIZE (GET_MODE (mem)), UNITS_PER_WORD)
-		      - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
-	  if (BYTES_BIG_ENDIAN)
-	    /* Adjust the address so that the address-after-the-data is
-	       unchanged.  */
-	    offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (mem))));
-
+	  HOST_WIDE_INT offset = byte_lowpart_offset (mode, GET_MODE (mem));
 	  mem = adjust_address_nv (mem, mode, offset);
 	}
     }

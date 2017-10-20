@@ -30,7 +30,8 @@ LIB2ADD = \
 	$(srcdir)/config/rl78/bit-count.S \
 	$(srcdir)/config/rl78/fpbit-sf.S \
 	$(srcdir)/config/rl78/fpmath-sf.S \
-	$(srcdir)/config/rl78/cmpsi2.S
+	$(srcdir)/config/rl78/cmpsi2.S \
+	$(srcdir)/config/rl78/adddi3.S
 
 LIB2FUNCS_EXCLUDE = _clzhi2 _clzsi2 _ctzhi2 _ctzsi2 \
   _popcounthi2 _popcountsi2 \

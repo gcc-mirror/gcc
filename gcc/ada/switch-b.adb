@@ -391,6 +391,18 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Quiet_Output := True;
 
+         --  Processing for Q switch
+
+         when 'Q' =>
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            end if;
+
+            Ptr := Ptr + 1;
+            Scan_Pos
+              (Switch_Chars, Max, Ptr,
+               Quantity_Of_Default_Size_Sec_Stacks, C);
+
          --  Processing for r switch
 
          when 'r' =>

@@ -913,21 +913,17 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       gcc_assert (src_bb == nocall_edge->src);
 
       call_edge->probability = profile_probability::very_unlikely ();
-      call_edge->count
-	 = src_bb->count.apply_probability (call_edge->probability);
       nocall_edge->probability = profile_probability::always ()
 				 - call_edge->probability;
-      nocall_edge->count = src_bb->count - call_edge->count;
 
       unsigned int call_frequency
 	 = call_edge->probability.apply (src_bb->frequency);
 
-      bi_call_bb->count += call_edge->count;
+      bi_call_bb->count += call_edge->count ();
       bi_call_bb->frequency += call_frequency;
 
       if (nocall_edge->dest != join_tgt_bb)
 	{
-	  nocall_edge->dest->count = nocall_edge->count;
 	  nocall_edge->dest->frequency = src_bb->frequency - call_frequency;
 	}
     }

@@ -357,8 +357,8 @@ canonicalize_address (rtx x)
       {
       case ASHIFT:
         if (CONST_INT_P (XEXP (x, 1))
-            && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (GET_MODE (x))
-            && INTVAL (XEXP (x, 1)) >= 0)
+	    && INTVAL (XEXP (x, 1)) < GET_MODE_UNIT_BITSIZE (GET_MODE (x))
+	    && INTVAL (XEXP (x, 1)) >= 0)
 	  {
 	    HOST_WIDE_INT shift = INTVAL (XEXP (x, 1));
 	    PUT_CODE (x, MULT);

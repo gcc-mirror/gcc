@@ -408,6 +408,7 @@ verify_changes (int num)
 	       && REG_P (changes[i].old)
 	       && asm_noperands (PATTERN (object)) > 0
 	       && REG_EXPR (changes[i].old) != NULL_TREE
+	       && HAS_DECL_ASSEMBLER_NAME_P (REG_EXPR (changes[i].old))
 	       && DECL_ASSEMBLER_NAME_SET_P (REG_EXPR (changes[i].old))
 	       && DECL_REGISTER (REG_EXPR (changes[i].old)))
 	{
@@ -3380,6 +3381,7 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 	  case REG_NORETURN:
 	  case REG_SETJMP:
 	  case REG_TM:
+	  case REG_CALL_NOCF_CHECK:
 	    add_reg_note (new_insn, REG_NOTE_KIND (note),
 			  XEXP (note, 0));
 	    break;

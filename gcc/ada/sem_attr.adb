@@ -28,7 +28,6 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -806,6 +805,20 @@ package body Sem_Attr is
               ("prefix of % attribute cannot be enumeration literal");
          end if;
 
+         --  Preserve relevant elaboration-related attributes of the context
+         --  which are no longer available or very expensive to recompute once
+         --  analysis, resolution, and expansion are over.
+
+         Mark_Elaboration_Attributes
+           (N_Id   => N,
+            Checks => True,
+            Modes  => True);
+
+         --  Save the scenario for later examination by the ABE Processing
+         --  phase.
+
+         Record_Elaboration_Scenario (N);
+
          --  Case of access to subprogram
 
          if Is_Entity_Name (P) and then Is_Overloadable (Entity (P)) then
@@ -858,14 +871,6 @@ package body Sem_Attr is
 
             else
                Kill_Current_Values;
-            end if;
-
-            --  In the static elaboration model, treat the attribute reference
-            --  as a call for elaboration purposes.  Suppress this treatment
-            --  under debug flag. In any case, we are all done.
-
-            if not Dynamic_Elaboration_Checks and not Debug_Flag_Dot_UU then
-               Check_Elab_Call (N);
             end if;
 
             return;
@@ -11133,8 +11138,8 @@ package body Sem_Attr is
             --  'Unrestricted_Access or in case of a subprogram.
 
             if Is_Entity_Name (P)
-             and then (Attr_Id = Attribute_Unrestricted_Access
-                        or else Is_Subprogram (Entity (P)))
+              and then (Attr_Id = Attribute_Unrestricted_Access
+                         or else Is_Subprogram (Entity (P)))
             then
                Set_Address_Taken (Entity (P));
             end if;

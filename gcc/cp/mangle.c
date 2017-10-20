@@ -1725,7 +1725,7 @@ write_integer_cst (const tree cst)
 
       type = c_common_signed_or_unsigned_type (1, TREE_TYPE (cst));
       base = build_int_cstu (type, chunk);
-      n = wide_int_to_tree (type, cst);
+      n = wide_int_to_tree (type, wi::to_wide (cst));
 
       if (sign < 0)
 	{

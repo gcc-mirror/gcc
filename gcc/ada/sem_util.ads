@@ -202,6 +202,10 @@ package Sem_Util is
    --  given, and the reference N is not in the same extended source unit as
    --  the declaration of T.
 
+   function Begin_Keyword_Location (N : Node_Id) return Source_Ptr;
+   --  Given block statement, entry body, package body, subprogram body, or
+   --  task body N, return the closest source location to the "begin" keyword.
+
    function Build_Actual_Subtype
      (T : Entity_Id;
       N : Node_Or_Entity_Id) return Node_Id;
@@ -547,8 +551,9 @@ package Sem_Util is
    --  instead of 0).
 
    function Defining_Entity
-     (N               : Node_Id;
-      Empty_On_Errors : Boolean := False) return Entity_Id;
+     (N                  : Node_Id;
+      Empty_On_Errors    : Boolean := False;
+      Concurrent_Subunit : Boolean := False) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
    --  declaration has a specification, the entity is obtained from the
    --  specification. If the declaration has a defining unit name, then the
@@ -572,6 +577,9 @@ package Sem_Util is
    --
    --  The former semantics is appropriate for the back end; the latter
    --  semantics is appropriate for the front end.
+   --
+   --  Set flag Concurrent_Subunit to handle rewritings of concurrent bodies
+   --  which act as subunits. Such bodies are generally rewritten as null.
 
    function Denotes_Discriminant
      (N                : Node_Id;
@@ -685,6 +693,12 @@ package Sem_Util is
    --  Utility function to return the Ada entity of the subprogram enclosing
    --  the entity E, if any. Returns Empty if no enclosing subprogram.
 
+   function End_Keyword_Location (N : Node_Id) return Source_Ptr;
+   --  Given block statement, entry body, package body, package declaration,
+   --  protected body, [single] protected type declaration, subprogram body,
+   --  task body, or [single] task type declaration N, return the closest
+   --  source location of the "end" keyword.
+
    procedure Ensure_Freeze_Node (E : Entity_Id);
    --  Make sure a freeze node is allocated for entity E. If necessary, build
    --  and initialize a new freeze node and set Has_Delayed_Freeze True for E.
@@ -740,12 +754,6 @@ package Sem_Util is
    --  Call is set to the node for the corresponding call. If the node N is not
    --  an actual parameter then Formal and Call are set to Empty.
 
-   function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
-   --  Find specific type of a class-wide type, and handle the case of an
-   --  incomplete type coming either from a limited_with clause or from an
-   --  incomplete type declaration. If resulting type is private return its
-   --  full view.
-
    function Find_Body_Discriminal
      (Spec_Discriminant : Entity_Id) return Entity_Id;
    --  Given a discriminant of the record type that implements a task or
@@ -762,9 +770,12 @@ package Sem_Util is
    --  discriminant at the same position in this new type.
 
    function Find_Enclosing_Iterator_Loop (Id : Entity_Id) return Entity_Id;
-   --  Given an arbitrary entity, try to find the nearest enclosing iterator
-   --  loop. If such a loop is found, return the entity of its identifier (the
-   --  E_Loop scope), otherwise return Empty.
+   --  Find the nearest iterator loop which encloses arbitrary entity Id. If
+   --  such a loop exists, return the entity of its identifier (E_Loop scope),
+   --  otherwise return Empty.
+
+   function Find_Enclosing_Scope (N : Node_Id) return Entity_Id;
+   --  Find the nearest scope which encloses arbitrary node N
 
    function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id;
    --  Find the nested loop statement in a conditional block. Loops subject to
@@ -867,6 +878,12 @@ package Sem_Util is
    --  captures the precise placement of the item in the enclosing state space.
    --  If the state space is that of a package, Pack_Id denotes its entity,
    --  otherwise Pack_Id is Empty.
+
+   function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
+   --  Find specific type of a class-wide type, and handle the case of an
+   --  incomplete type coming either from a limited_with clause or from an
+   --  incomplete type declaration. If resulting type is private return its
+   --  full view.
 
    function Find_Static_Alternative (N : Node_Id) return Node_Id;
    --  N is a case statement whose expression is a compile-time value.
@@ -1134,8 +1151,7 @@ package Sem_Util is
    --  subprogram or entry and returns it, or if no subprogram can be found,
    --  returns Empty.
 
-   function Get_Task_Body_Procedure (E : Entity_Id) return Node_Id;
-   pragma Inline (Get_Task_Body_Procedure);
+   function Get_Task_Body_Procedure (E : Entity_Id) return Entity_Id;
    --  Given an entity for a task type or subtype, retrieves the
    --  Task_Body_Procedure field from the corresponding task type declaration.
 
@@ -1259,14 +1275,14 @@ package Sem_Util is
    --  as expressed in pragma Refined_State. This function does not take into
    --  account the visible refinement region of abstract state Id.
 
-   function Has_Null_Body (Proc_Id : Entity_Id) return Boolean;
-   --  Determine whether the body of procedure Proc_Id contains a sole
-   --  null statement, possibly followed by an optional return. Used to
-   --  optimize useless calls to assertion checks.
+   function Has_Non_Trivial_Precondition (Subp : Entity_Id) return Boolean;
+   --  Determine whether subprogram Subp has a class-wide precondition that is
+   --  not statically True.
 
-      function Has_Non_Trivial_Precondition (P : Entity_Id) return Boolean;
-      --  True if subprogram has a class-wide precondition that is not
-      --  statically True.
+   function Has_Null_Body (Proc_Id : Entity_Id) return Boolean;
+   --  Determine whether the body of procedure Proc_Id contains a sole null
+   --  statement, possibly followed by an optional return. Used to optimize
+   --  useless calls to assertion checks.
 
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
@@ -1357,9 +1373,10 @@ package Sem_Util is
    --  Returns True if current scope is with the private part or the body of
    --  an instance. Other semantic checks are suppressed in this context.
 
-   function In_Instance_Visible_Part return Boolean;
-   --  Returns True if current scope is within the visible part of a package
-   --  instance, where several additional semantic checks apply.
+   function In_Instance_Visible_Part
+     (Id : Entity_Id := Current_Scope) return Boolean;
+   --  Returns True if arbitrary entity Id is within the visible part of a
+   --  package instance, where several additional semantic checks apply.
 
    function In_Package_Body return Boolean;
    --  Returns True if current scope is within a package body
@@ -1382,8 +1399,16 @@ package Sem_Util is
    --  appearing anywhere within such a construct (that is it does not need
    --  to be directly within).
 
-   function In_Subtree (Root : Node_Id; N : Node_Id) return Boolean;
+   function In_Subtree (N : Node_Id; Root : Node_Id) return Boolean;
    --  Determine whether node N is within the subtree rooted at Root
+
+   function In_Subtree
+     (N     : Node_Id;
+      Root1 : Node_Id;
+      Root2 : Node_Id) return Boolean;
+   --  Determine whether node N is within the subtree rooted at Root1 or Root2.
+   --  This version is more efficient than calling the single root version of
+   --  Is_Subtree twice.
 
    function In_Visible_Part (Scope_Id : Entity_Id) return Boolean;
    --  Determine whether a declaration occurs within the visible part of a
@@ -1765,6 +1790,14 @@ package Sem_Util is
    --  persistent. A private type is potentially persistent if the full type
    --  is potentially persistent.
 
+   function Is_Preelaborable_Aggregate (Aggr : Node_Id) return Boolean;
+   --  Determine whether aggregate Aggr violates the restrictions of
+   --  preelaborable constructs as defined in ARM 10.2.1(5-9).
+
+   function Is_Preelaborable_Construct (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N violates the restrictions of
+   --  preelaborable constructs as defined in ARM 10.2.1(5-9).
+
    function Is_Protected_Self_Reference (N : Node_Id) return Boolean;
    --  Return True if node N denotes a protected type name which represents
    --  the current instance of a protected object according to RM 9.4(21/2).
@@ -2028,18 +2061,30 @@ package Sem_Util is
    --  statement in Statements (HSS) that has Comes_From_Source set. If no
    --  such statement exists, Empty is returned.
 
+   procedure Mark_Coextensions (Context_Nod : Node_Id; Root_Nod : Node_Id);
+   --  Given a node which designates the context of analysis and an origin in
+   --  the tree, traverse from Root_Nod and mark all allocators as either
+   --  dynamic or static depending on Context_Nod. Any incorrect marking is
+   --  cleaned up during resolution.
+
+   procedure Mark_Elaboration_Attributes
+     (N_Id   : Node_Or_Entity_Id;
+      Checks : Boolean := False;
+      Level  : Boolean := False;
+      Modes  : Boolean := False);
+   --  Preserve relevant elaboration-related properties of the context in
+   --  arbitrary entity or node N_Id. When flag Checks is set, the routine
+   --  saves the status of Elaboration_Check. When flag Level is set, the
+   --  routine captures the declaration level of N_Id if applicable. When
+   --  flag Modes is set, the routine saves the Ghost and SPARK modes in
+   --  effect if applicable.
+
    function Matching_Static_Array_Bounds
      (L_Typ : Node_Id;
       R_Typ : Node_Id) return Boolean;
    --  L_Typ and R_Typ are two array types. Returns True when they have the
    --  same number of dimensions, and the same static bounds for each index
    --  position.
-
-   procedure Mark_Coextensions (Context_Nod : Node_Id; Root_Nod : Node_Id);
-   --  Given a node which designates the context of analysis and an origin in
-   --  the tree, traverse from Root_Nod and mark all allocators as either
-   --  dynamic or static depending on Context_Nod. Any incorrect marking is
-   --  cleaned up during resolution.
 
    function May_Be_Lvalue (N : Node_Id) return Boolean;
    --  Determines if N could be an lvalue (e.g. an assignment left hand side).
@@ -2229,6 +2274,11 @@ package Sem_Util is
    --   1) N is a N_Null node and Typ is a descendant of System.Address, or
    --   2) N is a comparison operator, one of the operands is null, and the
    --      type of the other operand is a descendant of System.Address.
+
+   function Number_Of_Elements_In_Array (T : Entity_Id) return Int;
+   --  Returns the number of elements in the array T if the index bounds of T
+   --  is known at compile time. If the bounds are not known at compile time,
+   --  the function returns the value zero.
 
    function Object_Access_Level (Obj : Node_Id) return Uint;
    --  Return the accessibility level of the view of the object Obj. For
@@ -2460,15 +2510,19 @@ package Sem_Util is
    --  this is the case, and False if no scalar parts are present (meaning that
    --  the result of Valid_Scalars applied to T is always vacuously True).
 
-   function Scope_Within_Or_Same (Scope1, Scope2 : Entity_Id) return Boolean;
-   --  Determines if the entity Scope1 is the same as Scope2, or if it is
-   --  inside it, where both entities represent scopes. Note that scopes
-   --  are only partially ordered, so Scope_Within_Or_Same (A,B) and
-   --  Scope_Within_Or_Same (B,A) can both be False for a given pair A,B.
+   function Scope_Within
+     (Inner : Entity_Id;
+      Outer : Entity_Id) return Boolean;
+   --  Determine whether scope Inner appears within scope Outer. Note that
+   --  scopes are partially ordered, so Scope_Within (A, B) and Scope_Within
+   --  (B, A) may both return False.
 
-   function Scope_Within (Scope1, Scope2 : Entity_Id) return Boolean;
-   --  Like Scope_Within_Or_Same, except that this function returns
-   --  False in the case where Scope1 and Scope2 are the same scope.
+   function Scope_Within_Or_Same
+     (Inner : Entity_Id;
+      Outer : Entity_Id) return Boolean;
+   --  Determine whether scope Inner appears within scope Outer or both renote
+   --  the same scope. Note that scopes are partially ordered, so Scope_Within
+   --  (A, B) and Scope_Within (B, A) may both return False.
 
    procedure Set_Convention (E : Entity_Id; Val : Convention_Id);
    --  Same as Basic_Set_Convention, but with an extra check for access types.

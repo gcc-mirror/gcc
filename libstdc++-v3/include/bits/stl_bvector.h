@@ -417,7 +417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (__last._M_offset != 0)
 	  __fill_bvector(__last._M_p, 0, __last._M_offset, __x);
       }
-    else
+    else if (__first._M_offset != __last._M_offset)
       __fill_bvector(__first._M_p, __first._M_offset, __last._M_offset, __x);
   }
 

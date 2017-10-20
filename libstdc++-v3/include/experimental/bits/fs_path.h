@@ -725,10 +725,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     pointer   operator->() const { return std::__addressof(**this); }
 
     iterator& operator++();
-    iterator  operator++(int) { auto __tmp = *this; ++_M_cur; return __tmp; }
+    iterator  operator++(int) { auto __tmp = *this; ++*this; return __tmp; }
 
     iterator& operator--();
-    iterator  operator--(int) { auto __tmp = *this; --_M_cur; return __tmp; }
+    iterator  operator--(int) { auto __tmp = *this; --*this; return __tmp; }
 
     friend bool operator==(const iterator& __lhs, const iterator& __rhs)
     { return __lhs._M_equals(__rhs); }
