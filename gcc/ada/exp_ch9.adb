@@ -5432,8 +5432,8 @@ package body Exp_Ch9 is
         (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
         and then not Restriction_Active (No_Secondary_Stack)
-        and then Has_Rep_Item (T, Name_Secondary_Stack_Size,
-                               Check_Parents => False);
+        and then Has_Rep_Item
+                   (T, Name_Secondary_Stack_Size, Check_Parents => False);
    end Create_Secondary_Stack_For_Task;
 
    -------------------------------------
@@ -11978,8 +11978,7 @@ package body Exp_Ch9 is
               Get_Rep_Item
                 (TaskId, Name_Secondary_Stack_Size, Check_Parents => False);
 
-            --  Get Secondary_Stack_Size expression. Can be a pragma or
-            --  aspect.
+            --  Get Secondary_Stack_Size expression. Can be a pragma or aspect.
 
             if Nkind (Ritem) = N_Pragma then
                Size_Expr :=
@@ -11993,21 +11992,22 @@ package body Exp_Ch9 is
 
             --  Create the secondary stack for the task
 
-            Decl_SS := Make_Component_Declaration (Loc,
-              Defining_Identifier  =>
-                Make_Defining_Identifier (Loc, Name_uSecondary_Stack),
-
-              Component_Definition =>
-                Make_Component_Definition (Loc,
-                  Aliased_Present     => True,
-                  Subtype_Indication  => Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                       New_Occurrence_Of (RTE (RE_SS_Stack), Loc),
-                    Constraint   =>
-                      Make_Index_Or_Discriminant_Constraint (Loc,
-                        Constraints  => New_List (
-                          Make_Integer_Literal (Loc,
-                            Expr_Value (Size_Expr)))))));
+            Decl_SS :=
+              Make_Component_Declaration (Loc,
+                Defining_Identifier  =>
+                  Make_Defining_Identifier (Loc, Name_uSecondary_Stack),
+                Component_Definition =>
+                  Make_Component_Definition (Loc,
+                    Aliased_Present     => True,
+                    Subtype_Indication  =>
+                      Make_Subtype_Indication (Loc,
+                        Subtype_Mark =>
+                          New_Occurrence_Of (RTE (RE_SS_Stack), Loc),
+                        Constraint   =>
+                          Make_Index_Or_Discriminant_Constraint (Loc,
+                            Constraints  => New_List (
+                              Make_Integer_Literal (Loc,
+                                Expr_Value (Size_Expr)))))));
 
             Append_To (Cdecls, Decl_SS);
          end;
@@ -14223,8 +14223,8 @@ package body Exp_Ch9 is
                 Prefix         =>
                   Make_Selected_Component (Loc,
                     Prefix        => Make_Identifier (Loc, Name_uInit),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Name_uSecondary_Stack)),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_uSecondary_Stack)),
                 Attribute_Name => Name_Unrestricted_Access));
 
          else

@@ -5305,8 +5305,7 @@ package body Sem_Ch12 is
             Valid_Operator_Definition (Act_Decl_Id);
          end if;
 
-         Set_Alias  (Act_Decl_Id, Anon_Id);
-         Set_Parent (Act_Decl_Id, Parent (Anon_Id));
+         Set_Alias (Act_Decl_Id, Anon_Id);
          Set_Has_Completion (Act_Decl_Id);
          Set_Related_Instance (Pack_Id, Act_Decl_Id);
 

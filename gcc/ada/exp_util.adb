@@ -10820,7 +10820,10 @@ package body Exp_Util is
          --  Could be e.g. a loop that was transformed into a block or null
          --  statement. Do nothing for terminate alternatives.
 
-         when N_Block_Statement | N_Null_Statement | N_Terminate_Alternative =>
+         when N_Block_Statement
+            | N_Null_Statement
+            | N_Terminate_Alternative
+         =>
             null;
 
          when others =>

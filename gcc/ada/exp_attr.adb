@@ -1765,7 +1765,6 @@ package body Exp_Attr is
 
          if Attribute_Name (Parent (Pref)) = Name_Old then
             null;
-
          else
             Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
          end if;

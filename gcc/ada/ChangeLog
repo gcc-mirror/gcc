@@ -1,5 +1,37 @@
 2017-10-20  Bob Duff  <duff@adacore.com>
 
+	* exp_aggr.adb (Initialize_Array_Component): Avoid adjusting a
+	component of an array aggregate if it is initialized by a
+	build-in-place function call.
+	* exp_ch6.adb (Is_Build_In_Place_Result_Type): Use -gnatd.9 to disable
+	bip for nonlimited types.
+	* debug.adb: Document -gnatd.9.
+
+2017-10-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb: Remove redundant setting of Parent.
+
+2017-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Find_Concatenation_Types): Filter out operators if one
+	of the operands is a string literal.
+
+2017-10-20  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Comment fix.
+
+2017-10-20  Clement Fumex  <fumex@adacore.com>
+
+	* switch-c.adb: Remove -gnatwm from the switches triggered by -gnateC.
+
+2017-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Extract_Power): Accept dimension values that are not
+	non-negative integers when the dimensioned base type is an Integer
+	type.
+
+2017-10-20  Bob Duff  <duff@adacore.com>
+
 	* sinfo.ads, sinfo.adb (Alloc_For_BIP_Return): New flag to indicate
 	that an allocator came from a b-i-p return statement.
 	* exp_ch4.adb (Expand_Allocator_Expression): Avoid adjusting the return

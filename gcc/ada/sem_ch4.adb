@@ -6431,10 +6431,24 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Op_Type : constant Entity_Id := Etype (Op_Id);
+      Is_String : constant Boolean := Nkind (L) = N_String_Literal
+                                        or else
+                                      Nkind (R) = N_String_Literal;
+      Op_Type   : constant Entity_Id := Etype (Op_Id);
 
    begin
       if Is_Array_Type (Op_Type)
+
+        --  Small but very effective optimization: if at least one operand is a
+        --  string literal, then the type of the operator must be either array
+        --  of characters or array of strings.
+
+        and then (not Is_String
+                    or else
+                  Is_Character_Type (Component_Type (Op_Type))
+                    or else
+                  Is_String_Type (Component_Type (Op_Type)))
+
         and then not Is_Limited_Type (Op_Type)
 
         and then (Has_Compatible_Type (L, Op_Type)

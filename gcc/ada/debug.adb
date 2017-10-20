@@ -163,7 +163,7 @@ package body Debug is
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7
    --  d.8
-   --  d.9  Enable build-in-place for nonlimited types
+   --  d.9  Disable build-in-place for nonlimited types
 
    --  Debug flags for binder (GNATBIND)
 

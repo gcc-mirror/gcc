@@ -1312,9 +1312,9 @@ package Einfo is
 --       that represents an activation record pointer is an extra formal.
 
 --    Extra_Formals (Node28)
---       Applies to subprograms and subprogram types, and also to entries
---       and entry families. Returns first extra formal of the subprogram
---       or entry. Returns Empty if there are no extra formals.
+--       Applies to subprograms, subprogram types, entries, and entry
+--       families. Returns first extra formal of the subprogram or entry.
+--       Returns Empty if there are no extra formals.
 
 --    Finalization_Master (Node23) [root type only]
 --       Defined in access-to-controlled or access-to-class-wide types. The
