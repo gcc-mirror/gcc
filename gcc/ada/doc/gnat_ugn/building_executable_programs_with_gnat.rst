@@ -1243,21 +1243,13 @@ Alphabetical List of All Switches
   :file:`scos.adb`.
 
 
-.. index:: -fdump-xref  (gcc)
-
-:switch:`-fdump-xref`
-  Generates cross reference information in GLI files for C and C++ sources.
-  The GLI files have the same syntax as the ALI files for Ada, and can be used
-  for source navigation in IDEs and on the command line using e.g. gnatxref
-  and the :switch:`--ext=gli` switch.
-
-
 .. index:: -flto  (gcc)
 
 :switch:`-flto[={n}]`
   Enables Link Time Optimization. This switch must be used in conjunction
-  with the traditional :switch:`-Ox` switches and instructs the compiler to
-  defer most optimizations until the link stage. The advantage of this
+  with the :switch:`-Ox` switches (but not with the :switch:`-gnatn` switch
+  since it is a full replacement for the latter) and instructs the compiler
+  to defer most optimizations until the link stage. The advantage of this
   approach is that the compiler can do a whole-program analysis and choose
   the best interprocedural optimization strategy based on a complete view
   of the program, instead of a fragmentary view with the usual approach.

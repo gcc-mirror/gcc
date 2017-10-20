@@ -1581,13 +1581,13 @@ package body Sem_Dim is
                   --  literal is treated as if its dimension matches the type
                   --  dimension.
 
-                  elsif Nkind_In (Original_Node (L), N_Real_Literal,
-                                                     N_Integer_Literal)
+                  elsif Nkind_In (Original_Node (L), N_Integer_Literal,
+                                                     N_Real_Literal)
                   then
                      Dim_Warning_For_Numeric_Literal (L, Etype (R));
 
-                  elsif Nkind_In (Original_Node (R), N_Real_Literal,
-                                                     N_Integer_Literal)
+                  elsif Nkind_In (Original_Node (R), N_Integer_Literal,
+                                                     N_Real_Literal)
                   then
                      Dim_Warning_For_Numeric_Literal (R, Etype (L));
 

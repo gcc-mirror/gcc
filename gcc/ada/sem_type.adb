@@ -2838,8 +2838,9 @@ package body Sem_Type is
          return False;
 
       elsif Nkind (Par) in N_Declaration then
-         return Nkind (Par) = N_Object_Declaration
-            and then Present (Corresponding_Generic_Association (Par));
+         return
+           Nkind (Par) = N_Object_Declaration
+             and then Present (Corresponding_Generic_Association (Par));
 
       elsif Nkind (Par) = N_Object_Renaming_Declaration then
          return Present (Corresponding_Generic_Association (Par));

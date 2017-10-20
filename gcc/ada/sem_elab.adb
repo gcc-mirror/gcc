@@ -8212,6 +8212,7 @@ package body Sem_Elab is
       --    Reads of variables
 
       elsif Is_Suitable_Access (N) then
+
          --  Signal any enclosing local exception handlers that the 'Access may
          --  raise Program_Error due to a failed ABE check when switch -gnatd.o
          --  (conservative elaboration order for indirect calls) is in effect.

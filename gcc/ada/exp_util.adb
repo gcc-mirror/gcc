@@ -10990,8 +10990,8 @@ package body Exp_Util is
          Id          : Character;
          Related_Nod : Node_Id := Empty) return Entity_Id
       is
-         Temp_Nam : Name_Id;
          Temp_Id  : Entity_Id;
+         Temp_Nam : Name_Id;
 
       begin
          --  The context requires an external symbol

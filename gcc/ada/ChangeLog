@@ -1,3 +1,21 @@
+2017-10-20  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Fix a comment typo.
+
+2017-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (-flto): Add
+	warning against usage in conjunction with -gnatn.
+	(-fdump-xref): Delete entry.
+	* doc/gnat_ugn/gnat_utility_programs.rst (--ext): Remove mention of
+	-fdump-xref switch.
+	* gnat_ugn.texi: Regenerate.
+
+2017-10-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_type.adb, exp_util.adb, sem_util.adb, sem_dim.adb, sem_elab.adb:
+	Minor reformatting.
+
 2017-10-20  Yannick Moy  <moy@adacore.com>
 
 	* sem_dim.adb (Analyze_Dimension_Binary_Op): Accept with a warning to

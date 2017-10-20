@@ -770,7 +770,7 @@ package Sinfo is
    --  The following flag fields appear in all nodes:
 
    --  Analyzed
-   --    This flag is used to indicate that a node (and all its children have
+   --    This flag is used to indicate that a node (and all its children) have
    --    been analyzed. It is used to avoid reanalysis of a node that has
    --    already been analyzed, both for efficiency and functional correctness
    --    reasons.
