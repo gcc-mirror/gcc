@@ -1,5 +1,10 @@
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82158
+	* tree-cfg.c (pass_warn_function_return::execute): In noreturn
+	functions when optimizing replace GIMPLE_RETURN stmts with
+	calls to __builtin_unreachable ().
+
 	PR sanitizer/82595
 	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Add libtsan_preinit.o
 	for -fsanitize=thread link of executables.
