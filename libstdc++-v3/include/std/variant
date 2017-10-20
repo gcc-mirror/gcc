@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 #include <type_traits>
 #include <utility>
@@ -72,6 +70,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_variant 201603
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;

@@ -1,6 +1,41 @@
 2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79433
+	* doc/xml/manual/status_cxx2017.xml: Update feature-test macros.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Remove <bits/c++17_warning.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++17_warning.h: Remove.
+	* include/bits/string_view.tcc: Do not include <bits/c++17_warning.h>
+	for pre-C++17 modes.
+	* include/std/any: Likewise.
+	(__cpp_lib_any): Define.
+	* include/std/mutex (__cpp_lib_scoped_lock): Adjust value as per new
+	SD-6 draft.
+	* include/std/numeric (__cpp_lib_gcd_lcm): Define as per new SD-6
+	draft.
+	* include/std/optional: Do not include <bits/c++17_warning.h>.
+	(__cpp_lib_optional): Define.
+	* include/std/shared_mutex: Do not include <bits/c++14_warning.h>.
+	* include/std/string_view: Do not include <bits/c++17_warning.h>.
+	(__cpp_lib_string_view): Define.
+	* include/std/variant: Do not include <bits/c++17_warning.h>.
+	(__cpp_lib_variant): Define.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/26_numerics/gcd/1.cc: Test for __cpp_lib_gcd_lcm.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/26_numerics/lcm/1.cc: Test for __cpp_lib_gcd_lcm.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc: Adjust
+	expected value of __cpp_lib_scoped_lock.
+
+	Backport from mainline
 	2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_path.h (path::iterator++(int))

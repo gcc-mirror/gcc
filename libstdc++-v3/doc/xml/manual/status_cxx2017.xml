@@ -98,7 +98,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry> <code>__has_include(&lt;variant&gt;)</code> </entry>
+      <entry> <code>__has_include(&lt;variant&gt;)</code>,
+              <code>__cpp_lib_variant >= 201603</code>
+      </entry>
     </row>
 
     <row>
@@ -109,7 +111,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry> <code>__has_include(&lt;optional&gt;)</code> </entry>
+      <entry> <code>__has_include(&lt;optional&gt;)</code>,
+              <code>__cpp_lib_optional >= 201603</code>
+      </entry>
     </row>
 
     <row>
@@ -120,7 +124,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry> <code>__has_include(&lt;any&gt;)</code> </entry>
+      <entry> <code>__has_include(&lt;any&gt;)</code>,
+              <code>__cpp_lib_any >= 201603</code>
+      </entry>
     </row>
 
     <row>
@@ -131,7 +137,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry> <code>__has_include(&lt;string_view&gt;)</code> </entry>
+      <entry> <code>__has_include(&lt;string_view&gt;)</code>,
+              <code>__cpp_lib_string_view >= 201603</code>
+      </entry>
     </row>
 
     <row>
@@ -143,7 +151,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> No </entry>
-      <entry> <code>__has_include(&lt;memory_resource&gt;)</code> </entry>
+      <entry> <code>__has_include(&lt;memory_resource&gt;)</code>,
+              <code>__cpp_lib_memory_resource >= 201603</code>
+      </entry>
     </row>
 
     <row>
@@ -616,7 +626,9 @@ Feature-testing recommendations for C++</link>.
       </entry>
       <entry align="center"> No </entry>
       <entry><code> __has_include(&lt;execution&gt;) </code>,
-	     <code> __cpp_lib_parallel_algorithm >= 201603 </code></entry>
+	     <code> __cpp_lib_execution >= 201603 </code>,
+	     <code> __cpp_lib_parallel_algorithm >= 201603 </code>
+      </entry>
     </row>
 
     <row>
@@ -638,9 +650,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry><code> __cpp_lib_gcd >= 201606 </code>,
-	     <code> __cpp_lib_lcm >= 201606 </code>
-      </entry>
+      <entry><code> __cpp_lib_gcd_lcm >= 201606 </code></entry>
     </row>
 
     <row>
