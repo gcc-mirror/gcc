@@ -1,3 +1,9 @@
+2017-10-20  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/ldist-27.c: Remove dg-require-stack-size.
+	(main): Move s ...
+	(s): ... here.
+
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82158
