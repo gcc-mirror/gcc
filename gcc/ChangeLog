@@ -1,3 +1,15 @@
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82370
+	* config/i386/sse.md (*andnot<mode>3,
+	<mask_codefor><code><mode>3<mask_name>, *<code><mode>3): Split
+	(=v,v,vm) alternative into (=x,x,xm) and (=v,v,vm), for 128-bit
+	and 256-bit vectors, the (=x,x,xm) alternative and when mask is
+	not applied use empty suffix even for TARGET_AVX512VL.
+	* config/i386/subst.md (mask_prefix3, mask_prefix4): When mask
+	is applied, supply evex,evex or evex,evex,evex instead of just
+	evex.
+
 2017-10-20  Julia Koval  <julia.koval@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_GFNI_SET,
