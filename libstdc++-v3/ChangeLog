@@ -1,6 +1,13 @@
 2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82481
+	* include/std/mutex (call_once): Suppress clang-tidy warnings about
+	dangling references.
+
+	Backport from mainline
 	2017-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79433
