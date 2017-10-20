@@ -518,25 +518,17 @@ package body Sem_Dim is
          Position : Dimension_Position)
       is
       begin
-         --  Integer case
-
-         if Is_Integer_Type (Def_Id) then
-
-            --  Dimension value must be an integer literal
-
-            if Nkind (Expr) = N_Integer_Literal then
-               Dimensions (Position) := +Whole (UI_To_Int (Intval (Expr)));
-            else
-               Error_Msg_N ("integer literal expected", Expr);
-            end if;
-
-         --  Float case
-
-         else
-            Dimensions (Position) := Create_Rational_From (Expr, True);
-         end if;
-
+         Dimensions (Position) := Create_Rational_From (Expr, True);
          Processed (Position) := True;
+
+         --  If the dimensioned root type is an integer type, it is not
+         --  particularly useful, and fractional dimensions do not make
+         --  much sense for such types, so previously we used to reject
+         --  dimensions of integer types that were not integer literals.
+         --  However, the manipulation of dimensions does not depend on
+         --  the kind of root type, so we can accept this usage for rare
+         --  cases where dimensions are specified for integer values.
+
       end Extract_Power;
 
       ------------------------

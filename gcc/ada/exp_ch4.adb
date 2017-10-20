@@ -5564,6 +5564,7 @@ package body Exp_Ch4 is
          declare
             Cnn     : constant Entity_Id := Make_Temporary (Loc, 'C', N);
             Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
          begin
             --  Generate:
             --    type Ann is access all Typ;
@@ -5641,6 +5642,7 @@ package body Exp_Ch4 is
       then
          declare
             Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+
          begin
             Insert_Action (N,
               Make_Object_Declaration (Loc,
@@ -5681,6 +5683,7 @@ package body Exp_Ch4 is
 
             declare
                Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+
             begin
                Decl :=
                  Make_Object_Declaration (Loc,

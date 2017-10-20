@@ -1,3 +1,7 @@
+2017-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/dimensions.adb, gnat.dg/dimensions.ads: New testcase.
+
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82473

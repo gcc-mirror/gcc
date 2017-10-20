@@ -7248,7 +7248,12 @@ package body Exp_Ch6 is
 
       if Is_Limited_View (Typ) then
          return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
+
       else
+         if Debug_Flag_Dot_9 then
+            return False;
+         end if;
+
          if Has_Interfaces (Typ) then
             return False;
          end if;
@@ -7284,16 +7289,15 @@ package body Exp_Ch6 is
 
             declare
                Result : Boolean;
+               --  So we can stop here in the debugger
             begin
                --  ???For now, enable build-in-place for a very narrow set of
                --  controlled types. Change "if True" to "if False" to
                --  experiment more controlled types. Eventually, we would
                --  like to enable build-in-place for all tagged types, all
                --  types that need finalization, and all caller-unknown-size
-               --  types. We will eventually use Debug_Flag_Dot_9 to disable
-               --  build-in-place for nonlimited types.
+               --  types.
 
---         if Debug_Flag_Dot_9 then
                if True then
                   Result := Is_Controlled (T)
                     and then Present (Enclosing_Subprogram (T))

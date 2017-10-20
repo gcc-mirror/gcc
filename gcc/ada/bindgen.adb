@@ -646,8 +646,9 @@ package body Bindgen is
          --  stack globals.
 
          if Sec_Stack_Used then
-            --  Elaborate the body of the binder to initialize the
-            --  default-sized secondary stack pool.
+
+            --  Elaborate the body of the binder to initialize the default-
+            --  sized secondary stack pool.
 
             WBI ("");
             WBI ("      " & Get_Ada_Main_Name & "'Elab_Body;");
@@ -656,12 +657,13 @@ package body Bindgen is
             --  related secondary stack globals.
 
             Set_String ("      Default_Secondary_Stack_Size := ");
+
             if Opt.Default_Sec_Stack_Size /= Opt.No_Stack_Size then
                Set_Int (Opt.Default_Sec_Stack_Size);
             else
-               Set_String
-                 ("System.Parameters.Runtime_Default_Sec_Stack_Size");
+               Set_String ("System.Parameters.Runtime_Default_Sec_Stack_Size");
             end if;
+
             Set_Char (';');
             Write_Statement_Buffer;
 
@@ -988,8 +990,9 @@ package body Bindgen is
          --  stack globals.
 
          if Sec_Stack_Used then
-            --  Elaborate the body of the binder to initialize the
-            --  default-sized secondary stack pool.
+
+            --  Elaborate the body of the binder to initialize the default-
+            --  sized secondary stack pool.
 
             WBI ("      " & Get_Ada_Main_Name & "'Elab_Body;");
 
@@ -997,11 +1000,13 @@ package body Bindgen is
             --  related secondary stack globals.
 
             Set_String ("      Default_Secondary_Stack_Size := ");
+
             if Opt.Default_Sec_Stack_Size /= Opt.No_Stack_Size then
                Set_Int (Opt.Default_Sec_Stack_Size);
             else
                Set_String ("System.Parameters.Runtime_Default_Sec_Stack_Size");
             end if;
+
             Set_Char (';');
             Write_Statement_Buffer;
 
@@ -1011,17 +1016,19 @@ package body Bindgen is
             Write_Statement_Buffer;
 
             Set_String ("      Default_Sized_SS_Pool := ");
+
             if Num_Sec_Stacks > 0 then
                Set_String ("Sec_Default_Sized_Stacks'Address;");
             else
                Set_String ("System.Null_Address;");
             end if;
-            Write_Statement_Buffer;
 
+            Write_Statement_Buffer;
             WBI ("");
          end if;
 
          --  Generate call to Runtime_Initialize
+
          WBI ("      Runtime_Initialize (1);");
       end if;
 
@@ -2195,9 +2202,11 @@ package body Bindgen is
       end if;
 
       for J in Units.First .. Units.Last loop
-         Num_Primary_Stacks := Num_Primary_Stacks +
-           Units.Table (J).Primary_Stack_Count;
-         Num_Sec_Stacks := Num_Sec_Stacks + Units.Table (J).Sec_Stack_Count;
+         Num_Primary_Stacks :=
+           Num_Primary_Stacks + Units.Table (J).Primary_Stack_Count;
+
+         Num_Sec_Stacks :=
+           Num_Sec_Stacks + Units.Table (J).Sec_Stack_Count;
       end loop;
 
       --  Generate output file in appropriate language
@@ -2525,11 +2534,13 @@ package body Bindgen is
          Set_String (" : array (1 .. ");
          Set_Int (Num_Sec_Stacks);
          Set_String (") of aliased System.Secondary_Stack.SS_Stack (");
+
          if Opt.Default_Sec_Stack_Size /= No_Stack_Size then
             Set_Int (Opt.Default_Sec_Stack_Size);
          else
             Set_String ("System.Parameters.Runtime_Default_Sec_Stack_Size");
          end if;
+
          Set_String (");");
          Write_Statement_Buffer;
          WBI ("");
@@ -2568,8 +2579,8 @@ package body Bindgen is
 
          if not Suppress_Standard_Library_On_Target then
 
-            --  The B.1(39) implementation advice says that the adainit
-            --  and adafinal routines should be idempotent. Generate a flag to
+            --  The B.1(39) implementation advice says that the adainit and
+            --  adafinal routines should be idempotent. Generate a flag to
             --  ensure that. This is not needed if we are suppressing the
             --  standard library since it would never be referenced.
 
