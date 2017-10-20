@@ -1,3 +1,28 @@
+2017-10-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* c-attribs.c (handle_nocf_check_attribute): New function.
+	(c_common_attribute_table): Add 'nocf_check' handling.
+	* gimple-parser.c: Add second argument NULL to
+	gimple_build_call_from_tree.
+	* attrib.c (comp_type_attributes): Check nocf_check attribute.
+	* cfgexpand.c (expand_call_stmt): Set REG_CALL_NOCF_CHECK for
+	call insn.
+	* combine.c (distribute_notes): Add REG_CALL_NOCF_CHECK handling.
+	* common.opt: Add fcf-protection flag.
+	* emit-rtl.c (try_split): Add REG_CALL_NOCF_CHECK handling.
+	* flag-types.h: Add enum cf_protection_level.
+	* gimple.c (gimple_build_call_from_tree): Add second parameter.
+	Add 'nocf_check' attribute propagation to gimple call.
+	* gimple.h (gf_mask): Add GF_CALL_NOCF_CHECK.
+	(gimple_build_call_from_tree): Update prototype.
+	(gimple_call_nocf_check_p): New function.
+	(gimple_call_set_nocf_check): Likewise.
+	* gimplify.c: Add second argument to gimple_build_call_from_tree.
+	* ipa-icf.c: Add nocf_check attribute in statement hash.
+	* recog.c (peep2_attempt): Add REG_CALL_NOCF_CHECK handling.
+	* reg-notes.def: Add REG_NOTE (CALL_NOCF_CHECK).
+	* toplev.c (process_options): Add flag_cf_protection handling.
+
 2017-10-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune-costs.h (core_cost): Fix div, move and sqrt latencies.

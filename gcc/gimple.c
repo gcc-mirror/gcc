@@ -346,7 +346,7 @@ gimple_build_call_internal_vec (enum internal_fn fn, vec<tree> args)
    this fact.  */
 
 gcall *
-gimple_build_call_from_tree (tree t)
+gimple_build_call_from_tree (tree t, tree fnptrtype)
 {
   unsigned i, nargs;
   gcall *call;
@@ -378,6 +378,23 @@ gimple_build_call_from_tree (tree t)
   gimple_call_set_by_descriptor (call, CALL_EXPR_BY_DESCRIPTOR (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
   gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
+
+  if (fnptrtype)
+    {
+      gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
+
+      /* Check if it's an indirect CALL and the type has the
+ 	 nocf_check attribute. In that case propagate the information
+	 to the gimple CALL insn.  */
+      if (!fndecl)
+	{
+	  gcc_assert (POINTER_TYPE_P (fnptrtype));
+	  tree fntype = TREE_TYPE (fnptrtype);
+
+	  if (lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (fntype)))
+	    gimple_call_set_nocf_check (call, TRUE);
+	}
+    }
 
   return call;
 }
