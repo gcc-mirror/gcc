@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "data-streamer.h"
 #include "cgraph.h"
+#include "wide-int.h"
 
 /* Dump THIS to F.  */
 
@@ -146,12 +147,12 @@ profile_probability::differs_from_p (profile_probability other) const
 {
   if (!initialized_p () || !other.initialized_p ())
     return false;
-  if ((uint64_t)m_val - (uint64_t)other.m_val < 10
-      || (uint64_t)other.m_val - (uint64_t)m_val < 10)
+  if ((uint64_t)m_val - (uint64_t)other.m_val < max_probability / 1000
+      || (uint64_t)other.m_val - (uint64_t)max_probability < 1000)
     return false;
   if (!other.m_val)
     return true;
-  int64_t ratio = m_val * 100 / other.m_val;
+  int64_t ratio = (int64_t)m_val * 100 / other.m_val;
   return ratio < 99 || ratio > 101;
 }
 
@@ -193,4 +194,22 @@ profile_probability::stream_out (struct lto_output_stream *ob)
 {
   streamer_write_uhwi_stream (ob, m_val);
   streamer_write_uhwi_stream (ob, m_quality);
+}
+
+/* Compute RES=(a*b + c/2)/c capping and return false if overflow happened.  */
+
+bool
+slow_safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
+{
+  FIXED_WIDE_INT (128) tmp = a;
+  bool overflow;
+  tmp = wi::udiv_floor (wi::umul (tmp, b, &overflow) + (c / 2), c);
+  gcc_checking_assert (!overflow);
+  if (wi::fits_uhwi_p (tmp))
+    {
+      *res = tmp.to_uhwi ();
+      return true;
+    }
+  *res = (uint64_t) -1;
+  return false;
 }

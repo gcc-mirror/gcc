@@ -6734,6 +6734,15 @@ scheduler and other passes from moving instructions and using register
 equivalences across the boundary defined by the blockage insn.
 This needs to be an UNSPEC_VOLATILE pattern or a volatile ASM.
 
+@cindex @code{memory_blockage} instruction pattern
+@item @samp{memory_blockage}
+This pattern, if defined, represents a compiler memory barrier, and will be
+placed at points across which RTL passes may not propagate memory accesses.
+This instruction needs to read and write volatile BLKmode memory.  It does
+not need to generate any machine instruction.  If this pattern is not defined,
+the compiler falls back to emitting an instruction corresponding
+to @code{asm volatile ("" ::: "memory")}.
+
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
 If the target memory model is not fully synchronous, then this pattern

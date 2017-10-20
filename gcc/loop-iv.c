@@ -353,7 +353,7 @@ iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
   adef = DF_REF_CHAIN (use)->ref;
 
   /* We do not handle setting only part of the register.  */
-  if (DF_REF_FLAGS (adef) & DF_REF_READ_WRITE)
+  if (DF_REF_FLAGS (adef) & (DF_REF_READ_WRITE | DF_REF_SUBREG))
     return GRD_INVALID;
 
   def_insn = DF_REF_INSN (adef);

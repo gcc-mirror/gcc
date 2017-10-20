@@ -561,7 +561,6 @@ handle_simple_exit (edge e)
       BB_END (old_bb) = end;
 
       redirect_edge_succ (e, new_bb);
-      new_bb->count = e->count;
       new_bb->frequency = EDGE_FREQUENCY (e);
       e->flags |= EDGE_FALLTHRU;
 

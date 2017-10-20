@@ -1156,7 +1156,6 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
     e->flags = 0;
 
   e->probability = profile_probability::always ();
-  e->count = src->count;
 
   if (e->dest != target)
     redirect_edge_succ (e, target);
@@ -1505,9 +1504,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  int prob = XINT (note, 0);
 
 	  b->probability = profile_probability::from_reg_br_prob_note (prob);
-	  b->count = e->count.apply_probability (b->probability);
 	  e->probability -= e->probability;
-	  e->count -= b->count;
 	}
     }
 
@@ -1615,7 +1612,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   if (EDGE_COUNT (e->src->succs) >= 2 || abnormal_edge_flags || asm_goto_edge)
     {
       rtx_insn *new_head;
-      profile_count count = e->count;
+      profile_count count = e->count ();
       profile_probability probability = e->probability;
       /* Create the new structures.  */
 
@@ -1640,7 +1637,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       /* Wire edge in.  */
       new_edge = make_edge (e->src, jump_block, EDGE_FALLTHRU);
       new_edge->probability = probability;
-      new_edge->count = count;
 
       /* Redirect old edge.  */
       redirect_edge_pred (e, jump_block);
@@ -1655,13 +1651,11 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       if (asm_goto_edge)
 	{
 	  new_edge->probability = new_edge->probability.apply_scale (1, 2);
-	  new_edge->count = new_edge->count.apply_scale (1, 2);
 	  jump_block->count = jump_block->count.apply_scale (1, 2);
 	  jump_block->frequency /= 2;
 	  edge new_edge2 = make_edge (new_edge->src, target,
 				      e->flags & ~EDGE_FALLTHRU);
 	  new_edge2->probability = probability - new_edge->probability;
-	  new_edge2->count = count - new_edge->count;
 	}
 
       new_bb = jump_block;
@@ -3155,7 +3149,6 @@ purge_dead_edges (basic_block bb)
       if (single_succ_p (bb))
 	{
 	  single_succ_edge (bb)->probability = profile_probability::always ();
-	  single_succ_edge (bb)->count = bb->count;
 	}
       else
 	{
@@ -3168,8 +3161,6 @@ purge_dead_edges (basic_block bb)
 	  b->probability = profile_probability::from_reg_br_prob_note
 					 (XINT (note, 0));
 	  f->probability = b->probability.invert ();
-	  b->count = bb->count.apply_probability (b->probability);
-	  f->count = bb->count.apply_probability (f->probability);
 	}
 
       return purged;
@@ -3221,7 +3212,6 @@ purge_dead_edges (basic_block bb)
   gcc_assert (single_succ_p (bb));
 
   single_succ_edge (bb)->probability = profile_probability::always ();
-  single_succ_edge (bb)->count = bb->count;
 
   if (dump_file)
     fprintf (dump_file, "Purged non-fallthru edges from bb %i\n",
@@ -4906,7 +4896,6 @@ rtl_flow_call_edges_add (sbitmap blocks)
 
 	      edge ne = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
 	      ne->probability = profile_probability::guessed_never ();
-	      ne->count = profile_count::guessed_zero ();
 	    }
 
 	  if (insn == BB_HEAD (bb))
@@ -5039,14 +5028,13 @@ rtl_account_profile_record (basic_block bb, int after_pass,
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
-	record->size[after_pass]
-	  += insn_rtx_cost (PATTERN (insn), false);
+	record->size[after_pass] += insn_cost (insn, false);
 	if (bb->count.initialized_p ())
 	  record->time[after_pass]
-	    += insn_rtx_cost (PATTERN (insn), true) * bb->count.to_gcov_type ();
+	    += insn_cost (insn, true) * bb->count.to_gcov_type ();
 	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	  record->time[after_pass]
-	    += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
+	    += insn_cost (insn, true) * bb->frequency;
       }
 }
 

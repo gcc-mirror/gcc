@@ -1422,15 +1422,15 @@ sms_schedule (void)
       get_ebb_head_tail (bb, bb, &head, &tail);
       latch_edge = loop_latch_edge (loop);
       gcc_assert (single_exit (loop));
-      if (single_exit (loop)->count > profile_count::zero ())
-	trip_count = latch_edge->count.to_gcov_type ()
-		     / single_exit (loop)->count.to_gcov_type ();
+      if (single_exit (loop)->count () > profile_count::zero ())
+	trip_count = latch_edge->count ().to_gcov_type ()
+		     / single_exit (loop)->count ().to_gcov_type ();
 
       /* Perform SMS only on loops that their average count is above threshold.  */
 
-      if ( latch_edge->count > profile_count::zero ()
-          && (latch_edge->count
-	      < single_exit (loop)->count.apply_scale
+      if ( latch_edge->count () > profile_count::zero ()
+          && (latch_edge->count()
+	      < single_exit (loop)->count ().apply_scale
 				 (SMS_LOOP_AVERAGE_COUNT_THRESHOLD, 1)))
 	{
 	  if (dump_file)
@@ -1552,9 +1552,9 @@ sms_schedule (void)
 
       latch_edge = loop_latch_edge (loop);
       gcc_assert (single_exit (loop));
-      if (single_exit (loop)->count > profile_count::zero ())
-	trip_count = latch_edge->count.to_gcov_type ()
-		     / single_exit (loop)->count.to_gcov_type ();
+      if (single_exit (loop)->count ()> profile_count::zero ())
+	trip_count = latch_edge->count ().to_gcov_type ()
+		     / single_exit (loop)->count ().to_gcov_type ();
 
       if (dump_file)
 	{

@@ -156,7 +156,8 @@ private:
 static bool
 function_always_visible_to_compiler_p (tree decl)
 {
-  return (!TREE_PUBLIC (decl) || DECL_DECLARED_INLINE_P (decl));
+  return (!TREE_PUBLIC (decl) || DECL_DECLARED_INLINE_P (decl)
+	  || DECL_COMDAT (decl));
 }
 
 /* Emit suggestion about attribute ATTRIB_NAME for DECL.  KNOWN_FINITE
@@ -230,6 +231,21 @@ warn_function_noreturn (tree decl)
     warned_about 
       = suggest_attribute (OPT_Wsuggest_attribute_noreturn, original_decl,
 			   true, warned_about, "noreturn");
+}
+
+void
+warn_function_cold (tree decl)
+{
+  tree original_decl = decl;
+
+  cgraph_node *node = cgraph_node::get (decl);
+  if (node->instrumentation_clone)
+    decl = node->instrumented_version->decl;
+
+  static hash_set<tree> *warned_about;
+  warned_about 
+    = suggest_attribute (OPT_Wsuggest_attribute_cold, original_decl,
+			 true, warned_about, "cold");
 }
 
 /* Return true if we have a function state for NODE.  */
@@ -502,8 +518,7 @@ special_builtin_state (enum pure_const_state_e *state, bool *looping,
       {
 	case BUILT_IN_RETURN:
 	case BUILT_IN_UNREACHABLE:
-	case BUILT_IN_ALLOCA:
-	case BUILT_IN_ALLOCA_WITH_ALIGN:
+	CASE_BUILT_IN_ALLOCA:
 	case BUILT_IN_STACK_SAVE:
 	case BUILT_IN_STACK_RESTORE:
 	case BUILT_IN_EH_POINTER:
@@ -1788,6 +1803,7 @@ pass_local_pure_const::execute (function *fun)
 
   node = cgraph_node::get (current_function_decl);
   skip = skip_function_for_local_pure_const (node);
+
   if (!warn_suggest_attribute_const
       && !warn_suggest_attribute_pure
       && skip)

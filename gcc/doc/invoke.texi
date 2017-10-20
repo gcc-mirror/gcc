@@ -461,6 +461,7 @@ Objective-C and Objective-C++ Dialects}.
 -fchkp-check-read  -fchkp-check-write  -fchkp-store-bounds @gol
 -fchkp-instrument-calls  -fchkp-instrument-marked-only @gol
 -fchkp-use-wrappers  -fchkp-flexible-struct-trailing-arrays@gol
+-fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]} @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -5201,7 +5202,7 @@ whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
 
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
@@ -5253,6 +5254,15 @@ might be appropriate for any function that calls a function like
 @code{vprintf} or @code{vscanf}, but this might not always be the
 case, and some functions for which @code{format} attributes are
 appropriate may not be detected.
+
+@item -Wsuggest-attribute=cold
+@opindex Wsuggest-attribute=cold
+@opindex Wno-suggest-attribute=cold
+
+Warn about functions that might be candidates for @code{cold} attribute.  This
+is based on static detection and generally will only warn about functions which
+always leads to a call to another @code{cold} function such as wrappers of
+C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
 
 @item -Wsuggest-final-types
@@ -5392,6 +5402,11 @@ arrays at the end of a struct and for arrays accessed through
 pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
+
+@item -Wattribute-alias
+Warn about declarations using the @code{alias} and similar attributes whose
+target is incompatible with the type of the alias.  @xref{Function Attributes,
+,Declaring Attributes of Functions}.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -7823,7 +7838,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR and CR16, this option is completely disabled.  
+defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.
@@ -9698,18 +9713,26 @@ file if the target supports arbitrary sections.  The name of the
 function or the name of the data item determines the section's name
 in the output file.
 
-Use these options on systems where the linker can perform optimizations
-to improve locality of reference in the instruction space.  Most systems
-using the ELF object format and SPARC processors running Solaris 2 have
-linkers with such optimizations.  AIX may have these optimizations in
-the future.
+Use these options on systems where the linker can perform optimizations to
+improve locality of reference in the instruction space.  Most systems using the
+ELF object format have linkers with such optimizations.  On AIX, the linker
+rearranges sections (CSECTs) based on the call graph.  The performance impact
+varies.
 
-Only use these options when there are significant benefits from doing
-so.  When you specify these options, the assembler and linker
-create larger object and executable files and are also slower.
-You cannot use @command{gprof} on all systems if you
-specify this option, and you may have problems with debugging if
-you specify both this option and @option{-g}.
+Together with a linker garbage collection (linker @option{--gc-sections}
+option) these options may lead to smaller statically-linked executables (after
+stripping).
+
+On ELF/DWARF systems these options do not degenerate the quality of the debug
+information.  There could be issues with other object files/debug info formats.
+
+Only use these options when there are significant benefits from doing so.  When
+you specify these options, the assembler and linker create larger object and
+executable files and are also slower.  These options affect code generation.
+They prevent optimizations by the compiler and assembler using relative
+locations inside a translation unit since the locations are unknown until
+link time.  An example of such an optimization is relaxing calls to short call
+instructions.
 
 @item -fbranch-target-load-optimize
 @opindex fbranch-target-load-optimize
@@ -11127,6 +11150,15 @@ to verify the referenced object has the correct dynamic type.
 This option enables instrumentation of pointer arithmetics.  If the pointer
 arithmetics overflows, a run-time error is issued.
 
+@item -fsanitize=builtin
+@opindex fsanitize=builtin
+
+This option enables instrumentation of arguments to selected builtin
+functions.  If an invalid value is passed to such arguments, a run-time
+error is issued.  E.g.@ passing 0 as the argument to @code{__builtin_ctz}
+or @code{__builtin_clz} invokes undefined behavior and is diagnosed
+by this option.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
@@ -11386,6 +11418,28 @@ with calls to wrapper functions.  When @option{-fchkp-use-wrappers}
 is used to link a program, the GCC driver automatically links
 against @file{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
 Enabled by default.
+
+@item -fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]}
+@opindex fcf-protection
+Enable code instrumentation of control-flow transfers to increase
+program security by checking that target addresses of control-flow
+transfer instructions (such as indirect function call, function return,
+indirect jump) are valid.  This prevents diverting the flow of control
+to an unexpected target.  This is intended to protect against such
+threats as Return-oriented Programming (ROP), and similarly
+call/jmp-oriented programming (COP/JOP).
+
+The value @code{branch} tells the compiler to implement checking of
+validity of control-flow transfer at the point of indirect branch
+instructions, i.e. call/jmp instructions.  The value @code{return}
+implements checking of validity at the point of returning from a
+function.  The value @code{full} is an alias for specifying both
+@code{branch} and @code{return}. The value @code{none} turns off
+instrumentation.
+
+You can also use the @code{nocf_check} attribute to identify
+which functions and calls should be skipped from instrumentation
+(@pxref{Function Attributes}).
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -14368,6 +14422,8 @@ Enable FP16 extension.  This also enables floating-point instructions.
 Enable the RcPc extension.  This does not change code generation from GCC,
 but is passed on to the assembler, enabling inline asm statements to use
 instructions from the RcPc extension.
+@item dotprod
+Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
 
 @end table
 
@@ -15608,6 +15664,9 @@ The ARMv8.1 Advanced SIMD and floating-point instructions.
 The cryptographic instructions.  This also enables the Advanced SIMD and
 floating-point instructions.
 
+@item +dotprod
+Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
+
 @item +nocrypto
 Disable the cryptographic extension.
 
@@ -15794,6 +15853,9 @@ Permissible names for this option are the same as those for
 The following extension options are common to the listed CPUs:
 
 @table @samp
+@item +nodsp
+Disable the DSP instructions on @samp{cortex-m33}.
+
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},

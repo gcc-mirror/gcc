@@ -612,6 +612,12 @@ package body Sem is
          when N_With_Clause =>
             Analyze_With_Clause (N);
 
+         --  A call to analyze a call marker is ignored because the node does
+         --  not have any static and run-time semantics.
+
+         when N_Call_Marker =>
+            null;
+
          --  A call to analyze the Empty node is an error, but most likely it
          --  is an error caused by an attempt to analyze a malformed piece of
          --  tree caused by some other error, so if there have been any other
@@ -1241,6 +1247,15 @@ package body Sem is
       Scope_Stack.Release;
       Scope_Stack.Locked := True;
    end Lock;
+
+   ------------------------
+   -- Preanalysis_Active --
+   ------------------------
+
+   function Preanalysis_Active return Boolean is
+   begin
+      return not Full_Analysis and not Expander_Active;
+   end Preanalysis_Active;
 
    ----------------
    -- Preanalyze --

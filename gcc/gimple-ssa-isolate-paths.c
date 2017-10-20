@@ -169,7 +169,6 @@ isolate_path (basic_block bb, basic_block duplicate,
 
       /* Update profile only when redirection is really processed.  */
       bb->frequency += EDGE_FREQUENCY (e);
-      bb->count += e->count;
     }
 
   /* There may be more than one statement in DUPLICATE which exhibits

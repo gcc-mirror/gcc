@@ -433,7 +433,7 @@ add_system_framework_path (char *path)
   p->construct = framework_construct_pathname;
   using_frameworks = 1;
 
-  add_cpp_dir_path (p, SYSTEM);
+  add_cpp_dir_path (p, INC_SYSTEM);
 }
 
 /* Add PATH to the bracket includes. PATH must be malloc-ed and
@@ -451,7 +451,7 @@ add_framework_path (char *path)
   p->construct = framework_construct_pathname;
   using_frameworks = 1;
 
-  add_cpp_dir_path (p, BRACKET);
+  add_cpp_dir_path (p, INC_BRACKET);
 }
 
 static const char *framework_defaults [] =
@@ -488,7 +488,7 @@ darwin_register_objc_includes (const char *sysroot, const char *iprefix,
 	{
 	  str = concat (iprefix, fname + len, NULL);
           /* FIXME: wrap the headers for C++awareness.  */
-	  add_path (str, SYSTEM, /*c++aware=*/false, false);
+	  add_path (str, INC_SYSTEM, /*c++aware=*/false, false);
 	}
 
       /* Should this directory start with the sysroot?  */
@@ -497,7 +497,7 @@ darwin_register_objc_includes (const char *sysroot, const char *iprefix,
       else
 	str = update_path (fname, "");
 
-      add_path (str, SYSTEM, /*c++aware=*/false, false);
+      add_path (str, INC_SYSTEM, /*c++aware=*/false, false);
     }
 }
 

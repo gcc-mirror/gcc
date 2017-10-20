@@ -412,8 +412,8 @@
 /* avx512dqintrin.h */
 #define __builtin_ia32_kshiftliqi(A, B) __builtin_ia32_kshiftliqi(A, 8)
 #define __builtin_ia32_kshiftriqi(A, B) __builtin_ia32_kshiftriqi(A, 8)
-#define __builtin_ia32_reducess(A, B, F) __builtin_ia32_reducess(A, B, 1)
-#define __builtin_ia32_reducesd(A, B, F) __builtin_ia32_reducesd(A, B, 1)
+#define __builtin_ia32_reducess_mask(A, B, F, W, U) __builtin_ia32_reducess_mask(A, B, 1, W, U)
+#define __builtin_ia32_reducesd_mask(A, B, F, W, U) __builtin_ia32_reducesd_mask(A, B, 1, W, U)
 #define __builtin_ia32_reduceps512_mask(A, E, C, D) __builtin_ia32_reduceps512_mask(A, 1, C, D)
 #define __builtin_ia32_reducepd512_mask(A, E, C, D) __builtin_ia32_reducepd512_mask(A, 1, C, D)
 #define __builtin_ia32_rangess128_round(A, B, I, F) __builtin_ia32_rangess128_round(A, B, 1, 8)

@@ -2861,7 +2861,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   HOST_WIDE_INT m;
   unsigned HOST_WIDE_INT n;
   int sgn;
-  wide_int wrhs = rhs;
+  wi::tree_to_wide_ref wrhs = wi::to_wide (rhs);
 
   /* If exponent is too large, we won't expand it anyway, so don't bother
      with large integer values.  */

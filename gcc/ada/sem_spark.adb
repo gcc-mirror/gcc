@@ -2314,6 +2314,7 @@ package body Sem_SPARK is
          when N_Abstract_Subprogram_Declaration
             | N_At_Clause
             | N_Attribute_Definition_Clause
+            | N_Call_Marker
             | N_Delta_Constraint
             | N_Digits_Constraint
             | N_Empty
@@ -5285,6 +5286,7 @@ package body Sem_SPARK is
    is
    begin
       case Nkind (N) is
+
          --  Base identifier. Set permission to W or No depending on Mode.
 
          when N_Identifier
@@ -5292,9 +5294,8 @@ package body Sem_SPARK is
          =>
             declare
                P : constant Node_Id := Entity (N);
-
                C : constant Perm_Tree_Access :=
-                 Get (Current_Perm_Env, Unique_Entity (P));
+                     Get (Current_Perm_Env, Unique_Entity (P));
 
             begin
                --  The base tree can be RW (first move from this base path) or

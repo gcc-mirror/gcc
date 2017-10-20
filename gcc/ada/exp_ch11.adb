@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@ package body Exp_Ch11 is
 
    procedure Warn_If_No_Propagation (N : Node_Id);
    --  Called for an exception raise that is not a local raise (and thus can
-   --  not be optimized to a goto. Issues warning if No_Exception_Propagation
+   --  not be optimized to a goto). Issues warning if No_Exception_Propagation
    --  restriction is set. N is the node for the raise or equivalent call.
 
    ---------------------------
@@ -998,15 +998,10 @@ package body Exp_Ch11 is
          --  if a source generated handler was not the target of a local raise.
 
          else
-            if Restriction_Active (No_Exception_Propagation)
-              and then not Has_Local_Raise (Handler)
+            if not Has_Local_Raise (Handler)
               and then Comes_From_Source (Handler)
-              and then Warn_On_Non_Local_Exception
             then
-               Warn_No_Exception_Propagation_Active (Handler);
-               Error_Msg_N
-                 ("\?X?this handler can never be entered, "
-                  & "and has been removed", Handler);
+               Warn_If_No_Local_Raise (Handler);
             end if;
 
             if No_Exception_Propagation_Active then
@@ -1859,8 +1854,12 @@ package body Exp_Ch11 is
          --  Otherwise, if the No_Exception_Propagation restriction is active
          --  and the warning is enabled, generate the appropriate warnings.
 
+         --  ??? Do not do it for the Call_Marker nodes inserted by the ABE
+         --  mechanism because this generates too many false positives.
+
          elsif Warn_On_Non_Local_Exception
            and then Restriction_Active (No_Exception_Propagation)
+           and then Nkind (N) /= N_Call_Marker
          then
             Warn_No_Exception_Propagation_Active (N);
 
@@ -2153,6 +2152,22 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("SE_Object_Too_Large");
       end case;
    end Get_RT_Exception_Name;
+
+   ----------------------------
+   -- Warn_If_No_Local_Raise --
+   ----------------------------
+
+   procedure Warn_If_No_Local_Raise (N : Node_Id) is
+   begin
+      if Restriction_Active (No_Exception_Propagation)
+        and then Warn_On_Non_Local_Exception
+      then
+         Warn_No_Exception_Propagation_Active (N);
+
+         Error_Msg_N
+           ("\?X?this handler can never be entered, and has been removed", N);
+      end if;
+   end Warn_If_No_Local_Raise;
 
    ----------------------------
    -- Warn_If_No_Propagation --

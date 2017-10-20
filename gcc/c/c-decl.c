@@ -7011,7 +7011,8 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* This is the earliest point at which we might know the assembler
      name of a variable.  Thus, if it's known before this, die horribly.  */
-    gcc_assert (!DECL_ASSEMBLER_NAME_SET_P (decl));
+    gcc_assert (!HAS_DECL_ASSEMBLER_NAME_P (decl)
+		|| !DECL_ASSEMBLER_NAME_SET_P (decl));
 
     if (warn_cxx_compat
 	&& VAR_P (decl)

@@ -751,6 +751,10 @@ hwmult_name (unsigned int val)
 static void
 msp430_option_override (void)
 {
+  /* The MSP430 architecture can safely dereference a NULL pointer. In fact,
+  there are memory mapped registers there.  */
+  flag_delete_null_pointer_checks = 0;
+
   init_machine_status = msp430_init_machine_status;
 
   if (target_cpu)
@@ -1877,7 +1881,7 @@ msp430_attr (tree * node,
 	  break;
 
 	case INTEGER_CST:
-	  if (wi::gtu_p (value, 63))
+	  if (wi::gtu_p (wi::to_wide (value), 63))
 	    /* Allow the attribute to be added - the linker script
 	       being used may still recognise this value.  */
 	    warning (OPT_Wattributes,

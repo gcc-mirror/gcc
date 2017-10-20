@@ -5298,7 +5298,7 @@ check_array_designated_initializer (constructor_elt *ce,
 	      == INTEGER_CST))
 	{
 	  /* A C99 designator is OK if it matches the current index.  */
-	  if (wi::eq_p (ce_index, index))
+	  if (wi::to_wide (ce_index) == index)
 	    return true;
 	  else
 	    sorry ("non-trivial designated initializers not supported");
@@ -6866,6 +6866,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  init = NULL_TREE;
 	  DECL_INITIAL (decl) = NULL_TREE;
 	}
+
+      init = do_dependent_capture (init);
 
       /* Generally, initializers in templates are expanded when the
 	 template is instantiated.  But, if DECL is a variable constant
@@ -8727,6 +8729,7 @@ grokfndecl (tree ctype,
       if (DECL_LANGUAGE (decl) == lang_c)
 	{
 	  error ("literal operator with C linkage");
+	  maybe_show_extern_c_location ();
 	  return NULL_TREE;
 	}
 

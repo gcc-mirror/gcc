@@ -71,11 +71,11 @@ package body System.Tasking.Stages is
    package STPO renames System.Task_Primitives.Operations;
    package SSL  renames System.Soft_Links;
    package SSE  renames System.Storage_Elements;
-   package SST  renames System.Secondary_Stack;
 
    use Ada.Exceptions;
 
    use Parameters;
+   use Secondary_Stack;
    use Task_Primitives;
    use Task_Primitives.Operations;
 
@@ -465,7 +465,7 @@ package body System.Tasking.Stages is
 
    procedure Create_Task
      (Priority             : Integer;
-      Size                 : System.Parameters.Size_Type;
+      Stack_Size           : System.Parameters.Size_Type;
       Secondary_Stack_Size : System.Parameters.Size_Type;
       Task_Info            : System.Task_Info.Task_Info_Type;
       CPU                  : Integer;
@@ -604,8 +604,7 @@ package body System.Tasking.Stages is
       end if;
 
       Initialize_ATCB (Self_ID, State, Discriminants, P, Elaborated,
-        Base_Priority, Base_CPU, Domain, Task_Info, Size,
-        Secondary_Stack_Size, T, Success);
+        Base_Priority, Base_CPU, Domain, Task_Info, Stack_Size, T, Success);
 
       if not Success then
          Free (T);
@@ -692,10 +691,18 @@ package body System.Tasking.Stages is
            Dispatching_Domain_Tasks (Base_CPU) + 1;
       end if;
 
-      --  Create TSD as early as possible in the creation of a task, since it
-      --  may be used by the operation of Ada code within the task.
+      --  Create the secondary stack for the task as early as possible during
+      --  in the creation of a task, since it may be used by the operation of
+      --  Ada code within the task.
 
-      SSL.Create_TSD (T.Common.Compiler_Data);
+      begin
+         SSL.Create_TSD (T.Common.Compiler_Data, null, Secondary_Stack_Size);
+      exception
+         when others =>
+            Initialization.Undefer_Abort_Nestable (Self_ID);
+            raise Storage_Error with "Secondary stack could not be allocated";
+      end;
+
       T.Common.Activation_Link := Chain.T_ID;
       Chain.T_ID := T;
       Created_Task := T;
@@ -914,8 +921,8 @@ package body System.Tasking.Stages is
       SSL.Unlock_Task        := SSL.Task_Unlock_NT'Access;
       SSL.Get_Jmpbuf_Address := SSL.Get_Jmpbuf_Address_NT'Access;
       SSL.Set_Jmpbuf_Address := SSL.Set_Jmpbuf_Address_NT'Access;
-      SSL.Get_Sec_Stack_Addr := SSL.Get_Sec_Stack_Addr_NT'Access;
-      SSL.Set_Sec_Stack_Addr := SSL.Set_Sec_Stack_Addr_NT'Access;
+      SSL.Get_Sec_Stack      := SSL.Get_Sec_Stack_NT'Access;
+      SSL.Set_Sec_Stack      := SSL.Set_Sec_Stack_NT'Access;
       SSL.Check_Abort_Status := SSL.Check_Abort_Status_NT'Access;
       SSL.Get_Stack_Info     := SSL.Get_Stack_Info_NT'Access;
 
@@ -1014,7 +1021,6 @@ package body System.Tasking.Stages is
    --  at-end handler that the compiler generates.
 
    procedure Task_Wrapper (Self_ID : Task_Id) is
-      use type SSE.Storage_Offset;
       use System.Standard_Library;
       use System.Stack_Usage;
 
@@ -1026,52 +1032,6 @@ package body System.Tasking.Stages is
 
       Use_Alternate_Stack : constant Boolean := Alternate_Stack_Size /= 0;
       --  Whether to use above alternate signal stack for stack overflows
-
-      function Secondary_Stack_Size return Storage_Elements.Storage_Offset;
-      --  Returns the size of the secondary stack for the task. For fixed
-      --  secondary stacks, the function will return the ATCB field
-      --  Secondary_Stack_Size if it is not set to Unspecified_Size,
-      --  otherwise a percentage of the stack is reserved using the
-      --  System.Parameters.Sec_Stack_Percentage property.
-
-      --  Dynamic secondary stacks are allocated in System.Soft_Links.
-      --  Create_TSD and thus the function returns 0 to suppress the
-      --  creation of the fixed secondary stack in the primary stack.
-
-      --------------------------
-      -- Secondary_Stack_Size --
-      --------------------------
-
-      function Secondary_Stack_Size return Storage_Elements.Storage_Offset is
-         use System.Storage_Elements;
-
-      begin
-         if Parameters.Sec_Stack_Dynamic then
-            return 0;
-
-         elsif Self_ID.Common.Secondary_Stack_Size = Unspecified_Size then
-            return (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size
-                    * SSE.Storage_Offset (Sec_Stack_Percentage) / 100);
-         else
-            --  Use the size specified by aspect Secondary_Stack_Size padded
-            --  by the amount of space used by the stack data structure.
-
-            return Storage_Offset (Self_ID.Common.Secondary_Stack_Size) +
-                     Storage_Offset (SST.Minimum_Secondary_Stack_Size);
-         end if;
-      end Secondary_Stack_Size;
-
-      Secondary_Stack : aliased Storage_Elements.Storage_Array
-                          (1 .. Secondary_Stack_Size);
-      for Secondary_Stack'Alignment use Standard'Maximum_Alignment;
-      --  Actual area allocated for secondary stack. Note that it is critical
-      --  that this have maximum alignment, since any kind of data can be
-      --  allocated here.
-
-      Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
-      --  Address of secondary stack. In the fixed secondary stack case, this
-      --  value is not modified, causing a warning, hence the bracketing with
-      --  Warnings (Off/On). But why is so much *more* bracketed???
 
       SEH_Table : aliased SSE.Storage_Array (1 .. 8);
       --  Structured Exception Registration table (2 words)
@@ -1136,14 +1096,6 @@ package body System.Tasking.Stages is
       Debug.Master_Hook
         (Self_ID, Self_ID.Common.Parent, Self_ID.Master_of_Task);
 
-      --  Assume a size of the stack taken at this stage
-
-      if not Parameters.Sec_Stack_Dynamic then
-         Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
-           Secondary_Stack'Address;
-         SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
-      end if;
-
       if Use_Alternate_Stack then
          Self_ID.Common.Task_Alternate_Stack := Task_Alternate_Stack'Address;
       end if;
@@ -1196,15 +1148,6 @@ package body System.Tasking.Stages is
                --  address. Estimate it using an address in the frame.
 
                Stack_Base := Bottom_Of_Stack'Address;
-
-               --  Also reduce the size of the stack to take into account the
-               --  secondary stack array declared in this frame. This is for
-               --  sure very conservative.
-
-               if not Parameters.Sec_Stack_Dynamic then
-                  Pattern_Size :=
-                    Pattern_Size - Natural (Secondary_Stack_Size);
-               end if;
 
                --  Adjustments for inner frames
 
@@ -1973,10 +1916,10 @@ package body System.Tasking.Stages is
          then
             Initialization.Task_Lock (Self_ID);
 
-            --  If Sec_Stack_Addr is not null, it means that Destroy_TSD
+            --  If Sec_Stack_Ptr is not null, it means that Destroy_TSD
             --  has not been called yet (case of an unactivated task).
 
-            if T.Common.Compiler_Data.Sec_Stack_Addr /= Null_Address then
+            if T.Common.Compiler_Data.Sec_Stack_Ptr /= null then
                SSL.Destroy_TSD (T.Common.Compiler_Data);
             end if;
 

@@ -5855,6 +5855,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case unaligned_load:
+      case vector_gather_load:
 	if (TARGET_P9_VECTOR)
 	  return 3;
 
@@ -5896,6 +5897,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_store:
+      case vector_scatter_store:
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -11617,7 +11619,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11647,7 +11650,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11679,7 +11683,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -15936,14 +15941,15 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Check whether the 2nd and 3rd arguments are integer constants and in
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
+      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (wi::to_wide (arg1), 2))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return CONST0_RTX (tmode);
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg2, 16))
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || wi::geu_p (wi::to_wide (arg2), 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return CONST0_RTX (tmode);

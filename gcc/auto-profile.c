@@ -1234,7 +1234,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
       if (!is_edge_annotated (e, *annotated_edge))
 	num_unknown_edge++, unknown_edge = e;
       else
-	total_known_count += e->count;
+	total_known_count += e->count ();
 
     if (num_unknown_edge == 0)
       {
@@ -1251,7 +1251,8 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
       }
     else if (num_unknown_edge == 1 && is_bb_annotated (bb, *annotated_bb))
       {
-        unknown_edge->count = bb->count - total_known_count;
+        unknown_edge->probability
+	  = total_known_count.probability_in (bb->count);
         set_edge_annotated (unknown_edge, annotated_edge);
         changed = true;
       }
@@ -1349,15 +1350,13 @@ afdo_propagate_circuit (const bb_set &annotated_bb, edge_set *annotated_edge)
           if (!e->probability.initialized_p ()
 	      && !is_edge_annotated (ep, *annotated_edge))
             {
-              ep->probability = profile_probability::never ();
-              ep->count = profile_count::zero ().afdo ();
+              ep->probability = profile_probability::never ().afdo ();
               set_edge_annotated (ep, annotated_edge);
             }
         }
       if (total == 1 && !is_edge_annotated (only_one, *annotated_edge))
         {
           only_one->probability = e->probability;
-          only_one->count = e->count;
           set_edge_annotated (only_one, annotated_edge);
         }
     }
@@ -1433,23 +1432,16 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
       if (!is_edge_annotated (e, *annotated_edge))
         num_unknown_succ++;
       else
-        total_count += e->count;
+        total_count += e->count ();
     }
     if (num_unknown_succ == 0 && total_count > profile_count::zero ())
       {
         FOR_EACH_EDGE (e, ei, bb->succs)
-        e->probability = e->count.probability_in (total_count);
+          e->probability = e->count ().probability_in (total_count);
       }
   }
   FOR_ALL_BB_FN (bb, cfun)
-  {
-    edge e;
-    edge_iterator ei;
-
-    FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = bb->count.apply_probability (e->probability);
     bb->aux = NULL;
-  }
 
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
@@ -1551,7 +1543,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
        counters are zero when not seen by autoFDO.  */
     bb->count = profile_count::zero ().afdo ();
     FOR_EACH_EDGE (e, ei, bb->succs)
-      e->count = profile_count::zero ().afdo ();
+      e->probability = profile_probability::uninitialized ();
 
     if (afdo_set_bb_count (bb, promoted_stmts))
       set_bb_annotated (bb, &annotated_bb);

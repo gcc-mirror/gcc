@@ -1760,8 +1760,8 @@ add_functions (void)
 
   make_generic ("eoshift", GFC_ISYM_EOSHIFT, GFC_STD_F95);
 
-  add_sym_1 ("epsilon", GFC_ISYM_EPSILON, CLASS_INQUIRY, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_x, gfc_simplify_epsilon, NULL,
+  add_sym_1 ("epsilon", GFC_ISYM_EPSILON, CLASS_INQUIRY, ACTUAL_NO, BT_REAL, dr,
+	     GFC_STD_F95, gfc_check_fn_r, gfc_simplify_epsilon, NULL,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("epsilon", GFC_ISYM_EPSILON, GFC_STD_F95);
@@ -1827,8 +1827,8 @@ add_functions (void)
 
   make_generic ("exp", GFC_ISYM_EXP, GFC_STD_F77);
 
-  add_sym_1 ("exponent", GFC_ISYM_EXPONENT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_x, gfc_simplify_exponent, gfc_resolve_exponent,
+  add_sym_1 ("exponent", GFC_ISYM_EXPONENT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F95, gfc_check_fn_r, gfc_simplify_exponent, gfc_resolve_exponent,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("exponent", GFC_ISYM_EXPONENT, GFC_STD_F95);
@@ -1865,8 +1865,8 @@ add_functions (void)
 
   make_generic ("fnum", GFC_ISYM_FNUM, GFC_STD_GNU);
 
-  add_sym_1 ("fraction", GFC_ISYM_FRACTION, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_x, gfc_simplify_fraction, gfc_resolve_fraction,
+  add_sym_1 ("fraction", GFC_ISYM_FRACTION, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr,
+	     GFC_STD_F95, gfc_check_fn_r, gfc_simplify_fraction, gfc_resolve_fraction,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("fraction", GFC_ISYM_FRACTION, GFC_STD_F95);
@@ -1937,6 +1937,13 @@ add_functions (void)
 	     di, GFC_STD_GNU, NULL, NULL, gfc_resolve_getpid);
 
   make_generic ("getpid", GFC_ISYM_GETPID, GFC_STD_GNU);
+
+  add_sym_1 ("get_team", GFC_ISYM_GET_TEAM, CLASS_TRANSFORMATIONAL,
+	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008_TS,
+	     gfc_check_get_team,
+	     NULL,
+	     gfc_resolve_get_team,
+	     "level", BT_INTEGER, di, OPTIONAL);
 
   add_sym_0 ("getuid", GFC_ISYM_GETUID, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
 	     di, GFC_STD_GNU, NULL, NULL, gfc_resolve_getuid);
@@ -2449,8 +2456,8 @@ add_functions (void)
 
   make_generic ("max", GFC_ISYM_MAX, GFC_STD_F77);
 
-  add_sym_1 ("maxexponent", GFC_ISYM_MAXEXPONENT, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di,
-	     GFC_STD_F95, gfc_check_x, gfc_simplify_maxexponent, NULL,
+  add_sym_1 ("maxexponent", GFC_ISYM_MAXEXPONENT, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER,
+	     di, GFC_STD_F95, gfc_check_fn_r, gfc_simplify_maxexponent, NULL,
 	     x, BT_UNKNOWN, dr, REQUIRED);
 
   make_generic ("maxexponent", GFC_ISYM_MAXEXPONENT, GFC_STD_F95);
@@ -2525,8 +2532,8 @@ add_functions (void)
 
   make_generic ("min", GFC_ISYM_MIN, GFC_STD_F77);
 
-  add_sym_1 ("minexponent", GFC_ISYM_MINEXPONENT, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di,
-	     GFC_STD_F95, gfc_check_x, gfc_simplify_minexponent, NULL,
+  add_sym_1 ("minexponent", GFC_ISYM_MINEXPONENT, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER,
+	     di, GFC_STD_F95, gfc_check_fn_r, gfc_simplify_minexponent, NULL,
 	     x, BT_UNKNOWN, dr, REQUIRED);
 
   make_generic ("minexponent", GFC_ISYM_MINEXPONENT, GFC_STD_F95);
@@ -2753,8 +2760,8 @@ add_functions (void)
 
   make_generic ("reshape", GFC_ISYM_RESHAPE, GFC_STD_F95);
 
-  add_sym_1 ("rrspacing", GFC_ISYM_RRSPACING, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_x, gfc_simplify_rrspacing, gfc_resolve_rrspacing,
+  add_sym_1 ("rrspacing", GFC_ISYM_RRSPACING, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr,
+	     GFC_STD_F95, gfc_check_fn_r, gfc_simplify_rrspacing, gfc_resolve_rrspacing,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("rrspacing", GFC_ISYM_RRSPACING, GFC_STD_F95);
@@ -2960,8 +2967,8 @@ add_functions (void)
 	     NULL, gfc_simplify_compiler_version, NULL);
   make_from_module();
 
-  add_sym_1 ("spacing", GFC_ISYM_SPACING, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_x, gfc_simplify_spacing, gfc_resolve_spacing,
+  add_sym_1 ("spacing", GFC_ISYM_SPACING, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr,
+	     GFC_STD_F95, gfc_check_fn_r, gfc_simplify_spacing, gfc_resolve_spacing,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("spacing", GFC_ISYM_SPACING, GFC_STD_F95);
@@ -3070,8 +3077,7 @@ add_functions (void)
   make_generic ("time8", GFC_ISYM_TIME8, GFC_STD_GNU);
 
   add_sym_1 ("tiny", GFC_ISYM_TINY, CLASS_INQUIRY, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_x, gfc_simplify_tiny, NULL,
-	     x, BT_REAL, dr, REQUIRED);
+	     gfc_check_fn_r, gfc_simplify_tiny, NULL, x, BT_REAL, dr, REQUIRED);
 
   make_generic ("tiny", GFC_ISYM_TINY, GFC_STD_F95);
 

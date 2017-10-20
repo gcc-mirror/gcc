@@ -659,6 +659,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-sequio$(objext) \
   s-shasto$(objext) \
   s-soflin$(objext) \
+  s-soliin$(objext) \
   s-spsufi$(objext) \
   s-stache$(objext) \
   s-stalib$(objext) \

@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
      printf(fmt, msg);
             ^~~
 
-   For each of cases 1-3, if param_range is non-NULL, then it is used
+   For each of cases 1-3, if param_loc is not UNKNOWN_LOCATION, then it is used
    as a secondary range within the warning.  For example, here it
    is used with case 1:
 
@@ -100,7 +100,7 @@ along with GCC; see the file COPYING3.  If not see
 ATTRIBUTE_GCC_DIAG (5,0)
 bool
 format_warning_va (const substring_loc &fmt_loc,
-		   const source_range *param_range,
+		   location_t param_loc,
 		   const char *corrected_substring,
 		   int opt, const char *gmsgid, va_list *ap)
 {
@@ -136,13 +136,8 @@ format_warning_va (const substring_loc &fmt_loc,
 
   rich_location richloc (line_table, primary_loc);
 
-  if (param_range)
-    {
-      location_t param_loc = make_location (param_range->m_start,
-					    param_range->m_start,
-					    param_range->m_finish);
-      richloc.add_range (param_loc, false);
-    }
+  if (param_loc != UNKNOWN_LOCATION)
+    richloc.add_range (param_loc, false);
 
   if (!err && corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, corrected_substring);
@@ -171,13 +166,13 @@ format_warning_va (const substring_loc &fmt_loc,
 
 bool
 format_warning_at_substring (const substring_loc &fmt_loc,
-			     const source_range *param_range,
+			     location_t param_loc,
 			     const char *corrected_substring,
 			     int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = format_warning_va (fmt_loc, param_range, corrected_substring,
+  bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
 				   opt, gmsgid, &ap);
   va_end (ap);
 

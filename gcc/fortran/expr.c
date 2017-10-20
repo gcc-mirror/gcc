@@ -3851,6 +3851,14 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  }
     }
 
+  /* Error for assignments of contiguous pointers to targets which is not
+     contiguous.  Be lenient in the definition of what counts as
+     congiguous.  */
+
+  if (lhs_attr.contiguous && !gfc_is_simply_contiguous (rvalue, false, true))
+    gfc_error ("Assignment to contiguous pointer from non-contiguous "
+	       "target at %L", &rvalue->where);
+
   /* Warn if it is the LHS pointer may lives longer than the RHS target.  */
   if (warn_target_lifetime
       && rvalue->expr_type == EXPR_VARIABLE
@@ -4972,6 +4980,24 @@ gfc_ref_this_image (gfc_ref *ref)
       return false;
 
   return true;
+}
+
+gfc_expr *
+gfc_find_team_co(gfc_expr *e)
+{
+  gfc_ref *ref;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+      return ref->u.ar.team;
+
+  if (e->value.function.actual->expr)
+    for (ref = e->value.function.actual->expr->ref; ref;
+	 ref = ref->next)
+      if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+	return ref->u.ar.team;
+
+  return NULL;
 }
 
 gfc_expr *

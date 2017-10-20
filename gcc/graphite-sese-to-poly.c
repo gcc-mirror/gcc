@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline void
 tree_int_to_gmp (tree t, mpz_t res)
 {
-  wi::to_mpz (t, res, TYPE_SIGN (TREE_TYPE (t)));
+  wi::to_mpz (wi::to_wide (t), res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 /* Return an isl identifier for the polyhedral basic block PBB.  */
@@ -86,7 +86,7 @@ extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
   isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
   isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
   isl_local_space *ls = isl_local_space_from_space (space);
-  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e));
+  unsigned pos = sese_loop_depth (s->scop_info->region, get_chrec_loop (e)) - 1;
   isl_aff *loop = isl_aff_set_coefficient_si
     (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
   isl_pw_aff *l = isl_pw_aff_from_aff (loop);
@@ -142,11 +142,8 @@ isl_id_for_dr (scop_p s)
 /* Extract an affine expression from the ssa_name E.  */
 
 static isl_pw_aff *
-extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
+extract_affine_name (int dimension, __isl_take isl_space *space)
 {
-  isl_id *id = isl_id_for_ssa_name (s, e);
-  int dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
-  isl_id_free (id);
   isl_set *dom = isl_set_universe (isl_space_copy (space));
   isl_aff *aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
   aff = isl_aff_add_coefficient_si (aff, isl_dim_param, dimension, 1);
@@ -211,17 +208,13 @@ wrap (isl_pw_aff *pwaff, unsigned width)
    Otherwise returns -1.  */
 
 static inline int
-parameter_index_in_region_1 (tree name, sese_info_p region)
+parameter_index_in_region (tree name, sese_info_p region)
 {
   int i;
   tree p;
-
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
   FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
       return i;
-
   return -1;
 }
 
@@ -288,10 +281,13 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       break;
 
     case SSA_NAME:
-      gcc_assert (-1 != parameter_index_in_region_1 (e, s->scop_info)
-		  || defined_in_sese_p (e, s->scop_info->region));
-      res = extract_affine_name (s, e, space);
-      break;
+      {
+	gcc_assert (! defined_in_sese_p (e, s->scop_info->region));
+	int dim = parameter_index_in_region (e, s->scop_info);
+	gcc_assert (dim != -1);
+	res = extract_affine_name (dim, space);
+	break;
+      }
 
     case INTEGER_CST:
       res = extract_affine_int (e, space);
@@ -431,54 +427,40 @@ add_conditions_to_domain (poly_bb_p pbb)
    of P.  */
 
 static void
-add_param_constraints (scop_p scop, graphite_dim_t p)
+add_param_constraints (scop_p scop, graphite_dim_t p, tree parameter)
 {
-  tree parameter = scop->scop_info->params[p];
   tree type = TREE_TYPE (parameter);
-  tree lb = NULL_TREE;
-  tree ub = NULL_TREE;
+  wide_int min, max;
 
-  if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
-    lb = lower_bound_in_type (type, type);
+  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
+
+  if (INTEGRAL_TYPE_P (type)
+      && get_range_info (parameter, &min, &max) == VR_RANGE)
+    ;
   else
-    lb = TYPE_MIN_VALUE (type);
-
-  if (POINTER_TYPE_P (type) || !TYPE_MAX_VALUE (type))
-    ub = upper_bound_in_type (type, type);
-  else
-    ub = TYPE_MAX_VALUE (type);
-
-  if (lb)
     {
-      isl_space *space = isl_set_get_space (scop->param_context);
-      isl_constraint *c;
-      isl_val *v;
-
-      c = isl_inequality_alloc (isl_local_space_from_space (space));
-      v = isl_val_int_from_wi (scop->isl_context, wi::to_widest (lb));
-      v = isl_val_neg (v);
-      c = isl_constraint_set_constant_val (c, v);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
-
-      scop->param_context = isl_set_coalesce
-	(isl_set_add_constraint (scop->param_context, c));
+      min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
     }
 
-  if (ub)
-    {
-      isl_space *space = isl_set_get_space (scop->param_context);
-      isl_constraint *c;
-      isl_val *v;
+  isl_space *space = isl_set_get_space (scop->param_context);
+  isl_constraint *c = isl_inequality_alloc (isl_local_space_from_space (space));
+  isl_val *v = isl_val_int_from_wi (scop->isl_context,
+				    widest_int::from (min, TYPE_SIGN (type)));
+  v = isl_val_neg (v);
+  c = isl_constraint_set_constant_val (c, v);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
+  scop->param_context = isl_set_coalesce
+      (isl_set_add_constraint (scop->param_context, c));
 
-      c = isl_inequality_alloc (isl_local_space_from_space (space));
-
-      v = isl_val_int_from_wi (scop->isl_context, wi::to_widest (ub));
-      c = isl_constraint_set_constant_val (c, v);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
-
-      scop->param_context = isl_set_coalesce
-	(isl_set_add_constraint (scop->param_context, c));
-    }
+  space = isl_set_get_space (scop->param_context);
+  c = isl_inequality_alloc (isl_local_space_from_space (space));
+  v = isl_val_int_from_wi (scop->isl_context,
+			   widest_int::from (max, TYPE_SIGN (type)));
+  c = isl_constraint_set_constant_val (c, v);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
+  scop->param_context = isl_set_coalesce
+      (isl_set_add_constraint (scop->param_context, c));
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of
@@ -763,10 +745,10 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
     return domain;
   const sese_l &region = scop->scop_info->region;
   if (!loop_in_sese_p (loop, region))
-    ;
-  else
-    /* Recursion all the way up to the context loop.  */
-    domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
+    return domain;
+
+  /* Recursion all the way up to the context loop.  */
+  domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
 
   /* Then, build constraints over the loop in post-order: outer to inner.  */
 
@@ -776,21 +758,6 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
 	     "domain for loop_%d.\n", loop->num);
   domain = add_iter_domain_dimension (domain, loop, scop);
   isl_space *space = isl_set_get_space (domain);
-
-  if (!loop_in_sese_p (loop, region))
-    {
-      /* 0 == loop_i */
-      isl_local_space *ls = isl_local_space_from_space (space);
-      isl_constraint *c = isl_equality_alloc (ls);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, 1);
-      if (dump_file)
-	{
-	  fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
-	  print_isl_constraint (dump_file, c);
-	}
-      domain = isl_set_add_constraint (domain, c);
-      return domain;
-    }
 
   /* 0 <= loop_i */
   isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
@@ -945,9 +912,8 @@ build_scop_context (scop_p scop)
 
   scop->param_context = isl_set_universe (space);
 
-  graphite_dim_t p;
-  for (p = 0; p < nbp; p++)
-    add_param_constraints (scop, p);
+  FOR_EACH_VEC_ELT (region->params, i, e)
+    add_param_constraints (scop, i, e);
 }
 
 /* Return true when loop A is nested in loop B.  */
@@ -1066,8 +1032,6 @@ outer_projection_mupa (__isl_take isl_union_set *set, int n)
   return isl_multi_union_pw_aff_from_union_pw_multi_aff (data.res);
 }
 
-static bool schedule_error;
-
 /* Embed SCHEDULE in the constraints of the LOOP domain.  */
 
 static isl_schedule *
@@ -1082,11 +1046,9 @@ add_loop_schedule (__isl_take isl_schedule *schedule, loop_p loop,
     return empty < 0 ? isl_schedule_free (schedule) : schedule;
 
   isl_union_set *domain = isl_schedule_get_domain (schedule);
-  /* We cannot apply an empty domain to pbbs in this loop so fail.
-     ??? Somehow drop pbbs in the loop instead.  */
+  /* We cannot apply an empty domain to pbbs in this loop so return early.  */
   if (isl_union_set_is_empty (domain))
     {
-      schedule_error = true;
       isl_union_set_free (domain);
       return schedule;
     }
@@ -1213,11 +1175,9 @@ build_schedule_loop_nest (scop_p scop, int *index, loop_p context_loop)
 
 /* Build the schedule of the SCOP.  */
 
-static bool
+static void
 build_original_schedule (scop_p scop)
 {
-  schedule_error = false;
-
   int i = 0;
   int n = scop->pbbs.length ();
   while (i < n)
@@ -1232,22 +1192,11 @@ build_original_schedule (scop_p scop)
       scop->original_schedule = add_in_sequence (scop->original_schedule, s);
     }
 
-  if (schedule_error)
-    {
-      if (dump_file)
-	fprintf (dump_file, "[sese-to-poly] failed to build "
-		 "original schedule\n");
-      return false;
-    }
-
   if (dump_file)
     {
       fprintf (dump_file, "[sese-to-poly] original schedule:\n");
       print_isl_schedule (dump_file, scop->original_schedule);
     }
-  if (!scop->original_schedule)
-    return false;
-  return true;
 }
 
 /* Builds the polyhedral representation for a SESE region.  */

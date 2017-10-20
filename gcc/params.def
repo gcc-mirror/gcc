@@ -882,13 +882,6 @@ DEFPARAM (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP,
 	  "maximum number of arrays per scop.",
 	  100, 0, 0)
 
-/* Maximal number of basic blocks in the functions analyzed by Graphite.  */
-
-DEFPARAM (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION,
-	  "graphite-min-loops-per-function",
-	  "minimal number of loops per function to be analyzed by Graphite.",
-	  2, 0, 0)
-
 DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
 	  "max-isl-operations",
 	  "maximum number of isl operations, 0 means unlimited",

@@ -102,9 +102,35 @@ static GTY(()) vec<tree, va_gc> *no_linkage_decls;
    is to be an alias for the former if the former is defined.  */
 static GTY(()) vec<tree, va_gc> *mangling_aliases;
 
-/* A hash table of mangled names to decls.  Used to figure out if we
-   need compatibility aliases.  */
-static GTY(()) hash_map<lang_identifier *, tree> *mangled_decls;
+/* hash traits for declarations.  Hashes single decls via
+   DECL_ASSEMBLER_NAME_RAW.  */
+
+struct mangled_decl_hash : ggc_remove <tree>
+{
+  typedef tree value_type; /* A DECL.  */
+  typedef tree compare_type; /* An identifier.  */
+
+  static hashval_t hash (const value_type decl)
+  {
+    return IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME_RAW (decl));
+  }
+  static bool equal (const value_type existing, compare_type candidate)
+  {
+    tree name = DECL_ASSEMBLER_NAME_RAW (existing);
+    return candidate == name;
+  }
+
+  static inline void mark_empty (value_type &p) {p = NULL_TREE;}
+  static inline bool is_empty (value_type p) {return !p;}
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
+/* A hash table of decls keyed by mangled name.  Used to figure out if
+   we need compatibility aliases.  */
+static GTY(()) hash_table<mangled_decl_hash> *mangled_decls;
 
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
@@ -4304,12 +4330,13 @@ generate_mangling_alias (tree decl, tree id2)
 	return;
     }
 
-  bool existed;
-  tree *slot = &mangled_decls->get_or_insert (id2, &existed);
+  tree *slot
+    = mangled_decls->find_slot_with_hash (id2, IDENTIFIER_HASH_VALUE (id2),
+					  INSERT);
 
   /* If there's a declaration already using this mangled name,
      don't create a compatibility alias that conflicts.  */
-  if (existed)
+  if (*slot)
     return;
 
   tree alias = make_alias_for (decl, id2);
@@ -4369,24 +4396,25 @@ void
 record_mangling (tree decl, bool need_warning)
 {
   if (!mangled_decls)
-    mangled_decls = hash_map<lang_identifier *, tree>::create_ggc (499);
+    mangled_decls = hash_table<mangled_decl_hash>::create_ggc (499);
 
   gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-  tree id = DECL_ASSEMBLER_NAME (decl);
-  bool existed;
-  tree *slot = &mangled_decls->get_or_insert (id, &existed);
+  tree id = DECL_ASSEMBLER_NAME_RAW (decl);
+  tree *slot
+    = mangled_decls->find_slot_with_hash (id, IDENTIFIER_HASH_VALUE (id),
+					  INSERT);
 
   /* If this is already an alias, remove the alias, because the real
      decl takes precedence.  */
-  if (existed && DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
+  if (*slot && DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
     if (symtab_node *n = symtab_node::get (*slot))
       if (n->cpp_implicit_alias)
 	{
 	  n->remove ();
-	  existed = false;
+	  *slot = NULL_TREE;
 	}
 
-  if (!existed)
+  if (!*slot)
     *slot = decl;
   else if (need_warning)
     {

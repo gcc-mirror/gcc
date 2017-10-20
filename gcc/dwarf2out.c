@@ -5364,6 +5364,16 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
   reparent_child (child, parent);
 }
 
+/* Create and return a new die with TAG_VALUE as tag.  */
+ 
+static inline dw_die_ref
+new_die_raw (enum dwarf_tag tag_value)
+{
+  dw_die_ref die = ggc_cleared_alloc<die_node> ();
+  die->die_tag = tag_value;
+  return die;
+}
+
 /* Create and return a new die with a parent of PARENT_DIE.  If
    PARENT_DIE is NULL, the new DIE is placed in limbo and an
    associated tree T must be supplied to determine parenthood
@@ -5372,9 +5382,7 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
 static inline dw_die_ref
 new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
 {
-  dw_die_ref die = ggc_cleared_alloc<die_node> ();
-
-  die->die_tag = tag_value;
+  dw_die_ref die = new_die_raw (tag_value);
 
   if (parent_die != NULL)
     add_child_die (parent_die, die);
@@ -5568,8 +5576,7 @@ add_AT_external_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind,
 {
   /* Create a fake DIE that contains the reference.  Don't use
      new_die because we don't want to end up in the limbo list.  */
-  dw_die_ref ref = ggc_cleared_alloc<die_node> ();
-  ref->die_tag = die->die_tag;
+  dw_die_ref ref = new_die_raw (die->die_tag);
   ref->die_id.die_symbol = IDENTIFIER_POINTER (get_identifier (symbol));
   ref->die_offset = offset;
   ref->with_offset = 1;
@@ -7712,12 +7719,9 @@ should_move_die_to_comdat (dw_die_ref die)
 static dw_die_ref
 clone_die (dw_die_ref die)
 {
-  dw_die_ref clone;
+  dw_die_ref clone = new_die_raw (die->die_tag);
   dw_attr_node *a;
   unsigned ix;
-
-  clone = ggc_cleared_alloc<die_node> ();
-  clone->die_tag = die->die_tag;
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     add_dwarf_attr (clone, a);
@@ -7762,8 +7766,7 @@ clone_as_declaration (dw_die_ref die)
       return clone;
     }
 
-  clone = ggc_cleared_alloc<die_node> ();
-  clone->die_tag = die->die_tag;
+  clone = new_die_raw (die->die_tag);
 
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
@@ -12090,9 +12093,6 @@ base_type_die (tree type, bool reverse)
   struct fixed_point_type_info fpt_info;
   tree type_bias = NULL_TREE;
 
-  if (TREE_CODE (type) == ERROR_MARK || TREE_CODE (type) == VOID_TYPE)
-    return 0;
-
   /* If this is a subtype that should not be emitted as a subrange type,
      use the base type.  See subrange_type_for_debug_p.  */
   if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != NULL_TREE)
@@ -12185,7 +12185,7 @@ base_type_die (tree type, bool reverse)
       gcc_unreachable ();
     }
 
-  base_type_result = new_die (DW_TAG_base_type, comp_unit_die (), type);
+  base_type_result = new_die_raw (DW_TAG_base_type);
 
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
 		   int_size_in_bytes (type));
@@ -12241,8 +12241,6 @@ base_type_die (tree type, bool reverse)
 		     | dw_scalar_form_reference,
 		     NULL);
 
-  add_pubtype (type, base_type_result);
-
   return base_type_result;
 }
 
@@ -12270,8 +12268,6 @@ is_base_type (tree type)
 {
   switch (TREE_CODE (type))
     {
-    case ERROR_MARK:
-    case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -12280,6 +12276,7 @@ is_base_type (tree type)
     case POINTER_BOUNDS_TYPE:
       return 1;
 
+    case VOID_TYPE:
     case ARRAY_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -12485,6 +12482,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
 			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
+  const bool reverse_base_type
+    = need_endianity_attribute_p (reverse) && is_base_type (type);
 
   if (code == ERROR_MARK)
     return NULL;
@@ -12535,29 +12534,33 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	qualified_type = size_type_node;
     }
 
-
   /* If we do, then we can just use its DIE, if it exists.  */
   if (qualified_type)
     {
       mod_type_die = lookup_type_die (qualified_type);
 
-      /* DW_AT_endianity doesn't come from a qualifier on the type.  */
+      /* DW_AT_endianity doesn't come from a qualifier on the type, so it is
+	 dealt with specially: the DIE with the attribute, if it exists, is
+	 placed immediately after the regular DIE for the same base type.  */
       if (mod_type_die
-	  && (!need_endianity_attribute_p (reverse)
-	      || !is_base_type (type)
-	      || get_AT_unsigned (mod_type_die, DW_AT_endianity)))
+	  && (!reverse_base_type
+	      || ((mod_type_die = mod_type_die->die_sib) != NULL
+		  && get_AT_unsigned (mod_type_die, DW_AT_endianity))))
 	return mod_type_die;
     }
 
   name = qualified_type ? TYPE_NAME (qualified_type) : NULL;
 
   /* Handle C typedef types.  */
-  if (name && TREE_CODE (name) == TYPE_DECL && DECL_ORIGINAL_TYPE (name)
+  if (name
+      && TREE_CODE (name) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (name)
       && !DECL_ARTIFICIAL (name))
     {
       tree dtype = TREE_TYPE (name);
 
-      if (qualified_type == dtype)
+      /* Skip the typedef for base types with DW_AT_endianity, no big deal.  */
+      if (qualified_type == dtype && !reverse_base_type)
 	{
 	  tree origin = decl_ultimate_origin (name);
 
@@ -12670,8 +12673,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	      }
 	    if (first)
 	      {
-		d = ggc_cleared_alloc<die_node> ();
-		d->die_tag = dwarf_qual_info[i].t;
+		d = new_die_raw (dwarf_qual_info[i].t);
 		add_child_die_after (mod_scope, d, last);
 		last = d;
 	      }
@@ -12729,7 +12731,21 @@ modified_type_die (tree type, int cv_quals, bool reverse,
       item_type = TREE_TYPE (type);
     }
   else if (is_base_type (type))
-    mod_type_die = base_type_die (type, reverse);
+    {
+      mod_type_die = base_type_die (type, reverse);
+
+      /* The DIE with DW_AT_endianity is placed right after the naked DIE.  */
+      if (reverse_base_type)
+	{
+	  dw_die_ref after_die
+	    = modified_type_die (type, cv_quals, false, context_die);
+	  add_child_die_after (comp_unit_die (), mod_type_die, after_die);
+	}
+      else
+	add_child_die (comp_unit_die (), mod_type_die);
+
+      add_pubtype (type, mod_type_die);
+    }
   else
     {
       gen_type_die (type, context_die);
@@ -12791,7 +12807,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 			  name ? IDENTIFIER_POINTER (name) : "__unknown__");
     }
 
-  if (qualified_type)
+  if (qualified_type && !reverse_base_type)
     equate_type_number_to_die (qualified_type, mod_type_die);
 
   if (item_type)
@@ -19077,12 +19093,11 @@ rtl_for_decl_location (tree decl)
   else if (VAR_P (decl)
 	   && rtl
 	   && MEM_P (rtl)
-	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl))
-	   && BYTES_BIG_ENDIAN)
+	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl)))
     {
       machine_mode addr_mode = get_address_mode (rtl);
-      int rsize = GET_MODE_SIZE (GET_MODE (rtl));
-      int dsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)));
+      HOST_WIDE_INT offset = byte_lowpart_offset (TYPE_MODE (TREE_TYPE (decl)),
+						  GET_MODE (rtl));
 
       /* If a variable is declared "register" yet is smaller than
 	 a register, then if we store the variable to memory, it
@@ -19090,10 +19105,9 @@ rtl_for_decl_location (tree decl)
 	 fact we are not.  We need to adjust the offset of the
 	 storage location to reflect the actual value's bytes,
 	 else gdb will not be able to display it.  */
-      if (rsize > dsize)
+      if (offset != 0)
 	rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
-			   plus_constant (addr_mode, XEXP (rtl, 0),
-					  rsize - dsize));
+			   plus_constant (addr_mode, XEXP (rtl, 0), offset));
     }
 
   /* A variable with no DECL_RTL but a DECL_INITIAL is a compile-time constant,
@@ -19820,7 +19834,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	   the precision of its type.  The precision and signedness
 	   of the type will be necessary to re-interpret it
 	   unambiguously.  */
-	add_AT_wide (die, attr, value);
+	add_AT_wide (die, attr, wi::to_wide (value));
       return;
     }
 
@@ -20502,8 +20516,7 @@ dwarf2out_vms_debug_main_pointer (void)
   dw_die_ref die;
 
   /* Allocate the VMS debug main subprogram die.  */
-  die = ggc_cleared_alloc<die_node> ();
-  die->die_tag = DW_TAG_subprogram;
+  die = new_die_raw (DW_TAG_subprogram);
   add_name_attribute (die, VMS_DEBUG_MAIN_POINTER);
   ASM_GENERATE_INTERNAL_LABEL (label, PROLOGUE_END_LABEL,
 			       current_function_funcdef_no);
@@ -21236,7 +21249,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	    /* Enumeration constants may be wider than HOST_WIDE_INT.  Handle
 	       that here.  TODO: This should be re-worked to use correct
 	       signed/unsigned double tags for all cases.  */
-	    add_AT_wide (enum_die, DW_AT_const_value, value);
+	    add_AT_wide (enum_die, DW_AT_const_value, wi::to_wide (value));
 	}
 
       add_gnat_descriptive_type_attribute (type_die, type, context_die);

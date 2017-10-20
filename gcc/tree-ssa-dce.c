@@ -231,8 +231,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_ALIGNED_ALLOC:
 	    case BUILT_IN_CALLOC:
-	    case BUILT_IN_ALLOCA:
-	    case BUILT_IN_ALLOCA_WITH_ALIGN:
+	    CASE_BUILT_IN_ALLOCA:
 	    case BUILT_IN_STRDUP:
 	    case BUILT_IN_STRNDUP:
 	      return;
@@ -576,8 +575,7 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  case BUILT_IN_MALLOC:
 	  case BUILT_IN_ALIGNED_ALLOC:
 	  case BUILT_IN_CALLOC:
-	  case BUILT_IN_ALLOCA:
-	  case BUILT_IN_ALLOCA_WITH_ALIGN:
+	  CASE_BUILT_IN_ALLOCA:
 	  case BUILT_IN_FREE:
 	    return false;
 
@@ -845,9 +843,7 @@ propagate_necessity (bool aggressive)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_CALLOC
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_END
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
-		      || (DECL_FUNCTION_CODE (callee)
-			  == BUILT_IN_ALLOCA_WITH_ALIGN)
+		      || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee))
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ASSUME_ALIGNED))
@@ -1055,7 +1051,6 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	}
       gcc_assert (e);
       e->probability = profile_probability::always ();
-      e->count = bb->count;
 
       /* The edge is no longer associated with a conditional, so it does
 	 not have TRUE/FALSE flags.
@@ -1348,9 +1343,8 @@ eliminate_unnecessary_stmts (void)
 		      || (DECL_FUNCTION_CODE (call) != BUILT_IN_ALIGNED_ALLOC
 			  && DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
 			  && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
-			  && DECL_FUNCTION_CODE (call) != BUILT_IN_ALLOCA
-			  && (DECL_FUNCTION_CODE (call)
-			      != BUILT_IN_ALLOCA_WITH_ALIGN)))
+			  && !ALLOCA_FUNCTION_CODE_P
+			      (DECL_FUNCTION_CODE (call))))
 		  /* Avoid doing so for bndret calls for the same reason.  */
 		  && !chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET))
 		{

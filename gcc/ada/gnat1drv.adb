@@ -1065,6 +1065,7 @@ begin
                  ("fatal error, run-time library not installed correctly");
                Write_Line ("cannot locate file system.ads");
                raise Unrecoverable_Error;
+
             elsif S = No_Access_To_Source_File then
                Write_Line
                  ("fatal error, run-time library not installed correctly");

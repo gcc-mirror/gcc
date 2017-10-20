@@ -3715,6 +3715,20 @@ registers on machines with lots of registers.",
  int, (rtx address, machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
 
+/* Compute a cost for INSN.  */
+DEFHOOK
+(insn_cost,
+ "This target hook describes the relative costs of RTL instructions.\n\
+\n\
+In implementing this hook, you can use the construct\n\
+@code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast\n\
+instructions.\n\
+\n\
+When optimizing for code size, i.e.@: when @code{speed} is\n\
+false, this target hook should be used to estimate the relative\n\
+size cost of an expression, again relative to @code{COSTS_N_INSNS}.",
+ int, (rtx_insn *insn, bool speed), NULL)
+
 /* Give a cost, in RTX Costs units, for an edge.  Like BRANCH_COST, but with
    well defined units.  */
 DEFHOOK

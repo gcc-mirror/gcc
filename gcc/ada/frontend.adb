@@ -87,6 +87,7 @@ begin
    Checks.Initialize;
    Sem_Warn.Initialize;
    Prep.Initialize;
+   Sem_Elab.Initialize;
 
    if Generate_SCIL then
       SCIL_LL.Initialize;
@@ -168,6 +169,7 @@ begin
          --  Case of gnat.adc file present
 
          if Source_gnat_adc > No_Source_File then
+
             --  Parse the gnat.adc file for configuration pragmas
 
             Initialize_Scanner (No_Unit, Source_gnat_adc);
@@ -422,8 +424,9 @@ begin
                Instantiate_Bodies;
             end if;
 
-            --  Analyze inlined bodies and check elaboration rules in GNATprove
-            --  mode as well as during compilation.
+            --  Analyze all inlined bodies, check access-before-elaboration
+            --  rules, and remove ignored Ghost code when generating code or
+            --  compiling for GNATprove.
 
             if Operating_Mode = Generate_Code or else GNATprove_Mode then
                if Inline_Processing_Required then
@@ -437,12 +440,24 @@ begin
                   Collect_Garbage_Entities;
                end if;
 
-               Check_Elab_Calls;
+               --  Examine all top level scenarios collected during analysis
+               --  and resolution. Diagnose conditional and guaranteed ABEs,
+               --  install run-time checks to catch ABEs, and guarantee the
+               --  prior elaboration of external units.
+
+               Check_Elaboration_Scenarios;
 
                --  Remove any ignored Ghost code as it must not appear in the
                --  executable.
 
                Remove_Ignored_Ghost_Code;
+
+            --  Otherwise check the access-before-elaboration rules even when
+            --  previous errors were detected or the compilation is verifying
+            --  semantics.
+
+            else
+               Check_Elaboration_Scenarios;
             end if;
 
             --  At this stage we can unnest subprogram bodies if required

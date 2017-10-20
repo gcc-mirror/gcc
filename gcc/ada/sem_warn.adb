@@ -248,6 +248,10 @@ package body Sem_Warn is
       --  If so, Ref is set to point to the reference node, and Var is set to
       --  the referenced Entity.
 
+      function Has_Condition_Actions (Iter : Node_Id) return Boolean;
+      --  Determine whether iteration scheme Iter has meaningful condition
+      --  actions.
+
       function Has_Indirection (T : Entity_Id) return Boolean;
       --  If the controlling variable is an access type, or is a record type
       --  with access components, assume that it is changed indirectly and
@@ -359,6 +363,29 @@ package body Sem_Warn is
             return;
          end if;
       end Find_Var;
+
+      ---------------------------
+      -- Has_Condition_Actions --
+      ---------------------------
+
+      function Has_Condition_Actions (Iter : Node_Id) return Boolean is
+         Action : Node_Id;
+
+      begin
+         --  A call marker is not considered a meaningful action because it
+         --  acts as an annotation and has no runtime semantics.
+
+         Action := First (Condition_Actions (Iter));
+         while Present (Action) loop
+            if Nkind (Action) /= N_Call_Marker then
+               return True;
+            end if;
+
+            Next (Action);
+         end loop;
+
+         return False;
+      end Has_Condition_Actions;
 
       ---------------------
       -- Has_Indirection --
@@ -482,7 +509,7 @@ package body Sem_Warn is
             end if;
 
             --  If the condition contains a function call, we consider it may
-            --  be modified by side-effects from a procedure call. Otherwise,
+            --  be modified by side effects from a procedure call. Otherwise,
             --  we consider the condition may not be modified, although that
             --  might happen if Variable is itself a by-reference parameter,
             --  and the procedure called modifies the global object referred to
@@ -597,7 +624,7 @@ package body Sem_Warn is
                --  Skip processing for while iteration with conditions actions,
                --  since they make it too complicated to get the warning right.
 
-               if Present (Condition_Actions (Iter)) then
+               if Has_Condition_Actions (Iter) then
                   return;
                end if;
 
@@ -4258,7 +4285,7 @@ package body Sem_Warn is
                   then
                      if not Has_Pragma_Unmodified_Check_Spec (E) then
                         Error_Msg_N -- CODEFIX
-                          ("?u?variable & is assigned but never read!", E);
+                          ("?m?variable & is assigned but never read!", E);
                      end if;
 
                      Set_Last_Assignment (E, Empty);

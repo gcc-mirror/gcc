@@ -1756,7 +1756,18 @@ package body Exp_Attr is
       --  and access to it must be passed to the function.
 
       if Is_Build_In_Place_Function_Call (Pref) then
-         Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
+
+         --  If attribute is 'Old, the context is a postcondition, and
+         --  the temporary must go in the corresponding subprogram, not
+         --  the postcondition function or any created blocks, as when
+         --  the attribute appears in a quantified expression. This is
+         --  handled below in the expansion of the attribute.
+
+         if Attribute_Name (Parent (Pref)) = Name_Old then
+            null;
+         else
+            Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
+         end if;
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
@@ -6512,7 +6523,9 @@ package body Exp_Attr is
          begin
             --  The prefix of attribute 'Valid should always denote an object
             --  reference. The reference is either coming directly from source
-            --  or is produced by validity check expansion.
+            --  or is produced by validity check expansion. The object may be
+            --  wrapped in a conversion in which case the call to Unqual_Conv
+            --  will yield it.
 
             --  If the prefix denotes a variable which captures the value of
             --  an object for validation purposes, use the variable in the
@@ -6523,7 +6536,7 @@ package body Exp_Attr is
             --    if not Temp in ... then
 
             if Is_Validation_Variable_Reference (Pref) then
-               Temp := New_Occurrence_Of (Entity (Pref), Loc);
+               Temp := New_Occurrence_Of (Entity (Unqual_Conv (Pref)), Loc);
 
             --  Otherwise the prefix is either a source object or a constant
             --  produced by validity check expansion. Generate:

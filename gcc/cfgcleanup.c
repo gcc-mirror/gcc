@@ -558,7 +558,7 @@ try_forward_edges (int mode, basic_block b)
       else
 	{
 	  /* Save the values now, as the edge may get removed.  */
-	  profile_count edge_count = e->count;
+	  profile_count edge_count = e->count ();
 	  profile_probability edge_probability = e->probability;
 	  int edge_frequency;
 	  int n = 0;
@@ -616,7 +616,6 @@ try_forward_edges (int mode, basic_block b)
 		  t = single_succ_edge (first);
 		}
 
-	      t->count -= edge_count;
 	      first = t->dest;
 	    }
 	  while (first != target);
@@ -2129,22 +2128,16 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 	    break;
 	}
 
-      s->count += s2->count;
-
       /* Take care to update possible forwarder blocks.  We verified
 	 that there is no more than one in the chain, so we can't run
 	 into infinite loop.  */
       if (FORWARDER_BLOCK_P (s->dest))
 	{
-	  single_succ_edge (s->dest)->count += s2->count;
-	  s->dest->count += s2->count;
 	  s->dest->frequency += EDGE_FREQUENCY (s);
 	}
 
       if (FORWARDER_BLOCK_P (s2->dest))
 	{
-	  single_succ_edge (s2->dest)->count -= s2->count;
-	  s2->dest->count -= s2->count;
 	  s2->dest->frequency -= EDGE_FREQUENCY (s);
 	  if (s2->dest->frequency < 0)
 	    s2->dest->frequency = 0;

@@ -105,6 +105,13 @@ arm_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
 #define TERNOP_QUALIFIERS (arm_ternop_qualifiers)
 
+/* unsigned T (unsigned T, unsigned T, unsigned T).  */
+static enum arm_type_qualifiers
+arm_unsigned_uternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned };
+#define UTERNOP_QUALIFIERS (arm_unsigned_uternop_qualifiers)
+
 /* T (T, immediate).  */
 static enum arm_type_qualifiers
 arm_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -130,6 +137,13 @@ arm_mac_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
       qualifier_none, qualifier_lane_index };
 #define MAC_LANE_QUALIFIERS (arm_mac_lane_qualifiers)
+
+/* unsigned T (unsigned T, unsigned T, unsigend T, lane index).  */
+static enum arm_type_qualifiers
+arm_umac_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_lane_index };
+#define UMAC_LANE_QUALIFIERS (arm_umac_lane_qualifiers)
 
 /* T (T, T, immediate).  */
 static enum arm_type_qualifiers

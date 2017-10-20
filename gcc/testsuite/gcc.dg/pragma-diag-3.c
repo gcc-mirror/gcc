@@ -15,7 +15,7 @@ void testing2() {
 
 void testing3() {
   int k = 4;
-  k + 4 < k; /* { dg-error "overflow" } */
+  k + 4 < k; /* { dg-error "overflow" "" { xfail *-*-* } } */
 }
 
 int bar()

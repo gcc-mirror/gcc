@@ -62,8 +62,8 @@
 (define_subst_attr "store_mask_predicate" "mask" "nonimmediate_operand" "register_operand")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
-(define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex")
-(define_subst_attr "mask_prefix4" "mask" "orig,orig,vex" "evex")
+(define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
+(define_subst_attr "mask_prefix4" "mask" "orig,orig,vex" "evex,evex,evex")
 (define_subst_attr "mask_expand_op3" "mask" "3" "5")
 
 (define_subst "mask"

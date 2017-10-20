@@ -245,7 +245,7 @@ default_unwind_word_mode (void)
 unsigned HOST_WIDE_INT
 default_shift_truncation_mask (machine_mode mode)
 {
-  return SHIFT_COUNT_TRUNCATED ? GET_MODE_BITSIZE (mode) - 1 : 0;
+  return SHIFT_COUNT_TRUNCATED ? GET_MODE_UNIT_BITSIZE (mode) - 1 : 0;
 }
 
 /* The default implementation of TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.  */
@@ -2235,7 +2235,7 @@ default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 }
 
-HOST_WIDE_INT
+bool
 default_stack_clash_protection_final_dynamic_probe (rtx residual ATTRIBUTE_UNUSED)
 {
   return 0;

@@ -125,7 +125,12 @@ NAMED_DERIVED_TYPE (ISOFORTRAN_LOCK_TYPE, "lock_type", \
 
 NAMED_DERIVED_TYPE (ISOFORTRAN_EVENT_TYPE, "event_type", \
 		    flag_coarray == GFC_FCOARRAY_LIB
-		    ?  get_int_kind_from_node (ptr_type_node)
+		    ? get_int_kind_from_node (ptr_type_node)
+		    : gfc_default_integer_kind, GFC_STD_F2008_TS)
+
+NAMED_DERIVED_TYPE (ISOFORTRAN_TEAM_TYPE, "team_type", \
+		    flag_coarray == GFC_FCOARRAY_LIB
+		    ? get_int_kind_from_node (ptr_type_node)
 		    : gfc_default_integer_kind, GFC_STD_F2008_TS)
 
 #undef NAMED_INTCST

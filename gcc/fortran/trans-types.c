@@ -2476,12 +2476,14 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       || (flag_coarray == GFC_FCOARRAY_LIB
 	  && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
 	  && (derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE
-	      || derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)))
+	      || derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE
+	      || derived->intmod_sym_id == ISOFORTRAN_TEAM_TYPE)))
     return ptr_type_node;
 
   if (flag_coarray != GFC_FCOARRAY_LIB
       && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
-      && derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+      && (derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE
+	  || derived->intmod_sym_id == ISOFORTRAN_TEAM_TYPE))
     return gfc_get_int_type (gfc_default_integer_kind);
 
   if (derived && derived->attr.flavor == FL_PROCEDURE

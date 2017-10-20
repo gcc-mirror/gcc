@@ -696,6 +696,115 @@ gfc_trans_fail_image (gfc_code *code ATTRIBUTE_UNUSED)
     }
 }
 
+/* Translate the FORM TEAM statement.  */
+
+tree
+gfc_trans_form_team (gfc_code *code)
+{
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      gfc_se argse;
+      tree team_id,team_type;
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr1);
+      team_id = fold_convert (integer_type_node, argse.expr);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr2);
+      team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
+
+      return build_call_expr_loc (input_location,
+				  gfor_fndecl_caf_form_team, 3,
+				  team_id, team_type,
+				  build_int_cst (integer_type_node, 0));
+    }
+  else
+    {
+      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+      tree tmp = gfc_get_symbol_decl (exsym);
+      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+    }
+}
+
+/* Translate the CHANGE TEAM statement.  */
+
+tree
+gfc_trans_change_team (gfc_code *code)
+{
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      gfc_se argse;
+      tree team_type;
+      /* gfc_init_se (&argse, NULL); */
+      /* gfc_conv_expr_val (&argse, code->expr1); */
+      /* team_id = fold_convert (integer_type_node, argse.expr); */
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr1);
+      team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
+
+      return build_call_expr_loc (input_location,
+				  gfor_fndecl_caf_change_team, 2,
+				  team_type,
+				  build_int_cst (integer_type_node, 0));
+    }
+  else
+    {
+      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+      tree tmp = gfc_get_symbol_decl (exsym);
+      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+    }
+}
+
+/* Translate the END TEAM statement.  */
+
+tree
+gfc_trans_end_team (gfc_code *code ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      return build_call_expr_loc (input_location,
+				  gfor_fndecl_caf_end_team, 1,
+				  build_int_cst (pchar_type_node, 0));
+    }
+  else
+    {
+      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+      tree tmp = gfc_get_symbol_decl (exsym);
+      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+    }
+}
+
+/* Translate the SYNC TEAM statement.  */
+
+tree
+gfc_trans_sync_team (gfc_code *code)
+{
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      gfc_se argse;
+      tree team_type;
+      /* gfc_init_se (&argse, NULL); */
+      /* gfc_conv_expr_val (&argse, code->expr1); */
+      /* team_id = fold_convert (integer_type_node, argse.expr); */
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr1);
+      team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
+
+      return build_call_expr_loc (input_location,
+				  gfor_fndecl_caf_sync_team, 2,
+				  team_type,
+				  build_int_cst (integer_type_node, 0));
+    }
+  else
+    {
+      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+      tree tmp = gfc_get_symbol_decl (exsym);
+      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+    }
+}
 
 tree
 gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)

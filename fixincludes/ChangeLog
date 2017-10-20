@@ -1,3 +1,8 @@
+2017-10-13  Mike Frysinger  <vapier@chromium.org>
+
+	* fixinc.in (dirname): Change sed from 's|[^/]*/||' to
+	's|[^/]*//*||'.
+
 2017-06-12  Doug Rupp  <rupp@adacore.com>
 
 	* inclhack.def (AAB_vxworks_stdint): Remove hack.

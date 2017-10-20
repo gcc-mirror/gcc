@@ -1051,14 +1051,13 @@ package body Repinfo is
                  and then List_Representation_Info = 3
                then
                   Spaces (Max_Spos_Length - 2);
-                  Write_Str ("bit offset");
+                  Write_Str ("bit offset ");
 
                   if Starting_Position /= Uint_0
                     or else Starting_First_Bit /= Uint_0
                   then
-                     Write_Char (' ');
                      UI_Write (Starting_Position * SSU + Starting_First_Bit);
-                     Write_Str (" +");
+                     Write_Str (" + ");
                   end if;
 
                   Write_Val (Bofs, Paren => True);
@@ -1686,27 +1685,18 @@ package body Repinfo is
             Write_Str ("??");
 
          else
+            if Paren then
+               Write_Char ('(');
+            end if;
+
             if Back_End_Layout then
-               Write_Char (' ');
-
-               if Paren then
-                  Write_Char ('(');
-                  List_GCC_Expression (Val);
-                  Write_Char (')');
-               else
-                  List_GCC_Expression (Val);
-               end if;
-
-               Write_Char (' ');
-
+               List_GCC_Expression (Val);
             else
-               if Paren then
-                  Write_Char ('(');
-                  Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
-                  Write_Char (')');
-               else
-                  Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
-               end if;
+               Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
+            end if;
+
+            if Paren then
+               Write_Char (')');
             end if;
          end if;
 

@@ -218,8 +218,7 @@ static a128 NoTsanAtomicLoad(const volatile a128 *a, morder mo) {
 #endif
 
 template<typename T>
-static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a,
-    morder mo) {
+static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a, morder mo) {
   CHECK(IsLoadOrder(mo));
   // This fast-path is critical for performance.
   // Assume the access is atomic.
@@ -227,10 +226,17 @@ static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a,
     MemoryReadAtomic(thr, pc, (uptr)a, SizeLog<T>());
     return NoTsanAtomicLoad(a, mo);
   }
-  SyncVar *s = ctx->metamap.GetOrCreateAndLock(thr, pc, (uptr)a, false);
-  AcquireImpl(thr, pc, &s->clock);
+  // Don't create sync object if it does not exist yet. For example, an atomic
+  // pointer is initialized to nullptr and then periodically acquire-loaded.
   T v = NoTsanAtomicLoad(a, mo);
-  s->mtx.ReadUnlock();
+  SyncVar *s = ctx->metamap.GetIfExistsAndLock((uptr)a, false);
+  if (s) {
+    AcquireImpl(thr, pc, &s->clock);
+    // Re-read under sync mutex because we need a consistent snapshot
+    // of the value and the clock we acquire.
+    v = NoTsanAtomicLoad(a, mo);
+    s->mtx.ReadUnlock();
+  }
   MemoryReadAtomic(thr, pc, (uptr)a, SizeLog<T>());
   return v;
 }
@@ -265,7 +271,7 @@ static void AtomicStore(ThreadState *thr, uptr pc, volatile T *a, T v,
   thr->fast_state.IncrementEpoch();
   // Can't increment epoch w/o writing to the trace as well.
   TraceAddEvent(thr, thr->fast_state, EventTypeMop, 0);
-  ReleaseImpl(thr, pc, &s->clock);
+  ReleaseStoreImpl(thr, pc, &s->clock);
   NoTsanAtomicStore(a, v, mo);
   s->mtx.Unlock();
 }
@@ -448,7 +454,7 @@ static void AtomicFence(ThreadState *thr, uptr pc, morder mo) {
 
 // C/C++
 
-static morder covert_morder(morder mo) {
+static morder convert_morder(morder mo) {
   if (flags()->force_seq_cst_atomics)
     return (morder)mo_seq_cst;
 
@@ -466,12 +472,14 @@ static morder covert_morder(morder mo) {
 }
 
 #define SCOPED_ATOMIC(func, ...) \
+    ThreadState *const thr = cur_thread(); \
+    if (thr->ignore_sync || thr->ignore_interceptors) { \
+      ProcessPendingSignals(thr); \
+      return NoTsanAtomic##func(__VA_ARGS__); \
+    } \
     const uptr callpc = (uptr)__builtin_return_address(0); \
     uptr pc = StackTrace::GetCurrentPc(); \
-    mo = covert_morder(mo); \
-    ThreadState *const thr = cur_thread(); \
-    if (thr->ignore_interceptors) \
-      return NoTsanAtomic##func(__VA_ARGS__); \
+    mo = convert_morder(mo); \
     AtomicStatInc(thr, sizeof(*a), mo, StatAtomic##func); \
     ScopedAtomic sa(thr, callpc, a, mo, __func__); \
     return Atomic##func(thr, pc, __VA_ARGS__); \

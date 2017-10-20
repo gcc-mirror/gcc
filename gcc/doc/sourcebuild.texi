@@ -2358,6 +2358,9 @@ Skip the test if the target does not support the @code{-fstack-check}
 option.  If @var{check} is @code{""}, support for @code{-fstack-check}
 is checked, for @code{-fstack-check=("@var{check}")} otherwise.
 
+@item dg-require-stack-size @var{size}
+Skip the test if the target does not support a stack size of @var{size}.
+
 @item dg-require-visibility @var{vis}
 Skip the test if the target does not support the @code{visibility} attribute.
 If @var{vis} is @code{""}, support for @code{visibility("hidden")} is

@@ -935,49 +935,49 @@ Feature-testing recommendations for C++</link>.
    </para>
 
    <para>
-      <emphasis>20.6.5 [optional.bad_optional_access]</emphasis>
+      <emphasis>23.6.5 [optional.bad_optional_access]</emphasis>
       <code>what()</code> returns <literal>"bad optional access"</literal>.
    </para>
 
    <para>
-      <emphasis>20.7.2 [variant.variant]</emphasis>
+      <emphasis>23.7.3 [variant.variant]</emphasis>
       Whether <classname>variant</classname> supports over-aligned types
       should be documented here.
    </para>
 
    <para>
-      <emphasis>20.7.10 [variant.bad.access]</emphasis>
+      <emphasis>23.7.10 [variant.bad.access]</emphasis>
       <code>what()</code> returns <literal>"Unexpected index"</literal>.
    </para>
 
    <para>
-      <emphasis>20.12.5.2 [memory.resource.pool.options]</emphasis>
+      <emphasis>23.12.5.2 [memory.resource.pool.options]</emphasis>
       The limits for maximum number of blocks and largest allocation size
       supported by <classname>pool_options</classname> should be documented
       here.
    </para>
 
    <para>
-      <emphasis>20.12.6.1 [memory.resource.monotonic.buffer.ctor]</emphasis>
+      <emphasis>23.12.6.1 [memory.resource.monotonic.buffer.ctor]</emphasis>
       The default <code>next_buffer_size</code> and growth factor should
       be documented here.
    </para>
 
    <para>
-      <emphasis>20.15.4.3 [meta.unary.prop]</emphasis>
+      <emphasis>23.15.4.3 [meta.unary.prop]</emphasis>
       The predicate condition for
       <code>has_unique_object_representations</code> is true for all scalar
       types except floating point types.
    </para>
 
    <para>
-      <emphasis>20.19.3 [execpol.type],
-      25.2.3 [algorithms.parallel.exec]</emphasis>
+      <emphasis>23.19.3 [execpol.type],
+      28.4.3 [algorithms.parallel.exec]</emphasis>
       There are no implementation-defined execution policies.
    </para>
 
    <para>
-      <emphasis>22.4.2 [string.view.template]</emphasis>
+      <emphasis>24.4.2 [string.view.template]</emphasis>
       <classname>basic_string_view&lt;C, T&gt;::iterator</classname> is
       <code>C*</code> and
       <classname>basic_string_view&lt;C, T&gt;::const_iterator</classname> is
@@ -986,7 +986,7 @@ Feature-testing recommendations for C++</link>.
 
 
    <para>
-      <emphasis>25.2.3 [algorithms.parallel.exec]</emphasis>
+      <emphasis>28.4.3 [algorithms.parallel.exec]</emphasis>
       Threads of execution created by <classname>std::thread</classname>
       provide concurrent forward progress guarantees, so threads of execution
       implicitly created by the library will provide parallel forward
@@ -994,39 +994,39 @@ Feature-testing recommendations for C++</link>.
    </para>
 
    <para>
-      <emphasis>26.4.1 [cfenv.syn]</emphasis>
+      <emphasis>29.4.1 [cfenv.syn]</emphasis>
       The effects of the <filename>&lt;cfenv&gt;</filename> functions
       depends on whether the <code>FENV_ACCESS</code> pragma is supported,
       and on the C library that provides the header.
    </para>
 
    <para>
-      <emphasis>26.6.9 [c.math.rand]</emphasis>
+      <emphasis>29.6.9 [c.math.rand]</emphasis>
       Whether the <function>rand</function> function may introduce data
       races depends on the target C library that provides the function.
    </para>
 
    <para>
-      <emphasis>26.9.5 [sf.cmath]</emphasis>
+      <emphasis>29.9.5 [sf.cmath]</emphasis>
       The effect of calling the mathematical special functions with large
       inputs should be documented here.
    </para>
 
    <para>
-      <emphasis>27.10.2.1 [fs.conform.9945]</emphasis>
+      <emphasis>30.10.2.1 [fs.conform.9945]</emphasis>
       The behavior of the filesystem library implementation will depend on
       the target operating system. Some features will not be not supported
       on some targets.
    </para>
 
    <para>
-      <emphasis>27.10.6 [fs.filesystem.syn]</emphasis>
+      <emphasis>30.10.5 [fs.filesystem.syn]</emphasis>
       The clock used for file times is
       <classname>std::chrono::system_clock</classname>.
    </para>
 
    <para>
-      <emphasis>27.10.8 [path.generic]</emphasis>
+      <emphasis>30.10.7.1 [fs.path.generic]</emphasis>
       dot-dot in the root-directory refers to the root-directory itself.
    </para>
 

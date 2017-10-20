@@ -56,6 +56,9 @@ package body Atree is
    Reporting_Proc : Report_Proc := null;
    --  Record argument to last call to Set_Reporting_Proc
 
+   Rewriting_Proc : Rewrite_Proc := null;
+   --  This soft link captures the procedure invoked during a node rewrite
+
    ---------------
    -- Debugging --
    ---------------
@@ -73,11 +76,12 @@ package body Atree is
    --     ww := 12345
    --  and set a breakpoint on New_Node_Breakpoint (nickname "nn"). Continue.
 
-   --  Either way, gnat1 will stop when node 12345 is created
+   --  Either way, gnat1 will stop when node 12345 is created, or certain other
+   --  interesting operations are performed, such as Rewrite. To see exactly
+   --  which operations, search for "pragma Debug" below.
 
-   --  The second method is much faster
-
-   --  Similarly, rr and rrd allow breaking on rewriting of a given node
+   --  The second method is much faster if the amount of Ada code being
+   --  compiled is large.
 
    ww : Node_Id'Base := Node_Id'First - 1;
    pragma Export (Ada, ww); --  trick the optimizer
@@ -103,24 +107,8 @@ package body Atree is
    --  If Node = Watch_Node, this prints out the new node and calls
    --  New_Node_Breakpoint. Otherwise, does nothing.
 
-   procedure rr;
-   pragma Export (Ada, rr);
-   procedure Rewrite_Breakpoint renames rr;
-   --  This doesn't do anything interesting; it's just for setting breakpoint
-   --  on as explained above.
-
-   procedure rrd (Old_Node, New_Node : Node_Id);
-   pragma Export (Ada, rrd);
-   procedure Rewrite_Debugging_Output
-     (Old_Node, New_Node : Node_Id) renames rrd;
-   --  For debugging. If debugging is turned on, Rewrite calls this. If debug
-   --  flag N is turned on, this prints out the new node.
-   --
-   --  If Old_Node = Watch_Node, this prints out the old and new nodes and
-   --  calls Rewrite_Breakpoint. Otherwise, does nothing.
-
    procedure Node_Debug_Output (Op : String; N : Node_Id);
-   --  Common code for nnd and rrd, writes Op followed by information about N
+   --  Called by nnd; writes Op followed by information about N
 
    procedure Print_Statistics;
    pragma Export (Ada, Print_Statistics);
@@ -751,6 +739,9 @@ package body Atree is
       Save_Link    : constant Union_Id := Nodes.Table (Destination).Link;
 
    begin
+      pragma Debug (New_Node_Debugging_Output (Source));
+      pragma Debug (New_Node_Debugging_Output (Destination));
+
       Nodes.Table (Destination)         := Nodes.Table (Source);
       Nodes.Table (Destination).In_List := Save_In_List;
       Nodes.Table (Destination).Link    := Save_Link;
@@ -1319,16 +1310,6 @@ package body Atree is
         Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11);
    end Ekind_In;
 
-   ------------------------
-   -- Set_Reporting_Proc --
-   ------------------------
-
-   procedure Set_Reporting_Proc (P : Report_Proc) is
-   begin
-      pragma Assert (Reporting_Proc = null);
-      Reporting_Proc := P;
-   end Set_Reporting_Proc;
-
    ------------------
    -- Error_Posted --
    ------------------
@@ -1348,6 +1329,9 @@ package body Atree is
       Temp_Flg : Flags_Byte;
 
    begin
+      pragma Debug (New_Node_Debugging_Output (E1));
+      pragma Debug (New_Node_Debugging_Output (E2));
+
       pragma Assert (True
         and then Has_Extension (E1)
         and then Has_Extension (E2)
@@ -1420,8 +1404,10 @@ package body Atree is
 
    begin
       pragma Assert (not (Has_Extension (Node)));
+
       Result := Allocate_Initialize_Node (Node, With_Extension => True);
       pragma Debug (Debug_Extend_Node);
+
       return Result;
    end Extend_Node;
 
@@ -1695,8 +1681,8 @@ package body Atree is
          Current_Error_Node := Ent;
       end if;
 
-      Nodes.Table (Ent).Nkind  := New_Node_Kind;
-      Nodes.Table (Ent).Sloc   := New_Sloc;
+      Nodes.Table (Ent).Nkind := New_Node_Kind;
+      Nodes.Table (Ent).Sloc  := New_Sloc;
       pragma Debug (New_Node_Debugging_Output (Ent));
 
       --  Mark the new entity as Ghost depending on the current Ghost region
@@ -1718,6 +1704,7 @@ package body Atree is
 
    begin
       pragma Assert (New_Node_Kind not in N_Entity);
+
       Nod := Allocate_Initialize_Node (Empty, With_Extension => False);
       Nodes.Table (Nod).Nkind := New_Node_Kind;
       Nodes.Table (Nod).Sloc  := New_Sloc;
@@ -1746,7 +1733,6 @@ package body Atree is
    begin
       Write_Str ("Watched node ");
       Write_Int (Int (Watch_Node));
-      Write_Str (" created");
       Write_Eol;
    end nn;
 
@@ -1759,7 +1745,7 @@ package body Atree is
 
    begin
       if Debug_Flag_N or else Node_Is_Watched then
-         Node_Debug_Output ("Allocate", N);
+         Node_Debug_Output ("Node", N);
 
          if Node_Is_Watched then
             New_Node_Breakpoint;
@@ -2164,6 +2150,9 @@ package body Atree is
           and not Has_Extension (New_Node)
           and not Nodes.Table (New_Node).In_List);
 
+      pragma Debug (New_Node_Debugging_Output (Old_Node));
+      pragma Debug (New_Node_Debugging_Output (New_Node));
+
       --  Do copy, preserving link and in list status and required flags
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
@@ -2214,7 +2203,9 @@ package body Atree is
         (not Has_Extension (Old_Node)
           and not Has_Extension (New_Node)
           and not Nodes.Table (New_Node).In_List);
-      pragma Debug (Rewrite_Debugging_Output (Old_Node, New_Node));
+
+      pragma Debug (New_Node_Debugging_Output (Old_Node));
+      pragma Debug (New_Node_Debugging_Output (New_Node));
 
       if Nkind (Old_Node) in N_Subexpr then
          Old_Paren_Count     := Paren_Count (Old_Node);
@@ -2262,37 +2253,13 @@ package body Atree is
       if Reporting_Proc /= null then
          Reporting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
-   end Rewrite;
 
-   -------------------------
-   -- Rewrite_Breakpoint --
-   -------------------------
+      --  Invoke the rewriting procedure (if available)
 
-   procedure rr is
-   begin
-      Write_Str ("Watched node ");
-      Write_Int (Int (Watch_Node));
-      Write_Str (" rewritten");
-      Write_Eol;
-   end rr;
-
-   ------------------------------
-   -- Rewrite_Debugging_Output --
-   ------------------------------
-
-   procedure rrd (Old_Node, New_Node : Node_Id) is
-      Node_Is_Watched : constant Boolean := Old_Node = Watch_Node;
-
-   begin
-      if Debug_Flag_N or else Node_Is_Watched then
-         Node_Debug_Output ("Rewrite", Old_Node);
-         Node_Debug_Output ("into",    New_Node);
-
-         if Node_Is_Watched then
-            Rewrite_Breakpoint;
-         end if;
+      if Rewriting_Proc /= null then
+         Rewriting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
-   end rrd;
+   end Rewrite;
 
    ------------------
    -- Set_Analyzed --
@@ -2429,6 +2396,16 @@ package body Atree is
       Nodes.Table (N).Link := Union_Id (Val);
    end Set_Parent;
 
+   ------------------------
+   -- Set_Reporting_Proc --
+   ------------------------
+
+   procedure Set_Reporting_Proc (Proc : Report_Proc) is
+   begin
+      pragma Assert (Reporting_Proc = null);
+      Reporting_Proc := Proc;
+   end Set_Reporting_Proc;
+
    --------------
    -- Set_Sloc --
    --------------
@@ -2438,6 +2415,16 @@ package body Atree is
       pragma Assert (not Locked);
       Nodes.Table (N).Sloc := Val;
    end Set_Sloc;
+
+   ------------------------
+   -- Set_Rewriting_Proc --
+   ------------------------
+
+   procedure Set_Rewriting_Proc (Proc : Rewrite_Proc) is
+   begin
+      pragma Assert (Rewriting_Proc = null);
+      Rewriting_Proc := Proc;
+   end Set_Rewriting_Proc;
 
    ----------
    -- Sloc --

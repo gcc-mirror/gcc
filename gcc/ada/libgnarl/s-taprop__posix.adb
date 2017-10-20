@@ -145,6 +145,38 @@ package body System.Task_Primitives.Operations is
    package body Specific is separate;
    --  The body of this package is target specific
 
+   package Monotonic is
+
+      function Monotonic_Clock return Duration;
+      pragma Inline (Monotonic_Clock);
+      --  Returns "absolute" time, represented as an offset relative to "the
+      --  Epoch", which is Jan 1, 1970. This clock implementation is immune to
+      --  the system's clock changes.
+
+      function RT_Resolution return Duration;
+      pragma Inline (RT_Resolution);
+      --  Returns resolution of the underlying clock used to implement RT_Clock
+
+      procedure Timed_Sleep
+        (Self_ID  : ST.Task_Id;
+         Time     : Duration;
+         Mode     : ST.Delay_Modes;
+         Reason   : System.Tasking.Task_States;
+         Timedout : out Boolean;
+         Yielded  : out Boolean);
+      --  Combination of Sleep (above) and Timed_Delay
+
+      procedure Timed_Delay
+        (Self_ID : ST.Task_Id;
+         Time    : Duration;
+         Mode    : ST.Delay_Modes);
+      --  Implement the semantics of the delay statement.
+      --  The caller should be abort-deferred and should not hold any locks.
+
+   end Monotonic;
+
+   package body Monotonic is separate;
+
    ----------------------------------
    -- ATCB allocation/deallocation --
    ----------------------------------
@@ -156,11 +188,16 @@ package body System.Task_Primitives.Operations is
    -- Support for foreign threads --
    ---------------------------------
 
-   function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
-   --  Allocate and Initialize a new ATCB for the current Thread
+   function Register_Foreign_Thread
+     (Thread         : Thread_Id;
+      Sec_Stack_Size : Size_Type := Unspecified_Size) return Task_Id;
+   --  Allocate and initialize a new ATCB for the current Thread. The size of
+   --  the secondary stack can be optionally specified.
 
    function Register_Foreign_Thread
-     (Thread : Thread_Id) return Task_Id is separate;
+     (Thread         : Thread_Id;
+      Sec_Stack_Size : Size_Type := Unspecified_Size)
+     return Task_Id is separate;
 
    -----------------------
    -- Local Subprograms --
@@ -177,18 +214,6 @@ package body System.Task_Primitives.Operations is
      (attr : access pthread_condattr_t) return int;
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
-
-   procedure Compute_Deadline
-     (Time       : Duration;
-      Mode       : ST.Delay_Modes;
-      Check_Time : out Duration;
-      Abs_Time   : out Duration;
-      Rel_Time   : out Duration);
-   --  Helper for Timed_Sleep and Timed_Delay: given a deadline specified by
-   --  Time and Mode, compute the current clock reading (Check_Time), and the
-   --  target absolute and relative clock readings (Abs_Time, Rel_Time). The
-   --  epoch for Time depends on Mode; the epoch for Check_Time and Abs_Time
-   --  is always that of CLOCK_RT_Ada.
 
    -------------------
    -- Abort_Handler --
@@ -247,67 +272,6 @@ package body System.Task_Primitives.Operations is
          raise Standard'Abort_Signal;
       end if;
    end Abort_Handler;
-
-   ----------------------
-   -- Compute_Deadline --
-   ----------------------
-
-   procedure Compute_Deadline
-     (Time       : Duration;
-      Mode       : ST.Delay_Modes;
-      Check_Time : out Duration;
-      Abs_Time   : out Duration;
-      Rel_Time   : out Duration)
-   is
-   begin
-      Check_Time := Monotonic_Clock;
-
-      --  Relative deadline
-
-      if Mode = Relative then
-         Abs_Time := Duration'Min (Time, Max_Sensible_Delay) + Check_Time;
-
-         if Relative_Timed_Wait then
-            Rel_Time := Duration'Min (Max_Sensible_Delay, Time);
-         end if;
-
-         pragma Warnings (Off);
-         --  Comparison "OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME" is compile
-         --  time known.
-
-      --  Absolute deadline specified using the tasking clock (CLOCK_RT_Ada)
-
-      elsif Mode = Absolute_RT
-        or else OSC.CLOCK_RT_Ada = OSC.CLOCK_REALTIME
-      then
-         pragma Warnings (On);
-         Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
-
-         if Relative_Timed_Wait then
-            Rel_Time := Duration'Min (Max_Sensible_Delay, Time - Check_Time);
-         end if;
-
-      --  Absolute deadline specified using the calendar clock, in the
-      --  case where it is not the same as the tasking clock: compensate for
-      --  difference between clock epochs (Base_Time - Base_Cal_Time).
-
-      else
-         declare
-            Cal_Check_Time : constant Duration := OS_Primitives.Clock;
-            RT_Time        : constant Duration :=
-                               Time + Check_Time - Cal_Check_Time;
-
-         begin
-            Abs_Time :=
-              Duration'Min (Check_Time + Max_Sensible_Delay, RT_Time);
-
-            if Relative_Timed_Wait then
-               Rel_Time :=
-                 Duration'Min (Max_Sensible_Delay, RT_Time - Check_Time);
-            end if;
-         end;
-      end if;
-   end Compute_Deadline;
 
    -----------------
    -- Stack_Guard --
@@ -595,60 +559,7 @@ package body System.Task_Primitives.Operations is
       Mode     : ST.Delay_Modes;
       Reason   : Task_States;
       Timedout : out Boolean;
-      Yielded  : out Boolean)
-   is
-      pragma Unreferenced (Reason);
-
-      Base_Time  : Duration;
-      Check_Time : Duration;
-      Abs_Time   : Duration;
-      Rel_Time   : Duration;
-
-      Request    : aliased timespec;
-      Result     : Interfaces.C.int;
-
-   begin
-      Timedout := True;
-      Yielded := False;
-
-      Compute_Deadline
-        (Time       => Time,
-         Mode       => Mode,
-         Check_Time => Check_Time,
-         Abs_Time   => Abs_Time,
-         Rel_Time   => Rel_Time);
-      Base_Time := Check_Time;
-
-      if Abs_Time > Check_Time then
-         Request :=
-           To_Timespec (if Relative_Timed_Wait then Rel_Time else Abs_Time);
-
-         loop
-            exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
-
-            Result :=
-              pthread_cond_timedwait
-                (cond    => Self_ID.Common.LL.CV'Access,
-                 mutex   => (if Single_Lock
-                             then Single_RTS_Lock'Access
-                             else Self_ID.Common.LL.L'Access),
-                 abstime => Request'Access);
-
-            Check_Time := Monotonic_Clock;
-            exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
-
-            if Result = 0 or Result = EINTR then
-
-               --  Somebody may have called Wakeup for us
-
-               Timedout := False;
-               exit;
-            end if;
-
-            pragma Assert (Result = ETIMEDOUT);
-         end loop;
-      end if;
-   end Timed_Sleep;
+      Yielded  : out Boolean) renames Monotonic.Timed_Sleep;
 
    -----------------
    -- Timed_Delay --
@@ -660,95 +571,19 @@ package body System.Task_Primitives.Operations is
    procedure Timed_Delay
      (Self_ID : Task_Id;
       Time    : Duration;
-      Mode    : ST.Delay_Modes)
-   is
-      Base_Time  : Duration;
-      Check_Time : Duration;
-      Abs_Time   : Duration;
-      Rel_Time   : Duration;
-      Request    : aliased timespec;
-
-      Result : Interfaces.C.int;
-      pragma Warnings (Off, Result);
-
-   begin
-      if Single_Lock then
-         Lock_RTS;
-      end if;
-
-      Write_Lock (Self_ID);
-
-      Compute_Deadline
-        (Time       => Time,
-         Mode       => Mode,
-         Check_Time => Check_Time,
-         Abs_Time   => Abs_Time,
-         Rel_Time   => Rel_Time);
-      Base_Time := Check_Time;
-
-      if Abs_Time > Check_Time then
-         Request :=
-           To_Timespec (if Relative_Timed_Wait then Rel_Time else Abs_Time);
-         Self_ID.Common.State := Delay_Sleep;
-
-         loop
-            exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
-
-            Result :=
-              pthread_cond_timedwait
-                (cond    => Self_ID.Common.LL.CV'Access,
-                 mutex   => (if Single_Lock
-                             then Single_RTS_Lock'Access
-                             else Self_ID.Common.LL.L'Access),
-                 abstime => Request'Access);
-
-            Check_Time := Monotonic_Clock;
-            exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
-
-            pragma Assert (Result = 0
-                             or else Result = ETIMEDOUT
-                             or else Result = EINTR);
-         end loop;
-
-         Self_ID.Common.State := Runnable;
-      end if;
-
-      Unlock (Self_ID);
-
-      if Single_Lock then
-         Unlock_RTS;
-      end if;
-
-      Result := sched_yield;
-   end Timed_Delay;
+      Mode    : ST.Delay_Modes) renames Monotonic.Timed_Delay;
 
    ---------------------
    -- Monotonic_Clock --
    ---------------------
 
-   function Monotonic_Clock return Duration is
-      TS     : aliased timespec;
-      Result : Interfaces.C.int;
-   begin
-      Result := clock_gettime
-        (clock_id => OSC.CLOCK_RT_Ada, tp => TS'Unchecked_Access);
-      pragma Assert (Result = 0);
-      return To_Duration (TS);
-   end Monotonic_Clock;
+   function Monotonic_Clock return Duration renames Monotonic.Monotonic_Clock;
 
    -------------------
    -- RT_Resolution --
    -------------------
 
-   function RT_Resolution return Duration is
-      TS     : aliased timespec;
-      Result : Interfaces.C.int;
-   begin
-      Result := clock_getres (OSC.CLOCK_REALTIME, TS'Unchecked_Access);
-      pragma Assert (Result = 0);
-
-      return To_Duration (TS);
-   end RT_Resolution;
+   function RT_Resolution return Duration renames Monotonic.RT_Resolution;
 
    ------------
    -- Wakeup --

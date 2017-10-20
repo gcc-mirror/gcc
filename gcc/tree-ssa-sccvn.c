@@ -1167,7 +1167,7 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
-      offset_int off = offset_int::from (mem_op->op0, SIGNED);
+      offset_int off = offset_int::from (wi::to_wide (mem_op->op0), SIGNED);
       off += addr_offset;
       mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
@@ -1202,7 +1202,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       && code != POINTER_PLUS_EXPR)
     return false;
 
-  off = offset_int::from (mem_op->op0, SIGNED);
+  off = offset_int::from (wi::to_wide (mem_op->op0), SIGNED);
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1235,8 +1235,9 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	      && tem[tem.length () - 2].opcode == MEM_REF)
 	    {
 	      vn_reference_op_t new_mem_op = &tem[tem.length () - 2];
-	      new_mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0),
-						  new_mem_op->op0);
+	      new_mem_op->op0
+		= wide_int_to_tree (TREE_TYPE (mem_op->op0),
+				    wi::to_wide (new_mem_op->op0));
 	    }
 	  else
 	    gcc_assert (tem.last ().opcode == STRING_CST);
@@ -3537,7 +3538,7 @@ valueized_wider_op (tree wide_type, tree op)
 
   /* For constants simply extend it.  */
   if (TREE_CODE (op) == INTEGER_CST)
-    return wide_int_to_tree (wide_type, op);
+    return wide_int_to_tree (wide_type, wi::to_wide (op));
 
   return NULL_TREE;
 }

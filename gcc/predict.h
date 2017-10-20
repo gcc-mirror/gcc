@@ -102,4 +102,7 @@ extern void propagate_unlikely_bbs_forward (void);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 
+/* In ipa-pure-const.c   */
+extern void warn_function_cold (tree);
+
 #endif  /* GCC_PREDICT_H */

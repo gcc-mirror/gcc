@@ -263,7 +263,8 @@ enum gfc_statement
   ST_OMP_TASKLOOP_SIMD, ST_OMP_END_TASKLOOP_SIMD, ST_OMP_ORDERED_DEPEND,
   ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
   ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
-  ST_EVENT_WAIT,ST_FAIL_IMAGE,ST_NONE
+  ST_EVENT_WAIT, ST_FAIL_IMAGE, ST_FORM_TEAM, ST_CHANGE_TEAM,
+  ST_END_TEAM, ST_SYNC_TEAM, ST_NONE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -456,6 +457,7 @@ enum gfc_isym_id
   GFC_ISYM_GETLOG,
   GFC_ISYM_GETPID,
   GFC_ISYM_GETUID,
+  GFC_ISYM_GET_TEAM,
   GFC_ISYM_GMTIME,
   GFC_ISYM_HOSTNM,
   GFC_ISYM_HUGE,
@@ -1913,6 +1915,7 @@ typedef struct gfc_array_ref
   int dimen;			/* # of components in the reference */
   int codimen;
   bool in_allocate;		/* For coarray checks. */
+  gfc_expr *team;
   gfc_expr *stat;
   locus where;
   gfc_array_spec *as;
@@ -2488,6 +2491,7 @@ enum gfc_exec_op
   EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
+  EXEC_FORM_TEAM, EXEC_CHANGE_TEAM, EXEC_END_TEAM, EXEC_SYNC_TEAM,
   EXEC_LOCK, EXEC_UNLOCK, EXEC_EVENT_POST, EXEC_EVENT_WAIT, EXEC_FAIL_IMAGE,
   EXEC_OACC_KERNELS_LOOP, EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_ROUTINE,
   EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS, EXEC_OACC_DATA, EXEC_OACC_HOST_DATA,
@@ -2796,6 +2800,17 @@ void gfc_done_2 (void);
 
 int get_c_kind (const char *, CInteropKind_t *);
 
+const char *gfc_closest_fuzzy_match (const char *, char **);
+static inline void
+vec_push (char **&optr, size_t &osz, const char *elt)
+{
+  /* {auto,}vec.safe_push () replacement.  Don't ask..  */
+  // if (strlen (elt) < 4) return; premature optimization: eliminated by cutoff
+  optr = XRESIZEVEC (char *, optr, osz + 2);
+  optr[osz] = CONST_CAST (char *, elt);
+  optr[++osz] = NULL;
+}
+
 /* options.c */
 unsigned int gfc_option_lang_mask (void);
 void gfc_init_options_struct (struct gcc_options *);
@@ -3103,7 +3118,8 @@ void gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *);
 void gfc_free_omp_udr (gfc_omp_udr *);
 gfc_omp_udr *gfc_omp_udr_find (gfc_symtree *, gfc_typespec *);
 void gfc_resolve_omp_directive (gfc_code *, gfc_namespace *);
-void gfc_resolve_do_iterator (gfc_code *, gfc_symbol *);
+void gfc_resolve_do_iterator (gfc_code *, gfc_symbol *, bool);
+void gfc_resolve_omp_local_vars (gfc_namespace *);
 void gfc_resolve_omp_parallel_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_omp_do_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_omp_declare_simd (gfc_namespace *);
@@ -3190,6 +3206,7 @@ bool gfc_is_coarray (gfc_expr *);
 int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
+gfc_expr* gfc_find_team_co (gfc_expr *);
 gfc_expr* gfc_find_stat_co (gfc_expr *);
 gfc_expr* gfc_build_intrinsic_call (gfc_namespace *, gfc_isym_id, const char*,
 				    locus, unsigned, ...);
@@ -3228,6 +3245,7 @@ bool gfc_type_is_extensible (gfc_symbol *);
 bool gfc_resolve_intrinsic (gfc_symbol *, locus *);
 bool gfc_explicit_interface_required (gfc_symbol *, char *, int);
 extern int gfc_do_concurrent_flag;
+const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
 
 
 /* array.c */
@@ -3311,6 +3329,7 @@ void gfc_free_dt (gfc_dt *);
 bool gfc_resolve_dt (gfc_dt *, locus *);
 void gfc_free_wait (gfc_wait *);
 bool gfc_resolve_wait (gfc_wait *);
+extern bool async_io_dt;
 
 /* module.c */
 void gfc_module_init_2 (void);

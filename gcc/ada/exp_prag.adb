@@ -42,6 +42,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -1447,82 +1448,287 @@ package body Exp_Prag is
    -- Expand_Pragma_Initial_Condition --
    -------------------------------------
 
-   procedure Expand_Pragma_Initial_Condition (Spec_Or_Body : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (Spec_Or_Body);
+   procedure Expand_Pragma_Initial_Condition
+     (Pack_Id : Entity_Id;
+      N       : Node_Id)
+   is
+      procedure Extract_Package_Body_Lists
+        (Pack_Body : Node_Id;
+         Body_List : out List_Id;
+         Call_List : out List_Id;
+         Spec_List : out List_Id);
+      --  Obtain the various declarative and statement lists of package body
+      --  Pack_Body needed to insert the initial condition procedure and the
+      --  call to it. The lists are as follows:
+      --
+      --    * Body_List - used to insert the initial condition procedure body
+      --
+      --    * Call_List - used to insert the call to the initial condition
+      --      procedure.
+      --
+      --    * Spec_List - used to insert the initial condition procedure spec
 
-      Check     : Node_Id;
-      Expr      : Node_Id;
-      Init_Cond : Node_Id;
-      List      : List_Id;
-      Pack_Id   : Entity_Id;
+      procedure Extract_Package_Declaration_Lists
+        (Pack_Decl : Node_Id;
+         Body_List : out List_Id;
+         Call_List : out List_Id;
+         Spec_List : out List_Id);
+      --  Obtain the various declarative lists of package declaration Pack_Decl
+      --  needed to insert the initial condition procedure and the call to it.
+      --  The lists are as follows:
+      --
+      --    * Body_List - used to insert the initial condition procedure body
+      --
+      --    * Call_List - used to insert the call to the initial condition
+      --      procedure.
+      --
+      --    * Spec_List - used to insert the initial condition procedure spec
+
+      --------------------------------
+      -- Extract_Package_Body_Lists --
+      --------------------------------
+
+      procedure Extract_Package_Body_Lists
+        (Pack_Body : Node_Id;
+         Body_List : out List_Id;
+         Call_List : out List_Id;
+         Spec_List : out List_Id)
+      is
+         Pack_Spec : constant Entity_Id := Corresponding_Spec (Pack_Body);
+
+         Dummy_1 : List_Id;
+         Dummy_2 : List_Id;
+         HSS     : Node_Id;
+
+      begin
+         pragma Assert (Present (Pack_Spec));
+
+         --  The different parts of the invariant procedure are inserted as
+         --  follows:
+
+         --    package Pack is       package body Pack is
+         --       <IC spec>             <IC body>
+         --    private               begin
+         --       ...                   <IC call>
+         --    end Pack;             end Pack;
+
+         --  The initial condition procedure spec is inserted in the visible
+         --  declaration of the corresponding package spec.
+
+         Extract_Package_Declaration_Lists
+           (Pack_Decl => Unit_Declaration_Node (Pack_Spec),
+            Body_List => Dummy_1,
+            Call_List => Dummy_2,
+            Spec_List => Spec_List);
+
+         --  The initial condition procedure body is added to the declarations
+         --  of the package body.
+
+         Body_List := Declarations (Pack_Body);
+
+         if No (Body_List) then
+            Body_List := New_List;
+            Set_Declarations (Pack_Body, Body_List);
+         end if;
+
+         --  The call to the initial condition procedure is inserted in the
+         --  statements of the package body.
+
+         HSS := Handled_Statement_Sequence (Pack_Body);
+
+         if No (HSS) then
+            HSS :=
+              Make_Handled_Sequence_Of_Statements (Sloc (Pack_Body),
+                Statements => New_List);
+            Set_Handled_Statement_Sequence (Pack_Body, HSS);
+         end if;
+
+         Call_List := Statements (HSS);
+      end Extract_Package_Body_Lists;
+
+      ---------------------------------------
+      -- Extract_Package_Declaration_Lists --
+      ---------------------------------------
+
+      procedure Extract_Package_Declaration_Lists
+        (Pack_Decl : Node_Id;
+         Body_List : out List_Id;
+         Call_List : out List_Id;
+         Spec_List : out List_Id)
+      is
+         Pack_Spec : constant Node_Id := Specification (Pack_Decl);
+
+      begin
+         --  The different parts of the invariant procedure are inserted as
+         --  follows:
+
+         --    package Pack is
+         --       <IC spec>
+         --       <IC body>
+         --    private
+         --       <IC call>
+         --    end Pack;
+
+         --  The initial condition procedure spec and body are inserted in the
+         --  visible declarations of the package spec.
+
+         Body_List := Visible_Declarations (Pack_Spec);
+
+         if No (Body_List) then
+            Body_List := New_List;
+            Set_Visible_Declarations (Pack_Spec, Body_List);
+         end if;
+
+         Spec_List := Body_List;
+
+         --  The call to the initial procedure is inserted in the private
+         --  declarations of the package spec.
+
+         Call_List := Private_Declarations (Pack_Spec);
+
+         if No (Call_List) then
+            Call_List := New_List;
+            Set_Private_Declarations (Pack_Spec, Call_List);
+         end if;
+      end Extract_Package_Declaration_Lists;
+
+      --  Local variables
+
+      IC_Prag : constant Node_Id :=
+                  Get_Pragma (Pack_Id, Pragma_Initial_Condition);
+
+      Body_List    : List_Id;
+      Call         : Node_Id;
+      Call_List    : List_Id;
+      Call_Loc     : Source_Ptr;
+      Expr         : Node_Id;
+      Loc          : Source_Ptr;
+      Proc_Body    : Node_Id;
+      Proc_Body_Id : Entity_Id;
+      Proc_Decl    : Node_Id;
+      Proc_Id      : Entity_Id;
+      Spec_List    : List_Id;
+
+   --  Start of processing for Expand_Pragma_Initial_Condition
 
    begin
-      if Nkind (Spec_Or_Body) = N_Package_Body then
-         Pack_Id := Corresponding_Spec (Spec_Or_Body);
+      --  Nothing to do when the package is not subject to an Initial_Condition
+      --  pragma.
 
-         if Present (Handled_Statement_Sequence (Spec_Or_Body)) then
-            List := Statements (Handled_Statement_Sequence (Spec_Or_Body));
+      if No (IC_Prag) then
+         return;
+      end if;
 
-         --  The package body lacks statements, create an empty list
+      Expr := Get_Pragma_Arg (First (Pragma_Argument_Associations (IC_Prag)));
+      Loc  := Sloc (IC_Prag);
 
-         else
-            List := New_List;
+      --  Nothing to do when the pragma or its argument are illegal because
+      --  there is no valid expression to check.
 
-            Set_Handled_Statement_Sequence (Spec_Or_Body,
-              Make_Handled_Sequence_Of_Statements (Loc, Statements => List));
-         end if;
+      if Error_Posted (IC_Prag) or else Error_Posted (Expr) then
+         return;
+      end if;
 
-      elsif Nkind (Spec_Or_Body) = N_Package_Declaration then
-         Pack_Id := Defining_Entity (Spec_Or_Body);
+      --  Obtain the various lists of the context where the individual pieces
+      --  of the initial condition procedure are to be inserted.
 
-         if Present (Visible_Declarations (Specification (Spec_Or_Body))) then
-            List := Visible_Declarations (Specification (Spec_Or_Body));
+      if Nkind (N) = N_Package_Body then
+         Extract_Package_Body_Lists
+           (Pack_Body => N,
+            Body_List => Body_List,
+            Call_List => Call_List,
+            Spec_List => Spec_List);
 
-         --  The package lacks visible declarations, create an empty list
-
-         else
-            List := New_List;
-
-            Set_Visible_Declarations (Specification (Spec_Or_Body), List);
-         end if;
+      elsif Nkind (N) = N_Package_Declaration then
+         Extract_Package_Declaration_Lists
+           (Pack_Decl => N,
+            Body_List => Body_List,
+            Call_List => Call_List,
+            Spec_List => Spec_List);
 
       --  This routine should not be used on anything other than packages
 
       else
-         raise Program_Error;
-      end if;
-
-      Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
-
-      --  The caller should check whether the package is subject to pragma
-      --  Initial_Condition.
-
-      pragma Assert (Present (Init_Cond));
-
-      Expr :=
-        Get_Pragma_Arg (First (Pragma_Argument_Associations (Init_Cond)));
-
-      --  The assertion expression was found to be illegal, do not generate the
-      --  runtime check as it will repeat the illegality.
-
-      if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
+         pragma Assert (False);
          return;
       end if;
 
+      Proc_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Pack_Id), "Initial_Condition"));
+
+      Set_Ekind                          (Proc_Id, E_Procedure);
+      Set_Is_Initial_Condition_Procedure (Proc_Id);
+
       --  Generate:
-      --    pragma Check (Initial_Condition, <Expr>);
+      --    procedure <Pack_Id>Initial_Condition;
 
-      Check :=
-        Make_Pragma (Loc,
-          Chars                        => Name_Check,
-          Pragma_Argument_Associations => New_List (
-            Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Identifier (Loc, Name_Initial_Condition)),
-            Make_Pragma_Argument_Association (Loc,
-              Expression => New_Copy_Tree (Expr))));
+      Proc_Decl :=
+        Make_Subprogram_Declaration (Loc,
+          Make_Procedure_Specification (Loc,
+            Defining_Unit_Name => Proc_Id));
 
-      Append_To (List, Check);
-      Analyze (Check);
+      Append_To (Spec_List, Proc_Decl);
+
+      --  The initial condition procedure requires debug info when initial
+      --  condition is subject to Source Coverage Obligations.
+
+      if Generate_SCO then
+         Set_Needs_Debug_Info (Proc_Id);
+      end if;
+
+      --  Generate:
+      --    procedure <Pack_Id>Initial_Condition is
+      --    begin
+      --       pragma Check (Initial_Condition, <Expr>);
+      --    end <Pack_Id>Initial_Condition;
+
+      Proc_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Copy_Subprogram_Spec (Specification (Proc_Decl)),
+          Declarations               => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (
+                Make_Pragma (Loc,
+                  Chars                        => Name_Check,
+                  Pragma_Argument_Associations => New_List (
+                    Make_Pragma_Argument_Association (Loc,
+                      Expression =>
+                        Make_Identifier (Loc, Name_Initial_Condition)),
+                    Make_Pragma_Argument_Association (Loc,
+                      Expression => New_Copy_Tree (Expr)))))));
+
+      Append_To (Body_List, Proc_Body);
+
+      --  The initial condition procedure requires debug info when initial
+      --  condition is subject to Source Coverage Obligations.
+
+      Proc_Body_Id := Defining_Entity (Proc_Body);
+
+      if Generate_SCO then
+         Set_Needs_Debug_Info (Proc_Body_Id);
+      end if;
+
+      --  The location of the initial condition procedure call must be as close
+      --  as possible to the intended semantic location of the check because
+      --  the ABE mechanism relies heavily on accurate locations.
+
+      Call_Loc := End_Keyword_Location (N);
+
+      --  Generate:
+      --    <Pack_Id>Initial_Condition;
+
+      Call :=
+        Make_Procedure_Call_Statement (Call_Loc,
+          Name => New_Occurrence_Of (Proc_Id, Call_Loc));
+
+      Append_To (Call_List, Call);
+
+      Analyze (Proc_Decl);
+      Analyze (Proc_Body);
+      Analyze (Call);
    end Expand_Pragma_Initial_Condition;
 
    ------------------------------------

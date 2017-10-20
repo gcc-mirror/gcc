@@ -807,7 +807,6 @@ adjust_return_value (basic_block bb, tree m, tree a)
 static void
 decrease_profile (basic_block bb, profile_count count, int frequency)
 {
-  edge e;
   bb->count = bb->count - count;
   bb->frequency -= frequency;
   if (bb->frequency < 0)
@@ -817,8 +816,6 @@ decrease_profile (basic_block bb, profile_count count, int frequency)
       gcc_assert (!EDGE_COUNT (bb->succs));
       return;
     }
-  e = single_succ_edge (bb);
-  e->count -= count;
 }
 
 /* Returns true if argument PARAM of the tail recursive call needs to be copied
@@ -895,11 +892,11 @@ eliminate_tail_call (struct tailcall *t)
 
   /* Number of executions of function has reduced by the tailcall.  */
   e = single_succ_edge (gsi_bb (t->call_gsi));
-  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), e->count, EDGE_FREQUENCY (e));
-  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), e->count,
+  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), e->count (), EDGE_FREQUENCY (e));
+  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), e->count (),
 		    EDGE_FREQUENCY (e));
   if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    decrease_profile (e->dest, e->count, EDGE_FREQUENCY (e));
+    decrease_profile (e->dest, e->count (), EDGE_FREQUENCY (e));
 
   /* Replace the call by a jump to the start of function.  */
   e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),

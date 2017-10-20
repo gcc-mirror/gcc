@@ -231,6 +231,7 @@ proc scan-assembler-times { args } {
 
     set testcase [testname-for-summary]
     set pattern [lindex $args 0]
+    set times [lindex $args 1]
     set pp_pattern [make_pattern_printable $pattern]
 
     # This must match the rule in gcc-dg.exp.
@@ -239,7 +240,7 @@ proc scan-assembler-times { args } {
     set files [glob -nocomplain $output_file]
     if { $files == "" } {
 	verbose -log "$testcase: output file does not exist"
-	unresolved "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+	unresolved "$testcase scan-assembler-times $pp_pattern $times"
 	return
     }
 
@@ -247,10 +248,11 @@ proc scan-assembler-times { args } {
     set text [read $fd]
     close $fd
 
-    if { [llength [regexp -inline -all -- $pattern $text]] == [lindex $args 1]} {
-	pass "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+    set result_count [llength [regexp -inline -all -- $pattern $text]]
+    if {$result_count == $times} {
+	pass "$testcase scan-assembler-times $pp_pattern $times"
     } else {
-	fail "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+	fail "$testcase scan-assembler-times $pp_pattern $times (found $result_count times)"
     }
 }
 

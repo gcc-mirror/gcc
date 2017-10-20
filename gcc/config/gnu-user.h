@@ -162,11 +162,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
 #undef LIBTSAN_EARLY_SPEC
-#define LIBTSAN_EARLY_SPEC "%{static-libtsan:%{!shared:" \
+#define LIBTSAN_EARLY_SPEC "%{!shared:libtsan_preinit%O%s} " \
+  "%{static-libtsan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -ltsan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libtsan:-ltsan}"
 #undef LIBLSAN_EARLY_SPEC
-#define LIBLSAN_EARLY_SPEC "%{static-liblsan:%{!shared:" \
+#define LIBLSAN_EARLY_SPEC "%{!shared:liblsan_preinit%O%s} " \
+  "%{static-liblsan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -llsan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-liblsan:-llsan}"
 #endif
