@@ -1,3 +1,9 @@
+2017-10-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* Makefile.am: (IFUNC_OPTIONS): Set the architecture to
+	-march=armv7-a+fp on Linux/Arm.
+	* Makefile.in: Regenerated.
+
 2017-10-02  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854

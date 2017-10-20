@@ -346,7 +346,7 @@ M_SRC = $(firstword $(filter %/$(M_FILE), $(all_c_files)))
 libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix \
 	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) $(am__append_2) \
 	$(am__append_3)
-@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a -DHAVE_KERNEL64
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=i586
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -mcx16
 libatomic_convenience_la_SOURCES = $(libatomic_la_SOURCES)
