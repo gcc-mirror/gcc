@@ -5145,11 +5145,19 @@ package body Exp_Ch6 is
                         Set_No_Initialization (Heap_Allocator);
                      end if;
 
+                     --  Set the flag indicating that the allocator came from
+                     --  a build-in-place return statement, so we can avoid
+                     --  adjusting the allocated object. Note that this flag
+                     --  will be inherited by the copies made below.
+
+                     Set_Alloc_For_BIP_Return (Heap_Allocator);
+
                      --  The Pool_Allocator is just like the Heap_Allocator,
                      --  except we set Storage_Pool and Procedure_To_Call so
                      --  it will use the user-defined storage pool.
 
                      Pool_Allocator := New_Copy_Tree (Heap_Allocator);
+                     pragma Assert (Alloc_For_BIP_Return (Pool_Allocator));
 
                      --  Do not generate the renaming of the build-in-place
                      --  pool parameter on ZFP because the parameter is not
@@ -5191,6 +5199,7 @@ package body Exp_Ch6 is
 
                      else
                         SS_Allocator := New_Copy_Tree (Heap_Allocator);
+                        pragma Assert (Alloc_For_BIP_Return (SS_Allocator));
 
                         --  The heap and pool allocators are marked as
                         --  Comes_From_Source since they correspond to an
