@@ -461,6 +461,7 @@ Objective-C and Objective-C++ Dialects}.
 -fchkp-check-read  -fchkp-check-write  -fchkp-store-bounds @gol
 -fchkp-instrument-calls  -fchkp-instrument-marked-only @gol
 -fchkp-use-wrappers  -fchkp-flexible-struct-trailing-arrays@gol
+-fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]} @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -11417,6 +11418,28 @@ with calls to wrapper functions.  When @option{-fchkp-use-wrappers}
 is used to link a program, the GCC driver automatically links
 against @file{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
 Enabled by default.
+
+@item -fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]}
+@opindex fcf-protection
+Enable code instrumentation of control-flow transfers to increase
+program security by checking that target addresses of control-flow
+transfer instructions (such as indirect function call, function return,
+indirect jump) are valid.  This prevents diverting the flow of control
+to an unexpected target.  This is intended to protect against such
+threats as Return-oriented Programming (ROP), and similarly
+call/jmp-oriented programming (COP/JOP).
+
+The value @code{branch} tells the compiler to implement checking of
+validity of control-flow transfer at the point of indirect branch
+instructions, i.e. call/jmp instructions.  The value @code{return}
+implements checking of validity at the point of returning from a
+function.  The value @code{full} is an alias for specifying both
+@code{branch} and @code{return}. The value @code{none} turns off
+instrumentation.
+
+You can also use the @code{nocf_check} attribute to identify
+which functions and calls should be skipped from instrumentation
+(@pxref{Function Attributes}).
 
 @item -fstack-protector
 @opindex fstack-protector

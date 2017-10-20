@@ -1,3 +1,11 @@
+2017-10-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* extend.texi: Add 'nocf_check' documentation.
+	* gimple.texi: Add second parameter to
+	gimple_build_call_from_tree.
+	* invoke.texi: Add -fcf-protection documentation.
+	* rtl.texi: Add REG_CALL_NOTRACK documenation.
+
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82473
