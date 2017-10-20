@@ -1,3 +1,10 @@
+2017-10-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/79795
+	* resolve.c (resovle_symbol): Change gcc_assert to
+	sensible error message.
+
 2017-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
