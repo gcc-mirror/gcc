@@ -12549,7 +12549,7 @@ package body Sem_Util is
                            and then Is_Aliased_View (Renamed_Object (E)))))
 
            or else ((Is_Formal (E) or else Is_Formal_Object (E))
-                    and then Is_Tagged_Type (Etype (E)))
+                      and then Is_Tagged_Type (Etype (E)))
 
            or else (Is_Concurrent_Type (E) and then In_Open_Scopes (E))
 
