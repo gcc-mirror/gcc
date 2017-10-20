@@ -4500,6 +4500,10 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
 
+  DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
+  if (MAYBE_DECL_MODULE_INDEX (decl))
+    DECL_MODULE_INDEX (tmpl) = DECL_MODULE_INDEX (decl);
+
   return tmpl;
 }
 
@@ -5571,9 +5575,6 @@ push_template_decl_real (tree decl, bool is_friend)
 
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   TREE_TYPE (tmpl) = TREE_TYPE (decl);
-  DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
-  if (MAYBE_DECL_MODULE_INDEX (decl))
-    DECL_MODULE_INDEX (tmpl) = DECL_MODULE_INDEX (decl);
 
   /* Push template declarations for global functions and types.  Note
      that we do not try to push a global template friend declared in a

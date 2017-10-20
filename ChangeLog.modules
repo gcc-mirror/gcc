@@ -1,8 +1,24 @@
 2017-10-20  Nathan Sidwell  <nathan@acm.org>
 
-	Early CRC not time stamps.
+	Template class!
 	gcc/cp/
 	* decl.c (xref_tag_1): Don't decl_set_module here.
+	* module.c (cpms_in::define_function): Check templatedness.
+	(cpms_{in,out}::define_class): Add maybe_template arg. Add
+	templatey bits.
+	(cpms_out::maybe_tag_definition): Deal with template classes.
+	{cpms_{in,out}::tag_definition): Add maybe_template arg, adjust.
+	{cpms_{in,out}::core_vals): Write record template_info.
+	* name-lookup.c (set_class_binding): Protect against empty
+	member_vec.
+	(do_pushtag): Call decl_set_module here.
+	* pt.c (build_template_decl): Copy module bits here ...
+	(push_template_decl_real): ... not here.
+	gcc/testsuite/
+	* g++.dg/modules/mod-tpl-2_[ab].C: New.
+
+	Early CRC not time stamps.
+	gcc/cp/
 	* module.c (module_state::set_name): CRC too.
 	(cpm_serial::get_crc): New.
 	(cpm_writer::seek): New.

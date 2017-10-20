@@ -1375,7 +1375,7 @@ public:
   void tag_trees ();
   tree tag_binding (tree ns, bool, tree name, tree ovl);
   void maybe_tag_definition (tree decl);
-  void tag_definition (tree node);
+  void tag_definition (tree node, tree maybe_template);
   int done ()
   {
     return w.done ();
@@ -1403,7 +1403,7 @@ private:
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
   void define_function (tree, tree);
-  void define_class (tree);
+  void define_class (tree, tree);
   void ident_imported_decl (tree ctx, unsigned mod, tree decl);
 
 public:
@@ -1513,7 +1513,7 @@ private:
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
   tree define_function (tree, tree);
-  tree define_class (tree);
+  tree define_class (tree, tree);
   tree ident_imported_decl (tree ctx, unsigned mod, tree name);
 
 public:
@@ -2087,7 +2087,7 @@ cpms_in::define_function (tree decl, tree maybe_template)
   set_cfun (NULL);
   current_function_decl = NULL_TREE;
 
-  if (maybe_template == decl)
+  if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
     {
       comdat_linkage (decl);
       note_vague_linkage_fn (decl);
@@ -2190,18 +2190,13 @@ cpms_in::tree_pair_vec ()
 /* Stream a class definition.  */
 
 void
-cpms_out::define_class (tree type)
+cpms_out::define_class (tree type, tree maybe_template)
 {
   chained_decls (TYPE_FIELDS (type));
   tree_node (TYPE_VFIELD (type));
   tree_node (TYPE_BINFO (type));
   if (TYPE_LANG_SPECIFIC (type))
     {
-      tree base = CLASSTYPE_AS_BASE (type);
-      if (!base || base == type)
-	tree_node (base);
-      else
-	tag_definition (base);
       tree_node (CLASSTYPE_PRIMARY_BINFO (type));
       tree_vec (CLASSTYPE_VBASECLASSES (type));
 
@@ -2223,10 +2218,10 @@ cpms_out::define_class (tree type)
 	tree_node (DECL_INITIAL (vtables));
     }
 
-  // template stuff
+  if (TREE_CODE (maybe_template) == TEMPLATE_DECL)
+    tree_node (CLASSTYPE_DECL_LIST (type));
+
   // lang->nested_udts
-  // lang->decl_list
-  // lang->template_info
 
   /* Now define all the members.  */
   for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
@@ -2236,7 +2231,7 @@ cpms_out::define_class (tree type)
   tree_node (NULL_TREE);
 }
 
-/* Nop sorted needed for resorting the method vec.  */
+/* Nop sorted needed for resorting the member vec.  */
 
 static void
 nop (void *, void *)
@@ -2244,14 +2239,13 @@ nop (void *, void *)
 }
 
 tree
-cpms_in::define_class (tree type)
+cpms_in::define_class (tree type, tree maybe_template)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
   tree fields = chained_decls ();
   tree vfield = tree_node ();
   tree binfo = tree_node ();
-  tree base = NULL_TREE;
   vec<tree, va_gc> *member_vec = NULL;
   tree primary = NULL_TREE;
   vec<tree, va_gc> *vbases = NULL;
@@ -2264,7 +2258,6 @@ cpms_in::define_class (tree type)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      base = tree_node ();
       primary = tree_node ();
       vbases = tree_vec ();
 
@@ -2283,10 +2276,11 @@ cpms_in::define_class (tree type)
       vtables = chained_decls ();
     }
 
-  // Templatey stuff
+  tree decl_list = NULL_TREE;
+  if (TREE_CODE (maybe_template) == TEMPLATE_DECL)
+    decl_list = tree_node ();
+
   // lang->nested_udts
-  // lang->decl_list
-  // lang->template_info
 
   // FIXME: Sanity check stuff
 
@@ -2299,7 +2293,6 @@ cpms_in::define_class (tree type)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      CLASSTYPE_AS_BASE (type) = base;
       CLASSTYPE_PRIMARY_BINFO (type) = primary;
       CLASSTYPE_VBASECLASSES (type) = vbases;
 
@@ -2319,8 +2312,9 @@ cpms_in::define_class (tree type)
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	DECL_INITIAL (vtables) = tree_node ();
 
-      // FIXME: create proper entry point
-      /* Resort things that need to be sorted.  */
+      CLASSTYPE_DECL_LIST (type) = decl_list;
+
+      /* Resort the member vector.  */
       resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
 
@@ -2332,6 +2326,15 @@ cpms_in::define_class (tree type)
     if (r.error ())
       break;
 
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      if (tree tdef
+	  = get_class_binding_direct (type, as_base_identifier, true))
+	CLASSTYPE_AS_BASE (type) = TREE_TYPE (tdef);
+      else
+	CLASSTYPE_AS_BASE (type) = type;
+    }
+  
   return type;
 }
 
@@ -2340,56 +2343,63 @@ cpms_in::define_class (tree type)
 void
 cpms_out::maybe_tag_definition (tree t)
 {
-  if (TREE_CODE (t) == TYPE_DECL)
-    t = TREE_TYPE (t);
+  tree maybe_template = NULL_TREE;
 
+ again:
   switch (TREE_CODE (t))
     {
     default:
       return;
 
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      if (!COMPLETE_TYPE_P (t))
-	return;
+    case TEMPLATE_DECL:
+      maybe_template = t;
+      t = DECL_TEMPLATE_RESULT (t);
+      goto again;
+
+    case TYPE_DECL:
+      switch (TREE_CODE (TREE_TYPE (t)))
+	{
+	default:
+	  return;
+
+	case RECORD_TYPE:
+	case UNION_TYPE:
+	  if (!maybe_template && !COMPLETE_TYPE_P (TREE_TYPE (t)))
+	    return;
+	  break;
+	}
       break;
 
     case FUNCTION_DECL:
       if (!DECL_SAVED_TREE (t))
 	return;
-      if (!DECL_DECLARED_INLINE_P (t))
+      if (DECL_TEMPLATE_INFO (t))
+	{
+	  if (DECL_USE_TEMPLATE (t) & 1)
+	    return;
+	}
+      else if (!DECL_DECLARED_INLINE_P (t))
 	return;
       if (DECL_CLONED_FUNCTION_P (t))
 	return;
       break;
-
-    case TEMPLATE_DECL:
-      if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == FUNCTION_DECL)
-	{
-	  if (!DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (t)))
-	    return;
-	}
-      else
-	return; // FIXME deal with non-functions
-      break;
     }
 
-  tag_definition (t);
+  tag_definition (t, maybe_template);
 }
 
 /* Write out T's definition  */
 
 void
-cpms_out::tag_definition (tree t)
+cpms_out::tag_definition (tree t, tree maybe_template)
 {
-  dump () && dump ("Writing definition for %C:%N%M", TREE_CODE (t), t, t);
+  dump () && dump ("Writing%s definition for %C:%N%M",
+		   maybe_template ? " template" : "", TREE_CODE (t), t, t);
 
+  if (!maybe_template)
+    maybe_template = t;
   tag (rt_definition);
-  tree_node (t);
-
-  tree maybe_template = t;
-  if (TREE_CODE (t) == TEMPLATE_DECL)
-    t = DECL_TEMPLATE_RESULT (t);
+  tree_node (maybe_template);
 
   switch (TREE_CODE (t))
     {
@@ -2398,9 +2408,17 @@ cpms_out::tag_definition (tree t)
     case FUNCTION_DECL:
       define_function (t, maybe_template);
       break;
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      define_class (t);
+    case TYPE_DECL:
+      t = TREE_TYPE (t);
+      switch (TREE_CODE (t))
+	{
+	default:
+	  gcc_unreachable ();
+	case RECORD_TYPE:
+	case UNION_TYPE:
+	  define_class (t, maybe_template);
+	  break;
+	}
       break;
     }
 }
@@ -2431,9 +2449,18 @@ cpms_in::tag_definition ()
 	DECL_SAVED_TREE (t) = NULL_TREE;
       break;
 
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      t = define_class (t);
+    case TYPE_DECL:
+      t = TREE_TYPE (t);
+      switch (TREE_CODE (t))
+	{
+	default:
+	  t = NULL_TREE;
+	  break;
+
+	case RECORD_TYPE:
+	case UNION_TYPE:
+	  t = define_class (t, maybe_template);
+	}
       break;
     }
 
@@ -3414,8 +3441,8 @@ cpms_out::core_vals (tree t)
 	  else
 	    WT (t->type_non_common.minval);
 	  WT (t->type_non_common.maxval);
-	  WT (t->type_non_common.lang_1);
 	}
+      WT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -3770,8 +3797,8 @@ cpms_in::core_vals (tree t)
 	      r.bad ();
 	    }
 	  RT (t->type_non_common.maxval);
-	  RT (t->type_non_common.lang_1);
 	}
+      RT (t->type_non_common.lang_1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))

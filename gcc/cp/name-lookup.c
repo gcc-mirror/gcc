@@ -1943,7 +1943,7 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
    no existing MEMBER_VEC and fewer than 8 fields, do nothing.  We
    know there must be at least 1 field -- the self-reference
    TYPE_DECL, except for anon aggregates, which will have at least
-   one field.  */
+   one field anyway.  */
 
 void 
 set_class_bindings (tree klass, unsigned extra)
@@ -1961,9 +1961,14 @@ set_class_bindings (tree klass, unsigned extra)
   if (member_vec)
     {
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), member_name_cmp);
-      member_vec_dedup (member_vec);
+      /* We can get here with a zero members if we came via
+	 get_member_slot on a complete class.  */
+      if (member_vec->length ())
+	{
+	  qsort (member_vec->address (), member_vec->length (),
+		 sizeof (tree), member_name_cmp);
+	  member_vec_dedup (member_vec);
+	}
     }
 }
 
@@ -6842,6 +6847,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	  DECL_ANTICIPATED (tdef) = 1;
 	  DECL_FRIEND_P (tdef) = 1;
 	}
+      else
+	decl_set_module (tdef);
 
       decl = maybe_process_template_type_declaration
 	(type, scope == ts_within_enclosing_non_class, b);

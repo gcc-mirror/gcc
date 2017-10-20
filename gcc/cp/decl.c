@@ -13647,8 +13647,6 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	    /* Mark it as a lambda type.  */
 	    CLASSTYPE_LAMBDA_EXPR (t) = error_mark_node;
 	  t = pushtag (name, t, scope);
-	  if (t != error_mark_node)
-	    decl_set_module (TYPE_NAME (t));
 	}
     }
   else
