@@ -1,3 +1,7 @@
+2017-10-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune-costs.h (core_cost): Fix div, move and sqrt latencies.
+
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82603
