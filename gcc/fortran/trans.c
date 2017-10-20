@@ -1968,6 +1968,22 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_forall (code);
 	  break;
 
+	case EXEC_FORM_TEAM:
+	  res = gfc_trans_form_team (code);
+	  break;
+
+	case EXEC_CHANGE_TEAM:
+	  res = gfc_trans_change_team (code);
+	  break;
+
+	case EXEC_END_TEAM:
+	  res = gfc_trans_end_team (code);
+	  break;
+
+	case EXEC_SYNC_TEAM:
+	  res = gfc_trans_sync_team (code);
+	  break;
+
 	case EXEC_WHERE:
 	  res = gfc_trans_where (code);
 	  break;

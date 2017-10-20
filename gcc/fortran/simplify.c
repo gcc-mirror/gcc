@@ -2495,6 +2495,28 @@ gfc_simplify_failed_or_stopped_images (gfc_expr *team ATTRIBUTE_UNUSED,
   return NULL;
 }
 
+gfc_expr *
+gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_current_locus = *gfc_current_intrinsic_where;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return &gfc_bad_expr;
+    }
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      gfc_expr *result;
+      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
+      result->rank = 0;
+      return result;
+    }
+
+  /* For fcoarray = lib no simplification is possible, because it is not known
+     what images failed or are stopped at compile time.  */
+  return NULL;
+}
 
 gfc_expr *
 gfc_simplify_float (gfc_expr *a)
