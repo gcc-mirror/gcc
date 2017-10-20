@@ -1,5 +1,10 @@
 2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/chrono (__cpp_lib_chrono): Update macro value to
+	indicate support for P0505R0.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc: Check
+	for updated macro.
+
 	* include/c_global/cstddef: Define __cpp_lib_byte feature-test macro.
 	* testsuite/18_support/byte/requirements.cc: Check macro.
 
