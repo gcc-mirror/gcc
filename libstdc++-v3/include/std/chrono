@@ -215,8 +215,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
         treat_as_floating_point<_Rep>::value;
 #endif // C++17
 
-#if __cplusplus > 201402L
-# define __cpp_lib_chrono 201510
+#if __cplusplus >= 201703L
+# define __cpp_lib_chrono 201611
 
     template<typename _ToDur, typename _Rep, typename _Period>
       constexpr enable_if_t<__is_duration<_ToDur>::value, _ToDur>
