@@ -2658,11 +2658,27 @@ expand_call_stmt (gcall *stmt)
 	  }
     }
 
+  rtx_insn *before_call = get_last_insn ();
   lhs = gimple_call_lhs (stmt);
   if (lhs)
     expand_assignment (lhs, exp, false);
   else
     expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* If the gimple call is an indirect call and has 'nocf_check'
+     attribute find a generated CALL insn to mark it as no
+     control-flow verification is needed.  */
+  if (gimple_call_nocf_check_p (stmt)
+      && !gimple_call_fndecl (stmt))
+    {
+      rtx_insn *last = get_last_insn ();
+      while (!CALL_P (last)
+	     && last != before_call)
+	last = PREV_INSN (last);
+
+      if (last != before_call)
+	add_reg_note (last, REG_CALL_NOCF_CHECK, const0_rtx);
+    }
 
   mark_transaction_restart_calls (stmt);
 }

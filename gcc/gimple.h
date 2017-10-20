@@ -148,6 +148,7 @@ enum gf_mask {
     GF_CALL_WITH_BOUNDS 	= 1 << 8,
     GF_CALL_MUST_TAIL_CALL	= 1 << 9,
     GF_CALL_BY_DESCRIPTOR	= 1 << 10,
+    GF_CALL_NOCF_CHECK		= 1 << 11,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
@@ -1425,7 +1426,7 @@ gcall *gimple_build_call (tree, unsigned, ...);
 gcall *gimple_build_call_valist (tree, unsigned, va_list);
 gcall *gimple_build_call_internal (enum internal_fn, unsigned, ...);
 gcall *gimple_build_call_internal_vec (enum internal_fn, vec<tree> );
-gcall *gimple_build_call_from_tree (tree);
+gcall *gimple_build_call_from_tree (tree, tree);
 gassign *gimple_build_assign (tree, tree CXX_MEM_STAT_INFO);
 gassign *gimple_build_assign (tree, enum tree_code,
 			      tree, tree, tree CXX_MEM_STAT_INFO);
@@ -2892,6 +2893,25 @@ gimple_call_set_with_bounds (gimple *gs, bool with_bounds)
   gimple_call_set_with_bounds (gc, with_bounds);
 }
 
+
+/* Return true if call GS is marked as nocf_check.  */
+
+static inline bool
+gimple_call_nocf_check_p (const gcall *gs)
+{
+  return (gs->subcode & GF_CALL_NOCF_CHECK) != 0;
+}
+
+/* Mark statement GS as nocf_check call.  */
+
+static inline void
+gimple_call_set_nocf_check (gcall *gs, bool nocf_check)
+{
+  if (nocf_check)
+    gs->subcode |= GF_CALL_NOCF_CHECK;
+  else
+    gs->subcode &= ~GF_CALL_NOCF_CHECK;
+}
 
 /* Return the target of internal call GS.  */
 
