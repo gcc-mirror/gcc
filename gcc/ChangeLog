@@ -1,3 +1,22 @@
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (isa): Remove fma_avx512f.
+	* config/i386/sse.md (<avx512>_fmadd_<mode>_mask<round_name>,
+	<avx512>_fmadd_<mode>_mask3<round_name>,
+	<avx512>_fmsub_<mode>_mask<round_name>,
+	<avx512>_fmsub_<mode>_mask3<round_name>,
+	<avx512>_fnmadd_<mode>_mask<round_name>,
+	<avx512>_fnmadd_<mode>_mask3<round_name>,
+	<avx512>_fnmsub_<mode>_mask<round_name>,
+	<avx512>_fnmsub_<mode>_mask3<round_name>,
+	<avx512>_fmaddsub_<mode>_mask<round_name>,
+	<avx512>_fmaddsub_<mode>_mask3<round_name>,
+	<avx512>_fmsubadd_<mode>_mask<round_name>,
+	<avx512>_fmsubadd_<mode>_mask3<round_name>): Remove isa attribute.
+	(*vec_widen_umult_even_v16si<mask_name>,
+	*vec_widen_smult_even_v16si<mask_name>): Likewise.
+	(<mask_codefor>avx512bw_dbpsadbw<mode><mask_name>): Likewise.
+
 2017-10-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* extend.texi: Add 'nocf_check' documentation.
