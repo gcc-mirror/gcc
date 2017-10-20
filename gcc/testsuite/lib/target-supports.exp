@@ -548,7 +548,8 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1
     }
-    if { [istarget avr-*-*] } {
+    if { [istarget avr-*-*]
+	 || [istarget msp430-*-*] } {
 	return 1;   
     }
     return 0
