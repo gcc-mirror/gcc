@@ -1550,9 +1550,6 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   bitmap_set_bit (data->relevant, SSA_NAME_VERSION (op));
 }
 
-static tree
-strip_offset (tree expr, unsigned HOST_WIDE_INT *offset);
-
 /* Record a group of TYPE.  */
 
 static struct iv_group *
@@ -2863,7 +2860,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
-static tree
+tree
 strip_offset (tree expr, unsigned HOST_WIDE_INT *offset)
 {
   HOST_WIDE_INT off;
@@ -3140,7 +3137,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
      statement.  */
   if (use_bb->loop_father != data->current_loop
       || !dominated_by_p (CDI_DOMINATORS, data->current_loop->latch, use_bb)
-      || stmt_could_throw_p (use->stmt)
+      || stmt_can_throw_internal (use->stmt)
       || !cst_and_fits_in_hwi (step))
     return;
 

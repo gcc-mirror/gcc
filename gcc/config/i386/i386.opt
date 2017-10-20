@@ -753,6 +753,10 @@ mrdpid
 Target Report Mask(ISA_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
 
+mgfni
+Target Report Mask(ISA_GFNI) Var(ix86_isa_flags2) Save
+Support GFNI built-in functions and code generation.
+
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
 Support BMI built-in functions and code generation.

@@ -42,9 +42,12 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
+with System.Secondary_Stack;
 with System.Soft_Links;
 
 package System.Threads is
+
+   package SST renames System.Secondary_Stack;
 
    type ATSD is limited private;
    --  Type of the Ada thread specific data. It contains datas needed
@@ -71,8 +74,7 @@ package System.Threads is
    --  wrapper in the APEX process registration package.
 
    procedure Thread_Body_Enter
-     (Sec_Stack_Address    : System.Address;
-      Sec_Stack_Size       : Natural;
+     (Sec_Stack_Ptr        : SST.SS_Stack_Ptr;
       Process_ATSD_Address : System.Address);
    --  Enter thread body, see above for details
 

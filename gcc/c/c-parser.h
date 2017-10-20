@@ -137,7 +137,8 @@ extern c_token * c_parser_peek_2nd_token (c_parser *parser);
 extern c_token * c_parser_peek_nth_token (c_parser *parser, unsigned int n);
 extern bool c_parser_require (c_parser *parser, enum cpp_ttype type,
 			      const char *msgid,
-			      location_t matching_location = UNKNOWN_LOCATION);
+			      location_t matching_location = UNKNOWN_LOCATION,
+			      bool type_is_unique=true);
 extern bool c_parser_error (c_parser *parser, const char *gmsgid);
 extern void c_parser_consume_token (c_parser *parser);
 extern void c_parser_skip_until_found (c_parser *parser, enum cpp_ttype type,

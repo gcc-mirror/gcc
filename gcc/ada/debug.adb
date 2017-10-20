@@ -112,7 +112,7 @@ package body Debug is
    --  d.s  Strict secondary stack management
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
-   --  d.v
+   --  d.v  Enforce SPARK elaboration rules in SPARK code
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
@@ -163,7 +163,7 @@ package body Debug is
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7
    --  d.8
-   --  d.9  Enable build-in-place for nonlimited types
+   --  d.9  Disable build-in-place for nonlimited types
 
    --  Debug flags for binder (GNATBIND)
 
@@ -599,6 +599,13 @@ package body Debug is
 
    --  d.u  Sets Modify_Tree_For_C mode in which tree is modified to make it
    --       easier to generate code using a C compiler.
+
+   --  d.v  This flag enforces the elaboration rules defined in the SPARK
+   --       Reference Manual, chapter 7.7, to all SPARK code within a unit. As
+   --       a result, constructs which violate the rules in chapter 7.7 are no
+   --       longer accepted, even if the implementation is able to statically
+   --       ensure that accepting these constructs does not introduce the
+   --       possibility of failing an elaboration check.
 
    --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.

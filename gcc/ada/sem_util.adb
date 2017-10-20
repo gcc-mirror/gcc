@@ -3354,10 +3354,13 @@ package body Sem_Util is
            and then not Comes_From_Source (Par)
          then
             --  Continue to examine the context if the reference appears in a
-            --  subprogram body which was previously an expression function.
+            --  subprogram body which was previously an expression function,
+            --  unless this is during preanalysis (when In_Spec_Expression is
+            --  True), as the body may not yet be inserted in the tree.
 
             if Nkind (Par) = N_Subprogram_Body
               and then Was_Expression_Function (Par)
+              and then not In_Spec_Expression
             then
                null;
 
@@ -12545,10 +12548,8 @@ package body Sem_Util is
                  or else (Present (Renamed_Object (E))
                            and then Is_Aliased_View (Renamed_Object (E)))))
 
-           or else ((Is_Formal (E)
-                      or else Ekind_In (E, E_Generic_In_Out_Parameter,
-                                           E_Generic_In_Parameter))
-                    and then Is_Tagged_Type (Etype (E)))
+           or else ((Is_Formal (E) or else Is_Formal_Object (E))
+                      and then Is_Tagged_Type (Etype (E)))
 
            or else (Is_Concurrent_Type (E) and then In_Open_Scopes (E))
 
@@ -13185,17 +13186,29 @@ package body Sem_Util is
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean
    is
+      Param     : Node_Id;
       Param_Typ : Entity_Id := Empty;
 
    begin
       if Ekind (Proc_Nam) = E_Procedure
         and then Present (Parameter_Specifications (Parent (Proc_Nam)))
       then
-         Param_Typ := Etype (Parameter_Type (First (
-                        Parameter_Specifications (Parent (Proc_Nam)))));
+         Param := Parameter_Type (First (
+                    Parameter_Specifications (Parent (Proc_Nam))));
 
-      --  In this case where an Itype was created, the procedure call has been
-      --  rewritten.
+         --  The formal may be an anonymous access type.
+
+         if Nkind (Param) = N_Access_Definition then
+            Param_Typ := Entity (Subtype_Mark (Param));
+
+         else
+            Param_Typ := Etype (Param);
+         end if;
+
+      --  In the case where an Itype was created for a dispatchin call, the
+      --  procedure call has been rewritten. The actual may be an access to
+      --  interface type in which case it is the designated type that is the
+      --  controlling type.
 
       elsif Present (Associated_Node_For_Itype (Proc_Nam))
         and then Present (Original_Node (Associated_Node_For_Itype (Proc_Nam)))
@@ -13206,6 +13219,10 @@ package body Sem_Util is
          Param_Typ :=
            Etype (First (Parameter_Associations
                           (Associated_Node_For_Itype (Proc_Nam))));
+
+         if Ekind (Param_Typ) = E_Anonymous_Access_Type then
+            Param_Typ := Directly_Designated_Type (Param_Typ);
+         end if;
       end if;
 
       if Present (Param_Typ) then
@@ -13387,7 +13404,7 @@ package body Sem_Util is
                end if;
 
             --  A discriminant check on a selected component may be expanded
-            --  into a dereference when removing side-effects. Recover the
+            --  into a dereference when removing side effects. Recover the
             --  original node and its type, which may be unconstrained.
 
             elsif Nkind (P) = N_Explicit_Dereference
@@ -20584,6 +20601,51 @@ package body Sem_Util is
       return False;
    end Null_To_Null_Address_Convert_OK;
 
+   ---------------------------------
+   -- Number_Of_Elements_In_Array --
+   ---------------------------------
+
+   function Number_Of_Elements_In_Array (T : Entity_Id) return Int is
+      Indx : Node_Id;
+      Typ  : Entity_Id;
+      Low  : Node_Id;
+      High : Node_Id;
+      Num  : Int := 1;
+
+   begin
+      pragma Assert (Is_Array_Type (T));
+
+      Indx := First_Index (T);
+      while Present (Indx) loop
+         Typ := Underlying_Type (Etype (Indx));
+
+         --  Never look at junk bounds of a generic type
+
+         if Is_Generic_Type (Typ) then
+            return 0;
+         end if;
+
+         --  Check the array bounds are known at compile time and return zero
+         --  if they are not.
+
+         Low  := Type_Low_Bound (Typ);
+         High := Type_High_Bound (Typ);
+
+         if not Compile_Time_Known_Value (Low) then
+            return 0;
+         elsif not Compile_Time_Known_Value (High) then
+            return 0;
+         else
+            Num :=
+              Num * UI_To_Int ((Expr_Value (High) - Expr_Value (Low) + 1));
+         end if;
+
+         Next_Index (Indx);
+      end loop;
+
+      return Num;
+   end Number_Of_Elements_In_Array;
+
    -------------------------
    -- Object_Access_Level --
    -------------------------
@@ -20603,7 +20665,7 @@ package body Sem_Util is
       --  This construct appears in the context of dispatching calls.
 
       function Reference_To (Obj : Node_Id) return Node_Id;
-      --  An explicit dereference is created when removing side-effects from
+      --  An explicit dereference is created when removing side effects from
       --  expressions for constraint checking purposes. In this case a local
       --  access type is created for it. The correct access level is that of
       --  the original source node. We detect this case by noting that the

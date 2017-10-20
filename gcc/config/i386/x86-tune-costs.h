@@ -65,6 +65,17 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_BYTES (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_BYTES (2),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_BYTES (2),			/* cost of MULSS instruction.  */
+  COSTS_N_BYTES (2),			/* cost of MULSD instruction.  */
+  COSTS_N_BYTES (2),			/* cost of FMA SS instruction.  */
+  COSTS_N_BYTES (2),			/* cost of FMA SD instruction.  */
+  COSTS_N_BYTES (2),			/* cost of DIVSS instruction.  */
+  COSTS_N_BYTES (2),			/* cost of DIVSD instruction.  */
+  COSTS_N_BYTES (2),			/* cost of SQRTSS instruction.  */
+  COSTS_N_BYTES (2),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   ix86_size_memcpy,
   ix86_size_memset,
@@ -142,6 +153,17 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (22),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (24),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (122),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (23),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (27),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (27),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (27),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (27),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (88),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (88),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (122),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (122),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i386_memcpy,
   i386_memset,
@@ -220,6 +242,17 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (83),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (8),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (16),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (16),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (16),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (16),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (73),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (74),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (83),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (83),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i486_memcpy,
   i486_memset,
@@ -296,6 +329,17 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (3),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (39),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (39),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (70),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (70),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
@@ -365,6 +409,17 @@ struct processor_costs lakemont_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (5),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (5),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (10),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (10),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (31),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (60),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (31),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (63),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
@@ -449,6 +504,17 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (7),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (7),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (18),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (18),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (31),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (31),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentiumpro_memcpy,
   pentiumpro_memset,
@@ -525,6 +591,17 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (6),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (11),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (11),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (17),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (17),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (47),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (47),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (54),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (54),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   geode_memcpy,
   geode_memset,
@@ -603,6 +680,17 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (2),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (2),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (2),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (4),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (56),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (56),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (56),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (56),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k6_memcpy,
   k6_memset,
@@ -681,6 +769,18 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (4),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FMA SD instruction.  */
+  /* 11-16  */
+  COSTS_N_INSNS (16),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (24),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (19),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (19),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   athlon_memcpy,
   athlon_memset,
@@ -768,6 +868,18 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (4),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FMA SD instruction.  */
+  /* 11-16  */
+  COSTS_N_INSNS (16),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (20),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (19),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (27),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k8_memcpy,
   k8_memset,
@@ -862,6 +974,18 @@ struct processor_costs amdfam10_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (4),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FMA SD instruction.  */
+  /* 11-16  */
+  COSTS_N_INSNS (16),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (20),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (19),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (27),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   amdfam10_memcpy,
   amdfam10_memset,
@@ -957,6 +1081,19 @@ const struct processor_costs bdver1_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (6),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (6),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  /* 9-24  */
+  COSTS_N_INSNS (24),			/* cost of DIVSS instruction.  */
+  /* 9-27  */
+  COSTS_N_INSNS (27),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (26),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver1_memcpy,
   bdver1_memset,
@@ -1053,6 +1190,19 @@ const struct processor_costs bdver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (6),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (6),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  /* 9-24  */
+  COSTS_N_INSNS (24),			/* cost of DIVSS instruction.  */
+  /* 9-27  */
+  COSTS_N_INSNS (27),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (26),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver2_memcpy,
   bdver2_memset,
@@ -1140,6 +1290,19 @@ struct processor_costs bdver3_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (6),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (6),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  /* 9-24  */
+  COSTS_N_INSNS (24),			/* cost of DIVSS instruction.  */
+  /* 9-27  */
+  COSTS_N_INSNS (27),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (26),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver3_memcpy,
   bdver3_memset,
@@ -1226,6 +1389,19 @@ struct processor_costs bdver4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (6),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (6),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  /* 9-24  */
+  COSTS_N_INSNS (24),			/* cost of DIVSS instruction.  */
+  /* 9-27  */
+  COSTS_N_INSNS (27),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (26),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver4_memcpy,
   bdver4_memset,
@@ -1264,42 +1440,49 @@ struct processor_costs znver1_cost = {
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI.  */
    COSTS_N_INSNS (3),			/*				 HI.  */
    COSTS_N_INSNS (3),			/*				 SI.  */
-   COSTS_N_INSNS (4),			/*				 DI.  */
-   COSTS_N_INSNS (4)},			/*			      other.  */
+   COSTS_N_INSNS (3),			/*				 DI.  */
+   COSTS_N_INSNS (3)},			/*			      other.  */
   0,					/* cost of multiply per each bit
 					    set.  */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI.  */
-   COSTS_N_INSNS (35),			/*			    HI.  */
-   COSTS_N_INSNS (51),			/*			    SI.  */
-   COSTS_N_INSNS (83),			/*			    DI.  */
-   COSTS_N_INSNS (83)},			/*			    other.  */
+   /* Depending on parameters, idiv can get faster on ryzen.  This is upper
+      bound.  */
+  {COSTS_N_INSNS (16),			/* cost of a divide/mod for QI.  */
+   COSTS_N_INSNS (22),			/*			    HI.  */
+   COSTS_N_INSNS (30),			/*			    SI.  */
+   COSTS_N_INSNS (45),			/*			    DI.  */
+   COSTS_N_INSNS (45)},			/*			    other.  */
   COSTS_N_INSNS (1),			/* cost of movsx.  */
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
   9,					/* MOVE_RATIO.  */
-  4,					/* cost for loading QImode using
+
+  /* reg-reg moves are done by renaming and thus they are even cheaper than
+     1 cycle. Becuase reg-reg move cost is 2 and the following tables correspond
+     to doubles of latencies, we do not model this correctly.  It does not
+     seem to make practical difference to bump prices up even more.  */
+  6,					/* cost for loading QImode using
 					   movzbl.  */
-  {5, 5, 4},				/* cost of loading integer registers
+  {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer
+  {8, 8, 8},				/* cost of storing integer
 					   registers.  */
   2,					/* cost of reg,reg fld/fst.  */
-  {5, 5, 12},				/* cost of loading fp registers
+  {6, 6, 16},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode.  */
-  {4, 4, 8},				/* cost of storing fp registers
+  {8, 8, 16},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode.  */
   2,					/* cost of moving MMX register.  */
-  {4, 4},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode.  */
-  {4, 4},				/* cost of storing MMX registers
+  {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode.  */
   2,					/* cost of moving SSE register.  */
-  {4, 4, 4},				/* cost of loading SSE registers
+  {6, 6, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode.  */
-  {4, 4, 4},				/* cost of storing SSE registers
+  {8, 8, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode.  */
-  2,					/* MMX or SSE register to integer.  */
+  6,					/* MMX or SSE register to integer.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
@@ -1310,12 +1493,26 @@ struct processor_costs znver1_cost = {
      time).  */
   100,					/* number of parallel prefetches.  */
   3,					/* Branch cost.  */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  /* Latency of fdiv is 8-15.  */
+  COSTS_N_INSNS (15),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  /* Latency of fsqrt is 4-10.  */
+  COSTS_N_INSNS (10),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (10),			/* cost of DIVSS instruction.  */
+  /* 9-13  */
+  COSTS_N_INSNS (13),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (10),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (15),			/* cost of SQRTSD instruction.  */
   /* Zen can execute 4 integer operations per cycle. FP operations take 3 cycles
      and it can execute 2 integer additions and 2 multiplications thus
      reassociation may make sense up to with of 6.  SPEC2k6 bencharks suggests
@@ -1413,6 +1610,17 @@ const struct processor_costs btver1_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (2),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (13),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (17),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (14),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (48),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver1_memcpy,
   btver1_memset,
@@ -1499,6 +1707,17 @@ const struct processor_costs btver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (2),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (4),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (13),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (19),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (16),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (21),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver2_memcpy,
   btver2_memset,
@@ -1576,6 +1795,17 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (4),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (6),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (23),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (38),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (23),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (38),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium4_memcpy,
   pentium4_memset,
@@ -1656,6 +1886,17 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (2),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (5),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (7),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (7),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (7),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (7),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (32),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (40),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (32),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (41),			/* cost of SQRTSD instruction.  */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   nocona_memcpy,
   nocona_memset,
@@ -1734,6 +1975,17 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (5),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (31),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (60),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (31),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (63),			/* cost of SQRTSD instruction.  */
   2, 2, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   atom_memcpy,
   atom_memset,
@@ -1812,6 +2064,17 @@ struct processor_costs slm_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (39),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (69),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (20),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (35),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   slm_memcpy,
   slm_memset,
@@ -1890,6 +2153,17 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (8),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (8),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (8),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (20),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (20),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (40),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (40),			/* cost of SQRTSD instruction.  */
   1, 4, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   intel_memcpy,
   intel_memset,
@@ -1922,8 +2196,7 @@ static stringop_algs generic_memset[2] = {
 static const
 struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
-  /* On all chips taken into consideration lea is 2 cycles and more.  With
-     this cost however our current implementation of synth_mult results in
+  /* Setting cost to 2 makes our current implementation of synth_mult result in
      use of unnecessary temporary registers causing regression on several
      SPECfp benchmarks.  */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -1972,12 +2245,23 @@ struct processor_costs generic_cost = {
   /* Benchmarks shows large regressions on K8 sixtrack benchmark when this
      value is increased to perhaps more appropriate value of 5.  */
   3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (18),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (32),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (30),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (58),			/* cost of SQRTSD instruction.  */
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
@@ -2021,50 +2305,64 @@ struct processor_costs core_cost = {
    COSTS_N_INSNS (4),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
    COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
+   COSTS_N_INSNS (4)},			/*			      other */
   0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
+  {COSTS_N_INSNS (8),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (8),			/*			    HI */
+   /* 8-11 */
+   COSTS_N_INSNS (11),			/*			    SI */
+   /* 24-81 */
+   COSTS_N_INSNS (81),			/*			    DI */
+   COSTS_N_INSNS (81)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
+  6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  {6, 6, 6},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {6, 6, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {8, 6, 10},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
+  {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
+  {6, 6, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
+  {6, 6, 6},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2,					/* MMX or SSE register to integer */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
   /* FIXME perhaps more appropriate value is 5.  */
   3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  /* 10-24 */
+  COSTS_N_INSNS (24),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (23),			/* cost of FSQRT instruction.  */
+
+  COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
+  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (4),			/* cost of MULSS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
+  COSTS_N_INSNS (18),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (32),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (30),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (58),			/* cost of SQRTSD instruction.  */
   1, 4, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   core_memcpy,
   core_memset,

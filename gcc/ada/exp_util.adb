@@ -10817,8 +10817,17 @@ package body Exp_Util is
                Analyze (Block);
             end if;
 
-         when others =>
+         --  Could be e.g. a loop that was transformed into a block or null
+         --  statement. Do nothing for terminate alternatives.
+
+         when N_Block_Statement
+            | N_Null_Statement
+            | N_Terminate_Alternative
+         =>
             null;
+
+         when others =>
+            raise Program_Error;
       end case;
    end Process_Statements_For_Controlled_Objects;
 
@@ -10969,7 +10978,8 @@ package body Exp_Util is
          Related_Nod : Node_Id := Empty) return Entity_Id;
       --  Create an external symbol of the form xxx_FIRST/_LAST if Related_Nod
       --  is present (xxx is taken from the Chars field of Related_Nod),
-      --  otherwise it generates an internal temporary.
+      --  otherwise it generates an internal temporary. The created temporary
+      --  entity is marked as internal.
 
       ---------------------
       -- Build_Temporary --
@@ -10980,6 +10990,7 @@ package body Exp_Util is
          Id          : Character;
          Related_Nod : Node_Id := Empty) return Entity_Id
       is
+         Temp_Id  : Entity_Id;
          Temp_Nam : Name_Id;
 
       begin
@@ -10992,13 +11003,17 @@ package body Exp_Util is
                Temp_Nam := New_External_Name (Chars (Related_Id), "_LAST");
             end if;
 
-            return Make_Defining_Identifier (Loc, Temp_Nam);
+            Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
 
          --  Otherwise generate an internal temporary
 
          else
-            return Make_Temporary (Loc, Id, Related_Nod);
+            Temp_Id := Make_Temporary (Loc, Id, Related_Nod);
          end if;
+
+         Set_Is_Internal (Temp_Id);
+
+         return Temp_Id;
       end Build_Temporary;
 
       --  Local variables
@@ -11249,7 +11264,7 @@ package body Exp_Util is
          --  Exp_Ch2.Expand_Renaming). Otherwise the temporary must be
          --  elaborated by gigi, and is of course not to be replaced in-line
          --  by the expression it renames, which would defeat the purpose of
-         --  removing the side-effect.
+         --  removing the side effect.
 
          if Nkind_In (Exp, N_Selected_Component, N_Indexed_Component)
            and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
@@ -12650,7 +12665,7 @@ package body Exp_Util is
            and then Variable_Ref
          then
             --  Exception is a prefix that is the result of a previous removal
-            --  of side-effects.
+            --  of side effects.
 
             return Is_Entity_Name (Prefix (N))
               and then not Comes_From_Source (Prefix (N))

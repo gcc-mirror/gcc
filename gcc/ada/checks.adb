@@ -5940,6 +5940,10 @@ package body Checks is
       --  In addition, we force a check if Force_Validity_Checks is set
 
       elsif not Comes_From_Source (Expr)
+        and then not
+          (Nkind (Expr) = N_Identifier
+            and then Present (Renamed_Object (Entity (Expr)))
+            and then Comes_From_Source (Renamed_Object (Entity (Expr))))
         and then not Force_Validity_Checks
         and then (Nkind (Expr) /= N_Unchecked_Type_Conversion
                     or else Kill_Range_Check (Expr))

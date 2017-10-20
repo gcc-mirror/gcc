@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
@@ -159,7 +160,7 @@ package body Sem_Elab is
    --
    --      -  Instantiations
    --
-   --      -  References to variables
+   --      -  Reads of variables
    --
    --      -  Task activation
    --
@@ -175,7 +176,7 @@ package body Sem_Elab is
    --
    --      - For instantiations, the target is the generic template
    --
-   --      - For references to variables, the target is the variable
+   --      - For reads of variables, the target is the variable
    --
    --      - For task activation, the target is the task body
    --
@@ -292,7 +293,7 @@ package body Sem_Elab is
    --  |       |                                                            |
    --  |       +--> Process_Variable_Assignment                             |
    --  |       |                                                            |
-   --  |       +--> Process_Variable_Reference                              |
+   --  |       +--> Process_Variable_Read                                   |
    --  |                                                                    |
    --  +------------------------- Processing phase -------------------------+
 
@@ -348,7 +349,7 @@ package body Sem_Elab is
    --           ABE mechanism effectively ignores all calls which cause the
    --           elaboration flow to "leave" the instance.
    --
-   --  -gnatd.o conservarive elaboration order for indirect calls
+   --  -gnatd.o conservative elaboration order for indirect calls
    --
    --           The ABE mechanism treats '[Unrestricted_]Access of an entry,
    --           operator, or subprogram as an immediate invocation of the
@@ -360,6 +361,13 @@ package body Sem_Elab is
    --           The ABE mechanism does not consider '[Unrestricted_]Access of
    --           entries, operators, and subprograms. As a result, the scenarios
    --           are not recorder or processed.
+   --
+   --  -gnatd.v enforce SPARK elaboration rules in SPARK code
+   --
+   --           The ABE mechanism applies some of the SPARK elaboration rules
+   --           defined in the SPARK reference manual, chapter 7.7. Note that
+   --           certain rules are always enforced, regardless of whether the
+   --           switch is active.
    --
    --  -gnatd.y disable implicit pragma Elaborate_All on task bodies
    --
@@ -776,14 +784,6 @@ package body Sem_Elab is
    --  message, otherwise it emits an error. If flag In_SPARK is set, then
    --  string " in SPARK" is added to the end of the message.
 
-   procedure Ensure_Dynamic_Prior_Elaboration
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id);
-   --  Guarantee the elaboration of unit Unit_Id with respect to the main unit
-   --  by suggesting the use of Elaborate[_All] with name Prag_Nam. N denotes
-   --  the related scenario.
-
    procedure Ensure_Prior_Elaboration
      (N            : Node_Id;
       Unit_Id      : Entity_Id;
@@ -792,7 +792,15 @@ package body Sem_Elab is
    --  N denotes the related scenario. Flag In_Task_Body should be set when the
    --  need for elaboration is initiated from a task body.
 
-   procedure Ensure_Static_Prior_Elaboration
+   procedure Ensure_Prior_Elaboration_Dynamic
+     (N        : Node_Id;
+      Unit_Id  : Entity_Id;
+      Prag_Nam : Name_Id);
+   --  Guarantee the elaboration of unit Unit_Id with respect to the main unit
+   --  by suggesting the use of Elaborate[_All] with name Prag_Nam. N denotes
+   --  the related scenario.
+
+   procedure Ensure_Prior_Elaboration_Static
      (N        : Node_Id;
       Unit_Id  : Entity_Id;
       Prag_Nam : Name_Id);
@@ -808,6 +816,7 @@ package body Sem_Elab is
      (Call      : Node_Id;
       Target_Id : out Entity_Id;
       Attrs     : out Call_Attributes);
+   pragma Inline (Extract_Call_Attributes);
    --  Obtain attributes Attrs associated with call Call. Target_Id is the
    --  entity of the call target.
 
@@ -828,6 +837,7 @@ package body Sem_Elab is
       Inst_Id  : out Entity_Id;
       Gen_Id   : out Entity_Id;
       Attrs    : out Instantiation_Attributes);
+   pragma Inline (Extract_Instantiation_Attributes);
    --  Obtain attributes Attrs associated with expanded instantiation Exp_Inst.
    --  Inst is the instantiation. Inst_Id is the entity of the instance. Gen_Id
    --  is the entity of the generic unit being instantiated.
@@ -841,13 +851,15 @@ package body Sem_Elab is
    procedure Extract_Task_Attributes
      (Typ   : Entity_Id;
       Attrs : out Task_Attributes);
+   pragma Inline (Extract_Task_Attributes);
    --  Obtain attributes Attrs associated with task type Typ
 
    procedure Extract_Variable_Reference_Attributes
      (Ref    : Node_Id;
       Var_Id : out Entity_Id;
       Attrs  : out Variable_Attributes);
-   --  Obtain attributes Attrs associated with reference Ref which mentions
+   pragma Inline (Extract_Variable_Reference_Attributes);
+   --  Obtain attributes Attrs associated with reference Ref that mentions
    --  variable Var_Id.
 
    function Find_Code_Unit (N : Node_Or_Entity_Id) return Entity_Id;
@@ -871,6 +883,10 @@ package body Sem_Elab is
    --  Return the top unit which contains arbitrary node or entity N. The unit
    --  is obtained by logically unwinding instantiations and subunits when N
    --  resides within one.
+
+   function Find_Unit_Entity (N : Node_Id) return Entity_Id;
+   pragma Inline (Find_Unit_Entity);
+   --  Return the entity of unit N
 
    function First_Formal_Type (Subp_Id : Entity_Id) return Entity_Id;
    pragma Inline (First_Formal_Type);
@@ -908,6 +924,7 @@ package body Sem_Elab is
    function In_External_Instance
      (N           : Node_Id;
       Target_Decl : Node_Id) return Boolean;
+   pragma Inline (In_External_Instance);
    --  Determine whether a target desctibed by its declaration Target_Decl
    --  resides in a package instance which is external to scenario N.
 
@@ -931,28 +948,30 @@ package body Sem_Elab is
       In_SPARK  : Boolean);
    --  Output information concerning call Call which invokes target Target_Id.
    --  If flag Info_Msg is set, the routine emits an information message,
-   --  otherwise it emits an error. If flag In_SPARK is set, then string " in
-   --  SPARK" is added to the end of the message.
+   --  otherwise it emits an error. If flag In_SPARK is set, then the string
+   --  " in SPARK" is added to the end of the message.
 
    procedure Info_Instantiation
      (Inst     : Node_Id;
       Gen_Id   : Entity_Id;
       Info_Msg : Boolean;
       In_SPARK : Boolean);
+   pragma Inline (Info_Instantiation);
    --  Output information concerning instantiation Inst which instantiates
    --  generic unit Gen_Id. If flag Info_Msg is set, the routine emits an
    --  information message, otherwise it emits an error. If flag In_SPARK
    --  is set, then string " in SPARK" is added to the end of the message.
 
-   procedure Info_Variable_Reference
+   procedure Info_Variable_Read
      (Ref      : Node_Id;
       Var_Id   : Entity_Id;
       Info_Msg : Boolean;
       In_SPARK : Boolean);
-   --  Output information concerning reference Ref which mentions variable
-   --  Var_Id. If flag Info_Msg is set, the routine emits an information
-   --  message, otherwise it emits an error. If flag In_SPARK is set, then
-   --  string " in SPARK" is added to the end of the message.
+   pragma Inline (Info_Variable_Read);
+   --  Output information concerning reference Ref which reads variable Var_Id.
+   --  If flag Info_Msg is set, the routine emits an information message,
+   --  otherwise it emits an error. If flag In_SPARK is set, then string " in
+   --  SPARK" is added to the end of the message.
 
    function Insertion_Node (N : Node_Id; Ins_Nod : Node_Id) return Node_Id;
    pragma Inline (Insertion_Node);
@@ -1026,6 +1045,7 @@ package body Sem_Elab is
      (N           : Node_Id;
       Target_Decl : Node_Id;
       Target_Body : Node_Id) return Boolean;
+   pragma Inline (Is_Guaranteed_ABE);
    --  Determine whether scenario N with a target described by its initial
    --  declaration Target_Decl and body Target_Decl results in a guaranteed
    --  ABE.
@@ -1034,6 +1054,10 @@ package body Sem_Elab is
    pragma Inline (Is_Initial_Condition_Proc);
    --  Determine whether arbitrary entity Id denotes internally generated
    --  routine Initial_Condition.
+
+   function Is_Initialized (Obj_Decl : Node_Id) return Boolean;
+   pragma Inline (Is_Initialized);
+   --  Determine whether object declaration Obj_Decl is initialized
 
    function Is_Invariant_Proc (Id : Entity_Id) return Boolean;
    pragma Inline (Is_Invariant_Proc);
@@ -1139,10 +1163,10 @@ package body Sem_Elab is
    --  Determine whether arbitrary node N denotes a suitable assignment for ABE
    --  processing.
 
-   function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Variable_Reference);
-   --  Determine whether arbitrary node N is a suitable reference to a variable
-   --  for ABE processing.
+   function Is_Suitable_Variable_Read (N : Node_Id) return Boolean;
+   pragma Inline (Is_Suitable_Variable_Read);
+   --  Determine whether arbitrary node N is a suitable variable read for ABE
+   --  processing.
 
    function Is_Task_Entry (Id : Entity_Id) return Boolean;
    pragma Inline (Is_Task_Entry);
@@ -1234,7 +1258,7 @@ package body Sem_Elab is
       Call_Attrs   : Call_Attributes;
       Target_Id    : Entity_Id;
       In_Task_Body : Boolean);
-   --  Top level dispatcher for processing of calls. Perform ABE checks and
+   --  Top-level dispatcher for processing of calls. Perform ABE checks and
    --  diagnostics for call Call which invokes target Target_Id. Call_Attrs
    --  are the attributes of the call. Flag In_Task_Body should be set when
    --  the processing is initiated from a task body.
@@ -1334,10 +1358,24 @@ package body Sem_Elab is
    --  should be set when the processing is initiated from a task body.
 
    procedure Process_Variable_Assignment (Asmt : Node_Id);
-   --  Perform ABE checks and diagnostics for assignment statement Asmt
+   --  Top level dispatcher for processing of variable assignments. Perform ABE
+   --  checks and diagnostics for assignment statement Asmt.
 
-   procedure Process_Variable_Reference (Ref : Node_Id);
-   --  Perform ABE checks and diagnostics for variable reference Ref
+   procedure Process_Variable_Assignment_Ada
+     (Asmt   : Node_Id;
+      Var_Id : Entity_Id);
+   --  Perform ABE checks and diagnostics for assignment statement Asmt that
+   --  updates the value of variable Var_Id using the Ada rules.
+
+   procedure Process_Variable_Assignment_SPARK
+     (Asmt   : Node_Id;
+      Var_Id : Entity_Id);
+   --  Perform ABE checks and diagnostics for assignment statement Asmt that
+   --  updates the value of variable Var_Id using the SPARK rules.
+
+   procedure Process_Variable_Read (Ref : Node_Id);
+   --  Perform ABE checks and diagnostics for reference Ref that reads a
+   --  variable.
 
    procedure Push_Active_Scenario (N : Node_Id);
    pragma Inline (Push_Active_Scenario);
@@ -1359,6 +1397,7 @@ package body Sem_Elab is
    --  should be set when the traversal is initiated from a task body.
 
    procedure Update_Elaboration_Scenario (New_N : Node_Id; Old_N : Node_Id);
+   pragma Inline (Update_Elaboration_Scenario);
    --  Update all relevant internal data structures when scenario Old_N is
    --  transformed into scenario New_N by Atree.Rewrite.
 
@@ -1774,7 +1813,7 @@ package body Sem_Elab is
          --  be on another machine.
 
          if Ekind (Body_Id) = E_Package_Body
-           and then Ekind (Spec_Id) = E_Package
+           and then Ekind_In (Spec_Id, E_Generic_Package, E_Package)
            and then (Is_Remote_Call_Interface (Spec_Id)
                       or else Is_Remote_Types (Spec_Id))
          then
@@ -1870,7 +1909,20 @@ package body Sem_Elab is
          Comp_Unit := Parent (Unit_Declaration_Node (Unit_Id));
       end if;
 
-      if Nkind (Comp_Unit) = N_Subunit then
+      --  Handle the case where a subprogram instantiation which acts as a
+      --  compilation unit is expanded into an anonymous package that wraps
+      --  the instantiated subprogram.
+
+      if Nkind (Comp_Unit) = N_Package_Specification
+        and then Nkind_In (Original_Node (Parent (Comp_Unit)),
+                           N_Function_Instantiation,
+                           N_Procedure_Instantiation)
+      then
+         Comp_Unit := Parent (Parent (Comp_Unit));
+
+      --  Handle the case where the compilation unit is a subunit
+
+      elsif Nkind (Comp_Unit) = N_Subunit then
          Comp_Unit := Parent (Comp_Unit);
       end if;
 
@@ -1938,97 +1990,6 @@ package body Sem_Elab is
    begin
       return Elaboration_Context_Index (Key mod Elaboration_Context_Max);
    end Elaboration_Context_Hash;
-
-   --------------------------------------
-   -- Ensure_Dynamic_Prior_Elaboration --
-   --------------------------------------
-
-   procedure Ensure_Dynamic_Prior_Elaboration
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id)
-   is
-      procedure Info_Missing_Pragma;
-      pragma Inline (Info_Missing_Pragma);
-      --  Output information concerning missing Elaborate or Elaborate_All
-      --  pragma with name Prag_Nam for scenario N which ensures the prior
-      --  elaboration of Unit_Id.
-
-      -------------------------
-      -- Info_Missing_Pragma --
-      -------------------------
-
-      procedure Info_Missing_Pragma is
-      begin
-         --  Internal units are ignored as they cause unnecessary noise
-
-         if not In_Internal_Unit (Unit_Id) then
-
-            --  The name of the unit subjected to the elaboration pragma is
-            --  fully qualified to improve the clarity of the info message.
-
-            Error_Msg_Name_1     := Prag_Nam;
-            Error_Msg_Qual_Level := Nat'Last;
-
-            Error_Msg_NE ("info: missing pragma % for unit &", N, Unit_Id);
-            Error_Msg_Qual_Level := 0;
-         end if;
-      end Info_Missing_Pragma;
-
-      --  Local variables
-
-      Elab_Attrs : Elaboration_Attributes;
-      Level      : Enclosing_Level_Kind;
-
-   --  Start of processing for Ensure_Dynamic_Prior_Elaboration
-
-   begin
-      Elab_Attrs := Elaboration_Context.Get (Unit_Id);
-
-      --  Nothing to do when the unit is guaranteed prior elaboration by means
-      --  of a source Elaborate[_All] pragma.
-
-      if Present (Elab_Attrs.Source_Pragma) then
-         return;
-      end if;
-
-      --  Output extra information on a missing Elaborate[_All] pragma when
-      --  switch -gnatel (info messages on implicit Elaborate[_All] pragmas
-      --  is in effect.
-
-      if Elab_Info_Messages then
-
-         --  Performance note: parent traversal
-
-         Level := Find_Enclosing_Level (N);
-
-         --  Declaration level scenario
-
-         if (Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N))
-           and then Level = Declaration_Level
-         then
-            null;
-
-         --  Library level scenario
-
-         elsif Level in Library_Level then
-            null;
-
-         --  Instantiation library level scenario
-
-         elsif Level = Instantiation then
-            null;
-
-         --  Otherwise the scenario does not appear at the proper level and
-         --  cannot possibly act as a top level scenario.
-
-         else
-            return;
-         end if;
-
-         Info_Missing_Pragma;
-      end if;
-   end Ensure_Dynamic_Prior_Elaboration;
 
    ------------------------------
    -- Ensure_Prior_Elaboration --
@@ -2147,7 +2108,7 @@ package body Sem_Elab is
       --  effect.
 
       elsif Dynamic_Elaboration_Checks then
-         Ensure_Dynamic_Prior_Elaboration
+         Ensure_Prior_Elaboration_Dynamic
            (N        => N,
             Unit_Id  => Unit_Id,
             Prag_Nam => Prag_Nam);
@@ -2158,18 +2119,109 @@ package body Sem_Elab is
       else
          pragma Assert (Static_Elaboration_Checks);
 
-         Ensure_Static_Prior_Elaboration
+         Ensure_Prior_Elaboration_Static
            (N        => N,
             Unit_Id  => Unit_Id,
             Prag_Nam => Prag_Nam);
       end if;
    end Ensure_Prior_Elaboration;
 
+   --------------------------------------
+   -- Ensure_Prior_Elaboration_Dynamic --
+   --------------------------------------
+
+   procedure Ensure_Prior_Elaboration_Dynamic
+     (N        : Node_Id;
+      Unit_Id  : Entity_Id;
+      Prag_Nam : Name_Id)
+   is
+      procedure Info_Missing_Pragma;
+      pragma Inline (Info_Missing_Pragma);
+      --  Output information concerning missing Elaborate or Elaborate_All
+      --  pragma with name Prag_Nam for scenario N, which would ensure the
+      --  prior elaboration of Unit_Id.
+
+      -------------------------
+      -- Info_Missing_Pragma --
+      -------------------------
+
+      procedure Info_Missing_Pragma is
+      begin
+         --  Internal units are ignored as they cause unnecessary noise
+
+         if not In_Internal_Unit (Unit_Id) then
+
+            --  The name of the unit subjected to the elaboration pragma is
+            --  fully qualified to improve the clarity of the info message.
+
+            Error_Msg_Name_1     := Prag_Nam;
+            Error_Msg_Qual_Level := Nat'Last;
+
+            Error_Msg_NE ("info: missing pragma % for unit &", N, Unit_Id);
+            Error_Msg_Qual_Level := 0;
+         end if;
+      end Info_Missing_Pragma;
+
+      --  Local variables
+
+      Elab_Attrs : Elaboration_Attributes;
+      Level      : Enclosing_Level_Kind;
+
+   --  Start of processing for Ensure_Prior_Elaboration_Dynamic
+
+   begin
+      Elab_Attrs := Elaboration_Context.Get (Unit_Id);
+
+      --  Nothing to do when the unit is guaranteed prior elaboration by means
+      --  of a source Elaborate[_All] pragma.
+
+      if Present (Elab_Attrs.Source_Pragma) then
+         return;
+      end if;
+
+      --  Output extra information on a missing Elaborate[_All] pragma when
+      --  switch -gnatel (info messages on implicit Elaborate[_All] pragmas
+      --  is in effect.
+
+      if Elab_Info_Messages then
+
+         --  Performance note: parent traversal
+
+         Level := Find_Enclosing_Level (N);
+
+         --  Declaration-level scenario
+
+         if (Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N))
+           and then Level = Declaration_Level
+         then
+            null;
+
+         --  Library-level scenario
+
+         elsif Level in Library_Level then
+            null;
+
+         --  Instantiation library-level scenario
+
+         elsif Level = Instantiation then
+            null;
+
+         --  Otherwise the scenario does not appear at the proper level and
+         --  cannot possibly act as a top-level scenario.
+
+         else
+            return;
+         end if;
+
+         Info_Missing_Pragma;
+      end if;
+   end Ensure_Prior_Elaboration_Dynamic;
+
    -------------------------------------
-   -- Ensure_Static_Prior_Elaboration --
+   -- Ensure_Prior_Elaboration_Static --
    -------------------------------------
 
-   procedure Ensure_Static_Prior_Elaboration
+   procedure Ensure_Prior_Elaboration_Static
      (N        : Node_Id;
       Unit_Id  : Entity_Id;
       Prag_Nam : Name_Id)
@@ -2177,8 +2229,9 @@ package body Sem_Elab is
       function Find_With_Clause
         (Items     : List_Id;
          Withed_Id : Entity_Id) return Node_Id;
-      --  Find a non-limited with clause in the list of context items Items
-      --  which withs unit Withed_Id. Return Empty if no such clause is found.
+      pragma Inline (Find_With_Clause);
+      --  Find a nonlimited with clause in the list of context items Items
+      --  that withs unit Withed_Id. Return Empty if no such clause is found.
 
       procedure Info_Implicit_Pragma;
       pragma Inline (Info_Implicit_Pragma);
@@ -2253,7 +2306,7 @@ package body Sem_Elab is
       Elab_Attrs : Elaboration_Attributes;
       Items      : List_Id;
 
-   --  Start of processing for Ensure_Static_Prior_Elaboration
+   --  Start of processing for Ensure_Prior_Elaboration_Static
 
    begin
       Elab_Attrs := Elaboration_Context.Get (Unit_Id);
@@ -2347,7 +2400,7 @@ package body Sem_Elab is
       if Elab_Info_Messages then
          Info_Implicit_Pragma;
       end if;
-   end Ensure_Static_Prior_Elaboration;
+   end Ensure_Prior_Elaboration_Static;
 
    -----------------------------
    -- Extract_Assignment_Name --
@@ -2898,10 +2951,8 @@ package body Sem_Elab is
    --------------------
 
    function Find_Code_Unit (N : Node_Or_Entity_Id) return Entity_Id is
-      N_Unit : constant Node_Id := Unit (Cunit (Get_Code_Unit (N)));
-
    begin
-      return Defining_Entity (N_Unit, Concurrent_Subunit => True);
+      return Find_Unit_Entity (Unit (Cunit (Get_Code_Unit (N))));
    end Find_Code_Unit;
 
    ---------------------------
@@ -2921,7 +2972,7 @@ package body Sem_Elab is
          Full_Context : Boolean);
       --  Add unit Unit_Id to the elaboration context. Prag denotes the pragma
       --  which prompted the inclusion of the unit to the elaboration context.
-      --  If flag Full_Context is set, examine the non-limited clauses of unit
+      --  If flag Full_Context is set, examine the nonlimited clauses of unit
       --  Unit_Id and add each withed unit to the context.
 
       procedure Find_Elaboration_Context (Comp_Unit : Node_Id);
@@ -3018,7 +3069,7 @@ package body Sem_Elab is
 
          if Full_Context then
 
-            --  Process all non-limited with clauses found in the context of
+            --  Process all nonlimited with clauses found in the context of
             --  the current unit. Note that limited clauses do not impose an
             --  elaboration order.
 
@@ -3370,11 +3421,46 @@ package body Sem_Elab is
    -------------------
 
    function Find_Top_Unit (N : Node_Or_Entity_Id) return Entity_Id is
-      N_Unit : constant Node_Id := Unit (Cunit (Get_Top_Level_Code_Unit (N)));
+   begin
+      return Find_Unit_Entity (Unit (Cunit (Get_Top_Level_Code_Unit (N))));
+   end Find_Top_Unit;
+
+   ----------------------
+   -- Find_Unit_Entity --
+   ----------------------
+
+   function Find_Unit_Entity (N : Node_Id) return Entity_Id is
+      Context : constant Node_Id := Parent (N);
+      Orig_N  : constant Node_Id := Original_Node (N);
 
    begin
-      return Defining_Entity (N_Unit, Concurrent_Subunit => True);
-   end Find_Top_Unit;
+      --  The unit denotes a package body of an instantiation which acts as
+      --  a compilation unit. The proper entity is that of the package spec.
+
+      if Nkind (N) = N_Package_Body
+        and then Nkind (Orig_N) = N_Package_Instantiation
+        and then Nkind (Context) = N_Compilation_Unit
+      then
+         return Corresponding_Spec (N);
+
+      --  The unit denotes an anonymous package created to wrap a subprogram
+      --  instantiation which acts as a compilation unit. The proper entity is
+      --  that of the "related instance".
+
+      elsif Nkind (N) = N_Package_Declaration
+        and then Nkind_In (Orig_N, N_Function_Instantiation,
+                                   N_Procedure_Instantiation)
+        and then Nkind (Context) = N_Compilation_Unit
+      then
+         return
+           Related_Instance (Defining_Entity (N, Concurrent_Subunit => True));
+
+      --  Otherwise the proper entity is the defining entity
+
+      else
+         return Defining_Entity (N, Concurrent_Subunit => True);
+      end if;
+   end Find_Unit_Entity;
 
    -----------------------
    -- First_Formal_Type --
@@ -4140,11 +4226,11 @@ package body Sem_Elab is
          In_SPARK => In_SPARK);
    end Info_Instantiation;
 
-   -----------------------------
-   -- Info_Variable_Reference --
-   -----------------------------
+   ------------------------
+   -- Info_Variable_Read --
+   ------------------------
 
-   procedure Info_Variable_Reference
+   procedure Info_Variable_Read
      (Ref      : Node_Id;
       Var_Id   : Entity_Id;
       Info_Msg : Boolean;
@@ -4152,12 +4238,12 @@ package body Sem_Elab is
    is
    begin
       Elab_Msg_NE
-        (Msg      => "reference to variable & during elaboration",
+        (Msg      => "read of variable & during elaboration",
          N        => Ref,
          Id       => Var_Id,
          Info_Msg => Info_Msg,
          In_SPARK => In_SPARK);
-   end Info_Variable_Reference;
+   end Info_Variable_Read;
 
    --------------------
    -- Insertion_Node --
@@ -4642,6 +4728,18 @@ package body Sem_Elab is
         Ekind (Id) = E_Procedure and then Is_Initial_Condition_Procedure (Id);
    end Is_Initial_Condition_Proc;
 
+   --------------------
+   -- Is_Initialized --
+   --------------------
+
+   function Is_Initialized (Obj_Decl : Node_Id) return Boolean is
+   begin
+      --  To qualify, the object declaration must have an expression
+
+      return
+        Present (Expression (Obj_Decl)) or else Has_Init_Expression (Obj_Decl);
+   end Is_Initialized;
+
    -----------------------
    -- Is_Invariant_Proc --
    -----------------------
@@ -5102,7 +5200,7 @@ package body Sem_Elab is
           or else Is_Suitable_Call (N)
           or else Is_Suitable_Instantiation (N)
           or else Is_Suitable_Variable_Assignment (N)
-          or else Is_Suitable_Variable_Reference (N);
+          or else Is_Suitable_Variable_Read (N);
    end Is_Suitable_Scenario;
 
    -------------------------------------
@@ -5182,11 +5280,7 @@ package body Sem_Elab is
       --  To qualify, the assignment must meet the following prerequisites:
 
       return
-
-        --  The variable must be a source entity and susceptible to warnings
-
         Comes_From_Source (Var_Id)
-          and then not Has_Warnings_Off (Var_Id)
 
           --  The variable must be declared in the spec of compilation unit U
 
@@ -5196,29 +5290,23 @@ package body Sem_Elab is
 
           and then Find_Enclosing_Level (Var_Decl) = Package_Spec
 
-          --  The variable must lack initialization
-
-          and then not Has_Init_Expression (Var_Decl)
-          and then No (Expression (Var_Decl))
-
           --  The assignment must occur in the body of compilation unit U
 
           and then Nkind (N_Unit) = N_Package_Body
           and then Present (Corresponding_Body (Var_Unit))
-          and then Corresponding_Body (Var_Unit) = N_Unit_Id
-
-          --  The package spec must lack pragma Elaborate_Body
-
-          and then not Has_Pragma_Elaborate_Body (Var_Unit_Id);
+          and then Corresponding_Body (Var_Unit) = N_Unit_Id;
    end Is_Suitable_Variable_Assignment;
 
-   ------------------------------------
-   -- Is_Suitable_Variable_Reference --
-   ------------------------------------
+   -------------------------------
+   -- Is_Suitable_Variable_Read --
+   -------------------------------
 
-   function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean is
+   function Is_Suitable_Variable_Read (N : Node_Id) return Boolean is
       function In_Pragma (Nod : Node_Id) return Boolean;
-      --  Determine whether arbitrary node N appears within a pragma
+      --  Determine whether arbitrary node Nod appears within a pragma
+
+      function Is_Variable_Read (Ref : Node_Id) return Boolean;
+      --  Determine whether variable reference Ref constitutes a read
 
       ---------------
       -- In_Pragma --
@@ -5245,12 +5333,88 @@ package body Sem_Elab is
          return False;
       end In_Pragma;
 
+      ----------------------
+      -- Is_Variable_Read --
+      ----------------------
+
+      function Is_Variable_Read (Ref : Node_Id) return Boolean is
+         function Is_Out_Actual (Call : Node_Id) return Boolean;
+         --  Determine whether the corresponding formal of actual Ref which
+         --  appears in call Call has mode OUT.
+
+         -------------------
+         -- Is_Out_Actual --
+         -------------------
+
+         function Is_Out_Actual (Call : Node_Id) return Boolean is
+            Actual     : Node_Id;
+            Call_Attrs : Call_Attributes;
+            Formal     : Entity_Id;
+            Target_Id  : Entity_Id;
+
+         begin
+            Extract_Call_Attributes
+              (Call      => Call,
+               Target_Id => Target_Id,
+               Attrs     => Call_Attrs);
+
+            --  Inspect the actual and formal parameters, trying to find the
+            --  corresponding formal for Ref.
+
+            Actual := First_Actual (Call);
+            Formal := First_Formal (Target_Id);
+            while Present (Actual) and then Present (Formal) loop
+               if Actual = Ref then
+                  return Ekind (Formal) = E_Out_Parameter;
+               end if;
+
+               Next_Actual (Actual);
+               Next_Formal (Formal);
+            end loop;
+
+            return False;
+         end Is_Out_Actual;
+
+         --  Local variables
+
+         Context : constant Node_Id := Parent (Ref);
+
+      --  Start of processing for Is_Variable_Read
+
+      begin
+         --  The majority of variable references are reads, and they can appear
+         --  in a great number of contexts. To determine whether a reference is
+         --  a read, it is more practical to find out whether it is a write.
+
+         --  A reference is a write when it appears immediately on the left-
+         --  hand side of an assignment.
+
+         if Nkind (Context) = N_Assignment_Statement
+           and then Name (Context) = Ref
+         then
+            return False;
+
+         --  A reference is a write when it acts as an actual in a subprogram
+         --  call and the corresponding formal has mode OUT.
+
+         elsif Nkind_In (Context, N_Function_Call,
+                                  N_Procedure_Call_Statement)
+           and then Is_Out_Actual (Context)
+         then
+            return False;
+         end if;
+
+         --  Any other reference is a read
+
+         return True;
+      end Is_Variable_Read;
+
       --  Local variables
 
       Prag   : Node_Id;
       Var_Id : Entity_Id;
 
-   --  Start of processing for Is_Suitable_Variable_Reference
+   --  Start of processing for Is_Suitable_Variable_Read
 
    begin
       --  This scenario is relevant only when the static model is in effect
@@ -5262,8 +5426,7 @@ package body Sem_Elab is
          return False;
 
       --  Attributes and operator sumbols are not considered to be suitable
-      --  references to variables even though they are part of predicate
-      --  Is_Entity_Name.
+      --  references even though they are part of predicate Is_Entity_Name.
 
       elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
          return False;
@@ -5303,6 +5466,10 @@ package body Sem_Elab is
           and then Get_SPARK_Mode_From_Annotation (Prag) = On
           and then Is_SPARK_Mode_On_Node (N)
 
+          --  The reference must denote a variable read
+
+          and then Is_Variable_Read (N)
+
           --  The reference must not be considered when it appears in a pragma.
           --  If the pragma has run-time semantics, then the reference will be
           --  reconsidered once the pragma is expanded.
@@ -5310,7 +5477,7 @@ package body Sem_Elab is
           --  Performance note: parent traversal
 
           and then not In_Pragma (N);
-   end Is_Suitable_Variable_Reference;
+   end Is_Suitable_Variable_Read;
 
    -------------------
    -- Is_Task_Entry --
@@ -5485,8 +5652,8 @@ package body Sem_Elab is
                Info_Msg => False,
                In_SPARK => True);
 
-         elsif Is_Suitable_Variable_Reference (N) then
-            Info_Variable_Reference
+         elsif Is_Suitable_Variable_Read (N) then
+            Info_Variable_Read
               (Ref      => N,
                Var_Id   => Target_Id,
                Info_Msg => False,
@@ -5650,8 +5817,9 @@ package body Sem_Elab is
       procedure Output_Variable_Assignment (N : Node_Id);
       --  Emit a specific diagnostic message for assignment statement N
 
-      procedure Output_Variable_Reference (N : Node_Id);
-      --  Emit a specific diagnostic message for variable reference N
+      procedure Output_Variable_Read (N : Node_Id);
+      --  Emit a specific diagnostic message for reference N which reads a
+      --  variable.
 
       -------------------
       -- Output_Access --
@@ -5980,11 +6148,11 @@ package body Sem_Elab is
          Error_Msg_NE ("\\  variable & assigned #", Error_Nod, Var_Id);
       end Output_Variable_Assignment;
 
-      -------------------------------
-      -- Output_Variable_Reference --
-      -------------------------------
+      --------------------------
+      -- Output_Variable_Read --
+      --------------------------
 
-      procedure Output_Variable_Reference (N : Node_Id) is
+      procedure Output_Variable_Read (N : Node_Id) is
          Dummy  : Variable_Attributes;
          Var_Id : Entity_Id;
 
@@ -5995,8 +6163,8 @@ package body Sem_Elab is
             Attrs  => Dummy);
 
          Error_Msg_Sloc := Sloc (N);
-         Error_Msg_NE ("\\  variable & referenced #", Error_Nod, Var_Id);
-      end Output_Variable_Reference;
+         Error_Msg_NE ("\\  variable & read #", Error_Nod, Var_Id);
+      end Output_Variable_Read;
 
       --  Local variables
 
@@ -6057,10 +6225,10 @@ package body Sem_Elab is
          elsif Nkind (N) = N_Assignment_Statement then
             Output_Variable_Assignment (N);
 
-         --  Variable references
+         --  Variable read
 
-         elsif Is_Suitable_Variable_Reference (N) then
-            Output_Variable_Reference (N);
+         elsif Is_Suitable_Variable_Read (N) then
+            Output_Variable_Read (N);
 
          else
             pragma Assert (False);
@@ -6166,7 +6334,7 @@ package body Sem_Elab is
       end if;
 
       --  Treat the attribute as an immediate invocation of the target when
-      --  switch -gnatd.o (conservarive elaboration order for indirect calls)
+      --  switch -gnatd.o (conservative elaboration order for indirect calls)
       --  is in effect. Note that the prior elaboration of the unit containing
       --  the target is ensured processing the corresponding call marker.
 
@@ -6781,16 +6949,18 @@ package body Sem_Elab is
       elsif Is_Up_Level_Target (Target_Attrs.Spec_Decl) then
          return;
 
-      --  The SPARK rules are in effect
+      --  The SPARK rules are verified only when -gnatd.v (enforce SPARK
+      --  elaboration rules in SPARK code) is in effect.
 
-      elsif SPARK_Rules_On then
+      elsif SPARK_Rules_On and Debug_Flag_Dot_V then
          Process_Call_SPARK
            (Call         => Call,
             Call_Attrs   => Call_Attrs,
             Target_Id    => Target_Id,
             Target_Attrs => Target_Attrs);
 
-      --  Otherwise the Ada rules are in effect
+      --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
+      --  violate the SPARK rules.
 
       else
          Process_Call_Ada
@@ -7349,9 +7519,10 @@ package body Sem_Elab is
       elsif Is_Up_Level_Target (Gen_Attrs.Spec_Decl) then
          return;
 
-      --  The SPARK rules are in effect
+      --  The SPARK rules are verified only when -gnatd.v (enforce SPARK
+      --  elaboration rules in SPARK code) is in effect.
 
-      elsif SPARK_Rules_On then
+      elsif SPARK_Rules_On and Debug_Flag_Dot_V then
          Process_Instantiation_SPARK
            (Exp_Inst   => Exp_Inst,
             Inst       => Inst,
@@ -7359,7 +7530,8 @@ package body Sem_Elab is
             Gen_Id     => Gen_Id,
             Gen_Attrs  => Gen_Attrs);
 
-      --  Otherwise the Ada rules are in effect
+      --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
+      --  violate the SPARK rules.
 
       else
          Process_Instantiation_Ada
@@ -7675,9 +7847,9 @@ package body Sem_Elab is
       --  ABE ramifications of the instantiation.
 
       if Nkind (Inst) = N_Package_Instantiation then
-         Req_Nam := Name_Elaborate;
-      else
          Req_Nam := Name_Elaborate_All;
+      else
+         Req_Nam := Name_Elaborate;
       end if;
 
       Meet_Elaboration_Requirement
@@ -7732,31 +7904,76 @@ package body Sem_Elab is
    ---------------------------------
 
    procedure Process_Variable_Assignment (Asmt : Node_Id) is
-      Var_Id  : constant Entity_Id := Entity (Extract_Assignment_Name (Asmt));
-      Spec_Id : Entity_Id;
+      Var_Id : constant Entity_Id := Entity (Extract_Assignment_Name (Asmt));
+      Prag   : constant Node_Id   := SPARK_Pragma (Var_Id);
+
+      SPARK_Rules_On : Boolean;
+      --  This flag is set when the SPARK rules are in effect
 
    begin
+      --  The SPARK rules are in effect when both the assignment and the
+      --  variable are subject to SPARK_Mode On.
+
+      SPARK_Rules_On :=
+        Present (Prag)
+          and then Get_SPARK_Mode_From_Annotation (Prag) = On
+          and then Is_SPARK_Mode_On_Node (Asmt);
+
       --  Output relevant information when switch -gnatel (info messages on
       --  implicit Elaborate[_All] pragmas) is in effect.
 
       if Elab_Info_Messages then
-         Error_Msg_NE
-           ("info: assignment to & during elaboration", Asmt, Var_Id);
+         Elab_Msg_NE
+           (Msg      => "assignment to & during elaboration",
+            N        => Asmt,
+            Id       => Var_Id,
+            Info_Msg => True,
+            In_SPARK => SPARK_Rules_On);
       end if;
 
-      Spec_Id := Find_Top_Unit (Var_Id);
+      --  The SPARK rules are in effect. These rules are applied regardless of
+      --  whether -gnatd.v (enforce SPARK elaboration rules in SPARK code) is
+      --  in effect because the static model cannot ensure safe assignment of
+      --  variables.
 
-      --  Generate an implicit Elaborate_Body in the spec
+      if SPARK_Rules_On then
+         Process_Variable_Assignment_SPARK
+           (Asmt   => Asmt,
+            Var_Id => Var_Id);
 
-      Set_Elaborate_Body_Desirable (Spec_Id);
-
-      --  No warning is emitted for internal uses. This behaviour parallels
-      --  that of the old ABE mechanism.
-
-      if GNAT_Mode then
-         null;
+      --  Otherwise the Ada rules are in effect
 
       else
+         Process_Variable_Assignment_Ada
+           (Asmt   => Asmt,
+            Var_Id => Var_Id);
+      end if;
+   end Process_Variable_Assignment;
+
+   -------------------------------------
+   -- Process_Variable_Assignment_Ada --
+   -------------------------------------
+
+   procedure Process_Variable_Assignment_Ada
+     (Asmt   : Node_Id;
+      Var_Id : Entity_Id)
+   is
+      Var_Decl : constant Node_Id   := Declaration_Node (Var_Id);
+      Spec_Id  : constant Entity_Id := Find_Top_Unit (Var_Decl);
+
+   begin
+      --  Emit a warning when an uninitialized variable declared in a package
+      --  spec without a pragma Elaborate_Body is initialized by elaboration
+      --  code within the corresponding body.
+
+      if not Warnings_Off (Var_Id)
+        and then not Is_Initialized (Var_Decl)
+        and then not Has_Pragma_Elaborate_Body (Spec_Id)
+      then
+         --  Generate an implicit Elaborate_Body in the spec
+
+         Set_Elaborate_Body_Desirable (Spec_Id);
+
          Error_Msg_NE
            ("??variable & can be accessed by clients before this "
             & "initialization", Asmt, Var_Id);
@@ -7767,13 +7984,44 @@ package body Sem_Elab is
 
          Output_Active_Scenarios (Asmt);
       end if;
-   end Process_Variable_Assignment;
+   end Process_Variable_Assignment_Ada;
 
-   --------------------------------
-   -- Process_Variable_Reference --
-   --------------------------------
+   ---------------------------------------
+   -- Process_Variable_Assignment_SPARK --
+   ---------------------------------------
 
-   procedure Process_Variable_Reference (Ref : Node_Id) is
+   procedure Process_Variable_Assignment_SPARK
+     (Asmt   : Node_Id;
+      Var_Id : Entity_Id)
+   is
+      Var_Decl : constant Node_Id   := Declaration_Node (Var_Id);
+      Spec_Id  : constant Entity_Id := Find_Top_Unit (Var_Decl);
+
+   begin
+      --  Emit an error when an initialized variable declared in a package spec
+      --  without pragma Elaborate_Body is further modified by elaboration code
+      --  within the corresponding body.
+
+      if Is_Initialized (Var_Decl)
+        and then not Has_Pragma_Elaborate_Body (Spec_Id)
+      then
+         Error_Msg_NE
+           ("variable & modified by elaboration code in package body",
+            Asmt, Var_Id);
+
+         Error_Msg_NE
+           ("\add pragma ""Elaborate_Body"" to spec & to ensure full "
+            & "initialization", Asmt, Spec_Id);
+
+         Output_Active_Scenarios (Asmt);
+      end if;
+   end Process_Variable_Assignment_SPARK;
+
+   ---------------------------
+   -- Process_Variable_Read --
+   ---------------------------
+
+   procedure Process_Variable_Read (Ref : Node_Id) is
       Var_Attrs : Variable_Attributes;
       Var_Id    : Entity_Id;
 
@@ -7788,22 +8036,42 @@ package body Sem_Elab is
 
       if Elab_Info_Messages then
          Elab_Msg_NE
-           (Msg      => "reference to variable & during elaboration",
+           (Msg      => "read of variable & during elaboration",
             N        => Ref,
             Id       => Var_Id,
             Info_Msg => True,
             In_SPARK => True);
       end if;
 
-      --  A source variable reference imposes an Elaborate_All requirement on
-      --  the context of the main unit. Determine whethe the context has a
-      --  pragma strong enough to meet the requirement.
+      --  Nothing to do when the variable appears within the main unit because
+      --  diagnostics on reads are relevant only for external variables.
 
-      Meet_Elaboration_Requirement
-        (N         => Ref,
-         Target_Id => Var_Id,
-         Req_Nam   => Name_Elaborate_All);
-   end Process_Variable_Reference;
+      if Is_Same_Unit (Var_Attrs.Unit_Id, Cunit_Entity (Main_Unit)) then
+         null;
+
+      --  Nothing to do when the variable is already initialized. Note that the
+      --  variable may be further modified by the external unit.
+
+      elsif Is_Initialized (Declaration_Node (Var_Id)) then
+         null;
+
+      --  Nothing to do when the external unit guarantees the initialization of
+      --  the variable by means of pragma Elaborate_Body.
+
+      elsif Has_Pragma_Elaborate_Body (Var_Attrs.Unit_Id) then
+         null;
+
+      --  A variable read imposes an Elaborate requirement on the context of
+      --  the main unit. Determine whether the context has a pragma strong
+      --  enough to meet the requirement.
+
+      else
+         Meet_Elaboration_Requirement
+           (N         => Ref,
+            Target_Id => Var_Id,
+            Req_Nam   => Name_Elaborate);
+      end if;
+   end Process_Variable_Read;
 
    --------------------------
    -- Push_Active_Scenario --
@@ -7874,10 +8142,10 @@ package body Sem_Elab is
       elsif Is_Suitable_Variable_Assignment (N) then
          Process_Variable_Assignment (N);
 
-      --  Variable references
+      --  Variable read
 
-      elsif Is_Suitable_Variable_Reference (N) then
-         Process_Variable_Reference (N);
+      elsif Is_Suitable_Variable_Read (N) then
+         Process_Variable_Read (N);
       end if;
 
       --  Remove the current scenario from the stack of active scenarios once
@@ -7938,19 +8206,39 @@ package body Sem_Elab is
       --  listed below are not considered. The categories are:
 
       --   'Access for entries, operators, and subprograms
+      --    Assignments to variables
       --    Calls (includes task activation)
       --    Instantiations
-      --    Variable assignments
-      --    Variable references
+      --    Reads of variables
 
-      elsif Is_Suitable_Access (N)
-        or else Is_Suitable_Variable_Assignment (N)
-        or else Is_Suitable_Variable_Reference (N)
-      then
-         null;
+      elsif Is_Suitable_Access (N) then
+
+         --  Signal any enclosing local exception handlers that the 'Access may
+         --  raise Program_Error due to a failed ABE check when switch -gnatd.o
+         --  (conservative elaboration order for indirect calls) is in effect.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         if Debug_Flag_Dot_O then
+            Possible_Local_Raise (N, Standard_Program_Error);
+         end if;
 
       elsif Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N) then
          Declaration_Level_OK := True;
+
+         --  Signal any enclosing local exception handlers that the call or
+         --  instantiation may raise Program_Error due to a failed ABE check.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         Possible_Local_Raise (N, Standard_Program_Error);
+
+      elsif Is_Suitable_Variable_Assignment (N)
+        or else Is_Suitable_Variable_Read (N)
+      then
+         null;
 
       --  Otherwise the input does not denote a suitable scenario
 
@@ -8004,7 +8292,7 @@ package body Sem_Elab is
 
       --  Mark a scenario which may produce run-time conditional ABE checks or
       --  guaranteed ABE failures as recorded. The flag ensures that scenario
-      --  rewritting performed by Atree.Rewrite will be properly reflected in
+      --  rewriting performed by Atree.Rewrite will be properly reflected in
       --  all relevant internal data structures.
 
       if Is_Check_Emitting_Scenario (N) then

@@ -2095,6 +2095,10 @@ analyze_scalar_evolution (struct loop *loop, tree var)
 {
   tree res;
 
+  /* ???  Fix callers.  */
+  if (! loop)
+    return var;
+
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(analyze_scalar_evolution \n");
@@ -2271,7 +2275,7 @@ eq_idx_scev_info (const void *e1, const void *e2)
 
 static unsigned
 get_instantiated_value_entry (instantiate_cache_type &cache,
-			      tree name, basic_block instantiate_below)
+			      tree name, edge instantiate_below)
 {
   if (!cache.map)
     {
@@ -2281,7 +2285,7 @@ get_instantiated_value_entry (instantiate_cache_type &cache,
 
   scev_info_str e;
   e.name_version = SSA_NAME_VERSION (name);
-  e.instantiated_below = instantiate_below->index;
+  e.instantiated_below = instantiate_below->dest->index;
   void **slot = htab_find_slot_with_hash (cache.map, &e,
 					  scev_info_hasher::hash (&e), INSERT);
   if (!*slot)
@@ -2325,7 +2329,7 @@ loop_closed_phi_def (tree var)
   return NULL_TREE;
 }
 
-static tree instantiate_scev_r (basic_block, struct loop *, struct loop *,
+static tree instantiate_scev_r (edge, struct loop *, struct loop *,
 				tree, bool *, int);
 
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
@@ -2344,7 +2348,7 @@ static tree instantiate_scev_r (basic_block, struct loop *, struct loop *,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_name (basic_block instantiate_below,
+instantiate_scev_name (edge instantiate_below,
 		       struct loop *evolution_loop, struct loop *inner_loop,
 		       tree chrec,
 		       bool *fold_conversions,
@@ -2354,11 +2358,9 @@ instantiate_scev_name (basic_block instantiate_below,
   struct loop *def_loop;
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (chrec));
 
-  /* A parameter (or loop invariant and we do not want to include
-     evolutions in outer loops), nothing to do.  */
+  /* A parameter, nothing to do.  */
   if (!def_bb
-      || loop_depth (def_bb->loop_father) == 0
-      || dominated_by_p (CDI_DOMINATORS, instantiate_below, def_bb))
+      || !dominated_by_p (CDI_DOMINATORS, def_bb, instantiate_below->dest))
     return chrec;
 
   /* We cache the value of instantiated variable to avoid exponential
@@ -2379,6 +2381,51 @@ instantiate_scev_name (basic_block instantiate_below,
   global_cache->set (si, chrec_dont_know);
 
   def_loop = find_common_loop (evolution_loop, def_bb->loop_father);
+
+  if (! dominated_by_p (CDI_DOMINATORS,
+			def_loop->header, instantiate_below->dest))
+    {
+      gimple *def = SSA_NAME_DEF_STMT (chrec);
+      if (gassign *ass = dyn_cast <gassign *> (def))
+	{
+	  switch (gimple_assign_rhs_class (ass))
+	    {
+	    case GIMPLE_UNARY_RHS:
+	      {
+		tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
+					       inner_loop, gimple_assign_rhs1 (ass),
+					       fold_conversions, size_expr);
+		if (op0 == chrec_dont_know)
+		  return chrec_dont_know;
+		res = fold_build1 (gimple_assign_rhs_code (ass),
+				   TREE_TYPE (chrec), op0);
+		break;
+	      }
+	    case GIMPLE_BINARY_RHS:
+	      {
+		tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
+					       inner_loop, gimple_assign_rhs1 (ass),
+					       fold_conversions, size_expr);
+		if (op0 == chrec_dont_know)
+		  return chrec_dont_know;
+		tree op1 = instantiate_scev_r (instantiate_below, evolution_loop,
+					       inner_loop, gimple_assign_rhs2 (ass),
+					       fold_conversions, size_expr);
+		if (op1 == chrec_dont_know)
+		  return chrec_dont_know;
+		res = fold_build2 (gimple_assign_rhs_code (ass),
+				   TREE_TYPE (chrec), op0, op1);
+		break;
+	      }
+	    default:
+	      res = chrec_dont_know;
+	    }
+	}
+      else
+	res = chrec_dont_know;
+      global_cache->set (si, res);
+      return res;
+    }
 
   /* If the analysis yields a parametric chrec, instantiate the
      result again.  */
@@ -2411,8 +2458,9 @@ instantiate_scev_name (basic_block instantiate_below,
 				    inner_loop, res,
 				    fold_conversions, size_expr);
 	}
-      else if (!dominated_by_p (CDI_DOMINATORS, instantiate_below,
-				gimple_bb (SSA_NAME_DEF_STMT (res))))
+      else if (dominated_by_p (CDI_DOMINATORS,
+				gimple_bb (SSA_NAME_DEF_STMT (res)),
+				instantiate_below->dest))
 	res = chrec_dont_know;
     }
 
@@ -2450,7 +2498,7 @@ instantiate_scev_name (basic_block instantiate_below,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_poly (basic_block instantiate_below,
+instantiate_scev_poly (edge instantiate_below,
 		       struct loop *evolution_loop, struct loop *,
 		       tree chrec, bool *fold_conversions, int size_expr)
 {
@@ -2495,7 +2543,7 @@ instantiate_scev_poly (basic_block instantiate_below,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_binary (basic_block instantiate_below,
+instantiate_scev_binary (edge instantiate_below,
 			 struct loop *evolution_loop, struct loop *inner_loop,
 			 tree chrec, enum tree_code code,
 			 tree type, tree c0, tree c1,
@@ -2541,43 +2589,6 @@ instantiate_scev_binary (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
-   "CHREC" is an array reference to be instantiated.
-
-   CACHE is the cache of already instantiated values.
-
-   Variable pointed by FOLD_CONVERSIONS is set to TRUE when the
-   conversions that may wrap in signed/pointer type are folded, as long
-   as the value of the chrec is preserved.  If FOLD_CONVERSIONS is NULL
-   then we don't do such fold.
-
-   SIZE_EXPR is used for computing the size of the expression to be
-   instantiated, and to stop if it exceeds some limit.  */
-
-static tree
-instantiate_array_ref (basic_block instantiate_below,
-		       struct loop *evolution_loop, struct loop *inner_loop,
-		       tree chrec, bool *fold_conversions, int size_expr)
-{
-  tree res;
-  tree index = TREE_OPERAND (chrec, 1);
-  tree op1 = instantiate_scev_r (instantiate_below, evolution_loop,
-				 inner_loop, index,
-				 fold_conversions, size_expr);
-
-  if (op1 == chrec_dont_know)
-    return chrec_dont_know;
-
-  if (chrec && op1 == index)
-    return chrec;
-
-  res = unshare_expr (chrec);
-  TREE_OPERAND (res, 1) = op1;
-  return res;
-}
-
-/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
-   and EVOLUTION_LOOP, that were left under a symbolic form.
-
    "CHREC" that stands for a convert expression "(TYPE) OP" is to be
    instantiated.
 
@@ -2592,7 +2603,7 @@ instantiate_array_ref (basic_block instantiate_below,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_convert (basic_block instantiate_below,
+instantiate_scev_convert (edge instantiate_below,
 			  struct loop *evolution_loop, struct loop *inner_loop,
 			  tree chrec, tree type, tree op,
 			  bool *fold_conversions, int size_expr)
@@ -2643,7 +2654,7 @@ instantiate_scev_convert (basic_block instantiate_below,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_not (basic_block instantiate_below,
+instantiate_scev_not (edge instantiate_below,
 		      struct loop *evolution_loop, struct loop *inner_loop,
 		      tree chrec,
 		      enum tree_code code, tree type, tree op,
@@ -2681,130 +2692,6 @@ instantiate_scev_not (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
-   CHREC is an expression with 3 operands to be instantiated.
-
-   CACHE is the cache of already instantiated values.
-
-   Variable pointed by FOLD_CONVERSIONS is set to TRUE when the
-   conversions that may wrap in signed/pointer type are folded, as long
-   as the value of the chrec is preserved.  If FOLD_CONVERSIONS is NULL
-   then we don't do such fold.
-
-   SIZE_EXPR is used for computing the size of the expression to be
-   instantiated, and to stop if it exceeds some limit.  */
-
-static tree
-instantiate_scev_3 (basic_block instantiate_below,
-		    struct loop *evolution_loop, struct loop *inner_loop,
-		    tree chrec,
-		    bool *fold_conversions, int size_expr)
-{
-  tree op1, op2;
-  tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
-				 inner_loop, TREE_OPERAND (chrec, 0),
-				 fold_conversions, size_expr);
-  if (op0 == chrec_dont_know)
-    return chrec_dont_know;
-
-  op1 = instantiate_scev_r (instantiate_below, evolution_loop,
-			    inner_loop, TREE_OPERAND (chrec, 1),
-			    fold_conversions, size_expr);
-  if (op1 == chrec_dont_know)
-    return chrec_dont_know;
-
-  op2 = instantiate_scev_r (instantiate_below, evolution_loop,
-			    inner_loop, TREE_OPERAND (chrec, 2),
-			    fold_conversions, size_expr);
-  if (op2 == chrec_dont_know)
-    return chrec_dont_know;
-
-  if (op0 == TREE_OPERAND (chrec, 0)
-      && op1 == TREE_OPERAND (chrec, 1)
-      && op2 == TREE_OPERAND (chrec, 2))
-    return chrec;
-
-  return fold_build3 (TREE_CODE (chrec),
-		      TREE_TYPE (chrec), op0, op1, op2);
-}
-
-/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
-   and EVOLUTION_LOOP, that were left under a symbolic form.
-
-   CHREC is an expression with 2 operands to be instantiated.
-
-   CACHE is the cache of already instantiated values.
-
-   Variable pointed by FOLD_CONVERSIONS is set to TRUE when the
-   conversions that may wrap in signed/pointer type are folded, as long
-   as the value of the chrec is preserved.  If FOLD_CONVERSIONS is NULL
-   then we don't do such fold.
-
-   SIZE_EXPR is used for computing the size of the expression to be
-   instantiated, and to stop if it exceeds some limit.  */
-
-static tree
-instantiate_scev_2 (basic_block instantiate_below,
-		    struct loop *evolution_loop, struct loop *inner_loop,
-		    tree chrec,
-		    bool *fold_conversions, int size_expr)
-{
-  tree op1;
-  tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
-				 inner_loop, TREE_OPERAND (chrec, 0),
-				 fold_conversions, size_expr);
-  if (op0 == chrec_dont_know)
-    return chrec_dont_know;
-
-  op1 = instantiate_scev_r (instantiate_below, evolution_loop,
-			    inner_loop, TREE_OPERAND (chrec, 1),
-			    fold_conversions, size_expr);
-  if (op1 == chrec_dont_know)
-    return chrec_dont_know;
-
-  if (op0 == TREE_OPERAND (chrec, 0)
-      && op1 == TREE_OPERAND (chrec, 1))
-    return chrec;
-
-  return fold_build2 (TREE_CODE (chrec), TREE_TYPE (chrec), op0, op1);
-}
-
-/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
-   and EVOLUTION_LOOP, that were left under a symbolic form.
-
-   CHREC is an expression with 2 operands to be instantiated.
-
-   CACHE is the cache of already instantiated values.
-
-   Variable pointed by FOLD_CONVERSIONS is set to TRUE when the
-   conversions that may wrap in signed/pointer type are folded, as long
-   as the value of the chrec is preserved.  If FOLD_CONVERSIONS is NULL
-   then we don't do such fold.
-
-   SIZE_EXPR is used for computing the size of the expression to be
-   instantiated, and to stop if it exceeds some limit.  */
-
-static tree
-instantiate_scev_1 (basic_block instantiate_below,
-		    struct loop *evolution_loop, struct loop *inner_loop,
-		    tree chrec,
-		    bool *fold_conversions, int size_expr)
-{
-  tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
-				 inner_loop, TREE_OPERAND (chrec, 0),
-				 fold_conversions, size_expr);
-
-  if (op0 == chrec_dont_know)
-    return chrec_dont_know;
-
-  if (op0 == TREE_OPERAND (chrec, 0))
-    return chrec;
-
-  return fold_build1 (TREE_CODE (chrec), TREE_TYPE (chrec), op0);
-}
-
-/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
-   and EVOLUTION_LOOP, that were left under a symbolic form.
-
    CHREC is the scalar evolution to instantiate.
 
    CACHE is the cache of already instantiated values.
@@ -2818,7 +2705,7 @@ instantiate_scev_1 (basic_block instantiate_below,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_r (basic_block instantiate_below,
+instantiate_scev_r (edge instantiate_below,
 		    struct loop *evolution_loop, struct loop *inner_loop,
 		    tree chrec,
 		    bool *fold_conversions, int size_expr)
@@ -2870,50 +2757,20 @@ instantiate_scev_r (basic_block instantiate_below,
 				   fold_conversions, size_expr);
 
     case ADDR_EXPR:
+      if (is_gimple_min_invariant (chrec))
+	return chrec;
+      /* Fallthru.  */
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
 
     case SCEV_KNOWN:
       return chrec_known;
 
-    case ARRAY_REF:
-      return instantiate_array_ref (instantiate_below, evolution_loop,
-				    inner_loop, chrec,
-				    fold_conversions, size_expr);
-
     default:
-      break;
+      if (CONSTANT_CLASS_P (chrec))
+	return chrec;
+      return chrec_dont_know;
     }
-
-  if (VL_EXP_CLASS_P (chrec))
-    return chrec_dont_know;
-
-  switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
-    {
-    case 3:
-      return instantiate_scev_3 (instantiate_below, evolution_loop,
-				 inner_loop, chrec,
-				 fold_conversions, size_expr);
-
-    case 2:
-      return instantiate_scev_2 (instantiate_below, evolution_loop,
-				 inner_loop, chrec,
-				 fold_conversions, size_expr);
-
-    case 1:
-      return instantiate_scev_1 (instantiate_below, evolution_loop,
-				 inner_loop, chrec,
-				 fold_conversions, size_expr);
-
-    case 0:
-      return chrec;
-
-    default:
-      break;
-    }
-
-  /* Too complicated to handle.  */
-  return chrec_dont_know;
 }
 
 /* Analyze all the parameters of the chrec that were left under a
@@ -2923,7 +2780,7 @@ instantiate_scev_r (basic_block instantiate_below,
    a function parameter.  */
 
 tree
-instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
+instantiate_scev (edge instantiate_below, struct loop *evolution_loop,
 		  tree chrec)
 {
   tree res;
@@ -2931,8 +2788,10 @@ instantiate_scev (basic_block instantiate_below, struct loop *evolution_loop,
   if (dump_file && (dump_flags & TDF_SCEV))
     {
       fprintf (dump_file, "(instantiate_scev \n");
-      fprintf (dump_file, "  (instantiate_below = %d)\n", instantiate_below->index);
-      fprintf (dump_file, "  (evolution_loop = %d)\n", evolution_loop->num);
+      fprintf (dump_file, "  (instantiate_below = %d -> %d)\n",
+	       instantiate_below->src->index, instantiate_below->dest->index);
+      if (evolution_loop)
+	fprintf (dump_file, "  (evolution_loop = %d)\n", evolution_loop->num);
       fprintf (dump_file, "  (chrec = ");
       print_generic_expr (dump_file, chrec);
       fprintf (dump_file, ")\n");
@@ -2980,7 +2839,7 @@ resolve_mixers (struct loop *loop, tree chrec, bool *folded_casts)
       destr = true;
     }
 
-  tree ret = instantiate_scev_r (block_before_loop (loop), loop, NULL,
+  tree ret = instantiate_scev_r (loop_preheader_edge (loop), loop, NULL,
 				 chrec, &fold_conversions, 0);
 
   if (folded_casts && !*folded_casts)

@@ -3796,47 +3796,6 @@ invert_truthvalue_loc (location_t loc, tree arg)
 			       : TRUTH_NOT_EXPR,
 			  type, arg);
 }
-
-/* Knowing that ARG0 and ARG1 are both RDIV_EXPRs, simplify a binary operation
-   with code CODE.  This optimization is unsafe.  */
-static tree
-distribute_real_division (location_t loc, enum tree_code code, tree type,
-			  tree arg0, tree arg1)
-{
-  bool mul0 = TREE_CODE (arg0) == MULT_EXPR;
-  bool mul1 = TREE_CODE (arg1) == MULT_EXPR;
-
-  /* (A / C) +- (B / C) -> (A +- B) / C.  */
-  if (mul0 == mul1
-      && operand_equal_p (TREE_OPERAND (arg0, 1),
-		       TREE_OPERAND (arg1, 1), 0))
-    return fold_build2_loc (loc, mul0 ? MULT_EXPR : RDIV_EXPR, type,
-			fold_build2_loc (loc, code, type,
-				     TREE_OPERAND (arg0, 0),
-				     TREE_OPERAND (arg1, 0)),
-			TREE_OPERAND (arg0, 1));
-
-  /* (A / C1) +- (A / C2) -> A * (1 / C1 +- 1 / C2).  */
-  if (operand_equal_p (TREE_OPERAND (arg0, 0),
-		       TREE_OPERAND (arg1, 0), 0)
-      && TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
-      && TREE_CODE (TREE_OPERAND (arg1, 1)) == REAL_CST)
-    {
-      REAL_VALUE_TYPE r0, r1;
-      r0 = TREE_REAL_CST (TREE_OPERAND (arg0, 1));
-      r1 = TREE_REAL_CST (TREE_OPERAND (arg1, 1));
-      if (!mul0)
-	real_arithmetic (&r0, RDIV_EXPR, &dconst1, &r0);
-      if (!mul1)
-        real_arithmetic (&r1, RDIV_EXPR, &dconst1, &r1);
-      real_arithmetic (&r0, code, &r0, &r1);
-      return fold_build2_loc (loc, MULT_EXPR, type,
-			  TREE_OPERAND (arg0, 0),
-			  build_real (type, r0));
-    }
-
-  return NULL_TREE;
-}
 
 /* Return a BIT_FIELD_REF of type TYPE to refer to BITSIZE bits of INNER
    starting at BITPOS.  The field is unsigned if UNSIGNEDP is nonzero
@@ -4013,21 +3972,20 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 		      size_int (nbitsize - lbitsize - lbitpos));
 
   if (! const_p)
-    /* If not comparing with constant, just rework the comparison
-       and return.  */
-    return fold_build2_loc (loc, code, compare_type,
-			fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type,
-				     make_bit_field_ref (loc, linner, lhs,
-							 unsigned_type,
-							 nbitsize, nbitpos,
-							 1, lreversep),
-				     mask),
-			fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type,
-				     make_bit_field_ref (loc, rinner, rhs,
-							 unsigned_type,
-							 nbitsize, nbitpos,
-							 1, rreversep),
-				     mask));
+    {
+      if (nbitpos < 0)
+	return 0;
+
+      /* If not comparing with constant, just rework the comparison
+	 and return.  */
+      tree t1 = make_bit_field_ref (loc, linner, lhs, unsigned_type,
+				    nbitsize, nbitpos, 1, lreversep);
+      t1 = fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type, t1, mask);
+      tree t2 = make_bit_field_ref (loc, rinner, rhs, unsigned_type,
+				    nbitsize, nbitpos, 1, rreversep);
+      t2 = fold_build2_loc (loc, BIT_AND_EXPR, unsigned_type, t2, mask);
+      return fold_build2_loc (loc, code, compare_type, t1, t2);
+    }
 
   /* Otherwise, we are handling the constant case.  See if the constant is too
      big for the field.  Warn and return a tree for 0 (false) if so.  We do
@@ -4057,6 +4015,9 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 	  return constant_boolean_node (code == NE_EXPR, compare_type);
 	}
     }
+
+  if (nbitpos < 0)
+    return 0;
 
   /* Single-bit compares should always be against zero.  */
   if (lbitsize == 1 && ! integer_zerop (rhs))
@@ -5874,7 +5835,10 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	 results.  */
       ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask);
       lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask);
-      if (lnbitsize == rnbitsize && xll_bitpos == xlr_bitpos)
+      if (lnbitsize == rnbitsize
+	  && xll_bitpos == xlr_bitpos
+	  && lnbitpos >= 0
+	  && rnbitpos >= 0)
 	{
 	  lhs = make_bit_field_ref (loc, ll_inner, ll_arg,
 				    lntype, lnbitsize, lnbitpos,
@@ -5898,10 +5862,14 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	 Note that we still must mask the lhs/rhs expressions.  Furthermore,
 	 the mask must be shifted to account for the shift done by
 	 make_bit_field_ref.  */
-      if ((ll_bitsize + ll_bitpos == rl_bitpos
-	   && lr_bitsize + lr_bitpos == rr_bitpos)
-	  || (ll_bitpos == rl_bitpos + rl_bitsize
-	      && lr_bitpos == rr_bitpos + rr_bitsize))
+      if (((ll_bitsize + ll_bitpos == rl_bitpos
+	    && lr_bitsize + lr_bitpos == rr_bitpos)
+	   || (ll_bitpos == rl_bitpos + rl_bitsize
+	       && lr_bitpos == rr_bitpos + rr_bitsize))
+	  && ll_bitpos >= 0
+	  && rl_bitpos >= 0
+	  && lr_bitpos >= 0
+	  && rr_bitpos >= 0)
 	{
 	  tree type;
 
@@ -5969,6 +5937,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	  return constant_boolean_node (false, truth_type);
 	}
     }
+
+  if (lnbitpos < 0)
+    return 0;
 
   /* Construct the expression we will return.  First get the component
      reference we will make.  Unless the mask is all ones the width of
@@ -9383,12 +9354,6 @@ fold_binary_loc (location_t loc,
 		}
 	    }
 
-	  if (flag_unsafe_math_optimizations
-	      && (TREE_CODE (arg0) == RDIV_EXPR || TREE_CODE (arg0) == MULT_EXPR)
-	      && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
-	      && (tem = distribute_real_division (loc, code, type, arg0, arg1)))
-	    return tem;
-
           /* Convert a + (b*c + d*e) into (a + b*c) + d*e.
              We associate floats only if the user has specified
              -fassociative-math.  */
@@ -9429,7 +9394,10 @@ fold_binary_loc (location_t loc,
       /* (A << C1) + (A >> C2) if A is unsigned and C1+C2 is the size of A
 	 is a rotate of A by C1 bits.  */
       /* (A << B) + (A >> (Z - B)) if A is unsigned and Z is the size of A
-	 is a rotate of A by B bits.  */
+	 is a rotate of A by B bits.
+	 Similarly for (A << B) | (A >> (-B & C3)) where C3 is Z-1,
+	 though in this case CODE must be | and not + or ^, otherwise
+	 it doesn't return A when B is 0.  */
       {
 	enum tree_code code0, code1;
 	tree rtype;
@@ -9447,25 +9415,32 @@ fold_binary_loc (location_t loc,
 		== GET_MODE_UNIT_PRECISION (TYPE_MODE (rtype))))
 	  {
 	    tree tree01, tree11;
+	    tree orig_tree01, orig_tree11;
 	    enum tree_code code01, code11;
 
-	    tree01 = TREE_OPERAND (arg0, 1);
-	    tree11 = TREE_OPERAND (arg1, 1);
+	    tree01 = orig_tree01 = TREE_OPERAND (arg0, 1);
+	    tree11 = orig_tree11 = TREE_OPERAND (arg1, 1);
 	    STRIP_NOPS (tree01);
 	    STRIP_NOPS (tree11);
 	    code01 = TREE_CODE (tree01);
 	    code11 = TREE_CODE (tree11);
+	    if (code11 != MINUS_EXPR
+		&& (code01 == MINUS_EXPR || code01 == BIT_AND_EXPR))
+	      {
+		std::swap (code0, code1);
+		std::swap (code01, code11);
+		std::swap (tree01, tree11);
+		std::swap (orig_tree01, orig_tree11);
+	      }
 	    if (code01 == INTEGER_CST
 		&& code11 == INTEGER_CST
 		&& (wi::to_widest (tree01) + wi::to_widest (tree11)
-		    == element_precision (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
+		    == element_precision (rtype)))
 	      {
 		tem = build2_loc (loc, LROTATE_EXPR,
-				  TREE_TYPE (TREE_OPERAND (arg0, 0)),
-				  TREE_OPERAND (arg0, 0),
+				  rtype, TREE_OPERAND (arg0, 0),
 				  code0 == LSHIFT_EXPR
-				  ? TREE_OPERAND (arg0, 1)
-				  : TREE_OPERAND (arg1, 1));
+				  ? orig_tree01 : orig_tree11);
 		return fold_convert_loc (loc, type, tem);
 	      }
 	    else if (code11 == MINUS_EXPR)
@@ -9477,39 +9452,37 @@ fold_binary_loc (location_t loc,
 		STRIP_NOPS (tree111);
 		if (TREE_CODE (tree110) == INTEGER_CST
 		    && 0 == compare_tree_int (tree110,
-					      element_precision
-					      (TREE_TYPE (TREE_OPERAND
-							  (arg0, 0))))
+					      element_precision (rtype))
 		    && operand_equal_p (tree01, tree111, 0))
-		  return
-		    fold_convert_loc (loc, type,
-				      build2 ((code0 == LSHIFT_EXPR
-					       ? LROTATE_EXPR
-					       : RROTATE_EXPR),
-					      TREE_TYPE (TREE_OPERAND (arg0, 0)),
-					      TREE_OPERAND (arg0, 0),
-					      TREE_OPERAND (arg0, 1)));
+		  {
+		    tem = build2_loc (loc, (code0 == LSHIFT_EXPR
+					    ? LROTATE_EXPR : RROTATE_EXPR),
+				      rtype, TREE_OPERAND (arg0, 0),
+				      orig_tree01);
+		    return fold_convert_loc (loc, type, tem);
+		  }
 	      }
-	    else if (code01 == MINUS_EXPR)
+	    else if (code == BIT_IOR_EXPR
+		     && code11 == BIT_AND_EXPR
+		     && pow2p_hwi (element_precision (rtype)))
 	      {
-		tree tree010, tree011;
-		tree010 = TREE_OPERAND (tree01, 0);
-		tree011 = TREE_OPERAND (tree01, 1);
-		STRIP_NOPS (tree010);
-		STRIP_NOPS (tree011);
-		if (TREE_CODE (tree010) == INTEGER_CST
-		    && 0 == compare_tree_int (tree010,
-					      element_precision
-					      (TREE_TYPE (TREE_OPERAND
-							  (arg0, 0))))
-		    && operand_equal_p (tree11, tree011, 0))
-		    return fold_convert_loc
-		      (loc, type,
-		       build2 ((code0 != LSHIFT_EXPR
-				? LROTATE_EXPR
-				: RROTATE_EXPR),
-			       TREE_TYPE (TREE_OPERAND (arg0, 0)),
-			       TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 1)));
+		tree tree110, tree111;
+		tree110 = TREE_OPERAND (tree11, 0);
+		tree111 = TREE_OPERAND (tree11, 1);
+		STRIP_NOPS (tree110);
+		STRIP_NOPS (tree111);
+		if (TREE_CODE (tree110) == NEGATE_EXPR
+		    && TREE_CODE (tree111) == INTEGER_CST
+		    && 0 == compare_tree_int (tree111,
+					      element_precision (rtype) - 1)
+		    && operand_equal_p (tree01, TREE_OPERAND (tree110, 0), 0))
+		  {
+		    tem = build2_loc (loc, (code0 == LSHIFT_EXPR
+					    ? LROTATE_EXPR : RROTATE_EXPR),
+				      rtype, TREE_OPERAND (arg0, 0),
+				      orig_tree01);
+		    return fold_convert_loc (loc, type, tem);
+		  }
 	      }
 	  }
       }
@@ -9779,13 +9752,6 @@ fold_binary_loc (location_t loc,
 	  if (tem)
 	    return tem;
 	}
-
-      if (FLOAT_TYPE_P (type)
-	  && flag_unsafe_math_optimizations
-	  && (TREE_CODE (arg0) == RDIV_EXPR || TREE_CODE (arg0) == MULT_EXPR)
-	  && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
-	  && (tem = distribute_real_division (loc, code, type, arg0, arg1)))
-	return tem;
 
       /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the same or
 	 one.  Make sure the type is not saturating and has the signedness of

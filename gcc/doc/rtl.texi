@@ -4040,6 +4040,22 @@ is used in place of the actual insn pattern.  This is done in cases where
 the pattern is either complex or misleading.
 @end table
 
+The note @code{REG_CALL_NOCF_CHECK} is used in conjunction with the
+@option{-fcf-protection=branch} option.  The note is set if a
+@code{nocf_check} attribute is specified for a function type or a
+pointer to function type.  The note is stored in the @code{REG_NOTES}
+field of an insn.
+
+@table @code
+@findex REG_CALL_NOCF_CHECK
+@item REG_CALL_NOCF_CHECK
+Users have control through the @code{nocf_check} attribute to identify
+which calls to a function should be skipped from control-flow instrumentation
+when the option @option{-fcf-protection=branch} is specified.  The compiler
+puts a @code{REG_CALL_NOCF_CHECK} note on each @code{CALL_INSN} instruction
+that has a function type marked with a @code{nocf_check} attribute.
+@end table
+
 For convenience, the machine mode in an @code{insn_list} or
 @code{expr_list} is printed using these symbolic codes in debugging dumps.
 

@@ -96,10 +96,29 @@ struct simple_bitmap_def
 /* Return the number of bits in BITMAP.  */
 #define SBITMAP_SIZE(BITMAP) ((BITMAP)->n_bits)
 
+/* Verify that access at INDEX in bitmap MAP is valid.  */ 
+
+static inline void
+bitmap_check_index (const_sbitmap map, int index)
+{
+  gcc_checking_assert (index >= 0);
+  gcc_checking_assert ((unsigned int)index < map->n_bits);
+}
+
+/* Verify that bitmaps A and B have same size.  */ 
+
+static inline void
+bitmap_check_sizes (const_sbitmap a, const_sbitmap b)
+{
+  gcc_checking_assert (a->n_bits == b->n_bits);
+}
+
 /* Test if bit number bitno in the bitmap is set.  */
 static inline SBITMAP_ELT_TYPE
 bitmap_bit_p (const_sbitmap map, int bitno)
 {
+  bitmap_check_index (map, bitno);
+
   size_t i = bitno / SBITMAP_ELT_BITS;
   unsigned int s = bitno % SBITMAP_ELT_BITS;
   return (map->elms[i] >> s) & (SBITMAP_ELT_TYPE) 1;
@@ -110,6 +129,8 @@ bitmap_bit_p (const_sbitmap map, int bitno)
 static inline void
 bitmap_set_bit (sbitmap map, int bitno)
 {
+  bitmap_check_index (map, bitno);
+
   map->elms[bitno / SBITMAP_ELT_BITS]
     |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
 }
@@ -119,6 +140,8 @@ bitmap_set_bit (sbitmap map, int bitno)
 static inline void
 bitmap_clear_bit (sbitmap map, int bitno)
 {
+  bitmap_check_index (map, bitno);
+
   map->elms[bitno / SBITMAP_ELT_BITS]
     &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
 }
@@ -148,6 +171,8 @@ static inline void
 bmp_iter_set_init (sbitmap_iterator *i, const_sbitmap bmp,
 		   unsigned int min, unsigned *bit_no ATTRIBUTE_UNUSED)
 {
+  bitmap_check_index (bmp, min);
+
   i->word_num = min / (unsigned int) SBITMAP_ELT_BITS;
   i->bit_num = min;
   i->size = bmp->size;

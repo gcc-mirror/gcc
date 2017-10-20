@@ -5305,8 +5305,7 @@ package body Sem_Ch12 is
             Valid_Operator_Definition (Act_Decl_Id);
          end if;
 
-         Set_Alias  (Act_Decl_Id, Anon_Id);
-         Set_Parent (Act_Decl_Id, Parent (Anon_Id));
+         Set_Alias (Act_Decl_Id, Anon_Id);
          Set_Has_Completion (Act_Decl_Id);
          Set_Related_Instance (Pack_Id, Act_Decl_Id);
 
@@ -6460,10 +6459,11 @@ package body Sem_Ch12 is
          elsif Ekind (E1) = E_Package then
             Check_Mismatch
               (Ekind (E1) /= Ekind (E2)
-                or else Renamed_Object (E1) /= Renamed_Object (E2));
+                or else (Present (Renamed_Object (E2))
+                          and then Renamed_Object (E1) /=
+                                     Renamed_Object (E2)));
 
          elsif Is_Overloadable (E1) then
-
             --  Verify that the actual subprograms match. Note that actuals
             --  that are attributes are rewritten as subprograms. If the
             --  subprogram in the formal package is defaulted, no check is

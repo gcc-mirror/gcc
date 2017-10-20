@@ -48,6 +48,18 @@ package body System.Parameters is
       end if;
    end Adjust_Storage_Size;
 
+   ----------------------------
+   -- Default_Sec_Stack_Size --
+   ----------------------------
+
+   function Default_Sec_Stack_Size return Size_Type is
+      Default_SS_Size : Integer;
+      pragma Import (C, Default_SS_Size,
+                     "__gnat_default_ss_size");
+   begin
+      return Size_Type (Default_SS_Size);
+   end Default_Sec_Stack_Size;
+
    ------------------------
    -- Default_Stack_Size --
    ------------------------

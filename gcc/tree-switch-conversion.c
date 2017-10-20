@@ -107,8 +107,7 @@ hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   e_false->flags &= ~EDGE_FALLTHRU;
   e_false->flags |= EDGE_FALSE_VALUE;
   e_false->probability = e_true->probability.invert ();
-  e_false->count = split_bb->count - e_true->count;
-  new_bb->count = e_false->count;
+  new_bb->count = e_false->count ();
 
   if (update_dominators)
     {
@@ -239,9 +238,9 @@ case_bit_test_cmp (const void *p1, const void *p2)
   const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
   const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
 
-  if (d2->target_edge->count < d1->target_edge->count)
+  if (d2->target_edge->count () < d1->target_edge->count ())
     return -1;
-  if (d2->target_edge->count > d1->target_edge->count)
+  if (d2->target_edge->count () > d1->target_edge->count ())
     return 1;
   if (d2->bits != d1->bits)
     return d2->bits - d1->bits;
@@ -635,10 +634,10 @@ collect_switch_conv_info (gswitch *swtch, struct switch_conv_info *info)
     = label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
   e_default = find_edge (info->switch_bb, info->default_bb);
   info->default_prob = e_default->probability;
-  info->default_count = e_default->count;
+  info->default_count = e_default->count ();
   FOR_EACH_EDGE (e, ei, info->switch_bb->succs)
     if (e != e_default)
-      info->other_count += e->count;
+      info->other_count += e->count ();
 
   /* Get upper and lower bounds of case values, and the covered range.  */
   min_case = gimple_switch_label (swtch, 1);
@@ -1424,19 +1423,16 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
   if (!info->default_case_nonstandard)
     e01 = make_edge (bb0, bb1, EDGE_TRUE_VALUE);
   e01->probability = info->default_prob.invert ();
-  e01->count = info->other_count;
 
   /* flags and profiles of the edge taking care of out-of-range values */
   e02->flags &= ~EDGE_FALLTHRU;
   e02->flags |= EDGE_FALSE_VALUE;
   e02->probability = info->default_prob;
-  e02->count = info->default_count;
 
   bbf = info->final_bb;
 
   e1f = make_edge (bb1, bbf, EDGE_FALLTHRU);
   e1f->probability = profile_probability::always ();
-  e1f->count = info->other_count;
 
   if (info->default_case_nonstandard)
     e2f = NULL;
@@ -1444,7 +1440,6 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
     {
       e2f = make_edge (bb2, bbf, EDGE_FALLTHRU);
       e2f->probability = profile_probability::always ();
-      e2f->count = info->default_count;
     }
 
   /* frequencies of the new BBs */
@@ -2248,12 +2243,10 @@ do_jump_if_equal (basic_block bb, tree op0, tree op1, basic_block label_bb,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
-  false_edge->count = bb->count.apply_probability (false_edge->probability);
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   fix_phi_operands_for_edge (true_edge, phi_mapping);
   true_edge->probability = prob;
-  true_edge->count = bb->count.apply_probability (true_edge->probability);
 
   return false_edge->dest;
 }
@@ -2293,12 +2286,10 @@ emit_cmp_and_jump_insns (basic_block bb, tree op0, tree op1,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
-  false_edge->count = bb->count.apply_probability (false_edge->probability);
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   fix_phi_operands_for_edge (true_edge, phi_mapping);
   true_edge->probability = prob;
-  true_edge->count = bb->count.apply_probability (true_edge->probability);
 
   return false_edge->dest;
 }

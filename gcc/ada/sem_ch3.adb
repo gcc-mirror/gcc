@@ -2820,24 +2820,10 @@ package body Sem_Ch3 is
 
          --  Analyze the contracts of packages and their bodies
 
-         if Nkind (Context) = N_Package_Specification then
-
-            --  When a package has private declarations, its contract must be
-            --  analyzed at the end of the said declarations. This way both the
-            --  analysis and freeze actions are properly synchronized in case
-            --  of private type use within the contract.
-
-            if L = Private_Declarations (Context) then
-               Analyze_Package_Contract (Defining_Entity (Context));
-
-            --  Otherwise the contract is analyzed at the end of the visible
-            --  declarations.
-
-            elsif L = Visible_Declarations (Context)
-              and then No (Private_Declarations (Context))
-            then
-               Analyze_Package_Contract (Defining_Entity (Context));
-            end if;
+         if Nkind (Context) = N_Package_Specification
+           and then L = Visible_Declarations (Context)
+         then
+            Analyze_Package_Contract (Defining_Entity (Context));
 
          elsif Nkind (Context) = N_Package_Body then
             Analyze_Package_Body_Contract (Defining_Entity (Context));

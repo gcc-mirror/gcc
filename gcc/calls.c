@@ -607,16 +607,9 @@ special_function_p (const_tree fndecl, int flags)
 	flags |= ECF_RETURNS_TWICE;
     }
 
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
-	flags |= ECF_MAY_BE_ALLOCA;
-	break;
-      default:
-	break;
-      }
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
+    flags |= ECF_MAY_BE_ALLOCA;
 
   return flags;
 }
@@ -698,8 +691,7 @@ gimple_alloca_call_p (const gimple *stmt)
   if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
         return true;
       default:
 	break;
@@ -719,8 +711,7 @@ alloca_call_p (const_tree exp)
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
         return true;
       default:
 	break;
@@ -1819,6 +1810,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  copy = allocate_dynamic_stack_space (size_rtx,
 						       TYPE_ALIGN (type),
 						       TYPE_ALIGN (type),
+						       max_int_size_in_bytes
+						       (type),
 						       true);
 		  copy = gen_rtx_MEM (BLKmode, copy);
 		  set_mem_attributes (copy, type, 1);
@@ -3638,8 +3631,8 @@ expand_call (tree exp, rtx target, int ignore)
 	      /* We can pass TRUE as the 4th argument because we just
 		 saved the stack pointer and will restore it right after
 		 the call.  */
-	      allocate_dynamic_stack_space (push_size, 0,
-					    BIGGEST_ALIGNMENT, true);
+	      allocate_dynamic_stack_space (push_size, 0, BIGGEST_ALIGNMENT,
+					    -1, true);
 	    }
 
 	  /* If argument evaluation might modify the stack pointer,
@@ -4117,7 +4110,6 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  tree type = rettype;
 	  int unsignedp = TYPE_UNSIGNED (type);
-	  int offset = 0;
 	  machine_mode pmode;
 
 	  /* Ensure we promote as expected, and get the new unsignedness.  */
@@ -4125,18 +4117,8 @@ expand_call (tree exp, rtx target, int ignore)
 					 funtype, 1);
 	  gcc_assert (GET_MODE (target) == pmode);
 
-	  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	      && (GET_MODE_SIZE (GET_MODE (target))
-		  > GET_MODE_SIZE (TYPE_MODE (type))))
-	    {
-	      offset = GET_MODE_SIZE (GET_MODE (target))
-	        - GET_MODE_SIZE (TYPE_MODE (type));
-	      if (! BYTES_BIG_ENDIAN)
-	        offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-	      else if (! WORDS_BIG_ENDIAN)
-	        offset %= UNITS_PER_WORD;
-	    }
-
+	  unsigned int offset = subreg_lowpart_offset (TYPE_MODE (type),
+						       GET_MODE (target));
 	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
 	  SUBREG_PROMOTED_SET (target, unsignedp);

@@ -18,10 +18,12 @@
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_posix.h"
 #include "sanitizer_common/sanitizer_procmaps.h"
+#include "sanitizer_common/sanitizer_stackdepot.h"
 #include "tsan_platform.h"
 #include "tsan_rtl.h"
 #include "tsan_flags.h"
 
+#include <mach/mach.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -71,12 +73,18 @@ static void *SignalSafeGetOrAllocate(uptr *dst, uptr size) {
 static uptr main_thread_identity = 0;
 ALIGNED(64) static char main_thread_state[sizeof(ThreadState)];
 
+ThreadState **cur_thread_location() {
+  ThreadState **thread_identity = (ThreadState **)pthread_self();
+  return ((uptr)thread_identity == main_thread_identity) ? nullptr
+                                                         : thread_identity;
+}
+
 ThreadState *cur_thread() {
-  uptr thread_identity = (uptr)pthread_self();
-  if (thread_identity == main_thread_identity || main_thread_identity == 0) {
+  ThreadState **thr_state_loc = cur_thread_location();
+  if (thr_state_loc == nullptr || main_thread_identity == 0) {
     return (ThreadState *)&main_thread_state;
   }
-  ThreadState **fake_tls = (ThreadState **)MemToShadow(thread_identity);
+  ThreadState **fake_tls = (ThreadState **)MemToShadow((uptr)thr_state_loc);
   ThreadState *thr = (ThreadState *)SignalSafeGetOrAllocate(
       (uptr *)fake_tls, sizeof(ThreadState));
   return thr;
@@ -86,26 +94,92 @@ ThreadState *cur_thread() {
 // munmap first and then clear `fake_tls`; if we receive a signal in between,
 // handler will try to access the unmapped ThreadState.
 void cur_thread_finalize() {
-  uptr thread_identity = (uptr)pthread_self();
-  if (thread_identity == main_thread_identity) {
+  ThreadState **thr_state_loc = cur_thread_location();
+  if (thr_state_loc == nullptr) {
     // Calling dispatch_main() or xpc_main() actually invokes pthread_exit to
     // exit the main thread. Let's keep the main thread's ThreadState.
     return;
   }
-  ThreadState **fake_tls = (ThreadState **)MemToShadow(thread_identity);
+  ThreadState **fake_tls = (ThreadState **)MemToShadow((uptr)thr_state_loc);
   internal_munmap(*fake_tls, sizeof(ThreadState));
   *fake_tls = nullptr;
 }
 #endif
 
-uptr GetShadowMemoryConsumption() {
-  return 0;
-}
-
 void FlushShadowMemory() {
 }
 
+static void RegionMemUsage(uptr start, uptr end, uptr *res, uptr *dirty) {
+  vm_address_t address = start;
+  vm_address_t end_address = end;
+  uptr resident_pages = 0;
+  uptr dirty_pages = 0;
+  while (address < end_address) {
+    vm_size_t vm_region_size;
+    mach_msg_type_number_t count = VM_REGION_EXTENDED_INFO_COUNT;
+    vm_region_extended_info_data_t vm_region_info;
+    mach_port_t object_name;
+    kern_return_t ret = vm_region_64(
+        mach_task_self(), &address, &vm_region_size, VM_REGION_EXTENDED_INFO,
+        (vm_region_info_t)&vm_region_info, &count, &object_name);
+    if (ret != KERN_SUCCESS) break;
+
+    resident_pages += vm_region_info.pages_resident;
+    dirty_pages += vm_region_info.pages_dirtied;
+
+    address += vm_region_size;
+  }
+  *res = resident_pages * GetPageSizeCached();
+  *dirty = dirty_pages * GetPageSizeCached();
+}
+
 void WriteMemoryProfile(char *buf, uptr buf_size, uptr nthread, uptr nlive) {
+  uptr shadow_res, shadow_dirty;
+  uptr meta_res, meta_dirty;
+  uptr trace_res, trace_dirty;
+  RegionMemUsage(ShadowBeg(), ShadowEnd(), &shadow_res, &shadow_dirty);
+  RegionMemUsage(MetaShadowBeg(), MetaShadowEnd(), &meta_res, &meta_dirty);
+  RegionMemUsage(TraceMemBeg(), TraceMemEnd(), &trace_res, &trace_dirty);
+
+#if !SANITIZER_GO
+  uptr low_res, low_dirty;
+  uptr high_res, high_dirty;
+  uptr heap_res, heap_dirty;
+  RegionMemUsage(LoAppMemBeg(), LoAppMemEnd(), &low_res, &low_dirty);
+  RegionMemUsage(HiAppMemBeg(), HiAppMemEnd(), &high_res, &high_dirty);
+  RegionMemUsage(HeapMemBeg(), HeapMemEnd(), &heap_res, &heap_dirty);
+#else  // !SANITIZER_GO
+  uptr app_res, app_dirty;
+  RegionMemUsage(AppMemBeg(), AppMemEnd(), &app_res, &app_dirty);
+#endif
+
+  StackDepotStats *stacks = StackDepotGetStats();
+  internal_snprintf(buf, buf_size,
+    "shadow   (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+    "meta     (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+    "traces   (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+#if !SANITIZER_GO
+    "low app  (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+    "high app (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+    "heap     (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+#else  // !SANITIZER_GO
+    "app      (0x%016zx-0x%016zx): resident %zd kB, dirty %zd kB\n"
+#endif
+    "stacks: %zd unique IDs, %zd kB allocated\n"
+    "threads: %zd total, %zd live\n"
+    "------------------------------\n",
+    ShadowBeg(), ShadowEnd(), shadow_res / 1024, shadow_dirty / 1024,
+    MetaShadowBeg(), MetaShadowEnd(), meta_res / 1024, meta_dirty / 1024,
+    TraceMemBeg(), TraceMemEnd(), trace_res / 1024, trace_dirty / 1024,
+#if !SANITIZER_GO
+    LoAppMemBeg(), LoAppMemEnd(), low_res / 1024, low_dirty / 1024,
+    HiAppMemBeg(), HiAppMemEnd(), high_res / 1024, high_dirty / 1024,
+    HeapMemBeg(), HeapMemEnd(), heap_res / 1024, heap_dirty / 1024,
+#else  // !SANITIZER_GO
+    AppMemBeg(), AppMemEnd(), app_res / 1024, app_dirty / 1024,
+#endif
+    stacks->n_uniq_ids, stacks->allocated / 1024,
+    nthread, nlive);
 }
 
 #if !SANITIZER_GO
@@ -137,7 +211,7 @@ static void my_pthread_introspection_hook(unsigned int event, pthread_t thread,
       ThreadState *parent_thread_state = nullptr;  // No parent.
       int tid = ThreadCreate(parent_thread_state, 0, (uptr)thread, true);
       CHECK_NE(tid, 0);
-      ThreadStart(thr, tid, GetTid());
+      ThreadStart(thr, tid, GetTid(), /*workerthread*/ true);
     }
   } else if (event == PTHREAD_INTROSPECTION_THREAD_TERMINATE) {
     if (thread == pthread_self()) {
@@ -154,6 +228,14 @@ static void my_pthread_introspection_hook(unsigned int event, pthread_t thread,
 #endif
 
 void InitializePlatformEarly() {
+#if defined(__aarch64__)
+  uptr max_vm = GetMaxVirtualAddress() + 1;
+  if (max_vm != Mapping::kHiAppMemEnd) {
+    Printf("ThreadSanitizer: unsupported vm address limit %p, expected %p.\n",
+           max_vm, Mapping::kHiAppMemEnd);
+    Die();
+  }
+#endif
 }
 
 void InitializePlatform() {
@@ -168,6 +250,29 @@ void InitializePlatform() {
       pthread_introspection_hook_install(&my_pthread_introspection_hook);
 #endif
 }
+
+#if !SANITIZER_GO
+void ImitateTlsWrite(ThreadState *thr, uptr tls_addr, uptr tls_size) {
+  // The pointer to the ThreadState object is stored in the shadow memory
+  // of the tls.
+  uptr tls_end = tls_addr + tls_size;
+  ThreadState **thr_state_loc = cur_thread_location();
+  if (thr_state_loc == nullptr) {
+    MemoryRangeImitateWrite(thr, /*pc=*/2, tls_addr, tls_size);
+  } else {
+    uptr thr_state_start = (uptr)thr_state_loc;
+    uptr thr_state_end = thr_state_start + sizeof(uptr);
+    CHECK_GE(thr_state_start, tls_addr);
+    CHECK_LE(thr_state_start, tls_addr + tls_size);
+    CHECK_GE(thr_state_end, tls_addr);
+    CHECK_LE(thr_state_end, tls_addr + tls_size);
+    MemoryRangeImitateWrite(thr, /*pc=*/2, tls_addr,
+                            thr_state_start - tls_addr);
+    MemoryRangeImitateWrite(thr, /*pc=*/2, thr_state_end,
+                            tls_end - thr_state_end);
+  }
+}
+#endif
 
 #if !SANITIZER_GO
 // Note: this function runs with async signals enabled,

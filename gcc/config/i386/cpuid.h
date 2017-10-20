@@ -97,6 +97,7 @@
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_GFNI	(1 << 8)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_RDPID	(1 << 22)
 

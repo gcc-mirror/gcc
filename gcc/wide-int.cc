@@ -2146,6 +2146,39 @@ template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
 template void offset_int::dump () const;
 template void widest_int::dump () const;
 
+/* We could add all the above ::dump variants here, but wide_int and
+   widest_int should handle the common cases.  Besides, you can always
+   call the dump method directly.  */
+
+DEBUG_FUNCTION void
+debug (const wide_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const wide_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
 
 #if CHECKING_P
 

@@ -1,4 +1,4 @@
-! { dg-do run  { target openacc_nvidia_accel_selected } }
+! { dg-do run }
 
 module vars
   implicit none

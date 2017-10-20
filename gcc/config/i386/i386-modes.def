@@ -39,18 +39,21 @@ ADJUST_ALIGNMENT (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 4);
    For the i386, we need separate modes when floating-point
    equality comparisons are being done.
 
-   Add CCNO to indicate comparisons against zero that requires
+   Add CCNO to indicate comparisons against zero that require
    Overflow flag to be unset.  Sign bit test is used instead and
    thus can be used to form "a&b>0" type of tests.
 
-   Add CCGC to indicate comparisons against zero that allows
+   Add CCGC to indicate comparisons against zero that allow
    unspecified garbage in the Carry flag.  This mode is used
    by inc/dec instructions.
 
-   Add CCGOC to indicate comparisons against zero that allows
+   Add CCGOC to indicate comparisons against zero that allow
    unspecified garbage in the Carry and Overflow flag. This
    mode is used to simulate comparisons of (a-b) and (a+b)
    against zero using sub/cmp/add operations.
+
+   Add CCGZ to indicate comparisons that allow unspecified garbage
+   in the Zero flag.  This mode is used in double-word comparisons.
 
    Add CCA to indicate that only the Above flag is valid.
    Add CCC to indicate that only the Carry flag is valid.
@@ -62,6 +65,7 @@ ADJUST_ALIGNMENT (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 4);
 CC_MODE (CCGC);
 CC_MODE (CCGOC);
 CC_MODE (CCNO);
+CC_MODE (CCGZ);
 CC_MODE (CCA);
 CC_MODE (CCC);
 CC_MODE (CCO);

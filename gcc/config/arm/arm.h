@@ -210,6 +210,11 @@ extern tree arm_fp16_type_node;
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
+/* Supports for Dot Product AdvSIMD extensions.  */
+#define TARGET_DOTPROD (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,		\
+					isa_bit_dotprod))
+
 /* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_VFP_FP16INST \
   (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)

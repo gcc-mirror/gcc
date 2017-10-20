@@ -152,6 +152,7 @@ verify_flow_info (void)
 		 bb->index, bb->frequency);
 	  err = 1;
 	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (last_visited [e->dest->index] == bb)
@@ -160,15 +161,18 @@ verify_flow_info (void)
 		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
+	  /* FIXME: Graphite and SLJL and target code still tends to produce
+	     edges with no probablity.  */
+	  if (profile_status_for_fn (cfun) >= PROFILE_GUESSED
+	      && !e->probability.initialized_p () && 0)
+	    {
+	      error ("Uninitialized probability of edge %i->%i", e->src->index,
+		     e->dest->index);
+	      err = 1;
+	    }
 	  if (!e->probability.verify ())
 	    {
 	      error ("verify_flow_info: Wrong probability of edge %i->%i",
-		     e->src->index, e->dest->index);
-	      err = 1;
-	    }
-	  if (!e->count.verify ())
-	    {
-	      error ("verify_flow_info: Wrong count of edge %i->%i",
 		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
@@ -443,7 +447,6 @@ redirect_edge_succ_nodup (edge e, basic_block new_succ)
     {
       s->flags |= e->flags;
       s->probability += e->probability;
-      s->count += e->count;
       /* FIXME: This should be called via a hook and only for IR_GIMPLE.  */
       redirect_edge_var_map_dup (s, e);
       remove_edge (e);
@@ -622,7 +625,7 @@ basic_block
 split_edge (edge e)
 {
   basic_block ret;
-  profile_count count = e->count;
+  profile_count count = e->count ();
   int freq = EDGE_FREQUENCY (e);
   edge f;
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
@@ -639,7 +642,6 @@ split_edge (edge e)
   ret->count = count;
   ret->frequency = freq;
   single_succ_edge (ret)->probability = profile_probability::always ();
-  single_succ_edge (ret)->count = count;
 
   if (irr)
     {
@@ -868,7 +870,6 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
   dummy = fallthru->src;
   dummy->count = profile_count::zero ();
   dummy->frequency = 0;
-  fallthru->count = profile_count::zero ();
   bb = fallthru->dest;
 
   /* Redirect back edges we want to keep.  */
@@ -882,8 +883,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 	  if (dummy->frequency > BB_FREQ_MAX)
 	    dummy->frequency = BB_FREQ_MAX;
 
-	  dummy->count += e->count;
-	  fallthru->count += e->count;
+	  dummy->count += e->count ();
 	  ei_next (&ei);
 	  continue;
 	}
@@ -1069,7 +1069,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 {
   edge s, n;
   basic_block new_bb;
-  profile_count new_count = e ? e->count : profile_count::uninitialized ();
+  profile_count new_count = e ? e->count (): profile_count::uninitialized ();
   edge_iterator ei;
 
   if (!cfg_hooks->duplicate_block)
@@ -1093,13 +1093,6 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 	 is no need to actually check for duplicated edges.  */
       n = unchecked_make_edge (new_bb, s->dest, s->flags);
       n->probability = s->probability;
-      if (e && bb->count > profile_count::zero ())
-	{
-	  n->count = s->count.apply_scale (new_count, bb->count);
-	  s->count -= n->count;
-	}
-      else
-	n->count = s->count;
       n->aux = s->aux;
     }
 
@@ -1463,7 +1456,7 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    record->num_mismatched_freq_out[after_pass]++;
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    lsum += e->count;
+	    lsum += e->count ();
 	  if (EDGE_COUNT (bb->succs) && (lsum.differs_from_p (bb->count)))
 	    record->num_mismatched_count_out[after_pass]++;
 	}
@@ -1479,7 +1472,7 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    record->num_mismatched_freq_in[after_pass]++;
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    lsum += e->count;
+	    lsum += e->count ();
 	  if (lsum.differs_from_p (bb->count))
 	    record->num_mismatched_count_in[after_pass]++;
 	}

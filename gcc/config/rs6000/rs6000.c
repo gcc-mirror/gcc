@@ -5419,9 +5419,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case unaligned_load:
-	if (TARGET_P9_VECTOR)
-	  return 3;
-
+      case vector_gather_load:
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -5460,6 +5458,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_store:
+      case vector_scatter_store:
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -23255,24 +23254,6 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   return 1;
 }
 
-const char *
-output_isel (rtx *operands)
-{
-  enum rtx_code code;
-
-  code = GET_CODE (operands[1]);
-
-  if (code == GE || code == GEU || code == LE || code == LEU || code == NE)
-    {
-      gcc_assert (GET_CODE (operands[2]) == REG
-		  && GET_CODE (operands[3]) == REG);
-      PUT_CODE (operands[1], reverse_condition (code));
-      return "isel %0,%3,%2,%j1";
-    }
-
-  return "isel %0,%2,%3,%j1";
-}
-
 void
 rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 {
@@ -34393,7 +34374,8 @@ rs6000_xcoff_asm_output_aligned_decl_common (FILE *stream,
 	   size, align2);
 
 #ifdef HAVE_GAS_HIDDEN
-  fputs (rs6000_xcoff_visibility (decl), stream);
+  if (decl != NULL)
+    fputs (rs6000_xcoff_visibility (decl), stream);
 #endif
   putc ('\n', stream);
 }

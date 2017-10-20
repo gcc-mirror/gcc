@@ -712,7 +712,8 @@ package body Exp_Ch6 is
          Stmt := First (Stmts);
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Block_Statement then
-               Replace_Returns (Param_Id, Statements (Stmt));
+               Replace_Returns (Param_Id,
+                 Statements (Handled_Statement_Sequence (Stmt)));
 
             elsif Nkind (Stmt) = N_Case_Statement then
                declare
@@ -5145,11 +5146,19 @@ package body Exp_Ch6 is
                         Set_No_Initialization (Heap_Allocator);
                      end if;
 
+                     --  Set the flag indicating that the allocator came from
+                     --  a build-in-place return statement, so we can avoid
+                     --  adjusting the allocated object. Note that this flag
+                     --  will be inherited by the copies made below.
+
+                     Set_Alloc_For_BIP_Return (Heap_Allocator);
+
                      --  The Pool_Allocator is just like the Heap_Allocator,
                      --  except we set Storage_Pool and Procedure_To_Call so
                      --  it will use the user-defined storage pool.
 
                      Pool_Allocator := New_Copy_Tree (Heap_Allocator);
+                     pragma Assert (Alloc_For_BIP_Return (Pool_Allocator));
 
                      --  Do not generate the renaming of the build-in-place
                      --  pool parameter on ZFP because the parameter is not
@@ -5191,6 +5200,7 @@ package body Exp_Ch6 is
 
                      else
                         SS_Allocator := New_Copy_Tree (Heap_Allocator);
+                        pragma Assert (Alloc_For_BIP_Return (SS_Allocator));
 
                         --  The heap and pool allocators are marked as
                         --  Comes_From_Source since they correspond to an
@@ -7239,8 +7249,68 @@ package body Exp_Ch6 is
 
       if Is_Limited_View (Typ) then
          return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
+
       else
-         return Debug_Flag_Dot_9;
+         if Debug_Flag_Dot_9 then
+            return False;
+         end if;
+
+         if Has_Interfaces (Typ) then
+            return False;
+         end if;
+
+         declare
+            T : Entity_Id := Typ;
+         begin
+            --  For T'Class, return True if it's True for T. This is necessary
+            --  because a class-wide function might say "return F (...)", where
+            --  F returns the corresponding specific type. We need a loop in
+            --  case T is a subtype of a class-wide type.
+
+            while Is_Class_Wide_Type (T) loop
+               T := Etype (T);
+            end loop;
+
+            --  If this is a generic formal type in an instance, return True if
+            --  it's True for the generic actual type.
+
+            if Nkind (Parent (T)) = N_Subtype_Declaration
+              and then Present (Generic_Parent_Type (Parent (T)))
+            then
+               T := Entity (Subtype_Indication (Parent (T)));
+
+               if Present (Full_View (T)) then
+                  T := Full_View (T);
+               end if;
+            end if;
+
+            if Present (Underlying_Type (T)) then
+               T := Underlying_Type (T);
+            end if;
+
+            declare
+               Result : Boolean;
+               --  So we can stop here in the debugger
+            begin
+               --  ???For now, enable build-in-place for a very narrow set of
+               --  controlled types. Change "if True" to "if False" to
+               --  experiment more controlled types. Eventually, we would
+               --  like to enable build-in-place for all tagged types, all
+               --  types that need finalization, and all caller-unknown-size
+               --  types.
+
+               if True then
+                  Result := Is_Controlled (T)
+                    and then Present (Enclosing_Subprogram (T))
+                    and then not Is_Compilation_Unit (Enclosing_Subprogram (T))
+                    and then Ekind (Enclosing_Subprogram (T)) = E_Procedure;
+               else
+                  Result := Is_Controlled (T);
+               end if;
+
+               return Result;
+            end;
+         end;
       end if;
    end Is_Build_In_Place_Result_Type;
 
@@ -7326,7 +7396,12 @@ package body Exp_Ch6 is
          raise Program_Error;
       end if;
 
-      return Is_Build_In_Place_Function (Function_Id);
+      declare
+         Result : constant Boolean := Is_Build_In_Place_Function (Function_Id);
+         --  So we can stop here in the debugger
+      begin
+         return Result;
+      end;
    end Is_Build_In_Place_Function_Call;
 
    -----------------------

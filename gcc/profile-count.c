@@ -147,12 +147,12 @@ profile_probability::differs_from_p (profile_probability other) const
 {
   if (!initialized_p () || !other.initialized_p ())
     return false;
-  if ((uint64_t)m_val - (uint64_t)other.m_val < 10
-      || (uint64_t)other.m_val - (uint64_t)m_val < 10)
+  if ((uint64_t)m_val - (uint64_t)other.m_val < max_probability / 1000
+      || (uint64_t)other.m_val - (uint64_t)max_probability < 1000)
     return false;
   if (!other.m_val)
     return true;
-  int64_t ratio = m_val * 100 / other.m_val;
+  int64_t ratio = (int64_t)m_val * 100 / other.m_val;
   return ratio < 99 || ratio > 101;
 }
 

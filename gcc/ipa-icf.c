@@ -1422,6 +1422,7 @@ sem_function::init (void)
 	      }
 	  }
 
+	hstate.commit_flag ();
 	gcode_hash = hstate.end ();
 	bb_sizes.safe_push (nondbg_stmt_count);
 
@@ -1644,6 +1645,11 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
 	  if (gimple_op (stmt, i))
 	    add_type (TREE_TYPE (gimple_op (stmt, i)), hstate);
 	}
+      /* Consider nocf_check attribute in hash as it affects code
+ 	 generation.  */
+      if (code == GIMPLE_CALL
+	  && flag_cf_protection & CF_BRANCH)
+	hstate.add_flag (gimple_call_nocf_check_p (as_a <gcall *> (stmt)));
     default:
       break;
     }

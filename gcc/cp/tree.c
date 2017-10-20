@@ -333,6 +333,10 @@ cp_stabilize_reference (tree ref)
 {
   switch (TREE_CODE (ref))
     {
+    case NON_DEPENDENT_EXPR:
+      /* We aren't actually evaluating this.  */
+      return ref;
+
     /* We need to treat specially anything stabilize_reference doesn't
        handle specifically.  */
     case VAR_DECL:

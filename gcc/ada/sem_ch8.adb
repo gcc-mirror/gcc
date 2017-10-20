@@ -3644,19 +3644,16 @@ package body Sem_Ch8 is
       --  and mark any use_package_clauses that affect the visibility of the
       --  implicit generic actual.
 
-      if From_Default (N)
-        and then Is_Generic_Actual_Subprogram (New_S)
-        and then Present (Alias (New_S))
-      then
-         Mark_Use_Clauses (Alias (New_S));
-
-      --  Check intrinsic operators used as generic actuals since they may
-      --  make a use_type_clause effective.
-
-      elsif Is_Generic_Actual_Subprogram (New_S)
-        and then Is_Intrinsic_Subprogram (New_S)
+      if Is_Generic_Actual_Subprogram (New_S)
+        and then (Is_Intrinsic_Subprogram (New_S) or else From_Default (N))
       then
          Mark_Use_Clauses (New_S);
+
+         --  Handle overloaded subprograms
+
+         if Present (Alias (New_S)) then
+            Mark_Use_Clauses (Alias (New_S));
+         end if;
       end if;
    end Analyze_Subprogram_Renaming;
 
@@ -9078,7 +9075,7 @@ package body Sem_Ch8 is
                   then
                      Error_Msg_Node_1 := Entity (N);
                      Error_Msg_NE
-                       ("use clause for package &? has no effect",
+                       ("use clause for package & has no effect?u?",
                         Curr, Entity (N));
                   end if;
 
@@ -9087,7 +9084,7 @@ package body Sem_Ch8 is
                else
                   Error_Msg_Node_1 := Etype (N);
                   Error_Msg_NE
-                    ("use clause for }? has no effect", Curr, Etype (N));
+                    ("use clause for } has no effect?u?", Curr, Etype (N));
                end if;
             end if;
 
@@ -9111,10 +9108,10 @@ package body Sem_Ch8 is
       --  Deal with use clauses within the context area if the current
       --  scope is a compilation unit.
 
-      if Is_Compilation_Unit (Current_Scope) then
-
-         pragma Assert (Scope_Stack.Last /= Scope_Stack.First);
-
+      if Is_Compilation_Unit (Current_Scope)
+        and then Sloc (Scope_Stack.Table
+                        (Scope_Stack.Last - 1).Entity) = Standard_Location
+      then
          Update_Chain_In_Scope (Scope_Stack.Last - 1);
       end if;
    end Update_Use_Clause_Chain;

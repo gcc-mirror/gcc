@@ -874,7 +874,7 @@ case ${target} in
   tmake_file="${tmake_file} t-sol2 t-slibgcc"
   c_target_objs="${c_target_objs} sol2-c.o"
   cxx_target_objs="${cxx_target_objs} sol2-c.o sol2-cxx.o"
-  extra_objs="sol2.o sol2-stubs.o"
+  extra_objs="${extra_objs} sol2.o sol2-stubs.o"
   extra_options="${extra_options} sol2.opt"
   case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
     "":yes:* | yes:yes:* )
@@ -1692,7 +1692,7 @@ i[34567]86-*-cygwin*)
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
@@ -1708,7 +1708,7 @@ x86_64-*-cygwin*)
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
@@ -1783,7 +1783,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 		*)
 			;;
 	esac
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	gas=yes
@@ -3437,11 +3437,18 @@ if test x$with_cpu = x ; then
       esac
       ;;
     powerpc*-*-*spe*)
+      # For SPE, start with 8540, then upgrade to 8548 if
+      # --enable-e500-double was requested explicitly or if we were
+      # configured for e500v2.
+      with_cpu=8540
       if test x$enable_e500_double = xyes; then
-         with_cpu=8548
-      else
-         with_cpu=8540
-      fi       
+        with_cpu=8548
+      fi
+      case ${target_noncanonical} in
+        e500v2*)
+          with_cpu=8548
+          ;;
+      esac
       ;;
     sparc*-*-*)
       case ${target} in

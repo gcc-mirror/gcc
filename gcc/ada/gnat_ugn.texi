@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 09, 2017
+GNAT User's Guide for Native Platforms , Oct 20, 2017
 
 AdaCore
 
@@ -8809,19 +8809,6 @@ in the compiler sources for details in files @code{scos.ads} and
 @code{scos.adb}.
 @end table
 
-@geindex -fdump-xref (gcc)
-
-
-@table @asis
-
-@item @code{-fdump-xref}
-
-Generates cross reference information in GLI files for C and C++ sources.
-The GLI files have the same syntax as the ALI files for Ada, and can be used
-for source navigation in IDEs and on the command line using e.g. gnatxref
-and the @code{--ext=gli} switch.
-@end table
-
 @geindex -flto (gcc)
 
 
@@ -8830,8 +8817,9 @@ and the @code{--ext=gli} switch.
 @item @code{-flto[=@emph{n}]}
 
 Enables Link Time Optimization. This switch must be used in conjunction
-with the traditional @code{-Ox} switches and instructs the compiler to
-defer most optimizations until the link stage. The advantage of this
+with the @code{-Ox} switches (but not with the @code{-gnatn} switch
+since it is a full replacement for the latter) and instructs the compiler
+to defer most optimizations until the link stage. The advantage of this
 approach is that the compiler can do a whole-program analysis and choose
 the best interprocedural optimization strategy based on a complete view
 of the program, instead of a fragmentary view with the usual approach.
@@ -12474,8 +12462,8 @@ should not complain at you.
 This switch activates warnings for exception usage when pragma Restrictions
 (No_Exception_Propagation) is in effect. Warnings are given for implicit or
 explicit exception raises which are not covered by a local handler, and for
-exception handlers which do not cover a local raise. The default is that these
-warnings are not given.
+exception handlers which do not cover a local raise. The default is that
+these warnings are given for units that contain exception handlers.
 
 @item @code{-gnatw.X}
 
@@ -17949,9 +17937,9 @@ Do not look for library files in the system default directory.
 @item @code{--ext=@emph{extension}}
 
 Specify an alternate ali file extension. The default is @code{ali} and other
-extensions (e.g. @code{gli} for C/C++ sources when using @code{-fdump-xref})
-may be specified via this switch. Note that if this switch overrides the
-default, which means that only the new extension will be considered.
+extensions (e.g. @code{gli} for C/C++ sources) may be specified via this switch.
+Note that if this switch overrides the default, which means that only the
+new extension will be considered.
 @end table
 
 @geindex --RTS (gnatxref)
@@ -22901,12 +22889,12 @@ combine a dimensioned and dimensionless value.  Thus an expression such as
 @code{Acceleration}.
 
 The dimensionality checks for relationals use the same rules as
-for "+" and "-"; thus
+for "+" and "-", except when comparing to a literal; thus
 
 @quotation
 
 @example
-acc > 10.0
+acc > len
 @end example
 @end quotation
 
@@ -22915,12 +22903,21 @@ is equivalent to
 @quotation
 
 @example
-acc-10.0 > 0.0
+acc-len > 0.0
 @end example
 @end quotation
 
-and is thus illegal. Analogously a conditional expression
-requires the same dimension vector for each branch.
+and is thus illegal, but
+
+@quotation
+
+@example
+acc > 10.0
+@end example
+@end quotation
+
+is accepted with a warning. Analogously a conditional expression requires the
+same dimension vector for each branch (with no exception for literals).
 
 The dimension vector of a type conversion @code{T(@emph{expr})} is defined
 as follows, based on the nature of @code{T}:
@@ -27187,8 +27184,62 @@ elaborated.
 
 
 The sequence by which the elaboration code of all units within a partition is
-executed is referred to as @strong{elaboration order}. The elaboration order depends
-on the following factors:
+executed is referred to as @strong{elaboration order}.
+
+Within a single unit, elaboration code is executed in sequential order.
+
+@example
+package body Client is
+   Result : ... := Server.Func;
+
+   procedure Proc is
+      package Inst is new Server.Gen;
+   begin
+      Inst.Eval (Result);
+   end Proc;
+begin
+   Proc;
+end Client;
+@end example
+
+In the example above, the elaboration order within package body @code{Client} is
+as follows:
+
+
+@enumerate 
+
+@item 
+The object declaration of @code{Result} is elaborated.
+
+
+@itemize *
+
+@item 
+Function @code{Server.Func} is invoked.
+@end itemize
+
+@item 
+The subprogram body of @code{Proc} is elaborated.
+
+@item 
+Procedure @code{Proc} is invoked.
+
+
+@itemize *
+
+@item 
+Generic unit @code{Server.Gen} is instantiated as @code{Inst}.
+
+@item 
+Instance @code{Inst} is elaborated.
+
+@item 
+Procedure @code{Inst.Eval} is invoked.
+@end itemize
+@end enumerate
+
+The elaboration order of all units within a partition depends on the following
+factors:
 
 
 @itemize *
@@ -27689,7 +27740,7 @@ dynamic model is in effect, GNAT assumes that all code within all units in
 a partition is elaboration code. GNAT performs very few diagnostics and
 generates run-time checks to verify the elaboration order of a program. This
 behavior is identical to that specified by the Ada Reference Manual. The
-dynamic model is enabled with compilation switch @code{-gnatE}.
+dynamic model is enabled with compiler switch @code{-gnatE}.
 @end itemize
 
 @geindex Static elaboration model
@@ -28001,7 +28052,7 @@ elaborated prior to the body of @code{Static_Model}.
 The SPARK model is identical to the static model in its handling of internal
 targets. The SPARK model, however, requires explicit @code{Elaborate} or
 @code{Elaborate_All} pragmas to be present in the program when a target is
-external, and emits hard errors instead of warnings:
+external, and compiler switch @code{-gnatd.v} is in effect.
 
 @example
 1. with Server;
@@ -28146,7 +28197,7 @@ code.
 @emph{Switch to more permissive elaboration model}
 
 If the compilation was performed using the static model, enable the dynamic
-model with compilation switch @code{-gnatE}. GNAT will no longer generate
+model with compiler switch @code{-gnatE}. GNAT will no longer generate
 implicit @code{Elaborate} and @code{Elaborate_All} pragmas, resulting in a behavior
 identical to that specified by the Ada Reference Manual. The binder will
 generate an executable program that may or may not raise @code{Program_Error},
@@ -28711,6 +28762,22 @@ When this switch is in effect, GNAT will ignore @code{'Access} of an entry,
 operator, or subprogram when the static model is in effect.
 @end table
 
+@geindex -gnatd.v (gnat)
+
+
+@table @asis
+
+@item @code{-gnatd.v}
+
+Enforce SPARK elaboration rules in SPARK code
+
+When this switch is in effect, GNAT will enforce the SPARK rules of
+elaboration as defined in the SPARK Reference Manual, section 7.7. As a
+result, constructs which violate the SPARK elaboration rules are no longer
+accepted, even if GNAT is able to statically ensure that these constructs
+will not lead to ABE problems.
+@end table
+
 @geindex -gnatd.y (gnat)
 
 
@@ -28785,7 +28852,7 @@ it will provide detailed traceback when an implicit @code{Elaborate} or
 @emph{SPARK model}
 
 GNAT will indicate how an elaboration requirement is met by the context of
-a unit.
+a unit. This diagnostic requires compiler switch @code{-gnatd.v}.
 
 @example
 1. with Server; pragma Elaborate_All (Server);
@@ -28846,8 +28913,8 @@ none of the binder or compiler switches. If the binder succeeds in finding an
 elaboration order, then apart from possible cases involing dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
 If it is important for the program to be portable to compilers other than GNAT,
-then the programmer should use compilation switch @code{-gnatel} and
-consider the messages about missing or implicitly created @code{Elaborate} and
+then the programmer should use compiler switch @code{-gnatel} and consider
+the messages about missing or implicitly created @code{Elaborate} and
 @code{Elaborate_All} pragmas.
 
 If the binder reports an elaboration circularity, the programmer has several

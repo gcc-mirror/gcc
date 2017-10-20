@@ -1294,12 +1294,10 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   /* Set the probability of new exit to the same of the old one.  Fix
      the frequency of the latch block, by scaling it back by
      1 - exit->probability.  */
-  new_exit->count = exit->count;
   new_exit->probability = exit->probability;
   new_nonexit = single_pred_edge (loop->latch);
   new_nonexit->probability = exit->probability.invert ();
   new_nonexit->flags = EDGE_TRUE_VALUE;
-  new_nonexit->count -= exit->count;
   if (new_nonexit->probability.initialized_p ())
     scale_bbs_frequencies (&loop->latch, 1, new_nonexit->probability);
 
@@ -1371,7 +1369,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
      exit edge.  */
 
   freq_h = loop->header->count;
-  freq_e = (loop_preheader_edge (loop))->count;
+  freq_e = (loop_preheader_edge (loop))->count ();
   /* Use frequency only if counts are zero.  */
   if (!(freq_h > 0) && !(freq_e > 0))
     {
@@ -1390,17 +1388,15 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   exit_bb = single_pred (loop->latch);
   new_exit = find_edge (exit_bb, rest);
-  new_exit->count = loop_preheader_edge (loop)->count;
   new_exit->probability = profile_probability::always ()
 				.apply_scale (1, new_est_niter + 1);
 
-  rest->count += new_exit->count;
+  rest->count += new_exit->count ();
   rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
   prob = new_nonexit->probability;
   new_nonexit->probability = new_exit->probability.invert ();
-  new_nonexit->count = exit_bb->count - new_exit->count;
   prob = new_nonexit->probability / prob;
   if (prob.initialized_p ())
     scale_bbs_frequencies (&loop->latch, 1, prob);
