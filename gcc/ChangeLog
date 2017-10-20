@@ -1,5 +1,11 @@
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82603
+	* tree-if-conv.c (predicate_mem_writes): Make sure to only
+	remove false predicated stores.
+
+2017-10-20  Richard Biener  <rguenther@suse.de>
+
 	* graphite-isl-ast-to-gimple.c
 	(translate_isl_ast_to_gimple::graphite_copy_stmts_from_block):
 	Remove return value and simplify, dump copied stmt after lhs

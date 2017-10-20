@@ -1,3 +1,8 @@
+2017-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82603
+	* gcc.dg/torture/pr82603.c: New testcase.
+
 2017-10-20  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tree-ssa/ldist-27.c: Remove dg-require-stack-size.
