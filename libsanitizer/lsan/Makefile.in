@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -100,7 +101,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 liblsan_la_DEPENDENCIES =  \
@@ -110,7 +112,7 @@ liblsan_la_DEPENDENCIES =  \
 am__objects_1 = lsan_common.lo lsan_common_linux.lo lsan_common_mac.lo
 am__objects_2 = $(am__objects_1) lsan.lo lsan_linux.lo lsan_mac.lo \
 	lsan_malloc_mac.lo lsan_allocator.lo lsan_interceptors.lo \
-	lsan_preinit.lo lsan_thread.lo
+	lsan_thread.lo
 am_liblsan_la_OBJECTS = $(am__objects_2)
 liblsan_la_OBJECTS = $(am_liblsan_la_OBJECTS)
 liblsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -139,6 +141,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+HEADERS = $(nodist_toolexeclib_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
@@ -298,6 +301,7 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libsanitizer_lsan.la
 @LSAN_SUPPORTED_TRUE@toolexeclib_LTLIBRARIES = liblsan.la
+@LSAN_SUPPORTED_TRUE@nodist_toolexeclib_HEADERS = liblsan_preinit.o
 sanitizer_lsan_files = \
 	lsan_common.cc \
 	lsan_common_linux.cc \
@@ -311,7 +315,6 @@ lsan_files = \
 	lsan_malloc_mac.cc \
 	lsan_allocator.cc \
 	lsan_interceptors.cc \
-	lsan_preinit.cc \
 	lsan_thread.cc
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
@@ -456,7 +459,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_malloc_mac.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_preinit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_thread.Plo@am__quote@
 
 .cc.o:
@@ -485,6 +487,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-nodist_toolexeclibHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -539,9 +562,9 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -603,7 +626,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am: install-nodist_toolexeclibHEADERS \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -643,7 +667,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -654,14 +679,19 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	html html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip \
-	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	install-info-am install-man install-nodist_toolexeclibHEADERS \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-toolexeclibLTLIBRARIES installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am \
+	uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
+
+liblsan_preinit.o: lsan_preinit.o
+	cp $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

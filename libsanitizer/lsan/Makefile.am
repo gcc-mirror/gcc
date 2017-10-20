@@ -12,6 +12,7 @@ ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libsanitizer_lsan.la
 if LSAN_SUPPORTED
 toolexeclib_LTLIBRARIES = liblsan.la
+nodist_toolexeclib_HEADERS = liblsan_preinit.o
 endif
 
 sanitizer_lsan_files = \
@@ -27,7 +28,6 @@ lsan_files = \
 	lsan_malloc_mac.cc \
 	lsan_allocator.cc \
 	lsan_interceptors.cc \
-	lsan_preinit.cc \
 	lsan_thread.cc
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
@@ -39,6 +39,9 @@ liblsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 endif
 liblsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_liblsan)
+
+liblsan_preinit.o: lsan_preinit.o
+	cp $< $@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
