@@ -1,3 +1,93 @@
+2017-10-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Binary_Op): Accept with a warning to
+	compare a dimensioned expression with a literal.
+	(Dim_Warning_For_Numeric_Literal): Do not issue a warning for the
+	special value zero.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Update description of
+	dimensionality system in GNAT.
+	* gnat_ugn.texi: Regenerate.
+
+2017-10-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function.Freeze_Expr_Types): Remove
+	inadequate silencing of errors.
+	* sem_util.adb (Check_Part_Of_Reference): Do not issue an error when
+	checking the subprogram body generated from an expression function,
+	when this is done as part of the preanalysis done on expression
+	functions, as the subprogram body may not yet be attached in the AST.
+	The error if any will be issued later during the analysis of the body.
+	(Is_Aliased_View): Trivial rewrite with Is_Formal_Object.
+
+2017-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Update_Chain_In_Scope): Add missing [-gnatwu] marker for
+	warning on ineffective use clause.
+
+2017-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch11.ads (Warn_If_No_Local_Raise): Declare.
+	* exp_ch11.adb (Expand_Exception_Handlers): Use Warn_If_No_Local_Raise
+	to issue the warning on the absence of local raise.
+	(Possible_Local_Raise): Do not issue the warning for Call_Markers.
+	(Warn_If_No_Local_Raise): New procedure to issue the warning on the
+	absence of local raise.
+	* sem_elab.adb: Add with and use clauses for Exp_Ch11.
+	(Record_Elaboration_Scenario): Call Possible_Local_Raise in the cases
+	where a scenario could give rise to raising Program_Error.
+	* sem_elab.adb: Typo fixes.
+	* fe.h (Warn_If_No_Local_Raise): Declare.
+	* gcc-interface/gigi.h (get_exception_label): Change return type.
+	* gcc-interface/trans.c (gnu_constraint_error_label_stack): Change to
+	simple vector of Entity_Id.
+	(gnu_storage_error_label_stack): Likewise.
+	(gnu_program_error_label_stack): Likewise.
+	(gigi): Adjust to above changes.
+	(Raise_Error_to_gnu): Likewise.
+	(gnat_to_gnu) <N_Goto_Statement>: Set TREE_USED on the label.
+	(N_Push_Constraint_Error_Label): Push the label onto the stack.
+	(N_Push_Storage_Error_Label): Likewise.
+	(N_Push_Program_Error_Label): Likewise.
+	(N_Pop_Constraint_Error_Label): Pop the label from the stack and issue
+	a warning on the absence of local raise.
+	(N_Pop_Storage_Error_Label): Likewise.
+	(N_Pop_Program_Error_Label): Likewise.
+	(push_exception_label_stack): Delete.
+	(get_exception_label): Change return type to Entity_Id and adjust.
+	* gcc-interface/utils2.c (build_goto_raise): Change type of first
+	parameter to Entity_Id and adjust.  Set TREE_USED on the label.
+	(build_call_raise): Adjust calls to get_exception_label and also
+	build_goto_raise.
+	(build_call_raise_column): Likewise.
+	(build_call_raise_range): Likewise.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (-gnatw.x):
+	Document actual default behavior.
+
+2017-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads: Minor consistent punctuation in comment.  All numbered
+	items in the comment of Is_Internal are now terminated with a period.
+
+2017-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Build_Temporary): Mark created temporary entity as
+	internal.
+
+2017-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.adb (In_Generic_Actual): Simplified.
+
+2017-10-20  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance): Add sanity check to
+	verify a renaming exists for a generic formal before comparing it to
+	the actual as defaulted formals will not have a renamed_object.
+
+2017-10-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Replace_Returns): Fix wrong management of
+	N_Block_Statement nodes.
+
 2017-10-20  Bob Duff  <duff@adacore.com>
 
 	* exp_aggr.adb (Initialize_Array_Component): Avoid adjusting a
