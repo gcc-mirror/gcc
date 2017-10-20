@@ -111,7 +111,7 @@ print_global_statistics (FILE* file)
   fprintf (file, "LOOPS:%ld, ", n_loops);
   fprintf (file, "CONDITIONS:%ld, ", n_conditions);
   fprintf (file, "STMTS:%ld)\n", n_stmts);
-  fprintf (file, "\nGlobal profiling statistics (");
+  fprintf (file, "Global profiling statistics (");
   fprintf (file, "BBS:");
   n_p_bbs.dump (file);
   fprintf (file, ", LOOPS:");
@@ -120,7 +120,7 @@ print_global_statistics (FILE* file)
   n_p_conditions.dump (file);
   fprintf (file, ", STMTS:");
   n_p_stmts.dump (file);
-  fprintf (file, ")\n");
+  fprintf (file, ")\n\n");
 }
 
 /* Print statistics for SCOP to FILE.  */
@@ -185,7 +185,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
   fprintf (file, "LOOPS:%ld, ", n_loops);
   fprintf (file, "CONDITIONS:%ld, ", n_conditions);
   fprintf (file, "STMTS:%ld)\n", n_stmts);
-  fprintf (file, "\nSCoP profiling statistics (");
+  fprintf (file, "SCoP profiling statistics (");
   fprintf (file, "BBS:");
   n_p_bbs.dump (file);
   fprintf (file, ", LOOPS:");
@@ -194,7 +194,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
   n_p_conditions.dump (file);
   fprintf (file, ", STMTS:");
   n_p_stmts.dump (file);
-  fprintf (file, ")\n");
+  fprintf (file, ")\n\n");
 }
 
 /* Print statistics for SCOPS to FILE.  */
@@ -203,15 +203,10 @@ static void
 print_graphite_statistics (FILE* file, vec<scop_p> scops)
 {
   int i;
-
   scop_p scop;
 
   FOR_EACH_VEC_ELT (scops, i, scop)
     print_graphite_scop_statistics (file, scop);
-
-  /* Print the loop structure.  */
-  print_loops (file, 2);
-  print_loops (file, 3);
 }
 
 /* Deletes all scops in SCOPS.  */
@@ -357,6 +352,13 @@ graphite_transform_loops (void)
 
   sort_sibling_loops (cfun);
   canonicalize_loop_closed_ssa_form ();
+
+  /* Print the loop structure.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      print_loops (dump_file, 2);
+      print_loops (dump_file, 3);
+    }
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
   build_scops (&scops);

@@ -191,7 +191,7 @@ class translate_isl_ast_to_gimple
 
   tree get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
 			     vec<tree> iv_map);
-  bool graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
+  void graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				       vec<tree> iv_map);
   edge copy_bb_and_scalar_dependences (basic_block bb, edge next_e,
 				       vec<tree> iv_map);
@@ -791,13 +791,12 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   isl_ast_expr_free (user_expr);
 
   basic_block old_bb = GBB_BB (gbb);
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
 	       "[codegen] copying from bb_%d on edge (bb_%d, bb_%d)\n",
 	       old_bb->index, next_e->src->index, next_e->dest->index);
       print_loops_bb (dump_file, GBB_BB (gbb), 0, 3);
-
     }
 
   next_e = copy_bb_and_scalar_dependences (old_bb, next_e, iv_map);
@@ -807,7 +806,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   if (codegen_error_p ())
     return NULL;
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "[codegen] (after copy) new basic block\n");
       print_loops_bb (dump_file, next_e->src, 0, 3);
@@ -1049,9 +1048,9 @@ gsi_insert_earliest (gimple_seq seq)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "[codegen] inserting statement: ");
+	  fprintf (dump_file, "[codegen] inserting statement in BB %d: ",
+		   gimple_bb (use_stmt)->index);
 	  print_gimple_stmt (dump_file, use_stmt, 0, TDF_VOPS | TDF_MEMSYMS);
-	  print_loops_bb (dump_file, gimple_bb (use_stmt), 0, 3);
 	}
     }
 }
@@ -1122,7 +1121,7 @@ should_copy_to_new_region (gimple *stmt, sese_info_p region)
 /* Duplicates the statements of basic block BB into basic block NEW_BB
    and compute the new induction variables according to the IV_MAP.  */
 
-bool translate_isl_ast_to_gimple::
+void translate_isl_ast_to_gimple::
 graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				vec<tree> iv_map)
 {
@@ -1139,7 +1138,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
       /* Create a new copy of STMT and duplicate STMT's virtual
 	 operands.  */
       gimple *copy = gimple_copy (stmt);
-      gsi_insert_after (&gsi_tgt, copy, GSI_NEW_STMT);
 
       /* Rather than not copying debug stmts we reset them.
          ???  Where we can rewrite uses without inserting new
@@ -1154,12 +1152,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	    gcc_unreachable ();
 	}
 
-      if (dump_file)
-	{
-	  fprintf (dump_file, "[codegen] inserting statement: ");
-	  print_gimple_stmt (dump_file, copy, 0);
-	}
-
       maybe_duplicate_eh_stmt (copy, stmt);
       gimple_duplicate_stmt_histograms (cfun, copy, cfun, stmt);
 
@@ -1172,8 +1164,12 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  create_new_def_for (old_name, copy, def_p);
 	}
 
-      if (codegen_error_p ())
-	return false;
+      gsi_insert_after (&gsi_tgt, copy, GSI_NEW_STMT);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[codegen] inserting statement: ");
+	  print_gimple_stmt (dump_file, copy, 0);
+	}
 
       /* For each SCEV analyzable SSA_NAME, rename their usage.  */
       ssa_op_iter iter;
@@ -1198,8 +1194,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 
       update_stmt (copy);
     }
-
-  return true;
 }
 
 
@@ -1236,11 +1230,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
       gsi_insert_after (&gsi_tgt, ass, GSI_NEW_STMT);
     }
 
-  if (!graphite_copy_stmts_from_block (bb, new_bb, iv_map))
-    {
-      set_codegen_error ();
-      return NULL;
-    }
+  graphite_copy_stmts_from_block (bb, new_bb, iv_map);
 
   /* Insert out-of SSA copies on the original BB outgoing edges.  */
   gsi_tgt = gsi_last_bb (new_bb);
