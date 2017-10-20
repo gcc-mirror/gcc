@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
-/* { dg-require-stack-size "(300 + 200 + 300 * 200) * 8" } */
 
 #define M (300)
 #define N (200)
@@ -12,7 +11,8 @@ struct st
   double c[M][N];
 };
 
-int __attribute__ ((noinline)) foo (struct st *s)
+int __attribute__ ((noinline))
+foo (struct st *s)
 {
   int i, j;
   for (i = 0; i != M;)
@@ -30,9 +30,11 @@ L2:
   return 0;
 }
 
-int main (void)
+struct st s;
+
+int
+main (void)
 {
-  struct st s;
   return foo (&s);
 }
 
