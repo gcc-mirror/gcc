@@ -1,3 +1,13 @@
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/82595
+	* lsan/lsan.h (__lsan_init): Add SANITIZER_INTERFACE_ATTRIBUTE.
+	* lsan/Makefile.am (nodist_toolexeclib_HEADERS): Add
+	liblsan_preinit.o.
+	(lsan_files): Remove lsan_preinit.cc.
+	(liblsan_preinit.o): New rule.
+	* lsan/Makefile.in: Regenerated.
+
 2017-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* All source files: Merge from upstream 315899.

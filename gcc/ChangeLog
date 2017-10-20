@@ -1,5 +1,11 @@
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/82595
+	* config/gnu-user.h (LIBTSAN_EARLY_SPEC): Add libtsan_preinit.o
+	for -fsanitize=thread link of executables.
+	(LIBLSAN_EARLY_SPEC): Add liblsan_preinit.o for -fsanitize=leak
+	link of executables.
+
 	PR target/82370
 	* config/i386/sse.md (VI248_AVX2, VI248_AVX512BW, VI248_AVX512BW_2):
 	New mode iterators.
