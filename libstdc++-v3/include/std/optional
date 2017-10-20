@@ -29,9 +29,9 @@
 #ifndef _GLIBCXX_OPTIONAL
 #define _GLIBCXX_OPTIONAL 1
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#pragma GCC system_header
+
+#if __cplusplus >= 201703L
 
 #include <utility>
 #include <type_traits>
@@ -50,6 +50,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @addtogroup utilities
    *  @{
    */
+
+#define __cpp_lib_optional 201603
 
   template<typename _Tp>
     class optional;

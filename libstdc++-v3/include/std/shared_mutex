@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <bits/c++config.h>
 #include <condition_variable>
@@ -51,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 #ifdef _GLIBCXX_HAS_GTHREADS
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 #define __cpp_lib_shared_mutex 201505
   class shared_mutex;
 #endif
