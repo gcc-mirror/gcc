@@ -79,9 +79,28 @@ test02()
   }
 }
 
+void
+test03()
+{
+  path paths[] = { "single", "multiple/elements" };
+  for (const path& p : paths)
+    for (auto iter = p.begin(); iter != p.end(); ++iter)
+    {
+      auto iter2 = iter;
+      ++iter;
+      iter2++;
+      VERIFY( iter2 == iter );
+      auto iter3 = iter;
+      --iter3;
+      iter2--;
+      VERIFY( iter2 == iter3 );
+    }
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }
