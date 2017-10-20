@@ -6800,15 +6800,7 @@ package body Exp_Ch3 is
             --  adjustment is required if we are going to rewrite the object
             --  declaration into a renaming declaration.
 
-            if Is_Build_In_Place_Result_Type (Typ)
-              and then Nkind (Parent (N)) = N_Extended_Return_Statement
-              and then
-                not Is_Definite_Subtype (Etype (Return_Applies_To
-                      (Return_Statement_Entity (Parent (N)))))
-            then
-               null;
-
-            elsif Needs_Finalization (Typ)
+            if Needs_Finalization (Typ)
               and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then

@@ -1,3 +1,19 @@
+2017-10-20  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Alloc_For_BIP_Return): New flag to indicate
+	that an allocator came from a b-i-p return statement.
+	* exp_ch4.adb (Expand_Allocator_Expression): Avoid adjusting the return
+	object of a nonlimited build-in-place function call.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Set the
+	Alloc_For_BIP_Return flag on generated allocators.
+	* sem_ch5.adb (Analyze_Assignment): Move Assert to where it can't fail.
+	If the N_Assignment_Statement has been transformed into something else,
+	then Should_Transform_BIP_Assignment won't work.
+	* exp_ch3.adb (Expand_N_Object_Declaration): A previous revision said,
+	"Remove Adjust if we're building the return object of an extended
+	return statement in place." Back out that part of the change, because
+	the Alloc_For_BIP_Return flag is now used for that.
+
 2017-10-19  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Is_Build_In_Place_Result_Type): Fix silly bug -- "Typ"
