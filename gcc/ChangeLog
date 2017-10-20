@@ -1,6 +1,19 @@
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82370
+	* config/i386/sse.md (VI248_AVX2, VI248_AVX512BW, VI248_AVX512BW_2):
+	New mode iterators.
+	(<shift_insn><mode>3<mask_name>): Change the last of the 3
+	define_insns for logical vector shifts to use VI248_AVX512BW
+	iterator instead of VI48_AVX512, remove <mask_mode512bit_condition>
+	condition, useless isa and prefix attributes.  Change the first
+	2 of these define_insns to ...
+	(<mask_codefor><shift_insn><mode>3<mask_name>): ... this, new
+	define_insn for avx512vl.
+	(<shift_insn><mode>3): ... and this, new define_insn without
+	masking for non-avx512vl.
+
+	PR target/82370
 	* config/i386/sse.md (*andnot<mode>3,
 	<mask_codefor><code><mode>3<mask_name>, *<code><mode>3): Split
 	(=v,v,vm) alternative into (=x,x,xm) and (=v,v,vm), for 128-bit
