@@ -1,3 +1,35 @@
+2017-10-20  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__linux.ads (Relative_Timed_Wait): Add variable
+	needed for using monotonic clock.
+	* libgnarl/s-taprop__linux.adb: Revert previous monotonic clock
+	changes.
+	* libgnarl/s-taprop__linux.adb, s-taprop__posix.adb: Unify and factor
+	out monotonic clock related functions body.
+	(Timed_Sleep, Timed_Delay, Montonic_Clock, RT_Resolution,
+	Compute_Deadline): Move to...
+	* libgnarl/s-tpopmo.adb: ... here. New separate package body.
+
+2017-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Controlling_Limited_Procedure): Handle properly the
+	case where the controlling formal is an anonymous access to interface
+	type.
+	* exp_ch9.adb (Extract_Dispatching_Call): If controlling actual is an
+	access type, handle properly the the constructed dereference that
+	designates the object used in the rewritten synchronized call.
+	(Parameter_Block_Pack): If the type of the actual is by-copy, its
+	generated declaration in the parameter block does not need an
+	initialization even if the type is a null-excluding access type,
+	because it will be initialized with the value of the actual later on.
+	(Parameter_Block_Pack): Do not add controlling actual to parameter
+	block when its type is by-copy.
+
+2017-10-20  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Update_Use_Clause_Chain): Add sanity check to verify
+	scope stack traversal into the context clause.
+
 2017-10-20  Bob Duff  <duff@adacore.com>
 
 	* sinfo.ads: Fix a comment typo.

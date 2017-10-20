@@ -12909,11 +12909,14 @@ package body Exp_Ch9 is
       end if;
 
       --  If the type of the dispatching object is an access type then return
-      --  an explicit dereference.
+      --  an explicit dereference  of a copy of the object, and note that
+      --  this is the controlling actual of the call.
 
       if Is_Access_Type (Etype (Object)) then
-         Object := Make_Explicit_Dereference (Sloc (N), Object);
+         Object :=
+           Make_Explicit_Dereference (Sloc (N), New_Copy_Tree (Object));
          Analyze (Object);
+         Set_Is_Controlling_Actual (Object);
       end if;
    end Extract_Dispatching_Call;
 
@@ -14561,6 +14564,12 @@ package body Exp_Ch9 is
                 Object_Definition   =>
                   New_Occurrence_Of (Etype (Formal), Loc)));
 
+            --  The object is initialized with an explicit assignment
+            --  later. Indicate that it does not need an initialization
+            --  to prevent spurious warnings if the type excludes null.
+
+            Set_No_Initialization (Last (Decls));
+
             if Ekind (Formal) /= E_Out_Parameter then
 
                --  Generate:
@@ -14577,15 +14586,22 @@ package body Exp_Ch9 is
                    Expression => New_Copy_Tree (Actual)));
             end if;
 
-            --  Generate:
+            --  If the actual is not controlling, generate:
+
             --    Jnn'unchecked_access
 
-            Append_To (Params,
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Unchecked_Access,
-                Prefix         => New_Occurrence_Of (Temp_Nam, Loc)));
+            --  and add it to aggegate for access to formals. Note that
+            --  the actual may be by-copy but still be a controlling actual
+            --  if it is an access to class-wide interface.
 
-            Has_Param := True;
+            if not Is_Controlling_Actual (Actual) then
+               Append_To (Params,
+                 Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Unchecked_Access,
+                   Prefix         => New_Occurrence_Of (Temp_Nam, Loc)));
+
+               Has_Param := True;
+            end if;
 
          --  The controlling parameter is omitted
 

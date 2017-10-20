@@ -9108,10 +9108,10 @@ package body Sem_Ch8 is
       --  Deal with use clauses within the context area if the current
       --  scope is a compilation unit.
 
-      if Is_Compilation_Unit (Current_Scope) then
-
-         pragma Assert (Scope_Stack.Last /= Scope_Stack.First);
-
+      if Is_Compilation_Unit (Current_Scope)
+        and then Sloc (Scope_Stack.Table
+                        (Scope_Stack.Last - 1).Entity) = Standard_Location
+      then
          Update_Chain_In_Scope (Scope_Stack.Last - 1);
       end if;
    end Update_Use_Clause_Chain;
