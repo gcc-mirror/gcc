@@ -1,3 +1,9 @@
+2017-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/sync_iface_call.adb, gnat.dg/sync_iface_call_pkg.ads,
+	gnat.dg/sync_iface_call_pkg2.adb, gnat.dg/sync_iface_call_pkg2.ads:
+	New testcase.
+
 2017-10-20  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/default_pkg_actual.adb, gnat.dg/default_pkg_actual2.adb: New

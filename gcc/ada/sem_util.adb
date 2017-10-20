@@ -13186,17 +13186,29 @@ package body Sem_Util is
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean
    is
+      Param     : Node_Id;
       Param_Typ : Entity_Id := Empty;
 
    begin
       if Ekind (Proc_Nam) = E_Procedure
         and then Present (Parameter_Specifications (Parent (Proc_Nam)))
       then
-         Param_Typ := Etype (Parameter_Type (First (
-                        Parameter_Specifications (Parent (Proc_Nam)))));
+         Param := Parameter_Type (First (
+                    Parameter_Specifications (Parent (Proc_Nam))));
 
-      --  In this case where an Itype was created, the procedure call has been
-      --  rewritten.
+         --  The formal may be an anonymous access type.
+
+         if Nkind (Param) = N_Access_Definition then
+            Param_Typ := Entity (Subtype_Mark (Param));
+
+         else
+            Param_Typ := Etype (Param);
+         end if;
+
+      --  In the case where an Itype was created for a dispatchin call, the
+      --  procedure call has been rewritten. The actual may be an access to
+      --  interface type in which case it is the designated type that is the
+      --  controlling type.
 
       elsif Present (Associated_Node_For_Itype (Proc_Nam))
         and then Present (Original_Node (Associated_Node_For_Itype (Proc_Nam)))
@@ -13207,6 +13219,10 @@ package body Sem_Util is
          Param_Typ :=
            Etype (First (Parameter_Associations
                           (Associated_Node_For_Itype (Proc_Nam))));
+
+         if Ekind (Param_Typ) = E_Anonymous_Access_Type then
+            Param_Typ := Directly_Designated_Type (Param_Typ);
+         end if;
       end if;
 
       if Present (Param_Typ) then
