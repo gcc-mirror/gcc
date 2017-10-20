@@ -20,6 +20,12 @@
 
 #include <cstddef>
 
+#ifndef __cpp_lib_byte
+# error "Feature-test macro for byte missing"
+#elif __cpp_lib_byte != 201603
+# error "Feature-test macro for byte has wrong value"
+#endif
+
 static_assert( sizeof(std::byte) == sizeof(unsigned char) );
 static_assert( alignof(std::byte) == alignof(unsigned char) );
 
