@@ -403,10 +403,18 @@
   [(V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
 
+(define_mode_iterator VI248_AVX2
+  [(V16HI "TARGET_AVX2") V8HI
+   (V8SI "TARGET_AVX2") V4SI
+   (V4DI "TARGET_AVX2") V2DI])
+
 (define_mode_iterator VI248_AVX2_8_AVX512F_24_AVX512BW
   [(V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI
    (V16SI "TARGET_AVX512BW") (V8SI "TARGET_AVX2") V4SI
    (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
+
+(define_mode_iterator VI248_AVX512BW
+  [(V32HI "TARGET_AVX512BW") V16SI V8DI])
 
 (define_mode_iterator VI248_AVX512BW_AVX512VL
   [(V32HI "TARGET_AVX512BW") 
@@ -417,6 +425,11 @@
  [(V16HI "TARGET_AVX512BW") (V8HI "TARGET_AVX512BW")
   V8SI V4SI
   V2DI])
+   
+(define_mode_iterator VI248_AVX512BW_2
+ [(V16HI "TARGET_AVX512BW") (V8HI "TARGET_AVX512BW")
+  V8SI V4SI
+  V4DI V2DI])
    
 (define_mode_iterator VI48_AVX512F
   [(V16SI "TARGET_AVX512F") V8SI V4SI
@@ -10731,15 +10744,29 @@
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<shift_insn><mode>3<mask_name>"
-  [(set (match_operand:VI2_AVX2_AVX512BW 0 "register_operand" "=x,v")
-	(any_lshift:VI2_AVX2_AVX512BW
-	  (match_operand:VI2_AVX2_AVX512BW 1 "register_operand" "0,v")
-	  (match_operand:DI 2 "nonmemory_operand" "xN,vN")))]
-  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
+(define_insn "<mask_codefor><shift_insn><mode>3<mask_name>"
+  [(set (match_operand:VI248_AVX512BW_2 0 "register_operand" "=v,v")
+	(any_lshift:VI248_AVX512BW_2
+	  (match_operand:VI248_AVX512BW_2 1 "nonimmediate_operand" "v,vm")
+	  (match_operand:DI 2 "nonmemory_operand" "v,N")))]
+  "TARGET_AVX512VL"
+  "vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "type" "sseishft")
+   (set (attr "length_immediate")
+     (if_then_else (match_operand 2 "const_int_operand")
+       (const_string "1")
+       (const_string "0")))
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<shift_insn><mode>3"
+  [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
+	(any_lshift:VI248_AVX2
+	  (match_operand:VI248_AVX2 1 "register_operand" "0,x")
+	  (match_operand:DI 2 "nonmemory_operand" "xN,xN")))]
+  "TARGET_SSE2"
   "@
    p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+   vp<vshift><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseishft")
    (set (attr "length_immediate")
@@ -10751,39 +10778,17 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<shift_insn><mode>3<mask_name>"
-  [(set (match_operand:VI48_AVX2 0 "register_operand" "=x,x,v")
-	(any_lshift:VI48_AVX2
-	  (match_operand:VI48_AVX2 1 "register_operand" "0,x,v")
-	  (match_operand:DI 2 "nonmemory_operand" "xN,xN,vN")))]
-  "TARGET_SSE2 && <mask_mode512bit_condition>"
-  "@
-   p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}
-   vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"  
-  [(set_attr "isa" "noavx,avx,avx512bw")
-   (set_attr "type" "sseishft")
-   (set (attr "length_immediate")
-     (if_then_else (match_operand 2 "const_int_operand")
-       (const_string "1")
-       (const_string "0")))
-   (set_attr "prefix_data16" "1,*,*")
-   (set_attr "prefix" "orig,vex,evex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "<shift_insn><mode>3<mask_name>"
-  [(set (match_operand:VI48_512 0 "register_operand" "=v,v")
-	(any_lshift:VI48_512
-	  (match_operand:VI48_512 1 "nonimmediate_operand" "v,m")
+  [(set (match_operand:VI248_AVX512BW 0 "register_operand" "=v,v")
+	(any_lshift:VI248_AVX512BW
+	  (match_operand:VI248_AVX512BW 1 "nonimmediate_operand" "v,m")
 	  (match_operand:DI 2 "nonmemory_operand" "vN,N")))]
-  "TARGET_AVX512F && <mask_mode512bit_condition>"
+  "TARGET_AVX512F"
   "vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "isa" "avx512f")
-   (set_attr "type" "sseishft")
+  [(set_attr "type" "sseishft")
    (set (attr "length_immediate")
      (if_then_else (match_operand 2 "const_int_operand")
        (const_string "1")
        (const_string "0")))
-   (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 

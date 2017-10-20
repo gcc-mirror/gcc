@@ -1,3 +1,13 @@
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82370
+	* gcc.target/i386/avx-pr82370.c: New test.
+	* gcc.target/i386/avx2-pr82370.c: New test.
+	* gcc.target/i386/avx512f-pr82370.c: New test.
+	* gcc.target/i386/avx512bw-pr82370.c: New test.
+	* gcc.target/i386/avx512vl-pr82370.c: New test.
+	* gcc.target/i386/avx512vlbw-pr82370.c: New test.
+
 2017-10-20  Orlando Arias  <oarias@knights.ucf.edu>
 
 	* lib/target-supports.exp (check_effective_target_keeps_null_pointer_checks):
