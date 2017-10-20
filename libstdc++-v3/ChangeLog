@@ -1,3 +1,13 @@
+2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h (path::iterator++(int))
+	(path::iterator--(int)): Fix for paths with only one component.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Test
+	post-increment and post-decrement.
+
 2017-09-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/clamp/1.cc: Fix order of arguments and
