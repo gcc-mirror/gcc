@@ -1,3 +1,9 @@
+2017-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82473
+	* tree-vect-loop.c (vectorizable_reduction): Properly get at
+	the largest input type.
+
 2017-10-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* c-attribs.c (handle_nocf_check_attribute): New function.
