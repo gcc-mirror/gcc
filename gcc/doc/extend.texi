@@ -5690,6 +5690,58 @@ Specify which floating-point unit to use.  You must specify the
 @code{target("fpmath=sse,387")} option as
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
+
+@item nocf_check
+@cindex @code{nocf_check} function attribute
+The @code{nocf_check} attribute on a function is used to inform the
+compiler that the function's prologue should not be instrumented when
+compiled with the @option{-fcf-protection=branch} option.  The
+compiler assumes that the function's address is a valid target for a
+control-flow transfer.
+
+The @code{nocf_check} attribute on a type of pointer to function is
+used to inform the compiler that a call through the pointer should
+not be instrumented when compiled with the
+@option{-fcf-protection=branch} option.  The compiler assumes
+that the function's address from the pointer is a valid target for
+a control-flow transfer.  A direct function call through a function
+name is assumed to be a safe call thus direct calls are not
+instrumented by the compiler.
+
+The @code{nocf_check} attribute is applied to an object's type.
+In case of assignment of a function address or a function pointer to
+another pointer, the attribute is not carried over from the right-hand
+object's type; the type of left-hand object stays unchanged.  The
+compiler checks for @code{nocf_check} attribute mismatch and reports
+a warning in case of mismatch.
+
+@smallexample
+@{
+int foo (void) __attribute__(nocf_check);
+void (*foo1)(void) __attribute__(nocf_check);
+void (*foo2)(void);
+
+int
+foo (void) /* The function's address is assumed to be valid.  */
+
+  /* This call site is not checked for control-flow validity.  */
+  (*foo1)();
+
+  foo1 = foo2; /* A warning is printed about attribute mismatch.  */
+  /* This call site is still not checked for control-flow validity.  */
+  (*foo1)();
+
+  /* This call site is checked for control-flow validity.  */
+  (*foo2)();
+
+  foo2 = foo1; /* A warning is printed about attribute mismatch.  */
+  /* This call site is still checked for control-flow validity.  */
+  (*foo2)();
+
+  return 0;
+@}
+@end smallexample
+
 @end table
 
 On the x86, the inliner does not inline a
