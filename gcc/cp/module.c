@@ -65,7 +65,7 @@ struct GTY(()) module_state {
  public:
   void freeze (const module_state *);
   void set_index (unsigned index);
-  void set_name (tree name, hashval_t);
+  void set_name (tree name, hashval_t, unsigned crc);
   void do_import (unsigned index, bool is_export);
 
  public:
@@ -150,10 +150,11 @@ module_state::set_index (unsigned index)
    already been checked for well-formedness.  */
 
 void
-module_state::set_name (tree name_, hashval_t hash_)
+module_state::set_name (tree name_, hashval_t hash_, unsigned crc_)
 {
   name = name_;
   name_hash = hash_;
+  crc = crc_;
 
   size_t len;
   const char *ptr;
@@ -347,6 +348,13 @@ public:
     return err;
   }
 
+
+public:
+  unsigned get_crc ()
+  {
+    return crc + !crc;
+  }
+
 public:
   /* Set an error.  We store the first errno.  */
   void bad (int e = -1)
@@ -437,7 +445,11 @@ public:
 private:
   size_t reserve (size_t);
   void flush ();
-  void bytes4 (unsigned);
+public:
+  void seek (unsigned);
+
+public:
+  void raw (unsigned);
 
 public:
   int done ()
@@ -481,7 +493,8 @@ public:
 
 private:
   size_t fill (size_t);
-  unsigned bytes4 ();
+public:
+  unsigned raw ();
 
 public:
   int done (bool atend = true)
@@ -493,10 +506,6 @@ public:
 
 public:
   bool checkpoint ();
-  unsigned get_crc () const
-  {
-    return crc;
-  }
 
 public:
   bool b ();
@@ -522,13 +531,13 @@ inline void
 cpm_writer::checkpoint ()
 {
   checksums++;
-  bytes4 (crc);
+  raw (crc);
 }
 
 bool
 cpm_reader::checkpoint ()
 {
-  if (bytes4 () != crc)
+  if (raw () != crc)
     {
       /* Map checksum error onto a reasonably specific errno.  */
 #if defined (EPROTO)
@@ -551,7 +560,7 @@ cpm_writer::bflush ()
 {
   if (bit_pos)
     {
-      bytes4 (bit_val);
+      raw (bit_val);
       lengths[2] += bit_flush ();
     }
   spans[2]++;
@@ -572,7 +581,7 @@ cpm_reader::bflush ()
 void
 cpm_reader::bfill ()
 {
-  bit_val = bytes4 ();
+  bit_val = raw ();
 }
 
 /* Low level cpm_readers and cpm_writers.  I did think about making these
@@ -604,7 +613,7 @@ cpm_writer::b (bool x)
   bit_val |= unsigned (x) << bit_pos++;
   if (bit_pos == 32)
     {
-      bytes4 (bit_val);
+      raw (bit_val);
       lengths[2] += bit_flush ();
     }
 }
@@ -624,7 +633,7 @@ cpm_reader::b ()
    transfer -- hence no crc here.  */
 
 void
-cpm_writer::bytes4 (unsigned val)
+cpm_writer::raw (unsigned val)
 {
   reserve (4);
   buffer[pos++] = val;
@@ -634,7 +643,7 @@ cpm_writer::bytes4 (unsigned val)
 }
 
 unsigned
-cpm_reader::bytes4 ()
+cpm_reader::raw ()
 {
   unsigned val = 0;
   if (fill (4) != 4)
@@ -953,6 +962,13 @@ cpm_writer::flush ()
   if (bytes != pos)
     bad (errno);
   pos = 0;
+}
+
+void
+cpm_writer::seek (unsigned loc)
+{
+  flush ();
+  fseek (stream, long (loc), SEEK_SET);
 }
 
 size_t
@@ -1318,7 +1334,7 @@ cpm_stream::version ()
   int version = 20170210;
 
 #if defined (MODULE_STAMP)
-  /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDDin
+  /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDD in
      local timezone.  Using __TIME__ doesnt work very well with
      boostrapping!  */
   version = -(MODULE_STAMP > 2000LL * 10000 * 10000
@@ -1447,15 +1463,14 @@ class cpms_in : public cpm_stream {
   hash_map<unsigned,void *,traits> tree_map; /* ids to trees  */
 
   unsigned mod_ix; /* Module index.  */
-  unsigned HOST_WIDE_INT stamp;  /* Expected time stamp.  */
+  unsigned crc;    /* Expected crc.  */
 
   /* Remapping from incoming module indices to current TU. */
   unsigned remap_num;
   unsigned *remap_vec;
 
 public:
-  cpms_in (FILE *, const char *, module_state *, unsigned HOST_WIDE_INT stamp,
-	   cpms_in *);
+  cpms_in (FILE *, const char *, module_state *, cpms_in *);
   ~cpms_in ();
 
 public:
@@ -1505,11 +1520,9 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (FILE *s, const char *n,
-		  module_state *state_, unsigned HOST_WIDE_INT stmp,
-		  cpms_in *from)
+cpms_in::cpms_in (FILE *s, const char *n, module_state *state_, cpms_in *from)
   :cpm_stream (from), r (s, n), state (state_), mod_ix (GLOBAL_MODULE_INDEX),
-   stamp (stmp), remap_num (0), remap_vec (NULL)
+   remap_num (0), remap_vec (NULL)
 {
   dump () && dump ("Importing %I", state->name);
 }
@@ -1538,13 +1551,12 @@ cpms_in::insert (tree t)
 }
 
 static unsigned do_module_import (location_t, tree, import_kind,
-				  unsigned HOST_WIDE_INT stamp,
 				  unsigned crc, cpms_in * = NULL);
 
 /* File header
    buf:ident
-   u:version
-   wu:timestamp
+   raw:version
+   raw:CRC -- not checksummed
    str:module
 */
 
@@ -1556,54 +1568,18 @@ cpms_out::header (tree name)
 
   int v = version ();
   gcc_assert (v < 0); /* Not ready for prime-time.  */
-  w.i (v);
+  w.raw (unsigned (v));
 
-  /* Although -1 is a legitimate time, it's not going to be a very
-     common problem.  */
-  time_t now = time (NULL);
-  if ((time_t)-1 == now)
-    now = 0;
-  w.wu ((unsigned HOST_WIDE_INT)now);
+  w.raw (0);
 
-  dump () && dump ("Writing \"%s\" version=%V stamp=%U",
-		   id, v, (unsigned long)now);
+  dump () && dump ("Writing \"%s\" version=%V", id, v);
 
   w.module_name (name);
 }
 
-static char *
-time2str (unsigned HOST_WIDE_INT t)
-{
-  const char *str = "<unknown>";
-  char buf[24];
-  if (t)
-    {
-      time_t e_time = (time_t)t;
-      struct tm *l_time = localtime (&e_time);
-      sprintf (buf, "%04d/%02d/%02d %02d:%02d:%02d",
-	       l_time->tm_year + 1900, l_time->tm_mon + 1, l_time->tm_mday,
-	       l_time->tm_hour, l_time->tm_min, l_time->tm_sec);
-      str = buf;
-    }
-  return xstrdup (str);
-}
-
-/* Diagnose mismatched timestamps.  */
-
-static void
-timestamp_mismatch (tree name, unsigned HOST_WIDE_INT expected,
-		    unsigned HOST_WIDE_INT actual)
-{
-  char *e_str = time2str (expected);
-  char *a_str = time2str (actual);
-  
-  error ("module %qE time stamp expected %qs, discovered %qs",
-	 name, e_str, a_str);
-
-
-  XDELETE (e_str);
-  XDELETE (a_str);
-}
+// FIXME: What we really want to do at this point is read the header
+// and then allow hooking out to rebuild it if there are
+// checksum/version mismatches.  Other errors should barf.
 
 bool
 cpms_in::header ()
@@ -1618,7 +1594,7 @@ cpms_in::header ()
 
   /* Check version.  */
   int ver = version ();
-  int v = r.i ();
+  int v = int (r.raw ());
   if (v != ver)
     {
       int ver_date = v2d (ver);
@@ -1648,13 +1624,15 @@ cpms_in::header ()
     }
   dump () && dump  ("Expecting %V found %V", ver, v);
 
-  /* Check timestamp.  */
-  state->stamp = r.wu ();
-  if (stamp && stamp != state->stamp)
+  unsigned crc = r.raw ();
+  dump () && dump ("Readinging CRC=%x", crc);
+  if (state->crc && state->crc != crc)
     {
-      timestamp_mismatch (state->name, stamp, state->stamp);
+      error ("module %qE (%qs) CRC mismatch", state->name, r.name);
       return false;
     }
+  else
+    state->crc = crc;
 
   /* Check module name.  */
   tree name = r.module_name ();
@@ -1675,6 +1653,11 @@ cpms_out::tag_eof ()
 {
   tag (rt_eof);
   w.checkpoint ();
+
+  w.seek (strlen (ident ()) + sizeof (unsigned));
+  unsigned crc = w.get_crc ();
+  w.raw (crc);
+  dump () && dump ("Writing eof, CRC=%x", crc);
 }
 
 int
@@ -1683,8 +1666,12 @@ cpms_in::tag_eof ()
   dump () && dump ("Read eof");
   if (!r.checkpoint ())
     return false;
+
   /* Record the crc.  */
-  state->crc = r.get_crc ();
+  unsigned crc = r.get_crc ();
+  gcc_assert (!state->crc || state->crc == crc);
+  state->crc = crc;
+
   return -1; /* Denote EOF.  */
 }
 
@@ -1888,7 +1875,6 @@ cpms_out::tag_import (unsigned ix, const module_state *state)
   w.u (ix);
   w.u (state->direct_import);
   w.u (state->crc);
-  w.wu (state->stamp);
   w.module_name (state->name);
   w.checkpoint ();
 }
@@ -1914,7 +1900,6 @@ cpms_in::tag_import ()
   unsigned ix = r.u ();
   unsigned direct = r.u ();
   unsigned crc = r.u ();
-  unsigned HOST_WIDE_INT stamp = r.wu ();
   tree imp = r.module_name ();
 
   if (!imp)
@@ -1939,7 +1924,7 @@ cpms_in::tag_import ()
 		   direct == 2 ? "export " : direct ? "" : "indirect ", imp);
   int imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
 				 direct ? ik_direct : ik_indirect,
-				 stamp, crc, this);
+				 crc, this);
   if (imp_ix != GLOBAL_MODULE_INDEX)
     {
       remap_vec[ix] = imp_ix;
@@ -4823,9 +4808,9 @@ module_interface_p ()
 
 static unsigned
 read_module (FILE *stream, const char *fname, module_state *state,
-	     unsigned HOST_WIDE_INT stamp, cpms_in *from = NULL)
+	     cpms_in *from = NULL)
 {
-  cpms_in in (stream, fname, state, stamp, from);
+  cpms_in in (stream, fname, state, from);
 
   int ok = in.header ();
   if (ok)
@@ -5049,7 +5034,7 @@ make_module_file (char *&name, size_t name_len)
 
 unsigned
 do_module_import (location_t loc, tree name, import_kind kind,
-		  unsigned HOST_WIDE_INT stamp, unsigned crc, cpms_in *from)
+		  unsigned crc, cpms_in *from)
 {
   if (!module_hash)
     {
@@ -5093,11 +5078,6 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	    return GLOBAL_MODULE_INDEX;
 	  }
 	index = state->mod;
-	if (stamp && stamp != state->stamp)
-	  {
-	    timestamp_mismatch (name, stamp, state->stamp);
-	    index = GLOBAL_MODULE_INDEX;
-	  }
       }
   else if (kind == ik_indirect)
     {
@@ -5117,7 +5097,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
 
-      state->set_name (name, hash);
+      state->set_name (name, hash, crc);
 
       *slot = state;
 
@@ -5145,7 +5125,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	  if (FILE *stream = search_module_path (fname, fname_len))
 	    {
 	      gcc_assert (global_namespace == current_scope ());
-	      index = read_module (stream, fname, state, stamp, from);
+	      index = read_module (stream, fname, state, from);
 	      fclose (stream);
 	      gcc_assert (state->mod == ~0U);
 	    }
@@ -5156,7 +5136,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	}
     }
 
-  if (index != GLOBAL_MODULE_INDEX && stamp && crc != state->crc)
+  if (index != GLOBAL_MODULE_INDEX && crc && crc != state->crc)
     {
       error ("module %qE crc mismatch", name);
       index = GLOBAL_MODULE_INDEX;

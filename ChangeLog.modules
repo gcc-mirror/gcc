@@ -1,10 +1,30 @@
 2017-10-20  Nathan Sidwell  <nathan@acm.org>
 
+	Early CRC not time stamps.
+	gcc/cp/
+	* decl.c (xref_tag_1): Don't decl_set_module here.
+	* module.c (module_state::set_name): CRC too.
+	(cpm_serial::get_crc): New.
+	(cpm_writer::seek): New.
+	(cpm_{reader,writer}::bytes4): Rename to ...
+	(cpm_{reader,writer}::raw): ... this.  Adjust all users.
+	(cpm_reader::get_crc): Delete.
+	(module_state::stamp): Replace with ...
+	(module_state::crc): ... this.
+	(cpms_in::cpms_in): Drop stamp arg.
+	(cpms_{in,out}::header): Deal with CRC not timestamp.
+	(time2str, timestamp_mismatch): Delete.
+	(cpms_{in,out}::tag_eof): Deal with crc.
+	(cpms_{in,out}::tag_import): Drop timestamp.
+	(read_module, do_module_import): Likewise. Use CRC.
+	gcc/testsuite/
+	* g++.dg/modules/mod-stamp-1_d.C: Adjust.
+
 	Merge trunk r253954.
 
 2017-10-13  Nathan Sidwell  <nathan@acm.org>
 
-	Templates!
+	Template function!
 	gcc/
 	* tree.h (MARK_TS_TYPE_NON_COMMON): New.
 	gcc/cp/
