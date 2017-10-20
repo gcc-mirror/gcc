@@ -1,5 +1,8 @@
 2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/c_global/cstddef: Define __cpp_lib_byte feature-test macro.
+	* testsuite/18_support/byte/requirements.cc: Check macro.
+
 	Backport from mainline
 	2017-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
