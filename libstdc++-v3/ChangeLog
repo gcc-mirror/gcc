@@ -1,3 +1,8 @@
+2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef: Define __cpp_lib_byte feature-test macro.
+	* testsuite/18_support/byte/requirements.cc: Check macro.
+
 2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/iterators/
