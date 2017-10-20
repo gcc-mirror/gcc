@@ -2305,38 +2305,40 @@ struct processor_costs core_cost = {
    COSTS_N_INSNS (4),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
    COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
+   COSTS_N_INSNS (4)},			/*			      other */
   0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
+  {COSTS_N_INSNS (8),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (8),			/*			    HI */
+   /* 8-11 */
+   COSTS_N_INSNS (11),			/*			    SI */
+   /* 24-81 */
+   COSTS_N_INSNS (81),			/*			    DI */
+   COSTS_N_INSNS (81)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
+  6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  {6, 6, 6},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {6, 6, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {8, 6, 10},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
+  {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
+  {6, 6, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
+  {6, 6, 6},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2,					/* MMX or SSE register to integer */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2345,10 +2347,11 @@ struct processor_costs core_cost = {
   3,					/* Branch cost */
   COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
+  /* 10-24 */
   COSTS_N_INSNS (24),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (24),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (23),			/* cost of FSQRT instruction.  */
 
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
