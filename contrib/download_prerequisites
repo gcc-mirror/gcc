@@ -31,6 +31,8 @@ gmp='gmp-6.1.0.tar.bz2'
 mpfr='mpfr-3.1.4.tar.bz2'
 mpc='mpc-1.0.3.tar.gz'
 isl='isl-0.18.tar.bz2'
+mpich='mpich-3.2.tar.gz'
+opencoarrays='opencoarrays-1.9.0.tar.gz'
 
 base_url='ftp://gcc.gnu.org/pub/gcc/infrastructure/'
 
@@ -38,6 +40,8 @@ echo_archives() {
     echo "${gmp}"
     echo "${mpfr}"
     echo "${mpc}"
+    echo "${mpich}"
+    echo "${opencoarrays}"
     if [ ${graphite} -gt 0 ]; then echo "${isl}"; fi
 }
 
@@ -55,11 +59,6 @@ case $OS in
   ;;
 esac
 
-if type wget > /dev/null ; then
-  fetch='wget'
-else
-  fetch='curl -LO -u anonymous:'
-fi
 chksum_extension='sha512'
 directory='.'
 
@@ -94,6 +93,14 @@ die() {
     echo "error: $@" >&2
     exit 1
 }
+
+if type wget > /dev/null ; then
+  fetch='wget'
+elif type curl > /dev/null ; then
+  fetch='curl -LO -u anonymous:'
+else
+  die "Invoking wget and curl in the 'download_prerequisites' script failed."
+fi
 
 for arg in "$@"
 do
