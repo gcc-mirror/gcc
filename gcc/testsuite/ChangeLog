@@ -1,3 +1,11 @@
+2017-10-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82436
+	* gcc.dg/vect/pr82436.c: New testcase.
+
 2017-10-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
