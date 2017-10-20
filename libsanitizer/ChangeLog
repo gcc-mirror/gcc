@@ -1,3 +1,9 @@
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/82595
+	* lsan/Makefile.am (lsan_files): Remove lsan_preinit.cc.
+	* lsan/Makefile.in: Regenerated.
+
 2017-10-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backported from mainline

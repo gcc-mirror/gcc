@@ -23,7 +23,6 @@ lsan_files = \
 	lsan.cc \
 	lsan_allocator.cc \
 	lsan_interceptors.cc \
-	lsan_preinit.cc \
 	lsan_thread.cc
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
