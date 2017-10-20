@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
@@ -348,7 +349,7 @@ package body Sem_Elab is
    --           ABE mechanism effectively ignores all calls which cause the
    --           elaboration flow to "leave" the instance.
    --
-   --  -gnatd.o conservarive elaboration order for indirect calls
+   --  -gnatd.o conservative elaboration order for indirect calls
    --
    --           The ABE mechanism treats '[Unrestricted_]Access of an entry,
    --           operator, or subprogram as an immediate invocation of the
@@ -6333,7 +6334,7 @@ package body Sem_Elab is
       end if;
 
       --  Treat the attribute as an immediate invocation of the target when
-      --  switch -gnatd.o (conservarive elaboration order for indirect calls)
+      --  switch -gnatd.o (conservative elaboration order for indirect calls)
       --  is in effect. Note that the prior elaboration of the unit containing
       --  the target is ensured processing the corresponding call marker.
 
@@ -8210,14 +8211,33 @@ package body Sem_Elab is
       --    Instantiations
       --    Reads of variables
 
-      elsif Is_Suitable_Access (N)
-        or else Is_Suitable_Variable_Assignment (N)
-        or else Is_Suitable_Variable_Read (N)
-      then
-         null;
+      elsif Is_Suitable_Access (N) then
+         --  Signal any enclosing local exception handlers that the 'Access may
+         --  raise Program_Error due to a failed ABE check when switch -gnatd.o
+         --  (conservative elaboration order for indirect calls) is in effect.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         if Debug_Flag_Dot_O then
+            Possible_Local_Raise (N, Standard_Program_Error);
+         end if;
 
       elsif Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N) then
          Declaration_Level_OK := True;
+
+         --  Signal any enclosing local exception handlers that the call or
+         --  instantiation may raise Program_Error due to a failed ABE check.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         Possible_Local_Raise (N, Standard_Program_Error);
+
+      elsif Is_Suitable_Variable_Assignment (N)
+        or else Is_Suitable_Variable_Read (N)
+      then
+         null;
 
       --  Otherwise the input does not denote a suitable scenario
 
@@ -8271,7 +8291,7 @@ package body Sem_Elab is
 
       --  Mark a scenario which may produce run-time conditional ABE checks or
       --  guaranteed ABE failures as recorded. The flag ensures that scenario
-      --  rewritting performed by Atree.Rewrite will be properly reflected in
+      --  rewriting performed by Atree.Rewrite will be properly reflected in
       --  all relevant internal data structures.
 
       if Is_Check_Emitting_Scenario (N) then

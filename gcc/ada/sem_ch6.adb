@@ -442,18 +442,12 @@ package body Sem_Ch6 is
       begin
          --  Preanalyze a duplicate of the expression to have available the
          --  minimum decoration needed to locate referenced unfrozen types
-         --  without adding any decoration to the function expression. This
-         --  preanalysis is performed with errors disabled to avoid reporting
-         --  spurious errors on Ghost entities (since the expression is not
-         --  fully analyzed).
+         --  without adding any decoration to the function expression.
 
          Push_Scope (Def_Id);
          Install_Formals (Def_Id);
-         Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
 
          Preanalyze_Spec_Expression (Dup_Expr, Etype (Def_Id));
-
-         Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
          End_Scope;
 
          --  Restore certain attributes of Def_Id since the preanalysis may

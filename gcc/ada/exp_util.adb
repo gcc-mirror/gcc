@@ -10978,7 +10978,8 @@ package body Exp_Util is
          Related_Nod : Node_Id := Empty) return Entity_Id;
       --  Create an external symbol of the form xxx_FIRST/_LAST if Related_Nod
       --  is present (xxx is taken from the Chars field of Related_Nod),
-      --  otherwise it generates an internal temporary.
+      --  otherwise it generates an internal temporary. The created temporary
+      --  entity is marked as internal.
 
       ---------------------
       -- Build_Temporary --
@@ -10990,6 +10991,7 @@ package body Exp_Util is
          Related_Nod : Node_Id := Empty) return Entity_Id
       is
          Temp_Nam : Name_Id;
+         Temp_Id  : Entity_Id;
 
       begin
          --  The context requires an external symbol
@@ -11001,13 +11003,17 @@ package body Exp_Util is
                Temp_Nam := New_External_Name (Chars (Related_Id), "_LAST");
             end if;
 
-            return Make_Defining_Identifier (Loc, Temp_Nam);
+            Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
 
          --  Otherwise generate an internal temporary
 
          else
-            return Make_Temporary (Loc, Id, Related_Nod);
+            Temp_Id := Make_Temporary (Loc, Id, Related_Nod);
          end if;
+
+         Set_Is_Internal (Temp_Id);
+
+         return Temp_Id;
       end Build_Temporary;
 
       --  Local variables

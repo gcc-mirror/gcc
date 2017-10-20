@@ -3354,10 +3354,13 @@ package body Sem_Util is
            and then not Comes_From_Source (Par)
          then
             --  Continue to examine the context if the reference appears in a
-            --  subprogram body which was previously an expression function.
+            --  subprogram body which was previously an expression function,
+            --  unless this is during preanalysis (when In_Spec_Expression is
+            --  True), as the body may not yet be inserted in the tree.
 
             if Nkind (Par) = N_Subprogram_Body
               and then Was_Expression_Function (Par)
+              and then not In_Spec_Expression
             then
                null;
 
@@ -12545,9 +12548,7 @@ package body Sem_Util is
                  or else (Present (Renamed_Object (E))
                            and then Is_Aliased_View (Renamed_Object (E)))))
 
-           or else ((Is_Formal (E)
-                      or else Ekind_In (E, E_Generic_In_Out_Parameter,
-                                           E_Generic_In_Parameter))
+           or else ((Is_Formal (E) or else Is_Formal_Object (E))
                     and then Is_Tagged_Type (Etype (E)))
 
            or else (Is_Concurrent_Type (E) and then In_Open_Scopes (E))

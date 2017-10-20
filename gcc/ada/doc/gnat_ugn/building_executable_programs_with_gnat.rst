@@ -3898,8 +3898,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch activates warnings for exception usage when pragma Restrictions
   (No_Exception_Propagation) is in effect. Warnings are given for implicit or
   explicit exception raises which are not covered by a local handler, and for
-  exception handlers which do not cover a local raise. The default is that these
-  warnings are not given.
+  exception handlers which do not cover a local raise. The default is that
+  these warnings are given for units that contain exception handlers.
 
 
 :switch:`-gnatw.X`
