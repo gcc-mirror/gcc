@@ -712,7 +712,8 @@ package body Exp_Ch6 is
          Stmt := First (Stmts);
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Block_Statement then
-               Replace_Returns (Param_Id, Statements (Stmt));
+               Replace_Returns (Param_Id,
+                 Statements (Handled_Statement_Sequence (Stmt)));
 
             elsif Nkind (Stmt) = N_Case_Statement then
                declare

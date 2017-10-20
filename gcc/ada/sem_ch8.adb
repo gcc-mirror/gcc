@@ -9075,7 +9075,7 @@ package body Sem_Ch8 is
                   then
                      Error_Msg_Node_1 := Entity (N);
                      Error_Msg_NE
-                       ("use clause for package &? has no effect",
+                       ("use clause for package & has no effect?u?",
                         Curr, Entity (N));
                   end if;
 
@@ -9084,7 +9084,7 @@ package body Sem_Ch8 is
                else
                   Error_Msg_Node_1 := Etype (N);
                   Error_Msg_NE
-                    ("use clause for }? has no effect", Curr, Etype (N));
+                    ("use clause for } has no effect?u?", Curr, Etype (N));
                end if;
             end if;
 

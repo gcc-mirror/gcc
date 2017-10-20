@@ -109,10 +109,12 @@ extern Nat       Serious_Errors_Detected;
 #define Get_Local_Raise_Call_Entity exp_ch11__get_local_raise_call_entity
 #define Get_RT_Exception_Entity exp_ch11__get_rt_exception_entity
 #define Get_RT_Exception_Name exp_ch11__get_rt_exception_name
+#define Warn_If_No_Local_Raise exp_ch11__warn_if_no_local_raise
 
 extern Entity_Id Get_Local_Raise_Call_Entity (void);
 extern Entity_Id Get_RT_Exception_Entity (int);
 extern void Get_RT_Exception_Name (int);
+extern void Warn_If_No_Local_Raise (int);
 
 /* exp_code:  */
 

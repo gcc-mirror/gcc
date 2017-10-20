@@ -1577,6 +1577,20 @@ package body Sem_Dim is
                   then
                      null;
 
+                  --  Numeric literal case. Issue a warning to indicate the
+                  --  literal is treated as if its dimension matches the type
+                  --  dimension.
+
+                  elsif Nkind_In (Original_Node (L), N_Real_Literal,
+                                                     N_Integer_Literal)
+                  then
+                     Dim_Warning_For_Numeric_Literal (L, Etype (R));
+
+                  elsif Nkind_In (Original_Node (R), N_Real_Literal,
+                                                     N_Integer_Literal)
+                  then
+                     Dim_Warning_For_Numeric_Literal (R, Etype (L));
+
                   else
                      Error_Dim_Msg_For_Binary_Op (N, L, R);
                   end if;
@@ -2724,6 +2738,24 @@ package body Sem_Dim is
 
    procedure Dim_Warning_For_Numeric_Literal (N : Node_Id; Typ : Entity_Id) is
    begin
+      --  Consider the literal zero (integer 0 or real 0.0) to be of any
+      --  dimension.
+
+      case Nkind (Original_Node (N)) is
+         when N_Real_Literal =>
+            if Expr_Value_R (N) = Ureal_0 then
+               return;
+            end if;
+
+         when N_Integer_Literal =>
+            if Expr_Value (N) = Uint_0 then
+               return;
+            end if;
+
+         when others =>
+            null;
+      end case;
+
       --  Initialize name buffer
 
       Name_Len := 0;

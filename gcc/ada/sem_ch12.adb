@@ -6459,10 +6459,11 @@ package body Sem_Ch12 is
          elsif Ekind (E1) = E_Package then
             Check_Mismatch
               (Ekind (E1) /= Ekind (E2)
-                or else Renamed_Object (E1) /= Renamed_Object (E2));
+                or else (Present (Renamed_Object (E2))
+                          and then Renamed_Object (E1) /=
+                                     Renamed_Object (E2)));
 
          elsif Is_Overloadable (E1) then
-
             --  Verify that the actual subprograms match. Note that actuals
             --  that are attributes are rewritten as subprograms. If the
             --  subprogram in the formal package is defaulted, no check is

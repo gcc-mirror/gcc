@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 14, 2017
+GNAT User's Guide for Native Platforms , Oct 20, 2017
 
 AdaCore
 
@@ -12474,8 +12474,8 @@ should not complain at you.
 This switch activates warnings for exception usage when pragma Restrictions
 (No_Exception_Propagation) is in effect. Warnings are given for implicit or
 explicit exception raises which are not covered by a local handler, and for
-exception handlers which do not cover a local raise. The default is that these
-warnings are not given.
+exception handlers which do not cover a local raise. The default is that
+these warnings are given for units that contain exception handlers.
 
 @item @code{-gnatw.X}
 
@@ -22901,12 +22901,12 @@ combine a dimensioned and dimensionless value.  Thus an expression such as
 @code{Acceleration}.
 
 The dimensionality checks for relationals use the same rules as
-for "+" and "-"; thus
+for "+" and "-", except when comparing to a literal; thus
 
 @quotation
 
 @example
-acc > 10.0
+acc > len
 @end example
 @end quotation
 
@@ -22915,12 +22915,21 @@ is equivalent to
 @quotation
 
 @example
-acc-10.0 > 0.0
+acc-len > 0.0
 @end example
 @end quotation
 
-and is thus illegal. Analogously a conditional expression
-requires the same dimension vector for each branch.
+and is thus illegal, but
+
+@quotation
+
+@example
+acc > 10.0
+@end example
+@end quotation
+
+is accepted with a warning. Analogously a conditional expression requires the
+same dimension vector for each branch (with no exception for literals).
 
 The dimension vector of a type conversion @code{T(@emph{expr})} is defined
 as follows, based on the nature of @code{T}:

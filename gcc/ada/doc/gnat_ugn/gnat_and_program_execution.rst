@@ -3611,20 +3611,26 @@ combine a dimensioned and dimensionless value.  Thus an expression such as
 ``Acceleration``.
 
 The dimensionality checks for relationals use the same rules as
-for "+" and "-"; thus
+for "+" and "-", except when comparing to a literal; thus
 
   .. code-block:: ada
 
-        acc > 10.0
+        acc > len
 
 is equivalent to
 
   .. code-block:: ada
 
-       acc-10.0 > 0.0
+       acc-len > 0.0
 
-and is thus illegal. Analogously a conditional expression
-requires the same dimension vector for each branch.
+and is thus illegal, but
+
+  .. code-block:: ada
+
+        acc > 10.0
+
+is accepted with a warning. Analogously a conditional expression requires the
+same dimension vector for each branch (with no exception for literals).
 
 The dimension vector of a type conversion :samp:`T({expr})` is defined
 as follows, based on the nature of ``T``:
