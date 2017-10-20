@@ -5836,9 +5836,12 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  reduc_index = i;
 	  continue;
 	}
-      else
+      else if (tem)
 	{
-	  if (!vectype_in)
+	  /* To properly compute ncopies we are interested in the widest
+	     input type in case we're looking at a widening accumulation.  */
+	  if (!vectype_in
+	      || TYPE_VECTOR_SUBPARTS (vectype_in) > TYPE_VECTOR_SUBPARTS (tem))
 	    vectype_in = tem;
 	}
 
