@@ -2121,27 +2121,27 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  {6, 6, 6},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {6, 6, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {6, 6, 10},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
+  {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
+  {6, 6, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
+  {6, 6, 6},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2,					/* MMX or SSE register to integer */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2221,23 +2221,23 @@ struct processor_costs generic_cost = {
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
+  {6, 6, 6},				/* cost of storing integer registers */
   4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  {6, 6, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {6, 6, 12},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
+  {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
+  {6, 6, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
+  {6, 6, 6},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  6,					/* MMX or SSE register to integer */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2326,7 +2326,7 @@ struct processor_costs core_cost = {
   2,					/* cost of reg,reg fld/fst */
   {6, 6, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {8, 6, 10},				/* cost of storing fp registers
+  {6, 6, 10},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {6, 6},				/* cost of loading MMX registers
