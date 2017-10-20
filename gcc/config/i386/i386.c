@@ -2595,6 +2595,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
      ISAs come first.  Target string will be displayed in the same order.  */
   static struct ix86_target_opts isa2_opts[] =
   {
+    { "-mgfni",		OPTION_MASK_ISA_GFNI },
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
@@ -5121,6 +5122,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("mpx",	OPT_mmpx),
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
     IX86_ATTR_ISA ("rdpid",	OPT_mrdpid),
+    IX86_ATTR_ISA ("gfni",	OPT_mgfni),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

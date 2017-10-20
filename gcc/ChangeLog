@@ -1,3 +1,16 @@
+2017-10-20  Julia Koval  <julia.koval@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_GFNI_SET,
+	(OPTION_MASK_ISA_GFNI_UNSET): New.
+	(ix86_handle_option): Handle OPT_mgfni.
+	* config/i386/cpuid.h (bit_GFNI): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect gfni.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define __GFNI__.
+	* config/i386/i386.c (ix86_target_string): Add -mgfni.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mgfni.
+	* config/i386/i386.h (TARGET_GFNI, TARGET_GFNI_P): New.
+	* config/i386/i386.opt: Add mgfni.
+
 2017-10-20  Orlando Arias  <oarias@knights.ucf.edu>
 
 	* config/msp430/msp430.c (msp430_option_override): Disable
