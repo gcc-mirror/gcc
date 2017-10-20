@@ -1,3 +1,9 @@
+2017-10-20  Orlando Arias  <oarias@knights.ucf.edu>
+
+	* config/msp430/msp430.c (msp430_option_override): Disable
+	-fdelete-null-pointer-checks.
+	* doc/invoke.text (-fdelete-null-pointer-checks): Document that.
+
 2017-10-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune-costs.h (generic_cost, core_cost): Correct costs

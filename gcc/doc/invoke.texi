@@ -7837,7 +7837,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR and CR16, this option is completely disabled.  
+defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.

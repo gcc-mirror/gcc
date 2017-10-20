@@ -1,3 +1,8 @@
+2017-10-20  Orlando Arias  <oarias@knights.ucf.edu>
+
+	* lib/target-supports.exp (check_effective_target_keeps_null_pointer_checks):
+	Add msp430 to the list.
+
 2017-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82308
