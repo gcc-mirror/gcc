@@ -1,4 +1,9 @@
-2017-10-18  Uros Bizjak  <ubizjak@gmail.com>
+2017-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82308
+	* g++.dg/cpp1z/class-deduction45.C: New.
+
+2017-10-19  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82618
