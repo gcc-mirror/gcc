@@ -263,8 +263,7 @@ enum gfc_statement
   ST_OMP_TASKLOOP_SIMD, ST_OMP_END_TASKLOOP_SIMD, ST_OMP_ORDERED_DEPEND,
   ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
   ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
-  ST_EVENT_WAIT, ST_FAIL_IMAGE, ST_FORM_TEAM, ST_CHANGE_TEAM,
-  ST_END_TEAM, ST_SYNC_TEAM, ST_NONE
+  ST_EVENT_WAIT,ST_FAIL_IMAGE,ST_NONE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -457,7 +456,6 @@ enum gfc_isym_id
   GFC_ISYM_GETLOG,
   GFC_ISYM_GETPID,
   GFC_ISYM_GETUID,
-  GFC_ISYM_GET_TEAM,
   GFC_ISYM_GMTIME,
   GFC_ISYM_HOSTNM,
   GFC_ISYM_HUGE,
@@ -1915,7 +1913,6 @@ typedef struct gfc_array_ref
   int dimen;			/* # of components in the reference */
   int codimen;
   bool in_allocate;		/* For coarray checks. */
-  gfc_expr *team;
   gfc_expr *stat;
   locus where;
   gfc_array_spec *as;
@@ -2491,7 +2488,6 @@ enum gfc_exec_op
   EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
-  EXEC_FORM_TEAM, EXEC_CHANGE_TEAM, EXEC_END_TEAM, EXEC_SYNC_TEAM,
   EXEC_LOCK, EXEC_UNLOCK, EXEC_EVENT_POST, EXEC_EVENT_WAIT, EXEC_FAIL_IMAGE,
   EXEC_OACC_KERNELS_LOOP, EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_ROUTINE,
   EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS, EXEC_OACC_DATA, EXEC_OACC_HOST_DATA,
@@ -3206,7 +3202,6 @@ bool gfc_is_coarray (gfc_expr *);
 int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
-gfc_expr* gfc_find_team_co (gfc_expr *);
 gfc_expr* gfc_find_stat_co (gfc_expr *);
 gfc_expr* gfc_build_intrinsic_call (gfc_namespace *, gfc_isym_id, const char*,
 				    locus, unsigned, ...);

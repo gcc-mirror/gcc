@@ -1595,19 +1595,16 @@ gfc_match_if (gfc_statement *if_type)
   match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
   match ("backspace", gfc_match_backspace, ST_BACKSPACE)
   match ("call", gfc_match_call, ST_CALL)
-  match ("change team", gfc_match_change_team, ST_CHANGE_TEAM)
   match ("close", gfc_match_close, ST_CLOSE)
   match ("continue", gfc_match_continue, ST_CONTINUE)
   match ("cycle", gfc_match_cycle, ST_CYCLE)
   match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
   match ("end file", gfc_match_endfile, ST_END_FILE)
-  match ("end team", gfc_match_end_team, ST_END_TEAM)
   match ("error stop", gfc_match_error_stop, ST_ERROR_STOP)
   match ("event post", gfc_match_event_post, ST_EVENT_POST)
   match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT)
   match ("exit", gfc_match_exit, ST_EXIT)
   match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE)
-  match ("form team", gfc_match_form_team, ST_FORM_TEAM)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
   match ("go to", gfc_match_goto, ST_GOTO)
@@ -1623,7 +1620,6 @@ gfc_match_if (gfc_statement *if_type)
   match ("rewind", gfc_match_rewind, ST_REWIND)
   match ("stop", gfc_match_stop, ST_STOP)
   match ("wait", gfc_match_wait, ST_WAIT)
-  match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM)
   match ("sync all", gfc_match_sync_all, ST_SYNC_CALL);
   match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
   match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
@@ -1663,6 +1659,7 @@ got_match:
       gfc_free_expr (expr);
       return MATCH_ERROR;
     }
+
   /* At this point, we've matched the single IF and the action clause
      is in new_st.  Rearrange things so that the IF statement appears
      in new_st.  */
@@ -3346,136 +3343,6 @@ syntax:
   return MATCH_ERROR;
 }
 
-/* Match a FORM TEAM statement.  */
-
-match
-gfc_match_form_team (void)
-{
-  match m;
-  gfc_expr *teamid,*team;
-
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "FORM TEAM statement at %C"))
-    return MATCH_ERROR;
-
-  if (gfc_match_char ('(') == MATCH_NO)
-    goto syntax;
-  
-  new_st.op = EXEC_FORM_TEAM;
-
-  if (gfc_match ("%e", &teamid) != MATCH_YES)
-    goto syntax;
-  m = gfc_match_char (',');
-  if (m == MATCH_ERROR)
-    goto syntax;
-  if (gfc_match ("%e", &team) != MATCH_YES)
-    goto syntax;
-
-  m = gfc_match_char (')');
-  if (m == MATCH_NO)
-    goto syntax;
-
-  new_st.expr1 = teamid;
-  new_st.expr2 = team;
-
-  return MATCH_YES;
-
-syntax:
-  gfc_syntax_error (ST_FORM_TEAM);
-
-  return MATCH_ERROR;
-}
-
-/* Match a CHANGE TEAM statement.  */
-
-match
-gfc_match_change_team (void)
-{
-  match m;
-  gfc_expr *team;
-
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "CHANGE TEAM statement at %C"))
-    return MATCH_ERROR;
-
-  if (gfc_match_char ('(') == MATCH_NO)
-    goto syntax;
-  
-  new_st.op = EXEC_CHANGE_TEAM;
-
-  /* if (gfc_match ("%e", &teamid) != MATCH_YES) */
-  /*   goto syntax; */
-  /* m = gfc_match_char (','); */
-  /* if (m == MATCH_ERROR) */
-  /*   goto syntax; */
-  if (gfc_match ("%e", &team) != MATCH_YES)
-    goto syntax;
-
-  m = gfc_match_char (')');
-  if (m == MATCH_NO)
-    goto syntax;
-
-  new_st.expr1 = team;
-
-  return MATCH_YES;
-
-syntax:
-  gfc_syntax_error (ST_CHANGE_TEAM);
-
-  return MATCH_ERROR;
-}
-
-/* Match a END TEAM statement.  */
-
-match
-gfc_match_end_team (void)
-{
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "END TEAM statement at %C"))
-    return MATCH_ERROR;
-
-  if (gfc_match_char ('(') == MATCH_YES)
-    goto syntax;
-  
-  new_st.op = EXEC_END_TEAM;
-
-  return MATCH_YES;
-
-syntax:
-  gfc_syntax_error (ST_END_TEAM);
-
-  return MATCH_ERROR;
-}
-
-/* Match a SYNC TEAM statement.  */
-
-match
-gfc_match_sync_team (void)
-{
-  match m;
-  gfc_expr *team;
-
-  if (!gfc_notify_std (GFC_STD_F2008_TS, "SYNC TEAM statement at %C"))
-    return MATCH_ERROR;
-
-  if (gfc_match_char ('(') == MATCH_NO)
-    goto syntax;
-  
-  new_st.op = EXEC_SYNC_TEAM;
-
-  if (gfc_match ("%e", &team) != MATCH_YES)
-    goto syntax;
-
-  m = gfc_match_char (')');
-  if (m == MATCH_NO)
-    goto syntax;
-
-  new_st.expr1 = team;
-
-  return MATCH_YES;
-
-syntax:
-  gfc_syntax_error (ST_SYNC_TEAM);
-
-  return MATCH_ERROR;
-}
 
 /* Match LOCK/UNLOCK statement. Syntax:
      LOCK ( lock-variable [ , lock-stat-list ] )

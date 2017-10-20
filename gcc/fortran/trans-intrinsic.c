@@ -842,7 +842,6 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
   gfc_isym_id id;
 
   id = expr->value.function.isym->id;
-
   /* Find the entry for this function.  */
   for (m = gfc_intrinsic_map;
        m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
@@ -853,7 +852,6 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
 
   if (m->id == GFC_ISYM_NONE)
     {
-      printf("Id %d none %d\n",id,GFC_ISYM_NONE);
       gfc_internal_error ("Intrinsic function %qs (%d) not recognized",
 			  expr->value.function.name, id);
     }
@@ -1848,11 +1846,11 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 
 static tree
 conv_caf_send (gfc_code *code) {
-  gfc_expr *lhs_expr, *rhs_expr, *tmp_stat, *tmp_team;
+  gfc_expr *lhs_expr, *rhs_expr, *tmp_stat;
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
-  tree may_require_tmp, src_stat, dst_stat, dst_team, src_team;
+  tree may_require_tmp, src_stat, dst_stat;
   tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
   symbol_attribute lhs_caf_attr, rhs_caf_attr;
@@ -1868,7 +1866,6 @@ conv_caf_send (gfc_code *code) {
   lhs_caf_attr = gfc_caf_attr (lhs_expr);
   rhs_caf_attr = gfc_caf_attr (rhs_expr);
   src_stat = dst_stat = null_pointer_node;
-  src_team = dst_team = null_pointer_node;
 
   /* LHS.  */
   gfc_init_se (&lhs_se, NULL);
@@ -2071,18 +2068,6 @@ conv_caf_send (gfc_code *code) {
       gfc_add_block_to_block (&block, &stat_se.post);
     }
 
-  tmp_team = gfc_find_team_co (lhs_expr);
-
-  if (tmp_team)
-    {
-      gfc_se team_se;
-      gfc_init_se (&team_se, NULL);
-      gfc_conv_expr_reference (&team_se, tmp_team);
-      dst_team = team_se.expr;
-      gfc_add_block_to_block (&block, &team_se.pre);
-      gfc_add_block_to_block (&block, &team_se.post);
-    }
-
   if (!gfc_is_coindexed (rhs_expr))
     {
       if (lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
@@ -2098,10 +2083,10 @@ conv_caf_send (gfc_code *code) {
 				     may_require_tmp, dst_realloc, src_stat);
 	  }
       else
-	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 11,
+	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 10,
 				   token, offset, image_index, lhs_se.expr, vec,
 				   rhs_se.expr, lhs_kind, rhs_kind,
-				   may_require_tmp, src_stat, dst_team);
+				   may_require_tmp, src_stat);
     }
   else
     {
@@ -9522,7 +9507,6 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
 
     case GFC_ISYM_CSHIFT:
     case GFC_ISYM_EOSHIFT:
-    case GFC_ISYM_GET_TEAM:
     case GFC_ISYM_FAILED_IMAGES:
     case GFC_ISYM_STOPPED_IMAGES:
     case GFC_ISYM_PACK:
