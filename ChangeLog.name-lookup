@@ -1,3 +1,10 @@
+2017-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* class.c (layout_class_type): Cleanup as-base creation, determine
+	mode here.
+	(finish_struct_1): ... not here.
+
 2017-10-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
