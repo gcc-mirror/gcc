@@ -1,5 +1,11 @@
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82603
+	* tree-if-conv.c (predicate_mem_writes): Make sure to only
+	remove false predicated stores.
+
+2017-10-20  Richard Biener  <rguenther@suse.de>
+
 	Backport from mainline
 	2017-10-06  Richard Biener  <rguenther@suse.de>
 
