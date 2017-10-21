@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 
-int func (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
-int (*fptr) (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
-typedef void (*nocf_check_t) (void) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+int func (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */
+int (*fptr) (int) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */
+typedef void (*nocf_check_t) (void) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */
 
 int
 foo1 (int arg)
@@ -13,7 +13,7 @@ foo1 (int arg)
 void
 foo2 (void (*foo) (void))
 {
-  void (*func) (void) __attribute__((nocf_check)) = foo; /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+  void (*func) (void) __attribute__((nocf_check)) = foo; /* { dg-warning "'nocf_check' attribute ignored" } */
   func ();
 }
 
@@ -24,7 +24,7 @@ foo3 (nocf_check_t foo)
 }
 
 void
-foo4 (void (*foo) (void) __attribute__((nocf_check))) /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+foo4 (void (*foo) (void) __attribute__((nocf_check))) /* { dg-warning "'nocf_check' attribute ignored" } */
 {
   foo ();
 }
