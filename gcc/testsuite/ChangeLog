@@ -1,3 +1,16 @@
+2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82586
+	* gfortran.dg/pdt_16.f03 : New test.
+	* gfortran.dg/pdt_4.f03 : Catch the changed messages.
+	* gfortran.dg/pdt_8.f03 : Ditto.
+
+	PR fortran/82587
+	* gfortran.dg/pdt_17.f03 : New test.
+
+	PR fortran/82589
+	* gfortran.dg/pdt_18.f03 : New test.
+
 2017-10-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* c-c++-common/fcf-protection-1.c: New test.

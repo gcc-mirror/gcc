@@ -1,3 +1,25 @@
+2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82586
+	* decl.c (gfc_get_pdt_instance): Remove the error message that
+	the parameter does not have a corresponding component since
+	this is now taken care of when the derived type is resolved. Go
+	straight to error return instead.
+	(gfc_match_formal_arglist): Make the PDT relevant errors
+	immediate so that parsing of the derived type can continue.
+	(gfc_match_derived_decl): Do not check the match status on
+	return from gfc_match_formal_arglist for the same reason.
+	* resolve.c (resolve_fl_derived0): Check that each type
+	parameter has a corresponding component.
+
+	PR fortran/82587
+	* resolve.c (resolve_generic_f): Check that the derived type
+	can be used before resolving the struture constructor.
+
+	PR fortran/82589
+	* symbol.c (check_conflict): Add the conflicts involving PDT
+	KIND and LEN attributes.
+
 2017-10-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* interface.c (check_sym_interfaces, check_uop_interfaces,
