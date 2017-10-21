@@ -1,3 +1,48 @@
+2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* c-c++-common/attr-nocf-check-1.c: Shorten a cheking message.
+	* c-c++-common/attr-nocf-check-3.c: Likewise.
+	* c-c++-common/fcf-protection-1.c: Add x86 specific message.
+	* c-c++-common/fcf-protection-2.c: Likewise.
+	* c-c++-common/fcf-protection-3.c: Likewise.
+	* c-c++-common/fcf-protection-5.c: Likewise.
+	* c-c++-common/attr-nocf-check-1a.c: New test.
+	* c-c++-common/attr-nocf-check-3a.c: Likewise.
+	* g++.dg/cet-notrack-1.C: Likewise.
+	* gcc.target/i386/cet-intrin-1.c: Likewise.
+	* gcc.target/i386/cet-intrin-10.c: Likewise.
+	* gcc.target/i386/cet-intrin-2.c: Likewise.
+	* gcc.target/i386/cet-intrin-3.c: Likewise.
+	* gcc.target/i386/cet-intrin-4.c: Likewise.
+	* gcc.target/i386/cet-intrin-5.c: Likewise.
+	* gcc.target/i386/cet-intrin-6.c: Likewise.
+	* gcc.target/i386/cet-intrin-7.c: Likewise.
+	* gcc.target/i386/cet-intrin-8.c: Likewise.
+	* gcc.target/i386/cet-intrin-9.c: Likewise.
+	* gcc.target/i386/cet-label.c: Likewise.
+	* gcc.target/i386/cet-notrack-1a.c: Likewise.
+	* gcc.target/i386/cet-notrack-1b.c: Likewise.
+	* gcc.target/i386/cet-notrack-2a.c: Likewise.
+	* gcc.target/i386/cet-notrack-2b.c: Likewise.
+	* gcc.target/i386/cet-notrack-3.c: Likewise.
+	* gcc.target/i386/cet-notrack-4a.c: Likewise.
+	* gcc.target/i386/cet-notrack-4b.c: Likewise.
+	* gcc.target/i386/cet-notrack-5a.c: Likewise.
+	* gcc.target/i386/cet-notrack-5b.c: Likewise.
+	* gcc.target/i386/cet-notrack-6a.c: Likewise.
+	* gcc.target/i386/cet-notrack-6b.c: Likewise.
+	* gcc.target/i386/cet-notrack-7.c: Likewise.
+	* gcc.target/i386/cet-property-1.c: Likewise.
+	* gcc.target/i386/cet-property-2.c: Likewise.
+	* gcc.target/i386/cet-rdssp-1.c: Likewise.
+	* gcc.target/i386/cet-sjlj-1.c: Likewise.
+	* gcc.target/i386/cet-sjlj-2.c: Likewise.
+	* gcc.target/i386/cet-sjlj-3.c: Likewise.
+	* gcc.target/i386/cet-switch-1.c: Likewise.
+	* gcc.target/i386/cet-switch-2.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_cet): New
+	proc.
+
 2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.target/i386/pr79683.c: Disable costmodel.
