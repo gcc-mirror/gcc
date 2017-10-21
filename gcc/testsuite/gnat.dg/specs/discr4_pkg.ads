@@ -1,4 +1,4 @@
-package Disc4_Pkg is
+package Discr4_Pkg is
 
    type Enum is (One, Two, Three);
 
@@ -24,4 +24,4 @@ private
 
    function Get (Value : Integer) return Rec is (Two, Value);
 
-end Disc4_Pkg;
+end Discr4_Pkg;

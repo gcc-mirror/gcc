@@ -1,9 +1,9 @@
 -- { dg-do compile }
 -- { dg-options "-O" }
 
-with Disc4_Pkg; use Disc4_Pkg;
+with Discr4_Pkg; use Discr4_Pkg;
 
-package Disc4 is
+package Discr4 is
 
    type Data is record
       Val : Rec;
@@ -20,4 +20,4 @@ package Disc4 is
 
    C2 : constant Pair := Build (Get (0), Rec_Three);
 
-end Disc4;
+end Discr4;
