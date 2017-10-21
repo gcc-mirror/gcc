@@ -378,7 +378,7 @@ i[34567]86-*-*)
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
 		       avx512vbmivlintrin.h avx5124fmapsintrin.h avx5124vnniwintrin.h
 		       avx512vpopcntdqintrin.h clwbintrin.h mwaitxintrin.h
-		       clzerointrin.h pkuintrin.h sgxintrin.h"
+		       clzerointrin.h pkuintrin.h sgxintrin.h cetintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -402,7 +402,7 @@ x86_64-*-*)
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
 		       avx512vbmivlintrin.h avx5124fmapsintrin.h avx5124vnniwintrin.h
 		       avx512vpopcntdqintrin.h clwbintrin.h mwaitxintrin.h
-		       clzerointrin.h pkuintrin.h sgxintrin.h"
+		       clzerointrin.h pkuintrin.h sgxintrin.h cetintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -4551,7 +4551,8 @@ case ${target} in
 	i[34567]86-*-darwin* | x86_64-*-darwin*)
 		;;
 	i[34567]86-*-linux* | x86_64-*-linux*)
-		tmake_file="$tmake_file i386/t-linux"
+		extra_objs="${extra_objs} cet.o"
+		tmake_file="$tmake_file i386/t-linux i386/t-cet"
 		;;
 	i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu)
 		tmake_file="$tmake_file i386/t-kfreebsd"

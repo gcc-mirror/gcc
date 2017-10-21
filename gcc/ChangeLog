@@ -1,3 +1,67 @@
+2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_IBT_SET): New.
+	(OPTION_MASK_ISA_SHSTK_SET): Likewise.
+	(OPTION_MASK_ISA_IBT_UNSET): Likewise.
+	(OPTION_MASK_ISA_SHSTK_UNSET): Likewise.
+	(ix86_handle_option): Add -mibt, -mshstk, -mcet handling.
+	* config.gcc (extra_headers): Add cetintrin.h for x86 targets.
+	(extra_objs): Add cet.o for Linux/x86 targets.
+	(tmake_file): Add i386/t-cet for Linux/x86 targets.
+	* config/i386/cet.c: New file.
+	* config/i386/cetintrin.h: Likewise.
+	* config/i386/t-cet: Likewise.
+	* config/i386/cpuid.h (bit_SHSTK): New.
+	(bit_IBT): Likewise.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect and
+	pass IBT and SHSTK bits.
+	* config/i386/i386-builtin-types.def
+	(VOID_FTYPE_UNSIGNED_PVOID): New.
+	(VOID_FTYPE_UINT64_PVOID): Likewise.
+	* config/i386/i386-builtin.def: Add CET intrinsics.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	OPTION_MASK_ISA_IBT, OPTION_MASK_ISA_SHSTK handling.
+	* config/i386/i386-passes.def: Add pass_insert_endbranch pass.
+	* config/i386/i386-protos.h (make_pass_insert_endbranch): New
+	prototype.
+	* config/i386/i386.c (rest_of_insert_endbranch): New.
+	(pass_data_insert_endbranch): Likewise.
+	(pass_insert_endbranch): Likewise.
+	(make_pass_insert_endbranch): Likewise.
+	(ix86_notrack_prefixed_insn_p): Likewise.
+	(ix86_target_string): Add -mibt, -mshstk flags.
+	(ix86_option_override_internal): Add flag_cf_protection
+	processing.
+	(ix86_valid_target_attribute_inner_p): Set OPT_mibt, OPT_mshstk.
+	(ix86_print_operand): Add 'notrack' prefix output.
+	(ix86_init_mmx_sse_builtins): Add CET intrinsics.
+	(ix86_expand_builtin): Expand CET intrinsics.
+	(x86_output_mi_thunk): Add 'endbranch' instruction.
+	* config/i386/i386.h (TARGET_IBT): New.
+	(TARGET_IBT_P): Likewise.
+	(TARGET_SHSTK): Likewise.
+	(TARGET_SHSTK_P): Likewise.
+	* config/i386/i386.md (unspecv): Add UNSPECV_NOP_RDSSP,
+	UNSPECV_INCSSP, UNSPECV_SAVEPREVSSP, UNSPECV_RSTORSSP,
+	UNSPECV_WRSS, UNSPECV_WRUSS, UNSPECV_SETSSBSY, UNSPECV_CLRSSBSY.
+	(builtin_setjmp_setup): New pattern.
+	(builtin_longjmp): Likewise.
+	(rdssp<mode>): Likewise.
+	(incssp<mode>): Likewise.
+	(saveprevssp): Likewise.
+	(rstorssp): Likewise.
+	(wrss<mode>): Likewise.
+	(wruss<mode>): Likewise.
+	(setssbsy): Likewise.
+	(clrssbsy): Likewise.
+	(nop_endbr): Likewise.
+	* config/i386/i386.opt: Add -mcet, -mibt, -mshstk and -mcet-switch
+	options.
+	* config/i386/immintrin.h: Include <cetintrin.h>.
+	* config/i386/linux-common.h
+	(file_end_indicate_exec_stack_and_cet): New prototype.
+	(TARGET_ASM_FILE_END): New.
+
 2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune-costs.h (intel_cost, generic_cost): Fix move costs.
