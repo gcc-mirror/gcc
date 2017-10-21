@@ -1,5 +1,12 @@
 2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
+	* extend.texi: Add x86 specific to 'nocf_check' attribute.
+	List CET intrinsics.
+	* invoke.texi: Add -mcet, -mibt, -mshstk options.  Add x86
+	specific to -fcf-protection option.
+
+2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_IBT_SET): New.
 	(OPTION_MASK_ISA_SHSTK_SET): Likewise.
 	(OPTION_MASK_ISA_IBT_UNSET): Likewise.
