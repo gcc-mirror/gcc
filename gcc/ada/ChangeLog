@@ -1,5 +1,9 @@
 2017-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Makefile.in: Remove bogus settings for VxWorks.
+
+2017-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (pad_type_hash): Use hashval_t for hash value.
 	(convert): Do not use an unchecked conversion for converting from a
 	type to another type padding it.
