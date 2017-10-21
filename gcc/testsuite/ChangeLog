@@ -1,3 +1,12 @@
+2017-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr_private.ads: Rename into ...
+	* gnat.dg/specs/discr2.ads: ...this.
+	* gnat.dg/specs/discr_record_constant.ads: Rename into...
+	* gnat.dg/specs/discr3.ads: ...this.
+	* gnat.dg/specs/discr4.ads: New test.
+	* gnat.dg/specs/discr4_pkg.ads: New helper.
+
 2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82586
