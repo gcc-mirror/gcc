@@ -90,10 +90,9 @@ test03()
       ++iter;
       iter2++;
       VERIFY( iter2 == iter );
-      auto iter3 = iter;
-      --iter3;
+      --iter;
       iter2--;
-      VERIFY( iter2 == iter3 );
+      VERIFY( iter2 == iter );
     }
 }
 
