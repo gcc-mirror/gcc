@@ -2694,6 +2694,8 @@ generic:
       if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL,
 						 NULL, false))
 	return false;
+      if (!gfc_use_derived (expr->ts.u.derived))
+	return false;
       return resolve_structure_cons (expr, 0);
     }
 
@@ -13937,6 +13939,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 {
   gfc_symbol* super_type;
   gfc_component *c;
+  gfc_formal_arglist *f;
   bool success;
 
   if (sym->attr.unlimited_polymorphic)
@@ -13988,6 +13991,22 @@ resolve_fl_derived0 (gfc_symbol *sym)
       && !sym->attr.is_class
       && !ensure_not_abstract (sym, super_type))
     return false;
+
+  /* Check that there is a component for every PDT parameter.  */
+  if (sym->attr.pdt_template)
+    {
+      for (f = sym->formal; f; f = f->next)
+	{
+	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
+	  if (c == NULL)
+	    {
+	      gfc_error ("Parameterized type %qs does not have a component "
+			 "corresponding to parameter %qs at %L", sym->name,
+			 f->sym->name, &sym->declared_at);
+	      break;
+	    }
+	}
+    }
 
   /* Add derived type to the derived type list.  */
   add_dt_to_dt_list (sym);

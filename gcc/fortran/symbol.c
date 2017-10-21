@@ -426,7 +426,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
     *proc_pointer = "PROCEDURE POINTER", *abstract = "ABSTRACT",
     *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION",
-    *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC";
+    *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC",
+    *pdt_len = "LEN", *pdt_kind = "KIND";
   static const char *threadprivate = "THREADPRIVATE";
   static const char *omp_declare_target = "OMP DECLARE TARGET";
   static const char *omp_declare_target_link = "OMP DECLARE TARGET LINK";
@@ -706,6 +707,23 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (entry, oacc_declare_copyin)
   conf (entry, oacc_declare_deviceptr)
   conf (entry, oacc_declare_device_resident)
+
+  conf (pdt_kind, allocatable)
+  conf (pdt_kind, pointer)
+  conf (pdt_kind, dimension)
+  conf (pdt_kind, codimension)
+
+  conf (pdt_len, allocatable)
+  conf (pdt_len, pointer)
+  conf (pdt_len, dimension)
+  conf (pdt_len, codimension)
+
+  if (attr->access == ACCESS_PRIVATE)
+    {
+      a1 = privat;
+      conf2 (pdt_kind);
+      conf2 (pdt_len);
+    }
 
   a1 = gfc_code2string (flavors, attr->flavor);
 
