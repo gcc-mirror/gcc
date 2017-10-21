@@ -19,7 +19,8 @@ succinct title.
 
 <!-- THE FOLLOWING INFORMATION IS MANDATORY if you would like our help -->
 
-- GCC Version used to build this fork: <!-- `gcc --version` -->
+- GCC fork release tag or git hash: <!-- e.g., teams-20170921 or `git rev-parse --short HEAD`  -->
+- GCC version used to build this fork: <!-- `gcc --version` -->
 - Output of `uname -a`:
 - Machine architecture and number of physical cores:
 
