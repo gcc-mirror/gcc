@@ -1869,22 +1869,6 @@ show_code_node (int level, gfc_code *c)
       fputs ("FAIL IMAGE ", dumpfile);
       break;
 
-    case EXEC_CHANGE_TEAM:
-      fputs ("CHANGE TEAM", dumpfile);
-      break;
-
-    case EXEC_END_TEAM:
-      fputs ("END TEAM", dumpfile);
-      break;
-
-    case EXEC_FORM_TEAM:
-      fputs ("FORM TEAM", dumpfile);
-      break;
-
-    case EXEC_SYNC_TEAM:
-      fputs ("SYNC TEAM", dumpfile);
-      break;
-
     case EXEC_SYNC_ALL:
       fputs ("SYNC ALL ", dumpfile);
       if (c->expr2 != NULL)

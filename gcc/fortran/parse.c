@@ -451,7 +451,6 @@ decode_statement (void)
 
     case 'c':
       match ("call", gfc_match_call, ST_CALL);
-      match ("change team", gfc_match_change_team, ST_CHANGE_TEAM);
       match ("close", gfc_match_close, ST_CLOSE);
       match ("continue", gfc_match_continue, ST_CONTINUE);
       match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
@@ -471,7 +470,6 @@ decode_statement (void)
 
     case 'e':
       match ("end file", gfc_match_endfile, ST_END_FILE);
-      match ("end team", gfc_match_end_team, ST_END_TEAM);
       match ("exit", gfc_match_exit, ST_EXIT);
       match ("else", gfc_match_else, ST_ELSE);
       match ("else where", gfc_match_elsewhere, ST_ELSEWHERE);
@@ -493,7 +491,6 @@ decode_statement (void)
       match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE);
       match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
-      match ("form team", gfc_match_form_team, ST_FORM_TEAM);
       match ("format", gfc_match_format, ST_FORMAT);
       break;
 
@@ -561,7 +558,6 @@ decode_statement (void)
       match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
       match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
       match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-      match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM);
       break;
 
     case 't':
@@ -591,7 +587,7 @@ decode_statement (void)
 
   if (!gfc_error_check ())
     gfc_error_now ("Unclassifiable statement at %C");
-  
+
   reject_statement ();
 
   gfc_error_recovery ();
@@ -1505,10 +1501,7 @@ next_statement (void)
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
   case ST_ERROR_STOP: case ST_SYNC_ALL: \
-  case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: \
-  case ST_LOCK: case ST_UNLOCK: \
-  case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
-  case ST_END_TEAM: case ST_SYNC_TEAM: \
+  case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
   case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
   case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
@@ -1839,18 +1832,6 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_FAIL_IMAGE:
       p = "FAIL IMAGE";
-      break;
-    case ST_CHANGE_TEAM:
-      p = "CHANGE TEAM";
-      break;
-    case ST_END_TEAM:
-      p = "END TEAM";
-      break;
-    case ST_FORM_TEAM:
-      p = "FORM TEAM";
-      break;
-    case ST_SYNC_TEAM:
-      p = "SYNC TEAM";
       break;
     case ST_END_ASSOCIATE:
       p = "END ASSOCIATE";
