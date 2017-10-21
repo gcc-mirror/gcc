@@ -904,10 +904,10 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
 
   ifeq ($(strip $(filter-out x86_64, $(target_cpu))),)
      X86CPU=x86_64
-     LIBGNAT_TARGET_PAIRS=s-atocou.adb<s-atocou-builtin.adb
+     LIBGNAT_TARGET_PAIRS=$(X86_64_TARGET_PAIRS)
   else
      X86CPU=x86
-     LIBGNAT_TARGET_PAIRS=s-atocou.adb<s-atocou-x86.adb
+     LIBGNAT_TARGET_PAIRS=$(X86_TARGET_PAIRS)
   endif
 
   LIBGNAT_TARGET_PAIRS+= \
@@ -930,10 +930,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(CERTMATH_TARGET_PAIRS) \
-  $(CERTMATH_TARGET_PAIRS_SQRT_FPU) \
-  $(CERTMATH_TARGET_PAIRS_X86TRA)
+  $(ATOMICS_TARGET_PAIRS)
 
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
@@ -1033,8 +1030,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
     endif
   endif
 
-  EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o \
-    $(CERTMATH_GNATRTL_OBJS) $(CERTMATH_GNATRTL_X86TRA_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o
   EXTRA_GNATRTL_TASKING_OBJS += i-vxinco.o s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -1135,7 +1131,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     endif
   endif
 
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o $(CERTMATH_GNATRTL_OBJS) \
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o \
     s-stchop.o
   EXTRA_GNATRTL_TASKING_OBJS=i-vxinco.o s-vxwork.o s-vxwext.o
 
