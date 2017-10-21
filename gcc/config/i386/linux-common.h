@@ -121,3 +121,8 @@ along with GCC; see the file COPYING3.  If not see
 #define CHKP_SPEC "\
 %{!nostdlib:%{!nodefaultlibs:" LIBMPX_SPEC LIBMPXWRAPPERS_SPEC "}}" MPX_SPEC
 #endif
+
+extern void file_end_indicate_exec_stack_and_cet (void);
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack_and_cet
