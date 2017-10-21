@@ -2,7 +2,7 @@
 
 pragma Restrictions (No_Implicit_Heap_Allocations);
 
-package Discr_Record_Constant is
+package Discr3 is
 
    type T (Big : Boolean := False) is record
       case Big is
@@ -19,4 +19,4 @@ package Discr_Record_Constant is
     Con : constant T := D;    --  Violation of restriction
     Ter : constant T := Con;  --  Violation of restriction
 
-end Discr_Record_Constant;
+end Discr3;
