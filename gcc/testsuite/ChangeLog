@@ -1,3 +1,7 @@
+2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr79683.c: Disable costmodel.
+
 2017-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/discr_private.ads: Rename into ...

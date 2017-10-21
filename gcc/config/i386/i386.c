@@ -44051,37 +44051,61 @@ static int
 ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
                                  tree vectype, int)
 {
+  bool fp = false;
+  machine_mode mode = TImode;
+  if (vectype != NULL)
+    {
+      fp = FLOAT_TYPE_P (vectype);
+      mode = TYPE_MODE (vectype);
+    }
+
   switch (type_of_cost)
     {
       case scalar_stmt:
-        return ix86_cost->scalar_stmt_cost;
+        return fp ? ix86_cost->addss : COSTS_N_INSNS (1);
 
       case scalar_load:
-        return ix86_cost->scalar_load_cost;
+	/* load/store costs are relative to register move which is 2. Recompute
+ 	   it to COSTS_N_INSNS so everything have same base.  */
+        return COSTS_N_INSNS (fp ? ix86_cost->sse_load[0]
+			      : ix86_cost->int_load [2]) / 2;
 
       case scalar_store:
-        return ix86_cost->scalar_store_cost;
+        return COSTS_N_INSNS (fp ? ix86_cost->sse_store[0]
+			      : ix86_cost->int_store [2]) / 2;
 
       case vector_stmt:
-        return ix86_cost->vec_stmt_cost;
+        return ix86_vec_cost (mode,
+			      fp ? ix86_cost->addss : ix86_cost->sse_op,
+			      true);
 
       case vector_load:
-        return ix86_cost->vec_align_load_cost;
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_load[2]) / 2,
+			      true);
 
       case vector_store:
-        return ix86_cost->vec_store_cost;
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_store[2]) / 2,
+			      true);
 
       case vec_to_scalar:
-        return ix86_cost->vec_to_scalar_cost;
-
       case scalar_to_vec:
-        return ix86_cost->scalar_to_vec_cost;
+        return ix86_vec_cost (mode, ix86_cost->sse_op, true);
 
+      /* We should have separate costs for unaligned loads and gather/scatter.
+	 Do that incrementally.  */
       case unaligned_load:
-      case unaligned_store:
       case vector_gather_load:
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_load[2]),
+			      true);
+
+      case unaligned_store:
       case vector_scatter_store:
-        return ix86_cost->vec_unalign_load_cost;
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_store[2]),
+			      true);
 
       case cond_branch_taken:
         return ix86_cost->cond_taken_branch_cost;
@@ -44091,10 +44115,11 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_perm:
       case vec_promote_demote:
-        return ix86_cost->vec_stmt_cost;
+        return ix86_vec_cost (mode,
+			      ix86_cost->sse_op, true);
 
       case vec_construct:
-	return ix86_cost->vec_stmt_cost * (TYPE_VECTOR_SUBPARTS (vectype) - 1);
+	return ix86_vec_cost (mode, ix86_cost->sse_op, false);
 
       default:
         gcc_unreachable ();

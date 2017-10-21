@@ -277,18 +277,6 @@ struct processor_costs {
 				   parallel.  See also
 				   ix86_reassociation_width.  */
   struct stringop_algs *memcpy, *memset;
-  const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
-				   load and store.  */
-  const int scalar_load_cost;   /* Cost of scalar load.  */
-  const int scalar_store_cost;  /* Cost of scalar store.  */
-  const int vec_stmt_cost;      /* Cost of any vector operation, excluding
-                                   load, store, vector-to-scalar and
-                                   scalar-to-vector operation.  */
-  const int vec_to_scalar_cost;    /* Cost of vect-to-scalar operation.  */
-  const int scalar_to_vec_cost;    /* Cost of scalar-to-vector operation.  */
-  const int vec_align_load_cost;   /* Cost of aligned vector load.  */
-  const int vec_unalign_load_cost; /* Cost of unaligned vector load.  */
-  const int vec_store_cost;        /* Cost of vector store.  */
   const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
 					  cost model.  */
   const int cond_not_taken_branch_cost;/* Cost of not taken branch for
