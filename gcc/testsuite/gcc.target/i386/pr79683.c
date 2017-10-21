@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -msse2" } */
+/* { dg-options "-O3 -msse2 -fvect-cost-model=unlimited" } */
 
 struct s {
     __INT64_TYPE__ a;
