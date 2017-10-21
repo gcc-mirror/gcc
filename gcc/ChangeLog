@@ -87,7 +87,7 @@
 
 2017-10-20  Nicolas Roche  <roche@adacore.com>
 
-	* configure.ac (ACX_PROG_GNAT): Append "libgnat" to the include dir.
+	* configure.ac (ACX_PROG_GNAT): Append "libgnat" to include search dir.
 	* configure: Regenerate.
 
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
