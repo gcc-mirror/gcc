@@ -1,3 +1,15 @@
+2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/82312
+	* resolve.c (gfc_resolve_code): Simplify condition for class
+	pointer assignments becoming regular assignments by asserting
+	that only class valued targets are permitted.
+	* trans-expr.c (trans_class_pointer_fcn): New function using a
+	block of code from gfc_trans_pointer_assignment.
+	(gfc_trans_pointer_assignment): Call the new function. Tidy up
+	a minor whitespace issue.
+
 2017-10-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

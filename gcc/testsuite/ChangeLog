@@ -1,3 +1,9 @@
+2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/82312
+	* gfortran.dg/typebound_proc_36.f90 : New test.
+
 2017-10-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
