@@ -5810,7 +5810,7 @@ low_bitmask_len (machine_mode mode, unsigned HOST_WIDE_INT m)
 {
   if (mode != VOIDmode)
     {
-      if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
+      if (!HWI_COMPUTABLE_MODE_P (mode))
 	return -1;
       m &= GET_MODE_MASK (mode);
     }

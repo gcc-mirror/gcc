@@ -11976,10 +11976,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	  if (paradoxical_subreg_p (inner_op0)
 	      && GET_CODE (inner_op1) == SUBREG
+	      && HWI_COMPUTABLE_MODE_P (GET_MODE (SUBREG_REG (inner_op0)))
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
-	      && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (inner_op0)))
-		  <= HOST_BITS_PER_WIDE_INT)
 	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
 					     GET_MODE (SUBREG_REG (inner_op0)))))
 	      && (0 == ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
@@ -13318,7 +13317,7 @@ record_promoted_value (rtx_insn *insn, rtx subreg)
   unsigned int regno = REGNO (SUBREG_REG (subreg));
   machine_mode mode = GET_MODE (subreg);
 
-  if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
+  if (!HWI_COMPUTABLE_MODE_P (mode))
     return;
 
   for (links = LOG_LINKS (insn); links;)
