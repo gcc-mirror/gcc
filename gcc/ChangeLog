@@ -1,5 +1,10 @@
 2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* inchash.h (inchash::hash::add_wide_int): New function.
+	* lto-streamer-out.c (hash_tree): Use it.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* inchash.h (inchash::hash::add_wide_int): Rename to...
 	(inchash::hash::add_hwi): ...this.
 	* ipa-devirt.c (hash_odr_vtable): Update accordingly.

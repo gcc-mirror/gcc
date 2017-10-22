@@ -1028,13 +1028,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
   hstate.commit_flag ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
-    {
-      int i;
-      hstate.add_hwi (TREE_INT_CST_NUNITS (t));
-      hstate.add_hwi (TREE_INT_CST_EXT_NUNITS (t));
-      for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
-    }
+    hstate.add_wide_int (wi::to_widest (t));
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
     {
