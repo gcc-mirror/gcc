@@ -5,14 +5,15 @@ contributions to the GNU Compiler Collection ([GCC]).
 
 Candidate features currently on this site are listed below.  The checked items indicate features 
 that have been submitted to the relevant GCC developer mailing list for review.  We welcome user 
-feedback from testing these features.  Unchecked itmes are insufficiently mature to submit to GCC.  
-We welcome code contributions via [pull request] for any listed features or other unsupported
-features of the draft Fortran 2015 standard:
+feedback from testing these features.  Unchecked items are insufficiently mature to submit to GCC. 
 
 - [X] The [teams branch] with experimental support for Fortran 2015 teams. 
 - [X] The [download-opencoarrays-mpich branch] modifying GCC's prequisites download script
   to add [OpenCoarrays] and [MPICH] to the list of downloade software.
 - [ ] The [issue-#6-iso-fortran-binding-h branch] providing gthe Fortran 2015 `iso_fortran_binding.h` file.
+
+We welcome code contributions via [pull request] for any listed features or other unsupported
+features of the draft Fortran 2015 standard:
 
 Installation
 ============
