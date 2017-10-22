@@ -8453,7 +8453,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  if (modifier == EXPAND_STACK_PARM)
 	    target = 0;
 	  if (TREE_CODE (treeop0) == INTEGER_CST
-	      && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT
+	      && HWI_COMPUTABLE_MODE_P (mode)
 	      && TREE_CONSTANT (treeop1))
 	    {
 	      rtx constant_part;
@@ -8476,7 +8476,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    }
 
 	  else if (TREE_CODE (treeop1) == INTEGER_CST
-		   && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT
+		   && HWI_COMPUTABLE_MODE_P (mode)
 		   && TREE_CONSTANT (treeop0))
 	    {
 	      rtx constant_part;

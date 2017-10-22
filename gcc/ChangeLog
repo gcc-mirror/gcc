@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (simplify_comparison): Use HWI_COMPUTABLE_MODE_P.
+	(record_promoted_value): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	* ree.c (update_reg_equal_equiv_notes): Likewise.
+	(combine_set_extension): Likewise.
+	* rtlanal.c (low_bitmask_len): Likewise.
+	* simplify-rtx.c (neg_const_int): Likewise.
+	(simplify_binary_operation_1): Likewise.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lra-spills.c (assign_mem_slot): Use subreg_size_lowpart_offset.
 	* regcprop.c (maybe_mode_change): Likewise.
 	* reload1.c (alter_reg): Likewise.
