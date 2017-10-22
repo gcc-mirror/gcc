@@ -1,3 +1,10 @@
+2017-10-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/82233
+	* intrinsics/execute_command_line.c (execute_command_line):
+	No call to runtime_error if cmdstat is present.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.

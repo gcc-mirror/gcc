@@ -126,15 +126,9 @@ execute_command_line (const char *command, bool wait, int *exitstat,
   free (cmd);
 
   /* Now copy back to the Fortran string if needed.  */
-  if (cmdstat && *cmdstat > EXEC_NOERROR)
-    {
-      if (cmdmsg)
-	fstrcpy (cmdmsg, cmdmsg_len, cmdmsg_values[*cmdstat],
+  if (cmdstat && *cmdstat > EXEC_NOERROR && cmdmsg)
+    fstrcpy (cmdmsg, cmdmsg_len, cmdmsg_values[*cmdstat],
 		strlen (cmdmsg_values[*cmdstat]));
-      else
-	runtime_error ("Failure in EXECUTE_COMMAND_LINE: %s",
-		       cmdmsg_values[*cmdstat]);
-    }
 }
 
 
