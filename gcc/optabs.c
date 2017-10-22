@@ -4655,7 +4655,8 @@ expand_float (rtx to, rtx from, int unsignedp)
 	int doing_unsigned = unsignedp;
 
 	if (fmode != GET_MODE (to)
-	    && significand_size (fmode) < GET_MODE_PRECISION (GET_MODE (from)))
+	    && (significand_size (fmode)
+		< GET_MODE_UNIT_PRECISION (GET_MODE (from))))
 	  continue;
 
 	icode = can_float_p (fmode, imode, unsignedp);
