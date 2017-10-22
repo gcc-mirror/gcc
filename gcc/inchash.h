@@ -58,7 +58,7 @@ class hash
   }
 
   /* Add HOST_WIDE_INT value V.  */
-  void add_wide_int (HOST_WIDE_INT v)
+  void add_hwi (HOST_WIDE_INT v)
   {
     val = iterative_hash_host_wide_int (v, val);
   }
