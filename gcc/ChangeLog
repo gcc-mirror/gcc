@@ -142,6 +142,19 @@
 
 2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* i386.c (ix86_builtin_vectorization_cost): Use existing rtx_cost
+	latencies instead of having separate table; make difference between
+	integer and float costs.
+	* i386.h (processor_costs): Remove scalar_stmt_cost,
+	scalar_load_cost, scalar_store_cost, vec_stmt_cost, vec_to_scalar_cost,
+	scalar_to_vec_cost, vec_align_load_cost, vec_unalign_load_cost,
+	vec_store_cost.
+	* x86-tune-costs.h: Remove entries which has been removed in
+	procesor_costs from all tables; make cond_taken_branch_cost
+	and cond_not_taken_branch_cost COST_N_INSNS based.
+
+2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	* x86-tune-costs.h (intel_cost, generic_cost): Fix move costs.
 
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
