@@ -1,3 +1,9 @@
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82628
+	* gcc.dg/torture/pr82628.c: New test.
+
 2017-10-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* c-c++-common/attr-nocf-check-1a.c: Remove test.
