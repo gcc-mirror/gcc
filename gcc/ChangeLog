@@ -1,4 +1,12 @@
 2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lra-spills.c (assign_mem_slot): Use subreg_size_lowpart_offset.
+	* regcprop.c (maybe_mode_change): Likewise.
+	* reload1.c (alter_reg): Likewise.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* inchash.h (inchash::hash::add_wide_int): New function.
 	* lto-streamer-out.c (hash_tree): Use it.

@@ -153,9 +153,7 @@ assign_mem_slot (int i)
 
   /* On a big endian machine, the "address" of the slot is the address
      of the low part that fits its inherent mode.  */
-  if (BYTES_BIG_ENDIAN && inherent_size < total_size)
-    adjust += (total_size - inherent_size);
-
+  adjust += subreg_size_lowpart_offset (inherent_size, total_size);
   x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
 
   /* Set all of the memory attributes as appropriate for a spill.  */
