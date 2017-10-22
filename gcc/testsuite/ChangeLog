@@ -1,3 +1,10 @@
+2017-10-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* c-c++-common/attr-nocf-check-1a.c: Remove test.
+	* c-c++-common/attr-nocf-check-3a.c: Likewise.
+	* gcc.target/i386/attr-nocf-check-1a.c: Add test.
+	* gcc.target/i386/attr-nocf-check-3a.c: Likewise.
+
 2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* c-c++-common/attr-nocf-check-1.c: Shorten a cheking message.
