@@ -1,3 +1,16 @@
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52451
+	* config/i386/i386.c (ix86_fp_compare_mode): Return CCFPmode
+	for ordered inequality comparisons even with TARGET_IEEE_FP.
+
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82628
+	* config/i386/i386.md (cmp<dwi>_doubleword): New pattern.
+	* config/i386/i386.c (ix86_expand_branch) <case E_TImode>:
+	Expand with cmp<dwi>_doubleword.
+
 2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* extend.texi: Add x86 specific to 'nocf_check' attribute.
