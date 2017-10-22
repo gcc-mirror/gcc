@@ -5886,7 +5886,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 
       if (GET_CODE (temp) == ASHIFTRT
 	  && CONST_INT_P (XEXP (temp, 1))
-	  && INTVAL (XEXP (temp, 1)) == GET_MODE_PRECISION (mode) - 1)
+	  && INTVAL (XEXP (temp, 1)) == GET_MODE_UNIT_PRECISION (mode) - 1)
 	return simplify_shift_const (NULL_RTX, LSHIFTRT, mode, XEXP (temp, 0),
 				     INTVAL (XEXP (temp, 1)));
 

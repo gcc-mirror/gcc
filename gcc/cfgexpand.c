@@ -4361,9 +4361,12 @@ expand_debug_expr (tree exp)
 	    else
 	      op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
 	  }
-	else if (CONSTANT_P (op0)
-		 || GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (inner_mode))
+	else if (GET_MODE_UNIT_PRECISION (mode)
+		 == GET_MODE_UNIT_PRECISION (inner_mode))
 	  op0 = lowpart_subreg (mode, op0, inner_mode);
+	else if (GET_MODE_UNIT_PRECISION (mode)
+		 < GET_MODE_UNIT_PRECISION (inner_mode))
+	  op0 = simplify_gen_unary (TRUNCATE, mode, op0, inner_mode);
 	else if (UNARY_CLASS_P (exp)
 		 ? TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
 		 : unsignedp)
@@ -5222,9 +5225,12 @@ expand_debug_source_expr (tree exp)
       else
 	op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
     }
-  else if (CONSTANT_P (op0)
-	   || GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (inner_mode))
+  else if (GET_MODE_UNIT_PRECISION (mode)
+	   == GET_MODE_UNIT_PRECISION (inner_mode))
     op0 = lowpart_subreg (mode, op0, inner_mode);
+  else if (GET_MODE_UNIT_PRECISION (mode)
+	   < GET_MODE_UNIT_PRECISION (inner_mode))
+    op0 = simplify_gen_unary (TRUNCATE, mode, op0, inner_mode);
   else if (TYPE_UNSIGNED (TREE_TYPE (exp)))
     op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
   else
