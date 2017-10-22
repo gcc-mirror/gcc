@@ -21682,14 +21682,35 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
    Return the appropriate mode to use.  */
 
 machine_mode
-ix86_fp_compare_mode (enum rtx_code)
+ix86_fp_compare_mode (enum rtx_code code)
 {
-  /* ??? In order to make all comparisons reversible, we do all comparisons
-     non-trapping when compiling for IEEE.  Once gcc is able to distinguish
-     all forms trapping and nontrapping comparisons, we can make inequality
-     comparisons trapping again, since it results in better code when using
-     FCOM based compares.  */
-  return TARGET_IEEE_FP ? CCFPUmode : CCFPmode;
+  if (!TARGET_IEEE_FP)
+    return CCFPmode;
+
+  switch (code)
+    {
+    case GT:
+    case GE:
+    case LT:
+    case LE:
+      return CCFPmode;
+
+    case EQ:
+    case NE:
+
+    case LTGT:
+    case UNORDERED:
+    case ORDERED:
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case UNEQ:
+      return CCFPUmode;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 machine_mode
