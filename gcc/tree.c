@@ -7073,7 +7073,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
     case INTEGER_CST:
       gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
       for (i = 0; i < TREE_INT_CST_EXT_NUNITS (t); i++)
-	hstate.add_wide_int (TREE_INT_CST_ELT (t, i));
+	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
       return;
     case REAL_CST:
       {
@@ -7108,7 +7108,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       }
     case SSA_NAME:
       /* We can just compare by pointer.  */
-      hstate.add_wide_int (SSA_NAME_VERSION (t));
+      hstate.add_hwi (SSA_NAME_VERSION (t));
       return;
     case PLACEHOLDER_EXPR:
       /* The node itself doesn't matter.  */
@@ -7166,7 +7166,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       if (tclass == tcc_declaration)
 	{
 	  /* DECL's have a unique ID */
-	  hstate.add_wide_int (DECL_UID (t));
+	  hstate.add_hwi (DECL_UID (t));
 	}
       else if (tclass == tcc_comparison && !commutative_tree_code (code))
 	{

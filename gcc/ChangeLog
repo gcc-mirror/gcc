@@ -1,3 +1,16 @@
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* inchash.h (inchash::hash::add_wide_int): Rename to...
+	(inchash::hash::add_hwi): ...this.
+	* ipa-devirt.c (hash_odr_vtable): Update accordingly.
+	(polymorphic_call_target_hasher::hash): Likewise.
+	* ipa-icf.c (sem_function::get_hash, sem_function::init): Likewise.
+	(sem_item::add_expr, sem_item::add_type, sem_variable::get_hash)
+	(sem_item_optimizer::update_hash_by_addr_refs): Likewise.
+	* lto-streamer-out.c (hash_tree): Likewise.
+	* optc-save-gen.awk: Likewise.
+	* tree.c (add_expr): Likewise.
+
 2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/52451

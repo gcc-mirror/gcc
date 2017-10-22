@@ -1030,10 +1030,10 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
       int i;
-      hstate.add_wide_int (TREE_INT_CST_NUNITS (t));
-      hstate.add_wide_int (TREE_INT_CST_EXT_NUNITS (t));
+      hstate.add_hwi (TREE_INT_CST_NUNITS (t));
+      hstate.add_hwi (TREE_INT_CST_EXT_NUNITS (t));
       for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	hstate.add_wide_int (TREE_INT_CST_ELT (t, i));
+	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
@@ -1058,7 +1058,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      hstate.add_wide_int (DECL_MODE (t));
+      hstate.add_hwi (DECL_MODE (t));
       hstate.add_flag (DECL_NONLOCAL (t));
       hstate.add_flag (DECL_VIRTUAL_P (t));
       hstate.add_flag (DECL_IGNORED_P (t));
@@ -1151,7 +1151,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      hstate.add_wide_int (TYPE_MODE (t));
+      hstate.add_hwi (TYPE_MODE (t));
       hstate.add_flag (TYPE_STRING_FLAG (t));
       /* TYPE_NO_FORCE_BLK is private to stor-layout and need
  	 no streaming.  */
@@ -1181,10 +1181,10 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION)
       /* We don't stream these when passing things to a different target.  */
       && !lto_stream_offload_p)
-    hstate.add_wide_int (cl_target_option_hash (TREE_TARGET_OPTION (t)));
+    hstate.add_hwi (cl_target_option_hash (TREE_TARGET_OPTION (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    hstate.add_wide_int (cl_optimization_hash (TREE_OPTIMIZATION (t)));
+    hstate.add_hwi (cl_optimization_hash (TREE_OPTIMIZATION (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     hstate.merge_hash (IDENTIFIER_HASH_VALUE (t));
@@ -1312,7 +1312,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-      hstate.add_wide_int (TREE_OPERAND_LENGTH (t));
+      hstate.add_hwi (TREE_OPERAND_LENGTH (t));
       for (int i = 0; i < TREE_OPERAND_LENGTH (t); ++i)
 	visit (TREE_OPERAND (t, i));
     }
@@ -1336,7 +1336,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     {
       unsigned i;
       tree index, value;
-      hstate.add_wide_int (CONSTRUCTOR_NELTS (t));
+      hstate.add_hwi (CONSTRUCTOR_NELTS (t));
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, index, value)
 	{
 	  visit (index);
@@ -1349,7 +1349,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       int i;
       HOST_WIDE_INT val;
 
-      hstate.add_wide_int (OMP_CLAUSE_CODE (t));
+      hstate.add_hwi (OMP_CLAUSE_CODE (t));
       switch (OMP_CLAUSE_CODE (t))
 	{
 	case OMP_CLAUSE_DEFAULT:
@@ -1374,7 +1374,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	  val = 0;
 	  break;
 	}
-      hstate.add_wide_int (val);
+      hstate.add_hwi (val);
       for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (t)]; i++)
 	visit (OMP_CLAUSE_OPERAND (t, i));
       visit (OMP_CLAUSE_CHAIN (t));
