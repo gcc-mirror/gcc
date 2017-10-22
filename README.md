@@ -4,9 +4,9 @@ This repository exists as a staging ground for developing candidate
 contributions to the GNU Compiler Collection ([GCC]).
 
 Candidate features currently on this site are listed below.  The checked items indicate features 
-that are deemed sufficiently functional submitted to the relevant GCC developer mailing list for review.
-We welcome user feedback from testing these features.  Unchecked itmes are insufficiently mature to 
-submit to GCC.  We welcome code via [pull request] for any listed features or other unsupported
+that have been submitted to the relevant GCC developer mailing list for review.  We welcome user 
+feedback from testing these features.  Unchecked itmes are insufficiently mature to submit to GCC.  
+We welcome code contributions via [pull request] for any listed features or other unsupported
 features of the draft Fortran 2015 standard:
 
 - [X] The [teams branch] with experimental support for Fortran 2015 teams. 
@@ -24,7 +24,7 @@ git clone https://github.com/sourceryinstitute/opencoarrays
 cd oppencoarrays
 ./install.sh --package gcc \
   --from-url https://github.com/sourceryinstitute/gcc/archive/<release-tag>.tar.gz \
-  --install-version teams-20170921
+  --install-version <release-tag>
 ```
 where <version-number> and <release-tag> must be replaced with the appropriate strings such as
 1.9.2 and teams-20170921, respectively.  The final command above peforms the safest but slowest
@@ -35,8 +35,7 @@ the above steps will install GCC in the prerequisites/installations subdirectory
 installation options, including choosing another installation path, execute `./install.sh --help`.
 
 For access to any Fortran 2015 parallel features, including teams and failed images, build the [MPICH] 
-and the [opencoarrays-teams branch]:
-of OpenCoarrays:
+and the [opencoarrays-teams branch] of OpenCoarrays:
 ```bash
 git checkout opencoarrays-teams
 export LD_LIBRARY_PATH=<gcc-fork-install-path>/lib64:$LD_LIBRARY_PATH
@@ -84,6 +83,7 @@ individually.
 [teams branch]: https://github.com/sourceryinstitute/gcc/tree/teams
 [issue-#6-iso-fortran-binding-h branch]: https://github.com/sourceryinstitute/gcc/tree/issue-#6-iso-fortran-binding-h
 [download-opencoarrays-mpich branch]: https://github.com/sourceryinstitute/gcc/tree/download-opencoarrays-mpich 
-[releases] https://github.com/sourceryinstitute/gcc/releases/
-[issues page] https://github.com/sourceryinstitute/gcc/issues/
+[releases]: https://github.com/sourceryinstitute/gcc/releases/
+[issues page]: https://github.com/sourceryinstitute/gcc/issues/
 [opencoarrays-teams branch]: https://github.com/sourceryinstitute/opencoarrays/tree/opencoarrays-teams
+[pull request]: https://github.com/sourceryinstitute/gcc/pulls
