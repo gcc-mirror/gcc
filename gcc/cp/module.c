@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "cpplib.h"
 #include "incpath.h"
+#include "libiberty.h"
+#include "tree-diagnostic.h"
 
 /* Id for dumping the class heirarchy.  */
 int module_dump_id;
@@ -4839,6 +4841,17 @@ read_module (FILE *stream, const char *fname, module_state *state,
 {
   cpms_in in (stream, fname, state, from);
 
+  if (!quiet_flag)
+    {
+      
+      fprintf (stderr, " importing:%s(%s)",
+	       identifier_p (state->name) ? IDENTIFIER_POINTER (state->name)
+	       : TREE_STRING_POINTER (state->name), fname);
+      fflush (stderr);
+      pp_needs_newline (global_dc->printer) = true;
+      diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+    }
+
   int ok = in.header ();
   if (ok)
     do
@@ -4964,7 +4977,7 @@ module_to_filename (tree id, size_t &len)
 
   if (identifier_p (id))
     {
-      char dot = module_path ? DIR_SEPARATOR : MOD_FNAME_DOT;
+      char dot = MOD_FNAME_DOT;
       if (dot != '.')
 	for (char *ptr = buffer; id_len--; ptr++)
 	  if (*ptr == '.')
@@ -4978,34 +4991,88 @@ module_to_filename (tree id, size_t &len)
    Updates NAME with path found.  */
 
 static FILE *
-search_module_path (char *&name, size_t name_len)
+search_module_path (char *&name, size_t name_len, tree mname)
 {
   char *buffer = XNEWVEC (char, module_path_max + name_len + 2);
-  FILE *stream;
+  bool once = false;
 
-  for (const cpp_dir *dir = module_path; dir; dir = dir->next)
+ again:
+  if (!IS_ABSOLUTE_PATH (name))
+    for (const cpp_dir *dir = module_path; dir; dir = dir->next)
+      {
+	memcpy (buffer, dir->name, dir->len);
+	buffer[dir->len] = DIR_SEPARATOR;
+	memcpy (buffer + dir->len + 1, name, name_len + 1);
+
+	if (FILE *stream = fopen (buffer, "rb"))
+	  {
+	    XDELETE (name);
+	    name = buffer;
+	    return stream;
+	  }
+      }
+  else if (FILE *stream = fopen (buffer, "rb"))
+    return stream;
+
+  if (once)
+    return NULL;
+
+  once = true;
+
+  /* wrapper <module-name> <module-bmi-file> <source-file> <this-file>
+     We may want to pass the multilib directory fragment too.  */
+
+  unsigned len = 0;
+  const char *argv[6];
+  argv[len++] = flag_module_wrapper;
+  argv[len++] = (identifier_p (mname) ? IDENTIFIER_POINTER (mname)
+		 : TREE_STRING_POINTER (mname));
+  argv[len++] = name;
+  argv[len++] = main_input_filename;
+  argv[len++] = expand_location (input_location).file;
+
+  if (!quiet_flag)
     {
-      memcpy (buffer, dir->name, dir->len);
-      buffer[dir->len] = DIR_SEPARATOR;
-      memcpy (buffer + dir->len + 1, name, name_len + 1);
-
-      stream = fopen (buffer, "rb");
-      if (stream)
+      if (pp_needs_newline (global_dc->printer))
 	{
-	  XDELETE (name);
-	  name = buffer;
-	  return stream;
+	  pp_needs_newline (global_dc->printer) = false;
+	  fprintf (stderr, "\n");
 	}
+      fprintf (stderr, "%s module wrapper:", progname);
+      for (unsigned ix = 0; ix != len; ix++)
+	fprintf (stderr, "%s%s", &" "[!ix], argv[ix]);
+      fprintf (stderr, "\n");
+      fflush (stderr);
     }
+  argv[len] = NULL;
 
-  stream = fopen (name, "rb");
+  int err;
+  const char *errmsg = NULL;
+  int status;
+  pex_obj *pex = pex_init (0, progname, NULL);
+  if (pex)
+    errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0],
+		      const_cast <char **> (argv), NULL, NULL, &err);
 
-  if (!stream)
+  if (!pex || (!errmsg && !pex_get_status (pex, 1, &status)))
+    errmsg = "cannot invoke";
+  pex_free (pex);
+
+  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+
+  if (errmsg)
     {
-      // FIXME: flag_module_hook
+      errno = err;
+      error_at (UNKNOWN_LOCATION, "%s %qs %m", errmsg, argv[0]);
     }
+  else if (WIFSIGNALED (status))
+    error_at (UNKNOWN_LOCATION, "module hook %qs died by signal %s",
+	      argv[0], strsignal (WTERMSIG (status)));
+  else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
+    error_at (UNKNOWN_LOCATION, "module hook %qs exit status %d",
+	      argv[0], WEXITSTATUS (status));
 
-  return stream;
+  goto again;
 }
 
 static FILE *
@@ -5149,7 +5216,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
           if (!fname)
             fname = module_to_filename (name, fname_len);
 
-	  if (FILE *stream = search_module_path (fname, fname_len))
+	  if (FILE *stream = search_module_path (fname, fname_len, name))
 	    {
 	      gcc_assert (global_namespace == current_scope ());
 	      index = read_module (stream, fname, state, from);
@@ -5262,6 +5329,13 @@ init_module_processing ()
   for (const cpp_dir *path = module_path; path; path = path->next)
     if (path->len > module_path_max)
       module_path_max = path->len;
+
+  if (!flag_module_wrapper)
+    {
+      flag_module_wrapper = getenv ("CXX_MODULE_WRAPPER");
+      if (!flag_module_wrapper)
+	flag_module_wrapper = "false";
+    }
 }
 
 /* Finalize the module at end of parsing.  */

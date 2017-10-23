@@ -46,7 +46,7 @@ CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-c++: cc1plus$(exeext)
+c++: cc1plus$(exeext) cxx-module-wrapper
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c++
@@ -100,6 +100,9 @@ ifeq ($(if $(wildcard ../stage_current),$(shell cat \
 $(CXX_AND_OBJCXX_OBJS): CFLAGS += -fauto-profile=cc1plus.fda
 $(CXX_AND_OBJCXX_OBJS): cc1plus.fda
 endif
+
+cxx-module-wrapper:cp/cxx-module-wrapper.sh
+	cp $< $@ && chmod +x $@
 
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
@@ -220,6 +223,9 @@ c++.install-common: installdirs
 	    fi ; \
 	  fi; \
 	fi
+	rm -f $(DESTDIR)$(libexecdir)/cxx-module-wrapper;
+	$(INSTALL_PROGRAM) cxx-module-wrapper $(DESTDIR)$(libexecdir)/cxx-module-wrapper
+	chmod a+x $(DESTDIR)$(libexecdir)/cxx-module-wrapper
 
 # We can't use links because not everyone supports them.  So just copy the
 # manpage.
@@ -260,10 +266,10 @@ c++.mostlyclean:
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext) cc1plus.fda
+	-rm -f cxx-module-wrapper
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
-	-rm -f cxxmain.c
 c++.maintainer-clean:
 #
 # Stage hooks:

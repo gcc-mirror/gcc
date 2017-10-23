@@ -45,6 +45,7 @@ class driver
   void putenv_COLLECT_GCC (const char *argv0) const;
   void maybe_putenv_COLLECT_LTO_WRAPPER () const;
   void maybe_putenv_OFFLOAD_TARGETS () const;
+  void maybe_putenv_CXX_MODULE_WRAPPER () const;
   void build_option_suggestions (void);
   const char *suggest_option (const char *bad_opt);
   void handle_unrecognized_options ();

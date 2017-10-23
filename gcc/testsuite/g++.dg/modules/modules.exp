@@ -36,7 +36,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules"
+lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules" "-fmodule-wrapper=false"
 
 dg-init
 
@@ -94,9 +94,9 @@ proc module_if_it { src ifs } {
 	set decode [decode_mod_spec $spec]
 	set absent [lindex $decode 0]
 	if { $absent != [file_on_host exists [lindex $decode 1]] } {
-	    pass "$src module $spec"
+	    pass "$src module-bmi $spec ([lindex $decode 1])"
 	} else {
-	    fail "$src module $spec"
+	    fail "$src module-bmi $spec ([lindex $decode 1])"
 	    set absent [expr ! $absent ]
 	}
 	if { ! $absent } {

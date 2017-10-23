@@ -1,3 +1,34 @@
+2017-10-23  Nathan Sidwell  <nathan@acm.org>
+
+	Wrapper program
+	gcc/
+	* doc/invoke.texi (fmodule-root, fmodule-path, fmodule-wrapper):
+	Document.
+	* gcc.c (driver::maybe_putenv_CXX_MODULE_WRAPPER): New.
+	(driver::main): Call it.
+	* gcc.h (driver::maybe_putenv_CXX_MODULE_WRAPPER): Declare.
+	* incpath.h (clean_cxx_module_path): Add multilib parm.
+	* incpath.c (add_path): Initialize length.
+	(clean_cxx_module_path): Append multilib fragment.  Add '.'.
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Pass multilib suffx to
+	clean_cxx_module_path.
+	* c.opt (fmodules): Notify driver.
+	(fmodule-hook): Rename to  ...
+	(fmodule-wrapper): ... here.
+	gcc/cp/
+	* Make-lang.in (cxx-module-wrapper): New program.
+	* cxx-module-wrapper.sh: New.
+	* module.c: Include libiberty.h, tree-diagnostic.h.
+	(read_module): Add announcement.
+	(module_to_filename): Identifier mapping does not depend on
+	module_path.
+	(search_module_path): Shell out to wrapper function.
+	(do_module_import): Adjust.
+	(init_module_processing): Default flag_module_wrapper.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Adjust.
+
 2017-10-20  Nathan Sidwell  <nathan@acm.org>
 
 	Template class!

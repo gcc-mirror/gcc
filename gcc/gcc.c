@@ -7304,6 +7304,7 @@ driver::main (int argc, char **argv)
   putenv_COLLECT_GCC (argv[0]);
   maybe_putenv_COLLECT_LTO_WRAPPER ();
   maybe_putenv_OFFLOAD_TARGETS ();
+  maybe_putenv_CXX_MODULE_WRAPPER ();
   handle_unrecognized_options ();
 
   if (!maybe_print_and_exit ())
@@ -7772,6 +7773,28 @@ driver::maybe_putenv_OFFLOAD_TARGETS () const
 
   free (offload_targets);
   offload_targets = NULL;
+}
+
+/* Set up to reinvoke on missing compiled modules.  */
+
+void driver::maybe_putenv_CXX_MODULE_WRAPPER () const
+{
+  /* If we're not moduling, no point setting up the environment.  */
+  if (!flag_modules)
+    return;
+
+  /* If the user provided a wrapper, don't override it.  */
+  if (env.get ("CXX_MODULE_WRAPPER"))
+    return;
+
+  if (char *module_wrapper = find_a_file (&exec_prefixes, "cxx-module-wrapper",
+					  X_OK, false))
+    {
+      module_wrapper = convert_white_space (module_wrapper);
+      module_wrapper = concat ("CXX_MODULE_WRAPPER=",
+			       module_wrapper, NULL);
+      xputenv (module_wrapper);
+    }
 }
 
 /* Helper function for driver::suggest_option.  Populate

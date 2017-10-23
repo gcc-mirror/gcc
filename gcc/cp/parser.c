@@ -12745,7 +12745,7 @@ check_module_outermost (const cp_token *token, const char *msg)
 static void
 cp_parser_module_declaration (cp_parser *parser, bool exporting)
 {
-  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  cp_lexer_consume_token (parser->lexer);
   cp_expr name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 

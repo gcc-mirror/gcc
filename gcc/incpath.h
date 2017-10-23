@@ -35,7 +35,8 @@ extern void register_include_chains (cpp_reader *, const char *,
 				     int, int, int);
 extern void add_cpp_dir_path (struct cpp_dir *, incpath_kind);
 extern struct cpp_dir *get_added_cpp_dirs (incpath_kind);
-extern void clean_cxx_module_path (cpp_reader *, const char *, bool);
+extern void clean_cxx_module_path (cpp_reader *, const char *, const char *,
+				   bool);
 
 struct target_c_incpath_s {
   /* Do extra includes processing.  STDINC is false iff -nostdinc was given.  */

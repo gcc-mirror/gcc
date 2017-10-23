@@ -1492,7 +1492,7 @@ C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fmodules
-C++ ObjC++ Var(flag_modules) Uinteger
+C++ ObjC++ Driver Var(flag_modules) Uinteger
 Enable C++ modules (experimental).
 
 fmodules++
@@ -1509,11 +1509,11 @@ C++ ObjC++ Joined Var(flag_module_root)
 ; perhaps steal -J?
 fmodule-path=
 C++ ObjC++ Joined Defer VAR(flag_module_path)
--fmodule-path=<directory>
+-fmodule-path=<directory> Append <directory> to module search path
 
-fmodule-hook=
-C++ ObjC++ Joined Var(flag_module_hook)
--fmodule-hook=<program> Invoke <program> for missing binary module interface
+fmodule-wrapper=
+C++ ObjC++ Joined Var(flag_module_wrapper)
+-fmodule-wrapper=<program> Invoke <program> for missing binary module interface
 
 fmodule-output=
 C++ ObjC++ Joined MissingArgError(missing filename after %qs)

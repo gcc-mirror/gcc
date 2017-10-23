@@ -2480,6 +2480,25 @@ errors if these functions are not inlined everywhere they are called.
 Enable experimental support for the Extensions to C++ for Modules
 extension.
 
+@item -fmodule-root=@var{dir}
+@opindex fmodule-root
+Option not fully baked.
+
+@item -fmodule-path=@var{dir}
+@opindex fmodule-path
+Append @var{dir} to the compiled module interface search path. The ':'
+separated directory list in @env{CXX_MODULE_PATH} is appended after
+explicitly specified directories.
+
+@item -fmodule-wrapper=@var{program}
+@opindex fmodule-wrapper
+If a compiled module interface file cannot be found on the module path,
+this program is invoked to build it.  After completion, the module path
+is re-searched.  If not specified, the value of @env{CXX_MODULE_WRAPPER}
+shall be used, which if not specified will default to a built-in wrapper
+program.  The values of @env{COLLECT_GCC} and @env{COLLECT_GCC_OPTIONS}
+can be used to determine the compiler command and compilation options.
+
 @item -fmodule-output=@var{file}
 @opindex fmodule-output
 Write the binary module interface into @var{file}. Note that this option is
