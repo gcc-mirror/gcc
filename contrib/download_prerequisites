@@ -101,7 +101,7 @@ if type wget > /dev/null ; then
 elif type curl > /dev/null ; then
   fetch='curl -LO -u anonymous:'
 else
-  die "Invoking wget and curl in the 'download_prerequisites' script failed."
+  die "Neither wget nor curl found, cannot download tarballs."
 fi
 
 for arg in "$@"
