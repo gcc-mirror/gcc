@@ -537,7 +537,6 @@ static pre_expr bitmap_find_leader (bitmap_set_t, unsigned int);
 static void bitmap_value_insert_into_set (bitmap_set_t, pre_expr);
 static void bitmap_value_replace_in_set (bitmap_set_t, pre_expr);
 static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
-static void bitmap_set_and (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
 static bitmap_set_t bitmap_set_new (void);
@@ -798,36 +797,6 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
     }
 
   return result;
-}
-
-/* Perform bitmapped set operation DEST &= ORIG.  */
-
-static void
-bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
-{
-  bitmap_iterator bi;
-  unsigned int i;
-
-  if (dest != orig)
-    {
-      bitmap_and_into (&dest->values, &orig->values);
-
-      unsigned int to_clear = -1U;
-      FOR_EACH_EXPR_ID_IN_SET (dest, i, bi)
-	{
-	  if (to_clear != -1U)
-	    {
-	      bitmap_clear_bit (&dest->expressions, to_clear);
-	      to_clear = -1U;
-	    }
-	  pre_expr expr = expression_for_id (i);
-	  unsigned int value_id = get_expr_value_id (expr);
-	  if (!bitmap_bit_p (&dest->values, value_id))
-	    to_clear = i;
-	}
-      if (to_clear != -1U)
-	bitmap_clear_bit (&dest->expressions, to_clear);
-    }
 }
 
 /* Subtract all expressions contained in ORIG from DEST.  */
@@ -2182,17 +2151,54 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
       phi_translate_set (ANTIC_OUT, ANTIC_IN (first), block, first);
 
+      /* If we have multiple successors we need to intersect the ANTIC_OUT
+         sets.  For values that's a simple intersection but for
+	 expressions it is a union.  Given we want to have a single
+	 expression per value in our sets we have to canonicalize.
+	 Avoid randomness and running into cycles like for PR82129 and
+	 canonicalize the expression we choose to the one with the
+	 lowest id.  This requires we actually compute the union first.  */
       FOR_EACH_VEC_ELT (worklist, i, bprime)
 	{
 	  if (!gimple_seq_empty_p (phi_nodes (bprime)))
 	    {
 	      bitmap_set_t tmp = bitmap_set_new ();
 	      phi_translate_set (tmp, ANTIC_IN (bprime), block, bprime);
-	      bitmap_set_and (ANTIC_OUT, tmp);
+	      bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
+	      bitmap_ior_into (&ANTIC_OUT->expressions, &tmp->expressions);
 	      bitmap_set_free (tmp);
 	    }
 	  else
-	    bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
+	    {
+	      bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (bprime)->values);
+	      bitmap_ior_into (&ANTIC_OUT->expressions,
+			       &ANTIC_IN (bprime)->expressions);
+	    }
+	}
+      if (! worklist.is_empty ())
+	{
+	  /* Prune expressions not in the value set, canonicalizing to
+	     expression with lowest ID.  */
+	  bitmap_iterator bi;
+	  unsigned int i;
+	  unsigned int to_clear = -1U;
+	  bitmap seen_value = BITMAP_ALLOC (NULL);
+	  FOR_EACH_EXPR_ID_IN_SET (ANTIC_OUT, i, bi)
+	    {
+	      if (to_clear != -1U)
+		{
+		  bitmap_clear_bit (&ANTIC_OUT->expressions, to_clear);
+		  to_clear = -1U;
+		}
+	      pre_expr expr = expression_for_id (i);
+	      unsigned int value_id = get_expr_value_id (expr);
+	      if (!bitmap_bit_p (&ANTIC_OUT->values, value_id)
+		  || !bitmap_set_bit (seen_value, value_id))
+		to_clear = i;
+	    }
+	  if (to_clear != -1U)
+	    bitmap_clear_bit (&ANTIC_OUT->expressions, to_clear);
+	  BITMAP_FREE (seen_value);
 	}
     }
 
