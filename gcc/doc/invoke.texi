@@ -7065,7 +7065,7 @@ Allow using extensions of later DWARF standard version than selected with
 @opindex gno-column-info
 Emit location column information into DWARF debugging information, rather
 than just file and line.
-This option is disabled by default.
+This option is enabled by default.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz

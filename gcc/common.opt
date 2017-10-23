@@ -2873,7 +2873,7 @@ Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format.
 
 gcolumn-info
-Common Driver Var(debug_column_info,1) Init(0)
+Common Driver Var(debug_column_info,1) Init(1)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
 
 gdwarf

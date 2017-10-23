@@ -1,3 +1,8 @@
+2017-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (gcolumn-info): Enable by default.
+	* doc/invoke.texi (gcolumn-info): Document new default.
+
 2017-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82672
