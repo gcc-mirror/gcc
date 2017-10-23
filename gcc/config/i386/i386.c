@@ -16840,13 +16840,17 @@ ix86_delegitimize_address_1 (rtx x, bool base_term_p)
 	 movl foo@GOTOFF(%ecx), %edx
 	 in which case we return (%ecx - %ebx) + foo
 	 or (%ecx - _GLOBAL_OFFSET_TABLE_) + foo if pseudo_pic_reg
-	 and reload has completed.  */
+	 and reload has completed.  Don't do the latter for debug,
+	 as _GLOBAL_OFFSET_TABLE_ can't be expressed in the assembly.  */
       if (pic_offset_table_rtx
 	  && (!reload_completed || !ix86_use_pseudo_pic_reg ()))
         result = gen_rtx_PLUS (Pmode, gen_rtx_MINUS (Pmode, copy_rtx (addend),
 						     pic_offset_table_rtx),
 			       result);
-      else if (pic_offset_table_rtx && !TARGET_MACHO && !TARGET_VXWORKS_RTP)
+      else if (base_term_p
+	       && pic_offset_table_rtx
+	       && !TARGET_MACHO
+	       && !TARGET_VXWORKS_RTP)
 	{
 	  rtx tmp = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
 	  tmp = gen_rtx_MINUS (Pmode, copy_rtx (addend), tmp);
@@ -16898,6 +16902,25 @@ ix86_find_base_term (rtx x)
     }
 
   return ix86_delegitimize_address_1 (x, true);
+}
+
+/* Return true if X shouldn't be emitted into the debug info.
+   Disallow UNSPECs other than @gotoff - we can't emit _GLOBAL_OFFSET_TABLE_
+   symbol easily into the .debug_info section, so we need not to
+   delegitimize, but instead assemble as @gotoff.
+   Disallow _GLOBAL_OFFSET_TABLE_ SYMBOL_REF - the assembler magically
+   assembles that as _GLOBAL_OFFSET_TABLE_-. expression.  */
+
+static bool
+ix86_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) != UNSPEC_GOTOFF)
+    return true;
+
+  if (SYMBOL_REF_P (x) && strcmp (XSTR (x, 0), GOT_SYMBOL_NAME) == 0)
+    return true;
+
+  return false;
 }
 
 static void
@@ -18217,6 +18240,10 @@ i386_asm_output_addr_const_extra (FILE *file, rtx x)
   op = XVECEXP (x, 0, 0);
   switch (XINT (x, 1))
     {
+    case UNSPEC_GOTOFF:
+      output_addr_const (file, op);
+      fputs ("@gotoff", file);
+      break;
     case UNSPEC_GOTTPOFF:
       output_addr_const (file, op);
       /* FIXME: This might be @TPOFF in Sun ld.  */
@@ -49826,6 +49853,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS ix86_delegitimize_address
+
+#undef TARGET_CONST_NOT_OK_FOR_DEBUG_P
+#define TARGET_CONST_NOT_OK_FOR_DEBUG_P ix86_const_not_ok_for_debug_p
 
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P ix86_ms_bitfield_layout_p

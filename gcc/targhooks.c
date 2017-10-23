@@ -177,6 +177,14 @@ default_legitimize_address_displacement (rtx *disp ATTRIBUTE_UNUSED,
   return false;
 }
 
+bool
+default_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    return true;
+  return false;
+}
+
 rtx
 default_expand_builtin_saveregs (void)
 {
