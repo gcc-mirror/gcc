@@ -1,3 +1,13 @@
+2017-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81395
+	* include/bits/fstream.tcc (basic_filebuf::xsgetn): Don't set buffer
+	pointers for write mode after reading.
+	* testsuite/27_io/basic_filebuf/sgetn/char/81395.cc: New.
+
 2017-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/path/itr/traversal.cc: Do not
