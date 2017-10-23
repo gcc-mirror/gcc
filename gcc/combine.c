@@ -5886,7 +5886,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 
       if (GET_CODE (temp) == ASHIFTRT
 	  && CONST_INT_P (XEXP (temp, 1))
-	  && INTVAL (XEXP (temp, 1)) == GET_MODE_PRECISION (mode) - 1)
+	  && INTVAL (XEXP (temp, 1)) == GET_MODE_UNIT_PRECISION (mode) - 1)
 	return simplify_shift_const (NULL_RTX, LSHIFTRT, mode, XEXP (temp, 0),
 				     INTVAL (XEXP (temp, 1)));
 
@@ -9526,13 +9526,9 @@ rtx_equal_for_field_assignment_p (rtx x, rtx y, bool widen_x)
 	return 0;
       if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
 	return 0;
-      /* For big endian, adjust the memory offset.  */
-      if (BYTES_BIG_ENDIAN)
-	x = adjust_address_nv (x, GET_MODE (y),
-			       -subreg_lowpart_offset (GET_MODE (x),
-						       GET_MODE (y)));
-      else
-	x = adjust_address_nv (x, GET_MODE (y), 0);
+      x = adjust_address_nv (x, GET_MODE (y),
+			     byte_lowpart_offset (GET_MODE (y),
+						  GET_MODE (x)));
     }
 
   if (x == y || rtx_equal_p (x, y))
@@ -11976,10 +11972,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	  if (paradoxical_subreg_p (inner_op0)
 	      && GET_CODE (inner_op1) == SUBREG
+	      && HWI_COMPUTABLE_MODE_P (GET_MODE (SUBREG_REG (inner_op0)))
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
-	      && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (inner_op0)))
-		  <= HOST_BITS_PER_WIDE_INT)
 	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
 					     GET_MODE (SUBREG_REG (inner_op0)))))
 	      && (0 == ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
@@ -13318,7 +13313,7 @@ record_promoted_value (rtx_insn *insn, rtx subreg)
   unsigned int regno = REGNO (SUBREG_REG (subreg));
   machine_mode mode = GET_MODE (subreg);
 
-  if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
+  if (!HWI_COMPUTABLE_MODE_P (mode))
     return;
 
   for (links = LOG_LINKS (insn); links;)

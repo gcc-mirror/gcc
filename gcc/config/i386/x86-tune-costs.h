@@ -1,4 +1,26 @@
+/* Costs of operations of individual x86 CPUs.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
 
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
 /* Processor costs (relative to an add) */
 /* We assume COSTS_N_INSNS is defined as (N)*4 and an addition is 2 bytes.  */
 #define COSTS_N_BYTES(N) ((N) * 2)
@@ -33,6 +55,8 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (3),			/* cost of movzx */
   0,					/* "large" insn */
   2,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2. */
   2,				     /* cost for loading QImode using movzbl */
   {2, 2, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -48,12 +72,16 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
 					   in SImode and DImode */
   {3, 3},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  3,					/* cost of moving SSE register */
-  {3, 3, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {3, 3, 3},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  3, 3, 3,				/* cost of moving XMM,YMM,ZMM register */
+  {3, 3, 3, 3, 3},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {3, 3, 3, 3, 3},			/* cost of unaligned SSE load
+					   in 128bit, 256bit and 512bit */
+  {3, 3, 3, 3, 3},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {3, 3, 3, 3, 3},				/* cost of unaligned SSE store
+					   in 128bit, 256bit and 512bit */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   0,					/* size of l1 cache  */
   0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -79,17 +107,8 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   ix86_size_memcpy,
   ix86_size_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  1,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  1,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_BYTES (1),			/* cond_taken_branch_cost.  */
+  COSTS_N_BYTES (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /* Processor costs (relative to an add) */
@@ -121,6 +140,9 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (2),			/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -136,12 +158,14 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
 					   in SImode and DImode */
   {4, 8},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 8, 16, 32, 64},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned loads.  */
+  {4, 8, 16, 32, 64},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   0,					/* size of l1 cache  */
   0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -167,17 +191,8 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i386_memcpy,
   i386_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs i486_memcpy[2] = {
@@ -208,6 +223,9 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (2),			/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -223,12 +241,14 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
 					   in SImode and DImode */
   {4, 8},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 8, 16, 32, 64},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned loads.  */
+  {4, 8, 16, 32, 64},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   4,					/* size of l1 cache.  486 has 8kB cache
 					   shared for code and data, so 4kB is
 					   not really precise.  */
@@ -256,17 +276,8 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   i486_memcpy,
   i486_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs pentium_memcpy[2] = {
@@ -297,6 +308,9 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   6,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -312,12 +326,14 @@ struct processor_costs pentium_cost = {
 					   in SImode and DImode */
   {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 8, 16, 32, 64},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned loads.  */
+  {4, 8, 16, 32, 64},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   8,					/* size of l1 cache.  */
   8,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -343,17 +359,8 @@ struct processor_costs pentium_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -377,6 +384,9 @@ struct processor_costs lakemont_cost = {
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   6,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -392,12 +402,14 @@ struct processor_costs lakemont_cost = {
 					   in SImode and DImode */
   {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 8, 16, 32, 64},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned loads.  */
+  {4, 8, 16, 32, 64},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   8,					/* size of l1 cache.  */
   8,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -423,17 +435,8 @@ struct processor_costs lakemont_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium_memcpy,
   pentium_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /* PentiumPro has optimized rep instructions for blocks aligned by 8 bytes
@@ -472,6 +475,9 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   2,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -487,12 +493,14 @@ struct processor_costs pentiumpro_cost = {
 					   in SImode and DImode */
   {2, 2},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 8, 16, 32, 64},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned loads.  */
+  {4, 8, 16, 32, 64},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   8,					/* size of l1 cache.  */
   256,					/* size of l2 cache  */
   32,					/* size of prefetch block */
@@ -518,17 +526,8 @@ struct processor_costs pentiumpro_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentiumpro_memcpy,
   pentiumpro_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs geode_memcpy[2] = {
@@ -558,13 +557,16 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
-  1,				     /* cost for loading QImode using movzbl */
-  {1, 1, 1},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  2,				     /* cost for loading QImode using movzbl */
+  {2, 2, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {1, 1, 1},				/* cost of storing integer registers */
-  1,					/* cost of reg,reg fld/fst */
-  {1, 1, 1},				/* cost of loading fp registers
+  {2, 2, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {2, 2, 2},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
   {4, 6, 6},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
@@ -574,12 +576,14 @@ struct processor_costs geode_cost = {
 					   in SImode and DImode */
   {2, 2},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {2, 2, 8, 16, 32},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {2, 2, 8, 16, 32},			/* cost of unaligned loads.  */
+  {2, 2, 8, 16, 32},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {2, 2, 8, 16, 32},			/* cost of unaligned stores.  */
+  6, 6,					/* SSE->integer and integer->SSE moves */
   64,					/* size of l1 cache.  */
   128,					/* size of l2 cache.  */
   32,					/* size of prefetch block */
@@ -605,17 +609,8 @@ struct processor_costs geode_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   geode_memcpy,
   geode_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs k6_memcpy[2] = {
@@ -645,6 +640,9 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   3,				     /* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -660,12 +658,14 @@ struct processor_costs k6_cost = {
 					   in SImode and DImode */
   {2, 2},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  6,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {2, 2, 8, 16, 32},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {2, 2, 8, 16, 32},			/* cost of unaligned loads.  */
+  {2, 2, 8, 16, 32},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {2, 2, 8, 16, 32},			/* cost of unaligned stores.  */
+  6, 6,					/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   32,					/* size of l2 cache.  Some models
 					   have integrated l2 cache, but
@@ -694,17 +694,8 @@ struct processor_costs k6_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k6_memcpy,
   k6_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /* For some reason, Athlon deals better with REP prefix (relative to loops)
@@ -737,6 +728,9 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -752,12 +746,14 @@ struct processor_costs athlon_cost = {
 					   in SImode and DImode */
   {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 4, 6, 12, 24},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 4, 6, 12, 24},			/* cost of unaligned loads.  */
+  {4, 4, 5, 10, 20},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
+  5, 5,					/* SSE->integer and integer->SSE moves */
   64,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -784,17 +780,8 @@ struct processor_costs athlon_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   athlon_memcpy,
   athlon_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /* K8 has optimized REP instruction for medium sized blocks, but for very
@@ -831,6 +818,9 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -846,12 +836,14 @@ struct processor_costs k8_cost = {
 					   in SImode and DImode */
   {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 3, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 3, 6, 12, 24},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 3, 6, 12, 24},			/* cost of unaligned loads.  */
+  {4, 4, 5, 10, 20},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
+  5, 5,					/* SSE->integer and integer->SSE moves */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -883,17 +875,8 @@ struct processor_costs k8_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   k8_memcpy,
   k8_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  5,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  3,					/* vec_unalign_load_cost.  */
-  3,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
 /* AMDFAM10 has optimized REP instruction for medium sized blocks, but for
@@ -929,6 +912,9 @@ struct processor_costs amdfam10_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -944,12 +930,14 @@ struct processor_costs amdfam10_cost = {
 					   in SImode and DImode */
   {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {4, 4, 3, 6, 12},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 4, 3, 7, 12},			/* cost of unaligned loads.  */
+  {4, 4, 5, 10, 20},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
+  3, 3,					/* SSE->integer and integer->SSE moves */
   					/* On K8:
   					    MOVD reg64, xmmreg Double FSTORE 4
 					    MOVD reg32, xmmreg Double FSTORE 4
@@ -989,17 +977,8 @@ struct processor_costs amdfam10_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   amdfam10_memcpy,
   amdfam10_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
@@ -1036,35 +1015,32 @@ const struct processor_costs bdver1_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,				     /* cost for loading QImode using movzbl */
+  {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
+  {8, 8, 8},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 28},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
+  {10, 10, 18},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
+  4,					/* cost of moving MMX register */
+  {12, 12},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
+  {10, 10},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  					/* On K8:
-					    MOVD reg64, xmmreg Double FSTORE 4
-					    MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					    MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {12, 12, 10, 20, 30},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {12, 12, 10, 20, 30},			/* cost of unaligned loads.  */
+  {10, 10, 10, 20, 30},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
+  16, 20,				/* SSE->integer and integer->SSE moves */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1097,17 +1073,8 @@ const struct processor_costs bdver1_cost = {
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver1_memcpy,
   bdver1_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
 /*  BDVER2 has optimized REP instruction for medium sized blocks, but for
@@ -1145,35 +1112,32 @@ const struct processor_costs bdver2_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,				     /* cost for loading QImode using movzbl */
+  {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
+  {8, 8, 8},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 28},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
+  {10, 10, 18},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
+  4,					/* cost of moving MMX register */
+  {12, 12},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
+  {10, 10},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  					/* On K8:
-					    MOVD reg64, xmmreg Double FSTORE 4
-					    MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					    MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {12, 12, 10, 20, 30},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {12, 12, 10, 20, 30},			/* cost of unaligned loads.  */
+  {10, 10, 10, 20, 30},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
+  16, 20,				/* SSE->integer and integer->SSE moves */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1206,17 +1170,8 @@ const struct processor_costs bdver2_cost = {
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver2_memcpy,
   bdver2_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
 
@@ -1253,27 +1208,32 @@ struct processor_costs bdver3_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,				     /* cost for loading QImode using movzbl */
+  {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
+  {8, 8, 8},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 28},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
+  {10, 10, 18},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
+  4,					/* cost of moving MMX register */
+  {12, 12},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
+  {10, 10},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {12, 12, 10, 20, 30},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {12, 12, 10, 20, 30},			/* cost of unaligned loads.  */
+  {10, 10, 10, 20, 30},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
+  16, 20,				/* SSE->integer and integer->SSE moves */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1306,17 +1266,8 @@ struct processor_costs bdver3_cost = {
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver3_memcpy,
   bdver3_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
 /*  BDVER4 has optimized REP instruction for medium sized blocks, but for
@@ -1352,27 +1303,32 @@ struct processor_costs bdver4_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,				     /* cost for loading QImode using movzbl */
+  {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
+  {8, 8, 8},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 28},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
+  {10, 10, 18},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
+  4,					/* cost of moving MMX register */
+  {12, 12},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
+  {10, 10},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {12, 12, 10, 20, 30},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {12, 12, 10, 20, 30},			/* cost of unaligned loads.  */
+  {10, 10, 10, 20, 30},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
+  16, 20,				/* SSE->integer and integer->SSE moves */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1405,17 +1361,8 @@ struct processor_costs bdver4_cost = {
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   bdver4_memcpy,
   bdver4_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
 
@@ -1456,6 +1403,9 @@ struct processor_costs znver1_cost = {
   8,					/* "large" insn.  */
   9,					/* MOVE_RATIO.  */
 
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+
   /* reg-reg moves are done by renaming and thus they are even cheaper than
      1 cycle. Becuase reg-reg move cost is 2 and the following tables correspond
      to doubles of latencies, we do not model this correctly.  It does not
@@ -1477,12 +1427,14 @@ struct processor_costs znver1_cost = {
 					   in SImode and DImode.  */
   {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode.  */
-  2,					/* cost of moving SSE register.  */
-  {6, 6, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode.  */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode.  */
-  6,					/* MMX or SSE register to integer.  */
+  2, 3, 6,				/* cost of moving XMM,YMM,ZMM register.  */
+  {6, 6, 6, 10, 20},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit.  */
+  {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
+  {8, 8, 8, 8, 16},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit.  */
+  {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
+  6, 6,					/* SSE->integer and integer->SSE moves.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
@@ -1524,17 +1476,8 @@ struct processor_costs znver1_cost = {
   4, 4, 3, 6,				/* reassoc int, fp, vec_int, vec_fp.  */
   znver1_memcpy,
   znver1_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
   /* BTVER1 has optimized REP instruction for medium sized blocks, but for
@@ -1570,35 +1513,32 @@ const struct processor_costs btver1_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,				     /* cost for loading QImode using movzbl */
+  {6, 8, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
+  {6, 8, 6},				/* cost of storing integer registers */
   4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
+  {12, 12, 28},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {12, 12, 38},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
+  4,					/* cost of moving MMX register */
+  {10, 10},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
+  {12, 12},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-					/* On K8:
-					   MOVD reg64, xmmreg Double FSTORE 4
-					   MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					   MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {10, 10, 12, 24, 48},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 12, 24, 48},			/* cost of unaligned loads.  */
+  {10, 10, 12, 24, 48},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 12, 24, 48},			/* cost of unaligned stores.  */
+  14, 14,				/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1624,17 +1564,8 @@ const struct processor_costs btver1_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver1_memcpy,
   btver1_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs btver2_memcpy[2] = {
@@ -1667,35 +1598,32 @@ const struct processor_costs btver2_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,				     /* cost for loading QImode using movzbl */
+  {8, 8, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
+  {8, 8, 6},				/* cost of storing integer registers */
   4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
+  {12, 12, 28},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {12, 12, 38},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
+  4,					/* cost of moving MMX register */
+  {10, 10},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
+  {12, 12},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-					/* On K8:
-					   MOVD reg64, xmmreg Double FSTORE 4
-					   MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					   MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {10, 10, 12, 24, 48},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 12, 24, 48},			/* cost of unaligned loads.  */
+  {10, 10, 12, 24, 48},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 12, 24, 48},			/* cost of unaligned stores.  */
+  14, 14,				/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1721,17 +1649,8 @@ const struct processor_costs btver2_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   btver2_memcpy,
   btver2_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs pentium4_memcpy[2] = {
@@ -1763,27 +1682,32 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   16,					/* "large" insn */
   6,					/* MOVE_RATIO */
-  2,				     /* cost for loading QImode using movzbl */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  5,				     /* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
   {2, 3, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {2, 2, 6},				/* cost of loading fp registers
+  12,					/* cost of reg,reg fld/fst */
+  {14, 14, 14},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of storing fp registers
+  {14, 14, 14},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {2, 2},				/* cost of loading MMX registers
+  12,					/* cost of moving MMX register */
+  {16, 16},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {2, 2},				/* cost of storing MMX registers
+  {16, 16},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  12,					/* cost of moving SSE register */
-  {12, 12, 12},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  10,					/* MMX or SSE register to integer */
+  12, 24, 48,				/* cost of moving XMM,YMM,ZMM register */
+  {16, 16, 16, 32, 64},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {32, 32, 32, 64, 128},		/* cost of unaligned loads.  */
+  {16, 16, 16, 32, 64},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {32, 32, 32, 64, 128},		/* cost of unaligned stores.  */
+  20, 12,				/* SSE->integer and integer->SSE moves */
   8,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1809,17 +1733,8 @@ struct processor_costs pentium4_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   pentium4_memcpy,
   pentium4_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs nocona_memcpy[2] = {
@@ -1854,27 +1769,32 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   16,					/* "large" insn */
   17,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
   {4, 4, 4},				/* cost of storing integer registers */
-  3,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  12,					/* cost of reg,reg fld/fst */
+  {14, 14, 14},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 4},				/* cost of storing fp registers
+  {14, 14, 14},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
-  6,					/* cost of moving MMX register */
+  14,					/* cost of moving MMX register */
   {12, 12},				/* cost of loading MMX registers
 					   in SImode and DImode */
   {12, 12},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  6,					/* cost of moving SSE register */
-  {12, 12, 12},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {12, 12, 12},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  8,					/* MMX or SSE register to integer */
+  6, 12, 24,				/* cost of moving XMM,YMM,ZMM register */
+  {12, 12, 12, 24, 48},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {24, 24, 24, 48, 96},			/* cost of unaligned loads.  */
+  {12, 12, 12, 24, 48},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {24, 24, 24, 48, 96},			/* cost of unaligned stores.  */
+  20, 12,				/* SSE->integer and integer->SSE moves */
   8,					/* size of l1 cache.  */
   1024,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1900,17 +1820,8 @@ struct processor_costs nocona_cost = {
   1, 1, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   nocona_memcpy,
   nocona_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs atom_memcpy[2] = {
@@ -1943,27 +1854,32 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  6,					/* cost for loading QImode using movzbl */
+  {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
+  {6, 6, 6},				/* cost of storing integer registers */
   4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  {6, 6, 18},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {14, 14, 24},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {8, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
+  {10, 10},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {8, 8, 8, 16, 32},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {16, 16, 16, 32, 64},			/* cost of unaligned loads.  */
+  {8, 8, 8, 16, 32},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {16, 16, 16, 32, 64},			/* cost of unaligned stores.  */
+  8, 6,					/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1989,17 +1905,8 @@ struct processor_costs atom_cost = {
   2, 2, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   atom_memcpy,
   atom_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs slm_memcpy[2] = {
@@ -2032,27 +1939,32 @@ struct processor_costs slm_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
+  8,					/* cost for loading QImode using movzbl */
+  {8, 8, 8},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
+  {6, 6, 6},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {8, 8, 18},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {6, 6, 18},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
   {8, 8},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
+  {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
+  2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
+  {8, 8, 8, 16, 32},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {16, 16, 16, 32, 64},			/* cost of unaligned loads.  */
+  {8, 8, 8, 16, 32},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {16, 16, 16, 32, 64},			/* cost of unaligned stores.  */
+  8, 6,					/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2078,17 +1990,8 @@ struct processor_costs slm_cost = {
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   slm_memcpy,
   slm_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  4,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 static stringop_algs intel_memcpy[2] = {
@@ -2121,6 +2024,9 @@ struct processor_costs intel_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -2136,12 +2042,14 @@ struct processor_costs intel_cost = {
 					   in SImode and DImode */
   {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {6, 6, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {6, 6, 6},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
+  2, 2, 2,				/* cost of moving XMM,YMM,ZMM register */
+  {6, 6, 6, 6, 6},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 10, 10},			/* cost of unaligned loads.  */
+  {6, 6, 6, 6, 6},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 10, 10},			/* cost of unaligned loads.  */
+  4, 4,					/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2167,17 +2075,8 @@ struct processor_costs intel_cost = {
   1, 4, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   intel_memcpy,
   intel_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  4,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /* Generic should produce code tuned for Core-i7 (and newer chips)
@@ -2217,6 +2116,9 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   4,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -2232,12 +2134,14 @@ struct processor_costs generic_cost = {
 					   in SImode and DImode */
   {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {6, 6, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {6, 6, 6},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  6,					/* MMX or SSE register to integer */
+  2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
+  {6, 6, 6, 10, 15},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 15, 20},			/* cost of unaligned loads.  */
+  {6, 6, 6, 10, 15},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {10, 10, 10, 15, 20},			/* cost of unaligned storess.  */
+  20, 20,				/* SSE->integer and integer->SSE moves */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2265,17 +2169,8 @@ struct processor_costs generic_cost = {
   1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 
 /* core_cost should produce code tuned for Core familly of CPUs.  */
@@ -2318,6 +2213,9 @@ struct processor_costs core_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
+
+  /* All move costs are relative to integer->integer move times 2 and thus
+     they are latency*2. */
   6,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -2333,12 +2231,14 @@ struct processor_costs core_cost = {
 					   in SImode and DImode */
   {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {6, 6, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {6, 6, 6},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
+  2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
+  {6, 6, 6, 6, 12},			/* cost of loading SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {6, 6, 6, 6, 12},			/* cost of unaligned loads.  */
+  {6, 6, 6, 6, 12},			/* cost of storing SSE registers
+					   in 32,64,128,256 and 512-bit */
+  {6, 6, 6, 6, 12},			/* cost of unaligned stores.  */
+  2, 2,					/* SSE->integer and integer->SSE moves */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2366,16 +2266,7 @@ struct processor_costs core_cost = {
   1, 4, 2, 2,				/* reassoc int, fp, vec_int, vec_fp.  */
   core_memcpy,
   core_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
 };
 

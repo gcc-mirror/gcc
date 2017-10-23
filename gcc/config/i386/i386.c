@@ -100,6 +100,7 @@ static rtx legitimize_pe_coff_symbol (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 static bool ix86_save_reg (unsigned int, bool, bool);
 static bool ix86_function_naked (const_tree);
+static bool ix86_notrack_prefixed_insn_p (rtx);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -1600,7 +1601,7 @@ dimode_scalar_chain::compute_convert_gain ()
       rtx dst = SET_DEST (def_set);
 
       if (REG_P (src) && REG_P (dst))
-	gain += COSTS_N_INSNS (2) - ix86_cost->sse_move;
+	gain += COSTS_N_INSNS (2) - ix86_cost->xmm_move;
       else if (REG_P (src) && MEM_P (dst))
 	gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
       else if (MEM_P (src) && REG_P (dst))
@@ -2568,6 +2569,150 @@ make_pass_stv (gcc::context *ctxt)
   return new pass_stv (ctxt);
 }
 
+/* Inserting ENDBRANCH instructions.  */
+
+static unsigned int
+rest_of_insert_endbranch (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  rtx cet_eb;
+  rtx_insn *insn;
+  basic_block bb;
+
+  /* Currently emit EB if it's a tracking function, i.e. 'nocf_check' is
+     absent among function attributes.  Later an optimization will be
+     introduced to make analysis if an address of a static function is
+     taken.  A static function whose address is not taken will get a
+     nocf_check attribute.  This will allow to reduce the number of EB.  */
+
+  if (!lookup_attribute ("nocf_check",
+			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl))))
+    {
+      cet_eb = gen_nop_endbr ();
+
+      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+      insn = BB_HEAD (bb);
+      emit_insn_before (cet_eb, insn);
+    }
+
+  bb = 0;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  if (INSN_P (insn) && GET_CODE (insn) == CALL_INSN)
+	    {
+	      rtx_insn *next_insn = insn;
+
+	      while ((next_insn != BB_END (bb))
+		      && (DEBUG_INSN_P (NEXT_INSN (next_insn))
+			  || NOTE_P (NEXT_INSN (next_insn))
+			  || BARRIER_P (NEXT_INSN (next_insn))))
+		next_insn = NEXT_INSN (next_insn);
+
+	      /* Generate ENDBRANCH after CALL, which can return more than
+		 twice, setjmp-like functions.  */
+	      if (find_reg_note (insn, REG_SETJMP, NULL) != NULL)
+		{
+		  cet_eb = gen_nop_endbr ();
+		  emit_insn_after (cet_eb, next_insn);
+		}
+	      continue;
+	    }
+
+	  if (INSN_P (insn) && JUMP_P (insn) && flag_cet_switch)
+	    {
+	      rtx target = JUMP_LABEL (insn);
+	      if (target == NULL_RTX || ANY_RETURN_P (target))
+		continue;
+
+	      /* Check the jump is a switch table.  */
+	      rtx_insn *label = as_a<rtx_insn *> (target);
+	      rtx_insn *table = next_insn (label);
+	      if (table == NULL_RTX || !JUMP_TABLE_DATA_P (table))
+		continue;
+
+	      /* For the indirect jump find out all places it jumps and insert
+		 ENDBRANCH there.  It should be done under a special flag to
+		 control ENDBRANCH generation for switch stmts.  */
+	      edge_iterator ei;
+	      edge e;
+	      basic_block dest_blk;
+
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		{
+		  rtx_insn *insn;
+
+		  dest_blk = e->dest;
+		  insn = BB_HEAD (dest_blk);
+		  gcc_assert (LABEL_P (insn));
+		  cet_eb = gen_nop_endbr ();
+		  emit_insn_after (cet_eb, insn);
+		}
+	      continue;
+	    }
+
+	  if ((LABEL_P (insn) && LABEL_PRESERVE_P (insn))
+	      || (NOTE_P (insn)
+		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
+/* TODO.  Check /s bit also.  */
+	    {
+	      cet_eb = gen_nop_endbr ();
+	      emit_insn_after (cet_eb, insn);
+	      continue;
+	    }
+	}
+    }
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_insert_endbranch =
+{
+  RTL_PASS, /* type.  */
+  "cet", /* name.  */
+  OPTGROUP_NONE, /* optinfo_flags.  */
+  TV_MACH_DEP, /* tv_id.  */
+  0, /* properties_required.  */
+  0, /* properties_provided.  */
+  0, /* properties_destroyed.  */
+  0, /* todo_flags_start.  */
+  0, /* todo_flags_finish.  */
+};
+
+class pass_insert_endbranch : public rtl_opt_pass
+{
+public:
+  pass_insert_endbranch (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_insert_endbranch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return ((flag_cf_protection & CF_BRANCH) && TARGET_IBT);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_insert_endbranch ();
+    }
+
+}; // class pass_insert_endbranch
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_insert_endbranch (gcc::context *ctxt)
+{
+  return new pass_insert_endbranch (ctxt);
+}
+
 /* Return true if a red-zone is in use.  */
 
 bool
@@ -2600,7 +2745,9 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
-    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ }
+    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
+    { "-mibt",	OPTION_MASK_ISA_IBT },
+    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -4693,6 +4840,37 @@ ix86_option_override_internal (bool main_args_p,
     target_option_default_node = target_option_current_node
       = build_target_option_node (opts);
 
+  /* Do not support control flow instrumentation if CET is not enabled.  */
+  if (opts->x_flag_cf_protection != CF_NONE)
+    {
+      if (!(TARGET_IBT_P (opts->x_ix86_isa_flags2)
+	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags2)))
+	{
+	  if (flag_cf_protection == CF_FULL)
+	    {
+	      error ("%<-fcf-protection=full%> requires CET support "
+		     "on this target. Use -mcet or one of -mibt, "
+		     "-mshstk options to enable CET");
+	    }
+	  else if (flag_cf_protection == CF_BRANCH)
+	    {
+	      error ("%<-fcf-protection=branch%> requires CET support "
+		     "on this target. Use -mcet or one of -mibt, "
+		     "-mshstk options to enable CET");
+	    }
+	  else if (flag_cf_protection == CF_RETURN)
+	    {
+	      error ("%<-fcf-protection=return%> requires CET support "
+		     "on this target. Use -mcet or one of -mibt, "
+		     "-mshstk options to enable CET");
+	    }
+	  flag_cf_protection = CF_NONE;
+	  return false;
+	}
+      opts->x_flag_cf_protection =
+	(cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    }
+
   return true;
 }
 
@@ -5123,6 +5301,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
     IX86_ATTR_ISA ("rdpid",	OPT_mrdpid),
     IX86_ATTR_ISA ("gfni",	OPT_mgfni),
+    IX86_ATTR_ISA ("ibt",	OPT_mibt),
+    IX86_ATTR_ISA ("shstk",	OPT_mshstk),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -12512,10 +12692,13 @@ ix86_finalize_stack_frame_flags (void)
 	      for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
 		   ref; ref = next)
 		{
-		  rtx_insn *insn = DF_REF_INSN (ref);
+		  next = DF_REF_NEXT_REG (ref);
+		  if (!DF_REF_INSN_INFO (ref))
+		    continue;
+
 		  /* Make sure the next ref is for a different instruction,
 		     so that we're not affected by the rescan.  */
-		  next = DF_REF_NEXT_REG (ref);
+		  rtx_insn *insn = DF_REF_INSN (ref);
 		  while (next && DF_REF_INSN (next) == insn)
 		    next = DF_REF_NEXT_REG (next);
 
@@ -17617,6 +17800,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case '!':
 	  if (ix86_bnd_prefixed_insn_p (current_output_insn))
 	    fputs ("bnd ", file);
+	  if (ix86_notrack_prefixed_insn_p (current_output_insn))
+	    fputs ("notrack ", file);
 	  return;
 
 	default:
@@ -21500,14 +21685,35 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
    Return the appropriate mode to use.  */
 
 machine_mode
-ix86_fp_compare_mode (enum rtx_code)
+ix86_fp_compare_mode (enum rtx_code code)
 {
-  /* ??? In order to make all comparisons reversible, we do all comparisons
-     non-trapping when compiling for IEEE.  Once gcc is able to distinguish
-     all forms trapping and nontrapping comparisons, we can make inequality
-     comparisons trapping again, since it results in better code when using
-     FCOM based compares.  */
-  return TARGET_IEEE_FP ? CCFPUmode : CCFPmode;
+  if (!TARGET_IEEE_FP)
+    return CCFPmode;
+
+  switch (code)
+    {
+    case GT:
+    case GE:
+    case LT:
+    case LE:
+      return CCFPmode;
+
+    case EQ:
+    case NE:
+
+    case LTGT:
+    case UNORDERED:
+    case ORDERED:
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case UNEQ:
+      return CCFPUmode;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 machine_mode
@@ -22184,11 +22390,20 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	    {
 	      rtx (*cmp_insn) (rtx, rtx);
 	      rtx (*sbb_insn) (rtx, rtx, rtx);
+	      bool uns = (code == LTU || code == GEU);
 
 	      if (TARGET_64BIT)
-		cmp_insn = gen_cmpdi_1, sbb_insn = gen_subdi3_carry_ccgz;
+		{
+		  cmp_insn = gen_cmpdi_1;
+		  sbb_insn
+		    = uns ? gen_subdi3_carry_ccc : gen_subdi3_carry_ccgz;
+		}
 	      else
-		cmp_insn = gen_cmpsi_1, sbb_insn = gen_subsi3_carry_ccgz;
+		{
+		  cmp_insn = gen_cmpsi_1;
+		  sbb_insn
+		    = uns ? gen_subsi3_carry_ccc : gen_subsi3_carry_ccgz;
+		}
 
 	      if (!nonimmediate_operand (lo[0], submode))
 		lo[0] = force_reg (submode, lo[0]);
@@ -22197,13 +22412,14 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
 	      if (!register_operand (hi[0], submode))
 		hi[0] = force_reg (submode, hi[0]);
-	      if (!x86_64_general_operand (hi[1], submode))
+	      if ((uns && !nonimmediate_operand (hi[1], submode))
+		  || (!uns && !x86_64_general_operand (hi[1], submode)))
 		hi[1] = force_reg (submode, hi[1]);
 
 	      emit_insn (cmp_insn (lo[0], lo[1]));
 	      emit_insn (sbb_insn (gen_rtx_SCRATCH (submode), hi[0], hi[1]));
 
-	      tmp = gen_rtx_REG (CCGZmode, FLAGS_REG);
+	      tmp = gen_rtx_REG (uns ? CCCmode : CCGZmode, FLAGS_REG);
 
 	      ix86_expand_branch (code, tmp, const0_rtx, label);
 	      return;
@@ -29778,8 +29994,12 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_CONST_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN_MAX,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_FIRST,
 	       IX86_BUILTIN__BDESC_MULTI_ARG_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
+	       IX86_BUILTIN__BDESC_CET_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN_MAX,
+	       IX86_BUILTIN__BDESC_CET_NORMAL_LAST, 1);
 
 /* Set up all the MMX/SSE builtins, even builtins for instructions that are not
    in the current target ISA to allow the user to compile particular modules
@@ -30446,6 +30666,35 @@ ix86_init_mmx_sse_builtins (void)
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_LAST,
 		 IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
 		 ARRAY_SIZE (bdesc_multi_arg) - 1);
+
+  /* Add CET inrinsics.  */
+  for (i = 0, d = bdesc_cet; i < ARRAY_SIZE (bdesc_cet); i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_CET_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_LAST,
+		 IX86_BUILTIN__BDESC_CET_FIRST,
+		 ARRAY_SIZE (bdesc_cet) - 1);
+
+  for (i = 0, d = bdesc_cet_rdssp;
+       i < ARRAY_SIZE (bdesc_cet_rdssp);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_CET_NORMAL_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_LAST,
+		 IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
+		 ARRAY_SIZE (bdesc_cet_rdssp) - 1);
 }
 
 static void
@@ -36630,6 +36879,57 @@ rdseed_step:
       emit_insn (gen_xabort (op0));
       return 0;
 
+    case IX86_BUILTIN_RSTORSSP:
+    case IX86_BUILTIN_CLRSSBSY:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      icode = (fcode == IX86_BUILTIN_RSTORSSP
+	  ? CODE_FOR_rstorssp
+	  : CODE_FOR_clrssbsy);
+      if (!address_operand (op0, VOIDmode))
+	{
+	  op1 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op1);
+	}
+      emit_insn (GEN_FCN (icode) (gen_rtx_MEM (Pmode, op0)));
+      return 0;
+
+    case IX86_BUILTIN_WRSSD:
+    case IX86_BUILTIN_WRSSQ:
+    case IX86_BUILTIN_WRUSSD:
+    case IX86_BUILTIN_WRUSSQ:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op1 = expand_normal (arg1);
+      switch (fcode)
+	{
+	case IX86_BUILTIN_WRSSD:
+	  icode = CODE_FOR_wrsssi;
+	  mode = SImode;
+	  break;
+	case IX86_BUILTIN_WRSSQ:
+	  icode = CODE_FOR_wrssdi;
+	  mode = DImode;
+	  break;
+	case IX86_BUILTIN_WRUSSD:
+	  icode = CODE_FOR_wrusssi;
+	  mode = SImode;
+	  break;
+	case IX86_BUILTIN_WRUSSQ:
+	  icode = CODE_FOR_wrussdi;
+	  mode = DImode;
+	  break;
+	}
+      op0 = force_reg (mode, op0);
+      if (!address_operand (op1, VOIDmode))
+	{
+	  op2 = convert_memory_address (Pmode, op1);
+	  op1 = copy_addr_to_reg (op2);
+	}
+      emit_insn (GEN_FCN (icode) (op0, gen_rtx_MEM (mode, op1)));
+      return 0;
+
     default:
       break;
     }
@@ -36930,6 +37230,22 @@ s4fma_expand:
       return ix86_expand_multi_arg_builtin (d->icode, exp, target,
 					    (enum ix86_builtin_func_type)
 					    d->flag, d->comparison);
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_CET_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_CET_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_CET_FIRST;
+      return ix86_expand_special_args_builtin (bdesc_cet + i, exp,
+					       target);
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_CET_NORMAL_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_CET_NORMAL_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_CET_NORMAL_FIRST;
+      return ix86_expand_args_builtin (bdesc_cet_rdssp + i, exp,
+				       target);
     }
 
   gcc_unreachable ();
@@ -38321,6 +38637,28 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
   return true;
 }
 
+/* Return index of MODE in the sse load/store tables.  */
+
+static inline int
+sse_store_index (machine_mode mode)
+{
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    return 0;
+	  case 8:
+	    return 1;
+	  case 16:
+	    return 2;
+	  case 32:
+	    return 3;
+	  case 64:
+	    return 4;
+	  default:
+	    return -1;
+	}
+}
+
 /* Return the cost of moving data of mode M between a
    register and memory.  A value of 2 is the default; this cost is
    relative to those in `REGISTER_MOVE_COST'.
@@ -38364,21 +38702,9 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
     }
   if (SSE_CLASS_P (regclass))
     {
-      int index;
-      switch (GET_MODE_SIZE (mode))
-	{
-	  case 4:
-	    index = 0;
-	    break;
-	  case 8:
-	    index = 1;
-	    break;
-	  case 16:
-	    index = 2;
-	    break;
-	  default:
-	    return 100;
-	}
+      int index = sse_store_index (mode);
+      if (index == -1)
+	return 100;
       if (in == 2)
         return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
       return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
@@ -38481,8 +38807,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
       /* In case of copying from general_purpose_register we may emit multiple
          stores followed by single load causing memory size mismatch stall.
          Count this as arbitrarily high cost of 20.  */
-      if (targetm.class_max_nregs (class1, mode)
-	  > targetm.class_max_nregs (class2, mode))
+      if (GET_MODE_BITSIZE (mode) > BITS_PER_WORD
+	  && TARGET_MEMORY_MISMATCH_STALL
+	  && targetm.class_max_nregs (class1, mode)
+	     > targetm.class_max_nregs (class2, mode))
 	cost += 20;
 
       /* In the case of FP/MMX moves, the registers actually overlap, and we
@@ -38504,12 +38832,19 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        where integer modes in MMX/SSE registers are not tieable
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
-    return MAX (8, ix86_cost->mmxsse_to_integer);
+    return MAX (8, MMX_CLASS_P (class1) || MMX_CLASS_P (class2)
+		? ix86_cost->mmxsse_to_integer : ix86_cost->ssemmx_to_integer);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
-    return ix86_cost->sse_move;
+    {
+      if (GET_MODE_BITSIZE (mode) <= 128)
+	return ix86_cost->xmm_move;
+      if (GET_MODE_BITSIZE (mode) <= 256)
+	return ix86_cost->ymm_move;
+      return ix86_cost->zmm_move;
+    }
   if (MAYBE_MMX_CLASS_P (class1))
     return ix86_cost->mmx_move;
   return 2;
@@ -39824,6 +40159,10 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
     }
 
   emit_note (NOTE_INSN_PROLOGUE_END);
+
+  /* CET is enabled, insert EB instruction.  */
+  if ((flag_cf_protection & CF_BRANCH) && TARGET_IBT)
+    emit_insn (gen_nop_endbr ());
 
   /* If VCALL_OFFSET, we'll need THIS in a register.  Might as well
      pull it in now and let DELTA benefit.  */
@@ -44051,37 +44390,69 @@ static int
 ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
                                  tree vectype, int)
 {
+  bool fp = false;
+  machine_mode mode = TImode;
+  int index;
+  if (vectype != NULL)
+    {
+      fp = FLOAT_TYPE_P (vectype);
+      mode = TYPE_MODE (vectype);
+    }
+
   switch (type_of_cost)
     {
       case scalar_stmt:
-        return ix86_cost->scalar_stmt_cost;
+        return fp ? ix86_cost->addss : COSTS_N_INSNS (1);
 
       case scalar_load:
-        return ix86_cost->scalar_load_cost;
+	/* load/store costs are relative to register move which is 2. Recompute
+ 	   it to COSTS_N_INSNS so everything have same base.  */
+        return COSTS_N_INSNS (fp ? ix86_cost->sse_load[0]
+			      : ix86_cost->int_load [2]) / 2;
 
       case scalar_store:
-        return ix86_cost->scalar_store_cost;
+        return COSTS_N_INSNS (fp ? ix86_cost->sse_store[0]
+			      : ix86_cost->int_store [2]) / 2;
 
       case vector_stmt:
-        return ix86_cost->vec_stmt_cost;
+        return ix86_vec_cost (mode,
+			      fp ? ix86_cost->addss : ix86_cost->sse_op,
+			      true);
 
       case vector_load:
-        return ix86_cost->vec_align_load_cost;
+	index = sse_store_index (mode);
+	gcc_assert (index >= 0);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2,
+			      true);
 
       case vector_store:
-        return ix86_cost->vec_store_cost;
+	index = sse_store_index (mode);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2,
+			      true);
 
       case vec_to_scalar:
-        return ix86_cost->vec_to_scalar_cost;
-
       case scalar_to_vec:
-        return ix86_cost->scalar_to_vec_cost;
+        return ix86_vec_cost (mode, ix86_cost->sse_op, true);
 
+      /* We should have separate costs for unaligned loads and gather/scatter.
+	 Do that incrementally.  */
       case unaligned_load:
-      case unaligned_store:
       case vector_gather_load:
+	index = sse_store_index (mode);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->sse_unaligned_load[index]) / 2,
+			      true);
+
+      case unaligned_store:
       case vector_scatter_store:
-        return ix86_cost->vec_unalign_load_cost;
+	index = sse_store_index (mode);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->sse_unaligned_store[index]) / 2,
+			      true);
 
       case cond_branch_taken:
         return ix86_cost->cond_taken_branch_cost;
@@ -44091,10 +44462,11 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_perm:
       case vec_promote_demote:
-        return ix86_cost->vec_stmt_cost;
+        return ix86_vec_cost (mode,
+			      ix86_cost->sse_op, true);
 
       case vec_construct:
-	return ix86_cost->vec_stmt_cost * (TYPE_VECTOR_SUBPARTS (vectype) - 1);
+	return ix86_vec_cost (mode, ix86_cost->sse_op, false);
 
       default:
         gcc_unreachable ();
@@ -47641,6 +48013,46 @@ ix86_bnd_prefixed_insn_p (rtx insn)
 
   /* All other insns are prefixed only if function is instrumented.  */
   return chkp_function_instrumented_p (current_function_decl);
+}
+
+/* Return 1 if control tansfer instruction INSN
+   should be encoded with notrack prefix.  */
+
+static bool
+ix86_notrack_prefixed_insn_p (rtx insn)
+{
+  if (!insn || !((flag_cf_protection & CF_BRANCH) && TARGET_IBT))
+    return false;
+
+  if (CALL_P (insn))
+    {
+      rtx call = get_call_rtx_from (insn);
+      gcc_assert (call != NULL_RTX);
+      rtx addr = XEXP (call, 0);
+
+      /* Do not emit 'notrack' if it's not an indirect call.  */
+      if (MEM_P (addr)
+	  && GET_CODE (XEXP (addr, 0)) == SYMBOL_REF)
+	return false;
+      else
+	return find_reg_note (insn, REG_CALL_NOCF_CHECK, 0);
+    }
+
+  if (JUMP_P (insn) && !flag_cet_switch)
+    {
+      rtx target = JUMP_LABEL (insn);
+      if (target == NULL_RTX || ANY_RETURN_P (target))
+	return false;
+
+      /* Check the jump is a switch table.  */
+      rtx_insn *label = as_a<rtx_insn *> (target);
+      rtx_insn *table = next_insn (label);
+      if (table == NULL_RTX || !JUMP_TABLE_DATA_P (table))
+	return false;
+      else
+	return true;
+    }
+  return false;
 }
 
 /* Calculate integer abs() using only SSE2 instructions.  */

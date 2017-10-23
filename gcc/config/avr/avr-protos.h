@@ -84,7 +84,6 @@ extern void avr_expand_prologue (void);
 extern void avr_expand_epilogue (bool);
 extern bool avr_emit_movmemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
-extern int avr_starting_frame_offset (void);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);

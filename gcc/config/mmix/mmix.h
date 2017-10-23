@@ -437,9 +437,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET \
-  mmix_starting_frame_offset ()
-
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 #define DYNAMIC_CHAIN_ADDRESS(FRAMEADDR) \

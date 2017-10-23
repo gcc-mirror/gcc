@@ -1958,6 +1958,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT rs6000_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
 
 
 /* Processor table.  */
@@ -39496,6 +39499,16 @@ rs6000_constant_alignment (const_tree exp, HOST_WIDE_INT align)
       && (STRICT_ALIGNMENT || !optimize_size))
     return MAX (align, BITS_PER_WORD);
   return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+rs6000_starting_frame_offset (void)
+{
+  if (FRAME_GROWS_DOWNWARD)
+    return 0;
+  return RS6000_STARTING_FRAME_OFFSET;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

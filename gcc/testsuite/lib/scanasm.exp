@@ -484,16 +484,16 @@ proc dg-function-on-line { args } {
     }
 
     if { [istarget hppa*-*-*] } {
-	set pattern [format {\t;[^:]+:%d\n(\t[^\t]+\n)+%s:\n\t.PROC} \
+	set pattern [format {\t;[^:]+:%d(:[0-9]+)?\n(\t[^\t]+\n)+%s:\n\t.PROC} \
                      $line $symbol]
     } elseif { [istarget mips*-*-*] } {
-	set pattern [format {\t\.loc [0-9]+ %d 0( [^\n]*)?\n(\t.cfi_startproc[^\t]*\n)*\t\.set\t(no)?mips16\n\t(\.set\t(no)?micromips\n\t)?\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
+	set pattern [format {\t\.loc [0-9]+ %d [0-9]+( [^\n]*)?\n(\t.cfi_startproc[^\t]*\n)*\t\.set\t(no)?mips16\n\t(\.set\t(no)?micromips\n\t)?\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
 		     $line $symbol $symbol $symbol]
     } elseif { [istarget microblaze*-*-*] } {
-        set pattern [format {:%d\n\$.*:\n\t\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
+        set pattern [format {:%d(:[0-9]+)?\n\$.*:\n\t\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
                      $line $symbol $symbol $symbol]
     } else {
-	set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
+	set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d(:[0-9]+)?\n} \
                      $symbol $line]
     }
 

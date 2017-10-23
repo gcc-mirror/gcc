@@ -963,7 +963,7 @@ reload (rtx_insn *first, int global)
 	     then repeat the elimination bookkeeping.  We don't
 	     realign when there is no stack, as that will cause a
 	     stack frame when none is needed should
-	     STARTING_FRAME_OFFSET not be already aligned to
+	     TARGET_STARTING_FRAME_OFFSET not be already aligned to
 	     STACK_BOUNDARY.  */
 	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
 	}
@@ -2251,8 +2251,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 
       /* On a big endian machine, the "address" of the slot
 	 is the address of the low part that fits its inherent mode.  */
-      if (BYTES_BIG_ENDIAN && inherent_size < total_size)
-	adjust += (total_size - inherent_size);
+      adjust += subreg_size_lowpart_offset (inherent_size, total_size);
 
       /* If we have any adjustment to make, or if the stack slot is the
 	 wrong mode, make a new stack slot.  */

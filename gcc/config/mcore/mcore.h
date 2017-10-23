@@ -390,12 +390,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
-
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable
    `crtl->outgoing_args_size'.  No space will be pushed

@@ -149,7 +149,6 @@
 #define HAS_LONG_UNCOND_BRANCH		0
 
 #define MOVE_MAX 			2
-#define STARTING_FRAME_OFFSET		0
 
 #define ADDR_SPACE_NEAR			1
 #define ADDR_SPACE_FAR			2

@@ -30,7 +30,10 @@ if ENABLE_DUAL_ABI
 cxx11_abi_sources = \
 	cow-dir.cc \
 	cow-ops.cc \
-	cow-path.cc
+	cow-path.cc \
+	cow-std-dir.cc \
+	cow-std-ops.cc \
+	cow-std-path.cc
 else
 cxx11_abi_sources =
 endif
@@ -39,6 +42,9 @@ sources = \
 	dir.cc \
 	ops.cc \
 	path.cc \
+	std-dir.cc \
+	std-ops.cc \
+	std-path.cc \
 	${cxx11_abi_sources}
 
 # vpath % $(top_srcdir)/src/filesystem
@@ -52,7 +58,7 @@ libstdc__fs_la_SOURCES = $(sources)
 # as the occasion call for it.
 AM_CXXFLAGS = \
 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
-	-std=gnu++14 \
+	-std=gnu++17 \
 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
 
 AM_MAKEFLAGS = \

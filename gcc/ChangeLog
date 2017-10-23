@@ -1,3 +1,389 @@
+2017-10-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82673
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Skip
+	DF_REF_INSN if DF_REF_INSN_INFO is false.
+
+2017-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (dimode_scalar_chain::compute_convert_gain): Use
+	xmm_move instead of sse_move.
+	(sse_store_index): New function.
+	(ix86_register_move_cost): Be more sensible about mismatch stall;
+	model AVX moves correctly; make difference between sse->integer and
+	integer->sse.
+	(ix86_builtin_vectorization_cost): Model correctly aligned and unaligned
+	moves; make difference between SSE and AVX.
+	* i386.h (processor_costs): Remove sse_move; add xmm_move, ymm_move
+	and zmm_move. Increase size of sse load and store tables;
+	add unaligned load and store tables; add ssemmx_to_integer.
+	* x86-tune-costs.h: Update all entries according to real 
+	move latencies from Agner Fog's manual and chip documentation.
+
+2017-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82628
+	* config/i386/predicates.md (x86_64_dwzext_immediate_operand): New.
+	* config/i386/constraints.md (Wf): New constraint.
+	* config/i386/i386.md (UNSPEC_SBB): New unspec.
+	(cmp<dwi>_doubleword): Removed.
+	(sub<mode>3_carry_ccc, *sub<mode>3_carry_ccc_1): New patterns.
+	(sub<mode>3_carry_ccgz): Use unspec instead of compare.
+	* config/i386/i386.c (ix86_expand_branch) <case E_TImode>: Don't
+	expand with cmp<dwi>_doubleword.  For LTU and GEU use
+	sub<mode>3_carry_ccc instead of sub<mode>3_carry_ccgz and use CCCmode.
+
+	* common.opt (gcolumn-info): Enable by default.
+	* doc/invoke.texi (gcolumn-info): Document new default.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82672
+	* graphite-isl-ast-to-gimple.c (graphite_copy_stmts_from_block):
+	Fold the stmt if we propagated into it.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (bitmap_remove_from_set): Rename to...
+	(bitmap_remove_expr_from_set): ... this.  All callers call this
+	for non-constant values.
+	(bitmap_set_subtract): Rename to...
+	(bitmap_set_subtract_expressions): ... this.  Adjust and
+	optimize.
+	(bitmap_set_contains_value): Remove superfluous check.
+	(bitmap_set_replace_value): Inline into single caller ...
+	(bitmap_value_replace_in_set): ... here and simplify.
+	(dependent_clean): Merge into ...
+	(clean): ... this using an overload.  Adjust.
+	(prune_clobbered_mems): Adjust.
+	(compute_antic_aux): Likewise.
+	(compute_partial_antic_aux): Likewise.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82129
+	Revert
+	2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81181
+	* tree-ssa-pre.c (compute_antic_aux): Defer clean() to ...
+	(compute_antic): ... end of iteration here.
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (starting_frame_offset): New hook.
+	* doc/tm.texi (STARTING_FRAME_OFFSET): Remove in favor of...
+	(TARGET_STARTING_FRAME_OFFSET): ...this new hook.
+	* doc/tm.texi.in: Regenerate.
+	* hooks.h (hook_hwi_void_0): Declare.
+	* hooks.c (hook_hwi_void_0): New function.
+	* doc/rtl.texi: Refer to TARGET_STARTING_FRAME_OFFSET instead of
+	STARTING_FRAME_OFFSET.
+	* builtins.c (expand_builtin_setjmp_receiver): Likewise.
+	* reload1.c (reload): Likewise.
+	* cfgexpand.c (expand_used_vars): Use targetm.starting_frame_offset
+	instead of STARTING_FRAME_OFFSET.
+	* function.c (try_fit_stack_local): Likewise.
+	(assign_stack_local_1): Likewise
+	(instantiate_virtual_regs): Likewise.
+	* rtlanal.c (rtx_addr_can_trap_p_1): Likewise.
+	* config/avr/avr.md (nonlocal_goto_receiver): Likewise.
+	* config/aarch64/aarch64.h (STARTING_FRAME_OFFSET): Delete.
+	* config/alpha/alpha.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/arc/arc.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/arm/arm.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/bfin/bfin.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/c6x/c6x.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/cr16/cr16.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/cris/cris.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/fr30/fr30.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/frv/frv.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/ft32/ft32.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/h8300/h8300.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/i386/i386.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/ia64/ia64.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/m32c/m32c.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/m68k/m68k.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/mcore/mcore.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/mn10300/mn10300.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/moxie/moxie.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/msp430/msp430.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/nds32/nds32.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/nios2/nios2.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/nvptx/nvptx.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/pdp11/pdp11.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/riscv/riscv.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/rl78/rl78.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/rx/rx.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/s390/s390.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/sh/sh.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/sparc/sparc.c (sparc_compute_frame_size): Likewise.
+	* config/sparc/sparc.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/spu/spu.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/stormy16/stormy16.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/tilegx/tilegx.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/tilepro/tilepro.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/v850/v850.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/visium/visium.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/avr/avr.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/avr/avr-protos.h (avr_starting_frame_offset): Likewise.
+	* config/avr/avr.c (avr_starting_frame_offset): Make static and
+	return a HOST_WIDE_INT.
+	(avr_builtin_setjmp_frame_value): Use it instead of
+	STARTING_FRAME_OFFSET.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/epiphany/epiphany.h (STARTING_FRAME_OFFSET): Delete.
+	* config/epiphany/epiphany.c (epiphany_starting_frame_offset):
+	New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/iq2000/iq2000.h (STARTING_FRAME_OFFSET): Delete.
+	* config/iq2000/iq2000.c (iq2000_starting_frame_offset): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/lm32/lm32.h (STARTING_FRAME_OFFSET): Delete.
+	* config/lm32/lm32.c (lm32_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/m32r/m32r.h (STARTING_FRAME_OFFSET): Delete.
+	* config/m32r/m32r.c (m32r_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/microblaze/microblaze.h (STARTING_FRAME_OFFSET): Delete.
+	* config/microblaze/microblaze.c (microblaze_starting_frame_offset):
+	New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/mips/mips.h (STARTING_FRAME_OFFSET): Delete.
+	* config/mips/mips.c (mips_compute_frame_info): Refer to
+	TARGET_STARTING_FRAME_OFFSET instead of STARTING_FRAME_OFFSET.
+	(mips_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/mmix/mmix.h (STARTING_FRAME_OFFSET): Delete.
+	* config/mmix/mmix-protos.h (mmix_starting_frame_offset): Delete.
+	* config/mmix/mmix.c (mmix_starting_frame_offset): Make static
+	and return a HOST_WIDE_INT.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	(mmix_initial_elimination_offset): Refer to
+	TARGET_STARTING_FRAME_OFFSET instead of STARTING_FRAME_OFFSET.
+	* config/pa/pa.h (STARTING_FRAME_OFFSET): Delete.
+	* config/pa/pa.c (pa_starting_frame_offset): New function.
+	(pa_compute_frame_size): Use it instead of STARTING_FRAME_OFFSET.
+	(pa_expand_prologue): Likewise.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/powerpcspe/aix.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/powerpcspe/darwin.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/powerpcspe/powerpcspe.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/powerpcspe/powerpcspe.c (TARGET_STARTING_FRAME_OFFSET):
+	Redefine.
+	(rs6000_starting_frame_offset): New function.
+	* config/rs6000/aix.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/rs6000/darwin.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/rs6000/rs6000.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/rs6000/rs6000.c (TARGET_STARTING_FRAME_OFFSET): Refine.
+	(rs6000_starting_frame_offset): New function.
+	* config/vax/elf.h (STARTING_FRAME_OFFSET): Delete.
+	* config/vax/vax.h (STARTING_FRAME_OFFSET): Delete.
+	* config/vax/vax.c (vax_starting_frame_offset): New function.
+	(vax_expand_prologue): Use it instead of STARTING_FRAME_OFFSET.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/xtensa/xtensa.h (STARTING_FRAME_OFFSET): Delete.
+	* config/xtensa/xtensa.c (xtensa_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* system.h (STARTING_FRAME_OFFSET): Poison.
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	SCALAR_TYPE_MODE instead of TYPE_MODE.
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dwarf2out.c (loc_list_from_tree_1): Use SCALAR_INT_TYPE_MODE
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expmed.c (expand_shift_1): Use scalar_mode for scalar_mode.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82129
+	* tree-ssa-pre.c (bitmap_set_and): Remove.
+	(compute_antic_aux): Compute ANTIC_OUT intersection in a way
+	canonicalizing expressions in the set to those with lowest
+	ID rather than taking that from the first edge.
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* combine.c (rtx_equal_for_field_assignment_p): Use
+	byte_lowpart_offset.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* internal-fn.c (expand_direct_optab_fn): Don't assign directly
+	to a SUBREG_PROMOTED_VAR.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cfgexpand.c (expand_debug_expr): Use GET_MODE_UNIT_PRECISION.
+	(expand_debug_source_expr): Likewise.
+	* combine.c (combine_simplify_rtx): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* optabs.c (expand_float): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_binary_operation_1): Likewise.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (simplify_comparison): Use HWI_COMPUTABLE_MODE_P.
+	(record_promoted_value): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	* ree.c (update_reg_equal_equiv_notes): Likewise.
+	(combine_set_extension): Likewise.
+	* rtlanal.c (low_bitmask_len): Likewise.
+	* simplify-rtx.c (neg_const_int): Likewise.
+	(simplify_binary_operation_1): Likewise.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lra-spills.c (assign_mem_slot): Use subreg_size_lowpart_offset.
+	* regcprop.c (maybe_mode_change): Likewise.
+	* reload1.c (alter_reg): Likewise.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* inchash.h (inchash::hash::add_wide_int): New function.
+	* lto-streamer-out.c (hash_tree): Use it.
+
+2017-10-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* inchash.h (inchash::hash::add_wide_int): Rename to...
+	(inchash::hash::add_hwi): ...this.
+	* ipa-devirt.c (hash_odr_vtable): Update accordingly.
+	(polymorphic_call_target_hasher::hash): Likewise.
+	* ipa-icf.c (sem_function::get_hash, sem_function::init): Likewise.
+	(sem_item::add_expr, sem_item::add_type, sem_variable::get_hash)
+	(sem_item_optimizer::update_hash_by_addr_refs): Likewise.
+	* lto-streamer-out.c (hash_tree): Likewise.
+	* optc-save-gen.awk: Likewise.
+	* tree.c (add_expr): Likewise.
+
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52451
+	* config/i386/i386.c (ix86_fp_compare_mode): Return CCFPmode
+	for ordered inequality comparisons even with TARGET_IEEE_FP.
+
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82628
+	* config/i386/i386.md (cmp<dwi>_doubleword): New pattern.
+	* config/i386/i386.c (ix86_expand_branch) <case E_TImode>:
+	Expand with cmp<dwi>_doubleword.
+
+2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* extend.texi: Add x86 specific to 'nocf_check' attribute.
+	List CET intrinsics.
+	* invoke.texi: Add -mcet, -mibt, -mshstk options.  Add x86
+	specific to -fcf-protection option.
+
+2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_IBT_SET): New.
+	(OPTION_MASK_ISA_SHSTK_SET): Likewise.
+	(OPTION_MASK_ISA_IBT_UNSET): Likewise.
+	(OPTION_MASK_ISA_SHSTK_UNSET): Likewise.
+	(ix86_handle_option): Add -mibt, -mshstk, -mcet handling.
+	* config.gcc (extra_headers): Add cetintrin.h for x86 targets.
+	(extra_objs): Add cet.o for Linux/x86 targets.
+	(tmake_file): Add i386/t-cet for Linux/x86 targets.
+	* config/i386/cet.c: New file.
+	* config/i386/cetintrin.h: Likewise.
+	* config/i386/t-cet: Likewise.
+	* config/i386/cpuid.h (bit_SHSTK): New.
+	(bit_IBT): Likewise.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect and
+	pass IBT and SHSTK bits.
+	* config/i386/i386-builtin-types.def
+	(VOID_FTYPE_UNSIGNED_PVOID): New.
+	(VOID_FTYPE_UINT64_PVOID): Likewise.
+	* config/i386/i386-builtin.def: Add CET intrinsics.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	OPTION_MASK_ISA_IBT, OPTION_MASK_ISA_SHSTK handling.
+	* config/i386/i386-passes.def: Add pass_insert_endbranch pass.
+	* config/i386/i386-protos.h (make_pass_insert_endbranch): New
+	prototype.
+	* config/i386/i386.c (rest_of_insert_endbranch): New.
+	(pass_data_insert_endbranch): Likewise.
+	(pass_insert_endbranch): Likewise.
+	(make_pass_insert_endbranch): Likewise.
+	(ix86_notrack_prefixed_insn_p): Likewise.
+	(ix86_target_string): Add -mibt, -mshstk flags.
+	(ix86_option_override_internal): Add flag_cf_protection
+	processing.
+	(ix86_valid_target_attribute_inner_p): Set OPT_mibt, OPT_mshstk.
+	(ix86_print_operand): Add 'notrack' prefix output.
+	(ix86_init_mmx_sse_builtins): Add CET intrinsics.
+	(ix86_expand_builtin): Expand CET intrinsics.
+	(x86_output_mi_thunk): Add 'endbranch' instruction.
+	* config/i386/i386.h (TARGET_IBT): New.
+	(TARGET_IBT_P): Likewise.
+	(TARGET_SHSTK): Likewise.
+	(TARGET_SHSTK_P): Likewise.
+	* config/i386/i386.md (unspecv): Add UNSPECV_NOP_RDSSP,
+	UNSPECV_INCSSP, UNSPECV_SAVEPREVSSP, UNSPECV_RSTORSSP,
+	UNSPECV_WRSS, UNSPECV_WRUSS, UNSPECV_SETSSBSY, UNSPECV_CLRSSBSY.
+	(builtin_setjmp_setup): New pattern.
+	(builtin_longjmp): Likewise.
+	(rdssp<mode>): Likewise.
+	(incssp<mode>): Likewise.
+	(saveprevssp): Likewise.
+	(rstorssp): Likewise.
+	(wrss<mode>): Likewise.
+	(wruss<mode>): Likewise.
+	(setssbsy): Likewise.
+	(clrssbsy): Likewise.
+	(nop_endbr): Likewise.
+	* config/i386/i386.opt: Add -mcet, -mibt, -mshstk and -mcet-switch
+	options.
+	* config/i386/immintrin.h: Include <cetintrin.h>.
+	* config/i386/linux-common.h
+	(file_end_indicate_exec_stack_and_cet): New prototype.
+	(TARGET_ASM_FILE_END): New.
+
+2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (ix86_builtin_vectorization_cost): Use existing rtx_cost
+	latencies instead of having separate table; make difference between
+	integer and float costs.
+	* i386.h (processor_costs): Remove scalar_stmt_cost,
+	scalar_load_cost, scalar_store_cost, vec_stmt_cost, vec_to_scalar_cost,
+	scalar_to_vec_cost, vec_align_load_cost, vec_unalign_load_cost,
+	vec_store_cost.
+	* x86-tune-costs.h: Remove entries which has been removed in
+	procesor_costs from all tables; make cond_taken_branch_cost
+	and cond_not_taken_branch_cost COST_N_INSNS based.
+
 2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune-costs.h (intel_cost, generic_cost): Fix move costs.
@@ -87,7 +473,7 @@
 
 2017-10-20  Nicolas Roche  <roche@adacore.com>
 
-	* configure.ac (ACX_PROG_GNAT): Append "libgnat" to the include dir.
+	* configure.ac (ACX_PROG_GNAT): Append "libgnat" to include search dir.
 	* configure: Regenerate.
 
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>

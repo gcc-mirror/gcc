@@ -537,7 +537,6 @@ static pre_expr bitmap_find_leader (bitmap_set_t, unsigned int);
 static void bitmap_value_insert_into_set (bitmap_set_t, pre_expr);
 static void bitmap_value_replace_in_set (bitmap_set_t, pre_expr);
 static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
-static void bitmap_set_and (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
 static bitmap_set_t bitmap_set_new (void);
@@ -720,14 +719,11 @@ sccvn_valnum_from_value_id (unsigned int val)
 /* Remove an expression EXPR from a bitmapped set.  */
 
 static void
-bitmap_remove_from_set (bitmap_set_t set, pre_expr expr)
+bitmap_remove_expr_from_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val  = get_expr_value_id (expr);
-  if (!value_id_constant_p (val))
-    {
-      bitmap_clear_bit (&set->values, val);
-      bitmap_clear_bit (&set->expressions, get_expression_id (expr));
-    }
+  bitmap_clear_bit (&set->values, val);
+  bitmap_clear_bit (&set->expressions, get_expression_id (expr));
 }
 
 /* Insert an expression EXPR into a bitmapped set.  */
@@ -800,40 +796,10 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
   return result;
 }
 
-/* Perform bitmapped set operation DEST &= ORIG.  */
-
-static void
-bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
-{
-  bitmap_iterator bi;
-  unsigned int i;
-
-  if (dest != orig)
-    {
-      bitmap_and_into (&dest->values, &orig->values);
-
-      unsigned int to_clear = -1U;
-      FOR_EACH_EXPR_ID_IN_SET (dest, i, bi)
-	{
-	  if (to_clear != -1U)
-	    {
-	      bitmap_clear_bit (&dest->expressions, to_clear);
-	      to_clear = -1U;
-	    }
-	  pre_expr expr = expression_for_id (i);
-	  unsigned int value_id = get_expr_value_id (expr);
-	  if (!bitmap_bit_p (&dest->values, value_id))
-	    to_clear = i;
-	}
-      if (to_clear != -1U)
-	bitmap_clear_bit (&dest->expressions, to_clear);
-    }
-}
-
 /* Subtract all expressions contained in ORIG from DEST.  */
 
 static bitmap_set_t
-bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
+bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig)
 {
   bitmap_set_t result = bitmap_set_new ();
   bitmap_iterator bi;
@@ -864,15 +830,15 @@ bitmap_set_subtract_values (bitmap_set_t a, bitmap_set_t b)
     {
       if (to_remove)
 	{
-	  bitmap_remove_from_set (a, to_remove);
+	  bitmap_remove_expr_from_set (a, to_remove);
 	  to_remove = NULL;
 	}
       pre_expr expr = expression_for_id (i);
-      if (bitmap_set_contains_value (b, get_expr_value_id (expr)))
+      if (bitmap_bit_p (&b->values, get_expr_value_id (expr)))
 	to_remove = expr;
     }
   if (to_remove)
-    bitmap_remove_from_set (a, to_remove);
+    bitmap_remove_expr_from_set (a, to_remove);
 }
 
 
@@ -884,9 +850,6 @@ bitmap_set_contains_value (bitmap_set_t set, unsigned int value_id)
   if (value_id_constant_p (value_id))
     return true;
 
-  if (!set || bitmap_empty_p (&set->expressions))
-    return false;
-
   return bitmap_bit_p (&set->values, value_id);
 }
 
@@ -894,44 +857,6 @@ static inline bool
 bitmap_set_contains_expr (bitmap_set_t set, const pre_expr expr)
 {
   return bitmap_bit_p (&set->expressions, get_expression_id (expr));
-}
-
-/* Replace an instance of value LOOKFOR with expression EXPR in SET.  */
-
-static void
-bitmap_set_replace_value (bitmap_set_t set, unsigned int lookfor,
-			  const pre_expr expr)
-{
-  bitmap exprset;
-  unsigned int i;
-  bitmap_iterator bi;
-
-  if (value_id_constant_p (lookfor))
-    return;
-
-  if (!bitmap_set_contains_value (set, lookfor))
-    return;
-
-  /* The number of expressions having a given value is usually
-     significantly less than the total number of expressions in SET.
-     Thus, rather than check, for each expression in SET, whether it
-     has the value LOOKFOR, we walk the reverse mapping that tells us
-     what expressions have a given value, and see if any of those
-     expressions are in our set.  For large testcases, this is about
-     5-10x faster than walking the bitmap.  If this is somehow a
-     significant lose for some cases, we can choose which set to walk
-     based on the set size.  */
-  exprset = value_expressions[lookfor];
-  EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
-    {
-      if (bitmap_clear_bit (&set->expressions, i))
-	{
-	  bitmap_set_bit (&set->expressions, get_expression_id (expr));
-	  return;
-	}
-    }
-
-  gcc_unreachable ();
 }
 
 /* Return true if two bitmap sets are equal.  */
@@ -949,9 +874,33 @@ static void
 bitmap_value_replace_in_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
+  if (value_id_constant_p (val))
+    return;
 
   if (bitmap_set_contains_value (set, val))
-    bitmap_set_replace_value (set, val, expr);
+    {
+      /* The number of expressions having a given value is usually
+	 significantly less than the total number of expressions in SET.
+	 Thus, rather than check, for each expression in SET, whether it
+	 has the value LOOKFOR, we walk the reverse mapping that tells us
+	 what expressions have a given value, and see if any of those
+	 expressions are in our set.  For large testcases, this is about
+	 5-10x faster than walking the bitmap.  If this is somehow a
+	 significant lose for some cases, we can choose which set to walk
+	 based on the set size.  */
+      unsigned int i;
+      bitmap_iterator bi;
+      bitmap exprset = value_expressions[val];
+      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
+	{
+	  if (bitmap_clear_bit (&set->expressions, i))
+	    {
+	      bitmap_set_bit (&set->expressions, get_expression_id (expr));
+	      return;
+	    }
+	}
+      gcc_unreachable ();
+    }
   else
     bitmap_insert_into_set (set, expr);
 }
@@ -2010,14 +1959,12 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr)
     }
 }
 
-/* Clean the set of expressions that are no longer valid in SET1 or
-   SET2.  This means expressions that are made up of values we have no
-   leaders for in SET1 or SET2.  This version is used for partial
-   anticipation, which means it is not valid in either ANTIC_IN or
-   PA_IN.  */
+/* Clean the set of expressions SET1 that are no longer valid in SET1 or SET2.
+   This means expressions that are made up of values we have no leaders for
+   in SET1 or SET2.  */
 
 static void
-dependent_clean (bitmap_set_t set1, bitmap_set_t set2)
+clean (bitmap_set_t set1, bitmap_set_t set2 = NULL)
 {
   vec<pre_expr> exprs = sorted_array_from_bitmap_set (set1);
   pre_expr expr;
@@ -2026,26 +1973,7 @@ dependent_clean (bitmap_set_t set1, bitmap_set_t set2)
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
       if (!valid_in_sets (set1, set2, expr))
-	bitmap_remove_from_set (set1, expr);
-    }
-  exprs.release ();
-}
-
-/* Clean the set of expressions that are no longer valid in SET.  This
-   means expressions that are made up of values we have no leaders for
-   in SET.  */
-
-static void
-clean (bitmap_set_t set)
-{
-  vec<pre_expr> exprs = sorted_array_from_bitmap_set (set);
-  pre_expr expr;
-  int i;
-
-  FOR_EACH_VEC_ELT (exprs, i, expr)
-    {
-      if (!valid_in_sets (set, NULL, expr))
-	bitmap_remove_from_set (set, expr);
+	bitmap_remove_expr_from_set (set1, expr);
     }
   exprs.release ();
 }
@@ -2065,7 +1993,7 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
       /* Remove queued expr.  */
       if (to_remove)
 	{
-	  bitmap_remove_from_set (set, to_remove);
+	  bitmap_remove_expr_from_set (set, to_remove);
 	  to_remove = NULL;
 	}
 
@@ -2100,7 +2028,7 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 
   /* Remove queued expr.  */
   if (to_remove)
-    bitmap_remove_from_set (set, to_remove);
+    bitmap_remove_expr_from_set (set, to_remove);
 }
 
 static sbitmap has_abnormal_preds;
@@ -2113,8 +2041,7 @@ static sbitmap has_abnormal_preds;
      ANTIC_OUT[BLOCK] = phi_translate (ANTIC_IN[succ(BLOCK)])
 
    ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] - TMP_GEN[BLOCK])
-
-   Note that clean() is deferred until after the iteration.  */
+*/
 
 static bool
 compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
@@ -2182,17 +2109,54 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
       phi_translate_set (ANTIC_OUT, ANTIC_IN (first), block, first);
 
+      /* If we have multiple successors we need to intersect the ANTIC_OUT
+         sets.  For values that's a simple intersection but for
+	 expressions it is a union.  Given we want to have a single
+	 expression per value in our sets we have to canonicalize.
+	 Avoid randomness and running into cycles like for PR82129 and
+	 canonicalize the expression we choose to the one with the
+	 lowest id.  This requires we actually compute the union first.  */
       FOR_EACH_VEC_ELT (worklist, i, bprime)
 	{
 	  if (!gimple_seq_empty_p (phi_nodes (bprime)))
 	    {
 	      bitmap_set_t tmp = bitmap_set_new ();
 	      phi_translate_set (tmp, ANTIC_IN (bprime), block, bprime);
-	      bitmap_set_and (ANTIC_OUT, tmp);
+	      bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
+	      bitmap_ior_into (&ANTIC_OUT->expressions, &tmp->expressions);
 	      bitmap_set_free (tmp);
 	    }
 	  else
-	    bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
+	    {
+	      bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (bprime)->values);
+	      bitmap_ior_into (&ANTIC_OUT->expressions,
+			       &ANTIC_IN (bprime)->expressions);
+	    }
+	}
+      if (! worklist.is_empty ())
+	{
+	  /* Prune expressions not in the value set, canonicalizing to
+	     expression with lowest ID.  */
+	  bitmap_iterator bi;
+	  unsigned int i;
+	  unsigned int to_clear = -1U;
+	  bitmap seen_value = BITMAP_ALLOC (NULL);
+	  FOR_EACH_EXPR_ID_IN_SET (ANTIC_OUT, i, bi)
+	    {
+	      if (to_clear != -1U)
+		{
+		  bitmap_clear_bit (&ANTIC_OUT->expressions, to_clear);
+		  to_clear = -1U;
+		}
+	      pre_expr expr = expression_for_id (i);
+	      unsigned int value_id = get_expr_value_id (expr);
+	      if (!bitmap_bit_p (&ANTIC_OUT->values, value_id)
+		  || !bitmap_set_bit (seen_value, value_id))
+		to_clear = i;
+	    }
+	  if (to_clear != -1U)
+	    bitmap_clear_bit (&ANTIC_OUT->expressions, to_clear);
+	  BITMAP_FREE (seen_value);
 	}
     }
 
@@ -2201,11 +2165,11 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   prune_clobbered_mems (ANTIC_OUT, block);
 
   /* Generate ANTIC_OUT - TMP_GEN.  */
-  S = bitmap_set_subtract (ANTIC_OUT, TMP_GEN (block));
+  S = bitmap_set_subtract_expressions (ANTIC_OUT, TMP_GEN (block));
 
   /* Start ANTIC_IN with EXP_GEN - TMP_GEN.  */
-  ANTIC_IN (block) = bitmap_set_subtract (EXP_GEN (block),
-					  TMP_GEN (block));
+  ANTIC_IN (block) = bitmap_set_subtract_expressions (EXP_GEN (block),
+						      TMP_GEN (block));
 
   /* Then union in the ANTIC_OUT - TMP_GEN values,
      to get ANTIC_OUT U EXP_GEN - TMP_GEN */
@@ -2213,8 +2177,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     bitmap_value_insert_into_set (ANTIC_IN (block),
 				  expression_for_id (bii));
 
-  /* clean (ANTIC_IN (block)) is defered to after the iteration converged
-     because it can cause non-convergence, see for example PR81181.  */
+  clean (ANTIC_IN (block));
 
   if (!bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
@@ -2250,8 +2213,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
    else if succs(BLOCK) == 1 then
      PA_OUT[BLOCK] = phi_translate (PA_IN[succ(BLOCK)])
 
-   PA_IN[BLOCK] = dependent_clean(PA_OUT[BLOCK] - TMP_GEN[BLOCK]
-				  - ANTIC_IN[BLOCK])
+   PA_IN[BLOCK] = clean(PA_OUT[BLOCK] - TMP_GEN[BLOCK] - ANTIC_IN[BLOCK])
 
 */
 static void
@@ -2344,7 +2306,7 @@ compute_partial_antic_aux (basic_block block,
 
   /* PA_IN starts with PA_OUT - TMP_GEN.
      Then we subtract things from ANTIC_IN.  */
-  PA_IN (block) = bitmap_set_subtract (PA_OUT, TMP_GEN (block));
+  PA_IN (block) = bitmap_set_subtract_expressions (PA_OUT, TMP_GEN (block));
 
   /* For partial antic, we want to put back in the phi results, since
      we will properly avoid making them partially antic over backedges.  */
@@ -2354,7 +2316,7 @@ compute_partial_antic_aux (basic_block block,
   /* PA_IN[block] = PA_IN[block] - ANTIC_IN[block] */
   bitmap_set_subtract_values (PA_IN (block), ANTIC_IN (block));
 
-  dependent_clean (PA_IN (block), ANTIC_IN (block));
+  clean (PA_IN (block), ANTIC_IN (block));
 
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2446,12 +2408,6 @@ compute_antic (void)
       /* Theoretically possible, but *highly* unlikely.  */
       gcc_checking_assert (num_iterations < 500);
     }
-
-  /* We have to clean after the dataflow problem converged as cleaning
-     can cause non-convergence because it is based on expressions
-     rather than values.  */
-  FOR_EACH_BB_FN (block, cfun)
-    clean (ANTIC_IN (block));
 
   statistics_histogram_event (cfun, "compute_antic iterations",
 			      num_iterations);

@@ -1,7 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-gnatws" }
 
-package Discr_Private is
+package Discr2 is
 
    package Dec is
       type T_DECIMAL (Prec : Integer := 1) is private;
@@ -47,4 +47,4 @@ package Discr_Private is
        end case;
    end record;
 
-end Discr_Private;
+end Discr2;

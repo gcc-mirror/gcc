@@ -1,3 +1,8 @@
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* brig-lang.c (brig_langhook_type_for_mode): Use scalar_int_mode
+	and scalar_float_mode.
+
 2017-10-09  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brigfrontend/brig-to-generic.cc: Support BRIG_KIND_NONE

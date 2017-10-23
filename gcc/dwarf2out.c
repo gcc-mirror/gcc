@@ -17482,7 +17482,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
 		    || POINTER_TYPE_P (TREE_TYPE (loc)))
 		&& DECL_CONTEXT (loc) == current_function_decl
-		&& (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (loc)))
+		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (loc)))
 		    <= DWARF2_ADDR_SIZE))
 	      {
 		dw_die_ref ref = lookup_decl_die (loc);

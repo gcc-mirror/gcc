@@ -2606,7 +2606,15 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
   tree lhs = gimple_call_lhs (stmt);
   tree lhs_type = TREE_TYPE (lhs);
   rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], lhs_rtx, insn_data[icode].operand[0].mode);
+
+  /* Do not assign directly to a promoted subreg, since there is no
+     guarantee that the instruction will leave the upper bits of the
+     register in the state required by SUBREG_PROMOTED_SIGN.  */
+  rtx dest = lhs_rtx;
+  if (GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+    dest = NULL_RTX;
+
+  create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
 
   for (unsigned int i = 0; i < nargs; ++i)
     {

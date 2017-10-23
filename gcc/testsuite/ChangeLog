@@ -1,3 +1,127 @@
+2017-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82681
+	* gcc.dg/c90-const-expr-11.c: Fix typos in dg-warning.
+	* gcc.dg/overflow-warn-5.c: Likewise.
+	* gcc.dg/overflow-warn-8.c: Likewise.
+
+2017-10-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82673
+	* gcc.target/i386/pr82673.c: New test.
+
+2017-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/scanasm.exp (dg-function-on-line): Accept optional column info.
+	* gcc.dg/debug/dwarf2/pr53948.c: Likewise.
+	* g++.dg/debug/dwarf2/pr77363.C: Likewise.
+	* gcc.dg/debug/dwarf2/asm-line1.c: Add -gno-column-info to dg-options.
+	* gcc.dg/debug/dwarf2/discriminator.c: Likewise.
+	* g++.dg/debug/dwarf2/typedef6.C: Likewise.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82672
+	* gfortran.dg/graphite/pr82672.f90: New testcase.
+
+2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/77555
+	* g++.dg/torture/pr77555.C: New.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82129
+	* gcc.dg/torture/pr82129.c: New testcase.
+
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52451
+	* gcc.dg/torture/pr52451.c: New test.
+
+2017-10-22  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82628
+	* gcc.dg/torture/pr82628.c: New test.
+
+2017-10-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* c-c++-common/attr-nocf-check-1a.c: Remove test.
+	* c-c++-common/attr-nocf-check-3a.c: Likewise.
+	* gcc.target/i386/attr-nocf-check-1a.c: Add test.
+	* gcc.target/i386/attr-nocf-check-3a.c: Likewise.
+
+2017-10-21  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* c-c++-common/attr-nocf-check-1.c: Shorten a cheking message.
+	* c-c++-common/attr-nocf-check-3.c: Likewise.
+	* c-c++-common/fcf-protection-1.c: Add x86 specific message.
+	* c-c++-common/fcf-protection-2.c: Likewise.
+	* c-c++-common/fcf-protection-3.c: Likewise.
+	* c-c++-common/fcf-protection-5.c: Likewise.
+	* c-c++-common/attr-nocf-check-1a.c: New test.
+	* c-c++-common/attr-nocf-check-3a.c: Likewise.
+	* g++.dg/cet-notrack-1.C: Likewise.
+	* gcc.target/i386/cet-intrin-1.c: Likewise.
+	* gcc.target/i386/cet-intrin-10.c: Likewise.
+	* gcc.target/i386/cet-intrin-2.c: Likewise.
+	* gcc.target/i386/cet-intrin-3.c: Likewise.
+	* gcc.target/i386/cet-intrin-4.c: Likewise.
+	* gcc.target/i386/cet-intrin-5.c: Likewise.
+	* gcc.target/i386/cet-intrin-6.c: Likewise.
+	* gcc.target/i386/cet-intrin-7.c: Likewise.
+	* gcc.target/i386/cet-intrin-8.c: Likewise.
+	* gcc.target/i386/cet-intrin-9.c: Likewise.
+	* gcc.target/i386/cet-label.c: Likewise.
+	* gcc.target/i386/cet-notrack-1a.c: Likewise.
+	* gcc.target/i386/cet-notrack-1b.c: Likewise.
+	* gcc.target/i386/cet-notrack-2a.c: Likewise.
+	* gcc.target/i386/cet-notrack-2b.c: Likewise.
+	* gcc.target/i386/cet-notrack-3.c: Likewise.
+	* gcc.target/i386/cet-notrack-4a.c: Likewise.
+	* gcc.target/i386/cet-notrack-4b.c: Likewise.
+	* gcc.target/i386/cet-notrack-5a.c: Likewise.
+	* gcc.target/i386/cet-notrack-5b.c: Likewise.
+	* gcc.target/i386/cet-notrack-6a.c: Likewise.
+	* gcc.target/i386/cet-notrack-6b.c: Likewise.
+	* gcc.target/i386/cet-notrack-7.c: Likewise.
+	* gcc.target/i386/cet-property-1.c: Likewise.
+	* gcc.target/i386/cet-property-2.c: Likewise.
+	* gcc.target/i386/cet-rdssp-1.c: Likewise.
+	* gcc.target/i386/cet-sjlj-1.c: Likewise.
+	* gcc.target/i386/cet-sjlj-2.c: Likewise.
+	* gcc.target/i386/cet-sjlj-3.c: Likewise.
+	* gcc.target/i386/cet-switch-1.c: Likewise.
+	* gcc.target/i386/cet-switch-2.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_cet): New proc.
+
+2017-10-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr79683.c: Disable costmodel.
+
+2017-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr_private.ads: Rename into ...
+	* gnat.dg/specs/discr2.ads: ...this.
+	* gnat.dg/specs/discr_record_constant.ads: Rename into...
+	* gnat.dg/specs/discr3.ads: ...this.
+	* gnat.dg/specs/discr4.ads: New test.
+	* gnat.dg/specs/discr4_pkg.ads: New helper.
+
+2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82586
+	* gfortran.dg/pdt_16.f03 : New test.
+	* gfortran.dg/pdt_4.f03 : Catch the changed messages.
+	* gfortran.dg/pdt_8.f03 : Ditto.
+
+	PR fortran/82587
+	* gfortran.dg/pdt_17.f03 : New test.
+
+	PR fortran/82589
+	* gfortran.dg/pdt_18.f03 : New test.
+
 2017-10-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* c-c++-common/fcf-protection-1.c: New test.
