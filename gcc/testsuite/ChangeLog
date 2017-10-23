@@ -1,3 +1,8 @@
+2017-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82662
+	* gcc.target/i386/pr82662.c: New test.
+
 2017-10-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/82681
