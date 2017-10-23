@@ -1439,7 +1439,11 @@ strip_typedefs (tree t, bool *remove_attributes)
 	  is_variant = true;
 
 	type = strip_typedefs (TREE_TYPE (t), remove_attributes);
-	changed = type != TREE_TYPE (t) || is_variant;
+	tree canon_spec = (flag_noexcept_type
+			   ? canonical_eh_spec (TYPE_RAISES_EXCEPTIONS (t))
+			   : NULL_TREE);
+	changed = (type != TREE_TYPE (t) || is_variant
+		   || TYPE_RAISES_EXCEPTIONS (t) != canon_spec);
 
 	for (arg_node = TYPE_ARG_TYPES (t);
 	     arg_node;
@@ -1498,9 +1502,8 @@ strip_typedefs (tree t, bool *remove_attributes)
 					type_memfn_rqual (t));
 	  }
 
-	if (TYPE_RAISES_EXCEPTIONS (t))
-	  result = build_exception_variant (result,
-					    TYPE_RAISES_EXCEPTIONS (t));
+	if (canon_spec)
+	  result = build_exception_variant (result, canon_spec);
 	if (TYPE_HAS_LATE_RETURN_TYPE (t))
 	  TYPE_HAS_LATE_RETURN_TYPE (result) = 1;
       }
