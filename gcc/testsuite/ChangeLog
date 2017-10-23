@@ -1,3 +1,12 @@
+2017-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/scanasm.exp (dg-function-on-line): Accept optional column info.
+	* gcc.dg/debug/dwarf2/pr53948.c: Likewise.
+	* g++.dg/debug/dwarf2/pr77363.C: Likewise.
+	* gcc.dg/debug/dwarf2/asm-line1.c: Add -gno-column-info to dg-options.
+	* gcc.dg/debug/dwarf2/discriminator.c: Likewise.
+	* g++.dg/debug/dwarf2/typedef6.C: Likewise.
+
 2017-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82672
