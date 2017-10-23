@@ -366,6 +366,31 @@
     }
 })
 
+;; Return true if VALUE is a constant integer whose value is
+;; x86_64_immediate_operand value zero extended from word mode to mode.
+(define_predicate "x86_64_dwzext_immediate_operand"
+  (match_code "const_int,const_wide_int")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST_INT:
+      if (!TARGET_64BIT)
+	return UINTVAL (op) <= HOST_WIDE_INT_UC (0xffffffff);
+      return UINTVAL (op) <= HOST_WIDE_INT_UC (0x7fffffff);
+
+    case CONST_WIDE_INT:
+      if (!TARGET_64BIT)
+	return false;
+      return (CONST_WIDE_INT_NUNITS (op) == 2
+	      && CONST_WIDE_INT_ELT (op, 1) == 0
+	      && (trunc_int_for_mode (CONST_WIDE_INT_ELT (op, 0), SImode)
+		  == (HOST_WIDE_INT) CONST_WIDE_INT_ELT (op, 0)));
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
 ;; Return true if size of VALUE can be stored in a sign
 ;; extended immediate field.
 (define_predicate "x86_64_immediate_size_operand"
