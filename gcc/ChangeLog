@@ -1,5 +1,11 @@
 2017-10-23  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82672
+	* graphite-isl-ast-to-gimple.c (graphite_copy_stmts_from_block):
+	Fold the stmt if we propagated into it.
+
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (bitmap_remove_from_set): Rename to...
 	(bitmap_remove_expr_from_set): ... this.  All callers call this
 	for non-constant values.
