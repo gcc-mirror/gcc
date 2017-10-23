@@ -1,3 +1,9 @@
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expmed.c (expand_shift_1): Use scalar_mode for scalar_mode.
+
 2017-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82129
