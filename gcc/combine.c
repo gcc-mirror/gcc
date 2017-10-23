@@ -9526,13 +9526,9 @@ rtx_equal_for_field_assignment_p (rtx x, rtx y, bool widen_x)
 	return 0;
       if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
 	return 0;
-      /* For big endian, adjust the memory offset.  */
-      if (BYTES_BIG_ENDIAN)
-	x = adjust_address_nv (x, GET_MODE (y),
-			       -subreg_lowpart_offset (GET_MODE (x),
-						       GET_MODE (y)));
-      else
-	x = adjust_address_nv (x, GET_MODE (y), 0);
+      x = adjust_address_nv (x, GET_MODE (y),
+			     byte_lowpart_offset (GET_MODE (y),
+						  GET_MODE (x)));
     }
 
   if (x == y || rtx_equal_p (x, y))
