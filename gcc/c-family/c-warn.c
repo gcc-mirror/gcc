@@ -1215,12 +1215,12 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
       if (cst)
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
-		    "chages value from %qE to %qE",
+		    "changes value from %qE to %qE",
 		    exprtype, type, expr, result);
       else
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
-		    "chages the value of %qE",
+		    "changes the value of %qE",
 		    exprtype, type, expr);
     }
   else
