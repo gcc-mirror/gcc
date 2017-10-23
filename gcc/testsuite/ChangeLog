@@ -1,3 +1,10 @@
+2017-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82681
+	* gcc.dg/c90-const-expr-11.c: Fix typos in dg-warning.
+	* gcc.dg/overflow-warn-5.c: Likewise.
+	* gcc.dg/overflow-warn-8.c: Likewise.
+
 2017-10-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82673
