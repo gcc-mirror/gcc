@@ -1,3 +1,8 @@
+2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/77555
+	* g++.dg/torture/pr77555.C: New.
+
 2017-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82129
