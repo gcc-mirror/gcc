@@ -1,3 +1,19 @@
+2017-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (dimode_scalar_chain::compute_convert_gain): Use
+	xmm_move instead of sse_move.
+	(sse_store_index): New function.
+	(ix86_register_move_cost): Be more sensible about mismatch stall;
+	model AVX moves correctly; make difference between sse->integer and
+	integer->sse.
+	(ix86_builtin_vectorization_cost): Model correctly aligned and unaligned
+	moves; make difference between SSE and AVX.
+	* i386.h (processor_costs): Remove sse_move; add xmm_move, ymm_move
+	and zmm_move. Increase size of sse load and store tables;
+	add unaligned load and store tables; add ssemmx_to_integer.
+	* x86-tune-costs.h: Update all entries according to real 
+	move latencies from Agner Fog's manual and chip documentation.
+
 2017-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82628
