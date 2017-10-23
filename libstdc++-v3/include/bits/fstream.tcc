@@ -699,7 +699,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  
  	   if (__n == 0)
  	     {
- 	       _M_set_buffer(0);
+	       // Set _M_reading. Buffer is already in initial 'read' mode.
  	       _M_reading = true;
  	     }
  	   else if (__len == 0)
