@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* dwarf2out.c (loc_list_from_tree_1): Use SCALAR_INT_TYPE_MODE
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expmed.c (expand_shift_1): Use scalar_mode for scalar_mode.
 
 2017-10-23  Richard Biener  <rguenther@suse.de>
