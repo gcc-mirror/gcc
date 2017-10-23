@@ -1,3 +1,8 @@
+2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80449
+	* g++.dg/cpp1z/class-deduction46.C: New.
+
 2017-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/82630
