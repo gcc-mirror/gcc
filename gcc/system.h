@@ -720,6 +720,16 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+/* Some of the headers included by <memory> can use "abort" within a
+   namespace, e.g. "_VSTD::abort();", which fails after we use the
+   preprocessor to redefine "abort" as "fancy_abort" below.
+   Given that unique-ptr.h can use "free", we need to do this after "free"
+   is declared but before "abort" is overridden.  */
+
+#ifdef INCLUDE_UNIQUE_PTR
+# include "unique-ptr.h"
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *)

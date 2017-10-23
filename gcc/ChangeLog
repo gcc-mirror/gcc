@@ -1,3 +1,11 @@
+2017-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/82610
+	* system.h: Conditionally include "unique-ptr.h" if
+	INCLUDE_UNIQUE_PTR is defined.
+	* unique-ptr-tests.cc: Remove include of "unique-ptr.h" in favor
+	of defining INCLUDE_UNIQUE_PTR before including "system.h".
+
 2017-10-23  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.md: New define_expand "subdi3".
