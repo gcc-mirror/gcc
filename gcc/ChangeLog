@@ -1,4 +1,9 @@
 2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	SCALAR_TYPE_MODE instead of TYPE_MODE.
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
