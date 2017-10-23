@@ -1,3 +1,11 @@
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82129
+	* tree-ssa-pre.c (bitmap_set_and): Remove.
+	(compute_antic_aux): Compute ANTIC_OUT intersection in a way
+	canonicalizing expressions in the set to those with lowest
+	ID rather than taking that from the first edge.
+
 2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* combine.c (rtx_equal_for_field_assignment_p): Use
