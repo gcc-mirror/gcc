@@ -2822,7 +2822,7 @@ DEFHOOK
  "This hook should return true if @var{x} should not be emitted into\n\
 debug sections.",
  bool, (rtx x),
- hook_bool_rtx_false)
+ default_const_not_ok_for_debug_p)
 
 /* Given an address RTX, say whether it is valid.  */
 DEFHOOK

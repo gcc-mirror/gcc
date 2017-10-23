@@ -1,3 +1,24 @@
+2017-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/82630
+	* target.def (const_not_ok_for_debug_p): Default to
+	default_const_not_ok_for_debug_p instead of hook_bool_rtx_false.
+	* targhooks.h (default_const_not_ok_for_debug_p): New declaration.
+	* targhooks.c (default_const_not_ok_for_debug_p): New function.
+	* dwarf2out.c (const_ok_for_output_1): Only reject UNSPECs for
+	which targetm.const_not_ok_for_debug_p returned true.
+	* config/arm/arm.c (arm_const_not_ok_for_debug_p): Return true
+	for UNSPECs.
+	* config/powerpcspe/powerpcspe.c (rs6000_const_not_ok_for_debug_p):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_const_not_ok_for_debug_p): Likewise.
+	* config/i386/i386.c (ix86_delegitimize_address_1): Don't delegitimize
+	UNSPEC_GOTOFF with addend into addend - _GLOBAL_OFFSET_TABLE_ + symbol
+	if !base_term_p.
+	(ix86_const_not_ok_for_debug_p): New function.
+	(i386_asm_output_addr_const_extra): Handle UNSPEC_GOTOFF.
+	(TARGET_CONST_NOT_OK_FOR_DEBUG_P): Redefine.
+
 2017-10-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/82610

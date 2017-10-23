@@ -13740,9 +13740,17 @@ expansion_failed (tree expr, rtx rtl, char const *reason)
 static bool
 const_ok_for_output_1 (rtx rtl)
 {
-  if (GET_CODE (rtl) == UNSPEC)
+  if (targetm.const_not_ok_for_debug_p (rtl))
     {
-      /* If delegitimize_address couldn't do anything with the UNSPEC, assume
+      if (GET_CODE (rtl) != UNSPEC)
+	{
+	  expansion_failed (NULL_TREE, rtl,
+			    "Expression rejected for debug by the backend.\n");
+	  return false;
+	}
+
+      /* If delegitimize_address couldn't do anything with the UNSPEC, and
+	 the target hook doesn't explicitly allow it in debug info, assume
 	 we can't express it in the debug info.  */
       /* Don't complain about TLS UNSPECs, those are just too hard to
 	 delegitimize.  Note this could be a non-decl SYMBOL_REF such as
@@ -13766,13 +13774,6 @@ const_ok_for_output_1 (rtx rtl)
 #endif
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");
-      return false;
-    }
-
-  if (targetm.const_not_ok_for_debug_p (rtl))
-    {
-      expansion_failed (NULL_TREE, rtl,
-			"Expression rejected for debug by the backend.\n");
       return false;
     }
 

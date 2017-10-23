@@ -26,6 +26,7 @@ extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, machine_mode);
 extern bool default_legitimize_address_displacement (rtx *, rtx *,
 						     machine_mode);
+extern bool default_const_not_ok_for_debug_p (rtx);
 
 extern int default_unspec_may_trap_p (const_rtx, unsigned);
 extern machine_mode default_promote_function_mode (const_tree, machine_mode,
