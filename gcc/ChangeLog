@@ -1,3 +1,13 @@
+2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82129
+	Revert
+	2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81181
+	* tree-ssa-pre.c (compute_antic_aux): Defer clean() to ...
+	(compute_antic): ... end of iteration here.
+
 2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* target.def (starting_frame_offset): New hook.
