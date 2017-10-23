@@ -47,7 +47,7 @@ namespace filesystem
 inline namespace v1
 {
   /**
-   * @ingroup filesystem
+   * @ingroup filesystem-ts
    * @{
    */
 
@@ -285,7 +285,7 @@ inline namespace v1
   path temp_directory_path();
   path temp_directory_path(error_code& __ec);
 
-  // @} group filesystem
+  // @} group filesystem-ts
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental

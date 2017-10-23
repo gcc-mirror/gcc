@@ -1,4 +1,4 @@
-// Class filesystem::directory_entry etc. -*- C++ -*-
+// Class experimental::filesystem::directory_entry etc. -*- C++ -*-
 
 // Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
