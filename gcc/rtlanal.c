@@ -551,12 +551,12 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	    {
 	      if (FRAME_GROWS_DOWNWARD)
 		{
-		  high_bound = STARTING_FRAME_OFFSET;
+		  high_bound = targetm.starting_frame_offset ();
 		  low_bound  = high_bound - get_frame_size ();
 		}
 	      else
 		{
-		  low_bound  = STARTING_FRAME_OFFSET;
+		  low_bound  = targetm.starting_frame_offset ();
 		  high_bound = low_bound + get_frame_size ();
 		}
 	    }

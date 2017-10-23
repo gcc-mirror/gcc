@@ -589,10 +589,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 
-/* It seems to be indicated in the code (at least 2.1) that this is
-   better a constant, and best 0.  */
-#define STARTING_FRAME_OFFSET 0
-
 #define FIRST_PARM_OFFSET(FNDECL) 0
 
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR) \

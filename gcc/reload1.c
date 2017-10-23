@@ -963,7 +963,7 @@ reload (rtx_insn *first, int global)
 	     then repeat the elimination bookkeeping.  We don't
 	     realign when there is no stack, as that will cause a
 	     stack frame when none is needed should
-	     STARTING_FRAME_OFFSET not be already aligned to
+	     TARGET_STARTING_FRAME_OFFSET not be already aligned to
 	     STACK_BOUNDARY.  */
 	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
 	}

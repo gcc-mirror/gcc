@@ -1786,11 +1786,11 @@ If @code{FRAME_GROWS_DOWNWARD} is defined to a nonzero value, this points
 to immediately above the first variable on the stack.  Otherwise, it points
 to the first variable on the stack.
 
-@cindex @code{STARTING_FRAME_OFFSET} and virtual registers
+@cindex @code{TARGET_STARTING_FRAME_OFFSET} and virtual registers
 @cindex @code{FRAME_POINTER_REGNUM} and virtual registers
 @code{VIRTUAL_STACK_VARS_REGNUM} is replaced with the sum of the
 register given by @code{FRAME_POINTER_REGNUM} and the value
-@code{STARTING_FRAME_OFFSET}.
+@code{TARGET_STARTING_FRAME_OFFSET}.
 
 @findex VIRTUAL_STACK_DYNAMIC_REGNUM
 @item VIRTUAL_STACK_DYNAMIC_REGNUM
