@@ -1,5 +1,16 @@
 2017-10-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82628
+	* config/i386/predicates.md (x86_64_dwzext_immediate_operand): New.
+	* config/i386/constraints.md (Wf): New constraint.
+	* config/i386/i386.md (UNSPEC_SBB): New unspec.
+	(cmp<dwi>_doubleword): Removed.
+	(sub<mode>3_carry_ccc, *sub<mode>3_carry_ccc_1): New patterns.
+	(sub<mode>3_carry_ccgz): Use unspec instead of compare.
+	* config/i386/i386.c (ix86_expand_branch) <case E_TImode>: Don't
+	expand with cmp<dwi>_doubleword.  For LTU and GEU use
+	sub<mode>3_carry_ccc instead of sub<mode>3_carry_ccgz and use CCCmode.
+
 	* common.opt (gcolumn-info): Enable by default.
 	* doc/invoke.texi (gcolumn-info): Document new default.
 

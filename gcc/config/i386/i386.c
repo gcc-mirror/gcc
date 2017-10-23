@@ -22378,27 +22378,45 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	switch (code)
 	  {
 	  case LE: case LEU: case GT: case GTU:
-	    std::swap (op0, op1);
+	    std::swap (lo[0], lo[1]);
+	    std::swap (hi[0], hi[1]);
 	    code = swap_condition (code);
 	    /* FALLTHRU */
 
 	  case LT: case LTU: case GE: case GEU:
 	    {
-	      rtx (*cmp_insn) (rtx, rtx, rtx);
+	      rtx (*cmp_insn) (rtx, rtx);
+	      rtx (*sbb_insn) (rtx, rtx, rtx);
+	      bool uns = (code == LTU || code == GEU);
 
 	      if (TARGET_64BIT)
-		cmp_insn = gen_cmpti_doubleword;
+		{
+		  cmp_insn = gen_cmpdi_1;
+		  sbb_insn
+		    = uns ? gen_subdi3_carry_ccc : gen_subdi3_carry_ccgz;
+		}
 	      else
-		cmp_insn = gen_cmpdi_doubleword;
+		{
+		  cmp_insn = gen_cmpsi_1;
+		  sbb_insn
+		    = uns ? gen_subsi3_carry_ccc : gen_subsi3_carry_ccgz;
+		}
 
-	      if (!register_operand (op0, mode))
-		op0 = force_reg (mode, op0);
-	      if (!x86_64_hilo_general_operand (op1, mode))
-		op1 = force_reg (mode, op1);
+	      if (!nonimmediate_operand (lo[0], submode))
+		lo[0] = force_reg (submode, lo[0]);
+	      if (!x86_64_general_operand (lo[1], submode))
+		lo[1] = force_reg (submode, lo[1]);
 
-	      emit_insn (cmp_insn (gen_rtx_SCRATCH (mode), op0, op1));
+	      if (!register_operand (hi[0], submode))
+		hi[0] = force_reg (submode, hi[0]);
+	      if ((uns && !nonimmediate_operand (hi[1], submode))
+		  || (!uns && !x86_64_general_operand (hi[1], submode)))
+		hi[1] = force_reg (submode, hi[1]);
 
-	      tmp = gen_rtx_REG (CCGZmode, FLAGS_REG);
+	      emit_insn (cmp_insn (lo[0], lo[1]));
+	      emit_insn (sbb_insn (gen_rtx_SCRATCH (submode), hi[0], hi[1]));
+
+	      tmp = gen_rtx_REG (uns ? CCCmode : CCGZmode, FLAGS_REG);
 
 	      ix86_expand_branch (code, tmp, const0_rtx, label);
 	      return;
