@@ -1,3 +1,17 @@
+2017-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82644
+	* doc/xml/manual/intro.xml: Include new section.
+	* doc/xml/manual/status_cxxis29124.xml: New section on IS 29124
+	status.
+	* include/bits/specfun.h [__STRICT_ANSI__] (hyperg, hypergf, hypergl)
+	(conf_hyperg, conf_hypergf, conf_hypergl): Don't declare.
+	* include/c_compatibility/math.h: Import special functions into
+	global namespace for C++17.
+	* testsuite/26_numerics/headers/cmath/82644.cc: New test.
+	* testsuite/26_numerics/headers/cmath/functions_global_c++17.cc: New
+	test.
+
 2017-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/filesystem/path/itr/traversal.cc: Do not
