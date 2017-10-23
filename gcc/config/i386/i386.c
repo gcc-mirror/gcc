@@ -12692,10 +12692,13 @@ ix86_finalize_stack_frame_flags (void)
 	      for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
 		   ref; ref = next)
 		{
-		  rtx_insn *insn = DF_REF_INSN (ref);
+		  next = DF_REF_NEXT_REG (ref);
+		  if (!DF_REF_INSN_INFO (ref))
+		    continue;
+
 		  /* Make sure the next ref is for a different instruction,
 		     so that we're not affected by the rescan.  */
-		  next = DF_REF_NEXT_REG (ref);
+		  rtx_insn *insn = DF_REF_INSN (ref);
 		  while (next && DF_REF_INSN (next) == insn)
 		    next = DF_REF_NEXT_REG (next);
 

@@ -1,3 +1,9 @@
+2017-10-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82673
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Skip
+	DF_REF_INSN if DF_REF_INSN_INFO is false.
+
 2017-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (dimode_scalar_chain::compute_convert_gain): Use
