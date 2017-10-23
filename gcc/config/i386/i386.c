@@ -1601,7 +1601,7 @@ dimode_scalar_chain::compute_convert_gain ()
       rtx dst = SET_DEST (def_set);
 
       if (REG_P (src) && REG_P (dst))
-	gain += COSTS_N_INSNS (2) - ix86_cost->sse_move;
+	gain += COSTS_N_INSNS (2) - ix86_cost->xmm_move;
       else if (REG_P (src) && MEM_P (dst))
 	gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
       else if (MEM_P (src) && REG_P (dst))
@@ -38634,6 +38634,28 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
   return true;
 }
 
+/* Return index of MODE in the sse load/store tables.  */
+
+static inline int
+sse_store_index (machine_mode mode)
+{
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    return 0;
+	  case 8:
+	    return 1;
+	  case 16:
+	    return 2;
+	  case 32:
+	    return 3;
+	  case 64:
+	    return 4;
+	  default:
+	    return -1;
+	}
+}
+
 /* Return the cost of moving data of mode M between a
    register and memory.  A value of 2 is the default; this cost is
    relative to those in `REGISTER_MOVE_COST'.
@@ -38677,21 +38699,9 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
     }
   if (SSE_CLASS_P (regclass))
     {
-      int index;
-      switch (GET_MODE_SIZE (mode))
-	{
-	  case 4:
-	    index = 0;
-	    break;
-	  case 8:
-	    index = 1;
-	    break;
-	  case 16:
-	    index = 2;
-	    break;
-	  default:
-	    return 100;
-	}
+      int index = sse_store_index (mode);
+      if (index == -1)
+	return 100;
       if (in == 2)
         return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
       return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
@@ -38794,8 +38804,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
       /* In case of copying from general_purpose_register we may emit multiple
          stores followed by single load causing memory size mismatch stall.
          Count this as arbitrarily high cost of 20.  */
-      if (targetm.class_max_nregs (class1, mode)
-	  > targetm.class_max_nregs (class2, mode))
+      if (GET_MODE_BITSIZE (mode) > BITS_PER_WORD
+	  && TARGET_MEMORY_MISMATCH_STALL
+	  && targetm.class_max_nregs (class1, mode)
+	     > targetm.class_max_nregs (class2, mode))
 	cost += 20;
 
       /* In the case of FP/MMX moves, the registers actually overlap, and we
@@ -38817,12 +38829,19 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        where integer modes in MMX/SSE registers are not tieable
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
-    return MAX (8, ix86_cost->mmxsse_to_integer);
+    return MAX (8, MMX_CLASS_P (class1) || MMX_CLASS_P (class2)
+		? ix86_cost->mmxsse_to_integer : ix86_cost->ssemmx_to_integer);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
-    return ix86_cost->sse_move;
+    {
+      if (GET_MODE_BITSIZE (mode) <= 128)
+	return ix86_cost->xmm_move;
+      if (GET_MODE_BITSIZE (mode) <= 256)
+	return ix86_cost->ymm_move;
+      return ix86_cost->zmm_move;
+    }
   if (MAYBE_MMX_CLASS_P (class1))
     return ix86_cost->mmx_move;
   return 2;
@@ -44370,6 +44389,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 {
   bool fp = false;
   machine_mode mode = TImode;
+  int index;
   if (vectype != NULL)
     {
       fp = FLOAT_TYPE_P (vectype);
@@ -44397,13 +44417,16 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 			      true);
 
       case vector_load:
+	index = sse_store_index (mode);
+	gcc_assert (index >= 0);
         return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_load[2]) / 2,
+			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2,
 			      true);
 
       case vector_store:
+	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_store[2]) / 2,
+			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2,
 			      true);
 
       case vec_to_scalar:
@@ -44414,14 +44437,18 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	 Do that incrementally.  */
       case unaligned_load:
       case vector_gather_load:
+	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_load[2]),
+			      COSTS_N_INSNS
+				 (ix86_cost->sse_unaligned_load[index]) / 2,
 			      true);
 
       case unaligned_store:
       case vector_scatter_store:
+	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_store[2]),
+			      COSTS_N_INSNS
+				 (ix86_cost->sse_unaligned_store[index]) / 2,
 			      true);
 
       case cond_branch_taken:

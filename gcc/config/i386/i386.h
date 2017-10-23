@@ -242,13 +242,17 @@ struct processor_costs {
 				   in SImode and DImode */
   const int mmx_store[2];	/* cost of storing MMX register
 				   in SImode and DImode */
-  const int sse_move;		/* cost of moving SSE register.  */
-  const int sse_load[3];	/* cost of loading SSE register
-				   in SImode, DImode and TImode*/
-  const int sse_store[3];	/* cost of storing SSE register
-				   in SImode, DImode and TImode*/
+  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
+	    zmm_move;
+  const int sse_load[5];	/* cost of loading SSE register
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  const int sse_unaligned_load[5];/* cost of unaligned load.  */
+  const int sse_store[5];	/* cost of storing SSE register
+				   in SImode, DImode and TImode.  */
+  const int sse_unaligned_store[5];/* cost of unaligned store.  */
   const int mmxsse_to_integer;	/* cost of moving mmxsse register to
-				   integer and vice versa.  */
+				   integer.  */
+  const int ssemmx_to_integer;  /* cost of moving integer to mmxsse register. */
   const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
   const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
   const int prefetch_block;	/* bytes moved to cache for prefetch.  */
