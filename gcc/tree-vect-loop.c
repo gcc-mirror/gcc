@@ -4487,7 +4487,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
 
       int scalar_precision
-	= GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (vectype)));
+	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (TREE_TYPE (vectype)));
       tree cr_index_scalar_type = make_unsigned_type (scalar_precision);
       tree cr_index_vector_type = build_vector_type
 	(cr_index_scalar_type, TYPE_VECTOR_SUBPARTS (vectype));
