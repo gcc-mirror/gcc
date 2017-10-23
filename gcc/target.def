@@ -5688,6 +5688,16 @@ five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
 
+DEFHOOK
+(starting_frame_offset,
+ "This hook returns the offset from the frame pointer to the first local\n\
+variable slot to be allocated.  If @code{FRAME_GROWS_DOWNWARD}, it is the\n\
+offset to @emph{end} of the first slot allocated, otherwise it is the\n\
+offset to @emph{beginning} of the first slot allocated.  The default\n\
+implementation returns 0.",
+ HOST_WIDE_INT, (void),
+ hook_hwi_void_0)
+
 /* Optional callback to advise the target to compute the frame layout.  */
 DEFHOOK
 (compute_frame_layout,

@@ -2025,7 +2025,7 @@ expand_used_vars (void)
   /* Compute the phase of the stack frame for this function.  */
   {
     int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-    int off = STARTING_FRAME_OFFSET % align;
+    int off = targetm.starting_frame_offset () % align;
     frame_phase = off ? align - off : 0;
   }
 

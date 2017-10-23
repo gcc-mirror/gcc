@@ -1,5 +1,135 @@
 2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* target.def (starting_frame_offset): New hook.
+	* doc/tm.texi (STARTING_FRAME_OFFSET): Remove in favor of...
+	(TARGET_STARTING_FRAME_OFFSET): ...this new hook.
+	* doc/tm.texi.in: Regenerate.
+	* hooks.h (hook_hwi_void_0): Declare.
+	* hooks.c (hook_hwi_void_0): New function.
+	* doc/rtl.texi: Refer to TARGET_STARTING_FRAME_OFFSET instead of
+	STARTING_FRAME_OFFSET.
+	* builtins.c (expand_builtin_setjmp_receiver): Likewise.
+	* reload1.c (reload): Likewise.
+	* cfgexpand.c (expand_used_vars): Use targetm.starting_frame_offset
+	instead of STARTING_FRAME_OFFSET.
+	* function.c (try_fit_stack_local): Likewise.
+	(assign_stack_local_1): Likewise
+	(instantiate_virtual_regs): Likewise.
+	* rtlanal.c (rtx_addr_can_trap_p_1): Likewise.
+	* config/avr/avr.md (nonlocal_goto_receiver): Likewise.
+	* config/aarch64/aarch64.h (STARTING_FRAME_OFFSET): Delete.
+	* config/alpha/alpha.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/arc/arc.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/arm/arm.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/bfin/bfin.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/c6x/c6x.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/cr16/cr16.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/cris/cris.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/fr30/fr30.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/frv/frv.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/ft32/ft32.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/h8300/h8300.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/i386/i386.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/ia64/ia64.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/m32c/m32c.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/m68k/m68k.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/mcore/mcore.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/mn10300/mn10300.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/moxie/moxie.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/msp430/msp430.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/nds32/nds32.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/nios2/nios2.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/nvptx/nvptx.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/pdp11/pdp11.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/riscv/riscv.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/rl78/rl78.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/rx/rx.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/s390/s390.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/sh/sh.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/sparc/sparc.c (sparc_compute_frame_size): Likewise.
+	* config/sparc/sparc.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/spu/spu.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/stormy16/stormy16.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/tilegx/tilegx.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/tilepro/tilepro.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/v850/v850.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/visium/visium.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/avr/avr.h (STARTING_FRAME_OFFSET): Likewise.
+	* config/avr/avr-protos.h (avr_starting_frame_offset): Likewise.
+	* config/avr/avr.c (avr_starting_frame_offset): Make static and
+	return a HOST_WIDE_INT.
+	(avr_builtin_setjmp_frame_value): Use it instead of
+	STARTING_FRAME_OFFSET.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/epiphany/epiphany.h (STARTING_FRAME_OFFSET): Delete.
+	* config/epiphany/epiphany.c (epiphany_starting_frame_offset):
+	New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/iq2000/iq2000.h (STARTING_FRAME_OFFSET): Delete.
+	* config/iq2000/iq2000.c (iq2000_starting_frame_offset): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/lm32/lm32.h (STARTING_FRAME_OFFSET): Delete.
+	* config/lm32/lm32.c (lm32_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/m32r/m32r.h (STARTING_FRAME_OFFSET): Delete.
+	* config/m32r/m32r.c (m32r_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/microblaze/microblaze.h (STARTING_FRAME_OFFSET): Delete.
+	* config/microblaze/microblaze.c (microblaze_starting_frame_offset):
+	New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/mips/mips.h (STARTING_FRAME_OFFSET): Delete.
+	* config/mips/mips.c (mips_compute_frame_info): Refer to
+	TARGET_STARTING_FRAME_OFFSET instead of STARTING_FRAME_OFFSET.
+	(mips_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/mmix/mmix.h (STARTING_FRAME_OFFSET): Delete.
+	* config/mmix/mmix-protos.h (mmix_starting_frame_offset): Delete.
+	* config/mmix/mmix.c (mmix_starting_frame_offset): Make static
+	and return a HOST_WIDE_INT.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	(mmix_initial_elimination_offset): Refer to
+	TARGET_STARTING_FRAME_OFFSET instead of STARTING_FRAME_OFFSET.
+	* config/pa/pa.h (STARTING_FRAME_OFFSET): Delete.
+	* config/pa/pa.c (pa_starting_frame_offset): New function.
+	(pa_compute_frame_size): Use it instead of STARTING_FRAME_OFFSET.
+	(pa_expand_prologue): Likewise.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/powerpcspe/aix.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/powerpcspe/darwin.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/powerpcspe/powerpcspe.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/powerpcspe/powerpcspe.c (TARGET_STARTING_FRAME_OFFSET):
+	Redefine.
+	(rs6000_starting_frame_offset): New function.
+	* config/rs6000/aix.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/rs6000/darwin.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/rs6000/rs6000.h (STARTING_FRAME_OFFSET): Split out
+	!FRAME_GROWS_DOWNWARD handling to...
+	(RS6000_STARTING_FRAME_OFFSET): ...this new macro.
+	* config/rs6000/rs6000.c (TARGET_STARTING_FRAME_OFFSET): Refine.
+	(rs6000_starting_frame_offset): New function.
+	* config/vax/elf.h (STARTING_FRAME_OFFSET): Delete.
+	* config/vax/vax.h (STARTING_FRAME_OFFSET): Delete.
+	* config/vax/vax.c (vax_starting_frame_offset): New function.
+	(vax_expand_prologue): Use it instead of STARTING_FRAME_OFFSET.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* config/xtensa/xtensa.h (STARTING_FRAME_OFFSET): Delete.
+	* config/xtensa/xtensa.c (xtensa_starting_frame_offset): New function.
+	(TARGET_STARTING_FRAME_OFFSET): Redefine.
+	* system.h (STARTING_FRAME_OFFSET): Poison.
+
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
 	SCALAR_TYPE_MODE instead of TYPE_MODE.
 

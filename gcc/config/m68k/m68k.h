@@ -467,7 +467,6 @@ extern enum reg_class regno_reg_class[];
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
 
 /* On the 680x0, sp@- in a byte insn really pushes a word.
    On the ColdFire, sp@- in a byte insn pushes just a byte.  */

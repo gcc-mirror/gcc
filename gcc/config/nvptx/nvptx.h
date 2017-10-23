@@ -122,7 +122,6 @@ enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 
 /* Stack and Calling.  */
 
-#define STARTING_FRAME_OFFSET 0
 #define FRAME_GROWS_DOWNWARD 0
 #define STACK_GROWS_DOWNWARD 1
 

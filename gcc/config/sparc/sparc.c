@@ -5276,8 +5276,9 @@ sparc_compute_frame_size (HOST_WIDE_INT size, int leaf_function)
     frame_size = apparent_frame_size = 0;
   else
     {
-      /* We subtract STARTING_FRAME_OFFSET, remember it's negative.  */
-      apparent_frame_size = ROUND_UP (size - STARTING_FRAME_OFFSET, 8);
+      /* We subtract TARGET_STARTING_FRAME_OFFSET, remember it's negative.  */
+      apparent_frame_size
+	= ROUND_UP (size - targetm.starting_frame_offset (), 8);
       apparent_frame_size += n_global_fp_regs * 4;
 
       /* We need to add the size of the outgoing argument area.  */

@@ -900,7 +900,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label)
 	 to the underlying register (fp in this case) that makes
 	 the original assignment true.
 	 So the following insn will actually be decrementing fp by
-	 STARTING_FRAME_OFFSET.  */
+	 TARGET_STARTING_FRAME_OFFSET.  */
       emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
       /* Restoring the frame pointer also modifies the hard frame pointer.

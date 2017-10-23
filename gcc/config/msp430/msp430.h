@@ -196,7 +196,6 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define WORD_REGISTER_OPERATIONS	1
 
 #define MOVE_MAX 			8
-#define STARTING_FRAME_OFFSET		0
 
 #define INCOMING_RETURN_ADDR_RTX \
   msp430_incoming_return_addr_rtx ()
