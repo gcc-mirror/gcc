@@ -1,3 +1,13 @@
+2017-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82370
+	* config/i386/sse.md (VIMAX_AVX2): Remove V4TImode.
+	(VIMAX_AVX2_AVX512BW, VIMAX_AVX512VL): New mode iterators.
+	(vec_shl_<mode>): Remove unused expander.
+	(avx512bw_<shift_insn><mode>3): New define_insn.
+	(<sse2_avx2>_ashl<mode>3, <sse2_avx2>_lshr<mode>3): Replaced by ...
+	(<sse2_avx2>_<shift_insn><mode>3): ... this.  New define_insn.
+
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82466
