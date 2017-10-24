@@ -1,5 +1,11 @@
 2017-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.target/i386/387-ficom-1.c: Allow for ficomp without s
+	suffix.
+	* gcc.target/i386/387-ficom-2.c: Likewise.
+
+2017-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.target/i386/cet-sjlj-3.c: Allow for emtpy user label prefix
 	in setjmp call.
 
