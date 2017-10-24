@@ -1,3 +1,14 @@
+2017-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82628
+	* config/i386/i386.md (addcarry<mode>, subborrow<mode>): Change
+	patterns to better describe from which operation the CF is computed.
+	(addcarry<mode>_0, subborrow<mode>_0): New patterns.
+	* config/i386/i386.c (ix86_expand_builtin) <case handlecarry>: Pass
+	one LTU with [DT]Imode and another one with [SD]Imode.  If arg0
+	is 0, use _0 suffixed expanders instead of emitting a comparison
+	before it.
+
 2017-10-06  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* config/i386/i386.md(*movsf_internal, *movdf_internal):
