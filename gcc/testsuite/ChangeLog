@@ -1,5 +1,22 @@
 2017-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82460
+	* gcc.target/i386/pr82460-1.c: New test.
+	* gcc.target/i386/pr82460-2.c: New test.
+	* gcc.target/i386/avx512f-vpermt2pd-1.c: Adjust scan-assembler*
+	regexps to allow vpermt2* to vpermi2* replacement or vice versa
+	where possible.
+	* gcc.target/i386/avx512vl-vpermt2pd-1.c: Likewise.
+	* gcc.target/i386/avx512f-vpermt2d-1.c: Likewise.
+	* gcc.target/i386/vect-pack-trunc-2.c: Likewise.
+	* gcc.target/i386/avx512vl-vpermt2ps-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpermt2q-1.c: Likewise.
+	* gcc.target/i386/avx512f-vpermt2ps-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpermt2d-1.c: Likewise.
+	* gcc.target/i386/avx512bw-vpermt2w-1.c: Likewise.
+	* gcc.target/i386/avx512vbmi-vpermt2b-1.c: Likewise.
+	* gcc.target/i386/avx512f-vpermt2q-1.c: Likewise.
+
 	PR target/82370
 	* gcc.target/i386/pr82370.c: New test.
 

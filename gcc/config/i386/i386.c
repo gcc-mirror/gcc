@@ -24049,10 +24049,10 @@ struct expand_vec_perm_d
 };
 
 static bool
-ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
+ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
 			      struct expand_vec_perm_d *d)
 {
-  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+  /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   machine_mode mode = GET_MODE (d ? d->op0 : op0);
   machine_mode maskmode = mode;
@@ -24062,83 +24062,83 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
     {
     case E_V8HImode:
       if (TARGET_AVX512VL && TARGET_AVX512BW)
-	gen = gen_avx512vl_vpermi2varv8hi3;
+	gen = gen_avx512vl_vpermt2varv8hi3;
       break;
     case E_V16HImode:
       if (TARGET_AVX512VL && TARGET_AVX512BW)
-	gen = gen_avx512vl_vpermi2varv16hi3;
+	gen = gen_avx512vl_vpermt2varv16hi3;
       break;
     case E_V64QImode:
       if (TARGET_AVX512VBMI)
-	gen = gen_avx512bw_vpermi2varv64qi3;
+	gen = gen_avx512bw_vpermt2varv64qi3;
       break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
-	gen = gen_avx512bw_vpermi2varv32hi3;
+	gen = gen_avx512bw_vpermt2varv32hi3;
       break;
     case E_V4SImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv4si3;
+	gen = gen_avx512vl_vpermt2varv4si3;
       break;
     case E_V8SImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv8si3;
+	gen = gen_avx512vl_vpermt2varv8si3;
       break;
     case E_V16SImode:
       if (TARGET_AVX512F)
-	gen = gen_avx512f_vpermi2varv16si3;
+	gen = gen_avx512f_vpermt2varv16si3;
       break;
     case E_V4SFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv4sf3;
+	  gen = gen_avx512vl_vpermt2varv4sf3;
 	  maskmode = V4SImode;
 	}
       break;
     case E_V8SFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv8sf3;
+	  gen = gen_avx512vl_vpermt2varv8sf3;
 	  maskmode = V8SImode;
 	}
       break;
     case E_V16SFmode:
       if (TARGET_AVX512F)
 	{
-	  gen = gen_avx512f_vpermi2varv16sf3;
+	  gen = gen_avx512f_vpermt2varv16sf3;
 	  maskmode = V16SImode;
 	}
       break;
     case E_V2DImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv2di3;
+	gen = gen_avx512vl_vpermt2varv2di3;
       break;
     case E_V4DImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv4di3;
+	gen = gen_avx512vl_vpermt2varv4di3;
       break;
     case E_V8DImode:
       if (TARGET_AVX512F)
-	gen = gen_avx512f_vpermi2varv8di3;
+	gen = gen_avx512f_vpermt2varv8di3;
       break;
     case E_V2DFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv2df3;
+	  gen = gen_avx512vl_vpermt2varv2df3;
 	  maskmode = V2DImode;
 	}
       break;
     case E_V4DFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv4df3;
+	  gen = gen_avx512vl_vpermt2varv4df3;
 	  maskmode = V4DImode;
 	}
       break;
     case E_V8DFmode:
       if (TARGET_AVX512F)
 	{
-	  gen = gen_avx512f_vpermi2varv8df3;
+	  gen = gen_avx512f_vpermt2varv8df3;
 	  maskmode = V8DImode;
 	}
       break;
@@ -24149,7 +24149,7 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
   if (gen == NULL)
     return false;
 
-  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+  /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   if (d)
     {
@@ -24162,7 +24162,7 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
       mask = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (d->nelt, vec));
     }
 
-  emit_insn (gen (target, op0, force_reg (maskmode, mask), op1));
+  emit_insn (gen (target, force_reg (maskmode, mask), op0, op1));
   return true;
 }
 
@@ -24213,7 +24213,7 @@ ix86_expand_vec_perm (rtx operands[])
 	}
     }
 
-  if (ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1, NULL))
+  if (ix86_expand_vec_perm_vpermt2 (target, mask, op0, op1, NULL))
     return;
 
   if (TARGET_AVX2)
@@ -45395,8 +45395,8 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   if (ix86_expand_vec_one_operand_perm_avx512 (d))
     return true;
 
-  /* Try the AVX512F vpermi2 instructions.  */
-  if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
+  /* Try the AVX512F vpermt2/vpermi2 instructions.  */
+  if (ix86_expand_vec_perm_vpermt2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
     return true;
 
   /* See if we can get the same permutation in different vector integer
@@ -47055,9 +47055,9 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
 }
 
 /* Implement arbitrary permutations of two V64QImode operands
-   will 2 vpermi2w, 2 vpshufb and one vpor instruction.  */
+   with 2 vperm[it]2w, 2 vpshufb and one vpor instruction.  */
 static bool
-expand_vec_perm_vpermi2_vpshub2 (struct expand_vec_perm_d *d)
+expand_vec_perm_vpermt2_vpshub2 (struct expand_vec_perm_d *d)
 {
   if (!TARGET_AVX512BW || !(d->vmode == V64QImode))
     return false;
@@ -47302,7 +47302,7 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_vpshufb2_vpermq_even_odd (d))
     return true;
 
-  if (expand_vec_perm_vpermi2_vpshub2 (d))
+  if (expand_vec_perm_vpermt2_vpshub2 (d))
     return true;
 
   /* ??? Look for narrow permutations whose element orderings would
@@ -47450,17 +47450,17 @@ ix86_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
     case E_V8DImode:
     case E_V8DFmode:
       if (TARGET_AVX512F)
-	/* All implementable with a single vpermi2 insn.  */
+	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
-	/* All implementable with a single vpermi2 insn.  */
+	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V64QImode:
       if (TARGET_AVX512BW)
-	/* Implementable with 2 vpermi2, 2 vpshufb and 1 or insn.  */
+	/* Implementable with 2 vperm[it]2, 2 vpshufb and 1 or insn.  */
 	return true;
       break;
     case E_V8SImode:
@@ -47468,7 +47468,7 @@ ix86_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
     case E_V4DFmode:
     case E_V4DImode:
       if (TARGET_AVX512VL)
-	/* All implementable with a single vpermi2 insn.  */
+	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V16HImode:
