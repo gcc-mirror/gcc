@@ -1,3 +1,10 @@
+2017-10-24  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82307
+	* cvt.c (type_promotes_to): Implement C++17, 7.6/4, about unscoped
+	enumeration type whose underlying type is fixed.
+
 2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80449
