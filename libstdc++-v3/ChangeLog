@@ -1,3 +1,44 @@
+2017-10-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_normal_mode): Add
+	c++config.h include.
+	(check_v3_target_normal_namespace): New.
+	* testsuite/lib/dg-options.exp (dg-require-normal-namespace): New.
+	* testsuite/18_support/headers/limits/synopsis.cc: Add latter.
+	* testsuite/20_util/from_chars/requirements.cc: Likewise.
+	* testsuite/20_util/headers/functional/synopsis.cc: Likewise.
+	* testsuite/20_util/headers/memory/synopsis.cc: Likewise.
+	* testsuite/20_util/headers/utility/synopsis.cc: Likewise.
+	* testsuite/20_util/to_chars/requirements.cc: Likewise.
+	* testsuite/21_strings/headers/string/synopsis.cc: Likewise.
+	* testsuite/22_locale/headers/locale/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/bitset/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/deque/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/forward_list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/map/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/queue/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/set/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/stack/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++11.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++14.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc: Likewise.
+	* testsuite/26_numerics/complex/abi_tag.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
+	* testsuite/26_numerics/headers/valarray/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/fstream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/ios/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/istream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/ostream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/sstream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/streambuf/synopsis.cc: Likewise.
+
 2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/locale/gnu/c_locale.cc [_GLIBCXX_LONG_DOUBLE_COMPAT]: Ignore
