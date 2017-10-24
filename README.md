@@ -10,7 +10,7 @@ feedback from testing these features.  Unchecked items are insufficiently mature
 - [X] The [teams branch] with experimental support for Fortran 2015 teams. 
 - [X] The [download-opencoarrays-mpich branch] modifying GCC's prequisites download script
   to add [OpenCoarrays] and [MPICH] to the list of downloade software.
-- [ ] The [issue-#6-iso-fortran-binding-h branch] providing gthe Fortran 2015 `iso_fortran_binding.h` file.
+- [ ] The [issue-#6-iso-fortran-binding-h branch] providing the Fortran 2015 `iso_fortran_binding.h` file.
 
 We welcome code contributions via [pull request] for any listed features or other unsupported
 features of the [draft Fortran 2015 standard]:
@@ -58,7 +58,7 @@ git checkout opencoarrays-teams
 ./install.sh  \
    --with-mpi "${PWD}"/prerequisites/installations/mpich/<mpich-version-number>/
 ```
-after again replacin text between angular brackets with the appropriate string (<...>) such as "3.2".
+after again replacing text between angular brackets with the appropriate string (<...>) such as "3.2".
 Please report any problems with the above steps on our [issues page].
 
 
