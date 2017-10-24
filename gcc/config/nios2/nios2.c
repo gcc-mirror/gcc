@@ -62,6 +62,7 @@ static const char *nios2_unspec_reloc_name (int);
 static void nios2_register_builtin_fndecl (unsigned, tree);
 static rtx nios2_ldst_parallel (bool, bool, bool, rtx, int,
 				unsigned HOST_WIDE_INT, bool);
+static int nios2_address_cost (rtx, machine_mode, addr_space_t, bool);
 
 /* Threshold for data being put into the small data/bss area, instead
    of the normal data area (references to the small data/bss area take
@@ -1430,29 +1431,25 @@ nios2_simple_const_p (const_rtx cst)
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
 static bool
-nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
-		 int outer_code ATTRIBUTE_UNUSED,
-		 int opno ATTRIBUTE_UNUSED,
-		 int *total, bool speed ATTRIBUTE_UNUSED)
+nios2_rtx_costs (rtx x, machine_mode mode,
+		 int outer_code,
+		 int opno,
+		 int *total, bool speed)
 {
   int code = GET_CODE (x);
 
   switch (code)
     {
       case CONST_INT:
-        if (INTVAL (x) == 0)
+        if (INTVAL (x) == 0 || nios2_simple_const_p (x))
           {
             *total = COSTS_N_INSNS (0);
             return true;
           }
-        else if (nios2_simple_const_p (x))
-          {
-            *total = COSTS_N_INSNS (2);
-            return true;
-          }
         else
           {
-            *total = COSTS_N_INSNS (4);
+	    /* High + lo_sum.  */
+            *total = COSTS_N_INSNS (1);
             return true;
           }
 
@@ -1460,10 +1457,30 @@ nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
       case SYMBOL_REF:
       case CONST:
       case CONST_DOUBLE:
-        {
-          *total = COSTS_N_INSNS (4);
-          return true;
-        }
+	if (gprel_constant_p (x))
+          {
+            *total = COSTS_N_INSNS (1);
+            return true;
+          }
+	else
+	  {
+	    /* High + lo_sum.  */
+	    *total = COSTS_N_INSNS (1);
+	    return true;
+	  }
+
+      case HIGH:
+	{
+	  /* This is essentially a constant.  */
+	  *total = COSTS_N_INSNS (0);
+	  return true;
+	}
+
+      case LO_SUM:
+	{
+	  *total = COSTS_N_INSNS (0);
+	  return true;
+	}
 
       case AND:
 	{
@@ -1477,29 +1494,83 @@ nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
 	  return false;
 	}
 
+      /* For insns that have an execution latency (3 cycles), don't
+	 penalize by the full amount since we can often schedule
+	 to avoid it.  */
       case MULT:
         {
-          *total = COSTS_N_INSNS (1);
-          return false;
-        }
-      case SIGN_EXTEND:
-        {
-          *total = COSTS_N_INSNS (3);
-          return false;
-        }
-      case ZERO_EXTEND:
-        {
-          *total = COSTS_N_INSNS (1);
+	  if (!TARGET_HAS_MUL)
+	    *total = COSTS_N_INSNS (5);  /* Guess?  */
+	  else if (speed)
+	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
+	  else 
+	    *total = COSTS_N_INSNS (1);
           return false;
         }
 
-    case ZERO_EXTRACT:
-      if (TARGET_HAS_BMX)
-	{
-          *total = COSTS_N_INSNS (1);
-          return true;
+      case DIV:
+        {
+	  if (!TARGET_HAS_DIV)
+	    *total = COSTS_N_INSNS (5);  /* Guess?  */
+	  else if (speed)
+	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
+	  else 
+	    *total = COSTS_N_INSNS (1);
+          return false;
+        }
+
+      case ASHIFT:
+      case ASHIFTRT:
+      case LSHIFTRT:
+      case ROTATE:
+        {
+	  if (!speed)
+	    *total = COSTS_N_INSNS (1);
+	  else 
+	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
+          return false;
+        }
+	
+      case ZERO_EXTRACT:
+	if (TARGET_HAS_BMX)
+	  {
+	    *total = COSTS_N_INSNS (1);
+	    return true;
+	  }
+	return false;
+
+      case SIGN_EXTEND:
+        {
+	  if (MEM_P (XEXP (x, 0)))
+	    *total = COSTS_N_INSNS (1);
+	  else
+	    *total = COSTS_N_INSNS (3);
+	  return false;
 	}
-      return false;
+
+      case MEM:
+	{
+	  rtx addr = XEXP (x, 0);
+
+	  /* Account for cost of different addressing modes.  */
+	  *total = nios2_address_cost (addr, mode, ADDR_SPACE_GENERIC, speed);
+
+	  if (outer_code == SET && opno == 0)
+	    /* Stores execute in 1 cycle accounted for by
+	       the outer SET.  */
+	    ;
+	  else if (outer_code == SET || outer_code == SIGN_EXTEND
+		   || outer_code == ZERO_EXTEND)
+	    /* Latency adjustment.  */
+	    {
+	      if (speed)
+		*total += COSTS_N_INSNS (1);
+	    }
+	  else
+	    /* This is going to have to be split into a load.  */
+	    *total += COSTS_N_INSNS (speed ? 2 : 1);
+	  return true;
+	}
 
       default:
         return false;
@@ -2090,6 +2161,37 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
   return false;
 }
 
+/* Implement TARGET_ADDRESS_COST.
+   Experimentation has shown that we get better code by penalizing the
+   the (plus reg symbolic_constant) and (plus reg (const ...)) forms
+   but giving (plus reg symbol_ref) address modes the same cost as those
+   that don't require splitting.  Also, from a theoretical point of view:
+   - This is in line with the recommendation in the GCC internals 
+     documentation to make address forms involving multiple
+     registers more expensive than single-register forms.  
+   - OTOH it still encourages fwprop1 to propagate constants into 
+     address expressions more aggressively.
+   - We should discourage splitting (symbol + offset) into hi/lo pairs
+     to allow CSE'ing the symbol when it's used with more than one offset,
+     but not so heavily as to avoid this addressing mode at all.  */
+static int
+nios2_address_cost (rtx address, 
+		    machine_mode mode ATTRIBUTE_UNUSED,
+		    addr_space_t as ATTRIBUTE_UNUSED, 
+		    bool speed ATTRIBUTE_UNUSED)
+{
+  if (nios2_plus_symbolic_constant_p (address))
+    return COSTS_N_INSNS (1);
+  if (nios2_symbolic_constant_p (address))
+    {
+      if (GET_CODE (address) == CONST)
+	return COSTS_N_INSNS (1);
+      else
+	return COSTS_N_INSNS (0);
+    }
+  return COSTS_N_INSNS (0);
+}
+
 /* Return true if X is a MEM whose address expression involves a symbolic
    constant.  */
 bool
@@ -2396,8 +2498,16 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   op0 = XEXP (x, 0);
   op1 = XEXP (x, 1);
 
+  /* Target-independent code turns (exp + constant) into plain
+     register indirect.  Although subsequent optimization passes will
+     eventually sort that out, ivopts uses the unoptimized form for
+     computing its cost model, so we get better results by generating
+     the correct form from the start.  */
+  if (nios2_valid_addr_offset_p (op1))
+    return gen_rtx_PLUS (Pmode, force_reg (Pmode, op0), copy_rtx (op1));
+
   /* We may need to split symbolic constants now.  */
-  if (nios2_symbolic_constant_p (op1))
+  else if (nios2_symbolic_constant_p (op1))
     {
       if (nios2_symbolic_constant_allowed ())
 	return gen_rtx_PLUS (Pmode, force_reg (Pmode, op0), copy_rtx (op1));
@@ -5258,6 +5368,9 @@ nios2_adjust_reg_alloc_order (void)
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS nios2_rtx_costs
+
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST nios2_address_cost
 
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS TARGET_LINUX_ABI

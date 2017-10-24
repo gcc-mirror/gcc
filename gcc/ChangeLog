@@ -1,5 +1,13 @@
 2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* config/nios2/nios2.c (nios2_rtx_costs): Make costs better
+	reflect reality.
+	(nios2_address_cost): Define.
+	(nios2_legitimize_address): Recognize (exp + constant) directly.
+	(TARGET_ADDRESS_COST): Define.
+
+2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* config/nios2/nios2-protos.h (nios2_large_constant_p): Declare.
 	(nios2_symbolic_memory_operand_p): Declare.
 	(nios2_split_large_constant): Declare.
