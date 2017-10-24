@@ -1,3 +1,9 @@
+2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82685
+	* include/experimental/string_view (operator""sv): Add noexcept.
+	* include/std/string_view (operator""sv): Likewise.
+
 2017-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new headers for C++17 filesystem library.
