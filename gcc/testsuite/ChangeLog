@@ -1,3 +1,8 @@
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80991
+	* g++.dg/ext/is_trivially_constructible5.C: New.
+
 2017-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/387-ficom-1.c: Allow for ficomp without s
