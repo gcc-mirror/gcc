@@ -1,3 +1,9 @@
+2017-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82697
+	* tree-ssa-phiopt.c (cond_store_replacement): Use alias-set
+	zero for conditional load and unconditional store.
+
 2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/install.texi: Document bootstrap-cet.

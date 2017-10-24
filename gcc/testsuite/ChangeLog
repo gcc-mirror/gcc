@@ -1,3 +1,8 @@
+2017-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82697
+	* gcc.dg/torture/pr82697.c: New testcase.
+
 2017-10-24  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
