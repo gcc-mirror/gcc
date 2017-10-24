@@ -1,5 +1,13 @@
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/82466
+	* decl.c (duplicate_decls): Warn for built-in functions declared as
+	non-function, use OPT_Wbuiltin_declaration_mismatch.
+
+	* decl.c (duplicate_decls): Avoid redundant '+' in warning_at.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/80991
 	* pt.c (value_dependent_expression_p, [TRAIT_EXPR]): Handle
 	a TREE_LIST as TRAIT_EXPR_TYPE2.

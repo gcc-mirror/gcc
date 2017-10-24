@@ -1837,7 +1837,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  locate_old_decl (olddecl);
 	}
       else if (TREE_PUBLIC (newdecl))
-	warning (0, "built-in function %q+D declared as non-function",
+	warning (OPT_Wbuiltin_declaration_mismatch,
+		 "built-in function %q+D declared as non-function",
 		 newdecl);
       else
 	warning (OPT_Wshadow, "declaration of %q+D shadows "

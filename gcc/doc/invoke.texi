@@ -6320,7 +6320,8 @@ attributes.
 @item -Wno-builtin-declaration-mismatch
 @opindex Wno-builtin-declaration-mismatch
 @opindex Wbuiltin-declaration-mismatch
-Warn if a built-in function is declared with the wrong signature.
+Warn if a built-in function is declared with the wrong signature or 
+as non-function.
 This warning is enabled by default.
 
 @item -Wno-builtin-macro-redefined
