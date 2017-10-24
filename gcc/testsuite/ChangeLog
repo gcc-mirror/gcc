@@ -1,5 +1,14 @@
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/82466
+	* c-c++-common/Wbuiltin-declaration-mismatch-1.c: New.
+	* c-c++-common/Wno-builtin-declaration-mismatch-1.c: Likewise.
+	* g++.dg/warn/Wbuiltin_declaration_mismatch-1.C: Likewise.
+	* g++.dg/parse/builtin2.C: Adjust.
+	* g++.old-deja/g++.mike/p811.C: Likewise.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/80991
 	* g++.dg/ext/is_trivially_constructible5.C: New.
 

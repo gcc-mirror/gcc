@@ -1,3 +1,9 @@
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* doc/invoke.texi ([Wbuiltin-declaration-mismatch]): Extend
+	description.
+
 2017-10-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR rtl-optimization/82396
@@ -55,7 +61,7 @@
 	* tree-outof-ssa.h (always_initialized_rtx_for_ssa_name_p): Delete.
 	* expr.c (expand_expr_real_1) <expand_decl_rtl>: Revert latest change.
 	* loop-iv.c (iv_get_reaching_def): Likewise.
-	* cfgexpand.c (expand_one_ssa_partition): Initialize the RTX if the 
+	* cfgexpand.c (expand_one_ssa_partition): Initialize the RTX if the
 	variable is promoted and the partition contains undefined values.
 
 2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
@@ -76,7 +82,7 @@
 	(nios2_symbolic_constant_allowed): New.
 	(nios2_symbolic_constant_p): New.
 	(nios2_plus_symbolic_constant_p): New.
-	(nios2_valid_addr_expr_p): Recognize addresses involving 
+	(nios2_valid_addr_expr_p): Recognize addresses involving
 	symbolic constants.
 	(nios2_legitimate_address_p): Likewise, also LO_SUM.
 	(nios2_symbolic_memory_operand_p): New.
@@ -157,7 +163,7 @@
 	* i386.h (processor_costs): Remove sse_move; add xmm_move, ymm_move
 	and zmm_move. Increase size of sse load and store tables;
 	add unaligned load and store tables; add ssemmx_to_integer.
-	* x86-tune-costs.h: Update all entries according to real 
+	* x86-tune-costs.h: Update all entries according to real
 	move latencies from Agner Fog's manual and chip documentation.
 
 2017-10-23  Jakub Jelinek  <jakub@redhat.com>

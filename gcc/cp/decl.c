@@ -1431,7 +1431,15 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* Avoid warnings redeclaring built-ins which have not been
 	     explicitly declared.  */
 	  if (DECL_ANTICIPATED (olddecl))
-	    return NULL_TREE;
+	    {
+	      if (TREE_PUBLIC (newdecl)
+		  && CP_DECL_CONTEXT (newdecl) == global_namespace)
+		warning_at (DECL_SOURCE_LOCATION (newdecl),
+			    OPT_Wbuiltin_declaration_mismatch,
+			    "built-in function %qD declared as non-function",
+			    newdecl);
+	      return NULL_TREE;
+	    }
 
 	  /* If you declare a built-in or predefined function name as static,
 	     the old definition is overridden, but optionally warn this was a
@@ -1522,7 +1530,7 @@ next_arg:;
 
 	      warning_at (DECL_SOURCE_LOCATION (newdecl),
 			  OPT_Wbuiltin_declaration_mismatch,
-			  "declaration of %q+#D conflicts with built-in "
+			  "declaration of %q#D conflicts with built-in "
 			  "declaration %q#D", newdecl, olddecl);
 	    }
 	  else if ((DECL_EXTERN_C_P (newdecl)
