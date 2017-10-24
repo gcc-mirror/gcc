@@ -35080,10 +35080,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 		     machine_mode mode, int ignore)
 {
   size_t i;
-  enum insn_code icode;
+  enum insn_code icode, icode2;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2, arg3, arg4;
-  rtx op0, op1, op2, op3, op4, pat, insn;
+  rtx op0, op1, op2, op3, op4, pat, pat2, insn;
   machine_mode mode0, mode1, mode2, mode3, mode4;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
@@ -36058,22 +36058,34 @@ rdseed_step:
 
     case IX86_BUILTIN_SBB32:
       icode = CODE_FOR_subborrowsi;
+      icode2 = CODE_FOR_subborrowsi_0;
       mode0 = SImode;
+      mode1 = DImode;
+      mode2 = CCmode;
       goto handlecarry;
 
     case IX86_BUILTIN_SBB64:
       icode = CODE_FOR_subborrowdi;
+      icode2 = CODE_FOR_subborrowdi_0;
       mode0 = DImode;
+      mode1 = TImode;
+      mode2 = CCmode;
       goto handlecarry;
 
     case IX86_BUILTIN_ADDCARRYX32:
       icode = CODE_FOR_addcarrysi;
+      icode2 = CODE_FOR_addcarrysi_0;
       mode0 = SImode;
+      mode1 = DImode;
+      mode2 = CCCmode;
       goto handlecarry;
 
     case IX86_BUILTIN_ADDCARRYX64:
       icode = CODE_FOR_addcarrydi;
+      icode2 = CODE_FOR_addcarrydi_0;
       mode0 = DImode;
+      mode1 = TImode;
+      mode2 = CCCmode;
 
     handlecarry:
       arg0 = CALL_EXPR_ARG (exp, 0); /* unsigned char c_in.  */
@@ -36082,7 +36094,8 @@ rdseed_step:
       arg3 = CALL_EXPR_ARG (exp, 3); /* unsigned int *sum_out.  */
 
       op1 = expand_normal (arg0);
-      op1 = copy_to_mode_reg (QImode, convert_to_mode (QImode, op1, 1));
+      if (!integer_zerop (arg0))
+	op1 = copy_to_mode_reg (QImode, convert_to_mode (QImode, op1, 1));
 
       op2 = expand_normal (arg1);
       if (!register_operand (op2, mode0))
@@ -36099,21 +36112,31 @@ rdseed_step:
 	  op4 = copy_addr_to_reg (op4);
 	}
 
-      /* Generate CF from input operand.  */
-      emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
-
-      /* Generate instruction that consumes CF.  */
       op0 = gen_reg_rtx (mode0);
+      if (integer_zerop (arg0))
+	{
+	  /* If arg0 is 0, optimize right away into add or sub
+	     instruction that sets CCCmode flags.  */
+	  op1 = gen_rtx_REG (mode2, FLAGS_REG);
+	  emit_insn (GEN_FCN (icode2) (op0, op2, op3));
+	}
+      else
+	{
+	  /* Generate CF from input operand.  */
+	  emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
 
-      op1 = gen_rtx_REG (CCCmode, FLAGS_REG);
-      pat = gen_rtx_LTU (mode0, op1, const0_rtx);
-      emit_insn (GEN_FCN (icode) (op0, op2, op3, op1, pat));
+	  /* Generate instruction that consumes CF.  */
+	  op1 = gen_rtx_REG (CCCmode, FLAGS_REG);
+	  pat = gen_rtx_LTU (mode1, op1, const0_rtx);
+	  pat2 = gen_rtx_LTU (mode0, op1, const0_rtx);
+	  emit_insn (GEN_FCN (icode) (op0, op2, op3, op1, pat, pat2));
+	}
 
       /* Return current CF value.  */
       if (target == 0)
         target = gen_reg_rtx (QImode);
 
-      PUT_MODE (pat, QImode);
+      pat = gen_rtx_LTU (QImode, op1, const0_rtx);
       emit_insn (gen_rtx_SET (target, pat));
 
       /* Store the result.  */
