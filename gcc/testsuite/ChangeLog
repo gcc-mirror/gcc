@@ -1,3 +1,10 @@
+2017-10-24  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82307
+	* g++.dg/cpp0x/enum35.C: New.
+	* g++.dg/cpp0x/enum36.C: Likewise.
+
 2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82659
