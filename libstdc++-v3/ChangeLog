@@ -1,5 +1,13 @@
 2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/locale/gnu/c_locale.cc [_GLIBCXX_LONG_DOUBLE_COMPAT]: Ignore
+	-Wattribute-alias warnings.
+	* src/c++11/istream-inst.cc: Likewise.
+	* src/c++11/locale-inst.cc: Likewise.
+	* src/c++11/ostream-inst.cc: Likewise.
+	* src/c++11/wlocale-inst.cc: Likewise.
+	* src/c++98/hash-long-double-tr1-aux.cc: Likewise.
+
 	* include/bits/string_view.tcc (find_first_of, find_last_of)
 	(find_first_not_of, find_last_not_of): Add noexcept.
 	* include/std/string_view (basic_string_view(const _CharT*))
