@@ -1,3 +1,7 @@
+2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bootstrap-cet.mk: New file.
+
 2017-06-19  Martin Liska  <mliska@suse.cz>
 
 	* bootstrap-lto-noplugin.mk: Enable -flto in all PGO stages.

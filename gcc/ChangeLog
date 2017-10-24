@@ -1,5 +1,9 @@
 2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* doc/install.texi: Document bootstrap-cet.
+
+2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/82659
 	* config/i386/i386.c (rest_of_insert_endbranch): Don't insert
 	ENDBR instruction at function entrance if function is only

@@ -2492,6 +2492,13 @@ useful to verify the full @option{-fcompare-debug} testing coverage.  It
 must be used along with @code{bootstrap-debug-lean} and
 @code{bootstrap-debug-lib}.
 
+@item @samp{bootstrap-cet}
+This option enables Intel CET for host tools during bootstrapping.
+@samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
+@option{-fcf-protection -mcet} to @samp{BOOT_CFLAGS}.  This option
+assumes that the host supports Intel CET (e.g. GNU assembler version
+2.30 or later).
+
 @item @samp{bootstrap-time}
 Arranges for the run time of each program started by the GCC driver,
 built in any stage, to be logged to @file{time.log}, in the top level of
