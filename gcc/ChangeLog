@@ -1,5 +1,14 @@
 2017-10-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	PR rtl-optimization/82396
+	* gcc/haifa-sched.c (ready_sort_real): Remove qsort workaround.
+	(autopref_multipass_init): Simplify initialization.
+	(autopref_rank_data): Simplify sort order.
+	* gcc/sched-int.h (autopref_multipass_data_): Remove
+	multi_mem_insn_p, min_offset and max_offset.
+
+2017-10-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	PR middle-end/60580
 	* config/aarch64/aarch64.c (aarch64_frame_pointer_required)
 	Check special value of flag_omit_frame_pointer.
