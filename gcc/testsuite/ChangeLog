@@ -1,3 +1,8 @@
+2017-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82370
+	* gcc.target/i386/pr82370.c: New test.
+
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82466
