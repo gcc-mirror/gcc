@@ -1,5 +1,35 @@
 2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* config/nios2/nios2-protos.h (nios2_large_constant_p): Declare.
+	(nios2_symbolic_memory_operand_p): Declare.
+	(nios2_split_large_constant): Declare.
+	(nios2_split_symbolic_memory_operand): Declare.
+	* config/nios2/nios2.c: Adjust includes.
+	(nios2_symbolic_constant_allowed): New.
+	(nios2_symbolic_constant_p): New.
+	(nios2_plus_symbolic_constant_p): New.
+	(nios2_valid_addr_expr_p): Recognize addresses involving 
+	symbolic constants.
+	(nios2_legitimate_address_p): Likewise, also LO_SUM.
+	(nios2_symbolic_memory_operand_p): New.
+	(nios2_large_constant_p): New.
+	(nios2_split_large_constant): New.
+	(nios2_split_plus_large_constant): New.
+	(nios2_split_symbolic_memory_operand): New.
+	(nios2_legitimize_address): Code refactoring.  Handle addresses
+	involving symbolic constants.
+	(nios2_emit_move_sequence): Likewise.
+	(nios2_print_operand): Improve error output.
+	(nios2_print_operand_address): Handle LO_SUM.
+	(nios2_cdx_narrow_form_p): Likewise.
+	* config/nios2/nios2.md (movqi_internal): Add splitter for memory
+	operands involving symbolic constants.
+	(movhi_internal, movsi_internal): Likewise.
+	(zero_extendhisi2, zero_extendqi<mode>2): Likewise.
+	(extendhisi2, extendqi<mode>2): Likewise.
+
+2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* tree-pass.h (PROP_rtl_split_insns): Define.
 	* recog.c (pass_data_split_all_insns): Provide PROP_rtl_split_insns.
 
