@@ -201,7 +201,7 @@
   "addi\\t%0, %1, %L2"
   [(set_attr "type" "alu")])
 
-(define_insn "movqi_internal"
+(define_insn_and_split "movqi_internal"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=m, r,r")
         (match_operand:QI 1 "general_operand"       "rM,m,rI"))]
   "(register_operand (operands[0], QImode)
@@ -224,20 +224,47 @@
 	gcc_unreachable ();
       }
   }
+  "(nios2_symbolic_memory_operand_p (operands[0]) 
+   || nios2_symbolic_memory_operand_p (operands[1]))"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    if (nios2_symbolic_memory_operand_p (operands[0]))
+      operands[0] = nios2_split_symbolic_memory_operand (operands[0]);
+    else
+      operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+  }
   [(set_attr "type" "st,ld,mov")])
 
-(define_insn "movhi_internal"
+(define_insn_and_split "movhi_internal"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=m, r,r")
         (match_operand:HI 1 "general_operand"       "rM,m,rI"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
-  "@
-    sth%o0%.\\t%z1, %0
-    ldhu%o1%.\\t%0, %1
-    mov%i1%.\\t%0, %z1"
+  {
+    switch (which_alternative)
+      {
+      case 0:
+        return "sth%o0%.\\t%z1, %0";
+      case 1:
+        return "ldhu%o1%.\\t%0, %1";
+      case 2:
+        return "mov%i1%.\\t%0, %z1";
+      default:
+	gcc_unreachable ();
+      }
+  }
+  "(nios2_symbolic_memory_operand_p (operands[0]) 
+   || nios2_symbolic_memory_operand_p (operands[1]))"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    if (nios2_symbolic_memory_operand_p (operands[0]))
+      operands[0] = nios2_split_symbolic_memory_operand (operands[0]);
+    else
+      operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+  }
   [(set_attr "type" "st,ld,mov")])
 
-(define_insn "movsi_internal"
+(define_insn_and_split "movsi_internal"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=m, r,r,   r")
         (match_operand:SI 1 "general_operand"       "rM,m,rIJK,S"))]
   "(register_operand (operands[0], SImode)
@@ -268,6 +295,18 @@
       default:
 	gcc_unreachable ();
       }
+  }
+  "(nios2_symbolic_memory_operand_p (operands[0]) 
+    || nios2_symbolic_memory_operand_p (operands[1])
+    || nios2_large_constant_p (operands[1]))"
+  [(set (match_dup 0) (match_dup 1))]
+  {
+    if (nios2_symbolic_memory_operand_p (operands[0]))
+      operands[0] = nios2_split_symbolic_memory_operand (operands[0]);
+    else if (nios2_symbolic_memory_operand_p (operands[1]))
+      operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+    else
+      operands[1] = nios2_split_large_constant (operands[1], operands[0]);
   }
   [(set_attr "type" "st,ld,mov,alu")])
 
@@ -318,42 +357,62 @@
 (define_mode_iterator QX [HI SI])
 
 ;; Zero extension patterns
-(define_insn "zero_extendhisi2"
+(define_insn_and_split "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
         (zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
     andi%.\\t%0, %1, 0xffff
     ldhu%o1%.\\t%0, %1"
+  "nios2_symbolic_memory_operand_p (operands[1])"
+  [(set (match_dup 0) (zero_extend:SI (match_dup 1)))]
+  {
+    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+  }
   [(set_attr "type"     "and,ld")])
 
-(define_insn "zero_extendqi<mode>2"
+(define_insn_and_split "zero_extendqi<mode>2"
   [(set (match_operand:QX 0 "register_operand" "=r,r")
         (zero_extend:QX (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
     andi%.\\t%0, %1, 0xff
     ldbu%o1%.\\t%0, %1"
+  "nios2_symbolic_memory_operand_p (operands[1])"
+  [(set (match_dup 0) (zero_extend:QX (match_dup 1)))]
+  {
+    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+  }
   [(set_attr "type"     "and,ld")])
 
 ;; Sign extension patterns
 
-(define_insn "extendhisi2"
+(define_insn_and_split "extendhisi2"
   [(set (match_operand:SI 0 "register_operand"                     "=r,r")
         (sign_extend:SI (match_operand:HI 1 "nonimmediate_operand"  "r,m")))]
   ""
   "@
    #
    ldh%o1%.\\t%0, %1"
+  "nios2_symbolic_memory_operand_p (operands[1])"
+  [(set (match_dup 0) (sign_extend:SI (match_dup 1)))]
+  {
+    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+  }
   [(set_attr "type" "alu,ld")])
 
-(define_insn "extendqi<mode>2"
+(define_insn_and_split "extendqi<mode>2"
   [(set (match_operand:QX 0 "register_operand"                     "=r,r")
         (sign_extend:QX (match_operand:QI 1 "nonimmediate_operand"  "r,m")))]
   ""
   "@
    #
    ldb%o1%.\\t%0, %1"
+  "nios2_symbolic_memory_operand_p (operands[1])"
+  [(set (match_dup 0) (sign_extend:QX (match_dup 1)))]
+  {
+    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+  }
   [(set_attr "type" "alu,ld")])
 
 ;; Split patterns for register alternative cases.

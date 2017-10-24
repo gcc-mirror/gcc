@@ -30,6 +30,11 @@ extern bool nios2_expand_return (void);
 extern void nios2_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE
+extern bool nios2_large_constant_p (rtx);
+extern bool nios2_symbolic_memory_operand_p (rtx);
+
+extern rtx nios2_split_large_constant (rtx, rtx);
+extern rtx nios2_split_symbolic_memory_operand (rtx);
 extern bool nios2_emit_move_sequence (rtx *, machine_mode);
 extern void nios2_emit_expensive_div (rtx *, machine_mode);
 extern void nios2_adjust_call_address (rtx *, rtx);
