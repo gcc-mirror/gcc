@@ -1,3 +1,8 @@
+2017-10-06  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* config/i386/i386.md(*movsf_internal, *movdf_internal):
+	Avoid 512-bit AVX modes for TARGET_PREFER_AVX256.
+
 2017-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/82569
