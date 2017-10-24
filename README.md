@@ -13,42 +13,53 @@ feedback from testing these features.  Unchecked items are insufficiently mature
 - [ ] The [issue-#6-iso-fortran-binding-h branch] providing gthe Fortran 2015 `iso_fortran_binding.h` file.
 
 We welcome code contributions via [pull request] for any listed features or other unsupported
-features of the draft Fortran 2015 standard:
+features of the [draft Fortran 2015 standard]:
 
 Installation
 ============
-This fork's [releases] are produced from the [teams branch], which expect will be of 
-most interest to users.   We recommend building releses usin the [OpenCoarrays] 
-installation script as follows:
+This fork's [releases] are produced from the [teams branch], which we expect will be of 
+most interest to users.   We recommend building the [latest release] using the [OpenCoarrays] 
+`install.sh` script as follows:
 ```bash
+# Install a teams-branch release of this GCC fork
 git clone https://github.com/sourceryinstitute/opencoarrays
 cd oppencoarrays
 ./install.sh --package gcc \
   --from-url https://github.com/sourceryinstitute/gcc/archive/<release-tag>.tar.gz \
   --install-version <release-tag>
 ```
-where <version-number> and <release-tag> must be replaced with the appropriate strings such as
-1.9.2 and teams-20170921, respectively.  The final command above peforms the safest but slowest
-build, which could take several hours to complete.  For a speedier build, add the `--disable-bootstrap`,
-which might fail if the GCC you are using to build is too old.  Also, for an interactive build,
-add `--yes-to-all` to instruct the installer to assume affirmative answers to any queries. If successful,
-the above steps will install GCC in the prerequisites/installations subdirectory.  To see additional
-installation options, including choosing another installation path, execute `./install.sh --help`.
+where <release-tag> must be replaced with the appropriate string such as teams-20170921.  The final
+command above peforms the safest but slowest build, which could take several hours to complete.
+For a speedier build, add the `--disable-bootstrap`, which might fail if the GCC you are using
+to build is too old.  Also, for an interactive build, add `--yes-to-all` to instruct the
+installer to assume affirmative answers to any queries. If successful, the above steps will 
+install GCC in the `prerequisites/installations` subdirectory.  To see additional installation
+options, including choosing another installation path, execute `./install.sh --help`.
 
-For access to any Fortran 2015 parallel features, including teams and failed images, build the [MPICH] 
-and the [opencoarrays-teams branch] of OpenCoarrays:
+Next use the resulting compilers to build [MPICH] 3.2 or later:
 ```bash
-git checkout opencoarrays-teams
-export LD_LIBRARY_PATH=<gcc-fork-install-path>/lib64:$LD_LIBRARY_PATH
-./install.sh  --package mpich \
-   --with-fortran <gcc-fork-install-path>/bin/gfortarn \
-   --with-c       <gcc-fork-install-path>/bin/gcc      \
-   --with-cpp     <gcc-fork-install-path>/bin/g++
-./install.sh  \
-   --with-mpi <mpich-install-path> 
+#Install the teams-branch release of the GCC fork:
+./install.sh --package gcc --from-url https://github.com/sourceryinstitute/gcc/teams-<release-tag>
+
+# Install MPICH 3.2 or later using the GCC that was installed above:
+export LD_LIBRARY_PATH="${PWD}"/prerequisites/installations/gcc/teams-<release-tag>/lib64
+
+./install.sh --package mpich \
+   --with-fortran "${PWD}"/prerequisites/installations/gcc/<release-tag>/bin/gfortarn \
+   --with-c       "${PWD}"/prerequisites/installations/gcc/<release-tag>/bin/gcc      \
+   --with-cpp     "${PWD}"/prerequisites/installations/gcc/<release-tag>bin/g++
+
 ```
-with appropriate substitutions for the values between angular brackdets (<...>).  Please report
-any problems with the above steps on our [issues page].
+
+Next use the resulting [MPICH] installation to build the [opencoarrays-teams branch] of OpenCoarrays.  
+```bash
+# Install OpenCoarrays using the MPICH just installed:
+git checkout opencoarrays-teams
+./install.sh  \
+   --with-mpi "${PWD}"/prerequisites/installations/mpich/<mpich-version-number>/
+```
+after again replacin text between angular brackets with the appropriate string (<...>) such as "3.2".
+Please report any problems with the above steps on our [issues page].
 
 
 [GCC mirror] README
@@ -88,3 +99,5 @@ individually.
 [issues page]: https://github.com/sourceryinstitute/gcc/issues/
 [opencoarrays-teams branch]: https://github.com/sourceryinstitute/opencoarrays/tree/opencoarrays-teams
 [pull request]: https://github.com/sourceryinstitute/gcc/pulls
+[draft Fortran 2015 standard]: https://bit.ly/fortran-2015-draft
+[latest release]: https://github.com/sourceryinstitute/gcc/releases/latest
