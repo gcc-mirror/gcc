@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-require-normal-namespace "" }
 
 // Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
