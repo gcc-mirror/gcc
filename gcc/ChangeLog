@@ -1,3 +1,10 @@
+2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82659
+	* config/i386/i386.c (rest_of_insert_endbranch): Don't insert
+	ENDBR instruction at function entrance if function is only
+	called directly.
+
 2017-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82628

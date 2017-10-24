@@ -2587,7 +2587,8 @@ rest_of_insert_endbranch (void)
      nocf_check attribute.  This will allow to reduce the number of EB.  */
 
   if (!lookup_attribute ("nocf_check",
-			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl))))
+			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
+      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
     {
       cet_eb = gen_nop_endbr ();
 

@@ -1,3 +1,17 @@
+2017-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82659
+	* gcc.target/i386/cet-label-2.c: New test.
+	* gcc.target/i386/cet-sjlj-4.c: Likewise.
+	* gcc.target/i386/cet-sjlj-5.c: Likewise.
+	* gcc.target/i386/cet-switch-3.c: Likewise.
+	* gcc.target/i386/pr82659-1.c: Likewise.
+	* gcc.target/i386/pr82659-2.c: Likewise.
+	* gcc.target/i386/pr82659-3.c: Likewise.
+	* gcc.target/i386/pr82659-4.c: Likewise.
+	* gcc.target/i386/pr82659-5.c: Likewise.
+	* gcc.target/i386/pr82659-6.c: Likewise.
+
 2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/nios2/cdx-branch.c:  Fix broken test.
