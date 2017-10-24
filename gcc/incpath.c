@@ -521,7 +521,7 @@ clean_cxx_module_path (cpp_reader *pfile, const char *root,
   /* Append '.'.  */
   add_path (xstrdup ("."), INC_CXX_MPATH, true, true);
   /* Append any environment path.  */
-  add_env_var_paths ("GCC_CXX_MODULE_PATH", INC_CXX_MPATH);
+  add_env_var_paths ("CXX_MODULE_PATH", INC_CXX_MPATH);
   if (root)
     {
       /* Prepend the root to the path.  */

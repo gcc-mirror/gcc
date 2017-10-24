@@ -1731,6 +1731,7 @@ cpms_in::tag_conf ()
 const cpm_stream::gtp cpm_stream::global_tree_arys[] =
   {
     {sizetype_tab, stk_type_kind_last},
+    {integer_types, itk_none},
     {global_trees, TI_MAX},
     {cp_global_trees, CPTI_MAX},
     {NULL, 0}
@@ -4295,6 +4296,10 @@ cpms_out::tree_node (tree t)
 	     type name as an interstitial, and then start over.  */
 	  dump () && dump ("Writing interstitial type name %C:%N%M",
 			   TREE_CODE (name), name, name);
+	  /* Make sure this is not a named builtin. We should find
+	     those some other way to be canonically correct.  */
+	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
+		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
 	  w.u (rt_type_name);
 	  tree_node (name);
 	  dump () && dump ("Wrote interstitial type name %C:%N%M",
@@ -4497,6 +4502,12 @@ cpms_in::tree_node ()
   else if (tag == rt_conv_identifier)
     {
       tree t = tree_node ();
+      if (!t || !TYPE_P (t))
+	{
+	  error ("bad conversion operator");
+	  r.bad ();
+	  t = void_type_node;
+	}
       tree id = make_conv_op_name (t);
       tag = insert (id);
       dump () && dump ("Read:%u conv_op_identifier:%N", tag, t);
@@ -4840,13 +4851,15 @@ read_module (FILE *stream, const char *fname, module_state *state,
 	     cpms_in *from = NULL)
 {
   cpms_in in (stream, fname, state, from);
+  const char *str_name
+    = (identifier_p (state->name) ? IDENTIFIER_POINTER (state->name)
+       : TREE_STRING_POINTER (state->name));
+  location_t saved_loc = input_location;
 
+  // FIXME: Push location information
   if (!quiet_flag)
     {
-      
-      fprintf (stderr, " importing:%s(%s)",
-	       identifier_p (state->name) ? IDENTIFIER_POINTER (state->name)
-	       : TREE_STRING_POINTER (state->name), fname);
+      fprintf (stderr, " importing:%s(%s)", str_name, fname);
       fflush (stderr);
       pp_needs_newline (global_dc->printer) = true;
       diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
@@ -4871,6 +4884,13 @@ read_module (FILE *stream, const char *fname, module_state *state,
     {
       ok = in.get_mod ();
       gcc_assert (ok >= THIS_MODULE_INDEX);
+      if (!quiet_flag)
+	{
+	  fprintf (stderr, " imported:%s(#%d)", str_name, ok);
+	  fflush (stderr);
+	  pp_needs_newline (global_dc->printer) = true;
+	  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+	}
     }
   else
     /* Failure to read a module is going to cause big problems, so
@@ -4878,6 +4898,7 @@ read_module (FILE *stream, const char *fname, module_state *state,
     fatal_error (input_location,
 		 "failed to read module %qE (%qs)", state->name, fname);
 
+  input_location = saved_loc;
   return ok;
 }
 
@@ -5015,18 +5036,25 @@ search_module_path (char *&name, size_t name_len, tree mname)
     return stream;
 
   if (once)
-    return NULL;
+    {
+      inform (input_location, "module wrapper failed to install BMI");
+      return NULL;
+    }
 
   once = true;
 
+  const char *str_name = (identifier_p (mname) ? IDENTIFIER_POINTER (mname)
+			  : TREE_STRING_POINTER (mname));
+  inform (UNKNOWN_LOCATION, "invoking module wrapper to install %qs", str_name);
+
   /* wrapper <module-name> <module-bmi-file> <source-file> <this-file>
-     We may want to pass the multilib directory fragment too.  */
+     We may want to pass the multilib directory fragment too.
+     We may want to provide entire chain of imports.  */
 
   unsigned len = 0;
   const char *argv[6];
   argv[len++] = flag_module_wrapper;
-  argv[len++] = (identifier_p (mname) ? IDENTIFIER_POINTER (mname)
-		 : TREE_STRING_POINTER (mname));
+  argv[len++] = str_name;
   argv[len++] = name;
   argv[len++] = main_input_filename;
   argv[len++] = expand_location (input_location).file;
@@ -5066,13 +5094,19 @@ search_module_path (char *&name, size_t name_len, tree mname)
       error_at (UNKNOWN_LOCATION, "%s %qs %m", errmsg, argv[0]);
     }
   else if (WIFSIGNALED (status))
-    error_at (UNKNOWN_LOCATION, "module hook %qs died by signal %s",
+    error_at (UNKNOWN_LOCATION, "module wrapper %qs died by signal %s",
 	      argv[0], strsignal (WTERMSIG (status)));
   else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-    error_at (UNKNOWN_LOCATION, "module hook %qs exit status %d",
+    error_at (UNKNOWN_LOCATION, "module wrapper %qs exit status %d",
 	      argv[0], WEXITSTATUS (status));
+  else
+    {
+      inform (UNKNOWN_LOCATION, "completed module wrapper to install %qs",
+	      str_name); 
+      goto again;
+    }
 
-  goto again;
+  return NULL;
 }
 
 static FILE *

@@ -1496,7 +1496,7 @@ C++ ObjC++ Driver Var(flag_modules) Uinteger
 Enable C++ modules (experimental).
 
 fmodules++
-C++ ObjC++ Var(flag_modules) Uinteger
+C++ ObjC++ Driver Var(flag_modules) Uinteger
 Enable C++ modules (more experimental).
 
 fmodules-ts

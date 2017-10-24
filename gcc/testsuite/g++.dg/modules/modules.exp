@@ -41,7 +41,7 @@ lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules" "-fmodule-wrapper=false"
 dg-init
 
 global module_do
-global module_ifs
+global module_bmis
 
 proc decode_mod_spec { spec } {
     set not 0
@@ -73,13 +73,13 @@ proc dg-module-bmi { args } {
 	lappend res [lindex $args 2]
     }
 
-    global module_ifs
-    lappend module_ifs $res
+    global module_bmis
+    lappend module_bmis $res
 }
 
 # check the expected module files exist (or not)
 # return list to delete
-proc module_if_it { src ifs } {
+proc module_bmi_p { src ifs } {
     set res {}
     foreach if_arg $ifs {
 	set spec [lindex $if_arg 0]
@@ -201,11 +201,12 @@ proc cleanup_module_files { files } {
 foreach src [prune [lsort [find $srcdir/$subdir "*.C"]] \
 		 "$srcdir/$subdir/*_?.C"] {
     if [runtest_file_p $runtests $src] {
-	set module_ifs {}
+	set module_bmis {}
+	set module_paths [list $srcdir/$subdir/]
 	# don't bother running these at each -std level
 	dg-test $src "" $DEFAULT_MODFLAGS
 	set testcase [string range $src [string length "$srcdir/"] end]
-	cleanup_module_files [module_if_it $testcase $module_ifs]
+	cleanup_module_files [module_bmi_p $testcase $module_bmis]
     }
 }
 
@@ -220,11 +221,11 @@ foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
 	set asm_list {}
 	verbose "Modules $srcs" 1
 	foreach test $srcs {
-	    set module_ifs {}
+	    set module_bmis {}
 	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
 	    lappend asm_list [regsub {\.C$} [file tail $test] {.s}]
 	    set testcase [string range $test [string length "$srcdir/"] end]
-	    lappend mod_files [module_if_it $testcase $module_ifs]
+	    lappend mod_files [module_bmi_p $testcase $module_bmis]
 	}
 	set ok 1
 	if { $module_do != "" } {
@@ -240,6 +241,26 @@ foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
 	    cleanup_module_files $mod_files
 	}
     }
+}
+
+# special-case test for module wrapper
+remote_download host $srcdir/$subdir/hello.cc
+set mod_files [list hello.cc]
+set module_bmis {}
+set module_do {}
+dg-test -keep-output $srcdir/$subdir/main.cc "" "-fmodules -fmodule-path=."
+set asm_list {main.o hello.o}
+set testcase $subdir/main.cc
+lappend mod_files [module_bmi_p $testcase $module_bmis]
+set ok 1
+if { $module_do != "" } {
+    set ok [module_do_it $module_do $testcase $asm_list]
+}
+if { $ok } {
+    foreach asm $asm_list {
+	file_on_host delete $asm
+    }
+    cleanup_module_files $mod_files
 }
 
 dg-finish

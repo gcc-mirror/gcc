@@ -1,3 +1,21 @@
+2017-10-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp
+	* cxx-module-wrapper.sh: Cleanups.
+	* module.c (cpm_stream::global_tree_arys): Add integer_types.
+	(cpms_{in,out}::tree_node): Robustify.
+	(read_module): Note end of importing.
+	(search_module_path): Note if wrapper failed to install.
+	* name-lookup.c (merge_global_decl): Zap anticipated decl here ...
+	(push_module_binding): ... not here.
+	gcc/
+	* incpath.c (clean_cxx_module_path): Correct env var name.
+	gcc/c-family/
+	* c.opt (fmodules++): Add Driver.
+	gcc/testsuite/
+	* g++.dg/modules/{main.c,hello.cc}: New.
+	* g++.dg/modules/modules.exp: Special case main.cc
+
 2017-10-23  Nathan Sidwell  <nathan@acm.org>
 
 	Wrapper program

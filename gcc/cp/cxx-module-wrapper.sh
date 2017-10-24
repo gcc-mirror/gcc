@@ -28,6 +28,7 @@
 
 shopt -s extglob nullglob
 
+progname=${0##*/}
 module=$1
 bmi=$2
 source=$3
@@ -37,11 +38,17 @@ args=$(eval echo $COLLECT_GCC_OPTIONS)
 gcc="$COLLECT_GCC"
 
 module=${bmi%.nms}
-for root in . ${INC_CXX_MPATH//:/\ } ; do
+for root in . ${CXX_MODULE_PATH//:/\ } ; do
   src=$(echo $root/$module.@(cc|C|ccm))
   test $src && break
 done
 src=${src#./}
-echo "Compiling module interface $module ($src)" >&2
-$gcc $args -c -fmodule-root=$root -fmodule-output=$bmi $src
-echo "Continuing compilation of $source ($importer)" >&2
+if test $src ; then
+    echo "$progname: note: Compiling module interface $module ($src)" >&2
+    case " $args " in
+	(' -v ') set -x ;;
+    esac
+    exec $gcc $args -c -fmodule-root=$root -fmodule-output=$root/$bmi $src
+fi
+echo "$progname: cannot find source for module $module" >&2
+exit 1

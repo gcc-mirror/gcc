@@ -3492,6 +3492,10 @@ merge_global_decl (tree ctx, tree decl)
 				     GLOBAL_MODULE_INDEX, is_ns);
   tree old = NULL_TREE;
 
+  if (*mslot && anticipated_builtin_p (*mslot))
+    /* Zap out an anticipated builtin.  */
+    *mslot = NULL_TREE;
+
   for (ovl_iterator iter (MAYBE_STAT_DECL (*mslot)); !old && iter; ++iter)
     if (!iter.using_p ())
       old = duplicate_decls (decl, *iter, false);
@@ -3555,13 +3559,6 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
   tree *mslot = module_binding_slot (slot, name, mod, is_ns ? -1 : 1);
 
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
-
-  if (*mslot && anticipated_builtin_p (*mslot))
-    {
-      gcc_assert (mod == GLOBAL_MODULE_INDEX);
-      /* Zap out an anticipated builtin.  */
-      *mslot = NULL_TREE;
-    }
 
   tree export_tail = NULL_TREE;
   for (ovl_iterator iter (value); iter; ++iter)
