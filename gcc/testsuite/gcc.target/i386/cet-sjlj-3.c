@@ -2,7 +2,7 @@
 /* { dg-options "-O -fcf-protection -mcet" } */
 /* { dg-final { scan-assembler-times "endbr32" 4 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "endbr64" 4 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "call	_setjmp" 1 } } */
+/* { dg-final { scan-assembler-times "call	_?setjmp" 1 } } */
 /* { dg-final { scan-assembler-times "call	longjmp" 1 } } */
 
 #include <stdio.h>
