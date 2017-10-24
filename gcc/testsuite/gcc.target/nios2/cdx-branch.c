@@ -23,7 +23,7 @@ extern int i (int);
 extern int j (int);
 extern int k (int);
 
-int h (int a)
+int h (int a, int b)
 {
   int x;
 
@@ -31,7 +31,7 @@ int h (int a)
      an unconditional branch from one branch of the "if" to
      the return statement.  We compile this testcase with -Os to
      avoid insertion of a duplicate epilogue in place of the branch.  */
-  if (a == 1)
+  if (a == b)
     x = i (37);
   else
     x = j (42);

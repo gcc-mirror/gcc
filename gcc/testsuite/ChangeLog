@@ -1,3 +1,16 @@
+2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/cdx-branch.c:  Fix broken test.
+	* gcc.target/nios2/lo-addr-bypass.c: New.
+	* gcc.target/nios2/lo-addr-char.c: New.
+	* gcc.target/nios2/lo-addr-int.c: New.
+	* gcc.target/nios2/lo-addr-pic.c: New.
+	* gcc.target/nios2/lo-addr-short.c: New.
+	* gcc.target/nios2/lo-addr-tls.c: New.
+	* gcc.target/nios2/lo-addr-uchar.c: New.
+	* gcc.target/nios2/lo-addr-ushort.c: New.
+	* gcc.target/nios2/lo-addr-volatile.c: New.
+
 2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/80449
