@@ -1,3 +1,7 @@
+2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (TARGET_LRA_P): Don't override.
+
 2017-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/82630
