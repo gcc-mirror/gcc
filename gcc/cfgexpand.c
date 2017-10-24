@@ -1391,10 +1391,18 @@ expand_one_ssa_partition (tree var)
     }
 
   machine_mode reg_mode = promote_ssa_mode (var, NULL);
-
   rtx x = gen_reg_rtx (reg_mode);
 
   set_rtl (var, x);
+
+  /* For a promoted variable, X will not be used directly but wrapped in a
+     SUBREG with SUBREG_PROMOTED_VAR_P set, which means that the RTL land
+     will assume that its upper bits can be inferred from its lower bits.
+     Therefore, if X isn't initialized on every path from the entry, then
+     we must do it manually in order to fulfill the above assumption.  */
+  if (reg_mode != TYPE_MODE (TREE_TYPE (var))
+      && bitmap_bit_p (SA.partitions_for_undefined_values, part))
+    emit_move_insn (x, CONST0_RTX (reg_mode));
 }
 
 /* Record the association between the RTL generated for partition PART
