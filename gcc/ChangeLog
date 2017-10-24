@@ -1,5 +1,10 @@
 2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* tree-pass.h (PROP_rtl_split_insns): Define.
+	* recog.c (pass_data_split_all_insns): Provide PROP_rtl_split_insns.
+
+2017-10-23  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* config/nios2/nios2.c (TARGET_LRA_P): Don't override.
 
 2017-10-23  Jakub Jelinek  <jakub@redhat.com>
