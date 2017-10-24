@@ -1,3 +1,9 @@
+2017-10-24  Qing Zhao <qing.zhao@oracle.com>
+	    Wilco Dijkstra <wilco.dijkstra@arm.com>
+
+        * builtins.c (expand_builtin_update_setjmp_buf): Add a
+        converstion to Pmode from the buf_addr.
+
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82603

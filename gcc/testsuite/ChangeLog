@@ -1,3 +1,9 @@
+2017-10-24  Qing Zhao <qing.zhao@oracle.com>
+	    Wilco Dijkstra <wilco.dijkstra@arm.com>
+
+        PR middle-end/80295
+        * gcc.target/aarch64/pr80295.c: New test.
+
 2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
