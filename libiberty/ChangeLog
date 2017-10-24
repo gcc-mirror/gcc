@@ -1,3 +1,10 @@
+2017-10-24  Alan Modra  <amodra@gmail.com>
+
+	PR lto/82687
+	PR lto/82575
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Only make __gnu_lto symbols hidden.
+
 2017-10-20  Alan Modra  <amodra@gmail.com>
 
 	PR lto/82575
