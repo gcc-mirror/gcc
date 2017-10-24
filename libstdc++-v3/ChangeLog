@@ -1,5 +1,19 @@
 2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/string_view.tcc (find_first_of, find_last_of)
+	(find_first_not_of, find_last_not_of): Add noexcept.
+	* include/std/string_view (basic_string_view(const _CharT*))
+	(basic_string_view(const _CharT*, size_type))
+	(front, back, remove_prefix, remove_suffix, find, rfind)
+	(find_first_of, find_first_not_of): Add noexcept.
+	(at(size_type), _S_compare(size_type, size_type)): Replace conditional
+	expressions with if statements.
+	(copy(_CharT*, size_type, size_type), substr(size_type, size_type)):
+	Use _M_check for length checks.
+	(compare(basic_string_view)): Reformat.
+	(_M_check(size_type, const char)): Add noexcept(false).
+	(_M_limit(size_type, size_type)): Use noexcept not _GLIBCXX_NOEXCEPT.
+
 	PR libstdc++/82685
 	* include/experimental/string_view (operator""sv): Add noexcept.
 	* include/std/string_view (operator""sv): Likewise.
