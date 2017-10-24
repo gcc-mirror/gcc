@@ -24019,8 +24019,21 @@ value_dependent_expression_p (tree expression)
     case TRAIT_EXPR:
       {
 	tree type2 = TRAIT_EXPR_TYPE2 (expression);
-	return (dependent_type_p (TRAIT_EXPR_TYPE1 (expression))
-		|| (type2 ? dependent_type_p (type2) : false));
+
+	if (dependent_type_p (TRAIT_EXPR_TYPE1 (expression)))
+	  return true;
+
+	if (!type2)
+	  return false;
+
+	if (TREE_CODE (type2) != TREE_LIST)
+	  return dependent_type_p (type2);
+
+	for (; type2; type2 = TREE_CHAIN (type2))
+	  if (dependent_type_p (TREE_VALUE (type2)))
+	    return true;
+
+	return false;
       }
 
     case MODOP_EXPR:
