@@ -1626,6 +1626,14 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
   BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
+  DECL_ATTRIBUTES (decl) = DECL_ATTRIBUTES (current_function_decl);
+  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
+    = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (current_function_decl);
+  DECL_FUNCTION_SPECIFIC_TARGET (decl)
+    = DECL_FUNCTION_SPECIFIC_TARGET (current_function_decl);
+  DECL_FUNCTION_VERSIONED (decl)
+    = DECL_FUNCTION_VERSIONED (current_function_decl);
+
   if (omp_maybe_offloaded_ctx (ctx))
     {
       cgraph_node::get_create (decl)->offloadable = 1;
@@ -3073,7 +3081,7 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
 	      if (tem != TREE_TYPE (t))
 		{
 		  if (TREE_CODE (t) == INTEGER_CST)
-		    *tp = wide_int_to_tree (tem, t);
+		    *tp = wide_int_to_tree (tem, wi::to_wide (t));
 		  else
 		    TREE_TYPE (t) = tem;
 		}
@@ -6364,14 +6372,14 @@ lower_omp_ordered_clauses (gimple_stmt_iterator *gsi_p, gomp_ordered *ord_stmt,
 	  tree itype = TREE_TYPE (TREE_VALUE (vec));
 	  if (POINTER_TYPE_P (itype))
 	    itype = sizetype;
-	  wide_int offset = wide_int::from (TREE_PURPOSE (vec),
+	  wide_int offset = wide_int::from (wi::to_wide (TREE_PURPOSE (vec)),
 					    TYPE_PRECISION (itype),
 					    TYPE_SIGN (itype));
 
 	  /* Ignore invalid offsets that are not multiples of the step.  */
-	  if (!wi::multiple_of_p
-	      (wi::abs (offset), wi::abs ((wide_int) fd.loops[i].step),
-	       UNSIGNED))
+	  if (!wi::multiple_of_p (wi::abs (offset),
+				  wi::abs (wi::to_wide (fd.loops[i].step)),
+				  UNSIGNED))
 	    {
 	      warning_at (OMP_CLAUSE_LOCATION (c), 0,
 			  "ignoring sink clause with offset that is not "

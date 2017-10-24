@@ -416,7 +416,7 @@ maybe_thunk_body (tree fn, bool force)
 	}
 
       DECL_ABSTRACT_ORIGIN (clone) = NULL;
-      expand_or_defer_fn (finish_function (0));
+      expand_or_defer_fn (finish_function (/*inline_p=*/false));
     }
   return 1;
 }
@@ -657,7 +657,7 @@ maybe_clone_body (tree fn)
       cp_function_chain->can_throw = !TREE_NOTHROW (fn);
 
       /* Now, expand this function into RTL, if appropriate.  */
-      finish_function (0);
+      finish_function (/*inline_p=*/false);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
       if (alias)
 	{

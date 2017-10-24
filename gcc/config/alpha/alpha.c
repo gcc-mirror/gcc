@@ -2910,8 +2910,8 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
       || (code == GE || code == GT))
     {
       code = reverse_condition (code);
-      diff = t, t = f, f = diff;
-      diff = t - f;
+      std::swap (t, f);
+      diff = -diff;
     }
 
   subtarget = target = dest;
@@ -6078,10 +6078,8 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const gimple *stmt)
 	  else if (code2 == COMPONENT_REF
 		   && (code1 == MINUS_EXPR || code1 == PLUS_EXPR))
 	    {
-	      gimple *tem = arg1_stmt;
+	      std::swap (arg1_stmt, arg2_stmt);
 	      code2 = code1;
-	      arg1_stmt = arg2_stmt;
-	      arg2_stmt = tem;
 	    }
 	  else
 	    goto escapes;
@@ -7760,8 +7758,8 @@ alpha_expand_prologue (void)
      Note that we are only allowed to adjust sp once in the prologue.  */
 
   probed_size = frame_size;
-  if (flag_stack_check)
-    probed_size += STACK_CHECK_PROTECT;
+  if (flag_stack_check || flag_stack_clash_protection)
+    probed_size += get_stack_check_protect ();
 
   if (probed_size <= 32768)
     {
@@ -7775,7 +7773,7 @@ alpha_expand_prologue (void)
 	  /* We only have to do this probe if we aren't saving registers or
 	     if we are probing beyond the frame because of -fstack-check.  */
 	  if ((sa_size == 0 && probed_size > probed - 4096)
-	      || flag_stack_check)
+	      || flag_stack_check || flag_stack_clash_protection)
 	    emit_insn (gen_probe_stack (GEN_INT (-probed_size)));
 	}
 
@@ -7805,7 +7803,8 @@ alpha_expand_prologue (void)
 	 late in the compilation, generate the loop as a single insn.  */
       emit_insn (gen_prologue_stack_probe_loop (count, ptr));
 
-      if ((leftover > 4096 && sa_size == 0) || flag_stack_check)
+      if ((leftover > 4096 && sa_size == 0)
+	  || flag_stack_check || flag_stack_clash_protection)
 	{
 	  rtx last = gen_rtx_MEM (DImode,
 				  plus_constant (Pmode, ptr, -leftover));
@@ -7813,7 +7812,7 @@ alpha_expand_prologue (void)
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      if (flag_stack_check)
+      if (flag_stack_check || flag_stack_clash_protection)
 	{
 	  /* If -fstack-check is specified we have to load the entire
 	     constant into a register and subtract from the sp in one go,
@@ -9830,9 +9829,7 @@ alpha_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && (*code == GE || *code == GT || *code == GEU || *code == GTU)
       && (REG_P (*op1) || *op1 == const0_rtx))
     {
-      rtx tem = *op0;
-      *op0 = *op1;
-      *op1 = tem;
+      std::swap (*op0, *op1);
       *code = (int)swap_condition ((enum rtx_code)*code);
     }
 

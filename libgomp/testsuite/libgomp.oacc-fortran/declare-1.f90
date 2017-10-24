@@ -1,4 +1,5 @@
-! { dg-do run  { target openacc_nvidia_accel_selected } }
+! { dg-do run }
+! { dg-skip-if "" { *-*-* } { "-DACC_MEM_SHARED=1" } }
 
 ! Tests to exercise the declare directive along with
 ! the clauses: copy

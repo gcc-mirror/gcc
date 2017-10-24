@@ -477,6 +477,8 @@ struct c_parm {
   tree attrs;
   /* The declarator.  */
   struct c_declarator *declarator;
+  /* The location of the parameter.  */
+  location_t loc;
 };
 
 /* Used when parsing an enum.  Initialized by start_enum.  */
@@ -581,7 +583,7 @@ extern void temp_pop_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern struct c_typespec parser_xref_tag (location_t, enum tree_code, tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
-				    struct c_declarator *);
+				    struct c_declarator *, location_t);
 extern struct c_declarator *build_attrs_declarator (tree,
 						    struct c_declarator *);
 extern struct c_declarator *build_function_declarator (struct c_arg_info *,

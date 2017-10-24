@@ -263,7 +263,6 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
   e = ggc_cleared_alloc<edge_def> ();
   n_edges_for_fn (cfun)++;
 
-  e->count = profile_count::uninitialized ();
   e->probability = profile_probability::uninitialized ();
   e->src = src;
   e->dest = dst;
@@ -334,7 +333,6 @@ make_single_succ_edge (basic_block src, basic_block dest, int flags)
   edge e = make_edge (src, dest, flags);
 
   e->probability = profile_probability::always ();
-  e->count = src->count;
   return e;
 }
 
@@ -445,18 +443,6 @@ check_bb_profile (basic_block bb, FILE * file, int indent)
 		       ";; %sInvalid sum of outgoing probabilities %.1f%%\n",
 		       s_indent, isum * 100.0 / REG_BR_PROB_BASE);
 	    }
-	  profile_count lsum = profile_count::zero ();
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    lsum += e->count;
-	  if (EDGE_COUNT (bb->succs) && lsum.differs_from_p (bb->count))
-	    {
-	      fprintf (file, ";; %sInvalid sum of outgoing counts ",
-		       s_indent);
-	      lsum.dump (file);
-	      fprintf (file, ", should be ");
-	      bb->count.dump (file);
-	      fprintf (file, "\n");
-	    }
 	}
     }
   if (bb != ENTRY_BLOCK_PTR_FOR_FN (fun))
@@ -468,18 +454,6 @@ check_bb_profile (basic_block bb, FILE * file, int indent)
 	fprintf (file,
 		 ";; %sInvalid sum of incoming frequencies %i, should be %i\n",
 		 s_indent, sum, bb->frequency);
-      profile_count lsum = profile_count::zero ();
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	lsum += e->count;
-      if (lsum.differs_from_p (bb->count))
-	{
-	  fprintf (file, ";; %sInvalid sum of incoming counts ",
-		   s_indent);
-	  lsum.dump (file);
-	  fprintf (file, ", should be ");
-	  bb->count.dump (file);
-	  fprintf (file, "\n");
-	}
     }
   if (BB_PARTITION (bb) == BB_COLD_PARTITION)
     {
@@ -522,10 +496,10 @@ dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
       fprintf (file, "] ");
     }
 
-  if (e->count.initialized_p () && do_details)
+  if (e->count ().initialized_p () && do_details)
     {
       fputs (" count:", file);
-      e->count.dump (file);
+      e->count ().dump (file);
     }
 
   if (e->flags && do_details)
@@ -941,10 +915,6 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
     }
 
   gcc_assert (bb == taken_edge->src);
-  if (dump_file && taken_edge->count < count)
-    fprintf (dump_file, "edge %i->%i count became negative after threading",
-	     taken_edge->src->index, taken_edge->dest->index);
-  taken_edge->count -= count;
 }
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
@@ -953,7 +923,6 @@ void
 scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
 {
   int i;
-  edge e;
   if (num < 0)
     num = 0;
 
@@ -973,14 +942,11 @@ scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
 
   for (i = 0; i < nbbs; i++)
     {
-      edge_iterator ei;
       bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
       /* Make sure the frequencies do not grow over BB_FREQ_MAX.  */
       if (bbs[i]->frequency > BB_FREQ_MAX)
 	bbs[i]->frequency = BB_FREQ_MAX;
       bbs[i]->count = bbs[i]->count.apply_scale (num, den);
-      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	e->count = e->count.apply_scale (num, den);
     }
 }
 
@@ -996,7 +962,6 @@ scale_bbs_frequencies_gcov_type (basic_block *bbs, int nbbs, gcov_type num,
 				 gcov_type den)
 {
   int i;
-  edge e;
   gcov_type fraction = RDIV (num * 65536, den);
 
   gcc_assert (fraction >= 0);
@@ -1004,29 +969,20 @@ scale_bbs_frequencies_gcov_type (basic_block *bbs, int nbbs, gcov_type num,
   if (num < MAX_SAFE_MULTIPLIER)
     for (i = 0; i < nbbs; i++)
       {
-	edge_iterator ei;
 	bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
 	if (bbs[i]->count <= MAX_SAFE_MULTIPLIER)
 	  bbs[i]->count = bbs[i]->count.apply_scale (num, den);
 	else
 	  bbs[i]->count = bbs[i]->count.apply_scale (fraction, 65536);
-	FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	  if (bbs[i]->count <= MAX_SAFE_MULTIPLIER)
-	    e->count =  e->count.apply_scale (num, den);
-	  else
-	    e->count = e->count.apply_scale (fraction, 65536);
       }
    else
     for (i = 0; i < nbbs; i++)
       {
-	edge_iterator ei;
 	if (sizeof (gcov_type) > sizeof (int))
 	  bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
 	else
 	  bbs[i]->frequency = RDIV (bbs[i]->frequency * fraction, 65536);
 	bbs[i]->count = bbs[i]->count.apply_scale (fraction, 65536);
-	FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	  e->count = e->count.apply_scale (fraction, 65536);
       }
 }
 
@@ -1038,16 +994,12 @@ scale_bbs_frequencies_profile_count (basic_block *bbs, int nbbs,
 				     profile_count num, profile_count den)
 {
   int i;
-  edge e;
 
   for (i = 0; i < nbbs; i++)
     {
-      edge_iterator ei;
       bbs[i]->frequency = RDIV (bbs[i]->frequency * num.to_gcov_type (),
 				den.to_gcov_type ());
       bbs[i]->count = bbs[i]->count.apply_scale (num, den);
-      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	e->count =  e->count.apply_scale (num, den);
     }
 }
 
@@ -1059,15 +1011,11 @@ scale_bbs_frequencies (basic_block *bbs, int nbbs,
 		       profile_probability p)
 {
   int i;
-  edge e;
 
   for (i = 0; i < nbbs; i++)
     {
-      edge_iterator ei;
       bbs[i]->frequency = p.apply (bbs[i]->frequency);
       bbs[i]->count = bbs[i]->count.apply_probability (p);
-      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	e->count =  e->count.apply_probability (p);
     }
 }
 

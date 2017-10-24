@@ -266,8 +266,8 @@ lhd_gimplify_expr (tree *expr_p ATTRIBUTE_UNUSED,
 }
 
 /* lang_hooks.tree_size: Determine the size of a tree with code C,
-   which is a language-specific tree code in category tcc_constant or
-   tcc_exceptional.  The default expects never to be called.  */
+   which is a language-specific tree code in category tcc_constant,
+   tcc_exceptional or tcc_type.  The default expects never to be called.  */
 size_t
 lhd_tree_size (enum tree_code c ATTRIBUTE_UNUSED)
 {

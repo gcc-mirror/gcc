@@ -31,11 +31,13 @@ std_headers = \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
 	${std_srcdir}/bitset \
+	${std_srcdir}/charconv \
 	${std_srcdir}/chrono \
 	${std_srcdir}/codecvt \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
 	${std_srcdir}/deque \
+	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
 	${std_srcdir}/functional \
@@ -103,6 +105,10 @@ bits_headers = \
 	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
+	${bits_srcdir}/fs_dir.h \
+	${bits_srcdir}/fs_fwd.h \
+	${bits_srcdir}/fs_ops.h \
+	${bits_srcdir}/fs_path.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/functional_hash.h \

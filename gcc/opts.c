@@ -1521,6 +1521,7 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true),
   SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
   SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
+  SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true),
   SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
   { NULL, 0U, 0UL, false }
@@ -1700,11 +1701,10 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 }
 
 /* Parse string values of no_sanitize attribute passed in VALUE.
-   Values are separated with comma.  Wrong argument is stored to
-   WRONG_ARGUMENT variable.  */
+   Values are separated with comma.  */
 
 unsigned int
-parse_no_sanitize_attribute (char *value, char **wrong_argument)
+parse_no_sanitize_attribute (char *value)
 {
   unsigned int flags = 0;
   unsigned int i;
@@ -1722,7 +1722,8 @@ parse_no_sanitize_attribute (char *value, char **wrong_argument)
 	  }
 
       if (sanitizer_opts[i].name == NULL)
-	*wrong_argument = q;
+	warning (OPT_Wattributes,
+		 "%<%s%> attribute directive ignored", q);
 
       q = strtok (NULL, ",");
     }

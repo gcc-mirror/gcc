@@ -52,6 +52,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
+with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -65,8 +66,7 @@ with Ttypes;   use Ttypes;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
-with GNAT.HTable; use GNAT.HTable;
-
+with GNAT.HTable;
 package body Exp_Util is
 
    ---------------------------------------------------------
@@ -650,7 +650,10 @@ package body Exp_Util is
       --  Do not process allocations on / deallocations from the secondary
       --  stack.
 
-      elsif Is_RTE (Pool_Id, RE_SS_Pool) then
+      elsif Is_RTE (Pool_Id, RE_SS_Pool)
+        or else (Nkind (Expr) = N_Allocator
+                  and then Is_RTE (Storage_Pool (Expr), RE_SS_Pool))
+      then
          return;
 
       --  Optimize the case where we are using the default Global_Pool_Object,
@@ -1760,9 +1763,12 @@ package body Exp_Util is
 
          --  Perform minor decoration in case the body is not analyzed
 
-         Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
-         Set_Etype (Proc_Body_Id, Standard_Void_Type);
-         Set_Scope (Proc_Body_Id, Current_Scope);
+         Set_Ekind        (Proc_Body_Id, E_Subprogram_Body);
+         Set_Etype        (Proc_Body_Id, Standard_Void_Type);
+         Set_Scope        (Proc_Body_Id, Current_Scope);
+         Set_SPARK_Pragma (Proc_Body_Id, SPARK_Pragma (Proc_Id));
+         Set_SPARK_Pragma_Inherited
+                          (Proc_Body_Id, SPARK_Pragma_Inherited (Proc_Id));
 
          --  Link both spec and body to avoid generating duplicates
 
@@ -1902,17 +1908,19 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Proc_Id, E_Procedure);
-      Set_Etype (Proc_Id, Standard_Void_Type);
-      Set_Scope (Proc_Id, Current_Scope);
+      Set_Ekind                  (Proc_Id, E_Procedure);
+      Set_Etype                  (Proc_Id, Standard_Void_Type);
+      Set_Is_DIC_Procedure       (Proc_Id);
+      Set_Scope                  (Proc_Id, Current_Scope);
+      Set_SPARK_Pragma           (Proc_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Proc_Id);
 
-      Set_Is_DIC_Procedure (Proc_Id);
       Set_DIC_Procedure (Work_Typ, Proc_Id);
 
       --  The DIC procedure requires debug info when the assertion expression
       --  is subject to Source Coverage Obligations.
 
-      if Opt.Generate_SCO then
+      if Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
       end if;
 
@@ -3384,7 +3392,7 @@ package body Exp_Util is
       --  The invariant procedure requires debug info when the invariants are
       --  subject to Source Coverage Obligations.
 
-      if Opt.Generate_SCO then
+      if Generate_SCO then
          Set_Needs_Debug_Info (Proc_Id);
       end if;
 
@@ -7229,7 +7237,7 @@ package body Exp_Util is
                   null;
                end if;
 
-            --  Another special case, an attribute denoting a procedure call
+            --  Special case: an attribute denoting a procedure call
 
             when N_Attribute_Reference =>
                if Is_Procedure_Attribute_Name (Attribute_Name (P)) then
@@ -7245,6 +7253,14 @@ package body Exp_Util is
 
                else
                   null;
+               end if;
+
+            --  Special case: a call marker
+
+            when N_Call_Marker =>
+               if Is_List_Member (P) then
+                  Insert_List_Before_And_Analyze (P, Ins_Actions);
+                  return;
                end if;
 
             --  A contract node should not belong to the tree
@@ -7857,6 +7873,8 @@ package body Exp_Util is
          if Nkind (Call) = N_Reference then
             Call := Prefix (Call);
          end if;
+
+         Call := Unqual_Conv (Call);
 
          if Is_Build_In_Place_Function_Call (Call) then
             declare
@@ -8680,9 +8698,7 @@ package body Exp_Util is
 
          Param := First (Parameter_Associations (Call));
          while Present (Param) loop
-            if Nkind (Param) = N_Parameter_Association
-              and then Nkind (Selector_Name (Param)) = N_Identifier
-            then
+            if Nkind (Param) = N_Parameter_Association then
                Formal := Selector_Name (Param);
                Actual := Explicit_Actual_Parameter (Param);
 
@@ -8830,6 +8846,11 @@ package body Exp_Util is
    begin
       if Present (N) then
          Remove_Warning_Messages (N);
+
+         --  Update the internal structures of the ABE mechanism in case the
+         --  dead node is an elaboration scenario.
+
+         Kill_Elaboration_Scenario (N);
 
          --  Generate warning if appropriate
 
@@ -9187,43 +9208,42 @@ package body Exp_Util is
       Lo          : constant Node_Id :=
                       New_Copy_Tree (String_Literal_Low_Bound (Literal_Typ));
       Index       : constant Entity_Id := Etype (Lo);
-
-      Hi          : Node_Id;
       Length_Expr : constant Node_Id :=
                       Make_Op_Subtract (Loc,
-                        Left_Opnd =>
+                        Left_Opnd  =>
                           Make_Integer_Literal (Loc,
                             Intval => String_Literal_Length (Literal_Typ)),
-                        Right_Opnd =>
-                          Make_Integer_Literal (Loc, 1));
+                        Right_Opnd => Make_Integer_Literal (Loc, 1));
+
+      Hi : Node_Id;
 
    begin
       Set_Analyzed (Lo, False);
 
-         if Is_Integer_Type (Index) then
-            Hi :=
-              Make_Op_Add (Loc,
-                Left_Opnd  => New_Copy_Tree (Lo),
-                Right_Opnd => Length_Expr);
-         else
-            Hi :=
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Val,
-                Prefix => New_Occurrence_Of (Index, Loc),
-                Expressions => New_List (
-                 Make_Op_Add (Loc,
-                   Left_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Pos,
-                       Prefix => New_Occurrence_Of (Index, Loc),
-                       Expressions => New_List (New_Copy_Tree (Lo))),
-                  Right_Opnd => Length_Expr)));
-         end if;
+      if Is_Integer_Type (Index) then
+         Hi :=
+           Make_Op_Add (Loc,
+             Left_Opnd  => New_Copy_Tree (Lo),
+             Right_Opnd => Length_Expr);
+      else
+         Hi :=
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Val,
+             Prefix         => New_Occurrence_Of (Index, Loc),
+             Expressions    => New_List (
+               Make_Op_Add (Loc,
+                 Left_Opnd  =>
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Pos,
+                     Prefix         => New_Occurrence_Of (Index, Loc),
+                     Expressions    => New_List (New_Copy_Tree (Lo))),
+                 Right_Opnd => Length_Expr)));
+      end if;
 
-         return
-           Make_Range (Loc,
-             Low_Bound  => Lo,
-             High_Bound => Hi);
+      return
+        Make_Range (Loc,
+          Low_Bound  => Lo,
+          High_Bound => Hi);
    end Make_Literal_Range;
 
    --------------------------
@@ -9284,10 +9304,22 @@ package body Exp_Util is
 
       --  Case of calling normal predicate function
 
-      Call :=
-        Make_Function_Call (Loc,
-          Name                   => New_Occurrence_Of (Func_Id, Loc),
-          Parameter_Associations => New_List (Relocate_Node (Expr)));
+      --  If the type is tagged, the expression may be class-wide, in which
+      --  case it has to be converted to its root type, given that the
+      --  generated predicate function is not dispatching.
+
+      if Is_Tagged_Type (Typ) then
+         Call :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Func_Id, Loc),
+             Parameter_Associations =>
+               New_List (Convert_To (Typ, Relocate_Node (Expr))));
+      else
+         Call :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Func_Id, Loc),
+             Parameter_Associations => New_List (Relocate_Node (Expr)));
+      end if;
 
       Restore_Ghost_Mode (Saved_GM);
 
@@ -10785,8 +10817,17 @@ package body Exp_Util is
                Analyze (Block);
             end if;
 
-         when others =>
+         --  Could be e.g. a loop that was transformed into a block or null
+         --  statement. Do nothing for terminate alternatives.
+
+         when N_Block_Statement
+            | N_Null_Statement
+            | N_Terminate_Alternative
+         =>
             null;
+
+         when others =>
+            raise Program_Error;
       end case;
    end Process_Statements_For_Controlled_Objects;
 
@@ -10937,7 +10978,8 @@ package body Exp_Util is
          Related_Nod : Node_Id := Empty) return Entity_Id;
       --  Create an external symbol of the form xxx_FIRST/_LAST if Related_Nod
       --  is present (xxx is taken from the Chars field of Related_Nod),
-      --  otherwise it generates an internal temporary.
+      --  otherwise it generates an internal temporary. The created temporary
+      --  entity is marked as internal.
 
       ---------------------
       -- Build_Temporary --
@@ -10948,6 +10990,7 @@ package body Exp_Util is
          Id          : Character;
          Related_Nod : Node_Id := Empty) return Entity_Id
       is
+         Temp_Id  : Entity_Id;
          Temp_Nam : Name_Id;
 
       begin
@@ -10960,13 +11003,17 @@ package body Exp_Util is
                Temp_Nam := New_External_Name (Chars (Related_Id), "_LAST");
             end if;
 
-            return Make_Defining_Identifier (Loc, Temp_Nam);
+            Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
 
          --  Otherwise generate an internal temporary
 
          else
-            return Make_Temporary (Loc, Id, Related_Nod);
+            Temp_Id := Make_Temporary (Loc, Id, Related_Nod);
          end if;
+
+         Set_Is_Internal (Temp_Id);
+
+         return Temp_Id;
       end Build_Temporary;
 
       --  Local variables
@@ -11217,7 +11264,7 @@ package body Exp_Util is
          --  Exp_Ch2.Expand_Renaming). Otherwise the temporary must be
          --  elaborated by gigi, and is of course not to be replaced in-line
          --  by the expression it renames, which would defeat the purpose of
-         --  removing the side-effect.
+         --  removing the side effect.
 
          if Nkind_In (Exp, N_Selected_Component, N_Indexed_Component)
            and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
@@ -12618,7 +12665,7 @@ package body Exp_Util is
            and then Variable_Ref
          then
             --  Exception is a prefix that is the result of a previous removal
-            --  of side-effects.
+            --  of side effects.
 
             return Is_Entity_Name (Prefix (N))
               and then not Comes_From_Source (Prefix (N))

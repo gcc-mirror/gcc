@@ -22,4 +22,4 @@ foo (void)
     }
 }
 
-/* { dg-final { scan-tree-dump "Loop . is the same" "ldist" } } */
+/* { dg-final { scan-tree-dump "Loop . not distributed" "ldist" } } */

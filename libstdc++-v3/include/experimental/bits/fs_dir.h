@@ -49,7 +49,7 @@ namespace filesystem
 inline namespace v1
 {
   /**
-   * @ingroup filesystem
+   * @ingroup filesystem-ts
    * @{
    */
 
@@ -351,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
-  // @} group filesystem
+  // @} group filesystem-ts
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental

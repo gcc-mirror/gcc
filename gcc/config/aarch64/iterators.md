@@ -354,6 +354,8 @@
     UNSPEC_SQRDMLSH     ; Used in aarch64-simd.md.
     UNSPEC_FMAXNM       ; Used in aarch64-simd.md.
     UNSPEC_FMINNM       ; Used in aarch64-simd.md.
+    UNSPEC_SDOT		; Used in aarch64-simd.md.
+    UNSPEC_UDOT		; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -800,6 +802,10 @@
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
 
+
+;; Register suffix for DOTPROD input types from the return type.
+(define_mode_attr Vdottype [(V2SI "8b") (V4SI "16b")])
+
 ;; Sum of lengths of instructions needed to move vector registers of a mode.
 (define_mode_attr insn_count [(OI "8") (CI "12") (XI "16")])
 
@@ -1029,6 +1035,7 @@
 			      UNSPEC_SHSUB UNSPEC_UHSUB
 			      UNSPEC_SRHSUB UNSPEC_URHSUB])
 
+(define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
 
 (define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
 			       UNSPEC_SUBHN UNSPEC_RSUBHN])
@@ -1166,6 +1173,7 @@
 		      (UNSPEC_USHLL  "u")  (UNSPEC_SSHLL "s")
 		      (UNSPEC_URSHL  "ur") (UNSPEC_SRSHL  "sr")
 		      (UNSPEC_UQRSHL  "u") (UNSPEC_SQRSHL  "s")
+		      (UNSPEC_SDOT "s") (UNSPEC_UDOT "u")
 ])
 
 (define_int_attr r [(UNSPEC_SQDMULH "") (UNSPEC_SQRDMULH "r")

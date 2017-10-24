@@ -977,7 +977,6 @@ unroll_loop_runtime_iterations (struct loop *loop)
   iter_count = new_count = swtch->count.apply_scale (1, max_unroll + 1);
   swtch->frequency = new_freq;
   swtch->count = new_count;
-  single_succ_edge (swtch)->count = new_count;
 
   for (i = 0; i < n_peel; i++)
     {
@@ -999,7 +998,6 @@ unroll_loop_runtime_iterations (struct loop *loop)
       /* Add in frequency/count of edge from switch block.  */
       preheader->frequency += iter_freq;
       preheader->count += iter_count;
-      single_succ_edge (preheader)->count = preheader->count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p,
 					  NULL);
@@ -1011,14 +1009,12 @@ unroll_loop_runtime_iterations (struct loop *loop)
       swtch = split_edge_and_insert (single_pred_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_succ_edge (swtch)->probability = p.invert ();
-      single_succ_edge (swtch)->count = new_count;
       new_freq += iter_freq;
       new_count += iter_count;
       swtch->frequency = new_freq;
       swtch->count = new_count;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
-      e->count = iter_count;
       e->probability = p;
     }
 
@@ -1035,7 +1031,6 @@ unroll_loop_runtime_iterations (struct loop *loop)
       /* Add in frequency/count of edge from switch block.  */
       preheader->frequency += iter_freq;
       preheader->count += iter_count;
-      single_succ_edge (preheader)->count = preheader->count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p,
 					  NULL);
@@ -1044,10 +1039,8 @@ unroll_loop_runtime_iterations (struct loop *loop)
       swtch = split_edge_and_insert (single_succ_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_succ_edge (swtch)->probability = p.invert ();
-      single_succ_edge (swtch)->count -= iter_count;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
-      e->count = iter_count;
       e->probability = p;
     }
 
@@ -1731,7 +1724,8 @@ split_iv (struct iv_to_split *ivts, rtx_insn *insn, unsigned delta)
   else
     {
       incr = simplify_gen_binary (MULT, mode,
-				  ivts->step, gen_int_mode (delta, mode));
+				  copy_rtx (ivts->step),
+				  gen_int_mode (delta, mode));
       expr = simplify_gen_binary (PLUS, GET_MODE (ivts->base_var),
 				  ivts->base_var, incr);
     }

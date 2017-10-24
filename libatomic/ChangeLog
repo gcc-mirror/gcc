@@ -1,3 +1,18 @@
+2017-10-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* Makefile.am: (IFUNC_OPTIONS): Set the architecture to
+	-march=armv7-a+fp on Linux/Arm.
+	* Makefile.in: Regenerated.
+
+2017-10-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* acinclude.m4 (LIBAT_CHECK_IFUNC): Have ifunc resolver return
+	a function pointer rather than void* to avoid GCC 8 warnings.
+	* configure: Regenerate.
+	* libatomic_i.h: Declare ifunc resolvers to return function
+	pointers rather than void*.
+
 2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libatomic.exp: Load scanlang.exp.

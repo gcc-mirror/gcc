@@ -365,7 +365,7 @@ Switches for ``gnatls``
 
 .. index:: --RTS (gnatls)
 
-:switch:`--RTS={rts-path}``
+:switch:`--RTS={rts-path}`
   Specifies the default location of the runtime library. Same meaning as the
   equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
 
@@ -586,9 +586,9 @@ The following switches are available for ``gnatxref``:
 
 :switch:`--ext={extension}`
   Specify an alternate ali file extension. The default is ``ali`` and other
-  extensions (e.g. ``gli`` for C/C++ sources when using :switch:`-fdump-xref`)
-  may be specified via this switch. Note that if this switch overrides the
-  default, which means that only the new extension will be considered.
+  extensions (e.g. ``gli`` for C/C++ sources) may be specified via this switch.
+  Note that if this switch overrides the default, which means that only the
+  new extension will be considered.
 
 
 .. index:: --RTS (gnatxref)

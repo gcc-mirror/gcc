@@ -96,7 +96,6 @@ extern GTY(()) int spu_tune;
    on the stack.  (Except a bug (?) allows some stack objects to be
    unaligned.)  */
 #define DATA_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
-#define CONSTANT_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 #define LOCAL_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 
 #define EMPTY_FIELD_BOUNDARY 32
@@ -222,8 +221,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
-
-#define STARTING_FRAME_OFFSET (0)
 
 #define STACK_POINTER_OFFSET 32
 

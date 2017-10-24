@@ -65,6 +65,7 @@ static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -367,6 +368,8 @@ const struct attribute_spec c_common_attribute_table[] =
   { "patchable_function_entry",	1, 2, true, false, false,
 			      handle_patchable_function_entry_attribute,
 			      false },
+  { "nocf_check",		      0, 0, false, true, true,
+			      handle_nocf_check_attribute, true },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -426,7 +429,7 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     {
       if (TYPE_ALIGN (TREE_TYPE (*node)) <= BITS_PER_UNIT
 	  /* Still pack bitfields.  */
-	  && ! DECL_INITIAL (*node))
+	  && ! DECL_C_BIT_FIELD (*node))
 	warning (OPT_Wattributes,
 		 "%qE attribute ignored for field of type %qT",
 		 name, TREE_TYPE (*node));
@@ -613,15 +616,8 @@ handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
       return NULL_TREE;
     }
 
-  char *error_value = NULL;
   char *string = ASTRDUP (TREE_STRING_POINTER (id));
-  unsigned int flags = parse_no_sanitize_attribute (string, &error_value);
-
-  if (error_value)
-    {
-      error ("wrong argument: \"%s\"", error_value);
-      return NULL_TREE;
-    }
+  unsigned int flags = parse_no_sanitize_attribute (string);
 
   add_no_sanitize_value (*node, flags);
 
@@ -730,10 +726,6 @@ handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
-  else
-    DECL_ATTRIBUTES (*node)
-      = tree_cons (get_identifier ("stack_protect"),
-		   NULL_TREE, DECL_ATTRIBUTES (*node));
 
   return NULL_TREE;
 }
@@ -777,6 +769,30 @@ handle_noclone_attribute (tree *node, tree name,
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "nocf_check" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nocf_check_attribute (tree *node, tree name,
+			  tree ARG_UNUSED (args),
+			  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != METHOD_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else if (!(flag_cf_protection & CF_BRANCH))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored. Use "
+				"-fcf-protection option to enable it", name);
       *no_add_attrs = true;
     }
 
@@ -1773,7 +1789,7 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
     {
       if (warn_if_not_aligned_p)
 	{
-	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_INITIAL (decl))
+	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_C_BIT_FIELD (decl))
 	    {
 	      SET_DECL_WARN_IF_NOT_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
 	      warn_if_not_aligned_p = false;

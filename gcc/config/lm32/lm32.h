@@ -99,11 +99,6 @@ do {                                                    \
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* Make arrays and structures word-aligned to allow faster copying etc.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   ((((ALIGN) < BITS_PER_WORD)						\
@@ -208,8 +203,6 @@ enum reg_class
 #define FRAME_GROWS_DOWNWARD 1
 
 #define STACK_POINTER_OFFSET (UNITS_PER_WORD)
-
-#define STARTING_FRAME_OFFSET (UNITS_PER_WORD)
 
 #define FIRST_PARM_OFFSET(FNDECL) (UNITS_PER_WORD)
 

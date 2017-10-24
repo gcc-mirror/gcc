@@ -142,6 +142,7 @@ extern void test_arch_corei7 (void)		__attribute__((__target__("arch=corei7")));
 extern void test_arch_corei7_avx (void)		__attribute__((__target__("arch=corei7-avx")));
 extern void test_arch_core_avx2 (void)		__attribute__((__target__("arch=core-avx2")));
 extern void test_arch_knl (void)		__attribute__((__target__("arch=knl")));
+extern void test_arch_knm (void)		__attribute__((__target__("arch=knm")));
 extern void test_arch_skylake_avx512 (void)	__attribute__((__target__("arch=skylake-avx512")));
 extern void test_arch_k8 (void)			__attribute__((__target__("arch=k8")));
 extern void test_arch_k8_sse3 (void)		__attribute__((__target__("arch=k8-sse3")));

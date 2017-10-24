@@ -981,6 +981,9 @@ struct GTY(()) tree_base {
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
 
+    /* CHREC_VARIABLE.  This field is only used with POLYNOMIAL_CHREC.  */
+    unsigned int chrec_var;
+
     /* Internal function code.  */
     enum internal_fn ifn;
 
@@ -2055,7 +2058,7 @@ struct floatn_type_info {
                                 Global variables
 ---------------------------------------------------------------------------*/
 /* Matrix describing the structures contained in a given tree code.  */
-extern unsigned char tree_contains_struct[MAX_TREE_CODES][64];
+extern bool tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Class of tree given its code.  */
 extern const enum tree_code_class tree_code_type[];

@@ -2783,23 +2783,25 @@ The @code{ifunc} attribute is used to mark a function as an indirect
 function using the STT_GNU_IFUNC symbol type extension to the ELF
 standard.  This allows the resolution of the symbol value to be
 determined dynamically at load time, and an optimized version of the
-routine can be selected for the particular processor or other system
+routine to be selected for the particular processor or other system
 characteristics determined then.  To use this attribute, first define
 the implementation functions available, and a resolver function that
 returns a pointer to the selected implementation function.  The
 implementation functions' declarations must match the API of the
-function being implemented, the resolver's declaration is be a
-function returning pointer to void function returning void:
+function being implemented.  The resolver should be declared to
+be a function taking no arguments and returning a pointer to
+a function of the same type as the implementation.  For example:
 
 @smallexample
 void *my_memcpy (void *dst, const void *src, size_t len)
 @{
   @dots{}
+  return dst;
 @}
 
-static void (*resolve_memcpy (void)) (void)
+static void * (*resolve_memcpy (void))(void *, const void *, size_t)
 @{
-  return my_memcpy; // we'll just always select this routine
+  return my_memcpy; // we will just always select this routine
 @}
 @end smallexample
 
@@ -2812,13 +2814,54 @@ extern void *memcpy (void *, const void *, size_t);
 @end smallexample
 
 @noindent
-allowing the user to call this as a regular function, unaware of the
-implementation.  Finally, the indirect function needs to be defined in
-the same translation unit as the resolver function:
+allowing the user to call @code{memcpy} as a regular function, unaware of
+the actual implementation.  Finally, the indirect function needs to be
+defined in the same translation unit as the resolver function:
 
 @smallexample
 void *memcpy (void *, const void *, size_t)
      __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+In C++, the @code{ifunc} attribute takes a string that is the mangled name
+of the resolver function.  A C++ resolver for a non-static member function
+of class @code{C} should be declared to return a pointer to a non-member
+function taking pointer to @code{C} as the first argument, followed by
+the same arguments as of the implementation function.  G++ checks
+the signatures of the two functions and issues
+a @option{-Wattribute-alias} warning for mismatches.  To suppress a warning
+for the necessary cast from a pointer to the implementation member function
+to the type of the corresponding non-member function use
+the @option{-Wno-pmf-conversions} option.  For example:
+
+@smallexample
+class S
+@{
+private:
+  int debug_impl (int);
+  int optimized_impl (int);
+
+  typedef int Func (S*, int);
+
+  static Func* resolver ();
+public:
+
+  int interface (int);
+@};
+
+int S::debug_impl (int) @{ /* @r{@dots{}} */ @}
+int S::optimized_impl (int) @{ /* @r{@dots{}} */ @}
+
+S::Func* S::resolver ()
+@{
+  int (S::*pimpl) (int)
+    = getenv ("DEBUG") ? &S::debug_impl : &S::optimized_impl;
+
+  // Cast triggers -Wno-pmf-conversions.
+  return reinterpret_cast<Func*>(pimpl);
+@}
+
+int S::interface (int) __attribute__ ((ifunc ("_ZN1S8resolverEv")));
 @end smallexample
 
 Indirect functions cannot be weak.  Binutils version 2.20.1 or higher
@@ -5647,6 +5690,58 @@ Specify which floating-point unit to use.  You must specify the
 @code{target("fpmath=sse,387")} option as
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
+
+@item nocf_check
+@cindex @code{nocf_check} function attribute
+The @code{nocf_check} attribute on a function is used to inform the
+compiler that the function's prologue should not be instrumented when
+compiled with the @option{-fcf-protection=branch} option.  The
+compiler assumes that the function's address is a valid target for a
+control-flow transfer.
+
+The @code{nocf_check} attribute on a type of pointer to function is
+used to inform the compiler that a call through the pointer should
+not be instrumented when compiled with the
+@option{-fcf-protection=branch} option.  The compiler assumes
+that the function's address from the pointer is a valid target for
+a control-flow transfer.  A direct function call through a function
+name is assumed to be a safe call thus direct calls are not
+instrumented by the compiler.
+
+The @code{nocf_check} attribute is applied to an object's type.
+In case of assignment of a function address or a function pointer to
+another pointer, the attribute is not carried over from the right-hand
+object's type; the type of left-hand object stays unchanged.  The
+compiler checks for @code{nocf_check} attribute mismatch and reports
+a warning in case of mismatch.
+
+@smallexample
+@{
+int foo (void) __attribute__(nocf_check);
+void (*foo1)(void) __attribute__(nocf_check);
+void (*foo2)(void);
+
+int
+foo (void) /* The function's address is assumed to be valid.  */
+
+  /* This call site is not checked for control-flow validity.  */
+  (*foo1)();
+
+  foo1 = foo2; /* A warning is printed about attribute mismatch.  */
+  /* This call site is still not checked for control-flow validity.  */
+  (*foo1)();
+
+  /* This call site is checked for control-flow validity.  */
+  (*foo2)();
+
+  foo2 = foo1; /* A warning is printed about attribute mismatch.  */
+  /* This call site is still checked for control-flow validity.  */
+  (*foo2)();
+
+  return 0;
+@}
+@end smallexample
+
 @end table
 
 On the x86, the inliner does not inline a
@@ -8079,7 +8174,7 @@ A comma-separated list of C expressions read by the instructions in the
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
-An empty list is permitted.  @xref{Clobbers}.
+An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
@@ -8439,7 +8534,7 @@ The enclosing parentheses are a required part of the syntax.
 
 When the compiler selects the registers to use to 
 represent the output operands, it does not use any of the clobbered registers 
-(@pxref{Clobbers}).
+(@pxref{Clobbers and Scratch Registers}).
 
 Output operand expressions must be lvalues. The compiler cannot check whether 
 the operands have data types that are reasonable for the instruction being 
@@ -8675,7 +8770,8 @@ as input.  The enclosing parentheses are a required part of the syntax.
 @end table
 
 When the compiler selects the registers to use to represent the input 
-operands, it does not use any of the clobbered registers (@pxref{Clobbers}).
+operands, it does not use any of the clobbered registers
+(@pxref{Clobbers and Scratch Registers}).
 
 If there are no output operands but there are input operands, place two 
 consecutive colons where the output operands would go:
@@ -8726,9 +8822,10 @@ asm ("cmoveq %1, %2, %[result]"
    : "r" (test), "r" (new), "[result]" (old));
 @end example
 
-@anchor{Clobbers}
-@subsubsection Clobbers
+@anchor{Clobbers and Scratch Registers}
+@subsubsection Clobbers and Scratch Registers
 @cindex @code{asm} clobbers
+@cindex @code{asm} scratch registers
 
 While the compiler is aware of changes to entries listed in the output 
 operands, the inline @code{asm} code may modify more than just the outputs. For 
@@ -8759,7 +8856,7 @@ registers:
 asm volatile ("movc3 %0, %1, %2"
                    : /* No outputs. */
                    : "g" (from), "g" (to), "g" (count)
-                   : "r0", "r1", "r2", "r3", "r4", "r5");
+                   : "r0", "r1", "r2", "r3", "r4", "r5", "memory");
 @end example
 
 Also, there are two special clobber arguments:
@@ -8790,14 +8887,141 @@ Note that this clobber does not prevent the @emph{processor} from doing
 speculative reads past the @code{asm} statement. To prevent that, you need 
 processor-specific fence instructions.
 
-Flushing registers to memory has performance implications and may be an issue 
-for time-sensitive code.  You can use a trick to avoid this if the size of 
-the memory being accessed is known at compile time. For example, if accessing 
-ten bytes of a string, use a memory input like: 
-
-@code{@{"m"( (@{ struct @{ char x[10]; @} *p = (void *)ptr ; *p; @}) )@}}.
-
 @end table
+
+Flushing registers to memory has performance implications and may be
+an issue for time-sensitive code.  You can provide better information
+to GCC to avoid this, as shown in the following examples.  At a
+minimum, aliasing rules allow GCC to know what memory @emph{doesn't}
+need to be flushed.
+
+Here is a fictitious sum of squares instruction, that takes two
+pointers to floating point values in memory and produces a floating
+point register output.
+Notice that @code{x}, and @code{y} both appear twice in the @code{asm}
+parameters, once to specify memory accessed, and once to specify a
+base register used by the @code{asm}.  You won't normally be wasting a
+register by doing this as GCC can use the same register for both
+purposes.  However, it would be foolish to use both @code{%1} and
+@code{%3} for @code{x} in this @code{asm} and expect them to be the
+same.  In fact, @code{%3} may well not be a register.  It might be a
+symbolic memory reference to the object pointed to by @code{x}.
+
+@smallexample
+asm ("sumsq %0, %1, %2"
+     : "+f" (result)
+     : "r" (x), "r" (y), "m" (*x), "m" (*y));
+@end smallexample
+
+Here is a fictitious @code{*z++ = *x++ * *y++} instruction.
+Notice that the @code{x}, @code{y} and @code{z} pointer registers
+must be specified as input/output because the @code{asm} modifies
+them.
+
+@smallexample
+asm ("vecmul %0, %1, %2"
+     : "+r" (z), "+r" (x), "+r" (y), "=m" (*z)
+     : "m" (*x), "m" (*y));
+@end smallexample
+
+An x86 example where the string memory argument is of unknown length.
+
+@smallexample
+asm("repne scasb"
+    : "=c" (count), "+D" (p)
+    : "m" (*(const char (*)[]) p), "0" (-1), "a" (0));
+@end smallexample
+
+If you know the above will only be reading a ten byte array then you
+could instead use a memory input like:
+@code{"m" (*(const char (*)[10]) p)}.
+
+Here is an example of a PowerPC vector scale implemented in assembly,
+complete with vector and condition code clobbers, and some initialized
+offset registers that are unchanged by the @code{asm}.
+
+@smallexample
+void
+dscal (size_t n, double *x, double alpha)
+@{
+  asm ("/* lots of asm here */"
+       : "+m" (*(double (*)[n]) x), "+&r" (n), "+b" (x)
+       : "d" (alpha), "b" (32), "b" (48), "b" (64),
+         "b" (80), "b" (96), "b" (112)
+       : "cr0",
+         "vs32","vs33","vs34","vs35","vs36","vs37","vs38","vs39",
+         "vs40","vs41","vs42","vs43","vs44","vs45","vs46","vs47");
+@}
+@end smallexample
+
+Rather than allocating fixed registers via clobbers to provide scratch
+registers for an @code{asm} statement, an alternative is to define a
+variable and make it an early-clobber output as with @code{a2} and
+@code{a3} in the example below.  This gives the compiler register
+allocator more freedom.  You can also define a variable and make it an
+output tied to an input as with @code{a0} and @code{a1}, tied
+respectively to @code{ap} and @code{lda}.  Of course, with tied
+outputs your @code{asm} can't use the input value after modifying the
+output register since they are one and the same register.  What's
+more, if you omit the early-clobber on the output, it is possible that
+GCC might allocate the same register to another of the inputs if GCC
+could prove they had the same value on entry to the @code{asm}.  This
+is why @code{a1} has an early-clobber.  Its tied input, @code{lda}
+might conceivably be known to have the value 16 and without an
+early-clobber share the same register as @code{%11}.  On the other
+hand, @code{ap} can't be the same as any of the other inputs, so an
+early-clobber on @code{a0} is not needed.  It is also not desirable in
+this case.  An early-clobber on @code{a0} would cause GCC to allocate
+a separate register for the @code{"m" (*(const double (*)[]) ap)}
+input.  Note that tying an input to an output is the way to set up an
+initialized temporary register modified by an @code{asm} statement.
+An input not tied to an output is assumed by GCC to be unchanged, for
+example @code{"b" (16)} below sets up @code{%11} to 16, and GCC might
+use that register in following code if the value 16 happened to be
+needed.  You can even use a normal @code{asm} output for a scratch if
+all inputs that might share the same register are consumed before the
+scratch is used.  The VSX registers clobbered by the @code{asm}
+statement could have used this technique except for GCC's limit on the
+number of @code{asm} parameters.
+
+@smallexample
+static void
+dgemv_kernel_4x4 (long n, const double *ap, long lda,
+                  const double *x, double *y, double alpha)
+@{
+  double *a0;
+  double *a1;
+  double *a2;
+  double *a3;
+
+  __asm__
+    (
+     /* lots of asm here */
+     "#n=%1 ap=%8=%12 lda=%13 x=%7=%10 y=%0=%2 alpha=%9 o16=%11\n"
+     "#a0=%3 a1=%4 a2=%5 a3=%6"
+     :
+       "+m" (*(double (*)[n]) y),
+       "+&r" (n),	// 1
+       "+b" (y),	// 2
+       "=b" (a0),	// 3
+       "=&b" (a1),	// 4
+       "=&b" (a2),	// 5
+       "=&b" (a3)	// 6
+     :
+       "m" (*(const double (*)[n]) x),
+       "m" (*(const double (*)[]) ap),
+       "d" (alpha),	// 9
+       "r" (x),		// 10
+       "b" (16),	// 11
+       "3" (ap),	// 12
+       "4" (lda)	// 13
+     :
+       "cr0",
+       "vs32","vs33","vs34","vs35","vs36","vs37",
+       "vs40","vs41","vs42","vs43","vs44","vs45","vs46","vs47"
+     );
+@}
+@end smallexample
 
 @anchor{GotoLabels}
 @subsubsection Goto Labels
@@ -10697,6 +10921,7 @@ in the Cilk Plus language manual which can be found at
 @cindex built-in functions
 @findex __builtin_alloca
 @findex __builtin_alloca_with_align
+@findex __builtin_alloca_with_align_and_max
 @findex __builtin_call_with_static_chain
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
@@ -11341,6 +11566,16 @@ Variable Length Arrays offer the same functionality under
 a portable, more convenient, and safer interface they are recommended
 instead, in both C99 and C++ programs where GCC provides them as
 an extension.  @xref{Variable Length}, for details.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void *__builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)
+Similar to @code{__builtin_alloca_with_align} but takes an extra argument
+specifying an upper bound for @var{size} in case its value cannot be computed
+at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
+and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
+expression, it has no effect on code generation and no attempt is made to
+check its compatibility with @var{size}.
 
 @end deftypefn
 
@@ -12039,6 +12274,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * PowerPC Hardware Transactional Memory Built-in Functions::
+* PowerPC Atomic Memory Operation Functions::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -15346,14 +15582,47 @@ that use the ISA 3.0 instruction set.
 
 @table @code
 @item __float128 __builtin_sqrtf128 (__float128)
-Similar to @code{__builtin_sqrtf}, except the return and input types
-are @code{__float128}.
+Perform a 128-bit IEEE floating point square root operation.
 @findex __builtin_sqrtf128
 
 @item __float128 __builtin_fmaf128 (__float128, __float128, __float128)
-Similar to @code{__builtin_fma}, except the return and input types are
-@code{__float128}.
+Perform a 128-bit IEEE floating point fused multiply and add operation.
 @findex __builtin_fmaf128
+
+@item __float128 __builtin_addf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point add using round to odd as the
+rounding mode.
+@findex __builtin_addf128_round_to_odd
+
+@item __float128 __builtin_subf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point subtract using round to odd as
+the rounding mode.
+@findex __builtin_subf128_round_to_odd
+
+@item __float128 __builtin_mulf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point multiply using round to odd as
+the rounding mode.
+@findex __builtin_mulf128_round_to_odd
+
+@item __float128 __builtin_divf128_round_to_odd (__float128, __float128)
+Perform a 128-bit IEEE floating point divide using round to odd as
+the rounding mode.
+@findex __builtin_divf128_round_to_odd
+
+@item __float128 __builtin_sqrtf128_round_to_odd (__float128)
+Perform a 128-bit IEEE floating point square root using round to odd
+as the rounding mode.
+@findex __builtin_sqrtf128_round_to_odd
+
+@item __float128 __builtin_fmaf128 (__float128, __float128, __float128)
+Perform a 128-bit IEEE floating point fused multiply and add operation
+using round to odd as the rounding mode.
+@findex __builtin_fmaf128_round_to_odd
+
+@item double __builtin_truncf128_round_to_odd (__float128)
+Convert a 128-bit IEEE floating point value to @code{double} using
+round to odd as the rounding mode.
+@findex __builtin_truncf128_round_to_odd
 @end table
 
 The following built-in functions are available for the PowerPC family
@@ -15651,6 +15920,8 @@ vector unsigned short vec_xl_len (unsigned short *addr, size_t len);
 vector double vec_xl_len (double *addr, size_t len);
 vector float vec_xl_len (float *addr, size_t len);
 
+vector unsigned char vec_xl_len_r (unsigned char *addr, size_t len);
+
 void vec_xst_len (vector signed char data, signed char *addr, size_t len);
 void vec_xst_len (vector unsigned char data, unsigned char *addr, size_t len);
 void vec_xst_len (vector signed int data, signed int *addr, size_t len);
@@ -15663,6 +15934,8 @@ void vec_xst_len (vector unsigned short data, unsigned short *addr, size_t len);
 void vec_xst_len (vector signed __int128 data, signed __int128 *addr, size_t len);
 void vec_xst_len (vector double data, double *addr, size_t len);
 void vec_xst_len (vector float data, float *addr, size_t len);
+
+void vec_xst_len_r (vector unsigned char data, unsigned char *addr, size_t len);
 
 signed char vec_xlx (unsigned int index, vector signed char data);
 unsigned char vec_xlx (unsigned int index, vector unsigned char data);
@@ -19087,6 +19360,67 @@ while (1)
   @}
 @end smallexample
 
+@node PowerPC Atomic Memory Operation Functions
+@subsection PowerPC Atomic Memory Operation Functions
+ISA 3.0 of the PowerPC added new atomic memory operation (amo)
+instructions.  GCC provides support for these instructions in 64-bit
+environments.  All of the functions are declared in the include file
+@code{amo.h}.
+
+The functions supported are:
+
+@smallexample
+#include <amo.h>
+
+uint32_t amo_lwat_add (uint32_t *, uint32_t);
+uint32_t amo_lwat_xor (uint32_t *, uint32_t);
+uint32_t amo_lwat_ior (uint32_t *, uint32_t);
+uint32_t amo_lwat_and (uint32_t *, uint32_t);
+uint32_t amo_lwat_umax (uint32_t *, uint32_t);
+uint32_t amo_lwat_umin (uint32_t *, uint32_t);
+uint32_t amo_lwat_swap (uint32_t *, uint32_t);
+
+int32_t amo_lwat_sadd (int32_t *, int32_t);
+int32_t amo_lwat_smax (int32_t *, int32_t);
+int32_t amo_lwat_smin (int32_t *, int32_t);
+int32_t amo_lwat_sswap (int32_t *, int32_t);
+
+uint64_t amo_ldat_add (uint64_t *, uint64_t);
+uint64_t amo_ldat_xor (uint64_t *, uint64_t);
+uint64_t amo_ldat_ior (uint64_t *, uint64_t);
+uint64_t amo_ldat_and (uint64_t *, uint64_t);
+uint64_t amo_ldat_umax (uint64_t *, uint64_t);
+uint64_t amo_ldat_umin (uint64_t *, uint64_t);
+uint64_t amo_ldat_swap (uint64_t *, uint64_t);
+
+int64_t amo_ldat_sadd (int64_t *, int64_t);
+int64_t amo_ldat_smax (int64_t *, int64_t);
+int64_t amo_ldat_smin (int64_t *, int64_t);
+int64_t amo_ldat_sswap (int64_t *, int64_t);
+
+void amo_stwat_add (uint32_t *, uint32_t);
+void amo_stwat_xor (uint32_t *, uint32_t);
+void amo_stwat_ior (uint32_t *, uint32_t);
+void amo_stwat_and (uint32_t *, uint32_t);
+void amo_stwat_umax (uint32_t *, uint32_t);
+void amo_stwat_umin (uint32_t *, uint32_t);
+
+void amo_stwat_sadd (int32_t *, int32_t);
+void amo_stwat_smax (int32_t *, int32_t);
+void amo_stwat_smin (int32_t *, int32_t);
+
+void amo_stdat_add (uint64_t *, uint64_t);
+void amo_stdat_xor (uint64_t *, uint64_t);
+void amo_stdat_ior (uint64_t *, uint64_t);
+void amo_stdat_and (uint64_t *, uint64_t);
+void amo_stdat_umax (uint64_t *, uint64_t);
+void amo_stdat_umin (uint64_t *, uint64_t);
+
+void amo_stdat_sadd (int64_t *, int64_t);
+void amo_stdat_smax (int64_t *, int64_t);
+void amo_stdat_smin (int64_t *, int64_t);
+@end smallexample
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
@@ -21183,6 +21517,25 @@ They generate reads and writes to PKRU.
 @smallexample
 void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
+@end smallexample
+
+The following built-in functions are available when @option{-mcet} is used.
+They are used to support Intel Control-flow Enforcment Technology (CET).
+Each built-in function generates the  machine instruction that is part of the
+function's name.
+@smallexample
+unsigned int __builtin_ia32_rdsspd (unsigned int)
+unsigned long long __builtin_ia32_rdsspq (unsigned long long)
+void __builtin_ia32_incsspd (unsigned int)
+void __builtin_ia32_incsspq (unsigned long long)
+void __builtin_ia32_saveprevssp(void);
+void __builtin_ia32_rstorssp(void *);
+void __builtin_ia32_wrssd(unsigned int, void *);
+void __builtin_ia32_wrssq(unsigned long long, void *);
+void __builtin_ia32_wrussd(unsigned int, void *);
+void __builtin_ia32_wrussq(unsigned long long, void *);
+void __builtin_ia32_setssbsy(void);
+void __builtin_ia32_clrssbsy(void *);
 @end smallexample
 
 @node x86 transactional memory intrinsics

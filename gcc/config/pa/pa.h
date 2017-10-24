@@ -309,11 +309,6 @@ typedef struct GTY(()) machine_function
    atomic operations.  */
 #define MALLOC_ABI_ALIGNMENT (TARGET_SOM ? 64 : 128)
 
-/* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
-  (TREE_CODE (EXP) == STRING_CST		\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -498,17 +493,6 @@ extern rtx hppa_pic_save_rtx (void);
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 0
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.
-
-   On the 32-bit ports, we reserve one slot for the previous frame
-   pointer and one fill slot.  The fill slot is for compatibility
-   with HP compiled programs.  On the 64-bit ports, we reserve one
-   slot for the previous frame pointer.  */
-#define STARTING_FRAME_OFFSET 8
 
 /* Define STACK_ALIGNMENT_NEEDED to zero to disable final alignment
    of the stack.  The default is to align it to STACK_BOUNDARY.  */
@@ -1311,3 +1295,5 @@ do {									     \
    seven and four instructions, respectively.  */  
 #define MAX_PCREL17F_OFFSET \
   (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
+
+#define NEED_INDICATE_EXEC_STACK 0

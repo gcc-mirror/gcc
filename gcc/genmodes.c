@@ -880,7 +880,7 @@ calc_wider_mode (void)
 	  for (i = 0, m = modes[c]; m; i++, m = m->next)
 	    sortbuf[i] = m;
 
-	  qsort (sortbuf, i, sizeof (struct mode_data *), cmp_modes);
+	  (qsort) (sortbuf, i, sizeof (struct mode_data *), cmp_modes);
 
 	  sortbuf[i] = 0;
 	  for (j = 0; j < i; j++)

@@ -761,15 +761,19 @@ package body Sem_Type is
 
       function Full_View_Covers (Typ1, Typ2 : Entity_Id) return Boolean is
       begin
-         return
-           Is_Private_Type (Typ1)
-             and then
-              ((Present (Full_View (Typ1))
-                 and then Covers (Full_View (Typ1), Typ2))
-                or else (Present (Underlying_Full_View (Typ1))
-                          and then Covers (Underlying_Full_View (Typ1), Typ2))
-                or else Base_Type (Typ1) = Typ2
-                or else Base_Type (Typ2) = Typ1);
+         if Present (Full_View (Typ1))
+           and then Covers (Full_View (Typ1), Typ2)
+         then
+            return True;
+
+         elsif Present (Underlying_Full_View (Typ1))
+           and then Covers (Underlying_Full_View (Typ1), Typ2)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
       end Full_View_Covers;
 
       -----------------
@@ -825,7 +829,7 @@ package body Sem_Type is
       --  Standard_Void_Type is a special entity that has some, but not all,
       --  properties of types.
 
-      if (T1 = Standard_Void_Type) /= (T2 = Standard_Void_Type) then
+      if T1 = Standard_Void_Type or else T2 = Standard_Void_Type then
          return False;
       end if;
 
@@ -892,8 +896,8 @@ package body Sem_Type is
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
         or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
         or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
-        or else (T2 = Any_String        and then Is_String_Type (T1))
         or else (T2 = Any_Character     and then Is_Character_Type (T1))
+        or else (T2 = Any_String        and then Is_String_Type (T1))
         or else (T2 = Any_Access        and then Is_Access_Type (T1))
       then
          return True;
@@ -916,9 +920,9 @@ package body Sem_Type is
       --  task_type or protected_type that implements the interface.
 
       elsif Ada_Version >= Ada_2005
+        and then Is_Concurrent_Type (T2)
         and then Is_Class_Wide_Type (T1)
         and then Is_Interface (Etype (T1))
-        and then Is_Concurrent_Type (T2)
         and then Interface_Present_In_Ancestor
                    (Typ => BT2, Iface => Etype (T1))
       then
@@ -928,9 +932,9 @@ package body Sem_Type is
       --  object T2 implementing T1.
 
       elsif Ada_Version >= Ada_2005
+        and then Is_Tagged_Type (T2)
         and then Is_Class_Wide_Type (T1)
         and then Is_Interface (Etype (T1))
-        and then Is_Tagged_Type (T2)
       then
          if Interface_Present_In_Ancestor (Typ   => T2,
                                            Iface => Etype (T1))
@@ -1183,19 +1187,16 @@ package body Sem_Type is
       --  whether a partial and a full view match. Verify that types are
       --  legal, to prevent cascaded errors.
 
-      elsif In_Instance
-        and then (Full_View_Covers (T1, T2) or else Full_View_Covers (T2, T1))
-      then
-         return True;
-
-      elsif Is_Type (T2)
-        and then Is_Generic_Actual_Type (T2)
+      elsif Is_Private_Type (T1)
+        and then (In_Instance
+                   or else (Is_Type (T2) and then Is_Generic_Actual_Type (T2)))
         and then Full_View_Covers (T1, T2)
       then
          return True;
 
-      elsif Is_Type (T1)
-        and then Is_Generic_Actual_Type (T1)
+      elsif Is_Private_Type (T2)
+        and then (In_Instance
+                   or else (Is_Type (T1) and then Is_Generic_Actual_Type (T1)))
         and then Full_View_Covers (T2, T1)
       then
          return True;
@@ -2837,11 +2838,9 @@ package body Sem_Type is
          return False;
 
       elsif Nkind (Par) in N_Declaration then
-         if Nkind (Par) = N_Object_Declaration then
-            return Present (Corresponding_Generic_Association (Par));
-         else
-            return False;
-         end if;
+         return
+           Nkind (Par) = N_Object_Declaration
+             and then Present (Corresponding_Generic_Association (Par));
 
       elsif Nkind (Par) = N_Object_Renaming_Declaration then
          return Present (Corresponding_Generic_Association (Par));

@@ -271,13 +271,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)             \
   (TREE_CODE (TYPE) == ARRAY_TYPE               \
@@ -664,12 +657,6 @@ extern enum reg_class arc_regno_reg_class[];
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */

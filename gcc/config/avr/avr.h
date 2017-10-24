@@ -284,8 +284,6 @@ enum reg_class {
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET avr_starting_frame_offset()
-
 #define STACK_POINTER_OFFSET 1
 
 #define FIRST_PARM_OFFSET(FUNDECL) 0

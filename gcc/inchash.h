@@ -58,9 +58,18 @@ class hash
   }
 
   /* Add HOST_WIDE_INT value V.  */
-  void add_wide_int (HOST_WIDE_INT v)
+  void add_hwi (HOST_WIDE_INT v)
   {
     val = iterative_hash_host_wide_int (v, val);
+  }
+
+  /* Add wide_int-based value V.  */
+  template<typename T>
+  void add_wide_int (const generic_wide_int<T> &x)
+  {
+    add_int (x.get_len ());
+    for (unsigned i = 0; i < x.get_len (); i++)
+      add_hwi (x.elt (i));
   }
 
   /* Hash in pointer PTR.  */

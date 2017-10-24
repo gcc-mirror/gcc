@@ -1,3 +1,14 @@
+2017-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/82233
+	* intrinsics/execute_command_line.c (execute_command_line):
+	No call to runtime_error if cmdstat is present.
+
+2017-09-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libgfortran/79612
+	* runtime/bounds.c: Use GFC_ASSERT.
+
 2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34640

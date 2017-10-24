@@ -485,7 +485,7 @@ get_min_precision (tree arg, signop sign)
 	  p = wi::min_precision (w, sign);
 	}
       else
-	p = wi::min_precision (arg, sign);
+	p = wi::min_precision (wi::to_wide (arg), sign);
       return MIN (p, prec);
     }
   while (CONVERT_EXPR_P (arg)
@@ -1770,8 +1770,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 		}
 
 	      /* At this point hipart{0,1} are both in [-1, 0].  If they are
-		 the same, overflow happened if res is negative, if they are
-		 different, overflow happened if res is positive.  */
+		 the same, overflow happened if res is non-positive, if they
+		 are different, overflow happened if res is positive.  */
 	      if (op0_sign != 1 && op1_sign != 1 && op0_sign != op1_sign)
 		emit_jump (hipart_different);
 	      else if (op0_sign == 1 || op1_sign == 1)
@@ -1779,7 +1779,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 					 NULL_RTX, NULL, hipart_different,
 					 profile_probability::even ());
 
-	      do_compare_rtx_and_jump (res, const0_rtx, LT, false, mode,
+	      do_compare_rtx_and_jump (res, const0_rtx, LE, false, mode,
 				       NULL_RTX, NULL, do_error,
 				       profile_probability::very_unlikely ());
 	      emit_jump (done_label);
@@ -2606,7 +2606,15 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
   tree lhs = gimple_call_lhs (stmt);
   tree lhs_type = TREE_TYPE (lhs);
   rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], lhs_rtx, insn_data[icode].operand[0].mode);
+
+  /* Do not assign directly to a promoted subreg, since there is no
+     guarantee that the instruction will leave the upper bits of the
+     register in the state required by SUBREG_PROMOTED_SIGN.  */
+  rtx dest = lhs_rtx;
+  if (GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+    dest = NULL_RTX;
+
+  create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
 
   for (unsigned int i = 0; i < nargs; ++i)
     {

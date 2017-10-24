@@ -9,9 +9,9 @@ struct Klass
   int implementation ();
   int magic ();
 
-  typedef int (Klass::*MemFuncPtr)();
+  typedef int Func (Klass*);
 
-  static MemFuncPtr resolver ();
+  static Func* resolver ();
 };
 
 int Klass::implementation (void)
@@ -20,9 +20,13 @@ int Klass::implementation (void)
   return 0;
 }
 
-Klass::memFuncPtr Klass::resolver (void)
+Klass::Func* Klass::resolver (void)
 {
-  return &Klass::implementation;
+  /* GCC guarantees this conversion to be safe and the resulting pointer
+     usable to call the member function using ordinary (i.e., non-member)
+     function call syntax.  */
+
+  return reinterpret_cast<Func*>(&Klass::implementation);
 }
 
 int Klass::magic (void) __attribute__ ((ifunc ("_ZN5Klass8resolverEv")));

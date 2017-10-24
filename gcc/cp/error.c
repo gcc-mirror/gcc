@@ -1574,6 +1574,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   int do_outer_scope = ! (flags & TFF_UNQUALIFIED_NAME);
   tree exceptions;
   bool constexpr_p;
+  tree ret = NULL_TREE;
 
   flags &= ~(TFF_UNQUALIFIED_NAME | TFF_TEMPLATE_NAME);
   if (TREE_CODE (t) == TEMPLATE_DECL)
@@ -1636,7 +1637,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 		   && !DECL_DESTRUCTOR_P (t) && !deduction_guide_p (t));
   if (show_return)
     {
-      tree ret = fndecl_declared_return_type (t);
+      ret = fndecl_declared_return_type (t);
       dump_type_prefix (pp, ret, flags);
     }
 
@@ -1677,7 +1678,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	}
 
       if (show_return)
-	dump_type_suffix (pp, TREE_TYPE (fntype), flags);
+	dump_type_suffix (pp, ret, flags);
       else if (deduction_guide_p (t))
 	{
 	  pp_cxx_ws_string (pp, "->");

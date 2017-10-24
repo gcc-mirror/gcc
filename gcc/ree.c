@@ -269,7 +269,7 @@ update_reg_equal_equiv_notes (rtx_insn *insn, machine_mode new_mode,
 	  /* Update equivalency constants.  Recall that RTL constants are
 	     sign-extended.  */
 	  if (GET_CODE (orig_src) == CONST_INT
-	      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (new_mode))
+	      && HWI_COMPUTABLE_MODE_P (new_mode))
 	    {
 	      if (INTVAL (orig_src) >= 0 || code == SIGN_EXTEND)
 		/* Nothing needed.  */;
@@ -337,7 +337,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
   /* Merge constants by directly moving the constant into the register under
      some conditions.  Recall that RTL constants are sign-extended.  */
   if (GET_CODE (orig_src) == CONST_INT
-      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (cand->mode))
+      && HWI_COMPUTABLE_MODE_P (cand->mode))
     {
       if (INTVAL (orig_src) >= 0 || cand->code == SIGN_EXTEND)
 	new_set = gen_rtx_SET (new_reg, orig_src);
@@ -428,7 +428,8 @@ transform_ifelse (ext_cand *cand, rtx_insn *def_insn)
   srcreg2 = XEXP (SET_SRC (set_insn), 2);
   /* If the conditional move already has the right or wider mode,
      there is nothing to do.  */
-  if (GET_MODE_SIZE (GET_MODE (dstreg)) >= GET_MODE_SIZE (cand->mode))
+  if (GET_MODE_UNIT_SIZE (GET_MODE (dstreg))
+      >= GET_MODE_UNIT_SIZE (cand->mode))
     return true;
 
   map_srcreg = gen_rtx_REG (cand->mode, REGNO (srcreg));
@@ -718,8 +719,8 @@ merge_def_and_ext (ext_cand *cand, rtx_insn *def_insn, ext_state *state)
 	      && state->modified[INSN_UID (def_insn)].mode
 		 == ext_src_mode)))
     {
-      if (GET_MODE_SIZE (GET_MODE (SET_DEST (*sub_rtx)))
-	  >= GET_MODE_SIZE (cand->mode))
+      if (GET_MODE_UNIT_SIZE (GET_MODE (SET_DEST (*sub_rtx)))
+	  >= GET_MODE_UNIT_SIZE (cand->mode))
 	return true;
       /* If def_insn is already scheduled to be deleted, don't attempt
 	 to modify it.  */
@@ -926,7 +927,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	  || (set = single_set (cand->insn)) == NULL_RTX)
 	return false;
       mode = GET_MODE (SET_DEST (set));
-      gcc_assert (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (cand->mode));
+      gcc_assert (GET_MODE_UNIT_SIZE (mode)
+		  >= GET_MODE_UNIT_SIZE (cand->mode));
       cand->mode = mode;
     }
 

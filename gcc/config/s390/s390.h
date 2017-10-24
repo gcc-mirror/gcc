@@ -315,7 +315,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define EMPTY_FIELD_BOUNDARY 32
 
 /* Alignment on even addresses for LARL instruction.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 #define DATA_ABI_ALIGNMENT(TYPE, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 
 /* Alignment is not required by the hardware.  */
@@ -590,9 +589,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 /* Offset from stack-pointer to first location of outgoing args.  */
 #define STACK_POINTER_OFFSET (TARGET_64BIT ? 160 : 96)
-
-/* Offset within stack frame to start allocating local variables at.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.  */

@@ -121,7 +121,7 @@ count_bb_insns (const_basic_block bb)
   return count;
 }
 
-/* Determine whether the total insn_rtx_cost on non-jump insns in
+/* Determine whether the total insn_cost on non-jump insns in
    basic block BB is less than MAX_COST.  This function returns
    false if the cost of any instruction could not be estimated. 
 
@@ -140,7 +140,7 @@ cheap_bb_rtx_cost_p (const_basic_block bb,
 	      : REG_BR_PROB_BASE;
 
   /* Set scale to REG_BR_PROB_BASE to void the identical scaling
-     applied to insn_rtx_cost when optimizing for size.  Only do
+     applied to insn_cost when optimizing for size.  Only do
      this after combine because if-conversion might interfere with
      passes before combine.
 
@@ -163,7 +163,7 @@ cheap_bb_rtx_cost_p (const_basic_block bb,
     {
       if (NONJUMP_INSN_P (insn))
 	{
-	  int cost = insn_rtx_cost (PATTERN (insn), speed) * REG_BR_PROB_BASE;
+	  int cost = insn_cost (insn, speed) * REG_BR_PROB_BASE;
 	  if (cost == 0)
 	    return false;
 
@@ -3021,7 +3021,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
   if (first_insn == last_insn)
     {
       *simple_p = noce_operand_ok (SET_DEST (first_set));
-      *cost += insn_rtx_cost (first_set, speed_p);
+      *cost += pattern_cost (first_set, speed_p);
       return *simple_p;
     }
 
@@ -3037,7 +3037,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
   /* The regs that are live out of test_bb.  */
   bitmap test_bb_live_out = df_get_live_out (test_bb);
 
-  int potential_cost = insn_rtx_cost (last_set, speed_p);
+  int potential_cost = pattern_cost (last_set, speed_p);
   rtx_insn *insn;
   FOR_BB_INSNS (test_bb, insn)
     {
@@ -3057,7 +3057,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 	      || reg_overlap_mentioned_p (SET_DEST (sset), cond))
 	    goto free_bitmap_and_fail;
 
-	  potential_cost += insn_rtx_cost (sset, speed_p);
+	  potential_cost += pattern_cost (sset, speed_p);
 	  bitmap_set_bit (test_bb_temps, REGNO (SET_DEST (sset)));
 	}
     }
@@ -5283,8 +5283,6 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
       if (reversep)
 	{
-	  std::swap (BRANCH_EDGE (test_bb)->count,
-		     FALLTHRU_EDGE (test_bb)->count);
 	  std::swap (BRANCH_EDGE (test_bb)->probability,
 		     FALLTHRU_EDGE (test_bb)->probability);
 	  update_br_prob_note (test_bb);

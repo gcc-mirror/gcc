@@ -50,7 +50,6 @@ test01()
   VERIFY( !ec );
   VERIFY( !b );
   b = create_directory(p);
-  VERIFY( !ec );
   VERIFY( !b );
 
   remove_all(p, ec);

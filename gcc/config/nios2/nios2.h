@@ -92,10 +92,6 @@
 #define PREFERRED_STACK_BOUNDARY 32
 #define MAX_FIXED_MODE_SIZE 64
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                          \
-  ((TREE_CODE (EXP) == STRING_CST)                              \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define LABEL_ALIGN(LABEL) nios2_label_align (LABEL)
 
 /* Layout of source language data types.  */
@@ -256,7 +252,6 @@ enum reg_class
 
 /* Stack layout.  */
 #define STACK_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 /* Before the prologue, RA lives in r31.  */

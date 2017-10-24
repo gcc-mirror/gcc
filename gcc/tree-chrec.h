@@ -157,8 +157,9 @@ build_polynomial_chrec (unsigned loop_num,
   if (chrec_zerop (right))
     return left;
 
-  return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left),
-		 build_int_cst (NULL_TREE, loop_num), left, right);
+  tree chrec = build2 (POLYNOMIAL_CHREC, TREE_TYPE (left), left, right);
+  CHREC_VARIABLE (chrec) = loop_num;
+  return chrec;
 }
 
 /* Determines whether the expression CHREC is a constant.  */
@@ -169,15 +170,9 @@ evolution_function_is_constant_p (const_tree chrec)
   if (chrec == NULL_TREE)
     return false;
 
-  switch (TREE_CODE (chrec))
-    {
-    case INTEGER_CST:
-    case REAL_CST:
-      return true;
-
-    default:
-      return false;
-    }
+  if (CONSTANT_CLASS_P (chrec))
+    return true;
+  return is_gimple_min_invariant (chrec);
 }
 
 /* Determine whether CHREC is an affine evolution function in LOOPNUM.  */

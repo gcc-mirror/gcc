@@ -2818,10 +2818,16 @@ package body Sem_Prag is
                                              E_Constant,
                                              E_Variable)
                then
+                  --  When the initialization item is undefined, it appears as
+                  --  Any_Id. Do not continue with the analysis of the item.
+
+                  if Item_Id = Any_Id then
+                     null;
+
                   --  The state or variable must be declared in the visible
                   --  declarations of the package (SPARK RM 7.1.5(7)).
 
-                  if not Contains (States_And_Objs, Item_Id) then
+                  elsif not Contains (States_And_Objs, Item_Id) then
                      Error_Msg_Name_1 := Chars (Pack_Id);
                      SPARK_Msg_NE
                        ("initialization item & must appear in the visible "
@@ -13219,7 +13225,7 @@ package body Sem_Prag is
                      Analyze (N);
                      raise Pragma_Exit;
 
-                     --  No other possibilities
+                  --  No other possibilities
 
                   when others =>
                      raise Program_Error;
@@ -13236,23 +13242,21 @@ package body Sem_Prag is
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
-            --  Deal with analyzing the string argument
+            --  Deal with analyzing the string argument. If checks are not
+            --  on we don't want any expansion (since such expansion would
+            --  not get properly deleted) but we do want to analyze (to get
+            --  proper references). The Preanalyze_And_Resolve routine does
+            --  just what we want. Ditto if pragma is active, because it will
+            --  be rewritten as an if-statement whose analysis will complete
+            --  analysis and expansion of the string message. This makes a
+            --  difference in the unusual case where the expression for the
+            --  string may have a side effect, such as raising an exception.
+            --  This is mandated by RM 11.4.2, which specifies that the string
+            --  expression is only evaluated if the check fails and
+            --  Assertion_Error is to be raised.
 
             if Arg_Count = 3 then
-
-               --  If checks are not on we don't want any expansion (since
-               --  such expansion would not get properly deleted) but
-               --  we do want to analyze (to get proper references).
-               --  The Preanalyze_And_Resolve routine does just what we want
-
-               if Is_Ignored (N) then
-                  Preanalyze_And_Resolve (Str, Standard_String);
-
-                  --  Otherwise we need a proper analysis and expansion
-
-               else
-                  Analyze_And_Resolve (Str, Standard_String);
-               end if;
+               Preanalyze_And_Resolve (Str, Standard_String);
             end if;
 
             --  Now you might think we could just do the same with the Boolean
@@ -14384,12 +14388,11 @@ package body Sem_Prag is
                Call := Get_Pragma_Arg (Arg1);
             end if;
 
-            if Nkind_In (Call,
-                 N_Indexed_Component,
-                 N_Function_Call,
-                 N_Identifier,
-                 N_Expanded_Name,
-                 N_Selected_Component)
+            if Nkind_In (Call, N_Expanded_Name,
+                               N_Function_Call,
+                               N_Identifier,
+                               N_Indexed_Component,
+                               N_Selected_Component)
             then
                --  If this pragma Debug comes from source, its argument was
                --  parsed as a name form (which is syntactically identical).
@@ -14999,26 +15002,6 @@ package body Sem_Prag is
                      Set_Elaborate_Present (Citem, True);
                      Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
-                     --  With the pragma present, elaboration calls on
-                     --  subprograms from the named unit need no further
-                     --  checks, as long as the pragma appears in the current
-                     --  compilation unit. If the pragma appears in some unit
-                     --  in the context, there might still be a need for an
-                     --  Elaborate_All_Desirable from the current compilation
-                     --  to the named unit, so we keep the check enabled.
-
-                     if In_Extended_Main_Source_Unit (N) then
-
-                        --  This does not apply in SPARK mode, where we allow
-                        --  pragma Elaborate, but we don't trust it to be right
-                        --  so we will still insist on the Elaborate_All.
-
-                        if SPARK_Mode /= On then
-                           Set_Suppress_Elaboration_Warnings
-                             (Entity (Name (Citem)));
-                        end if;
-                     end if;
-
                      exit Inner;
                   end if;
 
@@ -15096,14 +15079,6 @@ package body Sem_Prag is
                      Set_Elaborate_All_Present (Citem, True);
                      Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
-                     --  Suppress warnings and elaboration checks on the named
-                     --  unit if the pragma is in the current compilation, as
-                     --  for pragma Elaborate.
-
-                     if In_Extended_Main_Source_Unit (N) then
-                        Set_Suppress_Elaboration_Warnings
-                          (Entity (Name (Citem)));
-                     end if;
                      exit Innr;
                   end if;
 
@@ -15151,27 +15126,8 @@ package body Sem_Prag is
             then
                Error_Pragma ("pragma% must refer to a spec, not a body");
             else
-               Set_Body_Required (Cunit_Node, True);
+               Set_Body_Required (Cunit_Node);
                Set_Has_Pragma_Elaborate_Body (Cunit_Ent);
-
-               --  If we are in dynamic elaboration mode, then we suppress
-               --  elaboration warnings for the unit, since it is definitely
-               --  fine NOT to do dynamic checks at the first level (and such
-               --  checks will be suppressed because no elaboration boolean
-               --  is created for Elaborate_Body packages).
-
-               --  But in the static model of elaboration, Elaborate_Body is
-               --  definitely NOT good enough to ensure elaboration safety on
-               --  its own, since the body may WITH other units that are not
-               --  safe from an elaboration point of view, so a client must
-               --  still do an Elaborate_All on such units.
-
-               --  Debug flag -gnatdD restores the old behavior of 3.13, where
-               --  Elaborate_Body always suppressed elab warnings.
-
-               if Dynamic_Elaboration_Checks or Debug_Flag_DD then
-                  Set_Suppress_Elaboration_Warnings (Cunit_Ent);
-               end if;
             end if;
          end Elaborate_Body;
 
@@ -20249,7 +20205,6 @@ package body Sem_Prag is
                else
                   if not Debug_Flag_U then
                      Set_Is_Preelaborated (Ent);
-                     Set_Suppress_Elaboration_Warnings (Ent);
                   end if;
                end if;
             end if;
@@ -20877,7 +20832,6 @@ package body Sem_Prag is
             if not Debug_Flag_U then
                Set_Is_Pure (Ent);
                Set_Has_Pragma_Pure (Ent);
-               Set_Suppress_Elaboration_Warnings (Ent);
             end if;
          end Pure;
 
@@ -27448,7 +27402,7 @@ package body Sem_Prag is
                         --  Stop the compilation, as this leads to a multitude
                         --  of misleading cascaded errors.
 
-                        raise Program_Error;
+                        raise Unrecoverable_Error;
                      end if;
 
                   --  The constituent is a valid state or object

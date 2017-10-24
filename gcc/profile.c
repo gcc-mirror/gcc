@@ -831,12 +831,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
   FOR_ALL_BB_FN (bb, cfun)
     {
-      edge e;
-      edge_iterator ei;
-
       bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        e->count = profile_count::from_gcov_type (edge_gcov_count (e));
     }
   bb_gcov_counts.release ();
   delete edge_gcov_counts;

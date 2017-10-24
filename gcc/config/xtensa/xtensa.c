@@ -181,6 +181,8 @@ static void xtensa_conditional_register_usage (void);
 static unsigned int xtensa_hard_regno_nregs (unsigned int, machine_mode);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
+static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 
 
 
@@ -316,6 +318,12 @@ static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P xtensa_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT xtensa_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET xtensa_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4378,6 +4386,31 @@ enum reg_class xtensa_regno_to_class (int regno)
     return GR_REGS;
   else
     return regno_to_class[regno];
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Align string constants and
+   constructors to at least a word boundary.  The typical use of this
+   macro is to increase alignment for string constants to be word
+   aligned so that 'strcpy' calls that copy constants can be done
+   inline.  */
+
+static HOST_WIDE_INT
+xtensa_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if ((TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+      && !optimize_size)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+xtensa_starting_frame_offset (void)
+{
+  if (FRAME_GROWS_DOWNWARD)
+    return 0;
+  return crtl->outgoing_args_size;
 }
 
 #include "gt-xtensa.h"

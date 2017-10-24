@@ -101,6 +101,17 @@ stest_LDADD = libbacktrace.la
 
 check_PROGRAMS += stest
 
+ztest_SOURCES = ztest.c testlib.c
+ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
+ztest_LDADD = libbacktrace.la
+
+if HAVE_ZLIB
+ztest_LDADD += -lz
+endif
+ztest_LDADD += $(CLOCK_GETTIME_LINK)
+
+check_PROGRAMS += ztest
+
 edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 edtest_LDADD = libbacktrace.la
 
@@ -121,6 +132,32 @@ ttest_CFLAGS = $(AM_CFLAGS) -pthread
 ttest_LDADD = libbacktrace.la
 
 endif HAVE_PTHREAD
+
+if HAVE_OBJCOPY_DEBUGLINK
+
+TESTS += dtest
+
+dtest: btest
+	$(OBJCOPY) --only-keep-debug btest btest.debug
+	$(OBJCOPY) --strip-debug --add-gnu-debuglink=btest.debug btest dtest
+
+endif HAVE_OBJCOPY_DEBUGLINK
+
+if HAVE_COMPRESSED_DEBUG
+
+ctestg_SOURCES = btest.c testlib.c
+ctestg_CFLAGS = $(AM_CFLAGS) -g
+ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu
+ctestg_LDADD = libbacktrace.la
+
+ctesta_SOURCES = btest.c testlib.c
+ctesta_CFLAGS = $(AM_CFLAGS) -g
+ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
+ctesta_LDADD = libbacktrace.la
+
+check_PROGRAMS += ctestg ctesta
+
+endif
 
 endif NATIVE
 

@@ -286,11 +286,11 @@ sem_function::get_hash (void)
 
       /* Add common features of declaration itself.  */
       if (DECL_FUNCTION_SPECIFIC_TARGET (decl))
-        hstate.add_wide_int
+        hstate.add_hwi
 	 (cl_target_option_hash
 	   (TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (decl))));
       if (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))
-	hstate.add_wide_int
+	hstate.add_hwi
 	 (cl_optimization_hash
 	   (TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))));
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
@@ -1422,6 +1422,7 @@ sem_function::init (void)
 	      }
 	  }
 
+	hstate.commit_flag ();
 	gcode_hash = hstate.end ();
 	bb_sizes.safe_push (nondbg_stmt_count);
 
@@ -1437,8 +1438,8 @@ sem_function::init (void)
     {
       cfg_checksum = 0;
       inchash::hash hstate;
-      hstate.add_wide_int (cnode->thunk.fixed_offset);
-      hstate.add_wide_int (cnode->thunk.virtual_value);
+      hstate.add_hwi (cnode->thunk.fixed_offset);
+      hstate.add_hwi (cnode->thunk.virtual_value);
       hstate.add_flag (cnode->thunk.this_adjusting);
       hstate.add_flag (cnode->thunk.virtual_offset_p);
       hstate.add_flag (cnode->thunk.add_pointer_bounds_args);
@@ -1485,7 +1486,7 @@ sem_item::add_expr (const_tree exp, inchash::hash &hstate)
 	unsigned HOST_WIDE_INT idx;
 	tree value;
 
-	hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+	hstate.add_hwi (int_size_in_bytes (TREE_TYPE (exp)));
 
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
 	  if (value)
@@ -1500,7 +1501,7 @@ sem_item::add_expr (const_tree exp, inchash::hash &hstate)
     case VAR_DECL:
     case CONST_DECL:
     case PARM_DECL:
-      hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+      hstate.add_hwi (int_size_in_bytes (TREE_TYPE (exp)));
       break;
     case MEM_REF:
     case POINTER_PLUS_EXPR:
@@ -1518,7 +1519,7 @@ sem_item::add_expr (const_tree exp, inchash::hash &hstate)
       }
       break;
     CASE_CONVERT:
-      hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+      hstate.add_hwi (int_size_in_bytes (TREE_TYPE (exp)));
       return add_expr (TREE_OPERAND (exp, 0), hstate);
     default:
       break;
@@ -1589,11 +1590,11 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 
 	  hstate2.add_int (nf);
 	  hash = hstate2.end ();
-	  hstate.add_wide_int (hash);
+	  hstate.add_hwi (hash);
 	  optimizer->m_type_hash_cache.put (type, hash);
 	}
       else
-        hstate.add_wide_int (*val);
+        hstate.add_hwi (*val);
     }
 }
 
@@ -1644,6 +1645,11 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
 	  if (gimple_op (stmt, i))
 	    add_type (TREE_TYPE (gimple_op (stmt, i)), hstate);
 	}
+      /* Consider nocf_check attribute in hash as it affects code
+ 	 generation.  */
+      if (code == GIMPLE_CALL
+	  && flag_cf_protection & CF_BRANCH)
+	hstate.add_flag (gimple_call_nocf_check_p (as_a <gcall *> (stmt)));
     default:
       break;
     }
@@ -2108,7 +2114,7 @@ sem_variable::get_hash (void)
 
   hstate.add_int (456346417);
   if (DECL_SIZE (decl) && tree_fits_shwi_p (DECL_SIZE (decl)))
-    hstate.add_wide_int (tree_to_shwi (DECL_SIZE (decl)));
+    hstate.add_hwi (tree_to_shwi (DECL_SIZE (decl)));
   add_expr (ctor, hstate);
   set_hash (hstate.end ());
 
@@ -2720,7 +2726,7 @@ sem_item_optimizer::update_hash_by_addr_refs ()
 
 		if (TYPE_NAME (class_type)
 		     && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (class_type)))
-		  hstate.add_wide_int
+		  hstate.add_hwi
 		    (IDENTIFIER_HASH_VALUE
 		       (DECL_ASSEMBLER_NAME (TYPE_NAME (class_type))));
 

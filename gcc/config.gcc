@@ -360,6 +360,7 @@ i[34567]86-*-*)
 	cpu_type=i386
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
+	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
@@ -377,13 +378,14 @@ i[34567]86-*-*)
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
 		       avx512vbmivlintrin.h avx5124fmapsintrin.h avx5124vnniwintrin.h
 		       avx512vpopcntdqintrin.h clwbintrin.h mwaitxintrin.h
-		       clzerointrin.h pkuintrin.h sgxintrin.h"
+		       clzerointrin.h pkuintrin.h sgxintrin.h cetintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	extra_options="${extra_options} fused-madd.opt"
+	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
 		       nmmintrin.h bmmintrin.h fma4intrin.h wmmintrin.h
@@ -400,7 +402,7 @@ x86_64-*-*)
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
 		       avx512vbmivlintrin.h avx5124fmapsintrin.h avx5124vnniwintrin.h
 		       avx512vpopcntdqintrin.h clwbintrin.h mwaitxintrin.h
-		       clzerointrin.h pkuintrin.h sgxintrin.h"
+		       clzerointrin.h pkuintrin.h sgxintrin.h cetintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -461,6 +463,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} paired.h"
+	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
 	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[3456789]|xpower6x|xrs64a|xcell|xa2|xe500mc64|xe5500|xe6500)
 		cpu_is_64bit=yes
@@ -593,7 +596,7 @@ x86_64-*-*)
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 arm*-*-*)
-	tm_p_file="arm/arm-flags.h arm/arm-isa.h ${tm_p_file} arm/aarch-common-protos.h"
+	tm_p_file="arm/arm-flags.h ${tm_p_file} arm/aarch-common-protos.h"
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 mips*-*-* | sh*-*-* | sparc*-*-*)
@@ -623,7 +626,7 @@ pentium4 pentium4m pentiumpro prescott lakemont"
 x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
 bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
-sandybridge ivybridge haswell broadwell bonnell silvermont knl \
+sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
 skylake-avx512 x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
@@ -792,13 +795,16 @@ case ${target} in
   target_has_targetcm=yes
   ;;
 *-*-netbsd*)
-  tmake_file="t-slibgcc"
+  tm_p_file="${tm_p_file} netbsd-protos.h"
+  tmake_file="t-netbsd t-slibgcc"
+  extra_objs="${extra_objs} netbsd.o"
   gas=yes
   gnu_ld=yes
   use_gcc_stdint=wrap
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
+  nbsd_tm_file="netbsd.h netbsd-stdint.h netbsd-elf.h"
   default_use_cxa_atexit=yes
   ;;
 *-*-openbsd*)
@@ -868,7 +874,7 @@ case ${target} in
   tmake_file="${tmake_file} t-sol2 t-slibgcc"
   c_target_objs="${c_target_objs} sol2-c.o"
   cxx_target_objs="${cxx_target_objs} sol2-c.o sol2-cxx.o"
-  extra_objs="sol2.o sol2-stubs.o"
+  extra_objs="${extra_objs} sol2.o sol2-stubs.o"
   extra_options="${extra_options} sol2.opt"
   case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
     "":yes:* | yes:yes:* )
@@ -1002,7 +1008,7 @@ alpha*-*-freebsd*)
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-netbsd*)
-	tm_file="elfos.h ${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
+	tm_file="elfos.h ${tm_file} ${nbsd_tm_file} alpha/elf.h alpha/netbsd.h"
 	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt \
 		       alpha/elf.opt"
@@ -1090,10 +1096,13 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	case $target in
 	armv6*-*-freebsd*)
 	    target_cpu_cname="arm1176jzf-s"
-	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
             if test $fbsd_major -ge 11; then
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
             fi
+	    ;;
+	armv7*-*-freebsd*)
+	    target_cpu_cname="generic-armv7-a"
+	    tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
 	    ;;
 	*)
 	    target_cpu_cname="arm9"
@@ -1102,7 +1111,7 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	with_tls=${with_tls:-gnu}
 	;;
 arm*-*-netbsdelf*)
-	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
+	tm_file="dbxelf.h elfos.h ${nbsd_tm_file} arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
 	target_cpu_cname="arm6"
@@ -1487,11 +1496,11 @@ x86_64-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/x86-64.h i386/freebsd.h i386/freebsd64.h"
 	;;
 i[34567]86-*-netbsdelf*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-stdint.h netbsd-elf.h i386/netbsd-elf.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${nbsd_tm_file} i386/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 x86_64-*-netbsd*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-stdint.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${nbsd_tm_file} i386/x86-64.h i386/netbsd64.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 i[34567]86-*-openbsd*)
@@ -1516,14 +1525,6 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
 	i[34567]86-*-linux*)
 		tm_file="${tm_file} linux.h linux-android.h"
 		extra_options="${extra_options} linux-android.opt"
-		# Assume modern glibc if not targeting Android nor uclibc.
-		case ${target} in
-		*-*-*android*|*-*-*uclibc*|*-*-*musl*)
-		  ;;
-		*)
-		  default_gnu_indirect_function=yes
-		  ;;
-		esac
 		if test x$enable_targets = xall; then
 			tm_file="${tm_file} i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/linux-common.h i386/linux64.h"
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
@@ -1582,14 +1583,6 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
 	x86_64-*-linux*)
 		tm_file="${tm_file} linux.h linux-android.h i386/linux-common.h i386/linux64.h"
 		extra_options="${extra_options} linux-android.opt"
-		# Assume modern glibc if not targeting Android nor uclibc.
-		case ${target} in
-		*-*-*android*|*-*-*uclibc*|*-*-*musl*)
-		  ;;
-		*)
-		  default_gnu_indirect_function=yes
-		  ;;
-		esac
 	  	;;
 	x86_64-*-kfreebsd*-gnu)
 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
@@ -1699,7 +1692,7 @@ i[34567]86-*-cygwin*)
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
@@ -1715,7 +1708,7 @@ x86_64-*-cygwin*)
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
@@ -1790,7 +1783,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 		*)
 			;;
 	esac
-	extra_objs="winnt.o winnt-stubs.o"
+	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	gas=yes
@@ -1945,9 +1938,9 @@ m68k-*-elf* | fido-*-elf*)
 m68k*-*-netbsdelf*)
 	default_m68k_cpu=68020
 	default_cf_cpu=5475
-	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h ${nbsd_tm_file} m68k/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
-	tm_defines="${tm_defines} MOTOROLA=1"
+	tm_defines="${tm_defines} MOTOROLA=1 CHAR_FAST8=1 SHORT_FAST16=1"
 	;;
 m68k*-*-openbsd*)
 	default_m68k_cpu=68020
@@ -2074,7 +2067,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
-	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips*-img-linux*)
@@ -2390,7 +2383,7 @@ powerpc*-*-freebsd*)
 	esac
 	;;
 powerpc-*-netbsd*)
-	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
+	tm_file="${tm_file} dbxelf.h elfos.h ${nbsd_tm_file} freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} rs6000/t-netbsd"
 	extra_options="${extra_options} rs6000/sysv4.opt"
@@ -2455,7 +2448,6 @@ powerpc*-*-linux*spe*)
 	tm_file="${tm_file} powerpcspe/linux.h glibc-stdint.h"
 	tmake_file="${tmake_file} powerpcspe/t-ppcos powerpcspe/t-linux"
 	tm_file="${tm_file} powerpcspe/linuxspe.h powerpcspe/e500.h"
-	default_gnu_indirect_function=yes
 	;;
 powerpc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h freebsd-spec.h rs6000/sysv4.h"
@@ -2535,14 +2527,6 @@ powerpc*-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
-	# Assume modern glibc if not targeting Android nor uclibc.
-	case ${target} in
-	    *-*-*android*|*-*-*uclibc*|*-*-*musl*)
-		    ;;
-	    *)
-		default_gnu_indirect_function=yes
-		    ;;
-	esac
 	;;
 powerpc-wrs-vxworks*spe)
 	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
@@ -2649,7 +2633,7 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
-	extra_headers=altivec.h
+	extra_headers="altivec.h amo.h"
 	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
@@ -2664,7 +2648,6 @@ rx-*-elf*)
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
-	default_gnu_indirect_function=yes
 	tm_file="s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	c_target_objs="${c_target_objs} s390-c.o"
 	cxx_target_objs="${cxx_target_objs} s390-c.o"
@@ -2674,7 +2657,6 @@ s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-s390"
 	;;
 s390x-*-linux*)
-	default_gnu_indirect_function=yes
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	tm_p_file="linux-protos.h s390/s390-protos.h"
 	c_target_objs="${c_target_objs} s390-c.o"
@@ -2732,7 +2714,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 			fi
 			tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h sh/linux.h" ;;
 	sh*-*-netbsd*)
-			tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h"
+			tm_file="${tm_file} ${nbsd_tm_file} sh/netbsd-elf.h"
 			extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 
 			;;
@@ -2892,7 +2874,7 @@ sparc-*-linux*)
 	fi
 	;;
 sparc-*-netbsdelf*)
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h ${nbsd_tm_file} sparc/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc"
@@ -2940,7 +2922,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	;;
 sparc64-*-netbsd*)
 	tm_file="sparc/biarch64.h ${tm_file}"
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h ${nbsd_tm_file} sparc/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-netbsd64"
@@ -3044,8 +3026,9 @@ vax-*-linux*)
 	extra_options="${extra_options} vax/elf.opt"
 	;;
 vax-*-netbsdelf*)
-	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
+	tm_file="${tm_file} elfos.h ${nbsd_tm_file} vax/elf.h vax/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt vax/elf.opt"
+	tm_defines="${tm_defines} CHAR_FAST8=1 SHORT_FAST16=1"
 	;;
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-libpthread.h vax/openbsd.h"
@@ -3117,6 +3100,20 @@ case ${target} in
 	;;
 *-linux-uclibc*)
 	tmake_file="${tmake_file} t-uclibc"
+	;;
+esac
+
+# Assume the existence of indirect function support and allow the use of the
+# resolver attribute.
+case ${target} in
+*-*-linux*android*|*-*-linux*uclibc*|*-*-linux*musl*)
+        ;;
+*-*-linux*)
+	case ${target} in
+	aarch64*-* | arm*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
+		default_gnu_indirect_function=yes
+		;;
+	esac
 	;;
 esac
 
@@ -3440,11 +3437,18 @@ if test x$with_cpu = x ; then
       esac
       ;;
     powerpc*-*-*spe*)
+      # For SPE, start with 8540, then upgrade to 8548 if
+      # --enable-e500-double was requested explicitly or if we were
+      # configured for e500v2.
+      with_cpu=8540
       if test x$enable_e500_double = xyes; then
-         with_cpu=8548
-      else
-         with_cpu=8540
-      fi       
+        with_cpu=8548
+      fi
+      case ${target_noncanonical} in
+        e500v2*)
+          with_cpu=8548
+          ;;
+      esac
       ;;
     sparc*-*-*)
       case ${target} in
@@ -4547,7 +4551,8 @@ case ${target} in
 	i[34567]86-*-darwin* | x86_64-*-darwin*)
 		;;
 	i[34567]86-*-linux* | x86_64-*-linux*)
-		tmake_file="$tmake_file i386/t-linux"
+		extra_objs="${extra_objs} cet.o"
+		tmake_file="$tmake_file i386/t-linux i386/t-cet"
 		;;
 	i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu)
 		tmake_file="$tmake_file i386/t-kfreebsd"

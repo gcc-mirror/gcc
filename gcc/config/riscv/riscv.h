@@ -152,22 +152,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this macro is used
@@ -461,8 +445,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
-
-#define STARTING_FRAME_OFFSET 0
 
 #define RETURN_ADDR_RTX riscv_return_addr
 

@@ -1,3 +1,71 @@
+2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* brig-lang.c (brig_langhook_type_for_mode): Use scalar_int_mode
+	and scalar_float_mode.
+
+2017-10-09  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-to-generic.cc: Support BRIG_KIND_NONE
+	directives.  These directives are legal everywhere.  They
+	can be used to patch away BRIG entries at the binary level.
+	Also add extra error detection for zeroed regions: make sure
+	the byteCount field is never zero.
+	* brig/brigfrontend/phsa.h: Added a new error prefix for
+	errors which are due to corrupted BRIG modules.
+
+2017-10-09  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc: The call code
+	still failed a few test cases. Now all PRM cases pass again.
+
+2017-10-03  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc: Fix (more) crash with
+	calls with more than 4 args.  It missed a reference which is required
+	because vector expansion can move the object to another location.
+
+2017-09-29  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc: Fix crash with
+	calls with more than 4 args. Also fix a misexecution issue
+	with kernels that have both unexpanded ID functions and
+	calls to subfunctions.
+
+2017-09-28  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brig-lang.c: Added function attributes and their handlers.
+	Make BRIGFE 3-level optimize by default.
+
+2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig-lang.c: Improved support for function and module scope
+	group segment variables.  PRM specs defines function and module
+	scope group segment variables as an experimental feature. However,
+	PRM test suite uses and hcc relies on them. In addition, hcc
+	assumes certain group variable layout in its dynamic group segment
+	allocation code.  We cannot have global group memory offsets if we
+	want to both have kernel-specific group segment size and multiple
+	kernels calling the same functions that use function scope group memory
+	variables.  Now group segment is handled by separate book keeping of
+	module scope and function (kernel) offsets. Each function has a "frame"
+	in the group segment offset to which is given as an argument.
+	* brigfrontend/brig-branch-inst-handler.cc: See above.
+	* brigfrontend/brig-code-entry-handler.cc: See above.
+	* brigfrontend/brig-fbarrier-handler.cc: See above.
+	* brigfrontend/brig-function-handler.cc: See above.
+	* brigfrontend/brig-function.cc: See above.
+	* brigfrontend/brig-function.h: See above.
+	* brigfrontend/brig-to-generic.cc: See above.
+	* brigfrontend/brig-to-generic.h: See above.
+	* brigfrontend/brig-util.cc: See above.
+	* brigfrontend/brig-util.h: See above.
+	* brigfrontend/brig-variable-handler.cc: See above.
+
+2017-09-25  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-to-generic.cc: Ensure per WI copies of
+	private variables are aligned too.
+
 2017-09-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Make-lang.in (GO_TEXI_FILES): Rename to...

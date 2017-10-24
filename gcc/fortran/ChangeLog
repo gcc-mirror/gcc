@@ -1,3 +1,338 @@
+2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82586
+	* decl.c (gfc_get_pdt_instance): Remove the error message that
+	the parameter does not have a corresponding component since
+	this is now taken care of when the derived type is resolved. Go
+	straight to error return instead.
+	(gfc_match_formal_arglist): Make the PDT relevant errors
+	immediate so that parsing of the derived type can continue.
+	(gfc_match_derived_decl): Do not check the match status on
+	return from gfc_match_formal_arglist for the same reason.
+	* resolve.c (resolve_fl_derived0): Check that each type
+	parameter has a corresponding component.
+
+	PR fortran/82587
+	* resolve.c (resolve_generic_f): Check that the derived type
+	can be used before resolving the struture constructor.
+
+	PR fortran/82589
+	* symbol.c (check_conflict): Add the conflicts involving PDT
+	KIND and LEN attributes.
+
+2017-10-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* interface.c (check_sym_interfaces, check_uop_interfaces,
+	gfc_check_interfaces): Base interface_name buffer off
+	GFC_MAX_SYMBOL_LEN.
+
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/82568
+	* gfortran.h (gfc_resolve_do_iterator): Add a bool arg.
+	(gfc_resolve_omp_local_vars): New declaration.
+	* openmp.c (omp_current_ctx): Make static.
+	(gfc_resolve_omp_parallel_blocks): Handle EXEC_OMP_TASKLOOP
+	and EXEC_OMP_TASKLOOP_SIMD.
+	(gfc_resolve_do_iterator): Add ADD_CLAUSE argument, if false,
+	don't actually add any clause.  Move omp_current_ctx test
+	earlier.
+	(handle_local_var, gfc_resolve_omp_local_vars): New functions.
+	* resolve.c (gfc_resolve_code): Call gfc_resolve_omp_parallel_blocks
+	instead of just gfc_resolve_omp_do_blocks for EXEC_OMP_TASKLOOP
+	and EXEC_OMP_TASKLOOP_SIMD.
+	(gfc_resolve_code): Adjust gfc_resolve_do_iterator caller.
+	(resolve_codes): Call gfc_resolve_omp_local_vars.
+
+2017-10-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gfortran.h (gfc_lookup_function_fuzzy): New declaration.
+	(gfc_closest_fuzzy_match): New declaration.
+	(vec_push): New definition.
+	* misc.c (gfc_closest_fuzzy_match): New definition.
+	* resolve.c: Include spellcheck.h.
+	(lookup_function_fuzzy_find_candidates): New static function.
+	(lookup_uop_fuzzy_find_candidates): Likewise.
+	(lookup_uop_fuzzy): Likewise.
+	(resolve_operator) <INTRINSIC_USER>: Call lookup_uop_fuzzy.
+	(gfc_lookup_function_fuzzy): New definition.
+	(resolve_unknown_f): Call gfc_lookup_function_fuzzy.
+	* interface.c (check_interface0): Likewise.
+	(lookup_arg_fuzzy_find_candidates): New static function.
+	(lookup_arg_fuzzy ): Likewise.
+	(compare_actual_formal): Call lookup_arg_fuzzy.
+	* symbol.c: Include spellcheck.h.
+	(lookup_symbol_fuzzy_find_candidates): New static function.
+	(lookup_symbol_fuzzy): Likewise.
+	(gfc_set_default_type): Call lookup_symbol_fuzzy.
+	(lookup_component_fuzzy_find_candidates): New static function.
+	(lookup_component_fuzzy): Likewise.
+	(gfc_find_component): Call lookup_component_fuzzy.
+
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82567
+	* frontend-passes.c (combine_array_constructor): If an array
+	constructor is all constants and has more elements than a small
+	constant, don't convert a*[b,c] to [a*b,a*c] to reduce compilation
+	times.
+
+2017-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79795
+	* resolve.c (resovle_symbol): Change gcc_assert to
+	sensible error message.
+
+2017-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82550
+	* trans_decl.c (gfc_get_symbol_decl): Procedure symbols that
+	have the 'used_in_submodule' attribute should be processed by
+	'gfc_get_extern_function_decl'.
+
+2017-10-16  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/82511
+	* trans-io.c (transfer_expr): Treat BT_UNION as BT_DERIVED.
+
+2017-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82372
+	* fortran/scanner.c (last_error_char):  New global variable.
+	(gfc_scanner_init_1): Set last_error_char to NULL.
+	(gfc_gobble_whitespace): If a character not printable or
+	not newline, issue an error.
+
+2017-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81048
+	* resolve.c (resolve_symbol): Ensure that derived type array
+	results get default initialization.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cpp.c (gfc_cpp_add_include_path): Update incpath_e names.
+	(gfc_cpp_add_include_path_after): Likewise.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target-memory.c (gfc_interpret_logical): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* trans-const.c (gfc_conv_tree_to_mpz): Likewise.
+	* trans-expr.c (gfc_conv_cst_int_power): Likewise.
+	* trans-intrinsic.c (trans_this_image): Likewise.
+	(gfc_conv_intrinsic_bound): Likewise.
+	(conv_intrinsic_cobound): Likewise.
+
+2017-10-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* check.c (gfc_check_x): Remove function.
+	* intrinsic.c (add_functions): Use gfc_check_fn_r.
+
+2017-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82375
+	* module.c : Bump up MOD_VERSION to 15.
+	(mio_component): Edit comment about PDT specification list.
+	(mio_expr, mio_symbol): Include the expression and symbol PDT
+	specification lists in the same way as in mio_component.
+
+2017-10-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump_prase_tree (show_symbol): Output list of variables in
+	NAMELIST.
+	(show_code_node): Add new line for ELSE and END DO for DO
+	CONCURRENT.
+	* invoke.texi: Document that the output of
+	-fdump-fortran-original, -fdump-fortran-optimized and
+	-fdump-parse-tree is unsable and may lead to ICEs.
+
+2017-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82375
+	* class.c (gfc_find_derived_vtab): Return NULL for a passed
+	pdt template to prevent bad procedures from being written.
+	* decl.c (gfc_get_pdt_instance): Do not use the default
+	initializer for pointer and allocatable pdt type components. If
+	the component is allocatbale, set the 'alloc_comp' attribute of
+	'instance'.
+	* module.c : Add a prototype for 'mio_actual_arglist'. Add a
+	boolean argument 'pdt'.
+	(mio_component): Call it for the parameter list of pdt type
+	components with 'pdt' set to true.
+	(mio_actual_arg): Add the boolean 'pdt' and, if it is set, call
+	mio_integer for the 'spec_type'.
+	(mio_actual_arglist): Add the boolean 'pdt' and use it in the
+	call to mio_actual_arg.
+	(mio_expr, mio_omp_udr_expr): Call mio_actual_arglist with
+	'pdt' set false.
+	* resolve.c (get_pdt_spec_expr): Add the parameter name to the
+	KIND parameter error.
+	(get_pdt_constructor): Check that cons->expr is non-null.
+	* trans-array.c (structure_alloc_comps): For deallocation of
+	allocatable components, ensure that parameterized components
+	are deallocated first. Likewise, when parameterized components
+	are allocated, nullify allocatable components first. Do not
+	recurse into pointer or allocatable pdt components while
+	allocating or deallocating parameterized components. Test that
+	parameterized arrays or strings are allocated before freeing
+	them.
+	(gfc_trans_pointer_assignment): Call the new function. Tidy up
+	a minor whitespace issue.
+	trans-decl.c (gfc_trans_deferred_vars): Set 'tmp' to NULL_TREE
+	to prevent the expression from being used a second time.
+
+2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49232
+	* expr.c (gfc_check_pointer_assign): Error
+	for non-contiguous rhs.
+
+2017-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.h (async_io_dt): Add external reference.
+	* io.c (async_io_dt): Add variable.
+	(compare_to_allowed_values): Add prototyte. Add optional argument
+	num. If present, set it to the number of the entry that was
+	matched.
+	(check_io_constraints): If this is for an asynchronous I/O
+	statement, set async_io_dt and set the asynchronous flag for
+	a SIZE tag.
+	* resolve.c (resolve_transfer): If async_io_dt is set, set
+	the asynchronous flag on the variable.
+	(resolve_fl_namelist): If async_io_dt is set, set the asynchronous
+	flag on all elements of the namelist.
+
+2017-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/60458
+	PR fortran/77296
+	* resolve.c (resolve_assoc_var): Deferred character type
+	associate names must not receive an integer conatant length.
+	* symbol.c (gfc_is_associate_pointer): Deferred character
+	length functions also require an associate pointer.
+	* trans-decl.c (gfc_get_symbol_decl): Deferred character
+	length functions or derived type components require the assoc
+	name to have variable string length.
+	* trans-stmt.c (trans_associate_var): Set the string length of
+	deferred string length associate names. The address expression
+	is not needed for allocatable, pointer or dummy targets. Change
+	the comment about defered string length targets.
+
+2017-10-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io.c (match_wait_element): Correctly match END and EOR tags.
+	* dump-parse-tree.c (show_code_node): Handle EXEC_WAIT.
+
+2017-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82312
+	* resolve.c (gfc_resolve_code): Simplify condition for class
+	pointer assignments becoming regular assignments by asserting
+	that only class valued targets are permitted.
+	* trans-expr.c (trans_class_pointer_fcn): New function using a
+	block of code from gfc_trans_pointer_assignment.
+	(gfc_trans_pointer_assignment): Call the new function. Tidy up
+	a minor whitespace issue.
+
+2017-10-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/61450
+	* parse.c (gfc_global_used): Replace the gfc_internal_error
+	with an error.
+
+2017-09-29  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/25071
+	* interface.c (compare_actual_formal): Change warnings to errors
+	when "Actual argument contains too few elements for dummy
+	argument", unless -std=legacy is used.
+
+2017-09-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt <Wdo-subscript>: End help text with a period.
+
+2017-09-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (do_subscript): Don't do anything
+	if inside an associate list.
+
+2017-09-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* lang.opt:  Add -Wdo-subscript.
+	* frontend-passes.c (do_t): New type.
+	(doloop_list): Use variable of do_type.
+	(if_level): Variable to track if levels.
+	(select_level): Variable to track select levels.
+	(gfc_run_passes): Initialize i_level and select_level.
+	(doloop_code): Record current level of if + select
+	level in doloop_list.  Add seen_goto if there could
+	be a branch outside the loop. Use different type for
+	doloop_list.
+	(doloop_function): Call do_intent and do_subscript; move
+	functionality of checking INTENT to do_intent.
+	(insert_index_t): New type, for callback_insert_index.
+	(callback_insert_index): New function.
+	(insert_index): New function.
+	(do_subscript): New function.
+	(do_intent): New function.
+	(gfc_code_walker): Keep track of if_level and select_level.
+	* invoke.texi: Document -Wdo-subscript.
+
+2017-09-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans.c (gfc_unlikely): Remove unnecessary fold_convert.
+	(gfc_likely): Likewise.
+
+2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/80118
+	* expr.c (gfc_get_full_arrayspec_from_expr): If there is
+	no symtree, set array spec to NULL.
+
+2017-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82143
+	* lang.opt: Add the options -fdefault-real-10 and -fdefault-real-16.
+	Rename flag_default_real to flag_default_real_8.
+	* invoke.texi: Add documentation.
+	* module.c (use_iso_fortran_env_module): flag_default_real is renamed.
+	* trans-types.c (gfc_init_kinds): Implement the flags
+	-fdefault-real-10 and -fdefault-real-16. Make -fdefault-double-8 work
+	without -fdefault-real-8.
+
+2017-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52832
+	* match.c (gfc_match_associate): Before failing the association
+	try again, allowing a proc pointer selector.
+
+	PR fortran/80120
+	PR fortran/81903
+	PR fortran/82121
+	* primary.c (gfc_match_varspec): Introduce 'tgt_expr', which
+	points to the associate selector, if any. Go through selector
+	references, after resolution for variables, to catch any full
+	or section array references. If a class associate name does
+	not have the same declared type as the selector, resolve the
+	selector and copy the declared type to the associate name.
+	Before throwing a no implicit type error, resolve all allowed
+	selector expressions, and copy the resulting typespec.
+
+	PR fortran/67543
+	* resolve.c (resolve_assoc_var): Selector must cannot be the
+	NULL expression and it must have a type.
+
+	PR fortran/78152
+	* resolve.c (resolve_symbol): Allow associate names to be
+	coarrays.
+
+2017-09-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (gfc_match_oacc_wait): Don't restrict wait directive
+	arguments to constant integers.
+
 2017-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173

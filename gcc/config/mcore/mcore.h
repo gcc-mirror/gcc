@@ -148,12 +148,6 @@ extern char * mcore_current_function_name;
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -395,12 +389,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
 
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable

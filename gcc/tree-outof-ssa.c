@@ -969,6 +969,7 @@ remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
   sa->map = map;
   sa->values = values;
   sa->partitions_for_parm_default_defs = get_parm_default_def_partitions (map);
+  sa->partitions_for_undefined_values = get_undefined_value_partitions (map);
 }
 
 
@@ -1144,6 +1145,7 @@ finish_out_of_ssa (struct ssaexpand *sa)
     BITMAP_FREE (sa->values);
   delete_var_map (sa->map);
   BITMAP_FREE (sa->partitions_for_parm_default_defs);
+  BITMAP_FREE (sa->partitions_for_undefined_values);
   memset (sa, 0, sizeof *sa);
 }
 

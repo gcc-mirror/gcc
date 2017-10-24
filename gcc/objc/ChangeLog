@@ -1,3 +1,17 @@
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-act.c (objc_common_tree_size): Return size of TYPE nodes.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* objc-act.c (objc_decl_method_attributes): Use wi::to_wide when
+	operating on trees as wide_ints.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-act.c (check_ivars, gen_declaration): For OBJCPLUS look at
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

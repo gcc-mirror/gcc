@@ -26,6 +26,7 @@ extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, machine_mode);
 extern bool default_legitimize_address_displacement (rtx *, rtx *,
 						     machine_mode);
+extern bool default_const_not_ok_for_debug_p (rtx);
 
 extern int default_unspec_may_trap_p (const_rtx, unsigned);
 extern machine_mode default_promote_function_mode (const_tree, machine_mode,
@@ -93,8 +94,12 @@ extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, in
 
 extern tree default_builtin_reciprocal (tree);
 
+extern HOST_WIDE_INT default_constant_alignment (const_tree, HOST_WIDE_INT);
+extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,
+						      HOST_WIDE_INT);
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 
+extern HOST_WIDE_INT default_preferred_vector_alignment (const_tree);
 extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 extern bool
 default_builtin_support_vector_misalignment (machine_mode mode,
@@ -271,5 +276,6 @@ extern unsigned int default_min_arithmetic_precision (void);
 
 extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
+extern bool default_stack_clash_protection_final_dynamic_probe (rtx);
 
 #endif /* GCC_TARGHOOKS_H */

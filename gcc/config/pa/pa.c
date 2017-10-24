@@ -159,9 +159,7 @@ static void pa_hpux64_gas_file_start (void) ATTRIBUTE_UNUSED;
 static void pa_hpux64_hpas_file_start (void) ATTRIBUTE_UNUSED;
 static void output_deferred_plabels (void);
 static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-static void pa_hpux_file_end (void);
-#endif
+static void pa_file_end (void);
 static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
 static bool pa_pass_by_reference (cumulative_args_t, machine_mode,
@@ -205,6 +203,7 @@ static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool pa_modes_tieable_p (machine_mode, machine_mode);
 static bool pa_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
+static HOST_WIDE_INT pa_starting_frame_offset (void);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -301,11 +300,7 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 #undef TARGET_ASM_FILE_END
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-#define TARGET_ASM_FILE_END pa_hpux_file_end
-#else
-#define TARGET_ASM_FILE_END output_deferred_plabels
-#endif
+#define TARGET_ASM_FILE_END pa_file_end
 
 #undef TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK pa_reloc_rw_mask
@@ -424,6 +419,12 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS pa_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET pa_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3782,11 +3783,11 @@ pa_compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
   size = (size + UNITS_PER_WORD - 1) & ~(UNITS_PER_WORD - 1);
 
   /* Space for previous frame pointer + filler.  If any frame is
-     allocated, we need to add in the STARTING_FRAME_OFFSET.  We
+     allocated, we need to add in the TARGET_STARTING_FRAME_OFFSET.  We
      waste some space here for the sake of HP compatibility.  The
      first slot is only used when the frame pointer is needed.  */
   if (size || frame_pointer_needed)
-    size += STARTING_FRAME_OFFSET;
+    size += pa_starting_frame_offset ();
   
   /* If the current function calls __builtin_eh_return, then we need
      to allocate stack space for registers that will hold data for
@@ -3921,7 +3922,7 @@ pa_expand_prologue (void)
      and must be changed in tandem with this code.  */
   local_fsize = (size + UNITS_PER_WORD - 1) & ~(UNITS_PER_WORD - 1);
   if (local_fsize || frame_pointer_needed)
-    local_fsize += STARTING_FRAME_OFFSET;
+    local_fsize += pa_starting_frame_offset ();
 
   actual_fsize = pa_compute_frame_size (size, &save_fregs);
   if (flag_stack_usage_info)
@@ -9976,22 +9977,26 @@ pa_hpux_asm_output_external (FILE *file, tree decl, const char *name)
   extern_symbol p = {decl, name};
   vec_safe_push (extern_symbols, p);
 }
+#endif
 
 /* Output text required at the end of an assembler file.
    This includes deferred plabels and .import directives for
    all external symbols that were actually referenced.  */
 
 static void
-pa_hpux_file_end (void)
+pa_file_end (void)
 {
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   unsigned int i;
   extern_symbol *p;
 
   if (!NO_DEFERRED_PROFILE_COUNTERS)
     output_deferred_profile_counters ();
+#endif
 
   output_deferred_plabels ();
 
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   for (i = 0; vec_safe_iterate (extern_symbols, i, &p); i++)
     {
       tree decl = p->decl;
@@ -10002,8 +10007,11 @@ pa_hpux_file_end (void)
     }
 
   vec_free (extern_symbols);
-}
 #endif
+
+  if (NEED_INDICATE_EXEC_STACK)
+    file_end_indicate_exec_stack ();
+}
 
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
@@ -10803,6 +10811,19 @@ static bool
 pa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return PA_HARD_REGNO_MODE_OK (regno, mode);
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.
+
+   On the 32-bit ports, we reserve one slot for the previous frame
+   pointer and one fill slot.  The fill slot is for compatibility
+   with HP compiled programs.  On the 64-bit ports, we reserve one
+   slot for the previous frame pointer.  */
+
+static HOST_WIDE_INT
+pa_starting_frame_offset (void)
+{
+  return 8;
 }
 
 #include "gt-pa.h"

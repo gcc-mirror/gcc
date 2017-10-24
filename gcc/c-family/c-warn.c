@@ -355,15 +355,25 @@ warn_tautological_bitwise_comparison (location_t loc, tree_code code,
   else
     return;
 
+  /* Note that the two operands are from before the usual integer
+     conversions, so their types might not be the same.
+     Use the larger of the two precisions and ignore bits outside
+     of that.  */
+  int prec = MAX (TYPE_PRECISION (TREE_TYPE (cst)),
+		  TYPE_PRECISION (TREE_TYPE (bitopcst)));
+
+  wide_int bitopcstw = wi::to_wide (bitopcst, prec);
+  wide_int cstw = wi::to_wide (cst, prec);
+
   wide_int res;
   if (TREE_CODE (bitop) == BIT_AND_EXPR)
-    res = wi::bit_and (bitopcst, cst);
+    res = bitopcstw & cstw;
   else
-    res = wi::bit_or (bitopcst, cst);
+    res = bitopcstw | cstw;
 
   /* For BIT_AND only warn if (CST2 & CST1) != CST1, and
      for BIT_OR only if (CST2 | CST1) != CST1.  */
-  if (res == cst)
+  if (res == cstw)
     return;
 
   if (code == EQ_EXPR)
@@ -1205,12 +1215,12 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
       if (cst)
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
-		    "chages value from %qE to %qE",
+		    "changes value from %qE to %qE",
 		    exprtype, type, expr, result);
       else
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
-		    "chages the value of %qE",
+		    "changes the value of %qE",
 		    exprtype, type, expr);
     }
   else
@@ -1230,11 +1240,11 @@ match_case_to_enum_1 (tree key, tree type, tree label)
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
   if (tree_fits_uhwi_p (key))
-    print_dec (key, buf, UNSIGNED);
+    print_dec (wi::to_wide (key), buf, UNSIGNED);
   else if (tree_fits_shwi_p (key))
-    print_dec (key, buf, SIGNED);
+    print_dec (wi::to_wide (key), buf, SIGNED);
   else
-    print_hex (key, buf);
+    print_hex (wi::to_wide (key), buf);
 
   if (TYPE_NAME (type) == NULL_TREE)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
@@ -1336,8 +1346,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
       /* If there's a case value > 1 or < 0, that is outside bool
 	 range, warn.  */
       if (outside_range_p
-	  || (max && wi::gts_p (max, 1))
-	  || (min && wi::lts_p (min, 0))
+	  || (max && wi::gts_p (wi::to_wide (max), 1))
+	  || (min && wi::lts_p (wi::to_wide (min), 0))
 	  /* And handle the
 	     switch (boolean)
 	       {
@@ -1347,8 +1357,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 	       }
 	     case, where we want to warn.  */
 	  || (default_node
-	      && max && wi::eq_p (max, 1)
-	      && min && wi::eq_p (min, 0)))
+	      && max && wi::to_wide (max) == 1
+	      && min && wi::to_wide (min) == 0))
 	warning_at (switch_location, OPT_Wswitch_bool,
 		    "switch condition has boolean value");
     }
@@ -2253,7 +2263,7 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
   if (TYPE_UNSIGNED (type0))
     return false;
 
-  unsigned int min_prec = (wi::min_precision (op0, SIGNED)
+  unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), SIGNED)
 			   + TREE_INT_CST_LOW (op1));
   /* Handle the case of left-shifting 1 into the sign bit.
    * However, shifting 1 _out_ of the sign bit, as in

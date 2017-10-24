@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fopenmp -fcray-pointer" }
+! { dg-options "-fcray-pointer" }
 
   use iso_c_binding, only : c_ptr, c_ptrdiff_t, c_loc
   interface

@@ -1167,7 +1167,7 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
-      offset_int off = offset_int::from (mem_op->op0, SIGNED);
+      offset_int off = offset_int::from (wi::to_wide (mem_op->op0), SIGNED);
       off += addr_offset;
       mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
@@ -1202,7 +1202,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       && code != POINTER_PLUS_EXPR)
     return false;
 
-  off = offset_int::from (mem_op->op0, SIGNED);
+  off = offset_int::from (wi::to_wide (mem_op->op0), SIGNED);
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1235,8 +1235,9 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	      && tem[tem.length () - 2].opcode == MEM_REF)
 	    {
 	      vn_reference_op_t new_mem_op = &tem[tem.length () - 2];
-	      new_mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0),
-						  new_mem_op->op0);
+	      new_mem_op->op0
+		= wide_int_to_tree (TREE_TYPE (mem_op->op0),
+				    wi::to_wide (new_mem_op->op0));
 	    }
 	  else
 	    gcc_assert (tem.last ().opcode == STRING_CST);
@@ -3028,16 +3029,13 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 	      return false;
 
 	    /* Verify the controlling stmt is the same.  */
-	    gimple *last1 = last_stmt (idom1);
-	    gimple *last2 = last_stmt (idom2);
-	    if (gimple_code (last1) != GIMPLE_COND
-		|| gimple_code (last2) != GIMPLE_COND)
+	    gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1));
+	    gcond *last2 = safe_dyn_cast <gcond *> (last_stmt (idom2));
+	    if (! last1 || ! last2)
 	      return false;
 	    bool inverted_p;
-	    if (! cond_stmts_equal_p (as_a <gcond *> (last1),
-				      vp1->cclhs, vp1->ccrhs,
-				      as_a <gcond *> (last2),
-				      vp2->cclhs, vp2->ccrhs,
+	    if (! cond_stmts_equal_p (last1, vp1->cclhs, vp1->ccrhs,
+				      last2, vp2->cclhs, vp2->ccrhs,
 				      &inverted_p))
 	      return false;
 
@@ -3122,7 +3120,7 @@ vn_phi_lookup (gimple *phi)
   vp1.ccrhs = NULL_TREE;
   basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1.block);
   if (EDGE_COUNT (idom1->succs) == 2)
-    if (gcond *last1 = dyn_cast <gcond *> (last_stmt (idom1)))
+    if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
       {
 	vp1.cclhs = vn_valueize (gimple_cond_lhs (last1));
 	vp1.ccrhs = vn_valueize (gimple_cond_rhs (last1));
@@ -3168,7 +3166,7 @@ vn_phi_insert (gimple *phi, tree result)
   vp1->ccrhs = NULL_TREE;
   basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
   if (EDGE_COUNT (idom1->succs) == 2)
-    if (gcond *last1 = dyn_cast <gcond *> (last_stmt (idom1)))
+    if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
       {
 	vp1->cclhs = vn_valueize (gimple_cond_lhs (last1));
 	vp1->ccrhs = vn_valueize (gimple_cond_rhs (last1));
@@ -3358,6 +3356,12 @@ set_ssa_val_to (tree from, tree to)
 
   if (currval != to
       && !operand_equal_p (currval, to, 0)
+      /* Different undefined SSA names are not actually different.  See
+         PR82320 for a testcase were we'd otherwise not terminate iteration.  */
+      && !(TREE_CODE (currval) == SSA_NAME
+	   && TREE_CODE (to) == SSA_NAME
+	   && ssa_undefined_value_p (currval, false)
+	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
 	 getting invariant gimple addresses here, so can use
@@ -3534,7 +3538,7 @@ valueized_wider_op (tree wide_type, tree op)
 
   /* For constants simply extend it.  */
   if (TREE_CODE (op) == INTEGER_CST)
-    return wide_int_to_tree (wide_type, op);
+    return wide_int_to_tree (wide_type, wi::to_wide (op));
 
   return NULL_TREE;
 }

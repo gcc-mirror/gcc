@@ -86,21 +86,147 @@ cplus_expand_constant (tree cst)
   return cst;
 }
 
+/* We've seen an actual use of EXPR.  Possibly replace an outer variable
+   reference inside with its constant value or a lambda capture.  */
+
+static tree
+mark_use (tree expr, bool rvalue_p, bool read_p,
+	  location_t loc /* = UNKNOWN_LOCATION */,
+	  bool reject_builtin /* = true */)
+{
+#define RECUR(t) mark_use ((t), rvalue_p, read_p, loc, reject_builtin)
+
+  if (expr == NULL_TREE || expr == error_mark_node)
+    return expr;
+
+  if (reject_builtin && reject_gcc_builtin (expr, loc))
+    return error_mark_node;
+
+  if (read_p)
+    mark_exp_read (expr);
+
+  tree oexpr = expr;
+  bool recurse_op[3] = { false, false, false };
+  switch (TREE_CODE (expr))
+    {
+    case VAR_DECL:
+    case PARM_DECL:
+      if (outer_automatic_var_p (expr)
+	  && decl_constant_var_p (expr))
+	{
+	  if (rvalue_p)
+	    {
+	      tree t = maybe_constant_value (expr);
+	      if (TREE_CONSTANT (t))
+		{
+		  expr = t;
+		  break;
+		}
+	    }
+	  expr = process_outer_var_ref (expr, tf_warning_or_error, true);
+	  if (!(TREE_TYPE (oexpr)
+		&& TREE_CODE (TREE_TYPE (oexpr)) == REFERENCE_TYPE))
+	    expr = convert_from_reference (expr);
+	}
+      break;
+    case COMPONENT_REF:
+    case NON_DEPENDENT_EXPR:
+      recurse_op[0] = true;
+      break;
+    case COMPOUND_EXPR:
+      recurse_op[1] = true;
+      break;
+    case COND_EXPR:
+      recurse_op[2] = true;
+      if (TREE_OPERAND (expr, 1))
+	recurse_op[1] = true;
+      break;
+    case INDIRECT_REF:
+      if (REFERENCE_REF_P (expr))
+	{
+	  /* Try to look through the reference.  */
+	  tree ref = TREE_OPERAND (expr, 0);
+	  tree r = mark_rvalue_use (ref, loc, reject_builtin);
+	  if (r != ref)
+	    expr = convert_from_reference (r);
+	}
+      break;
+    default:
+      break;
+    }
+
+  for (int i = 0; i < 3; ++i)
+    if (recurse_op[i])
+      {
+	tree op = TREE_OPERAND (expr, i);
+	op = RECUR (op);
+	if (op == error_mark_node)
+	  return error_mark_node;
+	TREE_OPERAND (expr, i) = op;
+      }
+
+  return expr;
+#undef RECUR
+}
+
 /* Called whenever the expression EXPR is used in an rvalue context.
    When REJECT_BUILTIN is true the expression is checked to make sure
    it doesn't make it possible to obtain the address of a GCC built-in
    function with no library fallback (or any of its bits, such as in
    a conversion to bool).  */
+
 tree
-mark_rvalue_use (tree expr,
+mark_rvalue_use (tree e,
 		 location_t loc /* = UNKNOWN_LOCATION */,
 		 bool reject_builtin /* = true */)
 {
-  if (reject_builtin && reject_gcc_builtin (expr, loc))
-    return error_mark_node;
+  return mark_use (e, true, true, loc, reject_builtin);
+}
 
-  mark_exp_read (expr);
-  return expr;
+/* Called when expr appears as a discarded-value expression.  */
+
+tree
+mark_discarded_use (tree expr)
+{
+  /* The lvalue-to-rvalue conversion (7.1) is applied if and only if the
+     expression is a glvalue of volatile-qualified type and it is one of the
+     following:
+     * ( expression ), where expression is one of these expressions,
+     * id-expression (8.1.4),
+     * subscripting (8.2.1),
+     * class member access (8.2.5),
+     * indirection (8.3.1),
+     * pointer-to-member operation (8.5),
+     * conditional expression (8.16) where both the second and the third
+       operands are one of these expressions, or
+     * comma expression (8.19) where the right operand is one of these
+       expressions.  */
+  if (expr == NULL_TREE)
+    return expr;
+
+  switch (TREE_CODE (expr))
+    {
+    case COND_EXPR:
+      TREE_OPERAND (expr, 2) = mark_discarded_use (TREE_OPERAND (expr, 2));
+      gcc_fallthrough ();
+    case COMPOUND_EXPR:
+      TREE_OPERAND (expr, 1) = mark_discarded_use (TREE_OPERAND (expr, 1));
+      return expr;
+
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case INDIRECT_REF:
+    case MEMBER_REF:
+      break;
+    default:
+      if (DECL_P (expr))
+	break;
+      else
+	return expr;
+    }
+
+  /* Like mark_rvalue_use, but don't reject built-ins.  */
+  return mark_use (expr, true, true, input_location, false);
 }
 
 /* Called whenever an expression is used in an lvalue context.  */
@@ -108,8 +234,15 @@ mark_rvalue_use (tree expr,
 tree
 mark_lvalue_use (tree expr)
 {
-  mark_exp_read (expr);
-  return expr;
+  return mark_use (expr, false, true, input_location, false);
+}
+
+/* As above, but don't consider this use a read.  */
+
+tree
+mark_lvalue_use_nonread (tree expr)
+{
+  return mark_use (expr, false, false, input_location, false);
 }
 
 /* Called whenever an expression is used in a type use context.  */

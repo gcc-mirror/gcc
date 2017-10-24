@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "sbitmap.h"
+#include "selftest.h"
 
 typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
@@ -179,6 +180,8 @@ sbitmap_vector_alloc (unsigned int n_vecs, unsigned int n_elms)
 void
 bitmap_copy (sbitmap dst, const_sbitmap src)
 {
+  gcc_checking_assert (src->size <= dst->size);
+
   memcpy (dst->elms, src->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
 }
 
@@ -186,6 +189,8 @@ bitmap_copy (sbitmap dst, const_sbitmap src)
 int
 bitmap_equal_p (const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+
   return !memcmp (a->elms, b->elms, sizeof (SBITMAP_ELT_TYPE) * a->size);
 }
 
@@ -209,6 +214,8 @@ bitmap_clear_range (sbitmap bmap, unsigned int start, unsigned int count)
 {
   if (count == 0)
     return;
+
+  bitmap_check_index (bmap, start + count - 1);
 
   unsigned int start_word = start / SBITMAP_ELT_BITS;
   unsigned int start_bitno = start % SBITMAP_ELT_BITS;
@@ -266,6 +273,8 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
   if (count == 0)
     return;
 
+  bitmap_check_index (bmap, start + count - 1);
+
   unsigned int start_word = start / SBITMAP_ELT_BITS;
   unsigned int start_bitno = start % SBITMAP_ELT_BITS;
 
@@ -314,6 +323,55 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
   /* Now handle residuals in the last word.  */
   SBITMAP_ELT_TYPE mask = ((SBITMAP_ELT_TYPE)1 << count) - 1;
   bmap->elms[start_word] |= mask;
+}
+
+/* Return TRUE if any bit between START and END inclusive is set within
+   the simple bitmap BMAP.  Return FALSE otherwise.  */
+
+bool
+bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
+{
+  gcc_checking_assert (start <= end);
+  bitmap_check_index (bmap, end);
+
+  unsigned int start_word = start / SBITMAP_ELT_BITS;
+  unsigned int start_bitno = start % SBITMAP_ELT_BITS;
+
+  unsigned int end_word = end / SBITMAP_ELT_BITS;
+  unsigned int end_bitno = end % SBITMAP_ELT_BITS;
+
+  /* Check beginning of first word if different from zero.  */
+  if (start_bitno != 0)
+    {
+      SBITMAP_ELT_TYPE high_mask = ~(SBITMAP_ELT_TYPE)0;
+      if (start_word == end_word && end_bitno + 1 < SBITMAP_ELT_BITS)
+	high_mask = ((SBITMAP_ELT_TYPE)1 << (end_bitno + 1)) - 1;
+
+      SBITMAP_ELT_TYPE low_mask = ((SBITMAP_ELT_TYPE)1 << start_bitno) - 1;
+      SBITMAP_ELT_TYPE mask = high_mask - low_mask;
+      if (bmap->elms[start_word] & mask)
+	return true;
+      start_word++;
+    }
+
+  if (start_word > end_word)
+    return false;
+
+  /* Now test words at a time until we hit a partial word.  */
+  unsigned int nwords = (end_word - start_word);
+  while (nwords)
+    {
+      if (bmap->elms[start_word])
+	return true;
+      start_word++;
+      nwords--;
+    }
+
+  /* Now handle residuals in the last word.  */
+  SBITMAP_ELT_TYPE mask = ~(SBITMAP_ELT_TYPE)0;
+  if (end_bitno + 1 < SBITMAP_ELT_BITS)
+    mask = ((SBITMAP_ELT_TYPE)1 << (end_bitno + 1)) - 1;
+  return (bmap->elms[start_word] & mask) != 0;
 }
 
 #if GCC_VERSION < 3400
@@ -419,6 +477,9 @@ bitmap_vector_ones (sbitmap *bmap, unsigned int n_vecs)
 bool
 bitmap_ior_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, c);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -441,6 +502,8 @@ bitmap_ior_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitm
 void
 bitmap_not (sbitmap dst, const_sbitmap src)
 {
+  bitmap_check_sizes (src, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr srcp = src->elms;
@@ -462,6 +525,9 @@ bitmap_not (sbitmap dst, const_sbitmap src)
 void
 bitmap_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, dst_size = dst->size;
   unsigned int min_size = dst->size;
   sbitmap_ptr dstp = dst->elms;
@@ -489,6 +555,8 @@ bitmap_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_intersect_p (const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+
   const_sbitmap_ptr ap = a->elms;
   const_sbitmap_ptr bp = b->elms;
   unsigned int i, n;
@@ -507,6 +575,9 @@ bitmap_intersect_p (const_sbitmap a, const_sbitmap b)
 bool
 bitmap_and (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -529,6 +600,9 @@ bitmap_and (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_xor (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -551,6 +625,9 @@ bitmap_xor (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_ior (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -572,6 +649,8 @@ bitmap_ior (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_subset_p (const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+
   unsigned int i, n = a->size;
   const_sbitmap_ptr ap, bp;
 
@@ -588,6 +667,10 @@ bitmap_subset_p (const_sbitmap a, const_sbitmap b)
 bool
 bitmap_or_and (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, c);
+  bitmap_check_sizes (c, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -611,6 +694,10 @@ bitmap_or_and (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 bool
 bitmap_and_or (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, c);
+  bitmap_check_sizes (c, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -768,3 +855,146 @@ dump_bitmap_vector (FILE *file, const char *title, const char *subtitle,
 
   fprintf (file, "\n");
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests for sbitmaps.  */
+
+/* Checking function that uses both bitmap_bit_in_range_p and
+   loop of bitmap_bit_p and verifies consistent results.  */
+
+static bool
+bitmap_bit_in_range_p_checking (sbitmap s, unsigned int start,
+				unsigned end)
+{
+  bool r1 = bitmap_bit_in_range_p (s, start, end);
+  bool r2 = false;
+
+  for (unsigned int i = start; i <= end; i++)
+    if (bitmap_bit_p (s, i))
+      {
+	r2 = true;
+	break;
+      }
+
+  ASSERT_EQ (r1, r2);
+  return r1;
+}
+
+/* Verify bitmap_set_range functions for sbitmap.  */
+
+static void
+test_set_range ()
+{
+  sbitmap s = sbitmap_alloc (16);
+  bitmap_clear (s);
+
+  bitmap_set_range (s, 0, 1);
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 0, 0));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 15));
+  bitmap_set_range (s, 15, 1);
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 14));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 15, 15));
+
+  s = sbitmap_alloc (1024);
+  bitmap_clear (s);
+  bitmap_set_range (s, 512, 1);
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 0, 511));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 513, 1023));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 508, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 508, 513));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 508, 511));
+
+  bitmap_clear (s);
+  bitmap_set_range (s, 512, 64);
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 0, 511));
+  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 512 + 64, 1023));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512 + 63, 512 + 63));
+}
+
+/* Verify bitmap_bit_in_range_p functions for sbitmap.  */
+
+static void
+test_bit_in_range ()
+{
+  sbitmap s = sbitmap_alloc (1024);
+  bitmap_clear (s);
+
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 512, 1023));
+  bitmap_set_bit (s, 100);
+
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 512, 1023));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 99));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 101, 1023));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 100));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 64, 100));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 100, 100));
+  ASSERT_TRUE (bitmap_bit_p (s, 100));
+
+  s = sbitmap_alloc (64);
+  bitmap_clear (s);
+  bitmap_set_bit (s, 63);
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 63, 63));
+  ASSERT_TRUE (bitmap_bit_p (s, 63));
+
+  s = sbitmap_alloc (1024);
+  bitmap_clear (s);
+  bitmap_set_bit (s, 128);
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 127));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 129, 1023));
+
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 128));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 128));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 128, 255));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 128, 254));
+  ASSERT_TRUE (bitmap_bit_p (s, 128));
+
+  bitmap_clear (s);
+  bitmap_set_bit (s, 8);
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 8));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 12));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 127));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 512));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 8, 8));
+  ASSERT_TRUE (bitmap_bit_p (s, 8));
+
+  bitmap_clear (s);
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 0));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 8));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 63));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 1, 63));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 256));
+
+  bitmap_set_bit (s, 0);
+  bitmap_set_bit (s, 16);
+  bitmap_set_bit (s, 32);
+  bitmap_set_bit (s, 48);
+  bitmap_set_bit (s, 64);
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 0));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 16));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 48, 63));
+  ASSERT_TRUE (bitmap_bit_in_range_p (s, 64, 64));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 1, 15));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 17, 31));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 49, 63));
+  ASSERT_FALSE (bitmap_bit_in_range_p (s, 65, 1023));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+sbitmap_c_tests ()
+{
+  test_set_range ();
+  test_bit_in_range ();
+}
+
+} // namespace selftest
+#endif /* CHECKING_P */

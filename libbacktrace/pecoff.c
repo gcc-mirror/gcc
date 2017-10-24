@@ -890,7 +890,8 @@ coff_add (struct backtrace_state *state, int descriptor,
    sections.  */
 
 int
-backtrace_initialize (struct backtrace_state *state, int descriptor,
+backtrace_initialize (struct backtrace_state *state,
+		      const char *filename ATTRIBUTE_UNUSED, int descriptor,
 		      backtrace_error_callback error_callback,
 		      void *data, fileline *fileline_fn)
 {

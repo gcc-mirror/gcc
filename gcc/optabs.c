@@ -138,8 +138,8 @@ add_equal_note (rtx_insn *insns, rtx target, enum rtx_code code, rtx op0, rtx op
 	if (GET_MODE (op0) != VOIDmode && GET_MODE (target) != GET_MODE (op0))
 	  {
 	    note = gen_rtx_fmt_e (code, GET_MODE (op0), copy_rtx (op0));
-	    if (GET_MODE_SIZE (GET_MODE (op0))
-		> GET_MODE_SIZE (GET_MODE (target)))
+	    if (GET_MODE_UNIT_SIZE (GET_MODE (op0))
+		> GET_MODE_UNIT_SIZE (GET_MODE (target)))
 	      note = simplify_gen_unary (TRUNCATE, GET_MODE (target),
 					 note, GET_MODE (op0));
 	    else
@@ -173,12 +173,12 @@ widened_mode (machine_mode to_mode, rtx op0, rtx op1)
 
   if (m0 == VOIDmode && m1 == VOIDmode)
     return to_mode;
-  else if (m0 == VOIDmode || GET_MODE_SIZE (m0) < GET_MODE_SIZE (m1))
+  else if (m0 == VOIDmode || GET_MODE_UNIT_SIZE (m0) < GET_MODE_UNIT_SIZE (m1))
     result = m1;
   else
     result = m0;
 
-  if (GET_MODE_SIZE (result) > GET_MODE_SIZE (to_mode))
+  if (GET_MODE_UNIT_SIZE (result) > GET_MODE_UNIT_SIZE (to_mode))
     return to_mode;
 
   return result;
@@ -2977,9 +2977,9 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       else
 	{
 	  eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
-	  if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
+	  if (GET_MODE_UNIT_SIZE (outmode) < GET_MODE_UNIT_SIZE (mode))
 	    eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
-	  else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
+	  else if (GET_MODE_UNIT_SIZE (outmode) > GET_MODE_UNIT_SIZE (mode))
 	    eq_value = simplify_gen_unary (ZERO_EXTEND,
 					   outmode, eq_value, mode);
 	}
@@ -4655,7 +4655,8 @@ expand_float (rtx to, rtx from, int unsignedp)
 	int doing_unsigned = unsignedp;
 
 	if (fmode != GET_MODE (to)
-	    && significand_size (fmode) < GET_MODE_PRECISION (GET_MODE (from)))
+	    && (significand_size (fmode)
+		< GET_MODE_UNIT_PRECISION (GET_MODE (from))))
 	  continue;
 
 	icode = can_float_p (fmode, imode, unsignedp);
@@ -6273,10 +6274,10 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   return true;
 }
 
-/* Generate asm volatile("" : : : "memory") as the memory barrier.  */
+/* Generate asm volatile("" : : : "memory") as the memory blockage.  */
 
 static void
-expand_asm_memory_barrier (void)
+expand_asm_memory_blockage (void)
 {
   rtx asm_op, clob;
 
@@ -6292,6 +6293,17 @@ expand_asm_memory_barrier (void)
   emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, asm_op, clob)));
 }
 
+/* Do not propagate memory accesses across this point.  */
+
+static void
+expand_memory_blockage (void)
+{
+  if (targetm.have_memory_blockage ())
+    emit_insn (targetm.gen_memory_blockage ());
+  else
+    expand_asm_memory_blockage ();
+}
+
 /* This routine will either emit the mem_thread_fence pattern or issue a 
    sync_synchronize to generate a fence for memory model MEMMODEL.  */
 
@@ -6303,14 +6315,14 @@ expand_mem_thread_fence (enum memmodel model)
   if (targetm.have_mem_thread_fence ())
     {
       emit_insn (targetm.gen_mem_thread_fence (GEN_INT (model)));
-      expand_asm_memory_barrier ();
+      expand_memory_blockage ();
     }
   else if (targetm.have_memory_barrier ())
     emit_insn (targetm.gen_memory_barrier ());
   else if (synchronize_libfunc != NULL_RTX)
     emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode);
   else
-    expand_asm_memory_barrier ();
+    expand_memory_blockage ();
 }
 
 /* Emit a signal fence with given memory model.  */
@@ -6321,7 +6333,7 @@ expand_mem_signal_fence (enum memmodel model)
   /* No machine barrier is required to implement a signal fence, but
      a compiler memory barrier must be issued, except for relaxed MM.  */
   if (!is_mm_relaxed (model))
-    expand_asm_memory_barrier ();
+    expand_memory_blockage ();
 }
 
 /* This function expands the atomic load operation:
@@ -6343,7 +6355,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
       struct expand_operand ops[3];
       rtx_insn *last = get_last_insn ();
       if (is_mm_seq_cst (model))
-	expand_asm_memory_barrier ();
+	expand_memory_blockage ();
 
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
@@ -6351,7 +6363,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
       if (maybe_expand_insn (icode, 3, ops))
 	{
 	  if (!is_mm_relaxed (model))
-	    expand_asm_memory_barrier ();
+	    expand_memory_blockage ();
 	  return ops[0].value;
 	}
       delete_insns_since (last);
@@ -6401,14 +6413,14 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
     {
       rtx_insn *last = get_last_insn ();
       if (!is_mm_relaxed (model))
-	expand_asm_memory_barrier ();
+	expand_memory_blockage ();
       create_fixed_operand (&ops[0], mem);
       create_input_operand (&ops[1], val, mode);
       create_integer_operand (&ops[2], model);
       if (maybe_expand_insn (icode, 3, ops))
 	{
 	  if (is_mm_seq_cst (model))
-	    expand_asm_memory_barrier ();
+	    expand_memory_blockage ();
 	  return const0_rtx;
 	}
       delete_insns_since (last);

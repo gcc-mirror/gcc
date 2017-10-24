@@ -30,14 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 class dom_walker
 {
 public:
+  static const edge STOP;
+
   /* Use SKIP_UNREACHBLE_BLOCKS = true when your client can discover
      that some edges are not executable.
 
      If a client can discover that a COND, SWITCH or GOTO has a static
      target in the before_dom_children callback, the taken edge should
      be returned.  The generic walker will clear EDGE_EXECUTABLE on all
-     edges it can determine are not executable.  */
-  dom_walker (cdi_direction direction, bool skip_unreachable_blocks = false);
+     edges it can determine are not executable.
+     
+     You can provide a mapping of basic-block index to RPO if you
+     have that readily available or you do multiple walks.  */
+  dom_walker (cdi_direction direction, bool skip_unreachable_blocks = false,
+	      int *bb_index_to_rpo = NULL);
+
+  ~dom_walker ();
 
   /* Walk the dominator tree.  */
   void walk (basic_block);
@@ -48,7 +56,10 @@ public:
      edges, NULL otherwise.  When skipping unreachable blocks, the walker
      uses the taken edge information to clear EDGE_EXECUTABLE on the other
      edges, exposing unreachable blocks.  A NULL return value means all
-     outgoing edges should still be considered executable.  */
+     outgoing edges should still be considered executable.  A return value
+     of STOP means to stop the domwalk from processing dominated blocks from
+     here.  This can be used to process a SEME region only (note domwalk
+     will still do work linear in function size).  */
   virtual edge before_dom_children (basic_block) { return NULL; }
 
   /* Function to call after the recursive walk of the dominator children.  */
@@ -61,7 +72,9 @@ private:
      dominator tree.  */
   const ENUM_BITFIELD (cdi_direction) m_dom_direction : 2;
   bool m_skip_unreachable_blocks;
+  bool m_user_bb_to_rpo;
   basic_block m_unreachable_dom;
+  int *m_bb_to_rpo;
 
   /* Query whether or not the given block is reachable or not.  */
   bool bb_reachable (struct function *, basic_block);

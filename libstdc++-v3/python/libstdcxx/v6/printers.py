@@ -1592,6 +1592,10 @@ def build_libstdcxx_dictionary ():
                                   'path', StdExpPathPrinter)
     libstdcxx_printer.add_version('std::experimental::filesystem::v1::__cxx11::',
                                   'path', StdExpPathPrinter)
+    libstdcxx_printer.add_version('std::filesystem::',
+                                  'path', StdExpPathPrinter)
+    libstdcxx_printer.add_version('std::filesystem::__cxx11::',
+                                  'path', StdExpPathPrinter)
 
     # C++17 components
     libstdcxx_printer.add_version('std::',

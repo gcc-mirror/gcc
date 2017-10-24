@@ -3242,13 +3242,10 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       param = type_param_name_list->sym;
 
       c1 = gfc_find_component (pdt, param->name, false, true, NULL);
+      /* An error should already have been thrown in resolve.c
+	 (resolve_fl_derived0).  */
       if (!pdt->attr.use_assoc && !c1)
-	{
-	  gfc_error ("The type parameter name list at %L contains a parameter "
-		     "'%qs' , which is not declared as a component of the type",
-		     &pdt->declared_at, param->name);
-	  goto error_return;
-	}
+	goto error_return;
 
       kind_expr = NULL;
       if (!name_seen)
@@ -3570,7 +3567,11 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  type_param_spec_list = old_param_spec_list;
 
 	  c2->param_list = params;
-	  c2->initializer = gfc_default_initializer (&c2->ts);
+	  if (!(c2->attr.pointer || c2->attr.allocatable))
+	    c2->initializer = gfc_default_initializer (&c2->ts);
+
+	  if (c2->attr.allocatable)
+	    instance->attr.alloc_comp = 1;
 	}
     }
 
@@ -5980,7 +5981,7 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
       /* The name of a program unit can be in a different namespace,
 	 so check for it explicitly.  After the statement is accepted,
 	 the name is checked for especially in gfc_get_symbol().  */
-      if (gfc_new_block != NULL && sym != NULL
+      if (gfc_new_block != NULL && sym != NULL && !typeparam
 	  && strcmp (sym->name, gfc_new_block->name) == 0)
 	{
 	  gfc_error ("Name %qs at %C is the name of the procedure",
@@ -5995,7 +5996,11 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
       m = gfc_match_char (',');
       if (m != MATCH_YES)
 	{
-	  gfc_error ("Unexpected junk in formal argument list at %C");
+	  if (typeparam)
+	    gfc_error_now ("Expected parameter list in type declaration "
+			   "at %C");
+	  else
+	    gfc_error ("Unexpected junk in formal argument list at %C");
 	  goto cleanup;
 	}
     }
@@ -6012,8 +6017,12 @@ ok:
 	  for (q = p->next; q; q = q->next)
 	    if (p->sym == q->sym)
 	      {
-		gfc_error ("Duplicate symbol %qs in formal argument list "
-			   "at %C", p->sym->name);
+		if (typeparam)
+		  gfc_error_now ("Duplicate name %qs in parameter "
+				 "list at %C", p->sym->name);
+		else
+		  gfc_error ("Duplicate symbol %qs in formal argument "
+			     "list at %C", p->sym->name);
 
 		m = MATCH_ERROR;
 		goto cleanup;
@@ -9810,9 +9819,9 @@ gfc_match_derived_decl (void)
 
   if (parameterized_type)
     {
-      m = gfc_match_formal_arglist (sym, 0, 0, true);
-      if (m != MATCH_YES)
-	return m;
+      /* Ignore error or mismatches to avoid the component declarations
+	 causing problems later.  */
+      gfc_match_formal_arglist (sym, 0, 0, true);
       m = gfc_match_eos ();
       if (m != MATCH_YES)
 	return m;

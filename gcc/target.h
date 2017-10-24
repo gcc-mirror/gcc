@@ -171,9 +171,11 @@ enum vect_cost_for_stmt
   scalar_store,
   vector_stmt,
   vector_load,
+  vector_gather_load,
   unaligned_load,
   unaligned_store,
   vector_store,
+  vector_scatter_store,
   vec_to_scalar,
   scalar_to_vec,
   cond_branch_not_taken,
@@ -193,11 +195,11 @@ enum vect_cost_model_location {
 
 /* The type to use for vector permutes with a constant permute vector.
    Each entry is an index into the concatenated input vectors.  */
-typedef vec<unsigned char> vec_perm_indices;
+typedef vec<unsigned short> vec_perm_indices;
 
 /* Same, but can be used to construct local permute vectors that are
    automatically freed.  */
-typedef auto_vec<unsigned char, 32> auto_vec_perm_indices;
+typedef auto_vec<unsigned short, 32> auto_vec_perm_indices;
 
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;

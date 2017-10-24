@@ -690,48 +690,59 @@ rewrite_virtuals_into_loop_closed_ssa (struct loop *loop)
   rewrite_into_loop_closed_ssa_1 (NULL, 0, SSA_OP_VIRTUAL_USES, loop);
 }
 
-/* Check invariants of the loop closed ssa form for the USE in BB.  */
+/* Check invariants of the loop closed ssa form for the def in DEF_BB.  */
 
 static void
-check_loop_closed_ssa_use (basic_block bb, tree use)
+check_loop_closed_ssa_def (basic_block def_bb, tree def)
 {
-  gimple *def;
-  basic_block def_bb;
+  use_operand_p use_p;
+  imm_use_iterator iterator;
+  FOR_EACH_IMM_USE_FAST (use_p, iterator, def)
+    {
+      if (is_gimple_debug (USE_STMT (use_p)))
+	continue;
 
-  if (TREE_CODE (use) != SSA_NAME || virtual_operand_p (use))
-    return;
+      basic_block use_bb = gimple_bb (USE_STMT (use_p));
+      if (is_a <gphi *> (USE_STMT (use_p)))
+	use_bb = EDGE_PRED (use_bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
 
-  def = SSA_NAME_DEF_STMT (use);
-  def_bb = gimple_bb (def);
-  gcc_assert (!def_bb
-	      || flow_bb_inside_loop_p (def_bb->loop_father, bb));
+      gcc_assert (flow_bb_inside_loop_p (def_bb->loop_father, use_bb));
+    }
 }
 
-/* Checks invariants of loop closed ssa form in statement STMT in BB.  */
+/* Checks invariants of loop closed ssa form in BB.  */
 
 static void
-check_loop_closed_ssa_stmt (basic_block bb, gimple *stmt)
+check_loop_closed_ssa_bb (basic_block bb)
 {
-  ssa_op_iter iter;
-  tree var;
+  for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
+       gsi_next (&bsi))
+    {
+      gphi *phi = bsi.phi ();
 
-  if (is_gimple_debug (stmt))
-    return;
+      if (!virtual_operand_p (PHI_RESULT (phi)))
+	check_loop_closed_ssa_def (bb, PHI_RESULT (phi));
+    }
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
-    check_loop_closed_ssa_use (bb, var);
+  for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb); !gsi_end_p (bsi);
+       gsi_next_nondebug (&bsi))
+    {
+      ssa_op_iter iter;
+      tree var;
+      gimple *stmt = gsi_stmt (bsi);
+
+      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_DEF)
+	check_loop_closed_ssa_def (bb, var);
+    }
 }
 
 /* Checks that invariants of the loop closed ssa form are preserved.
-   Call verify_ssa when VERIFY_SSA_P is true.  */
+   Call verify_ssa when VERIFY_SSA_P is true.  Note all loops are checked
+   if LOOP is NULL, otherwise, only LOOP is checked.  */
 
 DEBUG_FUNCTION void
-verify_loop_closed_ssa (bool verify_ssa_p)
+verify_loop_closed_ssa (bool verify_ssa_p, struct loop *loop)
 {
-  basic_block bb;
-  edge e;
-  edge_iterator ei;
-
   if (number_of_loops (cfun) <= 1)
     return;
 
@@ -740,20 +751,22 @@ verify_loop_closed_ssa (bool verify_ssa_p)
 
   timevar_push (TV_VERIFY_LOOP_CLOSED);
 
-  FOR_EACH_BB_FN (bb, cfun)
+  if (loop == NULL)
     {
-      for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
-	{
-	  gphi *phi = bsi.phi ();
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    check_loop_closed_ssa_use (e->src,
-				       PHI_ARG_DEF_FROM_EDGE (phi, e));
-	}
+      basic_block bb;
 
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
-	check_loop_closed_ssa_stmt (bb, gsi_stmt (bsi));
+      FOR_EACH_BB_FN (bb, cfun)
+	if (bb->loop_father && bb->loop_father->num > 0)
+	  check_loop_closed_ssa_bb (bb);
+    }
+  else
+    {
+      basic_block *bbs = get_loop_body (loop);
+
+      for (unsigned i = 0; i < loop->num_nodes; ++i)
+	check_loop_closed_ssa_bb (bbs[i]);
+
+      free (bbs);
     }
 
   timevar_pop (TV_VERIFY_LOOP_CLOSED);
@@ -1281,12 +1294,10 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   /* Set the probability of new exit to the same of the old one.  Fix
      the frequency of the latch block, by scaling it back by
      1 - exit->probability.  */
-  new_exit->count = exit->count;
   new_exit->probability = exit->probability;
   new_nonexit = single_pred_edge (loop->latch);
   new_nonexit->probability = exit->probability.invert ();
   new_nonexit->flags = EDGE_TRUE_VALUE;
-  new_nonexit->count -= exit->count;
   if (new_nonexit->probability.initialized_p ())
     scale_bbs_frequencies (&loop->latch, 1, new_nonexit->probability);
 
@@ -1358,7 +1369,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
      exit edge.  */
 
   freq_h = loop->header->count;
-  freq_e = (loop_preheader_edge (loop))->count;
+  freq_e = (loop_preheader_edge (loop))->count ();
   /* Use frequency only if counts are zero.  */
   if (!(freq_h > 0) && !(freq_e > 0))
     {
@@ -1377,17 +1388,15 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   exit_bb = single_pred (loop->latch);
   new_exit = find_edge (exit_bb, rest);
-  new_exit->count = loop_preheader_edge (loop)->count;
   new_exit->probability = profile_probability::always ()
 				.apply_scale (1, new_est_niter + 1);
 
-  rest->count += new_exit->count;
+  rest->count += new_exit->count ();
   rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
   prob = new_nonexit->probability;
   new_nonexit->probability = new_exit->probability.invert ();
-  new_nonexit->count = exit_bb->count - new_exit->count;
   prob = new_nonexit->probability / prob;
   if (prob.initialized_p ())
     scale_bbs_frequencies (&loop->latch, 1, prob);
@@ -1405,7 +1414,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   checking_verify_flow_info ();
   checking_verify_loop_structure ();
-  checking_verify_loop_closed_ssa (true);
+  checking_verify_loop_closed_ssa (true, loop);
+  checking_verify_loop_closed_ssa (true, new_loop);
 }
 
 /* Wrapper over tree_transform_and_unroll_loop for case we do not

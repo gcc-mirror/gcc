@@ -5091,6 +5091,9 @@ tilepro_file_end (void)
 #undef  TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
+#undef  TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-tilepro.h"

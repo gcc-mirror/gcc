@@ -31,203 +31,65 @@
 
 pragma Compiler_Unit_Warning;
 
-with System.Soft_Links;
-with System.Parameters;
-
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.Soft_Links;
 
 package body System.Secondary_Stack is
 
    package SSL renames System.Soft_Links;
 
-   use type SSE.Storage_Offset;
    use type System.Parameters.Size_Type;
-
-   SS_Ratio_Dynamic : constant Boolean :=
-                        Parameters.Sec_Stack_Percentage = Parameters.Dynamic;
-   --  There are two entirely different implementations of the secondary
-   --  stack mechanism in this unit, and this Boolean is used to select
-   --  between them (at compile time, so the generated code will contain
-   --  only the code for the desired variant). If SS_Ratio_Dynamic is
-   --  True, then the secondary stack is dynamically allocated from the
-   --  heap in a linked list of chunks. If SS_Ration_Dynamic is False,
-   --  then the secondary stack is allocated statically by grabbing a
-   --  section of the primary stack and using it for this purpose.
-
-   type Memory is array (SS_Ptr range <>) of SSE.Storage_Element;
-   for Memory'Alignment use Standard'Maximum_Alignment;
-   --  This is the type used for actual allocation of secondary stack
-   --  areas. We require maximum alignment for all such allocations.
-
-   ---------------------------------------------------------------
-   -- Data Structures for Dynamically Allocated Secondary Stack --
-   ---------------------------------------------------------------
-
-   --  The following is a diagram of the data structures used for the
-   --  case of a dynamically allocated secondary stack, where the stack
-   --  is allocated as a linked list of chunks allocated from the heap.
-
-   --                                      +------------------+
-   --                                      |       Next       |
-   --                                      +------------------+
-   --                                      |                  | Last (200)
-   --                                      |                  |
-   --                                      |                  |
-   --                                      |                  |
-   --                                      |                  |
-   --                                      |                  |
-   --                                      |                  | First (101)
-   --                                      +------------------+
-   --                         +----------> |          |       |
-   --                         |            +--------- | ------+
-   --                         |                    ^  |
-   --                         |                    |  |
-   --                         |                    |  V
-   --                         |            +------ | ---------+
-   --                         |            |       |          |
-   --                         |            +------------------+
-   --                         |            |                  | Last (100)
-   --                         |            |         C        |
-   --                         |            |         H        |
-   --    +-----------------+  |   +------->|         U        |
-   --    |  Current_Chunk ----+   |        |         N        |
-   --    +-----------------+      |        |         K        |
-   --    |       Top      --------+        |                  | First (1)
-   --    +-----------------+               +------------------+
-   --    | Default_Size    |               |       Prev       |
-   --    +-----------------+               +------------------+
-   --
-
-   type Chunk_Id (First, Last : SS_Ptr);
-   type Chunk_Ptr is access all Chunk_Id;
-
-   type Chunk_Id (First, Last : SS_Ptr) is record
-      Prev, Next : Chunk_Ptr;
-      Mem        : Memory (First .. Last);
-   end record;
-
-   type Stack_Id is record
-      Top           : SS_Ptr;
-      Default_Size  : SSE.Storage_Count;
-      Current_Chunk : Chunk_Ptr;
-   end record;
-
-   type Stack_Ptr is access Stack_Id;
-   --  Pointer to record used to represent a dynamically allocated secondary
-   --  stack descriptor for a secondary stack chunk.
 
    procedure Free is new Ada.Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);
    --  Free a dynamically allocated chunk
 
-   function To_Stack_Ptr is new
-     Ada.Unchecked_Conversion (Address, Stack_Ptr);
-   function To_Addr is new
-     Ada.Unchecked_Conversion (Stack_Ptr, Address);
-   --  Convert to and from address stored in task data structures
-
-   --------------------------------------------------------------
-   -- Data Structures for Statically Allocated Secondary Stack --
-   --------------------------------------------------------------
-
-   --  For the static case, the secondary stack is a single contiguous
-   --  chunk of storage, carved out of the primary stack, and represented
-   --  by the following data structure
-
-   type Fixed_Stack_Id is record
-      Top : SS_Ptr;
-      --  Index of next available location in Mem. This is initialized to
-      --  0, and then incremented on Allocate, and Decremented on Release.
-
-      Last : SS_Ptr;
-      --  Length of usable Mem array, which is thus the index past the
-      --  last available location in Mem. Mem (Last-1) can be used. This
-      --  is used to check that the stack does not overflow.
-
-      Max : SS_Ptr;
-      --  Maximum value of Top. Initialized to 0, and then may be incremented
-      --  on Allocate, but is never Decremented. The last used location will
-      --  be Mem (Max - 1), so Max is the maximum count of used stack space.
-
-      Mem : Memory (0 .. 0);
-      --  This is the area that is actually used for the secondary stack.
-      --  Note that the upper bound is a dummy value properly defined by
-      --  the value of Last. We never actually allocate objects of type
-      --  Fixed_Stack_Id, so the bounds declared here do not matter.
-   end record;
-
-   Dummy_Fixed_Stack : Fixed_Stack_Id;
-   pragma Warnings (Off, Dummy_Fixed_Stack);
-   --  Well it is not quite true that we never allocate an object of the
-   --  type. This dummy object is allocated for the purpose of getting the
-   --  offset of the Mem field via the 'Position attribute (such a nuisance
-   --  that we cannot apply this to a field of a type).
-
-   type Fixed_Stack_Ptr is access Fixed_Stack_Id;
-   --  Pointer to record used to describe statically allocated sec stack
-
-   function To_Fixed_Stack_Ptr is new
-     Ada.Unchecked_Conversion (Address, Fixed_Stack_Ptr);
-   --  Convert from address stored in task data structures
-
-   ----------------------------------
-   -- Minimum_Secondary_Stack_Size --
-   ----------------------------------
-
-   function Minimum_Secondary_Stack_Size return Natural is
-   begin
-      return Dummy_Fixed_Stack.Mem'Position;
-   end Minimum_Secondary_Stack_Size;
-
-   --------------
-   -- Allocate --
-   --------------
+   -----------------
+   -- SS_Allocate --
+   -----------------
 
    procedure SS_Allocate
      (Addr         : out Address;
       Storage_Size : SSE.Storage_Count)
    is
-      Max_Align : constant SS_Ptr := SS_Ptr (Standard'Maximum_Alignment);
-      Max_Size  : constant SS_Ptr :=
-                    ((SS_Ptr (Storage_Size) + Max_Align - 1) / Max_Align) *
-                      Max_Align;
+      Max_Align   : constant SS_Ptr := SS_Ptr (Standard'Maximum_Alignment);
+      Mem_Request : constant SS_Ptr :=
+                      ((SS_Ptr (Storage_Size) + Max_Align - 1) / Max_Align) *
+                        Max_Align;
+      --  Round up Storage_Size to the nearest multiple of the max alignment
+      --  value for the target. This ensures efficient stack access.
 
+      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
    begin
-      --  Case of fixed allocation secondary stack
+      --  Case of fixed secondary stack
 
-      if not SS_Ratio_Dynamic then
-         declare
-            Fixed_Stack : constant Fixed_Stack_Ptr :=
-                            To_Fixed_Stack_Ptr (SSL.Get_Sec_Stack_Addr.all);
+      if not SP.Sec_Stack_Dynamic then
+         --  Check if max stack usage is increasing
 
-         begin
-            --  Check if max stack usage is increasing
+         if Stack.Top + Mem_Request > Stack.Max then
 
-            if Fixed_Stack.Top + Max_Size > Fixed_Stack.Max then
+            --  If so, check if the stack is exceeded, noting Stack.Top points
+            --  to the first free byte (so the value of Stack.Top on a fully
+            --  allocated stack will be Stack.Size + 1).
 
-               --  If so, check if max size is exceeded
-
-               if Fixed_Stack.Top + Max_Size > Fixed_Stack.Last then
-                  raise Storage_Error;
-               end if;
-
-               --  Record new max usage
-
-               Fixed_Stack.Max := Fixed_Stack.Top + Max_Size;
+            if Stack.Top + Mem_Request > Stack.Size + 1 then
+               raise Storage_Error;
             end if;
 
-            --  Set resulting address and update top of stack pointer
+            --  Record new max usage
 
-            Addr := Fixed_Stack.Mem (Fixed_Stack.Top)'Address;
-            Fixed_Stack.Top := Fixed_Stack.Top + Max_Size;
-         end;
+            Stack.Max := Stack.Top + Mem_Request;
+         end if;
 
-      --  Case of dynamically allocated secondary stack
+         --  Set resulting address and update top of stack pointer
+
+         Addr := Stack.Internal_Chunk.Mem (Stack.Top)'Address;
+         Stack.Top := Stack.Top + Mem_Request;
+
+      --  Case of dynamic secondary stack
 
       else
          declare
-            Stack : constant Stack_Ptr :=
-                      To_Stack_Ptr (SSL.Get_Sec_Stack_Addr.all);
             Chunk : Chunk_Ptr;
 
             To_Be_Released_Chunk : Chunk_Ptr;
@@ -235,7 +97,7 @@ package body System.Secondary_Stack is
          begin
             Chunk := Stack.Current_Chunk;
 
-            --  The Current_Chunk may not be the good one if a lot of release
+            --  The Current_Chunk may not be the best one if a lot of release
             --  operations have taken place. Go down the stack if necessary.
 
             while Chunk.First > Stack.Top loop
@@ -246,7 +108,7 @@ package body System.Secondary_Stack is
             --  sufficient, if not, go to the next one and eventually create
             --  the necessary room.
 
-            while Chunk.Last - Stack.Top + 1 < Max_Size loop
+            while Chunk.Last - Stack.Top + 1 < Mem_Request loop
                if Chunk.Next /= null then
 
                   --  Release unused non-first empty chunk
@@ -262,11 +124,11 @@ package body System.Secondary_Stack is
                --  Create new chunk of default size unless it is not sufficient
                --  to satisfy the current request.
 
-               elsif SSE.Storage_Count (Max_Size) <= Stack.Default_Size then
+               elsif Mem_Request <= Stack.Size then
                   Chunk.Next :=
                     new Chunk_Id
                       (First => Chunk.Last + 1,
-                       Last  => Chunk.Last + SS_Ptr (Stack.Default_Size));
+                       Last  => Chunk.Last + SS_Ptr (Stack.Size));
 
                   Chunk.Next.Prev := Chunk;
 
@@ -276,7 +138,7 @@ package body System.Secondary_Stack is
                   Chunk.Next :=
                     new Chunk_Id
                       (First => Chunk.Last + 1,
-                       Last  => Chunk.Last + Max_Size);
+                       Last  => Chunk.Last + Mem_Request);
 
                   Chunk.Next.Prev := Chunk;
                end if;
@@ -288,8 +150,15 @@ package body System.Secondary_Stack is
             --  Resulting address is the address pointed by Stack.Top
 
             Addr                := Chunk.Mem (Stack.Top)'Address;
-            Stack.Top           := Stack.Top + Max_Size;
+            Stack.Top           := Stack.Top + Mem_Request;
             Stack.Current_Chunk := Chunk;
+
+            --  Record new max usage
+
+            if Stack.Top > Stack.Max then
+               Stack.Max := Stack.Top;
+            end if;
+
          end;
       end if;
    end SS_Allocate;
@@ -298,39 +167,38 @@ package body System.Secondary_Stack is
    -- SS_Free --
    -------------
 
-   procedure SS_Free (Stk : in out Address) is
+   procedure SS_Free (Stack : in out SS_Stack_Ptr) is
+      procedure Free is
+         new Ada.Unchecked_Deallocation (SS_Stack, SS_Stack_Ptr);
    begin
-      --  Case of statically allocated secondary stack, nothing to free
+      --  If using dynamic secondary stack, free any external chunks
 
-      if not SS_Ratio_Dynamic then
-         return;
-
-      --  Case of dynamically allocated secondary stack
-
-      else
+      if SP.Sec_Stack_Dynamic then
          declare
-            Stack : Stack_Ptr := To_Stack_Ptr (Stk);
             Chunk : Chunk_Ptr;
 
             procedure Free is
-              new Ada.Unchecked_Deallocation (Stack_Id, Stack_Ptr);
+              new Ada.Unchecked_Deallocation (Chunk_Id, Chunk_Ptr);
 
          begin
             Chunk := Stack.Current_Chunk;
 
-            while Chunk.Prev /= null loop
-               Chunk := Chunk.Prev;
-            end loop;
+            --  Go to top of linked list and free backwards. Do not free the
+            --  internal chunk as it is part of SS_Stack.
 
             while Chunk.Next /= null loop
                Chunk := Chunk.Next;
-               Free (Chunk.Prev);
             end loop;
 
-            Free (Chunk);
-            Free (Stack);
-            Stk := Null_Address;
+            while Chunk.Prev /= null loop
+               Chunk := Chunk.Prev;
+               Free (Chunk.Next);
+            end loop;
          end;
+      end if;
+
+      if Stack.Freeable then
+         Free (Stack);
       end if;
    end SS_Free;
 
@@ -339,17 +207,13 @@ package body System.Secondary_Stack is
    ----------------
 
    function SS_Get_Max return Long_Long_Integer is
+      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
    begin
-      if SS_Ratio_Dynamic then
-         return -1;
-      else
-         declare
-            Fixed_Stack : constant Fixed_Stack_Ptr :=
-                            To_Fixed_Stack_Ptr (SSL.Get_Sec_Stack_Addr.all);
-         begin
-            return Long_Long_Integer (Fixed_Stack.Max);
-         end;
-      end if;
+      --  Stack.Max points to the first untouched byte in the stack, thus the
+      --  maximum number of bytes that have been allocated on the stack is one
+      --  less the value of Stack.Max.
+
+      return Long_Long_Integer (Stack.Max - 1);
    end SS_Get_Max;
 
    -------------
@@ -357,32 +221,25 @@ package body System.Secondary_Stack is
    -------------
 
    procedure SS_Info is
+      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
    begin
       Put_Line ("Secondary Stack information:");
 
       --  Case of fixed secondary stack
 
-      if not SS_Ratio_Dynamic then
-         declare
-            Fixed_Stack : constant Fixed_Stack_Ptr :=
-                            To_Fixed_Stack_Ptr (SSL.Get_Sec_Stack_Addr.all);
+      if not SP.Sec_Stack_Dynamic then
+         Put_Line ("  Total size              : "
+                   & SS_Ptr'Image (Stack.Size)
+                   & " bytes");
 
-         begin
-            Put_Line ("  Total size              : "
-                      & SS_Ptr'Image (Fixed_Stack.Last)
-                      & " bytes");
+         Put_Line ("  Current allocated space : "
+                   & SS_Ptr'Image (Stack.Top - 1)
+                   & " bytes");
 
-            Put_Line ("  Current allocated space : "
-                      & SS_Ptr'Image (Fixed_Stack.Top)
-                      & " bytes");
-         end;
-
-      --  Case of dynamically allocated secondary stack
+      --  Case of dynamic secondary stack
 
       else
          declare
-            Stack     : constant Stack_Ptr :=
-                          To_Stack_Ptr (SSL.Get_Sec_Stack_Addr.all);
             Nb_Chunks : Integer   := 1;
             Chunk     : Chunk_Ptr := Stack.Current_Chunk;
 
@@ -414,7 +271,7 @@ package body System.Secondary_Stack is
                       & Integer'Image (Nb_Chunks));
 
             Put_Line ("  Default size of Chunks : "
-                      & SSE.Storage_Count'Image (Stack.Default_Size));
+                      & SP.Size_Type'Image (Stack.Size));
          end;
       end if;
    end SS_Info;
@@ -424,42 +281,86 @@ package body System.Secondary_Stack is
    -------------
 
    procedure SS_Init
-     (Stk  : in out Address;
-      Size : Natural := Default_Secondary_Stack_Size)
+     (Stack : in out SS_Stack_Ptr;
+      Size  : SP.Size_Type := SP.Unspecified_Size)
    is
+      use Parameters;
+
+      Stack_Size : Size_Type;
    begin
-      --  Case of fixed size secondary stack
+      --  If Stack is not null then the stack has been allocated outside the
+      --  package (by the compiler or the user) and all that is left to do is
+      --  initialize the stack. Otherwise, SS_Init will allocate a secondary
+      --  stack from either the heap or the default-sized secondary stack pool
+      --  generated by the binder. In the later case, this pool is generated
+      --  only when the either No_Implicit_Heap_Allocations
+      --  or No_Implicit_Task_Allocations are active, and SS_Init will allocate
+      --  all requests for a secondary stack of Unspecified_Size from this
+      --  pool.
 
-      if not SS_Ratio_Dynamic then
-         declare
-            Fixed_Stack : constant Fixed_Stack_Ptr :=
-                            To_Fixed_Stack_Ptr (Stk);
+      if Stack = null then
+         if Size = Unspecified_Size then
+            Stack_Size := Default_Sec_Stack_Size;
+         else
+            Stack_Size := Size;
+         end if;
 
-         begin
-            Fixed_Stack.Top  := 0;
-            Fixed_Stack.Max  := 0;
+         if Size = Unspecified_Size
+           and then Binder_SS_Count > 0
+           and then Num_Of_Assigned_Stacks < Binder_SS_Count
+         then
+            --  The default-sized secondary stack pool is passed from the
+            --  binder to this package as an Address since it is not possible
+            --  to have a pointer to an array of unconstrained objects. A
+            --  pointer to the pool is obtainable via an unchecked conversion
+            --  to a constrained array of SS_Stacks that mirrors the one used
+            --  by the binder.
 
-            if Size <= Dummy_Fixed_Stack.Mem'Position then
-               Fixed_Stack.Last := 0;
-            else
-               Fixed_Stack.Last :=
-                 SS_Ptr (Size) - Dummy_Fixed_Stack.Mem'Position;
-            end if;
-         end;
+            --  However, Ada understandably does not allow a local pointer to
+            --  a stack in the pool to be stored in a pointer outside of this
+            --  scope. While the conversion is safe in this case, since a view
+            --  of a global object is being used, using Unchecked_Access
+            --  would prevent users from specifying the restriction
+            --  No_Unchecked_Access whenever the secondary stack is used. As
+            --  a workaround, the local stack pointer is converted to a global
+            --  pointer via System.Address.
 
-      --  Case of dynamically allocated secondary stack
+            declare
+               type Stk_Pool_Array is array (1 .. Binder_SS_Count) of
+                 aliased SS_Stack (Default_SS_Size);
+               type Stk_Pool_Access is access Stk_Pool_Array;
 
-      else
-         declare
-            Stack : Stack_Ptr;
-         begin
-            Stack               := new Stack_Id;
-            Stack.Current_Chunk := new Chunk_Id (1, SS_Ptr (Size));
-            Stack.Top           := 1;
-            Stack.Default_Size  := SSE.Storage_Count (Size);
-            Stk := To_Addr (Stack);
-         end;
+               function To_Stack_Pool is new
+                 Ada.Unchecked_Conversion (Address, Stk_Pool_Access);
+
+               pragma Warnings (Off);
+               function To_Global_Ptr is new
+                 Ada.Unchecked_Conversion (Address, SS_Stack_Ptr);
+               pragma Warnings (On);
+               --  Suppress aliasing warning since the pointer we return will
+               --  be the only access to the stack.
+
+               Local_Stk_Address : System.Address;
+
+            begin
+               Num_Of_Assigned_Stacks := Num_Of_Assigned_Stacks + 1;
+
+               Local_Stk_Address :=
+                 To_Stack_Pool
+                   (Default_Sized_SS_Pool) (Num_Of_Assigned_Stacks)'Address;
+               Stack := To_Global_Ptr (Local_Stk_Address);
+            end;
+
+            Stack.Freeable := False;
+         else
+            Stack := new SS_Stack (Stack_Size);
+            Stack.Freeable := True;
+         end if;
       end if;
+
+      Stack.Top := 1;
+      Stack.Max := 1;
+      Stack.Current_Chunk := Stack.Internal_Chunk'Access;
    end SS_Init;
 
    -------------
@@ -467,13 +368,9 @@ package body System.Secondary_Stack is
    -------------
 
    function SS_Mark return Mark_Id is
-      Sstk : constant System.Address := SSL.Get_Sec_Stack_Addr.all;
+      Stack : constant SS_Stack_Ptr := SSL.Get_Sec_Stack.all;
    begin
-      if SS_Ratio_Dynamic then
-         return (Sstk => Sstk, Sptr => To_Stack_Ptr (Sstk).Top);
-      else
-         return (Sstk => Sstk, Sptr => To_Fixed_Stack_Ptr (Sstk).Top);
-      end if;
+      return (Sec_Stack => Stack, Sptr => Stack.Top);
    end SS_Mark;
 
    ----------------
@@ -482,66 +379,7 @@ package body System.Secondary_Stack is
 
    procedure SS_Release (M : Mark_Id) is
    begin
-      if SS_Ratio_Dynamic then
-         To_Stack_Ptr (M.Sstk).Top := M.Sptr;
-      else
-         To_Fixed_Stack_Ptr (M.Sstk).Top := M.Sptr;
-      end if;
+      M.Sec_Stack.Top := M.Sptr;
    end SS_Release;
 
-   -------------------------
-   -- Package Elaboration --
-   -------------------------
-
-   --  Allocate a secondary stack for the main program to use
-
-   --  We make sure that the stack has maximum alignment. Some systems require
-   --  this (e.g. Sparc), and in any case it is a good idea for efficiency.
-
-   Stack : aliased Stack_Id;
-   for Stack'Alignment use Standard'Maximum_Alignment;
-
-   Static_Secondary_Stack_Size : constant := 10 * 1024;
-   --  Static_Secondary_Stack_Size must be static so that Chunk is allocated
-   --  statically, and not via dynamic memory allocation.
-
-   Chunk : aliased Chunk_Id (1, Static_Secondary_Stack_Size);
-   for Chunk'Alignment use Standard'Maximum_Alignment;
-   --  Default chunk used, unless gnatbind -D is specified with a value greater
-   --  than Static_Secondary_Stack_Size.
-
-begin
-   declare
-      Chunk_Address : Address;
-      Chunk_Access  : Chunk_Ptr;
-
-   begin
-      if Default_Secondary_Stack_Size <= Static_Secondary_Stack_Size then
-
-         --  Normally we allocate the secondary stack for the main program
-         --  statically, using the default secondary stack size.
-
-         Chunk_Access := Chunk'Access;
-
-      else
-         --  Default_Secondary_Stack_Size was increased via gnatbind -D, so we
-         --  need to allocate a chunk dynamically.
-
-         Chunk_Access :=
-           new Chunk_Id (1, SS_Ptr (Default_Secondary_Stack_Size));
-      end if;
-
-      if SS_Ratio_Dynamic then
-         Stack.Top           := 1;
-         Stack.Current_Chunk := Chunk_Access;
-         Stack.Default_Size  :=
-           SSE.Storage_Offset (Default_Secondary_Stack_Size);
-         System.Soft_Links.Set_Sec_Stack_Addr_NT (Stack'Address);
-
-      else
-         Chunk_Address := Chunk_Access.all'Address;
-         SS_Init (Chunk_Address, Default_Secondary_Stack_Size);
-         System.Soft_Links.Set_Sec_Stack_Addr_NT (Chunk_Address);
-      end if;
-   end;
 end System.Secondary_Stack;

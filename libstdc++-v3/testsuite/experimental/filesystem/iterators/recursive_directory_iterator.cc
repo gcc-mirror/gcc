@@ -28,6 +28,7 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
+  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   std::error_code ec;
 
   // Test non-existent path.
@@ -37,15 +38,19 @@ test01()
   VERIFY( iter == end(iter) );
 
   // Test empty directory.
+  ec = bad_ec;
   create_directory(p, fs::current_path(), ec);
   VERIFY( !ec );
+  ec = bad_ec;
   iter = fs::recursive_directory_iterator(p, ec);
   VERIFY( !ec );
   VERIFY( iter == end(iter) );
 
   // Test non-empty directory.
-  create_directories(p / "d1/d2");
+  ec = bad_ec;
+  create_directories(p / "d1/d2", ec);
   VERIFY( !ec );
+  ec = bad_ec;
   iter = fs::recursive_directory_iterator(p, ec);
   VERIFY( !ec );
   VERIFY( iter != end(iter) );
@@ -56,6 +61,7 @@ test01()
   VERIFY( iter == end(iter) );
 
   // Test inaccessible directory.
+  ec = bad_ec;
   permissions(p, fs::perms::none, ec);
   VERIFY( !ec );
   iter = fs::recursive_directory_iterator(p, ec);
@@ -64,15 +70,19 @@ test01()
 
   // Test inaccessible directory, skipping permission denied.
   const auto opts = fs::directory_options::skip_permission_denied;
+  ec = bad_ec;
   iter = fs::recursive_directory_iterator(p, opts, ec);
   VERIFY( !ec );
   VERIFY( iter == end(iter) );
 
   // Test inaccessible sub-directory.
+  ec = bad_ec;
   permissions(p, fs::perms::owner_all, ec);
   VERIFY( !ec );
+  ec = bad_ec;
   permissions(p/"d1/d2", fs::perms::none, ec);
   VERIFY( !ec );
+  ec = bad_ec;
   iter = fs::recursive_directory_iterator(p, ec);
   VERIFY( !ec );
   VERIFY( iter != end(iter) );
@@ -84,12 +94,14 @@ test01()
   VERIFY( iter == end(iter) );
 
   // Test inaccessible sub-directory, skipping permission denied.
+  ec = bad_ec;
   iter = fs::recursive_directory_iterator(p, opts, ec);
   VERIFY( !ec );
   VERIFY( iter != end(iter) );
   VERIFY( iter->path() == p/"d1" );
   ++iter;              // should recurse into d1
   VERIFY( iter->path() == p/"d1/d2" );
+  ec = bad_ec;
   iter.increment(ec);  // should fail to recurse into p/d1/d2, so skip it
   VERIFY( !ec );
   VERIFY( iter == end(iter) );
@@ -101,12 +113,15 @@ test01()
 void
 test02()
 {
+  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   std::error_code ec;
   const auto p = __gnu_test::nonexistent_path();
+  ec = bad_ec;
   create_directories(p / "d1/d2", ec);
   VERIFY( !ec );
 
   // Test post-increment (libstdc++/71005)
+  ec = bad_ec;
   auto iter = fs::recursive_directory_iterator(p, ec);
   VERIFY( !ec );
   VERIFY( iter != end(iter) );
@@ -126,7 +141,7 @@ test02()
 void
 test03()
 {
-  std::error_code ec;
+  std::error_code ec = make_error_code(std::errc::invalid_argument);
   const auto p = __gnu_test::nonexistent_path();
   create_directories(p / "longer_than_small_string_buffer", ec);
   VERIFY( !ec );

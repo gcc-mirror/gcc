@@ -62,7 +62,7 @@ neg_const_int (machine_mode mode, const_rtx i)
 {
   unsigned HOST_WIDE_INT val = -UINTVAL (i);
   
-  if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT
+  if (!HWI_COMPUTABLE_MODE_P (mode)
       && val == UINTVAL (i))
     return simplify_const_unary_operation (NEG, mode, CONST_CAST_RTX (i),
 					   mode);
@@ -1136,7 +1136,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 C is equal to the width of MODE minus 1.  */
       if (GET_CODE (op) == ASHIFTRT
 	  && CONST_INT_P (XEXP (op, 1))
-	  && INTVAL (XEXP (op, 1)) == GET_MODE_PRECISION (mode) - 1)
+	  && INTVAL (XEXP (op, 1)) == GET_MODE_UNIT_PRECISION (mode) - 1)
 	return simplify_gen_binary (LSHIFTRT, mode,
 				    XEXP (op, 0), XEXP (op, 1));
 
@@ -1144,7 +1144,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 C is equal to the width of MODE minus 1.  */
       if (GET_CODE (op) == LSHIFTRT
 	  && CONST_INT_P (XEXP (op, 1))
-	  && INTVAL (XEXP (op, 1)) == GET_MODE_PRECISION (mode) - 1)
+	  && INTVAL (XEXP (op, 1)) == GET_MODE_UNIT_PRECISION (mode) - 1)
 	return simplify_gen_binary (ASHIFTRT, mode,
 				    XEXP (op, 0), XEXP (op, 1));
 
@@ -1272,10 +1272,9 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       if ((GET_CODE (op) == FLOAT_TRUNCATE
 	   && flag_unsafe_math_optimizations)
 	  || GET_CODE (op) == FLOAT_EXTEND)
-	return simplify_gen_unary (GET_MODE_SIZE (GET_MODE (XEXP (op,
-							    0)))
-				   > GET_MODE_SIZE (mode)
-				   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
+	return simplify_gen_unary (GET_MODE_UNIT_SIZE (GET_MODE (XEXP (op, 0)))
+	  			   > GET_MODE_UNIT_SIZE (mode)
+	  			   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
 				   mode,
 				   XEXP (op, 0), mode);
 
@@ -1447,19 +1446,21 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 
 	      if (lcode == ASHIFTRT)
 		/* Number of bits not shifted off the end.  */
-		bits = GET_MODE_PRECISION (lmode) - INTVAL (XEXP (lhs, 1));
+		bits = (GET_MODE_UNIT_PRECISION (lmode)
+			- INTVAL (XEXP (lhs, 1)));
 	      else /* lcode == SIGN_EXTEND */
 		/* Size of inner mode.  */
-		bits = GET_MODE_PRECISION (GET_MODE (XEXP (lhs, 0)));
+		bits = GET_MODE_UNIT_PRECISION (GET_MODE (XEXP (lhs, 0)));
 
 	      if (rcode == ASHIFTRT)
-		bits += GET_MODE_PRECISION (rmode) - INTVAL (XEXP (rhs, 1));
+		bits += (GET_MODE_UNIT_PRECISION (rmode)
+			 - INTVAL (XEXP (rhs, 1)));
 	      else /* rcode == SIGN_EXTEND */
-		bits += GET_MODE_PRECISION (GET_MODE (XEXP (rhs, 0)));
+		bits += GET_MODE_UNIT_PRECISION (GET_MODE (XEXP (rhs, 0)));
 
 	      /* We can only widen multiplies if the result is mathematiclly
 		 equivalent.  I.e. if overflow was impossible.  */
-	      if (bits <= GET_MODE_PRECISION (GET_MODE (op)))
+	      if (bits <= GET_MODE_UNIT_PRECISION (GET_MODE (op)))
 		return simplify_gen_binary
 			 (MULT, mode,
 			  simplify_gen_unary (SIGN_EXTEND, mode, lhs, lmode),
@@ -1484,8 +1485,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 (sign_extend:M (zero_extend:N <X>)) is (zero_extend:M <X>).  */
       if (GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND)
 	{
-	  gcc_assert (GET_MODE_PRECISION (mode)
-		      > GET_MODE_PRECISION (GET_MODE (op)));
+	  gcc_assert (GET_MODE_UNIT_PRECISION (mode)
+		      > GET_MODE_UNIT_PRECISION (GET_MODE (op)));
 	  return simplify_gen_unary (GET_CODE (op), mode, XEXP (op, 0),
 				     GET_MODE (XEXP (op, 0)));
 	}
@@ -1585,19 +1586,21 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 
 	      if (lcode == LSHIFTRT)
 		/* Number of bits not shifted off the end.  */
-		bits = GET_MODE_PRECISION (lmode) - INTVAL (XEXP (lhs, 1));
+		bits = (GET_MODE_UNIT_PRECISION (lmode)
+			- INTVAL (XEXP (lhs, 1)));
 	      else /* lcode == ZERO_EXTEND */
 		/* Size of inner mode.  */
-		bits = GET_MODE_PRECISION (GET_MODE (XEXP (lhs, 0)));
+		bits = GET_MODE_UNIT_PRECISION (GET_MODE (XEXP (lhs, 0)));
 
 	      if (rcode == LSHIFTRT)
-		bits += GET_MODE_PRECISION (rmode) - INTVAL (XEXP (rhs, 1));
+		bits += (GET_MODE_UNIT_PRECISION (rmode)
+			 - INTVAL (XEXP (rhs, 1)));
 	      else /* rcode == ZERO_EXTEND */
-		bits += GET_MODE_PRECISION (GET_MODE (XEXP (rhs, 0)));
+		bits += GET_MODE_UNIT_PRECISION (GET_MODE (XEXP (rhs, 0)));
 
 	      /* We can only widen multiplies if the result is mathematiclly
 		 equivalent.  I.e. if overflow was impossible.  */
-	      if (bits <= GET_MODE_PRECISION (GET_MODE (op)))
+	      if (bits <= GET_MODE_UNIT_PRECISION (GET_MODE (op)))
 		return simplify_gen_binary
 			 (MULT, mode,
 			  simplify_gen_unary (ZERO_EXTEND, mode, lhs, lmode),
@@ -2145,7 +2148,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 {
   rtx tem, reversed, opleft, opright;
   HOST_WIDE_INT val;
-  unsigned int width = GET_MODE_PRECISION (mode);
   scalar_int_mode int_mode, inner_mode;
 
   /* Even if we can't compute a constant result,
@@ -2673,14 +2675,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
 	  if (((c1|c2) & mask) == mask)
 	    return simplify_gen_binary (IOR, mode, XEXP (op0, 0), op1);
-
-	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2.  */
-	  if (((c1 & ~c2) & mask) != (c1 & mask))
-	    {
-	      tem = simplify_gen_binary (AND, mode, XEXP (op0, 0),
-					 gen_int_mode (c1 & ~c2, mode));
-	      return simplify_gen_binary (IOR, mode, tem, op1);
-	    }
 	}
 
       /* Convert (A & B) | A to A.  */
@@ -2711,7 +2705,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
           && CONST_INT_P (XEXP (opleft, 1))
           && CONST_INT_P (XEXP (opright, 1))
           && (INTVAL (XEXP (opleft, 1)) + INTVAL (XEXP (opright, 1))
-              == GET_MODE_PRECISION (mode)))
+	      == GET_MODE_UNIT_PRECISION (mode)))
         return gen_rtx_ROTATE (mode, XEXP (opright, 0), XEXP (opleft, 1));
 
       /* Same, but for ashift that has been "simplified" to a wider mode
@@ -2735,23 +2729,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      == GET_MODE_PRECISION (int_mode)))
 	return gen_rtx_ROTATE (int_mode, XEXP (opright, 0),
 			       XEXP (SUBREG_REG (opleft), 1));
-
-      /* If we have (ior (and (X C1) C2)), simplify this by making
-	 C1 as small as possible if C1 actually changes.  */
-      if (CONST_INT_P (op1)
-	  && (HWI_COMPUTABLE_MODE_P (mode)
-	      || INTVAL (op1) > 0)
-	  && GET_CODE (op0) == AND
-	  && CONST_INT_P (XEXP (op0, 1))
-	  && CONST_INT_P (op1)
-	  && (UINTVAL (XEXP (op0, 1)) & UINTVAL (op1)) != 0)
-	{
-	  rtx tmp = simplify_gen_binary (AND, mode, XEXP (op0, 0),
-					 gen_int_mode (UINTVAL (XEXP (op0, 1))
-						       & ~UINTVAL (op1),
-						       mode));
-	  return simplify_gen_binary (IOR, mode, tmp, op1);
-	}
 
       /* If OP0 is (ashiftrt (plus ...) C), it might actually be
          a (sign_extend (plus ...)).  Then check if OP1 is a CONST_INT and
@@ -3354,11 +3331,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 #if defined(HAVE_rotate) && defined(HAVE_rotatert)
       if (CONST_INT_P (trueop1)
 	  && IN_RANGE (INTVAL (trueop1),
-		       GET_MODE_PRECISION (mode) / 2 + (code == ROTATE),
-		       GET_MODE_PRECISION (mode) - 1))
+		       GET_MODE_UNIT_PRECISION (mode) / 2 + (code == ROTATE),
+		       GET_MODE_UNIT_PRECISION (mode) - 1))
 	return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
-				    mode, op0, GEN_INT (GET_MODE_PRECISION (mode)
-							- INTVAL (trueop1)));
+				    mode, op0,
+				    GEN_INT (GET_MODE_UNIT_PRECISION (mode)
+					     - INTVAL (trueop1)));
 #endif
       /* FALLTHRU */
     case ASHIFTRT:
@@ -3367,7 +3345,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
 	return op0;
       /* Rotating ~0 always results in ~0.  */
-      if (CONST_INT_P (trueop0) && width <= HOST_BITS_PER_WIDE_INT
+      if (CONST_INT_P (trueop0)
+	  && HWI_COMPUTABLE_MODE_P (mode)
 	  && UINTVAL (trueop0) == GET_MODE_MASK (mode)
 	  && ! side_effects_p (op1))
 	return op0;
@@ -3408,7 +3387,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
 	{
-	  val = INTVAL (op1) & (GET_MODE_PRECISION (mode) - 1);
+	  val = INTVAL (op1) & (GET_MODE_UNIT_PRECISION (mode) - 1);
 	  if (val != INTVAL (op1))
 	    return simplify_gen_binary (code, mode, op0, GEN_INT (val));
 	}
@@ -3433,7 +3412,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && is_a <scalar_int_mode> (GET_MODE (XEXP (op0, 0)), &inner_mode)
 	  && CONST_INT_P (trueop1)
 	  && STORE_FLAG_VALUE == 1
-	  && INTVAL (trueop1) < (HOST_WIDE_INT)width)
+	  && INTVAL (trueop1) < GET_MODE_UNIT_PRECISION (mode))
 	{
 	  unsigned HOST_WIDE_INT zero_val = 0;
 
@@ -3446,7 +3425,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       goto canonicalize_shift;
 
     case SMIN:
-      if (width <= HOST_BITS_PER_WIDE_INT
+      if (HWI_COMPUTABLE_MODE_P (mode)
 	  && mode_signbit_p (mode, trueop1)
 	  && ! side_effects_p (op0))
 	return op1;
@@ -3458,7 +3437,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       break;
 
     case SMAX:
-      if (width <= HOST_BITS_PER_WIDE_INT
+      if (HWI_COMPUTABLE_MODE_P (mode)
 	  && CONST_INT_P (trueop1)
 	  && (UINTVAL (trueop1) == GET_MODE_MASK (mode) >> 1)
 	  && ! side_effects_p (op0))

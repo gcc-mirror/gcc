@@ -252,12 +252,6 @@ extern const char *bfin_library_id_string;
    it. */
 #define FIRST_PARM_OFFSET(DECL) 0
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
-
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM REG_P6
 
@@ -320,11 +314,6 @@ extern const char *bfin_library_id_string;
    data to make it all fit in fewer cache lines.  */
 
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) bfin_local_alignment ((TYPE), (ALIGN))
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST        \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))    
 
 #define TRAMPOLINE_SIZE (TARGET_FDPIC ? 30 : 18)
 

@@ -462,12 +462,6 @@ extern const sh_atomic_model& selected_atomic_model (void);
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT (32)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)	\
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-    ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* get_mode_alignment assumes complex values are always held in multiple
    registers, but that is not the case on the SH; CQImode and CHImode are
    held in a single integer register.  */
@@ -1114,10 +1108,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /*  Define this macro to nonzero if the addresses of local variable slots
     are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */

@@ -311,6 +311,26 @@ void __asan_unregister_image_globals(uptr *flag) {
   *flag = 0;
 }
 
+void __asan_register_elf_globals(uptr *flag, void *start, void *stop) {
+  if (*flag) return;
+  if (!start) return;
+  CHECK_EQ(0, ((uptr)stop - (uptr)start) % sizeof(__asan_global));
+  __asan_global *globals_start = (__asan_global*)start;
+  __asan_global *globals_stop = (__asan_global*)stop;
+  __asan_register_globals(globals_start, globals_stop - globals_start);
+  *flag = 1;
+}
+
+void __asan_unregister_elf_globals(uptr *flag, void *start, void *stop) {
+  if (!*flag) return;
+  if (!start) return;
+  CHECK_EQ(0, ((uptr)stop - (uptr)start) % sizeof(__asan_global));
+  __asan_global *globals_start = (__asan_global*)start;
+  __asan_global *globals_stop = (__asan_global*)stop;
+  __asan_unregister_globals(globals_start, globals_stop - globals_start);
+  *flag = 0;
+}
+
 // Register an array of globals.
 void __asan_register_globals(__asan_global *globals, uptr n) {
   if (!flags()->report_globals) return;
@@ -327,8 +347,26 @@ void __asan_register_globals(__asan_global *globals, uptr n) {
     Printf("=== ID %d; %p %p\n", stack_id, &globals[0], &globals[n - 1]);
   }
   for (uptr i = 0; i < n; i++) {
+    if (SANITIZER_WINDOWS && globals[i].beg == 0) {
+      // The MSVC incremental linker may pad globals out to 256 bytes. As long
+      // as __asan_global is less than 256 bytes large and its size is a power
+      // of two, we can skip over the padding.
+      static_assert(
+          sizeof(__asan_global) < 256 &&
+              (sizeof(__asan_global) & (sizeof(__asan_global) - 1)) == 0,
+          "sizeof(__asan_global) incompatible with incremental linker padding");
+      // If these are padding bytes, the rest of the global should be zero.
+      CHECK(globals[i].size == 0 && globals[i].size_with_redzone == 0 &&
+            globals[i].name == nullptr && globals[i].module_name == nullptr &&
+            globals[i].odr_indicator == 0);
+      continue;
+    }
     RegisterGlobal(&globals[i]);
   }
+
+  // Poison the metadata. It should not be accessible to user code.
+  PoisonShadow(reinterpret_cast<uptr>(globals), n * sizeof(__asan_global),
+               kAsanGlobalRedzoneMagic);
 }
 
 // Unregister an array of globals.
@@ -337,8 +375,16 @@ void __asan_unregister_globals(__asan_global *globals, uptr n) {
   if (!flags()->report_globals) return;
   BlockingMutexLock lock(&mu_for_globals);
   for (uptr i = 0; i < n; i++) {
+    if (SANITIZER_WINDOWS && globals[i].beg == 0) {
+      // Skip globals that look like padding from the MSVC incremental linker.
+      // See comment in __asan_register_globals.
+      continue;
+    }
     UnregisterGlobal(&globals[i]);
   }
+
+  // Unpoison the metadata.
+  PoisonShadow(reinterpret_cast<uptr>(globals), n * sizeof(__asan_global), 0);
 }
 
 // This method runs immediately prior to dynamic initialization in each TU,

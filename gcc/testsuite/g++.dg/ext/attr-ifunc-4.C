@@ -14,9 +14,9 @@ struct Klassier : Klass
   int implementation ();
   int magic ();
 
-  typedef int (Klass::*MemFuncPtr)();
+  typedef int Func (Klass*);
 
-  static MemFuncPtr resolver ();
+  static Func* resolver ();
 };
 
 int Klassier::implementation (void)
@@ -25,9 +25,13 @@ int Klassier::implementation (void)
   return 0;
 }
 
-Klassier::MemFuncPtr Klassier::resolver (void)
+Klassier::Func* Klassier::resolver ()
 {
-  return &Klassier::implementation;
+  /* GCC guarantees this conversion to be safe and the resulting pointer
+     usable to call the member function using ordinary (i.e., non-member)
+     function call syntax.  */
+
+  return reinterpret_cast<Func*>(&Klassier::implementation);
 }
 
 int Klassier::magic (void) __attribute__ ((ifunc ("_ZN8Klassier8resolverEv")));

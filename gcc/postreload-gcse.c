@@ -1108,14 +1108,14 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
 	    avail_insn = NULL;
 	}
 
-      if (EDGE_CRITICAL_P (pred) && pred->count.initialized_p ())
-	critical_count += pred->count;
+      if (EDGE_CRITICAL_P (pred) && pred->count ().initialized_p ())
+	critical_count += pred->count ();
 
       if (avail_insn != NULL_RTX)
 	{
 	  npred_ok++;
-	  if (pred->count.initialized_p ())
-	    ok_count = ok_count + pred->count;
+	  if (pred->count ().initialized_p ())
+	    ok_count = ok_count + pred->count ();
 	  if (! set_noop_p (PATTERN (gen_move_insn (copy_rtx (dest),
 						    copy_rtx (avail_reg)))))
 	    {
@@ -1139,8 +1139,8 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
 	  /* Adding a load on a critical edge will cause a split.  */
 	  if (EDGE_CRITICAL_P (pred))
 	    critical_edge_split = true;
-	  if (pred->count.initialized_p ())
-	    not_ok_count = not_ok_count + pred->count;
+	  if (pred->count ().initialized_p ())
+	    not_ok_count = not_ok_count + pred->count ();
 	  unoccr = (struct unoccr *) obstack_alloc (&unoccr_obstack,
 						    sizeof (struct unoccr));
 	  unoccr->insn = NULL;

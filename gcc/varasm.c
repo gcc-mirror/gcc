@@ -1055,7 +1055,7 @@ align_variable (tree decl, bool dont_output_data)
 	      && (in_lto_p || DECL_INITIAL (decl) != error_mark_node))
 	    {
 	      unsigned int const_align
-		= CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
+		= targetm.constant_alignment (DECL_INITIAL (decl), align);
 	      /* Don't increase alignment too much for TLS variables - TLS
 		 space is too precious.  */
 	      if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
@@ -1106,8 +1106,8 @@ get_variable_align (tree decl)
 	     to mark offlined constructors.  */
 	  && (in_lto_p || DECL_INITIAL (decl) != error_mark_node))
 	{
-	  unsigned int const_align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl),
-							 align);
+	  unsigned int const_align
+	    = targetm.constant_alignment (DECL_INITIAL (decl), align);
 	  /* Don't increase alignment too much for TLS variables - TLS space
 	     is too precious.  */
 	  if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
@@ -2399,8 +2399,7 @@ incorporeal_function_p (tree decl)
       const char *name;
 
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-	  && (DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA
-	      || DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA_WITH_ALIGN))
+	  && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (decl)))
 	return true;
 
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
@@ -3326,12 +3325,10 @@ build_constant_desc (tree exp)
      Instead we set the flag that will be recognized in make_decl_rtl.  */
   DECL_IN_CONSTANT_POOL (decl) = 1;
   DECL_INITIAL (decl) = desc->value;
-  /* ??? CONSTANT_ALIGNMENT hasn't been updated for vector types on most
-     architectures so use DATA_ALIGNMENT as well, except for strings.  */
+  /* ??? targetm.constant_alignment hasn't been updated for vector types on
+     most architectures so use DATA_ALIGNMENT as well, except for strings.  */
   if (TREE_CODE (exp) == STRING_CST)
-    {
-      SET_DECL_ALIGN (decl, CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl)));
-    }
+    SET_DECL_ALIGN (decl, targetm.constant_alignment (exp, DECL_ALIGN (decl)));
   else
     align_variable (decl, 0);
 
@@ -3790,7 +3787,7 @@ force_const_mem (machine_mode mode, rtx x)
 
   tree type = lang_hooks.types.type_for_mode (mode, 0);
   if (type != NULL_TREE)
-    align = CONSTANT_ALIGNMENT (make_tree (type, x), align);
+    align = targetm.constant_alignment (make_tree (type, x), align);
 
   pool->offset += (align / BITS_PER_UNIT) - 1;
   pool->offset &= ~ ((align / BITS_PER_UNIT) - 1);

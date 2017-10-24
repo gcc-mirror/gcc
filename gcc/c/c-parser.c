@@ -206,6 +206,9 @@ struct GTY(()) c_parser {
   /* Buffer to hold all the tokens from parsing the vector attribute for the
      SIMD-enabled functions (formerly known as elemental functions).  */
   vec <c_token, va_gc> *cilk_simd_fn_tokens;
+
+  /* Location of the last consumed token.  */
+  location_t last_token_location;
 };
 
 /* Return a pointer to the Nth token in PARSERs tokens_buf.  */
@@ -770,6 +773,7 @@ c_parser_consume_token (c_parser *parser)
   gcc_assert (parser->tokens[0].type != CPP_EOF);
   gcc_assert (!parser->in_pragma || parser->tokens[0].type != CPP_PRAGMA_EOL);
   gcc_assert (parser->error || parser->tokens[0].type != CPP_PRAGMA);
+  parser->last_token_location = parser->tokens[0].location;
   if (parser->tokens != &parser->tokens_buf[0])
     parser->tokens++;
   else if (parser->tokens_avail == 2)
@@ -1037,13 +1041,21 @@ get_matching_symbol (enum cpp_ttype type)
    If MATCHING_LOCATION is not UNKNOWN_LOCATION, then highlight it
    within any error as the location of an "opening" token matching
    the close token TYPE (e.g. the location of the '(' when TYPE is
-   CPP_CLOSE_PAREN).  */
+   CPP_CLOSE_PAREN).
+
+   If TYPE_IS_UNIQUE is true (the default) then msgid describes exactly
+   one type (e.g. "expected %<)%>") and thus it may be reasonable to
+   attempt to generate a fix-it hint for the problem.
+   Otherwise msgid describes multiple token types (e.g.
+   "expected %<;%>, %<,%> or %<)%>"), and thus we shouldn't attempt to
+   generate a fix-it hint.  */
 
 bool
 c_parser_require (c_parser *parser,
 		  enum cpp_ttype type,
 		  const char *msgid,
-		  location_t matching_location)
+		  location_t matching_location,
+		  bool type_is_unique)
 {
   if (c_parser_next_token_is (parser, type))
     {
@@ -1054,6 +1066,13 @@ c_parser_require (c_parser *parser,
     {
       location_t next_token_loc = c_parser_peek_token (parser)->location;
       gcc_rich_location richloc (next_token_loc);
+
+      /* Potentially supply a fix-it hint, suggesting to add the
+	 missing token immediately after the *previous* token.
+	 This may move the primary location within richloc.  */
+      if (!parser->error && type_is_unique)
+	maybe_suggest_missing_token_insertion (&richloc, type,
+					       parser->last_token_location);
 
       /* If matching_location != UNKNOWN_LOCATION, highlight it.
 	 Attempt to consolidate diagnostics by printing it as a
@@ -2120,6 +2139,10 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      tree d = start_decl (declarator, specs, false,
 				   chainon (postfix_attrs,
 					    all_prefix_attrs));
+	      if (d && TREE_CODE (d) == FUNCTION_DECL)
+		if (declarator->kind == cdk_function)
+		  if (DECL_ARGUMENTS (d) == NULL_TREE)
+		    DECL_ARGUMENTS (d) = declarator->u.arg_info->parms;
 	      if (omp_declare_simd_clauses.exists ()
 		  || !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
 		{
@@ -3967,7 +3990,8 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr)
 	    return get_parm_info (false, expr);
 	}
       if (!c_parser_require (parser, CPP_COMMA,
-			     "expected %<;%>, %<,%> or %<)%>"))
+			     "expected %<;%>, %<,%> or %<)%>",
+			     UNKNOWN_LOCATION, false))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	  return NULL;
@@ -4039,6 +4063,9 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_skip_to_end_of_parameter (parser);
       return NULL;
     }
+
+  location_t start_loc = c_parser_peek_token (parser)->location;
+
   specs = build_null_declspecs ();
   if (attrs)
     {
@@ -4061,8 +4088,33 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
     }
   if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
     postfix_attrs = c_parser_attributes (parser);
+
+  /* Generate a location for the parameter, ranging from the start of the
+     initial token to the end of the final token.
+
+     If we have a identifier, then use it for the caret location, e.g.
+
+       extern int callee (int one, int (*two)(int, int), float three);
+                                   ~~~~~~^~~~~~~~~~~~~~
+
+     otherwise, reuse the start location for the caret location e.g.:
+
+       extern int callee (int one, int (*)(int, int), float three);
+                                   ^~~~~~~~~~~~~~~~~
+  */
+  location_t end_loc = parser->last_token_location;
+
+  /* Find any cdk_id declarator; determine if we have an identifier.  */
+  c_declarator *id_declarator = declarator;
+  while (id_declarator && id_declarator->kind != cdk_id)
+    id_declarator = id_declarator->declarator;
+  location_t caret_loc = (id_declarator->u.id
+			  ? id_declarator->id_loc
+			  : start_loc);
+  location_t param_loc = make_location (caret_loc, start_loc, end_loc);
+
   return build_c_parm (specs, chainon (postfix_attrs, prefix_attrs),
-		       declarator);
+		       declarator, param_loc);
 }
 
 /* Parse a string literal in an asm expression.  It should not be
@@ -6393,7 +6445,8 @@ c_parser_asm_statement (c_parser *parser)
       if (!c_parser_require (parser, CPP_COLON,
 			     is_goto
 			     ? G_("expected %<:%>")
-			     : G_("expected %<:%> or %<)%>")))
+			     : G_("expected %<:%> or %<)%>"),
+			     UNKNOWN_LOCATION, is_goto))
 	goto error_close_paren;
 
       /* Once past any colon, we're no longer a simple asm.  */
@@ -17796,7 +17849,7 @@ c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses,
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
   
     error_at (loc, "vectorlength must be an integer constant");  
-  else if (wi::exact_log2 (expr) == -1)
+  else if (wi::exact_log2 (wi::to_wide (expr)) == -1)
     error_at (loc, "vectorlength must be a power of 2");
   else
     {

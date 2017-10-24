@@ -1767,7 +1767,7 @@ spu_expand_prologue (void)
 
   if (total_size > 0)
     {
-      if (flag_stack_check)
+      if (flag_stack_check || flag_stack_clash_protection)
 	{
 	  /* We compare against total_size-1 because
 	     ($sp >= total_size) <=> ($sp > total_size-1) */
@@ -3055,7 +3055,7 @@ spu_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
   if (JUMP_P (insn) && dep_type == REG_DEP_ANTI)
-    return insn_cost (dep_insn) - 3;
+    return insn_sched_cost (dep_insn) - 3;
 
   return cost;
 }
@@ -4159,7 +4159,7 @@ spu_encode_section_info (tree decl, rtx rtl, int first)
    which is both 16-byte aligned and padded to a 16-byte boundary.  This
    would make it safe to store with a single instruction. 
    We guarantee the alignment and padding for static objects by aligning
-   all of them to 16-bytes. (DATA_ALIGNMENT and CONSTANT_ALIGNMENT.)
+   all of them to 16-bytes. (DATA_ALIGNMENT and TARGET_CONSTANT_ALIGNMENT.)
    FIXME: We currently cannot guarantee this for objects on the stack
    because assign_parm_setup_stack calls assign_stack_local with the
    alignment of the parameter mode and in that case the alignment never
@@ -5390,7 +5390,7 @@ spu_allocate_stack (rtx op0, rtx op1)
   emit_insn (gen_spu_convert (sp, stack_pointer_rtx));
   emit_insn (gen_subv4si3 (sp, sp, splatted));
 
-  if (flag_stack_check)
+  if (flag_stack_check || flag_stack_clash_protection)
     {
       rtx avail = gen_reg_rtx(SImode);
       rtx result = gen_reg_rtx(SImode);
@@ -6640,6 +6640,8 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_load:
+      case vector_gather_load:
+      case vector_scatter_store:
         return 2;
 
       case cond_branch_taken:
@@ -7193,6 +7195,18 @@ spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 {
   return inprec <= 32 && outprec <= inprec;
 }
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.
+
+   Make all static objects 16-byte aligned.  This allows us to assume
+   they are also padded to 16 bytes, which means we can use a single
+   load or store instruction to access them.  */
+
+static HOST_WIDE_INT
+spu_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return MAX (align, 128);
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7432,6 +7446,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_TRULY_NOOP_TRUNCATION
 #define TARGET_TRULY_NOOP_TRUNCATION spu_truly_noop_truncation
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT spu_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -524,20 +524,28 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	  unsigned int i;
 
 	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
-	  if (dstbb->count.initialized_p ())
-	    dstbb->count += srcbb->count;
-	  else
-	    dstbb->count = srcbb->count;
-	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+	  if (!dstbb->count.initialized_p ())
 	    {
-	      edge srce = EDGE_SUCC (srcbb, i);
-	      edge dste = EDGE_SUCC (dstbb, i);
-	      if (dstbb->count.initialized_p ())
-	        dste->count += srce->count;
-	      else
-		dste->count = srce->count;
-	      if (dstbb->count > 0 && dste->count.initialized_p ())
-		dste->probability = dste->count.probability_in (dstbb->count);
+	      dstbb->count = srcbb->count;
+	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+		{
+		  edge srce = EDGE_SUCC (srcbb, i);
+		  edge dste = EDGE_SUCC (dstbb, i);
+		  if (srce->probability.initialized_p ())
+		    dste->probability = srce->probability;
+		}
+	    }	
+	  else if (srcbb->count.initialized_p ())
+	    {
+	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+		{
+		  edge srce = EDGE_SUCC (srcbb, i);
+		  edge dste = EDGE_SUCC (dstbb, i);
+		  dste->probability = 
+		    dste->probability * dstbb->count.probability_in (dstbb->count + srcbb->count)
+		    + srce->probability * srcbb->count.probability_in (dstbb->count + srcbb->count);
+		}
+	      dstbb->count += srcbb->count;
 	    }
 	}
       push_cfun (dstcfun);

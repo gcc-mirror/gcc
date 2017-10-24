@@ -195,7 +195,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 		}
 
 	      taken_edge->probability += e->probability;
-	      taken_edge->count += e->count;
 	      remove_edge_and_dominated_blocks (e);
 	      retval = true;
 	    }
@@ -892,7 +891,11 @@ cleanup_tree_cfg_noloop (void)
   changed |= cleanup_tree_cfg_1 ();
 
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
-  compact_blocks ();
+
+  /* Do not renumber blocks if the SCEV cache is active, it is indexed by
+     basic-block numbers.  */
+  if (! scev_initialized_p ())
+    compact_blocks ();
 
   checking_verify_flow_info ();
 

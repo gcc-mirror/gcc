@@ -331,3 +331,7 @@ VAR11 (STORE1, vst4,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf)
 VAR9 (STORE1LANE, vst4_lane,
 	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR2 (TERNOP, sdot, v8qi, v16qi)
+VAR2 (UTERNOP, udot, v8qi, v16qi)
+VAR2 (MAC_LANE, sdot_lane, v8qi, v16qi)
+VAR2 (UMAC_LANE, udot_lane, v8qi, v16qi)

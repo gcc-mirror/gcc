@@ -1,5 +1,6 @@
 ! { dg-do run }
-! { dg-options "-O2 -ftree-loop-linear" }
+! { dg-skip-if "" { *-*-* } { "-O0" } { "" } }
+! { dg-additional-options "-ftree-loop-linear" }
 
 ! Program to test the scalarizer
 program testarray
@@ -23,4 +24,3 @@ program testarray
       if (b(4, n) .ne. (6 - n)) call abort
    end do
 end program
-

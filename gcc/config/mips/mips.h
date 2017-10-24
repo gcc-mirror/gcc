@@ -1636,22 +1636,6 @@ FP_ASM_SPEC "\
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this macro is used
@@ -2313,14 +2297,6 @@ enum reg_class
 
 #define MIPS_GP_SAVE_AREA_SIZE \
   (TARGET_CALL_CLOBBERED_GP ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0)
-
-/* The offset of the first local variable from the frame pointer.  See
-   mips_compute_frame_info for details about the frame layout.  */
-
-#define STARTING_FRAME_OFFSET				\
-  (FRAME_GROWS_DOWNWARD					\
-   ? 0							\
-   : crtl->outgoing_args_size + MIPS_GP_SAVE_AREA_SIZE)
 
 #define RETURN_ADDR_RTX mips_return_addr
 

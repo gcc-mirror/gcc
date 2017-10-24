@@ -582,7 +582,7 @@ ignore_overflows (tree expr, tree orig)
     {
       gcc_assert (!TREE_OVERFLOW (orig));
       /* Ensure constant sharing.  */
-      expr = wide_int_to_tree (TREE_TYPE (expr), expr);
+      expr = wide_int_to_tree (TREE_TYPE (expr), wi::to_wide (expr));
     }
   return expr;
 }
@@ -1055,24 +1055,10 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
 
+  expr = mark_discarded_use (expr);
   if (implicit == ICV_CAST)
+    /* An explicit cast to void avoids all -Wunused-but-set* warnings.  */
     mark_exp_read (expr);
-  else
-    {
-      tree exprv = expr;
-
-      while (TREE_CODE (exprv) == COMPOUND_EXPR)
-	exprv = TREE_OPERAND (exprv, 1);
-      if (DECL_P (exprv)
-	  || handled_component_p (exprv)
-	  || INDIRECT_REF_P (exprv))
-	/* Expr is not being 'used' here, otherwise we whould have
-	   called mark_{rl}value_use use here, which would have in turn
-	   called mark_exp_read.  Rather, we call mark_exp_read directly
-	   to avoid some warnings when
-	   -Wunused-but-set-{variable,parameter} is in effect.  */
-	mark_exp_read (exprv);
-    }
 
   if (!TREE_TYPE (expr))
     return expr;
@@ -1848,12 +1834,27 @@ type_promotes_to (tree type)
 	   || type == char32_type_node
 	   || type == wchar_type_node)
     {
+      tree prom = type;
+
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  prom = ENUM_UNDERLYING_TYPE (prom);
+	  if (!ENUM_IS_SCOPED (type)
+	      && ENUM_FIXED_UNDERLYING_TYPE_P (type))
+	    {
+	      /* ISO C++17, 7.6/4.  A prvalue of an unscoped enumeration type
+		 whose underlying type is fixed (10.2) can be converted to a
+		 prvalue of its underlying type. Moreover, if integral promotion
+		 can be applied to its underlying type, a prvalue of an unscoped
+		 enumeration type whose underlying type is fixed can also be 
+		 converted to a prvalue of the promoted underlying type.  */
+	      return type_promotes_to (prom);
+	    }
+	}
+
       int precision = MAX (TYPE_PRECISION (type),
 			   TYPE_PRECISION (integer_type_node));
       tree totype = c_common_type_for_size (precision, 0);
-      tree prom = type;
-      if (TREE_CODE (prom) == ENUMERAL_TYPE)
-	prom = ENUM_UNDERLYING_TYPE (prom);
       if (TYPE_UNSIGNED (prom)
 	  && ! int_fits_type_p (TYPE_MAX_VALUE (prom), totype))
 	prom = c_common_type_for_size (precision, 1);

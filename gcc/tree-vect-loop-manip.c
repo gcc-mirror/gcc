@@ -117,8 +117,6 @@ rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
 		      || single_pred (e->src) != outer_loop->header)
 		    continue;
 		}
-	      else
-		continue;
 	    }
 	}
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
@@ -496,7 +494,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 			       loop_preheader_edge (new_loop)->src);
     }
 
-  for (unsigned i = 0; i < scalar_loop->num_nodes + 1; i++)
+  /* Skip new preheader since it's deleted if copy loop is added at entry.  */
+  for (unsigned i = (at_exit ? 0 : 1); i < scalar_loop->num_nodes + 1; i++)
     rename_variables_in_bb (new_bbs[i], duplicate_outer_loop);
 
   if (scalar_loop != loop)
@@ -564,13 +563,10 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
   /* Add new edge to connect guard block to the merge/loop-exit block.  */
   new_e = make_edge (guard_bb, guard_to, EDGE_TRUE_VALUE);
 
-  new_e->count = guard_bb->count;
   new_e->probability = probability;
-  new_e->count = enter_e->count.apply_probability (probability);
   if (irreducible_p)
     new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
 
-  enter_e->count -= new_e->count;
   enter_e->probability = probability.invert ();
   set_immediate_dominator (CDI_DOMINATORS, guard_to, dom_bb);
 
@@ -956,8 +952,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
   gimple *dr_stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  int vectype_align = TYPE_ALIGN (vectype) / BITS_PER_UNIT;
-  int nelements = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
 
   if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
@@ -978,32 +973,36 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
       tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
 							      &stmts, offset);
       tree type = unsigned_type_for (TREE_TYPE (start_addr));
-      tree vectype_align_minus_1 = build_int_cst (type, vectype_align - 1);
-      HOST_WIDE_INT elem_size =
-                int_cst_value (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
+      tree target_align_minus_1 = build_int_cst (type, target_align - 1);
+      HOST_WIDE_INT elem_size
+	= int_cst_value (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
       tree elem_size_log = build_int_cst (type, exact_log2 (elem_size));
-      tree nelements_minus_1 = build_int_cst (type, nelements - 1);
-      tree nelements_tree = build_int_cst (type, nelements);
-      tree byte_misalign;
-      tree elem_misalign;
+      HOST_WIDE_INT align_in_elems = target_align / elem_size;
+      tree align_in_elems_minus_1 = build_int_cst (type, align_in_elems - 1);
+      tree align_in_elems_tree = build_int_cst (type, align_in_elems);
+      tree misalign_in_bytes;
+      tree misalign_in_elems;
 
-      /* Create:  byte_misalign = addr & (vectype_align - 1)  */
-      byte_misalign =
-	fold_build2 (BIT_AND_EXPR, type, fold_convert (type, start_addr),
-		     vectype_align_minus_1);
+      /* Create:  misalign_in_bytes = addr & (target_align - 1).  */
+      misalign_in_bytes
+	= fold_build2 (BIT_AND_EXPR, type, fold_convert (type, start_addr),
+		       target_align_minus_1);
 
-      /* Create:  elem_misalign = byte_misalign / element_size  */
-      elem_misalign =
-	fold_build2 (RSHIFT_EXPR, type, byte_misalign, elem_size_log);
+      /* Create:  misalign_in_elems = misalign_in_bytes / element_size.  */
+      misalign_in_elems
+	= fold_build2 (RSHIFT_EXPR, type, misalign_in_bytes, elem_size_log);
 
-      /* Create:  (niters_type) (nelements - elem_misalign)&(nelements - 1)  */
+      /* Create:  (niters_type) ((align_in_elems - misalign_in_elems)
+				 & (align_in_elems - 1)).  */
       if (negative)
-	iters = fold_build2 (MINUS_EXPR, type, elem_misalign, nelements_tree);
+	iters = fold_build2 (MINUS_EXPR, type, misalign_in_elems,
+			     align_in_elems_tree);
       else
-	iters = fold_build2 (MINUS_EXPR, type, nelements_tree, elem_misalign);
-      iters = fold_build2 (BIT_AND_EXPR, type, iters, nelements_minus_1);
+	iters = fold_build2 (MINUS_EXPR, type, align_in_elems_tree,
+			     misalign_in_elems);
+      iters = fold_build2 (BIT_AND_EXPR, type, iters, align_in_elems_minus_1);
       iters = fold_convert (niters_type, iters);
-      *bound = nelements - 1;
+      *bound = align_in_elems - 1;
     }
 
   if (dump_enabled_p ())
@@ -1230,9 +1229,11 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
       /* Peeling algorithm guarantees that vector loop bound is at least ONE,
 	 we set range information to make niters analyzer's life easier.  */
       if (stmts != NULL)
-	set_range_info (niters_vector, VR_RANGE, build_int_cst (type, 1),
-			fold_build2 (RSHIFT_EXPR, type,
-				     TYPE_MAX_VALUE (type), log_vf));
+	set_range_info (niters_vector, VR_RANGE,
+			wi::to_wide (build_int_cst (type, 1)),
+			wi::to_wide (fold_build2 (RSHIFT_EXPR, type,
+						  TYPE_MAX_VALUE (type),
+						  log_vf)));
     }
   *niters_vector_ptr = niters_vector;
 
@@ -1785,7 +1786,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 least VF, so set range information for newly generated var.  */
       if (new_var_p)
 	set_range_info (niters, VR_RANGE,
-			build_int_cst (type, vf), TYPE_MAX_VALUE (type));
+			wi::to_wide (build_int_cst (type, vf)),
+			wi::to_wide (TYPE_MAX_VALUE (type)));
 
       /* Prolog iterates at most bound_prolog times, latch iterates at
 	 most bound_prolog - 1 times.  */
@@ -1843,7 +1845,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	     a merge point of control flow.  */
 	  guard_to->frequency = guard_bb->frequency;
 	  guard_to->count = guard_bb->count;
-	  single_succ_edge (guard_to)->count = guard_to->count;
 	  /* Scale probability of epilog loop back.
 	     FIXME: We should avoid scaling down and back up.  Profile may
 	     get lost if we scale down to 0.  */

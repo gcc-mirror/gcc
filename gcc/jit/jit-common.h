@@ -117,6 +117,7 @@ namespace recording {
       class compound_type;
         class struct_;
 	class union_;
+      class vector_type;
     class field;
     class fields;
     class function;
@@ -127,6 +128,7 @@ namespace recording {
 	class global;
         class param;
       class base_call;
+      class function_pointer;
     class statement;
     class case_;
 

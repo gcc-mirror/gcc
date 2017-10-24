@@ -74,10 +74,11 @@ package Layout is
    --  types, the RM_Size is simply set to zero. This routine also sets
    --  the Is_Constrained flag in Def_Id.
 
-   procedure Set_Elem_Alignment (E : Entity_Id);
+   procedure Set_Elem_Alignment (E : Entity_Id; Align : Nat := 0);
    --  The front end always sets alignments for elementary types by calling
    --  this procedure. Note that we have to do this for discrete types (since
    --  the Alignment attribute is static), so we might as well do it for all
-   --  elementary types, since the processing is the same.
+   --  elementary types, as the processing is the same. If Align is nonzero,
+   --  it is an external alignment setting that we must respect.
 
 end Layout;

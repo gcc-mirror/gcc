@@ -260,12 +260,6 @@
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)	\
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   (TREE_CODE (TYPE) == ARRAY_TYPE					\
@@ -497,15 +491,6 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
-
-/* Offset from frame pointer to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-/* The frame pointer points at the same place as the stack pointer, except if
-   alloca has been called.  */
-#define STARTING_FRAME_OFFSET \
-  M32R_STACK_ALIGN (crtl->outgoing_args_size)
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */

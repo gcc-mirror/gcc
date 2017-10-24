@@ -1335,7 +1335,7 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
   RETURN_NULL_IF_FAIL (a, ctxt, loc, "NULL a");
   RETURN_NULL_IF_FAIL (b, ctxt, loc, "NULL b");
   RETURN_NULL_IF_FAIL_PRINTF4 (
-    a->get_type () == b->get_type (),
+    a->get_type ()->unqualified () == b->get_type ()->unqualified (),
     ctxt, loc,
     "mismatching types for binary op:"
     " a: %s (type: %s) b: %s (type: %s)",
@@ -3021,4 +3021,82 @@ gcc_jit_type_get_vector (gcc_jit_type *type, size_t num_units)
      num_units);
 
   return (gcc_jit_type *)type->get_vector (num_units);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function::get_address method, in
+   jit-recording.c.  */
+
+gcc_jit_rvalue *
+gcc_jit_function_get_address (gcc_jit_function *fn,
+			      gcc_jit_location *loc)
+{
+  RETURN_NULL_IF_FAIL (fn, NULL, NULL, "NULL function");
+
+  gcc::jit::recording::context *ctxt = fn->m_ctxt;
+
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+
+  return (gcc_jit_rvalue *)fn->get_address (loc);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_rvalue_from_vector method, in
+   jit-recording.c.  */
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *vec_type,
+					size_t num_elements,
+					gcc_jit_rvalue **elements)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL ctxt");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (vec_type, ctxt, loc, "NULL vec_type");
+
+  /* "vec_type" must be a vector type.  */
+  gcc::jit::recording::vector_type *as_vec_type
+    = vec_type->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (as_vec_type, ctxt, loc,
+			       "%s is not a vector type",
+			       vec_type->get_debug_string ());
+
+  /* "num_elements" must match.  */
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    num_elements == as_vec_type->get_num_units (), ctxt, loc,
+    "num_elements != %zi", as_vec_type->get_num_units ());
+
+  /* "elements must be non-NULL.  */
+  RETURN_NULL_IF_FAIL (elements, ctxt, loc, "NULL elements");
+
+  /* Each of "elements" must be non-NULL and of the correct type.  */
+  gcc::jit::recording::type *element_type
+    = as_vec_type->get_element_type ();
+  for (size_t i = 0; i < num_elements; i++)
+    {
+      RETURN_NULL_IF_FAIL_PRINTF1 (
+	elements[i], ctxt, loc, "NULL elements[%zi]", i);
+      RETURN_NULL_IF_FAIL_PRINTF4 (
+	compatible_types (element_type,
+			  elements[i]->get_type ()),
+	ctxt, loc,
+	"mismatching type for element[%zi] (expected type: %s): %s (type: %s)",
+	i,
+	element_type->get_debug_string (),
+	elements[i]->get_debug_string (),
+	elements[i]->get_type ()->get_debug_string ());
+    }
+
+  return (gcc_jit_rvalue *)ctxt->new_rvalue_from_vector
+    (loc,
+     as_vec_type,
+     (gcc::jit::recording::rvalue **)elements);
 }

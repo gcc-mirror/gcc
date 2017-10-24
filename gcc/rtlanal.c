@@ -551,12 +551,12 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	    {
 	      if (FRAME_GROWS_DOWNWARD)
 		{
-		  high_bound = STARTING_FRAME_OFFSET;
+		  high_bound = targetm.starting_frame_offset ();
 		  low_bound  = high_bound - get_frame_size ();
 		}
 	      else
 		{
-		  low_bound  = STARTING_FRAME_OFFSET;
+		  low_bound  = targetm.starting_frame_offset ();
 		  high_bound = low_bound + get_frame_size ();
 		}
 	    }
@@ -5269,11 +5269,11 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	 ? 1 : bitwidth - floor_log2 (nonzero) - 1;
 }
 
-/* Calculate the rtx_cost of a single instruction.  A return value of
+/* Calculate the rtx_cost of a single instruction pattern.  A return value of
    zero indicates an instruction pattern without a known cost.  */
 
 int
-insn_rtx_cost (rtx pat, bool speed)
+pattern_cost (rtx pat, bool speed)
 {
   int i, cost;
   rtx set;
@@ -5321,6 +5321,18 @@ insn_rtx_cost (rtx pat, bool speed)
 
   cost = set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed);
   return cost > 0 ? cost : COSTS_N_INSNS (1);
+}
+
+/* Calculate the cost of a single instruction.  A return value of zero
+   indicates an instruction pattern without a known cost.  */
+
+int
+insn_cost (rtx_insn *insn, bool speed)
+{
+  if (targetm.insn_cost)
+    return targetm.insn_cost (insn, speed);
+
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 /* Returns estimate on cost of computing SEQ.  */
@@ -5798,7 +5810,7 @@ low_bitmask_len (machine_mode mode, unsigned HOST_WIDE_INT m)
 {
   if (mode != VOIDmode)
     {
-      if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
+      if (!HWI_COMPUTABLE_MODE_P (mode))
 	return -1;
       m &= GET_MODE_MASK (mode);
     }

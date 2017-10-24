@@ -226,10 +226,6 @@ enum reg_class
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET 0
-
 /* Define this if the above stack space is to be considered part of the
    space allocated by the caller.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
@@ -316,12 +312,6 @@ enum reg_class
 /* Largest integer machine mode for structures.  If undefined, the default
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\

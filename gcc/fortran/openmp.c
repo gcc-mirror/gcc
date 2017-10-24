@@ -2185,8 +2185,7 @@ gfc_match_oacc_wait (void)
 	  }
 
 	if (!gfc_resolve_expr (el->expr)
-	    || el->expr->ts.type != BT_INTEGER || el->expr->rank != 0
-	    || el->expr->expr_type != EXPR_CONSTANT)
+	    || el->expr->ts.type != BT_INTEGER || el->expr->rank != 0)
 	  {
 	    gfc_error ("WAIT clause at %L requires a scalar INTEGER expression",
 		       &el->expr->where);
@@ -5263,7 +5262,7 @@ resolve_omp_atomic (gfc_code *code)
 }
 
 
-struct fortran_omp_context
+static struct fortran_omp_context
 {
   gfc_code *code;
   hash_set<gfc_symbol *> *sharing_clauses;
@@ -5346,6 +5345,8 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TASKLOOP_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
@@ -5391,8 +5392,11 @@ gfc_omp_restore_state (struct gfc_omp_saved_state *state)
    construct, where they are predetermined private.  */
 
 void
-gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
+gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
 {
+  if (omp_current_ctx == NULL)
+    return;
+
   int i = omp_current_do_collapse;
   gfc_code *c = omp_current_do_code;
 
@@ -5411,9 +5415,6 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
       c = c->block->next;
     }
 
-  if (omp_current_ctx == NULL)
-    return;
-
   /* An openacc context may represent a data clause.  Abort if so.  */
   if (!omp_current_ctx->is_openmp && !oacc_is_loop (omp_current_ctx->code))
     return;
@@ -5422,7 +5423,7 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
       && omp_current_ctx->sharing_clauses->contains (sym))
     return;
 
-  if (! omp_current_ctx->private_iterators->add (sym))
+  if (! omp_current_ctx->private_iterators->add (sym) && add_clause)
     {
       gfc_omp_clauses *omp_clauses = omp_current_ctx->code->ext.omp_clauses;
       gfc_omp_namelist *p;
@@ -5434,6 +5435,22 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
     }
 }
 
+static void
+handle_local_var (gfc_symbol *sym)
+{
+  if (sym->attr.flavor != FL_VARIABLE
+      || sym->as != NULL
+      || (sym->ts.type != BT_INTEGER && sym->ts.type != BT_REAL))
+    return;
+  gfc_resolve_do_iterator (sym->ns->code, sym, false);
+}
+
+void
+gfc_resolve_omp_local_vars (gfc_namespace *ns)
+{
+  if (omp_current_ctx)
+    gfc_traverse_ns (ns, handle_local_var);
+}
 
 static void
 resolve_omp_do (gfc_code *code)

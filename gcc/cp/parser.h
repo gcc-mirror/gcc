@@ -412,6 +412,10 @@ struct GTY(()) cp_parser {
      context e.g., because they could never be deduced.  */
   int prevent_constrained_type_specifiers;
 
+  /* Location of the string-literal token within the current linkage
+     specification, if any, or UNKNOWN_LOCATION otherwise.  */
+  location_t innermost_linkage_specification_location;
+
 };
 
 /* In parser.c  */

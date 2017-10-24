@@ -63,20 +63,21 @@ add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
   return constrain_domain (x, isl_set_copy (pbb->domain));
 }
 
-/* Returns all the memory reads in SCOP.  */
+/* Returns an isl description of all memory operations in SCOP.  The memory
+   reads are returned in READS and writes in MUST_WRITES and MAY_WRITES.  */
 
-static isl_union_map *
-scop_get_reads (scop_p scop)
+static void
+scop_get_reads_and_writes (scop_p scop, isl_union_map *&reads,
+			   isl_union_map *&must_writes,
+			   isl_union_map *&may_writes)
 {
   int i, j;
   poly_bb_p pbb;
   poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->param_context);
-  isl_union_map *res = isl_union_map_empty (space);
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
-      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
+      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr) {
 	if (pdr_read_p (pdr))
 	  {
 	    if (dump_file)
@@ -86,33 +87,14 @@ scop_get_reads (scop_p scop)
 	      }
 	    isl_union_map *um
 	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
-	    res = isl_union_map_union (res, um);
+	    reads = isl_union_map_union (reads, um);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Reads depedence graph: ");
-		print_isl_union_map (dump_file, res);
+		print_isl_union_map (dump_file, reads);
 	      }
 	  }
-    }
-
-  return isl_union_map_coalesce (res);
-}
-
-/* Returns all the memory must writes in SCOP.  */
-
-static isl_union_map *
-scop_get_must_writes (scop_p scop)
-{
-  int i, j;
-  poly_bb_p pbb;
-  poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->param_context);
-  isl_union_map *res = isl_union_map_empty (space);
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
-	if (pdr_write_p (pdr))
+	else if (pdr_write_p (pdr))
 	  {
 	    if (dump_file)
 	      {
@@ -121,33 +103,14 @@ scop_get_must_writes (scop_p scop)
 	      }
 	    isl_union_map *um
 	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
-	    res = isl_union_map_union (res, um);
+	    must_writes = isl_union_map_union (must_writes, um);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Must writes depedence graph: ");
-		print_isl_union_map (dump_file, res);
+		print_isl_union_map (dump_file, must_writes);
 	      }
 	  }
-    }
-
-  return isl_union_map_coalesce (res);
-}
-
-/* Returns all the memory may writes in SCOP.  */
-
-static isl_union_map *
-scop_get_may_writes (scop_p scop)
-{
-  int i, j;
-  poly_bb_p pbb;
-  poly_dr_p pdr;
-  isl_space *space = isl_set_get_space (scop->param_context);
-  isl_union_map *res = isl_union_map_empty (space);
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
-	if (pdr_may_write_p (pdr))
+	else if (pdr_may_write_p (pdr))
 	  {
 	    if (dump_file)
 	      {
@@ -156,16 +119,15 @@ scop_get_may_writes (scop_p scop)
 	      }
 	    isl_union_map *um
 	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
-	    res = isl_union_map_union (res, um);
+	    may_writes = isl_union_map_union (may_writes, um);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "May writes depedence graph: ");
-		print_isl_union_map (dump_file, res);
+		print_isl_union_map (dump_file, may_writes);
 	      }
 	  }
+      }
     }
-
-  return isl_union_map_coalesce (res);
 }
 
 /* Helper function used on each MAP of a isl_union_map.  Computes the
@@ -300,9 +262,11 @@ scop_get_dependences (scop_p scop)
   if (scop->dependence)
     return;
 
-  isl_union_map *reads = scop_get_reads (scop);
-  isl_union_map *must_writes = scop_get_must_writes (scop);
-  isl_union_map *may_writes = scop_get_may_writes (scop);
+  isl_space *space = isl_set_get_space (scop->param_context);
+  isl_union_map *reads = isl_union_map_empty (isl_space_copy (space));
+  isl_union_map *must_writes = isl_union_map_empty (isl_space_copy (space));
+  isl_union_map *may_writes = isl_union_map_empty (space);
+  scop_get_reads_and_writes (scop, reads, must_writes, may_writes);
 
   if (dump_file)
     {

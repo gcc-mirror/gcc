@@ -92,12 +92,15 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be included last.  */
 #include "target-def.h"
 
+#include "x86-tune-costs.h"
+
 static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static rtx legitimize_pe_coff_symbol (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 static bool ix86_save_reg (unsigned int, bool, bool);
 static bool ix86_function_naked (const_tree);
+static bool ix86_notrack_prefixed_insn_p (rtx);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -111,2069 +114,12 @@ static bool ix86_function_naked (const_tree);
    : (mode) == DImode ? 3					\
    : 4)
 
-/* Processor costs (relative to an add) */
-/* We assume COSTS_N_INSNS is defined as (N)*4 and an addition is 2 bytes.  */
-#define COSTS_N_BYTES(N) ((N) * 2)
-
-#define DUMMY_STRINGOP_ALGS {libcall, {{-1, libcall, false}}}
-
-static stringop_algs ix86_size_memcpy[2] = {
-  {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
-  {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}}};
-static stringop_algs ix86_size_memset[2] = {
-  {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
-  {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}}};
-
-const
-struct processor_costs ix86_size_cost = {/* costs for tuning for size */
-  COSTS_N_BYTES (2),			/* cost of an add instruction */
-  COSTS_N_BYTES (3),			/* cost of a lea instruction */
-  COSTS_N_BYTES (2),			/* variable shift costs */
-  COSTS_N_BYTES (3),			/* constant shift costs */
-  {COSTS_N_BYTES (3),			/* cost of starting multiply for QI */
-   COSTS_N_BYTES (3),			/*				 HI */
-   COSTS_N_BYTES (3),			/*				 SI */
-   COSTS_N_BYTES (3),			/*				 DI */
-   COSTS_N_BYTES (5)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_BYTES (3),			/* cost of a divide/mod for QI */
-   COSTS_N_BYTES (3),			/*			    HI */
-   COSTS_N_BYTES (3),			/*			    SI */
-   COSTS_N_BYTES (3),			/*			    DI */
-   COSTS_N_BYTES (5)},			/*			    other */
-  COSTS_N_BYTES (3),			/* cost of movsx */
-  COSTS_N_BYTES (3),			/* cost of movzx */
-  0,					/* "large" insn */
-  2,					/* MOVE_RATIO */
-  2,				     /* cost for loading QImode using movzbl */
-  {2, 2, 2},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 2, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {2, 2, 2},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {2, 2, 2},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  3,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {3, 3},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  3,					/* cost of moving SSE register */
-  {3, 3, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {3, 3, 3},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  0,					/* size of l1 cache  */
-  0,					/* size of l2 cache  */
-  0,					/* size of prefetch block */
-  0,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_BYTES (2),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_BYTES (2),			/* cost of FMUL instruction.  */
-  COSTS_N_BYTES (2),			/* cost of FDIV instruction.  */
-  COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
-  COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
-  COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
-  ix86_size_memcpy,
-  ix86_size_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  1,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  1,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/* Processor costs (relative to an add) */
-static stringop_algs i386_memcpy[2] = {
-  {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs i386_memset[2] = {
-  {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-
-static const
-struct processor_costs i386_cost = {	/* 386 specific costs */
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (3),			/* variable shift costs */
-  COSTS_N_INSNS (2),			/* constant shift costs */
-  {COSTS_N_INSNS (6),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (6),			/*				 HI */
-   COSTS_N_INSNS (6),			/*				 SI */
-   COSTS_N_INSNS (6),			/*				 DI */
-   COSTS_N_INSNS (6)},			/*			      other */
-  COSTS_N_INSNS (1),			/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (23),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (23),			/*			    HI */
-   COSTS_N_INSNS (23),			/*			    SI */
-   COSTS_N_INSNS (23),			/*			    DI */
-   COSTS_N_INSNS (23)},			/*			    other */
-  COSTS_N_INSNS (3),			/* cost of movsx */
-  COSTS_N_INSNS (2),			/* cost of movzx */
-  15,					/* "large" insn */
-  3,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {2, 4, 2},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 4, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {8, 8, 8},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {8, 8, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  0,					/* size of l1 cache  */
-  0,					/* size of l2 cache  */
-  0,					/* size of prefetch block */
-  0,					/* number of parallel prefetches */
-  1,					/* Branch cost */
-  COSTS_N_INSNS (23),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (27),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (88),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (22),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (24),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (122),			/* cost of FSQRT instruction.  */
-  i386_memcpy,
-  i386_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs i486_memcpy[2] = {
-  {rep_prefix_4_byte, {{-1, rep_prefix_4_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs i486_memset[2] = {
-  {rep_prefix_4_byte, {{-1, rep_prefix_4_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-
-static const
-struct processor_costs i486_cost = {	/* 486 specific costs */
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (3),			/* variable shift costs */
-  COSTS_N_INSNS (2),			/* constant shift costs */
-  {COSTS_N_INSNS (12),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (12),			/*				 HI */
-   COSTS_N_INSNS (12),			/*				 SI */
-   COSTS_N_INSNS (12),			/*				 DI */
-   COSTS_N_INSNS (12)},			/*			      other */
-  1,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (40),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (40),			/*			    HI */
-   COSTS_N_INSNS (40),			/*			    SI */
-   COSTS_N_INSNS (40),			/*			    DI */
-   COSTS_N_INSNS (40)},			/*			    other */
-  COSTS_N_INSNS (3),			/* cost of movsx */
-  COSTS_N_INSNS (2),			/* cost of movzx */
-  15,					/* "large" insn */
-  3,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {2, 4, 2},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 4, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {8, 8, 8},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {8, 8, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  4,					/* size of l1 cache.  486 has 8kB cache
-					   shared for code and data, so 4kB is
-					   not really precise.  */
-  4,					/* size of l2 cache  */
-  0,					/* size of prefetch block */
-  0,					/* number of parallel prefetches */
-  1,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (16),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (73),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (83),			/* cost of FSQRT instruction.  */
-  i486_memcpy,
-  i486_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs pentium_memcpy[2] = {
-  {libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs pentium_memset[2] = {
-  {libcall, {{-1, rep_prefix_4_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-
-static const
-struct processor_costs pentium_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (4),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (11),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (11),			/*				 HI */
-   COSTS_N_INSNS (11),			/*				 SI */
-   COSTS_N_INSNS (11),			/*				 DI */
-   COSTS_N_INSNS (11)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (25),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (25),			/*			    HI */
-   COSTS_N_INSNS (25),			/*			    SI */
-   COSTS_N_INSNS (25),			/*			    DI */
-   COSTS_N_INSNS (25)},			/*			    other */
-  COSTS_N_INSNS (3),			/* cost of movsx */
-  COSTS_N_INSNS (2),			/* cost of movzx */
-  8,					/* "large" insn */
-  6,					/* MOVE_RATIO */
-  6,				     /* cost for loading QImode using movzbl */
-  {2, 4, 2},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 4, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {2, 2, 6},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  8,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  8,					/* size of l1 cache.  */
-  8,					/* size of l2 cache  */
-  0,					/* size of prefetch block */
-  0,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (39),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
-  pentium_memcpy,
-  pentium_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static const
-struct processor_costs lakemont_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (11),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (11),			/*				 HI */
-   COSTS_N_INSNS (11),			/*				 SI */
-   COSTS_N_INSNS (11),			/*				 DI */
-   COSTS_N_INSNS (11)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (25),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (25),			/*			    HI */
-   COSTS_N_INSNS (25),			/*			    SI */
-   COSTS_N_INSNS (25),			/*			    DI */
-   COSTS_N_INSNS (25)},			/*			    other */
-  COSTS_N_INSNS (3),			/* cost of movsx */
-  COSTS_N_INSNS (2),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  6,				     /* cost for loading QImode using movzbl */
-  {2, 4, 2},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 4, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {2, 2, 6},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  8,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 8, 16},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 8, 16},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  8,					/* size of l1 cache.  */
-  8,					/* size of l2 cache  */
-  0,					/* size of prefetch block */
-  0,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (39),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
-  pentium_memcpy,
-  pentium_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/* PentiumPro has optimized rep instructions for blocks aligned by 8 bytes
-   (we ensure the alignment).  For small blocks inline loop is still a
-   noticeable win, for bigger blocks either rep movsl or rep movsb is
-   way to go.  Rep movsb has apparently more expensive startup time in CPU,
-   but after 4K the difference is down in the noise.  */
-static stringop_algs pentiumpro_memcpy[2] = {
-  {rep_prefix_4_byte, {{128, loop, false}, {1024, unrolled_loop, false},
-                       {8192, rep_prefix_4_byte, false},
-                       {-1, rep_prefix_1_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs pentiumpro_memset[2] = {
-  {rep_prefix_4_byte, {{1024, unrolled_loop, false},
-                       {8192, rep_prefix_4_byte, false},
-                       {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static const
-struct processor_costs pentiumpro_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (4),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (4)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (17),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (17),			/*			    HI */
-   COSTS_N_INSNS (17),			/*			    SI */
-   COSTS_N_INSNS (17),			/*			    DI */
-   COSTS_N_INSNS (17)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  6,					/* MOVE_RATIO */
-  2,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 2, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {2, 2, 6},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {2, 2},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {2, 2},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  8,					/* size of l1 cache.  */
-  256,					/* size of l2 cache  */
-  32,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (56),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
-  pentiumpro_memcpy,
-  pentiumpro_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs geode_memcpy[2] = {
-  {libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs geode_memset[2] = {
-  {libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static const
-struct processor_costs geode_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (2),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (7),			/*				 SI */
-   COSTS_N_INSNS (7),			/*				 DI */
-   COSTS_N_INSNS (7)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (15),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (23),			/*			    HI */
-   COSTS_N_INSNS (39),			/*			    SI */
-   COSTS_N_INSNS (39),			/*			    DI */
-   COSTS_N_INSNS (39)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  4,					/* MOVE_RATIO */
-  1,				     /* cost for loading QImode using movzbl */
-  {1, 1, 1},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {1, 1, 1},				/* cost of storing integer registers */
-  1,					/* cost of reg,reg fld/fst */
-  {1, 1, 1},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 6, 6},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-
-  2,					/* cost of moving MMX register */
-  {2, 2},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {2, 2},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  64,					/* size of l1 cache.  */
-  128,					/* size of l2 cache.  */
-  32,					/* size of prefetch block */
-  1,					/* number of parallel prefetches */
-  1,					/* Branch cost */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (11),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (47),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
-  geode_memcpy,
-  geode_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs k6_memcpy[2] = {
-  {libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs k6_memset[2] = {
-  {libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static const
-struct processor_costs k6_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (3),			/*				 DI */
-   COSTS_N_INSNS (3)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (18),			/*			    HI */
-   COSTS_N_INSNS (18),			/*			    SI */
-   COSTS_N_INSNS (18),			/*			    DI */
-   COSTS_N_INSNS (18)},			/*			    other */
-  COSTS_N_INSNS (2),			/* cost of movsx */
-  COSTS_N_INSNS (2),			/* cost of movzx */
-  8,					/* "large" insn */
-  4,					/* MOVE_RATIO */
-  3,				     /* cost for loading QImode using movzbl */
-  {4, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 3, 2},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {6, 6, 6},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 4},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {2, 2},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {2, 2},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  6,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  32,					/* size of l2 cache.  Some models
-					   have integrated l2 cache, but
-					   optimizing for k6 is not important
-					   enough to worry about that.  */
-  32,					/* size of prefetch block */
-  1,					/* number of parallel prefetches */
-  1,					/* Branch cost */
-  COSTS_N_INSNS (2),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (2),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (56),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
-  k6_memcpy,
-  k6_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/* For some reason, Athlon deals better with REP prefix (relative to loops)
-   compared to K8. Alignment becomes important after 8 bytes for memcpy and
-   128 bytes for memset.  */
-static stringop_algs athlon_memcpy[2] = {
-  {libcall, {{2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs athlon_memset[2] = {
-  {libcall, {{2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static const
-struct processor_costs athlon_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (5),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (5),			/*				 HI */
-   COSTS_N_INSNS (5),			/*				 SI */
-   COSTS_N_INSNS (5),			/*				 DI */
-   COSTS_N_INSNS (5)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  64,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  5,					/* Branch cost */
-  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (24),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-  athlon_memcpy,
-  athlon_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/* K8 has optimized REP instruction for medium sized blocks, but for very
-   small blocks it is better to use loop. For large blocks, libcall can
-   do nontemporary accesses and beat inline considerably.  */
-static stringop_algs k8_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs k8_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static const
-struct processor_costs k8_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (5)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 3, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  64,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
-  k8_memcpy,
-  k8_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  5,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  3,					/* vec_unalign_load_cost.  */
-  3,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
-};
-
-/* AMDFAM10 has optimized REP instruction for medium sized blocks, but for
-   very small blocks it is better to use loop. For large blocks, libcall can
-   do nontemporary accesses and beat inline considerably.  */
-static stringop_algs amdfam10_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs amdfam10_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-struct processor_costs amdfam10_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (5)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
-		   			   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
- 		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-  					/* On K8:
-  					    MOVD reg64, xmmreg Double FSTORE 4
-					    MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					    MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
-  64,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
-  amdfam10_memcpy,
-  amdfam10_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/*  BDVER1 has optimized REP instruction for medium sized blocks, but for
-    very small blocks it is better to use loop. For large blocks, libcall
-    can do nontemporary accesses and beat inline considerably.  */
-static stringop_algs bdver1_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs bdver1_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-
-const struct processor_costs bdver1_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (4),			/*				 SI */
-   COSTS_N_INSNS (6),			/*				 DI */
-   COSTS_N_INSNS (6)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
-		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
- 		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  					/* On K8:
-					    MOVD reg64, xmmreg Double FSTORE 4
-					    MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					    MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
-  16,					/* size of l1 cache.  */
-  2048,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
-  bdver1_memcpy,
-  bdver1_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
-};
-
-/*  BDVER2 has optimized REP instruction for medium sized blocks, but for
-    very small blocks it is better to use loop. For large blocks, libcall
-    can do nontemporary accesses and beat inline considerably.  */
-
-static stringop_algs bdver2_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs bdver2_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-
-const struct processor_costs bdver2_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (4),			/*				 SI */
-   COSTS_N_INSNS (6),			/*				 DI */
-   COSTS_N_INSNS (6)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
-		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
- 		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  					/* On K8:
-					    MOVD reg64, xmmreg Double FSTORE 4
-					    MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					    MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
-  16,					/* size of l1 cache.  */
-  2048,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
-  bdver2_memcpy,
-  bdver2_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
-};
-
-
-  /*  BDVER3 has optimized REP instruction for medium sized blocks, but for
-      very small blocks it is better to use loop. For large blocks, libcall
-      can do nontemporary accesses and beat inline considerably.  */
-static stringop_algs bdver3_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs bdver3_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-struct processor_costs bdver3_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (4),			/*				 SI */
-   COSTS_N_INSNS (6),			/*				 DI */
-   COSTS_N_INSNS (6)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
-		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
- 		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  16,					/* size of l1 cache.  */
-  2048,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
-  bdver3_memcpy,
-  bdver3_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
-};
-
-/*  BDVER4 has optimized REP instruction for medium sized blocks, but for
-    very small blocks it is better to use loop. For large blocks, libcall
-    can do nontemporary accesses and beat inline considerably.  */
-static stringop_algs bdver4_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs bdver4_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-struct processor_costs bdver4_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (4),			/*				 SI */
-   COSTS_N_INSNS (6),			/*				 DI */
-   COSTS_N_INSNS (6)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {5, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {5, 5, 12},				/* cost of loading fp registers
-		   			   in SFmode, DFmode and XFmode */
-  {4, 4, 8},				/* cost of storing fp registers
- 		   			   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {4, 4},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  16,					/* size of l1 cache.  */
-  2048,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
-  bdver4_memcpy,
-  bdver4_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
-};
-
-
-/*  ZNVER1 has optimized REP instruction for medium sized blocks, but for
-    very small blocks it is better to use loop.  For large blocks, libcall
-    can do nontemporary accesses and beat inline considerably.  */
-static stringop_algs znver1_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-	     {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-	     {-1, libcall, false}}}};
-static stringop_algs znver1_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-	     {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-	     {-1, libcall, false}}}};
-struct processor_costs znver1_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction.  */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
-  COSTS_N_INSNS (1),			/* variable shift costs.  */
-  COSTS_N_INSNS (1),			/* constant shift costs.  */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI.  */
-   COSTS_N_INSNS (3),			/*				 HI.  */
-   COSTS_N_INSNS (3),			/*				 SI.  */
-   COSTS_N_INSNS (4),			/*				 DI.  */
-   COSTS_N_INSNS (4)},			/*			      other.  */
-  0,					/* cost of multiply per each bit
-					    set.  */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI.  */
-   COSTS_N_INSNS (35),			/*			    HI.  */
-   COSTS_N_INSNS (51),			/*			    SI.  */
-   COSTS_N_INSNS (83),			/*			    DI.  */
-   COSTS_N_INSNS (83)},			/*			    other.  */
-  COSTS_N_INSNS (1),			/* cost of movsx.  */
-  COSTS_N_INSNS (1),			/* cost of movzx.  */
-  8,					/* "large" insn.  */
-  9,					/* MOVE_RATIO.  */
-  4,					/* cost for loading QImode using
-					   movzbl.  */
-  {5, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer
-					   registers.  */
-  2,					/* cost of reg,reg fld/fst.  */
-  {5, 5, 12},				/* cost of loading fp registers
-		   			   in SFmode, DFmode and XFmode.  */
-  {4, 4, 8},				/* cost of storing fp registers
- 		   			   in SFmode, DFmode and XFmode.  */
-  2,					/* cost of moving MMX register.  */
-  {4, 4},				/* cost of loading MMX registers
-					   in SImode and DImode.  */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode.  */
-  2,					/* cost of moving SSE register.  */
-  {4, 4, 4},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode.  */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode.  */
-  2,					/* MMX or SSE register to integer.  */
-  32,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
-  64,					/* size of prefetch block.  */
-  /* New AMD processors never drop prefetches; if they cannot be performed
-     immediately, they are queued.  We set number of simultaneous prefetches
-     to a large constant to reflect this (it probably is not a good idea not
-     to limit number of prefetches at all, as their execution also takes some
-     time).  */
-  100,					/* number of parallel prefetches.  */
-  2,					/* Branch cost.  */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
-
-  znver1_memcpy,
-  znver1_memset,
-  6,					/* scalar_stmt_cost.  */
-  4,					/* scalar load_cost.  */
-  4,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  4,					/* vec_align_load_cost.  */
-  4,					/* vec_unalign_load_cost.  */
-  4,					/* vec_store_cost.  */
-  4,					/* cond_taken_branch_cost.  */
-  2,					/* cond_not_taken_branch_cost.  */
-};
-
-  /* BTVER1 has optimized REP instruction for medium sized blocks, but for
-     very small blocks it is better to use loop. For large blocks, libcall can
-     do nontemporary accesses and beat inline considerably.  */
-static stringop_algs btver1_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs btver1_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-const struct processor_costs btver1_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (5)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-					/* On K8:
-					   MOVD reg64, xmmreg Double FSTORE 4
-					   MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					   MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
-  32,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-
-  btver1_memcpy,
-  btver1_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs btver2_memcpy[2] = {
-  {libcall, {{6, loop, false}, {14, unrolled_loop, false},
-             {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs btver2_memset[2] = {
-  {libcall, {{8, loop, false}, {24, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-const struct processor_costs btver2_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (5)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),			/*			    HI */
-   COSTS_N_INSNS (51),			/*			    SI */
-   COSTS_N_INSNS (83),			/*			    DI */
-   COSTS_N_INSNS (83)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  9,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
-					/* On K8:
-					   MOVD reg64, xmmreg Double FSTORE 4
-					   MOVD reg32, xmmreg Double FSTORE 4
-					   On AMDFAM10:
-					   MOVD reg64, xmmreg Double FADD 3
-							       1/1  1/1
-					    MOVD reg32, xmmreg Double FADD 3
-							       1/1  1/1 */
-  32,					/* size of l1 cache.  */
-  2048,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  100,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-  btver2_memcpy,
-  btver2_memset,
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
-  6,					/* vec_stmt_cost.  */
-  0,					/* vec_to_scalar_cost.  */
-  2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs pentium4_memcpy[2] = {
-  {libcall, {{12, loop_1_byte, false}, {-1, rep_prefix_4_byte, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs pentium4_memset[2] = {
-  {libcall, {{6, loop_1_byte, false}, {48, loop, false},
-             {20480, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-
-static const
-struct processor_costs pentium4_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (3),			/* cost of a lea instruction */
-  COSTS_N_INSNS (4),			/* variable shift costs */
-  COSTS_N_INSNS (4),			/* constant shift costs */
-  {COSTS_N_INSNS (15),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (15),			/*				 HI */
-   COSTS_N_INSNS (15),			/*				 SI */
-   COSTS_N_INSNS (15),			/*				 DI */
-   COSTS_N_INSNS (15)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (56),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (56),			/*			    HI */
-   COSTS_N_INSNS (56),			/*			    SI */
-   COSTS_N_INSNS (56),			/*			    DI */
-   COSTS_N_INSNS (56)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  16,					/* "large" insn */
-  6,					/* MOVE_RATIO */
-  2,				     /* cost for loading QImode using movzbl */
-  {4, 5, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {2, 3, 2},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {2, 2, 6},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 6},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {2, 2},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {2, 2},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  12,					/* cost of moving SSE register */
-  {12, 12, 12},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  10,					/* MMX or SSE register to integer */
-  8,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  2,					/* Branch cost */
-  COSTS_N_INSNS (5),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (7),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (43),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
-  pentium4_memcpy,
-  pentium4_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs nocona_memcpy[2] = {
-  {libcall, {{12, loop_1_byte, false}, {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{32, loop, false}, {20000, rep_prefix_8_byte, false},
-             {100000, unrolled_loop, false}, {-1, libcall, false}}}};
-
-static stringop_algs nocona_memset[2] = {
-  {libcall, {{6, loop_1_byte, false}, {48, loop, false},
-             {20480, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{24, loop, false}, {64, unrolled_loop, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-
-static const
-struct processor_costs nocona_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1),			/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (10),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (10),			/*				 HI */
-   COSTS_N_INSNS (10),			/*				 SI */
-   COSTS_N_INSNS (10),			/*				 DI */
-   COSTS_N_INSNS (10)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (66),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (66),			/*			    HI */
-   COSTS_N_INSNS (66),			/*			    SI */
-   COSTS_N_INSNS (66),			/*			    DI */
-   COSTS_N_INSNS (66)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  16,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  3,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 4},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  6,					/* cost of moving MMX register */
-  {12, 12},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {12, 12},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  6,					/* cost of moving SSE register */
-  {12, 12, 12},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {12, 12, 12},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  8,					/* MMX or SSE register to integer */
-  8,					/* size of l1 cache.  */
-  1024,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  8,					/* number of parallel prefetches */
-  1,					/* Branch cost */
-  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
-  nocona_memcpy,
-  nocona_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs atom_memcpy[2] = {
-  {libcall, {{11, loop, false}, {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{32, loop, false}, {64, rep_prefix_4_byte, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static stringop_algs atom_memset[2] = {
-  {libcall, {{8, loop, false}, {15, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{24, loop, false}, {32, unrolled_loop, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static const
-struct processor_costs atom_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  atom_memcpy,
-  atom_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs slm_memcpy[2] = {
-  {libcall, {{11, loop, false}, {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{32, loop, false}, {64, rep_prefix_4_byte, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static stringop_algs slm_memset[2] = {
-  {libcall, {{8, loop, false}, {15, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{24, loop, false}, {32, unrolled_loop, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static const
-struct processor_costs slm_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  slm_memcpy,
-  slm_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  4,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static stringop_algs intel_memcpy[2] = {
-  {libcall, {{11, loop, false}, {-1, rep_prefix_4_byte, false}}},
-  {libcall, {{32, loop, false}, {64, rep_prefix_4_byte, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static stringop_algs intel_memset[2] = {
-  {libcall, {{8, loop, false}, {15, unrolled_loop, false},
-             {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
-  {libcall, {{24, loop, false}, {32, unrolled_loop, false},
-             {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}};
-static const
-struct processor_costs intel_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  intel_memcpy,
-  intel_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  4,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/* Generic should produce code tuned for Core-i7 (and newer chips)
-   and btver1 (and newer chips).  */
-
-static stringop_algs generic_memcpy[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static stringop_algs generic_memset[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
-static const
-struct processor_costs generic_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  /* On all chips taken into consideration lea is 2 cycles and more.  With
-     this cost however our current implementation of synth_mult results in
-     use of unnecessary temporary registers causing regression on several
-     SPECfp benchmarks.  */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  /* Benchmarks shows large regressions on K8 sixtrack benchmark when this
-     value is increased to perhaps more appropriate value of 5.  */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  generic_memcpy,
-  generic_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-/* core_cost should produce code tuned for Core familly of CPUs.  */
-static stringop_algs core_memcpy[2] = {
-  {libcall, {{1024, rep_prefix_4_byte, true}, {-1, libcall, false}}},
-  {libcall, {{24, loop, true}, {128, rep_prefix_8_byte, true},
-             {-1, libcall, false}}}};
-static stringop_algs core_memset[2] = {
-  {libcall, {{6, loop_1_byte, true},
-             {24, loop, true},
-             {8192, rep_prefix_4_byte, true},
-             {-1, libcall, false}}},
-  {libcall, {{24, loop, true}, {512, rep_prefix_8_byte, true},
-             {-1, libcall, false}}}};
-
-static const
-struct processor_costs core_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  /* On all chips taken into consideration lea is 2 cycles and more.  With
-     this cost however our current implementation of synth_mult results in
-     use of unnecessary temporary registers causing regression on several
-     SPECfp benchmarks.  */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  64,					/* size of l1 cache.  */
-  512,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  /* FIXME perhaps more appropriate value is 5.  */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  core_memcpy,
-  core_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
 
 /* Set by -mtune.  */
-const struct processor_costs *ix86_tune_cost = &pentium_cost;
+const struct processor_costs *ix86_tune_cost = NULL;
 
 /* Set by -mtune or -Os.  */
-const struct processor_costs *ix86_cost = &pentium_cost;
+const struct processor_costs *ix86_cost = NULL;
 
 /* Processor feature/optimization bitmasks.  */
 #define m_386 (1U<<PROCESSOR_I386)
@@ -2192,6 +138,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BONNELL (1U<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (1U<<PROCESSOR_KNL)
+#define m_KNM (1U<<PROCESSOR_KNM)
 #define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_INTEL (1U<<PROCESSOR_INTEL)
 
@@ -2903,6 +850,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"bonnell", &atom_cost, 16, 15, 16, 7, 16},
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
+  {"knm", &slm_cost, 16, 15, 16, 7, 16},
   {"skylake-avx512", &core_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
@@ -3653,7 +1601,7 @@ dimode_scalar_chain::compute_convert_gain ()
       rtx dst = SET_DEST (def_set);
 
       if (REG_P (src) && REG_P (dst))
-	gain += COSTS_N_INSNS (2) - ix86_cost->sse_move;
+	gain += COSTS_N_INSNS (2) - ix86_cost->xmm_move;
       else if (REG_P (src) && MEM_P (dst))
 	gain += 2 * ix86_cost->int_store[2] - ix86_cost->sse_store[1];
       else if (MEM_P (src) && REG_P (dst))
@@ -4621,6 +2569,151 @@ make_pass_stv (gcc::context *ctxt)
   return new pass_stv (ctxt);
 }
 
+/* Inserting ENDBRANCH instructions.  */
+
+static unsigned int
+rest_of_insert_endbranch (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  rtx cet_eb;
+  rtx_insn *insn;
+  basic_block bb;
+
+  /* Currently emit EB if it's a tracking function, i.e. 'nocf_check' is
+     absent among function attributes.  Later an optimization will be
+     introduced to make analysis if an address of a static function is
+     taken.  A static function whose address is not taken will get a
+     nocf_check attribute.  This will allow to reduce the number of EB.  */
+
+  if (!lookup_attribute ("nocf_check",
+			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
+      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+    {
+      cet_eb = gen_nop_endbr ();
+
+      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+      insn = BB_HEAD (bb);
+      emit_insn_before (cet_eb, insn);
+    }
+
+  bb = 0;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  if (INSN_P (insn) && GET_CODE (insn) == CALL_INSN)
+	    {
+	      rtx_insn *next_insn = insn;
+
+	      while ((next_insn != BB_END (bb))
+		      && (DEBUG_INSN_P (NEXT_INSN (next_insn))
+			  || NOTE_P (NEXT_INSN (next_insn))
+			  || BARRIER_P (NEXT_INSN (next_insn))))
+		next_insn = NEXT_INSN (next_insn);
+
+	      /* Generate ENDBRANCH after CALL, which can return more than
+		 twice, setjmp-like functions.  */
+	      if (find_reg_note (insn, REG_SETJMP, NULL) != NULL)
+		{
+		  cet_eb = gen_nop_endbr ();
+		  emit_insn_after (cet_eb, next_insn);
+		}
+	      continue;
+	    }
+
+	  if (INSN_P (insn) && JUMP_P (insn) && flag_cet_switch)
+	    {
+	      rtx target = JUMP_LABEL (insn);
+	      if (target == NULL_RTX || ANY_RETURN_P (target))
+		continue;
+
+	      /* Check the jump is a switch table.  */
+	      rtx_insn *label = as_a<rtx_insn *> (target);
+	      rtx_insn *table = next_insn (label);
+	      if (table == NULL_RTX || !JUMP_TABLE_DATA_P (table))
+		continue;
+
+	      /* For the indirect jump find out all places it jumps and insert
+		 ENDBRANCH there.  It should be done under a special flag to
+		 control ENDBRANCH generation for switch stmts.  */
+	      edge_iterator ei;
+	      edge e;
+	      basic_block dest_blk;
+
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		{
+		  rtx_insn *insn;
+
+		  dest_blk = e->dest;
+		  insn = BB_HEAD (dest_blk);
+		  gcc_assert (LABEL_P (insn));
+		  cet_eb = gen_nop_endbr ();
+		  emit_insn_after (cet_eb, insn);
+		}
+	      continue;
+	    }
+
+	  if ((LABEL_P (insn) && LABEL_PRESERVE_P (insn))
+	      || (NOTE_P (insn)
+		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
+/* TODO.  Check /s bit also.  */
+	    {
+	      cet_eb = gen_nop_endbr ();
+	      emit_insn_after (cet_eb, insn);
+	      continue;
+	    }
+	}
+    }
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_insert_endbranch =
+{
+  RTL_PASS, /* type.  */
+  "cet", /* name.  */
+  OPTGROUP_NONE, /* optinfo_flags.  */
+  TV_MACH_DEP, /* tv_id.  */
+  0, /* properties_required.  */
+  0, /* properties_provided.  */
+  0, /* properties_destroyed.  */
+  0, /* todo_flags_start.  */
+  0, /* todo_flags_finish.  */
+};
+
+class pass_insert_endbranch : public rtl_opt_pass
+{
+public:
+  pass_insert_endbranch (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_insert_endbranch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return ((flag_cf_protection & CF_BRANCH) && TARGET_IBT);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_insert_endbranch ();
+    }
+
+}; // class pass_insert_endbranch
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_insert_endbranch (gcc::context *ctxt)
+{
+  return new pass_insert_endbranch (ctxt);
+}
+
 /* Return true if a red-zone is in use.  */
 
 bool
@@ -4648,11 +2741,14 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
      ISAs come first.  Target string will be displayed in the same order.  */
   static struct ix86_target_opts isa2_opts[] =
   {
+    { "-mgfni",		OPTION_MASK_ISA_GFNI },
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
-    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ }
+    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
+    { "-mibt",	OPTION_MASK_ISA_IBT },
+    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -4756,6 +2852,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
   static struct ix86_target_opts flag2_opts[] =
   {
     { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY },
+    { "-mprefer-avx256",		OPTION_MASK_PREFER_AVX256 },
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (isa2_opts)
@@ -5352,6 +3449,8 @@ ix86_option_override_internal (bool main_args_p,
   (PTA_CORE2 | PTA_MOVBE)
 #define PTA_SILVERMONT \
   (PTA_WESTMERE | PTA_MOVBE)
+#define PTA_KNM \
+  (PTA_KNL | PTA_AVX5124VNNIW | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -5422,6 +3521,7 @@ ix86_option_override_internal (bool main_args_p,
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"slm", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL},
+      {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM},
       {"intel", PROCESSOR_INTEL, CPU_SLM, PTA_NEHALEM},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
@@ -6741,6 +4841,37 @@ ix86_option_override_internal (bool main_args_p,
     target_option_default_node = target_option_current_node
       = build_target_option_node (opts);
 
+  /* Do not support control flow instrumentation if CET is not enabled.  */
+  if (opts->x_flag_cf_protection != CF_NONE)
+    {
+      if (!(TARGET_IBT_P (opts->x_ix86_isa_flags2)
+	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags2)))
+	{
+	  if (flag_cf_protection == CF_FULL)
+	    {
+	      error ("%<-fcf-protection=full%> requires CET support "
+		     "on this target. Use -mcet or one of -mibt, "
+		     "-mshstk options to enable CET");
+	    }
+	  else if (flag_cf_protection == CF_BRANCH)
+	    {
+	      error ("%<-fcf-protection=branch%> requires CET support "
+		     "on this target. Use -mcet or one of -mibt, "
+		     "-mshstk options to enable CET");
+	    }
+	  else if (flag_cf_protection == CF_RETURN)
+	    {
+	      error ("%<-fcf-protection=return%> requires CET support "
+		     "on this target. Use -mcet or one of -mibt, "
+		     "-mshstk options to enable CET");
+	    }
+	  flag_cf_protection = CF_NONE;
+	  return false;
+	}
+      opts->x_flag_cf_protection =
+	(cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    }
+
   return true;
 }
 
@@ -6841,6 +4972,30 @@ ix86_conditional_register_usage (void)
       fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+
+static void
+ix86_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			      bool op0_preserve_value)
+{
+  /* The order of operands in x87 ficom compare is forced by combine in
+     simplify_comparison () function. Float operator is treated as RTX_OBJ
+     with a precedence over other operators and is always put in the first
+     place. Swap condition and operands to match ficom instruction.  */
+  if (!op0_preserve_value
+      && GET_CODE (*op0) == FLOAT && MEM_P (XEXP (*op0, 0)) && REG_P (*op1))
+    {
+      enum rtx_code scode = swap_condition ((enum rtx_code) *code);
+
+      /* We are called only for compares that are split to SAHF instruction.
+	 Ensure that we have setcc/jcc insn for the swapped condition.  */
+      if (ix86_fp_compare_code_to_integer (scode) != UNKNOWN)
+	{
+	  std::swap (*op0, *op1);
+	  *code = (int) scode;
+	}
+    }
+}
 
 /* Save the current options */
 
@@ -7146,6 +5301,9 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("mpx",	OPT_mmpx),
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
     IX86_ATTR_ISA ("rdpid",	OPT_mrdpid),
+    IX86_ATTR_ISA ("gfni",	OPT_mgfni),
+    IX86_ATTR_ISA ("ibt",	OPT_mibt),
+    IX86_ATTR_ISA ("shstk",	OPT_mshstk),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -13547,7 +11705,7 @@ ix86_add_queued_cfa_restore_notes (rtx insn)
    zero if %r11 register is live and cannot be freely used and positive
    otherwise.  */
 
-static void
+static rtx
 pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 			   int style, bool set_cfa)
 {
@@ -13638,6 +11796,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       m->fs.sp_valid = valid;
       m->fs.sp_realigned = realigned;
     }
+  return insn;
 }
 
 /* Find an available register to be used as dynamic realign argument
@@ -13923,6 +12082,155 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
+
+/* Emit code to adjust the stack pointer by SIZE bytes while probing it.
+
+   This differs from the next routine in that it tries hard to prevent
+   attacks that jump the stack guard.  Thus it is never allowed to allocate
+   more than PROBE_INTERVAL bytes of stack space without a suitable
+   probe.  */
+
+static void
+ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
+{
+  struct machine_function *m = cfun->machine;
+
+  /* If this function does not statically allocate stack space, then
+     no probes are needed.  */
+  if (!size)
+    {
+      /* However, the allocation of space via pushes for register
+	 saves could be viewed as allocating space, but without the
+	 need to probe.  */
+      if (m->frame.nregs || m->frame.nsseregs || frame_pointer_needed)
+        dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      else
+	dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
+      return;
+    }
+
+  /* If we are a noreturn function, then we have to consider the
+     possibility that we're called via a jump rather than a call.
+
+     Thus we don't have the implicit probe generated by saving the
+     return address into the stack at the call.  Thus, the stack
+     pointer could be anywhere in the guard page.  The safe thing
+     to do is emit a probe now.
+
+     ?!? This should be revamped to work like aarch64 and s390 where
+     we track the offset from the most recent probe.  Normally that
+     offset would be zero.  For a noreturn function we would reset
+     it to PROBE_INTERVAL - (STACK_BOUNDARY / BITS_PER_UNIT).   Then
+     we just probe when we cross PROBE_INTERVAL.  */
+  if (TREE_THIS_VOLATILE (cfun->decl))
+    {
+      emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+				       -GET_MODE_SIZE (word_mode)));
+      emit_insn (gen_blockage ());
+    }
+
+  /* If we allocate less than the size of the guard statically,
+     then no probing is necessary, but we do need to allocate
+     the stack.  */
+  if (size < (1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)))
+    {
+      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+			         GEN_INT (-size), -1,
+			         m->fs.cfa_reg == stack_pointer_rtx);
+      dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      return;
+    }
+
+  /* We're allocating a large enough stack frame that we need to
+     emit probes.  Either emit them inline or in a loop depending
+     on the size.  */
+  HOST_WIDE_INT probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  if (size <= 4 * probe_interval)
+    {
+      HOST_WIDE_INT i;
+      for (i = probe_interval; i <= size; i += probe_interval)
+	{
+	  /* Allocate PROBE_INTERVAL bytes.  */
+	  rtx insn
+	    = pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+					 GEN_INT (-PROBE_INTERVAL), -1,
+					 m->fs.cfa_reg == stack_pointer_rtx);
+	  add_reg_note (insn, REG_STACK_CHECK, const0_rtx);
+
+	  /* And probe at *sp.  */
+	  emit_stack_probe (stack_pointer_rtx);
+	  emit_insn (gen_blockage ());
+	}
+
+      /* We need to allocate space for the residual, but we do not need
+	 to probe the residual.  */
+      HOST_WIDE_INT residual = (i - probe_interval - size);
+      if (residual)
+	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				   GEN_INT (residual), -1,
+				   m->fs.cfa_reg == stack_pointer_rtx);
+      dump_stack_clash_frame_info (PROBE_INLINE, residual != 0);
+    }
+  else
+    {
+      struct scratch_reg sr;
+      get_scratch_register_on_entry (&sr);
+
+      /* Step 1: round SIZE down to a multiple of the interval.  */
+      HOST_WIDE_INT rounded_size = size & -probe_interval;
+
+      /* Step 2: compute final value of the loop counter.  Use lea if
+	 possible.  */
+      rtx addr = plus_constant (Pmode, stack_pointer_rtx, -rounded_size);
+      rtx insn;
+      if (address_no_seg_operand (addr, Pmode))
+	insn = emit_insn (gen_rtx_SET (sr.reg, addr));
+      else
+	{
+	  emit_move_insn (sr.reg, GEN_INT (-rounded_size));
+	  insn = emit_insn (gen_rtx_SET (sr.reg,
+					 gen_rtx_PLUS (Pmode, sr.reg,
+						       stack_pointer_rtx)));
+	}
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, sr.reg,
+				       m->fs.cfa_offset + rounded_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      /* Step 3: the loop.  */
+      rtx size_rtx = GEN_INT (rounded_size);
+      insn = emit_insn (ix86_gen_adjust_stack_and_probe (sr.reg, sr.reg,
+							 size_rtx));
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	{
+	  m->fs.cfa_offset += rounded_size;
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx,
+				       m->fs.cfa_offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      m->fs.sp_offset += rounded_size;
+      emit_insn (gen_blockage ());
+
+      /* Step 4: adjust SP if we cannot assert at compile-time that SIZE
+	 is equal to ROUNDED_SIZE.  */
+
+      if (size != rounded_size)
+	pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				   GEN_INT (rounded_size - size), -1,
+				   m->fs.cfa_reg == stack_pointer_rtx);
+      dump_stack_clash_frame_info (PROBE_LOOP, size != rounded_size);
+
+      release_scratch_register_on_entry (&sr);
+    }
+
+  /* Make sure nothing is scheduled before we are done.  */
+  emit_insn (gen_blockage ());
+}
 
 /* Emit code to adjust the stack pointer by SIZE bytes while probing it.  */
 
@@ -14385,10 +12693,13 @@ ix86_finalize_stack_frame_flags (void)
 	      for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
 		   ref; ref = next)
 		{
-		  rtx_insn *insn = DF_REF_INSN (ref);
+		  next = DF_REF_NEXT_REG (ref);
+		  if (!DF_REF_INSN_INFO (ref))
+		    continue;
+
 		  /* Make sure the next ref is for a different instruction,
 		     so that we're not affected by the rescan.  */
-		  next = DF_REF_NEXT_REG (ref);
+		  rtx_insn *insn = DF_REF_INSN (ref);
 		  while (next && DF_REF_INSN (next) == insn)
 		    next = DF_REF_NEXT_REG (next);
 
@@ -14852,12 +13163,19 @@ ix86_expand_prologue (void)
 
   /* The stack has already been decremented by the instruction calling us
      so probe if the size is non-negative to preserve the protection area.  */
-  if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (allocate >= 0
+      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || flag_stack_clash_protection))
     {
       /* We expect the GP registers to be saved when probes are used.  */
       gcc_assert (int_registers_saved);
 
-      if (STACK_CHECK_MOVING_SP)
+      if (flag_stack_clash_protection)
+	{
+	  ix86_adjust_stack_and_probe_stack_clash (allocate);
+	  allocate = 0;
+	}
+      else if (STACK_CHECK_MOVING_SP)
 	{
 	  if (!(crtl->is_leaf && !cfun->calls_alloca
 		&& allocate <= PROBE_INTERVAL))
@@ -14871,7 +13189,7 @@ ix86_expand_prologue (void)
 	  HOST_WIDE_INT size = allocate;
 
 	  if (TARGET_64BIT && size >= HOST_WIDE_INT_C (0x80000000))
-	    size = 0x80000000 - STACK_CHECK_PROTECT - 1;
+	    size = 0x80000000 - get_stack_check_protect () - 1;
 
 	  if (TARGET_STACK_PROBE)
 	    {
@@ -14881,18 +13199,20 @@ ix86_expand_prologue (void)
 		    ix86_emit_probe_stack_range (0, size);
 		}
 	      else
-		ix86_emit_probe_stack_range (0, size + STACK_CHECK_PROTECT);
+		ix86_emit_probe_stack_range (0,
+					     size + get_stack_check_protect ());
 	    }
 	  else
 	    {
 	      if (crtl->is_leaf && !cfun->calls_alloca)
 		{
-		  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-		    ix86_emit_probe_stack_range (STACK_CHECK_PROTECT,
-						 size - STACK_CHECK_PROTECT);
+		  if (size > PROBE_INTERVAL
+		      && size > get_stack_check_protect ())
+		    ix86_emit_probe_stack_range (get_stack_check_protect (),
+						 size - get_stack_check_protect ());
 		}
 	      else
-		ix86_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+		ix86_emit_probe_stack_range (get_stack_check_protect (), size);
 	    }
 	}
     }
@@ -18521,13 +16841,17 @@ ix86_delegitimize_address_1 (rtx x, bool base_term_p)
 	 movl foo@GOTOFF(%ecx), %edx
 	 in which case we return (%ecx - %ebx) + foo
 	 or (%ecx - _GLOBAL_OFFSET_TABLE_) + foo if pseudo_pic_reg
-	 and reload has completed.  */
+	 and reload has completed.  Don't do the latter for debug,
+	 as _GLOBAL_OFFSET_TABLE_ can't be expressed in the assembly.  */
       if (pic_offset_table_rtx
 	  && (!reload_completed || !ix86_use_pseudo_pic_reg ()))
         result = gen_rtx_PLUS (Pmode, gen_rtx_MINUS (Pmode, copy_rtx (addend),
 						     pic_offset_table_rtx),
 			       result);
-      else if (pic_offset_table_rtx && !TARGET_MACHO && !TARGET_VXWORKS_RTP)
+      else if (base_term_p
+	       && pic_offset_table_rtx
+	       && !TARGET_MACHO
+	       && !TARGET_VXWORKS_RTP)
 	{
 	  rtx tmp = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
 	  tmp = gen_rtx_MINUS (Pmode, copy_rtx (addend), tmp);
@@ -18580,6 +16904,25 @@ ix86_find_base_term (rtx x)
 
   return ix86_delegitimize_address_1 (x, true);
 }
+
+/* Return true if X shouldn't be emitted into the debug info.
+   Disallow UNSPECs other than @gotoff - we can't emit _GLOBAL_OFFSET_TABLE_
+   symbol easily into the .debug_info section, so we need not to
+   delegitimize, but instead assemble as @gotoff.
+   Disallow _GLOBAL_OFFSET_TABLE_ SYMBOL_REF - the assembler magically
+   assembles that as _GLOBAL_OFFSET_TABLE_-. expression.  */
+
+static bool
+ix86_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) != UNSPEC_GOTOFF)
+    return true;
+
+  if (SYMBOL_REF_P (x) && strcmp (XSTR (x, 0), GOT_SYMBOL_NAME) == 0)
+    return true;
+
+  return false;
+}
 
 static void
 put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
@@ -18598,6 +16941,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
   switch (code)
     {
     case EQ:
+      gcc_assert (mode != CCGZmode);
       switch (mode)
 	{
 	case E_CCAmode:
@@ -18621,6 +16965,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	}
       break;
     case NE:
+      gcc_assert (mode != CCGZmode);
       switch (mode)
 	{
 	case E_CCAmode:
@@ -18665,6 +17010,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 
 	case E_CCmode:
 	case E_CCGCmode:
+	case E_CCGZmode:
 	  suffix = "l";
 	  break;
 
@@ -18673,7 +17019,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	}
       break;
     case LTU:
-      if (mode == CCmode)
+      if (mode == CCmode || mode == CCGZmode)
 	suffix = "b";
       else if (mode == CCCmode)
 	suffix = fp ? "b" : "c";
@@ -18690,6 +17036,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 
 	case E_CCmode:
 	case E_CCGCmode:
+	case E_CCGZmode:
 	  suffix = "ge";
 	  break;
 
@@ -18698,7 +17045,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	}
       break;
     case GEU:
-      if (mode == CCmode)
+      if (mode == CCmode || mode == CCGZmode)
 	suffix = "nb";
       else if (mode == CCCmode)
 	suffix = fp ? "nb" : "nc";
@@ -19477,6 +17824,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case '!':
 	  if (ix86_bnd_prefixed_insn_p (current_output_insn))
 	    fputs ("bnd ", file);
+	  if (ix86_notrack_prefixed_insn_p (current_output_insn))
+	    fputs ("notrack ", file);
 	  return;
 
 	default:
@@ -19788,6 +18137,13 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	  code = 'k';
 	}
 
+      /* Since the upper 32 bits of RSP are always zero for x32,
+	 we can encode %esp as %rsp to avoid 0x67 prefix if
+	 there is no index register.  */
+      if (TARGET_X32 && Pmode == SImode
+	  && !index && base && REG_P (base) && REGNO (base) == SP_REG)
+	code = 'q';
+
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
 	  if (disp)
@@ -19885,6 +18241,10 @@ i386_asm_output_addr_const_extra (FILE *file, rtx x)
   op = XVECEXP (x, 0, 0);
   switch (XINT (x, 1))
     {
+    case UNSPEC_GOTOFF:
+      output_addr_const (file, op);
+      fputs ("@gotoff", file);
+      break;
     case UNSPEC_GOTTPOFF:
       output_addr_const (file, op);
       /* FIXME: This might be @TPOFF in Sun ld.  */
@@ -20004,8 +18364,49 @@ output_387_binary_op (rtx_insn *insn, rtx *operands)
 {
   static char buf[40];
   const char *p;
-  const char *ssep;
-  int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]);
+  bool is_sse
+    = (SSE_REG_P (operands[0])
+       || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]));
+
+  if (is_sse)
+    p = "%v";
+  else if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
+	   || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
+    p = "fi";
+  else
+    p = "f";
+
+  strcpy (buf, p);
+
+  switch (GET_CODE (operands[3]))
+    {
+    case PLUS:
+      p = "add"; break;
+    case MINUS:
+      p = "sub"; break;
+    case MULT:
+      p = "mul"; break;
+    case DIV:
+      p = "div"; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  strcat (buf, p);
+
+  if (is_sse)
+   {
+     p = (GET_MODE (operands[0]) == SFmode) ? "ss" : "sd";
+     strcat (buf, p);
+
+     if (TARGET_AVX)
+       p = "\t{%2, %1, %0|%0, %1, %2}";
+     else
+       p = "\t{%2, %0|%0, %2}";
+
+     strcat (buf, p);
+     return buf;
+   }
 
   /* Even if we do not want to check the inputs, this documents input
      constraints.  Which helps in understanding the following code.  */
@@ -20021,72 +18422,8 @@ output_387_binary_op (rtx_insn *insn, rtx *operands)
 	  && (STACK_TOP_P (operands[1]) || STACK_TOP_P (operands[2])))
 	; /* ok */
       else
-	gcc_assert (is_sse);
+	gcc_unreachable ();
     }
-
-  switch (GET_CODE (operands[3]))
-    {
-    case PLUS:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fiadd";
-      else
-	p = "fadd";
-      ssep = "vadd";
-      break;
-
-    case MINUS:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fisub";
-      else
-	p = "fsub";
-      ssep = "vsub";
-      break;
-
-    case MULT:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fimul";
-      else
-	p = "fmul";
-      ssep = "vmul";
-      break;
-
-    case DIV:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	p = "fidiv";
-      else
-	p = "fdiv";
-      ssep = "vdiv";
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (is_sse)
-   {
-     if (TARGET_AVX)
-       {
-	 strcpy (buf, ssep);
-	 if (GET_MODE (operands[0]) == SFmode)
-	   strcat (buf, "ss\t{%2, %1, %0|%0, %1, %2}");
-	 else
-	   strcat (buf, "sd\t{%2, %1, %0|%0, %1, %2}");
-       }
-     else
-       {
-	 strcpy (buf, ssep + 1);
-	 if (GET_MODE (operands[0]) == SFmode)
-	   strcat (buf, "ss\t{%2, %0|%0, %2}");
-	 else
-	   strcat (buf, "sd\t{%2, %0|%0, %2}");
-       }
-      return buf;
-   }
-  strcpy (buf, p);
 
   switch (GET_CODE (operands[3]))
     {
@@ -20675,9 +19012,12 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
 const char *
 output_fix_trunc (rtx_insn *insn, rtx *operands, bool fisttp)
 {
-  int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
-  int dimode_p = GET_MODE (operands[0]) == DImode;
+  bool stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG);
+  bool dimode_p = GET_MODE (operands[0]) == DImode;
   int round_mode = get_attr_i387_cw (insn);
+
+  static char buf[40];
+  const char *p;
 
   /* Jump through a hoop or two for DImode, since the hardware has no
      non-popping instruction.  We used to do this a different way, but
@@ -20690,18 +19030,20 @@ output_fix_trunc (rtx_insn *insn, rtx *operands, bool fisttp)
   gcc_assert (GET_MODE (operands[1]) != TFmode);
 
   if (fisttp)
-      output_asm_insn ("fisttp%Z0\t%0", operands);
-  else
-    {
-      if (round_mode != I387_CW_ANY)
-	output_asm_insn ("fldcw\t%3", operands);
-      if (stack_top_dies || dimode_p)
-	output_asm_insn ("fistp%Z0\t%0", operands);
-      else
-	output_asm_insn ("fist%Z0\t%0", operands);
-      if (round_mode != I387_CW_ANY)
-	output_asm_insn ("fldcw\t%2", operands);
-    }
+    return "fisttp%Z0\t%0";
+
+  strcpy (buf, "fist");
+
+  if (round_mode != I387_CW_ANY)
+    output_asm_insn ("fldcw\t%3", operands);
+
+  p = "p%Z0\t%0";
+  strcat (buf, p + !(stack_top_dies || dimode_p));
+
+  output_asm_insn (buf, operands);
+
+  if (round_mode != I387_CW_ANY)
+    output_asm_insn ("fldcw\t%2", operands);
 
   return "";
 }
@@ -20738,120 +19080,65 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
    should be used.  UNORDERED_P is true when fucom should be used.  */
 
 const char *
-output_fp_compare (rtx_insn *insn, rtx *operands, bool eflags_p, bool unordered_p)
+output_fp_compare (rtx_insn *insn, rtx *operands,
+		   bool eflags_p, bool unordered_p)
 {
-  int stack_top_dies;
-  rtx cmp_op0, cmp_op1;
-  int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]);
+  rtx *xops = eflags_p ? &operands[0] : &operands[1];
+  bool stack_top_dies;
+
+  static char buf[40];
+  const char *p;
+
+  gcc_assert (STACK_TOP_P (xops[0]));
+
+  stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG);
 
   if (eflags_p)
     {
-      cmp_op0 = operands[0];
-      cmp_op1 = operands[1];
-    }
-  else
-    {
-      cmp_op0 = operands[1];
-      cmp_op1 = operands[2];
-    }
+      p = unordered_p ? "fucomi" : "fcomi";
+      strcpy (buf, p);
 
-  if (is_sse)
-    {
-      if (GET_MODE (operands[0]) == SFmode)
-	if (unordered_p)
-	  return "%vucomiss\t{%1, %0|%0, %1}";
-	else
-	  return "%vcomiss\t{%1, %0|%0, %1}";
-      else
-	if (unordered_p)
-	  return "%vucomisd\t{%1, %0|%0, %1}";
-	else
-	  return "%vcomisd\t{%1, %0|%0, %1}";
+      p = "p\t{%y1, %0|%0, %y1}";
+      strcat (buf, p + !stack_top_dies);
+
+      return buf;
     }
 
-  gcc_assert (STACK_TOP_P (cmp_op0));
-
-  stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
-
-  if (cmp_op1 == CONST0_RTX (GET_MODE (cmp_op1)))
-    {
-      if (stack_top_dies)
-	{
-	  output_asm_insn ("ftst\n\tfnstsw\t%0", operands);
-	  return output_387_ffreep (operands, 1);
-	}
-      else
-	return "ftst\n\tfnstsw\t%0";
-    }
-
-  if (STACK_REG_P (cmp_op1)
+  if (STACK_REG_P (xops[1])
       && stack_top_dies
-      && find_regno_note (insn, REG_DEAD, REGNO (cmp_op1))
-      && REGNO (cmp_op1) != FIRST_STACK_REG)
+      && find_regno_note (insn, REG_DEAD, FIRST_STACK_REG + 1))
     {
-      /* If both the top of the 387 stack dies, and the other operand
-	 is also a stack register that dies, then this must be a
-	 `fcompp' float compare */
+      gcc_assert (REGNO (xops[1]) == FIRST_STACK_REG + 1);
 
-      if (eflags_p)
-	{
-	  /* There is no double popping fcomi variant.  Fortunately,
-	     eflags is immune from the fstp's cc clobbering.  */
-	  if (unordered_p)
-	    output_asm_insn ("fucomip\t{%y1, %0|%0, %y1}", operands);
-	  else
-	    output_asm_insn ("fcomip\t{%y1, %0|%0, %y1}", operands);
-	  return output_387_ffreep (operands, 0);
-	}
-      else
-	{
-	  if (unordered_p)
-	    return "fucompp\n\tfnstsw\t%0";
-	  else
-	    return "fcompp\n\tfnstsw\t%0";
-	}
+      /* If both the top of the 387 stack die, and the other operand
+	 is also a stack register that dies, then this must be a
+	 `fcompp' float compare.  */
+      p = unordered_p ? "fucompp" : "fcompp";
+      strcpy (buf, p);
+    }
+  else if (const0_operand (xops[1], VOIDmode))
+    {
+      gcc_assert (!unordered_p);
+      strcpy (buf, "ftst");
     }
   else
     {
-      /* Encoded here as eflags_p | intmode | unordered_p | stack_top_dies.  */
+      if (GET_MODE_CLASS (GET_MODE (xops[1])) == MODE_INT)
+	{
+	  gcc_assert (!unordered_p);
+	  p = "ficom";
+	}
+      else
+	p = unordered_p ? "fucom" : "fcom";
 
-      static const char * const alt[16] =
-      {
-	"fcom%Z2\t%y2\n\tfnstsw\t%0",
-	"fcomp%Z2\t%y2\n\tfnstsw\t%0",
-	"fucom%Z2\t%y2\n\tfnstsw\t%0",
-	"fucomp%Z2\t%y2\n\tfnstsw\t%0",
+      strcpy (buf, p);
 
-	"ficom%Z2\t%y2\n\tfnstsw\t%0",
-	"ficomp%Z2\t%y2\n\tfnstsw\t%0",
-	NULL,
-	NULL,
-
-	"fcomi\t{%y1, %0|%0, %y1}",
-	"fcomip\t{%y1, %0|%0, %y1}",
-	"fucomi\t{%y1, %0|%0, %y1}",
-	"fucomip\t{%y1, %0|%0, %y1}",
-
-	NULL,
-	NULL,
-	NULL,
-	NULL
-      };
-
-      int mask;
-      const char *ret;
-
-      mask  = eflags_p << 3;
-      mask |= (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_INT) << 2;
-      mask |= unordered_p << 1;
-      mask |= stack_top_dies;
-
-      gcc_assert (mask < 16);
-      ret = alt[mask];
-      gcc_assert (ret);
-
-      return ret;
+      p = "p%Z2\t%y2";
+      strcat (buf, p + !stack_top_dies);
     }
+
+  output_asm_insn (buf, operands);
+  return "fnstsw\t%0";
 }
 
 void
@@ -21755,9 +20042,22 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   switch (mode)
     {
     case E_SImode:
-      gen_divmod4_1 = signed_p ? gen_divmodsi4_1 : gen_udivmodsi4_1;
+      if (GET_MODE (operands[0]) == SImode)
+	{
+	  if (GET_MODE (operands[1]) == SImode)
+	    gen_divmod4_1 = signed_p ? gen_divmodsi4_1 : gen_udivmodsi4_1;
+	  else
+	    gen_divmod4_1
+	      = signed_p ? gen_divmodsi4_zext_2 : gen_udivmodsi4_zext_2;
+	  gen_zero_extend = gen_zero_extendqisi2;
+	}
+      else
+	{
+	  gen_divmod4_1
+	    = signed_p ? gen_divmodsi4_zext_1 : gen_udivmodsi4_zext_1;
+	  gen_zero_extend = gen_zero_extendqidi2;
+	}
       gen_test_ccno_1 = gen_testsi_ccno_1;
-      gen_zero_extend = gen_zero_extendqisi2;
       break;
     case E_DImode:
       gen_divmod4_1 = signed_p ? gen_divmoddi4_1 : gen_udivmoddi4_1;
@@ -21808,24 +20108,32 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 
   if (signed_p)
     {
-      div = gen_rtx_DIV (SImode, operands[2], operands[3]);
-      mod = gen_rtx_MOD (SImode, operands[2], operands[3]);
+      div = gen_rtx_DIV (mode, operands[2], operands[3]);
+      mod = gen_rtx_MOD (mode, operands[2], operands[3]);
     }
   else
     {
-      div = gen_rtx_UDIV (SImode, operands[2], operands[3]);
-      mod = gen_rtx_UMOD (SImode, operands[2], operands[3]);
+      div = gen_rtx_UDIV (mode, operands[2], operands[3]);
+      mod = gen_rtx_UMOD (mode, operands[2], operands[3]);
+    }
+  if (mode == SImode)
+    {
+      if (GET_MODE (operands[0]) != SImode)
+	div = gen_rtx_ZERO_EXTEND (DImode, div);
+      if (GET_MODE (operands[1]) != SImode)
+	mod = gen_rtx_ZERO_EXTEND (DImode, mod);
     }
 
   /* Extract remainder from AH.  */
-  tmp1 = gen_rtx_ZERO_EXTRACT (mode, tmp0, GEN_INT (8), GEN_INT (8));
+  tmp1 = gen_rtx_ZERO_EXTRACT (GET_MODE (operands[1]),
+			       tmp0, GEN_INT (8), GEN_INT (8));
   if (REG_P (operands[1]))
     insn = emit_move_insn (operands[1], tmp1);
   else
     {
       /* Need a new scratch register since the old one has result
 	 of 8bit divide.  */
-      scratch = gen_reg_rtx (mode);
+      scratch = gen_reg_rtx (GET_MODE (operands[1]));
       emit_move_insn (scratch, tmp1);
       insn = emit_move_insn (operands[1], scratch);
     }
@@ -23362,6 +21670,8 @@ ix86_match_ccmode (rtx insn, machine_mode req_mode)
     case E_CCZmode:
       break;
 
+    case E_CCGZmode:
+
     case E_CCAmode:
     case E_CCCmode:
     case E_CCOmode:
@@ -23403,14 +21713,35 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
    Return the appropriate mode to use.  */
 
 machine_mode
-ix86_fp_compare_mode (enum rtx_code)
+ix86_fp_compare_mode (enum rtx_code code)
 {
-  /* ??? In order to make all comparisons reversible, we do all comparisons
-     non-trapping when compiling for IEEE.  Once gcc is able to distinguish
-     all forms trapping and nontrapping comparisons, we can make inequality
-     comparisons trapping again, since it results in better code when using
-     FCOM based compares.  */
-  return TARGET_IEEE_FP ? CCFPUmode : CCFPmode;
+  if (!TARGET_IEEE_FP)
+    return CCFPmode;
+
+  switch (code)
+    {
+    case GT:
+    case GE:
+    case LT:
+    case LE:
+      return CCFPmode;
+
+    case EQ:
+    case NE:
+
+    case LTGT:
+    case UNORDERED:
+    case ORDERED:
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case UNEQ:
+      return CCFPUmode;
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 machine_mode
@@ -23650,7 +21981,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
   rtx op0 = *pop0, op1 = *pop1;
   machine_mode op_mode = GET_MODE (op0);
-  int is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
+  bool is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
 
   /* All of the unordered compare instructions only work on registers.
      The same is true of the fcomi compare instructions.  The XFmode
@@ -24070,6 +22401,62 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	      break;
 	    }
 
+	/* Emulate comparisons that do not depend on Zero flag with
+	   double-word subtraction.  Note that only Overflow, Sign
+	   and Carry flags are valid, so swap arguments and condition
+	   of comparisons that would otherwise test Zero flag.  */
+
+	switch (code)
+	  {
+	  case LE: case LEU: case GT: case GTU:
+	    std::swap (lo[0], lo[1]);
+	    std::swap (hi[0], hi[1]);
+	    code = swap_condition (code);
+	    /* FALLTHRU */
+
+	  case LT: case LTU: case GE: case GEU:
+	    {
+	      rtx (*cmp_insn) (rtx, rtx);
+	      rtx (*sbb_insn) (rtx, rtx, rtx);
+	      bool uns = (code == LTU || code == GEU);
+
+	      if (TARGET_64BIT)
+		{
+		  cmp_insn = gen_cmpdi_1;
+		  sbb_insn
+		    = uns ? gen_subdi3_carry_ccc : gen_subdi3_carry_ccgz;
+		}
+	      else
+		{
+		  cmp_insn = gen_cmpsi_1;
+		  sbb_insn
+		    = uns ? gen_subsi3_carry_ccc : gen_subsi3_carry_ccgz;
+		}
+
+	      if (!nonimmediate_operand (lo[0], submode))
+		lo[0] = force_reg (submode, lo[0]);
+	      if (!x86_64_general_operand (lo[1], submode))
+		lo[1] = force_reg (submode, lo[1]);
+
+	      if (!register_operand (hi[0], submode))
+		hi[0] = force_reg (submode, hi[0]);
+	      if ((uns && !nonimmediate_operand (hi[1], submode))
+		  || (!uns && !x86_64_general_operand (hi[1], submode)))
+		hi[1] = force_reg (submode, hi[1]);
+
+	      emit_insn (cmp_insn (lo[0], lo[1]));
+	      emit_insn (sbb_insn (gen_rtx_SCRATCH (submode), hi[0], hi[1]));
+
+	      tmp = gen_rtx_REG (uns ? CCCmode : CCGZmode, FLAGS_REG);
+
+	      ix86_expand_branch (code, tmp, const0_rtx, label);
+	      return;
+	    }
+
+	  default:
+	    break;
+	  }
+
 	/* Otherwise, we need two or three jumps.  */
 
 	label2 = gen_label_rtx ();
@@ -24119,31 +22506,6 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
       gcc_assert (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC);
       goto simple;
     }
-}
-
-/* Split branch based on floating point condition.  */
-void
-ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
-		      rtx target1, rtx target2, rtx tmp)
-{
-  rtx condition;
-  rtx_insn *i;
-
-  if (target2 != pc_rtx)
-    {
-      std::swap (target1, target2);
-      code = reverse_condition_maybe_unordered (code);
-    }
-
-  condition = ix86_expand_fp_compare (code, op1, op2,
-				      tmp);
-
-  i = emit_jump_insn (gen_rtx_SET
-		      (pc_rtx,
-		       gen_rtx_IF_THEN_ELSE (VOIDmode,
-					     condition, target1, target2)));
-  if (split_branch_probability.initialized_p ())
-    add_reg_br_prob_note (i, split_branch_probability);
 }
 
 void
@@ -25687,10 +24049,10 @@ struct expand_vec_perm_d
 };
 
 static bool
-ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
+ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
 			      struct expand_vec_perm_d *d)
 {
-  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+  /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   machine_mode mode = GET_MODE (d ? d->op0 : op0);
   machine_mode maskmode = mode;
@@ -25700,83 +24062,83 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
     {
     case E_V8HImode:
       if (TARGET_AVX512VL && TARGET_AVX512BW)
-	gen = gen_avx512vl_vpermi2varv8hi3;
+	gen = gen_avx512vl_vpermt2varv8hi3;
       break;
     case E_V16HImode:
       if (TARGET_AVX512VL && TARGET_AVX512BW)
-	gen = gen_avx512vl_vpermi2varv16hi3;
+	gen = gen_avx512vl_vpermt2varv16hi3;
       break;
     case E_V64QImode:
       if (TARGET_AVX512VBMI)
-	gen = gen_avx512bw_vpermi2varv64qi3;
+	gen = gen_avx512bw_vpermt2varv64qi3;
       break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
-	gen = gen_avx512bw_vpermi2varv32hi3;
+	gen = gen_avx512bw_vpermt2varv32hi3;
       break;
     case E_V4SImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv4si3;
+	gen = gen_avx512vl_vpermt2varv4si3;
       break;
     case E_V8SImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv8si3;
+	gen = gen_avx512vl_vpermt2varv8si3;
       break;
     case E_V16SImode:
       if (TARGET_AVX512F)
-	gen = gen_avx512f_vpermi2varv16si3;
+	gen = gen_avx512f_vpermt2varv16si3;
       break;
     case E_V4SFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv4sf3;
+	  gen = gen_avx512vl_vpermt2varv4sf3;
 	  maskmode = V4SImode;
 	}
       break;
     case E_V8SFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv8sf3;
+	  gen = gen_avx512vl_vpermt2varv8sf3;
 	  maskmode = V8SImode;
 	}
       break;
     case E_V16SFmode:
       if (TARGET_AVX512F)
 	{
-	  gen = gen_avx512f_vpermi2varv16sf3;
+	  gen = gen_avx512f_vpermt2varv16sf3;
 	  maskmode = V16SImode;
 	}
       break;
     case E_V2DImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv2di3;
+	gen = gen_avx512vl_vpermt2varv2di3;
       break;
     case E_V4DImode:
       if (TARGET_AVX512VL)
-	gen = gen_avx512vl_vpermi2varv4di3;
+	gen = gen_avx512vl_vpermt2varv4di3;
       break;
     case E_V8DImode:
       if (TARGET_AVX512F)
-	gen = gen_avx512f_vpermi2varv8di3;
+	gen = gen_avx512f_vpermt2varv8di3;
       break;
     case E_V2DFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv2df3;
+	  gen = gen_avx512vl_vpermt2varv2df3;
 	  maskmode = V2DImode;
 	}
       break;
     case E_V4DFmode:
       if (TARGET_AVX512VL)
 	{
-	  gen = gen_avx512vl_vpermi2varv4df3;
+	  gen = gen_avx512vl_vpermt2varv4df3;
 	  maskmode = V4DImode;
 	}
       break;
     case E_V8DFmode:
       if (TARGET_AVX512F)
 	{
-	  gen = gen_avx512f_vpermi2varv8df3;
+	  gen = gen_avx512f_vpermt2varv8df3;
 	  maskmode = V8DImode;
 	}
       break;
@@ -25787,7 +24149,7 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
   if (gen == NULL)
     return false;
 
-  /* ix86_expand_vec_perm_vpermi2 is called from both const and non-const
+  /* ix86_expand_vec_perm_vpermt2 is called from both const and non-const
      expander, so args are either in d, or in op0, op1 etc.  */
   if (d)
     {
@@ -25800,7 +24162,7 @@ ix86_expand_vec_perm_vpermi2 (rtx target, rtx op0, rtx mask, rtx op1,
       mask = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (d->nelt, vec));
     }
 
-  emit_insn (gen (target, op0, force_reg (maskmode, mask), op1));
+  emit_insn (gen (target, force_reg (maskmode, mask), op0, op1));
   return true;
 }
 
@@ -25851,7 +24213,7 @@ ix86_expand_vec_perm (rtx operands[])
 	}
     }
 
-  if (ix86_expand_vec_perm_vpermi2 (target, op0, mask, op1, NULL))
+  if (ix86_expand_vec_perm_vpermt2 (target, mask, op0, op1, NULL))
     return;
 
   if (TARGET_AVX2)
@@ -28729,6 +27091,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
 	move_mode = wider_mode;
 
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (move_mode) > 128)
+	move_mode = TImode;
+
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
       if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
@@ -29830,8 +28195,8 @@ ix86_get_modrm_for_rop (rtx_insn *insn, rtx *operands, int noperands,
 
 /* Check whether x86 address PARTS is a pc-relative address.  */
 
-static bool
-rip_relative_addr_p (struct ix86_address *parts)
+bool
+ix86_rip_relative_addr_p (struct ix86_address *parts)
 {
   rtx base, index, disp;
 
@@ -29935,7 +28300,7 @@ memory_address_length (rtx addr, bool lea)
   else if (disp && !base && !index)
     {
       len += 4;
-      if (!rip_relative_addr_p (&parts))
+      if (!ix86_rip_relative_addr_p (&parts))
 	len++;
     }
   else
@@ -30117,801 +28482,6 @@ ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
   return 2 + 1;
 }
 
-/* Return the maximum number of instructions a cpu can issue.  */
-
-static int
-ix86_issue_rate (void)
-{
-  switch (ix86_tune)
-    {
-    case PROCESSOR_PENTIUM:
-    case PROCESSOR_LAKEMONT:
-    case PROCESSOR_BONNELL:
-    case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_INTEL:
-    case PROCESSOR_K6:
-    case PROCESSOR_BTVER2:
-    case PROCESSOR_PENTIUM4:
-    case PROCESSOR_NOCONA:
-      return 2;
-
-    case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_ATHLON:
-    case PROCESSOR_K8:
-    case PROCESSOR_AMDFAM10:
-    case PROCESSOR_GENERIC:
-    case PROCESSOR_BTVER1:
-      return 3;
-
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
-    case PROCESSOR_BDVER4:
-    case PROCESSOR_ZNVER1:
-    case PROCESSOR_CORE2:
-    case PROCESSOR_NEHALEM:
-    case PROCESSOR_SANDYBRIDGE:
-    case PROCESSOR_HASWELL:
-      return 4;
-
-    default:
-      return 1;
-    }
-}
-
-/* A subroutine of ix86_adjust_cost -- return TRUE iff INSN reads flags set
-   by DEP_INSN and nothing set by DEP_INSN.  */
-
-static bool
-ix86_flags_dependent (rtx_insn *insn, rtx_insn *dep_insn, enum attr_type insn_type)
-{
-  rtx set, set2;
-
-  /* Simplify the test for uninteresting insns.  */
-  if (insn_type != TYPE_SETCC
-      && insn_type != TYPE_ICMOV
-      && insn_type != TYPE_FCMOV
-      && insn_type != TYPE_IBR)
-    return false;
-
-  if ((set = single_set (dep_insn)) != 0)
-    {
-      set = SET_DEST (set);
-      set2 = NULL_RTX;
-    }
-  else if (GET_CODE (PATTERN (dep_insn)) == PARALLEL
-	   && XVECLEN (PATTERN (dep_insn), 0) == 2
-	   && GET_CODE (XVECEXP (PATTERN (dep_insn), 0, 0)) == SET
-	   && GET_CODE (XVECEXP (PATTERN (dep_insn), 0, 1)) == SET)
-    {
-      set = SET_DEST (XVECEXP (PATTERN (dep_insn), 0, 0));
-      set2 = SET_DEST (XVECEXP (PATTERN (dep_insn), 0, 0));
-    }
-  else
-    return false;
-
-  if (!REG_P (set) || REGNO (set) != FLAGS_REG)
-    return false;
-
-  /* This test is true if the dependent insn reads the flags but
-     not any other potentially set register.  */
-  if (!reg_overlap_mentioned_p (set, PATTERN (insn)))
-    return false;
-
-  if (set2 && reg_overlap_mentioned_p (set2, PATTERN (insn)))
-    return false;
-
-  return true;
-}
-
-/* Return true iff USE_INSN has a memory address with operands set by
-   SET_INSN.  */
-
-bool
-ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn)
-{
-  int i;
-  extract_insn_cached (use_insn);
-  for (i = recog_data.n_operands - 1; i >= 0; --i)
-    if (MEM_P (recog_data.operand[i]))
-      {
-	rtx addr = XEXP (recog_data.operand[i], 0);
-	if (modified_in_p (addr, set_insn) != 0)
-	  {
-	    /* No AGI stall if SET_INSN is a push or pop and USE_INSN
-	       has SP based memory (unless index reg is modified in a pop).  */
-	    rtx set = single_set (set_insn);
-	    if (set
-		&& (push_operand (SET_DEST (set), GET_MODE (SET_DEST (set)))
-		    || pop_operand (SET_SRC (set), GET_MODE (SET_SRC (set)))))
-	      {
-		struct ix86_address parts;
-		if (ix86_decompose_address (addr, &parts)
-		    && parts.base == stack_pointer_rtx
-		    && (parts.index == NULL_RTX
-			|| MEM_P (SET_DEST (set))
-			|| !modified_in_p (parts.index, set_insn)))
-		  return false;
-	      }
-	    return true;
-	  }
-	return false;
-      }
-  return false;
-}
-
-/* Helper function for exact_store_load_dependency.
-   Return true if addr is found in insn.  */
-static bool
-exact_dependency_1 (rtx addr, rtx insn)
-{
-  enum rtx_code code;
-  const char *format_ptr;
-  int i, j;
-
-  code = GET_CODE (insn);
-  switch (code)
-    {
-    case MEM:
-      if (rtx_equal_p (addr, insn))
-	return true;
-      break;
-    case REG:
-    CASE_CONST_ANY:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-    case PC:
-    case CC0:
-    case EXPR_LIST:
-      return false;
-    default:
-      break;
-    }
-
-  format_ptr = GET_RTX_FORMAT (code);
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    {
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  if (exact_dependency_1 (addr, XEXP (insn, i)))
-	    return true;
-	  break;
-	case 'E':
-	  for (j = 0; j < XVECLEN (insn, i); j++)
-	    if (exact_dependency_1 (addr, XVECEXP (insn, i, j)))
-	      return true;
-	  break;
-	}
-    }
-  return false;
-}
-
-/* Return true if there exists exact dependency for store & load, i.e.
-   the same memory address is used in them.  */
-static bool
-exact_store_load_dependency (rtx_insn *store, rtx_insn *load)
-{
-  rtx set1, set2;
-
-  set1 = single_set (store);
-  if (!set1)
-    return false;
-  if (!MEM_P (SET_DEST (set1)))
-    return false;
-  set2 = single_set (load);
-  if (!set2)
-    return false;
-  if (exact_dependency_1 (SET_DEST (set1), SET_SRC (set2)))
-    return true;
-  return false;
-}
-
-static int
-ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
-		  unsigned int)
-{
-  enum attr_type insn_type, dep_insn_type;
-  enum attr_memory memory;
-  rtx set, set2;
-  int dep_insn_code_number;
-
-  /* Anti and output dependencies have zero cost on all CPUs.  */
-  if (dep_type != 0)
-    return 0;
-
-  dep_insn_code_number = recog_memoized (dep_insn);
-
-  /* If we can't recognize the insns, we can't really do anything.  */
-  if (dep_insn_code_number < 0 || recog_memoized (insn) < 0)
-    return cost;
-
-  insn_type = get_attr_type (insn);
-  dep_insn_type = get_attr_type (dep_insn);
-
-  switch (ix86_tune)
-    {
-    case PROCESSOR_PENTIUM:
-    case PROCESSOR_LAKEMONT:
-      /* Address Generation Interlock adds a cycle of latency.  */
-      if (insn_type == TYPE_LEA)
-	{
-	  rtx addr = PATTERN (insn);
-
-	  if (GET_CODE (addr) == PARALLEL)
-	    addr = XVECEXP (addr, 0, 0);
-
-	  gcc_assert (GET_CODE (addr) == SET);
-
-	  addr = SET_SRC (addr);
-	  if (modified_in_p (addr, dep_insn))
-	    cost += 1;
-	}
-      else if (ix86_agi_dependent (dep_insn, insn))
-	cost += 1;
-
-      /* ??? Compares pair with jump/setcc.  */
-      if (ix86_flags_dependent (insn, dep_insn, insn_type))
-	cost = 0;
-
-      /* Floating point stores require value to be ready one cycle earlier.  */
-      if (insn_type == TYPE_FMOV
-	  && get_attr_memory (insn) == MEMORY_STORE
-	  && !ix86_agi_dependent (dep_insn, insn))
-	cost += 1;
-      break;
-
-    case PROCESSOR_PENTIUMPRO:
-      /* INT->FP conversion is expensive.  */
-      if (get_attr_fp_int_src (dep_insn))
-	cost += 5;
-
-      /* There is one cycle extra latency between an FP op and a store.  */
-      if (insn_type == TYPE_FMOV
-	  && (set = single_set (dep_insn)) != NULL_RTX
-	  && (set2 = single_set (insn)) != NULL_RTX
-	  && rtx_equal_p (SET_DEST (set), SET_SRC (set2))
-	  && MEM_P (SET_DEST (set2)))
-	cost += 1;
-
-      memory = get_attr_memory (insn);
-
-      /* Show ability of reorder buffer to hide latency of load by executing
-	 in parallel with previous instruction in case
-	 previous instruction is not needed to compute the address.  */
-      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
-	  && !ix86_agi_dependent (dep_insn, insn))
-	{
-	  /* Claim moves to take one cycle, as core can issue one load
-	     at time and the next load can start cycle later.  */
-	  if (dep_insn_type == TYPE_IMOV
-	      || dep_insn_type == TYPE_FMOV)
-	    cost = 1;
-	  else if (cost > 1)
-	    cost--;
-	}
-      break;
-
-    case PROCESSOR_K6:
-     /* The esp dependency is resolved before
-	the instruction is really finished.  */
-      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
-	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
-	return 1;
-
-      /* INT->FP conversion is expensive.  */
-      if (get_attr_fp_int_src (dep_insn))
-	cost += 5;
-
-      memory = get_attr_memory (insn);
-
-      /* Show ability of reorder buffer to hide latency of load by executing
-	 in parallel with previous instruction in case
-	 previous instruction is not needed to compute the address.  */
-      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
-	  && !ix86_agi_dependent (dep_insn, insn))
-	{
-	  /* Claim moves to take one cycle, as core can issue one load
-	     at time and the next load can start cycle later.  */
-	  if (dep_insn_type == TYPE_IMOV
-	      || dep_insn_type == TYPE_FMOV)
-	    cost = 1;
-	  else if (cost > 2)
-	    cost -= 2;
-	  else
-	    cost = 1;
-	}
-      break;
-
-    case PROCESSOR_AMDFAM10:
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
-    case PROCESSOR_BDVER4:
-    case PROCESSOR_ZNVER1:
-    case PROCESSOR_BTVER1:
-    case PROCESSOR_BTVER2:
-    case PROCESSOR_GENERIC:
-      /* Stack engine allows to execute push&pop instructions in parall.  */
-      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
-	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
-	return 0;
-      /* FALLTHRU */
-
-    case PROCESSOR_ATHLON:
-    case PROCESSOR_K8:
-      memory = get_attr_memory (insn);
-
-      /* Show ability of reorder buffer to hide latency of load by executing
-	 in parallel with previous instruction in case
-	 previous instruction is not needed to compute the address.  */
-      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
-	  && !ix86_agi_dependent (dep_insn, insn))
-	{
-	  enum attr_unit unit = get_attr_unit (insn);
-	  int loadcost = 3;
-
-	  /* Because of the difference between the length of integer and
-	     floating unit pipeline preparation stages, the memory operands
-	     for floating point are cheaper.
-
-	     ??? For Athlon it the difference is most probably 2.  */
-	  if (unit == UNIT_INTEGER || unit == UNIT_UNKNOWN)
-	    loadcost = 3;
-	  else
-	    loadcost = TARGET_ATHLON ? 2 : 0;
-
-	  if (cost >= loadcost)
-	    cost -= loadcost;
-	  else
-	    cost = 0;
-	}
-      break;
-
-    case PROCESSOR_CORE2:
-    case PROCESSOR_NEHALEM:
-    case PROCESSOR_SANDYBRIDGE:
-    case PROCESSOR_HASWELL:
-      /* Stack engine allows to execute push&pop instructions in parall.  */
-      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
-	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
-	return 0;
-
-      memory = get_attr_memory (insn);
-
-      /* Show ability of reorder buffer to hide latency of load by executing
-	 in parallel with previous instruction in case
-	 previous instruction is not needed to compute the address.  */
-      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
-	  && !ix86_agi_dependent (dep_insn, insn))
-	{
-	  if (cost >= 4)
-	    cost -= 4;
-	  else
-	    cost = 0;
-	}
-      break;
-
-    case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_INTEL:
-      if (!reload_completed)
-	return cost;
-
-      /* Increase cost of integer loads.  */
-      memory = get_attr_memory (dep_insn);
-      if (memory == MEMORY_LOAD || memory == MEMORY_BOTH)
-	{
-	  enum attr_unit unit = get_attr_unit (dep_insn);
-	  if (unit == UNIT_INTEGER && cost == 1)
-	    {
-	      if (memory == MEMORY_LOAD)
-		cost = 3;
-	      else
-		{
-		  /* Increase cost of ld/st for short int types only
-		     because of store forwarding issue.  */
-		  rtx set = single_set (dep_insn);
-		  if (set && (GET_MODE (SET_DEST (set)) == QImode
-			      || GET_MODE (SET_DEST (set)) == HImode))
-		    {
-		      /* Increase cost of store/load insn if exact
-			 dependence exists and it is load insn.  */
-		      enum attr_memory insn_memory = get_attr_memory (insn);
-		      if (insn_memory == MEMORY_LOAD
-			  && exact_store_load_dependency (dep_insn, insn))
-			cost = 3;
-		    }
-		}
-	    }
-	}
-
-    default:
-      break;
-    }
-
-  return cost;
-}
-
-/* How many alternative schedules to try.  This should be as wide as the
-   scheduling freedom in the DFA, but no wider.  Making this value too
-   large results extra work for the scheduler.  */
-
-static int
-ia32_multipass_dfa_lookahead (void)
-{
-  switch (ix86_tune)
-    {
-    case PROCESSOR_PENTIUM:
-    case PROCESSOR_LAKEMONT:
-      return 2;
-
-    case PROCESSOR_PENTIUMPRO:
-    case PROCESSOR_K6:
-      return 1;
-
-    case PROCESSOR_BDVER1:
-    case PROCESSOR_BDVER2:
-    case PROCESSOR_BDVER3:
-    case PROCESSOR_BDVER4:
-      /* We use lookahead value 4 for BD both before and after reload
-	 schedules. Plan is to have value 8 included for O3. */
-        return 4;
-
-    case PROCESSOR_CORE2:
-    case PROCESSOR_NEHALEM:
-    case PROCESSOR_SANDYBRIDGE:
-    case PROCESSOR_HASWELL:
-    case PROCESSOR_BONNELL:
-    case PROCESSOR_SILVERMONT:
-    case PROCESSOR_KNL:
-    case PROCESSOR_INTEL:
-      /* Generally, we want haifa-sched:max_issue() to look ahead as far
-	 as many instructions can be executed on a cycle, i.e.,
-	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
-      if (reload_completed)
-        return ix86_issue_rate ();
-      /* Don't use lookahead for pre-reload schedule to save compile time.  */
-      return 0;
-
-    default:
-      return 0;
-    }
-}
-
-/* Return true if target platform supports macro-fusion.  */
-
-static bool
-ix86_macro_fusion_p ()
-{
-  return TARGET_FUSE_CMP_AND_BRANCH;
-}
-
-/* Check whether current microarchitecture support macro fusion
-   for insn pair "CONDGEN + CONDJMP". Refer to
-   "Intel Architectures Optimization Reference Manual". */
-
-static bool
-ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
-{
-  rtx src, dest;
-  enum rtx_code ccode;
-  rtx compare_set = NULL_RTX, test_if, cond;
-  rtx alu_set = NULL_RTX, addr = NULL_RTX;
-
-  if (!any_condjump_p (condjmp))
-    return false;
-
-  unsigned int condreg1, condreg2;
-  rtx cc_reg_1;
-  ix86_fixed_condition_code_regs (&condreg1, &condreg2);
-  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-  if (!reg_referenced_p (cc_reg_1, PATTERN (condjmp))
-      || !condgen
-      || !modified_in_p (cc_reg_1, condgen))
-    return false;
-
-  if (get_attr_type (condgen) != TYPE_TEST
-      && get_attr_type (condgen) != TYPE_ICMP
-      && get_attr_type (condgen) != TYPE_INCDEC
-      && get_attr_type (condgen) != TYPE_ALU)
-    return false;
-
-  compare_set = single_set (condgen);
-  if (compare_set == NULL_RTX
-      && !TARGET_FUSE_ALU_AND_BRANCH)
-    return false;
-
-  if (compare_set == NULL_RTX)
-    {
-      int i;
-      rtx pat = PATTERN (condgen);
-      for (i = 0; i < XVECLEN (pat, 0); i++)
-	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
-	  {
-	    rtx set_src = SET_SRC (XVECEXP (pat, 0, i));
-	    if (GET_CODE (set_src) == COMPARE)
-	      compare_set = XVECEXP (pat, 0, i);
-	    else
-	      alu_set = XVECEXP (pat, 0, i);
-	  }
-    }
-  if (compare_set == NULL_RTX)
-    return false;
-  src = SET_SRC (compare_set);
-  if (GET_CODE (src) != COMPARE)
-    return false;
-
-  /* Macro-fusion for cmp/test MEM-IMM + conditional jmp is not
-     supported.  */
-  if ((MEM_P (XEXP (src, 0))
-       && CONST_INT_P (XEXP (src, 1)))
-      || (MEM_P (XEXP (src, 1))
-	  && CONST_INT_P (XEXP (src, 0))))
-    return false;
-
-  /* No fusion for RIP-relative address.  */
-  if (MEM_P (XEXP (src, 0)))
-    addr = XEXP (XEXP (src, 0), 0);
-  else if (MEM_P (XEXP (src, 1)))
-    addr = XEXP (XEXP (src, 1), 0);
-
-  if (addr) {
-    ix86_address parts;
-    int ok = ix86_decompose_address (addr, &parts);
-    gcc_assert (ok);
-
-    if (rip_relative_addr_p (&parts))
-      return false;
-  }
-
-  test_if = SET_SRC (pc_set (condjmp));
-  cond = XEXP (test_if, 0);
-  ccode = GET_CODE (cond);
-  /* Check whether conditional jump use Sign or Overflow Flags.  */
-  if (!TARGET_FUSE_CMP_AND_BRANCH_SOFLAGS
-      && (ccode == GE
-          || ccode == GT
-	  || ccode == LE
-	  || ccode == LT))
-    return false;
-
-  /* Return true for TYPE_TEST and TYPE_ICMP.  */
-  if (get_attr_type (condgen) == TYPE_TEST
-      || get_attr_type (condgen) == TYPE_ICMP)
-    return true;
-
-  /* The following is the case that macro-fusion for alu + jmp.  */
-  if (!TARGET_FUSE_ALU_AND_BRANCH || !alu_set)
-    return false;
-
-  /* No fusion for alu op with memory destination operand.  */
-  dest = SET_DEST (alu_set);
-  if (MEM_P (dest))
-    return false;
-
-  /* Macro-fusion for inc/dec + unsigned conditional jump is not
-     supported.  */
-  if (get_attr_type (condgen) == TYPE_INCDEC
-      && (ccode == GEU
-	  || ccode == GTU
-	  || ccode == LEU
-	  || ccode == LTU))
-    return false;
-
-  return true;
-}
-
-/* Try to reorder ready list to take advantage of Atom pipelined IMUL
-   execution. It is applied if
-   (1) IMUL instruction is on the top of list;
-   (2) There exists the only producer of independent IMUL instruction in
-       ready list.
-   Return index of IMUL producer if it was found and -1 otherwise.  */
-static int
-do_reorder_for_imul (rtx_insn **ready, int n_ready)
-{
-  rtx_insn *insn;
-  rtx set, insn1, insn2;
-  sd_iterator_def sd_it;
-  dep_t dep;
-  int index = -1;
-  int i;
-
-  if (!TARGET_BONNELL)
-    return index;
-
-  /* Check that IMUL instruction is on the top of ready list.  */
-  insn = ready[n_ready - 1];
-  set = single_set (insn);
-  if (!set)
-    return index;
-  if (!(GET_CODE (SET_SRC (set)) == MULT
-      && GET_MODE (SET_SRC (set)) == SImode))
-    return index;
-
-  /* Search for producer of independent IMUL instruction.  */
-  for (i = n_ready - 2; i >= 0; i--)
-    {
-      insn = ready[i];
-      if (!NONDEBUG_INSN_P (insn))
-	continue;
-      /* Skip IMUL instruction.  */
-      insn2 = PATTERN (insn);
-      if (GET_CODE (insn2) == PARALLEL)
-	insn2 = XVECEXP (insn2, 0, 0);
-      if (GET_CODE (insn2) == SET
-	  && GET_CODE (SET_SRC (insn2)) == MULT
-	  && GET_MODE (SET_SRC (insn2)) == SImode)
-	continue;
-
-      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
-	{
-	  rtx con;
-	  con = DEP_CON (dep);
-	  if (!NONDEBUG_INSN_P (con))
-	    continue;
-	  insn1 = PATTERN (con);
-	  if (GET_CODE (insn1) == PARALLEL)
-	    insn1 = XVECEXP (insn1, 0, 0);
-
-	  if (GET_CODE (insn1) == SET
-	      && GET_CODE (SET_SRC (insn1)) == MULT
-	      && GET_MODE (SET_SRC (insn1)) == SImode)
-	    {
-	      sd_iterator_def sd_it1;
-	      dep_t dep1;
-	      /* Check if there is no other dependee for IMUL.  */
-	      index = i;
-	      FOR_EACH_DEP (con, SD_LIST_BACK, sd_it1, dep1)
-		{
-		  rtx pro;
-		  pro = DEP_PRO (dep1);
-		  if (!NONDEBUG_INSN_P (pro))
-		    continue;
-		  if (pro != insn)
-		    index = -1;
-		}
-	      if (index >= 0)
-		break;
-	    }
-	}
-      if (index >= 0)
-	break;
-    }
-  return index;
-}
-
-/* Try to find the best candidate on the top of ready list if two insns
-   have the same priority - candidate is best if its dependees were
-   scheduled earlier. Applied for Silvermont only.
-   Return true if top 2 insns must be interchanged.  */
-static bool
-swap_top_of_ready_list (rtx_insn **ready, int n_ready)
-{
-  rtx_insn *top = ready[n_ready - 1];
-  rtx_insn *next = ready[n_ready - 2];
-  rtx set;
-  sd_iterator_def sd_it;
-  dep_t dep;
-  int clock1 = -1;
-  int clock2 = -1;
-  #define INSN_TICK(INSN) (HID (INSN)->tick)
-
-  if (!TARGET_SILVERMONT && !TARGET_INTEL)
-    return false;
-
-  if (!NONDEBUG_INSN_P (top))
-    return false;
-  if (!NONJUMP_INSN_P (top))
-    return false;
-  if (!NONDEBUG_INSN_P (next))
-    return false;
-  if (!NONJUMP_INSN_P (next))
-    return false;
-  set = single_set (top);
-  if (!set)
-    return false;
-  set = single_set (next);
-  if (!set)
-    return false;
-
-  if (INSN_PRIORITY_KNOWN (top) && INSN_PRIORITY_KNOWN (next))
-    {
-      if (INSN_PRIORITY (top) != INSN_PRIORITY (next))
-	return false;
-      /* Determine winner more precise.  */
-      FOR_EACH_DEP (top, SD_LIST_RES_BACK, sd_it, dep)
-	{
-	  rtx pro;
-	  pro = DEP_PRO (dep);
-	  if (!NONDEBUG_INSN_P (pro))
-	    continue;
-	  if (INSN_TICK (pro) > clock1)
-	    clock1 = INSN_TICK (pro);
-	}
-      FOR_EACH_DEP (next, SD_LIST_RES_BACK, sd_it, dep)
-	{
-	  rtx pro;
-	  pro = DEP_PRO (dep);
-	  if (!NONDEBUG_INSN_P (pro))
-	    continue;
-	  if (INSN_TICK (pro) > clock2)
-	    clock2 = INSN_TICK (pro);
-	}
-
-      if (clock1 == clock2)
-	{
-	  /* Determine winner - load must win. */
-	  enum attr_memory memory1, memory2;
-	  memory1 = get_attr_memory (top);
-	  memory2 = get_attr_memory (next);
-	  if (memory2 == MEMORY_LOAD && memory1 != MEMORY_LOAD)
-	    return true;
-	}
-	return (bool) (clock2 < clock1);
-    }
-  return false;
-  #undef INSN_TICK
-}
-
-/* Perform possible reodering of ready list for Atom/Silvermont only.
-   Return issue rate.  */
-static int
-ix86_sched_reorder (FILE *dump, int sched_verbose, rtx_insn **ready,
-		    int *pn_ready, int clock_var)
-{
-  int issue_rate = -1;
-  int n_ready = *pn_ready;
-  int i;
-  rtx_insn *insn;
-  int index = -1;
-
-  /* Set up issue rate.  */
-  issue_rate = ix86_issue_rate ();
-
-  /* Do reodering for BONNELL/SILVERMONT only.  */
-  if (!TARGET_BONNELL && !TARGET_SILVERMONT && !TARGET_INTEL)
-    return issue_rate;
-
-  /* Nothing to do if ready list contains only 1 instruction.  */
-  if (n_ready <= 1)
-    return issue_rate;
-
-  /* Do reodering for post-reload scheduler only.  */
-  if (!reload_completed)
-    return issue_rate;
-
-  if ((index = do_reorder_for_imul (ready, n_ready)) >= 0)
-    {
-      if (sched_verbose > 1)
-	fprintf (dump, ";;\tatom sched_reorder: put %d insn on top\n",
-		 INSN_UID (ready[index]));
-
-      /* Put IMUL producer (ready[index]) at the top of ready list.  */
-      insn = ready[index];
-      for (i = index; i < n_ready - 1; i++)
-	ready[i] = ready[i + 1];
-      ready[n_ready - 1] = insn;
-      return issue_rate;
-    }
-
-  /* Skip selective scheduling since HID is not populated in it.  */
-  if (clock_var != 0
-      && !sel_sched_p ()
-      && swap_top_of_ready_list (ready, n_ready))
-    {
-      if (sched_verbose > 1)
-	fprintf (dump, ";;\tslm sched_reorder: swap %d and %d insns\n",
-		 INSN_UID (ready[n_ready - 1]), INSN_UID (ready[n_ready - 2]));
-      /* Swap 2 top elements of ready list.  */
-      insn = ready[n_ready - 1];
-      ready[n_ready - 1] = ready[n_ready - 2];
-      ready[n_ready - 2] = insn;
-    }
-  return issue_rate;
-}
 
 static bool
 ix86_class_likely_spilled_p (reg_class_t);
@@ -31137,204 +28707,6 @@ ix86_adjust_priority (rtx_insn *insn, int priority)
   return priority;
 }
 
-/* Model decoder of Core 2/i7.
-   Below hooks for multipass scheduling (see haifa-sched.c:max_issue)
-   track the instruction fetch block boundaries and make sure that long
-   (9+ bytes) instructions are assigned to D0.  */
-
-/* Maximum length of an insn that can be handled by
-   a secondary decoder unit.  '8' for Core 2/i7.  */
-static int core2i7_secondary_decoder_max_insn_size;
-
-/* Ifetch block size, i.e., number of bytes decoder reads per cycle.
-   '16' for Core 2/i7.  */
-static int core2i7_ifetch_block_size;
-
-/* Maximum number of instructions decoder can handle per cycle.
-   '6' for Core 2/i7.  */
-static int core2i7_ifetch_block_max_insns;
-
-typedef struct ix86_first_cycle_multipass_data_ *
-  ix86_first_cycle_multipass_data_t;
-typedef const struct ix86_first_cycle_multipass_data_ *
-  const_ix86_first_cycle_multipass_data_t;
-
-/* A variable to store target state across calls to max_issue within
-   one cycle.  */
-static struct ix86_first_cycle_multipass_data_ _ix86_first_cycle_multipass_data,
-  *ix86_first_cycle_multipass_data = &_ix86_first_cycle_multipass_data;
-
-/* Initialize DATA.  */
-static void
-core2i7_first_cycle_multipass_init (void *_data)
-{
-  ix86_first_cycle_multipass_data_t data
-    = (ix86_first_cycle_multipass_data_t) _data;
-
-  data->ifetch_block_len = 0;
-  data->ifetch_block_n_insns = 0;
-  data->ready_try_change = NULL;
-  data->ready_try_change_size = 0;
-}
-
-/* Advancing the cycle; reset ifetch block counts.  */
-static void
-core2i7_dfa_post_advance_cycle (void)
-{
-  ix86_first_cycle_multipass_data_t data = ix86_first_cycle_multipass_data;
-
-  gcc_assert (data->ifetch_block_n_insns <= core2i7_ifetch_block_max_insns);
-
-  data->ifetch_block_len = 0;
-  data->ifetch_block_n_insns = 0;
-}
-
-static int min_insn_size (rtx_insn *);
-
-/* Filter out insns from ready_try that the core will not be able to issue
-   on current cycle due to decoder.  */
-static void
-core2i7_first_cycle_multipass_filter_ready_try
-(const_ix86_first_cycle_multipass_data_t data,
- signed char *ready_try, int n_ready, bool first_cycle_insn_p)
-{
-  while (n_ready--)
-    {
-      rtx_insn *insn;
-      int insn_size;
-
-      if (ready_try[n_ready])
-	continue;
-
-      insn = get_ready_element (n_ready);
-      insn_size = min_insn_size (insn);
-
-      if (/* If this is a too long an insn for a secondary decoder ...  */
-	  (!first_cycle_insn_p
-	   && insn_size > core2i7_secondary_decoder_max_insn_size)
-	  /* ... or it would not fit into the ifetch block ...  */
-	  || data->ifetch_block_len + insn_size > core2i7_ifetch_block_size
-	  /* ... or the decoder is full already ...  */
-	  || data->ifetch_block_n_insns + 1 > core2i7_ifetch_block_max_insns)
-	/* ... mask the insn out.  */
-	{
-	  ready_try[n_ready] = 1;
-
-	  if (data->ready_try_change)
-	    bitmap_set_bit (data->ready_try_change, n_ready);
-	}
-    }
-}
-
-/* Prepare for a new round of multipass lookahead scheduling.  */
-static void
-core2i7_first_cycle_multipass_begin (void *_data,
-				     signed char *ready_try, int n_ready,
-				     bool first_cycle_insn_p)
-{
-  ix86_first_cycle_multipass_data_t data
-    = (ix86_first_cycle_multipass_data_t) _data;
-  const_ix86_first_cycle_multipass_data_t prev_data
-    = ix86_first_cycle_multipass_data;
-
-  /* Restore the state from the end of the previous round.  */
-  data->ifetch_block_len = prev_data->ifetch_block_len;
-  data->ifetch_block_n_insns = prev_data->ifetch_block_n_insns;
-
-  /* Filter instructions that cannot be issued on current cycle due to
-     decoder restrictions.  */
-  core2i7_first_cycle_multipass_filter_ready_try (data, ready_try, n_ready,
-						  first_cycle_insn_p);
-}
-
-/* INSN is being issued in current solution.  Account for its impact on
-   the decoder model.  */
-static void
-core2i7_first_cycle_multipass_issue (void *_data,
-				     signed char *ready_try, int n_ready,
-				     rtx_insn *insn, const void *_prev_data)
-{
-  ix86_first_cycle_multipass_data_t data
-    = (ix86_first_cycle_multipass_data_t) _data;
-  const_ix86_first_cycle_multipass_data_t prev_data
-    = (const_ix86_first_cycle_multipass_data_t) _prev_data;
-
-  int insn_size = min_insn_size (insn);
-
-  data->ifetch_block_len = prev_data->ifetch_block_len + insn_size;
-  data->ifetch_block_n_insns = prev_data->ifetch_block_n_insns + 1;
-  gcc_assert (data->ifetch_block_len <= core2i7_ifetch_block_size
-	      && data->ifetch_block_n_insns <= core2i7_ifetch_block_max_insns);
-
-  /* Allocate or resize the bitmap for storing INSN's effect on ready_try.  */
-  if (!data->ready_try_change)
-    {
-      data->ready_try_change = sbitmap_alloc (n_ready);
-      data->ready_try_change_size = n_ready;
-    }
-  else if (data->ready_try_change_size < n_ready)
-    {
-      data->ready_try_change = sbitmap_resize (data->ready_try_change,
-					       n_ready, 0);
-      data->ready_try_change_size = n_ready;
-    }
-  bitmap_clear (data->ready_try_change);
-
-  /* Filter out insns from ready_try that the core will not be able to issue
-     on current cycle due to decoder.  */
-  core2i7_first_cycle_multipass_filter_ready_try (data, ready_try, n_ready,
-						  false);
-}
-
-/* Revert the effect on ready_try.  */
-static void
-core2i7_first_cycle_multipass_backtrack (const void *_data,
-					 signed char *ready_try,
-					 int n_ready ATTRIBUTE_UNUSED)
-{
-  const_ix86_first_cycle_multipass_data_t data
-    = (const_ix86_first_cycle_multipass_data_t) _data;
-  unsigned int i = 0;
-  sbitmap_iterator sbi;
-
-  gcc_assert (bitmap_last_set_bit (data->ready_try_change) < n_ready);
-  EXECUTE_IF_SET_IN_BITMAP (data->ready_try_change, 0, i, sbi)
-    {
-      ready_try[i] = 0;
-    }
-}
-
-/* Save the result of multipass lookahead scheduling for the next round.  */
-static void
-core2i7_first_cycle_multipass_end (const void *_data)
-{
-  const_ix86_first_cycle_multipass_data_t data
-    = (const_ix86_first_cycle_multipass_data_t) _data;
-  ix86_first_cycle_multipass_data_t next_data
-    = ix86_first_cycle_multipass_data;
-
-  if (data != NULL)
-    {
-      next_data->ifetch_block_len = data->ifetch_block_len;
-      next_data->ifetch_block_n_insns = data->ifetch_block_n_insns;
-    }
-}
-
-/* Deallocate target data.  */
-static void
-core2i7_first_cycle_multipass_fini (void *_data)
-{
-  ix86_first_cycle_multipass_data_t data
-    = (ix86_first_cycle_multipass_data_t) _data;
-
-  if (data->ready_try_change)
-    {
-      sbitmap_free (data->ready_try_change);
-      data->ready_try_change = NULL;
-      data->ready_try_change_size = 0;
-    }
-}
-
 /* Prepare for scheduling pass.  */
 static void
 ix86_sched_init_global (FILE *, int, int)
@@ -31352,25 +28724,7 @@ ix86_sched_init_global (FILE *, int, int)
          to save compile time.  */
       if (reload_completed)
 	{
-	  targetm.sched.dfa_post_advance_cycle
-	    = core2i7_dfa_post_advance_cycle;
-	  targetm.sched.first_cycle_multipass_init
-	    = core2i7_first_cycle_multipass_init;
-	  targetm.sched.first_cycle_multipass_begin
-	    = core2i7_first_cycle_multipass_begin;
-	  targetm.sched.first_cycle_multipass_issue
-	    = core2i7_first_cycle_multipass_issue;
-	  targetm.sched.first_cycle_multipass_backtrack
-	    = core2i7_first_cycle_multipass_backtrack;
-	  targetm.sched.first_cycle_multipass_end
-	    = core2i7_first_cycle_multipass_end;
-	  targetm.sched.first_cycle_multipass_fini
-	    = core2i7_first_cycle_multipass_fini;
-
-	  /* Set decoder parameters.  */
-	  core2i7_secondary_decoder_max_insn_size = 8;
-	  core2i7_ifetch_block_size = 16;
-	  core2i7_ifetch_block_max_insns = 6;
+	  ix86_core2i7_init_hooks ();
 	  break;
 	}
       /* Fall through.  */
@@ -31387,14 +28741,10 @@ ix86_sched_init_global (FILE *, int, int)
 }
 
 
-/* Compute the alignment given to a constant that is being placed in memory.
-   EXP is the constant and ALIGN is the alignment that the object would
-   ordinarily have.
-   The value of this function is used instead of that alignment to align
-   the object.  */
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
 
-int
-ix86_constant_alignment (tree exp, int align)
+static HOST_WIDE_INT
+ix86_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 {
   if (TREE_CODE (exp) == REAL_CST || TREE_CODE (exp) == VECTOR_CST
       || TREE_CODE (exp) == INTEGER_CST)
@@ -31481,12 +28831,12 @@ ix86_data_alignment (tree type, int align, bool opt)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
     {
-      if (wi::geu_p (TYPE_SIZE (type), max_align_compat)
+      if (wi::geu_p (wi::to_wide (TYPE_SIZE (type)), max_align_compat)
 	  && align < max_align_compat)
 	align = max_align_compat;
-       if (wi::geu_p (TYPE_SIZE (type), max_align)
-	   && align < max_align)
-	 align = max_align;
+      if (wi::geu_p (wi::to_wide (TYPE_SIZE (type)), max_align)
+	  && align < max_align)
+	align = max_align;
     }
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
@@ -31496,7 +28846,7 @@ ix86_data_alignment (tree type, int align, bool opt)
       if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && wi::geu_p (wi::to_wide (TYPE_SIZE (type)), 128)
 	  && align < 128)
 	return 128;
     }
@@ -31615,7 +28965,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
 		  != TYPE_MAIN_VARIANT (va_list_type_node)))
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && wi::geu_p (TYPE_SIZE (type), 128)
+	  && wi::geu_p (wi::to_wide (TYPE_SIZE (type)), 128)
 	  && align < 128)
 	return 128;
     }
@@ -32672,8 +30022,12 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_CONST_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN_MAX,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_FIRST,
 	       IX86_BUILTIN__BDESC_MULTI_ARG_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
+	       IX86_BUILTIN__BDESC_CET_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN_MAX,
+	       IX86_BUILTIN__BDESC_CET_NORMAL_LAST, 1);
 
 /* Set up all the MMX/SSE builtins, even builtins for instructions that are not
    in the current target ISA to allow the user to compile particular modules
@@ -32799,7 +30153,9 @@ ix86_init_mmx_sse_builtins (void)
 		    UNSIGNED_FTYPE_VOID, IX86_BUILTIN_STMXCSR);
 
   /* SSE or 3DNow!A */
-  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+	       /* As it uses V4HImode, we have to require -mmmx too.  */
+	       | OPTION_MASK_ISA_MMX,
 	       "__builtin_ia32_maskmovq", VOID_FTYPE_V8QI_V8QI_PCHAR,
 	       IX86_BUILTIN_MASKMOVQ);
 
@@ -33237,7 +30593,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_vec_ext_v8hi",
 		     HI_FTYPE_V8HI_INT, IX86_BUILTIN_VEC_EXT_V8HI);
 
-  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+		     /* As it uses V4HImode, we have to require -mmmx too.  */
+		     | OPTION_MASK_ISA_MMX,
 		     "__builtin_ia32_vec_ext_v4hi",
 		     HI_FTYPE_V4HI_INT, IX86_BUILTIN_VEC_EXT_V4HI);
 
@@ -33261,7 +30619,9 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_vec_set_v8hi",
 		     V8HI_FTYPE_V8HI_HI_INT, IX86_BUILTIN_VEC_SET_V8HI);
 
-  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A,
+  def_builtin_const (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+		     /* As it uses V4HImode, we have to require -mmmx too.  */
+		     | OPTION_MASK_ISA_MMX,
 		     "__builtin_ia32_vec_set_v4hi",
 		     V4HI_FTYPE_V4HI_HI_INT, IX86_BUILTIN_VEC_SET_V4HI);
 
@@ -33334,6 +30694,35 @@ ix86_init_mmx_sse_builtins (void)
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_LAST,
 		 IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
 		 ARRAY_SIZE (bdesc_multi_arg) - 1);
+
+  /* Add CET inrinsics.  */
+  for (i = 0, d = bdesc_cet; i < ARRAY_SIZE (bdesc_cet); i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_CET_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_LAST,
+		 IX86_BUILTIN__BDESC_CET_FIRST,
+		 ARRAY_SIZE (bdesc_cet) - 1);
+
+  for (i = 0, d = bdesc_cet_rdssp;
+       i < ARRAY_SIZE (bdesc_cet_rdssp);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_CET_NORMAL_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_LAST,
+		 IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
+		 ARRAY_SIZE (bdesc_cet_rdssp) - 1);
 }
 
 static void
@@ -33689,6 +31078,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_KNL:
 	      arg_str = "knl";
+	      priority = P_PROC_AVX512F;
+	      break;
+	    case PROCESSOR_KNM:
+	      arg_str = "knm";
 	      priority = P_PROC_AVX512F;
 	      break;
 	    case PROCESSOR_SILVERMONT:
@@ -34374,6 +31767,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMD_BTVER1,
     M_AMD_BTVER2,    
     M_AMDFAM17H,
+    M_INTEL_KNM,
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -34417,6 +31811,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},
+      {"knm", M_INTEL_KNM},
       {"amdfam10h", M_AMDFAM10H},
       {"barcelona", M_AMDFAM10H_BARCELONA},
       {"shanghai", M_AMDFAM10H_SHANGHAI},
@@ -37686,10 +35081,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 		     machine_mode mode, int ignore)
 {
   size_t i;
-  enum insn_code icode;
+  enum insn_code icode, icode2;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2, arg3, arg4;
-  rtx op0, op1, op2, op3, op4, pat, insn;
+  rtx op0, op1, op2, op3, op4, pat, pat2, insn;
   machine_mode mode0, mode1, mode2, mode3, mode4;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
@@ -37719,18 +35114,23 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      Originally the builtin was not created if it wasn't applicable to the
      current ISA based on the command line switches.  With function specific
      options, we need to check in the context of the function making the call
-     whether it is supported.  Treat AVX512VL specially.  For other flags,
+     whether it is supported.  Treat AVX512VL and MMX specially.  For other flags,
      if isa includes more than one ISA bit, treat those are requiring any
      of them.  For AVX512VL, require both AVX512VL and the non-AVX512VL
-     ISAs.  Similarly for 64BIT, but we shouldn't be building such builtins
+     ISAs.  Likewise for MMX, require both MMX and the non-MMX ISAs.
+     Similarly for 64BIT, but we shouldn't be building such builtins
      at all, -m64 is a whole TU option.  */
   if (((ix86_builtins_isa[fcode].isa
-	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT))
+	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
+	    | OPTION_MASK_ISA_64BIT))
        && !(ix86_builtins_isa[fcode].isa
-	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_64BIT)
+	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
+		| OPTION_MASK_ISA_64BIT)
 	    & ix86_isa_flags))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_MMX)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_MMX))
       || (ix86_builtins_isa[fcode].isa2
 	  && !(ix86_builtins_isa[fcode].isa2 & ix86_isa_flags2)))
     {
@@ -38659,22 +36059,34 @@ rdseed_step:
 
     case IX86_BUILTIN_SBB32:
       icode = CODE_FOR_subborrowsi;
+      icode2 = CODE_FOR_subborrowsi_0;
       mode0 = SImode;
+      mode1 = DImode;
+      mode2 = CCmode;
       goto handlecarry;
 
     case IX86_BUILTIN_SBB64:
       icode = CODE_FOR_subborrowdi;
+      icode2 = CODE_FOR_subborrowdi_0;
       mode0 = DImode;
+      mode1 = TImode;
+      mode2 = CCmode;
       goto handlecarry;
 
     case IX86_BUILTIN_ADDCARRYX32:
       icode = CODE_FOR_addcarrysi;
+      icode2 = CODE_FOR_addcarrysi_0;
       mode0 = SImode;
+      mode1 = DImode;
+      mode2 = CCCmode;
       goto handlecarry;
 
     case IX86_BUILTIN_ADDCARRYX64:
       icode = CODE_FOR_addcarrydi;
+      icode2 = CODE_FOR_addcarrydi_0;
       mode0 = DImode;
+      mode1 = TImode;
+      mode2 = CCCmode;
 
     handlecarry:
       arg0 = CALL_EXPR_ARG (exp, 0); /* unsigned char c_in.  */
@@ -38683,7 +36095,8 @@ rdseed_step:
       arg3 = CALL_EXPR_ARG (exp, 3); /* unsigned int *sum_out.  */
 
       op1 = expand_normal (arg0);
-      op1 = copy_to_mode_reg (QImode, convert_to_mode (QImode, op1, 1));
+      if (!integer_zerop (arg0))
+	op1 = copy_to_mode_reg (QImode, convert_to_mode (QImode, op1, 1));
 
       op2 = expand_normal (arg1);
       if (!register_operand (op2, mode0))
@@ -38700,21 +36113,31 @@ rdseed_step:
 	  op4 = copy_addr_to_reg (op4);
 	}
 
-      /* Generate CF from input operand.  */
-      emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
-
-      /* Generate instruction that consumes CF.  */
       op0 = gen_reg_rtx (mode0);
+      if (integer_zerop (arg0))
+	{
+	  /* If arg0 is 0, optimize right away into add or sub
+	     instruction that sets CCCmode flags.  */
+	  op1 = gen_rtx_REG (mode2, FLAGS_REG);
+	  emit_insn (GEN_FCN (icode2) (op0, op2, op3));
+	}
+      else
+	{
+	  /* Generate CF from input operand.  */
+	  emit_insn (gen_addqi3_cconly_overflow (op1, constm1_rtx));
 
-      op1 = gen_rtx_REG (CCCmode, FLAGS_REG);
-      pat = gen_rtx_LTU (mode0, op1, const0_rtx);
-      emit_insn (GEN_FCN (icode) (op0, op2, op3, op1, pat));
+	  /* Generate instruction that consumes CF.  */
+	  op1 = gen_rtx_REG (CCCmode, FLAGS_REG);
+	  pat = gen_rtx_LTU (mode1, op1, const0_rtx);
+	  pat2 = gen_rtx_LTU (mode0, op1, const0_rtx);
+	  emit_insn (GEN_FCN (icode) (op0, op2, op3, op1, pat, pat2));
+	}
 
       /* Return current CF value.  */
       if (target == 0)
         target = gen_reg_rtx (QImode);
 
-      PUT_MODE (pat, QImode);
+      pat = gen_rtx_LTU (QImode, op1, const0_rtx);
       emit_insn (gen_rtx_SET (target, pat));
 
       /* Store the result.  */
@@ -39507,6 +36930,57 @@ rdseed_step:
       emit_insn (gen_xabort (op0));
       return 0;
 
+    case IX86_BUILTIN_RSTORSSP:
+    case IX86_BUILTIN_CLRSSBSY:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      icode = (fcode == IX86_BUILTIN_RSTORSSP
+	  ? CODE_FOR_rstorssp
+	  : CODE_FOR_clrssbsy);
+      if (!address_operand (op0, VOIDmode))
+	{
+	  op1 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op1);
+	}
+      emit_insn (GEN_FCN (icode) (gen_rtx_MEM (Pmode, op0)));
+      return 0;
+
+    case IX86_BUILTIN_WRSSD:
+    case IX86_BUILTIN_WRSSQ:
+    case IX86_BUILTIN_WRUSSD:
+    case IX86_BUILTIN_WRUSSQ:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op1 = expand_normal (arg1);
+      switch (fcode)
+	{
+	case IX86_BUILTIN_WRSSD:
+	  icode = CODE_FOR_wrsssi;
+	  mode = SImode;
+	  break;
+	case IX86_BUILTIN_WRSSQ:
+	  icode = CODE_FOR_wrssdi;
+	  mode = DImode;
+	  break;
+	case IX86_BUILTIN_WRUSSD:
+	  icode = CODE_FOR_wrusssi;
+	  mode = SImode;
+	  break;
+	case IX86_BUILTIN_WRUSSQ:
+	  icode = CODE_FOR_wrussdi;
+	  mode = DImode;
+	  break;
+	}
+      op0 = force_reg (mode, op0);
+      if (!address_operand (op1, VOIDmode))
+	{
+	  op2 = convert_memory_address (Pmode, op1);
+	  op1 = copy_addr_to_reg (op2);
+	}
+      emit_insn (GEN_FCN (icode) (op0, gen_rtx_MEM (mode, op1)));
+      return 0;
+
     default:
       break;
     }
@@ -39807,6 +37281,22 @@ s4fma_expand:
       return ix86_expand_multi_arg_builtin (d->icode, exp, target,
 					    (enum ix86_builtin_func_type)
 					    d->flag, d->comparison);
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_CET_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_CET_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_CET_FIRST;
+      return ix86_expand_special_args_builtin (bdesc_cet + i, exp,
+					       target);
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_CET_NORMAL_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_CET_NORMAL_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_CET_NORMAL_FIRST;
+      return ix86_expand_args_builtin (bdesc_cet_rdssp + i, exp,
+				       target);
     }
 
   gcc_unreachable ();
@@ -41198,6 +38688,28 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
   return true;
 }
 
+/* Return index of MODE in the sse load/store tables.  */
+
+static inline int
+sse_store_index (machine_mode mode)
+{
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    return 0;
+	  case 8:
+	    return 1;
+	  case 16:
+	    return 2;
+	  case 32:
+	    return 3;
+	  case 64:
+	    return 4;
+	  default:
+	    return -1;
+	}
+}
+
 /* Return the cost of moving data of mode M between a
    register and memory.  A value of 2 is the default; this cost is
    relative to those in `REGISTER_MOVE_COST'.
@@ -41241,21 +38753,9 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
     }
   if (SSE_CLASS_P (regclass))
     {
-      int index;
-      switch (GET_MODE_SIZE (mode))
-	{
-	  case 4:
-	    index = 0;
-	    break;
-	  case 8:
-	    index = 1;
-	    break;
-	  case 16:
-	    index = 2;
-	    break;
-	  default:
-	    return 100;
-	}
+      int index = sse_store_index (mode);
+      if (index == -1)
+	return 100;
       if (in == 2)
         return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
       return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
@@ -41358,8 +38858,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
       /* In case of copying from general_purpose_register we may emit multiple
          stores followed by single load causing memory size mismatch stall.
          Count this as arbitrarily high cost of 20.  */
-      if (targetm.class_max_nregs (class1, mode)
-	  > targetm.class_max_nregs (class2, mode))
+      if (GET_MODE_BITSIZE (mode) > BITS_PER_WORD
+	  && TARGET_MEMORY_MISMATCH_STALL
+	  && targetm.class_max_nregs (class1, mode)
+	     > targetm.class_max_nregs (class2, mode))
 	cost += 20;
 
       /* In the case of FP/MMX moves, the registers actually overlap, and we
@@ -41381,12 +38883,19 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
        where integer modes in MMX/SSE registers are not tieable
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
-    return MAX (8, ix86_cost->mmxsse_to_integer);
+    return MAX (8, MMX_CLASS_P (class1) || MMX_CLASS_P (class2)
+		? ix86_cost->mmxsse_to_integer : ix86_cost->ssemmx_to_integer);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->fp_move;
   if (MAYBE_SSE_CLASS_P (class1))
-    return ix86_cost->sse_move;
+    {
+      if (GET_MODE_BITSIZE (mode) <= 128)
+	return ix86_cost->xmm_move;
+      if (GET_MODE_BITSIZE (mode) <= 256)
+	return ix86_cost->ymm_move;
+      return ix86_cost->zmm_move;
+    }
   if (MAYBE_MMX_CLASS_P (class1))
     return ix86_cost->mmx_move;
   return 2;
@@ -41657,6 +39166,27 @@ ix86_set_reg_reg_cost (machine_mode mode)
   return COSTS_N_INSNS (CEIL (GET_MODE_SIZE (mode), units));
 }
 
+/* Return cost of vector operation in MODE given that scalar version has
+   COST.  If PARALLEL is true assume that CPU has more than one unit
+   performing the operation.  */
+
+static int
+ix86_vec_cost (machine_mode mode, int cost, bool parallel)
+{
+  if (!VECTOR_MODE_P (mode))
+    return cost;
+ 
+  if (!parallel)
+    return cost * GET_MODE_NUNITS (mode);
+  if (GET_MODE_BITSIZE (mode) == 128
+      && TARGET_SSE_SPLIT_REGS)
+    return cost * 2;
+  if (GET_MODE_BITSIZE (mode) > 128
+      && TARGET_AVX128_OPTIMAL)
+    return cost * GET_MODE_BITSIZE (mode) / 128;
+  return cost;
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -41670,6 +39200,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
   int src_cost;
+  machine_mode inner_mode = mode;
+  if (VECTOR_MODE_P (mode))
+    inner_mode = GET_MODE_INNER (mode);
 
   switch (code)
     {
@@ -41814,19 +39347,20 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 		     shift with one insn set the cost to prefer paddb.  */
 		  if (CONSTANT_P (XEXP (x, 1)))
 		    {
-		      *total = (cost->fabs
+		      *total = ix86_vec_cost (mode,
+				cost->sse_op
 				+ rtx_cost (XEXP (x, 0), mode, code, 0, speed)
-				+ (speed ? 2 : COSTS_N_BYTES (16)));
+				+ (speed ? 2 : COSTS_N_BYTES (16)), true);
 		      return true;
 		    }
 		  count = 3;
 		}
 	      else if (TARGET_SSSE3)
 		count = 7;
-	      *total = cost->fabs * count;
+	      *total = ix86_vec_cost (mode, cost->sse_op * count, true);
 	    }
 	  else
-	    *total = cost->fabs;
+	    *total = ix86_vec_cost (mode, cost->sse_op, true);
 	}
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	{
@@ -41868,9 +39402,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
         gcc_assert (FLOAT_MODE_P (mode));
         gcc_assert (TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F);
 
-        /* ??? SSE scalar/vector cost should be used here.  */
-        /* ??? Bald assumption that fma has the same cost as fmul.  */
-        *total = cost->fmul;
+        *total = ix86_vec_cost (mode,
+				mode == SFmode ? cost->fmass : cost->fmasd,
+				true);
 	*total += rtx_cost (XEXP (x, 1), mode, FMA, 1, speed);
 
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
@@ -41889,8 +39423,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case MULT:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
-	  /* ??? SSE scalar cost should be used here.  */
-	  *total = cost->fmul;
+	  *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
@@ -41900,8 +39433,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* ??? SSE vector cost should be used here.  */
-	  *total = cost->fmul;
+	  *total = ix86_vec_cost (mode,
+				  inner_mode == DFmode
+				  ? cost->mulsd : cost->mulss, true);
 	  return false;
 	}
       else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
@@ -41914,22 +39448,29 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 		extra = 5;
 	      else if (TARGET_SSSE3)
 		extra = 6;
-	      *total = cost->fmul * 2 + cost->fabs * extra;
+	      *total = ix86_vec_cost (mode,
+				      cost->mulss * 2 + cost->sse_op * extra,
+				      true);
 	    }
 	  /* V*DImode is emulated with 5-8 insns.  */
 	  else if (mode == V2DImode || mode == V4DImode)
 	    {
 	      if (TARGET_XOP && mode == V2DImode)
-		*total = cost->fmul * 2 + cost->fabs * 3;
+		*total = ix86_vec_cost (mode,
+					cost->mulss * 2 + cost->sse_op * 3,
+					true);
 	      else
-		*total = cost->fmul * 3 + cost->fabs * 5;
+		*total = ix86_vec_cost (mode,
+					cost->mulss * 3 + cost->sse_op * 5,
+					true);
 	    }
 	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
 	     insns, including two PMULUDQ.  */
 	  else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
-	    *total = cost->fmul * 2 + cost->fabs * 5;
+	    *total = ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5,
+				    true);
 	  else
-	    *total = cost->fmul;
+	    *total = ix86_vec_cost (mode, cost->mulss, true);
 	  return false;
 	}
       else
@@ -41983,13 +39524,13 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case MOD:
     case UMOD:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	/* ??? SSE cost should be used here.  */
-	*total = cost->fdiv;
+	*total = inner_mode == DFmode ? cost->divsd : cost->divss;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fdiv;
       else if (FLOAT_MODE_P (mode))
-	/* ??? SSE vector cost should be used here.  */
-	*total = cost->fdiv;
+	*total = ix86_vec_cost (mode,
+			        inner_mode == DFmode ? cost->divsd : cost->divss,
+				true);
       else
 	*total = cost->divide[MODE_INDEX (mode)];
       return false;
@@ -42068,8 +39609,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
-	  /* ??? SSE cost should be used here.  */
-	  *total = cost->fadd;
+	  *total = cost->addss;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
@@ -42079,8 +39619,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* ??? SSE vector cost should be used here.  */
-	  *total = cost->fadd;
+	  *total = ix86_vec_cost (mode, cost->addss, true);
 	  return false;
 	}
       /* FALLTHRU */
@@ -42103,8 +39642,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case NEG:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	{
-	  /* ??? SSE cost should be used here.  */
-	  *total = cost->fchs;
+	  *total = cost->sse_op;
 	  return false;
 	}
       else if (X87_FLOAT_MODE_P (mode))
@@ -42114,20 +39652,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  /* ??? SSE vector cost should be used here.  */
-	  *total = cost->fchs;
+	  *total = ix86_vec_cost (mode, cost->sse_op, true);
 	  return false;
 	}
       /* FALLTHRU */
 
     case NOT:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	{
-	  /* ??? Should be SSE vector operation cost.  */
-	  /* At least for published AMD latencies, this really is the same
-	     as the latency for a simple fpu operation like fabs.  */
-	  *total = cost->fabs;
-	}
+	*total = ix86_vec_cost (mode, cost->sse_op, true);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
       else
@@ -42160,28 +39692,38 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case FLOAT_EXTEND:
       if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
 	*total = 0;
+      else
+        *total = ix86_vec_cost (mode, cost->addss, true);
+      return false;
+
+    case FLOAT_TRUNCATE:
+      if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
+	*total = cost->fadd;
+      else
+        *total = ix86_vec_cost (mode, cost->addss, true);
       return false;
 
     case ABS:
+      /* SSE requires memory load for the constant operand. It may make
+	 sense to account for this.  Of course the constant operand may or
+	 may not be reused. */
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	/* ??? SSE cost should be used here.  */
-	*total = cost->fabs;
+	*total = cost->sse_op;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fabs;
       else if (FLOAT_MODE_P (mode))
-	/* ??? SSE vector cost should be used here.  */
-	*total = cost->fabs;
+	*total = ix86_vec_cost (mode, cost->sse_op, true);
       return false;
 
     case SQRT:
       if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	/* ??? SSE cost should be used here.  */
-	*total = cost->fsqrt;
+	*total = mode == SFmode ? cost->sqrtss : cost->sqrtsd;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fsqrt;
       else if (FLOAT_MODE_P (mode))
-	/* ??? SSE vector cost should be used here.  */
-	*total = cost->fsqrt;
+	*total = ix86_vec_cost (mode,
+				mode == SFmode ? cost->sqrtss : cost->sqrtsd,
+				true);
       return false;
 
     case UNSPEC:
@@ -42195,7 +39737,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* ??? Assume all of these vector manipulation patterns are
 	 recognizable.  In which case they all pretty much have the
 	 same cost.  */
-     *total = cost->fabs;
+     *total = cost->sse_op;
      return true;
     case VEC_MERGE:
       mask = XEXP (x, 2);
@@ -42204,7 +39746,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
 	*total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed);
       else
-	*total = cost->fabs;
+	*total = cost->sse_op;
       return true;
 
     default:
@@ -42669,6 +40211,10 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 
   emit_note (NOTE_INSN_PROLOGUE_END);
 
+  /* CET is enabled, insert EB instruction.  */
+  if ((flag_cf_protection & CF_BRANCH) && TARGET_IBT)
+    emit_insn (gen_nop_endbr ());
+
   /* If VCALL_OFFSET, we'll need THIS in a register.  Might as well
      pull it in now and let DELTA benefit.  */
   if (REG_P (this_param))
@@ -42922,8 +40468,8 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
    address sizes.  This is enough to eliminate unnecessary padding in
    99% of cases.  */
 
-static int
-min_insn_size (rtx_insn *insn)
+int
+ix86_min_insn_size (rtx_insn *insn)
 {
   int l = 0, len;
 
@@ -43032,13 +40578,13 @@ ix86_avoid_jump_mispredicts (void)
 		    njumps--, isjump = true;
 		  else
 		    isjump = false;
-		  nbytes -= min_insn_size (start);
+		  nbytes -= ix86_min_insn_size (start);
 		}
 	    }
 	  continue;
 	}
 
-      min_size = min_insn_size (insn);
+      min_size = ix86_min_insn_size (insn);
       nbytes += min_size;
       if (dump_file)
 	fprintf (dump_file, "Insn %i estimated to %i bytes\n",
@@ -43057,7 +40603,7 @@ ix86_avoid_jump_mispredicts (void)
 	    njumps--, isjump = true;
 	  else
 	    isjump = false;
-	  nbytes -= min_insn_size (start);
+	  nbytes -= ix86_min_insn_size (start);
 	}
       gcc_assert (njumps >= 0);
       if (dump_file)
@@ -43066,7 +40612,7 @@ ix86_avoid_jump_mispredicts (void)
 
       if (njumps == 3 && isjump && nbytes < 16)
 	{
-	  int padsize = 15 - nbytes + min_insn_size (insn);
+	  int padsize = 15 - nbytes + ix86_min_insn_size (insn);
 
 	  if (dump_file)
 	    fprintf (dump_file, "Padding insn %i by %i bytes!\n",
@@ -46895,35 +44441,69 @@ static int
 ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
                                  tree vectype, int)
 {
+  bool fp = false;
+  machine_mode mode = TImode;
+  int index;
+  if (vectype != NULL)
+    {
+      fp = FLOAT_TYPE_P (vectype);
+      mode = TYPE_MODE (vectype);
+    }
+
   switch (type_of_cost)
     {
       case scalar_stmt:
-        return ix86_cost->scalar_stmt_cost;
+        return fp ? ix86_cost->addss : COSTS_N_INSNS (1);
 
       case scalar_load:
-        return ix86_cost->scalar_load_cost;
+	/* load/store costs are relative to register move which is 2. Recompute
+ 	   it to COSTS_N_INSNS so everything have same base.  */
+        return COSTS_N_INSNS (fp ? ix86_cost->sse_load[0]
+			      : ix86_cost->int_load [2]) / 2;
 
       case scalar_store:
-        return ix86_cost->scalar_store_cost;
+        return COSTS_N_INSNS (fp ? ix86_cost->sse_store[0]
+			      : ix86_cost->int_store [2]) / 2;
 
       case vector_stmt:
-        return ix86_cost->vec_stmt_cost;
+        return ix86_vec_cost (mode,
+			      fp ? ix86_cost->addss : ix86_cost->sse_op,
+			      true);
 
       case vector_load:
-        return ix86_cost->vec_align_load_cost;
+	index = sse_store_index (mode);
+	gcc_assert (index >= 0);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2,
+			      true);
 
       case vector_store:
-        return ix86_cost->vec_store_cost;
+	index = sse_store_index (mode);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2,
+			      true);
 
       case vec_to_scalar:
-        return ix86_cost->vec_to_scalar_cost;
-
       case scalar_to_vec:
-        return ix86_cost->scalar_to_vec_cost;
+        return ix86_vec_cost (mode, ix86_cost->sse_op, true);
 
+      /* We should have separate costs for unaligned loads and gather/scatter.
+	 Do that incrementally.  */
       case unaligned_load:
+      case vector_gather_load:
+	index = sse_store_index (mode);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->sse_unaligned_load[index]) / 2,
+			      true);
+
       case unaligned_store:
-        return ix86_cost->vec_unalign_load_cost;
+      case vector_scatter_store:
+	index = sse_store_index (mode);
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->sse_unaligned_store[index]) / 2,
+			      true);
 
       case cond_branch_taken:
         return ix86_cost->cond_taken_branch_cost;
@@ -46933,10 +44513,11 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_perm:
       case vec_promote_demote:
-        return ix86_cost->vec_stmt_cost;
+        return ix86_vec_cost (mode,
+			      ix86_cost->sse_op, true);
 
       case vec_construct:
-	return ix86_cost->vec_stmt_cost * (TYPE_VECTOR_SUBPARTS (vectype) - 1);
+	return ix86_vec_cost (mode, ix86_cost->sse_op, false);
 
       default:
         gcc_unreachable ();
@@ -47814,8 +45395,8 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   if (ix86_expand_vec_one_operand_perm_avx512 (d))
     return true;
 
-  /* Try the AVX512F vpermi2 instructions.  */
-  if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
+  /* Try the AVX512F vpermt2/vpermi2 instructions.  */
+  if (ix86_expand_vec_perm_vpermt2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
     return true;
 
   /* See if we can get the same permutation in different vector integer
@@ -49474,9 +47055,9 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
 }
 
 /* Implement arbitrary permutations of two V64QImode operands
-   will 2 vpermi2w, 2 vpshufb and one vpor instruction.  */
+   with 2 vperm[it]2w, 2 vpshufb and one vpor instruction.  */
 static bool
-expand_vec_perm_vpermi2_vpshub2 (struct expand_vec_perm_d *d)
+expand_vec_perm_vpermt2_vpshub2 (struct expand_vec_perm_d *d)
 {
   if (!TARGET_AVX512BW || !(d->vmode == V64QImode))
     return false;
@@ -49721,7 +47302,7 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_vpshufb2_vpermq_even_odd (d))
     return true;
 
-  if (expand_vec_perm_vpermi2_vpshub2 (d))
+  if (expand_vec_perm_vpermt2_vpshub2 (d))
     return true;
 
   /* ??? Look for narrow permutations whose element orderings would
@@ -49850,8 +47431,7 @@ ix86_expand_vec_perm_const (rtx operands[4])
 /* Implement targetm.vectorize.vec_perm_const_ok.  */
 
 static bool
-ix86_vectorize_vec_perm_const_ok (machine_mode vmode,
-				  const unsigned char *sel)
+ix86_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
@@ -49870,17 +47450,17 @@ ix86_vectorize_vec_perm_const_ok (machine_mode vmode,
     case E_V8DImode:
     case E_V8DFmode:
       if (TARGET_AVX512F)
-	/* All implementable with a single vpermi2 insn.  */
+	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
-	/* All implementable with a single vpermi2 insn.  */
+	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V64QImode:
       if (TARGET_AVX512BW)
-	/* Implementable with 2 vpermi2, 2 vpshufb and 1 or insn.  */
+	/* Implementable with 2 vperm[it]2, 2 vpshufb and 1 or insn.  */
 	return true;
       break;
     case E_V8SImode:
@@ -49888,7 +47468,7 @@ ix86_vectorize_vec_perm_const_ok (machine_mode vmode,
     case E_V4DFmode:
     case E_V4DImode:
       if (TARGET_AVX512VL)
-	/* All implementable with a single vpermi2 insn.  */
+	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V16HImode:
@@ -49922,11 +47502,11 @@ ix86_vectorize_vec_perm_const_ok (machine_mode vmode,
 
   /* Extract the values from the vector CST into the permutation
      array in D.  */
-  memcpy (d.perm, sel, nelt);
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned char e = sel[i];
       gcc_assert (e < 2 * nelt);
+      d.perm[i] = e;
       which |= (e < nelt ? 1 : 2);
     }
 
@@ -50486,6 +48066,46 @@ ix86_bnd_prefixed_insn_p (rtx insn)
   return chkp_function_instrumented_p (current_function_decl);
 }
 
+/* Return 1 if control tansfer instruction INSN
+   should be encoded with notrack prefix.  */
+
+static bool
+ix86_notrack_prefixed_insn_p (rtx insn)
+{
+  if (!insn || !((flag_cf_protection & CF_BRANCH) && TARGET_IBT))
+    return false;
+
+  if (CALL_P (insn))
+    {
+      rtx call = get_call_rtx_from (insn);
+      gcc_assert (call != NULL_RTX);
+      rtx addr = XEXP (call, 0);
+
+      /* Do not emit 'notrack' if it's not an indirect call.  */
+      if (MEM_P (addr)
+	  && GET_CODE (XEXP (addr, 0)) == SYMBOL_REF)
+	return false;
+      else
+	return find_reg_note (insn, REG_CALL_NOCF_CHECK, 0);
+    }
+
+  if (JUMP_P (insn) && !flag_cet_switch)
+    {
+      rtx target = JUMP_LABEL (insn);
+      if (target == NULL_RTX || ANY_RETURN_P (target))
+	return false;
+
+      /* Check the jump is a switch table.  */
+      rtx_insn *label = as_a<rtx_insn *> (target);
+      rtx_insn *table = next_insn (label);
+      if (table == NULL_RTX || !JUMP_TABLE_DATA_P (table))
+	return false;
+      else
+	return true;
+    }
+  return false;
+}
+
 /* Calculate integer abs() using only SSE2 instructions.  */
 
 void
@@ -50830,837 +48450,64 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 }
 
 #undef TARGET_SCHED_DISPATCH
-#define TARGET_SCHED_DISPATCH has_dispatch
+#define TARGET_SCHED_DISPATCH ix86_bd_has_dispatch
 #undef TARGET_SCHED_DISPATCH_DO
-#define TARGET_SCHED_DISPATCH_DO do_dispatch
+#define TARGET_SCHED_DISPATCH_DO ix86_bd_do_dispatch
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH ix86_reassociation_width
 #undef TARGET_SCHED_REORDER
-#define TARGET_SCHED_REORDER ix86_sched_reorder
+#define TARGET_SCHED_REORDER ix86_atom_sched_reorder
 #undef TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY ix86_adjust_priority
 #undef TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK
 #define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK \
   ix86_dependencies_evaluation_hook
 
-/* The size of the dispatch window is the total number of bytes of
-   object code allowed in a window.  */
-#define DISPATCH_WINDOW_SIZE 16
-
-/* Number of dispatch windows considered for scheduling.  */
-#define MAX_DISPATCH_WINDOWS 3
-
-/* Maximum number of instructions in a window.  */
-#define MAX_INSN 4
-
-/* Maximum number of immediate operands in a window.  */
-#define MAX_IMM 4
-
-/* Maximum number of immediate bits allowed in a window.  */
-#define MAX_IMM_SIZE 128
-
-/* Maximum number of 32 bit immediates allowed in a window.  */
-#define MAX_IMM_32 4
-
-/* Maximum number of 64 bit immediates allowed in a window.  */
-#define MAX_IMM_64 2
-
-/* Maximum total of loads or prefetches allowed in a window.  */
-#define MAX_LOAD 2
-
-/* Maximum total of stores allowed in a window.  */
-#define MAX_STORE 1
-
-#undef BIG
-#define BIG 100
-
-
-/* Dispatch groups.  Istructions that affect the mix in a dispatch window.  */
-enum dispatch_group {
-  disp_no_group = 0,
-  disp_load,
-  disp_store,
-  disp_load_store,
-  disp_prefetch,
-  disp_imm,
-  disp_imm_32,
-  disp_imm_64,
-  disp_branch,
-  disp_cmp,
-  disp_jcc,
-  disp_last
-};
-
-/* Number of allowable groups in a dispatch window.  It is an array
-   indexed by dispatch_group enum.  100 is used as a big number,
-   because the number of these kind of operations does not have any
-   effect in dispatch window, but we need them for other reasons in
-   the table.  */
-static unsigned int num_allowable_groups[disp_last] = {
-  0, 2, 1, 1, 2, 4, 4, 2, 1, BIG, BIG
-};
-
-char group_name[disp_last + 1][16] = {
-  "disp_no_group", "disp_load", "disp_store", "disp_load_store",
-  "disp_prefetch", "disp_imm", "disp_imm_32", "disp_imm_64",
-  "disp_branch", "disp_cmp", "disp_jcc", "disp_last"
-};
-
-/* Instruction path.  */
-enum insn_path {
-  no_path = 0,
-  path_single, /* Single micro op.  */
-  path_double, /* Double micro op.  */
-  path_multi,  /* Instructions with more than 2 micro op..  */
-  last_path
-};
-
-/* sched_insn_info defines a window to the instructions scheduled in
-   the basic block.  It contains a pointer to the insn_info table and
-   the instruction scheduled.
-
-   Windows are allocated for each basic block and are linked
-   together.  */
-typedef struct sched_insn_info_s {
-  rtx insn;
-  enum dispatch_group group;
-  enum insn_path path;
-  int byte_len;
-  int imm_bytes;
-} sched_insn_info;
-
-/* Linked list of dispatch windows.  This is a two way list of
-   dispatch windows of a basic block.  It contains information about
-   the number of uops in the window and the total number of
-   instructions and of bytes in the object code for this dispatch
-   window.  */
-typedef struct dispatch_windows_s {
-  int num_insn;            /* Number of insn in the window.  */
-  int num_uops;            /* Number of uops in the window.  */
-  int window_size;         /* Number of bytes in the window.  */
-  int window_num;          /* Window number between 0 or 1.  */
-  int num_imm;             /* Number of immediates in an insn.  */
-  int num_imm_32;          /* Number of 32 bit immediates in an insn.  */
-  int num_imm_64;          /* Number of 64 bit immediates in an insn.  */
-  int imm_size;            /* Total immediates in the window.  */
-  int num_loads;           /* Total memory loads in the window.  */
-  int num_stores;          /* Total memory stores in the window.  */
-  int violation;          /* Violation exists in window.  */
-  sched_insn_info *window; /* Pointer to the window.  */
-  struct dispatch_windows_s *next;
-  struct dispatch_windows_s *prev;
-} dispatch_windows;
-
-/* Immediate valuse used in an insn.  */
-typedef struct imm_info_s
-  {
-    int imm;
-    int imm32;
-    int imm64;
-  } imm_info;
-
-static dispatch_windows *dispatch_window_list;
-static dispatch_windows *dispatch_window_list1;
-
-/* Get dispatch group of insn.  */
-
-static enum dispatch_group
-get_mem_group (rtx_insn *insn)
-{
-  enum attr_memory memory;
-
-  if (INSN_CODE (insn) < 0)
-    return disp_no_group;
-  memory = get_attr_memory (insn);
-  if (memory == MEMORY_STORE)
-    return disp_store;
-
-  if (memory == MEMORY_LOAD)
-    return disp_load;
-
-  if (memory == MEMORY_BOTH)
-    return disp_load_store;
-
-  return disp_no_group;
-}
-
-/* Return true if insn is a compare instruction.  */
-
-static bool
-is_cmp (rtx_insn *insn)
-{
-  enum attr_type type;
-
-  type = get_attr_type (insn);
-  return (type == TYPE_TEST
-	  || type == TYPE_ICMP
-	  || type == TYPE_FCMP
-	  || GET_CODE (PATTERN (insn)) == COMPARE);
-}
-
-/* Return true if a dispatch violation encountered.  */
-
-static bool
-dispatch_violation (void)
-{
-  if (dispatch_window_list->next)
-    return dispatch_window_list->next->violation;
-  return dispatch_window_list->violation;
-}
-
-/* Return true if insn is a branch instruction.  */
-
-static bool
-is_branch (rtx_insn *insn)
-{
-  return (CALL_P (insn) || JUMP_P (insn));
-}
-
-/* Return true if insn is a prefetch instruction.  */
-
-static bool
-is_prefetch (rtx_insn *insn)
-{
-  return NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == PREFETCH;
-}
-
-/* This function initializes a dispatch window and the list container holding a
-   pointer to the window.  */
-
-static void
-init_window (int window_num)
-{
-  int i;
-  dispatch_windows *new_list;
-
-  if (window_num == 0)
-    new_list = dispatch_window_list;
-  else
-    new_list = dispatch_window_list1;
-
-  new_list->num_insn = 0;
-  new_list->num_uops = 0;
-  new_list->window_size = 0;
-  new_list->next = NULL;
-  new_list->prev = NULL;
-  new_list->window_num = window_num;
-  new_list->num_imm = 0;
-  new_list->num_imm_32 = 0;
-  new_list->num_imm_64 = 0;
-  new_list->imm_size = 0;
-  new_list->num_loads = 0;
-  new_list->num_stores = 0;
-  new_list->violation = false;
-
-  for (i = 0; i < MAX_INSN; i++)
-    {
-      new_list->window[i].insn = NULL;
-      new_list->window[i].group = disp_no_group;
-      new_list->window[i].path = no_path;
-      new_list->window[i].byte_len = 0;
-      new_list->window[i].imm_bytes = 0;
-    }
-  return;
-}
-
-/* This function allocates and initializes a dispatch window and the
-   list container holding a pointer to the window.  */
-
-static dispatch_windows *
-allocate_window (void)
-{
-  dispatch_windows *new_list = XNEW (struct dispatch_windows_s);
-  new_list->window = XNEWVEC (struct sched_insn_info_s, MAX_INSN + 1);
-
-  return new_list;
-}
-
-/* This routine initializes the dispatch scheduling information.  It
-   initiates building dispatch scheduler tables and constructs the
-   first dispatch window.  */
-
-static void
-init_dispatch_sched (void)
-{
-  /* Allocate a dispatch list and a window.  */
-  dispatch_window_list = allocate_window ();
-  dispatch_window_list1 = allocate_window ();
-  init_window (0);
-  init_window (1);
-}
-
-/* This function returns true if a branch is detected.  End of a basic block
-   does not have to be a branch, but here we assume only branches end a
-   window.  */
-
-static bool
-is_end_basic_block (enum dispatch_group group)
-{
-  return group == disp_branch;
-}
-
-/* This function is called when the end of a window processing is reached.  */
-
-static void
-process_end_window (void)
-{
-  gcc_assert (dispatch_window_list->num_insn <= MAX_INSN);
-  if (dispatch_window_list->next)
-    {
-      gcc_assert (dispatch_window_list1->num_insn <= MAX_INSN);
-      gcc_assert (dispatch_window_list->window_size
-		  + dispatch_window_list1->window_size <= 48);
-      init_window (1);
-    }
-  init_window (0);
-}
-
-/* Allocates a new dispatch window and adds it to WINDOW_LIST.
-   WINDOW_NUM is either 0 or 1.  A maximum of two windows are generated
-   for 48 bytes of instructions.  Note that these windows are not dispatch
-   windows that their sizes are DISPATCH_WINDOW_SIZE.  */
-
-static dispatch_windows *
-allocate_next_window (int window_num)
-{
-  if (window_num == 0)
-    {
-      if (dispatch_window_list->next)
-	  init_window (1);
-      init_window (0);
-      return dispatch_window_list;
-    }
-
-  dispatch_window_list->next = dispatch_window_list1;
-  dispatch_window_list1->prev = dispatch_window_list;
-
-  return dispatch_window_list1;
-}
-
-/* Compute number of immediate operands of an instruction.  */
-
-static void
-find_constant (rtx in_rtx, imm_info *imm_values)
-{
-  if (INSN_P (in_rtx))
-    in_rtx = PATTERN (in_rtx);
-  subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, in_rtx, ALL)
-    if (const_rtx x = *iter)
-      switch (GET_CODE (x))
-	{
-	case CONST:
-	case SYMBOL_REF:
-	case CONST_INT:
-	  (imm_values->imm)++;
-	  if (x86_64_immediate_operand (CONST_CAST_RTX (x), SImode))
-	    (imm_values->imm32)++;
-	  else
-	    (imm_values->imm64)++;
-	  break;
-
-	case CONST_DOUBLE:
-	case CONST_WIDE_INT:
-	  (imm_values->imm)++;
-	  (imm_values->imm64)++;
-	  break;
-
-	case CODE_LABEL:
-	  if (LABEL_KIND (x) == LABEL_NORMAL)
-	    {
-	      (imm_values->imm)++;
-	      (imm_values->imm32)++;
-	    }
-	  break;
-
-	default:
-	  break;
-	}
-}
-
-/* Return total size of immediate operands of an instruction along with number
-   of corresponding immediate-operands.  It initializes its parameters to zero
-   befor calling FIND_CONSTANT.
-   INSN is the input instruction.  IMM is the total of immediates.
-   IMM32 is the number of 32 bit immediates.  IMM64 is the number of 64
-   bit immediates.  */
-
-static int
-get_num_immediates (rtx_insn *insn, int *imm, int *imm32, int *imm64)
-{
-  imm_info imm_values = {0, 0, 0};
-
-  find_constant (insn, &imm_values);
-  *imm = imm_values.imm;
-  *imm32 = imm_values.imm32;
-  *imm64 = imm_values.imm64;
-  return imm_values.imm32 * 4 + imm_values.imm64 * 8;
-}
-
-/* This function indicates if an operand of an instruction is an
-   immediate.  */
-
-static bool
-has_immediate (rtx_insn *insn)
-{
-  int num_imm_operand;
-  int num_imm32_operand;
-  int num_imm64_operand;
-
-  if (insn)
-    return get_num_immediates (insn, &num_imm_operand, &num_imm32_operand,
-			       &num_imm64_operand);
-  return false;
-}
-
-/* Return single or double path for instructions.  */
-
-static enum insn_path
-get_insn_path (rtx_insn *insn)
-{
-  enum attr_amdfam10_decode path = get_attr_amdfam10_decode (insn);
-
-  if ((int)path == 0)
-    return path_single;
-
-  if ((int)path == 1)
-    return path_double;
-
-  return path_multi;
-}
-
-/* Return insn dispatch group.  */
-
-static enum dispatch_group
-get_insn_group (rtx_insn *insn)
-{
-  enum dispatch_group group = get_mem_group (insn);
-  if (group)
-    return group;
-
-  if (is_branch (insn))
-    return disp_branch;
-
-  if (is_cmp (insn))
-    return disp_cmp;
-
-  if (has_immediate (insn))
-    return disp_imm;
-
-  if (is_prefetch (insn))
-    return disp_prefetch;
-
-  return disp_no_group;
-}
-
-/* Count number of GROUP restricted instructions in a dispatch
-   window WINDOW_LIST.  */
-
-static int
-count_num_restricted (rtx_insn *insn, dispatch_windows *window_list)
-{
-  enum dispatch_group group = get_insn_group (insn);
-  int imm_size;
-  int num_imm_operand;
-  int num_imm32_operand;
-  int num_imm64_operand;
-
-  if (group == disp_no_group)
-    return 0;
-
-  if (group == disp_imm)
-    {
-      imm_size = get_num_immediates (insn, &num_imm_operand, &num_imm32_operand,
-			      &num_imm64_operand);
-      if (window_list->imm_size + imm_size > MAX_IMM_SIZE
-	  || num_imm_operand + window_list->num_imm > MAX_IMM
-	  || (num_imm32_operand > 0
-	      && (window_list->num_imm_32 + num_imm32_operand > MAX_IMM_32
-		  || window_list->num_imm_64 * 2 + num_imm32_operand > MAX_IMM_32))
-	  || (num_imm64_operand > 0
-	      && (window_list->num_imm_64 + num_imm64_operand > MAX_IMM_64
-		  || window_list->num_imm_32 + num_imm64_operand * 2 > MAX_IMM_32))
-	  || (window_list->imm_size + imm_size == MAX_IMM_SIZE
-	      && num_imm64_operand > 0
-	      && ((window_list->num_imm_64 > 0
-		   && window_list->num_insn >= 2)
-		  || window_list->num_insn >= 3)))
-	return BIG;
-
-      return 1;
-    }
-
-  if ((group == disp_load_store
-       && (window_list->num_loads >= MAX_LOAD
-	   || window_list->num_stores >= MAX_STORE))
-      || ((group == disp_load
-	   || group == disp_prefetch)
-	  && window_list->num_loads >= MAX_LOAD)
-      || (group == disp_store
-	  && window_list->num_stores >= MAX_STORE))
-    return BIG;
-
-  return 1;
-}
-
-/* This function returns true if insn satisfies dispatch rules on the
-   last window scheduled.  */
-
-static bool
-fits_dispatch_window (rtx_insn *insn)
-{
-  dispatch_windows *window_list = dispatch_window_list;
-  dispatch_windows *window_list_next = dispatch_window_list->next;
-  unsigned int num_restrict;
-  enum dispatch_group group = get_insn_group (insn);
-  enum insn_path path = get_insn_path (insn);
-  int sum;
-
-  /* Make disp_cmp and disp_jcc get scheduled at the latest.  These
-     instructions should be given the lowest priority in the
-     scheduling process in Haifa scheduler to make sure they will be
-     scheduled in the same dispatch window as the reference to them.  */
-  if (group == disp_jcc || group == disp_cmp)
-    return false;
-
-  /* Check nonrestricted.  */
-  if (group == disp_no_group || group == disp_branch)
-    return true;
-
-  /* Get last dispatch window.  */
-  if (window_list_next)
-    window_list = window_list_next;
-
-  if (window_list->window_num == 1)
-    {
-      sum = window_list->prev->window_size + window_list->window_size;
-
-      if (sum == 32
-	  || (min_insn_size (insn) + sum) >= 48)
-	/* Window 1 is full.  Go for next window.  */
-	return true;
-    }
-
-  num_restrict = count_num_restricted (insn, window_list);
-
-  if (num_restrict > num_allowable_groups[group])
-    return false;
-
-  /* See if it fits in the first window.  */
-  if (window_list->window_num == 0)
-    {
-      /* The first widow should have only single and double path
-	 uops.  */
-      if (path == path_double
-	  && (window_list->num_uops + 2) > MAX_INSN)
-	return false;
-      else if (path != path_single)
-        return false;
-    }
-  return true;
-}
-
-/* Add an instruction INSN with NUM_UOPS micro-operations to the
-   dispatch window WINDOW_LIST.  */
-
-static void
-add_insn_window (rtx_insn *insn, dispatch_windows *window_list, int num_uops)
-{
-  int byte_len = min_insn_size (insn);
-  int num_insn = window_list->num_insn;
-  int imm_size;
-  sched_insn_info *window = window_list->window;
-  enum dispatch_group group = get_insn_group (insn);
-  enum insn_path path = get_insn_path (insn);
-  int num_imm_operand;
-  int num_imm32_operand;
-  int num_imm64_operand;
-
-  if (!window_list->violation && group != disp_cmp
-      && !fits_dispatch_window (insn))
-    window_list->violation = true;
-
-  imm_size = get_num_immediates (insn, &num_imm_operand, &num_imm32_operand,
-				 &num_imm64_operand);
-
-  /* Initialize window with new instruction.  */
-  window[num_insn].insn = insn;
-  window[num_insn].byte_len = byte_len;
-  window[num_insn].group = group;
-  window[num_insn].path = path;
-  window[num_insn].imm_bytes = imm_size;
-
-  window_list->window_size += byte_len;
-  window_list->num_insn = num_insn + 1;
-  window_list->num_uops = window_list->num_uops + num_uops;
-  window_list->imm_size += imm_size;
-  window_list->num_imm += num_imm_operand;
-  window_list->num_imm_32 += num_imm32_operand;
-  window_list->num_imm_64 += num_imm64_operand;
-
-  if (group == disp_store)
-    window_list->num_stores += 1;
-  else if (group == disp_load
-	   || group == disp_prefetch)
-    window_list->num_loads += 1;
-  else if (group == disp_load_store)
-    {
-      window_list->num_stores += 1;
-      window_list->num_loads += 1;
-    }
-}
-
-/* Adds a scheduled instruction, INSN, to the current dispatch window.
-   If the total bytes of instructions or the number of instructions in
-   the window exceed allowable, it allocates a new window.  */
-
-static void
-add_to_dispatch_window (rtx_insn *insn)
-{
-  int byte_len;
-  dispatch_windows *window_list;
-  dispatch_windows *next_list;
-  dispatch_windows *window0_list;
-  enum insn_path path;
-  enum dispatch_group insn_group;
-  bool insn_fits;
-  int num_insn;
-  int num_uops;
-  int window_num;
-  int insn_num_uops;
-  int sum;
-
-  if (INSN_CODE (insn) < 0)
-    return;
-
-  byte_len = min_insn_size (insn);
-  window_list = dispatch_window_list;
-  next_list = window_list->next;
-  path = get_insn_path (insn);
-  insn_group = get_insn_group (insn);
-
-  /* Get the last dispatch window.  */
-  if (next_list)
-      window_list = dispatch_window_list->next;
-
-  if (path == path_single)
-    insn_num_uops = 1;
-  else if (path == path_double)
-    insn_num_uops = 2;
-  else
-    insn_num_uops = (int) path;
-
-  /* If current window is full, get a new window.
-     Window number zero is full, if MAX_INSN uops are scheduled in it.
-     Window number one is full, if window zero's bytes plus window
-     one's bytes is 32, or if the bytes of the new instruction added
-     to the total makes it greater than 48, or it has already MAX_INSN
-     instructions in it.  */
-  num_insn = window_list->num_insn;
-  num_uops = window_list->num_uops;
-  window_num = window_list->window_num;
-  insn_fits = fits_dispatch_window (insn);
-
-  if (num_insn >= MAX_INSN
-      || num_uops + insn_num_uops > MAX_INSN
-      || !(insn_fits))
-    {
-      window_num = ~window_num & 1;
-      window_list = allocate_next_window (window_num);
-    }
-
-  if (window_num == 0)
-    {
-      add_insn_window (insn, window_list, insn_num_uops);
-      if (window_list->num_insn >= MAX_INSN
-	  && insn_group == disp_branch)
-	{
-	  process_end_window ();
-	  return;
-	}
-    }
-  else if (window_num == 1)
-    {
-      window0_list = window_list->prev;
-      sum = window0_list->window_size + window_list->window_size;
-      if (sum == 32
-	  || (byte_len + sum) >= 48)
-	{
-	  process_end_window ();
-	  window_list = dispatch_window_list;
-	}
-
-      add_insn_window (insn, window_list, insn_num_uops);
-    }
-  else
-    gcc_unreachable ();
-
-  if (is_end_basic_block (insn_group))
-    {
-      /* End of basic block is reached do end-basic-block process.  */
-      process_end_window ();
-      return;
-    }
-}
-
-/* Print the dispatch window, WINDOW_NUM, to FILE.  */
-
-DEBUG_FUNCTION static void
-debug_dispatch_window_file (FILE *file, int window_num)
-{
-  dispatch_windows *list;
-  int i;
-
-  if (window_num == 0)
-    list = dispatch_window_list;
-  else
-    list = dispatch_window_list1;
-
-  fprintf (file, "Window #%d:\n", list->window_num);
-  fprintf (file, "  num_insn = %d, num_uops = %d, window_size = %d\n",
-	  list->num_insn, list->num_uops, list->window_size);
-  fprintf (file, "  num_imm = %d, num_imm_32 = %d, num_imm_64 = %d, imm_size = %d\n",
-	   list->num_imm, list->num_imm_32, list->num_imm_64, list->imm_size);
-
-  fprintf (file, "  num_loads = %d, num_stores = %d\n", list->num_loads,
-	  list->num_stores);
-  fprintf (file, " insn info:\n");
-
-  for (i = 0; i < MAX_INSN; i++)
-    {
-      if (!list->window[i].insn)
-	break;
-      fprintf (file, "    group[%d] = %s, insn[%d] = %p, path[%d] = %d byte_len[%d] = %d, imm_bytes[%d] = %d\n",
-	      i, group_name[list->window[i].group],
-	      i, (void *)list->window[i].insn,
-	      i, list->window[i].path,
-	      i, list->window[i].byte_len,
-	      i, list->window[i].imm_bytes);
-    }
-}
-
-/* Print to stdout a dispatch window.  */
-
-DEBUG_FUNCTION void
-debug_dispatch_window (int window_num)
-{
-  debug_dispatch_window_file (stdout, window_num);
-}
-
-/* Print INSN dispatch information to FILE.  */
-
-DEBUG_FUNCTION static void
-debug_insn_dispatch_info_file (FILE *file, rtx_insn *insn)
-{
-  int byte_len;
-  enum insn_path path;
-  enum dispatch_group group;
-  int imm_size;
-  int num_imm_operand;
-  int num_imm32_operand;
-  int num_imm64_operand;
-
-  if (INSN_CODE (insn) < 0)
-    return;
-
-  byte_len = min_insn_size (insn);
-  path = get_insn_path (insn);
-  group = get_insn_group (insn);
-  imm_size = get_num_immediates (insn, &num_imm_operand, &num_imm32_operand,
-				 &num_imm64_operand);
-
-  fprintf (file, " insn info:\n");
-  fprintf (file, "  group = %s, path = %d, byte_len = %d\n",
-	   group_name[group], path, byte_len);
-  fprintf (file, "  num_imm = %d, num_imm_32 = %d, num_imm_64 = %d, imm_size = %d\n",
-	   num_imm_operand, num_imm32_operand, num_imm64_operand, imm_size);
-}
-
-/* Print to STDERR the status of the ready list with respect to
-   dispatch windows.  */
-
-DEBUG_FUNCTION void
-debug_ready_dispatch (void)
-{
-  int i;
-  int no_ready = number_in_ready ();
-
-  fprintf (stdout, "Number of ready: %d\n", no_ready);
-
-  for (i = 0; i < no_ready; i++)
-    debug_insn_dispatch_info_file (stdout, get_ready_element (i));
-}
-
-/* This routine is the driver of the dispatch scheduler.  */
-
-static void
-do_dispatch (rtx_insn *insn, int mode)
-{
-  if (mode == DISPATCH_INIT)
-    init_dispatch_sched ();
-  else if (mode == ADD_TO_DISPATCH_WINDOW)
-    add_to_dispatch_window (insn);
-}
-
-/* Return TRUE if Dispatch Scheduling is supported.  */
-
-static bool
-has_dispatch (rtx_insn *insn, int action)
-{
-  if ((TARGET_BDVER1 || TARGET_BDVER2 || TARGET_BDVER3
-      || TARGET_BDVER4 || TARGET_ZNVER1) && flag_dispatch_scheduler)
-    switch (action)
-      {
-      default:
-	return false;
-
-      case IS_DISPATCH_ON:
-	return true;
-
-      case IS_CMP:
-	return is_cmp (insn);
-
-      case DISPATCH_VIOLATION:
-	return dispatch_violation ();
-
-      case FITS_DISPATCH_WINDOW:
-	return fits_dispatch_window (insn);
-      }
-
-  return false;
-}
 
 /* Implementation of reassociation_width target hook used by
    reassoc phase to identify parallelism level in reassociated
    tree.  Statements tree_code is passed in OPC.  Arguments type
-   is passed in MODE.
-
-   Currently parallel reassociation is enabled for Atom
-   processors only and we set reassociation width to be 2
-   because Atom may issue up to 2 instructions per cycle.
-
-   Return value should be fixed if parallel reassociation is
-   enabled for other processors.  */
+   is passed in MODE.  */
 
 static int
-ix86_reassociation_width (unsigned int, machine_mode mode)
+ix86_reassociation_width (unsigned int op, machine_mode mode)
 {
+  int width = 1;
   /* Vector part.  */
   if (VECTOR_MODE_P (mode))
     {
-      if (TARGET_VECTOR_PARALLEL_EXECUTION)
-	return 2;
-      else
-	return 1;
-    }
+      int div = 1;
+      if (INTEGRAL_MODE_P (mode))
+	width = ix86_cost->reassoc_vec_int;
+      else if (FLOAT_MODE_P (mode))
+	width = ix86_cost->reassoc_vec_fp;
 
+      if (width == 1)
+	return 1;
+
+      /* Integer vector instructions execute in FP unit
+	 and can execute 3 additions and one multiplication per cycle.  */
+      if (ix86_tune == PROCESSOR_ZNVER1 && INTEGRAL_MODE_P (mode)
+	  && op != PLUS && op != MINUS)
+	return 1;
+
+      /* Account for targets that splits wide vectors into multiple parts.  */
+      if (TARGET_AVX128_OPTIMAL && GET_MODE_BITSIZE (mode) > 128)
+	div = GET_MODE_BITSIZE (mode) / 128;
+      else if (TARGET_SSE_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 64)
+	div = GET_MODE_BITSIZE (mode) / 64;
+      width = (width + div - 1) / div;
+    }
   /* Scalar part.  */
-  if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
-    return 2;
-  else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)
-    return ((TARGET_64BIT && ix86_tune == PROCESSOR_HASWELL)? 4 : 2);
-  else
-    return 1;
+  else if (INTEGRAL_MODE_P (mode))
+    width = ix86_cost->reassoc_int;
+  else if (FLOAT_MODE_P (mode))
+    width = ix86_cost->reassoc_fp;
+
+  /* Avoid using too many registers in 32bit mode.  */
+  if (!TARGET_64BIT && width > 2)
+    width = 2;
+  return width;
 }
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
@@ -51675,20 +48522,39 @@ ix86_preferred_simd_mode (scalar_mode mode)
   switch (mode)
     {
     case E_QImode:
-      return TARGET_AVX512BW ? V64QImode :
-       (TARGET_AVX && !TARGET_PREFER_AVX128) ? V32QImode : V16QImode;
+      if (TARGET_AVX512BW && !TARGET_PREFER_AVX256)
+	return V64QImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V32QImode;
+      else
+	return V16QImode;
+
     case E_HImode:
-      return TARGET_AVX512BW ? V32HImode :
-       (TARGET_AVX && !TARGET_PREFER_AVX128) ? V16HImode : V8HImode;
+      if (TARGET_AVX512BW && !TARGET_PREFER_AVX256)
+	return V32HImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V16HImode;
+      else
+	return V8HImode;
+
     case E_SImode:
-      return TARGET_AVX512F ? V16SImode :
-	(TARGET_AVX && !TARGET_PREFER_AVX128) ? V8SImode : V4SImode;
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
+	return V16SImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V8SImode;
+      else
+	return V4SImode;
+
     case E_DImode:
-      return TARGET_AVX512F ? V8DImode :
-	(TARGET_AVX && !TARGET_PREFER_AVX128) ? V4DImode : V2DImode;
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
+	return V8DImode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V4DImode;
+      else
+	return V2DImode;
 
     case E_SFmode:
-      if (TARGET_AVX512F)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V16SFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V8SFmode;
@@ -51696,7 +48562,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V4SFmode;
 
     case E_DFmode:
-      if (TARGET_AVX512F)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V8DFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V4DFmode;
@@ -51716,8 +48582,14 @@ ix86_preferred_simd_mode (scalar_mode mode)
 static unsigned int
 ix86_autovectorize_vector_sizes (void)
 {
-  return TARGET_AVX512F ? 64 | 32 | 16 :
-    (TARGET_AVX && !TARGET_PREFER_AVX128) ? 32 | 16 : 0;
+  unsigned int bytesizes = 0;
+
+  if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
+    bytesizes |= (64 | 32 | 16);
+  else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+    bytesizes |= (32 | 16);
+
+  return bytesizes;
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
@@ -53006,6 +49878,9 @@ ix86_run_selftests (void)
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS ix86_delegitimize_address
 
+#undef TARGET_CONST_NOT_OK_FOR_DEBUG_P
+#define TARGET_CONST_NOT_OK_FOR_DEBUG_P ix86_const_not_ok_for_debug_p
+
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P ix86_ms_bitfield_layout_p
 
@@ -53280,6 +50155,9 @@ ix86_run_selftests (void)
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE ix86_conditional_register_usage
 
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON ix86_canonicalize_comparison
+
 #undef TARGET_LOOP_UNROLL_ADJUST
 #define TARGET_LOOP_UNROLL_ADJUST ix86_loop_unroll_adjust
 
@@ -53402,6 +50280,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT ix86_constant_alignment
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

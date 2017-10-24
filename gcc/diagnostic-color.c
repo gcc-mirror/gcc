@@ -20,6 +20,10 @@
 #include "system.h"
 #include "diagnostic-color.h"
 
+#ifdef __MINGW32__
+#  include <windows.h>
+#endif
+
 /* Select Graphic Rendition (SGR, "\33[...m") strings.  */
 /* Also Erase in Line (EL) to Right ("\33[K") by default.  */
 /*    Why have EL to Right after SGR?
@@ -275,22 +279,27 @@ parse_gcc_colors (void)
       return true;
 }
 
-#if defined(_WIN32)
-bool
-colorize_init (diagnostic_color_rule_t)
-{
-  return false;
-}
-#else
-
 /* Return true if we should use color when in auto mode, false otherwise. */
 static bool
 should_colorize (void)
 {
+#ifdef __MINGW32__
+  /* For consistency reasons, one should check the handle returned by
+     _get_osfhandle(_fileno(stderr)) because the function
+     pp_write_text_to_stream() in pretty-print.c calls fputs() on
+     that stream.  However, the code below for non-Windows doesn't seem
+     to care about it either...  */
+  HANDLE h;
+  DWORD m;
+
+  h = GetStdHandle (STD_ERROR_HANDLE);
+  return (h != INVALID_HANDLE_VALUE) && (h != NULL)
+	  && GetConsoleMode (h, &m);
+#else
   char const *t = getenv ("TERM");
   return t && strcmp (t, "dumb") != 0 && isatty (STDERR_FILENO);
+#endif
 }
-
 
 bool
 colorize_init (diagnostic_color_rule_t rule)
@@ -310,4 +319,3 @@ colorize_init (diagnostic_color_rule_t rule)
       gcc_unreachable ();
     }
 }
-#endif

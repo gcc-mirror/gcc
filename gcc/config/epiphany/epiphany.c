@@ -173,6 +173,12 @@ static rtx_insn *frame_insn (rtx);
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK epiphany_hard_regno_mode_ok
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT epiphany_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET epiphany_starting_frame_offset
 
 bool
 epiphany_is_interrupt_p (tree decl)
@@ -3012,6 +3018,25 @@ epiphany_start_function (FILE *file, const char *name, tree decl)
     }
   switch_to_section (function_section (decl));
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
+}
+
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+epiphany_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, FASTEST_ALIGNMENT);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+epiphany_starting_frame_offset (void)
+{
+  return epiphany_stack_offset;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

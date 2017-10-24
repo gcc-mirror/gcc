@@ -607,16 +607,9 @@ special_function_p (const_tree fndecl, int flags)
 	flags |= ECF_RETURNS_TWICE;
     }
 
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
-	flags |= ECF_MAY_BE_ALLOCA;
-	break;
-      default:
-	break;
-      }
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
+    flags |= ECF_MAY_BE_ALLOCA;
 
   return flags;
 }
@@ -698,8 +691,7 @@ gimple_alloca_call_p (const gimple *stmt)
   if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
         return true;
       default:
 	break;
@@ -719,8 +711,7 @@ alloca_call_p (const_tree exp)
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
         return true;
       default:
 	break;
@@ -1252,9 +1243,8 @@ alloc_max_size (void)
 
 	      if (unit)
 		{
-		  wide_int w = wi::uhwi (limit, HOST_BITS_PER_WIDE_INT + 64);
-		  w *= unit;
-		  if (wi::ltu_p (w, alloc_object_size_limit))
+		  widest_int w = wi::mul (limit, unit);
+		  if (w < wi::to_widest (alloc_object_size_limit))
 		    alloc_object_size_limit = wide_int_to_tree (ssizetype, w);
 		}
 	    }
@@ -1294,8 +1284,6 @@ get_size_range (tree exp, tree range[2])
 
   tree exptype = TREE_TYPE (exp);
   unsigned expprec = TYPE_PRECISION (exptype);
-  wide_int wzero = wi::zero (expprec);
-  wide_int wmaxval = wide_int (TYPE_MAX_VALUE (exptype));
 
   bool signed_p = !TYPE_UNSIGNED (exptype);
 
@@ -1303,7 +1291,7 @@ get_size_range (tree exp, tree range[2])
     {
       if (signed_p)
 	{
-	  if (wi::les_p (max, wzero))
+	  if (wi::les_p (max, 0))
 	    {
 	      /* EXP is not in a strictly negative range.  That means
 		 it must be in some (not necessarily strictly) positive
@@ -1311,24 +1299,24 @@ get_size_range (tree exp, tree range[2])
 		 conversions negative values end up converted to large
 		 positive values, and otherwise they are not valid sizes,
 		 the resulting range is in both cases [0, TYPE_MAX].  */
-	      min = wzero;
-	      max = wmaxval;
+	      min = wi::zero (expprec);
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
 	    }
-	  else if (wi::les_p (min - 1, wzero))
+	  else if (wi::les_p (min - 1, 0))
 	    {
 	      /* EXP is not in a negative-positive range.  That means EXP
 		 is either negative, or greater than max.  Since negative
 		 sizes are invalid make the range [MAX + 1, TYPE_MAX].  */
 	      min = max + 1;
-	      max = wmaxval;
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
 	    }
 	  else
 	    {
 	      max = min - 1;
-	      min = wzero;
+	      min = wi::zero (expprec);
 	    }
 	}
-      else if (wi::eq_p (wzero, min - 1))
+      else if (wi::eq_p (0, min - 1))
 	{
 	  /* EXP is unsigned and not in the range [1, MAX].  That means
 	     it's either zero or greater than MAX.  Even though 0 would
@@ -1336,12 +1324,12 @@ get_size_range (tree exp, tree range[2])
 	     [MAX, TYPE_MAX] so that when MAX is greater than the limit
 	     the whole range is diagnosed.  */
 	  min = max + 1;
-	  max = wmaxval;
+	  max = wi::to_wide (TYPE_MAX_VALUE (exptype));
 	}
       else
 	{
 	  max = min - 1;
-	  min = wzero;
+	  min = wi::zero (expprec);
 	}
     }
 
@@ -1822,6 +1810,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  copy = allocate_dynamic_stack_space (size_rtx,
 						       TYPE_ALIGN (type),
 						       TYPE_ALIGN (type),
+						       max_int_size_in_bytes
+						       (type),
 						       true);
 		  copy = gen_rtx_MEM (BLKmode, copy);
 		  set_mem_attributes (copy, type, 1);
@@ -2197,11 +2187,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  if (POINTER_BOUNDS_P (args[i].tree_value))
 	    continue;
 
-	  if (CONST_INT_P (offset))
-	    addr = plus_constant (Pmode, arg_reg, INTVAL (offset));
-	  else
-	    addr = gen_rtx_PLUS (Pmode, arg_reg, offset);
-
+	  addr = simplify_gen_binary (PLUS, Pmode, arg_reg, offset);
 	  addr = plus_constant (Pmode, addr, arg_offset);
 
 	  if (args[i].partial != 0)
@@ -2231,11 +2217,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    }
 	  set_mem_align (args[i].stack, align);
 
-	  if (CONST_INT_P (slot_offset))
-	    addr = plus_constant (Pmode, arg_reg, INTVAL (slot_offset));
-	  else
-	    addr = gen_rtx_PLUS (Pmode, arg_reg, slot_offset);
-
+	  addr = simplify_gen_binary (PLUS, Pmode, arg_reg, slot_offset);
 	  addr = plus_constant (Pmode, addr, arg_offset);
 
 	  if (args[i].partial != 0)
@@ -3649,8 +3631,8 @@ expand_call (tree exp, rtx target, int ignore)
 	      /* We can pass TRUE as the 4th argument because we just
 		 saved the stack pointer and will restore it right after
 		 the call.  */
-	      allocate_dynamic_stack_space (push_size, 0,
-					    BIGGEST_ALIGNMENT, true);
+	      allocate_dynamic_stack_space (push_size, 0, BIGGEST_ALIGNMENT,
+					    -1, true);
 	    }
 
 	  /* If argument evaluation might modify the stack pointer,
@@ -4128,7 +4110,6 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  tree type = rettype;
 	  int unsignedp = TYPE_UNSIGNED (type);
-	  int offset = 0;
 	  machine_mode pmode;
 
 	  /* Ensure we promote as expected, and get the new unsignedness.  */
@@ -4136,18 +4117,8 @@ expand_call (tree exp, rtx target, int ignore)
 					 funtype, 1);
 	  gcc_assert (GET_MODE (target) == pmode);
 
-	  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	      && (GET_MODE_SIZE (GET_MODE (target))
-		  > GET_MODE_SIZE (TYPE_MODE (type))))
-	    {
-	      offset = GET_MODE_SIZE (GET_MODE (target))
-	        - GET_MODE_SIZE (TYPE_MODE (type));
-	      if (! BYTES_BIG_ENDIAN)
-	        offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-	      else if (! WORDS_BIG_ENDIAN)
-	        offset %= UNITS_PER_WORD;
-	    }
-
+	  unsigned int offset = subreg_lowpart_offset (TYPE_MODE (type),
+						       GET_MODE (target));
 	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
 	  SUBREG_PROMOTED_SET (target, unsignedp);

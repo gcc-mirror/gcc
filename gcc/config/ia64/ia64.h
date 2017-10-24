@@ -185,15 +185,6 @@ while (0)
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* If defined, a C expression to compute the alignment given to a constant that
-   is being placed in memory.  CONSTANT is the constant and ALIGN is the
-   alignment that the object would ordinarily have.  The value of this macro is
-   used instead of that alignment to align the object.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define STRICT_ALIGNMENT 1
 
 /* Define this if you wish to imitate the way many other C compilers handle
@@ -787,10 +778,6 @@ enum reg_class
 /* Define this macro to nonzero if the addresses of local variable slots
    are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 0
-
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  If not specified, the default value of zero

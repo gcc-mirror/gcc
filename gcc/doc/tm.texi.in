@@ -1050,19 +1050,7 @@ must be aligned to 16 byte boundaries.
 If this macro is not defined, then @var{basic-align} is used.
 @end defmac
 
-@defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
-If defined, a C expression to compute the alignment given to a constant
-that is being placed in memory.  @var{constant} is the constant and
-@var{basic-align} is the alignment that the object would ordinarily
-have.  The value of this macro is used instead of that alignment to
-align the object.
-
-The default definition just returns @var{basic-align}.
-
-The typical use of this macro is to increase alignment for string
-constants to be word aligned so that @code{strcpy} calls that copy
-constants can be done inline.
-@end defmac
+@hook TARGET_CONSTANT_ALIGNMENT
 
 @defmac LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
@@ -2423,22 +2411,13 @@ Define this macro if successive arguments to a function occupy decreasing
 addresses on the stack.
 @end defmac
 
-@defmac STARTING_FRAME_OFFSET
-Offset from the frame pointer to the first local variable slot to be allocated.
-
-If @code{FRAME_GROWS_DOWNWARD}, find the next slot's offset by
-subtracting the first slot's length from @code{STARTING_FRAME_OFFSET}.
-Otherwise, it is found by adding the length of the first slot to the
-value @code{STARTING_FRAME_OFFSET}.
-@c i'm not sure if the above is still correct.. had to change it to get
-@c rid of an overfull.  --mew 2feb93
-@end defmac
+@hook TARGET_STARTING_FRAME_OFFSET
 
 @defmac STACK_ALIGNMENT_NEEDED
 Define to zero to disable final alignment of the stack during reload.
 The nonzero default for this macro is suitable for most ports.
 
-On ports where @code{STARTING_FRAME_OFFSET} is nonzero or where there
+On ports where @code{TARGET_STARTING_FRAME_OFFSET} is nonzero or where there
 is a register save block following the local block that doesn't require
 alignment to @code{STACK_BOUNDARY}, it may be beneficial to disable
 stack alignment and do it in the backend.
@@ -2846,6 +2825,8 @@ fixed area of the stack frame when the user specifies
 GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
+
+@hook TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE
 
 @need 2000
 @node Frame Registers
@@ -4086,6 +4067,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 
+@hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
+
 @hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 
 @hook TARGET_VECTORIZE_VEC_PERM_CONST_OK
@@ -4607,6 +4590,8 @@ Define this macro if a non-short-circuit operation produced by
 @hook TARGET_RTX_COSTS
 
 @hook TARGET_ADDRESS_COST
+
+@hook TARGET_INSN_COST
 
 @hook TARGET_MAX_NOCE_IFCVT_SEQ_COST
 

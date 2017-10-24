@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 extern void mmix_init_expanders (void);
 extern int mmix_eh_return_data_regno (int);
 extern int mmix_initial_elimination_offset (int, int);
-extern int mmix_starting_frame_offset (void);
 extern int mmix_function_arg_regno_p (int, int);
 extern void mmix_function_profiler (FILE *, int);
 extern int mmix_reversible_cc_mode (machine_mode);
@@ -47,7 +46,6 @@ extern unsigned mmix_dbx_register_number (unsigned);
 extern int mmix_use_simple_return (void);
 extern void mmix_make_decl_one_only (tree);
 extern int mmix_data_alignment (tree, int);
-extern int mmix_constant_alignment (tree, int);
 extern unsigned mmix_local_alignment (tree, unsigned);
 extern void mmix_asm_output_pool_prologue (FILE *, const char *, tree, int);
 extern void mmix_asm_output_aligned_common (FILE *, const char *, int, int);

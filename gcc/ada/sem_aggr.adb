@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -1593,7 +1594,7 @@ package body Sem_Aggr is
             --  unless the expression covers a single component, or the
             --  expander is inactive.
 
-            --  In SPARK mode, expressions that can perform side-effects will
+            --  In SPARK mode, expressions that can perform side effects will
             --  be recognized by the gnat2why back-end, and the whole
             --  subprogram will be ignored. So semantic analysis can be
             --  performed safely.
@@ -2932,6 +2933,11 @@ package body Sem_Aggr is
       --  Verify that the type of the ancestor part is a non-private ancestor
       --  of the expected type, which must be a type extension.
 
+      procedure Transform_BIP_Assignment (Typ : Entity_Id);
+      --  For an extension aggregate whose ancestor part is a build-in-place
+      --  call returning a nonlimited type, this is used to transform the
+      --  assignment to the ancestor part to use a temp.
+
       ----------------------------
       -- Valid_Limited_Ancestor --
       ----------------------------
@@ -3013,6 +3019,26 @@ package body Sem_Aggr is
          return False;
       end Valid_Ancestor_Type;
 
+      ------------------------------
+      -- Transform_BIP_Assignment --
+      ------------------------------
+
+      procedure Transform_BIP_Assignment (Typ : Entity_Id) is
+         Loc      : constant Source_Ptr := Sloc (N);
+         Def_Id   : constant Entity_Id  := Make_Temporary (Loc, 'Y', A);
+         Obj_Decl : constant Node_Id    :=
+                      Make_Object_Declaration (Loc,
+                        Defining_Identifier => Def_Id,
+                        Constant_Present    => True,
+                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                        Expression          => A,
+                        Has_Init_Expression => True);
+      begin
+         Set_Etype (Def_Id, Typ);
+         Set_Ancestor_Part (N, New_Occurrence_Of (Def_Id, Loc));
+         Insert_Action (N, Obj_Decl);
+      end Transform_BIP_Assignment;
+
    --  Start of processing for Resolve_Extension_Aggregate
 
    begin
@@ -3081,7 +3107,7 @@ package body Sem_Aggr is
             Get_First_Interp (A, I, It);
             while Present (It.Typ) loop
 
-               --  Only consider limited interpretations in the Ada 2005 case
+               --  Consider limited interpretations if Ada 2005 or higher
 
                if Is_Tagged_Type (It.Typ)
                  and then (Ada_Version >= Ada_2005
@@ -3177,6 +3203,18 @@ package body Sem_Aggr is
 
                Error_Msg_N ("ancestor part must be statically tagged", A);
             else
+               --  We are using the build-in-place protocol, but we can't build
+               --  in place, because we need to call the function before
+               --  allocating the aggregate. Could do better for null
+               --  extensions, and maybe for nondiscriminated types.
+               --  This is wrong for limited, but those were wrong already.
+
+               if not Is_Limited_View (A_Type)
+                 and then Is_Build_In_Place_Function_Call (A)
+               then
+                  Transform_BIP_Assignment (A_Type);
+               end if;
+
                Resolve_Record_Aggregate (N, Typ);
             end if;
          end if;
@@ -3567,7 +3605,7 @@ package body Sem_Aggr is
                      --  This is redundant if the others_choice covers only
                      --  one component (small optimization possible???), but
                      --  indispensable otherwise, because each one must be
-                     --  expanded individually to preserve side-effects.
+                     --  expanded individually to preserve side effects.
 
                      --  Ada 2005 (AI-287): In case of default initialization
                      --  of components, we duplicate the corresponding default
@@ -3843,7 +3881,7 @@ package body Sem_Aggr is
          --  expansion is delayed until the enclosing aggregate is expanded
          --  into assignments. In that case, do not generate checks on the
          --  expression, because they will be generated later, and will other-
-         --  wise force a copy (to remove side-effects) that would leave a
+         --  wise force a copy (to remove side effects) that would leave a
          --  dynamic-sized aggregate in the code, something that gigi cannot
          --  handle.
 
@@ -4108,15 +4146,23 @@ package body Sem_Aggr is
          begin
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
-               if List_Length (Choices (Assoc)) > 1 then
-                  Check_SPARK_05_Restriction
-                    ("component association in record aggregate must "
-                     & "contain a single choice", Assoc);
-               end if;
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  Error_Msg_N
+                    ("iterated component association can only appear in an "
+                     & "array aggregate", N);
+                  raise Unrecoverable_Error;
 
-               if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                  Check_SPARK_05_Restriction
-                    ("record aggregate cannot contain OTHERS", Assoc);
+               else
+                  if List_Length (Choices (Assoc)) > 1 then
+                     Check_SPARK_05_Restriction
+                       ("component association in record aggregate must "
+                        & "contain a single choice", Assoc);
+                  end if;
+
+                  if Nkind (First (Choices (Assoc))) = N_Others_Choice then
+                     Check_SPARK_05_Restriction
+                       ("record aggregate cannot contain OTHERS", Assoc);
+                  end if;
                end if;
 
                Assoc := Next (Assoc);

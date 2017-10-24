@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides facilities for getting command line arguments
---  from a text file, called a "response file".
+--  This package provides facilities for getting command-line arguments from
+--  a text file, called a "response file".
 --
 --  Using a response file allow passing a set of arguments to an executable
 --  longer than the maximum allowed by the system on the command line.

@@ -48,8 +48,6 @@ package GNAT.Sockets.Thin is
 
    package C renames Interfaces.C;
 
-   use type System.CRTL.ssize_t;
-
    function Socket_Errno return Integer;
    --  Returns last socket error number
 

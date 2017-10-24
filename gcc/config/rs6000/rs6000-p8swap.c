@@ -335,21 +335,26 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 
   const_rtx tocrel_base;
 
-  /* Find the unique use in the swap and locate its def.  If the def
-     isn't unique, punt.  */
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   df_ref use;
   FOR_EACH_INSN_INFO_USE (use, insn_info)
     {
       struct df_link *def_link = DF_REF_CHAIN (use);
-      if (!def_link || def_link->next)
+
+      /* If there is no def or the def is artificial or there are
+	 multiple defs, punt.  */
+      if (!def_link || !def_link->ref || DF_REF_IS_ARTIFICIAL (def_link->ref)
+	  || def_link->next)
 	return false;
 
       rtx def_insn = DF_REF_INSN (def_link->ref);
       unsigned uid2 = INSN_UID (def_insn);
+      /* If this is not a load or is not a swap, return false.  */
       if (!insn_entry[uid2].is_load || !insn_entry[uid2].is_swap)
 	return false;
 
+      /* If the source of the rtl def is not a set from memory, return
+	 false.  */
       rtx body = PATTERN (def_insn);
       if (GET_CODE (body) != SET
 	  || GET_CODE (SET_SRC (body)) != VEC_SELECT
@@ -358,16 +363,30 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 
       rtx mem = XEXP (SET_SRC (body), 0);
       rtx base_reg = XEXP (mem, 0);
+      /* If the base address for the memory expression is not
+	 represented by a register, punt.  */
+      if (!REG_P (base_reg))
+	return false;
 
       df_ref base_use;
       insn_info = DF_INSN_INFO_GET (def_insn);
       FOR_EACH_INSN_INFO_USE (base_use, insn_info)
 	{
+	  /* If base_use does not represent base_reg, look for another
+	     use.  */
 	  if (!rtx_equal_p (DF_REF_REG (base_use), base_reg))
 	    continue;
 
 	  struct df_link *base_def_link = DF_REF_CHAIN (base_use);
 	  if (!base_def_link || base_def_link->next)
+	    return false;
+
+	  /* Constants held on the stack are not "true" constants
+	     because their values are not part of the static load
+	     image.  If this constant's base reference is a stack
+	     or frame pointer, it is seen as an artificial
+	     reference.  */
+	  if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
 	    return false;
 
 	  rtx tocrel_insn = DF_REF_INSN (base_def_link->ref);
@@ -383,8 +402,26 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  if (!toc_relative_expr_p (tocrel_expr, false, &tocrel_base, NULL))
 	    return false;
 	  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
+
 	  if (GET_CODE (base) != SYMBOL_REF || !CONSTANT_POOL_ADDRESS_P (base))
 	    return false;
+	  else
+	    {
+	      /* FIXME: The conditions under which
+	          ((GET_CODE (const_vector) == SYMBOL_REF) &&
+	           !CONSTANT_POOL_ADDRESS_P (const_vector))
+	         are not well understood.  This code prevents
+	         an internal compiler error which will occur in
+	         replace_swapped_load_constant () if we were to return
+	         true.  Some day, we should figure out how to properly
+	         handle this condition in
+	         replace_swapped_load_constant () and then we can
+	         remove this special test.  */
+	      rtx const_vector = get_pool_constant (base);
+	      if (GET_CODE (const_vector) == SYMBOL_REF
+		  && !CONSTANT_POOL_ADDRESS_P (const_vector))
+		    return false;
+	    }
 	}
     }
   return true;
@@ -1281,6 +1318,195 @@ replace_swap_with_copy (swap_web_entry *insn_entry, unsigned i)
   insn->set_deleted ();
 }
 
+/* Given that swap_insn represents a swap of a load of a constant
+   vector value, replace with a single instruction that loads a
+   swapped variant of the original constant.
+
+   The "natural" representation of a byte array in memory is the same
+   for big endian and little endian.
+
+   unsigned char byte_array[] =
+     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f };
+
+   However, when loaded into a vector register, the representation
+   depends on endian conventions.
+
+   In big-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f ]
+
+   In little-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ f, e, d, c, b, a, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 ]
+
+   Word arrays require different handling.  Consider the word array:
+
+   unsigned int word_array[] =
+     { 0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f };
+
+   The in-memory representation depends on endian configuration.  The
+   equivalent array, declared as a byte array, in memory would be:
+
+   unsigned char big_endian_word_array_data[] =
+     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f }
+
+   unsigned char little_endian_word_array_data[] =
+     { 3, 2, 1, 0, 7, 6, 5, 4, b, a, 9, 8, f, e, d, c }
+
+   In big-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f ]
+
+   In little-endian mode, the register holds:
+
+     MSB                                            LSB
+     [ c, d, e, f, 8, 9, a, b, 4, 5, 6, 7, 0, 1, 2, 3 ]
+
+
+  Similar transformations apply to the vector of half-word and vector
+  of double-word representations.
+
+  For now, don't handle vectors of quad-precision values.  Just return.
+  A better solution is to fix the code generator to emit lvx/stvx for
+  those.  */
+static void
+replace_swapped_load_constant (swap_web_entry *insn_entry, rtx swap_insn)
+{
+  /* Find the load.  */
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (swap_insn);
+  rtx_insn *load_insn;
+  df_ref use  = DF_INSN_INFO_USES (insn_info);
+  struct df_link *def_link = DF_REF_CHAIN (use);
+  gcc_assert (def_link && !def_link->next);
+
+  load_insn = DF_REF_INSN (def_link->ref);
+  gcc_assert (load_insn);
+
+  /* Find the TOC-relative symbol access.  */
+  insn_info = DF_INSN_INFO_GET (load_insn);
+  use = DF_INSN_INFO_USES (insn_info);
+
+  def_link = DF_REF_CHAIN (use);
+  gcc_assert (def_link && !def_link->next);
+
+  rtx_insn *tocrel_insn = DF_REF_INSN (def_link->ref);
+  gcc_assert (tocrel_insn);
+
+  /* Find the embedded CONST_VECTOR.  We have to call toc_relative_expr_p
+     to set tocrel_base; otherwise it would be unnecessary as we've
+     already established it will return true.  */
+  rtx base, offset;
+  rtx tocrel_expr = SET_SRC (PATTERN (tocrel_insn));
+  const_rtx tocrel_base;
+
+  /* There is an extra level of indirection for small/large code models.  */
+  if (GET_CODE (tocrel_expr) == MEM)
+    tocrel_expr = XEXP (tocrel_expr, 0);
+
+  if (!toc_relative_expr_p (tocrel_expr, false, &tocrel_base, NULL))
+    gcc_unreachable ();
+
+  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
+  rtx const_vector = get_pool_constant (base);
+
+  /* With the extra indirection, get_pool_constant will produce the
+     real constant from the reg_equal expression, so get the real
+     constant.  */
+  if (GET_CODE (const_vector) == SYMBOL_REF)
+    const_vector = get_pool_constant (const_vector);
+  gcc_assert (GET_CODE (const_vector) == CONST_VECTOR);
+
+  rtx new_mem;
+  enum machine_mode mode = GET_MODE (const_vector);
+
+  /* Create an adjusted constant from the original constant.  */
+  if (mode == V1TImode)
+    /* Leave this code as is.  */
+    return;
+  else if (mode == V16QImode)
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (16));
+      int i;
+
+      for (i = 0; i < 16; i++)
+	XVECEXP (vals, 0, ((i+8) % 16)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else if ((mode == V8HImode)
+#ifdef HAVE_V8HFmode
+	   || (mode == V8HFmode)
+#endif
+	   )
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (8));
+      int i;
+
+      for (i = 0; i < 8; i++)
+	XVECEXP (vals, 0, ((i+4) % 8)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else if ((mode == V4SImode) || (mode == V4SFmode))
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (4));
+      int i;
+
+      for (i = 0; i < 4; i++)
+	XVECEXP (vals, 0, ((i+2) % 4)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else if ((mode == V2DImode) || (mode == V2DFmode))
+    {
+      rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (2));
+      int i;
+
+      for (i = 0; i < 2; i++)
+	XVECEXP (vals, 0, ((i+1) % 2)) = XVECEXP (const_vector, 0, i);
+      rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      new_mem = force_const_mem (mode, new_const_vector);
+    }
+  else
+    {
+      /* We do not expect other modes to be constant-load-swapped.  */
+      gcc_unreachable ();
+    }
+
+  /* This gives us a MEM whose base operand is a SYMBOL_REF, which we
+     can't recognize.  Force the SYMBOL_REF into a register.  */
+  if (!REG_P (XEXP (new_mem, 0))) {
+    rtx base_reg = force_reg (Pmode, XEXP (new_mem, 0));
+    XEXP (new_mem, 0) = base_reg;
+
+    /* Move the newly created insn ahead of the load insn.  */
+    /* The last insn is the the insn that forced new_mem into a register.  */
+    rtx_insn *force_insn = get_last_insn ();
+    /* Remove this insn from the end of the instruction sequence.  */
+    remove_insn (force_insn);
+    rtx_insn *before_load_insn = PREV_INSN (load_insn);
+
+    /* And insert this insn back into the sequence before the previous
+       load insn so this new expression will be available when the
+       existing load is modified to load the swapped constant.  */
+    add_insn_after (force_insn, before_load_insn, BLOCK_FOR_INSN (load_insn));
+    df_insn_rescan (before_load_insn);
+    df_insn_rescan (force_insn);
+  }
+
+  /* Replace the MEM in the load instruction and rescan it.  */
+  XEXP (SET_SRC (PATTERN (load_insn)), 0) = new_mem;
+  INSN_CODE (load_insn) = -1; /* Force re-recognition.  */
+  df_insn_rescan (load_insn);
+
+  unsigned int uid = INSN_UID (swap_insn);
+  mark_swaps_for_removal (insn_entry, uid);
+  replace_swap_with_copy (insn_entry, uid);
+}
+
 /* Dump the swap table to DUMP_FILE.  */
 static void
 dump_swap_insn_table (swap_web_entry *insn_entry)
@@ -1656,6 +1882,7 @@ rs6000_analyze_swaps (function *fun)
 
   /* Pre-pass to recombine lvx and stvx patterns so we don't lose info.  */
   recombine_lvx_stvx_patterns (fun);
+  df_process_deferred_rescans ();
 
   /* Allocate structure to represent webs of insns.  */
   insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
@@ -1873,6 +2100,44 @@ rs6000_analyze_swaps (function *fun)
 
   /* Clean up.  */
   free (insn_entry);
+
+  /* Use additional pass over rtl to replace swap(load(vector constant))
+     with load(swapped vector constant). */
+  swap_web_entry *pass2_insn_entry;
+  pass2_insn_entry = XCNEWVEC (swap_web_entry, get_max_uid ());
+
+  /* Walk the insns to gather basic data.  */
+  FOR_ALL_BB_FN (bb, fun)
+    FOR_BB_INSNS_SAFE (bb, insn, curr_insn)
+    {
+      unsigned int uid = INSN_UID (insn);
+      if (NONDEBUG_INSN_P (insn))
+	{
+	  pass2_insn_entry[uid].insn = insn;
+
+	  pass2_insn_entry[uid].is_relevant = 1;
+	  pass2_insn_entry[uid].is_load = insn_is_load_p (insn);
+	  pass2_insn_entry[uid].is_store = insn_is_store_p (insn);
+
+	  /* Determine if this is a doubleword swap.  If not,
+	     determine whether it can legally be swapped.  */
+	  if (insn_is_swap_p (insn))
+	    pass2_insn_entry[uid].is_swap = 1;
+	}
+    }
+
+  e = get_max_uid ();
+  for (unsigned i = 0; i < e; ++i)
+    if (pass2_insn_entry[i].is_swap && !pass2_insn_entry[i].is_load
+	&& !pass2_insn_entry[i].is_store)
+      {
+	insn = pass2_insn_entry[i].insn;
+	if (const_load_sequence_p (pass2_insn_entry, insn))
+	  replace_swapped_load_constant (pass2_insn_entry, insn);
+      }
+
+  /* Clean up.  */
+  free (pass2_insn_entry);
   return 0;
 }
 

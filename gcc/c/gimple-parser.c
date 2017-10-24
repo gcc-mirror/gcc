@@ -276,7 +276,7 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
       && TREE_CODE (lhs.value) == CALL_EXPR)
     {
       gimple *call;
-      call = gimple_build_call_from_tree (lhs.value);
+      call = gimple_build_call_from_tree (lhs.value, NULL);
       gimple_seq_add_stmt (seq, call);
       gimple_set_location (call, loc);
       return;
@@ -407,7 +407,7 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
       rhs = c_parser_gimple_unary_expression (parser);
       if (rhs.value != error_mark_node)
 	{
-	  gimple *call = gimple_build_call_from_tree (rhs.value);
+	  gimple *call = gimple_build_call_from_tree (rhs.value, NULL);
 	  gimple_call_set_lhs (call, lhs.value);
 	  gimple_seq_add_stmt (seq, call);
 	  gimple_set_location (call, loc);

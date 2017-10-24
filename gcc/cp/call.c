@@ -2160,7 +2160,10 @@ add_function_candidate (struct z_candidate **candidates,
 	      else
 		{
 		  parmtype = build_pointer_type (parmtype);
-		  arg = build_this (arg);
+		  /* We don't use build_this here because we don't want to
+		     capture the object argument until we've chosen a
+		     non-static member function.  */
+		  arg = build_address (arg);
 		  argtype = lvalue_type (arg);
 		}
 	    }
@@ -3362,7 +3365,7 @@ build_this (tree obj)
 {
   /* In a template, we are only concerned about the type of the
      expression, so we can take a shortcut.  */
-  if (processing_template_decl)
+  if (processing_nonlambda_template ())
     return build_address (obj);
 
   return cp_build_addr_expr (obj, tf_warning_or_error);
@@ -4446,13 +4449,16 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, first_mem_arg = NULL_TREE;
-  tree type = TREE_TYPE (obj);
   bool any_viable_p;
   tree result = NULL_TREE;
   void *p;
 
+  obj = mark_lvalue_use (obj);
+
   if (error_operand_p (obj))
     return error_mark_node;
+
+  tree type = TREE_TYPE (obj);
 
   obj = prep_operand (obj);
 
@@ -6579,6 +6585,30 @@ maybe_print_user_conv_context (conversion *convs)
 	}
 }
 
+/* Locate the parameter with the given index within FNDECL.
+   ARGNUM is zero based, -1 indicates the `this' argument of a method.
+   Return the location of the FNDECL itself if there are problems.  */
+
+static location_t
+get_fndecl_argument_location (tree fndecl, int argnum)
+{
+  int i;
+  tree param;
+
+  /* Locate param by index within DECL_ARGUMENTS (fndecl).  */
+  for (i = 0, param = FUNCTION_FIRST_USER_PARM (fndecl);
+       i < argnum && param;
+       i++, param = TREE_CHAIN (param))
+    ;
+
+  /* If something went wrong (e.g. if we have a builtin and thus no arguments),
+     return the location of FNDECL.  */
+  if (param == NULL)
+    return DECL_SOURCE_LOCATION (fndecl);
+
+  return DECL_SOURCE_LOCATION (param);
+}
+
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
    ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is nonzero when
@@ -6680,7 +6710,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	complained = permerror (loc, "invalid conversion from %qH to %qI",
 				TREE_TYPE (expr), totype);
       if (complained && fn)
-	inform (DECL_SOURCE_LOCATION (fn),
+	inform (get_fndecl_argument_location (fn, argnum),
 		"  initializing argument %P of %qD", argnum, fn);
 
       return cp_convert (totype, expr, complain);
@@ -7141,13 +7171,9 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
       /* In a template (or ill-formed code), we can have an incomplete type
 	 even after require_complete_type_sfinae, in which case we don't know
 	 whether it has trivial copy or not.  */
-      && COMPLETE_TYPE_P (arg_type))
+      && COMPLETE_TYPE_P (arg_type)
+      && !cp_unevaluated_operand)
     {
-      /* Build up a real lvalue-to-rvalue conversion in case the
-	 copy constructor is trivial but not callable.  */
-      if (!cp_unevaluated_operand && CLASS_TYPE_P (arg_type))
-	force_rvalue (arg, complain);
-
       /* [expr.call] 5.2.2/7:
 	 Passing a potentially-evaluated argument of class type (Clause 9)
 	 with a non-trivial copy constructor or a non-trivial destructor
@@ -7159,10 +7185,10 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 
 	 If the call appears in the context of a sizeof expression,
 	 it is not potentially-evaluated.  */
-      if (cp_unevaluated_operand == 0
-	  && (type_has_nontrivial_copy_init (arg_type)
-	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type)))
+      if (type_has_nontrivial_copy_init (arg_type)
+	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type))
 	{
+	  arg = force_rvalue (arg, complain);
 	  if (complain & tf_warning)
 	    warning (OPT_Wconditionally_supported,
 		     "passing objects of non-trivially-copyable "
@@ -7170,6 +7196,11 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 		     arg_type);
 	  return cp_build_addr_expr (arg, complain);
 	}
+      /* Build up a real lvalue-to-rvalue conversion in case the
+	 copy constructor is trivial but not callable.  */
+      else if (CLASS_TYPE_P (arg_type))
+	force_rvalue (arg, complain);
+
     }
 
   return arg;
@@ -7686,8 +7717,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   /* N3276 magic doesn't apply to nested calls.  */
-  int decltype_flag = (complain & tf_decltype);
+  tsubst_flags_t decltype_flag = (complain & tf_decltype);
   complain &= ~tf_decltype;
+  /* No-Cleanup doesn't apply to nested calls either.  */
+  tsubst_flags_t no_cleanup_complain = complain;
+  complain &= ~tf_no_cleanup;
 
   /* Find maximum size of vector to hold converted arguments.  */
   parmlen = list_length (parm);
@@ -7746,6 +7780,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree argtype = TREE_TYPE (arg);
       tree converted_arg;
       tree base_binfo;
+
+      if (arg == error_mark_node)
+	return error_mark_node;
 
       if (convs[i]->bad_p)
 	{
@@ -7882,7 +7919,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (flags & LOOKUP_NO_CONVERSION)
 	conv->user_conv_p = true;
 
-      tsubst_flags_t arg_complain = complain & (~tf_no_cleanup);
+      tsubst_flags_t arg_complain = complain;
       if (!conversion_warning)
 	arg_complain &= ~tf_warning;
 
@@ -8130,7 +8167,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       else if (default_ctor_p (fn))
 	{
 	  if (is_dummy_object (argarray[0]))
-	    return force_target_expr (DECL_CONTEXT (fn), void_node, complain);
+	    return force_target_expr (DECL_CONTEXT (fn), void_node,
+				      no_cleanup_complain);
 	  else
 	    return cp_build_indirect_ref (argarray[0], RO_NULL, complain);
 	}
@@ -8821,7 +8859,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	      && (flags & LOOKUP_DELEGATING_CONS))
 	    check_self_delegation (arg);
 	  /* Avoid change of behavior on Wunused-var-2.C.  */
-	  mark_lvalue_use (instance);
+	  instance = mark_lvalue_use (instance);
 	  return build2 (INIT_EXPR, class_type, instance, arg);
 	}
     }
@@ -9027,7 +9065,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   /* Consider the object argument to be used even if we end up selecting a
      static member function.  */
   instance = mark_type_use (instance);
-
 
   /* Figure out whether to skip the first argument for the error
      message we will display to users if an error occurs.  We don't

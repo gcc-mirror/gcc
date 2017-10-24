@@ -978,14 +978,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   rs6000_data_alignment (TYPE, ALIGN, align_both)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                           \
-  (TREE_CODE (EXP) == STRING_CST	                         \
-   && (STRICT_ALIGNMENT || !optimize_size)                       \
-   && (ALIGN) < BITS_PER_WORD                                    \
-   ? BITS_PER_WORD                                               \
-   : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN) \
   rs6000_data_alignment (TYPE, ALIGN, align_opt)
@@ -1656,15 +1648,13 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
    sizes of the fixed area and the parameter area must be a multiple of
    STACK_BOUNDARY.  */
 
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD							\
-   ? 0									\
-   : (cfun->calls_alloca						\
-      ? (RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA,	\
-		       (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8 ))	\
-      : (RS6000_ALIGN (crtl->outgoing_args_size,			\
-		       (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)		\
-	 + RS6000_SAVE_AREA)))
+#define RS6000_STARTING_FRAME_OFFSET					\
+  (cfun->calls_alloca							\
+   ? (RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA,	\
+		    (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8 ))		\
+   : (RS6000_ALIGN (crtl->outgoing_args_size,				\
+		    (TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)		\
+      + RS6000_SAVE_AREA))
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.

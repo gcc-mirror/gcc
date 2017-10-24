@@ -1,3 +1,60 @@
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* c-decl.c (diagnose_mismatched_decls): Use
+	OPT_Wbuiltin_declaration_mismatch.
+
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_require): Add "type_is_unique" param and
+	use it to guard calls to maybe_suggest_missing_token_insertion.
+	(c_parser_parms_list_declarator): Override default value of new
+	"type_is_unique" param to c_parser_require.
+	(c_parser_asm_statement): Likewise.
+	* c-parser.h (c_parser_require): Add "type_is_unique" param,
+	defaulting to true.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (grokdeclarator): Check HAS_DECL_ASSEMBLER_NAME_P too.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-parser.c (c_parser_cilk_clause_vectorlength): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* c-typeck.c (build_c_cast, c_finish_omp_clauses): Likewise.
+	(c_tree_equal): Likewise.
+
+2017-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (push_parm_decl): Store c_parm's location into the
+	PARAM_DECL.
+	(build_c_parm): Add "loc" param and store it within the c_parm.
+	* c-parser.c (struct c_parser): Add "last_token_location" field.
+	(c_parser_consume_token): Store location of the token into the
+	new field.
+	(c_parser_declaration_or_fndef): Store params into DECL_ARGUMENTS
+	when handling a FUNCTION_DECL, if it doesn't already have them.
+	(c_parser_parameter_declaration): Generate a location for the
+	parameter, and pass it to the call to build_c_parm.
+	* c-tree.h (struct c_parm): Add field "loc".
+	(build_c_parm): Add location_t param.
+	* c-typeck.c (get_fndecl_argument_location): New function.
+	(inform_for_arg): New function.
+	(convert_for_assignment): Use inform_for_arg when dealing with
+	ic_argpass.
+
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (grokfield): Use SET_DECL_C_BIT_FIELD here if
+	width is non-NULL.
+	(finish_struct): Test DECL_C_BIT_FIELD instead of DECL_INITIAL,
+	don't SET_DECL_C_BIT_FIELD here.
+
+	PR c/82340
+	* c-decl.c (build_compound_literal): Use c_apply_type_quals_to_decl
+	instead of trying to set just TREE_READONLY manually.
+
 2017-09-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR c/81875

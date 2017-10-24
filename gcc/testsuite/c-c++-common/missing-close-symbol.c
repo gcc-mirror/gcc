@@ -12,6 +12,7 @@ void test_static_assert_same_line (void)
   /* { dg-begin-multiline-output "" }
    _Static_assert(sizeof(int) >= sizeof(char), "msg";
                  ~                                  ^
+                                                    )
      { dg-end-multiline-output "" } */
 }
 
@@ -25,6 +26,7 @@ void test_static_assert_different_line (void)
   /* { dg-begin-multiline-output "" }
     "msg";
          ^
+         )
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
    _Static_assert(sizeof(int) >= sizeof(char),

@@ -28,7 +28,6 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -47,7 +46,7 @@ with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
-with Sdefault; use Sdefault;
+with Sdefault;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -806,6 +805,20 @@ package body Sem_Attr is
               ("prefix of % attribute cannot be enumeration literal");
          end if;
 
+         --  Preserve relevant elaboration-related attributes of the context
+         --  which are no longer available or very expensive to recompute once
+         --  analysis, resolution, and expansion are over.
+
+         Mark_Elaboration_Attributes
+           (N_Id   => N,
+            Checks => True,
+            Modes  => True);
+
+         --  Save the scenario for later examination by the ABE Processing
+         --  phase.
+
+         Record_Elaboration_Scenario (N);
+
          --  Case of access to subprogram
 
          if Is_Entity_Name (P) and then Is_Overloadable (Entity (P)) then
@@ -858,14 +871,6 @@ package body Sem_Attr is
 
             else
                Kill_Current_Values;
-            end if;
-
-            --  In the static elaboration model, treat the attribute reference
-            --  as a call for elaboration purposes.  Suppress this treatment
-            --  under debug flag. In any case, we are all done.
-
-            if not Dynamic_Elaboration_Checks and not Debug_Flag_Dot_UU then
-               Check_Elab_Call (N);
             end if;
 
             return;
@@ -11089,7 +11094,7 @@ package body Sem_Attr is
                      and then Is_Overloadable (Entity (P)))
               and then not (Nkind (P) = N_Selected_Component
                              and then
-                            Is_Overloadable (Entity (Selector_Name (P))))
+                               Is_Overloadable (Entity (Selector_Name (P))))
               and then not Is_Aliased_View (P)
               and then not In_Instance
               and then not In_Inlined_Body
@@ -11133,8 +11138,8 @@ package body Sem_Attr is
             --  'Unrestricted_Access or in case of a subprogram.
 
             if Is_Entity_Name (P)
-             and then (Attr_Id = Attribute_Unrestricted_Access
-                        or else Is_Subprogram (Entity (P)))
+              and then (Attr_Id = Attribute_Unrestricted_Access
+                         or else Is_Subprogram (Entity (P)))
             then
                Set_Address_Taken (Entity (P));
             end if;
@@ -11796,6 +11801,15 @@ package body Sem_Attr is
                Check_Restriction (No_Dispatching_Calls, N);
             end if;
       end case;
+
+      --  Mark use clauses of the original prefix if the attribute is applied
+      --  to an entity.
+
+      if Nkind (Original_Node (P)) in N_Has_Entity
+        and then Present (Entity (Original_Node (P)))
+      then
+         Mark_Use_Clauses (Original_Node (P));
+      end if;
 
       --  Normally the Freezing is done by Resolve but sometimes the Prefix
       --  is not resolved, in which case the freezing must be done now.

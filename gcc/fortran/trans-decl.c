@@ -1670,7 +1670,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       /* Catch functions. Only used for actual parameters,
 	 procedure pointers and procptr initialization targets.  */
-      if (sym->attr.use_assoc || sym->attr.intrinsic
+      if (sym->attr.use_assoc
+	  || sym->attr.used_in_submodule
+	  || sym->attr.intrinsic
 	  || sym->attr.if_source != IFSRC_DECL)
 	{
 	  decl = gfc_get_extern_function_decl (sym);
@@ -1694,6 +1696,14 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      string length is a variable, it is not finished a second time.  */
   if (sym->ts.type == BT_CHARACTER)
     {
+      if (sym->attr.associate_var
+	  && sym->ts.deferred
+	  && sym->assoc && sym->assoc->target
+	  && ((sym->assoc->target->expr_type == EXPR_VARIABLE
+	       && sym->assoc->target->symtree->n.sym->ts.type != BT_CHARACTER)
+	      || sym->assoc->target->expr_type == EXPR_FUNCTION))
+	sym->ts.u.cl->backend_decl = NULL_TREE;
+
       if (sym->attr.associate_var
 	  && sym->ts.u.cl->backend_decl
 	  && VAR_P (sym->ts.u.cl->backend_decl))
@@ -4626,6 +4636,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
+	      /* TODO find out why this is necessary to stop double calls to
+		 free.  Somebody is reusing the expression in 'tmp' because
+		 it is being used unititialized.  */
+	      tmp = NULL_TREE;
 	    }
 	}
       else if (sym->ts.type == BT_CHARACTER && sym->ts.deferred)

@@ -69,6 +69,15 @@ extern void anti_adjust_stack (rtx);
 /* Add some bytes to the stack while probing it.  An rtx says how many. */
 extern void anti_adjust_stack_and_probe (rtx, bool);
 
+/* Support for building allocation/probing loops for stack-clash
+   protection of dyamically allocated stack space.  */
+extern void compute_stack_clash_protection_loop_data (rtx *, rtx *, rtx *,
+						      HOST_WIDE_INT *, rtx);
+extern void emit_stack_clash_protection_probe_loop_start (rtx *, rtx *,
+							  rtx, bool);
+extern void emit_stack_clash_protection_probe_loop_end (rtx, rtx,
+							rtx, bool);
+
 /* This enum is used for the following two functions.  */
 enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
 
@@ -85,7 +94,8 @@ extern void update_nonlocal_goto_save_area (void);
 extern void record_new_stack_level (void);
 
 /* Allocate some space on the stack dynamically and return its address.  */
-extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned, bool);
+extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned,
+					 HOST_WIDE_INT, bool);
 
 /* Calculate the necessary size of a constant dynamic stack allocation from the
    size of the variable area.  */

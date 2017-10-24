@@ -40,8 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "sese.h"
 #include "tree-ssa-propagate.h"
+#include "cfganal.h"
+#include "sese.h"
 
 /* For a USE in BB, if BB is outside REGION, mark the USE in the
    LIVEOUTS set.  */
@@ -67,106 +68,80 @@ sese_build_liveouts_use (sese_info_p region, bitmap liveouts, basic_block bb,
    used in BB that is outside of the REGION.  */
 
 static void
-sese_build_liveouts_bb (sese_info_p region, bitmap liveouts, basic_block bb)
+sese_build_liveouts_bb (sese_info_p region, basic_block bb)
 {
-  edge e;
-  edge_iterator ei;
   ssa_op_iter iter;
   use_operand_p use_p;
 
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    for (gphi_iterator bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi);
-	 gsi_next (&bsi))
-      sese_build_liveouts_use (region, liveouts, bb,
-			       PHI_ARG_DEF_FROM_EDGE (bsi.phi (), e));
+  for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
+       gsi_next (&bsi))
+    FOR_EACH_PHI_ARG (use_p, bsi.phi (), iter, SSA_OP_USE)
+      sese_build_liveouts_use (region, region->liveout,
+			       bb, USE_FROM_PTR (use_p));
 
   for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
        gsi_next (&bsi))
     {
       gimple *stmt = gsi_stmt (bsi);
 
+      bitmap liveouts = region->liveout;
       if (is_gimple_debug (stmt))
-	continue;
+	liveouts = region->debug_liveout;
 
-      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	sese_build_liveouts_use (region, liveouts, bb, USE_FROM_PTR (use_p));
     }
-}
-
-/* For a USE in BB, return true if BB is outside REGION and it's not
-   in the LIVEOUTS set.  */
-
-static bool
-sese_bad_liveouts_use (sese_info_p region, bitmap liveouts, basic_block bb,
-		       tree use)
-{
-  gcc_assert (!bb_in_sese_p (bb, region->region));
-
-  if (TREE_CODE (use) != SSA_NAME)
-    return false;
-
-  unsigned ver = SSA_NAME_VERSION (use);
-
-  /* If it's in liveouts, the variable will get a new PHI node, and
-     the debug use will be properly adjusted.  */
-  if (bitmap_bit_p (liveouts, ver))
-    return false;
-
-  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
-
-  if (!def_bb || !bb_in_sese_p (def_bb, region->region))
-    return false;
-
-  return true;
 }
 
 /* Reset debug stmts that reference SSA_NAMES defined in REGION that
    are not marked as liveouts.  */
 
 static void
-sese_reset_debug_liveouts_bb (sese_info_p region, bitmap liveouts,
-			      basic_block bb)
+sese_reset_debug_liveouts (sese_info_p region)
 {
-  gimple_stmt_iterator bsi;
-  ssa_op_iter iter;
-  use_operand_p use_p;
-
-  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+  bitmap_iterator bi;
+  unsigned i;
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (region->debug_liveout, region->liveout,
+				  0, i, bi)
     {
-      gimple *stmt = gsi_stmt (bsi);
-
-      if (!is_gimple_debug (stmt))
-	continue;
-
-      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
-	if (sese_bad_liveouts_use (region, liveouts, bb,
-				   USE_FROM_PTR (use_p)))
-	  {
-	    gimple_debug_bind_reset_value (stmt);
-	    update_stmt (stmt);
-	    break;
-	  }
+      tree name = ssa_name (i);
+      auto_vec<gimple *, 4> stmts;
+      gimple *use_stmt;
+      imm_use_iterator use_iter;
+      FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
+	{
+	  if (! is_gimple_debug (use_stmt)
+	      || bb_in_sese_p (gimple_bb (use_stmt), region->region))
+	    continue;
+	  stmts.safe_push (use_stmt);
+	}
+      while (!stmts.is_empty ())
+	{
+	  gimple *stmt = stmts.pop ();
+	  gimple_debug_bind_reset_value (stmt);
+	  update_stmt (stmt);
+	}
     }
 }
 
 /* Build the LIVEOUTS of REGION: the set of variables defined inside
    and used outside the REGION.  */
 
-static void
-sese_build_liveouts (sese_info_p region, bitmap liveouts)
+void
+sese_build_liveouts (sese_info_p region)
 {
   basic_block bb;
+
+  gcc_assert (region->liveout == NULL
+	      && region->debug_liveout == NULL);
+
+  region->liveout = BITMAP_ALLOC (NULL);
+  region->debug_liveout = BITMAP_ALLOC (NULL);
 
   /* FIXME: We could start iterating form the successor of sese.  */
   FOR_EACH_BB_FN (bb, cfun)
     if (!bb_in_sese_p (bb, region->region))
-      sese_build_liveouts_bb (region, liveouts, bb);
-
-  /* FIXME: We could start iterating form the successor of sese.  */
-  if (MAY_HAVE_DEBUG_STMTS)
-    FOR_EACH_BB_FN (bb, cfun)
-      if (!bb_in_sese_p (bb, region->region))
-	sese_reset_debug_liveouts_bb (region, liveouts, bb);
+      sese_build_liveouts_bb (region, bb);
 }
 
 /* Builds a new SESE region from edges ENTRY and EXIT.  */
@@ -178,14 +153,11 @@ new_sese_info (edge entry, edge exit)
 
   region->region.entry = entry;
   region->region.exit = exit;
-  region->loop_nest.create (3);
+  region->liveout = NULL;
+  region->debug_liveout = NULL;
   region->params.create (3);
-  region->rename_map = new rename_map_t;
-  region->parameter_rename_map = new parameter_rename_map_t;
-  region->copied_bb_map = new bb_map_t;
+  region->rename_map = new hash_map <tree, tree>;
   region->bbs.create (3);
-  region->incomplete_phis.create (3);
-
 
   return region;
 }
@@ -196,26 +168,12 @@ void
 free_sese_info (sese_info_p region)
 {
   region->params.release ();
-  region->loop_nest.release ();
-
-  for (rename_map_t::iterator it = region->rename_map->begin ();
-       it != region->rename_map->end (); ++it)
-    (*it).second.release ();
-
-  for (bb_map_t::iterator it = region->copied_bb_map->begin ();
-       it != region->copied_bb_map->end (); ++it)
-    (*it).second.release ();
+  BITMAP_FREE (region->liveout);
+  BITMAP_FREE (region->debug_liveout);
 
   delete region->rename_map;
-  delete region->parameter_rename_map;
-  delete region->copied_bb_map;
-
   region->rename_map = NULL;
-  region->parameter_rename_map = NULL;
-  region->copied_bb_map = NULL;
-
   region->bbs.release ();
-  region->incomplete_phis.release ();
 
   XDELETE (region);
 }
@@ -247,17 +205,14 @@ void
 sese_insert_phis_for_liveouts (sese_info_p region, basic_block bb,
 			       edge false_e, edge true_e)
 {
+  if (MAY_HAVE_DEBUG_STMTS)
+    sese_reset_debug_liveouts (region);
+
   unsigned i;
   bitmap_iterator bi;
-  bitmap liveouts = BITMAP_ALLOC (NULL);
-
-  sese_build_liveouts (region, liveouts);
-
-  EXECUTE_IF_SET_IN_BITMAP (liveouts, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (region->liveout, 0, i, bi)
     if (!virtual_operand_p (ssa_name (i)))
       sese_add_exit_phis_edge (bb, ssa_name (i), false_e, true_e);
-
-  BITMAP_FREE (liveouts);
 }
 
 /* Returns the outermost loop in SCOP that contains BB.  */
@@ -333,92 +288,6 @@ get_false_edge_from_guard_bb (basic_block bb)
   return NULL;
 }
 
-/* Sets the false region of an IF_REGION to REGION.  */
-
-void
-if_region_set_false_region (ifsese if_region, sese_info_p region)
-{
-  basic_block condition = if_region_get_condition_block (if_region);
-  edge false_edge = get_false_edge_from_guard_bb (condition);
-  basic_block dummy = false_edge->dest;
-  edge entry_region = region->region.entry;
-  edge exit_region = region->region.exit;
-  basic_block before_region = entry_region->src;
-  basic_block last_in_region = exit_region->src;
-  hashval_t hash = htab_hash_pointer (exit_region);
-  loop_exit **slot
-    = current_loops->exits->find_slot_with_hash (exit_region, hash, NO_INSERT);
-
-  entry_region->flags = false_edge->flags;
-  false_edge->flags = exit_region->flags;
-
-  redirect_edge_pred (entry_region, condition);
-  redirect_edge_pred (exit_region, before_region);
-  redirect_edge_pred (false_edge, last_in_region);
-  redirect_edge_succ (false_edge, single_succ (dummy));
-  delete_basic_block (dummy);
-
-  exit_region->flags = EDGE_FALLTHRU;
-  recompute_all_dominators ();
-
-  region->region.exit = false_edge;
-
-  free (if_region->false_region);
-  if_region->false_region = region;
-
-  if (slot)
-    {
-      struct loop_exit *loop_exit = ggc_cleared_alloc<struct loop_exit> ();
-
-      memcpy (loop_exit, *((struct loop_exit **) slot),
-	      sizeof (struct loop_exit));
-      current_loops->exits->clear_slot (slot);
-
-      hashval_t hash = htab_hash_pointer (false_edge);
-      slot = current_loops->exits->find_slot_with_hash (false_edge, hash,
-							INSERT);
-      loop_exit->e = false_edge;
-      *slot = loop_exit;
-      false_edge->src->loop_father->exits->next = loop_exit;
-    }
-}
-
-/* Creates an IFSESE with CONDITION on edge ENTRY.  */
-
-static ifsese
-create_if_region_on_edge (edge entry, tree condition)
-{
-  edge e;
-  edge_iterator ei;
-  sese_info_p sese_region = XNEW (struct sese_info_t);
-  sese_info_p true_region = XNEW (struct sese_info_t);
-  sese_info_p false_region = XNEW (struct sese_info_t);
-  ifsese if_region = XNEW (struct ifsese_s);
-  edge exit = create_empty_if_region_on_edge (entry, condition);
-
-  if_region->region = sese_region;
-  if_region->region->region.entry = entry;
-  if_region->region->region.exit = exit;
-
-  FOR_EACH_EDGE (e, ei, entry->dest->succs)
-    {
-      if (e->flags & EDGE_TRUE_VALUE)
-	{
-	  true_region->region.entry = e;
-	  true_region->region.exit = single_succ_edge (e->dest);
-	  if_region->true_region = true_region;
-	}
-      else if (e->flags & EDGE_FALSE_VALUE)
-	{
-	  false_region->region.entry = e;
-	  false_region->region.exit = single_succ_edge (e->dest);
-	  if_region->false_region = false_region;
-	}
-    }
-
-  return if_region;
-}
-
 /* Moves REGION in a condition expression:
    | if (1)
    |   ;
@@ -429,13 +298,34 @@ create_if_region_on_edge (edge entry, tree condition)
 ifsese
 move_sese_in_condition (sese_info_p region)
 {
+  basic_block region_entry_dest = region->region.entry->dest;
   basic_block pred_block = split_edge (region->region.entry);
-  ifsese if_region;
+  basic_block merge_block = split_edge (region->region.exit);
 
-  region->region.entry = single_succ_edge (pred_block);
-  if_region = create_if_region_on_edge (single_pred_edge (pred_block),
-					integer_one_node);
-  if_region_set_false_region (if_region, region);
+  edge true_edge = make_edge (pred_block, merge_block, EDGE_TRUE_VALUE);
+  edge false_edge = find_edge (pred_block, region_entry_dest);
+  false_edge->flags &= ~EDGE_FALLTHRU;
+  false_edge->flags |= EDGE_FALSE_VALUE;
+  gimple_stmt_iterator gsi = gsi_last_bb (pred_block);
+  gcond *cond = gimple_build_cond (NE_EXPR, integer_one_node, integer_zero_node,
+				   NULL_TREE, NULL_TREE);
+  gsi_insert_after (&gsi, cond, GSI_CONTINUE_LINKING);
+  if (dom_info_available_p (CDI_DOMINATORS))
+    set_immediate_dominator (CDI_DOMINATORS, merge_block, pred_block);
+
+  ifsese if_region = XNEW (ifsese_s);
+  if_region->region = XCNEW (sese_info_t);
+  if_region->true_region = XCNEW (sese_info_t);
+  if_region->false_region = XCNEW (sese_info_t);
+  if_region->region->region.entry = single_pred_edge (pred_block);
+  if_region->region->region.exit = single_succ_edge (merge_block);
+  if_region->false_region->region.entry = false_edge;
+  if_region->false_region->region.exit = region->region.exit;
+  if_region->true_region->region.entry = true_edge;
+  if_region->true_region->region.exit
+    = single_succ_edge (split_edge (true_edge));
+
+  region->region = if_region->false_region->region;
 
   return if_region;
 }
@@ -535,11 +425,13 @@ scev_analyzable_p (tree def, sese_l &region)
   loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
   scev = scalar_evolution_in_region (region, loop, def);
 
-  return !chrec_contains_undetermined (scev)
-    && (TREE_CODE (scev) != SSA_NAME
-	|| !defined_in_sese_p (scev, region))
-    && (tree_does_not_contain_chrecs (scev)
-	|| evolution_function_is_affine_p (scev));
+  return (!chrec_contains_undetermined (scev)
+	  && (TREE_CODE (scev) != SSA_NAME
+	      || !defined_in_sese_p (scev, region))
+	  && scev_is_linear_expression (scev)
+	  && (! loop
+	      || ! loop_in_sese_p (loop, region)
+	      || ! chrec_contains_symbols_defined_in_loop (scev, loop->num)));
 }
 
 /* Returns the scalar evolution of T in REGION.  Every variable that
@@ -548,42 +440,31 @@ scev_analyzable_p (tree def, sese_l &region)
 tree
 scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 {
-  gimple *def;
-  struct loop *def_loop;
-  basic_block before = region.entry->src;
-
   /* SCOP parameters.  */
   if (TREE_CODE (t) == SSA_NAME
       && !defined_in_sese_p (t, region))
     return t;
 
-  if (TREE_CODE (t) != SSA_NAME
-      || loop_in_sese_p (loop, region))
-    /* FIXME: we would need instantiate SCEV to work on a region, and be more
-       flexible wrt. memory loads that may be invariant in the region.  */
-    return instantiate_scev (before, loop,
-			     analyze_scalar_evolution (loop, t));
+  if (!loop_in_sese_p (loop, region))
+    loop = NULL;
 
-  def = SSA_NAME_DEF_STMT (t);
-  def_loop = loop_containing_stmt (def);
+  return instantiate_scev (region.entry, loop,
+			   analyze_scalar_evolution (loop, t));
+}
 
-  if (loop_in_sese_p (def_loop, region))
-    {
-      t = analyze_scalar_evolution (def_loop, t);
-      def_loop = superloop_at_depth (def_loop, loop_depth (loop) + 1);
-      t = compute_overall_effect_of_inner_loop (def_loop, t);
-      return t;
-    }
+/* Return true if BB is empty, contains only DEBUG_INSNs.  */
 
-  bool has_vdefs = false;
-  if (invariant_in_sese_p_rec (t, region, &has_vdefs))
-    return t;
+bool
+sese_trivially_empty_bb_p (basic_block bb)
+{         
+  gimple_stmt_iterator gsi;
 
-  /* T variates in REGION.  */
-  if (has_vdefs)
-    return chrec_dont_know;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG
+	&& gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
+      return false;
 
-  return instantiate_scev (before, loop, t);
+  return true;
 }
 
 /* Pretty print edge E to FILE.  */

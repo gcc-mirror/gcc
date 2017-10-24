@@ -1984,6 +1984,12 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS rs6000_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT rs6000_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
 
 
 /* Processor table.  */
@@ -5852,6 +5858,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case unaligned_load:
+      case vector_gather_load:
 	if (TARGET_P9_VECTOR)
 	  return 3;
 
@@ -5893,6 +5900,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_store:
+      case vector_scatter_store:
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
@@ -9531,6 +9539,8 @@ rs6000_delegitimize_address (rtx orig_x)
 static bool
 rs6000_const_not_ok_for_debug_p (rtx x)
 {
+  if (GET_CODE (x) == UNSPEC)
+    return true;
   if (GET_CODE (x) == SYMBOL_REF
       && CONSTANT_POOL_ADDRESS_P (x))
     {
@@ -11614,7 +11624,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11644,7 +11655,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -11676,7 +11688,8 @@ rs6000_aggregate_candidate (const_tree type, machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (wi::ne_p (TYPE_SIZE (type), count * GET_MODE_BITSIZE (*modep)))
+	if (wi::to_wide (TYPE_SIZE (type))
+	    != count * GET_MODE_BITSIZE (*modep))
 	  return -1;
 
 	return count;
@@ -15933,14 +15946,15 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Check whether the 2nd and 3rd arguments are integer constants and in
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
+      if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (wi::to_wide (arg1), 2))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return CONST0_RTX (tmode);
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg2, 16))
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || wi::geu_p (wi::to_wide (arg2), 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return CONST0_RTX (tmode);
@@ -29687,18 +29701,19 @@ rs6000_emit_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = info->total_size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       HOST_WIDE_INT size = info->total_size;
 
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					   size - STACK_CHECK_PROTECT);
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    rs6000_emit_probe_stack_range (get_stack_check_protect (),
+					   size - get_stack_check_protect ());
 	}
       else if (size > 0)
-	rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	rs6000_emit_probe_stack_range (get_stack_check_protect (), size);
     }
 
   if (TARGET_FIX_AND_CONTINUE)
@@ -38730,8 +38745,7 @@ rs6000_expand_vec_perm_const (rtx operands[4])
 /* Test whether a constant permutation is supported.  */
 
 static bool
-rs6000_vectorize_vec_perm_const_ok (machine_mode vmode,
-				    const unsigned char *sel)
+rs6000_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   /* AltiVec (and thus VSX) can handle arbitrary permutations.  */
   if (TARGET_ALTIVEC)
@@ -43751,6 +43765,27 @@ rs6000_optab_supported_p (int op, machine_mode mode1, machine_mode,
     default:
       return true;
     }
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+rs6000_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST
+      && (STRICT_ALIGNMENT || !optimize_size))
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+rs6000_starting_frame_offset (void)
+{
+  if (FRAME_GROWS_DOWNWARD)
+    return 0;
+  return RS6000_STARTING_FRAME_OFFSET;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

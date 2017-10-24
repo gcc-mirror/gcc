@@ -3643,7 +3643,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
   rhs_code = gimple_assign_rhs_code (last_stmt);
   if (CONVERT_EXPR_CODE_P (rhs_code))
     {
-      if (TREE_CODE (TREE_TYPE (lhs)) != INTEGER_TYPE
+      if (! INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	  || TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
 	return NULL;
       vectype = get_vectype_for_scalar_type (TREE_TYPE (lhs));
@@ -3714,7 +3714,7 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
          vectorized matches the vector type of the result in
 	 size and number of elements.  */
       unsigned prec
-	= wi::udiv_trunc (TYPE_SIZE (vectype),
+	= wi::udiv_trunc (wi::to_wide (TYPE_SIZE (vectype)),
 			  TYPE_VECTOR_SUBPARTS (vectype)).to_uhwi ();
       tree type
 	= build_nonstandard_integer_type (prec,

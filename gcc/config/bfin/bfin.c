@@ -3318,7 +3318,7 @@ bfin_local_alignment (tree type, unsigned align)
      memcpy can use 32 bit loads/stores.  */
   if (TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && wi::gtu_p (TYPE_SIZE (type), 8)
+      && wi::gtu_p (wi::to_wide (TYPE_SIZE (type)), 8)
       && align < 32)
     return 32;
   return align;
@@ -5881,5 +5881,8 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P bfin_modes_tieable_p
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
 
 struct gcc_target targetm = TARGET_INITIALIZER;

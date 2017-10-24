@@ -96,10 +96,6 @@
 	|| TREE_CODE (TYPE) == UNION_TYPE				\
 	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define EMPTY_FIELD_BOUNDARY 32
 
 #define STRUCTURE_SIZE_BOUNDARY 8
@@ -218,9 +214,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 0
-
-#define STARTING_FRAME_OFFSET						\
-  (crtl->outgoing_args_size)
 
 /* Use the default value zero.  */
 /* #define STACK_POINTER_OFFSET 0 */

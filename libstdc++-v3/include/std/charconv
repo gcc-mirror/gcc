@@ -1,0 +1,658 @@
+// Primitive numeric conversions (to_chars and from_chars) -*- C++ -*-
+
+// Copyright (C) 2017 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/charconv
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_CHARCONV
+#define _GLIBCXX_CHARCONV 1
+
+#pragma GCC system_header
+
+#if __cplusplus >= 201402L
+
+#include <type_traits>
+#include <limits>
+#include <cctype>
+#include <bits/error_constants.h> // for std::errc
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /// Result type of std::to_chars
+  struct to_chars_result
+  {
+    char* ptr;
+    errc ec;
+  };
+
+  /// Result type of std::from_chars
+  struct from_chars_result
+  {
+    const char* ptr;
+    errc ec;
+  };
+
+namespace __detail
+{
+  template<typename _Tp, typename... _Types>
+    using __is_one_of = __or_<is_same<_Tp, _Types>...>;
+
+  template<typename _Tp>
+    using __is_int_to_chars_type = __and_<is_integral<_Tp>,
+	  __not_<__is_one_of<_Tp, bool, char16_t, char32_t
+#if _GLIBCXX_USE_WCHAR_T
+	  , wchar_t
+#endif
+	    >>>;
+
+  template<typename _Tp>
+    using __integer_to_chars_result_type
+      = enable_if_t<__is_int_to_chars_type<_Tp>::value, to_chars_result>;
+
+  template<typename _Tp>
+    using __unsigned_least_t
+      = conditional_t<(sizeof(_Tp) <= sizeof(int)), unsigned int,
+	conditional_t<(sizeof(_Tp) <= sizeof(long)), unsigned long,
+	conditional_t<(sizeof(_Tp) <= sizeof(long long)), unsigned long long,
+#if _GLIBCXX_USE_INT128
+	conditional_t<(sizeof(_Tp) <= sizeof(__int128)), unsigned __int128,
+#endif
+	void
+#if _GLIBCXX_USE_INT128
+	>
+#endif
+	>>>;
+
+  // Generic implementation for arbitrary bases.
+  template<typename _Tp>
+    constexpr unsigned
+    __to_chars_len(_Tp __value, int __base = 10) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      unsigned __n = 1;
+      const int __b2 = __base  * __base;
+      const int __b3 = __b2 * __base;
+      const int __b4 = __b3 * __base;
+      for (;;)
+	{
+	  if (__value < __base) return __n;
+	  if (__value < __b2) return __n + 1;
+	  if (__value < __b3) return __n + 2;
+	  if (__value < __b4) return __n + 3;
+	  __value /= (unsigned)__b4;
+	  __n += 4;
+	}
+    }
+
+  template<typename _Tp>
+    constexpr unsigned
+    __to_chars_len_2(_Tp __value) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      constexpr size_t __nbits = __CHAR_BIT__ * sizeof(_Tp);
+
+      // N.B. __builtin_clzll is undefined if __value == 0, but std::to_chars
+      // handles zero values directly.
+
+      // For sizeof(_Tp) > 1 this is an order of magnitude faster than
+      // the generic __to_chars_len.
+      return __nbits
+	- (__builtin_clzll(__value)
+	    - ((__CHAR_BIT__ * sizeof(long long)) - __nbits));
+    }
+
+  template<typename _Tp>
+    constexpr unsigned
+    __to_chars_len_8(_Tp __value) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      constexpr size_t __nbits = __CHAR_BIT__ * sizeof(_Tp);
+
+      if _GLIBCXX17_CONSTEXPR (__nbits <= 16)
+	{
+	  return __value > 077777u ? 6u
+	    : __value > 07777u ? 5u
+	    : __value > 0777u ? 4u
+	    : __value > 077u ? 3u
+	    : __value > 07u ? 2u
+	    : 1u;
+	}
+      else
+	return __to_chars_len(__value, 8);
+    }
+
+  // Generic implementation for arbitrary bases.
+  template<typename _Tp>
+    to_chars_result
+    __to_chars(char* __first, char* __last, _Tp __val, int __base) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      to_chars_result __res;
+
+      const unsigned __len = __to_chars_len(__val, __base);
+
+      if (__builtin_expect((__last - __first) < __len, 0))
+	{
+	  __res.ptr = __last;
+	  __res.ec = errc::value_too_large;
+	  return __res;
+	}
+
+      unsigned __pos = __len - 1;
+
+      static constexpr char __digits[]
+	= "0123456789abcdefghijklmnopqrstuvwxyz";
+
+      while (__val >= __base)
+	{
+	  auto const __quo = __val / __base;
+	  auto const __rem = __val % __base;
+	  __first[__pos--] = __digits[__rem];
+	  __val = __quo;
+	}
+      *__first = __digits[__val];
+
+      __res.ptr = __first + __len;
+      __res.ec = {};
+      return __res;
+    }
+
+  template<typename _Tp>
+    __integer_to_chars_result_type<_Tp>
+    __to_chars_16(char* __first, char* __last, _Tp __val) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      to_chars_result __res;
+
+      const unsigned __len = __to_chars_len(__val, 0x10);
+
+      if (__builtin_expect((__last - __first) < __len, 0))
+	{
+	  __res.ptr = __last;
+	  __res.ec = errc::value_too_large;
+	  return __res;
+	}
+
+      static constexpr char __digits[513] =
+	"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+	"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f"
+	"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f"
+	"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f"
+	"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f"
+	"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf"
+	"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf"
+	"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
+      unsigned __pos = __len - 1;
+      while (__val >= 0x100)
+	{
+	  auto const __num = (__val % 0x100) * 2;
+	  __val /= 0x100;
+	  __first[__pos] = __digits[__num + 1];
+	  __first[__pos - 1] = __digits[__num];
+	  __pos -= 2;
+	}
+      if (__val >= 0x10)
+	{
+	  auto const __num = __val * 2;
+	  __first[__pos] = __digits[__num + 1];
+	  __first[__pos - 1] = __digits[__num];
+	}
+      else
+	__first[__pos] = "0123456789abcdef"[__val];
+      __res.ptr = __first + __len;
+      __res.ec = {};
+      return __res;
+    }
+
+  template<typename _Tp>
+    __integer_to_chars_result_type<_Tp>
+    __to_chars_10(char* __first, char* __last, _Tp __val) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      to_chars_result __res;
+
+      const unsigned __len = __to_chars_len(__val, 10);
+
+      if (__builtin_expect((__last - __first) < __len, 0))
+	{
+	  __res.ptr = __last;
+	  __res.ec = errc::value_too_large;
+	  return __res;
+	}
+
+      static constexpr char __digits[201] =
+	"0001020304050607080910111213141516171819"
+	"2021222324252627282930313233343536373839"
+	"4041424344454647484950515253545556575859"
+	"6061626364656667686970717273747576777879"
+	"8081828384858687888990919293949596979899";
+      unsigned __pos = __len - 1;
+      while (__val >= 100)
+	{
+	  auto const __num = (__val % 100) * 2;
+	  __val /= 100;
+	  __first[__pos] = __digits[__num + 1];
+	  __first[__pos - 1] = __digits[__num];
+	  __pos -= 2;
+	}
+      if (__val >= 10)
+	{
+	  auto const __num = __val * 2;
+	  __first[__pos] = __digits[__num + 1];
+	  __first[__pos - 1] = __digits[__num];
+	}
+      else
+	__first[__pos] = '0' + __val;
+      __res.ptr = __first + __len;
+      __res.ec = {};
+      return __res;
+    }
+
+  template<typename _Tp>
+    __integer_to_chars_result_type<_Tp>
+    __to_chars_8(char* __first, char* __last, _Tp __val) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      to_chars_result __res;
+
+      const unsigned __len = __to_chars_len_8(__val);
+
+      if (__builtin_expect((__last - __first) < __len, 0))
+	{
+	  __res.ptr = __last;
+	  __res.ec = errc::value_too_large;
+	  return __res;
+	}
+
+      static constexpr char __digits[129] =
+	"00010203040506071011121314151617"
+	"20212223242526273031323334353637"
+	"40414243444546475051525354555657"
+	"60616263646566677071727374757677";
+      unsigned __pos = __len - 1;
+      while (__val >= 0100)
+	{
+	  auto const __num = (__val % 0100) * 2;
+	  __val /= 0100;
+	  __first[__pos] = __digits[__num + 1];
+	  __first[__pos - 1] = __digits[__num];
+	  __pos -= 2;
+	}
+      if (__val >= 010)
+	{
+	  auto const __num = __val * 2;
+	  __first[__pos] = __digits[__num + 1];
+	  __first[__pos - 1] = __digits[__num];
+	}
+      else
+	__first[__pos] = '0' + __val;
+      __res.ptr = __first + __len;
+      __res.ec = {};
+      return __res;
+    }
+
+  template<typename _Tp>
+    __integer_to_chars_result_type<_Tp>
+    __to_chars_2(char* __first, char* __last, _Tp __val) noexcept
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      to_chars_result __res;
+
+      const unsigned __len = __to_chars_len_2(__val);
+
+      if (__builtin_expect((__last - __first) < __len, 0))
+	{
+	  __res.ptr = __last;
+	  __res.ec = errc::value_too_large;
+	  return __res;
+	}
+
+      unsigned __pos = __len - 1;
+
+      while (__pos)
+	{
+	  __first[__pos--] = '0' + (__val & 1);
+	  __val >>= 1;
+	}
+      *__first = '0' + (__val & 1);
+
+      __res.ptr = __first + __len;
+      __res.ec = {};
+      return __res;
+    }
+
+} // namespace __detail
+
+  template<typename _Tp>
+    __detail::__integer_to_chars_result_type<_Tp>
+    to_chars(char* __first, char* __last, _Tp __value, int __base = 10)
+    {
+      __glibcxx_assert(2 <= __base && __base <= 36);
+
+      using _Up = __detail::__unsigned_least_t<_Tp>;
+      _Up __unsigned_val = __value;
+
+      if (__value == 0 && __first != __last)
+	{
+	  *__first = '0';
+	  return { __first + 1, errc{} };
+	}
+
+      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+	if (__value < 0)
+	  {
+	    if (__builtin_expect(__first != __last, 1))
+	      *__first++ = '-';
+	    __unsigned_val = _Up(~__value) + _Up(1);
+	  }
+
+      switch (__base)
+      {
+      case 16:
+	return __detail::__to_chars_16(__first, __last, __unsigned_val);
+      case 10:
+	return __detail::__to_chars_10(__first, __last, __unsigned_val);
+      case 8:
+	return __detail::__to_chars_8(__first, __last, __unsigned_val);
+      case 2:
+	return __detail::__to_chars_2(__first, __last, __unsigned_val);
+      default:
+	return __detail::__to_chars(__first, __last, __unsigned_val, __base);
+      }
+    }
+
+namespace __detail
+{
+  template<typename _Tp>
+    bool
+    __raise_and_add(_Tp& __val, int __base, unsigned char __c)
+    {
+      if (__builtin_mul_overflow(__val, __base, &__val)
+	  || __builtin_add_overflow(__val, __c, &__val))
+	return false;
+      return true;
+    }
+
+  /// std::from_chars implementation for integers in base 2.
+  template<typename _Tp>
+    bool
+    __from_chars_binary(const char*& __first, const char* __last, _Tp& __val)
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      const ptrdiff_t __len = __last - __first;
+      int __i = 0;
+      while (__i < __len)
+	{
+	  const unsigned char __c = (unsigned)__first[__i] - '0';
+	  if (__c < 2)
+	    __val = (__val << 1) | __c;
+	  else
+	    break;
+	  __i++;
+	}
+      __first += __i;
+      return __i <= (sizeof(_Tp) * __CHAR_BIT__);
+    }
+
+  /// std::from_chars implementation for integers in bases 3 to 10.
+  template<typename _Tp>
+    bool
+    __from_chars_digit(const char*& __first, const char* __last, _Tp& __val,
+		       int __base)
+    {
+      static_assert(is_integral<_Tp>::value, "implementation bug");
+      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+
+      auto __matches = [__base](char __c) {
+	  return '0' <= __c && __c <= ('0' + (__base - 1));
+      };
+
+      while (__first != __last)
+	{
+	  const char __c = *__first;
+	  if (__matches(__c))
+	  {
+	    if (!__raise_and_add(__val, __base, __c - '0'))
+	      {
+		while (++__first != __last && __matches(*__first))
+		  ;
+		return false;
+	      }
+	    __first++;
+	  }
+	  else
+	    return true;
+	}
+      return true;
+    }
+
+  constexpr unsigned char
+  __from_chars_alpha_to_num(char __c)
+  {
+    switch (__c)
+    {
+    case 'a':
+    case 'A':
+      return 10;
+    case 'b':
+    case 'B':
+      return 11;
+    case 'c':
+    case 'C':
+      return 12;
+    case 'd':
+    case 'D':
+      return 13;
+    case 'e':
+    case 'E':
+      return 14;
+    case 'f':
+    case 'F':
+      return 15;
+    case 'g':
+    case 'G':
+      return 16;
+    case 'h':
+    case 'H':
+      return 17;
+    case 'i':
+    case 'I':
+      return 18;
+    case 'j':
+    case 'J':
+      return 19;
+    case 'k':
+    case 'K':
+      return 20;
+    case 'l':
+    case 'L':
+      return 21;
+    case 'm':
+    case 'M':
+      return 22;
+    case 'n':
+    case 'N':
+      return 23;
+    case 'o':
+    case 'O':
+      return 24;
+    case 'p':
+    case 'P':
+      return 25;
+    case 'q':
+    case 'Q':
+      return 26;
+    case 'r':
+    case 'R':
+      return 27;
+    case 's':
+    case 'S':
+      return 28;
+    case 't':
+    case 'T':
+      return 29;
+    case 'u':
+    case 'U':
+      return 30;
+    case 'v':
+    case 'V':
+      return 31;
+    case 'w':
+    case 'W':
+      return 32;
+    case 'x':
+    case 'X':
+      return 33;
+    case 'y':
+    case 'Y':
+      return 34;
+    case 'z':
+    case 'Z':
+      return 35;
+    }
+    return std::numeric_limits<unsigned char>::max();
+  }
+
+  /// std::from_chars implementation for integers in bases 11 to 26.
+  template<typename _Tp>
+    bool
+    __from_chars_alnum(const char*& __first, const char* __last, _Tp& __val,
+		       int __base)
+    {
+      bool __valid = true;
+      while (__first != __last)
+	{
+	  unsigned char __c = *__first;
+	  if (std::isdigit(__c))
+	    __c -= '0';
+	  else
+	    {
+	      __c = __from_chars_alpha_to_num(__c);
+	      if (__c >= __base)
+		break;
+	    }
+
+	  if (__builtin_expect(__valid, 1))
+	    __valid = __raise_and_add(__val, __base, __c);
+	  __first++;
+	}
+      return __valid;
+    }
+
+  template<typename _Tp>
+    using __integer_from_chars_result_type
+      = enable_if_t<__is_int_to_chars_type<_Tp>::value, from_chars_result>;
+
+} // namespace __detail
+
+  /// std::from_chars for integral types.
+  template<typename _Tp>
+    __detail::__integer_from_chars_result_type<_Tp>
+    from_chars(const char* __first, const char* __last, _Tp& __value,
+	       int __base = 10)
+    {
+      __glibcxx_assert(2 <= __base && __base <= 36);
+
+      from_chars_result __res{__first, {}};
+
+      int __sign = 1;
+      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+	if (__first != __last && *__first == '-')
+	  {
+	    __sign = -1;
+	    ++__first;
+	  }
+
+      using _Up = __detail::__unsigned_least_t<_Tp>;
+      _Up __val = 0;
+
+      const auto __start = __first;
+      bool __valid;
+      if (__base == 2)
+	__valid = __detail::__from_chars_binary(__first, __last, __val);
+      else if (__base <= 10)
+	__valid = __detail::__from_chars_digit(__first, __last, __val, __base);
+      else
+	__valid = __detail::__from_chars_alnum(__first, __last, __val, __base);
+
+      if (__builtin_expect(__first == __start, 0))
+	__res.ec = errc::invalid_argument;
+      else
+	{
+	  __res.ptr = __first;
+	  if (!__valid)
+	    __res.ec = errc::result_out_of_range;
+	  else
+	    {
+	      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+		{
+		  _Tp __tmp;
+		  if (__builtin_mul_overflow(__val, __sign, &__tmp))
+		    __res.ec = errc::result_out_of_range;
+		  else
+		    __value = __tmp;
+		}
+	      else
+		{
+		  if _GLIBCXX17_CONSTEXPR
+		    (numeric_limits<_Up>::max() > numeric_limits<_Tp>::max())
+		    {
+		      if (__val > numeric_limits<_Tp>::max())
+			__res.ec = errc::result_out_of_range;
+		      else
+			__value = __val;
+		    }
+		  else
+		    __value = __val;
+		}
+	    }
+	}
+      return __res;
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++14
+#endif // _GLIBCXX_CHARCONV

@@ -36,7 +36,7 @@ int main ()
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
   
-#pragma acc parallel num_gangs(32) vector_length(32) copy(ary) copy(ondev)
+#pragma acc parallel num_gangs(32) copy(ary) copy(ondev)
   {
     ondev = __builtin_acc_on_device (5);
     gang (ary);

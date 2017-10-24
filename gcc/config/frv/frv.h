@@ -351,20 +351,6 @@
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* If defined, a C expression to compute the alignment given to a constant that
-   is being placed in memory.  CONSTANT is the constant and ALIGN is the
-   alignment that the object would ordinarily have.  The value of this macro is
-   used instead of that alignment to align the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string constants
-   to be word aligned so that `strcpy' calls that copy constants can be done
-   inline.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* Define this macro to be the value 1 if instructions will fail to work if
    given data not on the nominal alignment.  If instructions will merely go
    slower in that case, define this macro as 0.  */
@@ -979,14 +965,6 @@ typedef struct frv_stack {
 /* Define this macro to nonzero if the addresses of local variable slots
    are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset from the frame pointer to the first local variable slot to be
-   allocated.
-
-   If `FRAME_GROWS_DOWNWARD', find the next slot's offset by subtracting the
-   first slot's length from `STARTING_FRAME_OFFSET'.  Otherwise, it is found by
-   adding the length of the first slot to the value `STARTING_FRAME_OFFSET'.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  If not specified, the default value of zero

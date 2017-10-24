@@ -312,9 +312,9 @@ extern void post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent,
 extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
                                   tree t, int num);
 
-/* Return a label to branch to for the exception type in KIND or NULL_TREE
+/* Return a label to branch to for the exception type in KIND or Empty
    if none.  */
-extern tree get_exception_label (char kind);
+extern Entity_Id get_exception_label (char kind);
 
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;

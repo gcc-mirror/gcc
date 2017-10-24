@@ -69,4 +69,16 @@ void nonfinite(unsigned short x) {
     nonfinite_10 = (float) x != SNAN;
     /* { dg-final { scan-tree-dump "nonfinite_10 = \\(float\\)" "original" } } */
   }
+
+  {
+    volatile int nonfinite_11;
+    nonfinite_11 = (float) x == QNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_11 = 0" "original" } } */
+  }
+
+  {
+    volatile int nonfinite_12;
+    nonfinite_12 = (float) x != QNAN;
+    /* { dg-final { scan-tree-dump "nonfinite_12 = 1" "original" } } */
+  }
 }

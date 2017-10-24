@@ -221,7 +221,7 @@ var pkgDeps = map[string][]string{
 	"go/constant":               {"L4", "go/token", "math/big"},
 	"go/importer":               {"L4", "go/build", "go/internal/gccgoimporter", "go/internal/gcimporter", "go/internal/srcimporter", "go/token", "go/types"},
 	"go/internal/gcimporter":    {"L4", "OS", "go/build", "go/constant", "go/token", "go/types", "text/scanner"},
-	"go/internal/gccgoimporter": {"L4", "OS", "debug/elf", "go/constant", "go/token", "go/types", "text/scanner"},
+	"go/internal/gccgoimporter": {"L4", "OS", "debug/elf", "debug/xcoff", "go/constant", "go/token", "go/types", "text/scanner"},
 	"go/internal/srcimporter":   {"L4", "fmt", "go/ast", "go/build", "go/parser", "go/token", "go/types", "path/filepath"},
 	"go/types":                  {"L4", "GOPARSER", "container/heap", "go/constant"},
 
@@ -243,6 +243,7 @@ var pkgDeps = map[string][]string{
 	"debug/macho":              {"L4", "OS", "debug/dwarf"},
 	"debug/pe":                 {"L4", "OS", "debug/dwarf"},
 	"debug/plan9obj":           {"L4", "OS"},
+	"debug/xcoff":              {"L4", "OS", "debug/dwarf"},
 	"encoding":                 {"L4"},
 	"encoding/ascii85":         {"L4"},
 	"encoding/asn1":            {"L4", "math/big"},

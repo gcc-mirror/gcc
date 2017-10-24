@@ -1102,19 +1102,18 @@ must be aligned to 16 byte boundaries.
 If this macro is not defined, then @var{basic-align} is used.
 @end defmac
 
-@defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
-If defined, a C expression to compute the alignment given to a constant
-that is being placed in memory.  @var{constant} is the constant and
-@var{basic-align} is the alignment that the object would ordinarily
-have.  The value of this macro is used instead of that alignment to
-align the object.
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_CONSTANT_ALIGNMENT (const_tree @var{constant}, HOST_WIDE_INT @var{basic_align})
+This hook returns the alignment in bits of a constant that is being
+placed in memory.  @var{constant} is the constant and @var{basic_align}
+is the alignment that the object would ordinarily have.
 
-The default definition just returns @var{basic-align}.
+The default definition just returns @var{basic_align}.
 
-The typical use of this macro is to increase alignment for string
+The typical use of this hook is to increase alignment for string
 constants to be word aligned so that @code{strcpy} calls that copy
-constants can be done inline.
-@end defmac
+constants can be done inline.  The function
+@code{constant_alignment_word_strings} provides such a definition.
+@end deftypefn
 
 @defmac LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
@@ -2967,22 +2966,19 @@ Define this macro if successive arguments to a function occupy decreasing
 addresses on the stack.
 @end defmac
 
-@defmac STARTING_FRAME_OFFSET
-Offset from the frame pointer to the first local variable slot to be allocated.
-
-If @code{FRAME_GROWS_DOWNWARD}, find the next slot's offset by
-subtracting the first slot's length from @code{STARTING_FRAME_OFFSET}.
-Otherwise, it is found by adding the length of the first slot to the
-value @code{STARTING_FRAME_OFFSET}.
-@c i'm not sure if the above is still correct.. had to change it to get
-@c rid of an overfull.  --mew 2feb93
-@end defmac
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_STARTING_FRAME_OFFSET (void)
+This hook returns the offset from the frame pointer to the first local
+variable slot to be allocated.  If @code{FRAME_GROWS_DOWNWARD}, it is the
+offset to @emph{end} of the first slot allocated, otherwise it is the
+offset to @emph{beginning} of the first slot allocated.  The default
+implementation returns 0.
+@end deftypefn
 
 @defmac STACK_ALIGNMENT_NEEDED
 Define to zero to disable final alignment of the stack during reload.
 The nonzero default for this macro is suitable for most ports.
 
-On ports where @code{STARTING_FRAME_OFFSET} is nonzero or where there
+On ports where @code{TARGET_STARTING_FRAME_OFFSET} is nonzero or where there
 is a register save block following the local block that doesn't require
 alignment to @code{STACK_BOUNDARY}, it may be beneficial to disable
 stack alignment and do it in the backend.
@@ -3410,6 +3406,10 @@ fixed area of the stack frame when the user specifies
 GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE (rtx @var{residual})
+Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.
+@end deftypefn
 
 @need 2000
 @node Frame Registers
@@ -5754,11 +5754,23 @@ For vector memory operations the cost may depend on type (@var{vectype}) and
 misalignment value (@var{misalign}).
 @end deftypefn
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT (const_tree @var{type})
+This hook returns the preferred alignment in bits for accesses to
+vectors of type @var{type} in vectorized code.  This might be less than
+or greater than the ABI-defined value returned by
+@code{TARGET_VECTOR_ALIGNMENT}.  It can be equal to the alignment of
+a single element, in which case the vectorizer will not try to optimize
+for alignment.
+
+The default hook returns @code{TYPE_ALIGN (@var{type})}, which is
+correct for most targets.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE (const_tree @var{type}, bool @var{is_packed})
 Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, const unsigned char *@var{sel})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, @var{vec_perm_indices})
 Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 
@@ -6635,6 +6647,18 @@ be live over a region of code where only one would have been if
 should be considered in the definition of this macro.  Equivalent costs
 should probably only be given to addresses with different numbers of
 registers on machines with lots of registers.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_INSN_COST (rtx_insn *@var{insn}, bool @var{speed})
+This target hook describes the relative costs of RTL instructions.
+
+In implementing this hook, you can use the construct
+@code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast
+instructions.
+
+When optimizing for code size, i.e.@: when @code{speed} is
+false, this target hook should be used to estimate the relative
+size cost of an expression, again relative to @code{COSTS_N_INSNS}.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned int} TARGET_MAX_NOCE_IFCVT_SEQ_COST (edge @var{e})

@@ -949,7 +949,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	*walk_subtrees = 0;
 
       else if (TREE_CODE (*tp) == INTEGER_CST)
-	*tp = wide_int_to_tree (new_type, *tp);
+	*tp = wide_int_to_tree (new_type, wi::to_wide (*tp));
       else
 	{
 	  *tp = copy_node (*tp);
@@ -1133,7 +1133,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	*walk_subtrees = 0;
 
       else if (TREE_CODE (*tp) == INTEGER_CST)
-	*tp = wide_int_to_tree (new_type, *tp);
+	*tp = wide_int_to_tree (new_type, wi::to_wide (*tp));
       else
 	{
 	  *tp = copy_node (*tp);
@@ -2215,7 +2215,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
    debug stmts are left after a statement that must end the basic block.  */
 
 static bool
-copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
+copy_edges_for_bb (basic_block bb,
 		   basic_block ret_bb, basic_block abnormal_goto_dest)
 {
   basic_block new_bb = (basic_block) bb->aux;
@@ -2224,8 +2224,6 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
   gimple_stmt_iterator si;
   int flags;
   bool need_debug_cleanup = false;
-  bool scale = num.initialized_p ()
-	       && (den > 0 || num == profile_count::zero ());
 
   /* Use the indices from the original blocks to create edges for the
      new ones.  */
@@ -2242,8 +2240,6 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  flags |= EDGE_FALLTHRU;
 	new_edge = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
-	if (scale)
-	  new_edge->count = old_edge->count.apply_scale (num, den);
 	new_edge->probability = old_edge->probability;
       }
 
@@ -2324,17 +2320,11 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 		&& (e = find_edge (copy_stmt_bb,
 				   (basic_block) old_edge->dest->aux))
 		&& (e->flags & EDGE_EH))
-	      {
-		e->probability = old_edge->probability;
-		e->count = old_edge->count;
-	      }
+	      e->probability = old_edge->probability;
 	    
           FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
 	    if ((e->flags & EDGE_EH) && !e->probability.initialized_p ())
-	      {
-	        e->probability = profile_probability::never ();
-	        e->count = profile_count::zero ();
-	      }
+	      e->probability = profile_probability::never ();
         }
 
 
@@ -2700,16 +2690,10 @@ void
 freqs_to_counts (struct cgraph_node *node, profile_count count)
 {
   basic_block bb;
-  edge_iterator ei;
-  edge e;
   struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
   FOR_ALL_BB_FN(bb, fn)
-    {
-      bb->count = count.apply_scale (bb->frequency, BB_FREQ_MAX);
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        e->count = e->src->count.apply_probability (e->probability);
-    }
+    bb->count = count.apply_scale (bb->frequency, BB_FREQ_MAX);
 }
 
 /* Make a copy of the body of FN so that it can be inserted inline in
@@ -2769,10 +2753,7 @@ copy_cfg_body (copy_body_data * id, profile_count count, int frequency_scale,
 
       FOR_EACH_EDGE (e, ei, new_entry->preds)
 	if (!e->src->aux)
-	  {
-	    incoming_frequency += EDGE_FREQUENCY (e);
-	    incoming_count += e->count;
-	  }
+	  incoming_frequency += EDGE_FREQUENCY (e);
       if (scale)
         incoming_count = incoming_count.apply_scale (num, den);
       else
@@ -2826,14 +2807,13 @@ copy_cfg_body (copy_body_data * id, profile_count count, int frequency_scale,
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     if (!id->blocks_to_copy
 	|| (bb->index > 0 && bitmap_bit_p (id->blocks_to_copy, bb->index)))
-      need_debug_cleanup |= copy_edges_for_bb (bb, num, den, exit_block_map,
+      need_debug_cleanup |= copy_edges_for_bb (bb, exit_block_map,
 					       abnormal_goto_dest);
 
   if (new_entry)
     {
       edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
       e->probability = profile_probability::always ();
-      e->count = incoming_count;
     }
 
   /* Duplicate the loop tree, if available and wanted.  */
@@ -4796,6 +4776,22 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 
   reset_debug_bindings (id, stmt_gsi);
 
+  if (flag_stack_reuse != SR_NONE)
+    for (tree p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
+      if (!TREE_THIS_VOLATILE (p))
+	{
+	  tree *varp = id->decl_map->get (p);
+	  if (varp && VAR_P (*varp) && !is_gimple_reg (*varp))
+	    {
+	      tree clobber = build_constructor (TREE_TYPE (*varp), NULL);
+	      gimple *clobber_stmt;
+	      TREE_THIS_VOLATILE (clobber) = 1;
+	      clobber_stmt = gimple_build_assign (*varp, clobber);
+	      gimple_set_location (clobber_stmt, gimple_location (stmt));
+	      gsi_insert_before (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
+	    }
+	}
+
   /* Reset the escaped solution.  */
   if (cfun->gimple_df)
     pt_solution_reset (&cfun->gimple_df->escaped);
@@ -4846,6 +4842,23 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       stmt = gimple_build_assign (gimple_call_lhs (stmt), use_retvar);
       gsi_replace (&stmt_gsi, stmt, false);
       maybe_clean_or_replace_eh_stmt (old_stmt, stmt);
+      /* Append a clobber for id->retvar if easily possible.  */
+      if (flag_stack_reuse != SR_NONE
+	  && id->retvar
+	  && VAR_P (id->retvar)
+	  && id->retvar != return_slot
+	  && id->retvar != modify_dest
+	  && !TREE_THIS_VOLATILE (id->retvar)
+	  && !is_gimple_reg (id->retvar)
+	  && !stmt_ends_bb_p (stmt))
+	{
+	  tree clobber = build_constructor (TREE_TYPE (id->retvar), NULL);
+	  gimple *clobber_stmt;
+	  TREE_THIS_VOLATILE (clobber) = 1;
+	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
+	  gimple_set_location (clobber_stmt, gimple_location (old_stmt));
+	  gsi_insert_after (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
+	}
 
       /* Copy bounds if we copy structure with bounds.  */
       if (chkp_function_instrumented_p (id->dst_fn)
@@ -4884,8 +4897,25 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	      SSA_NAME_DEF_STMT (name) = gimple_build_nop ();
 	    }
 	}
+      /* Replace with a clobber for id->retvar.  */
+      else if (flag_stack_reuse != SR_NONE
+	       && id->retvar
+	       && VAR_P (id->retvar)
+	       && id->retvar != return_slot
+	       && id->retvar != modify_dest
+	       && !TREE_THIS_VOLATILE (id->retvar)
+	       && !is_gimple_reg (id->retvar))
+	{
+	  tree clobber = build_constructor (TREE_TYPE (id->retvar), NULL);
+	  gimple *clobber_stmt;
+	  TREE_THIS_VOLATILE (clobber) = 1;
+	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
+	  gimple_set_location (clobber_stmt, gimple_location (stmt));
+	  gsi_replace (&stmt_gsi, clobber_stmt, false);
+	  maybe_clean_or_replace_eh_stmt (stmt, clobber_stmt);
+	}
       else
-        gsi_remove (&stmt_gsi, true);
+	gsi_remove (&stmt_gsi, true);
     }
 
   /* Put returned bounds into the correct place if required.  */
@@ -4934,6 +4964,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   cg_edge->callee->remove ();
 
   id->block = NULL_TREE;
+  id->retvar = NULL_TREE;
+  id->retbnd = NULL_TREE;
   successfully_inlined = true;
 
  egress:

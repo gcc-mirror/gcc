@@ -103,6 +103,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SGX_P(x)	TARGET_ISA_SGX_P(x)
 #define TARGET_RDPID	TARGET_ISA_RDPID
 #define TARGET_RDPID_P(x)	TARGET_ISA_RDPID_P(x)
+#define TARGET_GFNI	TARGET_ISA_GFNI
+#define TARGET_GFNI_P(x)	TARGET_ISA_GFNI_P(x)
 #define TARGET_BMI	TARGET_ISA_BMI
 #define TARGET_BMI_P(x)	TARGET_ISA_BMI_P(x)
 #define TARGET_BMI2	TARGET_ISA_BMI2
@@ -167,6 +169,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_MWAITX_P(x)	TARGET_ISA_MWAITX_P(x)
 #define TARGET_PKU	TARGET_ISA_PKU
 #define TARGET_PKU_P(x)	TARGET_ISA_PKU_P(x)
+#define TARGET_IBT	TARGET_ISA_IBT
+#define TARGET_IBT_P(x)	TARGET_ISA_IBT_P(x)
+#define TARGET_SHSTK	TARGET_ISA_SHSTK
+#define TARGET_SHSTK_P(x)	TARGET_ISA_SHSTK_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -236,13 +242,17 @@ struct processor_costs {
 				   in SImode and DImode */
   const int mmx_store[2];	/* cost of storing MMX register
 				   in SImode and DImode */
-  const int sse_move;		/* cost of moving SSE register.  */
-  const int sse_load[3];	/* cost of loading SSE register
-				   in SImode, DImode and TImode*/
-  const int sse_store[3];	/* cost of storing SSE register
-				   in SImode, DImode and TImode*/
+  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
+	    zmm_move;
+  const int sse_load[5];	/* cost of loading SSE register
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  const int sse_unaligned_load[5];/* cost of unaligned load.  */
+  const int sse_store[5];	/* cost of storing SSE register
+				   in SImode, DImode and TImode.  */
+  const int sse_unaligned_store[5];/* cost of unaligned store.  */
   const int mmxsse_to_integer;	/* cost of moving mmxsse register to
-				   integer and vice versa.  */
+				   integer.  */
+  const int ssemmx_to_integer;  /* cost of moving integer to mmxsse register. */
   const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
   const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
   const int prefetch_block;	/* bytes moved to cache for prefetch.  */
@@ -257,19 +267,24 @@ struct processor_costs {
   const int fsqrt;		/* cost of FSQRT instruction.  */
 				/* Specify what algorithm
 				   to use for stringops on unknown size.  */
+  const int sse_op;		/* cost of cheap SSE instruction.  */
+  const int addss;		/* cost of ADDSS/SD SUBSS/SD instructions.  */
+  const int mulss;		/* cost of MULSS instructions.  */
+  const int mulsd;		/* cost of MULSD instructions.  */
+  const int fmass;		/* cost of FMASS instructions.  */
+  const int fmasd;		/* cost of FMASD instructions.  */
+  const int divss;		/* cost of DIVSS instructions.  */
+  const int divsd;		/* cost of DIVSD instructions.  */
+  const int sqrtss;		/* cost of SQRTSS instructions.  */
+  const int sqrtsd;		/* cost of SQRTSD instructions.  */
+  const int reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp;
+				/* Specify reassociation width for integer,
+				   fp, vector integer and vector fp
+				   operations.  Generally should correspond
+				   to number of instructions executed in
+				   parallel.  See also
+				   ix86_reassociation_width.  */
   struct stringop_algs *memcpy, *memset;
-  const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
-				   load and store.  */
-  const int scalar_load_cost;   /* Cost of scalar load.  */
-  const int scalar_store_cost;  /* Cost of scalar store.  */
-  const int vec_stmt_cost;      /* Cost of any vector operation, excluding
-                                   load, store, vector-to-scalar and
-                                   scalar-to-vector operation.  */
-  const int vec_to_scalar_cost;    /* Cost of vect-to-scalar operation.  */
-  const int scalar_to_vec_cost;    /* Cost of scalar-to-vector operation.  */
-  const int vec_align_load_cost;   /* Cost of aligned vector load.  */
-  const int vec_unalign_load_cost; /* Cost of unaligned vector load.  */
-  const int vec_store_cost;        /* Cost of vector store.  */
   const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
 					  cost model.  */
   const int cond_not_taken_branch_cost;/* Cost of not taken branch for
@@ -351,6 +366,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
+#define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
@@ -465,8 +481,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_USE_VECTOR_CONVERTS]
 #define TARGET_SLOW_PSHUFB \
 	ix86_tune_features[X86_TUNE_SLOW_PSHUFB]
-#define TARGET_VECTOR_PARALLEL_EXECUTION \
-	ix86_tune_features[X86_TUNE_VECTOR_PARALLEL_EXECUTION]
 #define TARGET_AVOID_4BYTE_PREFIXES \
 	ix86_tune_features[X86_TUNE_AVOID_4BYTE_PREFIXES]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
@@ -487,10 +501,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
 #define TARGET_AVX128_OPTIMAL \
 	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
-#define TARGET_REASSOC_INT_TO_PARALLEL \
-	ix86_tune_features[X86_TUNE_REASSOC_INT_TO_PARALLEL]
-#define TARGET_REASSOC_FP_TO_PARALLEL \
-	ix86_tune_features[X86_TUNE_REASSOC_FP_TO_PARALLEL]
 #define TARGET_GENERAL_REGS_SSE_SPILL \
 	ix86_tune_features[X86_TUNE_GENERAL_REGS_SSE_SPILL]
 #define TARGET_AVOID_MEM_OPND_FOR_CMOVE \
@@ -846,20 +856,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
   x86_field_alignment ((TYPE), (COMPUTED))
 #endif
-
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  EXP is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ix86_constant_alignment ((EXP), (ALIGN))
 
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
@@ -1530,12 +1526,6 @@ enum reg_class
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* If we generate an insn to push BYTES bytes, this says how many the stack
    pointer really advances by.  On 386, we have pushw instruction that
@@ -2250,6 +2240,7 @@ enum processor_type
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
+  PROCESSOR_KNM,
   PROCESSOR_SKYLAKE_AVX512,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
@@ -2614,6 +2605,7 @@ struct GTY(()) machine_function {
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
 #define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
+#define ix86_red_zone_size (cfun->machine->frame.red_zone_size)
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false

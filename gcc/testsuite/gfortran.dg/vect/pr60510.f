@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-require-effective-target vect_double }
+! { dg-require-effective-target vect_intdouble_cvt }
 ! { dg-additional-options "-fno-inline -ffast-math" }
       subroutine foo(a,x,y,n)
       implicit none

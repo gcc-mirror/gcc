@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc;    use Alloc;
+with Alloc;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;

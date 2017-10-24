@@ -651,7 +651,7 @@ maybe_add_lang_decl_raw (tree t, bool decomp_p)
 
   if (sel == lds_ns)
     /* Who'd create a namespace, only to put nothing in it?  */
-    ld->u.ns.bindings = hash_map<lang_identifier *, tree>::create_ggc (499);
+    ld->u.ns.bindings = hash_table<named_decl_hash>::create_ggc (499);
 
   if (GATHER_STATISTICS)
     {

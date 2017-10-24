@@ -115,6 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
 
@@ -3438,6 +3439,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
 

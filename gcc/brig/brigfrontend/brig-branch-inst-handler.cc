@@ -42,7 +42,8 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
       vec<tree, va_gc> *out_args;
       vec_alloc (out_args, 1);
       vec<tree, va_gc> *in_args;
-      vec_alloc (in_args, 4);
+      /* Ten elem initially, more reserved if needed. */
+      vec_alloc (in_args, 10);
 
       size_t operand_count = operand_entries->byteCount / 4;
       gcc_assert (operand_count < 4);
@@ -69,7 +70,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	  const BrigOperandOffset32_t *operand_ptr
 	    = (const BrigOperandOffset32_t *) data->bytes;
 
-	  vec<tree, va_gc> *args = i == 0 ? out_args : in_args;
+	  bool out_args_p = i == 0;
 
 	  while (bytes > 0)
 	    {
@@ -84,7 +85,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	      if (brig_var->type & BRIG_TYPE_ARRAY)
 		{
 		  /* Array return values are passed as the first argument.  */
-		  args = in_args;
+		  out_args_p = false;
 		  /* Pass pointer to the element zero and use its element zero
 		     as the base address.  */
 		  tree etype = TREE_TYPE (TREE_TYPE (var));
@@ -96,7 +97,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 		}
 
 	      gcc_assert (var != NULL_TREE);
-	      vec_safe_push (args, var);
+	      vec_safe_push (out_args_p ? out_args : in_args, var);
 	      ++operand_ptr;
 	      bytes -= 4;
 	    }
@@ -117,8 +118,18 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	 they might call builtins that need them or access group/private
 	 memory.  */
 
+      tree group_local_offset
+	= add_temp_var ("group_local_offset",
+			build_int_cst
+			(uint32_type_node,
+			 m_parent.m_cf->m_local_group_variables.size()));
+
+      /* TODO: ensure the callee's frame is aligned!  */
+
+      vec_safe_reserve (in_args, 4);
       vec_safe_push (in_args, m_parent.m_cf->m_context_arg);
       vec_safe_push (in_args, m_parent.m_cf->m_group_base_arg);
+      vec_safe_push (in_args, group_local_offset);
       vec_safe_push (in_args, m_parent.m_cf->m_private_base_arg);
 
       tree call = build_call_vec (ret_val_type, build_fold_addr_expr (func_ref),
@@ -138,7 +149,6 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	  m_parent.m_cf->append_statement (call);
 	}
 
-      m_parent.m_cf->m_has_unexpanded_dp_builtins = false;
       m_parent.m_cf->m_called_functions.push_back (func_ref);
 
       return base->byteCount;

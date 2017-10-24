@@ -1,3 +1,12 @@
+2017-10-11  Tony Reix  <tony.reix@atos.net>
+
+	* go-system.h (__STDC_FORMAT_MACROS): Define before including any
+	system header files, as is done in ../system.h.
+
+2017-10-05  Ian Lance Taylor  <iant@golang.org>
+
+	* Make-lang.in (GO_OBJS): Add go/names.o.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -231,6 +231,7 @@ proc scan-assembler-times { args } {
 
     set testcase [testname-for-summary]
     set pattern [lindex $args 0]
+    set times [lindex $args 1]
     set pp_pattern [make_pattern_printable $pattern]
 
     # This must match the rule in gcc-dg.exp.
@@ -239,7 +240,7 @@ proc scan-assembler-times { args } {
     set files [glob -nocomplain $output_file]
     if { $files == "" } {
 	verbose -log "$testcase: output file does not exist"
-	unresolved "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+	unresolved "$testcase scan-assembler-times $pp_pattern $times"
 	return
     }
 
@@ -247,10 +248,11 @@ proc scan-assembler-times { args } {
     set text [read $fd]
     close $fd
 
-    if { [llength [regexp -inline -all -- $pattern $text]] == [lindex $args 1]} {
-	pass "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+    set result_count [llength [regexp -inline -all -- $pattern $text]]
+    if {$result_count == $times} {
+	pass "$testcase scan-assembler-times $pp_pattern $times"
     } else {
-	fail "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+	fail "$testcase scan-assembler-times $pp_pattern $times (found $result_count times)"
     }
 }
 
@@ -482,16 +484,16 @@ proc dg-function-on-line { args } {
     }
 
     if { [istarget hppa*-*-*] } {
-	set pattern [format {\t;[^:]+:%d\n(\t[^\t]+\n)+%s:\n\t.PROC} \
+	set pattern [format {\t;[^:]+:%d(:[0-9]+)?\n(\t[^\t]+\n)+%s:\n\t.PROC} \
                      $line $symbol]
     } elseif { [istarget mips*-*-*] } {
-	set pattern [format {\t\.loc [0-9]+ %d 0( [^\n]*)?\n(\t.cfi_startproc[^\t]*\n)*\t\.set\t(no)?mips16\n\t(\.set\t(no)?micromips\n\t)?\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
+	set pattern [format {\t\.loc [0-9]+ %d [0-9]+( [^\n]*)?\n(\t.cfi_startproc[^\t]*\n)*\t\.set\t(no)?mips16\n\t(\.set\t(no)?micromips\n\t)?\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
 		     $line $symbol $symbol $symbol]
     } elseif { [istarget microblaze*-*-*] } {
-        set pattern [format {:%d\n\$.*:\n\t\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
+        set pattern [format {:%d(:[0-9]+)?\n\$.*:\n\t\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
                      $line $symbol $symbol $symbol]
     } else {
-	set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
+	set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d(:[0-9]+)?\n} \
                      $symbol $line]
     }
 

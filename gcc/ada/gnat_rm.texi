@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 13, 2017
+GNAT Reference Manual , Oct 14, 2017
 
 AdaCore
 
@@ -5547,6 +5547,9 @@ Specifying SPACE also disables alignment promotions for standalone objects,
 which occur when the compiler increases the alignment of a specific object
 without changing the alignment of its type.
 
+Specifying SPACE also disables component reordering in unpacked record types,
+which can result in larger sizes in order to meet alignment requirements.
+
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:
 
@@ -9410,11 +9413,20 @@ that it is separately controllable using pragma @code{Assertion_Policy}.
 This aspect provides a light-weight mechanism for loops and quantified
 expressions over container types, without the overhead imposed by the tampering
 checks of standard Ada 2012 iterators. The value of the aspect is an aggregate
-with four named components: @code{First}, @code{Next}, @code{Has_Element}, and @code{Element} (the
-last one being optional). When only 3 components are specified, only the
-@code{for .. in} form of iteration over cursors is available. When all 4 components
-are specified, both this form and the @code{for .. of} form of iteration over
-elements are available. The following is a typical example of use:
+with six named components, or which the last three are optional: @code{First},
+
+@quotation
+
+@code{Next}, @code{Has_Element},`@w{`}Element`@w{`}, @code{Last}, and @code{Previous}.
+@end quotation
+
+When only the first three components are specified, only the
+@code{for .. in} form of iteration over cursors is available. When @code{Element}
+is specified, both this form and the @code{for .. of} form of iteration over
+elements are available. If the last two components are specified, reverse
+iterations over the container can be specified (analogous to what can be done
+over predefined containers that support the Reverse_Iterator interface).
+The following is a typical example of use:
 
 @example
 type List is private with
@@ -18099,7 +18111,7 @@ will be as described for elementary types, e.g. a packed array of length
 @item 
 @emph{Records}.
 
-For the normal non-packed case, the alignment of a record is equal to
+For the normal unpacked case, the alignment of a record is equal to
 the maximum alignment of any of its components.  For tagged records, this
 includes the implicit access type used for the tag.  If a pragma @code{Pack}
 is used and all components are packable (see separate section on pragma

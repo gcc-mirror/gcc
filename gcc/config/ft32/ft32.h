@@ -233,10 +233,6 @@ enum reg_class
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET 0
-
 /* Offset from the argument pointer register to the first argument's
    address.  On some machines it may depend on the data type of the
    function.  */
@@ -353,12 +349,6 @@ enum reg_class
 /* Largest integer machine mode for structures.  If undefined, the default
    is GET_MODE_SIZE(DImode).  */
 #define MAX_FIXED_MODE_SIZE 32
-
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST       \
-    && (ALIGN) < FASTEST_ALIGNMENT)     \
-   ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */

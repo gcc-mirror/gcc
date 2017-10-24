@@ -88,10 +88,17 @@ brig_code_entry_handler::build_code_ref (const BrigBase &ref)
     {
       const BrigDirectiveFbarrier* fbar = (const BrigDirectiveFbarrier*)&ref;
 
-      uint64_t offset = m_parent.group_variable_segment_offset
-	(m_parent.get_mangled_name (fbar));
+      std::string var_name = m_parent.get_mangled_name (fbar);
+      uint64_t offset
+	= m_parent.m_cf->group_variable_segment_offset (var_name);
 
-      return build_int_cst (uint32_type_node, offset);
+      tree local_offset = build_int_cst (uint32_type_node, offset);
+      if (m_parent.m_cf->m_local_group_variables.has_variable (var_name))
+	local_offset
+	  = build2 (PLUS_EXPR, uint64_type_node, local_offset,
+		    convert (uint64_type_node,
+			     m_parent.m_cf->m_group_local_offset_arg));
+      return local_offset;
     }
   else
     gcc_unreachable ();
@@ -264,9 +271,18 @@ brig_code_entry_handler::build_address_operand
 	}
       else if (segment == BRIG_SEGMENT_GROUP)
 	{
-
-	  uint64_t offset = m_parent.group_variable_segment_offset (var_name);
+	  uint64_t offset
+	    = m_parent.m_cf->group_variable_segment_offset (var_name);
 	  const_offset = build_int_cst (size_type_node, offset);
+
+	  /* If it's a local group variable reference, substract the local
+	     group segment offset to get the group base ptr offset.  */
+	  if (m_parent.m_cf->m_local_group_variables.has_variable (var_name))
+	    const_offset
+	      = build2 (PLUS_EXPR, uint64_type_node, const_offset,
+			convert (uint64_type_node,
+				 m_parent.m_cf->m_group_local_offset_arg));
+
 	}
       else if (segment == BRIG_SEGMENT_PRIVATE || segment == BRIG_SEGMENT_SPILL)
 	{

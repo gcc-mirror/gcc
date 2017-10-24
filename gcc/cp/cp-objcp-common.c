@@ -61,43 +61,34 @@ cxx_warn_unused_global_decl (const_tree decl)
 size_t
 cp_tree_size (enum tree_code code)
 {
+  gcc_checking_assert (code >= NUM_TREE_CODES);
   switch (code)
     {
-    case PTRMEM_CST:		return sizeof (struct ptrmem_cst);
-    case BASELINK:		return sizeof (struct tree_baselink);
+    case PTRMEM_CST:		return sizeof (ptrmem_cst);
+    case BASELINK:		return sizeof (tree_baselink);
     case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
-    case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
-    case DEFERRED_NOEXCEPT:	return sizeof (struct tree_deferred_noexcept);
-    case OVERLOAD:		return sizeof (struct tree_overload);
-    case STATIC_ASSERT:         return sizeof (struct tree_static_assert);
+    case DEFAULT_ARG:		return sizeof (tree_default_arg);
+    case DEFERRED_NOEXCEPT:	return sizeof (tree_deferred_noexcept);
+    case OVERLOAD:		return sizeof (tree_overload);
+    case STATIC_ASSERT:         return sizeof (tree_static_assert);
     case TYPE_ARGUMENT_PACK:
-    case TYPE_PACK_EXPANSION:
-      return sizeof (struct tree_common);
-
+    case TYPE_PACK_EXPANSION:	return sizeof (tree_type_non_common);
     case NONTYPE_ARGUMENT_PACK:
-    case EXPR_PACK_EXPANSION:
-      return sizeof (struct tree_exp);
-
-    case ARGUMENT_PACK_SELECT:
-      return sizeof (struct tree_argument_pack_select);
-
-    case TRAIT_EXPR:
-      return sizeof (struct tree_trait_expr);
-
-    case LAMBDA_EXPR:           return sizeof (struct tree_lambda_expr);
-
-    case TEMPLATE_INFO:         return sizeof (struct tree_template_info);
-
-    case CONSTRAINT_INFO:       return sizeof (struct tree_constraint_info);
-
-    case USERDEF_LITERAL:	return sizeof (struct tree_userdef_literal);
-
-    case TEMPLATE_DECL:		return sizeof (struct tree_template_decl);
-
+    case EXPR_PACK_EXPANSION:	return sizeof (tree_exp);
+    case ARGUMENT_PACK_SELECT:	return sizeof (tree_argument_pack_select);
+    case TRAIT_EXPR:		return sizeof (tree_trait_expr);
+    case LAMBDA_EXPR:           return sizeof (tree_lambda_expr);
+    case TEMPLATE_INFO:         return sizeof (tree_template_info);
+    case CONSTRAINT_INFO:       return sizeof (tree_constraint_info);
+    case USERDEF_LITERAL:	return sizeof (tree_userdef_literal);
+    case TEMPLATE_DECL:		return sizeof (tree_template_decl);
     default:
-      if (TREE_CODE_CLASS (code) == tcc_declaration)
-	return sizeof (struct tree_decl_non_common);
-      gcc_unreachable ();
+      switch (TREE_CODE_CLASS (code))
+	{
+	case tcc_declaration:	return sizeof (tree_decl_non_common);
+	case tcc_type:		return sizeof (tree_type_non_common);
+	default: gcc_unreachable ();
+	}
     }
   /* NOTREACHED */
 }
@@ -162,13 +153,13 @@ cp_get_debug_type (const_tree type)
 	 types on the fly for the debug info only, they would not be attached
 	 to any GC root and always be swept, so we would make the contents of
 	 the debug info depend on the collection points.  */
-      struct tree_map in, *h;
+      struct tree_map in, *h, **slot;
 
       in.base.from = CONST_CAST_TREE (type);
       in.hash = htab_hash_pointer (type);
-      h = debug_type_hash->find_with_hash (&in, in.hash);
-      if (h)
-	return h->to;
+      slot = debug_type_hash->find_slot_with_hash (&in, in.hash, INSERT);
+      if (*slot)
+	return (*slot)->to;
 
       tree t = build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
 				  TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
@@ -177,7 +168,7 @@ cp_get_debug_type (const_tree type)
       h->base.from = CONST_CAST_TREE (type);
       h->hash = htab_hash_pointer (type);
       h->to = t;
-      *debug_type_hash->find_slot_with_hash (h, h->hash, INSERT) = h;
+      *slot = h;
 
       return t;
     }
@@ -398,6 +389,15 @@ tree
 cp_pushdecl (tree decl)
 {
   return pushdecl (decl);
+}
+
+/* Get the global value binding of NAME.  Called directly from
+   c-common.c, not via a hook. */
+
+tree
+identifier_global_value (tree name)
+{
+  return get_global_binding (name);
 }
 
 /* Register c++-specific dumps.  */

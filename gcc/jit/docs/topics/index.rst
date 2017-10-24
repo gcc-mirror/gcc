@@ -26,6 +26,7 @@ Topic Reference
    types.rst
    expressions.rst
    functions.rst
+   function-pointers.rst
    locations.rst
    compilation.rst
    compatibility.rst

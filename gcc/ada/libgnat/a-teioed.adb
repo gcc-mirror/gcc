@@ -1019,7 +1019,6 @@ package body Ada.Text_IO.Editing is
       -------------------
 
       procedure Debug_Integer (Value : Integer; S : String) is
-         use Ada.Text_IO; --  needed for >
 
       begin
          if Debug and then Value > 0 then

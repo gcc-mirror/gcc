@@ -1,30 +1,75 @@
+2017-10-23  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/subdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added subdi3.S to LIB2ADD.
+
+2017-10-13  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/adddi3.S: New assembly file.
+	* config/rl78/t-rl78: Added adddi3.S to LIB2ADD.
+
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82274
+	* libgcc2.c (__mulvDI3): If both operands have
+	the same highpart of -1 and the topmost bit of lowpart is 0,
+	multiplication overflows even if both lowparts are 0.
+
+2017-09-28  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/crti-hw.S: Add watchdog vector, FT930 IRQ support.
+
+2017-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/microblaze/crti.S, config/microblaze/crtn.S,
+	config/microblaze/divsi3.S, config/microblaze/moddi3.S,
+	config/microblaze/modsi3.S, config/microblaze/muldi3_hard.S,
+	config/microblaze/mulsi3.S,
+	config/microblaze/stack_overflow_exit.S,
+	config/microblaze/udivsi3.S, config/microblaze/umodsi3.S,
+	config/pa/milli64.S: Add .note.GNU-stack section.
+
+2017-09-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* configure.ac: Add Check for HAVE_AS_AVX.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* config/i386/i386-asm.h: Include auto-target.h from libgcc.
+	(SSE_SAVE, SSE_RESTORE): Emit .byte sequence for !HAVE_AS_AVX.
+	Correct out-of-date comments.
+
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/cpuinfo.h (processor_types): Add INTEL_KNM.
+	* config/i386/cpuinfo.c (get_intel_cpu): Detect Knights Mill.
+
 2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
 
-	config/i386/i386-asm.h (PASTE2): New macro.
+	* config/i386/i386-asm.h (PASTE2): New macro.
 	(ASMNAME): Modify to use PASTE2.
 	(MS2SYSV_STUB_PREFIX): New macro for isa prefix.
 	(MS2SYSV_STUB_BEGIN, MS2SYSV_STUB_END): New macros for stub headers.
-	config/i386/resms64.S: Rename to a header file, use MS2SYSV_STUB_BEGIN
+	* config/i386/resms64.S: Rename to a header file, use MS2SYSV_STUB_BEGIN
 	instead of HIDDEN_FUNC and MS2SYSV_STUB_END instead of FUNC_END.
-	config/i386/resms64f.S: Likewise.
-	config/i386/resms64fx.S: Likewise.
-	config/i386/resms64x.S: Likewise.
-	config/i386/savms64.S: Likewise.
-	config/i386/savms64f.S: Likewise.
-	config/i386/avx_resms64.S: New file that only defines a macro and
+	* config/i386/resms64f.S: Likewise.
+	* config/i386/resms64fx.S: Likewise.
+	* config/i386/resms64x.S: Likewise.
+	* config/i386/savms64.S: Likewise.
+	* config/i386/savms64f.S: Likewise.
+	* config/i386/avx_resms64.S: New file that only defines a macro and
 	includes it's corresponding header file.
-	config/i386/avx_resms64f.S: Likewise.
-	config/i386/avx_resms64fx.S: Likewise.
-	config/i386/avx_resms64x.S: Likewise.
-	config/i386/avx_savms64.S: Likewise.
-	config/i386/avx_savms64f.S: Likewise.
-	config/i386/sse_resms64.S: Likewise.
-	config/i386/sse_resms64f.S: Likewise.
-	config/i386/sse_resms64fx.S: Likewise.
-	config/i386/sse_resms64x.S: Likewise.
-	config/i386/sse_savms64.S: Likewise.
-	config/i386/sse_savms64f.S: Likewise.
-	config/i386/t-msabi: Modified to add avx and sse versions of stubs.
+	* config/i386/avx_resms64f.S: Likewise.
+	* config/i386/avx_resms64fx.S: Likewise.
+	* config/i386/avx_resms64x.S: Likewise.
+	* config/i386/avx_savms64.S: Likewise.
+	* config/i386/avx_savms64f.S: Likewise.
+	* config/i386/sse_resms64.S: Likewise.
+	* config/i386/sse_resms64f.S: Likewise.
+	* config/i386/sse_resms64fx.S: Likewise.
+	* config/i386/sse_resms64x.S: Likewise.
+	* config/i386/sse_savms64.S: Likewise.
+	* config/i386/sse_savms64f.S: Likewise.
+	* config/i386/t-msabi: Modified to add avx and sse versions of stubs.
 
 2017-09-01  Olivier Hainque  <hainque@adacore.com>
 

@@ -52,11 +52,10 @@ brig_function::brig_function (const BrigDirectiveExecutable *exec,
     m_context_arg (NULL_TREE), m_group_base_arg (NULL_TREE),
     m_private_base_arg (NULL_TREE), m_ret_value (NULL_TREE),
     m_next_kernarg_offset (0), m_kernarg_max_align (0),
-    m_ret_value_brig_var (NULL), m_has_barriers (false),
-    m_has_allocas (false), m_has_function_calls_with_barriers (false),
-    m_calls_analyzed (false), m_is_wg_function (false),
-    m_has_unexpanded_dp_builtins (false), m_generating_arg_block (false),
-    m_parent (parent)
+    m_ret_value_brig_var (NULL), m_has_barriers (false), m_has_allocas (false),
+    m_has_function_calls_with_barriers (false), m_calls_analyzed (false),
+    m_is_wg_function (false), m_has_unexpanded_dp_builtins (false),
+    m_generating_arg_block (false), m_parent (parent)
 {
   memset (m_regs, 0,
 	  BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT * sizeof (BrigOperandRegister *));
@@ -577,20 +576,31 @@ brig_function::emit_launcher_and_metadata ()
 
   tree phsail_launch_kernel_call;
 
+  /* Compute the local group segment frame start pointer.  */
+  tree group_local_offset_temp
+    = create_tmp_var (uint32_type_node, "group_local_offset");
+  tree group_local_offset_arg
+    = build2 (MODIFY_EXPR, uint32_type_node,
+	      group_local_offset_temp,
+	      build_int_cst (uint32_type_node,
+			     m_parent->m_module_group_variables.size()));
+
   /* Emit a launcher depending whether we converted the kernel function to
      a work group function or not.  */
   if (m_is_wg_function)
     phsail_launch_kernel_call
       = call_builtin (builtin_decl_explicit (BUILT_IN_HSAIL_LAUNCH_WG_FUNC),
-		      3, void_type_node,
+		      4, void_type_node,
 		      ptr_type_node, kernel_func_ptr, ptr_type_node,
-		      context_arg, ptr_type_node, group_base_addr_arg);
+		      context_arg, ptr_type_node, group_base_addr_arg,
+		      uint32_type_node, group_local_offset_arg);
   else
     phsail_launch_kernel_call
       = call_builtin (builtin_decl_explicit (BUILT_IN_HSAIL_LAUNCH_KERNEL),
-		      3, void_type_node,
+		      4, void_type_node,
 		      ptr_type_node, kernel_func_ptr, ptr_type_node,
-		      context_arg, ptr_type_node, group_base_addr_arg);
+		      context_arg, ptr_type_node, group_base_addr_arg,
+		      uint32_type_node, group_local_offset_arg);
 
   append_to_statement_list_force (phsail_launch_kernel_call, &stmt_list);
 
@@ -721,4 +731,14 @@ bool
 brig_function::has_function_scope_var (const BrigBase* var) const
 {
   return m_function_scope_vars.find (var) != m_function_scope_vars.end ();
+}
+
+size_t
+brig_function::group_variable_segment_offset (const std::string &name) const
+{
+  if (m_local_group_variables.has_variable (name))
+    return m_local_group_variables.segment_offset (name);
+
+  gcc_assert (m_parent->m_module_group_variables.has_variable (name));
+  return m_parent->m_module_group_variables.segment_offset (name);
 }

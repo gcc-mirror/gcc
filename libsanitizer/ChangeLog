@@ -1,3 +1,49 @@
+2017-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/82595
+	* lsan/lsan.h (__lsan_init): Add SANITIZER_INTERFACE_ATTRIBUTE.
+	* lsan/Makefile.am (nodist_toolexeclib_HEADERS): Add
+	liblsan_preinit.o.
+	(lsan_files): Remove lsan_preinit.cc.
+	(liblsan_preinit.o): New rule.
+	* lsan/Makefile.in: Regenerated.
+
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* All source files: Merge from upstream 315899.
+        * asan/Makefile.am (nodist_saninclude_HEADERS): Add
+	include/sanitizer/tsan_interface.h.
+        * asan/libtool-version: Bump the libasan SONAME.
+	* lsan/Makefile.am (sanitizer_lsan_files): Add lsan_common_mac.cc.
+	(lsan_files): Add lsan_linux.cc, lsan_mac.cc and lsan_malloc_mac.cc.
+        * sanitizer_common/Makefile.am (sanitizer_common_files): Add
+	sancov_flags.cc, sanitizer_allocator_checks.cc,
+	sanitizer_coverage_libcdep_new.cc, sanitizer_errno.cc,
+	sanitizer_file.cc, sanitizer_mac_libcdep.cc and
+	sanitizer_stoptheworld_mac.cc.  Remove sanitizer_coverage_libcdep.cc
+	and sanitizer_coverage_mapping_libcdep.cc.
+        * tsan/Makefile.am (tsan_files): Add tsan_external.cc.
+	* ubsan/Makefile.am (DEFS): Add -DUBSAN_CAN_USE_CXXABI=1.
+	(ubsan_files): Add ubsan_init_standalone.cc and
+	ubsan_signals_standalone.cc.
+	* ubsan/libtool-version: Bump the libubsan SONAME.
+        * asan/Makefile.in: Regenerate.
+        * lsan/Makefile.in: Regenerate.
+        * sanitizer_common/Makefile.in: Regenerate.
+        * tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+2017-10-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/82379
+	* configure.tgt (SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS): Set
+	to sanitizer_linux_x86_64.lo if __x86_64__ is defined by $CC.
+
+2017-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libbacktrace/backtrace-rename.h (backtrace_uncompress_zdebug):
+	Define.
+
 2017-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/system/sys/ptrace.h: New file.

@@ -720,6 +720,16 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+/* Some of the headers included by <memory> can use "abort" within a
+   namespace, e.g. "_VSTD::abort();", which fails after we use the
+   preprocessor to redefine "abort" as "fancy_abort" below.
+   Given that unique-ptr.h can use "free", we need to do this after "free"
+   is declared but before "abort" is overridden.  */
+
+#ifdef INCLUDE_UNIQUE_PTR
+# include "unique-ptr.h"
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *)
@@ -915,7 +925,8 @@ extern void fancy_abort (const char *, int, const char *)
 	MODES_TIEABLE_P FUNCTION_ARG_PADDING SLOW_UNALIGNED_ACCESS	\
 	HARD_REGNO_NREGS SECONDARY_MEMORY_NEEDED_MODE			\
 	SECONDARY_MEMORY_NEEDED CANNOT_CHANGE_MODE_CLASS		\
-	TRULY_NOOP_TRUNCATION FUNCTION_ARG_OFFSET
+	TRULY_NOOP_TRUNCATION FUNCTION_ARG_OFFSET CONSTANT_ALIGNMENT	\
+	STARTING_FRAME_OFFSET
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */
@@ -1180,5 +1191,15 @@ helper_const_non_const_cast (const char *p)
 
 /* Get definitions of HOST_WIDE_INT.  */
 #include "hwint.h"
+
+/* qsort comparator consistency checking: except in release-checking compilers,
+   redirect 4-argument qsort calls to qsort_chk; keep 1-argument invocations
+   corresponding to vec::qsort (cmp): they use C qsort internally anyway.  */
+#if CHECKING_P
+#define PP_5th(a1, a2, a3, a4, a5, ...) a5
+#undef qsort
+#define qsort(...) PP_5th (__VA_ARGS__, qsort_chk, 3, 2, qsort, 0) (__VA_ARGS__)
+void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
+#endif
 
 #endif /* ! GCC_SYSTEM_H */

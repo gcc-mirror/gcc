@@ -236,16 +236,6 @@
    this macro is used instead of that alignment to align the object. */
 #define DATA_ALIGNMENT(TYPE,ALIGN) visium_data_alignment (TYPE, ALIGN)
 
-/* `CONSTANT_ALIGNMENT (CONSTANT, BASIC-ALIGN)`
-
-   If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  CONSTANT is the constant
-   and BASIC-ALIGN is the alignment that the object would ordinarily
-   have.  The value of this macro is used instead of that alignment to
-   align the object. */
-#define CONSTANT_ALIGNMENT(EXP,ALIGN) \
-  visium_data_alignment (TREE_TYPE (EXP), ALIGN)
-
 /* `LOCAL_ALIGNMENT (TYPE, BASIC-ALIGN)`
 
    If defined, a C expression to compute the alignment for a variable
@@ -736,17 +726,6 @@ enum reg_class
    Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
-
-/* `STARTING_FRAME_OFFSET'
-
-   Offset from the frame pointer to the first local variable slot to
-   be allocated.
-
-   If `FRAME_GROWS_DOWNWARD', find the next slot's offset by
-   subtracting the first slot's length from `STARTING_FRAME_OFFSET'.
-   Otherwise, it is found by adding the length of the first slot to
-   the value `STARTING_FRAME_OFFSET'. */
-#define STARTING_FRAME_OFFSET 0
 
 /* `FIRST_PARM_OFFSET (FUNDECL)'
 

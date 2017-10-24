@@ -237,6 +237,10 @@ Wconversion-extra
 Fortran Var(warn_conversion_extra) Warning
 Warn about most implicit conversions.
 
+Wdo-subscript
+Fortran Var(warn_do_subscript) Warning LangEnabledBy(Fortran,Wextra)
+Warn about possibly incorrect subscripts in do loops.
+
 Wextra
 Fortran Warning
 ; Documented in common
@@ -457,8 +461,16 @@ Fortran Var(flag_default_integer)
 Set the default integer kind to an 8 byte wide type.
 
 fdefault-real-8
-Fortran Var(flag_default_real)
+Fortran Var(flag_default_real_8)
 Set the default real kind to an 8 byte wide type.
+
+fdefault-real-10
+Fortran Var(flag_default_real_10)
+Set the default real kind to an 10 byte wide type.
+
+fdefault-real-16
+Fortran Var(flag_default_real_16)
+Set the default real kind to an 16 byte wide type.
 
 fdollar-ok
 Fortran Var(flag_dollar_ok)
