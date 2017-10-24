@@ -1,5 +1,32 @@
 2017-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82460
+	* config/i386/sse.md (UNSPEC_VPERMI2, UNSPEC_VPERMI2_MASK): Remove.
+	(VPERMI2, VPERMI2I): New mode iterators.
+	(<avx512>_vpermi2var<mode>3_maskz): Remove 3 define_expand patterns.
+	(<avx512>_vpermi2var<mode>3<sd_maskz_name>): Remove 3 define_insn
+	patterns.
+	(<avx512>_vpermi2var<mode>3_mask): New define_expand using VPERMI2
+	mode iterator.  Remove 3 old define_insn patterns.
+	(*<avx512>_vpermi2var<mode>3_mask): 2 new define_insn patterns.
+	(<avx512>_vpermt2var<mode>3_maskz): Adjust 1 define_expand to use
+	VPERMI2 mode iterator, remove the other two expanders.
+	(<avx512>_vpermt2var<mode>3<sd_maskz_name>): Adjust 1 define_insn
+	to use VPERMI2 mode iterator, add another alternative for vpermi2*
+	instructions, remove the other two patterns.
+	(<avx512>_vpermt2var<mode>3_mask): Adjust 1 define_insn to use VPERMI2
+	mode iterator, remove the other two patterns.
+	* config/i386/i386.c (ix86_expand_vec_perm_vpermi2): Renamed to ...
+	(ix86_expand_vec_perm_vpermt2): ... this.  Swap mask and op0
+	arguments, use gen_*vpermt2* expanders instead of gen_*vpermi2*
+	and adjust argument order accordingly.
+	(ix86_expand_vec_perm): Adjust caller.
+	(expand_vec_perm_1): Likewise.
+	(expand_vec_perm_vpermi2_vpshub2): Rename to ...
+	(expand_vec_perm_vpermt2_vpshub2): ... this.
+	(ix86_expand_vec_perm_const_1): Adjust caller.
+	(ix86_vectorize_vec_perm_const_ok): Adjust comments.
+
 	PR target/82370
 	* config/i386/sse.md (VIMAX_AVX2): Remove V4TImode.
 	(VIMAX_AVX2_AVX512BW, VIMAX_AVX512VL): New mode iterators.
