@@ -96,14 +96,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr basic_string_view(const basic_string_view&) noexcept = default;
 
-      constexpr basic_string_view(const _CharT* __str)
+      constexpr basic_string_view(const _CharT* __str) noexcept
       : _M_len{__str == nullptr ? 0 : traits_type::length(__str)},
 	_M_str{__str}
       { }
 
-      constexpr basic_string_view(const _CharT* __str, size_type __len)
-      : _M_len{__len},
-        _M_str{__str}
+      constexpr
+      basic_string_view(const _CharT* __str, size_type __len) noexcept
+      : _M_len{__len}, _M_str{__str}
       { }
 
       constexpr basic_string_view&
@@ -177,17 +177,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const _CharT&
       at(size_type __pos) const
       {
-	return __pos < this->_M_len
-	     ? *(this->_M_str + __pos)
-	     : (__throw_out_of_range_fmt(__N("basic_string_view::at: __pos "
-					     "(which is %zu) >= this->size() "
-					     "(which is %zu)"),
-					 __pos, this->size()),
-		*this->_M_str);
+	if (__pos >= _M_len)
+	  __throw_out_of_range_fmt(__N("basic_string_view::at: __pos "
+				       "(which is %zu) >= this->size() "
+				       "(which is %zu)"), __pos, this->size());
+	return *(this->_M_str + __pos);
       }
 
       constexpr const _CharT&
-      front() const
+      front() const noexcept
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
 	// __glibcxx_assert(this->_M_len > 0);
@@ -195,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       constexpr const _CharT&
-      back() const
+      back() const noexcept
       {
 	// TODO: Assert to restore in a way compatible with the constexpr.
 	// __glibcxx_assert(this->_M_len > 0);
@@ -209,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // [string.view.modifiers], modifiers:
 
       constexpr void
-      remove_prefix(size_type __n)
+      remove_prefix(size_type __n) noexcept
       {
 	__glibcxx_assert(this->_M_len >= __n);
 	this->_M_str += __n;
@@ -217,7 +215,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       constexpr void
-      remove_suffix(size_type __n)
+      remove_suffix(size_type __n) noexcept
       { this->_M_len -= __n; }
 
       constexpr void
@@ -235,38 +233,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       copy(_CharT* __str, size_type __n, size_type __pos = 0) const
       {
 	__glibcxx_requires_string_len(__str, __n);
-	if (__pos > this->_M_len)
-	  __throw_out_of_range_fmt(__N("basic_string_view::copy: __pos "
-				       "(which is %zu) > this->size() "
-				       "(which is %zu)"),
-				   __pos, this->size());
-	size_type __rlen{std::min(__n, size_type{this->_M_len  - __pos})};
+	__pos = _M_check(__pos, "basic_string_view::copy");
+	const size_type __rlen = std::min(__n, _M_len - __pos);
 	for (auto __begin = this->_M_str + __pos,
 	     __end = __begin + __rlen; __begin != __end;)
 	  *__str++ = *__begin++;
 	return __rlen;
       }
 
-
-      // [string.view.ops], string operations:
-
       constexpr basic_string_view
-      substr(size_type __pos, size_type __n=npos) const
+      substr(size_type __pos, size_type __n = npos) const noexcept(false)
       {
-	return __pos <= this->_M_len
-	     ? basic_string_view{this->_M_str + __pos,
-				std::min(__n, size_type{this->_M_len  - __pos})}
-	     : (__throw_out_of_range_fmt(__N("basic_string_view::substr: __pos "
-					     "(which is %zu) > this->size() "
-					     "(which is %zu)"),
-				     __pos, this->size()), basic_string_view{});
+	__pos = _M_check(__pos, "basic_string_view::substr");
+	const size_type __rlen = std::min(__n, _M_len - __pos);
+	return basic_string_view{_M_str + __pos, __rlen};
       }
 
       constexpr int
       compare(basic_string_view __str) const noexcept
       {
-	int __ret = traits_type::compare(this->_M_str, __str._M_str,
-					 std::min(this->_M_len, __str._M_len));
+	const size_type __rlen = std::min(this->_M_len, __str._M_len);
+	int __ret = traits_type::compare(this->_M_str, __str._M_str, __rlen);
 	if (__ret == 0)
 	  __ret = _S_compare(this->_M_len, __str._M_len);
 	return __ret;
@@ -279,7 +266,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr int
       compare(size_type __pos1, size_type __n1,
 	      basic_string_view __str, size_type __pos2, size_type __n2) const
-      { return this->substr(__pos1, __n1).compare(__str.substr(__pos2, __n2)); }
+      {
+	return this->substr(__pos1, __n1).compare(__str.substr(__pos2, __n2));
+      }
 
       constexpr int
       compare(const _CharT* __str) const noexcept
@@ -291,7 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr int
       compare(size_type __pos1, size_type __n1,
-	      const _CharT* __str, size_type __n2) const
+	      const _CharT* __str, size_type __n2) const noexcept(false)
       {
 	return this->substr(__pos1, __n1)
 		   .compare(basic_string_view(__str, __n2));
@@ -302,13 +291,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->find(__str._M_str, __pos, __str._M_len); }
 
       constexpr size_type
-      find(_CharT __c, size_type __pos=0) const noexcept;
+      find(_CharT __c, size_type __pos = 0) const noexcept;
 
       constexpr size_type
       find(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
 
       constexpr size_type
-      find(const _CharT* __str, size_type __pos=0) const noexcept
+      find(const _CharT* __str, size_type __pos = 0) const noexcept
       { return this->find(__str, __pos, traits_type::length(__str)); }
 
       constexpr size_type
@@ -350,7 +339,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->rfind(__c, __pos); }
 
       constexpr size_type
-      find_last_of(const _CharT* __str, size_type __pos, size_type __n) const;
+      find_last_of(const _CharT* __str, size_type __pos,
+		   size_type __n) const noexcept;
 
       constexpr size_type
       find_last_of(const _CharT* __str, size_type __pos = npos) const noexcept
@@ -366,7 +356,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr size_type
       find_first_not_of(const _CharT* __str,
-			size_type __pos, size_type __n) const;
+			size_type __pos, size_type __n) const noexcept;
 
       constexpr size_type
       find_first_not_of(const _CharT* __str, size_type __pos = 0) const noexcept
@@ -385,7 +375,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr size_type
       find_last_not_of(const _CharT* __str,
-		       size_type __pos, size_type __n) const;
+		       size_type __pos, size_type __n) const noexcept;
 
       constexpr size_type
       find_last_not_of(const _CharT* __str,
@@ -396,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       constexpr size_type
-      _M_check(size_type __pos, const char* __s) const
+      _M_check(size_type __pos, const char* __s) const noexcept(false)
       {
 	if (__pos > this->size())
 	  __throw_out_of_range_fmt(__N("%s: __pos (which is %zu) > "
@@ -407,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // NB: _M_limit doesn't check for a bad __pos value.
       constexpr size_type
-      _M_limit(size_type __pos, size_type __off) const _GLIBCXX_NOEXCEPT
+      _M_limit(size_type __pos, size_type __off) const noexcept
       {
 	const bool __testoff =  __off < this->size() - __pos;
 	return __testoff ? __off : this->size() - __pos;
@@ -418,11 +408,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
-	return difference_type{__n1 - __n2} > std::numeric_limits<int>::max()
-	     ? std::numeric_limits<int>::max()
-	     : difference_type{__n1 - __n2} < std::numeric_limits<int>::min()
-	     ? std::numeric_limits<int>::min()
-	     : static_cast<int>(difference_type{__n1 - __n2});
+	const difference_type __diff{__n1 - __n2};
+	if (__diff > std::numeric_limits<int>::max())
+	  return std::numeric_limits<int>::max();
+	if (__diff < std::numeric_limits<int>::min())
+	  return std::numeric_limits<int>::min();
+	return static_cast<int>(__diff);
       }
 
       size_t	    _M_len;
