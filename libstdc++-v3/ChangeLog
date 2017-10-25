@@ -1,5 +1,9 @@
 2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status, and
+	information on feature-test macros.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/82716
 	* include/std/array (tuple_size, tuple_element): Change class-key
 	from class to struct, to avoid annoying Clang warnings.
