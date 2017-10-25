@@ -779,10 +779,6 @@ enum reg_class
    are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 0
 
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET 0
-
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  If not specified, the default value of zero
    is used.  This is the proper value for most machines.  */

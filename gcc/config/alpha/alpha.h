@@ -493,13 +493,6 @@ enum reg_class {
    goes at a more negative offset in the frame.  */
 /* #define FRAME_GROWS_DOWNWARD 0 */
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-
-#define STARTING_FRAME_OFFSET 0
-
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
    On Alpha, don't define this because there are no push insns.  */

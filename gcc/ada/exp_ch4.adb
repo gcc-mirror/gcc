@@ -1069,12 +1069,15 @@ package body Exp_Ch4 is
          --  object can be limited but not inherently limited if this allocator
          --  came from a return statement (we're allocating the result on the
          --  secondary stack). In that case, the object will be moved, so we do
-         --  want to Adjust.
+         --  want to Adjust. However, if it's a nonlimited build-in-place
+         --  function call, Adjust is not wanted.
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
            and then not Aggr_In_Place
            and then not Is_Limited_View (T)
+           and then not Alloc_For_BIP_Return (N)
+           and then not Is_Build_In_Place_Function_Call (Expression (N))
          then
             --  An unchecked conversion is needed in the classwide case because
             --  the designated type can be an ancestor of the subtype mark of
@@ -5561,6 +5564,7 @@ package body Exp_Ch4 is
          declare
             Cnn     : constant Entity_Id := Make_Temporary (Loc, 'C', N);
             Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
          begin
             --  Generate:
             --    type Ann is access all Typ;
@@ -5638,6 +5642,7 @@ package body Exp_Ch4 is
       then
          declare
             Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+
          begin
             Insert_Action (N,
               Make_Object_Declaration (Loc,
@@ -5678,6 +5683,7 @@ package body Exp_Ch4 is
 
             declare
                Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+
             begin
                Decl :=
                  Make_Object_Declaration (Loc,

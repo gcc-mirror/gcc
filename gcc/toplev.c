@@ -1277,6 +1277,32 @@ process_options (void)
 	   "-floop-parallelize-all)");
 #endif
 
+  if (flag_cf_protection != CF_NONE
+      && !(flag_cf_protection & CF_SET))
+    {
+      if (flag_cf_protection == CF_FULL)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcf-protection=full%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
+	}
+      if (flag_cf_protection == CF_BRANCH)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcf-protection=branch%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
+	}
+      if (flag_cf_protection == CF_RETURN)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcf-protection=return%> is not supported for this "
+		    "target");
+	  flag_cf_protection = CF_NONE;
+	}
+    }
+
   if (flag_check_pointer_bounds)
     {
       if (targetm.chkp_bound_mode () == VOIDmode)

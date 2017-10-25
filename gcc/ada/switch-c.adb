@@ -548,7 +548,6 @@ package body Switch.C is
                         Warn_On_Bad_Fixed_Value          := True; -- -gnatwb
                         Warn_On_Biased_Representation    := True; -- -gnatw.b
                         Warn_On_Export_Import            := True; -- -gnatwx
-                        Warn_On_Modified_Unread          := True; -- -gnatwm
                         Warn_On_No_Value_Assigned        := True; -- -gnatwv
                         Warn_On_Object_Renames_Function  := True; -- -gnatw.r
                         Warn_On_Overlap                  := True; -- -gnatw.i

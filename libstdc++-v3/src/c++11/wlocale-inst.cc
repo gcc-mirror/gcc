@@ -37,6 +37,8 @@
 // XXX GLIBCXX_ABI Deprecated
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT
 
+#pragma GCC diagnostic ignored "-Wattribute-alias"
+
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
   extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
 

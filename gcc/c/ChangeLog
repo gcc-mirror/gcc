@@ -1,3 +1,15 @@
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* c-decl.c (merge_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* c-decl.c (diagnose_mismatched_decls): Use
+	OPT_Wbuiltin_declaration_mismatch.
+
 2017-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_require): Add "type_is_unique" param and

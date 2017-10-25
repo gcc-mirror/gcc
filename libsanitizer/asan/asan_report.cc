@@ -58,9 +58,8 @@ void PrintMemoryByte(InternalScopedString *str, const char *before, u8 byte,
                      bool in_shadow, const char *after) {
   Decorator d;
   str->append("%s%s%x%x%s%s", before,
-              in_shadow ? d.ShadowByte(byte) : d.MemoryByte(),
-              byte >> 4, byte & 15,
-              in_shadow ? d.EndShadowByte() : d.EndMemoryByte(), after);
+              in_shadow ? d.ShadowByte(byte) : d.MemoryByte(), byte >> 4,
+              byte & 15, d.Default(), after);
 }
 
 static void PrintZoneForPointer(uptr ptr, uptr zone_ptr,
@@ -86,7 +85,8 @@ bool ParseFrameDescription(const char *frame_descr,
   char *p;
   // This string is created by the compiler and has the following form:
   // "n alloc_1 alloc_2 ... alloc_n"
-  // where alloc_i looks like "offset size len ObjectName".
+  // where alloc_i looks like "offset size len ObjectName"
+  // or                       "offset size len ObjectName:line".
   uptr n_objects = (uptr)internal_simple_strtoll(frame_descr, &p, 10);
   if (n_objects == 0)
     return false;
@@ -99,7 +99,14 @@ bool ParseFrameDescription(const char *frame_descr,
       return false;
     }
     p++;
-    StackVarDescr var = {beg, size, p, len};
+    char *colon_pos = internal_strchr(p, ':');
+    uptr line = 0;
+    uptr name_len = len;
+    if (colon_pos != nullptr && colon_pos < p + len) {
+      name_len = colon_pos - p;
+      line = (uptr)internal_simple_strtoll(colon_pos + 1, nullptr, 10);
+    }
+    StackVarDescr var = {beg, size, p, name_len, line};
     vars->push_back(var);
     p += len;
   }
@@ -113,53 +120,15 @@ bool ParseFrameDescription(const char *frame_descr,
 // immediately after printing error report.
 class ScopedInErrorReport {
  public:
-  explicit ScopedInErrorReport(bool fatal = false) {
-    halt_on_error_ = fatal || flags()->halt_on_error;
-
-    if (lock_.TryLock()) {
-      StartReporting();
-      return;
-    }
-
-    // ASan found two bugs in different threads simultaneously.
-
-    u32 current_tid = GetCurrentTidOrInvalid();
-    if (reporting_thread_tid_ == current_tid ||
-        reporting_thread_tid_ == kInvalidTid) {
-      // This is either asynch signal or nested error during error reporting.
-      // Fail simple to avoid deadlocks in Report().
-
-      // Can't use Report() here because of potential deadlocks
-      // in nested signal handlers.
-      const char msg[] = "AddressSanitizer: nested bug in the same thread, "
-                         "aborting.\n";
-      WriteToFile(kStderrFd, msg, sizeof(msg));
-
-      internal__exit(common_flags()->exitcode);
-    }
-
-    if (halt_on_error_) {
-      // Do not print more than one report, otherwise they will mix up.
-      // Error reporting functions shouldn't return at this situation, as
-      // they are effectively no-returns.
-
-      Report("AddressSanitizer: while reporting a bug found another one. "
-             "Ignoring.\n");
-
-      // Sleep long enough to make sure that the thread which started
-      // to print an error report will finish doing it.
-      SleepForSeconds(Max(100, flags()->sleep_before_dying + 1));
-
-      // If we're still not dead for some reason, use raw _exit() instead of
-      // Die() to bypass any additional checks.
-      internal__exit(common_flags()->exitcode);
-    } else {
-      // The other thread will eventually finish reporting
-      // so it's safe to wait
-      lock_.Lock();
-    }
-
-    StartReporting();
+  explicit ScopedInErrorReport(bool fatal = false)
+      : halt_on_error_(fatal || flags()->halt_on_error) {
+    // Make sure the registry and sanitizer report mutexes are locked while
+    // we're printing an error report.
+    // We can lock them only here to avoid self-deadlock in case of
+    // recursive reports.
+    asanThreadRegistry().Lock();
+    Printf(
+        "=================================================================\n");
   }
 
   ~ScopedInErrorReport() {
@@ -177,6 +146,8 @@ class ScopedInErrorReport {
     if (common_flags()->print_cmdline)
       PrintCmdline();
 
+    if (common_flags()->print_module_map == 2) PrintModuleMap();
+
     // Copy the message buffer so that we could start logging without holding a
     // lock that gets aquired during printing.
     InternalScopedBuffer<char> buffer_copy(kErrorMessageBufferSize);
@@ -192,14 +163,19 @@ class ScopedInErrorReport {
       error_report_callback(buffer_copy.data());
     }
 
+    if (halt_on_error_ && common_flags()->abort_on_error) {
+      // On Android the message is truncated to 512 characters.
+      // FIXME: implement "compact" error format, possibly without, or with
+      // highly compressed stack traces?
+      // FIXME: or just use the summary line as abort message?
+      SetAbortMessage(buffer_copy.data());
+    }
+
     // In halt_on_error = false mode, reset the current error object (before
     // unlocking).
     if (!halt_on_error_)
       internal_memset(&current_error_, 0, sizeof(current_error_));
 
-    CommonSanitizerReportMutex.Unlock();
-    reporting_thread_tid_ = kInvalidTid;
-    lock_.Unlock();
     if (halt_on_error_) {
       Report("ABORTING\n");
       Die();
@@ -217,39 +193,18 @@ class ScopedInErrorReport {
   }
 
  private:
-  void StartReporting() {
-    // Make sure the registry and sanitizer report mutexes are locked while
-    // we're printing an error report.
-    // We can lock them only here to avoid self-deadlock in case of
-    // recursive reports.
-    asanThreadRegistry().Lock();
-    CommonSanitizerReportMutex.Lock();
-    reporting_thread_tid_ = GetCurrentTidOrInvalid();
-    Printf("===================================================="
-           "=============\n");
-  }
-
-  static StaticSpinMutex lock_;
-  static u32 reporting_thread_tid_;
+  ScopedErrorReportLock error_report_lock_;
   // Error currently being reported. This enables the destructor to interact
   // with the debugger and point it to an error description.
   static ErrorDescription current_error_;
   bool halt_on_error_;
 };
 
-StaticSpinMutex ScopedInErrorReport::lock_;
-u32 ScopedInErrorReport::reporting_thread_tid_ = kInvalidTid;
 ErrorDescription ScopedInErrorReport::current_error_;
 
-void ReportStackOverflow(const SignalContext &sig) {
+void ReportDeadlySignal(const SignalContext &sig) {
   ScopedInErrorReport in_report(/*fatal*/ true);
-  ErrorStackOverflow error(GetCurrentTidOrInvalid(), sig);
-  in_report.ReportError(error);
-}
-
-void ReportDeadlySignal(int signo, const SignalContext &sig) {
-  ScopedInErrorReport in_report(/*fatal*/ true);
-  ErrorDeadlySignal error(GetCurrentTidOrInvalid(), sig, signo);
+  ErrorDeadlySignal error(GetCurrentTidOrInvalid(), sig);
   in_report.ReportError(error);
 }
 
@@ -425,7 +380,7 @@ void __asan_describe_address(uptr addr) {
 }
 
 int __asan_report_present() {
-  return ScopedInErrorReport::CurrentError().kind == kErrorKindGeneric;
+  return ScopedInErrorReport::CurrentError().kind != kErrorKindInvalid;
 }
 
 uptr __asan_get_report_pc() {
@@ -447,9 +402,11 @@ uptr __asan_get_report_sp() {
 }
 
 uptr __asan_get_report_address() {
-  if (ScopedInErrorReport::CurrentError().kind == kErrorKindGeneric)
-    return ScopedInErrorReport::CurrentError()
-        .Generic.addr_description.Address();
+  ErrorDescription &err = ScopedInErrorReport::CurrentError();
+  if (err.kind == kErrorKindGeneric)
+    return err.Generic.addr_description.Address();
+  else if (err.kind == kErrorKindDoubleFree)
+    return err.DoubleFree.addr_description.addr;
   return 0;
 }
 
@@ -468,7 +425,7 @@ uptr __asan_get_report_access_size() {
 const char *__asan_get_report_description() {
   if (ScopedInErrorReport::CurrentError().kind == kErrorKindGeneric)
     return ScopedInErrorReport::CurrentError().Generic.bug_descr;
-  return nullptr;
+  return ScopedInErrorReport::CurrentError().Base.scariness.GetDescription();
 }
 
 extern "C" {
@@ -482,9 +439,6 @@ void __sanitizer_ptr_cmp(void *a, void *b) {
 }
 } // extern "C"
 
-#if !SANITIZER_SUPPORTS_WEAK_HOOKS
 // Provide default implementation of __asan_on_error that does nothing
 // and may be overriden by user.
-SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE NOINLINE
-void __asan_on_error() {}
-#endif
+SANITIZER_INTERFACE_WEAK_DEF(void, __asan_on_error, void) {}

@@ -31,40 +31,76 @@
 #include <stack>
 #include <string.h>
 #include <errno.h>
-#ifdef _GLIBCXX_HAVE_DIRENT_H
-# ifdef _GLIBCXX_HAVE_SYS_TYPES_H
-#  include <sys/types.h>
-# endif
-# include <dirent.h>
-#else
-# error "the <dirent.h> header is needed to build the Filesystem TS"
-#endif
-
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-# undef opendir
-# define opendir _wopendir
-#endif
+#define _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM \
+  namespace experimental { namespace filesystem {
+#define _GLIBCXX_END_NAMESPACE_FILESYSTEM } }
+#include "dir-common.h"
 
 namespace fs = std::experimental::filesystem;
 
-struct fs::_Dir
+struct fs::_Dir : std::filesystem::_Dir_base
 {
-  _Dir() : dirp(nullptr) { }
+  _Dir(const fs::path& p, bool skip_permission_denied, error_code& ec)
+  : _Dir_base(p.c_str(), skip_permission_denied, ec)
+  {
+    if (!ec)
+      path = p;
+  }
 
-  _Dir(DIR* dirp, const fs::path& path) : dirp(dirp), path(path) { }
+  _Dir(DIR* dirp, const path& p) : _Dir_base(dirp), path(p) { }
 
-  _Dir(_Dir&& d)
-  : dirp(std::exchange(d.dirp, nullptr)), path(std::move(d.path)),
-    entry(std::move(d.entry)), type(d.type)
-  { }
+  _Dir(_Dir&&) = default;
 
-  _Dir& operator=(_Dir&&) = delete;
+  // Returns false when the end of the directory entries is reached.
+  // Reports errors by setting ec.
+  bool advance(bool skip_permission_denied, error_code& ec) noexcept
+  {
+    if (const auto entp = _Dir_base::advance(skip_permission_denied, ec))
+      {
+	entry = fs::directory_entry{path / entp->d_name};
+	type = get_file_type(*entp);
+	return true;
+      }
+    else if (!ec)
+      {
+	// reached the end
+	entry = {};
+	type = file_type::none;
+      }
+    return false;
+  }
 
-  ~_Dir() { if (dirp) ::closedir(dirp); }
+  bool advance(error_code& ec) noexcept { return advance(false, ec); }
 
-  bool advance(std::error_code*, directory_options = directory_options::none);
+  // Returns false when the end of the directory entries is reached.
+  // Reports errors by throwing.
+  bool advance(bool skip_permission_denied = false)
+  {
+    error_code ec;
+    const bool ok = advance(skip_permission_denied, ec);
+    if (ec)
+      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	      "directory iterator cannot advance", ec));
+    return ok;
+  }
 
-  DIR*			dirp;
+  bool should_recurse(bool follow_symlink, error_code& ec) const
+  {
+    file_type type = this->type;
+    if (type == file_type::none || type == file_type::unknown)
+    {
+      type = entry.symlink_status(ec).type();
+      if (ec)
+	return false;
+    }
+
+    if (type == file_type::directory)
+      return true;
+    if (type == file_type::symlink)
+      return follow_symlink && is_directory(entry.status(ec));
+    return false;
+  }
+
   fs::path		path;
   directory_entry	entry;
   file_type		type = file_type::none;
@@ -78,119 +114,28 @@ namespace
     {
       return (obj & bits) != Bitmask::none;
     }
-
-  // Returns {dirp, p} on success, {} on error (whether ignored or not).
-  inline fs::_Dir
-  open_dir(const fs::path& p, fs::directory_options options,
-	   std::error_code* ec)
-  {
-    if (ec)
-      ec->clear();
-
-    if (DIR* dirp = ::opendir(p.c_str()))
-      return {dirp, p};
-
-    const int err = errno;
-    if (err == EACCES
-        && is_set(options, fs::directory_options::skip_permission_denied))
-      return {};
-
-    if (!ec)
-      _GLIBCXX_THROW_OR_ABORT(fs::filesystem_error(
-            "directory iterator cannot open directory", p,
-            std::error_code(err, std::generic_category())));
-
-    ec->assign(err, std::generic_category());
-    return {};
-  }
-
-  inline fs::file_type
-  get_file_type(const ::dirent& d __attribute__((__unused__)))
-  {
-#ifdef _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE
-    switch (d.d_type)
-    {
-    case DT_BLK:
-      return fs::file_type::block;
-    case DT_CHR:
-      return fs::file_type::character;
-    case DT_DIR:
-      return fs::file_type::directory;
-    case DT_FIFO:
-      return fs::file_type::fifo;
-    case DT_LNK:
-      return fs::file_type::symlink;
-    case DT_REG:
-      return fs::file_type::regular;
-    case DT_SOCK:
-      return fs::file_type::socket;
-    case DT_UNKNOWN:
-      return fs::file_type::unknown;
-    default:
-      return fs::file_type::none;
-    }
-#else
-    return fs::file_type::none;
-#endif
-  }
-}
-
-
-// Returns false when the end of the directory entries is reached.
-// Reports errors by setting ec or throwing.
-bool
-fs::_Dir::advance(error_code* ec, directory_options options)
-{
-  if (ec)
-    ec->clear();
-
-  int err = std::exchange(errno, 0);
-  const auto entp = readdir(dirp);
-  // std::swap cannot be used with Bionic's errno
-  err = std::exchange(errno, err);
-
-  if (entp)
-    {
-      // skip past dot and dot-dot
-      if (!strcmp(entp->d_name, ".") || !strcmp(entp->d_name, ".."))
-	return advance(ec, options);
-      entry = fs::directory_entry{path / entp->d_name};
-      type = get_file_type(*entp);
-      return true;
-    }
-  else if (err)
-    {
-      if (err == EACCES
-        && is_set(options, directory_options::skip_permission_denied))
-	return false;
-
-      if (!ec)
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "directory iterator cannot advance",
-	      std::error_code(err, std::generic_category())));
-      ec->assign(err, std::generic_category());
-      return false;
-    }
-  else
-    {
-      // reached the end
-      entry = {};
-      type = fs::file_type::none;
-      return false;
-    }
 }
 
 fs::directory_iterator::
-directory_iterator(const path& p, directory_options options, error_code* ec)
+directory_iterator(const path& p, directory_options options, error_code* ecptr)
 {
-  _Dir dir = open_dir(p, options, ec);
+  const bool skip_permission_denied
+    = is_set(options, directory_options::skip_permission_denied);
+
+  error_code ec;
+  _Dir dir(p, skip_permission_denied, ec);
 
   if (dir.dirp)
     {
       auto sp = std::make_shared<fs::_Dir>(std::move(dir));
-      if (sp->advance(ec, options))
+      if (sp->advance(skip_permission_denied, ec))
 	_M_dir.swap(sp);
     }
+  if (ecptr)
+    *ecptr = ec;
+  else if (ec)
+    _GLIBCXX_THROW_OR_ABORT(fs::filesystem_error(
+	  "directory iterator cannot open directory", p, ec));
 }
 
 const fs::directory_entry&
@@ -210,7 +155,7 @@ fs::directory_iterator::operator++()
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "cannot advance non-dereferenceable directory iterator",
 	  std::make_error_code(errc::invalid_argument)));
-  if (!_M_dir->advance(nullptr))
+  if (!_M_dir->advance())
     _M_dir.reset();
   return *this;
 }
@@ -223,12 +168,10 @@ fs::directory_iterator::increment(error_code& ec) noexcept
       ec = std::make_error_code(errc::invalid_argument);
       return *this;
     }
-  if (!_M_dir->advance(&ec))
+  if (!_M_dir->advance(ec))
     _M_dir.reset();
   return *this;
 }
-
-using Dir_iter_pair = std::pair<fs::_Dir, fs::directory_iterator>;
 
 struct fs::recursive_directory_iterator::_Dir_stack : std::stack<_Dir>
 {
@@ -240,6 +183,8 @@ recursive_directory_iterator(const path& p, directory_options options,
                              error_code* ec)
 : _M_options(options), _M_pending(true)
 {
+  if (ec)
+    ec->clear();
   if (DIR* dirp = ::opendir(p.c_str()))
     {
       auto sp = std::make_shared<_Dir_stack>();
@@ -252,11 +197,7 @@ recursive_directory_iterator(const path& p, directory_options options,
       const int err = errno;
       if (err == EACCES
 	  && is_set(options, fs::directory_options::skip_permission_denied))
-	{
-	  if (ec)
-	    ec->clear();
-	  return;
-	}
+	return;
 
       if (!ec)
 	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
@@ -300,35 +241,6 @@ fs::recursive_directory_iterator::operator++()
   return *this;
 }
 
-namespace
-{
-  bool
-  recurse(const fs::_Dir& d, fs::directory_options options, std::error_code& ec)
-  {
-    bool follow_symlink
-      = is_set(options, fs::directory_options::follow_directory_symlink);
-#ifdef _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE
-    if (d.type == fs::file_type::directory)
-      return true;
-    if (d.type == fs::file_type::symlink && follow_symlink)
-      return d.entry.status().type() == fs::file_type::directory;
-    if (d.type != fs::file_type::none && d.type != fs::file_type::unknown)
-      return false;
-#endif
-    const fs::path& path = d.entry.path();
-    auto type = fs::symlink_status(path, ec).type();
-    if (ec.value())
-      return false;
-    if (type == fs::file_type::symlink)
-      {
-	if (!follow_symlink)
-	  return false;
-	type = fs::status(path, ec).type();
-      }
-    return type == fs::file_type::directory;
-  }
-}
-
 fs::recursive_directory_iterator&
 fs::recursive_directory_iterator::increment(error_code& ec) noexcept
 {
@@ -338,11 +250,16 @@ fs::recursive_directory_iterator::increment(error_code& ec) noexcept
       return *this;
     }
 
+  const bool follow
+    = is_set(_M_options, directory_options::follow_directory_symlink);
+  const bool skip_permission_denied
+    = is_set(_M_options, directory_options::skip_permission_denied);
+
   auto& top = _M_dirs->top();
 
-  if (std::exchange(_M_pending, true) && recurse(top, _M_options, ec))
+  if (std::exchange(_M_pending, true) && top.should_recurse(follow, ec))
     {
-      _Dir dir = open_dir(top.entry.path(), _M_options, &ec);
+      _Dir dir(top.entry.path(), skip_permission_denied, ec);
       if (ec)
 	{
 	  _M_dirs.reset();
@@ -352,7 +269,7 @@ fs::recursive_directory_iterator::increment(error_code& ec) noexcept
 	  _M_dirs->push(std::move(dir));
     }
 
-  while (!_M_dirs->top().advance(&ec, _M_options) && !ec)
+  while (!_M_dirs->top().advance(skip_permission_denied, ec) && !ec)
     {
       _M_dirs->pop();
       if (_M_dirs->empty())
@@ -373,6 +290,9 @@ fs::recursive_directory_iterator::pop(error_code& ec)
       return;
     }
 
+  const bool skip_permission_denied
+    = is_set(_M_options, directory_options::skip_permission_denied);
+
   do {
     _M_dirs->pop();
     if (_M_dirs->empty())
@@ -381,7 +301,7 @@ fs::recursive_directory_iterator::pop(error_code& ec)
 	ec.clear();
 	return;
       }
-  } while (!_M_dirs->top().advance(&ec, _M_options));
+  } while (!_M_dirs->top().advance(skip_permission_denied, ec));
 }
 
 void

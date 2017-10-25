@@ -1,5 +1,7 @@
 2017-10-25  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r254084.
+
 	Kill IDENTIFIER_LABEL_VALUE.
 	gcc/cp/
 	* cp-tree.h (lang_identifier): Delete label_value slot.

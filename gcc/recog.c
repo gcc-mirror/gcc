@@ -3381,6 +3381,7 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 	  case REG_NORETURN:
 	  case REG_SETJMP:
 	  case REG_TM:
+	  case REG_CALL_NOCF_CHECK:
 	    add_reg_note (new_insn, REG_NOTE_KIND (note),
 			  XEXP (note, 0));
 	    break;
@@ -3862,7 +3863,7 @@ const pass_data pass_data_split_all_insns =
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   0, /* properties_required */
-  0, /* properties_provided */
+  PROP_rtl_split_insns, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */

@@ -375,7 +375,6 @@ replace_phi_edge_with_variable (basic_block cond_block,
       EDGE_SUCC (cond_block, 0)->flags |= EDGE_FALLTHRU;
       EDGE_SUCC (cond_block, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
       EDGE_SUCC (cond_block, 0)->probability = profile_probability::always ();
-      EDGE_SUCC (cond_block, 0)->count += EDGE_SUCC (cond_block, 1)->count;
 
       block_to_remove = EDGE_SUCC (cond_block, 1)->dest;
     }
@@ -385,7 +384,6 @@ replace_phi_edge_with_variable (basic_block cond_block,
       EDGE_SUCC (cond_block, 1)->flags
 	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
       EDGE_SUCC (cond_block, 1)->probability = profile_probability::always ();
-      EDGE_SUCC (cond_block, 1)->count += EDGE_SUCC (cond_block, 0)->count;
 
       block_to_remove = EDGE_SUCC (cond_block, 0)->dest;
     }
@@ -1914,9 +1912,24 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   gsi_remove (&gsi, true);
   release_defs (assign);
 
+  /* Make both store and load use alias-set zero as we have to
+     deal with the case of the store being a conditional change
+     of the dynamic type.  */
+  lhs = unshare_expr (lhs);
+  tree *basep = &lhs;
+  while (handled_component_p (*basep))
+    basep = &TREE_OPERAND (*basep, 0);
+  if (TREE_CODE (*basep) == MEM_REF
+      || TREE_CODE (*basep) == TARGET_MEM_REF)
+    TREE_OPERAND (*basep, 1)
+      = fold_convert (ptr_type_node, TREE_OPERAND (*basep, 1));
+  else
+    *basep = build2 (MEM_REF, TREE_TYPE (*basep),
+		     build_fold_addr_expr (*basep),
+		     build_zero_cst (ptr_type_node));
+
   /* 2) Insert a load from the memory of the store to the temporary
         on the edge which did not contain the store.  */
-  lhs = unshare_expr (lhs);
   name = make_temp_ssa_name (TREE_TYPE (lhs), NULL, "cstore");
   new_stmt = gimple_build_assign (name, lhs);
   gimple_set_location (new_stmt, locus);

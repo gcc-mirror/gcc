@@ -2399,8 +2399,7 @@ incorporeal_function_p (tree decl)
       const char *name;
 
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-	  && (DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA
-	      || DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA_WITH_ALIGN))
+	  && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (decl)))
 	return true;
 
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));

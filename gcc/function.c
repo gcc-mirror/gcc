@@ -294,7 +294,7 @@ try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
   /* Calculate how many bytes the start of local variables is off from
      stack alignment.  */
   frame_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-  frame_off = STARTING_FRAME_OFFSET % frame_alignment;
+  frame_off = targetm.starting_frame_offset () % frame_alignment;
   frame_phase = frame_off ? frame_alignment - frame_off : 0;
 
   /* Round the frame offset to the specified alignment.  */
@@ -499,7 +499,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
     addr = plus_constant (Pmode, frame_pointer_rtx,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction
-			   + STARTING_FRAME_OFFSET, Pmode));
+			   + targetm.starting_frame_offset (), Pmode));
   else
     addr = plus_constant (Pmode, virtual_stack_vars_rtx,
 			  trunc_int_for_mode
@@ -1930,7 +1930,7 @@ instantiate_virtual_regs (void)
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
-  var_offset = STARTING_FRAME_OFFSET;
+  var_offset = targetm.starting_frame_offset ();
   dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
   out_arg_offset = STACK_POINTER_OFFSET;
 #ifdef FRAME_POINTER_CFA_OFFSET
@@ -4049,10 +4049,9 @@ gimplify_parameters (void)
 		  DECL_IGNORED_P (addr) = 0;
 		  local = build_fold_indirect_ref (addr);
 
-		  t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		  t = build_call_expr (t, 2, DECL_SIZE_UNIT (parm),
-				       size_int (DECL_ALIGN (parm)));
-
+		  t = build_alloca_call_expr (DECL_SIZE_UNIT (parm),
+					      DECL_ALIGN (parm),
+					      max_int_size_in_bytes (type));
 		  /* The call has been built for a variable-sized object.  */
 		  CALL_ALLOCA_FOR_VAR_P (t) = 1;
 		  t = fold_convert (ptr_type, t);

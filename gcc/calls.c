@@ -607,16 +607,9 @@ special_function_p (const_tree fndecl, int flags)
 	flags |= ECF_RETURNS_TWICE;
     }
 
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
-	flags |= ECF_MAY_BE_ALLOCA;
-	break;
-      default:
-	break;
-      }
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
+    flags |= ECF_MAY_BE_ALLOCA;
 
   return flags;
 }
@@ -698,8 +691,7 @@ gimple_alloca_call_p (const gimple *stmt)
   if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
         return true;
       default:
 	break;
@@ -719,8 +711,7 @@ alloca_call_p (const_tree exp)
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
-      case BUILT_IN_ALLOCA:
-      case BUILT_IN_ALLOCA_WITH_ALIGN:
+      CASE_BUILT_IN_ALLOCA:
         return true;
       default:
 	break;
@@ -1819,6 +1810,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  copy = allocate_dynamic_stack_space (size_rtx,
 						       TYPE_ALIGN (type),
 						       TYPE_ALIGN (type),
+						       max_int_size_in_bytes
+						       (type),
 						       true);
 		  copy = gen_rtx_MEM (BLKmode, copy);
 		  set_mem_attributes (copy, type, 1);
@@ -3638,8 +3631,8 @@ expand_call (tree exp, rtx target, int ignore)
 	      /* We can pass TRUE as the 4th argument because we just
 		 saved the stack pointer and will restore it right after
 		 the call.  */
-	      allocate_dynamic_stack_space (push_size, 0,
-					    BIGGEST_ALIGNMENT, true);
+	      allocate_dynamic_stack_space (push_size, 0, BIGGEST_ALIGNMENT,
+					    -1, true);
 	    }
 
 	  /* If argument evaluation might modify the stack pointer,

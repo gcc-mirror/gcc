@@ -38,9 +38,7 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
-with Interfaces.C; use Interfaces;
-use type Interfaces.C.int;
-use type Interfaces.C.long;
+with Interfaces.C; use Interfaces; use type Interfaces.C.int;
 
 with System.Task_Info;
 with System.Tasking.Debug;
@@ -112,8 +110,6 @@ package body System.Task_Primitives.Operations is
    --  Constant to indicate that the thread identifier has not yet been
    --  initialized.
 
-   Base_Monotonic_Clock : Duration := 0.0;
-
    --------------------
    -- Local Packages --
    --------------------
@@ -140,6 +136,38 @@ package body System.Task_Primitives.Operations is
 
    package body Specific is separate;
    --  The body of this package is target specific
+
+   package Monotonic is
+
+      function Monotonic_Clock return Duration;
+      pragma Inline (Monotonic_Clock);
+      --  Returns "absolute" time, represented as an offset relative to "the
+      --  Epoch", which is Jan 1, 1970. This clock implementation is immune to
+      --  the system's clock changes.
+
+      function RT_Resolution return Duration;
+      pragma Inline (RT_Resolution);
+      --  Returns resolution of the underlying clock used to implement RT_Clock
+
+      procedure Timed_Sleep
+        (Self_ID  : ST.Task_Id;
+         Time     : Duration;
+         Mode     : ST.Delay_Modes;
+         Reason   : System.Tasking.Task_States;
+         Timedout : out Boolean;
+         Yielded  : out Boolean);
+      --  Combination of Sleep (above) and Timed_Delay
+
+      procedure Timed_Delay
+        (Self_ID : ST.Task_Id;
+         Time    : Duration;
+         Mode    : ST.Delay_Modes);
+      --  Implement the semantics of the delay statement.
+      --  The caller should be abort-deferred and should not hold any locks.
+
+   end Monotonic;
+
+   package body Monotonic is separate;
 
    ----------------------------------
    -- ATCB allocation/deallocation --
@@ -168,11 +196,6 @@ package body System.Task_Primitives.Operations is
    -----------------------
 
    procedure Abort_Handler (signo : Signal);
-
-   function Compute_Base_Monotonic_Clock return Duration;
-   --  The monotonic clock epoch is set to some undetermined time in the past
-   --  (typically system boot time). In order to use the monotonic clock for
-   --  absolute time, the offset from a known epoch is needed.
 
    function GNAT_pthread_condattr_setup
      (attr : access pthread_condattr_t) return C.int;
@@ -274,100 +297,6 @@ package body System.Task_Primitives.Operations is
          raise Standard'Abort_Signal;
       end if;
    end Abort_Handler;
-
-   ----------------------------------
-   -- Compute_Base_Monotonic_Clock --
-   ----------------------------------
-
-   function Compute_Base_Monotonic_Clock return Duration is
-      Aft     : Duration;
-      Bef     : Duration;
-      Mon     : Duration;
-      Res_A   : Interfaces.C.int;
-      Res_B   : Interfaces.C.int;
-      Res_M   : Interfaces.C.int;
-      TS_Aft  : aliased timespec;
-      TS_Aft0 : aliased timespec;
-      TS_Bef  : aliased timespec;
-      TS_Bef0 : aliased timespec;
-      TS_Mon  : aliased timespec;
-      TS_Mon0 : aliased timespec;
-
-   begin
-      Res_B :=
-        clock_gettime
-          (clock_id => OSC.CLOCK_REALTIME,
-           tp       => TS_Bef0'Unchecked_Access);
-      pragma Assert (Res_B = 0);
-
-      Res_M :=
-        clock_gettime
-          (clock_id => OSC.CLOCK_RT_Ada,
-           tp       => TS_Mon0'Unchecked_Access);
-      pragma Assert (Res_M = 0);
-
-      Res_A :=
-        clock_gettime
-          (clock_id => OSC.CLOCK_REALTIME,
-           tp       => TS_Aft0'Unchecked_Access);
-      pragma Assert (Res_A = 0);
-
-      for I in 1 .. 10 loop
-
-         --  Guard against a leap second that will cause CLOCK_REALTIME to jump
-         --  backwards. In the extrenmely unlikely event we call clock_gettime
-         --  before and after the jump the epoch, the result will be off
-         --  slightly.
-         --  Use only results where the tv_sec values match, for the sake of
-         --  convenience.
-         --  Also try to calculate the most accurate epoch by taking the
-         --  minimum difference of 10 tries.
-
-         Res_B :=
-           clock_gettime
-             (clock_id => OSC.CLOCK_REALTIME,
-              tp       => TS_Bef'Unchecked_Access);
-         pragma Assert (Res_B = 0);
-
-         Res_M :=
-           clock_gettime
-             (clock_id => OSC.CLOCK_RT_Ada,
-              tp       => TS_Mon'Unchecked_Access);
-         pragma Assert (Res_M = 0);
-
-         Res_A :=
-           clock_gettime
-             (clock_id => OSC.CLOCK_REALTIME,
-              tp       => TS_Aft'Unchecked_Access);
-         pragma Assert (Res_A = 0);
-
-         --  The calls to clock_gettime before the loop were no good
-
-         if (TS_Bef0.tv_sec /= TS_Aft0.tv_sec
-               and then TS_Bef.tv_sec  = TS_Aft.tv_sec)
-
-           --  The most recent calls to clock_gettime were better
-
-           or else
-             (TS_Bef0.tv_sec = TS_Aft0.tv_sec
-                and then TS_Bef.tv_sec = TS_Aft.tv_sec
-                and then (TS_Aft.tv_nsec - TS_Bef.tv_nsec
-                            < TS_Aft0.tv_nsec - TS_Bef0.tv_nsec))
-         then
-            TS_Bef0 := TS_Bef;
-            TS_Aft0 := TS_Aft;
-            TS_Mon0 := TS_Mon;
-         end if;
-      end loop;
-
-      Bef := To_Duration (TS_Bef0);
-      Mon := To_Duration (TS_Mon0);
-      Aft := To_Duration (TS_Aft0);
-
-      --  Distribute the division, to avoid potential type overflow someday
-
-      return Bef / 2 + Aft / 2 - Mon;
-   end Compute_Base_Monotonic_Clock;
 
    --------------
    -- Lock_RTS --
@@ -690,56 +619,7 @@ package body System.Task_Primitives.Operations is
       Mode     : ST.Delay_Modes;
       Reason   : System.Tasking.Task_States;
       Timedout : out Boolean;
-      Yielded  : out Boolean)
-   is
-      pragma Unreferenced (Reason);
-
-      Base_Time  : constant Duration := Monotonic_Clock;
-      Check_Time : Duration := Base_Time - Base_Monotonic_Clock;
-      Abs_Time   : Duration;
-      Request    : aliased timespec;
-      Result     : C.int;
-
-   begin
-      Timedout := True;
-      Yielded := False;
-
-      Abs_Time :=
-        (if Mode = Relative
-         then Duration'Min (Time, Max_Sensible_Delay) + Check_Time
-         else Duration'Min (Check_Time + Max_Sensible_Delay,
-                            Time - Base_Monotonic_Clock));
-
-      if Abs_Time > Check_Time then
-         Request := To_Timespec (Abs_Time);
-
-         loop
-            exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
-
-            Result :=
-              pthread_cond_timedwait
-                (cond    => Self_ID.Common.LL.CV'Access,
-                 mutex   => (if Single_Lock
-                             then Single_RTS_Lock'Access
-                             else Self_ID.Common.LL.L'Access),
-                 abstime => Request'Access);
-
-            Check_Time := Monotonic_Clock;
-            exit when Abs_Time + Base_Monotonic_Clock <= Check_Time
-                      or else Check_Time < Base_Time;
-
-            if Result in 0 | EINTR then
-
-               --  Somebody may have called Wakeup for us
-
-               Timedout := False;
-               exit;
-            end if;
-
-            pragma Assert (Result = ETIMEDOUT);
-         end loop;
-      end if;
-   end Timed_Sleep;
+      Yielded  : out Boolean) renames Monotonic.Timed_Sleep;
 
    -----------------
    -- Timed_Delay --
@@ -751,92 +631,19 @@ package body System.Task_Primitives.Operations is
    procedure Timed_Delay
      (Self_ID : Task_Id;
       Time    : Duration;
-      Mode    : ST.Delay_Modes)
-   is
-      Base_Time  : constant Duration := Monotonic_Clock;
-      Check_Time : Duration := Base_Time - Base_Monotonic_Clock;
-      Abs_Time   : Duration;
-      Request    : aliased timespec;
-
-      Result : C.int;
-      pragma Warnings (Off, Result);
-
-   begin
-      if Single_Lock then
-         Lock_RTS;
-      end if;
-
-      Write_Lock (Self_ID);
-
-      Abs_Time :=
-        (if Mode = Relative
-         then Time + Check_Time
-         else Duration'Min (Check_Time + Max_Sensible_Delay,
-                            Time - Base_Monotonic_Clock));
-
-      if Abs_Time > Check_Time then
-         Request := To_Timespec (Abs_Time);
-         Self_ID.Common.State := Delay_Sleep;
-
-         loop
-            exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
-
-            Result :=
-              pthread_cond_timedwait
-                (cond    => Self_ID.Common.LL.CV'Access,
-                 mutex   => (if Single_Lock
-                             then Single_RTS_Lock'Access
-                             else Self_ID.Common.LL.L'Access),
-                 abstime => Request'Access);
-
-            Check_Time := Monotonic_Clock;
-            exit when Abs_Time + Base_Monotonic_Clock <= Check_Time
-                      or else Check_Time < Base_Time;
-
-            pragma Assert (Result in 0 | ETIMEDOUT | EINTR);
-         end loop;
-
-         Self_ID.Common.State := Runnable;
-      end if;
-
-      Unlock (Self_ID);
-
-      if Single_Lock then
-         Unlock_RTS;
-      end if;
-
-      Result := sched_yield;
-   end Timed_Delay;
+      Mode    : ST.Delay_Modes) renames Monotonic.Timed_Delay;
 
    ---------------------
    -- Monotonic_Clock --
    ---------------------
 
-   function Monotonic_Clock return Duration is
-      TS     : aliased timespec;
-      Result : Interfaces.C.int;
-   begin
-      Result := clock_gettime
-        (clock_id => OSC.CLOCK_RT_Ada, tp => TS'Unchecked_Access);
-      pragma Assert (Result = 0);
-
-      return Base_Monotonic_Clock + To_Duration (TS);
-   end Monotonic_Clock;
+   function Monotonic_Clock return Duration renames Monotonic.Monotonic_Clock;
 
    -------------------
    -- RT_Resolution --
    -------------------
 
-   function RT_Resolution return Duration is
-      TS     : aliased timespec;
-      Result : C.int;
-
-   begin
-      Result := clock_getres (OSC.CLOCK_REALTIME, TS'Unchecked_Access);
-      pragma Assert (Result = 0);
-
-      return To_Duration (TS);
-   end RT_Resolution;
+   function RT_Resolution return Duration renames Monotonic.RT_Resolution;
 
    ------------
    -- Wakeup --
@@ -1611,8 +1418,6 @@ package body System.Task_Primitives.Operations is
       Environment_Task_Id := Environment_Task;
 
       Interrupt_Management.Initialize;
-
-      Base_Monotonic_Clock := Compute_Base_Monotonic_Clock;
 
       --  Prepare the set of signals that should be unblocked in all tasks
 

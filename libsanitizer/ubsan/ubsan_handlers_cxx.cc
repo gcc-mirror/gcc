@@ -93,8 +93,8 @@ void __ubsan::__ubsan_handle_dynamic_type_cache_miss_abort(
 }
 
 namespace __ubsan {
-void HandleCFIBadType(CFICheckFailData *Data, ValueHandle Vtable,
-                      bool ValidVtable, ReportOptions Opts) {
+void __ubsan_handle_cfi_bad_type(CFICheckFailData *Data, ValueHandle Vtable,
+                                 bool ValidVtable, ReportOptions Opts) {
   SourceLocation Loc = Data->Loc.acquire();
   ErrorType ET = ErrorType::CFIBadType;
 
@@ -121,6 +121,7 @@ void HandleCFIBadType(CFICheckFailData *Data, ValueHandle Vtable,
     CheckKindStr = "cast to unrelated type";
     break;
   case CFITCK_ICall:
+  default:
     Die();
   }
 
@@ -141,23 +142,5 @@ void HandleCFIBadType(CFICheckFailData *Data, ValueHandle Vtable,
   }
 }
 }  // namespace __ubsan
-
-void __ubsan::__ubsan_handle_cfi_bad_type(CFIBadTypeData *TypeData,
-                                          ValueHandle Vtable) {
-  GET_REPORT_OPTIONS(false);
-  CFITypeCheckKind TypeCheckKind
-    = static_cast<CFITypeCheckKind> (TypeData->TypeCheckKind);
-  CFICheckFailData Data = {TypeCheckKind, TypeData->Loc, TypeData->Type};
-  HandleCFIBadType(&Data, Vtable, false, Opts);
-}
-
-void __ubsan::__ubsan_handle_cfi_bad_type_abort(CFIBadTypeData *TypeData,
-                                                ValueHandle Vtable) {
-  GET_REPORT_OPTIONS(true);
-  CFITypeCheckKind TypeCheckKind
-    = static_cast<CFITypeCheckKind> (TypeData->TypeCheckKind);
-  CFICheckFailData Data = {TypeCheckKind, TypeData->Loc, TypeData->Type};
-  HandleCFIBadType(&Data, Vtable, false, Opts);
-}
 
 #endif // CAN_SANITIZE_UB

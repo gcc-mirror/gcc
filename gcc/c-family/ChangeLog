@@ -1,3 +1,13 @@
+2017-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82681
+	* c-warn.c (warnings_for_convert_and_check): Fix typos.
+
+2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-common.c (check_builtin_function_arguments): Also check arguments
+	of __builtin_alloca_with_align_and_max.
+
 2017-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (format_warning_at_char): Pass UNKNOWN_LOCATION

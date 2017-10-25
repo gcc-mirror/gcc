@@ -692,14 +692,7 @@ inline_transform (struct cgraph_node *node)
 
 	  basic_block bb;
 	  FOR_ALL_BB_FN (bb, cfun)
-	    {
-	      bb->count = bb->count.apply_scale (num, den);
-	
-	      edge e;
-	      edge_iterator ei;
-	      FOR_EACH_EDGE (e, ei, bb->succs)
-		e->count = e->count.apply_scale (num, den);
-	    }
+	    bb->count = bb->count.apply_scale (num, den);
 	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
 	}
       todo = optimize_inline_calls (current_function_decl);

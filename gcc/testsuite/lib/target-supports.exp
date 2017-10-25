@@ -548,7 +548,8 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1
     }
-    if { [istarget avr-*-*] } {
+    if { [istarget avr-*-*]
+	 || [istarget msp430-*-*] } {
 	return 1;   
     }
     return 0
@@ -8921,4 +8922,17 @@ proc check_effective_target_callee_realigns_stack { } {
 	return 1
   }
   return 0
+}
+
+# Return 1 if CET instructions can be compiled.
+proc check_effective_target_cet { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+	return 0
+    }
+    return [check_no_compiler_messages cet object {
+	void foo (void)
+	{
+	  asm ("setssbsy");
+	}
+    } "-O2" ]
 }

@@ -61,8 +61,10 @@ package body System.Parameters is
    begin
       --  There are two situations where the default secondary stack size is
       --  set to zero:
+      --
       --    * The user sets it to zero erroneously thinking it will disable
       --      the secondary stack.
+      --
       --    * Or more likely, we are building with an old compiler and
       --      Default_SS_Size is never set.
       --

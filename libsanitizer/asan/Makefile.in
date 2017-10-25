@@ -114,12 +114,13 @@ libasan_la_DEPENDENCIES =  \
 am__objects_1 = asan_activation.lo asan_allocator.lo asan_debugging.lo \
 	asan_descriptions.lo asan_errors.lo asan_fake_stack.lo \
 	asan_flags.lo asan_globals.lo asan_interceptors.lo \
-	asan_linux.lo asan_mac.lo asan_malloc_linux.lo \
-	asan_malloc_mac.lo asan_malloc_win.lo asan_memory_profile.lo \
-	asan_new_delete.lo asan_poisoning.lo asan_posix.lo \
-	asan_report.lo asan_rtl.lo asan_stack.lo asan_stats.lo \
-	asan_suppressions.lo asan_thread.lo asan_win.lo \
-	asan_win_dll_thunk.lo asan_win_dynamic_runtime_thunk.lo
+	asan_interceptors_memintrinsics.lo asan_linux.lo asan_mac.lo \
+	asan_malloc_linux.lo asan_malloc_mac.lo asan_malloc_win.lo \
+	asan_memory_profile.lo asan_new_delete.lo asan_poisoning.lo \
+	asan_posix.lo asan_report.lo asan_rtl.lo asan_shadow_setup.lo \
+	asan_stack.lo asan_stats.lo asan_suppressions.lo \
+	asan_thread.lo asan_win.lo asan_win_dll_thunk.lo \
+	asan_win_dynamic_runtime_thunk.lo
 am_libasan_la_OBJECTS = $(am__objects_1)
 libasan_la_OBJECTS = $(am_libasan_la_OBJECTS)
 libasan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -317,6 +318,7 @@ asan_files = \
 	asan_flags.cc \
 	asan_globals.cc \
 	asan_interceptors.cc \
+	asan_interceptors_memintrinsics.cc \
 	asan_linux.cc \
 	asan_mac.cc \
 	asan_malloc_linux.cc \
@@ -328,6 +330,7 @@ asan_files = \
 	asan_posix.cc \
 	asan_report.cc \
 	asan_rtl.cc \
+	asan_shadow_setup.cc \
 	asan_stack.cc \
 	asan_stats.cc \
 	asan_suppressions.cc \
@@ -466,6 +469,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_globals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors_memintrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_linux.Plo@am__quote@
@@ -477,6 +481,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_rtl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_shadow_setup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_stats.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_suppressions.Plo@am__quote@

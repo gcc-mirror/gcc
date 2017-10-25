@@ -681,8 +681,6 @@ enum reg_class
 
 #define FRAME_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET 0
-
 #define STACK_POINTER_OFFSET 0
 
 #define FIRST_PARM_OFFSET(fundecl) \

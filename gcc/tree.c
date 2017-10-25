@@ -7073,7 +7073,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
     case INTEGER_CST:
       gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
       for (i = 0; i < TREE_INT_CST_EXT_NUNITS (t); i++)
-	hstate.add_wide_int (TREE_INT_CST_ELT (t, i));
+	hstate.add_hwi (TREE_INT_CST_ELT (t, i));
       return;
     case REAL_CST:
       {
@@ -7108,7 +7108,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       }
     case SSA_NAME:
       /* We can just compare by pointer.  */
-      hstate.add_wide_int (SSA_NAME_VERSION (t));
+      hstate.add_hwi (SSA_NAME_VERSION (t));
       return;
     case PLACEHOLDER_EXPR:
       /* The node itself doesn't matter.  */
@@ -7166,7 +7166,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       if (tclass == tcc_declaration)
 	{
 	  /* DECL's have a unique ID */
-	  hstate.add_wide_int (DECL_UID (t));
+	  hstate.add_hwi (DECL_UID (t));
 	}
       else if (tclass == tcc_comparison && !commutative_tree_code (code))
 	{
@@ -9975,6 +9975,13 @@ build_common_builtin_nodes (void)
 			"__builtin_alloca_with_align",
 			alloca_flags);
 
+  ftype = build_function_type_list (ptr_type_node, size_type_node,
+				    size_type_node, size_type_node, NULL_TREE);
+  local_define_builtin ("__builtin_alloca_with_align_and_max", ftype,
+			BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX,
+			"__builtin_alloca_with_align_and_max",
+			alloca_flags);
+
   ftype = build_function_type_list (void_type_node,
 				    ptr_type_node, ptr_type_node,
 				    ptr_type_node, NULL_TREE);
@@ -10713,6 +10720,33 @@ maybe_build_call_expr_loc (location_t loc, combined_fn fn, tree type,
       if (!fndecl)
 	return NULL_TREE;
       return build_call_expr_loc_array (loc, fndecl, n, argarray);
+    }
+}
+
+/* Return a function call to the appropriate builtin alloca variant.
+
+   SIZE is the size to be allocated.  ALIGN, if non-zero, is the requested
+   alignment of the allocated area.  MAX_SIZE, if non-negative, is an upper
+   bound for SIZE in case it is not a fixed value.  */
+
+tree
+build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
+{
+  if (max_size >= 0)
+    {
+      tree t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX);
+      return
+	build_call_expr (t, 3, size, size_int (align), size_int (max_size));
+    }
+  else if (align > 0)
+    {
+      tree t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
+      return build_call_expr (t, 2, size, size_int (align));
+    }
+  else
+    {
+      tree t = builtin_decl_explicit (BUILT_IN_ALLOCA);
+      return build_call_expr (t, 1, size);
     }
 }
 
@@ -12513,6 +12547,9 @@ array_at_struct_end_p (tree ref)
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE)
     atype = TREE_TYPE (TREE_OPERAND (ref, 1));
   else
+    return false;
+
+  if (TREE_CODE (ref) == STRING_CST)
     return false;
 
   while (handled_component_p (ref))

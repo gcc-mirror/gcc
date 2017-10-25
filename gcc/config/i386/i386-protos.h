@@ -354,3 +354,4 @@ class rtl_opt_pass;
 
 extern rtl_opt_pass *make_pass_insert_vzeroupper (gcc::context *);
 extern rtl_opt_pass *make_pass_stv (gcc::context *);
+extern rtl_opt_pass *make_pass_insert_endbranch (gcc::context *);

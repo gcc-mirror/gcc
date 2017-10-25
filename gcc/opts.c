@@ -1521,6 +1521,7 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true),
   SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
   SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
+  SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true),
   SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
   { NULL, 0U, 0UL, false }

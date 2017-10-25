@@ -2867,12 +2867,13 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
 static bool
 aarch64_frame_pointer_required (void)
 {
-  /* In aarch64_override_options_after_change
-     flag_omit_leaf_frame_pointer turns off the frame pointer by
-     default.  Turn it back on now if we've not got a leaf
-     function.  */
-  if (flag_omit_leaf_frame_pointer
-      && (!crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM)))
+  /* Use the frame pointer if enabled and it is not a leaf function, unless
+     leaf frame pointer omission is disabled.  If the frame pointer is enabled,
+     force the frame pointer in leaf functions which use LR.  */
+  if (flag_omit_frame_pointer == 2
+      && !(flag_omit_leaf_frame_pointer
+	   && crtl->is_leaf
+	   && !df_regs_ever_live_p (LR_REGNUM)))
     return true;
 
   /* Force a frame pointer for EH returns so the return address is at FP+8.  */
@@ -5926,6 +5927,7 @@ aarch64_can_eliminate (const int from, const int to)
 	 LR in the function, then we'll want a frame pointer after all, so
 	 prevent this elimination to ensure a frame pointer is used.  */
       if (to == STACK_POINTER_REGNUM
+	  && flag_omit_frame_pointer == 2
 	  && flag_omit_leaf_frame_pointer
 	  && df_regs_ever_live_p (LR_REGNUM))
 	return false;
@@ -8965,24 +8967,16 @@ aarch64_parse_override_string (const char* input_string,
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
-  /* The logic here is that if we are disabling all frame pointer generation
-     then we do not need to disable leaf frame pointer generation as a
-     separate operation.  But if we are *only* disabling leaf frame pointer
-     generation then we set flag_omit_frame_pointer to true, but in
-     aarch64_frame_pointer_required we return false only for leaf functions.
+  /* PR 70044: We have to be careful about being called multiple times for the
+     same function.  This means all changes should be repeatable.  */
 
-     PR 70044: We have to be careful about being called multiple times for the
-     same function.  Once we have decided to set flag_omit_frame_pointer just
-     so that we can omit leaf frame pointers, we must then not interpret a
-     second call as meaning that all frame pointer generation should be
-     omitted.  We do this by setting flag_omit_frame_pointer to a special,
-     non-zero value.  */
-  if (opts->x_flag_omit_frame_pointer == 2)
-    opts->x_flag_omit_frame_pointer = 0;
-
-  if (opts->x_flag_omit_frame_pointer)
-    opts->x_flag_omit_leaf_frame_pointer = false;
-  else if (opts->x_flag_omit_leaf_frame_pointer)
+  /* If the frame pointer is enabled, set it to a special value that behaves
+     similar to frame pointer omission.  If we don't do this all leaf functions
+     will get a frame pointer even if flag_omit_leaf_frame_pointer is set.
+     If flag_omit_frame_pointer has this special value, we must force the
+     frame pointer if not in a leaf function.  We also need to force it in a
+     leaf function if flag_omit_frame_pointer is not set or if LR is used.  */
+  if (opts->x_flag_omit_frame_pointer == 0)
     opts->x_flag_omit_frame_pointer = 2;
 
   /* If not optimizing for size, set the default

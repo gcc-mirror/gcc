@@ -461,6 +461,7 @@ Objective-C and Objective-C++ Dialects}.
 -fchkp-check-read  -fchkp-check-write  -fchkp-store-bounds @gol
 -fchkp-instrument-calls  -fchkp-instrument-marked-only @gol
 -fchkp-use-wrappers  -fchkp-flexible-struct-trailing-arrays@gol
+-fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]} @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -1203,6 +1204,7 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
 -mmwaitx  -mclzero  -mpku  -mthreads @gol
+-mcet -mibt -mshstk @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -6318,7 +6320,8 @@ attributes.
 @item -Wno-builtin-declaration-mismatch
 @opindex Wno-builtin-declaration-mismatch
 @opindex Wbuiltin-declaration-mismatch
-Warn if a built-in function is declared with the wrong signature.
+Warn if a built-in function is declared with the wrong signature or 
+as non-function.
 This warning is enabled by default.
 
 @item -Wno-builtin-macro-redefined
@@ -7063,7 +7066,7 @@ Allow using extensions of later DWARF standard version than selected with
 @opindex gno-column-info
 Emit location column information into DWARF debugging information, rather
 than just file and line.
-This option is disabled by default.
+This option is enabled by default.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz
@@ -7837,7 +7840,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR and CR16, this option is completely disabled.  
+defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.
@@ -9712,18 +9715,26 @@ file if the target supports arbitrary sections.  The name of the
 function or the name of the data item determines the section's name
 in the output file.
 
-Use these options on systems where the linker can perform optimizations
-to improve locality of reference in the instruction space.  Most systems
-using the ELF object format and SPARC processors running Solaris 2 have
-linkers with such optimizations.  AIX may have these optimizations in
-the future.
+Use these options on systems where the linker can perform optimizations to
+improve locality of reference in the instruction space.  Most systems using the
+ELF object format have linkers with such optimizations.  On AIX, the linker
+rearranges sections (CSECTs) based on the call graph.  The performance impact
+varies.
 
-Only use these options when there are significant benefits from doing
-so.  When you specify these options, the assembler and linker
-create larger object and executable files and are also slower.
-You cannot use @command{gprof} on all systems if you
-specify this option, and you may have problems with debugging if
-you specify both this option and @option{-g}.
+Together with a linker garbage collection (linker @option{--gc-sections}
+option) these options may lead to smaller statically-linked executables (after
+stripping).
+
+On ELF/DWARF systems these options do not degenerate the quality of the debug
+information.  There could be issues with other object files/debug info formats.
+
+Only use these options when there are significant benefits from doing so.  When
+you specify these options, the assembler and linker create larger object and
+executable files and are also slower.  These options affect code generation.
+They prevent optimizations by the compiler and assembler using relative
+locations inside a translation unit since the locations are unknown until
+link time.  An example of such an optimization is relaxing calls to short call
+instructions.
 
 @item -fbranch-target-load-optimize
 @opindex fbranch-target-load-optimize
@@ -11141,6 +11152,15 @@ to verify the referenced object has the correct dynamic type.
 This option enables instrumentation of pointer arithmetics.  If the pointer
 arithmetics overflows, a run-time error is issued.
 
+@item -fsanitize=builtin
+@opindex fsanitize=builtin
+
+This option enables instrumentation of arguments to selected builtin
+functions.  If an invalid value is passed to such arguments, a run-time
+error is issued.  E.g.@ passing 0 as the argument to @code{__builtin_ctz}
+or @code{__builtin_clz} invokes undefined behavior and is diagnosed
+by this option.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
@@ -11400,6 +11420,33 @@ with calls to wrapper functions.  When @option{-fchkp-use-wrappers}
 is used to link a program, the GCC driver automatically links
 against @file{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
 Enabled by default.
+
+@item -fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]}
+@opindex fcf-protection
+Enable code instrumentation of control-flow transfers to increase
+program security by checking that target addresses of control-flow
+transfer instructions (such as indirect function call, function return,
+indirect jump) are valid.  This prevents diverting the flow of control
+to an unexpected target.  This is intended to protect against such
+threats as Return-oriented Programming (ROP), and similarly
+call/jmp-oriented programming (COP/JOP).
+
+The value @code{branch} tells the compiler to implement checking of
+validity of control-flow transfer at the point of indirect branch
+instructions, i.e. call/jmp instructions.  The value @code{return}
+implements checking of validity at the point of returning from a
+function.  The value @code{full} is an alias for specifying both
+@code{branch} and @code{return}. The value @code{none} turns off
+instrumentation.
+
+You can also use the @code{nocf_check} attribute to identify
+which functions and calls should be skipped from instrumentation
+(@pxref{Function Attributes}).
+
+Currently the x86 GNU/Linux target provides an implementation based
+on Intel Control-flow Enforcement Technology (CET).  Instrumentation
+for x86 is controlled by target-specific options @option{-mcet},
+@option{-mibt} and @option{-mshstk} (@pxref{x86 Options}).
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -25812,15 +25859,19 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mclzero
 @opindex mclzero
+@need 200
 @itemx -mpku
 @opindex mpku
+@need 200
+@itemx -mcet
+@opindex mcet
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
 AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA AVX512VBMI, BMI, BMI2, FXSR,
-XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, 3DNow!@: or enhanced 3DNow!@:
-extended instruction sets.  Each has a corresponding @option{-mno-} option
-to disable use of these instructions.
+XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, IBT, SHSTK,
+3DNow!@: or enhanced 3DNow!@: extended instruction sets.  Each has a
+corresponding @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -25839,6 +25890,13 @@ perform run-time CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
+
+The @option{-mcet} option turns on the @option{-mibt} and @option{-mshstk}
+options.  The @option{-mibt} option enables indirect branch tracking support
+and the @option{-mshstk} option enables shadow stack support from
+Intel Control-flow Enforcement Technology (CET).  The compiler also provides
+a number of built-in functions for fine-grained control in a CET-based
+application.  See @xref{x86 Built-in Functions}, for more information.
 
 @item -mdump-tune-features
 @opindex mdump-tune-features
@@ -25917,6 +25975,24 @@ see @ref{Other Builtins} for details.
 @opindex mmovbe
 This option enables use of the @code{movbe} instruction to implement
 @code{__builtin_bswap32} and @code{__builtin_bswap64}.
+
+@item -mibt
+@opindex mibt
+This option tells the compiler to use indirect branch tracking support
+(for indirect calls and jumps) from x86 Control-flow Enforcement
+Technology (CET).  The option has effect only if the
+@option{-fcf-protection=full} or @option{-fcf-protection=branch} option
+is specified. The option @option{-mibt} is on by default when the
+@code{-mcet} option is specified.
+
+@item -mshstk
+@opindex mshstk
+This option tells the compiler to use shadow stack support (return
+address tracking) from x86 Control-flow Enforcement Technology (CET).
+The option has effect only if the @option{-fcf-protection=full} or
+@option{-fcf-protection=return} option is specified.  The option
+@option{-mshstk} is on by default when the @option{-mcet} option is
+specified.
 
 @item -mcrc32
 @opindex mcrc32

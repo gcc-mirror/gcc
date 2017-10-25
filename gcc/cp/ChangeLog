@@ -1,3 +1,53 @@
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* decl.c (duplicate_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* decl.c (duplicate_decls): Warn for built-in functions declared as
+	non-function, use OPT_Wbuiltin_declaration_mismatch.
+
+	* decl.c (duplicate_decls): Avoid redundant '+' in warning_at.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80991
+	* pt.c (value_dependent_expression_p, [TRAIT_EXPR]): Handle
+	a TREE_LIST as TRAIT_EXPR_TYPE2.
+
+2017-10-24  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82307
+	* cvt.c (type_promotes_to): Implement C++17, 7.6/4, about unscoped
+	enumeration type whose underlying type is fixed.
+
+2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80449
+	* semantics.c (finish_compound_literal): Check do_auto_deduction
+	return value for error_mark_node.
+
+2017-10-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77369 - wrong noexcept handling in C++14 and below
+	* tree.c (strip_typedefs): Canonicalize TYPE_RAISES_EXCEPTIONS.
+
+2017-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (layout_class_type): Cleanup as-base creation, determine
+	mode here.
+	(finish_struct_1): ... not here.
+
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82600
+	* typeck.c (check_return_expr): Don't call
+	maybe_warn_about_returning_address_of_local in templates.
+
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82560

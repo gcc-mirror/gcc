@@ -77,6 +77,16 @@ extern tree remove_attribute (const char *, tree);
 
 extern tree merge_attributes (tree, tree);
 
+/* Duplicate all attributes with name NAME in ATTR list to *ATTRS if
+   they are missing there.  */
+
+extern void duplicate_one_attribute (tree *, tree, const char *);
+
+/* Duplicate all attributes from user DECL to the corresponding
+   builtin that should be propagated.  */
+
+extern void copy_attributes_to_builtin (tree);
+
 /* Given two Windows decl attributes lists, possibly including
    dllimport, return a list of their union .  */
 extern tree merge_dllimport_decl_attributes (tree, tree);

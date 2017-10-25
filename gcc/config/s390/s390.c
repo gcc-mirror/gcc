@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "sched-int.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -354,6 +355,18 @@ extern int reload_completed;
 static rtx_insn *last_scheduled_insn;
 #define MAX_SCHED_UNITS 3
 static int last_scheduled_unit_distance[MAX_SCHED_UNITS];
+
+#define NUM_SIDES 2
+static int current_side = 1;
+#define LONGRUNNING_THRESHOLD 5
+
+/* Estimate of number of cycles a long-running insn occupies an
+   execution unit.  */
+static unsigned fxu_longrunning[NUM_SIDES];
+static unsigned vfu_longrunning[NUM_SIDES];
+
+/* Factor to scale latencies by, determined by measurements.  */
+#define LATENCY_FACTOR 4
 
 /* The maximum score added for an instruction whose unit hasn't been
    in use for MAX_SCHED_MIX_DISTANCE steps.  Increase this value to
@@ -14606,6 +14619,28 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
   ready[0] = tmp;
 }
 
+/* Returns TRUE if BB is entered via a fallthru edge and all other
+   incoming edges are less than unlikely.  */
+static bool
+s390_bb_fallthru_entry_likely (basic_block bb)
+{
+  edge e, fallthru_edge;
+  edge_iterator ei;
+
+  if (!bb)
+    return false;
+
+  fallthru_edge = find_fallthru_edge (bb->preds);
+  if (!fallthru_edge)
+    return false;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e != fallthru_edge
+	&& e->probability >= profile_probability::unlikely ())
+      return false;
+
+  return true;
+}
 
 /* The s390_sched_state variable tracks the state of the current or
    the last instruction group.
@@ -14614,7 +14649,7 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
    3     the last group is complete - normal insns
    4     the last group was a cracked/expanded insn */
 
-static int s390_sched_state;
+static int s390_sched_state = 0;
 
 #define S390_SCHED_STATE_NORMAL  3
 #define S390_SCHED_STATE_CRACKED 4
@@ -14755,7 +14790,24 @@ s390_sched_score (rtx_insn *insn)
 	if (m & unit_mask)
 	  score += (last_scheduled_unit_distance[i] * MAX_SCHED_MIX_SCORE /
 		    MAX_SCHED_MIX_DISTANCE);
+
+      unsigned latency = insn_default_latency (insn);
+
+      int other_side = 1 - current_side;
+
+      /* Try to delay long-running insns when side is busy.  */
+      if (latency > LONGRUNNING_THRESHOLD)
+	{
+	  if (get_attr_z13_unit_fxu (insn) && fxu_longrunning[current_side]
+	      && fxu_longrunning[other_side] <= fxu_longrunning[current_side])
+	    score = MAX (0, score - 10);
+
+	  if (get_attr_z13_unit_vfu (insn) && vfu_longrunning[current_side]
+	      && vfu_longrunning[other_side] <= vfu_longrunning[current_side])
+	    score = MAX (0, score - 10);
+	}
     }
+
   return score;
 }
 
@@ -14874,11 +14926,18 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 {
   last_scheduled_insn = insn;
 
+  bool starts_group = false;
+
   if (s390_tune >= PROCESSOR_2827_ZEC12
       && reload_completed
       && recog_memoized (insn) >= 0)
     {
       unsigned int mask = s390_get_sched_attrmask (insn);
+
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
+	starts_group = true;
 
       if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
 	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0)
@@ -14892,14 +14951,15 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	  switch (s390_sched_state)
 	    {
 	    case 0:
+	      starts_group = true;
+	      /* fallthrough */
 	    case 1:
 	    case 2:
+	      s390_sched_state++;
+	      break;
 	    case S390_SCHED_STATE_NORMAL:
-	      if (s390_sched_state == S390_SCHED_STATE_NORMAL)
-		s390_sched_state = 1;
-	      else
-		s390_sched_state++;
-
+	      starts_group = true;
+	      s390_sched_state = 1;
 	      break;
 	    case S390_SCHED_STATE_CRACKED:
 	      s390_sched_state = S390_SCHED_STATE_NORMAL;
@@ -14920,6 +14980,27 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	      last_scheduled_unit_distance[i] = 0;
 	    else if (last_scheduled_unit_distance[i] < MAX_SCHED_MIX_DISTANCE)
 	      last_scheduled_unit_distance[i]++;
+	}
+
+      /* If this insn started a new group, the side flipped.  */
+      if (starts_group)
+	current_side = current_side ? 0 : 1;
+
+      for (int i = 0; i < 2; i++)
+	{
+	  if (fxu_longrunning[i] >= 1)
+	    fxu_longrunning[i] -= 1;
+	  if (vfu_longrunning[i] >= 1)
+	    vfu_longrunning[i] -= 1;
+	}
+
+      unsigned latency = insn_default_latency (insn);
+      if (latency > LONGRUNNING_THRESHOLD)
+	{
+	  if (get_attr_z13_unit_fxu (insn))
+	    fxu_longrunning[current_side] = latency * LATENCY_FACTOR;
+	  else
+	    vfu_longrunning[current_side] = latency * LATENCY_FACTOR;
 	}
 
       if (verbose > 5)
@@ -14978,7 +15059,21 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 {
   last_scheduled_insn = NULL;
   memset (last_scheduled_unit_distance, 0, MAX_SCHED_UNITS * sizeof (int));
-  s390_sched_state = 0;
+
+  /* If the next basic block is most likely entered via a fallthru edge
+     we keep the last sched state.  Otherwise we start a new group.
+     The scheduler traverses basic blocks in "instruction stream" ordering
+     so if we see a fallthru edge here, s390_sched_state will be of its
+     source block.
+
+     current_sched_info->prev_head is the insn before the first insn of the
+     block of insns to be scheduled.
+     */
+  rtx_insn *insn = current_sched_info->prev_head
+    ? NEXT_INSN (current_sched_info->prev_head) : NULL;
+  basic_block bb = insn ? BLOCK_FOR_INSN (insn) : NULL;
+  if (s390_tune < PROCESSOR_2964_Z13 || !s390_bb_fallthru_entry_likely (bb))
+    s390_sched_state = 0;
 }
 
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates

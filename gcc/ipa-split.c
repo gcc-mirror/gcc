@@ -1285,7 +1285,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	  FOR_EACH_EDGE (e, ei, return_bb->preds)
 	    if (bitmap_bit_p (split_point->split_bbs, e->src->index))
 	      {
-		new_return_bb->count += e->count;
 		new_return_bb->frequency += EDGE_FREQUENCY (e);
 		redirect_edge_and_branch (e, new_return_bb);
 		redirected = true;

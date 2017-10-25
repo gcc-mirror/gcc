@@ -25,6 +25,7 @@ asan_files = \
 	asan_flags.cc \
 	asan_globals.cc \
 	asan_interceptors.cc \
+	asan_interceptors_memintrinsics.cc \
 	asan_linux.cc \
 	asan_mac.cc \
 	asan_malloc_linux.cc \
@@ -36,6 +37,7 @@ asan_files = \
 	asan_posix.cc \
 	asan_report.cc \
 	asan_rtl.cc \
+	asan_shadow_setup.cc \
 	asan_stack.cc \
 	asan_stats.cc \
 	asan_suppressions.cc \

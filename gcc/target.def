@@ -2822,7 +2822,7 @@ DEFHOOK
  "This hook should return true if @var{x} should not be emitted into\n\
 debug sections.",
  bool, (rtx x),
- hook_bool_rtx_false)
+ default_const_not_ok_for_debug_p)
 
 /* Given an address RTX, say whether it is valid.  */
 DEFHOOK
@@ -5687,6 +5687,16 @@ The default is four for machines with a @code{casesi} instruction and\n\
 five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
+
+DEFHOOK
+(starting_frame_offset,
+ "This hook returns the offset from the frame pointer to the first local\n\
+variable slot to be allocated.  If @code{FRAME_GROWS_DOWNWARD}, it is the\n\
+offset to @emph{end} of the first slot allocated, otherwise it is the\n\
+offset to @emph{beginning} of the first slot allocated.  The default\n\
+implementation returns 0.",
+ HOST_WIDE_INT, (void),
+ hook_hwi_void_0)
 
 /* Optional callback to advise the target to compute the frame layout.  */
 DEFHOOK

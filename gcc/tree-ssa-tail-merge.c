@@ -1570,14 +1570,14 @@ replace_block_by (basic_block bb1, basic_block bb2)
      making the bb count inconsistent with the edge weights.  */
   FOR_EACH_EDGE (e1, ei, bb1->succs)
     {
-      if (e1->count.initialized_p ())
-	out_sum += e1->count;
+      if (e1->count ().initialized_p ())
+	out_sum += e1->count ();
       out_freq_sum += EDGE_FREQUENCY (e1);
     }
   FOR_EACH_EDGE (e1, ei, bb2->succs)
     {
-      if (e1->count.initialized_p ())
-	out_sum += e1->count;
+      if (e1->count ().initialized_p ())
+	out_sum += e1->count ();
       out_freq_sum += EDGE_FREQUENCY (e1);
     }
 
@@ -1585,10 +1585,9 @@ replace_block_by (basic_block bb1, basic_block bb2)
     {
       e2 = find_edge (bb2, e1->dest);
       gcc_assert (e2);
-      e2->count += e1->count;
-      if (out_sum > 0 && e2->count.initialized_p ())
+      if (out_sum > 0 && e2->count ().initialized_p ())
 	{
-	  e2->probability = e2->count.probability_in (bb2->count);
+	  e2->probability = e2->count ().probability_in (bb2->count);
 	}
       else if (bb1->frequency && bb2->frequency)
 	e2->probability = e1->probability;
@@ -1599,7 +1598,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
 		(GCOV_COMPUTE_SCALE (EDGE_FREQUENCY (e1)
 				     + EDGE_FREQUENCY (e2),
 				     out_freq_sum));
-      out_sum += e2->count;
+      out_sum += e2->count ();
     }
   bb2->frequency += bb1->frequency;
   if (bb2->frequency > BB_FREQ_MAX)

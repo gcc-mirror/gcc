@@ -5,5 +5,5 @@
 
 #include "387-ficom-1.c"
 
-/* { dg-final { scan-assembler-times "ficomps" 3 } } */
+/* { dg-final { scan-assembler-times "ficomp\[s\t\]" 3 } } */
 /* { dg-final { scan-assembler-times "ficompl" 3 } } */

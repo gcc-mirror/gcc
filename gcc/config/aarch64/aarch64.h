@@ -541,8 +541,6 @@ extern enum aarch64_processor aarch64_tune;
 
 #define FRAME_GROWS_DOWNWARD	1
 
-#define STARTING_FRAME_OFFSET	0
-
 #define ACCUMULATE_OUTGOING_ARGS	1
 
 #define FIRST_PARM_OFFSET(FNDECL) 0

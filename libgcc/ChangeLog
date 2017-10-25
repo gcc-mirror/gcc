@@ -1,3 +1,8 @@
+2017-10-23  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/subdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added subdi3.S to LIB2ADD.
+
 2017-10-13  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/adddi3.S: New assembly file.

@@ -366,6 +366,31 @@
     }
 })
 
+;; Return true if VALUE is a constant integer whose value is
+;; x86_64_immediate_operand value zero extended from word mode to mode.
+(define_predicate "x86_64_dwzext_immediate_operand"
+  (match_code "const_int,const_wide_int")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST_INT:
+      if (!TARGET_64BIT)
+	return UINTVAL (op) <= HOST_WIDE_INT_UC (0xffffffff);
+      return UINTVAL (op) <= HOST_WIDE_INT_UC (0x7fffffff);
+
+    case CONST_WIDE_INT:
+      if (!TARGET_64BIT)
+	return false;
+      return (CONST_WIDE_INT_NUNITS (op) == 2
+	      && CONST_WIDE_INT_ELT (op, 1) == 0
+	      && (trunc_int_for_mode (CONST_WIDE_INT_ELT (op, 0), SImode)
+		  == (HOST_WIDE_INT) CONST_WIDE_INT_ELT (op, 0)));
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
 ;; Return true if size of VALUE can be stored in a sign
 ;; extended immediate field.
 (define_predicate "x86_64_immediate_size_operand"
@@ -1329,14 +1354,20 @@
   switch (code)
     {
     case EQ: case NE:
+      if (inmode == CCGZmode)
+	return false;
       return true;
-    case LT: case GE:
+    case GE: case LT:
       if (inmode == CCmode || inmode == CCGCmode
-	  || inmode == CCGOCmode || inmode == CCNOmode)
+	  || inmode == CCGOCmode || inmode == CCNOmode || inmode == CCGZmode)
 	return true;
       return false;
-    case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCCmode)
+    case GEU: case LTU:
+      if (inmode == CCGZmode)
+	return true;
+      /* FALLTHRU */
+    case GTU: case LEU:
+      if (inmode == CCmode || inmode == CCCmode || inmode == CCGZmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:

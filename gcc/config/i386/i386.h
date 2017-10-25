@@ -103,6 +103,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SGX_P(x)	TARGET_ISA_SGX_P(x)
 #define TARGET_RDPID	TARGET_ISA_RDPID
 #define TARGET_RDPID_P(x)	TARGET_ISA_RDPID_P(x)
+#define TARGET_GFNI	TARGET_ISA_GFNI
+#define TARGET_GFNI_P(x)	TARGET_ISA_GFNI_P(x)
 #define TARGET_BMI	TARGET_ISA_BMI
 #define TARGET_BMI_P(x)	TARGET_ISA_BMI_P(x)
 #define TARGET_BMI2	TARGET_ISA_BMI2
@@ -167,6 +169,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_MWAITX_P(x)	TARGET_ISA_MWAITX_P(x)
 #define TARGET_PKU	TARGET_ISA_PKU
 #define TARGET_PKU_P(x)	TARGET_ISA_PKU_P(x)
+#define TARGET_IBT	TARGET_ISA_IBT
+#define TARGET_IBT_P(x)	TARGET_ISA_IBT_P(x)
+#define TARGET_SHSTK	TARGET_ISA_SHSTK
+#define TARGET_SHSTK_P(x)	TARGET_ISA_SHSTK_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -236,13 +242,21 @@ struct processor_costs {
 				   in SImode and DImode */
   const int mmx_store[2];	/* cost of storing MMX register
 				   in SImode and DImode */
-  const int sse_move;		/* cost of moving SSE register.  */
-  const int sse_load[3];	/* cost of loading SSE register
-				   in SImode, DImode and TImode*/
-  const int sse_store[3];	/* cost of storing SSE register
-				   in SImode, DImode and TImode*/
+  const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
+	    zmm_move;
+  const int sse_load[5];	/* cost of loading SSE register
+				   in 32bit, 64bit, 128bit, 256bit and 512bit */
+  const int sse_unaligned_load[5];/* cost of unaligned load.  */
+  const int sse_store[5];	/* cost of storing SSE register
+				   in SImode, DImode and TImode.  */
+  const int sse_unaligned_store[5];/* cost of unaligned store.  */
   const int mmxsse_to_integer;	/* cost of moving mmxsse register to
-				   integer and vice versa.  */
+				   integer.  */
+  const int ssemmx_to_integer;  /* cost of moving integer to mmxsse register. */
+  const int gather_static, gather_per_elt; /* Cost of gather load is computed
+				   as static + per_item * nelts. */
+  const int scatter_static, scatter_per_elt; /* Cost of gather store is
+				   computed as static + per_item * nelts.  */
   const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
   const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
   const int prefetch_block;	/* bytes moved to cache for prefetch.  */
@@ -275,18 +289,6 @@ struct processor_costs {
 				   parallel.  See also
 				   ix86_reassociation_width.  */
   struct stringop_algs *memcpy, *memset;
-  const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
-				   load and store.  */
-  const int scalar_load_cost;   /* Cost of scalar load.  */
-  const int scalar_store_cost;  /* Cost of scalar store.  */
-  const int vec_stmt_cost;      /* Cost of any vector operation, excluding
-                                   load, store, vector-to-scalar and
-                                   scalar-to-vector operation.  */
-  const int vec_to_scalar_cost;    /* Cost of vect-to-scalar operation.  */
-  const int scalar_to_vec_cost;    /* Cost of scalar-to-vector operation.  */
-  const int vec_align_load_cost;   /* Cost of aligned vector load.  */
-  const int vec_unalign_load_cost; /* Cost of unaligned vector load.  */
-  const int vec_store_cost;        /* Cost of vector store.  */
   const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
 					  cost model.  */
   const int cond_not_taken_branch_cost;/* Cost of not taken branch for
@@ -1528,12 +1530,6 @@ enum reg_class
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET 0
 
 /* If we generate an insn to push BYTES bytes, this says how many the stack
    pointer really advances by.  On 386, we have pushw instruction that

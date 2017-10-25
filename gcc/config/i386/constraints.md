@@ -332,6 +332,11 @@
    of it satisfies the e constraint."
   (match_operand 0 "x86_64_hilo_int_operand"))
 
+(define_constraint "Wf"
+  "32-bit signed integer constant zero extended from word size
+   to double word size."
+  (match_operand 0 "x86_64_dwzext_immediate_operand"))
+
 (define_constraint "Z"
   "32-bit unsigned integer constant, or a symbolic reference known
    to fit that range (for immediate operands in zero-extending x86-64

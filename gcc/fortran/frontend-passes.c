@@ -1635,6 +1635,8 @@ combine_array_constructor (gfc_expr *e)
   gfc_constructor *c, *new_c;
   gfc_constructor_base oldbase, newbase;
   bool scalar_first;
+  int n_elem;
+  bool all_const;
 
   /* Array constructors have rank one.  */
   if (e->rank != 1)
@@ -1674,11 +1676,37 @@ combine_array_constructor (gfc_expr *e)
   if (op2->ts.type == BT_CHARACTER)
     return false;
 
-  scalar = create_var (gfc_copy_expr (op2), "constr");
+  /* This might be an expanded constructor with very many constant values. If
+     we perform the operation here, we might end up with a long compile time
+     and actually longer execution time, so a length bound is in order here.
+     If the constructor constains something which is not a constant, it did
+     not come from an expansion, so leave it alone.  */
+
+#define CONSTR_LEN_MAX 4
 
   oldbase = op1->value.constructor;
+
+  n_elem = 0;
+  all_const = true;
+  for (c = gfc_constructor_first (oldbase); c; c = gfc_constructor_next(c))
+    {
+      if (c->expr->expr_type != EXPR_CONSTANT)
+	{
+	  all_const = false;
+	  break;
+	}
+      n_elem += 1;
+    }
+
+  if (all_const && n_elem > CONSTR_LEN_MAX)
+    return false;
+
+#undef CONSTR_LEN_MAX
+
   newbase = NULL;
   e->expr_type = EXPR_ARRAY;
+
+  scalar = create_var (gfc_copy_expr (op2), "constr");
 
   for (c = gfc_constructor_first (oldbase); c;
        c = gfc_constructor_next (c))
