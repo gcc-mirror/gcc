@@ -1,3 +1,11 @@
+2017-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_eliminate): Declare.
+	* tree-ssa-pre.c (class eliminate_dom_walker, eliminate,
+	class pass_fre): Move to ...
+	* tree-ssa-sccvn.c (class eliminate_dom_walker, vn_eliminate,
+	class pass_fre): ... here and adjust for statistics.
+
 2017-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/81706
