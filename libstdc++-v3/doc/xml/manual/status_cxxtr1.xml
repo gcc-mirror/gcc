@@ -22,8 +22,7 @@ In this implementation the header names are prefixed by
 </para>
 
 <para>
-This page describes the TR1 support in mainline GCC SVN, not in any particular
-release.
+This page describes the TR1 support in the GCC 6 series.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
