@@ -1,3 +1,15 @@
+2017-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (need_eh_cleanup, need_ab_cleanup, el_to_remove,
+	el_to_fixup, el_todo, el_avail, el_avail_stack, eliminate_avail,
+	eliminate_push_avail, eliminate_insert): Move inside...
+	(class eliminate_dom_walker): ... this class in preparation
+	of move.
+	(fini_eliminate): Remove by merging with ...
+	(eliminate): ... this function.  Adjust for class changes.
+	(pass_pre::execute): Remove fini_eliminate call.
+	(pass_fre::execute): Likewise.
+
 2017-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82460

@@ -551,12 +551,6 @@ static unsigned int get_expr_value_id (pre_expr);
 static object_allocator<bitmap_set> bitmap_set_pool ("Bitmap sets");
 static bitmap_obstack grand_bitmap_obstack;
 
-/* Set of blocks with statements that have had their EH properties changed.  */
-static bitmap need_eh_cleanup;
-
-/* Set of blocks with statements that have had their AB properties changed.  */
-static bitmap need_ab_cleanup;
-
 /* A three tuple {e, pred, v} used to cache phi translations in the
    phi_translate_table.  */
 
@@ -4042,27 +4036,61 @@ compute_avail (void)
   free (worklist);
 }
 
+class eliminate_dom_walker : public dom_walker
+{
+public:
+  eliminate_dom_walker (cdi_direction direction, bool do_pre_);
+  ~eliminate_dom_walker ();
 
-/* Local state for the eliminate domwalk.  */
-static vec<gimple *> el_to_remove;
-static vec<gimple *> el_to_fixup;
-static unsigned int el_todo;
-static vec<tree> el_avail;
-static vec<tree> el_avail_stack;
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+  tree eliminate_avail (tree op);
+  void eliminate_push_avail (tree op);
+  tree eliminate_insert (gimple_stmt_iterator *gsi, tree val);
+
+  bool do_pre;
+  unsigned int el_todo;
+
+  /* Blocks with statements that have had their EH properties changed.  */
+  bitmap need_eh_cleanup;
+
+  /* Blocks with statements that have had their AB properties changed.  */
+  bitmap need_ab_cleanup;
+
+  auto_vec<gimple *> to_remove;
+  auto_vec<gimple *> to_fixup;
+  auto_vec<tree> avail;
+  auto_vec<tree> avail_stack;
+};
+
+eliminate_dom_walker::eliminate_dom_walker (cdi_direction direction,
+					    bool do_pre_)
+  : dom_walker (direction), do_pre (do_pre_), el_todo (0)
+{
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
+  need_ab_cleanup = BITMAP_ALLOC (NULL);
+}
+
+eliminate_dom_walker::~eliminate_dom_walker ()
+{
+  BITMAP_FREE (need_eh_cleanup);
+  BITMAP_FREE (need_ab_cleanup);
+}
 
 /* Return a leader for OP that is available at the current point of the
    eliminate domwalk.  */
 
-static tree
-eliminate_avail (tree op)
+tree
+eliminate_dom_walker::eliminate_avail (tree op)
 {
   tree valnum = VN_INFO (op)->valnum;
   if (TREE_CODE (valnum) == SSA_NAME)
     {
       if (SSA_NAME_IS_DEFAULT_DEF (valnum))
 	return valnum;
-      if (el_avail.length () > SSA_NAME_VERSION (valnum))
-	return el_avail[SSA_NAME_VERSION (valnum)];
+      if (avail.length () > SSA_NAME_VERSION (valnum))
+	return avail[SSA_NAME_VERSION (valnum)];
     }
   else if (is_gimple_min_invariant (valnum))
     return valnum;
@@ -4071,27 +4099,27 @@ eliminate_avail (tree op)
 
 /* At the current point of the eliminate domwalk make OP available.  */
 
-static void
-eliminate_push_avail (tree op)
+void
+eliminate_dom_walker::eliminate_push_avail (tree op)
 {
   tree valnum = VN_INFO (op)->valnum;
   if (TREE_CODE (valnum) == SSA_NAME)
     {
-      if (el_avail.length () <= SSA_NAME_VERSION (valnum))
-	el_avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1);
+      if (avail.length () <= SSA_NAME_VERSION (valnum))
+	avail.safe_grow_cleared (SSA_NAME_VERSION (valnum) + 1);
       tree pushop = op;
-      if (el_avail[SSA_NAME_VERSION (valnum)])
-	pushop = el_avail[SSA_NAME_VERSION (valnum)];
-      el_avail_stack.safe_push (pushop);
-      el_avail[SSA_NAME_VERSION (valnum)] = op;
+      if (avail[SSA_NAME_VERSION (valnum)])
+	pushop = avail[SSA_NAME_VERSION (valnum)];
+      avail_stack.safe_push (pushop);
+      avail[SSA_NAME_VERSION (valnum)] = op;
     }
 }
 
 /* Insert the expression recorded by SCCVN for VAL at *GSI.  Returns
    the leader for the expression if insertion was successful.  */
 
-static tree
-eliminate_insert (gimple_stmt_iterator *gsi, tree val)
+tree
+eliminate_dom_walker::eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 {
   /* We can insert a sequence with a single assignment only.  */
   gimple_seq stmts = VN_INFO (val)->expr;
@@ -4171,17 +4199,7 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
   return res;
 }
 
-class eliminate_dom_walker : public dom_walker
-{
-public:
-  eliminate_dom_walker (cdi_direction direction, bool do_pre_)
-      : dom_walker (direction), do_pre (do_pre_) {}
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
-
-  bool do_pre;
-};
 
 /* Perform elimination for the basic-block B during the domwalk.  */
 
@@ -4189,7 +4207,7 @@ edge
 eliminate_dom_walker::before_dom_children (basic_block b)
 {
   /* Mark new bb.  */
-  el_avail_stack.safe_push (NULL_TREE);
+  avail_stack.safe_push (NULL_TREE);
 
   /* Skip unreachable blocks marked unreachable during the SCCVN domwalk.  */
   edge_iterator ei;
@@ -4236,7 +4254,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  if (may_propagate_copy (res, sprime))
 	    {
 	      /* Mark the PHI for removal.  */
-	      el_to_remove.safe_push (phi);
+	      to_remove.safe_push (phi);
 	      gsi_next (&gsi);
 	      continue;
 	    }
@@ -4378,7 +4396,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      if (may_propagate_copy (lhs, sprime))
 		{
 		  /* Mark it for removal.  */
-		  el_to_remove.safe_push (stmt);
+		  to_remove.safe_push (stmt);
 
 		  /* ???  Don't count copy/constant propagations.  */
 		  if (gimple_assign_single_p (stmt)
@@ -4493,7 +4511,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		    }
 
 		  /* Queue stmt for removal.  */
-		  el_to_remove.safe_push (stmt);
+		  to_remove.safe_push (stmt);
 		  continue;
 		}
 	    }
@@ -4601,7 +4619,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	  stmt = gsi_stmt (gsi);
 	  /* In case we folded the stmt away schedule the NOP for removal.  */
 	  if (gimple_nop_p (stmt))
-	    el_to_remove.safe_push (stmt);
+	    to_remove.safe_push (stmt);
 	}
 
       /* Visit indirect calls and turn them into direct calls if
@@ -4668,7 +4686,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	     is needed to fix up the noreturn call.  */
 	  if (!was_noreturn
 	      && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
-	    el_to_fixup.safe_push  (stmt);
+	    to_fixup.safe_push  (stmt);
 	  /* When changing a condition or switch into one we know what
 	     edge will be executed, schedule a cfg cleanup.  */
 	  if ((gimple_code (stmt) == GIMPLE_COND
@@ -4734,14 +4752,14 @@ void
 eliminate_dom_walker::after_dom_children (basic_block)
 {
   tree entry;
-  while ((entry = el_avail_stack.pop ()) != NULL_TREE)
+  while ((entry = avail_stack.pop ()) != NULL_TREE)
     {
       tree valnum = VN_INFO (entry)->valnum;
-      tree old = el_avail[SSA_NAME_VERSION (valnum)];
+      tree old = avail[SSA_NAME_VERSION (valnum)];
       if (old == entry)
-	el_avail[SSA_NAME_VERSION (valnum)] = NULL_TREE;
+	avail[SSA_NAME_VERSION (valnum)] = NULL_TREE;
       else
-	el_avail[SSA_NAME_VERSION (valnum)] = entry;
+	avail[SSA_NAME_VERSION (valnum)] = entry;
     }
 }
 
@@ -4750,40 +4768,18 @@ eliminate_dom_walker::after_dom_children (basic_block)
 static unsigned int
 eliminate (bool do_pre)
 {
-  need_eh_cleanup = BITMAP_ALLOC (NULL);
-  need_ab_cleanup = BITMAP_ALLOC (NULL);
+  eliminate_dom_walker el (CDI_DOMINATORS, do_pre);
+  el.avail.reserve (num_ssa_names);
 
-  el_to_remove.create (0);
-  el_to_fixup.create (0);
-  el_todo = 0;
-  el_avail.create (num_ssa_names);
-  el_avail_stack.create (0);
-
-  eliminate_dom_walker (CDI_DOMINATORS,
-			do_pre).walk (cfun->cfg->x_entry_block_ptr);
-
-  el_avail.release ();
-  el_avail_stack.release ();
-
-  return el_todo;
-}
-
-/* Perform CFG cleanups made necessary by elimination.  */
-
-static unsigned 
-fini_eliminate (void)
-{
-  gimple_stmt_iterator gsi;
-  gimple *stmt;
-  unsigned todo = 0;
+  el.walk (cfun->cfg->x_entry_block_ptr);
 
   /* We cannot remove stmts during BB walk, especially not release SSA
      names there as this confuses the VN machinery.  The stmts ending
-     up in el_to_remove are either stores or simple copies.
+     up in to_remove are either stores or simple copies.
      Remove stmts in reverse order to make debug stmt creation possible.  */
-  while (!el_to_remove.is_empty ())
+  while (!el.to_remove.is_empty ())
     {
-      stmt = el_to_remove.pop ();
+      gimple *stmt = el.to_remove.pop ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -4791,7 +4787,7 @@ fini_eliminate (void)
 	  print_gimple_stmt (dump_file, stmt, 0, 0);
 	}
 
-      gsi = gsi_for_stmt (stmt);
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
       if (gimple_code (stmt) == GIMPLE_PHI)
 	remove_phi_node (&gsi, true);
       else
@@ -4799,24 +4795,23 @@ fini_eliminate (void)
 	  basic_block bb = gimple_bb (stmt);
 	  unlink_stmt_vdef (stmt);
 	  if (gsi_remove (&gsi, true))
-	    bitmap_set_bit (need_eh_cleanup, bb->index);
+	    bitmap_set_bit (el.need_eh_cleanup, bb->index);
 	  if (is_gimple_call (stmt) && stmt_can_make_abnormal_goto (stmt))
-	    bitmap_set_bit (need_ab_cleanup, bb->index);
+	    bitmap_set_bit (el.need_ab_cleanup, bb->index);
 	  release_defs (stmt);
 	}
 
       /* Removing a stmt may expose a forwarder block.  */
-      todo |= TODO_cleanup_cfg;
+      el.el_todo |= TODO_cleanup_cfg;
     }
-  el_to_remove.release ();
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the dominator walk.  Do this
      in reverse order so we don't inadvertedly remove a stmt we want to
      fixup by visiting a dominating now noreturn call first.  */
-  while (!el_to_fixup.is_empty ())
+  while (!el.to_fixup.is_empty ())
     {
-      stmt = el_to_fixup.pop ();
+      gimple *stmt = el.to_fixup.pop ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -4825,25 +4820,21 @@ fini_eliminate (void)
 	}
 
       if (fixup_noreturn_call (stmt))
-	todo |= TODO_cleanup_cfg;
+	el.el_todo |= TODO_cleanup_cfg;
     }
-  el_to_fixup.release ();
 
-  bool do_eh_cleanup = !bitmap_empty_p (need_eh_cleanup);
-  bool do_ab_cleanup = !bitmap_empty_p (need_ab_cleanup);
+  bool do_eh_cleanup = !bitmap_empty_p (el.need_eh_cleanup);
+  bool do_ab_cleanup = !bitmap_empty_p (el.need_ab_cleanup);
 
   if (do_eh_cleanup)
-    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
+    gimple_purge_all_dead_eh_edges (el.need_eh_cleanup);
 
   if (do_ab_cleanup)
-    gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
-
-  BITMAP_FREE (need_eh_cleanup);
-  BITMAP_FREE (need_ab_cleanup);
+    gimple_purge_all_dead_abnormal_call_edges (el.need_ab_cleanup);
 
   if (do_eh_cleanup || do_ab_cleanup)
-    todo |= TODO_cleanup_cfg;
-  return todo;
+    el.el_todo |= TODO_cleanup_cfg;
+  return el.el_todo;
 }
 
 /* Cheap DCE of a known set of possibly dead stmts.
@@ -5043,7 +5034,6 @@ pass_pre::execute (function *fun)
   clear_expression_ids ();
 
   scev_finalize ();
-  todo |= fini_eliminate ();
   remove_dead_inserted_code ();
   fini_pre ();
   loop_optimizer_finalize ();
@@ -5120,8 +5110,6 @@ pass_fre::execute (function *fun)
 
   /* Remove all the redundant expressions.  */
   todo |= eliminate (false);
-
-  todo |= fini_eliminate ();
 
   scc_vn_restore_ssa_info ();
   free_scc_vn ();
