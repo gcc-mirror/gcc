@@ -6204,7 +6204,7 @@ gfc_match_type_is (void)
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Ssyntax error in TYPE IS specification at %C");
+  gfc_error ("Syntax error in TYPE IS specification at %C");
 
 cleanup:
   if (c != NULL)
