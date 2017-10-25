@@ -365,6 +365,8 @@ path::lexically_normal() const
   - As long as any appear, remove a non-dot-dot filename immediately followed
     by a directory-separator and a dot-dot filename, along with any immediately
     following directory-separator.
+  - If there is a root-directory, remove all dot-dot filenames and any
+    directory-separators immediately following them.
   - If the last filename is dot-dot, remove any trailing directory-separator.
   - If the path is empty, add a dot.
   */
@@ -388,7 +390,7 @@ path::lexically_normal() const
 	{
 	  if (ret.has_filename() && !is_dotdot(ret.filename()))
 	    ret.remove_filename();
-	  else
+	  else if (ret.has_filename() || !ret.has_root_directory())
 	    ret /= p;
 	}
       else if (is_dot(p))

@@ -19,20 +19,21 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.5 path modifiers [path.modifiers]
+// 30.10.7.4.5 path modifiers [fs.path.modifiers]
 
 #include <filesystem>
 #include <testsuite_fs.h>
 #include <testsuite_hooks.h>
 
 using std::filesystem::path;
+using __gnu_test::compare_paths;
 
 void
 test01()
 {
-  VERIFY( path("/foo.txt").replace_extension("cpp") == "/foo.cpp" );
-  VERIFY( path("/foo.txt").replace_extension(".cpp") == "/foo.cpp" );
-  VERIFY( path("/").replace_extension("bar") == "/.bar" );
+  compare_paths( path("/foo.txt").replace_extension("cpp"), "/foo.cpp" );
+  compare_paths( path("/foo.txt").replace_extension(".cpp"), "/foo.cpp" );
+  compare_paths( path("/").replace_extension("bar"), "/.bar" );
 }
 
 void
@@ -41,7 +42,7 @@ test02()
   for (const path& p : __gnu_test::test_paths)
   {
     path p2 = p;
-    VERIFY(p2.replace_extension(p2.extension()) == p);
+    compare_paths( p2.replace_extension(p2.extension()), p );
   }
 }
 
