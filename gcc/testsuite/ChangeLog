@@ -1,3 +1,8 @@
+2017-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82436
+	* gcc.dg/torture/pr82436-2.c: New testcase.
+
 2017-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71820
