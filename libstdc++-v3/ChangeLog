@@ -1,5 +1,10 @@
 2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79283
+	* src/filesystem/ops.cc (read_symlink): Handle st_size being zero.
+	* src/filesystem/std-ops.cc (read_symlink): Likewise.
+	(do_copy_file) [!NEED_DO_COPY_FILE]: Avoid multiple definitions.
+
 	* src/filesystem/std-path.cc (path::lexically_normal): Add missing
 	step to algorithm, for removing dot-dot elements after root-directory.
 	* testsuite/27_io/filesystem/operations/canonical.cc: Use
