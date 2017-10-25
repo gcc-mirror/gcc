@@ -585,7 +585,6 @@ make_conv_op_name (tree type)
 
       /* Just in case something managed to bind.  */
       IDENTIFIER_BINDING (identifier) = NULL;
-      IDENTIFIER_LABEL_VALUE (identifier) = NULL_TREE;
 
       /* Hang TYPE off the identifier so it can be found easily later
 	 when performing conversions.  */
