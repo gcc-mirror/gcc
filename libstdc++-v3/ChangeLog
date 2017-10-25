@@ -1,5 +1,34 @@
 2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/std-path.cc (path::lexically_normal): Add missing
+	step to algorithm, for removing dot-dot elements after root-directory.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/operations/proximate.cc: Likewise.
+	* testsuite/27_io/filesystem/path/append/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Fix comment.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Use
+	compare_paths for more exhaustive checks. Add extra testcases.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Remove
+	unused header.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc: Fix
+	comment.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h (compare_paths): Also compare native
+	strings.
+
 	PR libstdc++/82706
 	* testsuite/27_io/filesystem/operations/permissions.cc: Fix test.
 

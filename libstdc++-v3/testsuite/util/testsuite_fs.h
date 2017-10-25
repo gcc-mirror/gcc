@@ -47,6 +47,7 @@ namespace __gnu_test
   compare_paths(const test_fs::path& p1,
 		const test_fs::path& p2)
   {
+    PATH_CHK( p1, p2, native );
     PATH_CHK( p1, p2, string );
     PATH_CHK( p1, p2, empty );
     PATH_CHK( p1, p2, has_root_path );
