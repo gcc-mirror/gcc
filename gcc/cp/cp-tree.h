@@ -561,7 +561,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 struct GTY(()) lang_identifier {
   struct c_common_identifier c_common;
   cxx_binding *bindings;
-  tree label_value;
 };
 
 /* Return a typed pointer version of T if it designates a
@@ -995,11 +994,6 @@ enum GTY(()) abstract_class_use {
 #define REAL_IDENTIFIER_TYPE_VALUE(NODE) TREE_TYPE (NODE)
 #define SET_IDENTIFIER_TYPE_VALUE(NODE,TYPE) (TREE_TYPE (NODE) = (TYPE))
 #define IDENTIFIER_HAS_TYPE_VALUE(NODE) (IDENTIFIER_TYPE_VALUE (NODE) ? 1 : 0)
-
-#define IDENTIFIER_LABEL_VALUE(NODE) \
-  (LANG_IDENTIFIER_CAST (NODE)->label_value)
-#define SET_IDENTIFIER_LABEL_VALUE(NODE, VALUE)   \
-  IDENTIFIER_LABEL_VALUE (NODE) = (VALUE)
 
 /* Kinds of identifiers.  Values are carefully chosen.  */
 enum cp_identifier_kind {
@@ -1663,12 +1657,22 @@ struct cxx_int_tree_map_hasher : ggc_ptr_hash<cxx_int_tree_map>
   static bool equal (cxx_int_tree_map *, cxx_int_tree_map *);
 };
 
-struct named_label_entry;
+struct named_label_entry; /* Defined in decl.c.  */
 
-struct named_label_hasher : ggc_ptr_hash<named_label_entry>
+struct named_label_hash : ggc_remove <named_label_entry *>
 {
-  static hashval_t hash (named_label_entry *);
-  static bool equal (named_label_entry *, named_label_entry *);
+  typedef named_label_entry *value_type;
+  typedef tree compare_type; /* An identifier.  */
+
+  inline static hashval_t hash (value_type);
+  inline static bool equal (const value_type, compare_type);
+
+  inline static void mark_empty (value_type &p) {p = NULL;}
+  inline static bool is_empty (value_type p) {return !p;}
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  inline static bool is_deleted (value_type) { return false; }
+  inline static void mark_deleted (value_type) { gcc_unreachable (); }
 };
 
 /* Global state pertinent to the current function.  */
@@ -1697,7 +1701,8 @@ struct GTY(()) language_function {
 
   BOOL_BITFIELD invalid_constexpr : 1;
 
-  hash_table<named_label_hasher> *x_named_labels;
+  hash_table<named_label_hash> *x_named_labels;
+
   cp_binding_level *bindings;
   vec<tree, va_gc> *x_local_names;
   /* Tracking possibly infinite loops.  This is a vec<tree> only because
@@ -6056,6 +6061,7 @@ extern int decls_match				(tree, tree);
 extern bool maybe_version_functions		(tree, tree);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
+extern tree lookup_label			(tree);
 extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);
 extern bool check_omp_return			(void);

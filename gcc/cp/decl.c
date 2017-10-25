@@ -189,27 +189,33 @@ struct GTY((chain_next ("%h.next"))) named_label_use_entry {
    function, and so we can check the validity of jumps to these labels.  */
 
 struct GTY((for_user)) named_label_entry {
-  /* The decl itself.  */
-  tree label_decl;
+
+  tree name;  /* Name of decl. */
+
+  tree label_decl; /* LABEL_DECL, unless deleted local label. */
+
+  named_label_entry *outer; /* Outer shadowed chain.  */
 
   /* The binding level to which the label is *currently* attached.
      This is initially set to the binding level in which the label
      is defined, but is modified as scopes are closed.  */
   cp_binding_level *binding_level;
+
   /* The head of the names list that was current when the label was
      defined, or the inner scope popped.  These are the decls that will
      be skipped when jumping to the label.  */
   tree names_in_scope;
+
   /* A vector of all decls from all binding levels that would be
      crossed by a backward branch to the label.  */
   vec<tree, va_gc> *bad_decls;
 
   /* A list of uses of the label, before the label is defined.  */
-  struct named_label_use_entry *uses;
+  named_label_use_entry *uses;
 
   /* The following bits are set after the label is defined, and are
-     updated as scopes are popped.  They indicate that a backward jump
-     to the label will illegally enter a scope of the given flavor.  */
+     updated as scopes are popped.  They indicate that a jump to the
+     label will illegally enter a scope of the given flavor.  */
   bool in_try_scope;
   bool in_catch_scope;
   bool in_omp_scope;
@@ -347,7 +353,7 @@ finish_scope (void)
    in a valid manner, and issue any appropriate warnings or errors.  */
 
 static void
-pop_label (tree label, tree old_value)
+check_label_used (tree label)
 {
   if (!processing_template_decl)
     {
@@ -364,32 +370,6 @@ pop_label (tree label, tree old_value)
       else 
 	warn_for_unused_label (label);
     }
-
-  SET_IDENTIFIER_LABEL_VALUE (DECL_NAME (label), old_value);
-}
-
-/* Push all named labels into a vector, so that we can sort it on DECL_UID
-   to avoid code generation differences.  */
-
-int
-note_label (named_label_entry **slot, vec<named_label_entry **> &labels)
-{
-  labels.quick_push (slot);
-  return 1;
-}
-
-/* Helper function to sort named label entries in a vector by DECL_UID.  */
-
-static int
-sort_labels (const void *a, const void *b)
-{
-  named_label_entry **slot1 = *(named_label_entry **const *) a;
-  named_label_entry **slot2 = *(named_label_entry **const *) b;
-  if (DECL_UID ((*slot1)->label_decl) < DECL_UID ((*slot2)->label_decl))
-    return -1;
-  if (DECL_UID ((*slot1)->label_decl) > DECL_UID ((*slot2)->label_decl))
-    return 1;
-  return 0;
 }
 
 /* At the end of a function, all labels declared within the function
@@ -399,46 +379,49 @@ sort_labels (const void *a, const void *b)
 static void
 pop_labels (tree block)
 {
-  if (named_labels)
+  if (!named_labels)
+    return;
+
+  hash_table<named_label_hash>::iterator end (named_labels->end ());
+  for (hash_table<named_label_hash>::iterator iter
+	 (named_labels->begin ()); iter != end; ++iter)
     {
-      auto_vec<named_label_entry **, 32> labels;
-      named_label_entry **slot;
-      unsigned int i;
+      named_label_entry *ent = *iter;
 
-      /* Push all the labels into a vector and sort them by DECL_UID,
-	 so that gaps between DECL_UIDs don't affect code generation.  */
-      labels.reserve_exact (named_labels->elements ());
-      named_labels->traverse<vec<named_label_entry **> &, note_label> (labels);
-      labels.qsort (sort_labels);
-      FOR_EACH_VEC_ELT (labels, i, slot)
+      gcc_checking_assert (!ent->outer);
+      if (ent->label_decl)
 	{
-	  struct named_label_entry *ent = *slot;
-
-	  pop_label (ent->label_decl, NULL_TREE);
+	  check_label_used (ent->label_decl);
 
 	  /* Put the labels into the "variables" of the top-level block,
 	     so debugger can see them.  */
 	  DECL_CHAIN (ent->label_decl) = BLOCK_VARS (block);
 	  BLOCK_VARS (block) = ent->label_decl;
-
-	  named_labels->clear_slot (slot);
 	}
-      named_labels = NULL;
+      ggc_free (ent);
     }
+
+  named_labels = NULL;
 }
 
 /* At the end of a block with local labels, restore the outer definition.  */
 
 static void
-pop_local_label (tree label, tree old_value)
+pop_local_label (tree id, tree label)
 {
-  struct named_label_entry dummy;
+  check_label_used (label);
+  named_label_entry **slot = named_labels->find_slot_with_hash
+    (id, IDENTIFIER_HASH_VALUE (id), NO_INSERT);
+  named_label_entry *ent = *slot;
 
-  pop_label (label, old_value);
-
-  dummy.label_decl = label;
-  named_label_entry **slot = named_labels->find_slot (&dummy, NO_INSERT);
-  named_labels->clear_slot (slot);
+  if (ent->outer)
+    ent = ent->outer;
+  else
+    {
+      ent = ggc_cleared_alloc<named_label_entry> ();
+      ent->name = id;
+    }
+  *slot = ent;
 }
 
 /* The following two routines are used to interface to Objective-C++.
@@ -579,7 +562,6 @@ poplevel (int keep, int reverse, int functionbody)
   int leaving_for_scope;
   scope_kind kind;
   unsigned ix;
-  cp_label_binding *label_bind;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
  restart:
@@ -613,11 +595,12 @@ poplevel (int keep, int reverse, int functionbody)
      Usually current_binding_level->names is in reverse order.
      But parameter decls were previously put in forward order.  */
 
+  decls = current_binding_level->names;
   if (reverse)
-    current_binding_level->names
-      = decls = nreverse (current_binding_level->names);
-  else
-    decls = current_binding_level->names;
+    {
+      decls = nreverse (decls);
+      current_binding_level->names = decls;
+    }
 
   /* If there were any declarations or structure tags in that level,
      or if this level is a function body,
@@ -770,7 +753,10 @@ poplevel (int keep, int reverse, int functionbody)
 	    }
 	}
       /* Remove the binding.  */
-      pop_local_binding (name, decl);
+      if (TREE_CODE (decl) == LABEL_DECL)
+	pop_local_label (name, decl);
+      else
+	pop_local_binding (name, decl);
     }
 
   /* Remove declarations for any `for' variables from inner scopes
@@ -783,11 +769,6 @@ poplevel (int keep, int reverse, int functionbody)
   for (link = current_binding_level->type_shadowed;
        link; link = TREE_CHAIN (link))
     SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link), TREE_VALUE (link));
-
-  /* Restore the IDENTIFIER_LABEL_VALUEs for local labels.  */
-  FOR_EACH_VEC_SAFE_ELT_REVERSE (current_binding_level->shadowed_labels,
-			         ix, label_bind)
-    pop_local_label (label_bind->label, label_bind->prev_value);
 
   /* There may be OVERLOADs (wrapped in TREE_LISTs) on the BLOCK_VARs
      list if a `using' declaration put them there.  The debugging
@@ -2939,81 +2920,83 @@ redeclaration_error_message (tree newdecl, tree olddecl)
     }
 }
 
+
 /* Hash and equality functions for the named_label table.  */
 
 hashval_t
-named_label_hasher::hash (named_label_entry *ent)
+named_label_hash::hash (const value_type entry)
 {
-  return DECL_UID (ent->label_decl);
+  return IDENTIFIER_HASH_VALUE (entry->name);
 }
 
 bool
-named_label_hasher::equal (named_label_entry *a, named_label_entry *b)
+named_label_hash::equal (const value_type entry, compare_type name)
 {
-  return a->label_decl == b->label_decl;
-}
-
-/* Create a new label, named ID.  */
-
-static tree
-make_label_decl (tree id, int local_p)
-{
-  struct named_label_entry *ent;
-  tree decl;
-
-  decl = build_decl (input_location, LABEL_DECL, id, void_type_node);
-
-  DECL_CONTEXT (decl) = current_function_decl;
-  SET_DECL_MODE (decl, VOIDmode);
-  C_DECLARED_LABEL_FLAG (decl) = local_p;
-
-  /* Say where one reference is to the label, for the sake of the
-     error if it is not defined.  */
-  DECL_SOURCE_LOCATION (decl) = input_location;
-
-  /* Record the fact that this identifier is bound to this label.  */
-  SET_IDENTIFIER_LABEL_VALUE (id, decl);
-
-  /* Create the label htab for the function on demand.  */
-  if (!named_labels)
-    named_labels = hash_table<named_label_hasher>::create_ggc (13);
-
-  /* Record this label on the list of labels used in this function.
-     We do this before calling make_label_decl so that we get the
-     IDENTIFIER_LABEL_VALUE before the new label is declared.  */
-  ent = ggc_cleared_alloc<named_label_entry> ();
-  ent->label_decl = decl;
-
-  named_label_entry **slot = named_labels->find_slot (ent, INSERT);
-  gcc_assert (*slot == NULL);
-  *slot = ent;
-
-  return decl;
+  return name == entry->name;
 }
 
 /* Look for a label named ID in the current function.  If one cannot
-   be found, create one.  (We keep track of used, but undefined,
-   labels, and complain about them at the end of a function.)  */
+   be found, create one.  Return the named_label_entry, or NULL on
+   failure.  */
 
-static tree
-lookup_label_1 (tree id)
+static named_label_entry *
+lookup_label_1 (tree id, bool making_local_p)
 {
-  tree decl;
-
   /* You can't use labels at global scope.  */
   if (current_function_decl == NULL_TREE)
     {
       error ("label %qE referenced outside of any function", id);
-      return NULL_TREE;
+      return NULL;
     }
 
-  /* See if we've already got this label.  */
-  decl = IDENTIFIER_LABEL_VALUE (id);
-  if (decl != NULL_TREE && DECL_CONTEXT (decl) == current_function_decl)
-    return decl;
+  if (!named_labels)
+    named_labels = hash_table<named_label_hash>::create_ggc (13);
 
-  decl = make_label_decl (id, /*local_p=*/0);
-  return decl;
+  hashval_t hash = IDENTIFIER_HASH_VALUE (id);
+  named_label_entry **slot
+    = named_labels->find_slot_with_hash (id, hash, INSERT);
+  named_label_entry *old = *slot;
+  
+  if (old && old->label_decl)
+    {
+      if (!making_local_p)
+	return old;
+
+      if (old->binding_level == current_binding_level)
+	{
+	  error ("local label %qE conflicts with existing label", id);
+	  inform (DECL_SOURCE_LOCATION (old->label_decl), "previous label");
+	  return NULL;
+	}
+    }
+
+  /* We are making a new decl, create or reuse the named_label_entry  */
+  named_label_entry *ent = NULL;
+  if (old && !old->label_decl)
+    ent = old;
+  else
+    {
+      ent = ggc_cleared_alloc<named_label_entry> ();
+      ent->name = id;
+      ent->outer = old;
+      *slot = ent;
+    }
+
+  /* Now create the LABEL_DECL.  */
+  tree decl = build_decl (input_location, LABEL_DECL, id, void_type_node);
+
+  DECL_CONTEXT (decl) = current_function_decl;
+  SET_DECL_MODE (decl, VOIDmode);
+  if (making_local_p)
+    {
+      C_DECLARED_LABEL_FLAG (decl) = true;
+      DECL_CHAIN (decl) = current_binding_level->names;
+      current_binding_level->names = decl;
+    }
+
+  ent->label_decl = decl;
+
+  return ent;
 }
 
 /* Wrapper for lookup_label_1.  */
@@ -3021,30 +3004,19 @@ lookup_label_1 (tree id)
 tree
 lookup_label (tree id)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_label_1 (id);
+  named_label_entry *ent = lookup_label_1 (id, false);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
+  return ent ? ent->label_decl : NULL_TREE;
 }
-
-/* Declare a local label named ID.  */
 
 tree
 declare_local_label (tree id)
 {
-  tree decl;
-  cp_label_binding bind;
-
-  /* Add a new entry to the SHADOWED_LABELS list so that when we leave
-     this scope we can restore the old value of IDENTIFIER_TYPE_VALUE.  */
-  bind.prev_value = IDENTIFIER_LABEL_VALUE (id);
-
-  decl = make_label_decl (id, /*local_p=*/1);
-  bind.label = decl;
-  vec_safe_push (current_binding_level->shadowed_labels, bind);
-
-  return decl;
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  named_label_entry *ent = lookup_label_1 (id, true);
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return ent ? ent->label_decl : NULL_TREE;
 }
 
 /* Returns nonzero if it is ill-formed to jump past the declaration of
@@ -3083,8 +3055,9 @@ identify_goto (tree decl, location_t loc, const location_t *locus,
 	       diagnostic_t diag_kind)
 {
   bool complained
-    = (decl ? emit_diagnostic (diag_kind, loc, 0, "jump to label %qD", decl)
-	    : emit_diagnostic (diag_kind, loc, 0, "jump to case label"));
+    = emit_diagnostic (diag_kind, loc, 0,
+		       decl ? "jump to label %qD" : "jump to case label",
+		       decl);
   if (complained && locus)
     inform (*locus, "  from here");
   return complained;
@@ -3139,68 +3112,62 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 			"  crosses initialization of %q#D", new_decls);
 	      else
 		inform (DECL_SOURCE_LOCATION (new_decls),
-			"  enters scope of %q#D which has "
+			"  enters scope of %q#D, which has "
 			"non-trivial destructor", new_decls);
 	    }
 	}
 
       if (b == level)
 	break;
-      if ((b->kind == sk_try || b->kind == sk_catch) && !saw_eh)
+
+      const char *inf = NULL;
+      location_t loc = input_location;
+      switch (b->kind)
 	{
-	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
-	  if (complained)
-	    {
-	      if (b->kind == sk_try)
-		inform (input_location, "  enters try block");
-	      else
-		inform (input_location, "  enters catch block");
-	    }
+	case sk_try:
+	  if (!saw_eh)
+	    inf = "enters try block";
 	  saw_eh = true;
-	}
-      if (b->kind == sk_omp && !saw_omp)
-	{
-	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
-	  if (complained)
-	    inform (input_location, "  enters OpenMP structured block");
+	  break;
+
+	case sk_catch:
+	  if (!saw_eh)
+	    inf = "enters catch block";
+	  saw_eh = true;
+	  break;
+
+	case sk_omp:
+	  if (!saw_omp)
+	    inf = "enters OpenMP structured block";
 	  saw_omp = true;
-	}
-      if (b->kind == sk_transaction && !saw_tm)
-	{
-	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
-	  if (complained)
-	    inform (input_location,
-		    "  enters synchronized or atomic statement");
+	  break;
+
+	case sk_transaction:
+	  if (!saw_tm)
+	    inf = "enters synchronized or atomic statement";
 	  saw_tm = true;
+	  break;
+
+	case sk_block:
+	  if (!saw_cxif && level_for_constexpr_if (b->level_chain))
+	    {
+	      inf = "enters constexpr if statement";
+	      loc = EXPR_LOCATION (b->level_chain->this_entity);
+	      saw_cxif = true;
+	    }
+	  break;
+
+	default:
+	  break;
 	}
-      if (!saw_cxif && b->kind == sk_block
-	  && level_for_constexpr_if (b->level_chain))
+
+      if (inf)
 	{
 	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
+	    complained = identify_goto (decl, input_location, locus, DK_ERROR);
+	  identified = 2;
 	  if (complained)
-	    inform (EXPR_LOCATION (b->level_chain->this_entity),
-		    "  enters constexpr if statement");
-	  saw_cxif = true;
+	    inform (loc, "  %s", inf);
 	}
     }
 
@@ -3227,12 +3194,6 @@ check_switch_goto (cp_binding_level* level)
 void
 check_goto (tree decl)
 {
-  struct named_label_entry *ent, dummy;
-  bool saw_catch = false, complained = false;
-  int identified = 0;
-  tree bad;
-  unsigned ix;
-
   /* We can't know where a computed goto is jumping.
      So we assume that it's OK.  */
   if (TREE_CODE (decl) != LABEL_DECL)
@@ -3243,22 +3204,22 @@ check_goto (tree decl)
   if (decl == cdtor_label)
     return;
 
-  dummy.label_decl = decl;
-  ent = named_labels->find (&dummy);
-  gcc_assert (ent != NULL);
+  hashval_t hash = IDENTIFIER_HASH_VALUE (DECL_NAME (decl));
+  named_label_entry **slot
+    = named_labels->find_slot_with_hash (DECL_NAME (decl), hash, NO_INSERT);
+  named_label_entry *ent = *slot;
 
   /* If the label hasn't been defined yet, defer checking.  */
   if (! DECL_INITIAL (decl))
     {
-      struct named_label_use_entry *new_use;
-
       /* Don't bother creating another use if the last goto had the
 	 same data, and will therefore create the same set of errors.  */
       if (ent->uses
 	  && ent->uses->names_in_scope == current_binding_level->names)
 	return;
 
-      new_use = ggc_alloc<named_label_use_entry> ();
+      named_label_use_entry *new_use
+	= ggc_alloc<named_label_use_entry> ();
       new_use->binding_level = current_binding_level;
       new_use->names_in_scope = current_binding_level->names;
       new_use->o_goto_locus = input_location;
@@ -3268,6 +3229,11 @@ check_goto (tree decl)
       ent->uses = new_use;
       return;
     }
+
+  bool saw_catch = false, complained = false;
+  int identified = 0;
+  tree bad;
+  unsigned ix;
 
   if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
       || ent->in_constexpr_if
@@ -3329,27 +3295,24 @@ check_goto (tree decl)
 	inform (input_location, "  enters OpenMP structured block");
     }
   else if (flag_openmp)
-    {
-      cp_binding_level *b;
-      for (b = current_binding_level; b ; b = b->level_chain)
-	{
-	  if (b == ent->binding_level)
+    for (cp_binding_level *b = current_binding_level; b ; b = b->level_chain)
+      {
+	if (b == ent->binding_level)
+	  break;
+	if (b->kind == sk_omp)
+	  {
+	    if (identified < 2)
+	      {
+		complained = identify_goto (decl,
+					    DECL_SOURCE_LOCATION (decl),
+					    &input_location, DK_ERROR);
+		identified = 2;
+	      }
+	    if (complained)
+	      inform (input_location, "  exits OpenMP structured block");
 	    break;
-	  if (b->kind == sk_omp)
-	    {
-	      if (identified < 2)
-		{
-		  complained = identify_goto (decl,
-					      DECL_SOURCE_LOCATION (decl),
-					      &input_location, DK_ERROR);
-		  identified = 2;
-		}
-	      if (complained)
-		inform (input_location, "  exits OpenMP structured block");
-	      break;
-	    }
-	}
-    }
+	  }
+      }
 }
 
 /* Check that a return is ok wrt OpenMP structured blocks.
@@ -3358,8 +3321,7 @@ check_goto (tree decl)
 bool
 check_omp_return (void)
 {
-  cp_binding_level *b;
-  for (b = current_binding_level; b ; b = b->level_chain)
+  for (cp_binding_level *b = current_binding_level; b ; b = b->level_chain)
     if (b->kind == sk_omp)
       {
 	error ("invalid exit from OpenMP structured block");
@@ -3376,25 +3338,15 @@ check_omp_return (void)
 static tree
 define_label_1 (location_t location, tree name)
 {
-  struct named_label_entry *ent, dummy;
-  cp_binding_level *p;
-  tree decl;
-
-  decl = lookup_label (name);
-
-  dummy.label_decl = decl;
-  ent = named_labels->find (&dummy);
-  gcc_assert (ent != NULL);
-
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
-  for (p = current_binding_level;
+  for (cp_binding_level *p = current_binding_level;
        p->kind != sk_function_parms;
        p = p->level_chain)
     p->more_cleanups_ok = 0;
 
-  if (name == get_identifier ("wchar_t"))
-    permerror (input_location, "label named wchar_t");
+  named_label_entry *ent = lookup_label_1 (name, false);
+  tree decl = ent->label_decl;
 
   if (DECL_INITIAL (decl) != NULL_TREE)
     {
@@ -3403,8 +3355,6 @@ define_label_1 (location_t location, tree name)
     }
   else
     {
-      struct named_label_use_entry *use;
-
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
       /* Say where in the source.  */
@@ -3413,7 +3363,7 @@ define_label_1 (location_t location, tree name)
       ent->binding_level = current_binding_level;
       ent->names_in_scope = current_binding_level->names;
 
-      for (use = ent->uses; use ; use = use->next)
+      for (named_label_use_entry *use = ent->uses; use; use = use->next)
 	check_previous_goto (decl, use);
       ent->uses = NULL;
     }
@@ -3426,9 +3376,8 @@ define_label_1 (location_t location, tree name)
 tree
 define_label (location_t location, tree name)
 {
-  tree ret;
   bool running = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = define_label_1 (location, name);
+  tree ret = define_label_1 (location, name);
   timevar_cond_stop (TV_NAME_LOOKUP, running);
   return ret;
 }
