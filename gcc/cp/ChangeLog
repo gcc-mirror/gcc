@@ -1,3 +1,9 @@
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* decl.c (duplicate_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82466
