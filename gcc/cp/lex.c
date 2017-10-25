@@ -77,17 +77,23 @@ cxx_finish (void)
   c_common_finish ();
 }
 
+ooc_info_t ooc_info[2][int (OOC_MAX)] = 
+  {
+    {
+      {NULL_TREE, NULL, NULL, 0, 0, 0, ERROR_MARK},
+#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) \
+      {NULL_TREE, NAME, MANGLING, ARITY, KIND, OOC_##CODE, CODE},
+#define OPERATOR_TRANSITION }, {			\
+      {NULL_TREE, NULL, NULL, 0, 0, 0, ERROR_MARK},
+#include "operators.def"
+    }
+  };
+unsigned char ooc_mapping[int (MAX_TREE_CODES)];
+
 /* A mapping from tree codes to operator name information.  */
 operator_name_info_t operator_name_info[(int) MAX_TREE_CODES];
 /* Similar, but for assignment operators.  */
 operator_name_info_t assignment_operator_name_info[(int) MAX_TREE_CODES];
-
-/* Initialize data structures that keep track of operator names.  */
-
-#define DEF_OPERATOR(NAME, C, M, AR, AP) \
- CONSTRAINT (C, sizeof "operator " + sizeof NAME <= 256);
-#include "operators.def"
-#undef DEF_OPERATOR
 
 /* Get the name of the kind of identifier T.  */
 
@@ -108,6 +114,15 @@ get_identifier_kind_name (tree id)
   return names[kind];
 }
 
+static unsigned u (tree id)
+{
+  unsigned kind = 0;
+  kind |= IDENTIFIER_KIND_BIT_2 (id) << 2;
+  kind |= IDENTIFIER_KIND_BIT_1 (id) << 1;
+  kind |= IDENTIFIER_KIND_BIT_0 (id) << 0;
+  return kind;
+}
+
 /* Set the identifier kind, which we expect to currently be zero.  */
 
 void
@@ -122,8 +137,60 @@ set_identifier_kind (tree id, cp_identifier_kind kind)
 }
 
 static void
+set_operator_ident (ooc_info_t *ptr)
+{
+  char buffer[32];
+  size_t len = snprintf (buffer, sizeof (buffer), "operator%s%s",
+			 &" "[ptr->name[0] && ptr->name[0] != '_'
+			      && !ISALPHA (ptr->name[0])],
+			 ptr->name);
+  gcc_checking_assert (len < sizeof (buffer));
+  tree ident = get_identifier_with_length (buffer, len);
+  ptr->identifier = ident;
+  if (!IDENTIFIER_ANY_OP_P (ident) || ptr->kind != cik_simple_op)
+    set_identifier_kind (ident, cp_identifier_kind (ptr->kind));
+}
+
+/* Initialize data structures that keep track of operator names.  */
+
+static void
 init_operators (void)
 {
+#if 1 // NEW CODE
+  for (unsigned ix = OOC_MAX; ix--;)
+    {
+      ooc_info_t *op_ptr = &ooc_info[0][ix];
+
+      if (op_ptr->name)
+	set_operator_ident (op_ptr);
+      gcc_checking_assert (unsigned (op_ptr->code) < MAX_TREE_CODES);
+      gcc_checking_assert (!ooc_mapping[unsigned (op_ptr->code)]);
+      ooc_mapping[unsigned (op_ptr->code)] = op_ptr->ooc;
+
+      ooc_info_t *as_ptr = &ooc_info[1][ix];
+      if (as_ptr->name)
+	{
+	  /* These will be placed at the start of the array, move to
+	     the correct slot and initialize.  */
+	  if (as_ptr->ooc != ix)
+	    {
+	      ooc_info_t *targ_ptr = &ooc_info[1][as_ptr->ooc];
+	      gcc_checking_assert (!targ_ptr->name);
+	      *targ_ptr = *as_ptr;
+	      as_ptr->name = NULL;
+	      as_ptr = targ_ptr;
+	    }
+	  set_operator_ident (as_ptr);
+	  gcc_checking_assert (unsigned (as_ptr->code) < MAX_TREE_CODES);
+	  gcc_checking_assert (!ooc_mapping[unsigned (as_ptr->code)]
+			       || (ooc_mapping[unsigned (as_ptr->code)]
+				   == as_ptr->ooc));
+	  ooc_mapping[unsigned (as_ptr->code)] = as_ptr->ooc;
+	}
+    }
+  ooc_mapping[TYPE_EXPR] = OOC_CAST_EXPR;
+#endif
+
   tree identifier;
   char buffer[256];
   struct operator_name_info_t *oni;
@@ -133,10 +200,10 @@ init_operators (void)
 	   || NAME[0] == '_' || ISALPHA (NAME[0]) ? " " : "", NAME);	\
   identifier = get_identifier (buffer);					\
 									\
-  if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
-    set_identifier_kind (identifier, KIND);				\
+  gcc_checking_assert (u (identifier) == KIND);				\
   									\
-  oni = (KIND == cik_assign_op						\
+  									\
+ oni = (KIND == cik_assign_op						\
 	 ? &assignment_operator_name_info[(int) CODE]			\
 	 : &operator_name_info[(int) CODE]);				\
   oni->identifier = identifier;						\

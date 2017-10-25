@@ -12891,7 +12891,6 @@ grok_op_properties (tree decl, bool complain)
   tree argtype;
   int methodp = (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE);
   tree name = DECL_NAME (decl);
-  enum tree_code operator_code;
   int arity;
   bool ellipsis_p;
   tree class_type;
@@ -12907,6 +12906,7 @@ grok_op_properties (tree decl, bool complain)
   if (class_type && !CLASS_TYPE_P (class_type))
     class_type = NULL_TREE;
 
+  enum tree_code operator_code = ERROR_MARK;
   if (IDENTIFIER_CONV_OP_P (name))
     operator_code = TYPE_EXPR;
   else
@@ -12914,22 +12914,15 @@ grok_op_properties (tree decl, bool complain)
       /* It'd be nice to hang something else of the identifier to
 	 find CODE more directly.  */
       bool assign_op = IDENTIFIER_ASSIGN_OP_P (name);
-      const operator_name_info_t *oni
-	= (assign_op ? assignment_operator_name_info : operator_name_info);
+      for (unsigned ix = 0; ix != OOC_MAX; ix++)
+	if (name == ooc_info[assign_op][ix].identifier)
+	  {
+	    operator_code = ooc_info[assign_op][ix].code;
+	    break;
+	  }
+      gcc_checking_assert (operator_code != ERROR_MARK);
+    }
 
-      if (false)
-	;
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND)		\
-      else if (assign_op == (KIND == cik_assign_op)		\
-	       && oni[int (CODE)].identifier == name)		\
-	operator_code = (CODE);
-#include "operators.def"
-#undef DEF_OPERATOR
-      else
-	gcc_unreachable ();
-      }
-    while (0);
-  gcc_assert (operator_code != MAX_TREE_CODES);
   SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
 
   if (class_type)

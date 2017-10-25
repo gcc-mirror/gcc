@@ -73,8 +73,10 @@ along with GCC; see the file COPYING3.  If not see
    arguments are as for DEF_OPERATOR, but there is no need to provide
    ARITY (always 2), or KIND (always cik_assign_op).  */
 
+#ifndef DEF_ASSN_OPERATOR
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) \
   DEF_OPERATOR(NAME, CODE, MANGLING, 2, cik_assign_op)
+#endif
 
 /* Memory allocation operators.  */
 DEF_OPERATOR ("new", NEW_EXPR, "nw", -1, cik_newdel_op)
@@ -133,19 +135,6 @@ DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", 2)
 /* This one is needed for mangling.  */
 DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", 2)
 
-/* Assignment operators.  */
-DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS")
-DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL")
-DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI")
-DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL")
-DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV")
-DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM")
-DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN")
-DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR")
-DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO")
-DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS")
-DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS")
-
 /* Ternary operators.  */
 DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", 3)
 
@@ -159,5 +148,24 @@ DEF_SIMPLE_OPERATOR ("+ ...", UNARY_RIGHT_FOLD_EXPR, "fr", 2)
 DEF_SIMPLE_OPERATOR ("+ ... +", BINARY_LEFT_FOLD_EXPR, "fL", 3)
 DEF_SIMPLE_OPERATOR ("+ ... +", BINARY_RIGHT_FOLD_EXPR, "fR", 3)
 
+#ifdef OPERATOR_TRANSITION
+OPERATOR_TRANSITION
+#undef OPERATOR_TRANSITION
+#endif
+
+/* Assignment operators.  */
+DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS")
+DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL")
+DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI")
+DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL")
+DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV")
+DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM")
+DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN")
+DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR")
+DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO")
+DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS")
+DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS")
+
 #undef DEF_SIMPLE_OPERATOR
 #undef DEF_ASSN_OPERATOR
+#undef DEF_OPERATOR

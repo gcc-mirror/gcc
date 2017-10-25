@@ -5485,6 +5485,35 @@ enum auto_deduction_context
 
 extern void init_reswords (void);
 
+enum overloaded_operator_codes 
+  {
+    OOC_ERROR_MARK,
+#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) OOC_##CODE,
+#define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
+#include "operators.def"
+    OOC_NOP_EXPR,
+    OOC_MAX
+  };
+
+struct GTY(()) ooc_info_t {
+  /* The IDENTIFIER_NODE for the operator.  */
+  tree identifier;
+  /* The name of the operator.  */
+  const char *name;
+  /* The mangled name of the operator.  */
+  const char *mangled_name;
+  /* The arity of the operator.  */
+  short arity;
+  unsigned char kind;
+  unsigned char ooc;
+  enum tree_code code;
+};
+
+#define OOC_OPERATORS 0
+#define OOC_ASSIGNMENTS 1
+extern GTY(()) ooc_info_t ooc_info[2][int (OOC_MAX)];
+extern GTY(()) unsigned char ooc_mapping[int (MAX_TREE_CODES)];
+
 typedef struct GTY(()) operator_name_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;

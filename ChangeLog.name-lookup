@@ -1,5 +1,20 @@
 2017-10-25  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 1.
+	gcc/cp/
+	* cp-tree.h (enum overloaded_operator_codes): New.
+	(struct ooc_info_t): New.
+	(OOC_OPERATORS, OOC_ASSIGNMENTS): New.
+	(ooc_info, ooc_mapping): Declare.
+	* decl.c (grok_op_properties): Use ooc_info.
+	* lex.c (ooc_info, ooc_mapping): Define.
+	(set_operator_ident): New.
+	(init_operators): Initialize ooc_info, ooc_mapping.
+	* mangle.c (write_unqualified_id): Use ooc_info.
+	(write_expression): Use ooc_mapping and ooc_info.
+	* operators.def: Conditionally define DEF_ASSN_OPERATOR.  Move
+	assignment ops later.  Invoke OPERATOR_TRANSITION.
+
 	Merge trunk r254084.
 
 	Kill IDENTIFIER_LABEL_VALUE.
