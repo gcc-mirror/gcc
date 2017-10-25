@@ -1,3 +1,10 @@
+2017-10-25  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config/riscv/riscv.md (ZERO_EXTEND_LOAD): Define.
+	* config/riscv/pic.md (local_pic_load): Rename to local_pic_load_s,
+	mark as a sign-extending load.
+	(local_pic_load_u): Define.
+
 2017-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/82062
