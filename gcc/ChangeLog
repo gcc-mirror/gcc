@@ -1,3 +1,11 @@
+2017-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (ix86_builtin_vectorization_cost): Compute scatter/gather
+	cost correctly.
+	* i386.h (processor_costs): Add gather_static, gather_per_elt,
+	scatter_static, scatter_per_elt.
+	* x86-tune-costs.h: Add new cost entries.
+
 2017-10-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (vn_eliminate): Declare.
