@@ -2478,6 +2478,8 @@ next_arg:;
 		  break;
 		}
 	    }
+
+	  copy_attributes_to_builtin (newdecl);
 	}
       if (new_defines_function)
 	/* If defining a function declared with other language

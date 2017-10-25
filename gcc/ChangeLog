@@ -1,3 +1,12 @@
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* attribs.c (attribute_value_equal): Use omp_declare_simd_clauses_equal
+	for comparison of OMP_CLAUSEs regardless of flag_openmp{,_simd}.
+	(duplicate_one_attribute, copy_attributes_to_builtin): New functions.
+	* attribs.h (duplicate_one_attribute, copy_attributes_to_builtin): New
+	declarations.
+
 2017-10-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (need_eh_cleanup, need_ab_cleanup, el_to_remove,
