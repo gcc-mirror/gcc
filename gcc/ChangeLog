@@ -1,4 +1,11 @@
-2017-10-23  Jan Hubicka  <hubicka@ucw.cz>
+2017-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/82062
+	* fold-const.c (operand_equal_for_comparison_p): Also return true
+	if ARG0 is a simple variant of ARG1 with narrower precision.
+	(fold_ternary_loc): Always pass unstripped operands to the predicate.
+
+2017-10-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_builtin_vectorization_cost): Compute scatter/gather
 	cost correctly.
