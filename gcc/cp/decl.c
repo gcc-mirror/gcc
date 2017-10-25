@@ -3093,8 +3093,9 @@ identify_goto (tree decl, location_t loc, const location_t *locus,
 	       diagnostic_t diag_kind)
 {
   bool complained
-    = (decl ? emit_diagnostic (diag_kind, loc, 0, "jump to label %qD", decl)
-	    : emit_diagnostic (diag_kind, loc, 0, "jump to case label"));
+    = emit_diagnostic (diag_kind, loc, 0,
+		       decl ? "jump to label %qD" : "jump to case label",
+		       decl);
   if (complained && locus)
     inform (*locus, "  from here");
   return complained;
@@ -3149,68 +3150,62 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 			"  crosses initialization of %q#D", new_decls);
 	      else
 		inform (DECL_SOURCE_LOCATION (new_decls),
-			"  enters scope of %q#D which has "
+			"  enters scope of %q#D, which has "
 			"non-trivial destructor", new_decls);
 	    }
 	}
 
       if (b == level)
 	break;
-      if ((b->kind == sk_try || b->kind == sk_catch) && !saw_eh)
+
+      const char *inf = NULL;
+      location_t loc = input_location;
+      switch (b->kind)
 	{
-	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
-	  if (complained)
-	    {
-	      if (b->kind == sk_try)
-		inform (input_location, "  enters try block");
-	      else
-		inform (input_location, "  enters catch block");
-	    }
+	case sk_try:
+	  if (!saw_eh)
+	    inf = "enters try block";
 	  saw_eh = true;
-	}
-      if (b->kind == sk_omp && !saw_omp)
-	{
-	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
-	  if (complained)
-	    inform (input_location, "  enters OpenMP structured block");
+	  break;
+
+	case sk_catch:
+	  if (!saw_eh)
+	    inf = "enters catch block";
+	  saw_eh = true;
+	  break;
+
+	case sk_omp:
+	  if (!saw_omp)
+	    inf = "enters OpenMP structured block";
 	  saw_omp = true;
-	}
-      if (b->kind == sk_transaction && !saw_tm)
-	{
-	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
-	  if (complained)
-	    inform (input_location,
-		    "  enters synchronized or atomic statement");
+	  break;
+
+	case sk_transaction:
+	  if (!saw_tm)
+	    inf = "enters synchronized or atomic statement";
 	  saw_tm = true;
+	  break;
+
+	case sk_block:
+	  if (!saw_cxif && level_for_constexpr_if (b->level_chain))
+	    {
+	      inf = "enters constexpr if statement";
+	      loc = EXPR_LOCATION (b->level_chain->this_entity);
+	      saw_cxif = true;
+	    }
+	  break;
+
+	default:
+	  break;
 	}
-      if (!saw_cxif && b->kind == sk_block
-	  && level_for_constexpr_if (b->level_chain))
+
+      if (inf)
 	{
 	  if (identified < 2)
-	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  DK_ERROR);
-	      identified = 2;
-	    }
+	    complained = identify_goto (decl, input_location, locus, DK_ERROR);
+	  identified = 2;
 	  if (complained)
-	    inform (EXPR_LOCATION (b->level_chain->this_entity),
-		    "  enters constexpr if statement");
-	  saw_cxif = true;
+	    inform (loc, "  %s", inf);
 	}
     }
 
@@ -3238,10 +3233,6 @@ void
 check_goto (tree decl)
 {
   struct named_label_entry *ent, dummy;
-  bool saw_catch = false, complained = false;
-  int identified = 0;
-  tree bad;
-  unsigned ix;
 
   /* We can't know where a computed goto is jumping.
      So we assume that it's OK.  */
@@ -3278,6 +3269,11 @@ check_goto (tree decl)
       ent->uses = new_use;
       return;
     }
+
+  bool saw_catch = false, complained = false;
+  int identified = 0;
+  tree bad;
+  unsigned ix;
 
   if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
       || ent->in_constexpr_if
@@ -3339,27 +3335,24 @@ check_goto (tree decl)
 	inform (input_location, "  enters OpenMP structured block");
     }
   else if (flag_openmp)
-    {
-      cp_binding_level *b;
-      for (b = current_binding_level; b ; b = b->level_chain)
-	{
-	  if (b == ent->binding_level)
+    for (cp_binding_level *b = current_binding_level; b ; b = b->level_chain)
+      {
+	if (b == ent->binding_level)
+	  break;
+	if (b->kind == sk_omp)
+	  {
+	    if (identified < 2)
+	      {
+		complained = identify_goto (decl,
+					    DECL_SOURCE_LOCATION (decl),
+					    &input_location, DK_ERROR);
+		identified = 2;
+	      }
+	    if (complained)
+	      inform (input_location, "  exits OpenMP structured block");
 	    break;
-	  if (b->kind == sk_omp)
-	    {
-	      if (identified < 2)
-		{
-		  complained = identify_goto (decl,
-					      DECL_SOURCE_LOCATION (decl),
-					      &input_location, DK_ERROR);
-		  identified = 2;
-		}
-	      if (complained)
-		inform (input_location, "  exits OpenMP structured block");
-	      break;
-	    }
-	}
-    }
+	  }
+      }
 }
 
 /* Check that a return is ok wrt OpenMP structured blocks.
@@ -3368,8 +3361,7 @@ check_goto (tree decl)
 bool
 check_omp_return (void)
 {
-  cp_binding_level *b;
-  for (b = current_binding_level; b ; b = b->level_chain)
+  for (cp_binding_level *b = current_binding_level; b ; b = b->level_chain)
     if (b->kind == sk_omp)
       {
 	error ("invalid exit from OpenMP structured block");
@@ -3413,8 +3405,6 @@ define_label_1 (location_t location, tree name)
     }
   else
     {
-      struct named_label_use_entry *use;
-
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
       /* Say where in the source.  */
@@ -3423,7 +3413,7 @@ define_label_1 (location_t location, tree name)
       ent->binding_level = current_binding_level;
       ent->names_in_scope = current_binding_level->names;
 
-      for (use = ent->uses; use ; use = use->next)
+      for (named_label_use_entry *use = ent->uses; use; use = use->next)
 	check_previous_goto (decl, use);
       ent->uses = NULL;
     }
@@ -3436,9 +3426,8 @@ define_label_1 (location_t location, tree name)
 tree
 define_label (location_t location, tree name)
 {
-  tree ret;
   bool running = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = define_label_1 (location, name);
+  tree ret = define_label_1 (location, name);
   timevar_cond_stop (TV_NAME_LOOKUP, running);
   return ret;
 }
