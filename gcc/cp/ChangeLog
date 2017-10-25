@@ -1,3 +1,10 @@
+2017-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (identifier_goto): Reduce duplication.
+	(check_previous_goto_1): Likewise.
+	(check_goto): Move var decls to initialization.
+	(check_omp_return, define_label_1, define_label): Likewise.
+
 2017-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/81706
