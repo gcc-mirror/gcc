@@ -1,3 +1,8 @@
+2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82706
+	* testsuite/27_io/filesystem/operations/permissions.cc: Fix test.
+
 2017-10-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_normal_mode): Add
