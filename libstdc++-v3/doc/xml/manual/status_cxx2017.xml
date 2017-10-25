@@ -1,17 +1,17 @@
 <section xmlns="http://docbook.org/ns/docbook" version="5.0" 
-	 xml:id="status.iso.201z" xreflabel="Status C++ 201z">
-<?dbhtml filename="status_iso_cxx201z.html"?>
+	 xml:id="status.iso.2017" xreflabel="Status C++ 2017">
+<?dbhtml filename="status_iso_cxx2017.html"?>
 
-<info><title>C++ 201z</title>
+<info><title>C++ 2017</title>
   <keywordset>
     <keyword>ISO C++</keyword>
-    <keyword>201z</keyword>
+    <keyword>2017</keyword>
   </keywordset>
 </info>
 
 <para>
-In this implementation the <literal>-std=gnu++1z</literal> or
-<literal>-std=c++1z</literal> flag must be used to enable language
+In this implementation the <literal>-std=gnu++17</literal> or
+<literal>-std=c++17</literal> flag must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
@@ -20,13 +20,13 @@ presence of the required flag.
 </para>
 
 <para>
-This section describes the C++1z and library TS support in mainline GCC SVN,
+This section describes the C++17 and library TS support in mainline GCC SVN,
 not in any particular release.
 </para>
 
 <para>
 The following table lists new library features that have been accepted into
-the C++1z working draft. The "Proposal" column provides a link to the
+the C++17 working draft. The "Proposal" column provides a link to the
 ISO C++ committee proposal that describes the feature, while the "Status"
 column indicates the first version of GCC that contains an implementation of
 this feature (if it has been implemented).
@@ -35,8 +35,8 @@ The "SD-6 Feature Test" column shows the corresponding macro or header from
 Feature-testing recommendations for C++</link>.
 </para>
 
-<table frame="all" xml:id="table.cxx1z_status">
-<title>C++ 201z Implementation Status</title>
+<table frame="all" xml:id="table.cxx17_status">
+<title>C++ 2017 Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">
 <colspec colname="c1"/>
@@ -75,7 +75,7 @@ Feature-testing recommendations for C++</link>.
 	P0137R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__cpp_lib_launder >= 201606</code> </entry>
     </row>
 
@@ -97,9 +97,10 @@ Feature-testing recommendations for C++</link>.
 	P0088R3
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__has_include(&lt;variant&gt;)</code>,
               <code>__cpp_lib_variant >= 201603</code>
+              (since 7.3, see Note 1)
       </entry>
     </row>
 
@@ -110,9 +111,10 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__has_include(&lt;optional&gt;)</code>,
               <code>__cpp_lib_optional >= 201603</code>
+              (since 7.3, see Note 1)
       </entry>
     </row>
 
@@ -123,9 +125,10 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__has_include(&lt;any&gt;)</code>,
               <code>__cpp_lib_any >= 201603</code>
+              (since 7.3, see Note 1)
       </entry>
     </row>
 
@@ -136,9 +139,10 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__has_include(&lt;string_view&gt;)</code>,
               <code>__cpp_lib_string_view >= 201603</code>
+              (since 7.3, see Note 1)
       </entry>
     </row>
 
@@ -163,7 +167,7 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__cpp_lib_apply >= 201603</code> </entry>
     </row>
 
@@ -174,7 +178,7 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__cpp_lib_shared_ptr_arrays >= 201603</code> </entry>
     </row>
 
@@ -185,7 +189,7 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__cpp_lib_boyer_moore_searcher >= 201603</code> </entry>
     </row>
 
@@ -196,7 +200,7 @@ Feature-testing recommendations for C++</link>.
 	P0220R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry> <code>__cpp_lib_sample >= 201603</code> </entry>
     </row>
 
@@ -207,7 +211,7 @@ Feature-testing recommendations for C++</link>.
 	P0007R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_as_const >= 201510 </code></entry>
     </row>
 
@@ -229,7 +233,7 @@ Feature-testing recommendations for C++</link>.
 	P0209R2
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_make_from_tuple >= 201606 </code></entry>
     </row>
 
@@ -256,7 +260,7 @@ Feature-testing recommendations for C++</link>.
 	P0174R2
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> No  (kept for backwards compatibility)</entry>
       <entry/>
     </row>
 
@@ -267,7 +271,7 @@ Feature-testing recommendations for C++</link>.
 	P0074R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_transparent_operators >= 201510 </code></entry>
     </row>
 
@@ -278,7 +282,7 @@ Feature-testing recommendations for C++</link>.
 	LWG2296
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_addressof_constexpr >= 201603 </code></entry>
     </row>
 
@@ -311,7 +315,7 @@ Feature-testing recommendations for C++</link>.
 	P0033R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code>__cpp_lib_enable_shared_from_this >= 201603</code></entry>
     </row>
 
@@ -344,7 +348,7 @@ Feature-testing recommendations for C++</link>.
 	P0005R4
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code>__cpp_lib_not_fn >= 201603</code></entry>
     </row>
 
@@ -355,7 +359,7 @@ Feature-testing recommendations for C++</link>.
 	P0358R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry/>
     </row>
 
@@ -366,7 +370,7 @@ Feature-testing recommendations for C++</link>.
 	P0253R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry/>
     </row>
 
@@ -377,7 +381,7 @@ Feature-testing recommendations for C++</link>.
 	P0040R3
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> </code></entry>
     </row>
 
@@ -388,7 +392,7 @@ Feature-testing recommendations for C++</link>.
 	P0163R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_shared_ptr_weak_type >= 201606</code></entry>
     </row>
 
@@ -421,7 +425,7 @@ Feature-testing recommendations for C++</link>.
 	P0006R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_type_trait_variable_templates >= 201510 </code></entry>
     </row>
 
@@ -454,7 +458,7 @@ Feature-testing recommendations for C++</link>.
 	P0077R2
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_is_callable >= 201603 </code></entry>
     </row>
 
@@ -465,7 +469,7 @@ Feature-testing recommendations for C++</link>.
 	P0258R2
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_has_unique_object_representations >= 201606 </code></entry>
     </row>
 
@@ -476,7 +480,7 @@ Feature-testing recommendations for C++</link>.
 	P0092R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_chrono >= 201510 </code></entry>
     </row>
 
@@ -487,8 +491,10 @@ Feature-testing recommendations for C++</link>.
 	P0505R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
-      <entry><code> ??? </code></entry>
+      <entry align="center"> 7.1 </entry>
+      <entry><code> __cpp_lib_chrono >= 201611 </code>
+             (since 7.3, see Note 2)
+      </entry>
     </row>
 
     <row>
@@ -509,7 +515,7 @@ Feature-testing recommendations for C++</link>.
 	P0254R2
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> </code></entry>
     </row>
 
@@ -520,7 +526,7 @@ Feature-testing recommendations for C++</link>.
 	P0272R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> </code></entry>
     </row>
 
@@ -553,9 +559,9 @@ Feature-testing recommendations for C++</link>.
 	N4510
 	</link>
       </entry>
-      <entry align="center"> 6.2 (3.0)</entry>
+      <entry align="center"> 3.0 </entry>
       <entry><code> __cpp_lib_incomplete_container_elements >= 201505 </code>
-	     (the feature was always supported, but the macro was not defined until GCC 6.2)
+	     (since 6.2, see Note 2)
       </entry>
     </row>
 
@@ -566,8 +572,8 @@ Feature-testing recommendations for C++</link>.
 	P0084R2
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
-      <entry><code> ??? </code></entry>
+      <entry align="center"> 7.1 </entry>
+      <entry/>
     </row>
 
     <row>
@@ -590,7 +596,7 @@ Feature-testing recommendations for C++</link>.
 	P0083R3
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_node_extract >= 201606 </code></entry>
     </row>
 
@@ -612,7 +618,7 @@ Feature-testing recommendations for C++</link>.
 	P0031R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_array_constexpr >= 201603 </code></entry>
     </row>
 
@@ -638,7 +644,7 @@ Feature-testing recommendations for C++</link>.
 	P0025R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_clamp >= 201603 </code></entry>
     </row>
 
@@ -649,7 +655,7 @@ Feature-testing recommendations for C++</link>.
 	P0295R0
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_gcd_lcm >= 201606 </code></entry>
     </row>
 
@@ -660,7 +666,7 @@ Feature-testing recommendations for C++</link>.
 	P0030R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_hypot >= 201603 </code></entry>
     </row>
 
@@ -671,50 +677,58 @@ Feature-testing recommendations for C++</link>.
 	P0226R1
 	</link>
       </entry>
-      <entry align="center"> 7 (6.1) </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_math_special_functions >= 201603 </code>
-	     (for GCC 6 or pre-C++17 define
-	     <code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code> to a non-zero value
-	     and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>)
+	     (see Note 3)
       </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>Adopt the File System TS for C++17	 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0218r1.html">
 	P0218R1
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 8 </entry>
       <entry><code> __has_include(&lt;filesystem&gt;) </code>,
-	     <code> __cpp_lib_filesystem >= 201603 </code></entry>
+	     <code> __cpp_lib_filesystem >= 201603 </code>
+	     (requires linking with <code>-lstdc++fs</code>)
+      </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Relative Paths for Filesystem</entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0219r1.html">
 	P0219R1
 	</link>
       </entry>
-      <entry align="center"> No </entry>
-      <entry/>
+      <entry align="center"> 8 </entry>
+      <entry><code> __cpp_lib_filesystem >= 201606 </code></entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Adapting string_view by filesystem paths </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0392r0.pdf">
 	P0392R0
 	</link>
       </entry>
-      <entry align="center"> No </entry>
-      <entry/>
+      <entry align="center"> 8 </entry>
+      <entry><code> __cpp_lib_filesystem >= 201606 </code></entry>
     </row>
+
+    <row>
+      <entry> Directory Entry Caching for Filesystem </entry>
+      <entry>
+       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0317r1.html">
+       P0317R1
+       </link>
+      </entry>
+      <entry align="center"> 8 </entry>
+      <entry><code> __cpp_lib_filesystem >= 201703 </code></entry>
+     </row>
 
     <row>
       <entry> constexpr <code>atomic&lt;T&gt;::is_always_lock_free</code>	 </entry>
@@ -723,7 +737,7 @@ Feature-testing recommendations for C++</link>.
 	P0152R1
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_atomic_is_always_lock_free >= 201603 </code></entry>
     </row>
 
@@ -739,37 +753,39 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <entry> Variadic <code>lock_guard</code> </entry>
+      <entry> Variadic <code>lock_guard</code> (Rev. 5) </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0156r2.html">
 	P0156R2
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
+      <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_scoped_lock >= 201703 </code></entry>
     </row>
 
     <row>
-      <entry> byte type definition </entry>
+      <entry> A byte type definition </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0298r3.pdf">
 	P0298R3
 	</link>
       </entry>
-      <entry align="center"> 7 </entry>
-      <entry><code> ??? </code></entry>
+      <entry align="center"> 7.1 </entry>
+      <entry><code> __cpp_lib_byte >= 201603 </code> (since 7.3, see Note 2)
+      </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry> Elementary string conversions </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r5.html">
 	P0067R5
 	</link>
       </entry>
-      <entry align="center"> No </entry>
-      <entry><code> ??? </code></entry>
+      <entry align="center"> 8 (only integral types supported) </entry>
+      <entry><code> __has_include(&lt;charconv&gt;) </code>
+             <code> __cpp_lib_to_chars >= 201611 </code></entry>
     </row>
 
 
@@ -777,8 +793,26 @@ Feature-testing recommendations for C++</link>.
 </tgroup>
 </table>
 
+<para>
+Note 1: This feature is supported in GCC 7.1 and 7.2 but before GCC 7.3 the
+<code>__cpp_lib</code> macro is not defined, and compilation will fail if the
+header is included without using <option>-std</option> to enable C++17 support.
+</para>
 
-<table frame="all" xml:id="table.cxx1z_ts_status">
+<para>
+Note 2: This feature is supported in older releases but the
+<code>__cpp_lib</code> macro is not defined to the right value
+(or not defined at all) until the version shown in parentheses.
+</para>
+
+<para>
+Note 3: The mathematical special functions are enabled in C++17 mode from
+GCC 7.1 onwards. For GCC 6.x or for C++11/C++14 define
+<code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code> to a non-zero value
+and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
+</para>
+
+<table frame="all" xml:id="table.cxx17_ts_status">
 <title>C++ Technical Specifications Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">
