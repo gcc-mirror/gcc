@@ -1,3 +1,9 @@
+2017-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/7356
+	* c-parser.c (c_parser_declaration_or_fndef): Detect missing
+	semicolons.
+
 2017-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/81706

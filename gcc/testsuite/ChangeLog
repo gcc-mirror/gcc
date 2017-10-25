@@ -1,3 +1,15 @@
+2017-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/7356
+	PR c/44515
+	* c-c++-common/pr44515.c: New test case.
+	* gcc.dg/pr7356-2.c: New test case.
+	* gcc.dg/pr7356.c: New test case.
+	* gcc.dg/spellcheck-typenames.c: Update the "singed" char "TODO"
+	case to reflect changes to output.
+	* gcc.dg/noncompile/920923-1.c: Add dg-warning to reflect changes
+	to output.
+
 2017-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/fold-cond_expr-1.c: Rename to...
