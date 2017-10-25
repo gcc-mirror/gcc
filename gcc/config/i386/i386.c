@@ -44490,7 +44490,6 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       /* We should have separate costs for unaligned loads and gather/scatter.
 	 Do that incrementally.  */
       case unaligned_load:
-      case vector_gather_load:
 	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
@@ -44498,11 +44497,26 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 			      true);
 
       case unaligned_store:
-      case vector_scatter_store:
 	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->sse_unaligned_store[index]) / 2,
+			      true);
+
+      case vector_gather_load:
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->gather_static
+				  + ix86_cost->gather_per_elt
+				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2,
+			      true);
+
+      case vector_scatter_store:
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->scatter_static
+				  + ix86_cost->scatter_per_elt
+				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2,
 			      true);
 
       case cond_branch_taken:
