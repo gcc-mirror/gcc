@@ -1,3 +1,8 @@
+2017-10-25  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Add xfail for nvptx in scan-assembler-times
+	line, and add nvptx-specific version.
+
 2017-10-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/cet-sjlj-5.c: Allow for emtpy user label prefix
