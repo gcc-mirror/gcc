@@ -1,3 +1,8 @@
+2017-10-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/cet-sjlj-5.c: Allow for emtpy user label prefix
+	in setjmp call.
+
 2017-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/81706
