@@ -1,3 +1,20 @@
+2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (__find_if_not_n, generate_n): Cast to void
+	to ensure overloaded comma not used.
+	* include/bits/stl_algobase.h (__fill_n_a, equal): Likewise.
+	* include/bits/stl_uninitialized.h (__uninitialized_fill_n)
+	(__uninitialized_fill_n_a, __uninitialized_default_n_1)
+	(__uninitialized_default_n_a, __uninitialized_copy_n)
+	(__uninitialized_copy_n_pair): Likewise
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/1.cc:
+	Use test iterator wrappers with overloaded comma operator.
+	* testsuite/25_algorithms/fill_n/1.cc: Likewise.
+	* testsuite/25_algorithms/generate_n/1.cc: New test.
+	* testsuite/25_algorithms/stable_partition/1.cc: New test.
+	* testsuite/util/testsuite_iterators.h (operator,): Add deleted
+	non-member comma operator with iterator wrappers as right operand.
+
 2017-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Deduction guides for associative containers, debug mode deduction

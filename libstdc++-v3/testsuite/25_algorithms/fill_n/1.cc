@@ -22,21 +22,36 @@
 #include <algorithm>
 #include <vector>
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
+
+// Non-scalar type to exercise partial specialization of fill_n implementation.
+struct Value
+{
+  Value(int n) : n(n) { }
+
+  operator int() const { return n; }
+
+private:
+  int n;
+};
 
 void
 test01()
 {
   using namespace std;
+  using __gnu_test::test_container;
+  using __gnu_test::output_iterator_wrapper;
 
   const int A1[] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
   const int N1 = sizeof(A1) / sizeof(int);
   
   int i1[N1];
-  fill_n(i1, N1, 3);
+  test_container<int, output_iterator_wrapper> c1(i1, i1 + N1);
+  fill_n(c1.begin(), N1, 3);
   VERIFY( equal(i1, i1 + N1, A1) );
 
   vector<int> v1(N1);
-  fill_n(v1.begin(), N1, 3);
+  fill_n(v1.begin(), N1, Value(3));
   VERIFY( equal(v1.begin(), v1.end(), A1) );
 
   const char A2[] = {'\3', '\3', '\3', '\3', '\3',

@@ -738,7 +738,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
       for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, ++__first)
+	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __value;
       return __first;
     }
@@ -750,7 +750,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       const _Tp __tmp = __value;
       for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, ++__first)
+	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __tmp;
       return __first;
     }
@@ -796,7 +796,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static bool
 	equal(_II1 __first1, _II1 __last1, _II2 __first2)
 	{
-	  for (; __first1 != __last1; ++__first1, (void)++__first2)
+	  for (; __first1 != __last1; ++__first1, (void) ++__first2)
 	    if (!(*__first1 == *__first2))
 	      return false;
 	  return true;
