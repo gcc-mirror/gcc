@@ -1,3 +1,9 @@
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/81800
+	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2): Add flag_trapping_math
+	and flag_fp_int_builtin_inexact.
+
 2017-10-25  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* config/riscv/riscv.md (ZERO_EXTEND_LOAD): Define.
