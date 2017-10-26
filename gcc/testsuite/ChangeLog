@@ -1,5 +1,9 @@
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
+	* gcc.target/aarch64/inline-lrint_2.c (dg-options): Add -fno-trapping-math.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-qi.h: New.
 	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile.c: New.
 	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-s8.c: New.
