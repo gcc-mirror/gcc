@@ -1,3 +1,7 @@
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_unaligned_2.c: New file.
+
 2017-10-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/arm/require-pic-register-loc.c: Use wider regex for
