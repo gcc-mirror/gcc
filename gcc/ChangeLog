@@ -1,5 +1,14 @@
 2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.h (EXIT_IGNORE_STACK): Set if alloca is used.
+	(aarch64_frame): Add emit_frame_chain boolean.
+	* config/aarch64/aarch64.c (aarch64_frame_pointer_required)
+	Move eh_return case to aarch64_layout_frame.
+	(aarch64_layout_frame): Initialize emit_frame_chain.
+	(aarch64_expand_prologue): Use emit_frame_chain.
+
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_layout_frame):
 	Ensure LR is always stored at the bottom of the callee-saves.
 	Remove rarely used frame layout which saves callee-saves at top of
