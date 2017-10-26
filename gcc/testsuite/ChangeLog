@@ -1,5 +1,9 @@
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
+	* gcc.dg/vect/vect-multitypes-1.c: Correct target selector.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.target/aarch64/inline-lrint_2.c (dg-options): Add -fno-trapping-math.
 
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
