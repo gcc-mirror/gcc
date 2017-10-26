@@ -1,3 +1,9 @@
+2017-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (sort_labels): Restore function.
+	(pop_labels): Sort labels
+	(identify_goto): Add translation markup.
+
 2017-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	Kill IDENTIFIER_LABEL_VALUE.
