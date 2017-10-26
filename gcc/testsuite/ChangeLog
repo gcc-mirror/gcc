@@ -1,5 +1,12 @@
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
+	* gcc.dg/vect/vect-reduc-dot-s8a.c
+	(dg-additional-options, dg-require-effective-target): Add +dotprod.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c
+	(dg-additional-options, dg-require-effective-target): Add +dotprod.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
 	* lib/target-supports.exp
 	(check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache): New.
 	(check_effective_target_arm_v8_2a_dotprod_neon_ok): New.
