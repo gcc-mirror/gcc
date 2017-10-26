@@ -1,3 +1,26 @@
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (static_rtx_alignment): New hook.
+	* targhooks.h (default_static_rtx_alignment): Declare.
+	* targhooks.c (default_static_rtx_alignment): New function.
+	* doc/tm.texi.in (TARGET_STATIC_RTX_ALIGNMENT): New hook.
+	* doc/tm.texi: Regenerate.
+	* varasm.c (force_const_mem): Use targetm.static_rtx_alignment
+	instead of targetm.constant_alignment.  Remove call to
+	set_mem_attributes.
+	* config/cris/cris.c (TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+	(cris_preferred_mininum_alignment): New function, split out from...
+	(cris_constant_alignment): ...here.
+	(cris_static_rtx_alignment): New function.
+	* config/i386/i386.c (ix86_static_rtx_alignment): New function,
+	split out from...
+	(ix86_constant_alignment): ...here.
+	(TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+	* config/mmix/mmix.c (TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+	(mmix_static_rtx_alignment): New function.
+	* config/spu/spu.c (spu_static_rtx_alignment): New function.
+	(TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/81800

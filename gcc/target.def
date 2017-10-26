@@ -3336,6 +3336,15 @@ HOOK_VECTOR_END (addr_space)
 #define HOOK_PREFIX "TARGET_"
 
 DEFHOOK
+(static_rtx_alignment,
+ "This hook returns the preferred alignment in bits for a\n\
+statically-allocated rtx, such as a constant pool entry.  @var{mode}\n\
+is the mode of the rtx.  The default implementation returns\n\
+@samp{GET_MODE_ALIGNMENT (@var{mode})}.",
+ HOST_WIDE_INT, (machine_mode mode),
+ default_static_rtx_alignment)
+
+DEFHOOK
 (constant_alignment,
  "This hook returns the alignment in bits of a constant that is being\n\
 placed in memory.  @var{constant} is the constant and @var{basic_align}\n\

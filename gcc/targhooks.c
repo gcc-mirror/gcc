@@ -1173,6 +1173,14 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
    return id;
 }
 
+/* The default implementation of TARGET_STATIC_RTX_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_static_rtx_alignment (machine_mode mode)
+{
+  return GET_MODE_ALIGNMENT (mode);
+}
+
 /* The default implementation of TARGET_CONSTANT_ALIGNMENT.  */
 
 HOST_WIDE_INT
