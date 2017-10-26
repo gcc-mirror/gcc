@@ -1078,6 +1078,13 @@ On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_STATIC_RTX_ALIGNMENT (machine_mode @var{mode})
+This hook returns the preferred alignment in bits for a
+statically-allocated rtx, such as a constant pool entry.  @var{mode}
+is the mode of the rtx.  The default implementation returns
+@samp{GET_MODE_ALIGNMENT (@var{mode})}.
+@end deftypefn
+
 @defmac DATA_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in
 the static store.  @var{type} is the data type, and @var{basic-align} is
