@@ -1,3 +1,8 @@
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address_displacement):
+	Improve unaligned TImode/TFmode base/offset split.
+
 2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -4727,16 +4727,20 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
 /* Split an out-of-range address displacement into a base and offset.
    Use 4KB range for 1- and 2-byte accesses and a 16KB range otherwise
    to increase opportunities for sharing the base address of different sizes.
-   For unaligned accesses and TI/TF mode use the signed 9-bit range.  */
+   Unaligned accesses use the signed 9-bit range, TImode/TFmode use
+   the intersection of signed scaled 7-bit and signed 9-bit offset.  */
 static bool
 aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
 {
   HOST_WIDE_INT offset = INTVAL (*disp);
-  HOST_WIDE_INT base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
+  HOST_WIDE_INT base;
 
-  if (mode == TImode || mode == TFmode
-      || (offset & (GET_MODE_SIZE (mode) - 1)) != 0)
+  if (mode == TImode || mode == TFmode)
+    base = (offset + 0x100) & ~0x1f8;
+  else if ((offset & (GET_MODE_SIZE (mode) - 1)) != 0)
     base = (offset + 0x100) & ~0x1ff;
+  else
+    base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
 
   *off = GEN_INT (base);
   *disp = GEN_INT (offset - base);
