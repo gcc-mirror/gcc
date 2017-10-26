@@ -1,3 +1,18 @@
+2017-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	Operator code compaction part 2.
+	gcc/cp/
+	* cp-tree.h (IDENTIFIER_CP_INDEX): New.
+	* call.c (op_error): Use ooc_info.
+	(build_new_op_1): Likewise.
+	(build_op_delete_call): Likewise.
+	* error.c (assop_to_string): Delete.
+	(op_to_string): Add assop arg. Use ooc_info.
+	(dump_expr): Use ooc_info.
+	(cp_printer): Adjust.
+	* mangle.c (write_unqualified_name): Use ooc_info.
+	* typeck.c (cxx_sizeof_or_alignof_type): Likewise.
+
 2017-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	Operator code compaction part 1.

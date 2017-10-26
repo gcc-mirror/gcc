@@ -4620,12 +4620,10 @@ static void
 op_error (location_t loc, enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
 {
-  const char *opname;
-
-  if (code == MODIFY_EXPR)
-    opname = assignment_operator_name_info[code2].name;
-  else
-    opname = operator_name_info[code].name;
+  if (code != MODIFY_EXPR)
+    code2 = code;
+  const char *opname
+    =  ooc_info[code == MODIFY_EXPR][ooc_mapping[unsigned (code2)]].name;
 
   switch (code)
     {
@@ -5793,7 +5791,8 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		? G_("no %<%D(int)%> declared for postfix %qs,"
 		     " trying prefix operator instead")
 		: G_("no %<%D(int)%> declared for postfix %qs");
-	      permerror (loc, msg, fnname, operator_name_info[code].name);
+	      permerror (loc, msg, fnname,
+			 ooc_info[0][ooc_mapping[unsigned (code)]].name);
 	    }
 
 	  if (!flag_permissive)
@@ -6434,7 +6433,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   if (complain & tf_error)
     error ("no suitable %<operator %s%> for %qT",
-	   operator_name_info[(int)code].name, type);
+	   ooc_info[0][ooc_mapping[unsigned (code)]].name, type);
   return error_mark_node;
 }
 

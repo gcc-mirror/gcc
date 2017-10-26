@@ -1341,13 +1341,12 @@ write_unqualified_name (tree decl)
 	}
       else if (DECL_OVERLOADED_OPERATOR_P (decl))
 	{
-	  operator_name_info_t *oni;
-	  if (DECL_ASSIGNMENT_OPERATOR_P (decl))
-	    oni = assignment_operator_name_info;
-	  else
-	    oni = operator_name_info;
+	  unsigned map
+	    = ooc_mapping[unsigned DECL_OVERLOADED_OPERATOR_CODE (decl)];
+	  const char *mangled_name
+	    = ooc_info[DECL_ASSIGNMENT_OPERATOR_P (decl)][map].mangled_name;
 
-	  write_string (oni[DECL_OVERLOADED_OPERATOR_CODE (decl)].mangled_name);
+	  write_string (mangled_name);
 	}
       else if (UDLIT_OPER_P (DECL_NAME (decl)))
 	write_literal_operator_name (DECL_NAME (decl));

@@ -1079,6 +1079,11 @@ enum cp_identifier_kind {
    & IDENTIFIER_KIND_BIT_1 (NODE)		\
    & IDENTIFIER_KIND_BIT_0 (NODE))
 
+/* Access a C++-specific index for identifier NODE.
+   Used to optimize operator mappings etc.  */
+#define IDENTIFIER_CP_INDEX(NODE)		\
+  (IDENTIFIER_NODE_CHECK(NODE)->base.u.bits.address_space)
+
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(TYPE) \
   (LANG_TYPE_CLASS_CHECK (TYPE)->fields_readonly)
