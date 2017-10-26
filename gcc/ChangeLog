@@ -1,4 +1,19 @@
 2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* caller-save.c (mark_referenced_regs):  Use read_modify_subreg_p.
+	* combine.c (find_single_use_1): Likewise.
+	(expand_field_assignment): Likewise.
+	(move_deaths): Likewise.
+	* lra-constraints.c (simplify_operand_subreg): Likewise.
+	(curr_insn_transform): Likewise.
+	* lra.c (collect_non_operand_hard_regs): Likewise.
+	(add_regs_to_insn_regno_info): Likewise.
+	* rtlanal.c (reg_referenced_p): Likewise.
+	(covers_regno_no_parallel_p): Likewise.
+
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* wide-int-print.cc (print_hex): Loop based on extract_uhwi.
 	Don't print any bits outside the precision of the value.

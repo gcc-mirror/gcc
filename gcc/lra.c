@@ -832,14 +832,12 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
   subreg_p = false;
   if (code == SUBREG)
     {
+      if (read_modify_subreg_p (op))
+	subreg_p = true;
       op = SUBREG_REG (op);
       code = GET_CODE (op);
       if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (op)))
-	{
-	  mode = GET_MODE (op);
-	  if (GET_MODE_SIZE (mode) > REGMODE_NATURAL_SIZE (mode))
-	    subreg_p = true;
-	}
+	mode = GET_MODE (op);
     }
   if (REG_P (op))
     {
@@ -1427,14 +1425,12 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
   subreg_p = false;
   if (GET_CODE (x) == SUBREG)
     {
+      if (read_modify_subreg_p (x))
+	subreg_p = true;
       x = SUBREG_REG (x);
       code = GET_CODE (x);
       if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x)))
-	{
-	  mode = GET_MODE (x);
-	  if (GET_MODE_SIZE (mode) > REGMODE_NATURAL_SIZE (mode))
-	    subreg_p = true;
-	}
+	mode = GET_MODE (x);
     }
   if (REG_P (x))
     {
