@@ -2885,7 +2885,8 @@ aarch64_frame_pointer_required (void)
 
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
-   and LR may be omitted).  */
+   and LR may be omitted).  If the function is not a leaf, ensure LR is
+   saved at the bottom of the callee-save area.  */
 static void
 aarch64_layout_frame (void)
 {
@@ -2936,7 +2937,14 @@ aarch64_layout_frame (void)
       cfun->machine->frame.wb_candidate1 = R29_REGNUM;
       cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
       cfun->machine->frame.wb_candidate2 = R30_REGNUM;
-      offset += 2 * UNITS_PER_WORD;
+      offset = 2 * UNITS_PER_WORD;
+    }
+  else if (!crtl->is_leaf)
+    {
+      /* Ensure LR is saved at the bottom of the callee-saves.  */
+      cfun->machine->frame.reg_offset[R30_REGNUM] = 0;
+      cfun->machine->frame.wb_candidate1 = R30_REGNUM;
+      offset = UNITS_PER_WORD;
     }
 
   /* Now assign stack slots for them.  */
@@ -3034,20 +3042,6 @@ aarch64_layout_frame (void)
       cfun->machine->frame.callee_adjust = cfun->machine->frame.hard_fp_offset;
       cfun->machine->frame.final_adjust
 	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
-    }
-  else if (!frame_pointer_needed
-	   && varargs_and_saved_regs_size < max_push_offset)
-    {
-      /* Frame with large local area and outgoing arguments (this pushes the
-	 callee-saves first, followed by the locals and outgoing area):
-	 stp reg1, reg2, [sp, -varargs_and_saved_regs_size]!
-	 stp reg3, reg4, [sp, 16]
-	 sub sp, sp, frame_size - varargs_and_saved_regs_size  */
-      cfun->machine->frame.callee_adjust = varargs_and_saved_regs_size;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
-      cfun->machine->frame.hard_fp_offset = cfun->machine->frame.callee_adjust;
-      cfun->machine->frame.locals_offset = cfun->machine->frame.hard_fp_offset;
     }
   else
     {

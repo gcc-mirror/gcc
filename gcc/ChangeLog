@@ -1,5 +1,12 @@
 2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_layout_frame):
+	Ensure LR is always stored at the bottom of the callee-saves.
+	Remove rarely used frame layout which saves callee-saves at top of
+	frame, so the store of LR can be used as a valid probe in all cases.
+
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_legitimize_address_displacement):
 	Improve unaligned TImode/TFmode base/offset split.
 
