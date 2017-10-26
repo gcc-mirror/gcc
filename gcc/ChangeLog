@@ -1,3 +1,23 @@
+2017-10-26  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_cmpeq_pd_mask,
+	_mm512_cmple_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_cmpneq_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_cmpnlt_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_cmpunord_pd_mask, _mm512_mask_cmpeq_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_mask_cmplt_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_mask_cmpnle_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_mask_cmpord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask, _mm512_cmpeq_ps_mask,
+	_mm512_cmple_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_cmpneq_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_cmpnlt_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_cmpunord_ps_mask, _mm512_mask_cmpeq_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_mask_cmplt_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_mask_cmpnle_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_mask_cmpord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask): New intrinsics.
+
 2017-10-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/aix.h (TARGET_IEEEQUAD_DEFAULT): Set long double
