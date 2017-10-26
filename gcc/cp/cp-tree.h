@@ -249,9 +249,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    table.  */
 #define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
-/* The name of the identifier used internally to represent operator CODE.  */
-#define cp_operator_id(CODE) \
-  (operator_name_info[(int) (CODE)].identifier)
+#define ovl_op_identifier(ISASS, CODE)		\
+  (OOC_INFO(ISASS, CODE)->identifier)
 
 /* The name of the identifier used to represent assignment operator CODE,
    both simple (i.e., operator= with CODE == NOP_EXPR) and compound (e.g.,
@@ -5508,16 +5507,17 @@ struct GTY(()) ooc_info_t {
   /* The mangled name of the operator.  */
   const char *mangled_name;
   /* The arity of the operator.  */
-  short arity;
-  unsigned char kind;
-  unsigned char ooc;
+  signed arity : 8;
+  unsigned kind : 8;
+  unsigned ooc : 8;
   enum tree_code code;
 };
 
-#define OOC_OPERATORS 0
-#define OOC_ASSIGNMENTS 1
-extern GTY(()) ooc_info_t ooc_info[2][int (OOC_MAX)];
-extern GTY(()) unsigned char ooc_mapping[int (MAX_TREE_CODES)];
+extern GTY(()) ooc_info_t ooc_info[2][unsigned (OOC_MAX)];
+extern GTY(()) unsigned char ooc_mapping[unsigned (MAX_TREE_CODES)];
+
+#define OOC_INFO(ISASS,CODE)			\
+  (&ooc_info[(ISASS) != 0][ooc_mapping[unsigned (CODE)]])
 
 typedef struct GTY(()) operator_name_info_t {
   /* The IDENTIFIER_NODE for the operator.  */

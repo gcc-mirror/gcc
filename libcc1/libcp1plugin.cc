@@ -1346,12 +1346,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	    }
 
 	  if (opcode != ERROR_MARK)
-	    {
-	      if (assop)
-		identifier = cp_assignment_operator_id (opcode);
-	      else
-		identifier = cp_operator_id (opcode);
-	    }
+	    identifier = ovl_op_identifier (assop, opcode);
 	}
       decl = build_lang_decl_loc (loc, code, identifier, sym_type);
       /* FIXME: current_lang_name is lang_name_c while compiling an
@@ -2649,12 +2644,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
       gcc_assert (convop || !conv_type);
 
       if (opcode != ERROR_MARK)
-	{
-	  if (assop)
-	    identifier = cp_assignment_operator_id (opcode);
-	  else
-	    identifier = cp_operator_id (opcode);
-	}
+	identifier = ovl_op_identifier (assop, opcode);
 
       gcc_assert (identifier);
     }

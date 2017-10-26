@@ -4491,9 +4491,8 @@ static tree
 push_cp_library_fn (enum tree_code operator_code, tree type,
 		    int ecf_flags)
 {
-  tree fn = build_cp_library_fn (cp_operator_id (operator_code),
-				 operator_code,
-				 type, ecf_flags);
+  tree fn = build_cp_library_fn (ovl_op_identifier (false, operator_code),
+				 operator_code, type, ecf_flags);
   pushdecl (fn);
   if (flag_tm)
     apply_tm_attr (fn, get_identifier ("transaction_safe"));

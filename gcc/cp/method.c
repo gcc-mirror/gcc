@@ -1703,12 +1703,12 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	{
 	  /* Unlike for base ctor/op=/dtor, for operator delete it's fine
 	     to have a null fn (no class-specific op delete).  */
-	  fn = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+	  fn = locate_fn_flags (ctype, ovl_op_identifier (false, DELETE_EXPR),
 				ptr_type_node, flags, tf_none);
 	  if (fn && fn == error_mark_node)
 	    {
 	      if (complain & tf_error)
-		locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+		locate_fn_flags (ctype, ovl_op_identifier (false, DELETE_EXPR),
 				 ptr_type_node, flags, complain);
 	      if (deleted_p)
 		*deleted_p = true;

@@ -2253,9 +2253,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case EQ_EXPR:
     case NE_EXPR:
     case EXACT_DIV_EXPR:
-      dump_binary_op (pp,
-		      ooc_info[0][ooc_mapping[unsigned (TREE_CODE (t))]].name,
-		      t, flags);
+      dump_binary_op (pp, OOC_INFO (false, TREE_CODE (t))->name, t, flags);
       break;
 
     case CEIL_DIV_EXPR:
@@ -2386,17 +2384,14 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case TRUTH_NOT_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
-      dump_unary_op (pp,
-		     ooc_info[0][ooc_mapping[unsigned (TREE_CODE (t))]].name,
-		     t, flags);
+      dump_unary_op (pp, OOC_INFO (false, TREE_CODE (t))->name, t, flags);
       break;
 
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
       pp_cxx_left_paren (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_ws_string (pp,
-			ooc_info[0][ooc_mapping[unsigned (TREE_CODE (t))]].name);
+      pp_cxx_ws_string (pp, OOC_INFO (false, TREE_CODE (t))->name);
       pp_cxx_right_paren (pp);
       break;
 
@@ -2659,8 +2654,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      pp_cxx_ws_string (pp,
-			ooc_info[0][ooc_mapping[unsigned (TREE_CODE (t))]].name);
+      pp_cxx_ws_string (pp, OOC_INFO (false, TREE_CODE (t))->name);
       pp_cxx_whitespace (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
@@ -3142,7 +3136,7 @@ parm_to_string (int p)
 static const char *
 op_to_string (bool assop, enum tree_code p)
 {
-  tree id = ooc_info[assop][ooc_mapping[p]].identifier;
+  tree id = ovl_op_identifier (assop, p);
   return id ? IDENTIFIER_POINTER (id) : M_("<unknown>");
 }
 

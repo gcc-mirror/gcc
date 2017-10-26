@@ -5304,7 +5304,7 @@ type_requires_array_cookie (tree type)
      the array to the deallocation function, so we will need to store
      a cookie.  */
   fns = lookup_fnfields (TYPE_BINFO (type),
-			 cp_operator_id (VEC_DELETE_EXPR),
+			 ovl_op_identifier (false, VEC_DELETE_EXPR),
 			 /*protect=*/0);
   /* If there are no `operator []' members, or the lookup is
      ambiguous, then we don't need a cookie.  */

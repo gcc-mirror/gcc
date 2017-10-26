@@ -10614,7 +10614,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     p = obstack_alloc (&declarator_obstack, 0);
 
-    declarator = make_id_declarator (NULL_TREE, cp_operator_id (CALL_EXPR),
+    declarator = make_id_declarator (NULL_TREE,
+				     ovl_op_identifier (false, CALL_EXPR),
 				     sfk_none);
 
     quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
@@ -14715,12 +14716,13 @@ cp_parser_operator (cp_parser* parser)
   location_t start_loc = token->location;
 
   /* Figure out which operator we have.  */
+  enum tree_code op = ERROR_MARK;
+  bool assop = false;
+  bool consumed = false;
   switch (token->type)
     {
     case CPP_KEYWORD:
       {
-	enum tree_code op;
-
 	/* The keyword should be either `new' or `delete'.  */
 	if (token->keyword == RID_NEW)
 	  op = NEW_EXPR;
@@ -14744,160 +14746,166 @@ cp_parser_operator (cp_parser* parser)
 	    if (cp_token *close_token
 		= cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
 	      end_loc = close_token->location;
-	    id = cp_operator_id (op == NEW_EXPR
-			      ? VEC_NEW_EXPR : VEC_DELETE_EXPR);
+	    op = op == NEW_EXPR ? VEC_NEW_EXPR : VEC_DELETE_EXPR;
 	  }
-	/* Otherwise, we have the non-array variant.  */
-	else
-	  id = cp_operator_id (op);
-
-	location_t loc = make_location (start_loc, start_loc, end_loc);
-
-	return cp_expr (id, loc);
+	start_loc = make_location (start_loc, start_loc, end_loc);
+	consumed = true;
+	break;
       }
 
     case CPP_PLUS:
-      id = cp_operator_id (PLUS_EXPR);
+      op = PLUS_EXPR;
       break;
 
     case CPP_MINUS:
-      id = cp_operator_id (MINUS_EXPR);
+      op = MINUS_EXPR;
       break;
 
     case CPP_MULT:
-      id = cp_operator_id (MULT_EXPR);
+      op = MULT_EXPR;
       break;
 
     case CPP_DIV:
-      id = cp_operator_id (TRUNC_DIV_EXPR);
+      op = TRUNC_DIV_EXPR;
       break;
 
     case CPP_MOD:
-      id = cp_operator_id (TRUNC_MOD_EXPR);
+      op = TRUNC_MOD_EXPR;
       break;
 
     case CPP_XOR:
-      id = cp_operator_id (BIT_XOR_EXPR);
+      op = BIT_XOR_EXPR;
       break;
 
     case CPP_AND:
-      id = cp_operator_id (BIT_AND_EXPR);
+      op = BIT_AND_EXPR;
       break;
 
     case CPP_OR:
-      id = cp_operator_id (BIT_IOR_EXPR);
+      op = BIT_IOR_EXPR;
       break;
 
     case CPP_COMPL:
-      id = cp_operator_id (BIT_NOT_EXPR);
+      op = BIT_NOT_EXPR;
       break;
 
     case CPP_NOT:
-      id = cp_operator_id (TRUTH_NOT_EXPR);
+      op = TRUTH_NOT_EXPR;
       break;
 
     case CPP_EQ:
-      id = cp_assignment_operator_id (NOP_EXPR);
+      assop = true;
+      op = NOP_EXPR;
       break;
 
     case CPP_LESS:
-      id = cp_operator_id (LT_EXPR);
+      op = LT_EXPR;
       break;
 
     case CPP_GREATER:
-      id = cp_operator_id (GT_EXPR);
+      op = GT_EXPR;
       break;
 
     case CPP_PLUS_EQ:
-      id = cp_assignment_operator_id (PLUS_EXPR);
+      assop = true;
+      op = PLUS_EXPR;
       break;
 
     case CPP_MINUS_EQ:
-      id = cp_assignment_operator_id (MINUS_EXPR);
+      assop = true;
+      op = MINUS_EXPR;
       break;
 
     case CPP_MULT_EQ:
-      id = cp_assignment_operator_id (MULT_EXPR);
+      assop = true;
+      op = MULT_EXPR;
       break;
 
     case CPP_DIV_EQ:
-      id = cp_assignment_operator_id (TRUNC_DIV_EXPR);
+      assop = true;
+      op = TRUNC_DIV_EXPR;
       break;
 
     case CPP_MOD_EQ:
-      id = cp_assignment_operator_id (TRUNC_MOD_EXPR);
+      assop = true;
+      op = TRUNC_MOD_EXPR;
       break;
 
     case CPP_XOR_EQ:
-      id = cp_assignment_operator_id (BIT_XOR_EXPR);
+      assop = true;
+      op = BIT_XOR_EXPR;
       break;
 
     case CPP_AND_EQ:
-      id = cp_assignment_operator_id (BIT_AND_EXPR);
+      assop = true;
+      op = BIT_AND_EXPR;
       break;
 
     case CPP_OR_EQ:
-      id = cp_assignment_operator_id (BIT_IOR_EXPR);
+      assop = true;
+      op = BIT_IOR_EXPR;
       break;
 
     case CPP_LSHIFT:
-      id = cp_operator_id (LSHIFT_EXPR);
+      op = LSHIFT_EXPR;
       break;
 
     case CPP_RSHIFT:
-      id = cp_operator_id (RSHIFT_EXPR);
+      op = RSHIFT_EXPR;
       break;
 
     case CPP_LSHIFT_EQ:
-      id = cp_assignment_operator_id (LSHIFT_EXPR);
+      assop = true;
+      op = LSHIFT_EXPR;
       break;
 
     case CPP_RSHIFT_EQ:
-      id = cp_assignment_operator_id (RSHIFT_EXPR);
+      assop = true;
+      op = RSHIFT_EXPR;
       break;
 
     case CPP_EQ_EQ:
-      id = cp_operator_id (EQ_EXPR);
+      op = EQ_EXPR;
       break;
 
     case CPP_NOT_EQ:
-      id = cp_operator_id (NE_EXPR);
+      op = NE_EXPR;
       break;
 
     case CPP_LESS_EQ:
-      id = cp_operator_id (LE_EXPR);
+      op = LE_EXPR;
       break;
 
     case CPP_GREATER_EQ:
-      id = cp_operator_id (GE_EXPR);
+      op = GE_EXPR;
       break;
 
     case CPP_AND_AND:
-      id = cp_operator_id (TRUTH_ANDIF_EXPR);
+      op = TRUTH_ANDIF_EXPR;
       break;
 
     case CPP_OR_OR:
-      id = cp_operator_id (TRUTH_ORIF_EXPR);
+      op = TRUTH_ORIF_EXPR;
       break;
 
     case CPP_PLUS_PLUS:
-      id = cp_operator_id (POSTINCREMENT_EXPR);
+      op = POSTINCREMENT_EXPR;
       break;
 
     case CPP_MINUS_MINUS:
-      id = cp_operator_id (PREDECREMENT_EXPR);
+      op = PREDECREMENT_EXPR;
       break;
 
     case CPP_COMMA:
-      id = cp_operator_id (COMPOUND_EXPR);
+      op = COMPOUND_EXPR;
       break;
 
     case CPP_DEREF_STAR:
-      id = cp_operator_id (MEMBER_REF);
+      op = MEMBER_REF;
       break;
 
     case CPP_DEREF:
-      id = cp_operator_id (COMPONENT_REF);
+      op = COMPONENT_REF;
       break;
 
     case CPP_OPEN_PAREN:
@@ -14907,7 +14915,9 @@ cp_parser_operator (cp_parser* parser)
         parens.consume_open (parser);
         /* Look for the matching `)'.  */
         parens.require_close (parser);
-        return cp_operator_id (CALL_EXPR);
+	op = CALL_EXPR;
+	consumed = true;
+	break;
       }
 
     case CPP_OPEN_SQUARE:
@@ -14915,7 +14925,9 @@ cp_parser_operator (cp_parser* parser)
       cp_lexer_consume_token (parser->lexer);
       /* Look for the matching `]'.  */
       cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
-      return cp_operator_id (ARRAY_REF);
+      op = ARRAY_REF;
+      consumed = true;
+      break;
 
     case CPP_UTF8STRING:
     case CPP_UTF8STRING_USERDEF:
@@ -14994,8 +15006,12 @@ cp_parser_operator (cp_parser* parser)
 
   /* If we have selected an identifier, we need to consume the
      operator token.  */
-  if (id)
-    cp_lexer_consume_token (parser->lexer);
+  if (op != ERROR_MARK)
+    {
+      id = ovl_op_identifier (assop, op);
+      if (!consumed)
+	cp_lexer_consume_token (parser->lexer);
+    }
   /* Otherwise, no valid operator name was present.  */
   else
     {
@@ -32574,21 +32590,21 @@ cp_parser_omp_clause_reduction (cp_parser *parser, tree list)
 	    code = MIN_EXPR;
 	  else if (strcmp (p, "max") == 0)
 	    code = MAX_EXPR;
-	  else if (id == cp_operator_id (PLUS_EXPR))
+	  else if (id == ovl_op_identifier (false, PLUS_EXPR))
 	    code = PLUS_EXPR;
-	  else if (id == cp_operator_id (MULT_EXPR))
+	  else if (id == ovl_op_identifier (false, MULT_EXPR))
 	    code = MULT_EXPR;
-	  else if (id == cp_operator_id (MINUS_EXPR))
+	  else if (id == ovl_op_identifier (false, MINUS_EXPR))
 	    code = MINUS_EXPR;
-	  else if (id == cp_operator_id (BIT_AND_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_AND_EXPR))
 	    code = BIT_AND_EXPR;
-	  else if (id == cp_operator_id (BIT_IOR_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_IOR_EXPR))
 	    code = BIT_IOR_EXPR;
-	  else if (id == cp_operator_id (BIT_XOR_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_XOR_EXPR))
 	    code = BIT_XOR_EXPR;
-	  else if (id == cp_operator_id (TRUTH_ANDIF_EXPR))
+	  else if (id == ovl_op_identifier (false, TRUTH_ANDIF_EXPR))
 	    code = TRUTH_ANDIF_EXPR;
-	  else if (id == cp_operator_id (TRUTH_ORIF_EXPR))
+	  else if (id == ovl_op_identifier (false, TRUTH_ORIF_EXPR))
 	    code = TRUTH_ORIF_EXPR;
 	  id = omp_reduction_id (code, id, NULL_TREE);
 	  tree scope = parser->scope;

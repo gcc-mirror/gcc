@@ -1,5 +1,35 @@
 2017-10-26  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 3.
+	gcc/cp
+	* cp-tree.h (cp_operator_id): Delete.
+	(ovl_op_identifier): Define.
+	(OOC_INFO): Define.
+	* call.c (build_op_call_1): Use ovl_op_identifier.
+	(op_error): Use OOC_INFO.
+	(build_conditional_expr_1): Use ovl_op_identifier.
+	(build_new_op_1): Likewise.
+	(build_op_delete_call): Likewise.
+	* class.c (type_requires_array_cookie): Likewise.
+	* decl.c (push_cp_library_fn): Likewise.
+	* decl2.c (maybe_warn_sized_delete): Likewise.
+	* error.c (dump_expr): Use OOC_INFO.
+	(parm_to_string): Use ovl_op_identifier.
+	* init.c (build_new_1): Likewise.
+	* lambda.c (lambda_function): Likewise.
+	* lex.c (unqualified_name_lookup_error): Don't check ERROR_MARK.
+	* mangle.c (write_unqualified_name): Use OOC_INFO.
+	(write_expression): Likewise.
+	* method.c (synthesized_method_walk): Use ovl_op_identifier.
+	* parser.c (cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_operator): Likewise.
+	(cp_parser_omp_clause_reduction): Likewise.
+	* semantics.c (omp_reduction_id): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Use OOC_INFO.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_decl): Use ovl_op_identifier.
+	(plugin_build_dependent_expr): Likewise.
+
 	Operator code compaction part 2.
 	gcc/cp/
 	* cp-tree.h (IDENTIFIER_CP_INDEX): New.

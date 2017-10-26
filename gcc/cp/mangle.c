@@ -1341,11 +1341,9 @@ write_unqualified_name (tree decl)
 	}
       else if (DECL_OVERLOADED_OPERATOR_P (decl))
 	{
-	  unsigned map
-	    = ooc_mapping[unsigned DECL_OVERLOADED_OPERATOR_CODE (decl)];
 	  const char *mangled_name
-	    = ooc_info[DECL_ASSIGNMENT_OPERATOR_P (decl)][map].mangled_name;
-
+	    = OOC_INFO (DECL_ASSIGNMENT_OPERATOR_P (decl),
+			DECL_OVERLOADED_OPERATOR_CODE (decl))->mangled_name;
 	  write_string (mangled_name);
 	}
       else if (UDLIT_OPER_P (DECL_NAME (decl)))
@@ -3059,8 +3057,7 @@ write_expression (tree expr)
   else if (TREE_CODE (expr) == MODOP_EXPR)
     {
       enum tree_code subop = TREE_CODE (TREE_OPERAND (expr, 1));
-      unsigned map = ooc_mapping[unsigned (subop)];
-      const char *name = ooc_info[1][map].mangled_name;
+      const char *name = OOC_INFO (true, subop)->mangled_name;
 
       write_string (name);
       write_expression (TREE_OPERAND (expr, 0));
@@ -3086,7 +3083,7 @@ write_expression (tree expr)
       if (NEW_EXPR_USE_GLOBAL (expr))
 	write_string ("gs");
 
-      write_string (ooc_info[0][ooc_mapping[unsigned (code)]].mangled_name);
+      write_string (OOC_INFO (false, code)->mangled_name);
 
       for (t = placement; t; t = TREE_CHAIN (t))
 	write_expression (TREE_VALUE (t));
@@ -3126,7 +3123,7 @@ write_expression (tree expr)
       if (DELETE_EXPR_USE_GLOBAL (expr))
 	write_string ("gs");
 
-      write_string (ooc_info[0][ooc_mapping[unsigned (code)]].mangled_name);
+      write_string (OOC_INFO (false, code)->mangled_name);
 
       write_expression (TREE_OPERAND (expr, 0));
     }
@@ -3191,8 +3188,7 @@ write_expression (tree expr)
 
 	  if (TREE_CODE (ob) == ARROW_EXPR)
 	    {
-	      write_string (ooc_info[0][ooc_mapping[unsigned(code)]]
-			    .mangled_name);
+	      write_string (OOC_INFO (false, code)->mangled_name);
 	      ob = TREE_OPERAND (ob, 0);
 	      write_expression (ob);
 	    }
@@ -3209,7 +3205,7 @@ write_expression (tree expr)
 	}
 
       /* If it wasn't any of those, recursively expand the expression.  */
-      name = ooc_info[0][ooc_mapping[unsigned (code)]].mangled_name;
+      name = OOC_INFO (false, code)->mangled_name;
 
       /* We used to mangle const_cast and static_cast like a C cast.  */
       if (code == CONST_CAST_EXPR
@@ -3218,7 +3214,7 @@ write_expression (tree expr)
 	  if (abi_warn_or_compat_version_crosses (6))
 	    G.need_abi_warning = 1;
 	  if (!abi_version_at_least (6))
-	    name = ooc_info[0][ooc_mapping[unsigned (CAST_EXPR)]].mangled_name;
+	    name = OOC_INFO (false, CAST_EXPR)->mangled_name;
 	}
 
       if (name == NULL)
@@ -3319,8 +3315,7 @@ write_expression (tree expr)
 		  if (i == 0)
 		    {
 		      int fcode = TREE_INT_CST_LOW (operand);
-		      write_string (ooc_info[0][ooc_mapping[fcode]]
-				    .mangled_name);
+		      write_string (OOC_INFO (false, fcode)->mangled_name);
 		      continue;
 		    }
 		  else if (code == BINARY_LEFT_FOLD_EXPR)

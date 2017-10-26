@@ -4455,7 +4455,7 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (ovl_iterator iter (get_global_binding (cp_operator_id (code)));
+  for (ovl_iterator iter (get_global_binding (ovl_op_identifier (false, code)));
        iter; ++iter)
     {
       tree fn = *iter;

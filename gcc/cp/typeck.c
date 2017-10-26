@@ -1562,7 +1562,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       if (complain)
 	pedwarn (input_location, OPT_Wpointer_arith, 
 		 "invalid application of %qs to a member function", 
-		 ooc_info[0][ooc_mapping[unsigned (op)]].name);
+		 OOC_INFO (false, op)->name);
       else
 	return error_mark_node;
       value = size_one_node;

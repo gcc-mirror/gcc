@@ -5099,7 +5099,7 @@ omp_reduction_id (enum tree_code reduction_code, tree reduction_id, tree type)
     case BIT_IOR_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      reduction_id = cp_operator_id (reduction_code);
+      reduction_id = ovl_op_identifier (false, reduction_code);
       break;
     case MIN_EXPR:
       p = "min";
