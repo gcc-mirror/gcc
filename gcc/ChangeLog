@@ -1,3 +1,7 @@
+2017-10-26  Jim Wilson  <wilson@tuliptree.org>
+
+	* doc/invoke.texi (-fdebug-prefix-map): Expand documentation.
+
 2017-10-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/82707
