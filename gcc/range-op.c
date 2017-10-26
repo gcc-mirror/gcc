@@ -423,6 +423,7 @@ operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
   return true;
 }
 
+
 bool
 operator_lt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 {
@@ -449,11 +450,11 @@ operator_lt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
   switch (get_bool_state (r, lhs, op1.get_type ()))
     {
       case BRS_FALSE:
-	build_lt (r, op1.get_type (), op1.upper_bound ());
+	build_le (r, op1.get_type (), op1.upper_bound ());
 	break;
 
       case BRS_TRUE:
-	build_ge (r, op1.get_type (), op1.lower_bound ());
+	build_gt (r, op1.get_type (), op1.lower_bound ());
 	break;
 
       default:
@@ -524,11 +525,11 @@ operator_le::op2_irange (irange& r, const irange& lhs, const irange& op1) const
   switch (get_bool_state (r, lhs, op1.get_type ()))
     {
       case BRS_FALSE:
-	build_le (r, op1.get_type (), op1.upper_bound ());
+	build_lt (r, op1.get_type (), op1.upper_bound ());
 	break;
 
       case BRS_TRUE:
-	build_gt (r, op1.get_type (), op1.lower_bound ());
+	build_ge (r, op1.get_type (), op1.lower_bound ());
 	break;
 
       default:
@@ -601,11 +602,11 @@ operator_gt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
   switch (get_bool_state (r, lhs, op1.get_type ()))
     {
       case BRS_FALSE:
-	build_gt (r, op1.get_type (), op1.lower_bound ());
+	build_ge (r, op1.get_type (), op1.lower_bound ());
 	break;
 
       case BRS_TRUE:
-	build_le (r, op1.get_type (), op1.upper_bound ());
+	build_lt (r, op1.get_type (), op1.upper_bound ());
 	break;
 
       default:
@@ -678,11 +679,11 @@ operator_ge::op2_irange (irange& r, const irange& lhs, const irange& op1) const
   switch (get_bool_state (r, lhs, op1.get_type ()))
     {
       case BRS_FALSE:
-	build_ge (r, op1.get_type (), op1.lower_bound ());
+	build_gt (r, op1.get_type (), op1.lower_bound ());
 	break;
 
       case BRS_TRUE:
-	build_lt (r, op1.get_type (), op1.upper_bound ());
+	build_le (r, op1.get_type (), op1.upper_bound ());
 	break;
 
       default:
