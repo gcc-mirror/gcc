@@ -103,30 +103,28 @@ print_decu (const wide_int_ref &wi, FILE *file)
 }
 
 void
-print_hex (const wide_int_ref &wi, char *buf)
+print_hex (const wide_int_ref &val, char *buf)
 {
-  int i = wi.get_len ();
-
-  if (wi == 0)
+  if (val == 0)
     buf += sprintf (buf, "0x0");
   else
     {
-      if (wi::neg_p (wi))
+      buf += sprintf (buf, "0x");
+      int start = ROUND_DOWN (val.get_precision (), HOST_BITS_PER_WIDE_INT);
+      int width = val.get_precision () - start;
+      bool first_p = true;
+      for (int i = start; i >= 0; i -= HOST_BITS_PER_WIDE_INT)
 	{
-	  int j;
-	  /* If the number is negative, we may need to pad value with
-	     0xFFF...  because the leading elements may be missing and
-	     we do not print a '-' with hex.  */
-	  buf += sprintf (buf, "0x");
-	  for (j = BLOCKS_NEEDED (wi.get_precision ()); j > i; j--)
-	    buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, HOST_WIDE_INT_M1);
-
+	  unsigned HOST_WIDE_INT uhwi = wi::extract_uhwi (val, i, width);
+	  if (!first_p)
+	    buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, uhwi);
+	  else if (uhwi != 0)
+	    {
+	      buf += sprintf (buf, HOST_WIDE_INT_PRINT_HEX_PURE, uhwi);
+	      first_p = false;
+	    }
+	  width = HOST_BITS_PER_WIDE_INT;
 	}
-      else
-	buf += sprintf (buf, "0x" HOST_WIDE_INT_PRINT_HEX_PURE, wi.elt (--i));
-
-      while (--i >= 0)
-	buf += sprintf (buf, HOST_WIDE_INT_PRINT_PADDED_HEX, wi.elt (i));
     }
 }
 
