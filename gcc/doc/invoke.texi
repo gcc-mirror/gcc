@@ -6983,7 +6983,7 @@ link processing time.  Merging is enabled by default.
 @opindex fdebug-prefix-map
 When compiling files in directory @file{@var{old}}, record debugging
 information describing them as in @file{@var{new}} instead.  This can be
-used to replace a build time path with an install time path in the debug info.
+used to replace a build-time path with an install-time path in the debug info.
 It can also be used to change an absolute path to a relative path by using
 @file{.} for @var{new}.  This can give more reproducible builds, which are
 location independent, but may require an extra command to tell GDB where to
