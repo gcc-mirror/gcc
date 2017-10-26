@@ -1,5 +1,18 @@
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_dotprod_neon_ok): New.
+	(add_options_for_arm_v8_2a_dotprod_neon): New.
+	(check_effective_target_arm_v8_2a_dotprod_neon_hw): New.
+	(check_effective_target_vect_sdot_qi): Add ARM && AArch64.
+	(check_effective_target_vect_udot_qi): Likewise.
+	* gcc.target/arm/simd/vdot-exec.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-exec.c: New.
+	* gcc/doc/sourcebuild.texi: Document arm_v8_2a_dotprod_neon.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
 	* gcc.dg/vect/vect-multitypes-1.c: Correct target selector.
 
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
