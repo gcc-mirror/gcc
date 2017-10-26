@@ -49,6 +49,7 @@
 #include "stor-layout.h"
 #include "builtins.h"
 #include "tree-pass.h"
+#include "xregex.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -102,6 +103,9 @@ static enum nios2_ccs_code custom_code_status[256];
 static int custom_code_index[256];
 /* Set to true if any conflicts (re-use of a code between 0-255) are found.  */
 static bool custom_code_conflict = false;
+
+/* State for command-line options.  */
+regex_t nios2_gprel_sec_regex;
 
 
 /* Definition of builtin function types for nios2.  */
@@ -1371,6 +1375,23 @@ nios2_option_override (void)
 	nios2_gpopt_option = gpopt_local;
     }
 
+  /* GP-relative addressing doesn't make sense for PIC.  */
+  if (flag_pic)
+    { 
+      if (nios2_gpopt_option != gpopt_none)
+        error ("-mgpopt not supported with PIC.");
+      if (nios2_gprel_sec)
+        error ("-mgprel-sec= not supported with PIC.");
+    }
+
+  /* Process -mgprel-sec=.  */
+  if (nios2_gprel_sec)
+    {
+      if (regcomp (&nios2_gprel_sec_regex, nios2_gprel_sec, 
+		   REG_EXTENDED | REG_NOSUB))
+	error ("-mgprel-sec= argument is not a valid regular expression.");
+    }
+
   /* If we don't have mul, we don't have mulx either!  */
   if (!TARGET_HAS_MUL && TARGET_HAS_MULX)
     target_flags &= ~MASK_HAS_MULX;
@@ -2268,7 +2289,9 @@ nios2_small_section_name_p (const char *section)
   return (strcmp (section, ".sbss") == 0
 	  || strncmp (section, ".sbss.", 6) == 0
 	  || strcmp (section, ".sdata") == 0
-	  || strncmp (section, ".sdata.", 7) == 0);
+	  || strncmp (section, ".sdata.", 7) == 0
+	  || (nios2_gprel_sec 
+	      && regexec (&nios2_gprel_sec_regex, section, 0, NULL, 0) == 0));
 }
 
 /* Return true if EXP should be placed in the small data section.  */

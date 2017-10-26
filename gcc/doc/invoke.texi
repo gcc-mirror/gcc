@@ -948,6 +948,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{Nios II Options}
 @gccoptlist{-G @var{num}  -mgpopt=@var{option}  -mgpopt  -mno-gpopt @gol
+-mgprel-sec=@var{regexp} @gol
 -mel  -meb @gol
 -mno-bypass-cache  -mbypass-cache @gol
 -mno-cache-volatile  -mcache-volatile @gol
@@ -21170,6 +21171,18 @@ programs that include large amounts of small data, including large
 GOT data sections.  In this case, the 16-bit offset for GP-relative
 addressing may not be large enough to allow access to the entire 
 small data section.
+
+@item -mgprel-sec=@var{regexp}
+@opindex mgprel-sec
+This option specifies additional section names that can be accessed via
+GP-relative addressing.  It is most useful in conjunction with 
+@code{section} attributes on variable declarations 
+(@pxref{Common Variable Attributes}) and a custom linker script.  
+The @var{regexp} is a POSIX Extended Regular Expression.
+
+This option does not affect the behavior of the @option{-G} option, and 
+and the specified sections are in addition to the standard @code{.sdata} 
+and @code{.sbss} small-data sections that are recognized by @option{-mgpopt}.
 
 @item -mel
 @itemx -meb

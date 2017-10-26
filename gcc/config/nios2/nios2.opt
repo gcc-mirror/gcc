@@ -586,3 +586,7 @@ Enable generation of R2 BMX instructions.
 mcdx
 Target Report Mask(HAS_CDX)
 Enable generation of R2 CDX instructions.
+
+mgprel-sec=
+Target RejectNegative Joined Var(nios2_gprel_sec) Init(NULL)
+Regular expression matching additional GP-addressible small-data section names.
