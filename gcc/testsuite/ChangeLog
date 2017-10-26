@@ -1,3 +1,8 @@
+2017-10-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/arm/require-pic-register-loc.c: Use wider regex for
+	column information.
+
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/vect/vect-reduc-dot-s8a.c
