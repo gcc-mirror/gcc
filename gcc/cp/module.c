@@ -59,7 +59,8 @@ struct GTY(()) module_state {
   int direct_import;	/* Direct import/rexport of main module.  */
   unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
-  unsigned HOST_WIDE_INT stamp;	/* Timestamp we saw reading it in.  */
+  const char *filename;	/* Filename */
+  location_t loc;	/* Its location.  */
 
  public:
   module_state ();
@@ -68,6 +69,9 @@ struct GTY(()) module_state {
   void freeze (const module_state *);
   void set_index (unsigned index);
   void set_name (tree name, hashval_t, unsigned crc);
+  void set_location (const char *filename);
+  void push_location (const char *filename);
+  void pop_location () const;
   void do_import (unsigned index, bool is_export);
 
  public:
@@ -128,7 +132,7 @@ static int validate_module_name (bool, const char *, size_t);
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (NULL_TREE), name_parts (NULL), direct_import (0), mod (~0u),
-    crc (0), stamp (0)
+    crc (0), filename (NULL), loc (UNKNOWN_LOCATION)
 {
 }
 
@@ -246,6 +250,28 @@ module_state::set_name (tree name_, hashval_t hash_, unsigned crc_)
   while (dot);
 
   XDELETEVEC (buffer);
+}
+
+void
+module_state::set_location (const char *name)
+{
+  filename = name;
+  loc = input_location;
+}
+
+void
+module_state::push_location (const char *name)
+{
+  filename = name;
+  linemap_add (line_table, LC_ENTER, false, filename, 0);
+  loc = linemap_line_start (line_table, 0, 0);
+  input_location = loc;
+}
+
+void
+module_state::pop_location () const
+{
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -1049,6 +1075,9 @@ public:
 public:
   static const gtp global_tree_arys[];
 
+public:
+  module_state *state;
+
 private:
   unsigned tag;
 
@@ -1059,7 +1088,7 @@ private:
   bool bol;
 
 public:
-  cpm_stream (cpm_stream *chain = NULL);
+  cpm_stream (module_state *, cpm_stream *chain = NULL);
   ~cpm_stream ();
 
 protected:
@@ -1115,8 +1144,8 @@ public:
   }
 };
 
-cpm_stream::cpm_stream (cpm_stream *chain)
-  : tag (rt_ref_base), d (chain ? chain->d : NULL),
+cpm_stream::cpm_stream (module_state *state_, cpm_stream *chain)
+  : state (state_), tag (rt_ref_base), d (chain ? chain->d : NULL),
     depth (chain ? chain->depth + 1 : 0), nesting (0), bol (true)
 {
   gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
@@ -1364,7 +1393,7 @@ class cpms_out : public cpm_stream {
   unsigned records;
 
 public:
-  cpms_out (FILE *, const char *, tree);
+  cpms_out (FILE *, module_state *);
   ~cpms_out ();
 
   void instrument ();
@@ -1413,12 +1442,12 @@ public:
   void bindings (tree ns);
 };
 
-cpms_out::cpms_out (FILE *s, const char *n, tree name)
-  :cpm_stream (), w (s, n)
+cpms_out::cpms_out (FILE *s, module_state *state)
+  :cpm_stream (state), w (s, state->filename)
 {
   unique = refs = nulls = 0;
   records = 0;
-  dump () && dump ("Writing module %I", name);
+  dump () && dump ("Writing module %I", state->name);
 }
 
 cpms_out::~cpms_out ()
@@ -1458,9 +1487,6 @@ cpms_out::instrument ()
 class cpms_in : public cpm_stream {
   cpm_reader r;
 
-  /* Module state being initialized.  */
-  module_state *state;
-
   typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> traits;
   hash_map<unsigned,void *,traits> tree_map; /* ids to trees  */
 
@@ -1472,7 +1498,7 @@ class cpms_in : public cpm_stream {
   unsigned *remap_vec;
 
 public:
-  cpms_in (FILE *, const char *, module_state *, cpms_in *);
+  cpms_in (FILE *, module_state *, cpms_in *);
   ~cpms_in ();
 
 public:
@@ -1522,9 +1548,9 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (FILE *s, const char *n, module_state *state_, cpms_in *from)
-  :cpm_stream (from), r (s, n), state (state_), mod_ix (GLOBAL_MODULE_INDEX),
-   remap_num (0), remap_vec (NULL)
+cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
+  :cpm_stream (state, from), r (s, state->filename),
+   mod_ix (GLOBAL_MODULE_INDEX), remap_num (0), remap_vec (NULL)
 {
   dump () && dump ("Importing %I", state->name);
 }
@@ -1590,7 +1616,7 @@ cpms_in::header ()
   const char *i = r.buf (strlen (id));
   if (memcmp (id, i, strlen (id)))
     {
-      error ("%qs is not a module file", r.name);
+      error ("not a module file");
       return false;
     }
 
@@ -1608,8 +1634,8 @@ cpms_in::header ()
       if (ver_date != v_date)
 	{
 	  /* Dates differ, decline.  */
-	  error ("%qs built by version %s, this is version %s",
-		 r.name, v_dform, ver_dform);
+	  error ("built by version %s, this is version %s",
+		 v_dform, ver_dform);
 	  return false;
 	}
       else
@@ -1620,8 +1646,8 @@ cpms_in::header ()
 	  tbuf v_tform, ver_tform;
 	  t2s (v_time, v_tform);
 	  t2s (ver_time, ver_tform);
-	  warning (0, "%qs is version %s, but build time was %s, not %s",
-		   r.name, v_dform, v_tform, ver_tform);
+	  warning (0, "version %s, but build time was %s, not %s",
+		   v_dform, v_tform, ver_tform);
 	}
     }
   dump () && dump  ("Expecting %V found %V", ver, v);
@@ -1630,7 +1656,7 @@ cpms_in::header ()
   dump () && dump ("Readinging CRC=%x", crc);
   if (state->crc && state->crc != crc)
     {
-      error ("module %qE (%qs) CRC mismatch", state->name, r.name);
+      error ("module %qE CRC mismatch", state->name);
       return false;
     }
   else
@@ -1642,8 +1668,7 @@ cpms_in::header ()
     return false;
   if (!module_state_hash::equal (state, name))
     {
-      error ("%qs is module %qE, expected module %qE",
-	     r.name, name, state->name);
+      error ("module %qE found, expected module %qE", name, state->name);
       return false;
     }
 
@@ -1700,13 +1725,13 @@ cpms_in::tag_conf ()
   const char *targ = r.str (&l);
   if (strcmp (targ, TARGET_MACHINE))
     {
-      error ("%qs is target %qs, expected %qs", r.name, targ, TARGET_MACHINE);
+      error ("target is %qs, expected %qs", targ, TARGET_MACHINE);
       return false;
     }
   const char *host = r.str (&l);
   if (strcmp (host, HOST_MACHINE))
     {
-      error ("%qs is host %qs, expected %qs", r.name, host, HOST_MACHINE);
+      error ("host is %qs, expected %qs", host, HOST_MACHINE);
       return false;
     }
 
@@ -4847,23 +4872,9 @@ module_interface_p ()
    index, or 0 */
 
 static unsigned
-read_module (FILE *stream, const char *fname, module_state *state,
-	     cpms_in *from = NULL)
+read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
 {
-  cpms_in in (stream, fname, state, from);
-  const char *str_name
-    = (identifier_p (state->name) ? IDENTIFIER_POINTER (state->name)
-       : TREE_STRING_POINTER (state->name));
-  location_t saved_loc = input_location;
-
-  // FIXME: Push location information
-  if (!quiet_flag)
-    {
-      fprintf (stderr, " importing:%s(%s)", str_name, fname);
-      fflush (stderr);
-      pp_needs_newline (global_dc->printer) = true;
-      diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
-    }
+  cpms_in in (stream, state, from);
 
   int ok = in.header ();
   if (ok)
@@ -4884,21 +4895,12 @@ read_module (FILE *stream, const char *fname, module_state *state,
     {
       ok = in.get_mod ();
       gcc_assert (ok >= THIS_MODULE_INDEX);
-      if (!quiet_flag)
-	{
-	  fprintf (stderr, " imported:%s(#%d)", str_name, ok);
-	  fflush (stderr);
-	  pp_needs_newline (global_dc->printer) = true;
-	  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
-	}
     }
   else
     /* Failure to read a module is going to cause big problems, so
        bail out now.  */
-    fatal_error (input_location,
-		 "failed to read module %qE (%qs)", state->name, fname);
+    fatal_error (input_location, "failed to read module %qE", state->name);
 
-  input_location = saved_loc;
   return ok;
 }
 
@@ -5021,9 +5023,15 @@ search_module_path (char *&name, size_t name_len, tree mname)
   if (!IS_ABSOLUTE_PATH (name))
     for (const cpp_dir *dir = module_path; dir; dir = dir->next)
       {
-	memcpy (buffer, dir->name, dir->len);
-	buffer[dir->len] = DIR_SEPARATOR;
-	memcpy (buffer + dir->len + 1, name, name_len + 1);
+	size_t len = 0;
+	/* Don't prepend '.'.  */
+	if (dir->len != 1 || dir->name[0] != '.')
+	  {
+	    memcpy (buffer, dir->name, dir->len);
+	    len = dir->len;
+	    buffer[len++] = DIR_SEPARATOR;
+	  }
+	memcpy (buffer + len, name, name_len + 1);
 
 	if (FILE *stream = fopen (buffer, "rb"))
 	  {
@@ -5045,7 +5053,8 @@ search_module_path (char *&name, size_t name_len, tree mname)
 
   const char *str_name = (identifier_p (mname) ? IDENTIFIER_POINTER (mname)
 			  : TREE_STRING_POINTER (mname));
-  inform (UNKNOWN_LOCATION, "invoking module wrapper to install %qs", str_name);
+  inform (UNKNOWN_LOCATION, "invoking module wrapper to install %qs",
+	  str_name);
 
   /* wrapper <module-name> <module-bmi-file> <source-file> <this-file>
      We may want to pass the multilib directory fragment too.
@@ -5235,32 +5244,63 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	{
           /* First look in the module file map. If not found, fall back to the
              default mapping. */
-          char *fname = NULL;
-	  size_t fname_len;
+          char *filename = NULL;
+	  size_t filename_len;
 
 	  if (!identifier_p (name))
 	    ;
 	  else if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
 	    {
-	      fname_len = strlen (*slot);
-	      fname = XNEWVEC (char, fname_len + 1);
-	      memcpy (fname, *slot, fname_len + 1);
+	      filename_len = strlen (*slot);
+	      filename = XNEWVEC (char, filename_len + 1);
+	      memcpy (filename, *slot, filename_len + 1);
 	    }
 
-          if (!fname)
-            fname = module_to_filename (name, fname_len);
+          if (!filename)
+            filename = module_to_filename (name, filename_len);
 
-	  if (FILE *stream = search_module_path (fname, fname_len, name))
+	  if (FILE *stream = search_module_path (filename, filename_len, name))
 	    {
 	      gcc_assert (global_namespace == current_scope ());
-	      index = read_module (stream, fname, state, from);
+	      const char *str_name
+		= (identifier_p (state->name)
+		   ? IDENTIFIER_POINTER (state->name)
+		   : TREE_STRING_POINTER (state->name));
+	      location_t saved_loc = input_location;
+
+	      state->push_location (filename);
+
+	      if (!quiet_flag)
+		{
+		  fprintf (stderr, " importing:%s(%s)",
+			   str_name, state->filename);
+		  fflush (stderr);
+		  pp_needs_newline (global_dc->printer) = true;
+		  diagnostic_set_last_function (global_dc,
+						(diagnostic_info *) NULL);
+		}
+	      index = read_module (stream, state, from);
+	      if (!quiet_flag)
+		{
+		  fprintf (stderr, " imported:%s(#%d)", str_name, index);
+		  fflush (stderr);
+		  pp_needs_newline (global_dc->printer) = true;
+		  diagnostic_set_last_function (global_dc,
+						(diagnostic_info *) NULL);
+		}
+
+	      state->pop_location ();
+	      input_location = saved_loc;
+
 	      fclose (stream);
 	      gcc_assert (state->mod == ~0U);
 	    }
 	  else
-	    error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
-
-          XDELETE (fname);
+	    {
+	      error_at (loc, "cannot find module %qE (%qs): %m",
+			name, filename);
+	      XDELETE (filename);
+	    }
 	}
     }
 
@@ -5328,11 +5368,11 @@ declare_module (const cp_expr &name, bool inter, tree)
 }
 
 static void
-write_module (FILE *stream, const char *fname, tree name)
+write_module (FILE *stream, module_state *state)
 {
-  cpms_out out (stream, fname, name);
+  cpms_out out (stream, state);
 
-  out.header (name);
+  out.header (state->name);
   out.tag_conf ();
   // FIXME:Write 'important' flags etc
 
@@ -5349,7 +5389,8 @@ write_module (FILE *stream, const char *fname, tree name)
 
   out.tag_eof ();
   if (int e = out.done ())
-    error ("failed to write module %qE (%qs): %s", name, fname,
+    error ("failed to write module %qE (%qs): %s",
+	   state->name, state->filename,
 	   e >= 0 ? xstrerror (errno) : "Bad file data");
   out.instrument ();
 }
@@ -5379,33 +5420,34 @@ finish_module ()
 {
   if (this_module && this_module->direct_import)
     {
-      char *fname;
-      size_t fname_len;
+      char *filename;
+      size_t filename_len;
 
       if (module_output)
 	{
-	  fname_len = strlen (module_output);
-	  fname = XNEWVEC (char, fname_len + 1);
-	  memcpy (fname, module_output, fname_len + 1);
+	  filename_len = strlen (module_output);
+	  filename = XNEWVEC (char, filename_len + 1);
+	  memcpy (filename, module_output, filename_len + 1);
 	}
       else
-	fname = module_to_filename (this_module->name, fname_len);
+	filename = module_to_filename (this_module->name, filename_len);
 
       if (errorcount)
 	;
-      else if (FILE *stream = make_module_file (fname, fname_len))
+      else if (FILE *stream = make_module_file (filename, filename_len))
 	{
-	  write_module (stream, fname, this_module->name);
+	  this_module->set_location (filename);
+	  write_module (stream, this_module);
 	  fclose (stream);
 	}
       else
 	error_at (module_loc, "cannot open module interface %qE (%qs): %m",
-		  this_module->name, fname);
+		  this_module->name, filename);
 
       if (errorcount)
-	unlink (fname);
+	unlink (filename);
 
-      XDELETE (fname);
+      XDELETE (filename);
     }
   else if (module_output)
     error ("-fmodule-output specified for non-module interface compilation");

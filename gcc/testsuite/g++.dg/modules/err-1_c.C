@@ -1,7 +1,7 @@
 
 module Foo;
-// { dg-message "Frob\\(int, int, long int\\)" "" { target *-*-* } .-1 }
-// { dg-message "Frob@Foo\\(int, long int, int\\)" "" { target *-*-* } .-2 }
+// { dg-message "Frob\\(int, int, long int\\)" "Foo.nms:" { target *-*-* } 0 }
+// { dg-message "Frob@Foo\\(int, long int, int\\)" "Foo.nms:" { target *-*-* } 0 }
 
 int One ()
 {
@@ -11,7 +11,7 @@ int One ()
 }
 
 import Bar;
-// { dg-message "Frob\\(long int, int, int\\)" "" { target *-*-* } .-1 }
+// { dg-message "Frob\\(long int, int, int\\)" "Foo.nms:" { target *-*-* } 0 }
 
 int Two ()
 {

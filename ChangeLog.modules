@@ -1,3 +1,21 @@
+2017-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (module_state): Add filename & loc.
+	(module_state::{set,push,pop}_location): New.
+	(cpm_stream): Add state member.  Adjust.
+	(cpms_{in,out}): Adjust.
+	(cpms_in::{header,tag_conf}): Adjust.
+	(read_module, write_module): Lose fname arg.
+	(search_moule_path): Don't prefix .
+	(do_module_import, finish_module): Set location.
+	gcc/
+	* diagnostic.c (maybe_line_and_column): New.
+	(diagnostic_get_location_text, diagnostic_report_current_module):
+	Use it.
+	gcc/testsuite/
+	Markup no-column tests.
+
 2017-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp

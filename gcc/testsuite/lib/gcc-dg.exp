@@ -1092,22 +1092,25 @@ proc process-message { msgproc msgprefix dgargs } {
     set newentry [lindex ${dg-messages} end]
     set expmsg [lindex $newentry 2]
 
+    set column ""
     # Handle column numbers from the specified expression (if there is
     # one) and set up the search expression that will be used by DejaGnu.
-    if [regexp "^(\[0-9\]+):" $expmsg "" column] {
+    if [regexp {^-:} $expmsg] {
+	# The expected column -, so shouldn't appear.
+	set expmsg [string range $expmsg 2 end]
+    } elseif [regexp {^[0-9]+:} $expmsg column] {
 	# The expression in the directive included a column number.
-	# Remove "COLUMN:" from the original expression and move it
+	# Remove it from the original expression and move it
 	# to the proper place in the search expression.
-	regsub "^\[0-9\]+:" $expmsg "" expmsg
-	set expmsg "$column: $msgprefix\[^\n\]*$expmsg"
+	set expmsg [string range $expmsg [string length $column] end]
     } elseif [string match "" [lindex $newentry 0]] {
 	# The specified line number is 0; don't expect a column number.
-	set expmsg "$msgprefix\[^\n\]*$expmsg"
     } else {
 	# There is no column number in the search expression, but we
 	# should expect one in the message itself.
-	set expmsg "\[0-9\]+: $msgprefix\[^\n\]*$expmsg"
+	set column {[0-9]+:}
     }
+    set expmsg "$column $msgprefix\[^\n\]*$expmsg"
 
     set newentry [lreplace $newentry 2 2 $expmsg]
     set dg-messages [lreplace ${dg-messages} end end $newentry]

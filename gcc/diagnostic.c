@@ -293,6 +293,24 @@ diagnostic_get_color_for_kind (diagnostic_t kind)
   return diagnostic_kind_color[kind];
 }
 
+/* Return a formatted line and column ':%line:%column'.  Elided if
+   zero.  The result is a statically allocated buffer.  */
+
+static const char *
+maybe_line_and_column (int line, int col)
+{
+  static char result[32];
+
+  if (line)
+    {
+      size_t l = sprintf (result, col ? ":%d:%d" : ":%d", line, col);
+      gcc_checking_assert (l + 1 < sizeof (result));
+    }
+  else
+    result[0] = 0;
+  return result;
+}
+
 /* Return a malloc'd string describing a location e.g. "foo.c:42:10".
    The caller is responsible for freeing the memory.  */
 
@@ -303,19 +321,13 @@ diagnostic_get_location_text (diagnostic_context *context,
   pretty_printer *pp = context->printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
+  const char *file = s.file ? s.file : progname;
+  int line = strcmp (file, N_("<built-in>")) ? s.line : 0;
+  int col = context->show_column ? s.column : 0;
 
-  if (s.file == NULL)
-    return build_message_string ("%s%s:%s", locus_cs, progname, locus_ce);
-
-  if (!strcmp (s.file, N_("<built-in>")))
-    return build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce);
-
-  if (context->show_column)
-    return build_message_string ("%s%s:%d:%d:%s", locus_cs, s.file, s.line,
-				 s.column, locus_ce);
-  else
-    return build_message_string ("%s%s:%d:%s", locus_cs, s.file, s.line,
-				 locus_ce);
+  const char *line_col = maybe_line_and_column (line, col);
+  return build_message_string ("%s%s%s:%s", locus_cs, file,
+			       line_col, locus_ce);
 }
 
 /* Return a malloc'd string describing a location and the severity of the
@@ -577,21 +589,20 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       if (! MAIN_FILE_P (map))
 	{
 	  map = INCLUDED_FROM (line_table, map);
-	  if (context->show_column)
-	    pp_verbatim (context->printer,
-			 "In file included from %r%s:%d:%d%R", "locus",
-			 LINEMAP_FILE (map),
-			 LAST_SOURCE_LINE (map), LAST_SOURCE_COLUMN (map));
-	  else
-	    pp_verbatim (context->printer,
-			 "In file included from %r%s:%d%R", "locus",
-			 LINEMAP_FILE (map), LAST_SOURCE_LINE (map));
+	  const char *line_col
+	    = maybe_line_and_column (LAST_SOURCE_LINE (map),
+				     context->show_column
+				     ? LAST_SOURCE_COLUMN (map) : 0);
+	  pp_verbatim (context->printer,
+		       "In file included from %r%s%s%R", "locus",
+		       LINEMAP_FILE (map), line_col);
 	  while (! MAIN_FILE_P (map))
 	    {
 	      map = INCLUDED_FROM (line_table, map);
+	      line_col = maybe_line_and_column (LAST_SOURCE_LINE (map), 0);
 	      pp_verbatim (context->printer,
-			   ",\n                 from %r%s:%d%R", "locus",
-			   LINEMAP_FILE (map), LAST_SOURCE_LINE (map));
+			   ",\n                 from %r%s%s%R", "locus",
+			   LINEMAP_FILE (map), line_col);
 	    }
 	  pp_verbatim (context->printer, ":");
 	  pp_newline (context->printer);
