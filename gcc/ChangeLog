@@ -1,5 +1,25 @@
 2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* config/nios2/constraints.md ("S"): Match r0rel_constant_p too.
+	* config/nios2/nios2-protos.h (r0rel_constant_p): Declare.
+	* config/nios2/nios2.c: (nios2_r0rel_sec_regex): New.
+	(nios2_option_overide): Initialize it.  Don't allow R0-relative 
+	addressing with PIC.
+	(nios2_rtx_costs): Handle r0rel_constant_p like gprel_constant_p.
+	(nios2_symbolic_constant_p): Likewise.
+	(nios2_legitimate_address_p): Likewise.
+	(nios2_r0rel_section_name_p): New.
+	(nios2_symbol_ref_in_r0rel_data_p): New.
+	(nios2_emit_move_sequence): Handle r0rel_constant_p.
+	(r0rel_constant_p): New.
+	(nios2_print_operand_address): Handle r0rel_constant_p.
+	(nios2_cdx_narrow_form_p): Likewise.
+	* config/nios2/nios2.opt (mr0rel-sec=): New option.
+	* doc/invoke.texi (Option Summary): Add -mr0rel-sec.
+	(Nios II Options): Document -mr0rel-sec.
+
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* config/nios2/nios2.c: Include xregex.h.
 	(nios2_gprel_sec_regex): New.
 	(nios2_option_overide): Initialize it.  Don't allow GP-relative 

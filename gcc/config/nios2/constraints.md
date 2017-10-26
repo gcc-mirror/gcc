@@ -95,8 +95,8 @@
        (match_test "TARGET_ARCH_R2 && ANDCLEAR_INT (ival)")))
 
 (define_constraint "S"
-  "An immediate stored in small data, accessible by GP."
-  (match_test "gprel_constant_p (op)"))
+  "An immediate stored in small data, accessible by GP, or by offset from r0."
+  (match_test "gprel_constant_p (op) || r0rel_constant_p (op)"))
 
 (define_constraint "T"
   "A constant unspec offset representing a relocation."

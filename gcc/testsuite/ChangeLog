@@ -1,5 +1,9 @@
 2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* gcc.target/nios2/gpopt-r0rel-sec.c: New.
+
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* gcc.target/nios2/gpopt-gprel-sec.c: New.
 
 2017-10-26  Olga Makhotina  <olga.makhotina@intel.com>
