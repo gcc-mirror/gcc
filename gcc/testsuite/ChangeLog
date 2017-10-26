@@ -1,3 +1,7 @@
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/gpopt-gprel-sec.c: New.
+
 2017-10-26  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* gcc.target/i386/avx512f-vcmpps-1.c (_mm512_cmpeq_ps_mask,

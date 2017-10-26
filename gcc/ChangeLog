@@ -1,3 +1,14 @@
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c: Include xregex.h.
+	(nios2_gprel_sec_regex): New.
+	(nios2_option_overide): Initialize it.  Don't allow GP-relative 
+	addressing with PIC.
+	(nios2_small_section_name_p): Check for regex match.
+	* config/nios2/nios2.opt (mgprel-sec=): New option.
+	* doc/invoke.texi (Option Summary): Add -mgprel-sec.
+	(Nios II Options): Document -mgprel-sec.
+
 2017-10-26  Jim Wilson  <wilson@tuliptree.org>
 
 	* doc/invoke.texi (-fdebug-prefix-map): Expand documentation.
