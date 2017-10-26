@@ -1,3 +1,22 @@
+2017-10-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/aix.h (TARGET_IEEEQUAD_DEFAULT): Set long double
+	default to IBM.
+	* config/rs6000/darwin.h (TARGET_IEEEQUAD_DEFAULT): Likewise.
+	* config/rs6000/rs6000.opt (-mabi=ieeelongdouble): Move the
+	warning to rs6000.c.  Remove the Undocumented flag, since it has
+	been documented.
+	(-mabi=ibmlongdouble): Likewise.
+	* config/rs6000/rs6000.c (TARGET_IEEEQUAD_DEFAULT): If it is not
+	already set, set the default format for long double.
+	(rs6000_debug_reg_global): Print whether long double is IBM or
+	IEEE.
+	(rs6000_option_override_internal): Rework setting long double
+	format.  Only warn if the user is changing the long double default
+	and they did not use -Wno-psabi.
+	* doc/invoke.texi (PowerPC options): Update the documentation for
+	-mabi=ieeelongdouble and -mabi=ibmlongdouble.
+
 2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

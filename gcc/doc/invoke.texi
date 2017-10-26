@@ -22614,12 +22614,18 @@ Disable Book-E SPE ABI extensions for the current ABI@.
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble
 Change the current ABI to use IBM extended-precision long double.
-This is a PowerPC 32-bit SYSV ABI option.
+This is not likely to work if your system defaults to using IEEE
+extended-precision long double.  If you change the long double type
+from IEEE extended-precision, the compiler will issue a warning unless
+you use the @option{-Wno-psabi} option.
 
 @item -mabi=ieeelongdouble
 @opindex mabi=ieeelongdouble
 Change the current ABI to use IEEE extended-precision long double.
-This is a PowerPC 32-bit Linux ABI option.
+This is not likely to work if your system defaults to using IBM
+extended-precision long double.  If you change the long double type
+from IBM extended-precision, the compiler will issue a warning unless
+you use the @option{-Wno-psabi} option.
 
 @item -mabi=elfv1
 @opindex mabi=elfv1
