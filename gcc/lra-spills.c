@@ -134,8 +134,7 @@ assign_mem_slot (int i)
   machine_mode mode = GET_MODE (regno_reg_rtx[i]);
   HOST_WIDE_INT inherent_size = PSEUDO_REGNO_BYTES (i);
   machine_mode wider_mode
-    = (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
-       ? mode : lra_reg_info[i].biggest_mode);
+    = wider_subreg_mode (mode, lra_reg_info[i].biggest_mode);
   HOST_WIDE_INT total_size = GET_MODE_SIZE (wider_mode);
   HOST_WIDE_INT adjust = 0;
 
@@ -312,10 +311,8 @@ add_pseudo_to_slot (int regno, int slot_num)
      and a total size which provides room for paradoxical subregs.
      We need to make sure the size and alignment of the slot are
      sufficient for both.  */
-  machine_mode mode = (GET_MODE_SIZE (PSEUDO_REGNO_MODE (regno))
-		       >= GET_MODE_SIZE (lra_reg_info[regno].biggest_mode)
-		       ? PSEUDO_REGNO_MODE (regno)
-		       : lra_reg_info[regno].biggest_mode);
+  machine_mode mode = wider_subreg_mode (PSEUDO_REGNO_MODE (regno),
+					 lra_reg_info[regno].biggest_mode);
   unsigned int align = spill_slot_alignment (mode);
   slots[slot_num].align = MAX (slots[slot_num].align, align);
   slots[slot_num].size = MAX (slots[slot_num].size, GET_MODE_SIZE (mode));

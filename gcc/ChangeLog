@@ -1,3 +1,31 @@
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (wider_subreg_mode): New function.
+	* ira.h (ira_sort_regnos_for_alter_reg): Take a machine_mode *
+	rather than an unsigned int *.
+	* ira-color.c (regno_max_ref_width): Replace with...
+	(regno_max_ref_mode): ...this new variable.
+	(coalesced_pseudo_reg_slot_compare): Update accordingly.
+	Use wider_subreg_mode.
+	(ira_sort_regnos_for_alter_reg): Likewise.  Take a machine_mode *
+	rather than an unsigned int *.
+	* lra-constraints.c (uses_hard_regs_p): Use wider_subreg_mode.
+	(process_alt_operands): Likewise.
+	(invariant_p): Likewise.
+	* lra-spills.c (assign_mem_slot): Likewise.
+	(add_pseudo_to_slot): Likewise.
+	* lra.c (collect_non_operand_hard_regs): Likewise.
+	(add_regs_to_insn_regno_info): Likewise.
+	* reload1.c (regno_max_ref_width): Replace with...
+	(regno_max_ref_mode): ...this new variable.
+	(reload): Update accordingly.  Update call to
+	ira_sort_regnos_for_alter_reg.
+	(alter_reg): Update to use regno_max_ref_mode.  Call wider_subreg_mode.
+	(init_eliminable_invariants): Update to use regno_max_ref_mode.
+	(scan_paradoxical_subregs): Likewise.
+
 2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.h (EXIT_IGNORE_STACK): Set if alloca is used.
