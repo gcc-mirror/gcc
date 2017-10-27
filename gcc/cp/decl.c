@@ -12935,11 +12935,12 @@ grok_op_properties (tree decl, bool complain)
     {
       /* It'd be nice to hang something else of the identifier to
 	 find CODE more directly.  */
+      // FIXME:Mapping
       bool assign_op = IDENTIFIER_ASSIGN_OP_P (name);
-      for (unsigned ix = 0; ix != OOC_MAX; ix++)
-	if (name == ooc_info[assign_op][ix].identifier)
+      for (unsigned ix = 0; ix != OVL_OP_MAX; ix++)
+	if (name == ovl_op_info[assign_op][ix].identifier)
 	  {
-	    operator_code = ooc_info[assign_op][ix].code;
+	    operator_code = ovl_op_info[assign_op][ix].tree_code;
 	    break;
 	  }
       gcc_checking_assert (operator_code != ERROR_MARK);

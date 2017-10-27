@@ -250,9 +250,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
 #define ovl_op_identifier(ISASS, CODE)		\
-  (OOC_INFO(ISASS, CODE)->identifier)
-#define assign_op_identifier (ooc_info[true][OOC_NOP_EXPR].identifier)
-#define call_op_identifier (ooc_info[false][OOC_CALL_EXPR].identifier)
+  (OVL_OP_INFO(ISASS, CODE)->identifier)
+#define assign_op_identifier (ovl_op_info[true][OVL_OP_NOP_EXPR].identifier)
+#define call_op_identifier (ovl_op_info[false][OVL_OP_CALL_EXPR].identifier)
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
@@ -5484,17 +5484,17 @@ enum auto_deduction_context
 
 extern void init_reswords (void);
 
-enum overloaded_operator_codes 
+enum ovl_op_code
   {
-    OOC_ERROR_MARK,
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) OOC_##CODE,
+    OVL_OP_ERROR_MARK,
+#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) OVL_OP_##CODE,
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
 #include "operators.def"
-    OOC_NOP_EXPR,
-    OOC_MAX
+    OVL_OP_NOP_EXPR,
+    OVL_OP_MAX
   };
 
-struct GTY(()) ooc_info_t {
+struct GTY(()) ovl_op_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;
   /* The name of the operator.  */
@@ -5502,35 +5502,25 @@ struct GTY(()) ooc_info_t {
   /* The mangled name of the operator.  */
   const char *mangled_name;
   /* The arity of the operator.  */
-  signed arity : 8;
-  unsigned kind : 8;
-  unsigned ooc : 8;
-  enum tree_code code;
+  signed arity : 4;
+  /* The kind of identifier.  */
+  enum cp_identifier_kind kind : 4;
+  /* The (compressed) operator code.  */
+  enum ovl_op_code ovl_op_code : 8;
+  /* The (regular) tree code.  */
+  enum tree_code tree_code : 16;
 };
 
-extern GTY(()) ooc_info_t ooc_info[2][unsigned (OOC_MAX)];
-extern GTY(()) unsigned char ooc_mapping[unsigned (MAX_TREE_CODES)];
+/* Overloaded operator info indexed by ass_op_p & ovl_op_code.  */
+extern GTY(()) ovl_op_info_t ovl_op_info[2][OVL_OP_MAX];
+/* Mapping from tree_codes to ovl_op_codes.  */
+extern GTY(()) unsigned char ovl_op_mapping[MAX_TREE_CODES];
 
-#define OOC_INFO(ISASS,CODE)			\
-  (&ooc_info[(ISASS) != 0][ooc_mapping[unsigned (CODE)]])
-
-typedef struct GTY(()) operator_name_info_t {
-  /* The IDENTIFIER_NODE for the operator.  */
-  tree identifier;
-  /* The name of the operator.  */
-  const char *name;
-  /* The mangled name of the operator.  */
-  const char *mangled_name;
-  /* The arity of the operator.  */
-  int arity;
-} operator_name_info_t;
-
-/* A mapping from tree codes to operator name information.  */
-extern GTY(()) operator_name_info_t operator_name_info
-  [(int) MAX_TREE_CODES];
-/* Similar, but for assignment operators.  */
-extern GTY(()) operator_name_info_t assignment_operator_name_info
-  [(int) MAX_TREE_CODES];
+/* Given an ass_op_p boolean and a tree code, return a pointer to its
+   overloaded operator info.  Tree codes for non-overloaded operators
+   map to the error-operator.  */
+#define OVL_OP_INFO(IS_ASS_P,TREE_CODE)			\
+  (&ovl_op_info[(IS_ASS_P) != 0][ovl_op_mapping[(TREE_CODE)]])
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */

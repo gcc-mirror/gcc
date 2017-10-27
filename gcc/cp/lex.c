@@ -77,23 +77,18 @@ cxx_finish (void)
   c_common_finish ();
 }
 
-ooc_info_t ooc_info[2][int (OOC_MAX)] = 
+ovl_op_info_t ovl_op_info[2][int (OVL_OP_MAX)] = 
   {
     {
-      {NULL_TREE, NULL, NULL, 0, 0, 0, ERROR_MARK},
+      {NULL_TREE, NULL, NULL, 0, cik_normal, OVL_OP_ERROR_MARK, ERROR_MARK},
 #define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) \
-      {NULL_TREE, NAME, MANGLING, ARITY, KIND, OOC_##CODE, CODE},
+      {NULL_TREE, NAME, MANGLING, ARITY, KIND, OVL_OP_##CODE, CODE},
 #define OPERATOR_TRANSITION }, {			\
-      {NULL_TREE, NULL, NULL, 0, 0, 0, ERROR_MARK},
+      {NULL_TREE, NULL, NULL, 0, cik_normal, OVL_OP_ERROR_MARK, ERROR_MARK},
 #include "operators.def"
     }
   };
-unsigned char ooc_mapping[int (MAX_TREE_CODES)];
-
-/* A mapping from tree codes to operator name information.  */
-operator_name_info_t operator_name_info[(int) MAX_TREE_CODES];
-/* Similar, but for assignment operators.  */
-operator_name_info_t assignment_operator_name_info[(int) MAX_TREE_CODES];
+unsigned char ovl_op_mapping[int (MAX_TREE_CODES)];
 
 /* Get the name of the kind of identifier T.  */
 
@@ -114,15 +109,6 @@ get_identifier_kind_name (tree id)
   return names[kind];
 }
 
-static unsigned u (tree id)
-{
-  unsigned kind = 0;
-  kind |= IDENTIFIER_KIND_BIT_2 (id) << 2;
-  kind |= IDENTIFIER_KIND_BIT_1 (id) << 1;
-  kind |= IDENTIFIER_KIND_BIT_0 (id) << 0;
-  return kind;
-}
-
 /* Set the identifier kind, which we expect to currently be zero.  */
 
 void
@@ -136,8 +122,11 @@ set_identifier_kind (tree id, cp_identifier_kind kind)
   IDENTIFIER_KIND_BIT_0 (id) |= (kind >> 0) & 1;
 }
 
+/* Create and tag the internal operator name for the overloaded
+   operator PTR describes.  */
+
 static void
-set_operator_ident (ooc_info_t *ptr)
+set_operator_ident (ovl_op_info_t *ptr)
 {
   char buffer[32];
   size_t len = snprintf (buffer, sizeof (buffer), "operator%s%s",
@@ -156,67 +145,42 @@ set_operator_ident (ooc_info_t *ptr)
 static void
 init_operators (void)
 {
-#if 1 // NEW CODE
-  for (unsigned ix = OOC_MAX; ix--;)
+  /* We rely on both these being zero.  */
+  gcc_checking_assert (!OVL_OP_ERROR_MARK && !ERROR_MARK);
+
+  /* This loop iterates backwards because we need to move the
+     assignment operators down to their correct slots.  I.e. morally
+     equivalent to an overlapping memmove where dest > src.  Slot
+     zero is for error_mark, so hae no operator. */
+  for (unsigned ix = OVL_OP_MAX; --ix;)
     {
-      ooc_info_t *op_ptr = &ooc_info[0][ix];
+      ovl_op_info_t *op_ptr = &ovl_op_info[false][ix];
 
       if (op_ptr->name)
-	set_operator_ident (op_ptr);
-      gcc_checking_assert (unsigned (op_ptr->code) < MAX_TREE_CODES);
-      gcc_checking_assert (!ooc_mapping[unsigned (op_ptr->code)]);
-      ooc_mapping[unsigned (op_ptr->code)] = op_ptr->ooc;
+	{
+	  set_operator_ident (op_ptr);
+	  gcc_checking_assert (!ovl_op_mapping[op_ptr->tree_code]);
+	  ovl_op_mapping[op_ptr->tree_code] = op_ptr->ovl_op_code;
+	}
 
-      ooc_info_t *as_ptr = &ooc_info[1][ix];
+      ovl_op_info_t *as_ptr = &ovl_op_info[true][ix];
       if (as_ptr->name)
 	{
 	  /* These will be placed at the start of the array, move to
 	     the correct slot and initialize.  */
-	  if (as_ptr->ooc != ix)
-	    {
-	      ooc_info_t *targ_ptr = &ooc_info[1][as_ptr->ooc];
-	      gcc_checking_assert (!targ_ptr->name);
-	      *targ_ptr = *as_ptr;
-	      as_ptr->name = NULL;
-	      as_ptr = targ_ptr;
-	    }
-	  set_operator_ident (as_ptr);
-	  gcc_checking_assert (unsigned (as_ptr->code) < MAX_TREE_CODES);
-	  gcc_checking_assert (!ooc_mapping[unsigned (as_ptr->code)]
-			       || (ooc_mapping[unsigned (as_ptr->code)]
-				   == as_ptr->ooc));
-	  ooc_mapping[unsigned (as_ptr->code)] = as_ptr->ooc;
+	  gcc_assert (as_ptr->ovl_op_code > ix);
+	  ovl_op_info_t *dst_ptr = &ovl_op_info[true][as_ptr->ovl_op_code];
+	  gcc_checking_assert (!dst_ptr->name);
+	  *dst_ptr = *as_ptr;
+	  memset (as_ptr, 0, sizeof (*as_ptr));
+	  set_operator_ident (dst_ptr);
+	  gcc_checking_assert (!ovl_op_mapping[dst_ptr->tree_code]
+			       || (ovl_op_mapping[dst_ptr->tree_code]
+				   == dst_ptr->ovl_op_code));
+	  ovl_op_mapping[dst_ptr->tree_code] = dst_ptr->ovl_op_code;
 	}
     }
-  ooc_mapping[TYPE_EXPR] = OOC_CAST_EXPR;
-#endif
-
-  tree identifier;
-  char buffer[256];
-  struct operator_name_info_t *oni;
-
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND)			\
-  sprintf (buffer, "operator%s%s", !NAME[0]				\
-	   || NAME[0] == '_' || ISALPHA (NAME[0]) ? " " : "", NAME);	\
-  identifier = get_identifier (buffer);					\
-									\
-  gcc_checking_assert (u (identifier) == KIND);				\
-  									\
-  									\
- oni = (KIND == cik_assign_op						\
-	 ? &assignment_operator_name_info[(int) CODE]			\
-	 : &operator_name_info[(int) CODE]);				\
-  oni->identifier = identifier;						\
-  oni->name = NAME;							\
-  oni->mangled_name = MANGLING;						\
-  oni->arity = ARITY;
-
-#include "operators.def"
-#undef DEF_OPERATOR
-
-  /* TYPE_EXPR is used for conversion operators, even though they're
-     mangled as CAST_EXPR.  */
-  operator_name_info[(int) TYPE_EXPR] = operator_name_info[(int) CAST_EXPR];  
+  ovl_op_mapping[TYPE_EXPR] = OVL_OP_CAST_EXPR;
 }
 
 /* Initialize the reserved words.  */

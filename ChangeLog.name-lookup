@@ -1,5 +1,14 @@
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 5.
+	gcc/cp/
+	* cp-tree.h (ovl_op_code): Rename from overloaded_operator_code.
+	(ovl_op_info_t, ovl_op_info, ovl_op_mapping): Rename from
+	ooc_$FOO.
+	(operator_name_info_t, operator_name_info,
+	assignment_operator_name_info): Delete.
+	* *.c: Update all uses.
+
 	Merge trunk r254141.
 
 	Operator code compaction part 4.
