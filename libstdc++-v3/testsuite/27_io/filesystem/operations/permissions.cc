@@ -86,9 +86,10 @@ test03()
   create_symlink(f.path, p);
 
   std::error_code ec = make_error_code(std::errc::no_such_file_or_directory);
-  std::error_code ec2 = make_error_code(std::errc::invalid_argument);
   permissions(p, perms::owner_all,
 	      perm_options::replace|perm_options::nofollow, ec);
+  bool caught = false;
+  std::error_code ec2;
   try
   {
     permissions(p, perms::owner_all,
@@ -96,11 +97,18 @@ test03()
   }
   catch (const std::filesystem::filesystem_error& ex)
   {
+    caught = true;
     ec2 = ex.code();
     VERIFY( ex.path1() == p );
   }
   // Both calls should succeed, or both should fail with same error:
-  VERIFY( ec == ec2 );
+  if (ec)
+  {
+    VERIFY( caught );
+    VERIFY( ec == ec2 );
+  }
+  else
+    VERIFY( !caught );
 
   remove(p);
 }
@@ -114,9 +122,9 @@ test04()
   create_symlink(__gnu_test::nonexistent_path(), p);
 
   std::error_code ec = make_error_code(std::errc::no_such_file_or_directory);
-  std::error_code ec2 = make_error_code(std::errc::invalid_argument);
   permissions(p, perms::owner_all, ec);
   VERIFY( ec );
+  std::error_code ec2;
   try
   {
     permissions(p, perms::owner_all);

@@ -82,6 +82,8 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   {3, 3, 3, 3, 3},				/* cost of unaligned SSE store
 					   in 128bit, 256bit and 512bit */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  5, 0,					/* Gather load static, per_elt.  */
+  5, 0,					/* Gather store static, per_elt.  */
   0,					/* size of l1 cache  */
   0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -166,6 +168,8 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
 					   in 32,64,128,256 and 512-bit */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   0,					/* size of l1 cache  */
   0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -249,6 +253,8 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
 					   in 32,64,128,256 and 512-bit */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   4,					/* size of l1 cache.  486 has 8kB cache
 					   shared for code and data, so 4kB is
 					   not really precise.  */
@@ -334,6 +340,8 @@ struct processor_costs pentium_cost = {
 					   in 32,64,128,256 and 512-bit */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
   8,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -410,6 +418,8 @@ struct processor_costs lakemont_cost = {
 					   in 32,64,128,256 and 512-bit */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
   8,					/* size of l2 cache  */
   0,					/* size of prefetch block */
@@ -501,6 +511,8 @@ struct processor_costs pentiumpro_cost = {
 					   in 32,64,128,256 and 512-bit */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   3, 3,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
   256,					/* size of l2 cache  */
   32,					/* size of prefetch block */
@@ -584,6 +596,8 @@ struct processor_costs geode_cost = {
 					   in 32,64,128,256 and 512-bit */
   {2, 2, 8, 16, 32},			/* cost of unaligned stores.  */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,					/* Gather load static, per_elt.  */
+  2, 2,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
   128,					/* size of l2 cache.  */
   32,					/* size of prefetch block */
@@ -666,6 +680,8 @@ struct processor_costs k6_cost = {
 					   in 32,64,128,256 and 512-bit */
   {2, 2, 8, 16, 32},			/* cost of unaligned stores.  */
   6, 6,					/* SSE->integer and integer->SSE moves */
+  2, 2,					/* Gather load static, per_elt.  */
+  2, 2,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   32,					/* size of l2 cache.  Some models
 					   have integrated l2 cache, but
@@ -754,6 +770,8 @@ struct processor_costs athlon_cost = {
 					   in 32,64,128,256 and 512-bit */
   {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
   5, 5,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -844,6 +862,8 @@ struct processor_costs k8_cost = {
 					   in 32,64,128,256 and 512-bit */
   {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
   5, 5,					/* SSE->integer and integer->SSE moves */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -946,6 +966,8 @@ struct processor_costs amdfam10_cost = {
 							       1/1  1/1
 					    MOVD reg32, xmmreg Double FADD 3
 							       1/1  1/1 */
+  4, 4,					/* Gather load static, per_elt.  */
+  4, 4,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1041,6 +1063,8 @@ const struct processor_costs bdver1_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
   16, 20,				/* SSE->integer and integer->SSE moves */
+  12, 12,				/* Gather load static, per_elt.  */
+  10, 10,				/* Gather store static, per_elt.  */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1138,6 +1162,8 @@ const struct processor_costs bdver2_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
   16, 20,				/* SSE->integer and integer->SSE moves */
+  12, 12,				/* Gather load static, per_elt.  */
+  10, 10,				/* Gather store static, per_elt.  */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1234,6 +1260,8 @@ struct processor_costs bdver3_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
   16, 20,				/* SSE->integer and integer->SSE moves */
+  12, 12,				/* Gather load static, per_elt.  */
+  10, 10,				/* Gather store static, per_elt.  */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1329,6 +1357,8 @@ struct processor_costs bdver4_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
   16, 20,				/* SSE->integer and integer->SSE moves */
+  12, 12,				/* Gather load static, per_elt.  */
+  10, 10,				/* Gather store static, per_elt.  */
   16,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1435,6 +1465,11 @@ struct processor_costs znver1_cost = {
 					   in 32,64,128,256 and 512-bit.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   6, 6,					/* SSE->integer and integer->SSE moves.  */
+  /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
+     throughput 12.  Approx 9 uops do not depend on vector size and every load
+     is 7 uops.  */
+  18, 8,				/* Gather load static, per_elt.  */
+  18, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
@@ -1539,6 +1574,8 @@ const struct processor_costs btver1_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 12, 24, 48},			/* cost of unaligned stores.  */
   14, 14,				/* SSE->integer and integer->SSE moves */
+  10, 10,				/* Gather load static, per_elt.  */
+  10, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1624,6 +1661,8 @@ const struct processor_costs btver2_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 12, 24, 48},			/* cost of unaligned stores.  */
   14, 14,				/* SSE->integer and integer->SSE moves */
+  10, 10,				/* Gather load static, per_elt.  */
+  10, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1708,6 +1747,8 @@ struct processor_costs pentium4_cost = {
 					   in 32,64,128,256 and 512-bit */
   {32, 32, 32, 64, 128},		/* cost of unaligned stores.  */
   20, 12,				/* SSE->integer and integer->SSE moves */
+  16, 16,				/* Gather load static, per_elt.  */
+  16, 16,				/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1795,6 +1836,8 @@ struct processor_costs nocona_cost = {
 					   in 32,64,128,256 and 512-bit */
   {24, 24, 24, 48, 96},			/* cost of unaligned stores.  */
   20, 12,				/* SSE->integer and integer->SSE moves */
+  12, 12,				/* Gather load static, per_elt.  */
+  12, 12,				/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
   1024,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1880,6 +1923,8 @@ struct processor_costs atom_cost = {
 					   in 32,64,128,256 and 512-bit */
   {16, 16, 16, 32, 64},			/* cost of unaligned stores.  */
   8, 6,					/* SSE->integer and integer->SSE moves */
+  8, 8,					/* Gather load static, per_elt.  */
+  8, 8,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -1965,6 +2010,8 @@ struct processor_costs slm_cost = {
 					   in 32,64,128,256 and 512-bit */
   {16, 16, 16, 32, 64},			/* cost of unaligned stores.  */
   8, 6,					/* SSE->integer and integer->SSE moves */
+  8, 8,					/* Gather load static, per_elt.  */
+  8, 8,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2050,6 +2097,8 @@ struct processor_costs intel_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 10, 10, 10},			/* cost of unaligned loads.  */
   4, 4,					/* SSE->integer and integer->SSE moves */
+  6, 6,					/* Gather load static, per_elt.  */
+  6, 6,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2142,6 +2191,8 @@ struct processor_costs generic_cost = {
 					   in 32,64,128,256 and 512-bit */
   {10, 10, 10, 15, 20},			/* cost of unaligned storess.  */
   20, 20,				/* SSE->integer and integer->SSE moves */
+  6, 6,					/* Gather load static, per_elt.  */
+  6, 6,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2239,6 +2290,11 @@ struct processor_costs core_cost = {
 					   in 32,64,128,256 and 512-bit */
   {6, 6, 6, 6, 12},			/* cost of unaligned stores.  */
   2, 2,					/* SSE->integer and integer->SSE moves */
+  /* VGATHERDPD is 7 uops, rec throughput 5, while VGATHERDPD is 9 uops,
+     rec. throughput 6.
+     So 5 uops statically and one uops per load.  */
+  10, 6,				/* Gather load static, per_elt.  */
+  10, 6,				/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */

@@ -1,3 +1,138 @@
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/gpopt-r0rel-sec.c: New.
+
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/gpopt-gprel-sec.c: New.
+
+2017-10-26  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512f-vcmpps-1.c (_mm512_cmpeq_ps_mask,
+	_mm512_cmple_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_cmpneq_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_cmpnlt_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_cmpunord_ps_mask, _mm512_mask_cmpeq_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_mask_cmplt_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_mask_cmpnle_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_mask_cmpord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask): Test new intrinsics.
+	* gcc.target/i386/avx512f-vcmpps-2.c (_mm512_cmpeq_ps_mask,
+	_mm512_cmple_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_cmpneq_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_cmpnlt_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_cmpunord_ps_mask, _mm512_mask_cmpeq_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_mask_cmplt_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_mask_cmpnle_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_mask_cmpord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask): Test new intrinsics.
+	* gcc.target/i386/avx512f-vcmppd-1.c (_mm512_cmpeq_pd_mask,
+	_mm512_cmple_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_cmpneq_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_cmpnlt_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_cmpunord_pd_mask, _mm512_mask_cmpeq_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_mask_cmplt_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_mask_cmpnle_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_mask_cmpord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask): Test new intrinsics.
+	* gcc.target/i386/avx512f-vcmppd-2.c (_mm512_cmpeq_pd_mask,
+	_mm512_cmple_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_cmpneq_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_cmpnlt_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_cmpunord_pd_mask, _mm512_mask_cmpeq_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_mask_cmplt_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_mask_cmpnle_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_mask_cmpord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask): Test new intrinsics.
+
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_unaligned_2.c: New file.
+
+2017-10-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/arm/require-pic-register-loc.c: Use wider regex for
+	column information.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-reduc-dot-s8a.c
+	(dg-additional-options, dg-require-effective-target): Add +dotprod.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c
+	(dg-additional-options, dg-require-effective-target): Add +dotprod.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache): New.
+	(check_effective_target_arm_v8_2a_dotprod_neon_ok): New.
+	(add_options_for_arm_v8_2a_dotprod_neon): New.
+	(check_effective_target_arm_v8_2a_dotprod_neon_hw): New.
+	(check_effective_target_vect_sdot_qi): Add ARM && AArch64.
+	(check_effective_target_vect_udot_qi): Likewise.
+	* gcc.target/arm/simd/vdot-exec.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-exec.c: New.
+	* gcc/doc/sourcebuild.texi: Document arm_v8_2a_dotprod_neon.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-multitypes-1.c: Correct target selector.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/inline-lrint_2.c (dg-options): Add -fno-trapping-math.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-qi.h: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-s8.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vect-dot-u8.c: New.
+
+2017-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/7356
+	PR c/44515
+	* c-c++-common/pr44515.c: New test case.
+	* gcc.dg/pr7356-2.c: New test case.
+	* gcc.dg/pr7356.c: New test case.
+	* gcc.dg/spellcheck-typenames.c: Update the "singed" char "TODO"
+	case to reflect changes to output.
+	* gcc.dg/noncompile/920923-1.c: Add dg-warning to reflect changes
+	to output.
+
+2017-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/fold-cond_expr-1.c: Rename to...
+	* gcc.dg/fold-cond-2.c: ...this.
+	* gcc.dg/fold-cond-3.c: New test.
+
+2017-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82436
+	* gcc.dg/torture/pr82436-2.c: New testcase.
+
+2017-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71820
+	* g++.dg/ext/typeof12.C: New.
+
+2017-10-25  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Add xfail for nvptx in scan-assembler-times
+	line, and add nvptx-specific version.
+
+2017-10-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/cet-sjlj-5.c: Allow for emtpy user label prefix
+	in setjmp call.
+
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* gcc.target/i386/pr81706.c: New test.
+	* g++.dg/ext/pr81706.C: New test.
+
 2017-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82460

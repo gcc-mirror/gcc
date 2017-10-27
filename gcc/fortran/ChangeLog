@@ -1,3 +1,7 @@
+2017-10-25  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* match.c (gfc_match_type_is): Fix typo in error message.
+
 2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82586

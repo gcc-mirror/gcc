@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.4 path concatenation [path.concat]
+// 30.10.7.4.4 path concatenation [fs.path.concat]
 
 #include <filesystem>
 #include <testsuite_hooks.h>

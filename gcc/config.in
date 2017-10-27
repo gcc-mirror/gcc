@@ -717,6 +717,12 @@
 #endif
 
 
+/* Define if your assembler supports -xbrace_comment option. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_XBRACE_COMMENT_OPTION
+#endif
+
+
 /* Define to 1 if you have the `atoq' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ATOQ

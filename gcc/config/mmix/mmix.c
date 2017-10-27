@@ -168,6 +168,7 @@ static void mmix_print_operand (FILE *, rtx, int);
 static void mmix_print_operand_address (FILE *, machine_mode, rtx);
 static bool mmix_print_operand_punct_valid_p (unsigned char);
 static void mmix_conditional_register_usage (void);
+static HOST_WIDE_INT mmix_static_rtx_alignment (machine_mode);
 static HOST_WIDE_INT mmix_constant_alignment (const_tree, HOST_WIDE_INT);
 static HOST_WIDE_INT mmix_starting_frame_offset (void);
 
@@ -284,6 +285,8 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mmix_option_override
 
+#undef TARGET_STATIC_RTX_ALIGNMENT
+#define TARGET_STATIC_RTX_ALIGNMENT mmix_static_rtx_alignment
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT mmix_constant_alignment
 
@@ -340,6 +343,14 @@ mmix_data_alignment (tree type ATTRIBUTE_UNUSED, int basic_align)
     return 32;
 
   return basic_align;
+}
+
+/* Implement TARGET_STATIC_RTX_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+mmix_static_rtx_alignment (machine_mode mode)
+{
+  return MAX (GET_MODE_ALIGNMENT (mode), 32);
 }
 
 /* Implement tARGET_CONSTANT_ALIGNMENT.  */

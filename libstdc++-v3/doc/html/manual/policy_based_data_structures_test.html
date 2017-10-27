@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, policy, container, data, structure, associated, tree, trie, hash, metaprogramming" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures_design.html" title="Design" /><link rel="next" href="policy_data_structures_ack.html" title="Acknowledgments" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures_design.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_ack.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.test"></a>Testing</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.regression"></a>Regression</h3></div></div></div><p>The library contains a single comprehensive regression test.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Testing</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, policy, container, data, structure, associated, tree, trie, hash, metaprogramming" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures_design.html" title="Design" /><link rel="next" href="policy_data_structures_ack.html" title="Acknowledgments" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Testing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures_design.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_ack.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.test"></a>Testing</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.test.regression"></a>Regression</h3></div></div></div><p>The library contains a single comprehensive regression test.
     For a given container type in this library, the test creates
     an object of the container type and an object of the
     corresponding standard type (e.g., <code class="classname">std::set</code>). It
@@ -49,7 +49,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_hash_text_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -182,7 +182,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_cc_hash_int_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -284,7 +284,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_gp_hash_int_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -384,7 +384,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_cc_hash_int_subscript_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -484,7 +484,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_gp_hash_int_subscript_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -571,7 +571,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_cc_hash_int_subscript_insert.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -671,7 +671,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_gp_hash_int_subscript_insert.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -779,7 +779,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_hash_zlob_int_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -899,7 +899,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_hash_int_erase_mem.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="5" align="left">
 		    n_hash_map_ncah
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_map</code>
@@ -1007,7 +1007,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_text_insert_node.png" align="middle" /></div><p>
 	      The abbreviated names in the legend of the graphic above are
 	      instantiated with the types in the following table.
-	    </p></div><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	    </p></div><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_map
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::map</code>
@@ -1040,7 +1040,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_text_insert_vector.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_map
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::map</code>
@@ -1061,7 +1061,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_text_insert_trie.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_map
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::map</code>
@@ -1117,7 +1117,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_text_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_map
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::map</code>
@@ -1225,7 +1225,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_text_lor_find.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_map
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::map</code>
@@ -1313,7 +1313,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_split_join.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_set
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::set</code>
@@ -1416,7 +1416,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_tree_order_statistics.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_set
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::set</code>
@@ -1489,7 +1489,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_small_s2p_tree.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::multimap</code>
@@ -1551,7 +1551,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_small_s2p_hash.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_hash_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_multimap</code>
@@ -1660,7 +1660,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_large_s2p_tree.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::multimap</code>
@@ -1722,7 +1722,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_large_s2p_hash.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_hash_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_multimap</code>
@@ -1834,7 +1834,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_insert_small_s2p_tree.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::multimap</code>
@@ -1896,7 +1896,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_small_s2p_hash.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_hash_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_multimap</code>
@@ -2008,7 +2008,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_insert_large_s2p_tree.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::multimap</code>
@@ -2070,7 +2070,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_large_s2p_hash.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_hash_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_multimap</code>
@@ -2177,7 +2177,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_insert_mem_small_s2p_tree.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::multimap</code>
@@ -2239,7 +2239,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_large_s2p_hash.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_hash_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_multimap</code>
@@ -2346,7 +2346,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_insert_mem_large_s2p_tree.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::multimap</code>
@@ -2408,7 +2408,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_multimap_text_find_large_s2p_hash.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /><col align="left" class="c7" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="7" align="left">
 		    n_hash_mmap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::tr1::unordered_multimap</code>
@@ -2514,7 +2514,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_text_push.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -2576,7 +2576,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_pairing_priority_queue_text_push.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -2650,7 +2650,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_text_push_pop.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -2712,7 +2712,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_pairing_priority_queue_text_push_pop.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code> adapting <code class="classname">std::vector</code>
@@ -2779,7 +2779,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_int_push.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -2841,7 +2841,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_binary_priority_queue_int_push.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code> adapting <code class="classname">std::vector</code>
@@ -2896,7 +2896,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_int_push_pop.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -2996,7 +2996,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_text_pop_mem.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -3089,7 +3089,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_text_join.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -3188,7 +3188,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_text_modify_up.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -3250,7 +3250,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_pairing_priority_queue_text_modify_up_thin.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    thin_heap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">priority_queue</code>
@@ -3321,7 +3321,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_text_modify_down.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    n_pq_vector
 		  </td></tr><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
@@ -3383,7 +3383,7 @@
 	  </p><div class="informalfigure"><div class="mediaobject" align="center"><img src="../images/pbds_pairing_priority_queue_text_modify_down_thin.png" align="middle" /></div></div><p>
 	    The abbreviated names in the legend of the graphic above are
 	    instantiated with the types in the following table.
-	  </p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
+	  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /></colgroup><thead><tr><th align="left"><span class="emphasis"><em>Name/Instantiating Type</em></span></th><th align="left"><span class="emphasis"><em>Parameter</em></span></th><th align="left"><span class="emphasis"><em>Details</em></span></th></tr></thead><tbody><tr bgcolor="#B0B0B0"><td colspan="3" align="left">
 		    thin_heap
 		  </td></tr><tr><td align="left">
 		    <code class="classname">priority_queue</code>
@@ -3588,7 +3588,7 @@
 	  underlying data structures in terms of orders of growth. It is
 	  interesting to note that this table implies something about the
 	  constants of the operations as well (see Amortized <code class="function">push</code>
-	  and <code class="function">pop</code> operations).</p><div class="informaltable"><table border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /></colgroup><thead><tr><th align="left"> </th><th align="left"><span class="emphasis"><em><code class="function">push</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">pop</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">modify</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">erase</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">join</code></em></span></th></tr></thead><tbody><tr><td align="left">
+	  and <code class="function">pop</code> operations).</p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /><col align="left" class="c5" /><col align="left" class="c6" /></colgroup><thead><tr><th align="left"> </th><th align="left"><span class="emphasis"><em><code class="function">push</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">pop</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">modify</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">erase</code></em></span></th><th align="left"><span class="emphasis"><em><code class="function">join</code></em></span></th></tr></thead><tbody><tr><td align="left">
 		    <code class="classname">std::priority_queue</code>
 		  </td><td align="left">
 		    Θ(n) worst

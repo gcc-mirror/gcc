@@ -22,7 +22,6 @@
 // C++17 30.10.7.4.7 path generic format observers [fs.path.generic.obs]
 
 #include <filesystem>
-#include <testsuite_fs.h>
 #include <testsuite_hooks.h>
 
 using std::filesystem::path;

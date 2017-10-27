@@ -1679,7 +1679,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	  insert_before = (type != OP_OUT
-			   || GET_MODE_SIZE (innermode) > GET_MODE_SIZE (mode));
+			   || read_modify_subreg_p (operand));
 	  insert_after = (type != OP_IN);
 	  insert_move_for_subreg (insert_before ? &before : NULL,
 				  insert_after ? &after : NULL,
@@ -1772,10 +1772,9 @@ uses_hard_regs_p (rtx x, HARD_REG_SET set)
   mode = GET_MODE (x);
   if (code == SUBREG)
     {
+      mode = wider_subreg_mode (x);
       x = SUBREG_REG (x);
       code = GET_CODE (x);
-      if (GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
-	mode = GET_MODE (x);
     }
 
   if (REG_P (x))
@@ -1953,10 +1952,8 @@ process_alt_operands (int only_alternative)
       biggest_mode[nop] = GET_MODE (op);
       if (GET_CODE (op) == SUBREG)
 	{
+	  biggest_mode[nop] = wider_subreg_mode (op);
 	  operand_reg[nop] = reg = SUBREG_REG (op);
-	  if (GET_MODE_SIZE (biggest_mode[nop])
-	      < GET_MODE_SIZE (GET_MODE (reg)))
-	    biggest_mode[nop] = GET_MODE (reg);
 	}
       if (! REG_P (reg))
 	operand_reg[nop] = NULL_RTX;
@@ -4232,9 +4229,7 @@ curr_insn_transform (bool check_only_p)
 		     constraints.  */
 		  if (type == OP_OUT
 		      && (curr_static_id->operand[i].strict_low
-			  || (GET_MODE_SIZE (GET_MODE (reg)) > UNITS_PER_WORD
-			      && (GET_MODE_SIZE (mode)
-				  < GET_MODE_SIZE (GET_MODE (reg))))))
+			  || read_modify_subreg_p (*loc)))
 		    type = OP_INOUT;
 		  loc = &SUBREG_REG (*loc);
 		  mode = GET_MODE (*loc);
@@ -5661,8 +5656,7 @@ invariant_p (const_rtx x)
     {
       x = SUBREG_REG (x);
       code = GET_CODE (x);
-      if (GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
-	mode = GET_MODE (x);
+      mode = wider_subreg_mode (mode, GET_MODE (x));
     }
 
   if (MEM_P (x))

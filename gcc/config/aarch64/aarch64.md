@@ -5155,7 +5155,9 @@
 (define_expand "lrint<GPF:mode><GPI:mode>2"
   [(match_operand:GPI 0 "register_operand")
    (match_operand:GPF 1 "register_operand")]
-  "TARGET_FLOAT"
+  "TARGET_FLOAT
+   && ((GET_MODE_SIZE (<GPF:MODE>mode) <= GET_MODE_SIZE (<GPI:MODE>mode))
+   || !flag_trapping_math || flag_fp_int_builtin_inexact)"
 {
   rtx cvt = gen_reg_rtx (<GPF:MODE>mode);
   emit_insn (gen_rint<GPF:mode>2 (cvt, operands[1]));

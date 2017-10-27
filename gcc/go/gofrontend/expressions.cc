@@ -144,8 +144,8 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
       || rhs->is_error_expression())
     return Expression::make_error(location);
 
-  if (lhs_type->forwarded() != rhs_type->forwarded()
-      && lhs_type->interface_type() != NULL)
+  bool are_identical = Type::are_identical(lhs_type, rhs_type, false, NULL);
+  if (!are_identical && lhs_type->interface_type() != NULL)
     {
       if (rhs_type->interface_type() == NULL)
         return Expression::convert_type_to_interface(lhs_type, rhs, location);
@@ -153,8 +153,7 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
         return Expression::convert_interface_to_interface(lhs_type, rhs, false,
                                                           location);
     }
-  else if (lhs_type->forwarded() != rhs_type->forwarded()
-	   && rhs_type->interface_type() != NULL)
+  else if (!are_identical && rhs_type->interface_type() != NULL)
     return Expression::convert_interface_to_type(lhs_type, rhs, location);
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
     {
@@ -165,8 +164,15 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
     }
   else if (rhs_type->is_nil_type())
     return Expression::make_nil(location);
-  else if (Type::are_identical(lhs_type, rhs_type, false, NULL))
+  else if (are_identical)
     {
+      if (lhs_type->forwarded() != rhs_type->forwarded())
+	{
+	  // Different but identical types require an explicit
+	  // conversion.  This happens with type aliases.
+	  return Expression::make_cast(lhs_type, rhs, location);
+	}
+
       // No conversion is needed.
       return rhs;
     }

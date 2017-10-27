@@ -1,3 +1,45 @@
+2017-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (sort_labels): Restore function.
+	(pop_labels): Sort labels
+	(identify_goto): Add translation markup.
+
+2017-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	Kill IDENTIFIER_LABEL_VALUE.
+	* cp-tree.h (lang_identifier): Delete label_value slot.
+	(IDENTIFIER_LABEL_VALUE, SET_IDENTIFIER_LABEL_VALUE): Delete.
+	(struct named_label_hasher): Rename to ...
+	(struct named_label_hash): ... here.  Reimplement.
+	(struct language_function): Adjust x_named_labels.
+	* name-lookup.h (struct cp_label_binding): Delete.
+	(struct cp_binding_level): Delete shadowed_labels slot.
+	* decl.c (struct named_label_entry): Add name and outer slots.
+	(pop_label): Rename to ...
+	(check_label_used): ... here.  Don't pop.
+	(note_label, sort_labels): Delete.
+	(pop_labels, pop_local_label): Reimplement.
+	(poplevel): Pop local labels as any other decl. Remove
+	shadowed_labels handling.
+	(named_label_hash::hash, named_label_hash::equal): New.
+	(make_label_decl): Absorb into ...
+	(lookup_label_1): ... here.  Add making_local_p arg, reimplement.
+	(lookup_label, declare_local_label): Adjust.
+	(check_goto, define_label): Adjust.
+	* lex.c (make_conv_op_name): Don't clear IDENTIFIER_LABEL_VALUE.
+	* ptree.c (cxx_print_identifier): Don't print identifier binding.
+
+	* decl.c (identifier_goto): Reduce duplication.
+	(check_previous_goto_1): Likewise.
+	(check_goto): Move var decls to initialization.
+	(check_omp_return, define_label_1, define_label): Likewise.
+
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* decl.c (duplicate_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82466

@@ -19,13 +19,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.4 path concatenation [path.concat]
+// 30.10.7.4.4 path concatenation [fs.path.concat]
 
 #include <filesystem>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 
 using std::filesystem::path;
+using __gnu_test::compare_paths;
 
 void
 test01()
@@ -34,19 +35,16 @@ test01()
 
   path pp = p;
   pp += p;
-  VERIFY( pp.native() == "/foo/bar/foo/bar" );
-  VERIFY( std::distance(pp.begin(), pp.end()) == 5 );
+  compare_paths( pp, "/foo/bar/foo/bar" );
 
   path q("foo/bar");
 
   path qq = q;
   qq += q;
-  VERIFY( qq.native() == "foo/barfoo/bar" );
-  VERIFY( std::distance(qq.begin(), qq.end()) == 3 );
+  compare_paths( qq, "foo/barfoo/bar" );
 
   q += p;
-  VERIFY( q.native() == "foo/bar/foo/bar" );
-  VERIFY( std::distance(q.begin(), q.end()) == 4 );
+  compare_paths( q, "foo/bar/foo/bar" );
 }
 
 void

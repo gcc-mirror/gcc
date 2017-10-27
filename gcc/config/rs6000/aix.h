@@ -76,6 +76,9 @@
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
 
+#undef  TARGET_IEEEQUAD_DEFAULT
+#define TARGET_IEEEQUAD_DEFAULT 0
+
 /* The AIX linker will discard static constructors in object files before
    collect has a chance to see them, so scan the object files directly.  */
 #define COLLECT_EXPORT_LIST

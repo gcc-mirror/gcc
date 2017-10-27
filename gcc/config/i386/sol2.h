@@ -65,8 +65,16 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU64_DEFAULT_SPEC "-xarch=generic64"
 #endif
 
+/* Since Studio 12.6, as needs -xbrace_comment=no so its AVX512 syntax is
+   fully compatible with gas.  */
+#ifdef HAVE_AS_XBRACE_COMMENT_OPTION
+#define ASM_XBRACE_COMMENT_SPEC "-xbrace_comment=no"
+#else
+#define ASM_XBRACE_COMMENT_SPEC ""
+#endif
+
 #undef ASM_CPU_SPEC
-#define ASM_CPU_SPEC "%(asm_cpu_default)"
+#define ASM_CPU_SPEC "%(asm_cpu_default) " ASM_XBRACE_COMMENT_SPEC
 
 /* Don't include ASM_PIC_SPEC.  While the Solaris 10+ assembler accepts -K PIC,
    it gives many warnings: 

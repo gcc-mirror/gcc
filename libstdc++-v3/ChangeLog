@@ -1,3 +1,124 @@
+2017-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Deduction guides for associative containers, debug mode deduction
+	guide fixes.
+	* include/bits/stl_iterator.h (__iter_key_t)
+	(__iter_val_t, __iter_to_alloc_t): New.
+	* include/bits/stl_map.h: Add deduction guides.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: New.
+	* testsuite/23_containers/multimap/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
+2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status, and
+	information on feature-test macros.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/82716
+	* include/std/array (tuple_size, tuple_element): Change class-key
+	from class to struct, to avoid annoying Clang warnings.
+
+	PR libstdc++/79283
+	* src/filesystem/ops.cc (read_symlink): Handle st_size being zero.
+	* src/filesystem/std-ops.cc (read_symlink): Likewise.
+	(do_copy_file) [!NEED_DO_COPY_FILE]: Avoid multiple definitions.
+
+	* src/filesystem/std-path.cc (path::lexically_normal): Add missing
+	step to algorithm, for removing dot-dot elements after root-directory.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/operations/proximate.cc: Likewise.
+	* testsuite/27_io/filesystem/path/append/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Fix comment.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Use
+	compare_paths for more exhaustive checks. Add extra testcases.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Remove
+	unused header.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc: Fix
+	comment.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h (compare_paths): Also compare native
+	strings.
+
+	PR libstdc++/82706
+	* testsuite/27_io/filesystem/operations/permissions.cc: Fix test.
+
+2017-10-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_normal_mode): Add
+	c++config.h include.
+	(check_v3_target_normal_namespace): New.
+	* testsuite/lib/dg-options.exp (dg-require-normal-namespace): New.
+	* testsuite/18_support/headers/limits/synopsis.cc: Add latter.
+	* testsuite/20_util/from_chars/requirements.cc: Likewise.
+	* testsuite/20_util/headers/functional/synopsis.cc: Likewise.
+	* testsuite/20_util/headers/memory/synopsis.cc: Likewise.
+	* testsuite/20_util/headers/utility/synopsis.cc: Likewise.
+	* testsuite/20_util/to_chars/requirements.cc: Likewise.
+	* testsuite/21_strings/headers/string/synopsis.cc: Likewise.
+	* testsuite/22_locale/headers/locale/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/bitset/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/deque/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/forward_list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/map/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/queue/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/set/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/stack/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++11.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++14.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc: Likewise.
+	* testsuite/26_numerics/complex/abi_tag.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
+	* testsuite/26_numerics/headers/valarray/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/fstream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/ios/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/istream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/ostream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/sstream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/streambuf/synopsis.cc: Likewise.
+
 2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/locale/gnu/c_locale.cc [_GLIBCXX_LONG_DOUBLE_COMPAT]: Ignore

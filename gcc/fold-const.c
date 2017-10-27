@@ -3366,7 +3366,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 #undef OP_SAME_WITH_NULL
 }
 
-/* Similar to operand_equal_p, but strip nops first.  */
+/* Similar to operand_equal_p, but see if ARG0 might be a variant of ARG1
+   with a different signedness or a narrower precision.  */
 
 static bool
 operand_equal_for_comparison_p (tree arg0, tree arg1)
@@ -3381,9 +3382,20 @@ operand_equal_for_comparison_p (tree arg0, tree arg1)
   /* Discard any conversions that don't change the modes of ARG0 and ARG1
      and see if the inner values are the same.  This removes any
      signedness comparison, which doesn't matter here.  */
-  STRIP_NOPS (arg0);
-  STRIP_NOPS (arg1);
-  if (operand_equal_p (arg0, arg1, 0))
+  tree op0 = arg0;
+  tree op1 = arg1;
+  STRIP_NOPS (op0);
+  STRIP_NOPS (op1);
+  if (operand_equal_p (op0, op1, 0))
+    return true;
+
+  /* Discard a single widening conversion from ARG1 and see if the inner
+     value is the same as ARG0.  */
+  if (CONVERT_EXPR_P (arg1)
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (arg1, 0)))
+      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 0)))
+         < TYPE_PRECISION (TREE_TYPE (arg1))
+      && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
     return true;
 
   return false;
@@ -11169,8 +11181,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
          Also try swapping the arguments and inverting the conditional.  */
       if (COMPARISON_CLASS_P (arg0)
-	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0), arg1)
-	  && !HONOR_SIGNED_ZEROS (element_mode (arg1)))
+	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0), op1)
+	  && !HONOR_SIGNED_ZEROS (element_mode (op1)))
 	{
 	  tem = fold_cond_expr_with_comparison (loc, type, arg0, op1, op2);
 	  if (tem)

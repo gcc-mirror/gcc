@@ -2877,6 +2877,24 @@ subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
 				     GET_MODE_SIZE (innermode));
 }
 
+/* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
+   return the mode that is big enough to hold both the outer and inner
+   values.  Prefer the outer mode in the event of a tie.  */
+
+inline machine_mode
+wider_subreg_mode (machine_mode outermode, machine_mode innermode)
+{
+  return partial_subreg_p (outermode, innermode) ? innermode : outermode;
+}
+
+/* Likewise for subreg X.  */
+
+inline machine_mode
+wider_subreg_mode (const_rtx x)
+{
+  return wider_subreg_mode (GET_MODE (x), GET_MODE (SUBREG_REG (x)));
+}
+
 extern unsigned int subreg_size_highpart_offset (unsigned int, unsigned int);
 
 /* Return the SUBREG_BYTE for an OUTERMODE highpart of an INNERMODE value.  */

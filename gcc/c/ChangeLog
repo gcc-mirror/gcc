@@ -1,3 +1,15 @@
+2017-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/7356
+	* c-parser.c (c_parser_declaration_or_fndef): Detect missing
+	semicolons.
+
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* c-decl.c (merge_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
 2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82466

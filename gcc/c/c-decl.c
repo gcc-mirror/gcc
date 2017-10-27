@@ -2570,6 +2570,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 			set_builtin_decl_declared_p (fncode, true);
 		      break;
 		    }
+
+		  copy_attributes_to_builtin (newdecl);
 		}
 	    }
 	  else

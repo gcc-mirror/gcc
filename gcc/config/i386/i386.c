@@ -28741,6 +28741,18 @@ ix86_sched_init_global (FILE *, int, int)
 }
 
 
+/* Implement TARGET_STATIC_RTX_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+ix86_static_rtx_alignment (machine_mode mode)
+{
+  if (mode == DFmode)
+    return 64;
+  if (ALIGN_MODE_128 (mode))
+    return MAX (128, GET_MODE_ALIGNMENT (mode));
+  return GET_MODE_ALIGNMENT (mode);
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
 
 static HOST_WIDE_INT
@@ -28749,10 +28761,9 @@ ix86_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   if (TREE_CODE (exp) == REAL_CST || TREE_CODE (exp) == VECTOR_CST
       || TREE_CODE (exp) == INTEGER_CST)
     {
-      if (TYPE_MODE (TREE_TYPE (exp)) == DFmode && align < 64)
-	return 64;
-      else if (ALIGN_MODE_128 (TYPE_MODE (TREE_TYPE (exp))) && align < 128)
-	return 128;
+      machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+      HOST_WIDE_INT mode_align = ix86_static_rtx_alignment (mode);
+      return MAX (mode_align, align);
     }
   else if (!optimize_size && TREE_CODE (exp) == STRING_CST
 	   && TREE_STRING_LENGTH (exp) >= 31 && align < BITS_PER_WORD)
@@ -44490,7 +44501,6 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       /* We should have separate costs for unaligned loads and gather/scatter.
 	 Do that incrementally.  */
       case unaligned_load:
-      case vector_gather_load:
 	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
@@ -44498,11 +44508,26 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 			      true);
 
       case unaligned_store:
-      case vector_scatter_store:
 	index = sse_store_index (mode);
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->sse_unaligned_store[index]) / 2,
+			      true);
+
+      case vector_gather_load:
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->gather_static
+				  + ix86_cost->gather_per_elt
+				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2,
+			      true);
+
+      case vector_scatter_store:
+        return ix86_vec_cost (mode,
+			      COSTS_N_INSNS
+				 (ix86_cost->scatter_static
+				  + ix86_cost->scatter_per_elt
+				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2,
 			      true);
 
       case cond_branch_taken:
@@ -50281,6 +50306,8 @@ ix86_run_selftests (void)
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
 
+#undef TARGET_STATIC_RTX_ALIGNMENT
+#define TARGET_STATIC_RTX_ALIGNMENT ix86_static_rtx_alignment
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT ix86_constant_alignment
 

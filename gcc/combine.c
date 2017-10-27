@@ -579,10 +579,7 @@ find_single_use_1 (rtx dest, rtx *loc)
 	  && !REG_P (SET_DEST (x))
 	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (x)))
-		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))))
+		&& !read_modify_subreg_p (SET_DEST (x))))
 	break;
 
       return find_single_use_1 (dest, &SET_SRC (x));
@@ -7361,15 +7358,12 @@ expand_field_assignment (const_rtx x)
 	    }
 	}
 
-      /* A SUBREG between two modes that occupy the same numbers of words
-	 can be done by moving the SUBREG to the source.  */
+      /* If the destination is a subreg that overwrites the whole of the inner
+	 register, we can move the subreg to the source.  */
       else if (GET_CODE (SET_DEST (x)) == SUBREG
 	       /* We need SUBREGs to compute nonzero_bits properly.  */
 	       && nonzero_sign_valid
-	       && (((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-		     + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		   == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
+	       && !read_modify_subreg_p (SET_DEST (x)))
 	{
 	  x = gen_rtx_SET (SUBREG_REG (SET_DEST (x)),
 			   gen_lowpart
@@ -13993,10 +13987,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
       if (GET_CODE (dest) == ZERO_EXTRACT
 	  || GET_CODE (dest) == STRICT_LOW_PART
 	  || (GET_CODE (dest) == SUBREG
-	      && (((GET_MODE_SIZE (GET_MODE (dest))
-		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-		  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
-		       + UNITS_PER_WORD - 1) / UNITS_PER_WORD))))
+	      && !read_modify_subreg_p (dest)))
 	{
 	  move_deaths (dest, maybe_kill_insn, from_luid, to_insn, pnotes);
 	  return;
