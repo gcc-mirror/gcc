@@ -65,8 +65,6 @@ static const char *redeclaration_error_message (tree, tree);
 
 static int decl_jump_unsafe (tree);
 static void require_complete_types_for_parms (tree);
-static bool ambi_op_p (enum tree_code);
-static bool unary_op_p (enum tree_code);
 static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
@@ -8699,7 +8697,7 @@ grokfndecl (tree ctype,
 		  "deduction guide %qD must not have a function body", decl);
     }
   else if (IDENTIFIER_ANY_OP_P (DECL_NAME (decl))
-      && !grok_op_properties (decl, /*complain=*/true))
+	   && !grok_op_properties (decl, /*complain=*/true))
     return NULL_TREE;
   else if (UDLIT_OPER_P (DECL_NAME (decl)))
     {
@@ -12882,30 +12880,6 @@ grok_ctor_properties (const_tree ctype, const_tree decl)
   return true;
 }
 
-/* An operator with this code is unary, but can also be binary.  */
-
-static bool
-ambi_op_p (enum tree_code code)
-{
-  return (code == INDIRECT_REF
-	  || code == ADDR_EXPR
-	  || code == UNARY_PLUS_EXPR
-	  || code == NEGATE_EXPR
-	  || code == PREINCREMENT_EXPR
-	  || code == PREDECREMENT_EXPR);
-}
-
-/* An operator with this name can only be unary.  */
-
-static bool
-unary_op_p (enum tree_code code)
-{
-  return (code == TRUTH_NOT_EXPR
-	  || code == BIT_NOT_EXPR
-	  || code == COMPONENT_REF
-	  || code == TYPE_EXPR);
-}
-
 /* DECL is a declaration for an overloaded operator.  If COMPLAIN is true,
    errors are issued for invalid declarations.  */
 
@@ -12932,23 +12906,16 @@ grok_op_properties (tree decl, bool complain)
     class_type = NULL_TREE;
 
   enum tree_code operator_code = ERROR_MARK;
+  const ovl_op_info_t *ovl_op = NULL;
   if (IDENTIFIER_CONV_OP_P (name))
-    operator_code = TYPE_EXPR;
+    {
+      operator_code = TYPE_EXPR;
+      ovl_op = &ovl_op_info[false][OVL_OP_CAST_EXPR];
+    }
   else
     {
-      /* It'd be nice to hang something else of the identifier to
-	 find CODE more directly.  */
-      // FIXME:Mapping
-      bool assign_op = IDENTIFIER_ASSIGN_OP_P (name);
-      for (unsigned ix = 0; ix != OVL_OP_MAX; ix++)
-	{
-	  const ovl_op_info_t *ovl_op = &ovl_op_info[assign_op][ix];
-	  if (name == ovl_op->identifier)
-	    {
-	      operator_code = ovl_op->tree_code;
-	      break;
-	    }
-	}
+      ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      operator_code = ovl_op->tree_code;
       gcc_checking_assert (operator_code != ERROR_MARK);
     }
 
@@ -13094,7 +13061,7 @@ grok_op_properties (tree decl, bool complain)
                      ? G_("conversion to a reference to the same type "
                           "will never use a type conversion operator")
                      : G_("conversion to the same type "
-                          "will never use a type conversion operator"));		
+                          "will never use a type conversion operator"));
 	      /* Don't force t to be complete here.  */
 	      else if (MAYBE_CLASS_TYPE_P (t)
 		       && COMPLETE_TYPE_P (t)
@@ -13104,9 +13071,8 @@ grok_op_properties (tree decl, bool complain)
                           ? G_("conversion to a reference to a base class "
                                "will never use a type conversion operator")
                           : G_("conversion to a base class "
-                               "will never use a type conversion operator"));		
+                               "will never use a type conversion operator"));
 	    }
-
 	}
 
       if (operator_code == COND_EXPR)
@@ -13120,61 +13086,22 @@ grok_op_properties (tree decl, bool complain)
 	  error ("%qD must not have variable number of arguments", decl);
 	  return false;
 	}
-      else if (ambi_op_p (operator_code))
+      else if (ovl_op->flags == (OVL_OP_FLAG_UNARY | OVL_OP_FLAG_BINARY))
 	{
 	  if (arity == 1)
-	    /* We pick the one-argument operator codes by default, so
-	       we don't have to change anything.  */
-	    ;
+	    {
+	      /* Search forwards to find the unary one.  */
+	      for (unsigned ix = 0; ix != OVL_OP_MAX; ix++)
+		{
+		  ovl_op = &ovl_op_info[false][ix];
+		  if (name == ovl_op->identifier)
+		    break;
+		}
+	      gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
+	      operator_code = ovl_op->tree_code;
+	    }
 	  else if (arity == 2)
 	    {
-	      /* If we thought this was a unary operator, we now know
-		 it to be a binary operator.  */
-	      switch (operator_code)
-		{
-		case INDIRECT_REF:
-		  operator_code = MULT_EXPR;
-		  break;
-
-		case ADDR_EXPR:
-		  operator_code = BIT_AND_EXPR;
-		  break;
-
-		case UNARY_PLUS_EXPR:
-		  operator_code = PLUS_EXPR;
-		  break;
-
-		case NEGATE_EXPR:
-		  operator_code = MINUS_EXPR;
-		  break;
-
-		case PREINCREMENT_EXPR:
-		  operator_code = POSTINCREMENT_EXPR;
-		  break;
-
-		case PREDECREMENT_EXPR:
-		  operator_code = POSTDECREMENT_EXPR;
-		  break;
-
-		default:
-		  gcc_unreachable ();
-		}
-
-	      SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
-
-	      if ((operator_code == POSTINCREMENT_EXPR
-		   || operator_code == POSTDECREMENT_EXPR)
-		  && ! processing_template_decl
-		  && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
-		{
-		  if (methodp)
-		    error ("postfix %qD must take %<int%> as its argument",
-			   decl);
-		  else
-		    error ("postfix %qD must take %<int%> as its second "
-			   "argument", decl);
-		  return false;
-		}
 	    }
 	  else
 	    {
@@ -13182,6 +13109,22 @@ grok_op_properties (tree decl, bool complain)
 		error ("%qD must take either zero or one argument", decl);
 	      else
 		error ("%qD must take either one or two arguments", decl);
+	      return false;
+	    }
+
+	  SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
+
+	  if ((operator_code == POSTINCREMENT_EXPR
+	       || operator_code == POSTDECREMENT_EXPR)
+	      && ! processing_template_decl
+	      && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
+	    {
+	      if (methodp)
+		error ("postfix %qD must take %<int%> as its argument",
+		       decl);
+	      else
+		error ("postfix %qD must take %<int%> as its second "
+		       "argument", decl);
 	      return false;
 	    }
 
@@ -13213,7 +13156,7 @@ grok_op_properties (tree decl, bool complain)
 		}
 	    }
 	}
-      else if (unary_op_p (operator_code))
+      else if (ovl_op->flags == OVL_OP_FLAG_UNARY)
 	{
 	  if (arity != 1)
 	    {
@@ -13224,7 +13167,7 @@ grok_op_properties (tree decl, bool complain)
 	      return false;
 	    }
 	}
-      else /* if (binary_op_p (operator_code)) */
+      else if (ovl_op->flags == OVL_OP_FLAG_BINARY)
 	{
 	  if (arity != 2)
 	    {
@@ -13243,6 +13186,8 @@ grok_op_properties (tree decl, bool complain)
 	    warning (OPT_Weffc__, "user-defined %qD always evaluates both arguments",
 		     decl);
 	}
+      else
+	gcc_unreachable ();
 
       /* Effective C++ rule 23.  */
       if (warn_ecpp

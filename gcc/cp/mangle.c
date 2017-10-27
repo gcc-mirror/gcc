@@ -1263,22 +1263,10 @@ write_unqualified_id (tree identifier)
 {
   if (IDENTIFIER_CONV_OP_P (identifier))
     write_conversion_operator_name (TREE_TYPE (identifier));
-  else if (IDENTIFIER_ANY_OP_P (identifier))
+  else if (IDENTIFIER_OVL_OP_P (identifier))
     {
-      /* Unfortunately, there is no easy way to go from the
-	 name of the operator back to the corresponding tree
-	 code.  */
-      // FIXME: Mapping
-      bool ass_op_p = IDENTIFIER_ASSIGN_OP_P (identifier);
-      for (unsigned ix = OVL_OP_MAX; ix--;)
-	{
-	  const ovl_op_info_t *ovl_op = &ovl_op_info[ass_op_p][ix];
-	  if (ovl_op->identifier == identifier)
-	    {
-	      write_string (ovl_op->mangled_name);
-	      break;
-	    }
-	}
+      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (identifier);
+      write_string (ovl_op->mangled_name);
     }
   else if (UDLIT_OPER_P (identifier))
     write_literal_operator_name (identifier);

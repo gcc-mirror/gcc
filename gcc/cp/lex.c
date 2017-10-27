@@ -99,7 +99,7 @@ get_identifier_kind_name (tree id)
   /* Keep in sync with cp_id_kind enumeration.  */
   static const char *const names[cik_max] = {
     "normal", "keyword", "constructor", "destructor",
-    "simple-op", "<reserved>udlit-op", "assign-op", "conv-op"
+    "simple-op", "assign-op", "<reserved>udlit-op", "conv-op"
   };
 
   unsigned kind = 0;
@@ -177,7 +177,8 @@ init_operators (void)
 	}
       if (op_ptr->tree_code)
 	{
-	  gcc_checking_assert (!ovl_op_mapping[op_ptr->tree_code]);
+	  gcc_checking_assert (op_ptr->ovl_op_code == ix
+			       && !ovl_op_mapping[op_ptr->tree_code]);
 	  ovl_op_mapping[op_ptr->tree_code] = op_ptr->ovl_op_code;
 	}
 

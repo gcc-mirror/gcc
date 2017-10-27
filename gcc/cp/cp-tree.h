@@ -997,8 +997,8 @@ enum cp_identifier_kind {
   cik_dtor = 3,		/* Destructor (in-chg, deleting, complete or
 			   base).  */
   cik_simple_op = 4,	/* Non-assignment operator name.  */
-  cik_reserved_for_udlit = 5,	/* Not yet in use  */
-  cik_assign_op = 6,	/* An assignment operator name.  */
+  cik_assign_op = 5,	/* An assignment operator name.  */
+  cik_reserved_for_udlit = 6,	/* Not yet in use  */
   cik_conv_op = 7,	/* Conversion operator name.  */
   cik_max
 };
@@ -1054,22 +1054,20 @@ enum cp_identifier_kind {
 #define IDENTIFIER_ANY_OP_P(NODE)		\
   (IDENTIFIER_KIND_BIT_2 (NODE))
 
-/* True if this identifier is for an overloaded operator. Values 4,
-   6.  */
+/* True if this identifier is for an overloaded operator. Values 4, 5.  */
 #define IDENTIFIER_OVL_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)		\
-   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+  (IDENTIFIER_ANY_OP_P (NODE)			\
+   & (!IDENTIFIER_KIND_BIT_1 (NODE)))
 
-/* True if this identifier is for any assignment. Values 6.  */
+/* True if this identifier is for any assignment. Values 5.  */
 #define IDENTIFIER_ASSIGN_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
-   & IDENTIFIER_KIND_BIT_1 (NODE)		\
-   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+  (IDENTIFIER_OVL_OP_P (NODE)			\
+   & IDENTIFIER_KIND_BIT_0 (NODE))
 
 /* True if this identifier is the name of a type-conversion
    operator.  Value 7.  */
 #define IDENTIFIER_CONV_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
+  (IDENTIFIER_ANY_OP_P (NODE)			\
    & IDENTIFIER_KIND_BIT_1 (NODE)		\
    & IDENTIFIER_KIND_BIT_0 (NODE))
 
@@ -5516,7 +5514,7 @@ struct GTY(()) ovl_op_info_t {
   /* The (compressed) operator code.  */
   enum ovl_op_code ovl_op_code : 8;
   /* The ovl_op_flags of the operator */
-  unsigned flags : 4;
+  unsigned flags : 8;
 };
 
 /* Overloaded operator info indexed by ass_op_p & ovl_op_code.  */
@@ -5527,12 +5525,12 @@ extern GTY(()) unsigned char ovl_op_mapping[MAX_TREE_CODES];
 /* Given an ass_op_p boolean and a tree code, return a pointer to its
    overloaded operator info.  Tree codes for non-overloaded operators
    map to the error-operator.  */
-#define OVL_OP_INFO(IS_ASS_P,TREE_CODE)			\
+#define OVL_OP_INFO(IS_ASS_P, TREE_CODE)			\
   (&ovl_op_info[(IS_ASS_P) != 0][ovl_op_mapping[(TREE_CODE)]])
 /* Overloaded operator info for an identifier for which
    IDENTIFIER_OVL_OP_P is true.  */
 #define IDENTIFIER_OVL_OP_INFO(NODE) \
-  (&ovl_op_info[IDENTIFIER_KIND_BIT_1 (NODE)][IDENTIFIER_CP_INDEX (NODE)])
+  (&ovl_op_info[IDENTIFIER_KIND_BIT_0 (NODE)][IDENTIFIER_CP_INDEX (NODE)])
 #define IDENTIFIER_OVL_OP_FLAGS(NODE) \
   (IDENTIFIER_OVL_OP_INFO (NODE)->flags)
 

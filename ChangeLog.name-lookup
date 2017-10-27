@@ -1,5 +1,17 @@
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 7.
+	gcc/cp/
+	* cp-tree.h (cp_identifier_kind): Swap cik_assign_op &
+	cik_reserved_for_udlit.
+	(IDENTIFIER_OVL_OP_P, IDENTIFIER_ASSIGN_OP_P,
+	IDENTIFIER_CONV_OP_P, IDENTIFIER_OVL_OP_INFO): Update.
+	* decl.c (ambi_op_p, unary_op_p): Delete.
+	(grok_op_properties): Reimplement operator lookup.
+	* lex.c (get_identifier_kind_name): Adjust.
+	* mangle.c (write_unqualified_id): Use IDENTIFIER_OVL_OP_INFO.
+	* operators.def (COMPONENT_REF): Is unary.
+
 	Operator code compaction part 6.
 	gcc/cp/
 	(enum cp_operator_kind): Delete cik_newdel_op.
