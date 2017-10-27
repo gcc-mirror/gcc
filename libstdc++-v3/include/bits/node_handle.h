@@ -37,7 +37,6 @@
 # define __cpp_lib_node_extract 201606
 
 #include <optional>
-#include <tuple>
 #include <bits/alloc_traits.h>
 #include <bits/ptr_traits.h>
 
@@ -286,22 +285,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<size_t _Idx>
 	decltype(auto) get() &
-	{ return std::get<_Idx>(std::tie(inserted, position, node)); }
+	{
+	  static_assert(_Idx < 3);
+	  if constexpr (_Idx == 0)
+	    return inserted;
+	  else if constexpr (_Idx == 1)
+	    return position;
+	  else if constexpr (_Idx == 2)
+	    return node;
+	}
 
       template<size_t _Idx>
 	decltype(auto) get() const &
-	{ return std::get<_Idx>(std::tie(inserted, position, node)); }
+	{
+	  static_assert(_Idx < 3);
+	  if constexpr (_Idx == 0)
+	    return inserted;
+	  else if constexpr (_Idx == 1)
+	    return position;
+	  else if constexpr (_Idx == 2)
+	    return node;
+	}
 
       template<size_t _Idx>
 	decltype(auto) get() &&
 	{
-	  return std::move(std::get<_Idx>(std::tie(inserted, position, node)));
+	  static_assert(_Idx < 3);
+	  if constexpr (_Idx == 0)
+	    return std::move(inserted);
+	  else if constexpr (_Idx == 1)
+	    return std::move(position);
+	  else if constexpr (_Idx == 2)
+	    return std::move(node);
 	}
 
       template<size_t _Idx>
 	decltype(auto) get() const &&
 	{
-	  return std::move(std::get<_Idx>(std::tie(inserted, position, node)));
+	  static_assert(_Idx < 3);
+	  if constexpr (_Idx == 0)
+	    return std::move(inserted);
+	  else if constexpr (_Idx == 1)
+	    return std::move(position);
+	  else if constexpr (_Idx == 2)
+	    return std::move(node);
 	}
     };
 
