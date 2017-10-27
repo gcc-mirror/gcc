@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "substring-locations.h"
 #include "diagnostic.h"
+#include "domwalk.h"
 
 /* The likely worst case value of MB_LEN_MAX for the target, large enough
    for UTF-8.  Ideally, this would be obtained by a target hook if it were
@@ -113,6 +114,19 @@ static int warn_level;
 
 struct format_result;
 
+class sprintf_dom_walker : public dom_walker
+{
+ public:
+  sprintf_dom_walker () : dom_walker (CDI_DOMINATORS) {}
+  ~sprintf_dom_walker () {}
+
+  virtual edge before_dom_children (basic_block) FINAL OVERRIDE;
+  bool handle_gimple_call (gimple_stmt_iterator *);
+
+  struct call_info;
+  bool compute_format_length (call_info &, format_result *);
+};
+
 class pass_sprintf_length : public gimple_opt_pass
 {
   bool fold_return_value;
@@ -135,10 +149,6 @@ public:
       fold_return_value = param;
     }
 
-  bool handle_gimple_call (gimple_stmt_iterator *);
-
-  struct call_info;
-  bool compute_format_length (call_info &, format_result *);
 };
 
 bool
@@ -976,7 +986,7 @@ bytes_remaining (unsigned HOST_WIDE_INT navail, const format_result &res)
 
 /* Description of a call to a formatted function.  */
 
-struct pass_sprintf_length::call_info
+struct sprintf_dom_walker::call_info
 {
   /* Function call statement.  */
   gimple *callstmt;
@@ -2348,7 +2358,7 @@ format_plain (const directive &dir, tree)
    should be diagnosed given the AVAILable space in the destination.  */
 
 static bool
-should_warn_p (const pass_sprintf_length::call_info &info,
+should_warn_p (const sprintf_dom_walker::call_info &info,
 	       const result_range &avail, const result_range &result)
 {
   if (result.max <= avail.min)
@@ -2419,7 +2429,7 @@ should_warn_p (const pass_sprintf_length::call_info &info,
 
 static bool
 maybe_warn (substring_loc &dirloc, location_t argloc,
-	    const pass_sprintf_length::call_info &info,
+	    const sprintf_dom_walker::call_info &info,
 	    const result_range &avail_range, const result_range &res,
 	    const directive &dir)
 {
@@ -2716,7 +2726,7 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
    in *RES.  Return true if the directive has been handled.  */
 
 static bool
-format_directive (const pass_sprintf_length::call_info &info,
+format_directive (const sprintf_dom_walker::call_info &info,
 		  format_result *res, const directive &dir)
 {
   /* Offset of the beginning of the directive from the beginning
@@ -3004,7 +3014,7 @@ format_directive (const pass_sprintf_length::call_info &info,
    the directive.  */
 
 static size_t
-parse_directive (pass_sprintf_length::call_info &info,
+parse_directive (sprintf_dom_walker::call_info &info,
 		 directive &dir, format_result *res,
 		 const char *str, unsigned *argno)
 {
@@ -3431,7 +3441,7 @@ parse_directive (pass_sprintf_length::call_info &info,
    that caused the processing to be terminated early).  */
 
 bool
-pass_sprintf_length::compute_format_length (call_info &info,
+sprintf_dom_walker::compute_format_length (call_info &info,
 					    format_result *res)
 {
   if (dump_file)
@@ -3514,7 +3524,7 @@ get_destination_size (tree dest)
    of its return values.  */
 
 static bool
-is_call_safe (const pass_sprintf_length::call_info &info,
+is_call_safe (const sprintf_dom_walker::call_info &info,
 	      const format_result &res, bool under4k,
 	      unsigned HOST_WIDE_INT retval[2])
 {
@@ -3573,7 +3583,7 @@ is_call_safe (const pass_sprintf_length::call_info &info,
 
 static bool
 try_substitute_return_value (gimple_stmt_iterator *gsi,
-			     const pass_sprintf_length::call_info &info,
+			     const sprintf_dom_walker::call_info &info,
 			     const format_result &res)
 {
   tree lhs = gimple_get_lhs (info.callstmt);
@@ -3690,7 +3700,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 
 static bool
 try_simplify_call (gimple_stmt_iterator *gsi,
-		   const pass_sprintf_length::call_info &info,
+		   const sprintf_dom_walker::call_info &info,
 		   const format_result &res)
 {
   unsigned HOST_WIDE_INT dummy[2];
@@ -3717,7 +3727,7 @@ try_simplify_call (gimple_stmt_iterator *gsi,
    and gsi_next should not be performed in the caller.  */
 
 bool
-pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
+sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 {
   call_info info = call_info ();
 
@@ -3982,6 +3992,24 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
   return call_removed;
 }
 
+edge
+sprintf_dom_walker::before_dom_children (basic_block bb)
+{
+  for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si); )
+    {
+      /* Iterate over statements, looking for function calls.  */
+      gimple *stmt = gsi_stmt (si);
+
+      if (is_gimple_call (stmt) && handle_gimple_call (&si))
+	/* If handle_gimple_call returns true, the iterator is
+	   already pointing to the next statement.  */
+	continue;
+
+      gsi_next (&si);
+    }
+  return NULL;
+}
+
 /* Execute the pass for function FUN.  */
 
 unsigned int
@@ -3989,26 +4017,13 @@ pass_sprintf_length::execute (function *fun)
 {
   init_target_to_host_charmap ();
 
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si); )
-	{
-	  /* Iterate over statements, looking for function calls.  */
-	  gimple *stmt = gsi_stmt (si);
+  calculate_dominance_info (CDI_DOMINATORS);
 
-	  if (is_gimple_call (stmt) && handle_gimple_call (&si))
-	    /* If handle_gimple_call returns true, the iterator is
-	       already pointing to the next statement.  */
-	    continue;
-
-	  gsi_next (&si);
-	}
-    }
+  sprintf_dom_walker sprintf_dom_walker;
+  sprintf_dom_walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   /* Clean up object size info.  */
   fini_object_sizes ();
-
   return 0;
 }
 
