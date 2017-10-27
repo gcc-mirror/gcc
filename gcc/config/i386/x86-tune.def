@@ -48,7 +48,8 @@ DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
    over partial stores.  For example preffer MOVZBL or MOVQ to load 8bit
    value over movb.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
-          m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL
+          m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
+	  | m_BONNELL | m_SILVERMONT | m_INTEL
 	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: This knob promotes all store
@@ -84,8 +85,9 @@ DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
 /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
    partial dependencies.  */
 DEF_TUNE (X86_TUNE_MOVX, "movx",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	  | m_KNL | m_KNM | m_INTEL | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC)
+          m_PPRO | m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
+	  | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
+	  | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */
