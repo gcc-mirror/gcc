@@ -1,6 +1,11 @@
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82373
+	* g++.dg/cpp1y/pr82373.C: New test.
+
 	2017-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81715
