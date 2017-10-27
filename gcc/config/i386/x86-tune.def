@@ -366,7 +366,7 @@ DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
    to SSE registers.  If disabled, the moves will be done by storing
    the value to memory and reloading.  */
 DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_TO_VEC, "inter_unit_moves_to_vec",
-          ~(m_AMD_MULTIPLE | m_GENERIC))
+          ~(m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC))
 
 /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC: Enable moves in from SSE
    to integer registers.  If disabled, the moves will be done by storing
