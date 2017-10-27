@@ -1,3 +1,8 @@
+2017-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81659
+	* g++.dg/torture/pr81659.C: New testcase.
+
 2017-10-26  Michael Collison  <michael.collison@arm.com>
 
 	* gcc.target/aarch64/fix_trunc1.c: New testcase.

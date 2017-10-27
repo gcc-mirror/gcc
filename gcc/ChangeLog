@@ -1,3 +1,9 @@
+2017-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81659
+	* tree-eh.c (pass_lower_eh_dispatch::execute): Free dominator
+	info when we redirected EH.
+
 2017-10-26  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64.md(<optab>_trunc><vf><GPI:mode>2):
