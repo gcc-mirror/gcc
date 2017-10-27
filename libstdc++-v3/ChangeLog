@@ -1,5 +1,8 @@
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am: Put headers in alphabetical order.
+	* include/Makefile.in: Regenerate.
+
 	* include/bits/fs_dir.h (directory_iterator): Remove noexcept from
 	constructors and increment member (LWG 3013).
 	(recursive_directory_iterator): Likewise.
