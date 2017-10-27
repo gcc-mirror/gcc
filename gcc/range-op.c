@@ -1421,7 +1421,7 @@ irange_op_table::irange_op_table ()
   irange_tree[EQ_EXPR] = &op_equal;
 
   irange_tree[PLUS_EXPR] = &op_plus;
-  irange_tree[MINUS_EXPR] = &op_minus;
+//  irange_tree[MINUS_EXPR] = &op_minus;
   
   irange_tree[NOP_EXPR] = &op_cast;
   irange_tree[CONVERT_EXPR] = &op_cast;
