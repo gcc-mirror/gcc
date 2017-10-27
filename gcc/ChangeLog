@@ -1,6 +1,15 @@
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81715
+	* tree-inline.c (expand_call_inline): Emit clobber stmts for
+	VAR_DECLs to which addressable non-volatile parameters are mapped
+	and for id->retvar after the return value assignment, though
+	for -fsanitize=kernel-address only.  Clear id->retval and id->retbnd
+	after inlining.
+
 	2017-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82234
