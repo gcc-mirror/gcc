@@ -1,3 +1,8 @@
+2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80739
+	* g++.dg/cpp1y/constexpr-80739.C: New.
+
 2017-10-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81659
