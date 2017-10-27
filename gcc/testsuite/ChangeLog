@@ -1,3 +1,16 @@
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-hw.c: Add support for all 4 FMA
+	variants.  Check various conversions to/from float128.  Check
+	negation.  Use {\m...\M} in the tests.
+	* gcc.target/powerpc/float128-hw2.c: New test for implicit
+	_Float128 math functions.
+	* gcc.target/powerpc/float128-hw3.c: New test for strict ansi mode
+	not implicitly adding the _Float128 math functions.
+	* gcc.target/powerpc/float128-fma2.c: Delete, test is no longer
+	valid.
+	* gcc.target/powerpc/float128-sqrt2.c: Likewise.
+
 2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82692
