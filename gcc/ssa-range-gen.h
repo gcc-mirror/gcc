@@ -56,6 +56,9 @@ public:
   bool range_on_stmt (irange& r, tree name, gimple *g);
   /* What infomation does stmt g provide about the defintion.  */
   bool range_of_def (irange& r, gimple *g);
+  /* What does g provide about the lhs if name has range_for_name.  */
+  bool range_of_def (irange& r, gimple *g, tree name,
+		     const irange& range_for_name);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */

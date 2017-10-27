@@ -461,6 +461,35 @@ range_stmt::fold (irange& r, FILE *trace) const
 }
 
 bool
+range_stmt::fold (irange& r, tree name, const irange& name_range) const
+{
+  irange r1, r2;
+  irange *r1p = NULL, *r2p = NULL;
+  bool res;
+
+  if (ssa1)
+    {
+      if (ssa1 == name)
+        r1 = name_range;
+      else
+	r1 = ssa1;
+      r1p = &r1;
+    }
+
+  if (ssa2)
+    {
+      if (ssa2 == name)
+        r2 = name_range;
+      else
+	r2 = ssa2;
+      r2p = &r2;
+    }
+
+  res = fold (r, r1p, r2p);
+  return res;
+}
+
+bool
 range_stmt::op1_irange (irange& r, const irange& lhs, const irange& op2,
 		        FILE *trace) const
 {  

@@ -77,6 +77,7 @@ public:
   		     const irange& op1_false, const irange& op2_true,
 		     const irange& op2_false);
   bool fold (irange& res, FILE *trace = NULL) const;
+  bool fold (irange& res, tree name, const irange& name_range) const;
   bool op1_irange (irange& r, const irange& lhs, const irange& op2,
 		   FILE *trace = NULL) const;
   bool op2_irange (irange& r, const irange& lhs, const irange& op1,

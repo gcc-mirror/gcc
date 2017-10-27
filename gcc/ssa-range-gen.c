@@ -527,6 +527,18 @@ gori::range_of_def (irange& r, gimple *g)
   return rn.fold (r);
 }
 
+bool
+gori::range_of_def (irange& r, gimple *g, tree name,
+		    const irange& range_of_name)
+{
+  range_stmt rn (g);
+
+  /* If we don't understand the stmt... */
+  if (!rn.valid())
+    return false;
+  
+  return rn.fold (r, name, range_of_name);
+}
 // -------------------------------------------------------------------------
 
 range_cache::range_cache ()
