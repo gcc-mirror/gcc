@@ -1,3 +1,35 @@
+2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* cgraph.h (set_malloc_flag): Declare.
+	* cgraph.c (set_malloc_flag_1): New function.
+	(set_malloc_flag): Likewise.
+	* ipa-fnsummary.h (ipa_call_summary): Add new field is_return_callee.
+	* ipa-fnsummary.c (ipa_call_summary::reset): Set is_return_callee to
+	false.
+	(read_ipa_call_summary): Add support for reading is_return_callee.
+	(write_ipa_call_summary): Stream is_return_callee.
+	* ipa-inline.c (ipa_inline): Remove call to ipa_free_fn_summary.
+	* ipa-pure-const.c: Add headers ssa.h, alloc-pool.h, symbol-summary.h,
+	ipa-prop.h, ipa-fnsummary.h.
+	(pure_const_names): Change to static.
+	(malloc_state_e): Define.
+	(malloc_state_names): Define.
+	(funct_state_d): Add field malloc_state.
+	(varying_state): Set malloc_state to STATE_MALLOC_BOTTOM.
+	(check_retval_uses): New function.
+	(malloc_candidate_p): Likewise.
+	(analyze_function): Add support for malloc attribute.
+	(pure_const_write_summary): Stream malloc_state.
+	(pure_const_read_summary): Add support for reading malloc_state.
+	(dump_malloc_lattice): New function.
+	(propagate_malloc): New function.
+	(warn_function_malloc): New function.
+	(ipa_pure_const::execute): Call propagate_malloc and
+	ipa_free_fn_summary.
+	(pass_local_pure_const::execute): Add support for malloc attribute.
+	* ssa-iterators.h (RETURN_FROM_IMM_USE_STMT): New macro.
+	* doc/invoke.texi: Document Wsuggest-attribute=malloc.
+
 2017-10-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/82457
