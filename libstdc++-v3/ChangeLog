@@ -1,5 +1,22 @@
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/fstream (basic_filebuf::_If_path): New SFINAE helper.
+	(basic_filebuf::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_ifstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_ifstream::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_ofstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_ofstream::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_fstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_fstream::open<Path>(const Path&, const ios_base::openmode&)):
+	New constructors and member functions.
+	* testsuite/27_io/basic_filebuf/open/char/path.cc: New test.
+	* testsuite/27_io/basic_fstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_fstream/open/char/path.cc: New test.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_ifstream/open/char/path.cc: New test.
+	* testsuite/27_io/basic_ofstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_ofstream/open/char/path.cc: New test.
+
 	* include/bits/fs_path.h (path::format): Define new enumeration type.
 	(path(string_type&&), path<Source>(const Source&))
 	(path<InputIterator>(InputIterator, InputIterator))
