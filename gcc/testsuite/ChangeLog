@@ -1,3 +1,11 @@
+2017-10-27  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-neg-char.c: New.
+	* gcc.target/powerpc/fold-vec-neg-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-neg-int.c: New.
+	* gcc.target/powerpc/fold-vec-neg-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-neg-short.c: New.
+
 2017-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56342
