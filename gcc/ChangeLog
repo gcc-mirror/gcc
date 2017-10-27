@@ -1,3 +1,10 @@
+2017-10-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, i?86-*-solaris2.10): Simplify gas
+	2.26 caveat.  Update gas and gld versions.
+	(Specific, *-*-solaris2*): Update binutils version.  Remove caveat
+	reference.
+
 2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* cgraph.h (set_malloc_flag): Declare.
