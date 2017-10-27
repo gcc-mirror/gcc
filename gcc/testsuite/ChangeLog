@@ -1,6 +1,11 @@
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82159
+	* g++.dg/opt/pr82159-2.C: New test.
+
 	2017-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82373

@@ -1,6 +1,12 @@
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82159
+	* expr.c (store_field): Don't optimize away bitsize == 0 store
+	from CALL_EXPR with addressable return type.
+
 	2017-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81715
