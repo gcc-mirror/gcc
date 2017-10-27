@@ -50,10 +50,11 @@ namespace filesystem
   class file_status
   {
   public:
-    // constructors
+    // constructors and destructor
+    file_status() noexcept : file_status(file_type::none) {}
+
     explicit
-    file_status(file_type __ft = file_type::none,
-	        perms __prms = perms::unknown) noexcept
+    file_status(file_type __ft, perms __prms = perms::unknown) noexcept
     : _M_type(__ft), _M_perms(__prms) { }
 
     file_status(const file_status&) noexcept = default;
