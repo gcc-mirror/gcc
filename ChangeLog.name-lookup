@@ -1,5 +1,7 @@
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r254141.
+
 	Operator code compaction part 4.
 	gcc/cp/
 	* cp-tree.h (cp_assignment_operator_id): Delete.

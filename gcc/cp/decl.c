@@ -372,6 +372,18 @@ check_label_used (tree label)
     }
 }
 
+/* Helper function to sort named label entries in a vector by DECL_UID.  */
+
+static int
+sort_labels (const void *a, const void *b)
+{
+  tree label1 = *(tree const *) a;
+  tree label2 = *(tree const *) b;
+
+  /* DECL_UIDs can never be equal.  */
+  return DECL_UID (label1) > DECL_UID (label2) ? -1 : +1;
+}
+
 /* At the end of a function, all labels declared within the function
    go out of scope.  BLOCK is the top-level block for the
    function.  */
@@ -382,6 +394,12 @@ pop_labels (tree block)
   if (!named_labels)
     return;
 
+  /* We need to add the labels to the block chain, so debug
+     information is emitted.  But, we want the order to be stable so
+     need to sort them first.  Otherwise the debug output could be
+     randomly ordered.  I guess it's mostly stable, unless the hash
+     table implementation changes.  */
+  auto_vec<tree, 32> labels (named_labels->elements ());
   hash_table<named_label_hash>::iterator end (named_labels->end ());
   for (hash_table<named_label_hash>::iterator iter
 	 (named_labels->begin ()); iter != end; ++iter)
@@ -390,15 +408,20 @@ pop_labels (tree block)
 
       gcc_checking_assert (!ent->outer);
       if (ent->label_decl)
-	{
-	  check_label_used (ent->label_decl);
-
-	  /* Put the labels into the "variables" of the top-level block,
-	     so debugger can see them.  */
-	  DECL_CHAIN (ent->label_decl) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = ent->label_decl;
-	}
+	labels.quick_push (ent->label_decl);
       ggc_free (ent);
+    }
+  named_labels = NULL;
+  labels.qsort (sort_labels);
+
+  while (labels.length ())
+    {
+      tree label = labels.pop ();
+
+      DECL_CHAIN (label) = BLOCK_VARS (block);
+      BLOCK_VARS (block) = label;
+
+      check_label_used (label);
     }
 
   named_labels = NULL;
@@ -3066,8 +3089,8 @@ identify_goto (tree decl, location_t loc, const location_t *locus,
 {
   bool complained
     = emit_diagnostic (diag_kind, loc, 0,
-		       decl ? "jump to label %qD" : "jump to case label",
-		       decl);
+		       decl ? N_("jump to label %qD")
+		       : N_("jump to case label"), decl);
   if (complained && locus)
     inform (*locus, "  from here");
   return complained;
@@ -3136,32 +3159,32 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	{
 	case sk_try:
 	  if (!saw_eh)
-	    inf = "enters try block";
+	    inf = N_("enters try block");
 	  saw_eh = true;
 	  break;
 
 	case sk_catch:
 	  if (!saw_eh)
-	    inf = "enters catch block";
+	    inf = N_("enters catch block");
 	  saw_eh = true;
 	  break;
 
 	case sk_omp:
 	  if (!saw_omp)
-	    inf = "enters OpenMP structured block";
+	    inf = N_("enters OpenMP structured block");
 	  saw_omp = true;
 	  break;
 
 	case sk_transaction:
 	  if (!saw_tm)
-	    inf = "enters synchronized or atomic statement";
+	    inf = N_("enters synchronized or atomic statement");
 	  saw_tm = true;
 	  break;
 
 	case sk_block:
 	  if (!saw_cxif && level_for_constexpr_if (b->level_chain))
 	    {
-	      inf = "enters constexpr if statement";
+	      inf = N_("enters constexpr if statement");
 	      loc = EXPR_LOCATION (b->level_chain->this_entity);
 	      saw_cxif = true;
 	    }

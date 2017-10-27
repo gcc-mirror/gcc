@@ -4103,6 +4103,11 @@ foo:	nop
 	;;
     esac
 
+    gcc_GAS_CHECK_FEATURE([-xbrace_comment], gcc_cv_as_ix86_xbrace_comment,,
+      [-xbrace_comment=no], [.text],,
+      [AC_DEFINE(HAVE_AS_XBRACE_COMMENT_OPTION, 1,
+		[Define if your assembler supports -xbrace_comment option.])])
+
     # Test if the assembler supports the section flag 'e' for specifying
     # an excluded section.
     gcc_GAS_CHECK_FEATURE([.section with e], gcc_cv_as_section_has_e,

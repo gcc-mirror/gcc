@@ -52,6 +52,7 @@ extern const char * nios2_add_insn_asm (rtx_insn *, rtx *);
 
 extern bool nios2_legitimate_pic_operand_p (rtx);
 extern bool gprel_constant_p (rtx);
+extern bool r0rel_constant_p (rtx);
 extern bool nios2_regno_ok_for_base_p (int, bool);
 extern bool nios2_unspec_reloc_p (rtx);
 

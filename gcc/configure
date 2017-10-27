@@ -25552,6 +25552,38 @@ $as_echo "$as_me: WARNING: LTO for $target requires binutils >= 2.20.1, but vers
 	;;
     esac
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -xbrace_comment" >&5
+$as_echo_n "checking assembler for -xbrace_comment... " >&6; }
+if test "${gcc_cv_as_ix86_xbrace_comment+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_ix86_xbrace_comment=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -xbrace_comment=no -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_ix86_xbrace_comment=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_xbrace_comment" >&5
+$as_echo "$gcc_cv_as_ix86_xbrace_comment" >&6; }
+if test $gcc_cv_as_ix86_xbrace_comment = yes; then
+
+$as_echo "#define HAVE_AS_XBRACE_COMMENT_OPTION 1" >>confdefs.h
+
+fi
+
+
     # Test if the assembler supports the section flag 'e' for specifying
     # an excluded section.
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .section with e" >&5

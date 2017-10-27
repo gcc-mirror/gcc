@@ -1,4 +1,261 @@
-2017-10-23  Jan Hubicka  <hubicka@ucw.cz>
+2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* cgraph.h (set_malloc_flag): Declare.
+	* cgraph.c (set_malloc_flag_1): New function.
+	(set_malloc_flag): Likewise.
+	* ipa-fnsummary.h (ipa_call_summary): Add new field is_return_callee.
+	* ipa-fnsummary.c (ipa_call_summary::reset): Set is_return_callee to
+	false.
+	(read_ipa_call_summary): Add support for reading is_return_callee.
+	(write_ipa_call_summary): Stream is_return_callee.
+	* ipa-inline.c (ipa_inline): Remove call to ipa_free_fn_summary.
+	* ipa-pure-const.c: Add headers ssa.h, alloc-pool.h, symbol-summary.h,
+	ipa-prop.h, ipa-fnsummary.h.
+	(pure_const_names): Change to static.
+	(malloc_state_e): Define.
+	(malloc_state_names): Define.
+	(funct_state_d): Add field malloc_state.
+	(varying_state): Set malloc_state to STATE_MALLOC_BOTTOM.
+	(check_retval_uses): New function.
+	(malloc_candidate_p): Likewise.
+	(analyze_function): Add support for malloc attribute.
+	(pure_const_write_summary): Stream malloc_state.
+	(pure_const_read_summary): Add support for reading malloc_state.
+	(dump_malloc_lattice): New function.
+	(propagate_malloc): New function.
+	(warn_function_malloc): New function.
+	(ipa_pure_const::execute): Call propagate_malloc and
+	ipa_free_fn_summary.
+	(pass_local_pure_const::execute): Add support for malloc attribute.
+	* ssa-iterators.h (RETURN_FROM_IMM_USE_STMT): New macro.
+	* doc/invoke.texi: Document Wsuggest-attribute=malloc.
+
+2017-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/82457
+	* doc/invoke.texi: Document that one needs a non-strict ISO mode
+	for fork-like functions to be properly instrumented.
+
+2017-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81659
+	* tree-eh.c (pass_lower_eh_dispatch::execute): Free dominator
+	info when we redirected EH.
+
+2017-10-26  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64.md(<optab>_trunc><vf><GPI:mode>2):
+	New pattern.
+	(<optab>_trunchf<GPI:mode>2: New pattern.
+	(<optab>_trunc<vgp><GPI:mode>2: New pattern.
+	* config/aarch64/iterators.md (wv): New mode attribute.
+	(vf, VF): New mode attributes.
+	(vgp, VGP): New mode attributes.
+	(s): Update attribute with SImode and DImode prefixes.
+
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/constraints.md ("S"): Match r0rel_constant_p too.
+	* config/nios2/nios2-protos.h (r0rel_constant_p): Declare.
+	* config/nios2/nios2.c: (nios2_r0rel_sec_regex): New.
+	(nios2_option_overide): Initialize it.  Don't allow R0-relative 
+	addressing with PIC.
+	(nios2_rtx_costs): Handle r0rel_constant_p like gprel_constant_p.
+	(nios2_symbolic_constant_p): Likewise.
+	(nios2_legitimate_address_p): Likewise.
+	(nios2_r0rel_section_name_p): New.
+	(nios2_symbol_ref_in_r0rel_data_p): New.
+	(nios2_emit_move_sequence): Handle r0rel_constant_p.
+	(r0rel_constant_p): New.
+	(nios2_print_operand_address): Handle r0rel_constant_p.
+	(nios2_cdx_narrow_form_p): Likewise.
+	* config/nios2/nios2.opt (mr0rel-sec=): New option.
+	* doc/invoke.texi (Option Summary): Add -mr0rel-sec.
+	(Nios II Options): Document -mr0rel-sec.
+
+2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c: Include xregex.h.
+	(nios2_gprel_sec_regex): New.
+	(nios2_option_overide): Initialize it.  Don't allow GP-relative 
+	addressing with PIC.
+	(nios2_small_section_name_p): Check for regex match.
+	* config/nios2/nios2.opt (mgprel-sec=): New option.
+	* doc/invoke.texi (Option Summary): Add -mgprel-sec.
+	(Nios II Options): Document -mgprel-sec.
+
+2017-10-26  Jim Wilson  <wilson@tuliptree.org>
+
+	* doc/invoke.texi (-fdebug-prefix-map): Expand documentation.
+
+2017-10-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/82707
+	* gimple.c (gimple_copy): Fix unsharing of
+	GIMPLE_OMP_{SINGLE,TARGET,TEAMS}.
+
+2017-10-26  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_cmpeq_pd_mask,
+	_mm512_cmple_pd_mask, _mm512_cmplt_pd_mask,
+	_mm512_cmpneq_pd_mask, _mm512_cmpnle_pd_mask,
+	_mm512_cmpnlt_pd_mask, _mm512_cmpord_pd_mask,
+	_mm512_cmpunord_pd_mask, _mm512_mask_cmpeq_pd_mask,
+	_mm512_mask_cmple_pd_mask, _mm512_mask_cmplt_pd_mask,
+	_mm512_mask_cmpneq_pd_mask, _mm512_mask_cmpnle_pd_mask,
+	_mm512_mask_cmpnlt_pd_mask, _mm512_mask_cmpord_pd_mask,
+	_mm512_mask_cmpunord_pd_mask, _mm512_cmpeq_ps_mask,
+	_mm512_cmple_ps_mask, _mm512_cmplt_ps_mask,
+	_mm512_cmpneq_ps_mask, _mm512_cmpnle_ps_mask,
+	_mm512_cmpnlt_ps_mask, _mm512_cmpord_ps_mask,
+	_mm512_cmpunord_ps_mask, _mm512_mask_cmpeq_ps_mask,
+	_mm512_mask_cmple_ps_mask, _mm512_mask_cmplt_ps_mask,
+	_mm512_mask_cmpneq_ps_mask, _mm512_mask_cmpnle_ps_mask,
+	_mm512_mask_cmpnlt_ps_mask, _mm512_mask_cmpord_ps_mask,
+	_mm512_mask_cmpunord_ps_mask): New intrinsics.
+
+2017-10-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/aix.h (TARGET_IEEEQUAD_DEFAULT): Set long double
+	default to IBM.
+	* config/rs6000/darwin.h (TARGET_IEEEQUAD_DEFAULT): Likewise.
+	* config/rs6000/rs6000.opt (-mabi=ieeelongdouble): Move the
+	warning to rs6000.c.  Remove the Undocumented flag, since it has
+	been documented.
+	(-mabi=ibmlongdouble): Likewise.
+	* config/rs6000/rs6000.c (TARGET_IEEEQUAD_DEFAULT): If it is not
+	already set, set the default format for long double.
+	(rs6000_debug_reg_global): Print whether long double is IBM or
+	IEEE.
+	(rs6000_option_override_internal): Rework setting long double
+	format.  Only warn if the user is changing the long double default
+	and they did not use -Wno-psabi.
+	* doc/invoke.texi (PowerPC options): Update the documentation for
+	-mabi=ieeelongdouble and -mabi=ibmlongdouble.
+
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (wider_subreg_mode): New function.
+	* ira.h (ira_sort_regnos_for_alter_reg): Take a machine_mode *
+	rather than an unsigned int *.
+	* ira-color.c (regno_max_ref_width): Replace with...
+	(regno_max_ref_mode): ...this new variable.
+	(coalesced_pseudo_reg_slot_compare): Update accordingly.
+	Use wider_subreg_mode.
+	(ira_sort_regnos_for_alter_reg): Likewise.  Take a machine_mode *
+	rather than an unsigned int *.
+	* lra-constraints.c (uses_hard_regs_p): Use wider_subreg_mode.
+	(process_alt_operands): Likewise.
+	(invariant_p): Likewise.
+	* lra-spills.c (assign_mem_slot): Likewise.
+	(add_pseudo_to_slot): Likewise.
+	* lra.c (collect_non_operand_hard_regs): Likewise.
+	(add_regs_to_insn_regno_info): Likewise.
+	* reload1.c (regno_max_ref_width): Replace with...
+	(regno_max_ref_mode): ...this new variable.
+	(reload): Update accordingly.  Update call to
+	ira_sort_regnos_for_alter_reg.
+	(alter_reg): Update to use regno_max_ref_mode.  Call wider_subreg_mode.
+	(init_eliminable_invariants): Update to use regno_max_ref_mode.
+	(scan_paradoxical_subregs): Likewise.
+
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.h (EXIT_IGNORE_STACK): Set if alloca is used.
+	(aarch64_frame): Add emit_frame_chain boolean.
+	* config/aarch64/aarch64.c (aarch64_frame_pointer_required)
+	Move eh_return case to aarch64_layout_frame.
+	(aarch64_layout_frame): Initialize emit_frame_chain.
+	(aarch64_expand_prologue): Use emit_frame_chain.
+
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_layout_frame):
+	Ensure LR is always stored at the bottom of the callee-saves.
+	Remove rarely used frame layout which saves callee-saves at top of
+	frame, so the store of LR can be used as a valid probe in all cases.
+
+2017-10-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address_displacement):
+	Improve unaligned TImode/TFmode base/offset split.
+
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* caller-save.c (mark_referenced_regs):  Use read_modify_subreg_p.
+	* combine.c (find_single_use_1): Likewise.
+	(expand_field_assignment): Likewise.
+	(move_deaths): Likewise.
+	* lra-constraints.c (simplify_operand_subreg): Likewise.
+	(curr_insn_transform): Likewise.
+	* lra.c (collect_non_operand_hard_regs): Likewise.
+	(add_regs_to_insn_regno_info): Likewise.
+	* rtlanal.c (reg_referenced_p): Likewise.
+	(covers_regno_no_parallel_p): Likewise.
+
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* wide-int-print.cc (print_hex): Loop based on extract_uhwi.
+	Don't print any bits outside the precision of the value.
+	* wide-int.cc (test_printing): Add some new tests.
+
+2017-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_ix86_xbrace_comment): Check if assembler
+	supports -xbrace_comment option.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/sol2.h (ASM_XBRACE_COMMENT_SPEC): Define.
+	(ASM_CPU_SPEC): Use it.
+
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (static_rtx_alignment): New hook.
+	* targhooks.h (default_static_rtx_alignment): Declare.
+	* targhooks.c (default_static_rtx_alignment): New function.
+	* doc/tm.texi.in (TARGET_STATIC_RTX_ALIGNMENT): New hook.
+	* doc/tm.texi: Regenerate.
+	* varasm.c (force_const_mem): Use targetm.static_rtx_alignment
+	instead of targetm.constant_alignment.  Remove call to
+	set_mem_attributes.
+	* config/cris/cris.c (TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+	(cris_preferred_mininum_alignment): New function, split out from...
+	(cris_constant_alignment): ...here.
+	(cris_static_rtx_alignment): New function.
+	* config/i386/i386.c (ix86_static_rtx_alignment): New function,
+	split out from...
+	(ix86_constant_alignment): ...here.
+	(TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+	* config/mmix/mmix.c (TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+	(mmix_static_rtx_alignment): New function.
+	* config/spu/spu.c (spu_static_rtx_alignment): New function.
+	(TARGET_STATIC_RTX_ALIGNMENT): Redefine.
+
+2017-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/81800
+	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2): Add flag_trapping_math
+	and flag_fp_int_builtin_inexact.
+
+2017-10-25  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config/riscv/riscv.md (ZERO_EXTEND_LOAD): Define.
+	* config/riscv/pic.md (local_pic_load): Rename to local_pic_load_s,
+	mark as a sign-extending load.
+	(local_pic_load_u): Define.
+
+2017-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/82062
+	* fold-const.c (operand_equal_for_comparison_p): Also return true
+	if ARG0 is a simple variant of ARG1 with narrower precision.
+	(fold_ternary_loc): Always pass unstripped operands to the predicate.
+
+2017-10-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_builtin_vectorization_cost): Compute scatter/gather
 	cost correctly.

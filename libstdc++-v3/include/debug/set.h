@@ -560,6 +560,42 @@ namespace __debug
       _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
     };
 
+#if __cpp_deduction_guides >= 201606
+
+  template<typename _InputIterator,
+	   typename _Compare =
+	     less<typename iterator_traits<_InputIterator>::value_type>,
+	   typename _Allocator =
+	     allocator<typename iterator_traits<_InputIterator>::value_type>,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    set(_InputIterator, _InputIterator,
+       _Compare = _Compare(), _Allocator = _Allocator())
+   -> set<typename iterator_traits<_InputIterator>::value_type,
+	  _Compare, _Allocator>;
+
+ template<typename _Key, typename _Compare = less<_Key>,
+	  typename _Allocator = allocator<_Key>,
+	  typename = _RequireAllocator<_Allocator>>
+   set(initializer_list<_Key>,
+       _Compare = _Compare(), _Allocator = _Allocator())
+   -> set<_Key, _Compare, _Allocator>;
+
+ template<typename _InputIterator, typename _Allocator,
+	  typename = _RequireInputIter<_InputIterator>,
+	  typename = _RequireAllocator<_Allocator>>
+   set(_InputIterator, _InputIterator, _Allocator)
+   -> set<typename iterator_traits<_InputIterator>::value_type,
+	  less<typename iterator_traits<_InputIterator>::value_type>,
+	  _Allocator>;
+
+ template<typename _Key, typename _Allocator,
+	  typename = _RequireAllocator<_Allocator>>
+   set(initializer_list<_Key>, _Allocator)
+   -> set<_Key, less<_Key>, _Allocator>;
+
+#endif
+
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
     operator==(const set<_Key, _Compare, _Allocator>& __lhs,

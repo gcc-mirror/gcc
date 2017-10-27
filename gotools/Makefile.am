@@ -193,7 +193,7 @@ check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	$(CHECK_ENV) \
 	GOPATH=`cd check-go-dir && $(PWD_COMMAND)`; \
 	export GOPATH; \
-	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cmd_go-testlog 2>&1 || echo "--- $${fl} go test cmd/go (0.00s)" >> cmd_go-testlog
+	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cmd_go-testlog 2>&1 || echo "--- $${fl}: go test cmd/go (0.00s)" >> cmd_go-testlog
 	grep '^--- ' cmd_go-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-runtime runs `go test runtime` in our environment.
@@ -215,7 +215,7 @@ check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
 	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
-	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.v >> runtime-testlog 2>&1 || echo "--- $${fl} go test runtime (0.00s)" >> runtime-testlog
+	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-cgo-test runs `go test misc/cgo/test` in our environment.
@@ -228,7 +228,7 @@ check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	$(CHECK_ENV) \
 	GOTRACEBACK=2; \
 	export GOTRACEBACK; \
-	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cgo-testlog 2>&1 || echo "--- $${fl} go test misc/cgo/test (0.00s)" >> cgo-testlog
+	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cgo-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/test (0.00s)" >> cgo-testlog
 	grep '^--- ' cgo-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
@@ -242,7 +242,7 @@ check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	$(CHECK_ENV) \
 	LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LIBRARY_PATH; \
-	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl} go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
+	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
 	grep '^--- ' carchive-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # The check targets runs the tests and assembles the output files.

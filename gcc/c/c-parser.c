@@ -2241,11 +2241,37 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       if (!start_function (specs, declarator, all_prefix_attrs))
 	{
-	  /* This can appear in many cases looking nothing like a
-	     function definition, so we don't give a more specific
-	     error suggesting there was one.  */
-	  c_parser_error (parser, "expected %<=%>, %<,%>, %<;%>, %<asm%> "
-			  "or %<__attribute__%>");
+	  /* At this point we've consumed:
+	       declaration-specifiers declarator
+	     and the next token isn't CPP_EQ, CPP_COMMA, CPP_SEMICOLON,
+	     RID_ASM, RID_ATTRIBUTE, or RID_IN,
+	     but the
+	       declaration-specifiers declarator
+	     aren't grokkable as a function definition, so we have
+	     an error.  */
+	  gcc_assert (!c_parser_next_token_is (parser, CPP_SEMICOLON));
+	  if (c_parser_next_token_starts_declspecs (parser))
+	    {
+	      /* If we have
+		   declaration-specifiers declarator decl-specs
+		 then assume we have a missing semicolon, which would
+		 give us:
+		   declaration-specifiers declarator  decl-specs
+						    ^
+						    ;
+		   <~~~~~~~~~ declaration ~~~~~~~~~~>
+		 Use c_parser_require to get an error with a fix-it hint.  */
+	      c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>");
+	      parser->error = false;
+	    }
+	  else
+	    {
+	      /* This can appear in many cases looking nothing like a
+		 function definition, so we don't give a more specific
+		 error suggesting there was one.  */
+	      c_parser_error (parser, "expected %<=%>, %<,%>, %<;%>, %<asm%> "
+			      "or %<__attribute__%>");
+	    }
 	  if (nested)
 	    c_pop_function_context ();
 	  break;

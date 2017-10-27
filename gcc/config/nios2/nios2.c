@@ -49,6 +49,7 @@
 #include "stor-layout.h"
 #include "builtins.h"
 #include "tree-pass.h"
+#include "xregex.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -102,6 +103,10 @@ static enum nios2_ccs_code custom_code_status[256];
 static int custom_code_index[256];
 /* Set to true if any conflicts (re-use of a code between 0-255) are found.  */
 static bool custom_code_conflict = false;
+
+/* State for command-line options.  */
+regex_t nios2_gprel_sec_regex;
+regex_t nios2_r0rel_sec_regex;
 
 
 /* Definition of builtin function types for nios2.  */
@@ -1371,6 +1376,31 @@ nios2_option_override (void)
 	nios2_gpopt_option = gpopt_local;
     }
 
+  /* GP-relative and r0-relative addressing don't make sense for PIC.  */
+  if (flag_pic)
+    {
+      if (nios2_gpopt_option != gpopt_none)
+	error ("-mgpopt not supported with PIC.");
+      if (nios2_gprel_sec)
+	error ("-mgprel-sec= not supported with PIC.");
+      if (nios2_r0rel_sec)
+	error ("-mr0rel-sec= not supported with PIC.");
+    }
+
+  /* Process -mgprel-sec= and -m0rel-sec=.  */
+  if (nios2_gprel_sec)
+    {
+      if (regcomp (&nios2_gprel_sec_regex, nios2_gprel_sec, 
+		   REG_EXTENDED | REG_NOSUB))
+	error ("-mgprel-sec= argument is not a valid regular expression.");
+    }
+  if (nios2_r0rel_sec)
+    {
+      if (regcomp (&nios2_r0rel_sec_regex, nios2_r0rel_sec, 
+		   REG_EXTENDED | REG_NOSUB))
+	error ("-mr0rel-sec= argument is not a valid regular expression.");
+    }
+
   /* If we don't have mul, we don't have mulx either!  */
   if (!TARGET_HAS_MUL && TARGET_HAS_MULX)
     target_flags &= ~MASK_HAS_MULX;
@@ -1457,7 +1487,7 @@ nios2_rtx_costs (rtx x, machine_mode mode,
       case SYMBOL_REF:
       case CONST:
       case CONST_DOUBLE:
-	if (gprel_constant_p (x))
+	if (gprel_constant_p (x) || r0rel_constant_p (x))
           {
             *total = COSTS_N_INSNS (1);
             return true;
@@ -2007,6 +2037,7 @@ nios2_symbolic_constant_p (rtx x)
       return (SYMBOL_REF_P (base)
 		&& !SYMBOL_REF_TLS_MODEL (base)
 		&& !gprel_constant_p (base)
+		&& !r0rel_constant_p (base)
 		&& SMALL_INT (INTVAL (offset)));
     }
   return false;
@@ -2108,7 +2139,7 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 
       /* Else, fall through.  */
     case CONST:
-      if (gprel_constant_p (operand))
+      if (gprel_constant_p (operand) || r0rel_constant_p (operand))
 	return true;
 
       /* Else, fall through.  */
@@ -2268,7 +2299,17 @@ nios2_small_section_name_p (const char *section)
   return (strcmp (section, ".sbss") == 0
 	  || strncmp (section, ".sbss.", 6) == 0
 	  || strcmp (section, ".sdata") == 0
-	  || strncmp (section, ".sdata.", 7) == 0);
+	  || strncmp (section, ".sdata.", 7) == 0
+	  || (nios2_gprel_sec 
+	      && regexec (&nios2_gprel_sec_regex, section, 0, NULL, 0) == 0));
+}
+
+/* Return true if SECTION is a r0-relative section name.  */
+static bool
+nios2_r0rel_section_name_p (const char *section)
+{
+  return (nios2_r0rel_sec 
+	  && regexec (&nios2_r0rel_sec_regex, section, 0, NULL, 0) == 0);
 }
 
 /* Return true if EXP should be placed in the small data section.  */
@@ -2375,6 +2416,33 @@ nios2_symbol_ref_in_small_data_p (rtx sym)
       /* We shouldn't get here.  */
       return false;
     }
+}
+
+/* Likewise for r0-relative addressing.  */
+static bool
+nios2_symbol_ref_in_r0rel_data_p (rtx sym)
+{
+  tree decl;
+
+  gcc_assert (GET_CODE (sym) == SYMBOL_REF);
+  decl = SYMBOL_REF_DECL (sym);
+
+  /* TLS variables are not accessed through r0.  */
+  if (SYMBOL_REF_TLS_MODEL (sym) != 0)
+    return false;
+
+  /* On Nios II R2, there is no r0-relative relocation that can be
+     used with "io" instructions.  So, if we are implicitly generating
+     those instructions, we cannot emit r0-relative accesses.  */
+  if (TARGET_ARCH_R2
+      && (TARGET_BYPASS_CACHE || TARGET_BYPASS_CACHE_VOLATILE))
+    return false;
+
+  /* If the user has explicitly placed the symbol in a r0rel section
+     via an attribute, generate r0-relative addressing.  */
+  if (decl && DECL_SECTION_NAME (decl))
+    return nios2_r0rel_section_name_p (DECL_SECTION_NAME (decl));
+  return false;
 }
 
 /* Implement TARGET_SECTION_TYPE_FLAGS.  */
@@ -2610,8 +2678,9 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	      return true;
 	    }
 	}
-      else if (gprel_constant_p (from))
-	/* Handled directly by movsi_internal as gp + offset.  */
+      else if (gprel_constant_p (from) || r0rel_constant_p (from))
+	/* Handled directly by movsi_internal as gp + offset 
+	   or r0 + offset.  */
 	;
       else if (nios2_large_constant_p (from))
 	/* This case covers either a regular symbol reference or an UNSPEC
@@ -2961,6 +3030,20 @@ gprel_constant_p (rtx op)
   return false;
 }
 
+/* Likewise if this is a zero-relative accessible reference.  */
+bool
+r0rel_constant_p (rtx op)
+{
+  if (GET_CODE (op) == SYMBOL_REF
+      && nios2_symbol_ref_in_r0rel_data_p (op))
+    return true;
+  else if (GET_CODE (op) == CONST
+           && GET_CODE (XEXP (op, 0)) == PLUS)
+    return r0rel_constant_p (XEXP (XEXP (op, 0), 0));
+
+  return false;
+}
+
 /* Return the name string for a supported unspec reloc offset.  */
 static const char *
 nios2_unspec_reloc_name (int unspec)
@@ -3025,7 +3108,13 @@ nios2_print_operand_address (FILE *file, machine_mode mode, rtx op)
           fprintf (file, ")(%s)", reg_names[GP_REGNO]);
           return;
         }
-
+      else if (r0rel_constant_p (op))
+        {
+          fprintf (file, "%%lo(");
+          output_addr_const (file, op);
+          fprintf (file, ")(r0)");
+          return;
+        }
       break;
 
     case PLUS:
@@ -4631,8 +4720,8 @@ nios2_cdx_narrow_form_p (rtx_insn *insn)
 		|| TARGET_BYPASS_CACHE)
 	      return false;
 	    addr = XEXP (mem, 0);
-	    /* GP-based references are never narrow.  */
-	    if (gprel_constant_p (addr))
+	    /* GP-based and R0-based references are never narrow.  */
+	    if (gprel_constant_p (addr) || r0rel_constant_p (addr))
 		return false;
 	    /* %lo requires a 16-bit relocation and is never narrow.  */
 	    if (GET_CODE (addr) == LO_SUM)
@@ -4678,8 +4767,8 @@ nios2_cdx_narrow_form_p (rtx_insn *insn)
 	      || TARGET_BYPASS_CACHE)
 	    return false;
 	  addr = XEXP (mem, 0);
-	  /* GP-based references are never narrow.  */
-	  if (gprel_constant_p (addr))
+	  /* GP-based and r0-based references are never narrow.  */
+	  if (gprel_constant_p (addr) || r0rel_constant_p (addr))
 	    return false;
 	  /* %lo requires a 16-bit relocation and is never narrow.  */
 	  if (GET_CODE (addr) == LO_SUM)

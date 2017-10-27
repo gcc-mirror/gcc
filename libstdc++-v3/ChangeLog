@@ -1,3 +1,53 @@
+2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (__find_if_not_n, generate_n): Cast to void
+	to ensure overloaded comma not used.
+	* include/bits/stl_algobase.h (__fill_n_a, equal): Likewise.
+	* include/bits/stl_uninitialized.h (__uninitialized_fill_n)
+	(__uninitialized_fill_n_a, __uninitialized_default_n_1)
+	(__uninitialized_default_n_a, __uninitialized_copy_n)
+	(__uninitialized_copy_n_pair): Likewise
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/1.cc:
+	Use test iterator wrappers with overloaded comma operator.
+	* testsuite/25_algorithms/fill_n/1.cc: Likewise.
+	* testsuite/25_algorithms/generate_n/1.cc: New test.
+	* testsuite/25_algorithms/stable_partition/1.cc: New test.
+	* testsuite/util/testsuite_iterators.h (operator,): Add deleted
+	non-member comma operator with iterator wrappers as right operand.
+
+2017-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Deduction guides for associative containers, debug mode deduction
+	guide fixes.
+	* include/bits/stl_iterator.h (__iter_key_t)
+	(__iter_val_t, __iter_to_alloc_t): New.
+	* include/bits/stl_map.h: Add deduction guides.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: New.
+	* testsuite/23_containers/multimap/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
 2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update C++17 status, and
