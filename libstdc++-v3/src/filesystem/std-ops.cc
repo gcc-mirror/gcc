@@ -430,7 +430,7 @@ fs::do_copy_file(const char* from, const char* to,
 
 void
 fs::copy(const path& from, const path& to, copy_options options,
-	 error_code& ec) noexcept
+	 error_code& ec)
 {
   const bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
   const bool create_symlinks = is_set(options, copy_options::create_symlinks);
@@ -544,7 +544,7 @@ fs::copy_file(const path& from, const path& to, copy_options option)
 
 bool
 fs::copy_file(const path& from, const path& to, copy_options options,
-	      error_code& ec) noexcept
+	      error_code& ec)
 {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
   return do_copy_file(from.c_str(), to.c_str(), copy_file_options(options),
@@ -596,7 +596,7 @@ fs::create_directories(const path& p)
 }
 
 bool
-fs::create_directories(const path& p, error_code& ec) noexcept
+fs::create_directories(const path& p, error_code& ec)
 {
   if (p.empty())
     {
@@ -1008,7 +1008,7 @@ fs::is_empty(const path& p)
 }
 
 bool
-fs::is_empty(const path& p, error_code& ec) noexcept
+fs::is_empty(const path& p, error_code& ec)
 {
   auto s = status(p, ec);
   if (ec)
@@ -1268,7 +1268,7 @@ fs::remove_all(const path& p)
 }
 
 std::uintmax_t
-fs::remove_all(const path& p, error_code& ec) noexcept
+fs::remove_all(const path& p, error_code& ec)
 {
   auto fs = symlink_status(p, ec);
   uintmax_t count = 0;
