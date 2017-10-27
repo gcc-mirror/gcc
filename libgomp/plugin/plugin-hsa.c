@@ -896,7 +896,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   int host_mapped_function_count = image_desc->function_count;
   int hsa_only_function_count;
 
-  if (version == GOMP_VERSION_HSA)
+  if (GOMP_VERSION_DEV (version) == GOMP_VERSION_HSA)
     hsa_only_function_count = image_desc->hsa_only_function_count;
   else
     hsa_only_function_count = 0;

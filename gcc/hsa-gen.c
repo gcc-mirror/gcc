@@ -959,9 +959,6 @@ hsa_get_host_function (tree decl)
   gcc_assert (s->m_kind != HSA_NONE);
   gcc_assert (s->m_hsa_implementation_p);
 
-  if (s->m_kind == HSA_KERNEL)
-    return NULL;
-
   return s->m_bound_function ? s->m_bound_function->decl : NULL;
 }
 
