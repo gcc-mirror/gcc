@@ -1302,7 +1302,7 @@ get_class_binding (tree klass, tree name, int type_or_fns)
 	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
 	    lazily_declare_fn (sfk_destructor, klass);
 	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
+      else if (IDENTIFIER_ASSIGN_OP_P (name) && name == assign_op_identifier)
 	{
 	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
 	    lazily_declare_fn (sfk_copy_assignment, klass);

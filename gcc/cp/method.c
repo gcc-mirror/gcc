@@ -815,7 +815,7 @@ do_build_copy_assign (tree fndecl)
 	  parmvec = make_tree_vector_single (converted_parm);
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
-					cp_assignment_operator_id (NOP_EXPR),
+					assign_op_identifier,
 					&parmvec,
 					base_binfo,
 					flags,
@@ -1109,7 +1109,7 @@ get_copy_assign (tree type)
   int quals = (TYPE_HAS_CONST_COPY_ASSIGN (type)
 	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
-  tree fn = locate_fn_flags (type, cp_assignment_operator_id (NOP_EXPR), argtype,
+  tree fn = locate_fn_flags (type, assign_op_identifier, argtype,
 			     LOOKUP_NORMAL, tf_warning_or_error);
   if (fn == error_mark_node)
     return NULL_TREE;
@@ -1566,7 +1566,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_move_assignment:
     case sfk_copy_assignment:
       assign_p = true;
-      fnname = cp_assignment_operator_id (NOP_EXPR);
+      fnname = assign_op_identifier;
       break;
 
     case sfk_destructor:
@@ -2008,7 +2008,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	  || kind == sfk_move_assignment)
 	{
 	  return_type = build_reference_type (type);
-	  name = cp_assignment_operator_id (NOP_EXPR);
+	  name = assign_op_identifier;
 	}
       else
 	name = ctor_identifier;

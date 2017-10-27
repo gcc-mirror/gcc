@@ -12796,7 +12796,7 @@ grok_special_member_properties (tree decl)
 	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
-  else if (DECL_NAME (decl) == cp_assignment_operator_id (NOP_EXPR))
+  else if (DECL_NAME (decl) == assign_op_identifier)
     {
       /* [class.copy]
 

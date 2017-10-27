@@ -1,3 +1,24 @@
+2017-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	Operator code compaction part 4.
+	gcc/cp/
+	* cp-tree.h (cp_assignment_operator_id): Delete.
+	(assign_op_identifier, call_op_identifier): New.
+	* call.c (build_op_call_1): Use call_op_identifier.
+	(has_trivial_copy_assign_p): Use assign_op_identifier.
+	(build_special_member_call): Likewise.
+	* class.c (dfs_declare_virt_assop_and_dtor,
+	classtype_has_move_assign_or_move_ctor_p): Likewise.
+	* decl.c (grok_special_member_properties): Likewise.
+	* lambda.c (lambda_function): Use call_op_identifier.
+	* method.c (do_build_copy_assign): Use assign_op_identifier.
+	(get_copy_assign, synthesized_method_walk,
+	implicitly_declare_fn): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Use call_op_identifier.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Use
+	assign_op_identifier.
+	* typeck.c (check_return_expr): Likewise.
+
 2017-10-26  Nathan Sidwell  <nathan@acm.org>
 
 	Operator code compaction part 3.

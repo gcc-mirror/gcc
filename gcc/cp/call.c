@@ -4474,8 +4474,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   if (TYPE_BINFO (type))
     {
-      fns = lookup_fnfields (TYPE_BINFO (type),
-			     ovl_op_identifier (false, CALL_EXPR), 1);
+      fns = lookup_fnfields (TYPE_BINFO (type), call_op_identifier, 1);
       if (fns == error_mark_node)
 	return error_mark_node;
     }
@@ -8278,7 +8277,7 @@ first_non_public_field (tree type)
 static bool
 has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
 {
-  tree fns = get_class_binding (type, cp_assignment_operator_id (NOP_EXPR));
+  tree fns = get_class_binding (type, assign_op_identifier);
   bool all_trivial = true;
 
   /* Iterate over overloads of the assignment operator, checking
@@ -8778,8 +8777,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
   vec<tree, va_gc> *allocated = NULL;
   tree ret;
 
-  gcc_assert (IDENTIFIER_CDTOR_P (name)
-	      || name == cp_assignment_operator_id (NOP_EXPR));
+  gcc_assert (IDENTIFIER_CDTOR_P (name) || name == assign_op_identifier);
   if (TYPE_P (binfo))
     {
       /* Resolve the name.  */
@@ -8805,7 +8803,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
       if (!same_type_ignoring_top_level_qualifiers_p
 	  (TREE_TYPE (instance), BINFO_TYPE (binfo)))
 	{
-	  if (name != cp_assignment_operator_id (NOP_EXPR))
+	  if (IDENTIFIER_CDTOR_P (name))
 	    /* For constructors and destructors, either the base is
 	       non-virtual, or it is virtual but we are doing the
 	       conversion from a constructor or destructor for the
@@ -8813,10 +8811,13 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	       statically.  */
 	    instance = convert_to_base_statically (instance, binfo);
 	  else
-	    /* However, for assignment operators, we must convert
-	       dynamically if the base is virtual.  */
-	    instance = build_base_path (PLUS_EXPR, instance,
-					binfo, /*nonnull=*/1, complain);
+	    {
+	      /* However, for assignment operators, we must convert
+		 dynamically if the base is virtual.  */
+	      gcc_checking_assert (name == assign_op_identifier);
+	      instance = build_base_path (PLUS_EXPR, instance,
+					  binfo, /*nonnull=*/1, complain);
+	    }
 	}
     }
 

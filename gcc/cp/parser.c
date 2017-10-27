@@ -10614,9 +10614,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     p = obstack_alloc (&declarator_obstack, 0);
 
-    declarator = make_id_declarator (NULL_TREE,
-				     ovl_op_identifier (false, CALL_EXPR),
-				     sfk_none);
+    declarator = make_id_declarator (NULL_TREE, call_op_identifier, sfk_none);
 
     quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
 	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);

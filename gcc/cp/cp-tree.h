@@ -217,7 +217,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    things) to iterate over their overloads defined by/for a type.  For
    example:
 
-     tree ovlid = cp_assignment_operator_id (NOP_EXPR);
+     tree ovlid = assign_op_identifier;
      tree overloads = get_class_binding (type, ovlid);
      for (ovl_iterator it (overloads); it; ++it) { ... }
 
@@ -251,13 +251,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 #define ovl_op_identifier(ISASS, CODE)		\
   (OOC_INFO(ISASS, CODE)->identifier)
-
-/* The name of the identifier used to represent assignment operator CODE,
-   both simple (i.e., operator= with CODE == NOP_EXPR) and compound (e.g.,
-   operator+= with CODE == PLUS_EXPR).  Includes copy and move assignment.
-   Use copy_fn_p() to test specifically for copy assignment.  */
-#define cp_assignment_operator_id(CODE)				\
-  (assignment_operator_name_info[(int) (CODE)].identifier)
+#define assign_op_identifier (ooc_info[true][OOC_NOP_EXPR].identifier)
+#define call_op_identifier (ooc_info[false][OOC_CALL_EXPR].identifier)
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
