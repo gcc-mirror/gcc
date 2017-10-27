@@ -1,5 +1,13 @@
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_path.h (path::format): Define new enumeration type.
+	(path(string_type&&), path<Source>(const Source&))
+	(path<InputIterator>(InputIterator, InputIterator))
+	(path<Source>(const Source&, const locale&))
+	(path<InputIterator>(InputIterator, InputIterator, const locale&)):
+	Add format parameter.
+	* testsuite/27_io/filesystem/path/construct/format.cc: New test.
+
 	* include/bits/stl_algo.h (__find_if_not_n, generate_n): Cast to void
 	to ensure overloaded comma not used.
 	* include/bits/stl_algobase.h (__fill_n_a, equal): Likewise.
