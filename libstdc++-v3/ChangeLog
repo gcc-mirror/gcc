@@ -1,5 +1,8 @@
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/node_handle.h (_Node_insert_return::get): Avoid
+	use of std::tie and std::get.
+
 	* include/Makefile.am: Put headers in alphabetical order.
 	* include/Makefile.in: Regenerate.
 
