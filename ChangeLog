@@ -1,3 +1,9 @@
+2017-10-27  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.tpl: Use proper name of folder as it was renamed
+	during transition to 4 stages.
+	* Makefile.in: Regenerate.
+
 2017-10-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
         * MAINTAINERS (write after approval): Add myself.
