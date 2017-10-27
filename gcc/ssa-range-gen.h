@@ -66,21 +66,36 @@ public:
 
 
 
-class range_cache
+class ssa_range_cache
 {
 private:
   vec<irange_storage *> tab;
+  irange_storage *type_range;
+  const_tree type;
+public:
+  ssa_range_cache (tree t);
+  ~ssa_range_cache ();
+
+  void set_range (const basic_block bb, const irange &r);
+  void set_range_for_type (const basic_block bb);
+  bool get_range (irange& r, const basic_block bb);
+  bool range_p (const basic_block bb);
+
+  void dump(FILE *f);
+};
+
+
+class range_cache
+{
+private:
+  vec<ssa_range_cache *> ssa_ranges;
 public:
   range_cache ();
   ~range_cache ();
+  ssa_range_cache& operator[] (tree name);
 
-  void reset ();
-  void set_range (basic_block bb, irange_storage *r);
-  irange_storage *operator[] (const basic_block bb);
-
-  void dump(FILE *f, tree type);
+  void dump (FILE *f);
 };
-
 
 /* This class utilizes the basic block GORI map and is used to query the range
    of SSA_NAMEs across multiple basic blocks and edges.  */
@@ -88,15 +103,9 @@ class path_ranger : public gori
 {
 private:
   range_cache block_cache;
-  tree ssa_name;
-  basic_block def_bb;
-  gimple *def_stmt;
-  irange_storage *processing;
-  irange_storage *type_range;
 
-  bool init (tree name);
-  void range_for_bb (irange &r, basic_block bb);
-  void determine_block (basic_block bb);
+  void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
+  void determine_block (tree name, basic_block bb, basic_block def_bb);
   bool path_range_reverse (irange &r, tree name, const vec<basic_block> &);
 public:
   path_ranger ();
