@@ -398,6 +398,9 @@
 (define_mode_attr w1 [(HF "w") (SF "w") (DF "x")])
 (define_mode_attr w2 [(HF "x") (SF "x") (DF "w")])
 
+;; For width of fp registers in fcvt instruction
+(define_mode_attr fpw [(DI "s") (SI "d")])
+
 (define_mode_attr short_mask [(HI "65535") (QI "255")])
 
 ;; For constraints used in scalar immediate vector moves
@@ -405,6 +408,10 @@
 
 ;; For doubling width of an integer mode
 (define_mode_attr DWI [(QI "HI") (HI "SI") (SI "DI") (DI "TI")])
+
+(define_mode_attr fcvt_change_mode [(SI "df") (DI "sf")])
+
+(define_mode_attr FCVT_CHANGE_MODE [(SI "DF") (DI "SF")])
 
 ;; For scalar usage of vector/FP registers
 (define_mode_attr v [(QI "b") (HI "h") (SI "s") (DI "d")
@@ -438,8 +445,8 @@
 (define_mode_attr rtn [(DI "d") (SI "")])
 (define_mode_attr vas [(DI "") (SI ".2s")])
 
-;; Map a floating point mode to the appropriate register name prefix
-(define_mode_attr s [(HF "h") (SF "s") (DF "d")])
+;; Map a floating point or integer mode to the appropriate register name prefix
+(define_mode_attr s [(HF "h") (SF "s") (DF "d") (SI "s") (DI "d")])
 
 ;; Give the length suffix letter for a sign- or zero-extension.
 (define_mode_attr size [(QI "b") (HI "h") (SI "w")])

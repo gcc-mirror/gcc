@@ -1,3 +1,14 @@
+2017-10-26  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64.md(<optab>_trunc><vf><GPI:mode>2):
+	New pattern.
+	(<optab>_trunchf<GPI:mode>2: New pattern.
+	(<optab>_trunc<vgp><GPI:mode>2: New pattern.
+	* config/aarch64/iterators.md (wv): New mode attribute.
+	(vf, VF): New mode attributes.
+	(vgp, VGP): New mode attributes.
+	(s): Update attribute with SImode and DImode prefixes.
+
 2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/constraints.md ("S"): Match r0rel_constant_p too.

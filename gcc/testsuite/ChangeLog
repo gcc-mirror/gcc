@@ -1,3 +1,10 @@
+2017-10-26  Michael Collison  <michael.collison@arm.com>
+
+	* gcc.target/aarch64/fix_trunc1.c: New testcase.
+	* gcc.target/aarch64/vect-vcvt.c: Fix scan-assembler
+	directives to allow float or integer destination registers for
+	fcvtz[su].
+
 2017-10-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/nios2/gpopt-r0rel-sec.c: New.
