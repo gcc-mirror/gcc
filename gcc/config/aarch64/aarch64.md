@@ -4849,11 +4849,37 @@
   [(set_attr "type" "f_cvt")]
 )
 
-(define_insn "<optab>_trunc<GPF_F16:mode><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(FIXUORS:GPI (match_operand:GPF_F16 1 "register_operand" "w")))]
+;; Convert SF -> SI or DF -> DI while preferring w = w register constraints
+;; and making r = w more expensive
+
+(define_insn "<optab>_trunc<fcvt_target><GPI:mode>2"
+  [(set (match_operand:GPI 0 "register_operand" "=?r,w")
+	(FIXUORS:GPI (match_operand:<FCVT_TARGET> 1 "register_operand" "w,w")))]
   "TARGET_FLOAT"
-  "fcvtz<su>\t%<GPI:w>0, %<GPF_F16:s>1"
+  "@
+   fcvtz<su>\t%<w>0, %<s>1
+   fcvtz<su>\t%<s>0, %<s>1"
+  [(set_attr "type" "f_cvtf2i,neon_fp_to_int_s")]
+)
+
+;; Convert HF -> SI or DI
+
+(define_insn "<optab>_trunchf<GPI:mode>2"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(FIXUORS:GPI (match_operand:HF 1 "register_operand" "w")))]
+  "TARGET_FP_F16INST"
+  "fcvtz<su>\t%<w>0, %h1"
+  [(set_attr "type" "f_cvtf2i")]
+)
+
+;; Convert DF -> SI or SF -> DI which can only be accomplished with
+;; input in a fp register and output in a integer register
+
+(define_insn "<optab>_trunc<fcvt_change_mode><GPI:mode>2"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(FIXUORS:GPI (match_operand:<FCVT_CHANGE_MODE> 1 "register_operand" "w")))]
+  "TARGET_FLOAT"
+  "fcvtz<su>\t%<w>0, %<fpw>1"
   [(set_attr "type" "f_cvtf2i")]
 )
 
