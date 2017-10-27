@@ -1,3 +1,7 @@
+2017-10-27  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr82196-1.c (dg-options): Add -mno-avx.
+
 2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/float128-hw.c: Add support for all 4 FMA
