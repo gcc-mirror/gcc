@@ -16930,7 +16930,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 {
   const char *suffix;
 
-  if (mode == CCFPmode || mode == CCFPUmode)
+  if (mode == CCFPmode)
     {
       code = ix86_fp_compare_code_to_integer (code);
       mode = CCmode;
@@ -21695,14 +21695,13 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
   return gen_rtx_fmt_ee (code, VOIDmode, flags, const0_rtx);
 }
 
-/* Figure out whether to use ordered or unordered fp comparisons.
-   Return the appropriate mode to use.  */
+/* Figure out whether to use unordered fp comparisons.  */
 
-machine_mode
-ix86_fp_compare_mode (enum rtx_code code)
+static bool
+ix86_unordered_fp_compare (enum rtx_code code)
 {
   if (!TARGET_IEEE_FP)
-    return CCFPmode;
+    return false;
 
   switch (code)
     {
@@ -21710,7 +21709,7 @@ ix86_fp_compare_mode (enum rtx_code code)
     case GE:
     case LT:
     case LE:
-      return CCFPmode;
+      return false;
 
     case EQ:
     case NE:
@@ -21723,7 +21722,7 @@ ix86_fp_compare_mode (enum rtx_code code)
     case UNGT:
     case UNGE:
     case UNEQ:
-      return CCFPUmode;
+      return true;
 
     default:
       gcc_unreachable ();
@@ -21738,7 +21737,7 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
   if (SCALAR_FLOAT_MODE_P (mode))
     {
       gcc_assert (!DECIMAL_FLOAT_MODE_P (mode));
-      return ix86_fp_compare_mode (code);
+      return CCFPmode;
     }
 
   switch (code)
@@ -21860,7 +21859,6 @@ ix86_cc_modes_compatible (machine_mode m1, machine_mode m2)
 	}
 
     case E_CCFPmode:
-    case E_CCFPUmode:
       /* These are only compatible with themselves, which we already
 	 checked above.  */
       return VOIDmode;
@@ -21964,7 +21962,7 @@ ix86_fp_comparison_strategy (enum rtx_code)
 static enum rtx_code
 ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
 {
-  machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
+  bool unordered_compare = ix86_unordered_fp_compare (code);
   rtx op0 = *pop0, op1 = *pop1;
   machine_mode op_mode = GET_MODE (op0);
   bool is_sse = TARGET_SSE_MATH && SSE_FLOAT_MODE_P (op_mode);
@@ -21976,7 +21974,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
      floating point.  */
 
   if (!is_sse
-      && (fpcmp_mode == CCFPUmode
+      && (unordered_compare
 	  || (op_mode == XFmode
 	      && ! (standard_80387_constant_p (op0) == 1
 		    || standard_80387_constant_p (op1) == 1)
@@ -22073,27 +22071,29 @@ ix86_fp_compare_code_to_integer (enum rtx_code code)
 static rtx
 ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 {
-  machine_mode fpcmp_mode, intcmp_mode;
+  bool unordered_compare = ix86_unordered_fp_compare (code);
+  machine_mode intcmp_mode;
   rtx tmp, tmp2;
 
-  fpcmp_mode = ix86_fp_compare_mode (code);
   code = ix86_prepare_fp_compare_args (code, &op0, &op1);
 
   /* Do fcomi/sahf based test when profitable.  */
   switch (ix86_fp_comparison_strategy (code))
     {
     case IX86_FPCMP_COMI:
-      intcmp_mode = fpcmp_mode;
-      tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
-      tmp = gen_rtx_SET (gen_rtx_REG (fpcmp_mode, FLAGS_REG), tmp);
-      emit_insn (tmp);
+      intcmp_mode = CCFPmode;
+      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
+      if (unordered_compare)
+	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+      emit_insn (gen_rtx_SET (gen_rtx_REG (CCFPmode, FLAGS_REG), tmp));
       break;
 
     case IX86_FPCMP_SAHF:
-      intcmp_mode = fpcmp_mode;
-      tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
-      tmp = gen_rtx_SET (gen_rtx_REG (fpcmp_mode, FLAGS_REG), tmp);
-
+      intcmp_mode = CCFPmode;
+      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
+      if (unordered_compare)
+	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+      tmp = gen_rtx_SET (gen_rtx_REG (CCFPmode, FLAGS_REG), tmp);
       if (!scratch)
 	scratch = gen_reg_rtx (HImode);
       tmp2 = gen_rtx_CLOBBER (VOIDmode, scratch);
@@ -22102,11 +22102,13 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 
     case IX86_FPCMP_ARITH:
       /* Sadness wrt reg-stack pops killing fpsr -- gotta get fnstsw first.  */
-      tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
-      tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), UNSPEC_FNSTSW);
+      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
+      if (unordered_compare)
+	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+      tmp = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), UNSPEC_FNSTSW);
       if (!scratch)
 	scratch = gen_reg_rtx (HImode);
-      emit_insn (gen_rtx_SET (scratch, tmp2));
+      emit_insn (gen_rtx_SET (scratch, tmp));
 
       /* In the unordered case, we have to check C2 for NaN's, which
 	 doesn't happen to work out to anything nice combination-wise.
@@ -22548,8 +22550,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
       compare_seq = get_insns ();
       end_sequence ();
 
-      if (GET_MODE (XEXP (compare_op, 0)) == CCFPmode
-	  || GET_MODE (XEXP (compare_op, 0)) == CCFPUmode)
+      if (GET_MODE (XEXP (compare_op, 0)) == CCFPmode)
         code = ix86_fp_compare_code_to_integer (GET_CODE (compare_op));
       else
 	code = GET_CODE (compare_op);
@@ -22689,8 +22690,7 @@ ix86_expand_int_movcc (rtx operands[])
 
 	      flags = XEXP (compare_op, 0);
 
-	      if (GET_MODE (flags) == CCFPmode
-		  || GET_MODE (flags) == CCFPUmode)
+	      if (GET_MODE (flags) == CCFPmode)
 		{
 		  fpcmp = true;
 		  compare_code
@@ -24730,8 +24730,7 @@ ix86_expand_int_addcc (rtx operands[])
 
   flags = XEXP (compare_op, 0);
 
-  if (GET_MODE (flags) == CCFPmode
-      || GET_MODE (flags) == CCFPUmode)
+  if (GET_MODE (flags) == CCFPmode)
     {
       fpcmp = true;
       code = ix86_fp_compare_code_to_integer (code);
@@ -43190,7 +43189,7 @@ ix86_encode_section_info (tree decl, rtx rtl, int first)
 enum rtx_code
 ix86_reverse_condition (enum rtx_code code, machine_mode mode)
 {
-  return (mode != CCFPmode && mode != CCFPUmode
+  return (mode != CCFPmode
 	  ? reverse_condition (code)
 	  : reverse_condition_maybe_unordered (code));
 }
@@ -43805,17 +43804,20 @@ static rtx_code_label *
 ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
                                   bool swap_operands)
 {
-  machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
+  bool unordered_compare = ix86_unordered_fp_compare (code);
   rtx_code_label *label;
-  rtx tmp;
+  rtx tmp, reg;
 
   if (swap_operands)
     std::swap (op0, op1);
 
   label = gen_label_rtx ();
-  tmp = gen_rtx_REG (fpcmp_mode, FLAGS_REG);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_COMPARE (fpcmp_mode, op0, op1)));
-  tmp = gen_rtx_fmt_ee (code, VOIDmode, tmp, const0_rtx);
+  tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
+  if (unordered_compare)
+    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+  reg = gen_rtx_REG (CCFPmode, FLAGS_REG);
+  emit_insn (gen_rtx_SET (reg, tmp));
+  tmp = gen_rtx_fmt_ee (code, VOIDmode, reg, const0_rtx);
   tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 			      gen_rtx_LABEL_REF (VOIDmode, label), pc_rtx);
   tmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));

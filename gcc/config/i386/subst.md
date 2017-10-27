@@ -37,8 +37,7 @@
    V8DI  V4DI  V2DI
    V16SF V8SF  V4SF
    V8DF  V4DF  V2DF
-   QI HI SI DI SF DF
-   CCFP CCFPU])
+   QI HI SI DI SF DF])
 
 (define_subst_attr "mask_name" "mask" "" "_mask")
 (define_subst_attr "mask_applied" "mask" "false" "true")
@@ -179,6 +178,16 @@
   "TARGET_AVX512F"
   [(set (match_dup 0)
 	(unspec:SUBST_A [(match_dup 1)
+	  (match_operand:SI 2 "const48_operand")]
+	  UNSPEC_EMBEDDED_ROUNDING))
+])
+
+(define_subst "round_saeonly"
+  [(set (match_operand:CCFP 0)
+        (match_operand:CCFP 1))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(unspec:CCFP [(match_dup 1)
 	  (match_operand:SI 2 "const48_operand")]
 	  UNSPEC_EMBEDDED_ROUNDING))
 ])

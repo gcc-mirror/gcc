@@ -1560,12 +1560,6 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 
 	switch (GET_CODE (pat_src))
 	  {
-	  case COMPARE:
-	    /* `fcomi' insn can't pop two regs.  */
-	    compare_for_stack_reg (insn, regstack, pat_src,
-				   REGNO (*dest) != FLAGS_REG);
-	    break;
-
 	  case CALL:
 	    {
 	      int count;
@@ -1966,29 +1960,33 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 		replace_reg (src2, FIRST_STACK_REG + 1);
 		break;
 
-	      case UNSPEC_SAHF:
-		/* (unspec [(unspec [(compare)] UNSPEC_FNSTSW)] UNSPEC_SAHF)
-		   The combination matches the PPRO fcomi instruction.  */
-
-		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == UNSPEC);
-		gcc_assert (XINT (pat_src, 1) == UNSPEC_FNSTSW);
-		/* Fall through.  */
-
 	      case UNSPEC_FNSTSW:
 		/* Combined fcomp+fnstsw generated for doing well with
 		   CSE.  When optimizing this would have been broken
 		   up before now.  */
 
 		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		if (GET_CODE (pat_src) == COMPARE)
+		  goto do_compare;
 
-		compare_for_stack_reg (insn, regstack, pat_src, true);
-		break;
+		/* Fall through.  */
+
+	      case UNSPEC_NOTRAP:
+
+		pat_src = XVECEXP (pat_src, 0, 0);
+		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		goto do_compare;
 
 	      default:
 		gcc_unreachable ();
 	      }
+	    break;
+
+	  case COMPARE:
+	  do_compare:
+	    /* `fcomi' insn can't pop two regs.  */
+	    compare_for_stack_reg (insn, regstack, pat_src,
+				   REGNO (*dest) != FLAGS_REG);
 	    break;
 
 	  case IF_THEN_ELSE:
