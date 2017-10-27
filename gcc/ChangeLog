@@ -1,3 +1,7 @@
+2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_fp_compare_mode): Remove prototype.
+
 2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* builtins.c (CASE_MATHFN_FLOATN): New helper macro to add cases

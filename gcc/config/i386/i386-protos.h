@@ -158,8 +158,6 @@ extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
 extern int ix86_attr_length_address_default (rtx_insn *);
 extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
 
-extern machine_mode ix86_fp_compare_mode (enum rtx_code);
-
 extern rtx ix86_libcall_value (machine_mode);
 extern bool ix86_function_arg_regno_p (int);
 extern void ix86_asm_output_function_label (FILE *, const char *, tree);

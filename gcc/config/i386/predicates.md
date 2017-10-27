@@ -1311,8 +1311,7 @@
   switch (code)
     {
     case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCFPmode
-	  || inmode == CCCmode)
+      if (inmode == CCmode || inmode == CCFPmode || inmode == CCCmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:

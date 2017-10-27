@@ -43189,9 +43189,9 @@ ix86_encode_section_info (tree decl, rtx rtl, int first)
 enum rtx_code
 ix86_reverse_condition (enum rtx_code code, machine_mode mode)
 {
-  return (mode != CCFPmode
-	  ? reverse_condition (code)
-	  : reverse_condition_maybe_unordered (code));
+  return (mode == CCFPmode
+	  ? reverse_condition_maybe_unordered (code)
+	  : reverse_condition (code));
 }
 
 /* Output code to perform an x87 FP register move, from OPERANDS[1]
@@ -47647,7 +47647,6 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       op2_h = gen_reg_rtx (qimode);
       emit_insn (gen_il (op2_l, op2, op2));
       emit_insn (gen_ih (op2_h, op2, op2));
-      /* FALLTHRU */
 
       op1_l = gen_reg_rtx (qimode);
       op1_h = gen_reg_rtx (qimode);
