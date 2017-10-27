@@ -1,3 +1,7 @@
+2017-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt68.ad[sb]: New test.
+
 2017-10-27  Daniel Santos  <daniel.santos@pobox.com>
 
 	* gcc.target/i386/pr82196-1.c (dg-options): Add -mno-avx.
