@@ -1,3 +1,10 @@
+2017-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bb-reorder.c (find_traces_1_round): Fix off-by-one index.
+	Move comment around.  Do not reset best_edge for a copiable
+	destination if the copy would cause a partition change.
+	(better_edge_p): Remove redundant check.
+
 2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (ix86_fp_compare_mode): Remove prototype.

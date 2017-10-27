@@ -529,7 +529,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 	  if (dump_file)
 	    fprintf (dump_file, "Basic block %d was visited in trace %d\n",
-		     bb->index, *n_traces - 1);
+		     bb->index, *n_traces);
 
 	  ends_in_call = block_ends_with_call_p (bb);
 
@@ -545,6 +545,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		  && bb_visited_trace (e->dest) != *n_traces)
 		continue;
 
+	      /* If partitioning hot/cold basic blocks, don't consider edges
+		 that cross section boundaries.  */
 	      if (BB_PARTITION (e->dest) != BB_PARTITION (bb))
 		continue;
 
@@ -574,9 +576,6 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		      || e->count () < count_th) && (!for_size)))
 		continue;
 
-	      /* If partitioning hot/cold basic blocks, don't consider edges
-		 that cross section boundaries.  */
-
 	      if (better_edge_p (bb, e, prob, freq, best_prob, best_freq,
 				 best_edge))
 		{
@@ -586,12 +585,28 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		}
 	    }
 
-	  /* If the best destination has multiple predecessors, and can be
-	     duplicated cheaper than a jump, don't allow it to be added
-	     to a trace.  We'll duplicate it when connecting traces.  */
-	  if (best_edge && EDGE_COUNT (best_edge->dest->preds) >= 2
+	  /* If the best destination has multiple predecessors and can be
+	     duplicated cheaper than a jump, don't allow it to be added to
+	     a trace; we'll duplicate it when connecting the traces later.
+	     However, we need to check that this duplication wouldn't leave
+	     the best destination with only crossing predecessors, because
+	     this would change its effective partition from hot to cold.  */
+	  if (best_edge
+	      && EDGE_COUNT (best_edge->dest->preds) >= 2
 	      && copy_bb_p (best_edge->dest, 0))
-	    best_edge = NULL;
+	    {
+	      bool only_crossing_preds = true;
+	      edge e;
+	      edge_iterator ei;
+	      FOR_EACH_EDGE (e, ei, best_edge->dest->preds)
+		if (e != best_edge && !(e->flags & EDGE_CROSSING))
+		  {
+		    only_crossing_preds = false;
+		    break;
+		  }
+	      if (!only_crossing_preds)
+		best_edge = NULL;
+	    }
 
 	  /* If the best destination has multiple successors or predecessors,
 	     don't allow it to be added when optimizing for size.  This makes
@@ -987,16 +1002,6 @@ better_edge_p (const_basic_block bb, const_edge e, profile_probability prob,
     is_better_edge = true;
   else
     is_better_edge = false;
-
-  /* If we are doing hot/cold partitioning, make sure that we always favor
-     non-crossing edges over crossing edges.  */
-
-  if (!is_better_edge
-      && flag_reorder_blocks_and_partition
-      && cur_best_edge
-      && (cur_best_edge->flags & EDGE_CROSSING)
-      && !(e->flags & EDGE_CROSSING))
-    is_better_edge = true;
 
   return is_better_edge;
 }
