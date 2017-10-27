@@ -1,5 +1,15 @@
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_dir.h (directory_iterator): Remove noexcept from
+	constructors and increment member (LWG 3013).
+	(recursive_directory_iterator): Likewise.
+	* include/bits/fs_ops.h (copy, copy_file, create_directories)
+	(is_empty, remove_all): Remove noexcept (LWG 3013 and LWG 3014).
+	* src/filesystem/std-dir.cc (directory_iterator::increment)
+	(recursive_directory_iterator::increment): Remove noexcept.
+	* src/filesystem/std-ops.cc (copy, copy_file, create_directories)
+	(is_empty, remove_all): Remove noexcept
+
 	* include/bits/fs_dir.h (file_status): Make default constructor
 	non-explicit (LWG 2787).
 	* testsuite/27_io/filesystem/file_status/1.cc: New test.
