@@ -1,3 +1,9 @@
+2017-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/82457
+	* doc/invoke.texi: Document that one needs a non-strict ISO mode
+	for fork-like functions to be properly instrumented.
+
 2017-10-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81659

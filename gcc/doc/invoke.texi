@@ -10868,9 +10868,9 @@ Link your object files with @option{-lgcov} or @option{-fprofile-arcs}
 Run the program on a representative workload to generate the arc profile
 information.  This may be repeated any number of times.  You can run
 concurrent instances of your program, and provided that the file system
-supports locking, the data files will be correctly updated.  Also
-@code{fork} calls are detected and correctly handled (double counting
-will not happen).
+supports locking, the data files will be correctly updated.  Unless
+a strict ISO C dialect option is in effect, @code{fork} calls are
+detected and correctly handled without double counting.
 
 @item
 For profile-directed optimizations, compile the source files again with
