@@ -1,3 +1,7 @@
+2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (invalid_nontype_parm_type_p): Return a bool instead of an int.
+
 2017-10-26  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (sort_labels): Restore function.
