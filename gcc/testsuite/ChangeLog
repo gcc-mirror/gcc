@@ -1,3 +1,7 @@
+2017-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr70021.c: Add -mtune=skylake.
+
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82703
