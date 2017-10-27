@@ -997,7 +997,7 @@ enum cp_identifier_kind {
   cik_dtor = 3,		/* Destructor (in-chg, deleting, complete or
 			   base).  */
   cik_simple_op = 4,	/* Non-assignment operator name.  */
-  cik_newdel_op = 5,	/* New or delete operator name.  */
+  cik_reserved_for_udlit = 5,	/* Not yet in use  */
   cik_assign_op = 6,	/* An assignment operator name.  */
   cik_conv_op = 7,	/* Conversion operator name.  */
   cik_max
@@ -1054,11 +1054,11 @@ enum cp_identifier_kind {
 #define IDENTIFIER_ANY_OP_P(NODE)		\
   (IDENTIFIER_KIND_BIT_2 (NODE))
 
-/* True if this identifier is for new or delete operator.  Value 5.  */
-#define IDENTIFIER_NEWDEL_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
-   & (!IDENTIFIER_KIND_BIT_1 (NODE))		\
-   & IDENTIFIER_KIND_BIT_0 (NODE))
+/* True if this identifier is for an overloaded operator. Values 4,
+   6.  */
+#define IDENTIFIER_OVL_OP_P(NODE)		\
+  (IDENTIFIER_KIND_BIT_2 (NODE)		\
+   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
 
 /* True if this identifier is for any assignment. Values 6.  */
 #define IDENTIFIER_ASSIGN_OP_P(NODE)		\
@@ -2825,7 +2825,7 @@ struct GTY(()) lang_decl {
 
 /* DECL is an overloaded operator.  Test whether it is for TREE_CODE
    CODE.  */
-#define DECL_OVERLOADED_OPERATOR_IS(DECL,CODE)			\
+#define DECL_OVERLOADED_OPERATOR_IS(DECL, CODE)			\
   (DECL_OVERLOADED_OPERATOR_CODE (DECL) == (CODE))
 
 /* For FUNCTION_DECLs: nonzero means that this function is a
@@ -5484,13 +5484,23 @@ enum auto_deduction_context
 
 extern void init_reswords (void);
 
+enum ovl_op_flags
+  {
+    OVL_OP_FLAG_NONE = 0,
+    OVL_OP_FLAG_UNARY = 1,
+    OVL_OP_FLAG_BINARY = 2,
+    OVL_OP_FLAG_NEWDEL = 4,  // new/delete
+    OVL_OP_FLAG_DELETE = 5,  // delete
+    OVL_OP_FLAG_VEC = 2      // vector new/delete
+  };
+
 enum ovl_op_code
   {
     OVL_OP_ERROR_MARK,
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) OVL_OP_##CODE,
+    OVL_OP_NOP_EXPR,
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) OVL_OP_##CODE,
 #define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
 #include "operators.def"
-    OVL_OP_NOP_EXPR,
     OVL_OP_MAX
   };
 
@@ -5501,14 +5511,12 @@ struct GTY(()) ovl_op_info_t {
   const char *name;
   /* The mangled name of the operator.  */
   const char *mangled_name;
-  /* The arity of the operator.  */
-  signed arity : 4;
-  /* The kind of identifier.  */
-  enum cp_identifier_kind kind : 4;
-  /* The (compressed) operator code.  */
-  enum ovl_op_code ovl_op_code : 8;
   /* The (regular) tree code.  */
   enum tree_code tree_code : 16;
+  /* The (compressed) operator code.  */
+  enum ovl_op_code ovl_op_code : 8;
+  /* The ovl_op_flags of the operator */
+  unsigned flags : 4;
 };
 
 /* Overloaded operator info indexed by ass_op_p & ovl_op_code.  */
@@ -5521,6 +5529,12 @@ extern GTY(()) unsigned char ovl_op_mapping[MAX_TREE_CODES];
    map to the error-operator.  */
 #define OVL_OP_INFO(IS_ASS_P,TREE_CODE)			\
   (&ovl_op_info[(IS_ASS_P) != 0][ovl_op_mapping[(TREE_CODE)]])
+/* Overloaded operator info for an identifier for which
+   IDENTIFIER_OVL_OP_P is true.  */
+#define IDENTIFIER_OVL_OP_INFO(NODE) \
+  (&ovl_op_info[IDENTIFIER_KIND_BIT_1 (NODE)][IDENTIFIER_CP_INDEX (NODE)])
+#define IDENTIFIER_OVL_OP_FLAGS(NODE) \
+  (IDENTIFIER_OVL_OP_INFO (NODE)->flags)
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */

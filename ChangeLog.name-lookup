@@ -1,5 +1,23 @@
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 6.
+	gcc/cp/
+	(enum cp_operator_kind): Delete cik_newdel_op.
+	(IDENTIFIER_NEWDEL_OP_P): Delete.
+	(IDENTIFIER_OVL_OP_P): New.
+	(enum ovl_op_flags): New.
+	(struct ovl_op_info_t): Delete kind, reorder.
+	(IDENTIFIER_OVL_OP_INFO, IDENTIFIER_OVL_OP_FLAGS): New.
+	* decl.c (grokdeclarator): Use IDENTIFIER_OVL_OP_FLAGS.
+	* lex.c (ovl_op_info): Adjust initialization.
+	(get_identifier_kind_name): Lose new-del-op.
+	(set_operator_ident): Return identifier.  Don't set kind.
+	(init_operators): Set kind here.  Set IDENTIFIER_CP_INDEX.
+	* mangle.c (write_unqualified_id): Pick first operator.
+	* operators.def: Adjust.
+	* pt.c (push_template_decl_real): Use IDENTIFIER_OVL_OP_FLAGS.
+	* typeck.c (check_return_expr): Likewise.
+
 	Operator code compaction part 5.
 	gcc/cp/
 	* cp-tree.h (ovl_op_code): Rename from overloaded_operator_code.

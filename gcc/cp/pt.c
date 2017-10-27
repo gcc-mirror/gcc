@@ -5329,7 +5329,9 @@ push_template_decl_real (tree decl, bool is_friend)
 	      error ("destructor %qD declared as member template", decl);
 	      return error_mark_node;
 	    }
-	  if (IDENTIFIER_NEWDEL_OP_P (DECL_NAME (decl))
+	  if (IDENTIFIER_OVL_OP_P (DECL_NAME (decl))
+	      && (IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (decl))
+		  & OVL_OP_FLAG_NEWDEL)
 	      && (!prototype_p (TREE_TYPE (decl))
 		  || TYPE_ARG_TYPES (TREE_TYPE (decl)) == void_list_node
 		  || !TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)))

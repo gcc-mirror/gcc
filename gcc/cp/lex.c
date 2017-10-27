@@ -80,11 +80,12 @@ cxx_finish (void)
 ovl_op_info_t ovl_op_info[2][int (OVL_OP_MAX)] = 
   {
     {
-      {NULL_TREE, NULL, NULL, 0, cik_normal, OVL_OP_ERROR_MARK, ERROR_MARK},
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND) \
-      {NULL_TREE, NAME, MANGLING, ARITY, KIND, OVL_OP_##CODE, CODE},
+      {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
+      {NULL_TREE, NULL, NULL, NOP_EXPR, OVL_OP_NOP_EXPR, 0},
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) \
+      {NULL_TREE, NAME, MANGLING, CODE, OVL_OP_##CODE, FLAGS},
 #define OPERATOR_TRANSITION }, {			\
-      {NULL_TREE, NULL, NULL, 0, cik_normal, OVL_OP_ERROR_MARK, ERROR_MARK},
+      {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
 #include "operators.def"
     }
   };
@@ -98,7 +99,7 @@ get_identifier_kind_name (tree id)
   /* Keep in sync with cp_id_kind enumeration.  */
   static const char *const names[cik_max] = {
     "normal", "keyword", "constructor", "destructor",
-    "simple-op", "new-del-op", "assign-op", "conv-op"
+    "simple-op", "<reserved>udlit-op", "assign-op", "conv-op"
   };
 
   unsigned kind = 0;
@@ -125,7 +126,7 @@ set_identifier_kind (tree id, cp_identifier_kind kind)
 /* Create and tag the internal operator name for the overloaded
    operator PTR describes.  */
 
-static void
+static tree
 set_operator_ident (ovl_op_info_t *ptr)
 {
   char buffer[32];
@@ -134,10 +135,11 @@ set_operator_ident (ovl_op_info_t *ptr)
 			      && !ISALPHA (ptr->name[0])],
 			 ptr->name);
   gcc_checking_assert (len < sizeof (buffer));
+
   tree ident = get_identifier_with_length (buffer, len);
   ptr->identifier = ident;
-  if (!IDENTIFIER_ANY_OP_P (ident) || ptr->kind != cik_simple_op)
-    set_identifier_kind (ident, cp_identifier_kind (ptr->kind));
+
+  return ident;
 }
 
 /* Initialize data structures that keep track of operator names.  */
@@ -158,7 +160,23 @@ init_operators (void)
 
       if (op_ptr->name)
 	{
-	  set_operator_ident (op_ptr);
+	  tree ident = set_operator_ident (op_ptr);
+	  if (unsigned index = IDENTIFIER_CP_INDEX (ident))
+	    {
+	      ovl_op_info_t *bin_ptr = &ovl_op_info[false][index];
+
+	      gcc_checking_assert (op_ptr->flags == OVL_OP_FLAG_UNARY
+				   && (bin_ptr->flags == OVL_OP_FLAG_BINARY));
+	      bin_ptr->flags |= op_ptr->flags;
+	    }
+	  else
+	    {
+	      IDENTIFIER_CP_INDEX (ident) = ix;
+	      set_identifier_kind (ident, cik_simple_op);
+	    }
+	}
+      if (op_ptr->tree_code)
+	{
 	  gcc_checking_assert (!ovl_op_mapping[op_ptr->tree_code]);
 	  ovl_op_mapping[op_ptr->tree_code] = op_ptr->ovl_op_code;
 	}
@@ -168,16 +186,24 @@ init_operators (void)
 	{
 	  /* These will be placed at the start of the array, move to
 	     the correct slot and initialize.  */
-	  gcc_assert (as_ptr->ovl_op_code > ix);
-	  ovl_op_info_t *dst_ptr = &ovl_op_info[true][as_ptr->ovl_op_code];
-	  gcc_checking_assert (!dst_ptr->name);
-	  *dst_ptr = *as_ptr;
-	  memset (as_ptr, 0, sizeof (*as_ptr));
-	  set_operator_ident (dst_ptr);
-	  gcc_checking_assert (!ovl_op_mapping[dst_ptr->tree_code]
-			       || (ovl_op_mapping[dst_ptr->tree_code]
-				   == dst_ptr->ovl_op_code));
-	  ovl_op_mapping[dst_ptr->tree_code] = dst_ptr->ovl_op_code;
+	  if (as_ptr->ovl_op_code != ix)
+	    {
+	      ovl_op_info_t *dst_ptr = &ovl_op_info[true][as_ptr->ovl_op_code];
+	      gcc_assert (as_ptr->ovl_op_code > ix && !dst_ptr->tree_code);
+	      memcpy (dst_ptr, as_ptr, sizeof (*dst_ptr));
+	      memset (as_ptr, 0, sizeof (*as_ptr));
+	      as_ptr = dst_ptr;
+	    }
+
+	  tree ident = set_operator_ident (as_ptr);
+	  gcc_checking_assert (!IDENTIFIER_CP_INDEX (ident));
+	  IDENTIFIER_CP_INDEX (ident) = as_ptr->ovl_op_code;
+	  set_identifier_kind (ident, cik_assign_op);
+
+	  gcc_checking_assert (!ovl_op_mapping[as_ptr->tree_code]
+			       || (ovl_op_mapping[as_ptr->tree_code]
+				   == as_ptr->ovl_op_code));
+	  ovl_op_mapping[as_ptr->tree_code] = as_ptr->ovl_op_code;
 	}
     }
   ovl_op_mapping[TYPE_EXPR] = OVL_OP_CAST_EXPR;

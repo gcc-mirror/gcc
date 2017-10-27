@@ -1265,29 +1265,20 @@ write_unqualified_id (tree identifier)
     write_conversion_operator_name (TREE_TYPE (identifier));
   else if (IDENTIFIER_ANY_OP_P (identifier))
     {
-      const char *mangled_name = NULL;
-
       /* Unfortunately, there is no easy way to go from the
 	 name of the operator back to the corresponding tree
 	 code.  */
+      // FIXME: Mapping
+      bool ass_op_p = IDENTIFIER_ASSIGN_OP_P (identifier);
       for (unsigned ix = OVL_OP_MAX; ix--;)
-	if (ovl_op_info[0][ix].identifier == identifier)
-	  {
-	    /* The ABI says that we prefer binary operator
-	       names to unary operator names.  */
-	    if (ovl_op_info[0][ix].arity == 2)
-	      {
-		mangled_name = ovl_op_info[0][ix].mangled_name;
-		break;
-	      }
-	    mangled_name = ovl_op_info[0][ix].mangled_name;
-	  }
-	else if (ovl_op_info[1][ix].identifier == identifier)
-	  {
-	    mangled_name = ovl_op_info[1][ix].mangled_name;
-	    break;
-	  }
-      write_string (mangled_name);
+	{
+	  const ovl_op_info_t *ovl_op = &ovl_op_info[ass_op_p][ix];
+	  if (ovl_op->identifier == identifier)
+	    {
+	      write_string (ovl_op->mangled_name);
+	      break;
+	    }
+	}
     }
   else if (UDLIT_OPER_P (identifier))
     write_literal_operator_name (identifier);
@@ -1343,7 +1334,7 @@ write_unqualified_name (tree decl)
 	{
 	  const char *mangled_name
 	    = OVL_OP_INFO (DECL_ASSIGNMENT_OPERATOR_P (decl),
-			DECL_OVERLOADED_OPERATOR_CODE (decl))->mangled_name;
+			   DECL_OVERLOADED_OPERATOR_CODE (decl))->mangled_name;
 	  write_string (mangled_name);
 	}
       else if (UDLIT_OPER_P (DECL_NAME (decl)))

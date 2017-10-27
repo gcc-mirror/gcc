@@ -11750,7 +11750,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
       && !(identifier_p (unqualified_id)
-	   && IDENTIFIER_NEWDEL_OP_P (unqualified_id)))
+	   && IDENTIFIER_OVL_OP_P (unqualified_id)
+	   && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id) & OVL_OP_FLAG_NEWDEL)))
     {
       cp_cv_quals real_quals = memfn_quals;
       if (cxx_dialect < cxx14 && constexpr_p
@@ -11863,7 +11864,9 @@ grokdeclarator (const cp_declarator *declarator,
 
 		if (virtualp
 		    && identifier_p (unqualified_id)
-		    && IDENTIFIER_NEWDEL_OP_P (unqualified_id))
+		    && IDENTIFIER_OVL_OP_P (unqualified_id)
+		    && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id)
+			& OVL_OP_FLAG_NEWDEL))
 		  {
 		    error ("%qD cannot be declared %<virtual%>, since it "
 			   "is always static", unqualified_id);
@@ -12938,11 +12941,14 @@ grok_op_properties (tree decl, bool complain)
       // FIXME:Mapping
       bool assign_op = IDENTIFIER_ASSIGN_OP_P (name);
       for (unsigned ix = 0; ix != OVL_OP_MAX; ix++)
-	if (name == ovl_op_info[assign_op][ix].identifier)
-	  {
-	    operator_code = ovl_op_info[assign_op][ix].tree_code;
-	    break;
-	  }
+	{
+	  const ovl_op_info_t *ovl_op = &ovl_op_info[assign_op][ix];
+	  if (name == ovl_op->identifier)
+	    {
+	      operator_code = ovl_op->tree_code;
+	      break;
+	    }
+	}
       gcc_checking_assert (operator_code != ERROR_MARK);
     }
 
