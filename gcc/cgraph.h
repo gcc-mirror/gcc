@@ -1151,6 +1151,10 @@ public:
      if any to NOTHROW.  */
   bool set_nothrow_flag (bool nothrow);
 
+  /* SET DECL_IS_MALLOC on cgraph_node's decl and on aliases of the node
+     if any.  */
+  bool set_malloc_flag (bool malloc_p);
+
   /* If SET_CONST is true, mark function, aliases and thunks to be ECF_CONST.
     If SET_CONST if false, clear the flag.
 

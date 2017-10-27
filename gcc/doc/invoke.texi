@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstack-protector  -Wstack-usage=@var{len}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
 -Wstringop-overflow=@var{n} @gol
--Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
+-Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
 -Wmissing-format-attribute  -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
@@ -5204,7 +5204,7 @@ whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
 
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
@@ -5214,21 +5214,25 @@ attributes currently supported are listed below.
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
+@itemx -Wsuggest-attribute=malloc
 @opindex Wsuggest-attribute=pure
 @opindex Wno-suggest-attribute=pure
 @opindex Wsuggest-attribute=const
 @opindex Wno-suggest-attribute=const
 @opindex Wsuggest-attribute=noreturn
 @opindex Wno-suggest-attribute=noreturn
+@opindex Wsuggest-attribute=malloc
+@opindex Wno-suggest-attribute=malloc
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const} or @code{noreturn}.  The compiler only warns for
-functions visible in other compilation units or (in the case of @code{pure} and
-@code{const}) if it cannot prove that the function returns normally. A function
-returns normally if it doesn't contain an infinite loop or return abnormally
-by throwing, calling @code{abort} or trapping.  This analysis requires option
-@option{-fipa-pure-const}, which is enabled by default at @option{-O} and
-higher.  Higher optimization levels improve the accuracy of the analysis.
+@code{pure}, @code{const} or @code{noreturn} or @code{malloc}. The compiler
+only warns for functions visible in other compilation units or (in the case of
+@code{pure} and @code{const}) if it cannot prove that the function returns
+normally. A function returns normally if it doesn't contain an infinite loop or
+return abnormally by throwing, calling @code{abort} or trapping.  This analysis
+requires option @option{-fipa-pure-const}, which is enabled by default at
+@option{-O} and higher.  Higher optimization levels improve the accuracy
+of the analysis.
 
 @item -Wsuggest-attribute=format
 @itemx -Wmissing-format-attribute

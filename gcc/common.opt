@@ -741,6 +741,10 @@ Wsuggest-attribute=noreturn
 Common Var(warn_suggest_attribute_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn)).
 
+Wsuggest-attribute=malloc
+Common Var(warn_suggest_attribute_malloc) Warning
+Warn about functions which might be candidates for __attribute__((malloc)).
+
 Wsuggest-final-types
 Common Var(warn_suggest_final_types) Warning
 Warn about C++ polymorphic types where adding final keyword would improve code quality.

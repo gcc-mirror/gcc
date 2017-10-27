@@ -93,6 +93,12 @@ struct imm_use_iterator
      break;							\
    }
 
+/* Similarly for return.  */
+#define RETURN_FROM_IMM_USE_STMT(ITER, VAL)			\
+  {								\
+    end_imm_use_stmt_traverse (&(ITER));			\
+    return (VAL);						\
+  }
 
 /* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to
    get access to each occurrence of ssavar on the stmt returned by

@@ -2530,6 +2530,53 @@ cgraph_node::set_nothrow_flag (bool nothrow)
   return changed;
 }
 
+/* Worker to set malloc flag.  */
+static void
+set_malloc_flag_1 (cgraph_node *node, bool malloc_p, bool *changed)
+{
+  if (malloc_p && !DECL_IS_MALLOC (node->decl))
+    {
+      DECL_IS_MALLOC (node->decl) = true;
+      *changed = true;
+    }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+      if (!malloc_p || alias->get_availability () > AVAIL_INTERPOSABLE)
+	set_malloc_flag_1 (alias, malloc_p, changed);
+    }
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk.thunk_p
+	&& (!malloc_p || e->caller->get_availability () > AVAIL_INTERPOSABLE))
+      set_malloc_flag_1 (e->caller, malloc_p, changed);
+}
+
+/* Set DECL_IS_MALLOC on NODE's decl and on NODE's aliases if any.  */
+
+bool
+cgraph_node::set_malloc_flag (bool malloc_p)
+{
+  bool changed = false;
+
+  if (!malloc_p || get_availability () > AVAIL_INTERPOSABLE)
+    set_malloc_flag_1 (this, malloc_p, &changed);
+  else
+    {
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	{
+	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+	  if (!malloc_p || alias->get_availability () > AVAIL_INTERPOSABLE)
+	    set_malloc_flag_1 (alias, malloc_p, &changed);
+	}
+    }
+  return changed;
+}
+
 /* Worker to set_const_flag.  */
 
 static void

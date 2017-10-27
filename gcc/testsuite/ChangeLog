@@ -1,3 +1,9 @@
+2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/ipa/propmalloc-1.c: New test-case.
+	* gcc.dg/ipa/propmalloc-2.c: Likewise.
+	* gcc.dg/ipa/propmalloc-3.c: Likewise.
+
 2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71385
