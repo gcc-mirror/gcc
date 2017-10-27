@@ -1,3 +1,8 @@
+2017-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56342
+	* gfortran.dg/matmul_const.f90: New test.
+
 2017-10-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.target/i386/pr70021.c: Add -mtune=skylake.

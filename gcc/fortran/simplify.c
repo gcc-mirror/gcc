@@ -227,7 +227,8 @@ convert_boz (gfc_expr *x, int kind)
 }
 
 
-/* Test that the expression is an constant array.  */
+/* Test that the expression is an constant array, simplifying if
+   we are dealing with a parameter array.  */
 
 static bool
 is_constant_array_expr (gfc_expr *e)
@@ -236,6 +237,10 @@ is_constant_array_expr (gfc_expr *e)
 
   if (e == NULL)
     return true;
+
+  if (e->expr_type == EXPR_VARIABLE && e->rank > 0
+      && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
+    gfc_simplify_expr (e, 1);
 
   if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
     return false;
