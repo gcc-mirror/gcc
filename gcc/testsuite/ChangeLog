@@ -1,5 +1,13 @@
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82192
+	* gcc.c-torture/execute/pr82192.c: New test.
+
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/82703
 	* gcc.dg/pr82703.c: New test.
 

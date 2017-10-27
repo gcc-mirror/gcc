@@ -7397,7 +7397,14 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (pos_rtx && CONST_INT_P (pos_rtx))
     pos = INTVAL (pos_rtx), pos_rtx = 0;
 
-  if (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
+  if (GET_CODE (inner) == SUBREG
+      && subreg_lowpart_p (inner)
+      && (paradoxical_subreg_p (inner)
+	  /* If trying or potentionally trying to extract
+	     bits outside of is_mode, don't look through
+	     non-paradoxical SUBREGs.  See PR82192.  */
+	  || (pos_rtx == NULL_RTX
+	      && pos + len <= GET_MODE_PRECISION (is_mode))))
     {
       /* If going from (subreg:SI (mem:QI ...)) to (mem:QI ...),
 	 consider just the QI as the memory to extract from.
@@ -7423,7 +7430,12 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       if (new_rtx != 0)
 	return gen_rtx_ASHIFT (mode, new_rtx, XEXP (inner, 1));
     }
-  else if (GET_CODE (inner) == TRUNCATE)
+  else if (GET_CODE (inner) == TRUNCATE
+	   /* If trying or potentionally trying to extract
+	      bits outside of is_mode, don't look through
+	      TRUNCATE.  See PR82192.  */
+	   && pos_rtx == NULL_RTX
+	   && pos + len <= GET_MODE_PRECISION (is_mode))
     inner = XEXP (inner, 0);
 
   inner_mode = GET_MODE (inner);

@@ -1,5 +1,15 @@
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82192
+	* combine.c (make_extraction): Don't look through non-paradoxical
+	SUBREGs or TRUNCATE if pos + len is or might be bigger than
+	inner's mode.
+
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/82703
 	* config/i386/i386-protos.h (maybe_get_pool_constant): Removed.
 	* config/i386/i386.c (maybe_get_pool_constant): Removed.
