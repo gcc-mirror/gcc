@@ -99,7 +99,7 @@ get_identifier_kind_name (tree id)
   /* Keep in sync with cp_id_kind enumeration.  */
   static const char *const names[cik_max] = {
     "normal", "keyword", "constructor", "destructor",
-    "simple-op", "assign-op", "<reserved>udlit-op", "conv-op"
+    "simple-op", "assign-op", "conv-op", "<reserved>udlit-op"
   };
 
   unsigned kind = 0;
@@ -172,7 +172,8 @@ init_operators (void)
 	  else
 	    {
 	      IDENTIFIER_CP_INDEX (ident) = ix;
-	      set_identifier_kind (ident, cik_simple_op);
+	      set_identifier_kind (ident, (ix == OVL_OP_TYPE_EXPR
+					   ? cik_conv_op : cik_simple_op));
 	    }
 	}
       if (op_ptr->tree_code)
@@ -207,7 +208,6 @@ init_operators (void)
 	  ovl_op_mapping[as_ptr->tree_code] = as_ptr->ovl_op_code;
 	}
     }
-  ovl_op_mapping[TYPE_EXPR] = OVL_OP_CAST_EXPR;
 }
 
 /* Initialize the reserved words.  */

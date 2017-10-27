@@ -3959,7 +3959,6 @@ initialize_predefined_identifiers (void)
     {"__dt_base ", &base_dtor_identifier, cik_dtor},
     {"__dt_comp ", &complete_dtor_identifier, cik_dtor},
     {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
-    {"__conv_op ", &conv_op_identifier, cik_conv_op},
     {"__in_chrg", &in_charge_identifier, cik_normal},
     {"this", &this_identifier, cik_normal},
     {"__delta", &delta_identifier, cik_normal},
@@ -12905,19 +12904,9 @@ grok_op_properties (tree decl, bool complain)
   if (class_type && !CLASS_TYPE_P (class_type))
     class_type = NULL_TREE;
 
-  enum tree_code operator_code = ERROR_MARK;
-  const ovl_op_info_t *ovl_op = NULL;
-  if (IDENTIFIER_CONV_OP_P (name))
-    {
-      operator_code = TYPE_EXPR;
-      ovl_op = &ovl_op_info[false][OVL_OP_CAST_EXPR];
-    }
-  else
-    {
-      ovl_op = IDENTIFIER_OVL_OP_INFO (name);
-      operator_code = ovl_op->tree_code;
-      gcc_checking_assert (operator_code != ERROR_MARK);
-    }
+  const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+  enum tree_code operator_code = ovl_op->tree_code;
+  gcc_checking_assert (operator_code != ERROR_MARK);
 
   SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
 

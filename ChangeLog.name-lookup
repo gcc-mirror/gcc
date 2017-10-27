@@ -1,5 +1,18 @@
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 8.
+	gcc/cp/
+	* cp-tree.h (CPTI_CONV_OP_IDENTIFIER): Delete.
+	(conv_op_identifier): Map into ovl_op_info array.
+	(enum cp_identifier_kind): Swap cik_conv_op &
+	cik_reserved_for_udlit.
+	(IDENTIFIER_CONV_OP_P): Adjust.
+	* decl.c (initialize_predefined_identifiers): Drop conv_op.
+	(grok_op_properties): Use IDENTIFIER_OVL_OP_INFO for all ops.
+	* lex.c (get_identifier_kind_name): Adjust.
+	(init_operators): Special case TYPE_EXPR.
+	* operators.def: Add TYPE_EXPR. Casts are mangling only.
+
 	Operator code compaction part 7.
 	gcc/cp/
 	* cp-tree.h (cp_identifier_kind): Swap cik_assign_op &
