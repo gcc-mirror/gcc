@@ -21705,9 +21705,26 @@ When generating PIC code, allow the use of PLTs. Ignored for non-PIC.
 
 @item -mabi=@var{ABI-string}
 @opindex mabi
-Specify integer and floating-point calling convention.  This defaults to the
-natural calling convention: e.g.@ LP64 for RV64I, ILP32 for RV32I, LP64D for
-RV64G.
+@item -mabi=@var{ABI-string}
+@opindex mabi
+Specify integer and floating-point calling convention.  @var{ABI-string}
+contains two parts: the size of integer types and the registers used for
+floating-point types.  For example @samp{-march=rv64ifd -mabi=lp64d} means that
+@samp{long} and pointers are 64-bit (implicitly defining @samp{int} to be
+32-bit), and that floating-point values up to 64 bits wide are passed in F
+registers.  Contrast this with @samp{-march=rv64ifd -mabi=lp64f}, which still
+allows the compiler to generate code that uses the F and D extensions but only
+allows floating-point values up to 32 bits long to be passed in registers; or
+@samp{-march=rv64ifd -mabi=lp64}, in which no floating-point arguments will be
+passed in registers.
+
+The default for this argument is system dependent, users who want a specific
+calling convention should specify one explicitly.  The valid calling
+conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
+@samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
+implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
+invalid because the ABI requires 64-bit values be passed in F registers, but F
+registers are only 32 bits wide.
 
 @item -mfdiv
 @itemx -mno-fdiv

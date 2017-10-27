@@ -1,3 +1,8 @@
+2017-10-27  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	PR target/82717
+	* doc/invoke.texi (RISC-V) <-mabi>: Correct and improve.
+
 2017-10-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_REG_DEPENDENCY,
