@@ -1,5 +1,10 @@
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82703
+	* gcc.dg/pr82703.c: New test.
+
 2017-10-24  Qing Zhao <qing.zhao@oracle.com>
-	    Wilco Dijkstra <wilco.dijkstra@arm.com>
+	    Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
         PR middle-end/80295
         * gcc.target/aarch64/pr80295.c: New test.
