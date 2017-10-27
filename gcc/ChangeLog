@@ -1,3 +1,9 @@
+2017-10-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* wide-int-print.cc (print_hex): Loop based on extract_uhwi.
+	Don't print any bits outside the precision of the value.
+	* wide-int.cc (test_printing): Add some new tests.
+
 2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR tree-optimization/71026
