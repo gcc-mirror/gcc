@@ -1,5 +1,10 @@
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_dir.h (file_status): Make default constructor
+	non-explicit (LWG 2787).
+	* testsuite/27_io/filesystem/file_status/1.cc: New test.
+	* testsuite/experimental/filesystem/file_status/1.cc: New test.
+
 	* include/std/fstream (basic_filebuf::_If_path): New SFINAE helper.
 	(basic_filebuf::open<Path>(const Path&, const ios_base::openmode&))
 	(basic_ifstream<Path>(const Path&, const ios_base::openmode&))
