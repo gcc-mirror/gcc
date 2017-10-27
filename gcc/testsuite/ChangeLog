@@ -1,3 +1,8 @@
+2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82218
+	* g++.dg/cpp1y/constexpr-82218.C: New.
+
 2017-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt68.ad[sb]: New test.
