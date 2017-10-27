@@ -3779,7 +3779,10 @@ pass_lower_eh_dispatch::execute (function *fun)
     }
 
   if (redirected)
-    delete_unreachable_blocks ();
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      delete_unreachable_blocks ();
+    }
   return flags;
 }
 
