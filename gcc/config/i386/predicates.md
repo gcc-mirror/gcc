@@ -1301,7 +1301,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
 	return false;
@@ -1311,7 +1311,7 @@
   switch (code)
     {
     case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCFPmode || inmode == CCFPUmode
+      if (inmode == CCmode || inmode == CCFPmode
 	  || inmode == CCCmode)
 	return true;
       return false;
@@ -1348,7 +1348,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     return ix86_trivial_fp_comparison_operator (op, mode);
 
   switch (code)
@@ -1391,7 +1391,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
 	return false;

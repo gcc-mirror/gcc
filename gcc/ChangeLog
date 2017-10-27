@@ -1,3 +1,42 @@
+2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82692
+	* config/i386/i386-modes.def (CCFPU): Remove definition.
+	* config/i386/i386.c (put_condition_mode): Remove CCFPU mode handling.
+	(ix86_cc_modes_compatible): Ditto.
+	(ix86_expand_carry_flag_compare): Ditto.
+	(ix86_expand_int_movcc): Ditto.
+	(ix86_expand_int_addcc): Ditto.
+	(ix86_reverse_condition): Ditto.
+	(ix86_unordered_fp_compare): Rename from ix86_fp_compare_mode.
+	Return true/false for unordered/ordered fp comparisons.
+	(ix86_cc_mode): Always return CCFPmode for float mode comparisons.
+	(ix86_prepare_fp_compare_args): Update for rename.
+	(ix86_expand_fp_compare): Update for rename.  Generate unordered
+	compare RTXes wrapped with UNSPEC_NOTRAP unspec.
+	(ix86_expand_sse_compare_and_jump): Ditto.
+	* config/i386/predicates.md (fcmov_comparison_operator):
+	Remove CCFPU mode handling.
+	(ix86_comparison_operator): Ditto.
+	(ix86_carry_flag_operator): Ditto.
+	* config/i386/i386.md (UNSPEC_NOTRAP): New unspec.
+	(*cmpu<mode>_i387): Wrap compare RTX with UNSPEC_NOTRAP unspec.
+	(*cmpu<mode>_cc_i387): Ditto.
+	(FPCMP): Remove mode iterator.
+	(unord): Remove mode attribute.
+	(unord_subst): New define_subst transformation
+	(unord): New define_subst attribute.
+	(unordered): Ditto.
+	(*cmpi<unord><MODEF:mode>): Rewrite using unord_subst transformation.
+	(*cmpi<unord>xf_i387): Ditto.
+	* config/i386/sse.md (<sse>_<unord>comi<round_saeonly_name>): Merge
+	from <sse>_comi<round_saeonly_name> and <sse>_ucomi<round_saeonly_name>
+	using unord_subst transformation.
+	* config/i386/subst.md (SUBST_A): Remove CCFP and CCFPU modes.
+	(round_saeonly): Also handle CCFP mode.
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_NOTRAP unspec.
+	Remove UNSPEC_SAHF unspec handling.
+
 2017-10-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* x86-tune.def (X86_TUNE_INTER_UNIT_MOVES_TO_VEC): Disable for Zen.
