@@ -1,3 +1,8 @@
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82703
+	* gcc.dg/pr82703.c: New test.
+
 2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/ipa/propmalloc-1.c: New test-case.
