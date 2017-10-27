@@ -1258,7 +1258,7 @@ maybe_add_lambda_conv_op (tree type)
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
-  SET_OVERLOADED_OPERATOR_CODE (fn, TYPE_EXPR);
+  DECL_OVERLOADED_OPERATOR_CODE_RAW (fn) = OVL_OP_TYPE_EXPR;
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);
   rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);

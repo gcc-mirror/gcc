@@ -1,5 +1,23 @@
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 9.
+	gcc/cp/
+	* cp-tree.h (lang_decl_fn): Replace operator_code with smaller
+	ovl_op_code field.
+	(DECL_OVERLOADED_OPERATOR_CODE, SET_OVERLOADED_OPERATOR_CODE): Delete.
+	(DECL_OVERLOADED_OPERATOR_CODE_RAW): New.
+	(DECL_OVERLOADED_OPERATOR_IS): Adjust.
+	* decl.c (duplicate_decls): Open code operator copying.
+	(builtin_function_1): Don't set operator code.
+	(build_library_fn): Adjust operator code setting.
+	(grok_op_properties): Likewise.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+	* mangle.c (write_unqualified_name): Adjust operator name
+	accessor.
+	libcc1/
+	* libcp1plugin.cc (plugin_build_decl): Adjust.
+
 	Operator code compaction part 8.
 	gcc/cp/
 	* cp-tree.h (CPTI_CONV_OP_IDENTIFIER): Delete.

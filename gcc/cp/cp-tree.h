@@ -2473,10 +2473,9 @@ struct GTY(()) lang_decl_min {
 struct GTY(()) lang_decl_fn {
   struct lang_decl_min min;
 
-  /* In an overloaded operator, this is the value of
-     DECL_OVERLOADED_OPERATOR_P.
-     FIXME: We should really do better in compressing this.  */
-  ENUM_BITFIELD (tree_code) operator_code : 16;
+  /* In a overloaded operator, this is the compressed operator code.  */
+  unsigned ovl_op_code : 6;
+  unsigned spare : 10;
 
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
@@ -2808,18 +2807,14 @@ struct GTY(()) lang_decl {
   IDENTIFIER_ASSIGN_OP_P (DECL_NAME (NODE))
 
 /* NODE is a function_decl for an overloaded operator.  Return its
-   operator code.  Note that this is not a TREE_CODE.  */
-#define DECL_OVERLOADED_OPERATOR_CODE(NODE)	\
-  (LANG_DECL_FN_CHECK (NODE)->operator_code)
-
-/* Set the overloaded operator code for NODE to CODE.  */
-#define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
-  (LANG_DECL_FN_CHECK (NODE)->operator_code = (CODE))
+   compressed (raw) operator code.  Note that this is not a TREE_CODE.  */
+#define DECL_OVERLOADED_OPERATOR_CODE_RAW(NODE)		\
+  (LANG_DECL_FN_CHECK (NODE)->ovl_op_code)
 
 /* DECL is an overloaded operator.  Test whether it is for TREE_CODE
-   CODE.  */
+   (a literal constant).  */
 #define DECL_OVERLOADED_OPERATOR_IS(DECL, CODE)			\
-  (DECL_OVERLOADED_OPERATOR_CODE (DECL) == (CODE))
+  (DECL_OVERLOADED_OPERATOR_CODE_RAW (DECL) == OVL_OP_##CODE)
 
 /* For FUNCTION_DECLs: nonzero means that this function is a
    constructor or a destructor with an extra in-charge parameter to

@@ -1321,8 +1321,8 @@ write_unqualified_name (tree decl)
       else if (DECL_OVERLOADED_OPERATOR_P (decl))
 	{
 	  const char *mangled_name
-	    = OVL_OP_INFO (DECL_ASSIGNMENT_OPERATOR_P (decl),
-			   DECL_OVERLOADED_OPERATOR_CODE (decl))->mangled_name;
+	    = (ovl_op_info[DECL_ASSIGNMENT_OPERATOR_P (decl)]
+	       [DECL_OVERLOADED_OPERATOR_CODE_RAW (decl)].mangled_name);
 	  write_string (mangled_name);
 	}
       else if (UDLIT_OPER_P (DECL_NAME (decl)))

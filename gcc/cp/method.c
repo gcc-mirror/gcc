@@ -2078,7 +2078,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 
   if (!IDENTIFIER_CDTOR_P (name))
     /* Assignment operator.  */
-    SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
+    DECL_OVERLOADED_OPERATOR_CODE_RAW (fn) = OVL_OP_NOP_EXPR;
   else if (IDENTIFIER_CTOR_P (name))
     DECL_CXX_CONSTRUCTOR_P (fn) = true;
   else
