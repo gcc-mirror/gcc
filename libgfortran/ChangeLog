@@ -1,3 +1,11 @@
+2017-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Rimvydas (RJ)
+
+	Backport from trunk
+	PR libgfortran/81938
+	io/format.c (free_format_data): Don't try to free vlist
+	descriptors past the end of the fnode array.
+
 2017-10-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
