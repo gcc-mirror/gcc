@@ -1004,9 +1004,9 @@
   (match_code "mem")
 {
   unsigned n_elts;
-  op = maybe_get_pool_constant (op);
+  op = avoid_constant_pool_reference (op);
 
-  if (!(op && GET_CODE (op) == CONST_VECTOR))
+  if (GET_CODE (op) != CONST_VECTOR)
     return false;
 
   n_elts = CONST_VECTOR_NUNITS (op);

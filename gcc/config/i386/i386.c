@@ -19211,20 +19211,6 @@ ix86_expand_clear (rtx dest)
   emit_insn (tmp);
 }
 
-/* X is an unchanging MEM.  If it is a constant pool reference, return
-   the constant pool rtx, else NULL.  */
-
-rtx
-maybe_get_pool_constant (rtx x)
-{
-  x = ix86_delegitimize_address (XEXP (x, 0));
-
-  if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
-    return get_pool_constant (x);
-
-  return NULL_RTX;
-}
-
 void
 ix86_expand_move (machine_mode mode, rtx operands[])
 {
@@ -24832,11 +24818,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
   /* Optimize constant pool reference to immediates.  This is used by fp
      moves, that force all constants to memory to allow combining.  */
   if (MEM_P (operand) && MEM_READONLY_P (operand))
-    {
-      rtx tmp = maybe_get_pool_constant (operand);
-      if (tmp)
-	operand = tmp;
-    }
+    operand = avoid_constant_pool_reference (operand);
 
   if (MEM_P (operand) && !offsettable_memref_p (operand))
     {

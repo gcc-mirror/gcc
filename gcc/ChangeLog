@@ -1,3 +1,13 @@
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82703
+	* config/i386/i386-protos.h (maybe_get_pool_constant): Removed.
+	* config/i386/i386.c (maybe_get_pool_constant): Removed.
+	(ix86_split_to_parts): Use avoid_constant_pool_reference instead of
+	maybe_get_pool_constant.
+	* config/i386/predicates.md (zero_extended_scalar_load_operand):
+	Likewise.
+
 2017-10-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, i?86-*-solaris2.10): Simplify gas
