@@ -1816,14 +1816,26 @@ expand_builtin_classify_type (tree exp)
   return GEN_INT (no_type_class);
 }
 
-/* This helper macro, meant to be used in mathfn_built_in below,
-   determines which among a set of three builtin math functions is
-   appropriate for a given type mode.  The `F' and `L' cases are
-   automatically generated from the `double' case.  */
+/* This helper macro, meant to be used in mathfn_built_in below, determines
+   which among a set of builtin math functions is appropriate for a given type
+   mode.  The `F' (float) and `L' (long double) are automatically generated
+   from the 'double' case.  If a function supports the _Float<N> and _Float<N>X
+   types, there are additional types that are considered with 'F32', 'F64',
+   'F128', etc. suffixes.  */
 #define CASE_MATHFN(MATHFN) \
   CASE_CFN_##MATHFN: \
   fcode = BUILT_IN_##MATHFN; fcodef = BUILT_IN_##MATHFN##F ; \
   fcodel = BUILT_IN_##MATHFN##L ; break;
+/* Similar to the above, but also add support for the _Float<N> and _Float<N>X
+   types.  */
+#define CASE_MATHFN_FLOATN(MATHFN) \
+  CASE_CFN_##MATHFN: \
+  fcode = BUILT_IN_##MATHFN; fcodef = BUILT_IN_##MATHFN##F ; \
+  fcodel = BUILT_IN_##MATHFN##L ; fcodef16 = BUILT_IN_##MATHFN##F16 ; \
+  fcodef32 = BUILT_IN_##MATHFN##F32; fcodef64 = BUILT_IN_##MATHFN##F64 ; \
+  fcodef128 = BUILT_IN_##MATHFN##F128 ; fcodef32x = BUILT_IN_##MATHFN##F32X ; \
+  fcodef64x = BUILT_IN_##MATHFN##F64X ; fcodef128x = BUILT_IN_##MATHFN##F128X ;\
+  break;
 /* Similar to above, but appends _R after any F/L suffix.  */
 #define CASE_MATHFN_REENT(MATHFN) \
   case CFN_BUILT_IN_##MATHFN##_R: \
@@ -1840,7 +1852,15 @@ expand_builtin_classify_type (tree exp)
 static built_in_function
 mathfn_built_in_2 (tree type, combined_fn fn)
 {
+  tree mtype;
   built_in_function fcode, fcodef, fcodel;
+  built_in_function fcodef16 = END_BUILTINS;
+  built_in_function fcodef32 = END_BUILTINS;
+  built_in_function fcodef64 = END_BUILTINS;
+  built_in_function fcodef128 = END_BUILTINS;
+  built_in_function fcodef32x = END_BUILTINS;
+  built_in_function fcodef64x = END_BUILTINS;
+  built_in_function fcodef128x = END_BUILTINS;
 
   switch (fn)
     {
@@ -1854,7 +1874,7 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (CBRT)
     CASE_MATHFN (CEIL)
     CASE_MATHFN (CEXPI)
-    CASE_MATHFN (COPYSIGN)
+    CASE_MATHFN_FLOATN (COPYSIGN)
     CASE_MATHFN (COS)
     CASE_MATHFN (COSH)
     CASE_MATHFN (DREM)
@@ -1867,9 +1887,9 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (FABS)
     CASE_MATHFN (FDIM)
     CASE_MATHFN (FLOOR)
-    CASE_MATHFN (FMA)
-    CASE_MATHFN (FMAX)
-    CASE_MATHFN (FMIN)
+    CASE_MATHFN_FLOATN (FMA)
+    CASE_MATHFN_FLOATN (FMAX)
+    CASE_MATHFN_FLOATN (FMIN)
     CASE_MATHFN (FMOD)
     CASE_MATHFN (FREXP)
     CASE_MATHFN (GAMMA)
@@ -1923,7 +1943,7 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (SIN)
     CASE_MATHFN (SINCOS)
     CASE_MATHFN (SINH)
-    CASE_MATHFN (SQRT)
+    CASE_MATHFN_FLOATN (SQRT)
     CASE_MATHFN (TAN)
     CASE_MATHFN (TANH)
     CASE_MATHFN (TGAMMA)
@@ -1936,12 +1956,27 @@ mathfn_built_in_2 (tree type, combined_fn fn)
       return END_BUILTINS;
     }
 
-  if (TYPE_MAIN_VARIANT (type) == double_type_node)
+  mtype = TYPE_MAIN_VARIANT (type);
+  if (mtype == double_type_node)
     return fcode;
-  else if (TYPE_MAIN_VARIANT (type) == float_type_node)
+  else if (mtype == float_type_node)
     return fcodef;
-  else if (TYPE_MAIN_VARIANT (type) == long_double_type_node)
+  else if (mtype == long_double_type_node)
     return fcodel;
+  else if (mtype == float16_type_node)
+    return fcodef16;
+  else if (mtype == float32_type_node)
+    return fcodef32;
+  else if (mtype == float64_type_node)
+    return fcodef64;
+  else if (mtype == float128_type_node)
+    return fcodef128;
+  else if (mtype == float32x_type_node)
+    return fcodef32x;
+  else if (mtype == float64x_type_node)
+    return fcodef64x;
+  else if (mtype == float128x_type_node)
+    return fcodef128x;
   else
     return END_BUILTINS;
 }
@@ -1995,6 +2030,9 @@ associated_internal_fn (tree fndecl)
     {
 #define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
     CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME;
+#define DEF_INTERNAL_FLT_FLOATN_FN(NAME, FLAGS, OPTAB, TYPE) \
+    CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME; \
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_##NAME): return IFN_##NAME;
 #define DEF_INTERNAL_INT_FN(NAME, FLAGS, OPTAB, TYPE) \
     CASE_INT_FN (BUILT_IN_##NAME): return IFN_##NAME;
 #include "internal-fn.def"
@@ -2068,6 +2106,7 @@ expand_builtin_mathfn_ternary (tree exp, rtx target, rtx subtarget)
   switch (DECL_FUNCTION_CODE (fndecl))
     {
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
       builtin_optab = fma_optab; break;
     default:
       gcc_unreachable ();
@@ -6567,6 +6606,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
       target = expand_builtin_mathfn_ternary (exp, target, subtarget);
       if (target)
 	return target;
@@ -8996,6 +9036,7 @@ fold_builtin_3 (location_t loc, tree fndecl,
       return fold_builtin_sincos (loc, arg0, arg1, arg2);
 
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
       return fold_builtin_fma (loc, arg0, arg1, arg2, type);
 
     CASE_FLT_FN (BUILT_IN_REMQUO):

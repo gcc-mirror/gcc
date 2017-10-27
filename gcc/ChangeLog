@@ -1,3 +1,72 @@
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* builtins.c (CASE_MATHFN_FLOATN): New helper macro to add cases
+	for math functions that have _Float<N> and _Float<N>X variants.
+	(mathfn_built_in_2): Add support for math functions that have
+	_Float<N> and _Float<N>X variants.
+	(DEF_INTERNAL_FLT_FLOATN_FN): New helper macro.
+	(expand_builtin_mathfn_ternary): Add support for fma with
+	_Float<N> and _Float<N>X variants.
+	(expand_builtin): Likewise.
+	(fold_builtin_3): Likewise.
+	* builtins.def (DEF_EXT_LIB_FLOATN_NX_BUILTINS): New macro to
+	create math function _Float<N> and _Float<N>X variants as external
+	library builtins.
+	(BUILT_IN_COPYSIGN _Float<N> and _Float<N>X variants) Use
+	DEF_EXT_LIB_FLOATN_NX_BUILTINS to make built-in functions using
+	the __builtin_ prefix and if not strict ansi, without the prefix.
+	(BUILT_IN_FABS _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_FMA _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_FMAX _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_FMIN _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_NAN _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_SQRT _Float<N> and _Float<N>X variants): Likewise.
+	* builtin-types.def (BT_FN_FLOAT16_FLOAT16_FLOAT16_FLOAT16): New
+	function signatures for fma _Float<N> and _Float<N>X variants.
+	(BT_FN_FLOAT32_FLOAT32_FLOAT32_FLOAT32): Likewise.
+	(BT_FN_FLOAT64_FLOAT64_FLOAT64_FLOAT64): Likewise.
+	(BT_FN_FLOAT128_FLOAT128_FLOAT128_FLOAT128): Likewise.
+	(BT_FN_FLOAT32X_FLOAT32X_FLOAT32X_FLOAT32X): Likewise.
+	(BT_FN_FLOAT64X_FLOAT64X_FLOAT64X_FLOAT64X): Likewise.
+	(BT_FN_FLOAT128X_FLOAT128X_FLOAT128X_FLOAT128X): Likewise.
+	* gencfn-macros.c (print_case_cfn): Add support for math functions
+	that have _Float<N> and _Float<N>X variants.
+	(print_define_operator_list): Likewise.
+	(fltfn_suffixes): Likewise.
+	(main): Likewise.
+	* internal-fn.def (DEF_INTERNAL_FLT_FLOATN_FN): New helper macro
+	for math functions that have _Float<N> and _Float<N>X variants.
+	(SQRT): Add support for sqrt, copysign, fmin and fmax _Float<N>
+	and _Float<N>X variants.
+	(COPYSIGN): Likewise.
+	(FMIN): Likewise.
+	(FMAX): Likewise.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Add support for
+	copysign, fma, fmax, fmin, and sqrt _Float<N> and _Float<N>X
+	variants.
+	(integer_valued_read_call_p): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	(fold_const_call_sss): Add support for copysign, fmin, and fmax
+	_Float<N> and _Float<N>X variants.
+	(fold_const_call_ssss): Add support for fma _Float<N> and
+	_Float<N>X variants.
+	* gimple-ssa-backprop.c (backprop::process_builtin_call_use): Add
+	support for copysign and fma _Float<N> and _Float<N>X variants.
+	(backprop::process_builtin_call_use): Likewise.
+	* tree-call-cdce.c (can_test_argument_range); Add support for
+	sqrt _Float<N> and _Float<N>X variants.
+	(edom_only_function): Likewise.
+	(get_no_error_domain): Likewise.
+	* tree-ssa-math-opts.c (internal_fn_reciprocal): Likewise.
+	* tree-ssa-reassoc.c (attempt_builtin_copysign): Add support for
+	copysign _Float<N> and _Float<N>X variants.
+	* config/rs6000/rs6000-builtin.def (SQRTF128): Delete, this is now
+	handled by machine independent code.
+	(FMAF128): Likewise.
+	* doc/cpp.texi (Common Predefined Macros): Document defining
+	__FP_FAST_FMAF<N> and __FP_FAST_FMAF<N>X if the backend supports
+	fma _Float<N> and _Float<N>X variants.
+
 2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82692
