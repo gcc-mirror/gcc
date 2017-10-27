@@ -57174,8 +57174,8 @@ stageprofile-end::
 stagefeedback-start::
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	for i in prev-*; do \
-	  j=`echo $$i | sed s/^prev-//`; \
+	for i in stageprofile-*; do \
+	  j=`echo $$i | sed s/^stageprofile-//`; \
 	  cd $$r/$$i && \
 	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../'$$j'/&",' | $(SHELL); } && \
 	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../'$$j'/&",' | $(SHELL); }; \
