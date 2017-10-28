@@ -1731,7 +1731,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
-      gfc_error ("A argument at %L has type %s but the function passed as "
+      gfc_error ("The A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
 		 &a->where, gfc_typename (&a->ts), &op->where,
 		 gfc_typename (&sym->result->ts));
