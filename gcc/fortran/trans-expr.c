@@ -8053,7 +8053,7 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
     {
       /* Get the vptr from the rhs expression only, when it is variable.
 	 Functions are expected to be assigned to a temporary beforehand.  */
-      vptr_expr = re->expr_type == EXPR_VARIABLE
+      vptr_expr = (re->expr_type == EXPR_VARIABLE && re->ts.type == BT_CLASS)
 	  ? gfc_find_and_cut_at_last_class_ref (re)
 	  : NULL;
       if (vptr_expr != NULL && vptr_expr->ts.type == BT_CLASS)
