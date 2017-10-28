@@ -3968,7 +3968,10 @@ gfc_match_allocate (void)
   saw_stat = saw_errmsg = saw_source = saw_mold = saw_deferred = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
-    goto syntax;
+    {
+      gfc_syntax_error (ST_ALLOCATE);
+      return MATCH_ERROR;
+    }
 
   /* Match an optional type-spec.  */
   old_locus = gfc_current_locus;
