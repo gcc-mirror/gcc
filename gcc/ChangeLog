@@ -223,7 +223,7 @@
 	* config/nios2/constraints.md ("S"): Match r0rel_constant_p too.
 	* config/nios2/nios2-protos.h (r0rel_constant_p): Declare.
 	* config/nios2/nios2.c: (nios2_r0rel_sec_regex): New.
-	(nios2_option_overide): Initialize it.  Don't allow R0-relative 
+	(nios2_option_overide): Initialize it.  Don't allow R0-relative
 	addressing with PIC.
 	(nios2_rtx_costs): Handle r0rel_constant_p like gprel_constant_p.
 	(nios2_symbolic_constant_p): Likewise.
@@ -242,7 +242,7 @@
 
 	* config/nios2/nios2.c: Include xregex.h.
 	(nios2_gprel_sec_regex): New.
-	(nios2_option_overide): Initialize it.  Don't allow GP-relative 
+	(nios2_option_overide): Initialize it.  Don't allow GP-relative
 	addressing with PIC.
 	(nios2_small_section_name_p): Check for regex match.
 	* config/nios2/nios2.opt (mgprel-sec=): New option.
@@ -403,8 +403,8 @@
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/81800
-	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2): Add flag_trapping_math
-	and flag_fp_int_builtin_inexact.
+	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2):
+	Add flag_trapping_math and flag_fp_int_builtin_inexact.
 
 2017-10-25  Palmer Dabbelt  <palmer@dabbelt.com>
 
@@ -1733,8 +1733,8 @@
 	(__builtin_ia32_reducesd, __builtin_ia32_reducess): Remove.
 	* config/i386/sse.md (reduces<mode>): Renamed to ...
 	(reduces<mode><mask_scalar_name>): ... this.
-	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}): Changed
-	to ...
+	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}):
+	Changed to ...
 	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0<mask_scalar_operand4>|
 	%0<mask_scalar_operand4>, %1, %2, %3}): ... this.
 
@@ -1784,7 +1784,8 @@
 
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32): New.
+	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32):
+	New.
 	(vdot_lane_u32, vdot_laneq_u32, vdotq_lane_u32, vdotq_laneq_u32): New.
 	(vdot_lane_s32, vdot_laneq_s32, vdotq_lane_s32, vdotq_laneq_s32): New.
 
@@ -1806,17 +1807,21 @@
 
 	* config/aarch64/aarch64.h (AARCH64_FL_DOTPROD): New.
 	(AARCH64_ISA_DOTPROD, TARGET_DOTPROD): New.
-	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add TARGET_DOTPROD.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	Add TARGET_DOTPROD.
 	* config/aarch64/aarch64-option-extensions.def (dotprod): New.
-	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75): Enable TARGET_DOTPROD.
+	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75):
+	Enable TARGET_DOTPROD.
 	(cortex-a75.cortex-a55): Likewise.
 	* doc/invoke.texi (aarch64-feature-modifiers): Document dotprod.
 
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm-builtins.c (arm_unsigned_uternop_qualifiers): New.
-	(UTERNOP_QUALIFIERS, arm_umac_lane_qualifiers, UMAC_LANE_QUALIFIERS): New.
-	* config/arm/arm_neon_builtins.def (sdot, udot, sdot_lane, udot_lane): new.
+	(UTERNOP_QUALIFIERS, arm_umac_lane_qualifiers, UMAC_LANE_QUALIFIERS):
+	New.
+	* config/arm/arm_neon_builtins.def (sdot, udot, sdot_lane, udot_lane):
+	New.
 	* config/arm/iterators.md (DOTPROD, VSI2QI, vsi2qi): New.
 	(UNSPEC_DOT_S, UNSPEC_DOT_U, opsuffix): New.
 	* config/arm/neon.md (neon_<sup>dot<vsi2qi>): New.
