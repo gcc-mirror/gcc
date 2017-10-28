@@ -1,3 +1,11 @@
+2017-10-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/81758
+	* trans-expr.c (trans_class_vptr_len_assignment): 'vptr_expr'
+	must only be set if the right hand side expression is of type
+	class.
+
 2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
