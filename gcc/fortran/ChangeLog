@@ -1,3 +1,8 @@
+2017-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82620
+	* match.c (gfc_match_allocate): Exit early on syntax error.
+
 2017-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56342

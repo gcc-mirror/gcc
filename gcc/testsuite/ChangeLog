@@ -1,3 +1,8 @@
+2017-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82620
+	* gfortran.dg/allocate_error_7.f90: new test.
+
 2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82218
