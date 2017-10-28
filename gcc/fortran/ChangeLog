@@ -1,3 +1,7 @@
+2017-10-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* check.c (gfc_check_co_reduce): Clarify error message.
+
 2017-10-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/81758
