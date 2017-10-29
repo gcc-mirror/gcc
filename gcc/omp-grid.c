@@ -1315,6 +1315,7 @@ grid_attempt_target_gridification (gomp_target *target,
       n1 = fold_convert (itype, n1);
       n2 = fold_convert (itype, n2);
 
+      tree cond = fold_build2 (cond_code, boolean_type_node, n1, n2);
       tree step
 	= omp_get_for_step_from_incr (loc, gimple_omp_for_incr (inner_loop, i));
 
@@ -1327,7 +1328,7 @@ grid_attempt_target_gridification (gomp_target *target,
 			 fold_build1 (NEGATE_EXPR, itype, t),
 			 fold_build1 (NEGATE_EXPR, itype, step));
       else
-	t = fold_build2 (TRUNC_DIV_EXPR, itype, t, step);
+	t = fold_build3 (COND_EXPR, itype, cond, t, build_zero_cst (itype));
       if (grid.tiling)
 	{
 	  if (cond_code == GT_EXPR)

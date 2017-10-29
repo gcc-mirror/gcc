@@ -1223,11 +1223,14 @@ struct hsa_function_summary
 
   /* Pointer to a cgraph node which is a HSA implementation of the function.
      In case of the function is a HSA function, the bound function points
-     to the host function.  */
+     to the host function.
+     This can also be NULL if there is no counterpart, which can happen for GPU
+     implementations if they are functions marked with hsa_kernel or
+     hsa_function attributes.  */
   cgraph_node *m_bound_function;
 
-  /* Identifies if the function is an HSA function or a host function.  */
-  bool m_gpu_implementation_p;
+  /* Identifies if the function is an HSA function.  */
+  bool m_hsa_implementation_p;
 
   /* True if the function is a gridified kernel.  */
   bool m_gridified_kernel_p;
@@ -1235,7 +1238,7 @@ struct hsa_function_summary
 
 inline
 hsa_function_summary::hsa_function_summary (): m_kind (HSA_NONE),
-  m_bound_function (NULL), m_gpu_implementation_p (false)
+  m_bound_function (NULL), m_hsa_implementation_p (false)
 {
 }
 
@@ -1253,6 +1256,13 @@ public:
 
   void link_functions (cgraph_node *gpu, cgraph_node *host,
 		       hsa_function_kind kind, bool gridified_kernel_p);
+
+  /* Mark a specific function NODE as a standalone HSA implementation (that has
+     no CPU counterpart).  KIND determines whether this is a host-invokable
+     kernel or an agent-callable function.  */
+
+  void mark_hsa_only_implementation (cgraph_node *node,
+				     hsa_function_kind kind);
 
 private:
   void process_gpu_implementation_attributes (tree gdecl);
@@ -1314,7 +1324,7 @@ hsa_internal_fn_hasher::equal (const value_type a, const compare_type b)
 
 /* in hsa-common.c */
 extern struct hsa_function_representation *hsa_cfun;
-extern hash_map <tree, vec <const char *> *> *hsa_decl_kernel_dependencies;
+extern hash_map <tree, vec <const char *> *> *hsa_decl_function_dependencies;
 extern hsa_summary_t *hsa_summaries;
 extern hsa_symbol *hsa_num_threads;
 extern unsigned hsa_kernel_calls_counter;
@@ -1343,13 +1353,15 @@ BrigAlignment8_t hsa_object_alignment (tree t);
 unsigned hsa_byte_alignment (BrigAlignment8_t alignment);
 void hsa_destroy_operand (hsa_op_base *op);
 void hsa_destroy_insn (hsa_insn_basic *insn);
-void hsa_add_kern_decl_mapping (tree decl, char *name, unsigned, bool);
-unsigned hsa_get_number_decl_kernel_mappings (void);
-tree hsa_get_decl_kernel_mapping_decl (unsigned i);
-char *hsa_get_decl_kernel_mapping_name (unsigned i);
+void hsa_add_function_decl_mapping (tree decl, char *name, unsigned,
+				    struct hsa_function_summary *s);
+unsigned hsa_get_number_decl_function_mappings (void);
+tree hsa_get_decl_function_mapping_decl (unsigned i);
+char *hsa_get_decl_function_mapping_name (unsigned i);
 unsigned hsa_get_decl_kernel_mapping_omp_size (unsigned i);
-bool hsa_get_decl_kernel_mapping_gridified (unsigned i);
-void hsa_free_decl_kernel_mapping (void);
+bool hsa_get_decl_function_mapping_gridified_p (unsigned i);
+bool hsa_get_decl_function_mapping_kernel_p (unsigned i);
+void hsa_free_decl_function_mapping (void);
 tree *hsa_get_ctor_statements (void);
 tree *hsa_get_dtor_statements (void);
 tree *hsa_get_kernel_dispatch_type (void);
@@ -1357,8 +1369,9 @@ void hsa_add_kernel_dependency (tree caller, const char *called_function);
 void hsa_sanitize_name (char *p);
 char *hsa_brig_function_name (const char *p);
 const char *hsa_get_declaration_name (tree decl);
-void hsa_register_kernel (cgraph_node *host);
-void hsa_register_kernel (cgraph_node *gpu, cgraph_node *host);
+void hsa_register_function (cgraph_node *host, bool kernel_p);
+void hsa_register_function (cgraph_node *gpu, cgraph_node *host,
+			    bool kernel_p);
 bool hsa_seen_error (void);
 void hsa_fail_cfun (void);
 
@@ -1409,7 +1422,7 @@ hsa_gpu_implementation_p (tree decl)
 
   hsa_function_summary *s = hsa_summaries->get (cgraph_node::get_create (decl));
 
-  return s->m_gpu_implementation_p;
+  return s->m_hsa_implementation_p;
 }
 
 #endif /* HSA_H */

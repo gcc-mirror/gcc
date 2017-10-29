@@ -310,13 +310,14 @@ hsa_error (const char *str, hsa_status_t status)
   return false;
 }
 
-struct hsa_kernel_description
+struct hsa_function_description
 {
   const char *name;
   unsigned omp_data_size;
+  bool kernel_p;
   bool gridified_kernel_p;
-  unsigned kernel_dependencies_count;
-  const char **kernel_dependencies;
+  unsigned function_dependencies_count;
+  const char **function_dependencies;
 };
 
 struct global_var_info
@@ -331,26 +332,31 @@ struct global_var_info
 struct brig_image_desc
 {
   hsa_ext_module_t brig_module;
-  const unsigned kernel_count;
-  struct hsa_kernel_description *kernel_infos;
+  const unsigned function_count;
+  struct hsa_function_description *function_infos;
   const unsigned global_variable_count;
   struct global_var_info *global_variables;
+  /* Functions/kernels that do not have a host-side version.  */
+  const unsigned hsa_only_function_count;
+  struct hsa_function_description *hsa_only_function_infos;
 };
 
 struct agent_info;
 
 /* Information required to identify, finalize and run any given kernel.  */
 
-struct kernel_info
-{
-  /* Name of the kernel, required to locate it within the brig module.  */
-  const char *name;
+struct function_info
+ {
+  /* Name of the function, required to locate it within the BRIG module.  */
+   const char *name;
+  /* True if the function is a kernel.  */
+  bool kernel_p;
   /* Size of memory space for OMP data.  */
   unsigned omp_data_size;
   /* The specific agent the kernel has been or will be finalized for and run
      on.  */
   struct agent_info *agent;
-  /* The specific module where the kernel takes place.  */
+  /* The module where the function resides.  */
   struct module_info *module;
   /* Mutex enforcing that at most once thread ever initializes a kernel for
      use.  A thread should have locked agent->modules_rwlock for reading before
@@ -369,7 +375,7 @@ struct kernel_info
   uint32_t group_segment_size;
   /* Required size of private segment.  */
   uint32_t private_segment_size;
-  /* List of all kernel dependencies.  */
+  /* List of all function dependencies.  */
   const char **dependencies;
   /* Number of dependencies.  */
   unsigned dependencies_count;
@@ -388,11 +394,11 @@ struct module_info
   /* The description with which the program has registered the image.  */
   struct brig_image_desc *image_desc;
 
-  /* Number of kernels in this module.  */
-  int kernel_count;
-  /* An array of kernel_info structures describing each kernel in this
-     module.  */
-  struct kernel_info kernels[];
+  /* Number of functions (or kernels) in this module.  */
+  int function_count;
+  /* An array of function_info structures describing each function in this
+      module.  */
+  struct function_info functions[];
 };
 
 /* Information about shared brig library.  */
@@ -513,16 +519,16 @@ init_hsa_runtime_functions (void)
 
 /* Find kernel for an AGENT by name provided in KERNEL_NAME.  */
 
-static struct kernel_info *
-get_kernel_for_agent (struct agent_info *agent, const char *kernel_name)
+static struct function_info *
+get_function_for_agent (struct agent_info *agent, const char *func_name)
 {
   struct module_info *module = agent->first_module;
 
   while (module)
     {
-      for (unsigned i = 0; i < module->kernel_count; i++)
-	if (strcmp (module->kernels[i].name, kernel_name) == 0)
-	  return &module->kernels[i];
+      for (unsigned i = 0; i < module->function_count; i++)
+	if (strcmp (module->functions[i].name, func_name) == 0)
+	  return &module->functions[i];
 
       module = module->next;
     }
@@ -835,29 +841,30 @@ destroy_hsa_program (struct agent_info *agent)
   for (module = agent->first_module; module; module = module->next)
     {
       int i;
-      for (i = 0; i < module->kernel_count; i++)
-	module->kernels[i].initialized = false;
+      for (i = 0; i < module->function_count; i++)
+	module->functions[i].initialized = false;
     }
   agent->prog_finalized = false;
   return true;
 }
 
-/* Initialize KERNEL from D and other parameters.  Return true on success. */
+/* Initialize FUNCTION from D and other parameters.  Return true on success. */
 
 static bool
-init_basic_kernel_info (struct kernel_info *kernel,
-			struct hsa_kernel_description *d,
-			struct agent_info *agent,
-			struct module_info *module)
+init_basic_function_info (struct function_info *function,
+			  struct hsa_function_description *d,
+			  struct agent_info *agent,
+			  struct module_info *module)
 {
-  kernel->agent = agent;
-  kernel->module = module;
-  kernel->name = d->name;
-  kernel->omp_data_size = d->omp_data_size;
-  kernel->gridified_kernel_p = d->gridified_kernel_p;
-  kernel->dependencies_count = d->kernel_dependencies_count;
-  kernel->dependencies = d->kernel_dependencies;
-  if (pthread_mutex_init (&kernel->init_mutex, NULL))
+  function->agent = agent;
+  function->module = module;
+  function->name = d->name;
+  function->omp_data_size = d->omp_data_size;
+  function->kernel_p = d->kernel_p;
+  function->gridified_kernel_p = d->gridified_kernel_p;
+  function->dependencies_count = d->function_dependencies_count;
+  function->dependencies = d->function_dependencies;
+  if (pthread_mutex_init (&function->init_mutex, NULL))
     {
       GOMP_PLUGIN_error ("Failed to initialize an HSA kernel mutex");
       return false;
@@ -885,8 +892,17 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   struct agent_info *agent;
   struct addr_pair *pair;
   struct module_info *module;
-  struct kernel_info *kernel;
-  int kernel_count = image_desc->kernel_count;
+  struct function_info *function;
+  int host_mapped_function_count = image_desc->function_count;
+  int hsa_only_function_count;
+
+  if (GOMP_VERSION_DEV (version) == GOMP_VERSION_HSA)
+    hsa_only_function_count = image_desc->hsa_only_function_count;
+  else
+    hsa_only_function_count = 0;
+
+  int total_function_count
+    = host_mapped_function_count + hsa_only_function_count;
 
   agent = get_agent_info (ord);
   if (!agent)
@@ -897,32 +913,45 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       GOMP_PLUGIN_error ("Unable to write-lock an HSA agent rwlock");
       return -1;
     }
-  if (agent->prog_finalized
-      && !destroy_hsa_program (agent))
+  if (agent->prog_finalized && !destroy_hsa_program (agent))
     return -1;
 
-  HSA_DEBUG ("Encountered %d kernels in an image\n", kernel_count);
-  pair = GOMP_PLUGIN_malloc (kernel_count * sizeof (struct addr_pair));
+  HSA_DEBUG ("Encountered %d mapped and %d HSA-only functions in the "
+	     "image\n", host_mapped_function_count, hsa_only_function_count);
+  pair = GOMP_PLUGIN_malloc (host_mapped_function_count * sizeof (struct addr_pair));
   *target_table = pair;
   module = (struct module_info *)
     GOMP_PLUGIN_malloc_cleared (sizeof (struct module_info)
-				+ kernel_count * sizeof (struct kernel_info));
+				+ (total_function_count
+				   * sizeof (struct function_info)));
   module->image_desc = image_desc;
-  module->kernel_count = kernel_count;
+  module->function_count = total_function_count;
 
-  kernel = &module->kernels[0];
+  function = &module->functions[0];
 
-  /* Allocate memory for kernel dependencies.  */
-  for (unsigned i = 0; i < kernel_count; i++)
+  for (unsigned i = 0; i < host_mapped_function_count; i++)
     {
-      pair->start = (uintptr_t) kernel;
-      pair->end = (uintptr_t) (kernel + 1);
+      pair->start = (uintptr_t) function;
+      pair->end = (uintptr_t) (function + 1);
 
-      struct hsa_kernel_description *d = &image_desc->kernel_infos[i];
-      if (!init_basic_kernel_info (kernel, d, agent, module))
+      struct hsa_function_description *d = &image_desc->function_infos[i];
+      if (!init_basic_function_info (function, d, agent, module))
 	return -1;
-      kernel++;
+      HSA_DEBUG ("Initialized host-mapped function with name '%s' "
+		 "to info struct %p\n", function->name, function);
+      function++;
       pair++;
+    }
+  for (unsigned i = 0; i < hsa_only_function_count; i++)
+    {
+      struct hsa_function_description *d
+	= &image_desc->hsa_only_function_infos[i];
+      if (!init_basic_function_info (function, d, agent, module))
+	return -1;
+      HSA_DEBUG ("Initialized HSA-only function with name '%s' to info "
+		 "struct %p\n", function->name, function);
+
+      function++;
     }
 
   add_module_to_agent (agent, module);
@@ -931,7 +960,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       GOMP_PLUGIN_error ("Unable to unlock an HSA agent rwlock");
       return -1;
     }
-  return kernel_count;
+  return host_mapped_function_count;
 }
 
 /* Add a shared BRIG library from a FILE_NAME to an AGENT.  */
@@ -1112,7 +1141,7 @@ final:
 /* Create kernel dispatch data structure for given KERNEL.  */
 
 static struct GOMP_hsa_kernel_dispatch *
-create_single_kernel_dispatch (struct kernel_info *kernel,
+create_single_kernel_dispatch (struct function_info *kernel,
 			       unsigned omp_data_size)
 {
   struct agent_info *agent = kernel->agent;
@@ -1176,7 +1205,7 @@ release_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *shadow)
    to calculate maximum necessary memory for OMP data allocation.  */
 
 static void
-init_single_kernel (struct kernel_info *kernel, unsigned *max_omp_data_size)
+init_single_kernel (struct function_info *kernel, unsigned *max_omp_data_size)
 {
   hsa_status_t status;
   struct agent_info *agent = kernel->agent;
@@ -1227,8 +1256,8 @@ init_single_kernel (struct kernel_info *kernel, unsigned *max_omp_data_size)
 
   for (unsigned i = 0; i < kernel->dependencies_count; i++)
     {
-      struct kernel_info *dependency
-	= get_kernel_for_agent (agent, kernel->dependencies[i]);
+      struct function_info *dependency
+	= get_function_for_agent (agent, kernel->dependencies[i]);
 
       if (dependency == NULL)
 	{
@@ -1301,7 +1330,7 @@ print_kernel_dispatch (struct GOMP_hsa_kernel_dispatch *dispatch, unsigned inden
    dependencies.  */
 
 static struct GOMP_hsa_kernel_dispatch *
-create_kernel_dispatch (struct kernel_info *kernel, unsigned omp_data_size)
+create_kernel_dispatch (struct function_info *kernel, unsigned omp_data_size)
 {
   struct GOMP_hsa_kernel_dispatch *shadow
     = create_single_kernel_dispatch (kernel, omp_data_size);
@@ -1310,11 +1339,11 @@ create_kernel_dispatch (struct kernel_info *kernel, unsigned omp_data_size)
   shadow->omp_level = kernel->gridified_kernel_p ? 1 : 0;
 
   /* Create kernel dispatch data structures.  We do not allow to have
-     a kernel dispatch with depth bigger than one.  */
+     a kernel dispatch with depth larger than one.  */
   for (unsigned i = 0; i < kernel->dependencies_count; i++)
     {
-      struct kernel_info *dependency
-	= get_kernel_for_agent (kernel->agent, kernel->dependencies[i]);
+      struct function_info *dependency
+	= get_function_for_agent (kernel->agent, kernel->dependencies[i]);
       shadow->children_dispatches[i]
 	= create_single_kernel_dispatch (dependency, omp_data_size);
       shadow->children_dispatches[i]->queue
@@ -1330,7 +1359,7 @@ create_kernel_dispatch (struct kernel_info *kernel, unsigned omp_data_size)
    create_and_finalize_hsa_program.  */
 
 static void
-init_kernel (struct kernel_info *kernel)
+init_kernel (struct function_info *kernel)
 {
   if (pthread_mutex_lock (&kernel->init_mutex))
     GOMP_PLUGIN_fatal ("Could not lock an HSA kernel initialization mutex");
@@ -1445,7 +1474,7 @@ get_group_size (uint32_t ndim, uint32_t grid, uint32_t group)
 bool
 GOMP_OFFLOAD_can_run (void *fn_ptr)
 {
-  struct kernel_info *kernel = (struct kernel_info *) fn_ptr;
+  struct function_info *kernel = (struct function_info *) fn_ptr;
   struct agent_info *agent = kernel->agent;
   create_and_finalize_hsa_program (agent);
 
@@ -1474,10 +1503,10 @@ packet_store_release (uint32_t* packet, uint16_t header, uint16_t rest)
 }
 
 /* Run KERNEL on its agent, pass VARS to it as arguments and take
-   launchattributes from KLA.  */
+   launch attributes from KLA.  */
 
 void
-run_kernel (struct kernel_info *kernel, void *vars,
+run_kernel (struct function_info *kernel, void *vars,
 	    struct GOMP_kernel_launch_attributes *kla)
 {
   struct agent_info *agent = kernel->agent;
@@ -1608,13 +1637,13 @@ run_kernel (struct kernel_info *kernel, void *vars,
 /* Part of the libgomp plugin interface.  Run a kernel on device N (the number
    is actually ignored, we assume the FN_PTR has been mapped using the correct
    device) and pass it an array of pointers in VARS as a parameter.  The kernel
-   is identified by FN_PTR which must point to a kernel_info structure.  */
+   is identified by FN_PTR which must point to a function_info structure.  */
 
 void
 GOMP_OFFLOAD_run (int n __attribute__((unused)),
 		  void *fn_ptr, void *vars, void **args)
 {
-  struct kernel_info *kernel = (struct kernel_info *) fn_ptr;
+  struct function_info *kernel = (struct function_info *) fn_ptr;
   struct GOMP_kernel_launch_attributes def;
   struct GOMP_kernel_launch_attributes *kla;
   if (!parse_target_attributes (args, &def, &kla))
@@ -1690,8 +1719,8 @@ static bool
 destroy_module (struct module_info *module)
 {
   int i;
-  for (i = 0; i < module->kernel_count; i++)
-    if (pthread_mutex_destroy (&module->kernels[i].init_mutex))
+  for (i = 0; i < module->function_count; i++)
+    if (pthread_mutex_destroy (&module->functions[i].init_mutex))
       {
 	GOMP_PLUGIN_error ("Failed to destroy an HSA kernel initialization "
 			   "mutex");
