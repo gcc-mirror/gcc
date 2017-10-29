@@ -1,5 +1,8 @@
 2017-10-29  Jim Wilson  <wilson@tuliptree.org>
 
+	* common.opt (gcoff): Re-add as ignored option.
+	(gcoff1, gcoff2, gcoff3): Likewise.
+
 	* Makefile.in (OBJS): Delete sdbout.o.
 	(GTFILES): Delete $(srcdir)/sdbout.c.
 	* debug.h: Delete sdb_debug_hooks.

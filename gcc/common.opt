@@ -2872,6 +2872,22 @@ g
 Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
+gcoff
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
+gcoff1
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
+gcoff2
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
+gcoff3
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
 gcolumn-info
 Common Driver Var(debug_column_info,1) Init(1)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
