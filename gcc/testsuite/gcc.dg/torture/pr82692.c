@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-add-options ieee } */
 /* { dg-require-effective-target fenv_exceptions } */
 
 #include <fenv.h>
