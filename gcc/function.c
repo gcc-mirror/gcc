@@ -4709,11 +4709,11 @@ number_blocks (tree fn)
   int n_blocks;
   tree *block_vector;
 
-  /* For SDB and XCOFF debugging output, we start numbering the blocks
+  /* For XCOFF debugging output, we start numbering the blocks
      from 1 within each function, rather than keeping a running
      count.  */
-#if SDB_DEBUGGING_INFO || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == SDB_DEBUG || write_symbols == XCOFF_DEBUG)
+#if defined (XCOFF_DEBUGGING_INFO)
+  if (write_symbols == XCOFF_DEBUG)
     next_block_index = 1;
 #endif
 
@@ -5248,7 +5248,7 @@ expand_function_start (tree subr)
     }
 
   /* The following was moved from init_function_start.
-     The move is supposed to make sdb output more accurate.  */
+     The move was supposed to make sdb output more accurate.  */
   /* Indicate the beginning of the function body,
      as opposed to parm setup.  */
   emit_note (NOTE_INSN_FUNCTION_BEG);
@@ -5439,7 +5439,7 @@ expand_function_end (void)
   do_pending_stack_adjust ();
 
   /* Output a linenumber for the end of the function.
-     SDB depends on this.  */
+     SDB depended on this.  */
   set_curr_insn_location (input_location);
 
   /* Before the return label (if any), clobber the return

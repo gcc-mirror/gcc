@@ -876,9 +876,8 @@ to generate it on the spot.",
 
 DEFHOOK
 (output_source_filename,
- "Output COFF information or DWARF debugging information which indicates\
- that filename @var{name} is the current source file to the stdio\
- stream @var{file}.\n\
+ "Output DWARF debugging information which indicates that filename\
+ @var{name} is the current source file to the stdio stream @var{file}.\n\
  \n\
  This target hook need not be defined if the standard form of output\
  for the file format in use is appropriate.",

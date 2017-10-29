@@ -2872,10 +2872,6 @@ g
 Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
-gcoff
-Common Driver JoinedOrMissing Negative(gdwarf)
-Generate debug information in COFF format.
-
 gcolumn-info
 Common Driver Var(debug_column_info,1) Init(1)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
@@ -2941,7 +2937,7 @@ Common Driver JoinedOrMissing Negative(gxcoff+)
 Generate debug information in XCOFF format.
 
 gxcoff+
-Common Driver JoinedOrMissing Negative(gcoff)
+Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in extended XCOFF format.
 
 Enum

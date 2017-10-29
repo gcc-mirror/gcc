@@ -1,3 +1,79 @@
+2017-10-29  Jim Wilson  <wilson@tuliptree.org>
+
+	* Makefile.in (OBJS): Delete sdbout.o.
+	(GTFILES): Delete $(srcdir)/sdbout.c.
+	* debug.h: Delete sdb_debug_hooks.
+	* final.c: Delete sdbout.h include.
+	(final_scan_insn): Delete SDB_DEBUG check.
+	(rest_of_clean_state): Likewise.
+	* output.h: Delete sdb_begin_function_line.
+	* sdbout.c: Delete.
+	* sdbout.h: Delete.
+	* toplev.c: Delete sdbout.h include.
+	(process_options): Delete SDB_DEBUG check.
+	* tree-core.h (tree_type_common): Delete pointer field of
+	tree_type_symtab.
+	* tree.c (copy_node): Clear TYPE_SYMTAB_DIE instead of
+	TYPE_SYMTAB_POINTER.
+	* tree.h (TYPE_SYMTAB_POINTER): Delete.
+	(TYPE_SYMTAB_IS_POINTER): Delete.
+	(TYPE_SYMTAB_IS_DIE): Renumber.
+	* xcoffout.c: Refer to former sdbout.c file.
+	(xcoffout_begin_prologue): Use past tense for sdbout.c reference.
+
+	* doc/install.texi (--with-stabs): Delete COFF and ECOFF info.
+	* doc/invoke.texi (SEEALSO): Delete adb and sdb references.
+	(Debugging Options): Delete -gcoff.
+	(-gstabs): Delete SDB reference.
+	(-gcoff): Delete.
+	(-gcoff@var{level}): Delete.
+	* doc/passes.texi (Debugging information output): Delete SDB and
+	sdbout.c references.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (DWARF_CIE_DATA_ALIGNMENT): Delete SDB from xref.
+	(SDB and DWARF): Change node name to DWARF and delete SDB and COFF
+	references.
+	(DEBUGGER_AUTO_OFFSET): Delete COFF and SDB references.
+	(PREFERRED_DEBUGGING_TYPE): Delete SDB_DEBUG and -gcoff references.
+	(SDB_DEBUGGING_INFO): Delete.
+	(PUT_SDB_@dots{}, SDB_DELIM, SDB_ALLOW_UNKNOWN_REFERENCES)
+	SDB_ALLOW_FORWARD_REFERENCES, SDB_OUTPUT_SOURCE_LINE): Delete.
+	* target.def (output_source_filename): Delete COFF reference.
+
+	* common.opt (gcoff): Delete.
+	(gxcoff+): Update Negative chain.
+	* defaults.h: Delete all references to SDB_DEBUGGING_INFO and
+	SDB_DEBUG.
+	* dwarf2out.c (gen_array_type_die): Change SDB to debuggers.
+	* flag-types.h (enum debug_info_type): Delete SDB_DEBUG.
+	* function.c (number_blocks): Delete SDB_DEBUGGING_INFO, SDB_DEBUG,
+	and SDB references.
+	(expand_function_start): Change sdb reference to past tense.
+	(expand_function_end): Change sdb reference to past tense.
+	* gcc.c (cpp_unique_options): Delete gcoff3 reference.
+	* opts.c (debug_type_names): Delete coff entry.
+	(common_handle_option): Delete OPT_gcoff case.
+	* system.h (SDB_DEBUG, SDB_DEBUGGING_INFO): Poison.
+
+	* config/dbxcoff.h (PREFERRED_DEBUGGING_TYPE): Set to DBX_DEBUG.
+	* config/cris/cris.h: Delete SDB reference in comment.
+	* config/i386/cygming.h: Don't define SDB_DEBUGGING_INFO.
+	(ASM_DECLARE_FUNCTION_NAME): Delete SDB reference from comment.
+	* config/i386/gas.h: Don't define SDB_DEBUGGING_INFO.
+	* config/i386/i386.c (svr4_dbx_register_map): Change SDB references
+	to past tense.
+	(ix86_expand_prologue): Likewise.
+	* config/i386/winnt.c (i386_pe_start_function): Don't check SDB_DEBUG.
+	* config/ia64/ia64.h: Likewise.
+	* config/m68k/m68kelf.h (DBX_REGISTER_NUMBER): Delete SDB reference.
+	* config/mips/mips.h (SUBTARGET_ASM_DEBUGGING_SPEC): Delete gcoff*
+	support.
+	* config/mmix/mmix.h: Likewise.
+	* config/nds32/nds32.c: Likewise.
+	* config/stormy/storym16.h: Likewise.
+	* config/visium/visium.h: Likewise.
+	* config/vx-common.h (SDB_DEBUGGING_INFO): Delete undef.
+
 2017-10-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.h (FRAME_GROWS_DOWNWARD): Define to 1.

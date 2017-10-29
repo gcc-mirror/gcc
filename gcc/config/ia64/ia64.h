@@ -1470,7 +1470,7 @@ do {									\
 /* Likewise.  */
 
 
-/* Macros for SDB and Dwarf Output.  */
+/* Macros for Dwarf Output.  */
 
 /* Define this macro if GCC should produce dwarf version 2 format debugging
    output in response to the `-g' option.  */
