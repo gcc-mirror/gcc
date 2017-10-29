@@ -72,7 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 /* None of these other formats is supported.  */
 #undef DWARF_DEBUGGING_INFO
 #undef DBX_DEBUGGING_INFO
-#undef SDB_DEBUGGING_INFO
 #undef XCOFF_DEBUGGING_INFO
 #undef VMS_DEBUGGING_INFO
 

@@ -1007,31 +1007,6 @@ Specify that stabs debugging
 information should be used instead of whatever format the host normally
 uses.  Normally GCC uses the same debug format as the host system.
 
-On MIPS based systems and on Alphas, you must specify whether you want
-GCC to create the normal ECOFF debugging format, or to use BSD-style
-stabs passed through the ECOFF symbol table.  The normal ECOFF debug
-format cannot fully handle languages other than C@.  BSD stabs format can
-handle other languages, but it only works with the GNU debugger GDB@.
-
-Normally, GCC uses the ECOFF debugging format by default; if you
-prefer BSD stabs, specify @option{--with-stabs} when you configure GCC@.
-
-No matter which default you choose when you configure GCC, the user
-can use the @option{-gcoff} and @option{-gstabs+} options to specify explicitly
-the debug format for a particular compilation.
-
-@option{--with-stabs} is meaningful on the ISC system on the 386, also, if
-@option{--with-gas} is used.  It selects use of stabs debugging
-information embedded in COFF output.  This kind of debugging information
-supports C++ well; ordinary COFF debugging information does not.
-
-@option{--with-stabs} is also meaningful on 386 systems running SVR4.  It
-selects use of stabs debugging information embedded in ELF output.  The
-C++ compiler currently (2.6.0) does not support the DWARF debugging
-information normally used on 386 SVR4 platforms; stabs provide a
-workable alternative.  This requires gas and gdb, as the normal SVR4
-tools can not generate or interpret stabs.
-
 @item --with-tls=@var{dialect}
 Specify the default TLS dialect, for systems were there is a choice.
 For ARM targets, possible values for @var{dialect} are @code{gnu} or

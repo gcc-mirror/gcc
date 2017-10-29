@@ -20939,10 +20939,10 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
 
 #if 0
-  /* We default the array ordering.  SDB will probably do
-     the right things even if DW_AT_ordering is not present.  It's not even
-     an issue until we start to get into multidimensional arrays anyway.  If
-     SDB is ever caught doing the Wrong Thing for multi-dimensional arrays,
+  /* We default the array ordering.  Debuggers will probably do the right
+     things even if DW_AT_ordering is not present.  It's not even an issue
+     until we start to get into multidimensional arrays anyway.  If a debugger
+     is ever caught doing the Wrong Thing for multi-dimensional arrays,
      then we'll have to put the DW_AT_ordering attribute back in.  (But if
      and when we find out that we need to put these in, we will only do so
      for multidimensional arrays.  */

@@ -1206,8 +1206,8 @@ copy_node (tree node MEM_STAT_DECL)
 	 The two statements usually duplicate each other
 	 (because they clear fields of the same union),
 	 but the optimizer should catch that.  */
-      TYPE_SYMTAB_POINTER (t) = 0;
       TYPE_SYMTAB_ADDRESS (t) = 0;
+      TYPE_SYMTAB_DIE (t) = 0;
 
       /* Do not copy the values cache.  */
       if (TYPE_CACHED_VALUES_P (t))

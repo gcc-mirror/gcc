@@ -560,7 +560,7 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 
     if ![info exists DEBUG_TORTURE_OPTIONS] {
 	set DEBUG_TORTURE_OPTIONS ""
-	foreach type {-gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+ -gcoff} {
+	foreach type {-gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+} {
 	    set comp_output [$target_compile \
 		    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
 		    "additional_flags=$type"]

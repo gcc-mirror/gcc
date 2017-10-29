@@ -1527,9 +1527,8 @@ do									\
    automatic variable having address X (an RTL expression).  The
    default computation assumes that X is based on the frame-pointer
    and gives the offset from the frame-pointer.  This is required for
-   targets that produce debugging output for DBX or COFF-style
-   debugging output for SDB and allow the frame-pointer to be
-   eliminated when the `-g' options is used. */
+   targets that produce debugging output for DBX and allow the frame-pointer
+   to be eliminated when the `-g' options is used. */
 #define DEBUGGER_AUTO_OFFSET(X) \
   (GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0)
 

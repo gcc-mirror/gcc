@@ -894,14 +894,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_GDB_EXTENSIONS 1
 #endif
 
-#ifndef SDB_DEBUGGING_INFO
-#define SDB_DEBUGGING_INFO 0
-#endif
-
 /* If more than one debugging type is supported, you must define
    PREFERRED_DEBUGGING_TYPE to choose the default.  */
 
-#if 1 < (defined (DBX_DEBUGGING_INFO) + (SDB_DEBUGGING_INFO) \
+#if 1 < (defined (DBX_DEBUGGING_INFO) \
          + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO) \
          + defined (VMS_DEBUGGING_INFO))
 #ifndef PREFERRED_DEBUGGING_TYPE
@@ -912,9 +908,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    here so other code needn't care.  */
 #elif defined DBX_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#elif SDB_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
 #elif defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
