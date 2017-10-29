@@ -1,3 +1,9 @@
+2017-10-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.h (FRAME_GROWS_DOWNWARD): Define to 1.
+	* config/nios2/nios2.c (nios2_initial_elimination_offset):  Make
+	FRAME_POINTER_REGNUM point at high end of local var area.
+
 2017-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bb-reorder.c (find_traces_1_round): Fix off-by-one index.
