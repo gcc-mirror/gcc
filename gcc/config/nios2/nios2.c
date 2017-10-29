@@ -1114,7 +1114,9 @@ nios2_initial_elimination_offset (int from, int to)
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
-      offset = cfun->machine->args_size;
+      /* This is the high end of the local variable storage, not the
+	 hard frame pointer.  */
+      offset = cfun->machine->args_size + cfun->machine->var_size;
       break;
 
     case ARG_POINTER_REGNUM:
