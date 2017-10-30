@@ -1,5 +1,7 @@
 2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/faq.xml: Adjust "What is libstdc++?" answer slightly.
+
 	* include/bits/hashtable_policy.h: Include <tuple>.
 	* include/std/unordered_map: Only include <bits/stl_pair.h> instead
 	of <utility> and <tuple>.
