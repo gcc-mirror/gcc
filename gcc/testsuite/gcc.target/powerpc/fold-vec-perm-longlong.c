@@ -16,7 +16,7 @@ testbl (vector bool long long vbl2, vector bool long long vbl3,
 }
 
 vector signed long long
-testsl (vector signed long vsl2, vector signed long vsl3,
+testsl (vector signed long long vsl2, vector signed long long vsl3,
 	vector unsigned char vuc)
 {
   return vec_perm (vsl2, vsl3, vuc);
