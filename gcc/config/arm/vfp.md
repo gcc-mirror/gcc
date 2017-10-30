@@ -304,9 +304,9 @@
 ;; DImode moves
 
 (define_insn "*movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,q,q,m,w,r,w,w, Uv")
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,q,q,m,w,!r,w,w, Uv")
        (match_operand:DI 1 "di_operand"              "r,rDa,Db,Dc,mi,mi,q,r,w,w,Uvi,w"))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && arm_tune != TARGET_CPU_cortexa8
+  "TARGET_32BIT && TARGET_HARD_FLOAT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))
    && !(TARGET_NEON && CONST_INT_P (operands[1])
@@ -339,70 +339,24 @@
     }
   "
   [(set_attr "type" "multiple,multiple,multiple,multiple,load_8,load_8,store_8,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
-   (set (attr "length") (cond [(eq_attr "alternative" "1,4,5,6") (const_int 8)
+   (set (attr "length") (cond [(eq_attr "alternative" "1") (const_int 8)
                               (eq_attr "alternative" "2") (const_int 12)
                               (eq_attr "alternative" "3") (const_int 16)
+			      (eq_attr "alternative" "4,5,6")
+			       (symbol_ref "arm_count_output_move_double_insns (operands) * 4")
                               (eq_attr "alternative" "9")
                                (if_then_else
                                  (match_test "TARGET_VFP_SINGLE")
                                  (const_int 8)
                                  (const_int 4))]
                               (const_int 4)))
+   (set_attr "predicable"    "yes")
    (set_attr "arm_pool_range"     "*,*,*,*,1020,4096,*,*,*,*,1020,*")
    (set_attr "thumb2_pool_range"     "*,*,*,*,1018,4094,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,1004,0,*,*,*,*,1004,*")
+   (set (attr "ce_count") (symbol_ref "get_attr_length (insn) / 4"))
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
 )
-
-(define_insn "*movdi_vfp_cortexa8"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,r,r,q,q,m,w,!r,w,w, Uv")
-	(match_operand:DI 1 "di_operand"		"r,rDa,Db,Dc,mi,mi,q,r,w,w,Uvi,w"))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && arm_tune == TARGET_CPU_cortexa8
-    && (   register_operand (operands[0], DImode)
-        || register_operand (operands[1], DImode))
-    && !(TARGET_NEON && CONST_INT_P (operands[1])
-	 && neon_immediate_valid_for_move (operands[1], DImode, NULL, NULL))"
-  "*
-  switch (which_alternative)
-    {
-    case 0: 
-    case 1:
-    case 2:
-    case 3:
-      return \"#\";
-    case 4:
-    case 5:
-    case 6:
-      return output_move_double (operands, true, NULL);
-    case 7:
-      return \"vmov%?\\t%P0, %Q1, %R1\\t%@ int\";
-    case 8:
-      return \"vmov%?\\t%Q0, %R0, %P1\\t%@ int\";
-    case 9:
-      return \"vmov%?.f64\\t%P0, %P1\\t%@ int\";
-    case 10: case 11:
-      return output_move_vfp (operands);
-    default:
-      gcc_unreachable ();
-    }
-  "
-  [(set_attr "type" "multiple,multiple,multiple,multiple,load_8,load_8,store_8,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
-   (set (attr "length") (cond [(eq_attr "alternative" "1") (const_int 8)
-                               (eq_attr "alternative" "2") (const_int 12)
-                               (eq_attr "alternative" "3") (const_int 16)
-                               (eq_attr "alternative" "4,5,6") 
-			       (symbol_ref 
-				"arm_count_output_move_double_insns (operands) \
-                                 * 4")]
-                              (const_int 4)))
-   (set_attr "predicable"    "yes")
-   (set_attr "arm_pool_range"     "*,*,*,*,1018,4094,*,*,*,*,1018,*")
-   (set_attr "thumb2_pool_range"     "*,*,*,*,1018,4094,*,*,*,*,1018,*")
-   (set_attr "neg_pool_range" "*,*,*,*,1004,0,*,*,*,*,1004,*")
-   (set (attr "ce_count") 
-	(symbol_ref "get_attr_length (insn) / 4"))
-   (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
- )
 
 ;; HFmode moves
 

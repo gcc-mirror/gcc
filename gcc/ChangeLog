@@ -1,3 +1,8 @@
+2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/vfp.md (movdi_vfp): Merge changes from movdi_vfp_cortexa8.
+	* (movdi_vfp_cortexa8): Remove pattern.
+
 2017-10-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, alpha*-*-*): Remove DEC OSF/1
