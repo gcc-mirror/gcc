@@ -1,3 +1,9 @@
+2017-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/22141
+	* gimple-ssa-store-merging.c (merged_store_group::apply_stores): Fix
+	arguments to clear_bit_region_be.
+
 2017-10-30  Jim Wilson  <wilson@tuliptree.org>
 
 	* gimplify.c: Include memmodel.h.
