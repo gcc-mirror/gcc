@@ -1,3 +1,7 @@
+2017-10-30  Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	* gfortran.dg/dtio_13.f90: Remove TODO comment and dg-error test.
+
 2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82085

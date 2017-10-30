@@ -1,3 +1,8 @@
+2017-10-30  Steven G. Kargl   <kargl@gcc.gnu.org>
+
+	* resolve.c (resolve_transfer): Set derived to correct symbol for 
+	BT_CLASS.
+
 2017-10-29  Jim Wilson  <wilson@tuliptree.org>
 
 	* invoke.texi: Delete adb and sdb references.
