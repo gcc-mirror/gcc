@@ -102,7 +102,7 @@
   [(set_attr "type" "neon_dup<q>")]
 )
 
-(define_insn "*aarch64_simd_mov<mode>"
+(define_insn "*aarch64_simd_mov<VD:mode>"
   [(set (match_operand:VD 0 "nonimmediate_operand"
 		"=w, m,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VD 1 "general_operand"
@@ -126,12 +126,12 @@
      default: gcc_unreachable ();
      }
 }
-  [(set_attr "type" "neon_load1_1reg<q>, neon_stp, neon_store1_1reg<q>,\
+  [(set_attr "type" "neon_load1_1reg<q>, store_8, neon_store1_1reg<q>,\
 		     neon_logic<q>, neon_to_gp<q>, f_mcr,\
 		     mov_reg, neon_move<q>")]
 )
 
-(define_insn "*aarch64_simd_mov<mode>"
+(define_insn "*aarch64_simd_mov<VQ:mode>"
   [(set (match_operand:VQ 0 "nonimmediate_operand"
 		"=w, Umq,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VQ 1 "general_operand"
@@ -160,8 +160,8 @@
 	gcc_unreachable ();
     }
 }
-  [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
-		     neon_stp, neon_logic<q>, multiple, multiple,\
+  [(set_attr "type" "neon_load1_1reg<q>, store_16, neon_store1_1reg<q>,\
+		     neon_logic<q>, multiple, multiple,\
 		     multiple, neon_move<q>")
    (set_attr "length" "4,4,4,4,8,8,8,4")]
 )
