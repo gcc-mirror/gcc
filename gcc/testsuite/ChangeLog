@@ -1,3 +1,11 @@
+2017-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/22141
+	* gcc.dg/store_merging_10.c: New test.
+	* gcc.dg/store_merging_11.c: New test.
+	* gcc.dg/store_merging_12.c: New test.
+	* g++.dg/pr71694.C: Add -fno-store-merging to dg-options.
+
 2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82725
