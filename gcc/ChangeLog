@@ -1,3 +1,11 @@
+2017-10-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, alpha*-*-*): Remove DEC OSF/1
+	etc. reference.
+	(Specific, alpha*-dec-osf5.1): Remove.
+	(Specific, mips-sgi-irix5): Remove.
+	(Specific, mips-sgi-irix6): Remove.
+
 2017-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/22141

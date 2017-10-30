@@ -3143,8 +3143,6 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
-@item
 @uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
@@ -3194,10 +3192,6 @@ information have to.
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
-@item
-@uref{#mips-sgi-irix5,,mips-sgi-irix5}
-@item
-@uref{#mips-sgi-irix6,,mips-sgi-irix6}
 @item
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
@@ -3328,28 +3322,13 @@ The workaround is disabled by default if neither of
 @anchor{alpha-x-x}
 @heading alpha*-*-*
 This section contains general configuration information for all
-alpha-based platforms using ELF (in particular, ignore this section for
-DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
+Alpha-based platforms using ELF@.  In addition to reading this
 section, please read all other sections that match your target.
 
 We require binutils 2.11.2 or newer.
 Previous binutils releases had a number of problems with DWARF 2
 debugging information, not the least of which is incorrect linking of
 shared libraries.
-
-@html
-<hr />
-@end html
-@anchor{alpha-dec-osf51}
-@heading alpha*-dec-osf5.1
-Systems using processors that implement the DEC Alpha architecture and
-are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
-Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
-
-Support for Tru64 UNIX V5.1 has been removed in GCC 4.8.  As of GCC 4.6,
-support for Tru64 UNIX V4.0 and V5.0 has been removed.  As of GCC 3.2,
-versions before @code{alpha*-dec-osf4} are no longer supported.  (These
-are the versions which identify themselves as DEC OSF/1.)
 
 @html
 <hr />
@@ -4136,22 +4115,6 @@ prevents trap from generating the proper signal (@code{SIGFPE}).  To enable
 the use of break, use the @option{--with-divide=breaks}
 @command{configure} option when configuring GCC@.  The default is to
 use traps on systems that support them.
-
-@html
-<hr />
-@end html
-@anchor{mips-sgi-irix5}
-@heading mips-sgi-irix5
-Support for IRIX 5 has been removed in GCC 4.6.
-
-@html
-<hr />
-@end html
-@anchor{mips-sgi-irix6}
-@heading mips-sgi-irix6
-Support for IRIX 6.5 has been removed in GCC 4.8.  Support for IRIX 6
-releases before 6.5 has been removed in GCC 4.6, as well as support for
-the O32 ABI.
 
 @html
 <hr />
