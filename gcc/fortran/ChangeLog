@@ -1,6 +1,15 @@
+2017-10-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80850
+	* trans_expr.c (gfc_conv_procedure_call): When passing a class
+	argument to an unlimited polymorphic dummy, it is wrong to cast
+	the passed expression as unlimited, unless it is unlimited. The
+	correct way is to assign to each of the fields and set the _len
+	field to zero.
+
 2017-10-30  Steven G. Kargl   <kargl@gcc.gnu.org>
 
-	* resolve.c (resolve_transfer): Set derived to correct symbol for 
+	* resolve.c (resolve_transfer): Set derived to correct symbol for
 	BT_CLASS.
 
 2017-10-29  Jim Wilson  <wilson@tuliptree.org>
