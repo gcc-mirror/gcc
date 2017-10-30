@@ -77,7 +77,7 @@ cxx_finish (void)
   c_common_finish ();
 }
 
-ovl_op_info_t ovl_op_info[2][int (OVL_OP_MAX)] = 
+ovl_op_info_t ovl_op_info[2][OVL_OP_MAX] = 
   {
     {
       {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
@@ -89,7 +89,8 @@ ovl_op_info_t ovl_op_info[2][int (OVL_OP_MAX)] =
 #include "operators.def"
     }
   };
-unsigned char ovl_op_mapping[int (MAX_TREE_CODES)];
+unsigned char ovl_op_mapping[MAX_TREE_CODES];
+unsigned char ovl_op_alternate[OVL_OP_MAX];
 
 /* Get the name of the kind of identifier T.  */
 
@@ -160,6 +161,8 @@ init_operators (void)
 
       if (op_ptr->name)
 	{
+	  /* Make sure it fits in lang_decl_fn::operator_code. */
+	  gcc_checking_assert (op_ptr->ovl_op_code < (1 << 6));
 	  tree ident = set_operator_ident (op_ptr);
 	  if (unsigned index = IDENTIFIER_CP_INDEX (ident))
 	    {
@@ -168,6 +171,7 @@ init_operators (void)
 	      gcc_checking_assert (op_ptr->flags == OVL_OP_FLAG_UNARY
 				   && (bin_ptr->flags == OVL_OP_FLAG_BINARY));
 	      bin_ptr->flags |= op_ptr->flags;
+	      ovl_op_alternate[index] = ix;
 	    }
 	  else
 	    {

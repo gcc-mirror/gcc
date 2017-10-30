@@ -11748,7 +11748,8 @@ grokdeclarator (const cp_declarator *declarator,
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
       && !(identifier_p (unqualified_id)
 	   && IDENTIFIER_OVL_OP_P (unqualified_id)
-	   && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id) & OVL_OP_FLAG_NEWDEL)))
+	   && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id)
+	       & (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE))))
     {
       cp_cv_quals real_quals = memfn_quals;
       if (cxx_dialect < cxx14 && constexpr_p
@@ -11863,7 +11864,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    && identifier_p (unqualified_id)
 		    && IDENTIFIER_OVL_OP_P (unqualified_id)
 		    && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id)
-			& OVL_OP_FLAG_NEWDEL))
+			& (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE)))
 		  {
 		    error ("%qD cannot be declared %<virtual%>, since it "
 			   "is always static", unqualified_id);
@@ -12891,7 +12892,6 @@ grok_op_properties (tree decl, bool complain)
   tree name = DECL_NAME (decl);
   int arity;
   bool ellipsis_p;
-  tree class_type;
 
   /* Count the number of arguments and check for ellipsis.  */
   for (argtype = argtypes, arity = 0;
@@ -12900,49 +12900,54 @@ grok_op_properties (tree decl, bool complain)
     ++arity;
   ellipsis_p = !argtype;
 
-  class_type = DECL_CONTEXT (decl);
+  tree class_type = DECL_CONTEXT (decl);
   if (class_type && !CLASS_TYPE_P (class_type))
     class_type = NULL_TREE;
 
   const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+  if (arity == 1 && ovl_op->flags == (OVL_OP_FLAG_UNARY | OVL_OP_FLAG_BINARY))
+    {
+      /* We have a unary instance of an ambi-ary op.  Remap to the
+	 unary one.  */
+      unsigned alt = ovl_op_alternate[ovl_op->ovl_op_code];
+      ovl_op = &ovl_op_info[false][alt];
+      gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
+    }
   enum tree_code operator_code = ovl_op->tree_code;
   gcc_checking_assert (operator_code != ERROR_MARK);
 
   DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
 
-  if (class_type)
-    switch (operator_code)
-      {
-      case NEW_EXPR:
-	TYPE_HAS_NEW_OPERATOR (class_type) = 1;
-	break;
-
-      case DELETE_EXPR:
-	TYPE_GETS_DELETE (class_type) |= 1;
-	break;
-
-      case VEC_NEW_EXPR:
-	TYPE_HAS_ARRAY_NEW_OPERATOR (class_type) = 1;
-	break;
-
-      case VEC_DELETE_EXPR:
-	TYPE_GETS_DELETE (class_type) |= 2;
-	break;
-
-      default:
-	break;
-      }
-
-    /* [basic.std.dynamic.allocation]/1:
-
-       A program is ill-formed if an allocation function is declared
-       in a namespace scope other than global scope or declared static
-       in global scope.
-
-       The same also holds true for deallocation functions.  */
-  if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR
-      || operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
+  if (ovl_op->flags & (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE))
     {
+      /* operator new and operator delete are quite special.  */
+      if (class_type)
+	switch (ovl_op->flags)
+	  {
+	  case OVL_OP_FLAG_NEW:
+	    TYPE_HAS_NEW_OPERATOR (class_type) = 1;
+	    break;
+
+	  case OVL_OP_FLAG_DELETE:
+	    TYPE_GETS_DELETE (class_type) |= 1;
+	    break;
+
+	  case OVL_OP_FLAG_NEW | OVL_OP_FLAG_VEC:
+	    TYPE_HAS_ARRAY_NEW_OPERATOR (class_type) = 1;
+	    break;
+
+	  case OVL_OP_FLAG_DELETE | OVL_OP_FLAG_VEC:
+	    TYPE_GETS_DELETE (class_type) |= 2;
+	    break;
+	  }
+
+      /* [basic.std.dynamic.allocation]/1:
+
+	 A program is ill-formed if an allocation function is declared
+	 in a namespace scope other than global scope or declared
+	 static in global scope.
+
+	 The same also holds true for deallocation functions.  */
       if (DECL_NAMESPACE_SCOPE_P (decl))
 	{
 	  if (CP_DECL_CONTEXT (decl) != global_namespace)
@@ -12950,265 +12955,239 @@ grok_op_properties (tree decl, bool complain)
 	      error ("%qD may not be declared within a namespace", decl);
 	      return false;
 	    }
-	  else if (!TREE_PUBLIC (decl))
+
+	  if (!TREE_PUBLIC (decl))
 	    {
 	      error ("%qD may not be declared as static", decl);
 	      return false;
 	    }
 	}
-    }
 
-  if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR)
-    {
-      TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
-      DECL_IS_OPERATOR_NEW (decl) = 1;
-    }
-  else if (operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
-    TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
-  else
-    {
-      /* An operator function must either be a non-static member function
-	 or have at least one parameter of a class, a reference to a class,
-	 an enumeration, or a reference to an enumeration.  13.4.0.6 */
-      if (! methodp || DECL_STATIC_FUNCTION_P (decl))
+      if (ovl_op->flags & (OVL_OP_FLAG_DELETE ^ OVL_OP_FLAG_NEW))
+	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
+      else
 	{
-	  if (operator_code == TYPE_EXPR
-	      || operator_code == CALL_EXPR
-	      || operator_code == COMPONENT_REF
-	      || operator_code == ARRAY_REF
-	      || operator_code == NOP_EXPR)
-	    {
-	      error ("%qD must be a nonstatic member function", decl);
-	      return false;
-	    }
-	  else
-	    {
-	      tree p;
-
-	      if (DECL_STATIC_FUNCTION_P (decl))
-		{
-		  error ("%qD must be either a non-static member "
-			 "function or a non-member function", decl);
-		  return false;
-		}
-
-	      for (p = argtypes; p && p != void_list_node; p = TREE_CHAIN (p))
-		{
-		  tree arg = non_reference (TREE_VALUE (p));
-		  if (arg == error_mark_node)
-		    return false;
-
-		  /* MAYBE_CLASS_TYPE_P, rather than CLASS_TYPE_P, is used
-		     because these checks are performed even on
-		     template functions.  */
-		  if (MAYBE_CLASS_TYPE_P (arg)
-		      || TREE_CODE (arg) == ENUMERAL_TYPE)
-		    break;
-		}
-
-	      if (!p || p == void_list_node)
-		{
-		  if (complain)
-		    error ("%qD must have an argument of class or "
-			   "enumerated type", decl);
-		  return false;
-		}
-	    }
+	  DECL_IS_OPERATOR_NEW (decl) = 1;
+	  TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
 	}
 
-      /* There are no restrictions on the arguments to an overloaded
-	 "operator ()".  */
-      if (operator_code == CALL_EXPR)
-	return true;
+      return true;
+    }
 
-      /* Warn about conversion operators that will never be used.  */
-      if (IDENTIFIER_CONV_OP_P (name)
-	  && ! DECL_TEMPLATE_INFO (decl)
-	  && warn_conversion
-	  /* Warn only declaring the function; there is no need to
-	     warn again about out-of-class definitions.  */
-	  && class_type == current_class_type)
+  /* An operator function must either be a non-static member function
+     or have at least one parameter of a class, a reference to a class,
+     an enumeration, or a reference to an enumeration.  13.4.0.6 */
+  if (! methodp || DECL_STATIC_FUNCTION_P (decl))
+    {
+      if (operator_code == TYPE_EXPR
+	  || operator_code == CALL_EXPR
+	  || operator_code == COMPONENT_REF
+	  || operator_code == ARRAY_REF
+	  || operator_code == NOP_EXPR)
 	{
-	  tree t = TREE_TYPE (name);
-	  int ref = (TREE_CODE (t) == REFERENCE_TYPE);
+	  error ("%qD must be a nonstatic member function", decl);
+	  return false;
+	}
 
-	  if (ref)
-	    t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+      if (DECL_STATIC_FUNCTION_P (decl))
+	{
+	  error ("%qD must be either a non-static member "
+		 "function or a non-member function", decl);
+	  return false;
+	}
 
-	  if (VOID_TYPE_P (t))
-            warning (OPT_Wconversion,
-                     ref
-                     ? G_("conversion to a reference to void "
-                          "will never use a type conversion operator")
-                     : G_("conversion to void "
-                          "will never use a type conversion operator"));
-	  else if (class_type)
-	    {
-	      if (t == class_type)
-                warning (OPT_Wconversion,
+      tree p;
+      for (p = argtypes; p && p != void_list_node; p = TREE_CHAIN (p))
+	{
+	  tree arg = non_reference (TREE_VALUE (p));
+	  if (arg == error_mark_node)
+	    return false;
+	  
+	  /* MAYBE_CLASS_TYPE_P, rather than CLASS_TYPE_P, is used
+	     because these checks are performed even on
+	     template functions.  */
+	  if (MAYBE_CLASS_TYPE_P (arg)
+	      || TREE_CODE (arg) == ENUMERAL_TYPE)
+	    break;
+	}
+
+      if (!p || p == void_list_node)
+	{
+	  if (complain)
+	    error ("%qD must have an argument of class or "
+		   "enumerated type", decl);
+	  return false;
+	}
+    }
+
+  if (operator_code == CALL_EXPR)
+    /* There are no restrictions on the arguments to an overloaded
+       "operator ()".  */
+    return true;
+
+  if (operator_code == COND_EXPR)
+    {
+      /* 13.4.0.3 */
+      error ("ISO C++ prohibits overloading operator ?:");
+      return false;
+    }
+
+  if (ellipsis_p)
+    {
+      error ("%qD must not have variable number of arguments", decl);
+      return false;
+    }
+
+  /* Verify correct number of arguments.  */
+  if (ovl_op->flags == (OVL_OP_FLAG_UNARY | OVL_OP_FLAG_BINARY) && arity != 2)
+    {
+      /* This was an ambiguous operator but is invalid. */
+      error (methodp
+	     ? G_("%qD must have either zero or one argument")
+	     : G_("%qD must have either one or two arguments"), decl);
+      return false;
+    }
+  else if (ovl_op->flags == OVL_OP_FLAG_UNARY && arity != 1)
+    {
+      error (methodp
+	     ? G_("%qD must have no arguments")
+	     : G_("%qD must have exactly one argument"), decl);
+      return false;
+    }
+  else if (ovl_op->flags == OVL_OP_FLAG_BINARY && arity != 2)
+    {
+      error (methodp
+	     ? G_("%qD must have exactly one argument")
+	     : G_("%qD must have exactly two arguments"), decl);
+      return false;
+    }
+
+  /* x++ and x--'s second argument must be an int.  */
+  if ((operator_code == POSTINCREMENT_EXPR
+       || operator_code == POSTDECREMENT_EXPR)
+      && ! processing_template_decl
+      && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
+    {
+      error (methodp
+	     ? G_("postfix %qD must have %<int%> as its argument")
+	     : G_("postfix %qD must have %<int%> as its second argument"),
+	     decl);
+      return false;
+    }
+
+  /* There can be no default arguments.  */
+  for (tree p = argtypes; p && p != void_list_node; p = TREE_CHAIN (p))
+    if (TREE_PURPOSE (p))
+      {
+	TREE_PURPOSE (p) = NULL_TREE;
+	if (operator_code == POSTINCREMENT_EXPR
+	    || operator_code == POSTDECREMENT_EXPR)
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "%qD cannot have default arguments", decl);
+	else
+	  {
+	    error ("%qD cannot have default arguments", decl);
+	    return false;
+	  }
+      }
+
+  /* At this point the declaration is well-formed.  It may not be
+     sensible though.  */
+
+  /* Check member function warnings only on the in-class declaration.
+     There's no point warning on an out-of-class definition.  */
+  if (class_type && class_type != current_class_type)
+    return true;
+
+  /* Warn about conversion operators that will never be used.  */
+  if (IDENTIFIER_CONV_OP_P (name)
+      && ! DECL_TEMPLATE_INFO (decl)
+      && warn_conversion)
+    {
+      tree t = TREE_TYPE (name);
+      int ref = (TREE_CODE (t) == REFERENCE_TYPE);
+
+      if (ref)
+	t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+
+      if (VOID_TYPE_P (t))
+	warning (OPT_Wconversion,
+		 ref
+		 ? G_("conversion to a reference to void "
+		      "will never use a type conversion operator")
+		 : G_("conversion to void "
+		      "will never use a type conversion operator"));
+      else if (class_type)
+	{
+	  if (t == class_type)
+	    warning (OPT_Wconversion,
                      ref
                      ? G_("conversion to a reference to the same type "
                           "will never use a type conversion operator")
                      : G_("conversion to the same type "
                           "will never use a type conversion operator"));
-	      /* Don't force t to be complete here.  */
-	      else if (MAYBE_CLASS_TYPE_P (t)
-		       && COMPLETE_TYPE_P (t)
-		       && DERIVED_FROM_P (t, class_type))
-                 warning (OPT_Wconversion,
-                          ref
-                          ? G_("conversion to a reference to a base class "
-                               "will never use a type conversion operator")
-                          : G_("conversion to a base class "
-                               "will never use a type conversion operator"));
-	    }
+	  /* Don't force t to be complete here.  */
+	  else if (MAYBE_CLASS_TYPE_P (t)
+		   && COMPLETE_TYPE_P (t)
+		   && DERIVED_FROM_P (t, class_type))
+	    warning (OPT_Wconversion,
+		     ref
+		     ? G_("conversion to a reference to a base class "
+			  "will never use a type conversion operator")
+		     : G_("conversion to a base class "
+			  "will never use a type conversion operator"));
 	}
+    }
 
-      if (operator_code == COND_EXPR)
-	{
-	  /* 13.4.0.3 */
-	  error ("ISO C++ prohibits overloading operator ?:");
-	  return false;
-	}
-      else if (ellipsis_p)
-	{
-	  error ("%qD must not have variable number of arguments", decl);
-	  return false;
-	}
-      else if (ovl_op->flags == (OVL_OP_FLAG_UNARY | OVL_OP_FLAG_BINARY))
-	{
-	  if (arity == 1)
-	    {
-	      /* Search forwards to find the unary one.  */
-	      for (unsigned ix = 0; ix != OVL_OP_MAX; ix++)
-		{
-		  ovl_op = &ovl_op_info[false][ix];
-		  if (name == ovl_op->identifier)
-		    break;
-		}
-	      gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
-	      operator_code = ovl_op->tree_code;
-	    }
-	  else if (arity == 2)
-	    {
-	    }
-	  else
-	    {
-	      if (methodp)
-		error ("%qD must take either zero or one argument", decl);
-	      else
-		error ("%qD must take either one or two arguments", decl);
-	      return false;
-	    }
+  if (!warn_ecpp)
+    return true;
 
-	  DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
+  /* Effective C++ rules below.  */
 
-	  if ((operator_code == POSTINCREMENT_EXPR
-	       || operator_code == POSTDECREMENT_EXPR)
-	      && ! processing_template_decl
-	      && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
-	    {
-	      if (methodp)
-		error ("postfix %qD must take %<int%> as its argument",
-		       decl);
-	      else
-		error ("postfix %qD must take %<int%> as its second "
-		       "argument", decl);
-	      return false;
-	    }
+  /* More Effective C++ rule 7.  */
+  if (operator_code == TRUTH_ANDIF_EXPR
+      || operator_code == TRUTH_ORIF_EXPR
+      || operator_code == COMPOUND_EXPR)
+    warning (OPT_Weffc__,
+	     "user-defined %qD always evaluates both arguments", decl);
+  
+  /* More Effective C++ rule 6.  */
+  if (operator_code == POSTINCREMENT_EXPR
+      || operator_code == POSTDECREMENT_EXPR
+      || operator_code == PREINCREMENT_EXPR
+      || operator_code == PREDECREMENT_EXPR)
+    {
+      tree arg = TREE_VALUE (argtypes);
+      tree ret = TREE_TYPE (TREE_TYPE (decl));
+      if (methodp || TREE_CODE (arg) == REFERENCE_TYPE)
+	arg = TREE_TYPE (arg);
+      arg = TYPE_MAIN_VARIANT (arg);
 
-	  /* More Effective C++ rule 6.  */
-	  if (warn_ecpp
-	      && (operator_code == POSTINCREMENT_EXPR
-		  || operator_code == POSTDECREMENT_EXPR
-		  || operator_code == PREINCREMENT_EXPR
-		  || operator_code == PREDECREMENT_EXPR))
-	    {
-	      tree arg = TREE_VALUE (argtypes);
-	      tree ret = TREE_TYPE (TREE_TYPE (decl));
-	      if (methodp || TREE_CODE (arg) == REFERENCE_TYPE)
-		arg = TREE_TYPE (arg);
-	      arg = TYPE_MAIN_VARIANT (arg);
-	      if (operator_code == PREINCREMENT_EXPR
-		  || operator_code == PREDECREMENT_EXPR)
-		{
-		  if (TREE_CODE (ret) != REFERENCE_TYPE
-		      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
-				       arg))
-		    warning (OPT_Weffc__, "prefix %qD should return %qT", decl,
-			     build_reference_type (arg));
-		}
-	      else
-		{
-		  if (!same_type_p (TYPE_MAIN_VARIANT (ret), arg))
-		    warning (OPT_Weffc__, "postfix %qD should return %qT", decl, arg);
-		}
-	    }
-	}
-      else if (ovl_op->flags == OVL_OP_FLAG_UNARY)
+      if (operator_code == PREINCREMENT_EXPR
+	  || operator_code == PREDECREMENT_EXPR)
 	{
-	  if (arity != 1)
-	    {
-	      if (methodp)
-		error ("%qD must take %<void%>", decl);
-	      else
-		error ("%qD must take exactly one argument", decl);
-	      return false;
-	    }
-	}
-      else if (ovl_op->flags == OVL_OP_FLAG_BINARY)
-	{
-	  if (arity != 2)
-	    {
-	      if (methodp)
-		error ("%qD must take exactly one argument", decl);
-	      else
-		error ("%qD must take exactly two arguments", decl);
-	      return false;
-	    }
-
-	  /* More Effective C++ rule 7.  */
-	  if (warn_ecpp
-	      && (operator_code == TRUTH_ANDIF_EXPR
-		  || operator_code == TRUTH_ORIF_EXPR
-		  || operator_code == COMPOUND_EXPR))
-	    warning (OPT_Weffc__, "user-defined %qD always evaluates both arguments",
-		     decl);
+	  if (TREE_CODE (ret) != REFERENCE_TYPE
+	      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)), arg))
+	    warning (OPT_Weffc__, "prefix %qD should return %qT", decl,
+		     build_reference_type (arg));
 	}
       else
-	gcc_unreachable ();
-
-      /* Effective C++ rule 23.  */
-      if (warn_ecpp
-	  && arity == 2
-	  && !DECL_ASSIGNMENT_OPERATOR_P (decl)
-	  && (operator_code == PLUS_EXPR
-	      || operator_code == MINUS_EXPR
-	      || operator_code == TRUNC_DIV_EXPR
-	      || operator_code == MULT_EXPR
-	      || operator_code == TRUNC_MOD_EXPR)
-	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
-	warning (OPT_Weffc__, "%qD should return by value", decl);
-
-      /* [over.oper]/8 */
-      for (; argtypes && argtypes != void_list_node;
-	  argtypes = TREE_CHAIN (argtypes))
-	if (TREE_PURPOSE (argtypes))
-	  {
-	    TREE_PURPOSE (argtypes) = NULL_TREE;
-	    if (operator_code == POSTINCREMENT_EXPR
-		|| operator_code == POSTDECREMENT_EXPR)
-	      {
-		pedwarn (input_location, OPT_Wpedantic, "%qD cannot have default arguments", 
-			 decl);
-	      }
-	    else
-	      {
-		error ("%qD cannot have default arguments", decl);
-		return false;
-	      }
-	  }
+	{
+	  if (!same_type_p (TYPE_MAIN_VARIANT (ret), arg))
+	    warning (OPT_Weffc__, "postfix %qD should return %qT", decl, arg);
+	}
     }
+
+  /* Effective C++ rule 23.  */
+  if (!DECL_ASSIGNMENT_OPERATOR_P (decl)
+      && (operator_code == PLUS_EXPR
+	  || operator_code == MINUS_EXPR
+	  || operator_code == TRUNC_DIV_EXPR
+	  || operator_code == MULT_EXPR
+	  || operator_code == TRUNC_MOD_EXPR)
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
+    warning (OPT_Weffc__, "%qD should return by value", decl);
+
   return true;
 }
 

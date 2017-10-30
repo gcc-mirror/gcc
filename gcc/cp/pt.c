@@ -5331,7 +5331,7 @@ push_template_decl_real (tree decl, bool is_friend)
 	    }
 	  if (IDENTIFIER_OVL_OP_P (DECL_NAME (decl))
 	      && (IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (decl))
-		  & OVL_OP_FLAG_NEWDEL)
+		  & (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE))
 	      && (!prototype_p (TREE_TYPE (decl))
 		  || TYPE_ARG_TYPES (TREE_TYPE (decl)) == void_list_node
 		  || !TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)))

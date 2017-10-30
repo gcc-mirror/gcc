@@ -9045,10 +9045,11 @@ check_return_expr (tree retval, bool *no_warning)
 	/* You can return a `void' value from a function of `void'
 	   type.  In that case, we have to evaluate the expression for
 	   its side-effects.  */
-	  finish_expr_stmt (retval);
+	finish_expr_stmt (retval);
       else
-	permerror (input_location, "return-statement with a value, in function "
-		   "returning 'void'");
+	permerror (input_location,
+		   "return-statement with a value, in function "
+		   "returning %qT", valtype);
       current_function_returns_null = 1;
 
       /* There's really no value to return, after all.  */
@@ -9074,7 +9075,7 @@ check_return_expr (tree retval, bool *no_warning)
   /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
   if (IDENTIFIER_OVL_OP_P (DECL_NAME (current_function_decl))
       && ((IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (current_function_decl))
-	   & (OVL_OP_FLAG_NEWDEL | OVL_OP_FLAG_DELETE)) == OVL_OP_FLAG_NEWDEL)
+	   & (OVL_OP_FLAG_NEW | OVL_OP_FLAG_DELETE)) == OVL_OP_FLAG_NEW)
       && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
       && ! flag_check_new
       && retval && null_ptr_cst_p (retval))

@@ -5477,9 +5477,9 @@ enum ovl_op_flags
     OVL_OP_FLAG_NONE = 0,
     OVL_OP_FLAG_UNARY = 1,
     OVL_OP_FLAG_BINARY = 2,
-    OVL_OP_FLAG_NEWDEL = 4,  // new/delete
-    OVL_OP_FLAG_DELETE = 5,  // delete
-    OVL_OP_FLAG_VEC = 2      // vector new/delete
+    OVL_OP_FLAG_NEW = 4,  	// new
+    OVL_OP_FLAG_DELETE = 5,	// delete
+    OVL_OP_FLAG_VEC = 2		// vector new/delete
   };
 
 enum ovl_op_code
@@ -5511,6 +5511,8 @@ struct GTY(()) ovl_op_info_t {
 extern GTY(()) ovl_op_info_t ovl_op_info[2][OVL_OP_MAX];
 /* Mapping from tree_codes to ovl_op_codes.  */
 extern GTY(()) unsigned char ovl_op_mapping[MAX_TREE_CODES];
+/* Mapping for ambi-ary operators from the binary to the unary.  */
+extern GTY(()) unsigned char ovl_op_alternate[OVL_OP_MAX];
 
 /* Given an ass_op_p boolean and a tree code, return a pointer to its
    overloaded operator info.  Tree codes for non-overloaded operators

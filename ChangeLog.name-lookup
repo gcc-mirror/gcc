@@ -1,3 +1,21 @@
+2017-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	Operator code compaction part 10.
+	gcc/cp/
+	* cp-tree.h (ovl_op_flags): Adjust.
+	(ovl_op_alternate): Declare.
+	* decl.c (grokdeclarator): Adjust NEW/DEL selection.
+	(grok_op_properties): Move warnings to end.  Don't multiply check
+	specific tree codes.
+	* lex.c (ovl_op_alternate): Define.
+	(init_operators): Initialize it.
+	* operators.def: Adjust new/delete.
+	* pt.c (push_template_decl_real): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+	gcc/testsuite/
+	* g++.dg/other/operator2.C: Adjust diagnostic.
+	* g++.old-deja/g++.jason/operator.C: Likewise.
+
 2017-10-27  Nathan Sidwell  <nathan@acm.org>
 
 	Operator code compaction part 9.

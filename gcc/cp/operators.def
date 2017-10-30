@@ -68,13 +68,11 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Memory allocation operators.  ARITY has special meaning. */
-DEF_OPERATOR ("new", NEW_EXPR, "nw", OVL_OP_FLAG_NEWDEL)
-DEF_OPERATOR ("new []", VEC_NEW_EXPR, "na",
-	      OVL_OP_FLAG_NEWDEL | OVL_OP_FLAG_VEC)
-DEF_OPERATOR ("delete", DELETE_EXPR, "dl",
-	      OVL_OP_FLAG_NEWDEL | OVL_OP_FLAG_DELETE)
+DEF_OPERATOR ("new", NEW_EXPR, "nw", OVL_OP_FLAG_NEW)
+DEF_OPERATOR ("new []", VEC_NEW_EXPR, "na", OVL_OP_FLAG_NEW | OVL_OP_FLAG_VEC)
+DEF_OPERATOR ("delete", DELETE_EXPR, "dl", OVL_OP_FLAG_DELETE)
 DEF_OPERATOR ("delete []", VEC_DELETE_EXPR, "da",
-	      OVL_OP_FLAG_NEWDEL | OVL_OP_FLAG_VEC | OVL_OP_FLAG_DELETE)
+	      OVL_OP_FLAG_DELETE | OVL_OP_FLAG_VEC)
 
 /* Unary operators.  */
 DEF_OPERATOR ("+", UNARY_PLUS_EXPR, "ps", OVL_OP_FLAG_UNARY)
