@@ -15079,10 +15079,16 @@ legitimate_pic_address_disp_p (rtx disp)
 	    break;
 	  op0 = XEXP (XEXP (disp, 0), 0);
 	  op1 = XEXP (XEXP (disp, 0), 1);
-	  if (!CONST_INT_P (op1)
-	      || INTVAL (op1) >= 16*1024*1024
+	  if (!CONST_INT_P (op1))
+	    break;
+	  if (GET_CODE (op0) == UNSPEC
+	      && (XINT (op0, 1) == UNSPEC_DTPOFF
+		  || XINT (op0, 1) == UNSPEC_NTPOFF)
+	      && trunc_int_for_mode (INTVAL (op1), SImode) == INTVAL (op1))
+	    return true;
+	  if (INTVAL (op1) >= 16*1024*1024
 	      || INTVAL (op1) < -16*1024*1024)
-            break;
+	    break;
 	  if (GET_CODE (op0) == LABEL_REF)
 	    return true;
 	  if (GET_CODE (op0) == CONST

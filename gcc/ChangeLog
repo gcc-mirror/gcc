@@ -1,3 +1,9 @@
+2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82725
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
+	UNSPEC_DTPOFF and UNSPEC_NTPOFF with SImode immediate offset.
+
 2017-10-29  Jim Wilson  <wilson@tuliptree.org>
 
 	* gimplify.c: Include tm_p.h.
