@@ -1,3 +1,8 @@
+2017-10-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.c (asan_finish_file): Align asan globals array by shadow
+	granularity.
+
 2017-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/22141

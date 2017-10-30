@@ -2942,6 +2942,9 @@ asan_finish_file (void)
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (var) = ctor;
+      SET_DECL_ALIGN (var, MAX (DECL_ALIGN (var),
+				ASAN_SHADOW_GRANULARITY * BITS_PER_UNIT));
+
       varpool_node::finalize_decl (var);
 
       tree fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
