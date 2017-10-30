@@ -1004,9 +1004,9 @@
   (match_code "mem")
 {
   unsigned n_elts;
-  op = maybe_get_pool_constant (op);
+  op = avoid_constant_pool_reference (op);
 
-  if (!(op && GET_CODE (op) == CONST_VECTOR))
+  if (GET_CODE (op) != CONST_VECTOR)
     return false;
 
   n_elts = CONST_VECTOR_NUNITS (op);
@@ -1301,7 +1301,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
 	return false;
@@ -1311,8 +1311,7 @@
   switch (code)
     {
     case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCFPmode || inmode == CCFPUmode
-	  || inmode == CCCmode)
+      if (inmode == CCmode || inmode == CCFPmode || inmode == CCCmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:
@@ -1348,7 +1347,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     return ix86_trivial_fp_comparison_operator (op, mode);
 
   switch (code)
@@ -1391,7 +1390,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
 	return false;

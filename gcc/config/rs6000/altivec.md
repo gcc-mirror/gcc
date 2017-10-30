@@ -795,10 +795,11 @@
   rtx zero = gen_reg_rtx (V8HImode);
 
   emit_insn (gen_altivec_vspltish (zero, const0_rtx));
-  emit_insn (gen_altivec_vmladduhm(operands[0], operands[1], operands[2], zero));
+  emit_insn (gen_fmav8hi4 (operands[0], operands[1], operands[2], zero));
 
   DONE;
 })
+
 
 ;; Fused multiply subtract 
 (define_insn "*altivec_vnmsubfp"
@@ -936,7 +937,7 @@
   "vmhraddshs %0,%1,%2,%3"
   [(set_attr "type" "veccomplex")])
 
-(define_insn "altivec_vmladduhm"
+(define_insn "fmav8hi4"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (plus:V8HI (mult:V8HI (match_operand:V8HI 1 "register_operand" "v")
 		   	      (match_operand:V8HI 2 "register_operand" "v"))

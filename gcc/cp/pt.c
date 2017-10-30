@@ -203,7 +203,7 @@ static void tsubst_default_arguments (tree, tsubst_flags_t);
 static tree for_each_template_parm_r (tree *, int *, void *);
 static tree copy_default_args_to_explicit_spec_1 (tree, tree);
 static void copy_default_args_to_explicit_spec (tree);
-static int invalid_nontype_parm_type_p (tree, tsubst_flags_t);
+static bool invalid_nontype_parm_type_p (tree, tsubst_flags_t);
 static bool dependent_template_arg_p (tree);
 static bool any_template_arguments_need_structural_equality_p (tree);
 static bool dependent_type_p_r (tree);
@@ -23620,31 +23620,31 @@ instantiating_current_function_p (void)
 }
 
 /* [temp.param] Check that template non-type parm TYPE is of an allowable
-   type. Return zero for ok, nonzero for disallowed. Issue error and
-   warning messages under control of COMPLAIN.  */
+   type.  Return false for ok, true for disallowed.  Issue error and
+   inform messages under control of COMPLAIN.  */
 
-static int
+static bool
 invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 {
   if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
-    return 0;
+    return false;
   else if (POINTER_TYPE_P (type))
-    return 0;
+    return false;
   else if (TYPE_PTRMEM_P (type))
-    return 0;
+    return false;
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-    return 0;
+    return false;
   else if (TREE_CODE (type) == TYPENAME_TYPE)
-    return 0;
+    return false;
   else if (TREE_CODE (type) == DECLTYPE_TYPE)
-    return 0;
+    return false;
   else if (TREE_CODE (type) == NULLPTR_TYPE)
-    return 0;
+    return false;
   /* A bound template template parm could later be instantiated to have a valid
      nontype parm type via an alias template.  */
   else if (cxx_dialect >= cxx11
 	   && TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    return 0;
+    return false;
 
   if (complain & tf_error)
     {
@@ -23654,7 +23654,7 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 	error ("%q#T is not a valid type for a template non-type parameter",
 	       type);
     }
-  return 1;
+  return true;
 }
 
 /* Returns TRUE if TYPE is dependent, in the sense of [temp.dep.type].

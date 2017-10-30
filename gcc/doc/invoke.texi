@@ -45,7 +45,7 @@ remainder.  @command{g++} accepts mostly the same options as @command{gcc}.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
-cpp(1), gcov(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1)
+cpp(1), gcov(1), as(1), ld(1), gdb(1), dbx(1)
 and the Info entries for @file{gcc}, @file{cpp}, @file{as},
 @file{ld}, @file{binutils} and @file{gdb}.
 @c man end
@@ -342,7 +342,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program}.
-@gccoptlist{-g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-@var{version} @gol
+@gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gcolumn-info  -gno-column-info @gol
@@ -1831,6 +1831,13 @@ substantially completely supported, modulo bugs, floating-point issues
 Annexes F and G) and the optional Annexes K (Bounds-checking
 interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
+@item c17
+@itemx iso9899:2017
+ISO C17, the 2017 revision of the ISO C standard.  This standard is
+same as C11 except for corrections of defects (all of which are also
+applied with @option{-std=c11}) and a new value of
+@code{__STDC_VERSION__}, and so is supported to the same extent as C11.
+
 @item gnu90
 @itemx gnu89
 GNU dialect of ISO C90 (including some C99 features).
@@ -1841,8 +1848,11 @@ GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  This is the default for C code.
+GNU dialect of ISO C11.
 The name @samp{gnu1x} is deprecated.
+
+@item gnu17
+GNU dialect of ISO C17.  This is the default for C code.
 
 @item c++98
 @itemx c++03
@@ -6901,7 +6911,7 @@ in their names, but apply to all currently-supported versions of DWARF.
 Produce debugging information in stabs format (if that is supported),
 without GDB extensions.  This is the format used by DBX on most BSD
 systems.  On MIPS, Alpha and System V Release 4 systems this option
-produces stabs debugging output that is not understood by DBX or SDB@.
+produces stabs debugging output that is not understood by DBX@.
 On System V Release 4 systems this option requires the GNU assembler.
 
 @item -gstabs+
@@ -6910,12 +6920,6 @@ Produce debugging information in stabs format (if that is supported),
 using GNU extensions understood only by the GNU debugger (GDB)@.  The
 use of these extensions is likely to make other debuggers crash or
 refuse to read the program.
-
-@item -gcoff
-@opindex gcoff
-Produce debugging information in COFF format (if that is supported).
-This is the format used by SDB on most System V systems prior to
-System V Release 4.
 
 @item -gxcoff
 @opindex gxcoff
@@ -6938,7 +6942,6 @@ supported).  This is the format used by DEBUG on Alpha/VMS systems.
 @item -g@var{level}
 @itemx -ggdb@var{level}
 @itemx -gstabs@var{level}
-@itemx -gcoff@var{level}
 @itemx -gxcoff@var{level}
 @itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
@@ -21705,9 +21708,26 @@ When generating PIC code, allow the use of PLTs. Ignored for non-PIC.
 
 @item -mabi=@var{ABI-string}
 @opindex mabi
-Specify integer and floating-point calling convention.  This defaults to the
-natural calling convention: e.g.@ LP64 for RV64I, ILP32 for RV32I, LP64D for
-RV64G.
+@item -mabi=@var{ABI-string}
+@opindex mabi
+Specify integer and floating-point calling convention.  @var{ABI-string}
+contains two parts: the size of integer types and the registers used for
+floating-point types.  For example @samp{-march=rv64ifd -mabi=lp64d} means that
+@samp{long} and pointers are 64-bit (implicitly defining @samp{int} to be
+32-bit), and that floating-point values up to 64 bits wide are passed in F
+registers.  Contrast this with @samp{-march=rv64ifd -mabi=lp64f}, which still
+allows the compiler to generate code that uses the F and D extensions but only
+allows floating-point values up to 32 bits long to be passed in registers; or
+@samp{-march=rv64ifd -mabi=lp64}, in which no floating-point arguments will be
+passed in registers.
+
+The default for this argument is system dependent, users who want a specific
+calling convention should specify one explicitly.  The valid calling
+conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
+@samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
+implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
+invalid because the ABI requires 64-bit values be passed in F registers, but F
+registers are only 32 bits wide.
 
 @item -mfdiv
 @itemx -mno-fdiv

@@ -419,6 +419,23 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
   if (lhs.value != error_mark_node
       && rhs.value != error_mark_node)
     {
+      /* If we parsed a comparison and the next token is a '?' then
+         parse a conditional expression.  */
+      if (COMPARISON_CLASS_P (rhs.value)
+	  && c_parser_next_token_is (parser, CPP_QUERY))
+	{
+	  struct c_expr trueval, falseval;
+	  c_parser_consume_token (parser);
+	  trueval = c_parser_gimple_postfix_expression (parser);
+	  falseval.set_error ();
+	  if (c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+	    falseval = c_parser_gimple_postfix_expression (parser);
+	  if (trueval.value == error_mark_node
+	      || falseval.value == error_mark_node)
+	    return;
+	  rhs.value = build3_loc (loc, COND_EXPR, TREE_TYPE (trueval.value),
+				  rhs.value, trueval.value, falseval.value);
+	}
       assign = gimple_build_assign (lhs.value, rhs.value);
       gimple_seq_add_stmt (seq, assign);
       gimple_set_location (assign, loc);

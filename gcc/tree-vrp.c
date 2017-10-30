@@ -6837,10 +6837,7 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   if (EXPR_HAS_LOCATION (t))
     location = EXPR_LOCATION (t);
   else
-    {
-      location_t *locp = (location_t *) wi->info;
-      location = *locp;
-    }
+    location = gimple_location (wi->stmt);
 
   *walk_subtree = TRUE;
 
@@ -6886,9 +6883,6 @@ check_all_array_refs (void)
 	    continue;
 
 	  memset (&wi, 0, sizeof (wi));
-
-	  location_t loc = gimple_location (stmt);
-	  wi.info = &loc;
 
 	  walk_gimple_op (gsi_stmt (si),
 			  check_array_bounds,

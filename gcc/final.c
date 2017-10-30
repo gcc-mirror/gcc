@@ -92,8 +92,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbxout.h"
 #endif
 
-#include "sdbout.h"
-
 /* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
    So define a null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT
@@ -2328,8 +2326,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
 	      BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn)) = in_cold_section_p;
 	    }
-	  if (write_symbols == DBX_DEBUG
-	      || write_symbols == SDB_DEBUG)
+	  if (write_symbols == DBX_DEBUG)
 	    {
 	      location_t *locus_ptr
 		= block_nonartificial_location (NOTE_BLOCK (insn));
@@ -2363,8 +2360,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      gcc_assert (BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn))
 			  == in_cold_section_p);
 	    }
-	  if (write_symbols == DBX_DEBUG
-	      || write_symbols == SDB_DEBUG)
+	  if (write_symbols == DBX_DEBUG)
 	    {
 	      tree outer_block = BLOCK_SUPERCONTEXT (NOTE_BLOCK (insn));
 	      location_t *locus_ptr
@@ -4683,12 +4679,6 @@ rest_of_clean_state (void)
 	  flag_dump_final_insns = NULL;
 	}
     }
-
-  /* In case the function was not output,
-     don't leave any temporary anonymous types
-     queued up for sdb output.  */
-  if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
-    sdbout_types (NULL_TREE);
 
   flag_rerun_cse_after_global_opts = 0;
   reload_completed = 0;

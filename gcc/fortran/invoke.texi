@@ -41,7 +41,7 @@ remainder.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
-cpp(1), gcov(1), gcc(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1)
+cpp(1), gcov(1), gcc(1), as(1), ld(1), gdb(1), dbx(1)
 and the Info entries for @file{gcc}, @file{cpp}, @file{gfortran}, @file{as},
 @file{ld}, @file{binutils} and @file{gdb}.
 @c man end

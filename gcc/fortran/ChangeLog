@@ -1,3 +1,29 @@
+2017-10-29  Jim Wilson  <wilson@tuliptree.org>
+
+	* invoke.texi: Delete adb and sdb references.
+
+2017-10-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* check.c (gfc_check_co_reduce): Clarify error message.
+
+2017-10-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81758
+	* trans-expr.c (trans_class_vptr_len_assignment): 'vptr_expr'
+	must only be set if the right hand side expression is of type
+	class.
+
+2017-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82620
+	* match.c (gfc_match_allocate): Exit early on syntax error.
+
+2017-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56342
+	* simplify.c (is_constant_array_expr): If the expression is
+	a parameter array, call gfc_simplify_expr.
+
 2017-10-25  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* match.c (gfc_match_type_is): Fix typo in error message.

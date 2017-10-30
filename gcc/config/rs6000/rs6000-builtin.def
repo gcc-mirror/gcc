@@ -961,7 +961,7 @@ BU_SPECIAL_X (RS6000_BUILTIN_NONE, NULL, 0, RS6000_BTC_MISC)
 BU_ALTIVEC_3 (VMADDFP,        "vmaddfp",        FP,    	fmav4sf4)
 BU_ALTIVEC_3 (VMHADDSHS,      "vmhaddshs",      SAT,   	altivec_vmhaddshs)
 BU_ALTIVEC_3 (VMHRADDSHS,     "vmhraddshs",     SAT,   	altivec_vmhraddshs)
-BU_ALTIVEC_3 (VMLADDUHM,      "vmladduhm",      CONST, 	altivec_vmladduhm)
+BU_ALTIVEC_3 (VMLADDUHM,      "vmladduhm",      CONST, 	fmav8hi4)
 BU_ALTIVEC_3 (VMSUMUBM,       "vmsumubm",       CONST, 	altivec_vmsumubm)
 BU_ALTIVEC_3 (VMSUMMBM,       "vmsummbm",       CONST, 	altivec_vmsummbm)
 BU_ALTIVEC_3 (VMSUMUHM,       "vmsumuhm",       CONST, 	altivec_vmsumuhm)
@@ -2374,17 +2374,13 @@ BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)
 BU_FLOAT128_2 (COPYSIGNQ,	"copysignq",   CONST, copysignkf3)
 
 /* 1, 2, and 3 argument IEEE 128-bit floating point functions that require ISA
-   3.0 hardware.  These functions use the new 'f128' suffix.  Eventually the
-   standard functions should be folded into the common built-in function
-   handling. */
-BU_FLOAT128_1_HW (SQRTF128,	 "sqrtf128",		   CONST, sqrtkf2)
+   3.0 hardware.  These functions use the new 'f128' suffix.  */
 BU_FLOAT128_1_HW (SQRTF128_ODD,	 "sqrtf128_round_to_odd",  CONST, sqrtkf2_odd)
 BU_FLOAT128_1_HW (TRUNCF128_ODD, "truncf128_round_to_odd", CONST, trunckfdf2_odd)
 BU_FLOAT128_2_HW (ADDF128_ODD,	 "addf128_round_to_odd",   CONST, addkf3_odd)
 BU_FLOAT128_2_HW (SUBF128_ODD,	 "subf128_round_to_odd",   CONST, subkf3_odd)
 BU_FLOAT128_2_HW (MULF128_ODD,	 "mulf128_round_to_odd",   CONST, mulkf3_odd)
 BU_FLOAT128_2_HW (DIVF128_ODD,	 "divf128_round_to_odd",   CONST, divkf3_odd)
-BU_FLOAT128_3_HW (FMAF128,	 "fmaf128",		   CONST, fmakf4_hw)
 BU_FLOAT128_3_HW (FMAF128_ODD,	 "fmaf128_round_to_odd",   CONST, fmakf4_odd)
 
 /* 1 argument crypto functions.  */

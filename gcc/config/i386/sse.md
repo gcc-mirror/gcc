@@ -2755,7 +2755,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<sse>_comi<round_saeonly_name>"
+(define_insn "<sse>_<unord>comi<round_saeonly_name>"
   [(set (reg:CCFP FLAGS_REG)
 	(compare:CCFP
 	  (vec_select:MODEF
@@ -2765,27 +2765,7 @@
 	    (match_operand:<ssevecmode> 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	    (parallel [(const_int 0)]))))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
-  "%vcomi<ssemodesuffix>\t{<round_saeonly_op2>%1, %0|%0, %<iptr>1<round_saeonly_op2>}"
-  [(set_attr "type" "ssecomi")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "prefix_rep" "0")
-   (set (attr "prefix_data16")
-	(if_then_else (eq_attr "mode" "DF")
-		      (const_string "1")
-		      (const_string "0")))
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "<sse>_ucomi<round_saeonly_name>"
-  [(set (reg:CCFPU FLAGS_REG)
-	(compare:CCFPU
-	  (vec_select:MODEF
-	    (match_operand:<ssevecmode> 0 "register_operand" "v")
-	    (parallel [(const_int 0)]))
-	  (vec_select:MODEF
-	    (match_operand:<ssevecmode> 1 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
-	    (parallel [(const_int 0)]))))]
-  "SSE_FLOAT_MODE_P (<MODE>mode)"
-  "%vucomi<ssemodesuffix>\t{<round_saeonly_op2>%1, %0|%0, %<iptr>1<round_saeonly_op2>}"
+  "%v<unord>comi<ssemodesuffix>\t{<round_saeonly_op2>%1, %0|%0, %<iptr>1<round_saeonly_op2>}"
   [(set_attr "type" "ssecomi")
    (set_attr "prefix" "maybe_vex")
    (set_attr "prefix_rep" "0")

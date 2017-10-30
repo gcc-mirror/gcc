@@ -1,5 +1,7 @@
 2017-10-30  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r254231.
+
 	Operator code compaction part 11.
 	gcc/cp/
 	* cp-tree.h (lang_decl_fn): Move spare bits to end.

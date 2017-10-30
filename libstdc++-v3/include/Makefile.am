@@ -130,7 +130,6 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
-	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
 	${bits_srcdir}/node_handle.h \
@@ -161,6 +160,7 @@ bits_headers = \
 	${bits_srcdir}/shared_ptr_atomic.h \
 	${bits_srcdir}/shared_ptr_base.h \
 	${bits_srcdir}/slice_array.h \
+	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/sstream.tcc \
 	${bits_srcdir}/std_abs.h \
 	${bits_srcdir}/std_function.h \
@@ -1031,7 +1031,7 @@ stamp-bits: ${bits_headers}
 	@$(STAMP) stamp-bits
 
 stamp-bits-sup: stamp-bits ${bits_sup_headers}
-	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
+	@-cd ${bits_builddir} && $(LN_S) ${bits_sup_headers} . 2>/dev/null
 	@$(STAMP) stamp-bits-sup
 
 stamp-c_base: ${c_base_headers}

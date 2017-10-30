@@ -1007,31 +1007,6 @@ Specify that stabs debugging
 information should be used instead of whatever format the host normally
 uses.  Normally GCC uses the same debug format as the host system.
 
-On MIPS based systems and on Alphas, you must specify whether you want
-GCC to create the normal ECOFF debugging format, or to use BSD-style
-stabs passed through the ECOFF symbol table.  The normal ECOFF debug
-format cannot fully handle languages other than C@.  BSD stabs format can
-handle other languages, but it only works with the GNU debugger GDB@.
-
-Normally, GCC uses the ECOFF debugging format by default; if you
-prefer BSD stabs, specify @option{--with-stabs} when you configure GCC@.
-
-No matter which default you choose when you configure GCC, the user
-can use the @option{-gcoff} and @option{-gstabs+} options to specify explicitly
-the debug format for a particular compilation.
-
-@option{--with-stabs} is meaningful on the ISC system on the 386, also, if
-@option{--with-gas} is used.  It selects use of stabs debugging
-information embedded in COFF output.  This kind of debugging information
-supports C++ well; ordinary COFF debugging information does not.
-
-@option{--with-stabs} is also meaningful on 386 systems running SVR4.  It
-selects use of stabs debugging information embedded in ELF output.  The
-C++ compiler currently (2.6.0) does not support the DWARF debugging
-information normally used on 386 SVR4 platforms; stabs provide a
-workable alternative.  This requires gas and gdb, as the normal SVR4
-tools can not generate or interpret stabs.
-
 @item --with-tls=@var{dialect}
 Specify the default TLS dialect, for systems were there is a choice.
 For ARM targets, possible values for @var{dialect} are @code{gnu} or
@@ -3168,8 +3143,6 @@ information have to.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
-@item
 @uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
 @item
 @uref{#arm-x-eabi,,arm-*-eabi}
@@ -3219,10 +3192,6 @@ information have to.
 @uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
-@item
-@uref{#mips-sgi-irix5,,mips-sgi-irix5}
-@item
-@uref{#mips-sgi-irix6,,mips-sgi-irix6}
 @item
 @uref{#nds32le-x-elf,,nds32le-*-elf}
 @item
@@ -3353,28 +3322,13 @@ The workaround is disabled by default if neither of
 @anchor{alpha-x-x}
 @heading alpha*-*-*
 This section contains general configuration information for all
-alpha-based platforms using ELF (in particular, ignore this section for
-DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
+Alpha-based platforms using ELF@.  In addition to reading this
 section, please read all other sections that match your target.
 
 We require binutils 2.11.2 or newer.
 Previous binutils releases had a number of problems with DWARF 2
 debugging information, not the least of which is incorrect linking of
 shared libraries.
-
-@html
-<hr />
-@end html
-@anchor{alpha-dec-osf51}
-@heading alpha*-dec-osf5.1
-Systems using processors that implement the DEC Alpha architecture and
-are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
-Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
-
-Support for Tru64 UNIX V5.1 has been removed in GCC 4.8.  As of GCC 4.6,
-support for Tru64 UNIX V4.0 and V5.0 has been removed.  As of GCC 3.2,
-versions before @code{alpha*-dec-osf4} are no longer supported.  (These
-are the versions which identify themselves as DEC OSF/1.)
 
 @html
 <hr />
@@ -3806,12 +3760,10 @@ It is recommended that you configure GCC to use the GNU assembler.  The
 versions included in Solaris 10, from GNU binutils 2.15 (in
 @file{/usr/sfw/bin/gas}), and Solaris 11, from GNU binutils 2.19 or
 newer (also available as @file{/usr/bin/gas} and
-@file{/usr/gnu/bin/as}), work fine.  Please note that the current
-version, from GNU binutils 2.26, only works on Solaris 12 when using the
-Solaris linker.  On Solaris 10 and 11, you either have to wait for GNU
-binutils 2.26.1 or newer, or stay with GNU binutils 2.25.1.  Recent
-versions of the Solaris assembler in @file{/usr/ccs/bin/as} work almost
-as well, though.
+@file{/usr/gnu/bin/as}), work fine.  The current version, from GNU
+binutils 2.29, is known to work, but the version from GNU binutils 2.26
+must be avoided.  Recent versions of the Solaris assembler in
+@file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
 
 For linking, the Solaris linker, is preferred.  If you want to use the GNU
@@ -3819,7 +3771,7 @@ linker instead, note that due to a packaging bug the version in Solaris
 10, from GNU binutils 2.15 (in @file{/usr/sfw/bin/gld}), cannot be used,
 while the version in Solaris 11, from GNU binutils 2.19 or newer (also
 in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works, as does the
-latest version, from GNU binutils 2.26.
+latest version, from GNU binutils 2.29.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
@@ -4167,22 +4119,6 @@ use traps on systems that support them.
 @html
 <hr />
 @end html
-@anchor{mips-sgi-irix5}
-@heading mips-sgi-irix5
-Support for IRIX 5 has been removed in GCC 4.6.
-
-@html
-<hr />
-@end html
-@anchor{mips-sgi-irix6}
-@heading mips-sgi-irix6
-Support for IRIX 6.5 has been removed in GCC 4.8.  Support for IRIX 6
-releases before 6.5 has been removed in GCC 4.6, as well as support for
-the O32 ABI.
-
-@html
-<hr />
-@end html
 @anchor{moxie-x-elf}
 @heading moxie-*-elf
 The moxie processor.
@@ -4456,9 +4392,8 @@ versions included in Solaris 10, from GNU binutils 2.15 (in
 @file{/usr/sfw/bin/gas}), and Solaris 11,
 from GNU binutils 2.19 or newer (also in @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), are known to work.
-Current versions of GNU binutils (2.26)
-are known to work as well, with the caveat mentioned in
-@uref{#ix86-x-solaris210,,i?86-*-solaris2.10} .  Note that your mileage may vary
+The current version, from GNU binutils 2.29,
+is known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Solaris tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} may fail to
@@ -4466,7 +4401,7 @@ build or cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.26) is known to work, but generally lacks platform specific
+version (2.29) is known to work, but generally lacks platform specific
 features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.

@@ -20939,10 +20939,10 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
 
 #if 0
-  /* We default the array ordering.  SDB will probably do
-     the right things even if DW_AT_ordering is not present.  It's not even
-     an issue until we start to get into multidimensional arrays anyway.  If
-     SDB is ever caught doing the Wrong Thing for multi-dimensional arrays,
+  /* We default the array ordering.  Debuggers will probably do the right
+     things even if DW_AT_ordering is not present.  It's not even an issue
+     until we start to get into multidimensional arrays anyway.  If a debugger
+     is ever caught doing the Wrong Thing for multi-dimensional arrays,
      then we'll have to put the DW_AT_ordering attribute back in.  (But if
      and when we find out that we need to put these in, we will only do so
      for multidimensional arrays.  */
@@ -23434,6 +23434,8 @@ highest_c_language (const char *lang1, const char *lang2)
   if (strcmp ("GNU C++98", lang1) == 0 || strcmp ("GNU C++98", lang2) == 0)
     return "GNU C++98";
 
+  if (strcmp ("GNU C17", lang1) == 0 || strcmp ("GNU C17", lang2) == 0)
+    return "GNU C17";
   if (strcmp ("GNU C11", lang1) == 0 || strcmp ("GNU C11", lang2) == 0)
     return "GNU C11";
   if (strcmp ("GNU C99", lang1) == 0 || strcmp ("GNU C99", lang2) == 0)
@@ -23510,7 +23512,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C99;
 
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
-	    if (strcmp (language_string, "GNU C11") == 0)
+	    if (strcmp (language_string, "GNU C11") == 0
+		|| strcmp (language_string, "GNU C17") == 0)
 	      language = DW_LANG_C11;
 	}
     }

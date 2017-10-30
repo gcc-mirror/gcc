@@ -1,3 +1,107 @@
+2017-10-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-perm-longlong.c: Update to use long long
+	types for testcase arguments.
+
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82762
+	* gcc.dg/torture/pr82762.c: New testcase.
+
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-27.c: New testcase.
+
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c17-version-1.c, gcc.dg/c17-version-2.c: New tests.
+
+2017-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/22141
+	* gcc.dg/store_merging_10.c: New test.
+	* gcc.dg/store_merging_11.c: New test.
+	* gcc.dg/store_merging_12.c: New test.
+	* g++.dg/pr71694.C: Add -fno-store-merging to dg-options.
+
+2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82725
+	* g++.dg/pr82725.C: New test.
+
+2017-10-29  Jim Wilson  <wilson@tuliptree.org>
+
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Delete -gcoff.
+	* lib/gfortran-dg.exp (gfortran-dg-debug-runtest): Delete -gcoff.
+
+2017-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70971
+	* g++.dg/torture/pr70971.C: New.
+
+2017-10-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81758
+	* gfortran.dg/class_63.f90: New test.
+
+2017-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82620
+	* gfortran.dg/allocate_error_7.f90: new test.
+
+2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82218
+	* g++.dg/cpp1y/constexpr-82218.C: New.
+
+2017-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt68.ad[sb]: New test.
+
+2017-10-27  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr82196-1.c (dg-options): Add -mno-avx.
+
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-hw.c: Add support for all 4 FMA
+	variants.  Check various conversions to/from float128.  Check
+	negation.  Use {\m...\M} in the tests.
+	* gcc.target/powerpc/float128-hw2.c: New test for implicit
+	_Float128 math functions.
+	* gcc.target/powerpc/float128-hw3.c: New test for strict ansi mode
+	not implicitly adding the _Float128 math functions.
+	* gcc.target/powerpc/float128-fma2.c: Delete, test is no longer
+	valid.
+	* gcc.target/powerpc/float128-sqrt2.c: Likewise.
+
+2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82692
+	* gcc.dg/torture/pr82692.c: New test.
+
+2017-10-27  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-neg-char.c: New.
+	* gcc.target/powerpc/fold-vec-neg-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-neg-int.c: New.
+	* gcc.target/powerpc/fold-vec-neg-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-neg-short.c: New.
+
+2017-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56342
+	* gfortran.dg/matmul_const.f90: New test.
+
+2017-10-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr70021.c: Add -mtune=skylake.
+
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82703
+	* gcc.dg/pr82703.c: New test.
+
 2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/ipa/propmalloc-1.c: New test-case.

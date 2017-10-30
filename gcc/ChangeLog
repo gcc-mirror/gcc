@@ -1,3 +1,383 @@
+2017-10-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, alpha*-*-*): Remove DEC OSF/1
+	etc. reference.
+	(Specific, alpha*-dec-osf5.1): Remove.
+	(Specific, mips-sgi-irix5): Remove.
+	(Specific, mips-sgi-irix6): Remove.
+
+2017-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/22141
+	* gimple-ssa-store-merging.c (merged_store_group::apply_stores): Fix
+	arguments to clear_bit_region_be.
+
+2017-10-30  Jim Wilson  <wilson@tuliptree.org>
+
+	* gimplify.c: Include memmodel.h.
+
+2017-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	* omp-grid.c (grid_attempt_target_gridification): Also insert a
+	condition whether loop should be executed at all.
+
+2017-10-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support for
+	gimple folding of vec_madd() intrinsics.
+	* config/rs6000/altivec.md (mulv8hi3): Rename altivec_vmladduhm to
+	fmav8hi4.  (altivec_vmladduhm): Rename to fmav8hi4.
+	* config/rs6000/rs6000-builtin.def: Rename vmladduhm to fmav8hi4
+
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82762
+	Revert
+	2017-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82129
+	Revert
+	2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81181
+	* tree-ssa-pre.c (compute_antic_aux): Defer clean() to ...
+	(compute_antic): ... end of iteration here.
+
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (C Dialect Options): Document -std=c17,
+	-std=iso9899:2017 and -std=gnu17.
+	* doc/standards.texi (C Language): Document C17 support.
+	* doc/cpp.texi (Overview): Mention -std=c17.
+	(Standard Predefined Macros): Document C11 and C17 values of
+	__STDC_VERSION__.  Do not refer to C99 support as incomplete.
+	* doc/extend.texi (Inline): Do not list individual options for
+	standards newer than C99.
+	* dwarf2out.c (highest_c_language, gen_compile_unit_die): Handle
+	"GNU C17".
+	* config/rl78/rl78.c (rl78_option_override): Handle "GNU C17"
+	language name.
+
+2017-10-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* asan.c (asan_finish_file): Align asan globals array by shadow
+	granularity.
+
+2017-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/22141
+	* gimple-ssa-store-merging.c: Include rtl.h and expr.h.
+	(struct store_immediate_info): Add bitregion_start and bitregion_end
+	fields.
+	(store_immediate_info::store_immediate_info): Add brs and bre
+	arguments and initialize bitregion_{start,end} from those.
+	(struct merged_store_group): Add bitregion_start, bitregion_end,
+	align_base and mask fields.  Drop unnecessary struct keyword from
+	struct store_immediate_info.  Add do_merge method.
+	(clear_bit_region_be): Use memset instead of loop storing zeros.
+	(merged_store_group::do_merge): New method.
+	(merged_store_group::merge_into): Use do_merge.  Allow gaps in between
+	stores as long as the surrounding bitregions have no gaps.
+	(merged_store_group::merge_overlapping): Use do_merge.
+	(merged_store_group::apply_stores): Test that bitregion_{start,end}
+	is byte aligned, rather than requiring that start and width are
+	byte aligned.  Drop unnecessary struct keyword from
+	struct store_immediate_info.  Allocate and populate also mask array.
+	Make start of the arrays relative to bitregion_start rather than
+	start and size them according to bitregion_{end,start} difference.
+	(struct imm_store_chain_info): Drop unnecessary struct keyword from
+	struct store_immediate_info.
+	(pass_store_merging::gate): Punt if BITS_PER_UNIT or CHAR_BIT is not 8.
+	(pass_store_merging::terminate_all_aliasing_chains): Drop unnecessary
+	struct keyword from struct store_immediate_info.
+	(imm_store_chain_info::coalesce_immediate_stores): Allow gaps in
+	between stores as long as the surrounding bitregions have no gaps.
+	Formatting fixes.
+	(struct split_store): Add orig non-static data member.
+	(split_store::split_store): Initialize orig to false.
+	(find_constituent_stmts): Return store_immediate_info *, non-NULL
+	if there is exactly a single original stmt.  Change stmts argument
+	to pointer from reference, if NULL, don't push anything to it.  Add
+	first argument, use it to optimize skipping over orig stmts that
+	are known to be before bitpos already.  Simplify.
+	(split_group): Return unsigned int count how many stores are or
+	would be needed rather than a bool.  Add allow_unaligned argument.
+	Change split_stores argument from reference to pointer, if NULL,
+	only do a dry run computing how many stores would be produced.
+	Rewritten algorithm to use both alignment and misalign if
+	!allow_unaligned and handle bitfield stores with gaps.
+	(imm_store_chain_info::output_merged_store): Set start_byte_pos
+	from bitregion_start instead of start.  Compute allow_unaligned
+	here, if true, do 2 split_group dry runs to compute which one
+	produces fewer stores and prefer aligned if equal.  Punt if
+	new count is bigger or equal than original before emitting any
+	statements, rather than during that.  Remove no longer needed
+	new_ssa_names tracking.  Replace num_stmts with
+	split_stores.length ().  Use 32-bit stack allocated entries
+	in split_stores auto_vec.  Try to reuse original store lhs/rhs1
+	if possible.  Handle bitfields with gaps.
+	(pass_store_merging::execute): Ignore bitsize == 0 stores.
+	Compute bitregion_{start,end} for the stores and construct
+	store_immediate_info with that.  Formatting fixes.
+
+2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82725
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
+	UNSPEC_DTPOFF and UNSPEC_NTPOFF with SImode immediate offset.
+
+2017-10-29  Jim Wilson  <wilson@tuliptree.org>
+
+	* gimplify.c: Include tm_p.h.
+
+	* common.opt (gcoff): Re-add as ignored option.
+	(gcoff1, gcoff2, gcoff3): Likewise.
+
+	* Makefile.in (OBJS): Delete sdbout.o.
+	(GTFILES): Delete $(srcdir)/sdbout.c.
+	* debug.h: Delete sdb_debug_hooks.
+	* final.c: Delete sdbout.h include.
+	(final_scan_insn): Delete SDB_DEBUG check.
+	(rest_of_clean_state): Likewise.
+	* output.h: Delete sdb_begin_function_line.
+	* sdbout.c: Delete.
+	* sdbout.h: Delete.
+	* toplev.c: Delete sdbout.h include.
+	(process_options): Delete SDB_DEBUG check.
+	* tree-core.h (tree_type_common): Delete pointer field of
+	tree_type_symtab.
+	* tree.c (copy_node): Clear TYPE_SYMTAB_DIE instead of
+	TYPE_SYMTAB_POINTER.
+	* tree.h (TYPE_SYMTAB_POINTER): Delete.
+	(TYPE_SYMTAB_IS_POINTER): Delete.
+	(TYPE_SYMTAB_IS_DIE): Renumber.
+	* xcoffout.c: Refer to former sdbout.c file.
+	(xcoffout_begin_prologue): Use past tense for sdbout.c reference.
+
+	* doc/install.texi (--with-stabs): Delete COFF and ECOFF info.
+	* doc/invoke.texi (SEEALSO): Delete adb and sdb references.
+	(Debugging Options): Delete -gcoff.
+	(-gstabs): Delete SDB reference.
+	(-gcoff): Delete.
+	(-gcoff@var{level}): Delete.
+	* doc/passes.texi (Debugging information output): Delete SDB and
+	sdbout.c references.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (DWARF_CIE_DATA_ALIGNMENT): Delete SDB from xref.
+	(SDB and DWARF): Change node name to DWARF and delete SDB and COFF
+	references.
+	(DEBUGGER_AUTO_OFFSET): Delete COFF and SDB references.
+	(PREFERRED_DEBUGGING_TYPE): Delete SDB_DEBUG and -gcoff references.
+	(SDB_DEBUGGING_INFO): Delete.
+	(PUT_SDB_@dots{}, SDB_DELIM, SDB_ALLOW_UNKNOWN_REFERENCES)
+	SDB_ALLOW_FORWARD_REFERENCES, SDB_OUTPUT_SOURCE_LINE): Delete.
+	* target.def (output_source_filename): Delete COFF reference.
+
+	* common.opt (gcoff): Delete.
+	(gxcoff+): Update Negative chain.
+	* defaults.h: Delete all references to SDB_DEBUGGING_INFO and
+	SDB_DEBUG.
+	* dwarf2out.c (gen_array_type_die): Change SDB to debuggers.
+	* flag-types.h (enum debug_info_type): Delete SDB_DEBUG.
+	* function.c (number_blocks): Delete SDB_DEBUGGING_INFO, SDB_DEBUG,
+	and SDB references.
+	(expand_function_start): Change sdb reference to past tense.
+	(expand_function_end): Change sdb reference to past tense.
+	* gcc.c (cpp_unique_options): Delete gcoff3 reference.
+	* opts.c (debug_type_names): Delete coff entry.
+	(common_handle_option): Delete OPT_gcoff case.
+	* system.h (SDB_DEBUG, SDB_DEBUGGING_INFO): Poison.
+
+	* config/dbxcoff.h (PREFERRED_DEBUGGING_TYPE): Set to DBX_DEBUG.
+	* config/cris/cris.h: Delete SDB reference in comment.
+	* config/i386/cygming.h: Don't define SDB_DEBUGGING_INFO.
+	(ASM_DECLARE_FUNCTION_NAME): Delete SDB reference from comment.
+	* config/i386/gas.h: Don't define SDB_DEBUGGING_INFO.
+	* config/i386/i386.c (svr4_dbx_register_map): Change SDB references
+	to past tense.
+	(ix86_expand_prologue): Likewise.
+	* config/i386/winnt.c (i386_pe_start_function): Don't check SDB_DEBUG.
+	* config/ia64/ia64.h: Likewise.
+	* config/m68k/m68kelf.h (DBX_REGISTER_NUMBER): Delete SDB reference.
+	* config/mips/mips.h (SUBTARGET_ASM_DEBUGGING_SPEC): Delete gcoff*
+	support.
+	* config/mmix/mmix.h: Likewise.
+	* config/nds32/nds32.c: Likewise.
+	* config/stormy/storym16.h: Likewise.
+	* config/visium/visium.h: Likewise.
+	* config/vx-common.h (SDB_DEBUGGING_INFO): Delete undef.
+
+2017-10-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.h (FRAME_GROWS_DOWNWARD): Define to 1.
+	* config/nios2/nios2.c (nios2_initial_elimination_offset):  Make
+	FRAME_POINTER_REGNUM point at high end of local var area.
+
+2017-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bb-reorder.c (find_traces_1_round): Fix off-by-one index.
+	Move comment around.  Do not reset best_edge for a copiable
+	destination if the copy would cause a partition change.
+	(better_edge_p): Remove redundant check.
+
+2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_fp_compare_mode): Remove prototype.
+
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* builtins.c (CASE_MATHFN_FLOATN): New helper macro to add cases
+	for math functions that have _Float<N> and _Float<N>X variants.
+	(mathfn_built_in_2): Add support for math functions that have
+	_Float<N> and _Float<N>X variants.
+	(DEF_INTERNAL_FLT_FLOATN_FN): New helper macro.
+	(expand_builtin_mathfn_ternary): Add support for fma with
+	_Float<N> and _Float<N>X variants.
+	(expand_builtin): Likewise.
+	(fold_builtin_3): Likewise.
+	* builtins.def (DEF_EXT_LIB_FLOATN_NX_BUILTINS): New macro to
+	create math function _Float<N> and _Float<N>X variants as external
+	library builtins.
+	(BUILT_IN_COPYSIGN _Float<N> and _Float<N>X variants) Use
+	DEF_EXT_LIB_FLOATN_NX_BUILTINS to make built-in functions using
+	the __builtin_ prefix and if not strict ansi, without the prefix.
+	(BUILT_IN_FABS _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_FMA _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_FMAX _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_FMIN _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_NAN _Float<N> and _Float<N>X variants): Likewise.
+	(BUILT_IN_SQRT _Float<N> and _Float<N>X variants): Likewise.
+	* builtin-types.def (BT_FN_FLOAT16_FLOAT16_FLOAT16_FLOAT16): New
+	function signatures for fma _Float<N> and _Float<N>X variants.
+	(BT_FN_FLOAT32_FLOAT32_FLOAT32_FLOAT32): Likewise.
+	(BT_FN_FLOAT64_FLOAT64_FLOAT64_FLOAT64): Likewise.
+	(BT_FN_FLOAT128_FLOAT128_FLOAT128_FLOAT128): Likewise.
+	(BT_FN_FLOAT32X_FLOAT32X_FLOAT32X_FLOAT32X): Likewise.
+	(BT_FN_FLOAT64X_FLOAT64X_FLOAT64X_FLOAT64X): Likewise.
+	(BT_FN_FLOAT128X_FLOAT128X_FLOAT128X_FLOAT128X): Likewise.
+	* gencfn-macros.c (print_case_cfn): Add support for math functions
+	that have _Float<N> and _Float<N>X variants.
+	(print_define_operator_list): Likewise.
+	(fltfn_suffixes): Likewise.
+	(main): Likewise.
+	* internal-fn.def (DEF_INTERNAL_FLT_FLOATN_FN): New helper macro
+	for math functions that have _Float<N> and _Float<N>X variants.
+	(SQRT): Add support for sqrt, copysign, fmin and fmax _Float<N>
+	and _Float<N>X variants.
+	(COPYSIGN): Likewise.
+	(FMIN): Likewise.
+	(FMAX): Likewise.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Add support for
+	copysign, fma, fmax, fmin, and sqrt _Float<N> and _Float<N>X
+	variants.
+	(integer_valued_read_call_p): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	(fold_const_call_sss): Add support for copysign, fmin, and fmax
+	_Float<N> and _Float<N>X variants.
+	(fold_const_call_ssss): Add support for fma _Float<N> and
+	_Float<N>X variants.
+	* gimple-ssa-backprop.c (backprop::process_builtin_call_use): Add
+	support for copysign and fma _Float<N> and _Float<N>X variants.
+	(backprop::process_builtin_call_use): Likewise.
+	* tree-call-cdce.c (can_test_argument_range); Add support for
+	sqrt _Float<N> and _Float<N>X variants.
+	(edom_only_function): Likewise.
+	(get_no_error_domain): Likewise.
+	* tree-ssa-math-opts.c (internal_fn_reciprocal): Likewise.
+	* tree-ssa-reassoc.c (attempt_builtin_copysign): Add support for
+	copysign _Float<N> and _Float<N>X variants.
+	* config/rs6000/rs6000-builtin.def (SQRTF128): Delete, this is now
+	handled by machine independent code.
+	(FMAF128): Likewise.
+	* doc/cpp.texi (Common Predefined Macros): Document defining
+	__FP_FAST_FMAF<N> and __FP_FAST_FMAF<N>X if the backend supports
+	fma _Float<N> and _Float<N>X variants.
+
+2017-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82692
+	* config/i386/i386-modes.def (CCFPU): Remove definition.
+	* config/i386/i386.c (put_condition_mode): Remove CCFPU mode handling.
+	(ix86_cc_modes_compatible): Ditto.
+	(ix86_expand_carry_flag_compare): Ditto.
+	(ix86_expand_int_movcc): Ditto.
+	(ix86_expand_int_addcc): Ditto.
+	(ix86_reverse_condition): Ditto.
+	(ix86_unordered_fp_compare): Rename from ix86_fp_compare_mode.
+	Return true/false for unordered/ordered fp comparisons.
+	(ix86_cc_mode): Always return CCFPmode for float mode comparisons.
+	(ix86_prepare_fp_compare_args): Update for rename.
+	(ix86_expand_fp_compare): Update for rename.  Generate unordered
+	compare RTXes wrapped with UNSPEC_NOTRAP unspec.
+	(ix86_expand_sse_compare_and_jump): Ditto.
+	* config/i386/predicates.md (fcmov_comparison_operator):
+	Remove CCFPU mode handling.
+	(ix86_comparison_operator): Ditto.
+	(ix86_carry_flag_operator): Ditto.
+	* config/i386/i386.md (UNSPEC_NOTRAP): New unspec.
+	(*cmpu<mode>_i387): Wrap compare RTX with UNSPEC_NOTRAP unspec.
+	(*cmpu<mode>_cc_i387): Ditto.
+	(FPCMP): Remove mode iterator.
+	(unord): Remove mode attribute.
+	(unord_subst): New define_subst transformation
+	(unord): New define_subst attribute.
+	(unordered): Ditto.
+	(*cmpi<unord><MODEF:mode>): Rewrite using unord_subst transformation.
+	(*cmpi<unord>xf_i387): Ditto.
+	* config/i386/sse.md (<sse>_<unord>comi<round_saeonly_name>): Merge
+	from <sse>_comi<round_saeonly_name> and <sse>_ucomi<round_saeonly_name>
+	using unord_subst transformation.
+	* config/i386/subst.md (SUBST_A): Remove CCFP and CCFPU modes.
+	(round_saeonly): Also handle CCFP mode.
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_NOTRAP unspec.
+	Remove UNSPEC_SAHF unspec handling.
+
+2017-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune.def (X86_TUNE_INTER_UNIT_MOVES_TO_VEC): Disable for Zen.
+
+2017-10-27  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-sprintf.c: Include domwalk.h.
+	(class sprintf_dom_walker): New class, derived from dom_walker.
+	(sprintf_dom_walker::before_dom_children): New function.
+	(struct call_info): Moved into sprintf_dom_walker class
+	(compute_formath_length, handle_gimple_call): Likewise.
+	(sprintf_length::execute): Call the dominator walker rather
+	than walking the statements.
+
+	* tree-vrp.c (check_all_array_refs): Do not use wi->info to smuggle
+	gimple statement locations.
+	(check_array_bounds): Corresponding changes.  Get the statement's
+	location directly from wi->stmt.
+
+2017-10-27  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	PR target/82717
+	* doc/invoke.texi (RISC-V) <-mabi>: Correct and improve.
+
+2017-10-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_REG_DEPENDENCY,
+	X86_TUNE_MOVX): Disable for Haswell and newer CPUs.
+
+2017-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82703
+	* config/i386/i386-protos.h (maybe_get_pool_constant): Removed.
+	* config/i386/i386.c (maybe_get_pool_constant): Removed.
+	(ix86_split_to_parts): Use avoid_constant_pool_reference instead of
+	maybe_get_pool_constant.
+	* config/i386/predicates.md (zero_extended_scalar_load_operand):
+	Likewise.
+
+2017-10-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, i?86-*-solaris2.10): Simplify gas
+	2.26 caveat.  Update gas and gld versions.
+	(Specific, *-*-solaris2*): Update binutils version.  Remove caveat
+	reference.
+
 2017-10-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* cgraph.h (set_malloc_flag): Declare.
@@ -58,7 +438,7 @@
 	* config/nios2/constraints.md ("S"): Match r0rel_constant_p too.
 	* config/nios2/nios2-protos.h (r0rel_constant_p): Declare.
 	* config/nios2/nios2.c: (nios2_r0rel_sec_regex): New.
-	(nios2_option_overide): Initialize it.  Don't allow R0-relative 
+	(nios2_option_overide): Initialize it.  Don't allow R0-relative
 	addressing with PIC.
 	(nios2_rtx_costs): Handle r0rel_constant_p like gprel_constant_p.
 	(nios2_symbolic_constant_p): Likewise.
@@ -77,7 +457,7 @@
 
 	* config/nios2/nios2.c: Include xregex.h.
 	(nios2_gprel_sec_regex): New.
-	(nios2_option_overide): Initialize it.  Don't allow GP-relative 
+	(nios2_option_overide): Initialize it.  Don't allow GP-relative
 	addressing with PIC.
 	(nios2_small_section_name_p): Check for regex match.
 	* config/nios2/nios2.opt (mgprel-sec=): New option.
@@ -238,8 +618,8 @@
 2017-10-26  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/81800
-	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2): Add flag_trapping_math
-	and flag_fp_int_builtin_inexact.
+	* config/aarch64/aarch64.md (lrint<GPF:mode><GPI:mode>2):
+	Add flag_trapping_math and flag_fp_int_builtin_inexact.
 
 2017-10-25  Palmer Dabbelt  <palmer@dabbelt.com>
 
@@ -1568,8 +1948,8 @@
 	(__builtin_ia32_reducesd, __builtin_ia32_reducess): Remove.
 	* config/i386/sse.md (reduces<mode>): Renamed to ...
 	(reduces<mode><mask_scalar_name>): ... this.
-	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}): Changed
-	to ...
+	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}):
+	Changed to ...
 	(vreduce<ssescalarmodesuffix>\t{%3, %2, %1, %0<mask_scalar_operand4>|
 	%0<mask_scalar_operand4>, %1, %2, %3}): ... this.
 
@@ -1619,7 +1999,8 @@
 
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32): New.
+	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32):
+	New.
 	(vdot_lane_u32, vdot_laneq_u32, vdotq_lane_u32, vdotq_laneq_u32): New.
 	(vdot_lane_s32, vdot_laneq_s32, vdotq_lane_s32, vdotq_laneq_s32): New.
 
@@ -1641,17 +2022,21 @@
 
 	* config/aarch64/aarch64.h (AARCH64_FL_DOTPROD): New.
 	(AARCH64_ISA_DOTPROD, TARGET_DOTPROD): New.
-	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add TARGET_DOTPROD.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	Add TARGET_DOTPROD.
 	* config/aarch64/aarch64-option-extensions.def (dotprod): New.
-	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75): Enable TARGET_DOTPROD.
+	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75):
+	Enable TARGET_DOTPROD.
 	(cortex-a75.cortex-a55): Likewise.
 	* doc/invoke.texi (aarch64-feature-modifiers): Document dotprod.
 
 2017-10-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm-builtins.c (arm_unsigned_uternop_qualifiers): New.
-	(UTERNOP_QUALIFIERS, arm_umac_lane_qualifiers, UMAC_LANE_QUALIFIERS): New.
-	* config/arm/arm_neon_builtins.def (sdot, udot, sdot_lane, udot_lane): new.
+	(UTERNOP_QUALIFIERS, arm_umac_lane_qualifiers, UMAC_LANE_QUALIFIERS):
+	New.
+	* config/arm/arm_neon_builtins.def (sdot, udot, sdot_lane, udot_lane):
+	New.
 	* config/arm/iterators.md (DOTPROD, VSI2QI, vsi2qi): New.
 	(UNSPEC_DOT_S, UNSPEC_DOT_U, opsuffix): New.
 	* config/arm/neon.md (neon_<sup>dot<vsi2qi>): New.

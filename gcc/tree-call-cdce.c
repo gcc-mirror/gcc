@@ -314,6 +314,7 @@ can_test_argument_range (gcall *call)
     CASE_FLT_FN (BUILT_IN_POW10):
     /* Sqrt.  */
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       return check_builtin_call (call);
     /* Special one: two argument pow.  */
     case BUILT_IN_POW:
@@ -342,6 +343,7 @@ edom_only_function (gcall *call)
     CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
     CASE_FLT_FN (BUILT_IN_SIN):
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
     CASE_FLT_FN (BUILT_IN_FMOD):
     CASE_FLT_FN (BUILT_IN_REMAINDER):
       return true;
@@ -703,6 +705,7 @@ get_no_error_domain (enum built_in_function fnc)
                          308, true, false);
     /* sqrt: [0, +inf)  */
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       return get_domain (0, true, true,
                          0, false, false);
     default:

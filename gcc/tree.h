@@ -2072,11 +2072,6 @@ extern machine_mode vector_type_mode (const_tree);
 #define TYPE_SYMTAB_ADDRESS(NODE) \
   (TYPE_CHECK (NODE)->type_common.symtab.address)
 
-/* Symtab field as a string.  Used by COFF generator in sdbout.c to
-   hold struct/union type tag names.  */
-#define TYPE_SYMTAB_POINTER(NODE) \
-  (TYPE_CHECK (NODE)->type_common.symtab.pointer)
-
 /* Symtab field as a pointer to a DWARF DIE.  Used by DWARF generator
    in dwarf2out.c to point to the DIE generated for the type.  */
 #define TYPE_SYMTAB_DIE(NODE) \
@@ -2087,8 +2082,7 @@ extern machine_mode vector_type_mode (const_tree);
    union.  */
 
 #define TYPE_SYMTAB_IS_ADDRESS (0)
-#define TYPE_SYMTAB_IS_POINTER (1)
-#define TYPE_SYMTAB_IS_DIE (2)
+#define TYPE_SYMTAB_IS_DIE (1)
 
 #define TYPE_LANG_SPECIFIC(NODE) \
   (TYPE_CHECK (NODE)->type_with_lang_specific.lang_specific)

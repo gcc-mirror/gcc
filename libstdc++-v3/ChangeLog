@@ -1,4 +1,93 @@
+2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am (stamp-bits-sup): Do not create broken symlink
+	to stamp-bits.
+	* include/Makefile.in: Regenerate.
+
+	* include/std/fstream (basic_ifstream, basic_ofstream, basic_fstream):
+	Remove outdated comments about calling c_str() to create a file stream
+	from a std::string.
+	(basic_ofstream::basic_ofstream, basic_ofstream::open): Remove
+	redundant ios_mode::trunc bits from default arguments and comments.
+
+	* doc/xml/faq.xml: Adjust "What is libstdc++?" answer slightly.
+
+	* include/bits/hashtable_policy.h: Include <tuple>.
+	* include/std/unordered_map: Only include <bits/stl_pair.h> instead
+	of <utility> and <tuple>.
+	* include/std/unordered_set: Likewise.
+
+2017-10-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2485
+	* include/debug/array (get(const array<_Tp, _Nm>&&)): New.
+	* include/std/array (get(const array<_Tp, _Nm>&&)): Likewise.
+	* include/std/tuple (get(const tuple<_Elements...>&&)): Likewise.
+	(get(const tuple<_Types...>&&)): Likewise.
+	* include/std/utility
+	(__pair_get::__const_move_get(const std::pair<_Tp1, _Tp2>&&)):
+	Likewise.
+	(get(const std::pair<_Tp1, _Tp2>&&)): Likewise.
+	(get(const pair<_Tp, _Up>&&)): Likewise.
+	(get(const pair<_Up, _Tp>&&)): Likewise.
+	* testsuite/20_util/pair/astuple/get.cc: Add tests for
+	new overloads.
+	* testsuite/20_util/pair/astuple/get_by_type.cc: Likewise.
+	* testsuite/20_util/tuple/element_access/get2.cc: Likewise.
+	* testsuite/20_util/tuple/element_access/get2_by_type.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_debug_neg.cc:
+	Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/node_handle.h (_Node_insert_return::get): Avoid
+	use of std::tie and std::get.
+
+	* include/Makefile.am: Put headers in alphabetical order.
+	* include/Makefile.in: Regenerate.
+
+	* include/bits/fs_dir.h (directory_iterator): Remove noexcept from
+	constructors and increment member (LWG 3013).
+	(recursive_directory_iterator): Likewise.
+	* include/bits/fs_ops.h (copy, copy_file, create_directories)
+	(is_empty, remove_all): Remove noexcept (LWG 3013 and LWG 3014).
+	* src/filesystem/std-dir.cc (directory_iterator::increment)
+	(recursive_directory_iterator::increment): Remove noexcept.
+	* src/filesystem/std-ops.cc (copy, copy_file, create_directories)
+	(is_empty, remove_all): Remove noexcept
+
+	* include/bits/fs_dir.h (file_status): Make default constructor
+	non-explicit (LWG 2787).
+	* testsuite/27_io/filesystem/file_status/1.cc: New test.
+	* testsuite/experimental/filesystem/file_status/1.cc: New test.
+
+	* include/std/fstream (basic_filebuf::_If_path): New SFINAE helper.
+	(basic_filebuf::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_ifstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_ifstream::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_ofstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_ofstream::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_fstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_fstream::open<Path>(const Path&, const ios_base::openmode&)):
+	New constructors and member functions.
+	* testsuite/27_io/basic_filebuf/open/char/path.cc: New test.
+	* testsuite/27_io/basic_fstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_fstream/open/char/path.cc: New test.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_ifstream/open/char/path.cc: New test.
+	* testsuite/27_io/basic_ofstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_ofstream/open/char/path.cc: New test.
+
+	* include/bits/fs_path.h (path::format): Define new enumeration type.
+	(path(string_type&&), path<Source>(const Source&))
+	(path<InputIterator>(InputIterator, InputIterator))
+	(path<Source>(const Source&, const locale&))
+	(path<InputIterator>(InputIterator, InputIterator, const locale&)):
+	Add format parameter.
+	* testsuite/27_io/filesystem/path/construct/format.cc: New test.
 
 	* include/bits/stl_algo.h (__find_if_not_n, generate_n): Cast to void
 	to ensure overloaded comma not used.
