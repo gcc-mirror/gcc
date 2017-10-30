@@ -1,3 +1,9 @@
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR lto/82757
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Strip two leading _s from the __gnu_lto_* symbols.
+
 2017-10-24  Alan Modra  <amodra@gmail.com>
 
 	PR lto/82687
