@@ -9045,10 +9045,11 @@ check_return_expr (tree retval, bool *no_warning)
 	/* You can return a `void' value from a function of `void'
 	   type.  In that case, we have to evaluate the expression for
 	   its side-effects.  */
-	  finish_expr_stmt (retval);
+	finish_expr_stmt (retval);
       else
-	permerror (input_location, "return-statement with a value, in function "
-		   "returning 'void'");
+	permerror (input_location,
+		   "return-statement with a value, in function "
+		   "returning %qT", valtype);
       current_function_returns_null = 1;
 
       /* There's really no value to return, after all.  */

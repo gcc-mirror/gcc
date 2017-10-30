@@ -1,3 +1,18 @@
+2017-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_op_call_1): Test for FUNCTION_DECL in same manner
+	as a few lines earlier.
+	* cp-tree.h (PACK_EXPANSION_PATTERN): Fix white space.
+	* decl.c (grokfndecl): Fix indentation.
+	(compute_array_index_type): Use processing_template_decl_sentinel.
+	(grok_op_properties): Move warnings to end.  Reorder other checks
+	to group similar entities.  Tweak diagnostics.
+	* lex.c (unqualified_name_lookup_error): No need to check name is
+	not ERROR_MARK operator.
+	* parser.c (cp_parser_operator): Select operator code before
+	looking it up.
+	* typeck.c (check_return_expr): Fix indentation and line wrapping.
+
 2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (invalid_nontype_parm_type_p): Return a bool instead of an int.

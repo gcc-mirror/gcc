@@ -462,10 +462,7 @@ unqualified_name_lookup_error (tree name, location_t loc)
     loc = EXPR_LOC_OR_LOC (name, input_location);
 
   if (IDENTIFIER_ANY_OP_P (name))
-    {
-      if (name != cp_operator_id (ERROR_MARK))
-	error_at (loc, "%qD not defined", name);
-    }
+    error_at (loc, "%qD not defined", name);
   else
     {
       if (!objc_diagnose_private_ivar (name))
