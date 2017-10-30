@@ -1221,12 +1221,8 @@
 	gcc_assert (!reg_overlap_mentioned_p (operands[0], operands[1])
 		    || REGNO (operands[0]) == REGNO (operands[1]));
 
-	if (operands[2] == CONST1_RTX (SImode))
-	  /* This clobbers CC.  */
-	  emit_insn (gen_arm_ashldi3_1bit (operands[0], operands[1]));
-	else
-	  arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
-					 operands[2], operands[3], operands[4]);
+	arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
+				       operands[2], operands[3], operands[4]);
       }
     DONE;
   }"
@@ -1325,13 +1321,9 @@
 	gcc_assert (!reg_overlap_mentioned_p (operands[0], operands[1])
 		    || REGNO (operands[0]) == REGNO (operands[1]));
 
-	if (operands[2] == CONST1_RTX (SImode))
-	  /* This clobbers CC.  */
-	  emit_insn (gen_arm_<shift>di3_1bit (operands[0], operands[1]));
-	else
-	  /* This clobbers CC (ASHIFTRT by register only).  */
-	  arm_emit_coreregs_64bit_shift (<CODE>, operands[0], operands[1],
-				 	 operands[2], operands[3], operands[4]);
+	/* This clobbers CC (ASHIFTRT by register only).  */
+	arm_emit_coreregs_64bit_shift (<CODE>, operands[0], operands[1],
+				       operands[2], operands[3], operands[4]);
       }
 
     DONE;
