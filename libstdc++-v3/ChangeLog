@@ -1,5 +1,9 @@
 2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/Makefile.am (stamp-bits-sup): Do not create broken symlink
+	to stamp-bits.
+	* include/Makefile.in: Regenerate.
+
 	* include/std/fstream (basic_ifstream, basic_ofstream, basic_fstream):
 	Remove outdated comments about calling c_str() to create a file stream
 	from a std::string.

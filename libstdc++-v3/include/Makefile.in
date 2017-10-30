@@ -1480,7 +1480,7 @@ stamp-bits: ${bits_headers}
 	@$(STAMP) stamp-bits
 
 stamp-bits-sup: stamp-bits ${bits_sup_headers}
-	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
+	@-cd ${bits_builddir} && $(LN_S) ${bits_sup_headers} . 2>/dev/null
 	@$(STAMP) stamp-bits-sup
 
 stamp-c_base: ${c_base_headers}
