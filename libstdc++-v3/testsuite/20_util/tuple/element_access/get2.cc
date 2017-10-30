@@ -37,4 +37,19 @@ void test01()
   short&&  t3one __attribute__((unused)) = std::get<0>(std::move(t3));
   int&&    t3two __attribute__((unused)) = std::get<1>(std::move(t3));
   double&& t3thr __attribute__((unused)) = std::get<2>(std::move(t3));
+
+  const std::tuple<int> ct1;
+
+  const int&&   ct1one __attribute__((unused)) = std::get<0>(std::move(ct1));
+
+  const std::tuple<float, int> ct2;
+
+  const float&& ct2one __attribute__((unused)) = std::get<0>(std::move(ct2));
+  const int&&   ct2two __attribute__((unused)) = std::get<1>(std::move(ct2));
+
+  const std::tuple<short, int, double> ct3;
+
+  const short&&  ct3one __attribute__((unused)) = std::get<0>(std::move(ct3));
+  const int&&    ct3two __attribute__((unused)) = std::get<1>(std::move(ct3));
+  const double&& ct3thr __attribute__((unused)) = std::get<2>(std::move(ct3));
 }
