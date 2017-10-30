@@ -1,3 +1,8 @@
+2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82085
+	* g++.dg/cpp1y/var-templ56.C: New.
+
 2017-10-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk
