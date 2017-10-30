@@ -1,3 +1,7 @@
+2017-10-30  Jim Wilson  <wilson@tuliptree.org>
+
+	* gimplify.c: Include memmodel.h.
+
 2017-10-30  Martin Jambor  <mjambor@suse.cz>
 
 	* omp-grid.c (grid_attempt_target_gridification): Also insert a
