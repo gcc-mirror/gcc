@@ -1,3 +1,7 @@
+2017-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c (HAVE_TARGET_EXECUTABLE_SUFFIX): Remove old kludge.
+
 2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.md (ashldi3): Remove shift by 1 expansion.
