@@ -1,3 +1,9 @@
+2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82085
+	* pt.c (tsubst_copy_and_build, [INDIRECT_REF]): For a REFERENCE_REF_P,
+	unconditionally call convert_from_reference.
+
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
