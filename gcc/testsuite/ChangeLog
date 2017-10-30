@@ -1,3 +1,7 @@
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c17-version-1.c, gcc.dg/c17-version-2.c: New tests.
+
 2017-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/22141

@@ -1,3 +1,9 @@
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC17 and CLK_STDC17.
+	* init.c (lang_defaults): Add GNUC17 and STDC17 data.
+	(cpp_init_builtins): Handle C17 value of __STDC_VERSION__.
+
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/82506

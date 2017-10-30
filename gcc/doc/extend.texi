@@ -7775,8 +7775,8 @@ GCC implements three different semantics of declaring a function
 inline.  One is available with @option{-std=gnu89} or
 @option{-fgnu89-inline} or when @code{gnu_inline} attribute is present
 on all inline declarations, another when
-@option{-std=c99}, @option{-std=c11},
-@option{-std=gnu99} or @option{-std=gnu11}
+@option{-std=c99},
+@option{-std=gnu99} or an option for a later C version is used
 (without @option{-fgnu89-inline}), and the third
 is used when compiling C++.
 

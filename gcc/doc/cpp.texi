@@ -211,8 +211,8 @@ Standard C@.  In its default mode, the GNU C preprocessor does not do a
 few things required by the standard.  These are features which are
 rarely, if ever, used, and may cause surprising changes to the meaning
 of a program which does not expect them.  To get strict ISO Standard C,
-you should use the @option{-std=c90}, @option{-std=c99} or
-@option{-std=c11} options, depending
+you should use the @option{-std=c90}, @option{-std=c99},
+@option{-std=c11} or @option{-std=c17} options, depending
 on which version of the standard you want.  To get all the mandatory
 diagnostics, you must also use @option{-pedantic}.  @xref{Invocation}.
 
@@ -1857,8 +1857,11 @@ implementation, unless GNU CPP is being used with GCC@.
 
 The value @code{199409L} signifies the 1989 C standard as amended in
 1994, which is the current default; the value @code{199901L} signifies
-the 1999 revision of the C standard.  Support for the 1999 revision is
-not yet complete.
+the 1999 revision of the C standard; the value @code{201112L}
+signifies the 2011 revision of the C standard; the value
+@code{201710L} signifies the 2017 revision of the C standard (which is
+otherwise identical to the 2011 version apart from correction of
+defects).
 
 This macro is not defined if the @option{-traditional-cpp} option is
 used, nor when compiling C++ or Objective-C@.
