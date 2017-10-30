@@ -1,3 +1,16 @@
+2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (ashldi3): Remove shift by 1 expansion.
+	(arm_ashldi3_1bit): Remove pattern.
+	(ashrdi3): Remove shift by 1 expansion.
+	(arm_ashrdi3_1bit): Remove pattern.
+	(lshrdi3): Remove shift by 1 expansion.
+	(arm_lshrdi3_1bit): Remove pattern.
+	* config/arm/arm.c (arm_rtx_costs_internal): Slightly increase
+	cost of ashldi3 by 1.
+	* config/arm/neon.md (ashldi3_neon): Remove shift by 1 expansion.
+	(<shift>di3_neon): Likewise.
+
 2017-10-30  Dominik Infuehr  <dominik.infuehr@theobroma-systems.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov): Rename

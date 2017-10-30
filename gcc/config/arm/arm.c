@@ -9430,6 +9430,9 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		   + rtx_cost (XEXP (x, 0), mode, code, 0, speed_p));
 	  if (speed_p)
 	    *cost += 2 * extra_cost->alu.shift;
+	  /* Slightly disparage left shift by 1 at so we prefer adddi3.  */
+	  if (code == ASHIFT && XEXP (x, 1) == CONST1_RTX (SImode))
+	    *cost += 1;
 	  return true;
 	}
       else if (mode == SImode)

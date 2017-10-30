@@ -4059,12 +4059,6 @@
     {
       rtx scratch1, scratch2;
 
-      if (operands[2] == CONST1_RTX (SImode))
-        {
-          emit_insn (gen_arm_ashldi3_1bit (operands[0], operands[1]));
-          DONE;
-        }
-
       /* Ideally we should use iwmmxt here if we could know that operands[1]
          ends up already living in an iwmmxt register. Otherwise it's
          cheaper to have the alternate code being generated than moving
@@ -4079,18 +4073,6 @@
       DONE;
     }
   "
-)
-
-(define_insn "arm_ashldi3_1bit"
-  [(set (match_operand:DI            0 "s_register_operand" "=r,&r")
-        (ashift:DI (match_operand:DI 1 "s_register_operand" "0,r")
-                   (const_int 1)))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "movs\\t%Q0, %Q1, asl #1\;adc\\t%R0, %R1, %R1"
-  [(set_attr "conds" "clob")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
 )
 
 (define_expand "ashlsi3"
@@ -4128,12 +4110,6 @@
     {
       rtx scratch1, scratch2;
 
-      if (operands[2] == CONST1_RTX (SImode))
-        {
-          emit_insn (gen_arm_ashrdi3_1bit (operands[0], operands[1]));
-          DONE;
-        }
-
       /* Ideally we should use iwmmxt here if we could know that operands[1]
          ends up already living in an iwmmxt register. Otherwise it's
          cheaper to have the alternate code being generated than moving
@@ -4148,18 +4124,6 @@
       DONE;
     }
   "
-)
-
-(define_insn "arm_ashrdi3_1bit"
-  [(set (match_operand:DI              0 "s_register_operand" "=r,&r")
-        (ashiftrt:DI (match_operand:DI 1 "s_register_operand" "0,r")
-                     (const_int 1)))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "movs\\t%R0, %R1, asr #1\;mov\\t%Q0, %Q1, rrx"
-  [(set_attr "conds" "clob")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
 )
 
 (define_expand "ashrsi3"
@@ -4194,12 +4158,6 @@
     {
       rtx scratch1, scratch2;
 
-      if (operands[2] == CONST1_RTX (SImode))
-        {
-          emit_insn (gen_arm_lshrdi3_1bit (operands[0], operands[1]));
-          DONE;
-        }
-
       /* Ideally we should use iwmmxt here if we could know that operands[1]
          ends up already living in an iwmmxt register. Otherwise it's
          cheaper to have the alternate code being generated than moving
@@ -4214,18 +4172,6 @@
       DONE;
     }
   "
-)
-
-(define_insn "arm_lshrdi3_1bit"
-  [(set (match_operand:DI              0 "s_register_operand" "=r,&r")
-        (lshiftrt:DI (match_operand:DI 1 "s_register_operand" "0,r")
-                     (const_int 1)))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_32BIT"
-  "movs\\t%R0, %R1, lsr #1\;mov\\t%Q0, %Q1, rrx"
-  [(set_attr "conds" "clob")
-   (set_attr "length" "8")
-   (set_attr "type" "multiple")]
 )
 
 (define_expand "lshrsi3"
