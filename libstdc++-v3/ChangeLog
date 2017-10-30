@@ -1,5 +1,11 @@
 2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/fstream (basic_ifstream, basic_ofstream, basic_fstream):
+	Remove outdated comments about calling c_str() to create a file stream
+	from a std::string.
+	(basic_ofstream::basic_ofstream, basic_ofstream::open): Remove
+	redundant ios_mode::trunc bits from default arguments and comments.
+
 	* doc/xml/faq.xml: Adjust "What is libstdc++?" answer slightly.
 
 	* include/bits/hashtable_policy.h: Include <tuple>.

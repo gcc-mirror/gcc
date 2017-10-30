@@ -506,9 +506,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
        *  @c ios_base::in is automatically included in @a __mode.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       explicit
       basic_ifstream(const char* __s, ios_base::openmode __mode = ios_base::in)
@@ -622,9 +619,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c std::basic_filebuf::open(s,__mode|in).  If that function
        *  fails, @c failbit is set in the stream's error state.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       void
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
@@ -738,15 +732,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  Null terminated string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out | @c ios_base::trunc is automatically included in
-       *  @a __mode.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
+       *  @c ios_base::out is automatically included in @a __mode.
        */
       explicit
       basic_ofstream(const char* __s,
-		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+		     ios_base::openmode __mode = ios_base::out)
       : __ostream_type(), _M_filebuf()
       {
 	this->init(&_M_filebuf);
@@ -759,12 +749,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  std::string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out | @c ios_base::trunc is automatically included in
-       *  @a __mode.
+       *  @c ios_base::out is automatically included in @a __mode.
        */
       explicit
       basic_ofstream(const std::string& __s,
-		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+		     ios_base::openmode __mode = ios_base::out)
       : __ostream_type(), _M_filebuf()
       {
 	this->init(&_M_filebuf);
@@ -777,13 +766,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  filesystem::path specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        *
-       *  @c ios_base::out | @c ios_base::trunc is automatically included in
-       *  @a __mode.
+       *  @c ios_base::out is automatically included in @a __mode.
        */
       template<typename _Path, typename = _Require<
 	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
-	basic_ofstream(const _Path& __s, ios_base::openmode __mode
-		       = ios_base::out|ios_base::trunc)
+	basic_ofstream(const _Path& __s,
+		       ios_base::openmode __mode = ios_base::out)
 	: basic_ofstream(__s.c_str(), __mode)
 	{ }
 #endif // C++17
@@ -857,15 +845,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  The name of the file.
        *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(__s,__mode|out|trunc).  If that
+       *  Calls @c std::basic_filebuf::open(__s,__mode|out).  If that
        *  function fails, @c failbit is set in the stream's error state.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       void
-      open(const char* __s,
-	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
+      open(const char* __s, ios_base::openmode __mode = ios_base::out)
       {
 	if (!_M_filebuf.open(__s, __mode | ios_base::out))
 	  this->setstate(ios_base::failbit);
@@ -881,12 +865,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  The name of the file.
        *  @param  __mode  The open mode flags.
        *
-       *  Calls @c std::basic_filebuf::open(s,mode|out|trunc).  If that
+       *  Calls @c std::basic_filebuf::open(s,mode|out).  If that
        *  function fails, @c failbit is set in the stream's error state.
        */
       void
-      open(const std::string& __s,
-	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
+      open(const std::string& __s, ios_base::openmode __mode = ios_base::out)
       {
 	if (!_M_filebuf.open(__s, __mode | ios_base::out))
 	  this->setstate(ios_base::failbit);
@@ -978,9 +961,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Create an input/output file stream.
        *  @param  __s  Null terminated string specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       explicit
       basic_fstream(const char* __s,
@@ -1091,9 +1071,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Calls @c std::basic_filebuf::open(__s,__mode).  If that
        *  function fails, @c failbit is set in the stream's error state.
-       *
-       *  Tip:  When using std::string to hold the filename, you must use
-       *  .c_str() before passing it to this constructor.
        */
       void
       open(const char* __s,
