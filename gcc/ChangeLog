@@ -1,3 +1,60 @@
+2017-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/22141
+	* gimple-ssa-store-merging.c: Include rtl.h and expr.h.
+	(struct store_immediate_info): Add bitregion_start and bitregion_end
+	fields.
+	(store_immediate_info::store_immediate_info): Add brs and bre
+	arguments and initialize bitregion_{start,end} from those.
+	(struct merged_store_group): Add bitregion_start, bitregion_end,
+	align_base and mask fields.  Drop unnecessary struct keyword from
+	struct store_immediate_info.  Add do_merge method.
+	(clear_bit_region_be): Use memset instead of loop storing zeros.
+	(merged_store_group::do_merge): New method.
+	(merged_store_group::merge_into): Use do_merge.  Allow gaps in between
+	stores as long as the surrounding bitregions have no gaps.
+	(merged_store_group::merge_overlapping): Use do_merge.
+	(merged_store_group::apply_stores): Test that bitregion_{start,end}
+	is byte aligned, rather than requiring that start and width are
+	byte aligned.  Drop unnecessary struct keyword from
+	struct store_immediate_info.  Allocate and populate also mask array.
+	Make start of the arrays relative to bitregion_start rather than
+	start and size them according to bitregion_{end,start} difference.
+	(struct imm_store_chain_info): Drop unnecessary struct keyword from
+	struct store_immediate_info.
+	(pass_store_merging::gate): Punt if BITS_PER_UNIT or CHAR_BIT is not 8.
+	(pass_store_merging::terminate_all_aliasing_chains): Drop unnecessary
+	struct keyword from struct store_immediate_info.
+	(imm_store_chain_info::coalesce_immediate_stores): Allow gaps in
+	between stores as long as the surrounding bitregions have no gaps.
+	Formatting fixes.
+	(struct split_store): Add orig non-static data member.
+	(split_store::split_store): Initialize orig to false.
+	(find_constituent_stmts): Return store_immediate_info *, non-NULL
+	if there is exactly a single original stmt.  Change stmts argument
+	to pointer from reference, if NULL, don't push anything to it.  Add
+	first argument, use it to optimize skipping over orig stmts that
+	are known to be before bitpos already.  Simplify.
+	(split_group): Return unsigned int count how many stores are or
+	would be needed rather than a bool.  Add allow_unaligned argument.
+	Change split_stores argument from reference to pointer, if NULL,
+	only do a dry run computing how many stores would be produced.
+	Rewritten algorithm to use both alignment and misalign if
+	!allow_unaligned and handle bitfield stores with gaps.
+	(imm_store_chain_info::output_merged_store): Set start_byte_pos
+	from bitregion_start instead of start.  Compute allow_unaligned
+	here, if true, do 2 split_group dry runs to compute which one
+	produces fewer stores and prefer aligned if equal.  Punt if
+	new count is bigger or equal than original before emitting any
+	statements, rather than during that.  Remove no longer needed
+	new_ssa_names tracking.  Replace num_stmts with
+	split_stores.length ().  Use 32-bit stack allocated entries
+	in split_stores auto_vec.  Try to reuse original store lhs/rhs1
+	if possible.  Handle bitfields with gaps.
+	(pass_store_merging::execute): Ignore bitsize == 0 stores.
+	Compute bitregion_{start,end} for the stores and construct
+	store_immediate_info with that.  Formatting fixes.
+
 2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82725
