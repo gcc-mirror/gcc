@@ -1,3 +1,8 @@
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Parse conditional
+	stmts.
+
 2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* c-decl.c (header_for_builtin_fn): Add support for copysign, fma,
