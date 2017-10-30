@@ -1,3 +1,9 @@
+2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82085
+	* pt.c (tsubst_copy_and_build, [INDIRECT_REF]): For a REFERENCE_REF_P,
+	unconditionally call convert_from_reference.
+
 2017-10-30  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (build_op_call_1): Test for FUNCTION_DECL in same manner
