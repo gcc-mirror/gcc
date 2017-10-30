@@ -1,3 +1,8 @@
+2017-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	* omp-grid.c (grid_attempt_target_gridification): Also insert a
+	condition whether loop should be executed at all.
+
 2017-10-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support for
