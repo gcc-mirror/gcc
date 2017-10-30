@@ -1,3 +1,8 @@
+2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67595
+	* g++.dg/concepts/pr67595.C: New.
+
 2017-10-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80850
