@@ -1,3 +1,27 @@
+2017-10-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2485
+	* include/debug/array (get(const array<_Tp, _Nm>&&)): New.
+	* include/std/array (get(const array<_Tp, _Nm>&&)): Likewise.
+	* include/std/tuple (get(const tuple<_Elements...>&&)): Likewise.
+	(get(const tuple<_Types...>&&)): Likewise.
+	* include/std/utility
+	(__pair_get::__const_move_get(const std::pair<_Tp1, _Tp2>&&)):
+	Likewise.
+	(get(const std::pair<_Tp1, _Tp2>&&)): Likewise.
+	(get(const pair<_Tp, _Up>&&)): Likewise.
+	(get(const pair<_Up, _Tp>&&)): Likewise.
+	* testsuite/20_util/pair/astuple/get.cc: Add tests for
+	new overloads.
+	* testsuite/20_util/pair/astuple/get_by_type.cc: Likewise.
+	* testsuite/20_util/tuple/element_access/get2.cc: Likewise.
+	* testsuite/20_util/tuple/element_access/get2_by_type.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_debug_neg.cc:
+	Adjust.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
 2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/node_handle.h (_Node_insert_return::get): Avoid
