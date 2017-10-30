@@ -701,7 +701,9 @@ merged_store_group::apply_stores ()
 	return false;
       unsigned char *m = mask + (pos_in_buffer / BITS_PER_UNIT);
       if (BYTES_BIG_ENDIAN)
-	clear_bit_region_be (m, pos_in_buffer % BITS_PER_UNIT, info->bitsize);
+	clear_bit_region_be (m, (BITS_PER_UNIT - 1
+				 - (pos_in_buffer % BITS_PER_UNIT)),
+			     info->bitsize);
       else
 	clear_bit_region (m, pos_in_buffer % BITS_PER_UNIT, info->bitsize);
     }
