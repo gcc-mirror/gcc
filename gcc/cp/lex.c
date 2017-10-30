@@ -177,8 +177,7 @@ init_operators (void)
 	  else
 	    {
 	      IDENTIFIER_CP_INDEX (ident) = ix;
-	      set_identifier_kind (ident, (ix == OVL_OP_TYPE_EXPR
-					   ? cik_conv_op : cik_simple_op));
+	      set_identifier_kind (ident, cik_simple_op);
 	    }
 	}
       if (op_ptr->tree_code)

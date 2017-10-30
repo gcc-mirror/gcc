@@ -1,5 +1,15 @@
 2017-10-30  Nathan Sidwell  <nathan@acm.org>
 
+	Operator code compaction part 12.
+	gcc/cp/
+	* cp-tree.h (CPTI_CONV_OP_IDENTIFIER): Restore.
+	(conv_op_identifier): Revert.
+	* decl.c (initialize_predefined_identifiers): Restore.
+	(grok_op_properties): Detect conversion operators.
+	* decl2.c (mark_used): Dectect lambda conversion properly.
+	* lambda.c (maybe_add_lambda_conv_op): Not an overloaded fn.
+	* lex.c (init_operators): No need to deal with TYPE_EXPR.
+
 	Merge trunk r254231.
 
 	Operator code compaction part 11.

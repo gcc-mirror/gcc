@@ -136,6 +136,7 @@ enum cp_tree_index
     CPTI_COMPLETE_DTOR_IDENTIFIER,
     CPTI_BASE_DTOR_IDENTIFIER,
     CPTI_DELETING_DTOR_IDENTIFIER,
+    CPTI_CONV_OP_IDENTIFIER,
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_VTT_PARM_IDENTIFIER,
@@ -247,7 +248,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define ovl_op_identifier(ISASS, CODE)  (OVL_OP_INFO(ISASS, CODE)->identifier)
 #define assign_op_identifier (ovl_op_info[true][OVL_OP_NOP_EXPR].identifier)
 #define call_op_identifier (ovl_op_info[false][OVL_OP_CALL_EXPR].identifier)
-#define conv_op_identifier (ovl_op_info[false][OVL_OP_TYPE_EXPR].identifier)
+#define conv_op_identifier 		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]

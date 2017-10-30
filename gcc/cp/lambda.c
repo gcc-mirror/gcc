@@ -1258,7 +1258,6 @@ maybe_add_lambda_conv_op (tree type)
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
-  DECL_OVERLOADED_OPERATOR_CODE_RAW (fn) = OVL_OP_TYPE_EXPR;
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);
   rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
@@ -1312,11 +1311,9 @@ maybe_add_lambda_conv_op (tree type)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
   if (flag_sanitize & SANITIZE_NULL)
-    {
-      /* Don't UBsan this function; we're deliberately calling op() with a null
-	 object argument.  */
-      add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
-    }
+    /* Don't UBsan this function; we're deliberately calling op() with a null
+       object argument.  */
+    add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
 
   add_method (type, fn, false);
 

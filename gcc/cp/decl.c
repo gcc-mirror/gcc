@@ -421,8 +421,6 @@ pop_labels (tree block)
 
       check_label_used (label);
     }
-
-  named_labels = NULL;
 }
 
 /* At the end of a block with local labels, restore the outer definition.  */
@@ -3959,6 +3957,7 @@ initialize_predefined_identifiers (void)
     {"__dt_base ", &base_dtor_identifier, cik_dtor},
     {"__dt_comp ", &complete_dtor_identifier, cik_dtor},
     {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
+    {"__conv_op ", &conv_op_identifier, cik_conv_op},
     {"__in_chrg", &in_charge_identifier, cik_normal},
     {"this", &this_identifier, cik_normal},
     {"__delta", &delta_identifier, cik_normal},
@@ -12907,25 +12906,37 @@ grok_op_properties (tree decl, bool complain)
       ++arity;
     }
 
-  const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
-  if (arity == 1 && ovl_op->flags == OVL_OP_FLAG_AMBIARY)
+  tree_code operator_code;
+  unsigned op_flags;
+  if (IDENTIFIER_CONV_OP_P (name))
     {
-      /* We have a unary instance of an ambi-ary op.  Remap to the
-	 unary one.  */
-      unsigned alt = ovl_op_alternate[ovl_op->ovl_op_code];
-      ovl_op = &ovl_op_info[false][alt];
-      gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
+      /* Conversion operators are TYPE_EXPR for the purposes of this
+	 function.  */
+      operator_code = TYPE_EXPR;
+      op_flags = OVL_OP_FLAG_UNARY;
     }
-  enum tree_code operator_code = ovl_op->tree_code;
-  gcc_checking_assert (operator_code != ERROR_MARK);
+  else
+    {
+      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
+      if (arity == 1 && ovl_op->flags == OVL_OP_FLAG_AMBIARY)
+	{
+	  /* We have a unary instance of an ambi-ary op.  Remap to the
+	     unary one.  */
+	  unsigned alt = ovl_op_alternate[ovl_op->ovl_op_code];
+	  ovl_op = &ovl_op_info[false][alt];
+	  gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
+	}
+      operator_code = ovl_op->tree_code;
+      op_flags = ovl_op->flags;
+      gcc_checking_assert (operator_code != ERROR_MARK);
+      DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
+    }
 
-  DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
-
-  if (ovl_op->flags & OVL_OP_FLAG_ALLOC)
+  if (op_flags & OVL_OP_FLAG_ALLOC)
     {
       /* operator new and operator delete are quite special.  */
       if (class_type)
-	switch (ovl_op->flags)
+	switch (op_flags)
 	  {
 	  case OVL_OP_FLAG_ALLOC:
 	    TYPE_HAS_NEW_OPERATOR (class_type) = 1;
@@ -12942,6 +12953,9 @@ grok_op_properties (tree decl, bool complain)
 	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE | OVL_OP_FLAG_VEC:
 	    TYPE_GETS_DELETE (class_type) |= 2;
 	    break;
+
+	  default:
+	    gcc_unreachable ();
 	  }
 
       /* [basic.std.dynamic.allocation]/1:
@@ -12966,7 +12980,7 @@ grok_op_properties (tree decl, bool complain)
 	    }
 	}
 
-      if (ovl_op->flags & OVL_OP_FLAG_DELETE)
+      if (op_flags & OVL_OP_FLAG_DELETE)
 	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
       else
 	{
@@ -13041,7 +13055,7 @@ grok_op_properties (tree decl, bool complain)
     }
 
   /* Verify correct number of arguments.  */
-  switch (ovl_op->flags)
+  switch (op_flags)
     {
     case OVL_OP_FLAG_AMBIARY:
       if (arity != 2)
