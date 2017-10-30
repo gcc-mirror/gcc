@@ -360,6 +360,7 @@ rl78_option_override (void)
   if (TARGET_ES0
       && strcmp (lang_hooks.name, "GNU C")
       && strcmp (lang_hooks.name, "GNU C11")
+      && strcmp (lang_hooks.name, "GNU C17")
       && strcmp (lang_hooks.name, "GNU C89")
       && strcmp (lang_hooks.name, "GNU C99")
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */

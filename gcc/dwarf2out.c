@@ -23434,6 +23434,8 @@ highest_c_language (const char *lang1, const char *lang2)
   if (strcmp ("GNU C++98", lang1) == 0 || strcmp ("GNU C++98", lang2) == 0)
     return "GNU C++98";
 
+  if (strcmp ("GNU C17", lang1) == 0 || strcmp ("GNU C17", lang2) == 0)
+    return "GNU C17";
   if (strcmp ("GNU C11", lang1) == 0 || strcmp ("GNU C11", lang2) == 0)
     return "GNU C11";
   if (strcmp ("GNU C99", lang1) == 0 || strcmp ("GNU C99", lang2) == 0)
@@ -23510,7 +23512,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C99;
 
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
-	    if (strcmp (language_string, "GNU C11") == 0)
+	    if (strcmp (language_string, "GNU C11") == 0
+		|| strcmp (language_string, "GNU C17") == 0)
 	      language = DW_LANG_C11;
 	}
     }

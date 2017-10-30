@@ -1831,6 +1831,13 @@ substantially completely supported, modulo bugs, floating-point issues
 Annexes F and G) and the optional Annexes K (Bounds-checking
 interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
+@item c17
+@itemx iso9899:2017
+ISO C17, the 2017 revision of the ISO C standard.  This standard is
+same as C11 except for corrections of defects (all of which are also
+applied with @option{-std=c11}) and a new value of
+@code{__STDC_VERSION__}, and so is supported to the same extent as C11.
+
 @item gnu90
 @itemx gnu89
 GNU dialect of ISO C90 (including some C99 features).
@@ -1841,8 +1848,11 @@ GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  This is the default for C code.
+GNU dialect of ISO C11.
 The name @samp{gnu1x} is deprecated.
+
+@item gnu17
+GNU dialect of ISO C17.  This is the default for C code.
 
 @item c++98
 @itemx c++03

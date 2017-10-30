@@ -1,3 +1,18 @@
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (C Dialect Options): Document -std=c17,
+	-std=iso9899:2017 and -std=gnu17.
+	* doc/standards.texi (C Language): Document C17 support.
+	* doc/cpp.texi (Overview): Mention -std=c17.
+	(Standard Predefined Macros): Document C11 and C17 values of
+	__STDC_VERSION__.  Do not refer to C99 support as incomplete.
+	* doc/extend.texi (Inline): Do not list individual options for
+	standards newer than C99.
+	* dwarf2out.c (highest_c_language, gen_compile_unit_die): Handle
+	"GNU C17".
+	* config/rl78/rl78.c (rl78_option_override): Handle "GNU C17"
+	language name.
+
 2017-10-30  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	* asan.c (asan_finish_file): Align asan globals array by shadow

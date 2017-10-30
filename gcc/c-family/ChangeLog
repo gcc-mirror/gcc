@@ -1,3 +1,10 @@
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (std=c17, std=gnu17, std=iso9899:2017): New options.
+	* c-opts.c (set_std_c17): New function.
+	(c_common_init_options): Use gnu17 as default C version.
+	(c_common_handle_option): Handle -std=c17 and -std=gnu17.
+
 2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* c-cppbuiltin.c (mode_has_fma): Add support for PowerPC KFmode.
