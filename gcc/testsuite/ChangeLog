@@ -1,8 +1,12 @@
+2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82725
+	* g++.dg/pr82725.C: New test.
+
 2017-10-29  Jim Wilson  <wilson@tuliptree.org>
 
 	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Delete -gcoff.
-	* lib/gfortran-dg.exp (gfortran-dg-debug-runtest): Delete
-	-gcoff.
+	* lib/gfortran-dg.exp (gfortran-dg-debug-runtest): Delete -gcoff.
 
 2017-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
