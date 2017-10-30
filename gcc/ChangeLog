@@ -1,3 +1,9 @@
+2017-10-30  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add emmintrin.h.
+	* config/rs6000/emmintrin.h: New file.
+	* config/rs6000/x86intrin.h [__ALTIVEC__]: Include emmintrin.h.
+
 2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/vfp.md (movdi_vfp): Merge changes from movdi_vfp_cortexa8.
