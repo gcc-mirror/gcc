@@ -1,3 +1,10 @@
+2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h: Include <tuple>.
+	* include/std/unordered_map: Only include <bits/stl_pair.h> instead
+	of <utility> and <tuple>.
+	* include/std/unordered_set: Likewise.
+
 2017-10-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2485

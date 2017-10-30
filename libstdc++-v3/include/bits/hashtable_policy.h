@@ -31,7 +31,9 @@
 #ifndef _HASHTABLE_POLICY_H
 #define _HASHTABLE_POLICY_H 1
 
-#include <bits/stl_algobase.h> // for std::min.
+#include <tuple>		// for std::tuple, std::forward_as_tuple
+#include <cstdint>		// for std::uint_fast64_t
+#include <bits/stl_algobase.h>	// for std::min.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
