@@ -1,3 +1,8 @@
+2017-10-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80850
+	* gfortran.dg/class_64_f90 : New test.
+
 2017-10-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/pr82725.C: Move to ...
