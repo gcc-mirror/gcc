@@ -1,3 +1,8 @@
+2017-10-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-perm-longlong.c: Update to use long long
+	types for testcase arguments.
+
 2017-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82762
