@@ -1384,7 +1384,12 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 				  && p[1] == '_'
 				  && strncmp (p + (p[2] == '_'),
 					      "__gnu_lto_", 10) == 0)
-				other = STV_HIDDEN;
+				{
+				  other = STV_HIDDEN;
+				  ELF_SET_FIELD (type_functions, ei_class, Sym,
+						 ent, st_name, Elf_Word,
+						 st_name + 2);
+				}
 			    }
 			}
 		      *st_other = other;
