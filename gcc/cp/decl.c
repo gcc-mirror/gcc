@@ -11748,8 +11748,7 @@ grokdeclarator (const cp_declarator *declarator,
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
       && !(identifier_p (unqualified_id)
 	   && IDENTIFIER_OVL_OP_P (unqualified_id)
-	   && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id)
-	       & (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE))))
+	   && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id) & OVL_OP_FLAG_ALLOC)))
     {
       cp_cv_quals real_quals = memfn_quals;
       if (cxx_dialect < cxx14 && constexpr_p
@@ -11864,7 +11863,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    && identifier_p (unqualified_id)
 		    && IDENTIFIER_OVL_OP_P (unqualified_id)
 		    && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id)
-			& (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE)))
+			& OVL_OP_FLAG_ALLOC))
 		  {
 		    error ("%qD cannot be declared %<virtual%>, since it "
 			   "is always static", unqualified_id);
@@ -12887,25 +12886,29 @@ bool
 grok_op_properties (tree decl, bool complain)
 {
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-  tree argtype;
-  int methodp = (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE);
+  bool methodp = TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE;
   tree name = DECL_NAME (decl);
-  int arity;
-  bool ellipsis_p;
-
-  /* Count the number of arguments and check for ellipsis.  */
-  for (argtype = argtypes, arity = 0;
-       argtype && argtype != void_list_node;
-       argtype = TREE_CHAIN (argtype))
-    ++arity;
-  ellipsis_p = !argtype;
 
   tree class_type = DECL_CONTEXT (decl);
   if (class_type && !CLASS_TYPE_P (class_type))
     class_type = NULL_TREE;
 
+  /* Count the number of arguments and check for ellipsis.  */
+  int arity = 0;
+  tree arg_end_marker = void_list_node;
+  for (tree arg = argtypes; arg != arg_end_marker; arg = TREE_CHAIN (arg))
+    {
+      if (!arg)
+	{
+	  /* Variadic.  */
+	  arg_end_marker = NULL_TREE;
+	  break;
+	}
+      ++arity;
+    }
+
   const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
-  if (arity == 1 && ovl_op->flags == (OVL_OP_FLAG_UNARY | OVL_OP_FLAG_BINARY))
+  if (arity == 1 && ovl_op->flags == OVL_OP_FLAG_AMBIARY)
     {
       /* We have a unary instance of an ambi-ary op.  Remap to the
 	 unary one.  */
@@ -12918,25 +12921,25 @@ grok_op_properties (tree decl, bool complain)
 
   DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
 
-  if (ovl_op->flags & (OVL_OP_FLAG_NEW & OVL_OP_FLAG_DELETE))
+  if (ovl_op->flags & OVL_OP_FLAG_ALLOC)
     {
       /* operator new and operator delete are quite special.  */
       if (class_type)
 	switch (ovl_op->flags)
 	  {
-	  case OVL_OP_FLAG_NEW:
+	  case OVL_OP_FLAG_ALLOC:
 	    TYPE_HAS_NEW_OPERATOR (class_type) = 1;
 	    break;
 
-	  case OVL_OP_FLAG_DELETE:
+	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE:
 	    TYPE_GETS_DELETE (class_type) |= 1;
 	    break;
 
-	  case OVL_OP_FLAG_NEW | OVL_OP_FLAG_VEC:
+	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_VEC:
 	    TYPE_HAS_ARRAY_NEW_OPERATOR (class_type) = 1;
 	    break;
 
-	  case OVL_OP_FLAG_DELETE | OVL_OP_FLAG_VEC:
+	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE | OVL_OP_FLAG_VEC:
 	    TYPE_GETS_DELETE (class_type) |= 2;
 	    break;
 	  }
@@ -12963,7 +12966,7 @@ grok_op_properties (tree decl, bool complain)
 	    }
 	}
 
-      if (ovl_op->flags & (OVL_OP_FLAG_DELETE ^ OVL_OP_FLAG_NEW))
+      if (ovl_op->flags & OVL_OP_FLAG_DELETE)
 	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
       else
 	{
@@ -12996,27 +12999,26 @@ grok_op_properties (tree decl, bool complain)
 	  return false;
 	}
 
-      tree p;
-      for (p = argtypes; p && p != void_list_node; p = TREE_CHAIN (p))
+      for (tree arg = argtypes; ; arg = TREE_CHAIN (arg))
 	{
-	  tree arg = non_reference (TREE_VALUE (p));
-	  if (arg == error_mark_node)
+	  if (arg == arg_end_marker)
+	    {
+	      if (complain)
+		error ("%qD must have an argument of class or "
+		       "enumerated type", decl);
+	      return false;
+	    }
+      
+	  tree type = non_reference (TREE_VALUE (arg));
+	  if (type == error_mark_node)
 	    return false;
 	  
 	  /* MAYBE_CLASS_TYPE_P, rather than CLASS_TYPE_P, is used
-	     because these checks are performed even on
-	     template functions.  */
-	  if (MAYBE_CLASS_TYPE_P (arg)
-	      || TREE_CODE (arg) == ENUMERAL_TYPE)
+	     because these checks are performed even on template
+	     functions.  */
+	  if (MAYBE_CLASS_TYPE_P (type)
+	      || TREE_CODE (type) == ENUMERAL_TYPE)
 	    break;
-	}
-
-      if (!p || p == void_list_node)
-	{
-	  if (complain)
-	    error ("%qD must have an argument of class or "
-		   "enumerated type", decl);
-	  return false;
 	}
     }
 
@@ -13032,54 +13034,69 @@ grok_op_properties (tree decl, bool complain)
       return false;
     }
 
-  if (ellipsis_p)
+  if (!arg_end_marker)
     {
       error ("%qD must not have variable number of arguments", decl);
       return false;
     }
 
   /* Verify correct number of arguments.  */
-  if (ovl_op->flags == (OVL_OP_FLAG_UNARY | OVL_OP_FLAG_BINARY) && arity != 2)
+  switch (ovl_op->flags)
     {
-      /* This was an ambiguous operator but is invalid. */
-      error (methodp
-	     ? G_("%qD must have either zero or one argument")
-	     : G_("%qD must have either one or two arguments"), decl);
-      return false;
-    }
-  else if (ovl_op->flags == OVL_OP_FLAG_UNARY && arity != 1)
-    {
-      error (methodp
-	     ? G_("%qD must have no arguments")
-	     : G_("%qD must have exactly one argument"), decl);
-      return false;
-    }
-  else if (ovl_op->flags == OVL_OP_FLAG_BINARY && arity != 2)
-    {
-      error (methodp
-	     ? G_("%qD must have exactly one argument")
-	     : G_("%qD must have exactly two arguments"), decl);
-      return false;
-    }
+    case OVL_OP_FLAG_AMBIARY:
+      if (arity != 2)
+	{
+	  /* This was an ambiguous operator but is invalid. */
+	  error (methodp
+		 ? G_("%qD must have either zero or one argument")
+		 : G_("%qD must have either one or two arguments"), decl);
+	  return false;
+	}
 
-  /* x++ and x--'s second argument must be an int.  */
-  if ((operator_code == POSTINCREMENT_EXPR
-       || operator_code == POSTDECREMENT_EXPR)
-      && ! processing_template_decl
-      && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
-    {
-      error (methodp
-	     ? G_("postfix %qD must have %<int%> as its argument")
-	     : G_("postfix %qD must have %<int%> as its second argument"),
-	     decl);
-      return false;
+      /* x++ and x--'s second argument must be an int.  */
+      if ((operator_code == POSTINCREMENT_EXPR
+	   || operator_code == POSTDECREMENT_EXPR)
+	  && ! processing_template_decl
+	  && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)),
+			    integer_type_node))
+	{
+	  error (methodp
+		 ? G_("postfix %qD must have %<int%> as its argument")
+		 : G_("postfix %qD must have %<int%> as its second argument"),
+		 decl);
+	  return false;
+	}
+      break;
+
+    case OVL_OP_FLAG_UNARY:
+      if (arity != 1)
+	{
+	  error (methodp
+		 ? G_("%qD must have no arguments")
+		 : G_("%qD must have exactly one argument"), decl);
+	  return false;
+	}
+      break;
+
+    case OVL_OP_FLAG_BINARY:
+      if (arity != 2)
+	{
+	  error (methodp
+		 ? G_("%qD must have exactly one argument")
+		 : G_("%qD must have exactly two arguments"), decl);
+	  return false;
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
     }
 
   /* There can be no default arguments.  */
-  for (tree p = argtypes; p && p != void_list_node; p = TREE_CHAIN (p))
-    if (TREE_PURPOSE (p))
+  for (tree arg = argtypes; arg != void_list_node; arg = TREE_CHAIN (arg))
+    if (TREE_PURPOSE (arg))
       {
-	TREE_PURPOSE (p) = NULL_TREE;
+	TREE_PURPOSE (arg) = NULL_TREE;
 	if (operator_code == POSTINCREMENT_EXPR
 	    || operator_code == POSTDECREMENT_EXPR)
 	  pedwarn (input_location, OPT_Wpedantic,

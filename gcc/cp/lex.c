@@ -168,8 +168,9 @@ init_operators (void)
 	    {
 	      ovl_op_info_t *bin_ptr = &ovl_op_info[false][index];
 
-	      gcc_checking_assert (op_ptr->flags == OVL_OP_FLAG_UNARY
-				   && (bin_ptr->flags == OVL_OP_FLAG_BINARY));
+	      /* They should only differ in unary/binary ness.  */
+	      gcc_checking_assert ((op_ptr->flags ^ bin_ptr->flags)
+				   == OVL_OP_FLAG_AMBIARY);
 	      bin_ptr->flags |= op_ptr->flags;
 	      ovl_op_alternate[index] = ix;
 	    }

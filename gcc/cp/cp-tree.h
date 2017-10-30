@@ -2475,23 +2475,22 @@ struct GTY(()) lang_decl_fn {
 
   /* In a overloaded operator, this is the compressed operator code.  */
   unsigned ovl_op_code : 6;
-  unsigned spare : 10;
-
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
+
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned defaulted_p : 1;
   unsigned has_in_charge_parm_p : 1;
   unsigned has_vtt_parm_p : 1;
   unsigned pending_inline_p : 1;
-
   unsigned nonconverting : 1;
   unsigned thunk_p : 1;
+
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  /* 3 spare bits.  */
+  unsigned spare : 13;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -5477,9 +5476,10 @@ enum ovl_op_flags
     OVL_OP_FLAG_NONE = 0,
     OVL_OP_FLAG_UNARY = 1,
     OVL_OP_FLAG_BINARY = 2,
-    OVL_OP_FLAG_NEW = 4,  	// new
-    OVL_OP_FLAG_DELETE = 5,	// delete
-    OVL_OP_FLAG_VEC = 2		// vector new/delete
+    OVL_OP_FLAG_AMBIARY = 3,
+    OVL_OP_FLAG_ALLOC = 4,  	// operator new or delete
+    OVL_OP_FLAG_DELETE = 1,	// operator delete
+    OVL_OP_FLAG_VEC = 2		// vector new or delete
   };
 
 enum ovl_op_code
