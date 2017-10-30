@@ -1,5 +1,7 @@
 2017-10-29  Jim Wilson  <wilson@tuliptree.org>
 
+	* gimplify.c: Include tm_p.h.
+
 	* common.opt (gcoff): Re-add as ignored option.
 	(gcoff1, gcoff2, gcoff3): Likewise.
 
