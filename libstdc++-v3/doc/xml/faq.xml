@@ -30,13 +30,18 @@
   <answer xml:id="faq.what.a">
     <para>
      The GNU Standard C++ Library v3 is an ongoing project to
-     implement the ISO 14882 Standard C++ library as described in
-     clauses 17 through 30 and annex D.  For those who want to see
+     implement the ISO 14882 C++ Standard Library as described in
+     clauses 20 through 33 and annex D (prior to the 2017 standard
+     the library clauses started with 17).  For those who want to see
      exactly how far the project has come, or just want the latest
      bleeding-edge code, the up-to-date source is available over
-     anonymous SVN, and can be browsed over
-     the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/svn.html">web</link>.
+     anonymous SVN, and can be browsed over the
+     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/svn.html">web</link>.
     </para> 
+
+    <para>
+    N.B. The library is called libstdc++ <emphasis>not</emphasis> stdlibc++.
+    </para>
   </answer>
 </qandaentry>
 
