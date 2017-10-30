@@ -1,3 +1,11 @@
+2017-10-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support for
+	gimple folding of vec_madd() intrinsics.
+	* config/rs6000/altivec.md (mulv8hi3): Rename altivec_vmladduhm to
+	fmav8hi4.  (altivec_vmladduhm): Rename to fmav8hi4.
+	* config/rs6000/rs6000-builtin.def: Rename vmladduhm to fmav8hi4
+
 2017-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82762
