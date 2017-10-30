@@ -1446,7 +1446,6 @@ OBJS = \
 	sched-deps.o \
 	sched-ebb.o \
 	sched-rgn.o \
-	sdbout.o \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
 	sel-sched.o \
@@ -1568,6 +1567,7 @@ OBJS = \
 	tree-vrp.o \
 	tree.o \
 	typed-splay-tree.o \
+	unique-ptr-tests.o \
 	valtrack.o \
 	value-prof.o \
 	var-tracking.o \
@@ -2524,7 +2524,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfgrtl.c \
-  $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
+  $(srcdir)/stor-layout.c \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \

@@ -216,8 +216,6 @@ enum reg_class
 
 #define ARGS_GROW_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET 0
-
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR)	\
@@ -448,7 +446,7 @@ enum reg_class
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 
-/* Macros for SDB and Dwarf Output.  */
+/* Macros for Dwarf Output.  */
 
 /* Define this macro if addresses in Dwarf 2 debugging info should not
    be the same size as pointers on the target architecture.  The

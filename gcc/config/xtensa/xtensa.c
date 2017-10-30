@@ -182,6 +182,7 @@ static unsigned int xtensa_hard_regno_nregs (unsigned int, machine_mode);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
+static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 
 
 
@@ -320,6 +321,9 @@ static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT xtensa_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET xtensa_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4397,6 +4401,16 @@ xtensa_constant_alignment (const_tree exp, HOST_WIDE_INT align)
       && !optimize_size)
     return MAX (align, BITS_PER_WORD);
   return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+xtensa_starting_frame_offset (void)
+{
+  if (FRAME_GROWS_DOWNWARD)
+    return 0;
+  return crtl->outgoing_args_size;
 }
 
 #include "gt-xtensa.h"

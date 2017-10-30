@@ -548,7 +548,8 @@ proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1
     }
-    if { [istarget avr-*-*] } {
+    if { [istarget avr-*-*]
+	 || [istarget msp430-*-*] } {
 	return 1;   
     }
     return 0
@@ -4395,6 +4396,48 @@ proc check_effective_target_arm_v8_2a_fp16_neon_ok { } {
 		check_effective_target_arm_v8_2a_fp16_neon_ok_nocache]
 }
 
+# Return 1 if the target supports ARMv8.2 Adv.SIMD Dot Product
+# instructions, 0 otherwise.  The test is valid for ARM and for AArch64.
+# Record the command line options needed.
+
+proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
+    global et_arm_v8_2a_dotprod_neon_flags
+    set et_arm_v8_2a_dotprod_neon_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+        return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8"} {
+        if { [check_no_compiler_messages_nocache \
+                  arm_v8_2a_dotprod_neon_ok object {
+            #if !defined (__ARM_FEATURE_DOTPROD)
+            #error "__ARM_FEATURE_DOTPROD not defined"
+            #endif
+        } "$flags -march=armv8.2-a+dotprod"] } {
+            set et_arm_v8_2a_dotprod_neon_flags "$flags -march=armv8.2-a+dotprod"
+            return 1
+        }
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_2a_dotprod_neon_ok { } {
+    return [check_cached_effective_target arm_v8_2a_dotprod_neon_ok \
+                check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache]
+}
+
+proc add_options_for_arm_v8_2a_dotprod_neon { flags } {
+    if { ! [check_effective_target_arm_v8_2a_dotprod_neon_ok] } {
+        return "$flags"
+    }
+    global et_arm_v8_2a_dotprod_neon_flags
+    return "$flags $et_arm_v8_2a_dotprod_neon_flags"
+}
+
 # Return 1 if the target supports executing ARMv8 NEON instructions, 0
 # otherwise.
 
@@ -4530,6 +4573,42 @@ proc check_effective_target_arm_v8_2a_fp16_neon_hw { } {
 	  return (result[0] == 1.0) ? 0 : 1;
 	}
     } [add_options_for_arm_v8_2a_fp16_neon ""]]
+}
+
+# Return 1 if the target supports executing AdvSIMD instructions from ARMv8.2
+# with the Dot Product extension, 0 otherwise.  The test is valid for ARM and for
+# AArch64.
+
+proc check_effective_target_arm_v8_2a_dotprod_neon_hw { } {
+    if { ![check_effective_target_arm_v8_2a_dotprod_neon_ok] } {
+        return 0;
+    }
+    return [check_runtime arm_v8_2a_dotprod_neon_hw_available {
+        #include "arm_neon.h"
+        int
+        main (void)
+        {
+
+	  uint32x2_t results = {0,0};
+	  uint8x8_t a = {1,1,1,1,2,2,2,2};
+	  uint8x8_t b = {2,2,2,2,3,3,3,3};
+
+          #ifdef __ARM_ARCH_ISA_A64
+          asm ("udot %0.2s, %1.8b, %2.8b"
+               : "=w"(results)
+               : "w"(a), "w"(b)
+               : /* No clobbers.  */);
+
+	  #else
+          asm ("vudot.u8 %P0, %P1, %P2"
+               : "=w"(results)
+               : "w"(a), "w"(b)
+               : /* No clobbers.  */);
+          #endif
+
+          return (results[0] == 8 && results[1] == 24) ? 1 : 0;
+        }
+    } [add_options_for_arm_v8_2a_dotprod_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.
@@ -5849,6 +5928,8 @@ proc check_effective_target_vect_sdot_qi { } {
     } else {
 	set et_vect_sdot_qi_saved($et_index) 0
 	if { [istarget ia64-*-*]
+	     || [istarget aarch64*-*-*]
+	     || [istarget arm*-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa]) } {
             set et_vect_udot_qi_saved 1
@@ -5873,6 +5954,8 @@ proc check_effective_target_vect_udot_qi { } {
     } else {
 	set et_vect_udot_qi_saved($et_index) 0
         if { [istarget powerpc*-*-*]
+	     || [istarget aarch64*-*-*]
+	     || [istarget arm*-*-*]
 	     || [istarget ia64-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa]) } {
@@ -8289,7 +8372,7 @@ proc check_effective_target_aarch64_tiny { } {
 # Create functions to check that the AArch64 assembler supports the
 # various architecture extensions via the .arch_extension pseudo-op.
 
-foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse"} {
+foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod"} {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
@@ -8921,4 +9004,17 @@ proc check_effective_target_callee_realigns_stack { } {
 	return 1
   }
   return 0
+}
+
+# Return 1 if CET instructions can be compiled.
+proc check_effective_target_cet { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+	return 0
+    }
+    return [check_no_compiler_messages cet object {
+	void foo (void)
+	{
+	  asm ("setssbsy");
+	}
+    } "-O2" ]
 }

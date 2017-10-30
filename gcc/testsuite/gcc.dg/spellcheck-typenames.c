@@ -100,8 +100,9 @@ baz value; /* { dg-error "1: unknown type name .baz.; use .enum. keyword to refe
    { dg-end-multiline-output "" } */
 
 /* TODO: it would be better to detect the "singed" vs "signed" typo here.  */
-singed char ch; /* { dg-error "8: before .char." } */
+singed char ch; /* { dg-error "7: before .char." } */
 /* { dg-begin-multiline-output "" }
  singed char ch;
-        ^~~~
+       ^~~~~
+       ;
    { dg-end-multiline-output "" } */

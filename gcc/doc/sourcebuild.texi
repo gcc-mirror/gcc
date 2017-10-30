@@ -1702,6 +1702,17 @@ ARM target supports executing instructions from ARMv8.2 with the FP16
 extension.  Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_fp16_neon_ok and arm_v8_2a_fp16_scalar_hw.
 
+@item arm_v8_2a_dotprod_neon_ok
+@anchor{arm_v8_2a_dotprod_neon_ok}
+ARM target supports options to generate instructions from ARMv8.2 with
+the Dot Product extension. Some multilibs may be incompatible with these
+options.
+
+@item arm_v8_2a_dotprod_neon_hw
+ARM target supports executing instructions from ARMv8.2 with the Dot
+Product extension. Some multilibs may be incompatible with these options.
+Implies arm_v8_2a_dotprod_neon_ok.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -2308,6 +2319,11 @@ supported by the target; see the
 @ref{arm_v8_2a_fp16_neon_ok,,arm_v8_2a_fp16_neon_ok} effective target
 keyword.
 
+@item arm_v8_2a_dotprod_neon
+Add options for ARMv8.2 with Adv.SIMD Dot Product support, if this is
+supported by the target; see the
+@ref{arm_v8_2a_dotprod_neon_ok} effective target keyword.
+
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
@@ -2357,6 +2373,9 @@ Skip the test if the target does not support profiling with option
 Skip the test if the target does not support the @code{-fstack-check}
 option.  If @var{check} is @code{""}, support for @code{-fstack-check}
 is checked, for @code{-fstack-check=("@var{check}")} otherwise.
+
+@item dg-require-stack-size @var{size}
+Skip the test if the target does not support a stack size of @var{size}.
 
 @item dg-require-visibility @var{vis}
 Skip the test if the target does not support the @code{visibility} attribute.

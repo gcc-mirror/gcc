@@ -542,6 +542,7 @@ void
 ipa_call_summary::reset ()
 {
   call_stmt_size = call_stmt_time = 0;
+  is_return_callee_uncaptured = false;
   if (predicate)
     edge_predicate_pool.remove (predicate);
   predicate = NULL;
@@ -3204,6 +3205,10 @@ read_ipa_call_summary (struct lto_input_block *ib, struct cgraph_edge *e)
   es->call_stmt_size = streamer_read_uhwi (ib);
   es->call_stmt_time = streamer_read_uhwi (ib);
   es->loop_depth = streamer_read_uhwi (ib);
+
+  bitpack_d bp = streamer_read_bitpack (ib);
+  es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);
+
   p.stream_in (ib);
   edge_set_predicate (e, &p);
   length = streamer_read_uhwi (ib);
@@ -3360,6 +3365,11 @@ write_ipa_call_summary (struct output_block *ob, struct cgraph_edge *e)
   streamer_write_uhwi (ob, es->call_stmt_size);
   streamer_write_uhwi (ob, es->call_stmt_time);
   streamer_write_uhwi (ob, es->loop_depth);
+
+  bitpack_d bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, es->is_return_callee_uncaptured, 1);
+  streamer_write_bitpack (&bp);
+
   if (es->predicate)
     es->predicate->stream_out (ob);
   else

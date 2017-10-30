@@ -339,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// tuple_size
   template<typename _Tp>
-    class tuple_size;
+    struct tuple_size;
 
   /// Partial specialization for std::array
   template<typename _Tp, std::size_t _Nm>
@@ -348,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// tuple_element
   template<std::size_t _Int, typename _Tp>
-    class tuple_element;
+    struct tuple_element;
 
   /// Partial specialization for std::array
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>

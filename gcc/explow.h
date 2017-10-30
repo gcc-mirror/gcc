@@ -94,7 +94,8 @@ extern void update_nonlocal_goto_save_area (void);
 extern void record_new_stack_level (void);
 
 /* Allocate some space on the stack dynamically and return its address.  */
-extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned, bool);
+extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned,
+					 HOST_WIDE_INT, bool);
 
 /* Calculate the necessary size of a constant dynamic stack allocation from the
    size of the variable area.  */

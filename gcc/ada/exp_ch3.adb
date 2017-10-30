@@ -5792,6 +5792,7 @@ package body Exp_Ch3 is
          Sec_Stacks  : out Int)
       is
          Component : Entity_Id;
+
       begin
          --  To calculate the number of default-sized task stacks required for
          --  an object of Typ, a depth-first recursive traversal of the AST
@@ -5806,8 +5807,8 @@ package body Exp_Ch3 is
          end if;
 
          case Ekind (Typ) is
-            when E_Task_Type
-               | E_Task_Subtype
+            when E_Task_Subtype
+               | E_Task_Type
             =>
                --  A task type is found marking the bottom of the descent. If
                --  the type has no representation aspect for the corresponding
@@ -5825,8 +5826,8 @@ package body Exp_Ch3 is
                   Sec_Stacks := 1;
                end if;
 
-            when E_Array_Type
-               | E_Array_Subtype
+            when E_Array_Subtype
+               | E_Array_Type
             =>
                --  First find the number of default stacks contained within an
                --  array component.
@@ -5848,10 +5849,10 @@ package body Exp_Ch3 is
                   Sec_Stacks := Sec_Stacks * Quantity;
                end;
 
-            when E_Record_Type
-               | E_Record_Subtype
+            when E_Protected_Subtype
                | E_Protected_Type
-               | E_Protected_Subtype
+               | E_Record_Subtype
+               | E_Record_Type
             =>
                Component := First_Component_Or_Discriminant (Typ);
 
@@ -5862,7 +5863,9 @@ package body Exp_Ch3 is
                while Present (Component) loop
                   if Has_Task (Etype (Component)) then
                      declare
-                        P, S : Int;
+                        P : Int;
+                        S : Int;
+
                      begin
                         Count_Default_Sized_Task_Stacks
                           (Etype (Component), P, S);
@@ -5874,10 +5877,10 @@ package body Exp_Ch3 is
                   Next_Component_Or_Discriminant (Component);
                end loop;
 
-            when E_Limited_Private_Type
-               | E_Limited_Private_Subtype
-               | E_Record_Type_With_Private
+            when E_Limited_Private_Subtype
+               | E_Limited_Private_Type
                | E_Record_Subtype_With_Private
+               | E_Record_Type_With_Private
             =>
                --  Switch to the full view of the private type to continue
                --  search.
@@ -6800,15 +6803,7 @@ package body Exp_Ch3 is
             --  adjustment is required if we are going to rewrite the object
             --  declaration into a renaming declaration.
 
-            if Is_Build_In_Place_Result_Type (Typ)
-              and then Nkind (Parent (N)) = N_Extended_Return_Statement
-              and then
-                not Is_Definite_Subtype (Etype (Return_Applies_To
-                      (Return_Statement_Entity (Parent (N)))))
-            then
-               null;
-
-            elsif Needs_Finalization (Typ)
+            if Needs_Finalization (Typ)
               and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then

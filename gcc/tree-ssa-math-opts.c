@@ -515,6 +515,7 @@ internal_fn_reciprocal (gcall *call)
   switch (gimple_call_combined_fn (call))
     {
     CASE_CFN_SQRT:
+    CASE_CFN_SQRT_FN:
       ifn = IFN_RSQRT;
       break;
 

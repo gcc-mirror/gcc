@@ -1,3 +1,30 @@
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-cppbuiltin.c (mode_has_fma): Add support for PowerPC KFmode.
+	(c_cpp_builtins): If a machine has a fast fma _Float<N> and
+	_Float<N>X variant, define __FP_FAST_FMA<N> and/or
+	__FP_FAST_FMA<N>X.
+
+2017-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82681
+	* c-warn.c (warnings_for_convert_and_check): Fix typos.
+
+2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-common.c (check_builtin_function_arguments): Also check arguments
+	of __builtin_alloca_with_align_and_max.
+
+2017-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (format_warning_at_char): Pass UNKNOWN_LOCATION
+	rather than NULL to format_warning_va.
+	(check_format_types): Likewise when calling format_type_warning.
+	Remove code to extract source_ranges and source_range * in favor
+	of just a location_t.
+	(format_type_warning): Convert source_range * param to a
+	location_t.
+
 2017-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-gimplify.c (c_gimplify_expr): Handle [LR]ROTATE_EXPR like

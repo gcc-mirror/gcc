@@ -177,6 +177,14 @@ default_legitimize_address_displacement (rtx *disp ATTRIBUTE_UNUSED,
   return false;
 }
 
+bool
+default_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    return true;
+  return false;
+}
+
 rtx
 default_expand_builtin_saveregs (void)
 {
@@ -1163,6 +1171,14 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 					 tree id)
 {
    return id;
+}
+
+/* The default implementation of TARGET_STATIC_RTX_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_static_rtx_alignment (machine_mode mode)
+{
+  return GET_MODE_ALIGNMENT (mode);
 }
 
 /* The default implementation of TARGET_CONSTANT_ALIGNMENT.  */

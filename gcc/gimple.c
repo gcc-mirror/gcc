@@ -346,7 +346,7 @@ gimple_build_call_internal_vec (enum internal_fn fn, vec<tree> args)
    this fact.  */
 
 gcall *
-gimple_build_call_from_tree (tree t)
+gimple_build_call_from_tree (tree t, tree fnptrtype)
 {
   unsigned i, nargs;
   gcall *call;
@@ -369,8 +369,7 @@ gimple_build_call_from_tree (tree t)
   gimple_call_set_return_slot_opt (call, CALL_EXPR_RETURN_SLOT_OPT (t));
   if (fndecl
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA
-	  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA_WITH_ALIGN))
+      && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
     gimple_call_set_alloca_for_var (call, CALL_ALLOCA_FOR_VAR_P (t));
   else
     gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
@@ -379,6 +378,23 @@ gimple_build_call_from_tree (tree t)
   gimple_call_set_by_descriptor (call, CALL_EXPR_BY_DESCRIPTOR (t));
   gimple_set_no_warning (call, TREE_NO_WARNING (t));
   gimple_call_set_with_bounds (call, CALL_WITH_BOUNDS_P (t));
+
+  if (fnptrtype)
+    {
+      gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
+
+      /* Check if it's an indirect CALL and the type has the
+ 	 nocf_check attribute. In that case propagate the information
+	 to the gimple CALL insn.  */
+      if (!fndecl)
+	{
+	  gcc_assert (POINTER_TYPE_P (fnptrtype));
+	  tree fntype = TREE_TYPE (fnptrtype);
+
+	  if (lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (fntype)))
+	    gimple_call_set_nocf_check (call, TRUE);
+	}
+    }
 
   return call;
 }
@@ -1824,11 +1840,35 @@ gimple_copy (gimple *stmt)
 	  gimple_omp_sections_set_clauses (copy, t);
 	  t = unshare_expr (gimple_omp_sections_control (stmt));
 	  gimple_omp_sections_set_control (copy, t);
-	  /* FALLTHRU  */
+	  goto copy_omp_body;
 
 	case GIMPLE_OMP_SINGLE:
+	  {
+	    gomp_single *omp_single_copy = as_a <gomp_single *> (copy);
+	    t = unshare_expr (gimple_omp_single_clauses (stmt));
+	    gimple_omp_single_set_clauses (omp_single_copy, t);
+	  }
+	  goto copy_omp_body;
+
 	case GIMPLE_OMP_TARGET:
+	  {
+	    gomp_target *omp_target_stmt = as_a <gomp_target *> (stmt);
+	    gomp_target *omp_target_copy = as_a <gomp_target *> (copy);
+	    t = unshare_expr (gimple_omp_target_clauses (omp_target_stmt));
+	    gimple_omp_target_set_clauses (omp_target_copy, t);
+	    t = unshare_expr (gimple_omp_target_data_arg (omp_target_stmt));
+	    gimple_omp_target_set_data_arg (omp_target_copy, t);
+	  }
+	  goto copy_omp_body;
+
 	case GIMPLE_OMP_TEAMS:
+	  {
+	    gomp_teams *omp_teams_copy = as_a <gomp_teams *> (copy);
+	    t = unshare_expr (gimple_omp_teams_clauses (stmt));
+	    gimple_omp_teams_set_clauses (omp_teams_copy, t);
+	  }
+	  /* FALLTHRU  */
+
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
 	case GIMPLE_OMP_TASKGROUP:

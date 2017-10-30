@@ -2711,8 +2711,12 @@ finish_compound_literal (tree type, tree compound_literal,
 
   if (tree anode = type_uses_auto (type))
     if (CLASS_PLACEHOLDER_TEMPLATE (anode))
-      type = do_auto_deduction (type, compound_literal, anode, complain,
-				adc_variable_type);
+      {
+	type = do_auto_deduction (type, compound_literal, anode, complain,
+				  adc_variable_type);
+	if (type == error_mark_node)
+	  return error_mark_node;
+      }
 
   if (processing_template_decl)
     {

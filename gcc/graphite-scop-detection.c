@@ -1005,15 +1005,10 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  edge nest;
+  edge nest = scop.entry;;
   loop_p loop = loop_containing_stmt (stmt);
   if (!loop_in_sese_p (loop, scop))
-    {
-      nest = scop.entry;
-      loop = NULL;
-    }
-  else
-    nest = loop_preheader_edge (outermost_loop_in_sese (scop, gimple_bb (stmt)));
+    loop = NULL;
 
   auto_vec<data_reference_p> drs;
   if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
@@ -1108,7 +1103,7 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
 	    tree op = gimple_op (stmt, i);
 	    if (!graphite_can_represent_expr (scop, loop, op)
 		/* We can only constrain on integer type.  */
-		|| (TREE_CODE (TREE_TYPE (op)) != INTEGER_TYPE))
+		|| ! INTEGRAL_TYPE_P (TREE_TYPE (op)))
 	      {
 		DEBUG_PRINT (dp << "[scop-detection-fail] "
 				<< "Graphite cannot represent stmt:\n";
@@ -1151,49 +1146,23 @@ scop_detection::nb_pbbs_in_loops (scop_p scop)
   return res;
 }
 
-/* When parameter NAME is in REGION, returns its index in SESE_PARAMS.
-   Otherwise returns -1.  */
+/* Assigns the parameter NAME an index in REGION.  */
 
-static inline int
-parameter_index_in_region_1 (tree name, sese_info_p region)
+static void
+assign_parameter_index_in_region (tree name, sese_info_p region)
 {
+  gcc_assert (TREE_CODE (name) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (name))
+	      && ! defined_in_sese_p (name, region->region));
+
   int i;
   tree p;
-
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
   FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
-      return i;
-
-  return -1;
-}
-
-/* When the parameter NAME is in REGION, returns its index in
-   SESE_PARAMS.  Otherwise this function inserts NAME in SESE_PARAMS
-   and returns the index of NAME.  */
-
-static int
-parameter_index_in_region (tree name, sese_info_p region)
-{
-  int i;
-
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
-  /* Cannot constrain on anything else than INTEGER_TYPE parameters.  */
-  if (TREE_CODE (TREE_TYPE (name)) != INTEGER_TYPE)
-    return -1;
-
-  if (!invariant_in_sese_p_rec (name, region->region, NULL))
-    return -1;
-
-  i = parameter_index_in_region_1 (name, region);
-  if (i != -1)
-    return i;
+      return;
 
   i = region->params.length ();
   region->params.safe_push (name);
-  return i;
 }
 
 /* In the context of sese S, scan the expression E and translate it to
@@ -1235,7 +1204,7 @@ scan_tree_for_params (sese_info_p s, tree e)
       break;
 
     case SSA_NAME:
-      parameter_index_in_region (e, s);
+      assign_parameter_index_in_region (e, s);
       break;
 
     case INTEGER_CST:
@@ -1381,15 +1350,10 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
-  edge nest;
+  edge nest = region.entry;
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
-    {
-      nest = region.entry;
-      loop = NULL;
-    }
-  else
-    nest = loop_preheader_edge (outermost_loop_in_sese (region, bb));
+    loop = NULL;
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
@@ -1708,10 +1672,6 @@ build_scops (vec<scop_p> *scops)
   sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
     {
-      /* For our out-of-SSA we need a block on s->entry, similar to how
-         we include the LCSSA block in the region.  */
-      s->entry = single_pred_edge (split_edge (s->entry));
-
       scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */

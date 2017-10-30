@@ -770,7 +770,7 @@ package Sinfo is
    --  The following flag fields appear in all nodes:
 
    --  Analyzed
-   --    This flag is used to indicate that a node (and all its children have
+   --    This flag is used to indicate that a node (and all its children) have
    --    been analyzed. It is used to avoid reanalysis of a node that has
    --    already been analyzed, both for efficiency and functional correctness
    --    reasons.
@@ -902,6 +902,10 @@ package Sinfo is
    --    Present in array N_Aggregate nodes. If the bounds of the aggregate are
    --    known at compile time, this field points to an N_Range node with those
    --    bounds. Otherwise Empty.
+
+   --  Alloc_For_BIP_Return (Flag1-Sem)
+   --    Present in N_Allocator nodes. True if the allocator is one of those
+   --    generated for a build-in-place return statement.
 
    --  All_Others (Flag11-Sem)
    --    Present in an N_Others_Choice node. This flag is set for an others
@@ -4773,6 +4777,7 @@ package Sinfo is
       --  Subpool_Handle_Name (Node4) (set to Empty if not present)
       --  Storage_Pool (Node1-Sem)
       --  Procedure_To_Call (Node2-Sem)
+      --  Alloc_For_BIP_Return (Flag1-Sem)
       --  Null_Exclusion_Present (Flag11)
       --  No_Initialization (Flag13-Sem)
       --  Is_Static_Coextension (Flag14-Sem)
@@ -7837,7 +7842,7 @@ package Sinfo is
 
       --  The required semantics is that the set of actions is executed in
       --  the order in which it appears, as though they appeared by themselves
-      --  in the enclosing list of declarations of statements. Unlike what
+      --  in the enclosing list of declarations or statements. Unlike what
       --  happens when using an N_Block_Statement, no new scope is introduced.
 
       --  Note: for the time being, this is used only as a transient
@@ -9125,6 +9130,9 @@ package Sinfo is
    function Aliased_Present
      (N : Node_Id) return Boolean;    -- Flag4
 
+   function Alloc_For_BIP_Return
+     (N : Node_Id) return Boolean;    -- Flag1
+
    function All_Others
      (N : Node_Id) return Boolean;    -- Flag11
 
@@ -10213,6 +10221,9 @@ package Sinfo is
 
    procedure Set_Aliased_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag4
+
+   procedure Set_Alloc_For_BIP_Return
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
 
    procedure Set_All_Others
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -13063,6 +13074,7 @@ package Sinfo is
    pragma Inline (Address_Warning_Posted);
    pragma Inline (Aggregate_Bounds);
    pragma Inline (Aliased_Present);
+   pragma Inline (Alloc_For_BIP_Return);
    pragma Inline (All_Others);
    pragma Inline (All_Present);
    pragma Inline (Alternatives);
@@ -13423,6 +13435,7 @@ package Sinfo is
    pragma Inline (Set_Address_Warning_Posted);
    pragma Inline (Set_Aggregate_Bounds);
    pragma Inline (Set_Aliased_Present);
+   pragma Inline (Set_Alloc_For_BIP_Return);
    pragma Inline (Set_All_Others);
    pragma Inline (Set_All_Present);
    pragma Inline (Set_Alternatives);

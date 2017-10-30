@@ -349,8 +349,6 @@ enum reg_class
 /* Stack layout and calling conventions.  */
 #define STACK_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET   0
-
 #define STACK_POINTER_REGNUM    15
 
 #define FRAME_POINTER_REGNUM    13

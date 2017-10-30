@@ -259,6 +259,12 @@ hook_uint_void_0 (void)
   return 0;
 }
 
+HOST_WIDE_INT
+hook_hwi_void_0 (void)
+{
+  return 0;
+}
+
 void
 hook_void_tree (tree)
 {

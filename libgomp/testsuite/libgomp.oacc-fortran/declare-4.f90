@@ -1,3 +1,5 @@
+! { dg-do run }
+
 module vars
   implicit none
   real b

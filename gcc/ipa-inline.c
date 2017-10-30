@@ -2526,9 +2526,6 @@ ipa_inline (void)
 
   if (dump_file)
     ipa_dump_fn_summaries (dump_file);
-  /* In WPA we use inline summaries for partitioning process.  */
-  if (!flag_wpa)
-    ipa_free_fn_summary ();
   return remove_functions ? TODO_remove_functions : 0;
 }
 

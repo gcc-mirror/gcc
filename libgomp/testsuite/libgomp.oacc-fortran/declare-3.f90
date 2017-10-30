@@ -1,3 +1,4 @@
+! { dg-do run }
 ! { dg-skip-if "" { *-*-* } { "-DACC_MEM_SHARED=1" } }
 
 module globalvars

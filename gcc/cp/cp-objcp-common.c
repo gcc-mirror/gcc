@@ -61,43 +61,34 @@ cxx_warn_unused_global_decl (const_tree decl)
 size_t
 cp_tree_size (enum tree_code code)
 {
+  gcc_checking_assert (code >= NUM_TREE_CODES);
   switch (code)
     {
-    case PTRMEM_CST:		return sizeof (struct ptrmem_cst);
-    case BASELINK:		return sizeof (struct tree_baselink);
+    case PTRMEM_CST:		return sizeof (ptrmem_cst);
+    case BASELINK:		return sizeof (tree_baselink);
     case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
-    case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
-    case DEFERRED_NOEXCEPT:	return sizeof (struct tree_deferred_noexcept);
-    case OVERLOAD:		return sizeof (struct tree_overload);
-    case STATIC_ASSERT:         return sizeof (struct tree_static_assert);
+    case DEFAULT_ARG:		return sizeof (tree_default_arg);
+    case DEFERRED_NOEXCEPT:	return sizeof (tree_deferred_noexcept);
+    case OVERLOAD:		return sizeof (tree_overload);
+    case STATIC_ASSERT:         return sizeof (tree_static_assert);
     case TYPE_ARGUMENT_PACK:
-    case TYPE_PACK_EXPANSION:
-      return sizeof (struct tree_common);
-
+    case TYPE_PACK_EXPANSION:	return sizeof (tree_type_non_common);
     case NONTYPE_ARGUMENT_PACK:
-    case EXPR_PACK_EXPANSION:
-      return sizeof (struct tree_exp);
-
-    case ARGUMENT_PACK_SELECT:
-      return sizeof (struct tree_argument_pack_select);
-
-    case TRAIT_EXPR:
-      return sizeof (struct tree_trait_expr);
-
-    case LAMBDA_EXPR:           return sizeof (struct tree_lambda_expr);
-
-    case TEMPLATE_INFO:         return sizeof (struct tree_template_info);
-
-    case CONSTRAINT_INFO:       return sizeof (struct tree_constraint_info);
-
-    case USERDEF_LITERAL:	return sizeof (struct tree_userdef_literal);
-
-    case TEMPLATE_DECL:		return sizeof (struct tree_template_decl);
-
+    case EXPR_PACK_EXPANSION:	return sizeof (tree_exp);
+    case ARGUMENT_PACK_SELECT:	return sizeof (tree_argument_pack_select);
+    case TRAIT_EXPR:		return sizeof (tree_trait_expr);
+    case LAMBDA_EXPR:           return sizeof (tree_lambda_expr);
+    case TEMPLATE_INFO:         return sizeof (tree_template_info);
+    case CONSTRAINT_INFO:       return sizeof (tree_constraint_info);
+    case USERDEF_LITERAL:	return sizeof (tree_userdef_literal);
+    case TEMPLATE_DECL:		return sizeof (tree_template_decl);
     default:
-      if (TREE_CODE_CLASS (code) == tcc_declaration)
-	return sizeof (struct tree_decl_non_common);
-      gcc_unreachable ();
+      switch (TREE_CODE_CLASS (code))
+	{
+	case tcc_declaration:	return sizeof (tree_decl_non_common);
+	case tcc_type:		return sizeof (tree_type_non_common);
+	default: gcc_unreachable ();
+	}
     }
   /* NOTREACHED */
 }

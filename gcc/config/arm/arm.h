@@ -1256,12 +1256,6 @@ enum reg_class
    && crtl->outgoing_args_size != 0		\
    ? UNITS_PER_WORD : 0)
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
-
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
 /* The push insns do not do this rounding implicitly.

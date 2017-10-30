@@ -195,7 +195,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 		}
 
 	      taken_edge->probability += e->probability;
-	      taken_edge->count += e->count;
 	      remove_edge_and_dominated_blocks (e);
 	      retval = true;
 	    }

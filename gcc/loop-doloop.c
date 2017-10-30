@@ -393,9 +393,7 @@ add_test (rtx cond, edge *e, basic_block dest)
 
   edge e2 = make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
   e2->probability = prob;
-  e2->count = e2->src->count.apply_probability (prob);
   (*e)->probability = prob.invert ();
-  (*e)->count = (*e)->count.apply_probability (prob);
   update_br_prob_note (e2->src);
   return true;
 }

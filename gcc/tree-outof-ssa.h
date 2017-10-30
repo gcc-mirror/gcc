@@ -74,18 +74,6 @@ get_gimple_for_ssa_name (tree exp)
   return NULL;
 }
 
-/* Return whether the RTX expression representing the storage of the outof-SSA
-   partition that the SSA name EXP is a member of is always initialized.  */
-static inline bool
-always_initialized_rtx_for_ssa_name_p (tree exp)
-{
-  int p = partition_find (SA.map->var_partition, SSA_NAME_VERSION (exp));
-  if (SA.map->partition_to_view)
-    p = SA.map->partition_to_view[p];
-  gcc_assert (p != NO_PARTITION);
-  return !bitmap_bit_p (SA.partitions_for_undefined_values, p);
-}
-
 extern bool ssa_is_replaceable_p (gimple *stmt);
 extern void finish_out_of_ssa (struct ssaexpand *sa);
 extern unsigned int rewrite_out_of_ssa (struct ssaexpand *sa);

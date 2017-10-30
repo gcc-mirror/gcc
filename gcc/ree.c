@@ -269,7 +269,7 @@ update_reg_equal_equiv_notes (rtx_insn *insn, machine_mode new_mode,
 	  /* Update equivalency constants.  Recall that RTL constants are
 	     sign-extended.  */
 	  if (GET_CODE (orig_src) == CONST_INT
-	      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (new_mode))
+	      && HWI_COMPUTABLE_MODE_P (new_mode))
 	    {
 	      if (INTVAL (orig_src) >= 0 || code == SIGN_EXTEND)
 		/* Nothing needed.  */;
@@ -337,7 +337,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
   /* Merge constants by directly moving the constant into the register under
      some conditions.  Recall that RTL constants are sign-extended.  */
   if (GET_CODE (orig_src) == CONST_INT
-      && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (cand->mode))
+      && HWI_COMPUTABLE_MODE_P (cand->mode))
     {
       if (INTVAL (orig_src) >= 0 || cand->code == SIGN_EXTEND)
 	new_set = gen_rtx_SET (new_reg, orig_src);

@@ -753,6 +753,10 @@ mrdpid
 Target Report Mask(ISA_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
 
+mgfni
+Target Report Mask(ISA_GFNI) Var(ix86_isa_flags2) Save
+Support GFNI built-in functions and code generation.
+
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
 Support BMI built-in functions and code generation.
@@ -953,3 +957,23 @@ Attempt to avoid generating instruction sequences containing ret bytes.
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
 Generate code which uses only the general registers.
+
+mcet
+Target Report Var(flag_cet) Init(0)
+Support Control-flow  Enforcment Technology (CET) built-in functions
+and code generation.
+
+mibt
+Target Report Mask(ISA_IBT) Var(ix86_isa_flags2) Save
+Specifically enables an indirect branch tracking feature from Control-flow
+Enforcment Technology (CET).
+
+mshstk
+Target Report Mask(ISA_SHSTK) Var(ix86_isa_flags2) Save
+Specifically enables an shadow stack support feature from Control-flow
+Enforcment Technology (CET).
+
+mcet-switch
+Target Report Undocumented Var(flag_cet_switch) Init(0)
+Turn on CET instrumentation for switch statements, which use jump table and
+indirect jump.

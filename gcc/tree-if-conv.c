@@ -2214,7 +2214,8 @@ predicate_mem_writes (loop_p loop)
 	{
 	  if (!gimple_assign_single_p (stmt = gsi_stmt (gsi)))
 	    ;
-	  else if (is_false_predicate (cond))
+	  else if (is_false_predicate (cond)
+		   && gimple_vdef (stmt))
 	    {
 	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&gsi, true);

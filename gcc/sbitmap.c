@@ -180,6 +180,8 @@ sbitmap_vector_alloc (unsigned int n_vecs, unsigned int n_elms)
 void
 bitmap_copy (sbitmap dst, const_sbitmap src)
 {
+  gcc_checking_assert (src->size <= dst->size);
+
   memcpy (dst->elms, src->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
 }
 
@@ -187,6 +189,8 @@ bitmap_copy (sbitmap dst, const_sbitmap src)
 int
 bitmap_equal_p (const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+
   return !memcmp (a->elms, b->elms, sizeof (SBITMAP_ELT_TYPE) * a->size);
 }
 
@@ -210,6 +214,8 @@ bitmap_clear_range (sbitmap bmap, unsigned int start, unsigned int count)
 {
   if (count == 0)
     return;
+
+  bitmap_check_index (bmap, start + count - 1);
 
   unsigned int start_word = start / SBITMAP_ELT_BITS;
   unsigned int start_bitno = start % SBITMAP_ELT_BITS;
@@ -266,6 +272,8 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
 {
   if (count == 0)
     return;
+
+  bitmap_check_index (bmap, start + count - 1);
 
   unsigned int start_word = start / SBITMAP_ELT_BITS;
   unsigned int start_bitno = start % SBITMAP_ELT_BITS;
@@ -324,6 +332,8 @@ bool
 bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
 {
   gcc_checking_assert (start <= end);
+  bitmap_check_index (bmap, end);
+
   unsigned int start_word = start / SBITMAP_ELT_BITS;
   unsigned int start_bitno = start % SBITMAP_ELT_BITS;
 
@@ -467,6 +477,9 @@ bitmap_vector_ones (sbitmap *bmap, unsigned int n_vecs)
 bool
 bitmap_ior_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, c);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -489,6 +502,8 @@ bitmap_ior_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitm
 void
 bitmap_not (sbitmap dst, const_sbitmap src)
 {
+  bitmap_check_sizes (src, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr srcp = src->elms;
@@ -510,6 +525,9 @@ bitmap_not (sbitmap dst, const_sbitmap src)
 void
 bitmap_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, dst_size = dst->size;
   unsigned int min_size = dst->size;
   sbitmap_ptr dstp = dst->elms;
@@ -537,6 +555,8 @@ bitmap_and_compl (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_intersect_p (const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+
   const_sbitmap_ptr ap = a->elms;
   const_sbitmap_ptr bp = b->elms;
   unsigned int i, n;
@@ -555,6 +575,9 @@ bitmap_intersect_p (const_sbitmap a, const_sbitmap b)
 bool
 bitmap_and (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -577,6 +600,9 @@ bitmap_and (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_xor (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -599,6 +625,9 @@ bitmap_xor (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_ior (sbitmap dst, const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -620,6 +649,8 @@ bitmap_ior (sbitmap dst, const_sbitmap a, const_sbitmap b)
 bool
 bitmap_subset_p (const_sbitmap a, const_sbitmap b)
 {
+  bitmap_check_sizes (a, b);
+
   unsigned int i, n = a->size;
   const_sbitmap_ptr ap, bp;
 
@@ -636,6 +667,10 @@ bitmap_subset_p (const_sbitmap a, const_sbitmap b)
 bool
 bitmap_or_and (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, c);
+  bitmap_check_sizes (c, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;
@@ -659,6 +694,10 @@ bitmap_or_and (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 bool
 bitmap_and_or (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitmap c)
 {
+  bitmap_check_sizes (a, b);
+  bitmap_check_sizes (b, c);
+  bitmap_check_sizes (c, dst);
+
   unsigned int i, n = dst->size;
   sbitmap_ptr dstp = dst->elms;
   const_sbitmap_ptr ap = a->elms;

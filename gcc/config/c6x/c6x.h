@@ -298,7 +298,6 @@ enum reg_class
 #define STACK_POINTER_OFFSET 4
 /* Likewise for AP (which is the incoming stack pointer).  */
 #define FIRST_PARM_OFFSET(fundecl) 4
-#define STARTING_FRAME_OFFSET 0
 #define FRAME_GROWS_DOWNWARD 1
 #define STACK_GROWS_DOWNWARD 1
 

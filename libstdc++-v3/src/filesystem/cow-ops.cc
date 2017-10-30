@@ -1,4 +1,4 @@
-// Filesystem operations -*- C++ -*-
+// Filesystem TS operations -*- C++ -*-
 
 // Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //

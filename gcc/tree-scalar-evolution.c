@@ -2358,11 +2358,9 @@ instantiate_scev_name (edge instantiate_below,
   struct loop *def_loop;
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (chrec));
 
-  /* A parameter (or loop invariant and we do not want to include
-     evolutions in outer loops), nothing to do.  */
+  /* A parameter, nothing to do.  */
   if (!def_bb
-      || loop_depth (def_bb->loop_father) == 0
-      || ! dominated_by_p (CDI_DOMINATORS, def_bb, instantiate_below->dest))
+      || !dominated_by_p (CDI_DOMINATORS, def_bb, instantiate_below->dest))
     return chrec;
 
   /* We cache the value of instantiated variable to avoid exponential

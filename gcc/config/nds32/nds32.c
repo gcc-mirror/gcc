@@ -3763,7 +3763,7 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- File Names in DBX Format.  */
 
-/* -- Macros for SDB and DWARF Output.  */
+/* -- Macros for DWARF Output.  */
 
 /* -- Macros for VMS Debug Format.  */
 

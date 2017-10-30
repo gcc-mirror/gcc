@@ -278,10 +278,11 @@ brig_langhook_type_for_mode (machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
-  enum mode_class mc = GET_MODE_CLASS (mode);
-  if (mc == MODE_FLOAT)
+  scalar_int_mode imode;
+  scalar_float_mode fmode;
+  if (is_int_mode (mode, &imode))
     {
-      switch (GET_MODE_BITSIZE (mode))
+      switch (GET_MODE_BITSIZE (imode))
 	{
 	case 32:
 	  return float_type_node;
@@ -290,15 +291,15 @@ brig_langhook_type_for_mode (machine_mode mode, int unsignedp)
 	default:
 	  /* We have to check for long double in order to support
 	     i386 excess precision.  */
-	  if (mode == TYPE_MODE (long_double_type_node))
+	  if (imode == TYPE_MODE (long_double_type_node))
 	    return long_double_type_node;
 
 	  gcc_unreachable ();
 	  return NULL_TREE;
 	}
     }
-  else if (mc == MODE_INT)
-    return brig_langhook_type_for_size(GET_MODE_BITSIZE(mode), unsignedp);
+  else if (is_float_mode (mode, &fmode))
+    return brig_langhook_type_for_size (GET_MODE_BITSIZE (fmode), unsignedp);
   else
     {
       /* E.g., build_common_builtin_nodes () asks for modes/builtins

@@ -262,7 +262,7 @@ static bool move_for_stack_reg (rtx_insn *, stack_ptr, rtx);
 static bool move_nan_for_stack_reg (rtx_insn *, stack_ptr, rtx);
 static int swap_rtx_condition_1 (rtx);
 static int swap_rtx_condition (rtx_insn *);
-static void compare_for_stack_reg (rtx_insn *, stack_ptr, rtx);
+static void compare_for_stack_reg (rtx_insn *, stack_ptr, rtx, bool);
 static bool subst_stack_regs_pat (rtx_insn *, stack_ptr, rtx);
 static void subst_asm_stack_regs (rtx_insn *, stack_ptr);
 static bool subst_stack_regs (rtx_insn *, stack_ptr);
@@ -1325,7 +1325,8 @@ swap_rtx_condition (rtx_insn *insn)
    set up.  */
 
 static void
-compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
+compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack,
+		       rtx pat_src, bool can_pop_second_op)
 {
   rtx *src1, *src2;
   rtx src1_note, src2_note;
@@ -1366,8 +1367,18 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
 
   if (src1_note)
     {
-      pop_stack (regstack, REGNO (XEXP (src1_note, 0)));
-      replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+      if (*src2 == CONST0_RTX (GET_MODE (*src2)))
+	{
+	  /* This is `ftst' insn that can't pop register.  */
+	  remove_regno_note (insn, REG_DEAD, REGNO (XEXP (src1_note, 0)));
+	  emit_pop_insn (insn, regstack, XEXP (src1_note, 0),
+			 EMIT_AFTER);
+	}
+      else
+	{
+	  pop_stack (regstack, REGNO (XEXP (src1_note, 0)));
+	  replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+	}
     }
 
   /* If the second operand dies, handle that.  But if the operands are
@@ -1384,7 +1395,7 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
 	 at top (FIRST_STACK_REG) now.  */
 
       if (get_hard_regnum (regstack, XEXP (src2_note, 0)) == FIRST_STACK_REG
-	  && src1_note)
+	  && src1_note && can_pop_second_op)
 	{
 	  pop_stack (regstack, REGNO (XEXP (src2_note, 0)));
 	  replace_reg (&XEXP (src2_note, 0), FIRST_STACK_REG + 1);
@@ -1549,10 +1560,6 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 
 	switch (GET_CODE (pat_src))
 	  {
-	  case COMPARE:
-	    compare_for_stack_reg (insn, regstack, pat_src);
-	    break;
-
 	  case CALL:
 	    {
 	      int count;
@@ -1953,29 +1960,33 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 		replace_reg (src2, FIRST_STACK_REG + 1);
 		break;
 
-	      case UNSPEC_SAHF:
-		/* (unspec [(unspec [(compare)] UNSPEC_FNSTSW)] UNSPEC_SAHF)
-		   The combination matches the PPRO fcomi instruction.  */
-
-		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == UNSPEC);
-		gcc_assert (XINT (pat_src, 1) == UNSPEC_FNSTSW);
-		/* Fall through.  */
-
 	      case UNSPEC_FNSTSW:
 		/* Combined fcomp+fnstsw generated for doing well with
 		   CSE.  When optimizing this would have been broken
 		   up before now.  */
 
 		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		if (GET_CODE (pat_src) == COMPARE)
+		  goto do_compare;
 
-		compare_for_stack_reg (insn, regstack, pat_src);
-		break;
+		/* Fall through.  */
+
+	      case UNSPEC_NOTRAP:
+
+		pat_src = XVECEXP (pat_src, 0, 0);
+		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		goto do_compare;
 
 	      default:
 		gcc_unreachable ();
 	      }
+	    break;
+
+	  case COMPARE:
+	  do_compare:
+	    /* `fcomi' insn can't pop two regs.  */
+	    compare_for_stack_reg (insn, regstack, pat_src,
+				   REGNO (*dest) != FLAGS_REG);
 	    break;
 
 	  case IF_THEN_ELSE:
@@ -2948,9 +2959,9 @@ better_edge (edge e1, edge e2)
   if (EDGE_FREQUENCY (e1) < EDGE_FREQUENCY (e2))
     return e2;
 
-  if (e1->count > e2->count)
+  if (e1->count () > e2->count ())
     return e1;
-  if (e1->count < e2->count)
+  if (e1->count () < e2->count ())
     return e2;
 
   /* Prefer critical edges to minimize inserting compensation code on

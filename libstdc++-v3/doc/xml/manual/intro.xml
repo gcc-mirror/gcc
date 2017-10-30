@@ -50,6 +50,10 @@
     <!-- Section 01.6 : Status C++ TR24733 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxxtr24733.xml">
     </xi:include>
+
+    <!-- Section 01.7 : Status C++ IS 24733 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxxis29124.xml">
+    </xi:include>
   </section>
 
   <!-- Section 02 : License -->

@@ -15,6 +15,7 @@ nodist_toolexeclib_HEADERS = libtsan_preinit.o
 tsan_files = \
 	tsan_clock.cc \
 	tsan_debugging.cc \
+	tsan_external.cc \
 	tsan_fd.cc \
 	tsan_flags.cc \
 	tsan_ignoreset.cc \
