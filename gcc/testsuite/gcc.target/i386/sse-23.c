@@ -619,6 +619,14 @@
 #define __builtin_ia32_extracti64x2_256_mask(A, E, C, D) __builtin_ia32_extracti64x2_256_mask(A, 1, C, D)
 #define __builtin_ia32_extractf64x2_256_mask(A, E, C, D) __builtin_ia32_extractf64x2_256_mask(A, 1, C, D)
 
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,clwb,mwaitx,clzero,pku,sgx,rdpid")
+/* gfniintrin.h */
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, 1) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, 1, D, E) 
+
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni")
 
 #include <x86intrin.h>

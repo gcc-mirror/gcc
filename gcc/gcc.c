@@ -170,9 +170,10 @@ env_manager::restore ()
 
 
 /* By default there is no special suffix for target executables.  */
-/* FIXME: when autoconf is fixed, remove the host check - dj */
-#if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
+#ifdef TARGET_EXECUTABLE_SUFFIX
 #define HAVE_TARGET_EXECUTABLE_SUFFIX
+#else
+#define TARGET_EXECUTABLE_SUFFIX ""
 #endif
 
 /* By default there is no special suffix for host executables.  */

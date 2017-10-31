@@ -1,3 +1,114 @@
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (struct name_map): do not use typedef.
+	Define operator== and operator<.
+	(name_search): Remove.
+	(name_sort): Remove.
+	(main): Do not allocate names.
+	(process_file): Add vertical space.
+	(generate_results): Use std::find.
+	(release_structures): Do not release memory.
+	(find_source): Use std::find.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (struct line_info): Remove it's typedef.
+	(line_info::line_info): Add proper ctor.
+	(line_info::has_block): Do not use a typedef.
+	(struct source_info): Do not use typedef.
+	(circuit): Likewise.
+	(get_cycles_count): Likewise.
+	(output_intermediate_file): Iterate via vector iterator.
+	(add_line_counts): Use std::vector methods.
+	(accumulate_line_counts): Likewise.
+	(output_lines): Likewise.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (struct source_info): Remove typedef.
+	(source_info::source_info): Add proper ctor.
+	(accumulate_line_counts): Use struct, not it's typedef.
+	(output_gcov_file): Likewise.
+	(output_lines): Likewise.
+	(main): Do not allocate an array.
+	(output_intermediate_file): Use size of vector container.
+	(process_file): Resize the vector.
+	(generate_results): Do not preallocate, use newly added vector
+	lines.
+	(release_structures): Do not release sources.
+	(find_source): Use vector methods.
+	(add_line_counts): Do not use typedef.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov.texi: Document that.
+	* gcov.c (add_line_counts): Mark lines with a non-executed
+	statement.
+	(output_line_beginning): Handle such lines.
+	(output_lines): Pass new argument.
+	(output_intermediate_file): Print it in intermediate format.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* color-macros.h: New file.
+	* diagnostic-color.c: Factor out color related to macros to
+	color-macros.h.
+	* doc/gcov.texi: Document -k option.
+	* gcov.c (INCLUDE_STRING): Include string.h.
+	(print_usage): Add -k option.
+	(process_args): Parse it.
+	(pad_count_string): New function.
+	(output_line_beginning): Likewise.
+	(DEFAULT_LINE_START): New macro.
+	(output_lines): Support color output.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/82633
+	* doc/gcov.texi: Document -fkeep-{static,inline}-functions and
+	their interaction with GCOV infrastructure.
+	* configure.ac: Add -fkeep-{inline,static}-functions to
+	coverage_flags.
+	* configure: Regenerate.
+
+2017-10-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82772
+	* config/alpha/sync.md (fetchop_constr) <and>: Change to "rINM".
+
+2017-10-31  Segher Boessenkool  <segher@kernel.crsahing.org>
+
+	PR target/82674
+	* config/rs6000/rs6000.md (allocate_stack): Force update interval
+	into a register if it does not fit into an immediate offset field.
+
+2017-10-31  Olivier Hainque  <hainque@adacore.com>
+
+        * gcc/Makefile.in (FLAGS_TO_PASS): Pass libsubdir as well.
+
+2017-10-31  Julia Koval  <julia.koval@intel.com>
+
+	* config.gcc: Add gfniintrin.h.
+	* config/i386/gfniintrin.h: New.
+	* config/i386/i386-builtin-types.def
+	(__builtin_ia32_vgf2p8affineinvqb_v64qi,
+	__builtin_ia32_vgf2p8affineinvqb_v64qi_mask,
+	__builtin_ia32_vgf2p8affineinvqb_v32qi,
+	__builtin_ia32_vgf2p8affineinvqb_v32qi_mask,
+	__builtin_ia32_vgf2p8affineinvqb_v16qi,
+	__builtin_ia32_vgf2p8affineinvqb_v16qi_mask): New builtins.
+	* config/i386/i386-builtin.def (V64QI_FTYPE_V64QI_V64QI_INT_V64QI_UDI,
+	V32QI_FTYPE_V32QI_V32QI_INT_V32QI_USI,
+	V16QI_FTYPE_V16QI_V16QI_INT_V16QI_UHI,
+	V64QI_FTYPE_V64QI_V64QI_INT): New types.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle new types.
+	* config/i386/immintrin.h: Include gfniintrin.h.
+	* config/i386/sse.md (vgf2p8affineinvqb_*) New pattern.
+
+2017-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c (HAVE_TARGET_EXECUTABLE_SUFFIX): Remove old kludge.
+
 2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.md (ashldi3): Remove shift by 1 expansion.

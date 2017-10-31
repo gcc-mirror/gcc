@@ -1161,6 +1161,7 @@ FLAGS_TO_PASS = \
 	"libexecsubdir=$(libexecsubdir)" \
 	"datarootdir=$(datarootdir)" \
 	"datadir=$(datadir)" \
+	"libsubdir=$(libsubdir)" \
 	"localedir=$(localedir)"
 #
 # Lists of files for various purposes.

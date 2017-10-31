@@ -248,6 +248,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define ovl_op_identifier(ISASS, CODE)  (OVL_OP_INFO(ISASS, CODE)->identifier)
 #define assign_op_identifier (ovl_op_info[true][OVL_OP_NOP_EXPR].identifier)
 #define call_op_identifier (ovl_op_info[false][OVL_OP_CALL_EXPR].identifier)
+/* The name used for conversion operators -- but note that actual
+   conversion funcg1tions use special identifiers outside the identifier
+   table.  */
 #define conv_op_identifier 		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
@@ -2803,7 +2806,7 @@ struct GTY(()) lang_decl {
   IDENTIFIER_ANY_OP_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE is an assignment operator (including += and such).  */
-#define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
+#define DECL_ASSIGNMENT_OPERATOR_P(NODE)		 \
   IDENTIFIER_ASSIGN_OP_P (DECL_NAME (NODE))
 
 /* NODE is a function_decl for an overloaded operator.  Return its

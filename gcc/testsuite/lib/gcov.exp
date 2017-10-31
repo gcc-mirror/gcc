@@ -108,7 +108,7 @@ proc verify-intermediate { testname testcase file } {
 	if [regexp "^function:(\[0-9\]+),(\[0-9\]+),.*" $line] {
 	    incr function
 	}
-	if [regexp "^lcount:(\[0-9\]+),(\[0-9\]+)" $line] {
+	if [regexp "^lcount:(\[0-9\]+),(\[0-9\]+),(\[01\])" $line] {
 	    incr lcount
 	}
 	if [regexp "^branch:(\[0-9\]+),(taken|nottaken|notexec)" $line] {
