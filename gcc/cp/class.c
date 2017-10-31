@@ -3011,7 +3011,7 @@ static tree
 dfs_declare_virt_assop_and_dtor (tree binfo, void *data)
 {
   tree bv, fn, t = (tree)data;
-  tree opname = cp_assignment_operator_id (NOP_EXPR);
+  tree opname = assign_op_identifier;
 
   gcc_assert (t && CLASS_TYPE_P (t));
   gcc_assert (binfo && TREE_CODE (binfo) == TREE_BINFO);
@@ -5038,7 +5038,7 @@ vbase_has_user_provided_move_assign (tree type)
   /* Does the type itself have a user-provided move assignment operator?  */
   if (!CLASSTYPE_LAZY_MOVE_ASSIGN (type))
     for (ovl_iterator iter (get_class_binding_direct
-			    (type, cp_assignment_operator_id (NOP_EXPR)));
+			    (type, assign_op_identifier));
 	 iter; ++iter)
       if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
@@ -5186,7 +5186,7 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
 
   if (!CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     for (ovl_iterator iter (get_class_binding_direct
-			    (t, cp_assignment_operator_id (NOP_EXPR)));
+			    (t, assign_op_identifier));
 	 iter; ++iter)
       if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
 	return true;
