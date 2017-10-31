@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -602,6 +602,16 @@
 #define __builtin_ia32_fpclasspd128_mask(A, D, C) __builtin_ia32_fpclasspd128_mask(A, 1, C)
 #define __builtin_ia32_extracti64x2_256_mask(A, E, C, D) __builtin_ia32_extracti64x2_256_mask(A, 1, C, D)
 #define __builtin_ia32_extractf64x2_256_mask(A, E, C, D) __builtin_ia32_extractf64x2_256_mask(A, 1, C, D)
+
+/* gfniintrin.h */
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, 1) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, 1, D, E) 
+
+
 
 #include <wmmintrin.h>
 #include <immintrin.h>

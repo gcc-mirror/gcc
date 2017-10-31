@@ -33674,6 +33674,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case UQI_FTYPE_V4SF_V4SF_INT:
     case UHI_FTYPE_V16SI_V16SI_INT:
     case UHI_FTYPE_V16SF_V16SF_INT:
+    case V64QI_FTYPE_V64QI_V64QI_INT:
       nargs = 3;
       nargs_constant = 1;
       break;
@@ -33900,6 +33901,13 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       nargs = 5;
       mask_pos = 1;
       nargs_constant = 1;
+      break;
+    case V64QI_FTYPE_V64QI_V64QI_INT_V64QI_UDI:
+    case V32QI_FTYPE_V32QI_V32QI_INT_V32QI_USI:
+    case V16QI_FTYPE_V16QI_V16QI_INT_V16QI_UHI:
+      nargs = 5;
+      mask_pos = 1;
+      nargs_constant = 2;
       break;
 
     default:
