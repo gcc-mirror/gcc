@@ -1,3 +1,7 @@
+2017-10-31  Jim Wilson  <wilson@tuliptree.org>
+
+	* parse.c (unexpected_eof): Call gcc_unreachable before return.
+
 2017-10-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80850
