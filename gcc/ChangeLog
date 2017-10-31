@@ -1,8 +1,14 @@
+2017-10-31  Segher Boessenkool  <segher@kernel.crsahing.org>
+
+	PR target/82674
+	* config/rs6000/rs6000.md (allocate_stack): Force update interval
+	into a register if it does not fit into an immediate offset field.
+
 2017-10-31  Olivier Hainque  <hainque@adacore.com>
 
         * gcc/Makefile.in (FLAGS_TO_PASS): Pass libsubdir as well.
 
-2017-11-01  Julia Koval  <julia.koval@intel.com>
+2017-10-31  Julia Koval  <julia.koval@intel.com>
 
 	* config.gcc: Add gfniintrin.h.
 	* config/i386/gfniintrin.h: New.
