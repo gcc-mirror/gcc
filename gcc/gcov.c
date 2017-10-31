@@ -272,22 +272,29 @@ line_t::has_block (block_t *needle)
 /* Describes a file mentioned in the block graph.  Contains an array
    of line info.  */
 
-typedef struct source_info
+struct source_info
 {
+  /* Default constructor.  */
+  source_info ();
+
   /* Canonical name of source file.  */
   char *name;
   time_t file_time;
 
-  /* Array of line information.  */
-  line_t *lines;
-  unsigned num_lines;
+  /* Vector of line information.  */
+  vector<line_t> lines;
 
   coverage_t coverage;
 
   /* Functions in this source file.  These are in ascending line
      number order.  */
   function_t *functions;
-} source_t;
+};
+
+source_info::source_info (): name (NULL), file_time (), lines (),
+  coverage (), functions (NULL)
+{
+}
 
 typedef struct name_map
 {
@@ -300,9 +307,8 @@ typedef struct name_map
 static function_t *functions;
 static function_t **fn_end = &functions;
 
-static source_t *sources;   /* Array of source files  */
-static unsigned n_sources;  /* Number of sources */
-static unsigned a_sources;  /* Allocated sources */
+/* Vector of source files.  */
+static vector<source_info> sources;
 
 static name_map_t *names;   /* Mapping of file names to sources */
 static unsigned n_names;    /* Number of names */
@@ -444,10 +450,10 @@ static void add_line_counts (coverage_t *, function_t *);
 static void executed_summary (unsigned, unsigned);
 static void function_summary (const coverage_t *, const char *);
 static const char *format_gcov (gcov_type, gcov_type, int);
-static void accumulate_line_counts (source_t *);
-static void output_gcov_file (const char *, source_t *);
+static void accumulate_line_counts (source_info *);
+static void output_gcov_file (const char *, source_info *);
 static int output_branch_count (FILE *, int, const arc_t *);
-static void output_lines (FILE *, const source_t *);
+static void output_lines (FILE *, const source_info *);
 static char *make_gcov_file_name (const char *, const char *);
 static char *mangle_name (const char *, char *);
 static void release_structures (void);
@@ -664,8 +670,6 @@ main (int argc, char **argv)
 
   a_names = 10;
   names = XNEWVEC (name_map_t, a_names);
-  a_sources = 10;
-  sources = XNEWVEC (source_t, a_sources);
 
   argno = process_args (argc, argv);
   if (optind == argc)
@@ -859,7 +863,7 @@ included. Instead the intermediate format here outputs only a single
 file 'foo.cc.gcov' similar to the above example. */
 
 static void
-output_intermediate_file (FILE *gcov_file, source_t *src)
+output_intermediate_file (FILE *gcov_file, source_info *src)
 {
   unsigned line_num;    /* current line number.  */
   const line_t *line;   /* current line info ptr.  */
@@ -876,7 +880,7 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
     }
 
   for (line_num = 1, line = &src->lines[line_num];
-       line_num < src->num_lines;
+       line_num < src->lines.size ();
        line_num++, line++)
     {
       arc_t *arc;
@@ -958,8 +962,8 @@ process_file (const char *file_name)
 		    {
 		      unsigned last_line
 			= block->locations[i].lines.back () + 1;
-		      if (last_line > sources[s].num_lines)
-			sources[s].num_lines = last_line;
+		      if (last_line > sources[s].lines.size ())
+			sources[s].lines.resize (last_line);
 		    }
 		}
 	    }
@@ -978,7 +982,7 @@ process_file (const char *file_name)
 }
 
 static void
-output_gcov_file (const char *file_name, source_t *src)
+output_gcov_file (const char *file_name, source_info *src)
 {
   char *gcov_file_name = make_gcov_file_name (file_name, src->coverage.name);
 
@@ -1011,13 +1015,7 @@ output_gcov_file (const char *file_name, source_t *src)
 static void
 generate_results (const char *file_name)
 {
-  unsigned ix;
-  source_t *src;
   function_t *fn;
-
-  for (ix = n_sources, src = sources; ix--; src++)
-    if (src->num_lines)
-      src->lines = XCNEWVEC (line_t, src->num_lines);
 
   for (fn = functions; fn; fn = fn->next)
     {
@@ -1043,8 +1041,10 @@ generate_results (const char *file_name)
 	file_name = canonicalize_name (file_name);
     }
 
-  for (ix = n_sources, src = sources; ix--; src++)
+  for (vector<source_info>::iterator it = sources.begin ();
+       it != sources.end (); it++)
     {
+      source_info *src = &(*it);
       if (flag_relative_only)
 	{
 	  /* Ignore this source, if it is an absolute path (after
@@ -1081,10 +1081,6 @@ release_structures (void)
 {
   unsigned ix;
   function_t *fn;
-
-  for (ix = n_sources; ix--;)
-    free (sources[ix].lines);
-  free (sources);
 
   for (ix = n_names; ix--;)
     free (names[ix].name);
@@ -1230,25 +1226,15 @@ find_source (const char *file_name)
   if (!name_map)
     {
       /* Not found with canonical name, create a new source.  */
-      source_t *src;
+      source_info *src;
 
-      if (n_sources == a_sources)
-	{
-	  a_sources *= 2;
-	  src = XNEWVEC (source_t, a_sources);
-	  memcpy (src, sources, n_sources * sizeof (*sources));
-	  free (sources);
-	  sources = src;
-	}
-
-      idx = n_sources;
-
+      idx = sources.size ();
       name_map = &names[n_names++];
       name_map->name = canon;
       name_map->src = idx;
 
-      src = &sources[n_sources++];
-      memset (src, 0, sizeof (*src));
+      sources.push_back (source_info ());
+      src = &sources.back ();
       src->name = canon;
       src->coverage.name = src->name;
       if (source_length
@@ -2254,7 +2240,7 @@ add_line_counts (coverage_t *coverage, function_t *fn)
 	fn->blocks_executed++;
       for (unsigned i = 0; i < block->locations.size (); i++)
 	{
-	  const source_t *src = &sources[block->locations[i].source_file_idx];
+	  source_info *src = &sources[block->locations[i].source_file_idx];
 
 	  vector<unsigned> &lines = block->locations[i].lines;
 	  for (unsigned j = 0; j < lines.size (); j++)
@@ -2310,11 +2296,10 @@ add_line_counts (coverage_t *coverage, function_t *fn)
 /* Accumulate the line counts of a file.  */
 
 static void
-accumulate_line_counts (source_t *src)
+accumulate_line_counts (source_info *src)
 {
-  line_t *line;
   function_t *fn, *fn_p, *fn_n;
-  unsigned ix;
+  unsigned ix = 0;
 
   /* Reverse the function order.  */
   for (fn = src->functions, fn_p = NULL; fn; fn_p = fn, fn = fn_n)
@@ -2324,8 +2309,10 @@ accumulate_line_counts (source_t *src)
     }
   src->functions = fn_p;
 
-  for (ix = src->num_lines, line = src->lines; ix--; line++)
+  for (vector<line_t>::reverse_iterator it = src->lines.rbegin ();
+       it != src->lines.rend (); it++)
     {
+      line_t *line = &(*it);
       if (line->blocks)
 	{
 	  /* The user expects the line count to be the number of times
@@ -2378,6 +2365,8 @@ accumulate_line_counts (source_t *src)
 	  if (line->count)
 	    src->coverage.lines_executed++;
 	}
+
+      ix++;
     }
 }
 
@@ -2539,7 +2528,7 @@ output_line_beginning (FILE *f, bool exists, bool unexceptional,
    information.  */
 
 static void
-output_lines (FILE *gcov_file, const source_t *src)
+output_lines (FILE *gcov_file, const source_info *src)
 {
 #define  DEFAULT_LINE_START "        -:    0:"
 
@@ -2572,7 +2561,7 @@ output_lines (FILE *gcov_file, const source_t *src)
     fn = src->functions;
 
   for (line_num = 1, line = &src->lines[line_num];
-       line_num < src->num_lines; line_num++, line++)
+       line_num < src->lines.size (); line_num++, line++)
     {
       for (; fn && fn->line == line_num; fn = fn->next_file_fn)
 	{
