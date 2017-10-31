@@ -1,5 +1,13 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Document new option.
+	* gcov.c (print_usage): Likewise print it.
+	(process_args): Support the argument.
+	(format_count): New function.
+	(format_gcov): Use the function.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (struct name_map): do not use typedef.
 	Define operator== and operator<.
 	(name_search): Remove.
