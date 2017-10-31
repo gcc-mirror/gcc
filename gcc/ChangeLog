@@ -1,5 +1,18 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct line_info): Remove it's typedef.
+	(line_info::line_info): Add proper ctor.
+	(line_info::has_block): Do not use a typedef.
+	(struct source_info): Do not use typedef.
+	(circuit): Likewise.
+	(get_cycles_count): Likewise.
+	(output_intermediate_file): Iterate via vector iterator.
+	(add_line_counts): Use std::vector methods.
+	(accumulate_line_counts): Likewise.
+	(output_lines): Likewise.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (struct source_info): Remove typedef.
 	(source_info::source_info): Add proper ctor.
 	(accumulate_line_counts): Use struct, not it's typedef.
