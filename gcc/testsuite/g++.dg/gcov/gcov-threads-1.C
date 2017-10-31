@@ -31,14 +31,14 @@ int main(int argc, char **argv) {
   {
     ids[i] = i;
     int r = pthread_create (&t[i], NULL, ContentionNoDeadlock_thread, &ids[i]);
-    assert (r == 0);				/* count(5) */
+    assert (r == 0);				/* count(5*) */
   }
 
   int ret;
   for (int i = 0; i < NR; i++)
     {
       int r = pthread_join (t[i], (void**)&ret);
-      assert (r == 0);				/* count(5) */
+      assert (r == 0);				/* count(5*) */
     }
 
   return 0;					/* count(1) */

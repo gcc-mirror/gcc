@@ -189,7 +189,7 @@ one entry per line
 @smallexample
 file:@var{source_file_name}
 function:@var{line_number},@var{execution_count},@var{function_name}
-lcount:@var{line number},@var{execution_count}
+lcount:@var{line number},@var{execution_count},@var{has_unexecuted_block}
 branch:@var{line_number},@var{branch_coverage_type}
 
 Where the @var{branch_coverage_type} is
@@ -208,11 +208,11 @@ Here is a sample when @option{-i} is used in conjunction with @option{-b} option
 file:array.cc
 function:11,1,_Z3sumRKSt6vectorIPiSaIS0_EE
 function:22,1,main
-lcount:11,1
-lcount:12,1
-lcount:14,1
+lcount:11,1,0
+lcount:12,1,0
+lcount:14,1,0
 branch:14,taken
-lcount:26,1
+lcount:26,1,0
 branch:28,nottaken
 @end smallexample
 
@@ -336,6 +336,9 @@ non-exceptional paths or only exceptional paths such as C++ exception
 handlers, respectively. Given @samp{-a} option, unexecuted blocks are
 marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
 is reachable via non-exceptional or exceptional paths.
+Executed basic blocks having a statement with zero @var{execution_count}
+end with @samp{*} character and are colored with magenta color with @option{-k}
+option.
 
 Note that GCC can completely remove the bodies of functions that are
 not needed -- for instance if they are inlined everywhere.  Such functions

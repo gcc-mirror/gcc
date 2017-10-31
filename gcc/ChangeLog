@@ -1,5 +1,14 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Document that.
+	* gcov.c (add_line_counts): Mark lines with a non-executed
+	statement.
+	(output_line_beginning): Handle such lines.
+	(output_lines): Pass new argument.
+	(output_intermediate_file): Print it in intermediate format.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	* color-macros.h: New file.
 	* diagnostic-color.c: Factor out color related to macros to
 	color-macros.h.
