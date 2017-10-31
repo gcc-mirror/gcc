@@ -1,3 +1,13 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (binary_op_error): Update for renaming of
+	error_at_rich_loc.
+	(c_parse_error): Likewise.
+	* c-warn.c (warn_logical_not_parentheses): Likewise for
+	renaming of inform_at_rich_loc.
+	(warn_for_restrict): Likewise for renaming of
+	warning_at_rich_loc_n.
+
 2017-10-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (std=c17, std=gnu17, std=iso9899:2017): New options.

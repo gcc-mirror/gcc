@@ -1,3 +1,19 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (_cpp_handle_directive): Update for renaming of
+	cpp_error_at_richloc to cpp_error_at.
+	* errors.c (cpp_diagnostic_at_richloc): Rename to...
+	(cpp_diagnostic_at): ...this, dropping the location_t-based
+	implementation.
+	(cpp_diagnostic): Update for removal of location_t-based
+	cpp_diagnostic_at.
+	(cpp_error_at): Likewise.
+	(cpp_error_at_richloc): Rename to...
+	(cpp_error_at): ...this, and update for renaming of
+	cpp_diagnostic_at_richloc.
+	* include/cpplib.h (cpp_error_at_richloc): Rename to...
+	(cpp_error_at): ...this.
+
 2017-10-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (enum c_lang): Add CLK_GNUC17 and CLK_STDC17.

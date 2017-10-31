@@ -5315,7 +5315,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      inform (0, "%s", _(buf));
+	      inform (UNKNOWN_LOCATION, "%s", _(buf));
 	      if (*p)
 		p++;
 	    }
@@ -8192,7 +8192,8 @@ driver::do_spec_on_infiles () const
 	      else if (compare_debug && debug_check_temp_file[0])
 		{
 		  if (verbose_flag)
-		    inform (0, "recompiling with -fcompare-debug");
+		    inform (UNKNOWN_LOCATION,
+			    "recompiling with -fcompare-debug");
 
 		  compare_debug = -compare_debug;
 		  n_switches = n_switches_debug_check[1];
@@ -8217,7 +8218,7 @@ driver::do_spec_on_infiles () const
 					       debug_check_temp_file[1]));
 
 		  if (verbose_flag)
-		    inform (0, "comparing final insns dumps");
+		    inform (UNKNOWN_LOCATION, "comparing final insns dumps");
 
 		  if (compare_files (debug_check_temp_file))
 		    this_file_error = 1;

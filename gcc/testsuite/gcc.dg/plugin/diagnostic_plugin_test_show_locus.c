@@ -176,7 +176,7 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, get_loc (line, 15));
       add_range (&richloc, get_loc (line, 10), get_loc (line, 14), false);
       add_range (&richloc, get_loc (line, 16), get_loc (line, 16), false);
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
     }
 
   if (0 == strcmp (fnname, "test_simple_2"))
@@ -185,7 +185,7 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, get_loc (line, 24));
       add_range (&richloc, get_loc (line, 6), get_loc (line, 22), false);
       add_range (&richloc, get_loc (line, 26), get_loc (line, 43), false);
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
     }
 
   if (0 == strcmp (fnname, "test_multiline"))
@@ -195,7 +195,7 @@ test_show_locus (function *fun)
       add_range (&richloc, get_loc (line, 7), get_loc (line, 23), false);
       add_range (&richloc, get_loc (line + 1, 9), get_loc (line + 1, 26),
 		 false);
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
     }
 
   if (0 == strcmp (fnname, "test_many_lines"))
@@ -205,7 +205,7 @@ test_show_locus (function *fun)
       add_range (&richloc, get_loc (line, 7), get_loc (line + 4, 65), false);
       add_range (&richloc, get_loc (line + 5, 9), get_loc (line + 10, 61),
 		 false);
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
     }
 
   /* Example of a rich_location where the range is larger than
@@ -216,7 +216,7 @@ test_show_locus (function *fun)
       location_t start = get_loc (line, 12);
       location_t finish = get_loc (line, 16);
       rich_location richloc (line_table, make_location (start, start, finish));
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
     }
 
   /* Example of a single-range location where the range starts
@@ -251,7 +251,7 @@ test_show_locus (function *fun)
       add_range (&richloc, caret_b, caret_b, true);
       global_dc->caret_chars[0] = 'A';
       global_dc->caret_chars[1] = 'B';
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
       global_dc->caret_chars[0] = '^';
       global_dc->caret_chars[1] = '^';
     }
@@ -265,7 +265,7 @@ test_show_locus (function *fun)
       rich_location richloc (line_table, make_location (start, start, finish));
       richloc.add_fixit_insert_before ("{");
       richloc.add_fixit_insert_after ("}");
-      warning_at_rich_loc (&richloc, 0, "example of insertion hints");
+      warning_at (&richloc, 0, "example of insertion hints");
     }
 
   if (0 == strcmp (fnname, "test_fixit_insert_newline"))
@@ -277,7 +277,7 @@ test_show_locus (function *fun)
       location_t case_loc = make_location (case_start, case_start, case_finish);
       rich_location richloc (line_table, case_loc);
       richloc.add_fixit_insert_before (line_start, "      break;\n");
-      warning_at_rich_loc (&richloc, 0, "example of newline insertion hint");
+      warning_at (&richloc, 0, "example of newline insertion hint");
     }
 
   if (0 == strcmp (fnname, "test_fixit_remove"))
@@ -290,7 +290,7 @@ test_show_locus (function *fun)
       src_range.m_start = start;
       src_range.m_finish = finish;
       richloc.add_fixit_remove (src_range);
-      warning_at_rich_loc (&richloc, 0, "example of a removal hint");
+      warning_at (&richloc, 0, "example of a removal hint");
     }
 
   if (0 == strcmp (fnname, "test_fixit_replace"))
@@ -303,7 +303,7 @@ test_show_locus (function *fun)
       src_range.m_start = start;
       src_range.m_finish = finish;
       richloc.add_fixit_replace (src_range, "gtk_widget_show_all");
-      warning_at_rich_loc (&richloc, 0, "example of a replacement hint");
+      warning_at (&richloc, 0, "example of a replacement hint");
     }
 
   if (0 == strcmp (fnname, "test_mutually_exclusive_suggestions"))
@@ -319,14 +319,14 @@ test_show_locus (function *fun)
 	rich_location richloc (line_table, make_location (start, start, finish));
 	richloc.add_fixit_replace (src_range, "replacement_1");
 	richloc.fixits_cannot_be_auto_applied ();
-	warning_at_rich_loc (&richloc, 0, "warning 1");
+	warning_at (&richloc, 0, "warning 1");
       }
 
       {
 	rich_location richloc (line_table, make_location (start, start, finish));
 	richloc.add_fixit_replace (src_range, "replacement_2");
 	richloc.fixits_cannot_be_auto_applied ();
-	warning_at_rich_loc (&richloc, 0, "warning 2");
+	warning_at (&richloc, 0, "warning 2");
       }
     }  
 
@@ -346,7 +346,7 @@ test_show_locus (function *fun)
       richloc.add_range (caret_b, true);
       global_dc->caret_chars[0] = '1';
       global_dc->caret_chars[1] = '2';
-      warning_at_rich_loc (&richloc, 0, "test");
+      warning_at (&richloc, 0, "test");
       global_dc->caret_chars[0] = '^';
       global_dc->caret_chars[1] = '^';
     }
@@ -411,8 +411,8 @@ test_show_locus (function *fun)
 	 statically-allocated buffer in class rich_location,
 	 and then trigger a reallocation of the dynamic buffer.  */
       gcc_assert (richloc.get_num_locations () > 3 + (2 * 16));
-      warning_at_rich_loc (&richloc, 0, "test of %i locations",
-			   richloc.get_num_locations ());
+      warning_at (&richloc, 0, "test of %i locations",
+		  richloc.get_num_locations ());
     }
 }
 

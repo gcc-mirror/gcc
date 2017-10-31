@@ -1,3 +1,10 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Update
+	for renaming of error_at_rich_loc and inform_at_rich_loc.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Likewise for renaming of warning_at_rich_loc.
+
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/loop.C: New test.

@@ -1,3 +1,43 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* auto-profile.c (autofdo_source_profile::read): Use
+	UNKNOWN_LOCATION rather than 0.
+	* diagnostic-core.h (warning_at_rich_loc): Rename to...
+	(warning_at): ...this overload.
+	(warning_at_rich_loc_n): Rename to...
+	(warning_n): ...this overload.
+	(error_at_rich_loc): Rename to...
+	(error_at): ...this overload.
+	(pedwarn_at_rich_loc): Rename to...
+	(pedwarn): ...this overload.
+	(permerror_at_rich_loc): Rename to...
+	(permerror): ...this overload.
+	(inform_at_rich_loc): Rename to...
+	(inform): ...this overload.
+	* diagnostic.c: (diagnostic_n_impl): Delete location_t-based decl.
+	(diagnostic_n_impl_richloc): Rename to...
+	(diagnostic_n_impl): ...this rich_location *-based decl.
+	(inform_at_rich_loc): Rename to...
+	(inform): ...this, and add an assertion.
+	(inform_n): Update for removal of location_t-based diagnostic_n_impl.
+	(warning_at_rich_loc): Rename to...
+	(warning_at): ...this, and add an assertion.
+	(warning_at_rich_loc_n): Rename to...
+	(warning_n): ...this, and add an assertion.
+	(warning_n): Update location_t-based implementation for removal of
+	location_t-based diagnostic_n_impl.
+	(pedwarn_at_rich_loc): Rename to...
+	(pedwarn): ...this, and add an assertion.
+	(permerror_at_rich_loc): Rename to...
+	(permerror): ...this, and add an assertion.
+	(error_n): Update for removal of location_t-based diagnostic_n_impl.
+	(error_at_rich_loc): Rename to...
+	(error_at): ...this, and add an assertion.
+	* gcc.c (do_spec_1): Use UNKNOWN_LOCATION rather than 0.
+	(driver::do_spec_on_infiles): Likewise.
+	* substring-locations.c (format_warning_va): Update for renaming
+	of inform_at_rich_loc.
+
 2017-10-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* builtins.def (DEF_FLOATN_BUILTIN): Change most _Float<N> and

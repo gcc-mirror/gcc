@@ -1096,9 +1096,9 @@ extern bool cpp_error_at (cpp_reader * pfile, int level,
 			  source_location src_loc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
-extern bool cpp_error_at_richloc (cpp_reader * pfile, int level,
-				  rich_location *richloc, const char *msgid,
-				  ...)
+extern bool cpp_error_at (cpp_reader * pfile, int level,
+			  rich_location *richloc, const char *msgid,
+			  ...)
   ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */
