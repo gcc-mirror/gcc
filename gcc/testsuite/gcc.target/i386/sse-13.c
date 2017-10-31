@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512vl -mavx512dq -mavx512bw -mavx512vbmi -mavx512ifma -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512vl -mavx512dq -mavx512bw -mavx512vbmi -mavx512ifma -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -619,5 +619,13 @@
 #define __builtin_ia32_fpclasspd128_mask(A, D, C) __builtin_ia32_fpclasspd128_mask(A, 1, C)
 #define __builtin_ia32_extracti64x2_256_mask(A, E, C, D) __builtin_ia32_extracti64x2_256_mask(A, 1, C, D)
 #define __builtin_ia32_extractf64x2_256_mask(A, E, C, D) __builtin_ia32_extractf64x2_256_mask(A, 1, C, D)
+
+/* gfniintrin.h */
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v16qi(A, B, 1) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v32qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, C) __builtin_ia32_vgf2p8affineinvqb_v64qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, 1, D, E) 
 
 #include <x86intrin.h>

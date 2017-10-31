@@ -1,3 +1,23 @@
+2017-11-01  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx-1.c: Handle new intrinsics.
+	* gcc.target/i386/avx512-check.h: Check GFNI bit.
+	* gcc.target/i386/avx512f-gf2p8affineinvqb-2.c: Runtime test.
+	* gcc.target/i386/avx512vl-gf2p8affineinvqb-2.c: Runtime test.
+	* gcc.target/i386/gfni-1.c: New.
+	* gcc.target/i386/gfni-2.c: New.
+	* gcc.target/i386/gfni-3.c: New.
+	* gcc.target/i386/gfni-4.c: New.
+	* gcc.target/i386/i386.exp: (check_effective_target_gfni): New.
+	* gcc.target/i386/sse-12.c: Handle new intrinsics.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
+
 2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67595
