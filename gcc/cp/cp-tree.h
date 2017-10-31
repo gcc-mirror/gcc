@@ -5485,29 +5485,26 @@ enum ovl_op_flags
     OVL_OP_FLAG_VEC = 2		/* vector new or delete  */
   };
 
-struct GTY(()) operator_name_info_t {
+struct GTY(()) ovl_op_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;
   /* The name of the operator.  */
   const char *name;
   /* The mangled name of the operator.  */
   const char *mangled_name;
+  /* The tree code.  */
+  enum tree_code tree_code : 16;
   /* The ovl_op_flags of the operator */
   unsigned flags : 8;
 };
 
-/* A mapping from tree codes to operator name information.  */
-extern GTY(()) operator_name_info_t operator_name_info
-  [(int) MAX_TREE_CODES];
-/* Similar, but for assignment operators.  */
-extern GTY(()) operator_name_info_t assignment_operator_name_info
-  [(int) MAX_TREE_CODES];
+/* Overloaded operator info indexed by ass_op_p & tree_code.  */
+extern GTY(()) ovl_op_info_t ovl_op_info[2][MAX_TREE_CODES];
 
 /* Given an ass_op_p boolean and a tree code, return a pointer to its
    overloaded operator info.  */
 #define OVL_OP_INFO(IS_ASS_P, TREE_CODE)			\
-  (((IS_ASS_P) ? assignment_operator_name_info : operator_name_info)	\
-   + (TREE_CODE))
+  (&ovl_op_info[(IS_ASS_P) != 0][(TREE_CODE)])
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */

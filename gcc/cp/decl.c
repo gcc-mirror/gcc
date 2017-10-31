@@ -12898,8 +12898,8 @@ unary_op_p (enum tree_code code)
 	  || code == TYPE_EXPR);
 }
 
-/* DECL is a declaration for an overloaded operator.  If COMPLAIN is true,
-   errors are issued for invalid declarations.  */
+/* DECL is a declaration for an overloaded or conversion operator.  If
+   COMPLAIN is true, errors are issued for invalid declarations.  */
 
 bool
 grok_op_properties (tree decl, bool complain)
@@ -12912,52 +12912,54 @@ grok_op_properties (tree decl, bool complain)
   if (class_type && !CLASS_TYPE_P (class_type))
     class_type = NULL_TREE;
 
-  enum tree_code operator_code = ERROR_MARK;
+  tree_code operator_code = ERROR_MARK;
+  unsigned op_flags = OVL_OP_FLAG_NONE;
   if (IDENTIFIER_CONV_OP_P (name))
-    operator_code = TYPE_EXPR;
+    {
+      /* Conversion operators are TYPE_EXPR for the purposes of this
+	 function.  */
+      operator_code = TYPE_EXPR;
+      op_flags = OVL_OP_FLAG_UNARY;
+    }
   else
     {
       /* It'd be nice to hang something else of the identifier to
 	 find CODE more directly.  */
       bool assign_op = IDENTIFIER_ASSIGN_OP_P (name);
-      const operator_name_info_t *oni
-	= (assign_op ? assignment_operator_name_info : operator_name_info);
-
+      const ovl_op_info_t *ovl_op = OVL_OP_INFO (assign_op, 0);
       if (false)
 	;
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND)		\
-      else if (assign_op == (KIND == cik_assign_op)		\
-	       && oni[int (CODE)].identifier == name)		\
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS, KIND)		\
+      else if (ovl_op[CODE].identifier == name)			\
 	operator_code = (CODE);
 #include "operators.def"
 #undef DEF_OPERATOR
       else
 	gcc_unreachable ();
-      }
-    while (0);
-  gcc_assert (operator_code != MAX_TREE_CODES);
-  DECL_OVERLOADED_OPERATOR_CODE (decl) = operator_code;
+      gcc_assert (operator_code != ERROR_MARK);
+      op_flags = ovl_op[operator_code].flags;
+      DECL_OVERLOADED_OPERATOR_CODE (decl) = operator_code;
+    }
 
-  if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR
-      || operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
+  if (op_flags & OVL_OP_FLAG_ALLOC)
     {
       /* operator new and operator delete are quite special.  */
       if (class_type)
-	switch (operator_code)
+	switch (op_flags)
 	  {
-	  case NEW_EXPR:
+	  case OVL_OP_FLAG_ALLOC:
 	    TYPE_HAS_NEW_OPERATOR (class_type) = 1;
 	    break;
 
-	  case DELETE_EXPR:
+	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE:
 	    TYPE_GETS_DELETE (class_type) |= 1;
 	    break;
 
-	  case VEC_NEW_EXPR:
+	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_VEC:
 	    TYPE_HAS_ARRAY_NEW_OPERATOR (class_type) = 1;
 	    break;
 
-	  case VEC_DELETE_EXPR:
+	  case OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE | OVL_OP_FLAG_VEC:
 	    TYPE_GETS_DELETE (class_type) |= 2;
 	    break;
 
@@ -12987,12 +12989,12 @@ grok_op_properties (tree decl, bool complain)
 	    }
 	}
 
-      if (operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
+      if (op_flags & OVL_OP_FLAG_DELETE)
 	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
       else
 	{
-	  TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
 	  DECL_IS_OPERATOR_NEW (decl) = 1;
+	  TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
 	}
 
       return true;
@@ -13043,9 +13045,9 @@ grok_op_properties (tree decl, bool complain)
 	}
     }
 
-  /* There are no restrictions on the arguments to an overloaded
-     "operator ()".  */
   if (operator_code == CALL_EXPR)
+    /* There are no further restrictions on the arguments to an overloaded
+       "operator ()".  */
     return true;
 
   if (operator_code == COND_EXPR)

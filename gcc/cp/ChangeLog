@@ -1,5 +1,18 @@
 2017-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (struct operator_name_info_t): Rename to ...
+	(struct ovl_op_info_t): ... here.  Add tree_code field.
+	(operator_name_info, assignment_operator_name_info): Delete.
+	(ovl_op_info): Declare.
+	(OVL_OP_INFO): Adjust.
+	* decl.c (grok_op_properties): Use ovl_op_flags.
+	* lex.c (operator_name_info, assignment_operator_name_info):
+	Delete.
+	(ovl_op_info): Define.
+	(set_operator_ident): Adjust.
+	(init_operators): Set tree_code.
+	* mangle.c (write_unqualified_id): Adjust operator array scan.
+
 	* lex.c (init_operators): Allow NULL operator name.  Don't add
 	special cases.
 	* operators.def: Use NULL for mangling only operators.  Move to
