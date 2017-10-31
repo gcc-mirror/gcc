@@ -82,13 +82,6 @@ operator_name_info_t operator_name_info[(int) MAX_TREE_CODES];
 /* Similar, but for assignment operators.  */
 operator_name_info_t assignment_operator_name_info[(int) MAX_TREE_CODES];
 
-/* Initialize data structures that keep track of operator names.  */
-
-#define DEF_OPERATOR(NAME, C, M, AR, AP) \
- CONSTRAINT (C, sizeof "operator " + sizeof NAME <= 256);
-#include "operators.def"
-#undef DEF_OPERATOR
-
 /* Get the name of the kind of identifier T.  */
 
 const char *
@@ -120,28 +113,40 @@ set_identifier_kind (tree id, cp_identifier_kind kind)
   IDENTIFIER_KIND_BIT_0 (id) |= (kind >> 0) & 1;
 }
 
+/* Create and tag the internal operator name for the overloaded
+   operator PTR describes.  */
+
+static tree
+set_operator_ident (operator_name_info_t *ptr)
+{
+  char buffer[32];
+  size_t len = snprintf (buffer, sizeof (buffer), "operator%s%s",
+			 &" "[ptr->name[0] && ptr->name[0] != '_'
+			      && !ISALPHA (ptr->name[0])],
+			 ptr->name);
+  gcc_checking_assert (len < sizeof (buffer));
+
+  tree ident = get_identifier_with_length (buffer, len);
+  ptr->identifier = ident;
+
+  return ident;
+}
+
 static void
 init_operators (void)
 {
   tree identifier;
-  char buffer[256];
-  struct operator_name_info_t *oni;
+  operator_name_info_t *oni;
 
-#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, KIND)			\
-  sprintf (buffer, "operator%s%s", !NAME[0]				\
-	   || NAME[0] == '_' || ISALPHA (NAME[0]) ? " " : "", NAME);	\
-  identifier = get_identifier (buffer);					\
-									\
-  if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
-    set_identifier_kind (identifier, KIND);				\
-  									\
-  oni = (KIND == cik_assign_op						\
-	 ? &assignment_operator_name_info[(int) CODE]			\
-	 : &operator_name_info[(int) CODE]);				\
-  oni->identifier = identifier;						\
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS, KIND)			\
+  oni = OVL_OP_INFO (KIND == cik_assign_op, CODE);			\
   oni->name = NAME;							\
   oni->mangled_name = MANGLING;						\
-  oni->arity = ARITY;
+  oni->flags = FLAGS;							\
+  identifier = set_operator_ident (oni);				\
+									\
+  if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
+    set_identifier_kind (identifier, KIND);
 
 #include "operators.def"
 #undef DEF_OPERATOR
