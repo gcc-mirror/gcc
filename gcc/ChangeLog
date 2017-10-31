@@ -1,3 +1,8 @@
+2017-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/81702
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Remove assert.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* auto-profile.c (autofdo_source_profile::read): Use

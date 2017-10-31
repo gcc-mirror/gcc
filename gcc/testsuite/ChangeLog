@@ -1,3 +1,8 @@
+2017-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/81702
+	* g++.dg/tree-ssa/pr81702.C: New test.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/jit.exp (jit-dg-test): If PRESERVE_EXECUTABLES is set in
