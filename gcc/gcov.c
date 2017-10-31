@@ -33,6 +33,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include "config.h"
 #define INCLUDE_ALGORITHM
 #define INCLUDE_VECTOR
+#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -40,6 +41,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "version.h"
 #include "demangle.h"
+#include "color-macros.h"
 
 #include <getopt.h>
 
@@ -381,6 +383,10 @@ static int flag_hash_filenames = 0;
 
 static int flag_verbose = 0;
 
+/* Print colored output.  */
+
+static int flag_use_colors = 0;
+
 /* Output count information for every basic block, not merely those
    that contain line number information.  */
 
@@ -703,6 +709,7 @@ print_usage (int error_p)
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
   fnotice (file, "  -i, --intermediate-format       Output .gcov file in intermediate text format\n");
+  fnotice (file, "  -k, --use-colors                Emit colored output\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
                                     source files\n");
   fnotice (file, "  -m, --demangled-names           Output demangled function names\n");
@@ -756,6 +763,7 @@ static const struct option options[] =
   { "unconditional-branches", no_argument,     NULL, 'u' },
   { "display-progress",     no_argument,       NULL, 'd' },
   { "hash-filenames",	    no_argument,       NULL, 'x' },
+  { "use-colors",	    no_argument,       NULL, 'k' },
   { 0, 0, 0, 0 }
 };
 
@@ -766,7 +774,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhilmno:prs:uvwx";
+  const char *opts = "abcdfhiklmno:prs:uvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -788,6 +796,9 @@ process_args (int argc, char **argv)
 	  /* print_usage will exit.  */
 	case 'l':
 	  flag_long_names = 1;
+	  break;
+	case 'k':
+	  flag_use_colors = 1;
 	  break;
 	case 'm':
 	  flag_demangled_names = 1;
@@ -2468,6 +2479,65 @@ read_line (FILE *file)
   return pos ? string : NULL;
 }
 
+/* Pad string S with spaces from left to have total width equal to 9.  */
+
+static void
+pad_count_string (string &s)
+{
+  if (s.size () < 9)
+    s.insert (0, 9 - s.size (), ' ');
+}
+
+/* Print GCOV line beginning to F stream.  If EXISTS is set to true, the
+   line exists in source file.  UNEXCEPTIONAL indicated that it's not in
+   an exceptional statement.  The output is printed for LINE_NUM of given
+   COUNT of executions.  EXCEPTIONAL_STRING and UNEXCEPTIONAL_STRING are
+   used to indicate non-executed blocks.  */
+
+static void
+output_line_beginning (FILE *f, bool exists, bool unexceptional,
+		       gcov_type count, unsigned line_num,
+		       const char *exceptional_string,
+		       const char *unexceptional_string)
+{
+  string s;
+  if (exists)
+    {
+      if (count > 0)
+	{
+	  s = format_gcov (count, 0, -1);
+	  pad_count_string (s);
+	}
+      else
+	{
+	  if (flag_use_colors)
+	    {
+	      s = "0";
+	      pad_count_string (s);
+	      if (unexceptional)
+		s.insert (0, SGR_SEQ (COLOR_BG_RED
+				      COLOR_SEPARATOR COLOR_FG_WHITE));
+	      else
+		s.insert (0, SGR_SEQ (COLOR_BG_CYAN
+				      COLOR_SEPARATOR COLOR_FG_WHITE));
+	      s += SGR_RESET;
+	    }
+	  else
+	    {
+	      s = unexceptional ? unexceptional_string : exceptional_string;
+	      pad_count_string (s);
+	    }
+	}
+    }
+  else
+    {
+      s = "-";
+      pad_count_string (s);
+    }
+
+  fprintf (f, "%s:%5u", s.c_str (), line_num);
+}
+
 /* Read in the source file one line at a time, and output that line to
    the gcov file preceded by its execution count and other
    information.  */
@@ -2475,21 +2545,23 @@ read_line (FILE *file)
 static void
 output_lines (FILE *gcov_file, const source_t *src)
 {
+#define  DEFAULT_LINE_START "        -:    0:"
+
   FILE *source_file;
   unsigned line_num;	/* current line number.  */
   const line_t *line;           /* current line info ptr.  */
   const char *retval = "";	/* status of source file reading.  */
   function_t *fn = NULL;
 
-  fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, src->coverage.name);
+  fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
   if (!multiple_files)
     {
-      fprintf (gcov_file, "%9s:%5d:Graph:%s\n", "-", 0, bbg_file_name);
-      fprintf (gcov_file, "%9s:%5d:Data:%s\n", "-", 0,
+      fprintf (gcov_file, DEFAULT_LINE_START "Graph:%s\n", bbg_file_name);
+      fprintf (gcov_file, DEFAULT_LINE_START "Data:%s\n",
 	       no_data_file ? "-" : da_file_name);
-      fprintf (gcov_file, "%9s:%5d:Runs:%u\n", "-", 0, object_runs);
+      fprintf (gcov_file, DEFAULT_LINE_START "Runs:%u\n", object_runs);
     }
-  fprintf (gcov_file, "%9s:%5d:Programs:%u\n", "-", 0, program_count);
+  fprintf (gcov_file, DEFAULT_LINE_START "Programs:%u\n", program_count);
 
   source_file = fopen (src->name, "r");
   if (!source_file)
@@ -2498,7 +2570,7 @@ output_lines (FILE *gcov_file, const source_t *src)
       retval = NULL;
     }
   else if (src->file_time == 0)
-    fprintf (gcov_file, "%9s:%5d:Source is newer than graph\n", "-", 0);
+    fprintf (gcov_file, DEFAULT_LINE_START "Source is newer than graph\n");
 
   if (flag_branches)
     fn = src->functions;
@@ -2537,11 +2609,10 @@ output_lines (FILE *gcov_file, const source_t *src)
 	 Otherwise, print the execution count before the source line.
 	 There are 16 spaces of indentation added before the source
 	 line so that tabs won't be messed up.  */
-      fprintf (gcov_file, "%9s:%5u:%s\n",
-	       !line->exists ? "-" : line->count
-	       ? format_gcov (line->count, 0, -1)
-	       : line->unexceptional ? "#####" : "=====", line_num,
-	       retval ? retval : "/*EOF*/");
+      output_line_beginning (gcov_file, line->exists, line->unexceptional,
+			     line->count, line_num,
+			     "=====", "#####");
+      fprintf (gcov_file, ":%s\n", retval ? retval : "/*EOF*/");
 
       if (flag_all_blocks)
 	{
@@ -2554,11 +2625,11 @@ output_lines (FILE *gcov_file, const source_t *src)
 	    {
 	      if (!block->is_call_return)
 		{
-		  fprintf (gcov_file, "%9s:%5u-block %2d",
-			   !line->exists ? "-" : block->count
-			   ? format_gcov (block->count, 0, -1)
-			   : block->exceptional ? "%%%%%" : "$$$$$",
-			   line_num, ix++);
+		  output_line_beginning (gcov_file, line->exists,
+					 block->exceptional,
+					 block->count, line_num,
+					 "%%%%%", "$$$$$");
+		  fprintf (gcov_file, "-block %2d", ix++);
 		  if (flag_verbose)
 		    fprintf (gcov_file, " (BB %u)", block->id);
 		  fprintf (gcov_file, "\n");
