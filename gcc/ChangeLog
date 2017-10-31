@@ -1,3 +1,37 @@
+2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (ashldi3): Remove shift by 1 expansion.
+	(arm_ashldi3_1bit): Remove pattern.
+	(ashrdi3): Remove shift by 1 expansion.
+	(arm_ashrdi3_1bit): Remove pattern.
+	(lshrdi3): Remove shift by 1 expansion.
+	(arm_lshrdi3_1bit): Remove pattern.
+	* config/arm/arm.c (arm_rtx_costs_internal): Slightly increase
+	cost of ashldi3 by 1.
+	* config/arm/neon.md (ashldi3_neon): Remove shift by 1 expansion.
+	(<shift>di3_neon): Likewise.
+
+2017-10-30  Dominik Infuehr  <dominik.infuehr@theobroma-systems.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov): Rename
+	both identically named patterns to (*aarch64_simd_mov<VD:mode>)
+	and (*aarch64_simd_mov<VQ:mode>).
+	(*aarch64_simd_mov<VD:mode>): Change type attribute to match
+	pattern alternative.
+	(*aarch64_simd_mov<VQ:mode>): Re-order and change type
+	attributes to match pattern alternative.
+
+2017-10-30  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add emmintrin.h.
+	* config/rs6000/emmintrin.h: New file.
+	* config/rs6000/x86intrin.h [__ALTIVEC__]: Include emmintrin.h.
+
+2017-10-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/vfp.md (movdi_vfp): Merge changes from movdi_vfp_cortexa8.
+	* (movdi_vfp_cortexa8): Remove pattern.
+
 2017-10-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, alpha*-*-*): Remove DEC OSF/1

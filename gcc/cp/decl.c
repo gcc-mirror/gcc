@@ -9469,22 +9469,20 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
     itype = build_min (MINUS_EXPR, sizetype, size, integer_one_node);
   else
     {
-      HOST_WIDE_INT saved_processing_template_decl;
-
       /* Compute the index of the largest element in the array.  It is
 	 one less than the number of elements in the array.  We save
 	 and restore PROCESSING_TEMPLATE_DECL so that computations in
 	 cp_build_binary_op will be appropriately folded.  */
-      saved_processing_template_decl = processing_template_decl;
-      processing_template_decl = 0;
-      itype = cp_build_binary_op (input_location,
-				  MINUS_EXPR,
-				  cp_convert (ssizetype, size, complain),
-				  cp_convert (ssizetype, integer_one_node,
-					      complain),
-				  complain);
-      itype = maybe_constant_value (itype);
-      processing_template_decl = saved_processing_template_decl;
+      {
+	processing_template_decl_sentinel s;
+	itype = cp_build_binary_op (input_location,
+				    MINUS_EXPR,
+				    cp_convert (ssizetype, size, complain),
+				    cp_convert (ssizetype, integer_one_node,
+						complain),
+				    complain);
+	itype = maybe_constant_value (itype);
+      }
 
       if (!TREE_CONSTANT (itype))
 	{
@@ -12892,20 +12890,6 @@ grok_op_properties (tree decl, bool complain)
   if (class_type && !CLASS_TYPE_P (class_type))
     class_type = NULL_TREE;
 
-  /* Count the number of arguments and check for ellipsis.  */
-  int arity = 0;
-  tree arg_end_marker = void_list_node;
-  for (tree arg = argtypes; arg != arg_end_marker; arg = TREE_CHAIN (arg))
-    {
-      if (!arg)
-	{
-	  /* Variadic.  */
-	  arg_end_marker = NULL_TREE;
-	  break;
-	}
-      ++arity;
-    }
-
   tree_code operator_code;
   unsigned op_flags;
   if (IDENTIFIER_CONV_OP_P (name))
@@ -12918,14 +12902,7 @@ grok_op_properties (tree decl, bool complain)
   else
     {
       const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (name);
-      if (arity == 1 && ovl_op->flags == OVL_OP_FLAG_AMBIARY)
-	{
-	  /* We have a unary instance of an ambi-ary op.  Remap to the
-	     unary one.  */
-	  unsigned alt = ovl_op_alternate[ovl_op->ovl_op_code];
-	  ovl_op = &ovl_op_info[false][alt];
-	  gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
-	}
+
       operator_code = ovl_op->tree_code;
       op_flags = ovl_op->flags;
       gcc_checking_assert (operator_code != ERROR_MARK);
@@ -13015,7 +12992,7 @@ grok_op_properties (tree decl, bool complain)
 
       for (tree arg = argtypes; ; arg = TREE_CHAIN (arg))
 	{
-	  if (arg == arg_end_marker)
+	  if (!arg || arg == void_list_node)
 	    {
 	      if (complain)
 		error ("%qD must have an argument of class or "
@@ -13048,17 +13025,34 @@ grok_op_properties (tree decl, bool complain)
       return false;
     }
 
-  if (!arg_end_marker)
+  /* Count the number of arguments and check for ellipsis.  */
+  int arity = 0;
+  for (tree arg = argtypes; arg != void_list_node; arg = TREE_CHAIN (arg))
     {
-      error ("%qD must not have variable number of arguments", decl);
-      return false;
+      if (!arg)
+	{
+	  /* Variadic.  */
+	  error ("%qD must not have variable number of arguments", decl);
+	  return false;
+	}
+      ++arity;
     }
 
   /* Verify correct number of arguments.  */
   switch (op_flags)
     {
     case OVL_OP_FLAG_AMBIARY:
-      if (arity != 2)
+      if (arity == 1)
+	{
+	  /* We have a unary instance of an ambi-ary op.  Remap to the
+	     unary one.  */
+	  unsigned alt = ovl_op_alternate[ovl_op_mapping [operator_code]];
+	  const ovl_op_info_t *ovl_op = &ovl_op_info[false][alt];
+	  DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
+	  operator_code = ovl_op->tree_code;
+	  gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
+	}
+      else if (arity != 2)
 	{
 	  /* This was an ambiguous operator but is invalid. */
 	  error (methodp
@@ -13066,13 +13060,12 @@ grok_op_properties (tree decl, bool complain)
 		 : G_("%qD must have either one or two arguments"), decl);
 	  return false;
 	}
-
-      /* x++ and x--'s second argument must be an int.  */
-      if ((operator_code == POSTINCREMENT_EXPR
-	   || operator_code == POSTDECREMENT_EXPR)
-	  && ! processing_template_decl
-	  && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)),
-			    integer_type_node))
+      else if ((operator_code == POSTINCREMENT_EXPR
+		|| operator_code == POSTDECREMENT_EXPR)
+	       && ! processing_template_decl
+	       /* x++ and x--'s second argument must be an int.  */
+	       && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)),
+				 integer_type_node))
 	{
 	  error (methodp
 		 ? G_("postfix %qD must have %<int%> as its argument")
