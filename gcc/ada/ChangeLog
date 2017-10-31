@@ -1,3 +1,8 @@
+2017-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82785
+	* gcc-interface/Makefile.in (m68k/Linux): Fix typo.
+
 2017-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in: Remove bogus settings for VxWorks.
