@@ -76,7 +76,7 @@
 	PR target/82772
 	* config/alpha/sync.md (fetchop_constr) <and>: Change to "rINM".
 
-2017-10-31  Segher Boessenkool  <segher@kernel.crsahing.org>
+2017-10-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/82674
 	* config/rs6000/rs6000.md (allocate_stack): Force update interval
