@@ -77,10 +77,7 @@ cxx_finish (void)
   c_common_finish ();
 }
 
-/* A mapping from tree codes to operator name information.  */
-operator_name_info_t operator_name_info[(int) MAX_TREE_CODES];
-/* Similar, but for assignment operators.  */
-operator_name_info_t assignment_operator_name_info[(int) MAX_TREE_CODES];
+ovl_op_info_t ovl_op_info[2][MAX_TREE_CODES];
 
 /* Get the name of the kind of identifier T.  */
 
@@ -117,7 +114,7 @@ set_identifier_kind (tree id, cp_identifier_kind kind)
    operator PTR describes.  */
 
 static tree
-set_operator_ident (operator_name_info_t *ptr)
+set_operator_ident (ovl_op_info_t *ptr)
 {
   char buffer[32];
   size_t len = snprintf (buffer, sizeof (buffer), "operator%s%s",
@@ -136,12 +133,13 @@ static void
 init_operators (void)
 {
   tree identifier;
-  operator_name_info_t *oni;
+  ovl_op_info_t *oni;
 
 #define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS, KIND)			\
   oni = OVL_OP_INFO (KIND == cik_assign_op, CODE);			\
   oni->name = NAME;							\
   oni->mangled_name = MANGLING;						\
+  oni->tree_code = CODE;						\
   oni->flags = FLAGS;							\
   if (NAME) {								\
     identifier = set_operator_ident (oni);				\
