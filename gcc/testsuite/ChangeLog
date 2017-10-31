@@ -1,5 +1,11 @@
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
+	* g++.dg/cpp0x/auto21.C: Update dg-error to reflect addition of
+	quotes.
+	* g++.dg/cpp0x/missing-initializer_list-include.C: Likewise.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Update
 	for renaming of error_at_rich_loc and inform_at_rich_loc.
 	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c

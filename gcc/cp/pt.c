@@ -25132,7 +25132,7 @@ listify (tree arg)
       maybe_add_include_fixit (&richloc, "<initializer_list>");
       error_at (&richloc,
 		"deducing from brace-enclosed initializer list"
-		" requires #include <initializer_list>");
+		" requires %<#include <initializer_list>%>");
 
       return error_mark_node;
     }
