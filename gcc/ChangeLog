@@ -1,5 +1,21 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct source_info): Remove typedef.
+	(source_info::source_info): Add proper ctor.
+	(accumulate_line_counts): Use struct, not it's typedef.
+	(output_gcov_file): Likewise.
+	(output_lines): Likewise.
+	(main): Do not allocate an array.
+	(output_intermediate_file): Use size of vector container.
+	(process_file): Resize the vector.
+	(generate_results): Do not preallocate, use newly added vector
+	lines.
+	(release_structures): Do not release sources.
+	(find_source): Use vector methods.
+	(add_line_counts): Do not use typedef.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	* doc/gcov.texi: Document that.
 	* gcov.c (add_line_counts): Mark lines with a non-executed
 	statement.
