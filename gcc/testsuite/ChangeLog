@@ -1,5 +1,10 @@
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/jit.exp (jit-dg-test): If PRESERVE_EXECUTABLES is set in
+	the environment, don't delete the generated executable.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
 	* g++.dg/cpp0x/auto21.C: Update dg-error to reflect addition of
 	quotes.
 	* g++.dg/cpp0x/missing-initializer_list-include.C: Likewise.
