@@ -1,5 +1,10 @@
 2017-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* lex.c (init_operators): Allow NULL operator name.  Don't add
+	special cases.
+	* operators.def: Use NULL for mangling only operators.  Move to
+	after regular operators but move assignment operators last.
+
 	* cp-tree.h (enum ovl_op_flags): New.
 	(struct operator_name_info_t): Rename arity to flags.
 	* lex.c (set_operator_ident): New.

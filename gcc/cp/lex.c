@@ -143,48 +143,14 @@ init_operators (void)
   oni->name = NAME;							\
   oni->mangled_name = MANGLING;						\
   oni->flags = FLAGS;							\
-  identifier = set_operator_ident (oni);				\
-									\
-  if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
-    set_identifier_kind (identifier, KIND);
+  if (NAME) {								\
+    identifier = set_operator_ident (oni);				\
+    if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
+      set_identifier_kind (identifier, KIND);				\
+  }
 
 #include "operators.def"
 #undef DEF_OPERATOR
-
-  operator_name_info[(int) TYPE_EXPR] = operator_name_info[(int) CAST_EXPR];
-  operator_name_info[(int) ERROR_MARK].identifier
-    = get_identifier ("<invalid operator>");
-
-  /* Handle some special cases.  These operators are not defined in
-     the language, but can be produced internally.  We may need them
-     for error-reporting.  (Eventually, we should ensure that this
-     does not happen.  Error messages involving these operators will
-     be confusing to users.)  */
-
-  operator_name_info [(int) INIT_EXPR].name
-    = operator_name_info [(int) MODIFY_EXPR].name;
-
-  operator_name_info [(int) EXACT_DIV_EXPR].name = "(ceiling /)";
-  operator_name_info [(int) CEIL_DIV_EXPR].name = "(ceiling /)";
-  operator_name_info [(int) FLOOR_DIV_EXPR].name = "(floor /)";
-  operator_name_info [(int) ROUND_DIV_EXPR].name = "(round /)";
-  operator_name_info [(int) CEIL_MOD_EXPR].name = "(ceiling %)";
-  operator_name_info [(int) FLOOR_MOD_EXPR].name = "(floor %)";
-  operator_name_info [(int) ROUND_MOD_EXPR].name = "(round %)";
-
-  operator_name_info [(int) ABS_EXPR].name = "abs";
-  operator_name_info [(int) TRUTH_AND_EXPR].name = "strict &&";
-  operator_name_info [(int) TRUTH_OR_EXPR].name = "strict ||";
-  operator_name_info [(int) RANGE_EXPR].name = "...";
-  operator_name_info [(int) UNARY_PLUS_EXPR].name = "+";
-
-  assignment_operator_name_info [(int) EXACT_DIV_EXPR].name = "(exact /=)";
-  assignment_operator_name_info [(int) CEIL_DIV_EXPR].name = "(ceiling /=)";
-  assignment_operator_name_info [(int) FLOOR_DIV_EXPR].name = "(floor /=)";
-  assignment_operator_name_info [(int) ROUND_DIV_EXPR].name = "(round /=)";
-  assignment_operator_name_info [(int) CEIL_MOD_EXPR].name = "(ceiling %=)";
-  assignment_operator_name_info [(int) FLOOR_MOD_EXPR].name = "(floor %=)";
-  assignment_operator_name_info [(int) ROUND_MOD_EXPR].name = "(round %=)";
 }
 
 /* Initialize the reserved words.  */
