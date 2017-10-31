@@ -125,6 +125,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-d}|@option{--display-progress}]
      [@option{-f}|@option{--function-summaries}]
      [@option{-i}|@option{--intermediate-format}]
+     [@option{-j}|@option{--human-readable}]
      [@option{-k}|@option{--use-colors}]
      [@option{-l}|@option{--long-file-names}]
      [@option{-m}|@option{--demangled-names}]
@@ -185,6 +186,10 @@ be used by @command{lcov} or other tools. The output is a single
 
 The format of the intermediate @file{.gcov} file is plain text with
 one entry per line
+
+@item -j
+@itemx --human-readable
+Write counts in human readable format (like 24k).
 
 @smallexample
 file:@var{source_file_name}
