@@ -1,5 +1,37 @@
 2017-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (ovl_op_identifier): New.
+	(assign_op_identifier, call_op_identifier): Adjust.
+	(cp_operator_id, cp_assignment_operator_ide): Delete.
+	(SET_OVERLOADED_OPERATOR_CODE): Delete.
+	(OVL_OP_INFO): New.
+	* call.c (op_error): Use OVL_OP_INFO.
+	(build_conditional_expr_1): Use ovl_op_identifier.
+	(build_new_op_1): Use OVL_OP_INFO & ovl_op_identifier.
+	(build_op_delete_call): Likewise.
+	* class.c (type_requires_array_cookie): Use ovl_op_identifier.
+	* decl.c (duplicate_decls): Directly copy operator code.
+	(builtin_function_1): Do not set operator code.
+	(build_library_fn): Directly set operator code.
+	(push_cp_library_fn): Use ovl_op_identifier.
+	(grok_op_properties): Directly set operator code.
+	* decl2.c (maybe_warn_sized_delete): Use ovl_op_identifier.
+	* error.c (dump_expr): Use OVL_OP_INFO.
+	(op_to_string): Add assop arg. Use OVL_OP_INFO.
+	(assop_to_string): Delete.
+	(args_to_string): Adjust.
+	* init.c (build_new_1): Use ovl_op_identifier.
+	* mangle.c (write_unqualified_name): Use OVL_OP_INFO.
+	(write_expression): Likewise.
+	* method.c (synthesized_method_walk): Use ovl_op_identifier.
+	(implicitly_declare_fn): Use assign_op_identifier. Directly set
+	operator code.
+	* name-lookup.c (get_class_binding): Use assign_op_identifier.
+	* parser.c (cp_parser_operator): Use ovl_op_identifier.
+	(cp_parser_omp_clause_reduction): Likewise.
+	* semantics.c (omp_reduction_id): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Use OVL_OP_INFO.
+
 	* cp-tree.h (assign_op_identifier, call_op_identifier): Define.
 	(LAMBDA_FUNCTION_P): Use DECL_OVERLOADED_OPERATOR_IS.
 	(DECL_OVERLOADED_OPERATOR_P): Just retuurn true/false.

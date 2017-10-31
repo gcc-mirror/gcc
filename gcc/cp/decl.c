@@ -1922,8 +1922,8 @@ next_arg:;
       DECL_OVERRIDE_P (newdecl) |= DECL_OVERRIDE_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
       if (DECL_OVERLOADED_OPERATOR_P (olddecl))
-	SET_OVERLOADED_OPERATOR_CODE
-	  (newdecl, DECL_OVERLOADED_OPERATOR_CODE (olddecl));
+	DECL_OVERLOADED_OPERATOR_CODE (newdecl)
+	  = DECL_OVERLOADED_OPERATOR_CODE (olddecl);
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
 
       /* Optionally warn about more than one declaration for the same
@@ -4359,7 +4359,6 @@ builtin_function_1 (tree decl, tree context, bool is_global)
   retrofit_lang_decl (decl);
 
   DECL_ARTIFICIAL (decl) = 1;
-  SET_OVERLOADED_OPERATOR_CODE (decl, ERROR_MARK);
   SET_DECL_LANGUAGE (decl, lang_c);
   /* Runtime library routines are, by definition, available in an
      external shared object.  */
@@ -4447,7 +4446,7 @@ build_library_fn (tree name, enum tree_code operator_code, tree type,
   DECL_EXTERNAL (fn) = 1;
   TREE_PUBLIC (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
-  SET_OVERLOADED_OPERATOR_CODE (fn, operator_code);
+  DECL_OVERLOADED_OPERATOR_CODE (fn) = operator_code;
   SET_DECL_LANGUAGE (fn, lang_c);
   /* Runtime library routines are, by definition, available in an
      external shared object.  */
@@ -4512,9 +4511,8 @@ static tree
 push_cp_library_fn (enum tree_code operator_code, tree type,
 		    int ecf_flags)
 {
-  tree fn = build_cp_library_fn (cp_operator_id (operator_code),
-				 operator_code,
-				 type, ecf_flags);
+  tree fn = build_cp_library_fn (ovl_op_identifier (false, operator_code),
+				 operator_code, type, ecf_flags);
   pushdecl (fn);
   if (flag_tm)
     apply_tm_attr (fn, get_identifier ("transaction_safe"));
@@ -12938,7 +12936,7 @@ grok_op_properties (tree decl, bool complain)
       }
     while (0);
   gcc_assert (operator_code != MAX_TREE_CODES);
-  SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
+  DECL_OVERLOADED_OPERATOR_CODE (decl) = operator_code;
 
   if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR
       || operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
@@ -13111,7 +13109,7 @@ grok_op_properties (tree decl, bool complain)
 	      gcc_unreachable ();
 	    }
 
-	  SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
+	  DECL_OVERLOADED_OPERATOR_CODE (decl) = operator_code;
 
 	  if ((operator_code == POSTINCREMENT_EXPR
 	       || operator_code == POSTDECREMENT_EXPR)

@@ -4620,12 +4620,8 @@ static void
 op_error (location_t loc, enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
 {
-  const char *opname;
-
-  if (code == MODIFY_EXPR)
-    opname = assignment_operator_name_info[code2].name;
-  else
-    opname = operator_name_info[code].name;
+  bool assop = code == MODIFY_EXPR;
+  const char *opname = OVL_OP_INFO (assop, assop ? code2 : code)->name;
 
   switch (code)
     {
@@ -5184,7 +5180,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       add_builtin_candidates (&candidates,
 			      COND_EXPR,
 			      NOP_EXPR,
-			      cp_operator_id (COND_EXPR),
+			      ovl_op_identifier (false, COND_EXPR),
 			      args,
 			      LOOKUP_NORMAL, complain);
 
@@ -5574,7 +5570,6 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 {
   struct z_candidate *candidates = 0, *cand;
   vec<tree, va_gc> *arglist;
-  tree fnname;
   tree args[3];
   tree result = NULL_TREE;
   bool result_valid_p = false;
@@ -5591,14 +5586,13 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
       || error_operand_p (arg3))
     return error_mark_node;
 
-  if (code == MODIFY_EXPR)
+  bool ismodop = code == MODIFY_EXPR;
+  if (ismodop)
     {
       code2 = TREE_CODE (arg3);
       arg3 = NULL_TREE;
-      fnname = cp_assignment_operator_id (code2);
     }
-  else
-    fnname = cp_operator_id (code);
+  tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 
   arg1 = prep_operand (arg1);
 
@@ -5793,7 +5787,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		? G_("no %<%D(int)%> declared for postfix %qs,"
 		     " trying prefix operator instead")
 		: G_("no %<%D(int)%> declared for postfix %qs");
-	      permerror (loc, msg, fnname, operator_name_info[code].name);
+	      permerror (loc, msg, fnname, OVL_OP_INFO (false, code)->name);
 	    }
 
 	  if (!flag_permissive)
@@ -6205,7 +6199,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   type = strip_array_types (TREE_TYPE (TREE_TYPE (addr)));
 
-  fnname = cp_operator_id (code);
+  fnname = ovl_op_identifier (false, code);
 
   if (CLASS_TYPE_P (type)
       && COMPLETE_TYPE_P (complete_type (type))
@@ -6434,7 +6428,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   if (complain & tf_error)
     error ("no suitable %<operator %s%> for %qT",
-	   operator_name_info[(int)code].name, type);
+	   OVL_OP_INFO (false, code)->name, type);
   return error_mark_node;
 }
 
