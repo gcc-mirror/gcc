@@ -1,3 +1,10 @@
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/ternary.C: New test.
+	* g++.dg/gcov/gcov-threads-1.C (main): Update expected line
+	count.
+	* lib/gcov.exp: Support new format for intermediate file format.
+
 2017-11-01  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx-1.c: Handle new intrinsics.
