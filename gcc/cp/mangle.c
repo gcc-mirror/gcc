@@ -1276,7 +1276,7 @@ write_unqualified_id (tree identifier)
 	  {
 	    /* The ABI says that we prefer binary operator
 	       names to unary operator names.  */
-	    if (operator_name_info[i].arity == 2)
+	    if (operator_name_info[i].flags == OVL_OP_FLAG_BINARY)
 	      {
 		mangled_name = operator_name_info[i].mangled_name;
 		break;

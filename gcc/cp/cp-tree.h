@@ -5474,16 +5474,27 @@ enum auto_deduction_context
 
 extern void init_reswords (void);
 
-typedef struct GTY(()) operator_name_info_t {
+/* Various flags for the overloaded operator information.  */
+enum ovl_op_flags
+  {
+    OVL_OP_FLAG_NONE = 0,
+    OVL_OP_FLAG_UNARY = 1,
+    OVL_OP_FLAG_BINARY = 2,
+    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete  */
+    OVL_OP_FLAG_DELETE = 1,	/* operator delete  */
+    OVL_OP_FLAG_VEC = 2		/* vector new or delete  */
+  };
+
+struct GTY(()) operator_name_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;
   /* The name of the operator.  */
   const char *name;
   /* The mangled name of the operator.  */
   const char *mangled_name;
-  /* The arity of the operator.  */
-  int arity;
-} operator_name_info_t;
+  /* The ovl_op_flags of the operator */
+  unsigned flags : 8;
+};
 
 /* A mapping from tree codes to operator name information.  */
 extern GTY(()) operator_name_info_t operator_name_info

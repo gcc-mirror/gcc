@@ -1,5 +1,12 @@
 2017-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (enum ovl_op_flags): New.
+	(struct operator_name_info_t): Rename arity to flags.
+	* lex.c (set_operator_ident): New.
+	(init_operators): Use it.  Adjust for flags.
+	* mangle.c (write_unqualified_id): Adjust for flags.
+	* operators.def: Replace arity with flags.
+
 	* cp-tree.h (ovl_op_identifier): New.
 	(assign_op_identifier, call_op_identifier): Adjust.
 	(cp_operator_id, cp_assignment_operator_ide): Delete.
