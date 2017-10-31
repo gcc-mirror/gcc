@@ -217,7 +217,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    things) to iterate over their overloads defined by/for a type.  For
    example:
 
-     tree ovlid = cp_assignment_operator_id (NOP_EXPR);
+     tree ovlid = assign_op_identifier;
      tree overloads = get_class_binding (type, ovlid);
      for (ovl_iterator it (overloads); it; ++it) { ... }
 
@@ -244,6 +244,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of a destructor that destroys virtual base classes, and
    then deletes the entire object.  */
 #define deleting_dtor_identifier	cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+
+#define assign_op_identifier (cp_assignment_operator_id (NOP_EXPR))
+#define call_op_identifier (cp_operator_id (CALL_EXPR))
 /* The name used for conversion operators -- but note that actual
    conversion functions use special identifiers outside the identifier
    table.  */
@@ -1203,9 +1206,10 @@ struct GTY (()) tree_trait_expr {
   (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
-#define LAMBDA_FUNCTION_P(FNDECL)			\
-  (DECL_DECLARES_FUNCTION_P (FNDECL)			\
-   && DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR	\
+#define LAMBDA_FUNCTION_P(FNDECL)				\
+  (DECL_DECLARES_FUNCTION_P (FNDECL)				\
+   && DECL_OVERLOADED_OPERATOR_P (FNDECL)			\
+   && DECL_OVERLOADED_OPERATOR_IS (FNDECL, CALL_EXPR)		\
    && LAMBDA_TYPE_P (CP_DECL_CONTEXT (FNDECL)))
 
 enum cp_lambda_default_capture_mode_type {
@@ -2810,18 +2814,23 @@ struct GTY(()) lang_decl {
 #define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
   (LANG_DECL_FN_CHECK (NODE)->operator_code = (CODE))
 
-/* If NODE is an overloaded operator, then this returns the TREE_CODE
-   associated with the overloaded operator.  If NODE is not an
-   overloaded operator, ERROR_MARK is returned.  Since the numerical
-   value of ERROR_MARK is zero, this macro can be used as a predicate
-   to test whether or not NODE is an overloaded operator.  */
+/* True iff decl NODE is for an overloaded operator.  */
 #define DECL_OVERLOADED_OPERATOR_P(NODE)		\
-  (IDENTIFIER_ANY_OP_P (DECL_NAME (NODE))		\
-   ? LANG_DECL_FN_CHECK (NODE)->operator_code : ERROR_MARK)
+  IDENTIFIER_ANY_OP_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE is an assignment operator (including += and such).  */
-#define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
+#define DECL_ASSIGNMENT_OPERATOR_P(NODE)		 \
   IDENTIFIER_ASSIGN_OP_P (DECL_NAME (NODE))
+
+/* NODE is a function_decl for an overloaded operator.  Return its
+   operator code.   */
+#define DECL_OVERLOADED_OPERATOR_CODE(NODE)			\
+  (LANG_DECL_FN_CHECK (NODE)->operator_code)
+
+/* DECL is an overloaded operator.  Test whether it is for TREE_CODE
+   (a literal constant).  */
+#define DECL_OVERLOADED_OPERATOR_IS(DECL, CODE)			\
+  (DECL_OVERLOADED_OPERATOR_CODE (DECL) == CODE)
 
 /* For FUNCTION_DECLs: nonzero means that this function is a
    constructor or a destructor with an extra in-charge parameter to

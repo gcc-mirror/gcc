@@ -815,7 +815,7 @@ do_build_copy_assign (tree fndecl)
 	  parmvec = make_tree_vector_single (converted_parm);
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
-					cp_assignment_operator_id (NOP_EXPR),
+					assign_op_identifier,
 					&parmvec,
 					base_binfo,
 					flags,
@@ -929,7 +929,8 @@ synthesize_method (tree fndecl)
   start_preparsed_function (fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   stmt = begin_function_body ();
 
-  if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
+  if (DECL_ASSIGNMENT_OPERATOR_P (fndecl)
+      && DECL_OVERLOADED_OPERATOR_IS (fndecl, NOP_EXPR))
     {
       do_build_copy_assign (fndecl);
       need_body = false;
@@ -1108,7 +1109,7 @@ get_copy_assign (tree type)
   int quals = (TYPE_HAS_CONST_COPY_ASSIGN (type)
 	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
-  tree fn = locate_fn_flags (type, cp_assignment_operator_id (NOP_EXPR), argtype,
+  tree fn = locate_fn_flags (type, assign_op_identifier, argtype,
 			     LOOKUP_NORMAL, tf_warning_or_error);
   if (fn == error_mark_node)
     return NULL_TREE;
@@ -1565,7 +1566,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_move_assignment:
     case sfk_copy_assignment:
       assign_p = true;
-      fnname = cp_assignment_operator_id (NOP_EXPR);
+      fnname = assign_op_identifier;
       break;
 
     case sfk_destructor:
@@ -2318,7 +2319,7 @@ defaultable_fn_check (tree fn)
   else if (DECL_DESTRUCTOR_P (fn))
     kind = sfk_destructor;
   else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
-	   && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR)
+	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR))
     {
       if (copy_fn_p (fn))
 	kind = sfk_copy_assignment;
