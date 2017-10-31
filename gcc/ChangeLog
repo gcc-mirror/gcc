@@ -1,3 +1,8 @@
+2017-10-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82772
+	* config/alpha/sync.md (fetchop_constr) <and>: Change to "rINM".
+
 2017-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
