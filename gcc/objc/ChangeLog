@@ -1,3 +1,8 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* objc-gnu-runtime-abi-01.c (objc_gnu_runtime_abi_01_init): Use
+	UNKNOWN_LOCATION rather than 0.
+
 2017-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	* objc-act.c (objc_common_tree_size): Return size of TYPE nodes.

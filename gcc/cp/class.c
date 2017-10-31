@@ -5394,18 +5394,20 @@ explain_non_literal_class (tree t)
     /* Already explained.  */
     return;
 
-  inform (0, "%q+T is not literal because:", t);
+  inform (UNKNOWN_LOCATION, "%q+T is not literal because:", t);
   if (cxx_dialect < cxx17 && LAMBDA_TYPE_P (t))
-    inform (0, "  %qT is a closure type, which is only literal in "
+    inform (UNKNOWN_LOCATION,
+	    "  %qT is a closure type, which is only literal in "
 	    "C++17 and later", t);
   else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
-    inform (0, "  %q+T has a non-trivial destructor", t);
+    inform (UNKNOWN_LOCATION, "  %q+T has a non-trivial destructor", t);
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && !LAMBDA_TYPE_P (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     {
-      inform (0, "  %q+T is not an aggregate, does not have a trivial "
+      inform (UNKNOWN_LOCATION,
+	      "  %q+T is not an aggregate, does not have a trivial "
 	      "default constructor, and has no constexpr constructor that "
 	      "is not a copy or move constructor", t);
       if (type_has_non_user_provided_default_constructor (t))
@@ -5437,7 +5439,8 @@ explain_non_literal_class (tree t)
 	  tree basetype = TREE_TYPE (base_binfo);
 	  if (!CLASSTYPE_LITERAL_P (basetype))
 	    {
-	      inform (0, "  base class %qT of %q+T is non-literal",
+	      inform (UNKNOWN_LOCATION,
+		      "  base class %qT of %q+T is non-literal",
 		      basetype, t);
 	      explain_non_literal_class (basetype);
 	      return;

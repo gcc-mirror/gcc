@@ -1,3 +1,40 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* class.c (explain_non_literal_class): Use UNKNOWN_LOCATION rather
+	than 0.
+	* name-lookup.c (suggest_alternatives_for): Update for renaming of
+	inform_at_rich_loc.
+	(maybe_suggest_missing_header): Likewise.
+	(suggest_alternative_in_explicit_scope): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise for
+	renaming of error_at_rich_loc.
+	(cp_parser_string_literal): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_cast_expression): Likewise for renaming of
+	warning_at_rich_loc.
+	(cp_parser_decl_specifier_seq): Likewise for renaming of
+	error_at_rich_loc and warning_at_rich_loc.
+	(cp_parser_elaborated_type_specifier): Likewise for renaming of
+	pedwarn_at_rich_loc.
+	(cp_parser_cv_qualifier_seq_opt): Likewise for renaming of
+	error_at_rich_loc.
+	(cp_parser_virt_specifier_seq_opt): Likewise.
+	(cp_parser_class_specifier_1): Likewise.
+	(cp_parser_class_head): Likewise.
+	(cp_parser_member_declaration): Likewise for renaming of
+	pedwarn_at_rich_loc, warning_at_rich_loc, and error_at_rich_loc.
+	(cp_parser_enclosed_template_argument_list): Likewise for renaming
+	of error_at_rich_loc.
+	(set_and_check_decl_spec_loc): Likewise.
+	* pt.c (listify): Likewise.
+	* rtti.c (typeid_ok_p): Likewise.
+	* semantics.c (process_outer_var_ref): Use UNKNOWN_LOCATION rather
+	than 0.
+	* typeck.c (access_failure_info::maybe_suggest_accessor): Update
+	for renaming of inform_at_rich_loc.
+	(finish_class_member_access_expr): Likewise for renaming of
+	error_at_rich_loc.
+
 2017-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct operator_name_info_t): Rename to ...

@@ -852,7 +852,7 @@ autofdo_source_profile::read ()
 {
   if (gcov_read_unsigned () != GCOV_TAG_AFDO_FUNCTION)
     {
-      inform (0, "Not expected TAG.");
+      inform (UNKNOWN_LOCATION, "Not expected TAG.");
       return false;
     }
 

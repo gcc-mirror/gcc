@@ -5377,7 +5377,7 @@ suggest_alternatives_for (location_t location, tree name,
       gcc_rich_location richloc (location);
 
       richloc.add_fixit_replace (fuzzy);
-      inform_at_rich_loc (&richloc, "suggested alternative: %qs", fuzzy);
+      inform (&richloc, "suggested alternative: %qs", fuzzy);
     }
 }
 
@@ -5485,10 +5485,10 @@ maybe_suggest_missing_header (location_t location, tree name, tree scope)
 
   gcc_rich_location richloc (location);
   maybe_add_include_fixit (&richloc, header_hint);
-  inform_at_rich_loc (&richloc,
-		      "%<std::%s%> is defined in header %qs;"
-		      " did you forget to %<#include %s%>?",
-		      name_str, header_hint, header_hint);
+  inform (&richloc,
+	  "%<std::%s%> is defined in header %qs;"
+	  " did you forget to %<#include %s%>?",
+	  name_str, header_hint, header_hint);
   return true;
 }
 
@@ -5518,8 +5518,8 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
     {
       gcc_rich_location richloc (location);
       richloc.add_fixit_replace (fuzzy_name);
-      inform_at_rich_loc (&richloc, "suggested alternative: %qs",
-			  fuzzy_name);
+      inform (&richloc, "suggested alternative: %qs",
+	      fuzzy_name);
       return true;
     }
 

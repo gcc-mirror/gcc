@@ -130,7 +130,8 @@ objc_gnu_runtime_abi_01_init (objc_runtime_hooks *rthooks)
   /* GNU runtime does not need the compiler to change code in order to do GC. */
   if (flag_objc_gc)
     {
-      warning_at (0, 0, "%<-fobjc-gc%> is ignored for %<-fgnu-runtime%>");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fobjc-gc%> is ignored for %<-fgnu-runtime%>");
       flag_objc_gc = 0;
     }
 

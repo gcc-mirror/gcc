@@ -319,9 +319,9 @@ typeid_ok_p (void)
     {
       gcc_rich_location richloc (input_location);
       maybe_add_include_fixit (&richloc, "<typeinfo>");
-      error_at_rich_loc (&richloc,
-			 "must %<#include <typeinfo>%> before using"
-			 " %<typeid%>");
+      error_at (&richloc,
+		"must %<#include <typeinfo>%> before using"
+		" %<typeid%>");
 
       return false;
     }

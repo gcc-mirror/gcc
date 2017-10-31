@@ -496,8 +496,8 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       rich_location richloc (line_table, lhs_loc);
       richloc.add_fixit_insert_before (lhs_loc, "(");
       richloc.add_fixit_insert_after (lhs_loc, ")");
-      inform_at_rich_loc (&richloc, "add parentheses around left hand side "
-			  "expression to silence this warning");
+      inform (&richloc, "add parentheses around left hand side "
+	      "expression to silence this warning");
     }
 }
 
@@ -2391,13 +2391,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 	richloc.add_range (EXPR_LOCATION (arg), false);
     }
 
-  warning_at_rich_loc_n (&richloc, OPT_Wrestrict, arg_positions.length (),
-			 "passing argument %i to restrict-qualified parameter"
-			 " aliases with argument %Z",
-			 "passing argument %i to restrict-qualified parameter"
-			 " aliases with arguments %Z",
-			 param_pos + 1, arg_positions.address (),
-			 arg_positions.length ());
+  warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
+	     "passing argument %i to restrict-qualified parameter"
+	     " aliases with argument %Z",
+	     "passing argument %i to restrict-qualified parameter"
+	     " aliases with arguments %Z",
+	     param_pos + 1, arg_positions.address (),
+	     arg_positions.length ());
 }
 
 /* Callback function to determine whether an expression TP or one of its

@@ -527,10 +527,10 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 	      source_range misspelled_token_range
 		= get_range_from_loc (pfile->line_table, dname->src_loc);
 	      richloc.add_fixit_replace (misspelled_token_range, hint);
-	      cpp_error_at_richloc (pfile, CPP_DL_ERROR, &richloc,
-				    "invalid preprocessing directive #%s;"
-				    " did you mean #%s?",
-				    unrecognized, hint);
+	      cpp_error_at (pfile, CPP_DL_ERROR, &richloc,
+			    "invalid preprocessing directive #%s;"
+			    " did you mean #%s?",
+			    unrecognized, hint);
 	    }
 	  else
 	    cpp_error (pfile, CPP_DL_ERROR,
