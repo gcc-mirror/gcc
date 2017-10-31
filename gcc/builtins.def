@@ -130,18 +130,26 @@ along with GCC; see the file COPYING3.  If not see
 
 /* A set of GCC builtins for _FloatN and _FloatNx types.  TYPE_MACRO is called
    with an argument such as FLOAT32 to produce the enum value for the type.  If
-   we are being fully conformant we ignore the version of these builtins that
-   does not being with __builtin_.  */
+   we are compiling for the C language with GNU extensions, we enable the name
+   without the __builtin_ prefix as well as the name with the __builtin_
+   prefix.  C++ does not enable these names by default because they don't have
+   the _Float<N> and _Float<N>X keywords, and a class based library should use
+   the __builtin_ names.  */
+#undef DEF_FLOATN_BUILTIN
+#define DEF_FLOATN_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
+	       targetm.floatn_builtin_p ((int) ENUM), true, true, ATTRS, \
+	       false, true)
 #undef DEF_EXT_LIB_FLOATN_NX_BUILTINS
-#define DEF_EXT_LIB_FLOATN_NX_BUILTINS(ENUM, NAME, TYPE_MACRO, ATTRS)		\
-  DEF_EXT_LIB_BUILTIN (ENUM ## F16, NAME "f16", TYPE_MACRO (FLOAT16), ATTRS) \
-  DEF_EXT_LIB_BUILTIN (ENUM ## F32, NAME "f32", TYPE_MACRO (FLOAT32), ATTRS) \
-  DEF_EXT_LIB_BUILTIN (ENUM ## F64, NAME "f64", TYPE_MACRO (FLOAT64), ATTRS) \
-  DEF_EXT_LIB_BUILTIN (ENUM ## F128, NAME "f128", TYPE_MACRO (FLOAT128), ATTRS)\
-  DEF_EXT_LIB_BUILTIN (ENUM ## F32X, NAME "f32x", TYPE_MACRO (FLOAT32X), ATTRS)\
-  DEF_EXT_LIB_BUILTIN (ENUM ## F64X, NAME "f64x", TYPE_MACRO (FLOAT64X), ATTRS)\
-  DEF_EXT_LIB_BUILTIN (ENUM ## F128X, NAME "f128x", TYPE_MACRO (FLOAT128X), \
-			ATTRS)
+#define DEF_EXT_LIB_FLOATN_NX_BUILTINS(ENUM, NAME, TYPE_MACRO, ATTRS)	\
+  DEF_FLOATN_BUILTIN (ENUM ## F16, NAME "f16", TYPE_MACRO (FLOAT16), ATTRS) \
+  DEF_FLOATN_BUILTIN (ENUM ## F32, NAME "f32", TYPE_MACRO (FLOAT32), ATTRS) \
+  DEF_FLOATN_BUILTIN (ENUM ## F64, NAME "f64", TYPE_MACRO (FLOAT64), ATTRS) \
+  DEF_FLOATN_BUILTIN (ENUM ## F128, NAME "f128", TYPE_MACRO (FLOAT128), ATTRS) \
+  DEF_FLOATN_BUILTIN (ENUM ## F32X, NAME "f32x", TYPE_MACRO (FLOAT32X), ATTRS) \
+  DEF_FLOATN_BUILTIN (ENUM ## F64X, NAME "f64x", TYPE_MACRO (FLOAT64X), ATTRS) \
+  DEF_FLOATN_BUILTIN (ENUM ## F128X, NAME "f128x", TYPE_MACRO (FLOAT128X), \
+		      ATTRS)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C94 or above.  */
