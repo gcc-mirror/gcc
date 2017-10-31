@@ -1,5 +1,9 @@
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
+	* pt.c (listify): Use %< and %> for description of #include.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
 	* class.c (explain_non_literal_class): Use UNKNOWN_LOCATION rather
 	than 0.
 	* name-lookup.c (suggest_alternatives_for): Update for renaming of
