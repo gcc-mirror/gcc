@@ -2737,6 +2737,9 @@ unexpected_eof (void)
   gfc_done_2 ();
 
   longjmp (eof_buf, 1);
+
+  /* Avoids build error on systems where longjmp is not declared noreturn.  */
+  gcc_unreachable ();
 }
 
 
