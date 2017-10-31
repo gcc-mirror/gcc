@@ -1,3 +1,7 @@
+2017-10-31  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brig-lang.c (brig_langhook_type_for_mode): Fix PR 82771.
+
 2017-10-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* brig-lang.c (brig_langhook_type_for_mode): Use scalar_int_mode
