@@ -302,11 +302,38 @@ source_info::source_info (): name (NULL), file_time (), lines (),
 {
 }
 
-typedef struct name_map
+class name_map
 {
-  char *name;  /* Source file name */
+public:
+  name_map ()
+  {
+  }
+
+  name_map (char *_name, unsigned _src): name (_name), src (_src)
+  {
+  }
+
+  bool operator== (const name_map &rhs) const
+  {
+#if HAVE_DOS_BASED_FILE_SYSTEM
+    return strcasecmp (this->name, rhs.name) == 0;
+#else
+    return strcmp (this->name, rhs.name) == 0;
+#endif
+  }
+
+  bool operator< (const name_map &rhs) const
+  {
+#if HAVE_DOS_BASED_FILE_SYSTEM
+    return strcasecmp (this->name, rhs.name) < 0;
+#else
+    return strcmp (this->name, rhs.name) < 0;
+#endif
+  }
+
+  const char *name;  /* Source file name */
   unsigned src;  /* Source file */
-} name_map_t;
+};
 
 /* Holds a list of function basic block graphs.  */
 
@@ -316,9 +343,8 @@ static function_t **fn_end = &functions;
 /* Vector of source files.  */
 static vector<source_info> sources;
 
-static name_map_t *names;   /* Mapping of file names to sources */
-static unsigned n_names;    /* Number of names */
-static unsigned a_names;    /* Allocated names */
+/* Mapping of file names to sources */
+static vector<name_map> names;
 
 /* This holds data summary information.  */
 
@@ -443,8 +469,6 @@ static void print_version (void) ATTRIBUTE_NORETURN;
 static void process_file (const char *);
 static void generate_results (const char *);
 static void create_file_names (const char *);
-static int name_search (const void *, const void *);
-static int name_sort (const void *, const void *);
 static char *canonicalize_name (const char *);
 static unsigned find_source (const char *);
 static function_t *read_graph_file (void);
@@ -674,9 +698,6 @@ main (int argc, char **argv)
 
   /* Handle response files.  */
   expandargv (&argc, &argv);
-
-  a_names = 10;
-  names = XNEWVEC (name_map_t, a_names);
 
   argno = process_args (argc, argv);
   if (optind == argc)
@@ -941,7 +962,7 @@ process_file (const char *file_name)
 	  unsigned line = fn->line;
 	  unsigned block_no;
 	  function_t *probe, **prev;
-	  
+
 	  /* Now insert it into the source file's list of
 	     functions. Normally functions will be encountered in
 	     ascending order, so a simple scan is quick.  Note we're
@@ -1038,12 +1059,15 @@ generate_results (const char *file_name)
 	}
     }
 
+  name_map needle;
+
   if (file_name)
     {
-      name_map_t *name_map = (name_map_t *)bsearch
-	(file_name, names, n_names, sizeof (*names), name_search);
-      if (name_map)
-	file_name = sources[name_map->src].coverage.name;
+      needle.name = file_name;
+      vector<name_map>::iterator it = std::find (names.begin (), names.end (),
+						 needle);
+      if (it != names.end ())
+	file_name = sources[it->src].coverage.name;
       else
 	file_name = canonicalize_name (file_name);
     }
@@ -1086,12 +1110,7 @@ generate_results (const char *file_name)
 static void
 release_structures (void)
 {
-  unsigned ix;
   function_t *fn;
-
-  for (ix = n_names; ix--;)
-    free (names[ix].name);
-  free (names);
 
   while ((fn = functions))
     {
@@ -1168,77 +1187,42 @@ create_file_names (const char *file_name)
   return;
 }
 
-/* A is a string and B is a pointer to name_map_t.  Compare for file
-   name orderability.  */
-
-static int
-name_search (const void *a_, const void *b_)
-{
-  const char *a = (const char *)a_;
-  const name_map_t *b = (const name_map_t *)b_;
-
-#if HAVE_DOS_BASED_FILE_SYSTEM
-  return strcasecmp (a, b->name);
-#else
-  return strcmp (a, b->name);
-#endif
-}
-
-/* A and B are a pointer to name_map_t.  Compare for file name
-   orderability.  */
-
-static int
-name_sort (const void *a_, const void *b_)
-{
-  const name_map_t *a = (const name_map_t *)a_;
-  return name_search (a->name, b_);
-}
-
 /* Find or create a source file structure for FILE_NAME. Copies
    FILE_NAME on creation */
 
 static unsigned
 find_source (const char *file_name)
 {
-  name_map_t *name_map;
   char *canon;
   unsigned idx;
   struct stat status;
 
   if (!file_name)
     file_name = "<unknown>";
-  name_map = (name_map_t *)bsearch
-    (file_name, names, n_names, sizeof (*names), name_search);
-  if (name_map)
-    {
-      idx = name_map->src;
-      goto check_date;
-    }
 
-  if (n_names + 2 > a_names)
+  name_map needle;
+  needle.name = file_name;
+
+  vector<name_map>::iterator it = std::find (names.begin (), names.end (),
+					     needle);
+  if (it != names.end ())
     {
-      /* Extend the name map array -- we'll be inserting one or two
-	 entries.  */
-      a_names *= 2;
-      name_map = XNEWVEC (name_map_t, a_names);
-      memcpy (name_map, names, n_names * sizeof (*names));
-      free (names);
-      names = name_map;
+      idx = it->src;
+      goto check_date;
     }
 
   /* Not found, try the canonical name. */
   canon = canonicalize_name (file_name);
-  name_map = (name_map_t *) bsearch (canon, names, n_names, sizeof (*names),
-				     name_search);
-  if (!name_map)
+  needle.name = canon;
+  it = std::find (names.begin (), names.end (), needle);
+  if (it == names.end ())
     {
       /* Not found with canonical name, create a new source.  */
       source_info *src;
 
       idx = sources.size ();
-      name_map = &names[n_names++];
-      name_map->name = canon;
-      name_map->src = idx;
+      needle = name_map (canon, idx);
+      names.push_back (needle);
 
       sources.push_back (source_info ());
       src = &sources.back ();
@@ -1258,18 +1242,17 @@ find_source (const char *file_name)
 	src->file_time = status.st_mtime;
     }
   else
-    idx = name_map->src;
+    idx = it->src;
 
-  if (name_search (file_name, name_map))
+  needle.name = file_name;
+  if (std::find (names.begin (), names.end (), needle) == names.end ())
     {
       /* Append the non-canonical name.  */
-      name_map = &names[n_names++];
-      name_map->name = xstrdup (file_name);
-      name_map->src = idx;
+      names.push_back (name_map (xstrdup (file_name), idx));
     }
 
   /* Resort the name map.  */
-  qsort (names, n_names, sizeof (*names), name_sort);
+  std::sort (names.begin (), names.end ());
 
  check_date:
   if (sources[idx].file_time > bbg_file_time)

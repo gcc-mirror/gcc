@@ -1,5 +1,17 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct name_map): do not use typedef.
+	Define operator== and operator<.
+	(name_search): Remove.
+	(name_sort): Remove.
+	(main): Do not allocate names.
+	(process_file): Add vertical space.
+	(generate_results): Use std::find.
+	(release_structures): Do not release memory.
+	(find_source): Use std::find.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (struct line_info): Remove it's typedef.
 	(line_info::line_info): Add proper ctor.
 	(line_info::has_block): Do not use a typedef.
