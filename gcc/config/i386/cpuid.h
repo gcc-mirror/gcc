@@ -97,12 +97,15 @@
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
+#define bit_SHSTK	(1 << 7)
+#define bit_GFNI	(1 << 8)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_RDPID	(1 << 22)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
+#define bit_IBT	(1 << 20)
 
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)

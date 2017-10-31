@@ -2337,12 +2337,10 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
   optab lrotate_optab = rotl_optab;
   optab rrotate_optab = rotr_optab;
   machine_mode op1_mode;
-  machine_mode scalar_mode = mode;
+  scalar_mode scalar_mode = GET_MODE_INNER (mode);
   int attempt;
   bool speed = optimize_insn_for_speed_p ();
 
-  if (VECTOR_MODE_P (mode))
-    scalar_mode = GET_MODE_INNER (mode);
   op1 = amount;
   op1_mode = GET_MODE (op1);
 

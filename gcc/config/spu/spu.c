@@ -6640,6 +6640,8 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 2;
 
       case unaligned_load:
+      case vector_gather_load:
+      case vector_scatter_store:
         return 2;
 
       case cond_branch_taken:
@@ -7194,6 +7196,18 @@ spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
   return inprec <= 32 && outprec <= inprec;
 }
 
+/* Implement TARGET_STATIC_RTX_ALIGNMENT.
+
+   Make all static objects 16-byte aligned.  This allows us to assume
+   they are also padded to 16 bytes, which means we can use a single
+   load or store instruction to access them.  */
+
+static HOST_WIDE_INT
+spu_static_rtx_alignment (machine_mode mode)
+{
+  return MAX (GET_MODE_ALIGNMENT (mode), 128);
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.
 
    Make all static objects 16-byte aligned.  This allows us to assume
@@ -7445,6 +7459,8 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_TRULY_NOOP_TRUNCATION
 #define TARGET_TRULY_NOOP_TRUNCATION spu_truly_noop_truncation
 
+#undef TARGET_STATIC_RTX_ALIGNMENT
+#define TARGET_STATIC_RTX_ALIGNMENT spu_static_rtx_alignment
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT spu_constant_alignment
 

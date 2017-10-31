@@ -1391,10 +1391,18 @@ expand_one_ssa_partition (tree var)
     }
 
   machine_mode reg_mode = promote_ssa_mode (var, NULL);
-
   rtx x = gen_reg_rtx (reg_mode);
 
   set_rtl (var, x);
+
+  /* For a promoted variable, X will not be used directly but wrapped in a
+     SUBREG with SUBREG_PROMOTED_VAR_P set, which means that the RTL land
+     will assume that its upper bits can be inferred from its lower bits.
+     Therefore, if X isn't initialized on every path from the entry, then
+     we must do it manually in order to fulfill the above assumption.  */
+  if (reg_mode != TYPE_MODE (TREE_TYPE (var))
+      && bitmap_bit_p (SA.partitions_for_undefined_values, part))
+    emit_move_insn (x, CONST0_RTX (reg_mode));
 }
 
 /* Record the association between the RTL generated for partition PART
@@ -2025,7 +2033,7 @@ expand_used_vars (void)
   /* Compute the phase of the stack frame for this function.  */
   {
     int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-    int off = STARTING_FRAME_OFFSET % align;
+    int off = targetm.starting_frame_offset () % align;
     frame_phase = off ? align - off : 0;
   }
 
@@ -2507,7 +2515,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   dest = false_edge->dest;
   redirect_edge_succ (false_edge, new_bb);
   false_edge->flags |= EDGE_FALLTHRU;
-  new_bb->count = false_edge->count;
+  new_bb->count = false_edge->count ();
   new_bb->frequency = EDGE_FREQUENCY (false_edge);
   loop_p loop = find_common_loop (bb->loop_father, dest->loop_father);
   add_bb_to_loop (new_bb, loop);
@@ -2634,8 +2642,7 @@ expand_call_stmt (gcall *stmt)
   CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
   if (decl
       && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-      && (DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA
-	  || DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA_WITH_ALIGN))
+      && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (decl)))
     CALL_ALLOCA_FOR_VAR_P (exp) = gimple_call_alloca_for_var_p (stmt);
   else
     CALL_FROM_THUNK_P (exp) = gimple_call_from_thunk_p (stmt);
@@ -2659,11 +2666,27 @@ expand_call_stmt (gcall *stmt)
 	  }
     }
 
+  rtx_insn *before_call = get_last_insn ();
   lhs = gimple_call_lhs (stmt);
   if (lhs)
     expand_assignment (lhs, exp, false);
   else
     expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* If the gimple call is an indirect call and has 'nocf_check'
+     attribute find a generated CALL insn to mark it as no
+     control-flow verification is needed.  */
+  if (gimple_call_nocf_check_p (stmt)
+      && !gimple_call_fndecl (stmt))
+    {
+      rtx_insn *last = get_last_insn ();
+      while (!CALL_P (last)
+	     && last != before_call)
+	last = PREV_INSN (last);
+
+      if (last != before_call)
+	add_reg_note (last, REG_CALL_NOCF_CHECK, const0_rtx);
+    }
 
   mark_transaction_restart_calls (stmt);
 }
@@ -3818,7 +3841,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
      the exit block.  */
 
   probability = profile_probability::never ();
-  profile_count count = profile_count::zero ();
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
@@ -3826,12 +3848,10 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
 	{
 	  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
-	      e->dest->count -= e->count;
 	      e->dest->frequency -= EDGE_FREQUENCY (e);
 	      if (e->dest->frequency < 0)
 		e->dest->frequency = 0;
 	    }
-	  count += e->count;
 	  probability += e->probability;
 	  remove_edge (e);
 	}
@@ -3861,7 +3881,6 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_ABNORMAL
 		 | EDGE_SIBCALL);
   e->probability = probability;
-  e->count = count;
   BB_END (bb) = last;
   update_bb_for_insn (bb);
 
@@ -4350,9 +4369,12 @@ expand_debug_expr (tree exp)
 	    else
 	      op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
 	  }
-	else if (CONSTANT_P (op0)
-		 || GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (inner_mode))
+	else if (GET_MODE_UNIT_PRECISION (mode)
+		 == GET_MODE_UNIT_PRECISION (inner_mode))
 	  op0 = lowpart_subreg (mode, op0, inner_mode);
+	else if (GET_MODE_UNIT_PRECISION (mode)
+		 < GET_MODE_UNIT_PRECISION (inner_mode))
+	  op0 = simplify_gen_unary (TRUNCATE, mode, op0, inner_mode);
 	else if (UNARY_CLASS_P (exp)
 		 ? TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
 		 : unsignedp)
@@ -5211,9 +5233,12 @@ expand_debug_source_expr (tree exp)
       else
 	op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
     }
-  else if (CONSTANT_P (op0)
-	   || GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (inner_mode))
+  else if (GET_MODE_UNIT_PRECISION (mode)
+	   == GET_MODE_UNIT_PRECISION (inner_mode))
     op0 = lowpart_subreg (mode, op0, inner_mode);
+  else if (GET_MODE_UNIT_PRECISION (mode)
+	   < GET_MODE_UNIT_PRECISION (inner_mode))
+    op0 = simplify_gen_unary (TRUNCATE, mode, op0, inner_mode);
   else if (TYPE_UNSIGNED (TREE_TYPE (exp)))
     op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
   else
@@ -5931,8 +5956,7 @@ construct_exit_block (void)
   FOR_EACH_EDGE (e2, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e2 != e)
       {
-	e->count -= e2->count;
-	exit_block->count -= e2->count;
+	exit_block->count -= e2->count ();
 	exit_block->frequency -= EDGE_FREQUENCY (e2);
       }
   if (exit_block->frequency < 0)

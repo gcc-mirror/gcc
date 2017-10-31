@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _ForwardIterator __cur = __first;
 	  __try
 	    {
-	      for (; __n > 0; --__n, ++__cur)
+	      for (; __n > 0; --__n, (void) ++__cur)
 		std::_Construct(std::__addressof(*__cur), __x);
 	      return __cur;
 	    }
@@ -347,7 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __try
 	{
 	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __n > 0; --__n, ++__cur)
+	  for (; __n > 0; --__n, (void) ++__cur)
 	    __traits::construct(__alloc, std::__addressof(*__cur), __x);
 	  return __cur;
 	}
@@ -523,7 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _ForwardIterator __cur = __first;
 	  __try
 	    {
-	      for (; __n > 0; --__n, ++__cur)
+	      for (; __n > 0; --__n, (void) ++__cur)
 		std::_Construct(std::__addressof(*__cur));
 	      return __cur;
 	    }
@@ -627,7 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __try
 	{
 	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __n > 0; --__n, ++__cur)
+	  for (; __n > 0; --__n, (void) ++__cur)
 	    __traits::construct(__alloc, std::__addressof(*__cur));
 	  return __cur;
 	}
@@ -687,7 +687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _ForwardIterator __cur = __first;
 	  __try
 	    {
-	      for (; __n > 0; --__n, ++__cur)
+	      for (; __n > 0; --__n, (void) ++__cur)
 		std::_Construct_novalue(std::__addressof(*__cur));
 	      return __cur;
 	    }
@@ -747,7 +747,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ForwardIterator __cur = __result;
       __try
 	{
-	  for (; __n > 0; --__n, ++__first, ++__cur)
+	  for (; __n > 0; --__n, (void) ++__first, ++__cur)
 	    std::_Construct(std::__addressof(*__cur), *__first);
 	  return __cur;
 	}
@@ -775,7 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ForwardIterator __cur = __result;
       __try
 	{
-	  for (; __n > 0; --__n, ++__first, ++__cur)
+	  for (; __n > 0; --__n, (void) ++__first, ++__cur)
 	    std::_Construct(std::__addressof(*__cur), *__first);
 	  return {__first, __cur};
 	}

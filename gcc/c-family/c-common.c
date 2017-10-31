@@ -5695,6 +5695,16 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
+      if (!tree_fits_uhwi_p (args[2]))
+	{
+	  error_at (ARG_LOCATION (2),
+		    "third argument to function %qE must be a constant integer",
+		    fndecl);
+	  return false;
+	}
+      /* fall through */
+
     case BUILT_IN_ALLOCA_WITH_ALIGN:
       {
 	/* Get the requested alignment (in bits) if it's a constant

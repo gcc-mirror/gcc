@@ -54,7 +54,8 @@ host_triplet = @host@
 target_triplet = @target@
 @SANITIZER_SUPPORTED_TRUE@am__append_1 = include/sanitizer/common_interface_defs.h \
 @SANITIZER_SUPPORTED_TRUE@	include/sanitizer/lsan_interface.h \
-@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/asan_interface.h
+@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/asan_interface.h \
+@SANITIZER_SUPPORTED_TRUE@	include/sanitizer/tsan_interface.h
 @SANITIZER_SUPPORTED_TRUE@@USING_MAC_INTERPOSE_FALSE@am__append_2 = interception
 @LIBBACKTRACE_SUPPORTED_TRUE@@SANITIZER_SUPPORTED_TRUE@am__append_3 = libbacktrace
 @SANITIZER_SUPPORTED_TRUE@@TSAN_SUPPORTED_TRUE@am__append_4 = tsan

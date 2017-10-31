@@ -1815,9 +1815,9 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 
   if (flag_probability.initialized_p ())
     ;
-  else if (ncount == nbbs && count_sum > 0 && preheader->count >= count_sum)
+  else if (ncount == nbbs && count_sum > 0 && preheader->count () >= count_sum)
     {
-      flag_probability = count_sum.probability_in (preheader->count);
+      flag_probability = count_sum.probability_in (preheader->count ());
       if (flag_probability > cap)
 	flag_probability = cap;
     }
@@ -1881,13 +1881,11 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   edge e2 = make_edge (new_bb, then_bb,
 	               EDGE_TRUE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
   e2->probability = flag_probability;
-  e2->count = then_bb->count;
 
   e1->flags |= EDGE_FALSE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0);
   e1->flags &= ~EDGE_FALLTHRU;
 
   e1->probability = flag_probability.invert ();
-  e1->count = new_bb->count - then_bb->count;
 
   then_old_edge = make_single_succ_edge (then_bb, old_dest,
 			     EDGE_FALLTHRU | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));

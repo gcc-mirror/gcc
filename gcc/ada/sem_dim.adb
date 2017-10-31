@@ -518,25 +518,17 @@ package body Sem_Dim is
          Position : Dimension_Position)
       is
       begin
-         --  Integer case
-
-         if Is_Integer_Type (Def_Id) then
-
-            --  Dimension value must be an integer literal
-
-            if Nkind (Expr) = N_Integer_Literal then
-               Dimensions (Position) := +Whole (UI_To_Int (Intval (Expr)));
-            else
-               Error_Msg_N ("integer literal expected", Expr);
-            end if;
-
-         --  Float case
-
-         else
-            Dimensions (Position) := Create_Rational_From (Expr, True);
-         end if;
-
+         Dimensions (Position) := Create_Rational_From (Expr, True);
          Processed (Position) := True;
+
+         --  If the dimensioned root type is an integer type, it is not
+         --  particularly useful, and fractional dimensions do not make
+         --  much sense for such types, so previously we used to reject
+         --  dimensions of integer types that were not integer literals.
+         --  However, the manipulation of dimensions does not depend on
+         --  the kind of root type, so we can accept this usage for rare
+         --  cases where dimensions are specified for integer values.
+
       end Extract_Power;
 
       ------------------------
@@ -1584,6 +1576,20 @@ package body Sem_Dim is
                     and then Expander_Active
                   then
                      null;
+
+                  --  Numeric literal case. Issue a warning to indicate the
+                  --  literal is treated as if its dimension matches the type
+                  --  dimension.
+
+                  elsif Nkind_In (Original_Node (L), N_Integer_Literal,
+                                                     N_Real_Literal)
+                  then
+                     Dim_Warning_For_Numeric_Literal (L, Etype (R));
+
+                  elsif Nkind_In (Original_Node (R), N_Integer_Literal,
+                                                     N_Real_Literal)
+                  then
+                     Dim_Warning_For_Numeric_Literal (R, Etype (L));
 
                   else
                      Error_Dim_Msg_For_Binary_Op (N, L, R);
@@ -2732,6 +2738,24 @@ package body Sem_Dim is
 
    procedure Dim_Warning_For_Numeric_Literal (N : Node_Id; Typ : Entity_Id) is
    begin
+      --  Consider the literal zero (integer 0 or real 0.0) to be of any
+      --  dimension.
+
+      case Nkind (Original_Node (N)) is
+         when N_Real_Literal =>
+            if Expr_Value_R (N) = Ureal_0 then
+               return;
+            end if;
+
+         when N_Integer_Literal =>
+            if Expr_Value (N) = Uint_0 then
+               return;
+            end if;
+
+         when others =>
+            null;
+      end case;
+
       --  Initialize name buffer
 
       Name_Len := 0;

@@ -5690,6 +5690,58 @@ Specify which floating-point unit to use.  You must specify the
 @code{target("fpmath=sse,387")} option as
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
+
+@item nocf_check
+@cindex @code{nocf_check} function attribute
+The @code{nocf_check} attribute on a function is used to inform the
+compiler that the function's prologue should not be instrumented when
+compiled with the @option{-fcf-protection=branch} option.  The
+compiler assumes that the function's address is a valid target for a
+control-flow transfer.
+
+The @code{nocf_check} attribute on a type of pointer to function is
+used to inform the compiler that a call through the pointer should
+not be instrumented when compiled with the
+@option{-fcf-protection=branch} option.  The compiler assumes
+that the function's address from the pointer is a valid target for
+a control-flow transfer.  A direct function call through a function
+name is assumed to be a safe call thus direct calls are not
+instrumented by the compiler.
+
+The @code{nocf_check} attribute is applied to an object's type.
+In case of assignment of a function address or a function pointer to
+another pointer, the attribute is not carried over from the right-hand
+object's type; the type of left-hand object stays unchanged.  The
+compiler checks for @code{nocf_check} attribute mismatch and reports
+a warning in case of mismatch.
+
+@smallexample
+@{
+int foo (void) __attribute__(nocf_check);
+void (*foo1)(void) __attribute__(nocf_check);
+void (*foo2)(void);
+
+int
+foo (void) /* The function's address is assumed to be valid.  */
+
+  /* This call site is not checked for control-flow validity.  */
+  (*foo1)();
+
+  foo1 = foo2; /* A warning is printed about attribute mismatch.  */
+  /* This call site is still not checked for control-flow validity.  */
+  (*foo1)();
+
+  /* This call site is checked for control-flow validity.  */
+  (*foo2)();
+
+  foo2 = foo1; /* A warning is printed about attribute mismatch.  */
+  /* This call site is still checked for control-flow validity.  */
+  (*foo2)();
+
+  return 0;
+@}
+@end smallexample
+
 @end table
 
 On the x86, the inliner does not inline a
@@ -10869,6 +10921,7 @@ in the Cilk Plus language manual which can be found at
 @cindex built-in functions
 @findex __builtin_alloca
 @findex __builtin_alloca_with_align
+@findex __builtin_alloca_with_align_and_max
 @findex __builtin_call_with_static_chain
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
@@ -11513,6 +11566,16 @@ Variable Length Arrays offer the same functionality under
 a portable, more convenient, and safer interface they are recommended
 instead, in both C99 and C++ programs where GCC provides them as
 an extension.  @xref{Variable Length}, for details.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void *__builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)
+Similar to @code{__builtin_alloca_with_align} but takes an extra argument
+specifying an upper bound for @var{size} in case its value cannot be computed
+at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
+and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
+expression, it has no effect on code generation and no attempt is made to
+check its compatibility with @var{size}.
 
 @end deftypefn
 
@@ -21454,6 +21517,25 @@ They generate reads and writes to PKRU.
 @smallexample
 void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
+@end smallexample
+
+The following built-in functions are available when @option{-mcet} is used.
+They are used to support Intel Control-flow Enforcment Technology (CET).
+Each built-in function generates the  machine instruction that is part of the
+function's name.
+@smallexample
+unsigned int __builtin_ia32_rdsspd (unsigned int)
+unsigned long long __builtin_ia32_rdsspq (unsigned long long)
+void __builtin_ia32_incsspd (unsigned int)
+void __builtin_ia32_incsspq (unsigned long long)
+void __builtin_ia32_saveprevssp(void);
+void __builtin_ia32_rstorssp(void *);
+void __builtin_ia32_wrssd(unsigned int, void *);
+void __builtin_ia32_wrssq(unsigned long long, void *);
+void __builtin_ia32_wrussd(unsigned int, void *);
+void __builtin_ia32_wrussq(unsigned long long, void *);
+void __builtin_ia32_setssbsy(void);
+void __builtin_ia32_clrssbsy(void *);
 @end smallexample
 
 @node x86 transactional memory intrinsics

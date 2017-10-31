@@ -2867,16 +2867,13 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
 static bool
 aarch64_frame_pointer_required (void)
 {
-  /* In aarch64_override_options_after_change
-     flag_omit_leaf_frame_pointer turns off the frame pointer by
-     default.  Turn it back on now if we've not got a leaf
-     function.  */
-  if (flag_omit_leaf_frame_pointer
-      && (!crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM)))
-    return true;
-
-  /* Force a frame pointer for EH returns so the return address is at FP+8.  */
-  if (crtl->calls_eh_return)
+  /* Use the frame pointer if enabled and it is not a leaf function, unless
+     leaf frame pointer omission is disabled.  If the frame pointer is enabled,
+     force the frame pointer in leaf functions which use LR.  */
+  if (flag_omit_frame_pointer == 2
+      && !(flag_omit_leaf_frame_pointer
+	   && crtl->is_leaf
+	   && !df_regs_ever_live_p (LR_REGNUM)))
     return true;
 
   return false;
@@ -2884,7 +2881,8 @@ aarch64_frame_pointer_required (void)
 
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
-   and LR may be omitted).  */
+   and LR may be omitted).  If the function is not a leaf, ensure LR is
+   saved at the bottom of the callee-save area.  */
 static void
 aarch64_layout_frame (void)
 {
@@ -2893,6 +2891,10 @@ aarch64_layout_frame (void)
 
   if (reload_completed && cfun->machine->frame.laid_out)
     return;
+
+  /* Force a frame chain for EH returns so the return address is at FP+8.  */
+  cfun->machine->frame.emit_frame_chain
+    = frame_pointer_needed || crtl->calls_eh_return;
 
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
@@ -2928,14 +2930,21 @@ aarch64_layout_frame (void)
 	last_fp_reg = regno;
       }
 
-  if (frame_pointer_needed)
+  if (cfun->machine->frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
       cfun->machine->frame.reg_offset[R29_REGNUM] = 0;
       cfun->machine->frame.wb_candidate1 = R29_REGNUM;
       cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
       cfun->machine->frame.wb_candidate2 = R30_REGNUM;
-      offset += 2 * UNITS_PER_WORD;
+      offset = 2 * UNITS_PER_WORD;
+    }
+  else if (!crtl->is_leaf)
+    {
+      /* Ensure LR is saved at the bottom of the callee-saves.  */
+      cfun->machine->frame.reg_offset[R30_REGNUM] = 0;
+      cfun->machine->frame.wb_candidate1 = R30_REGNUM;
+      offset = UNITS_PER_WORD;
     }
 
   /* Now assign stack slots for them.  */
@@ -3033,20 +3042,6 @@ aarch64_layout_frame (void)
       cfun->machine->frame.callee_adjust = cfun->machine->frame.hard_fp_offset;
       cfun->machine->frame.final_adjust
 	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
-    }
-  else if (!frame_pointer_needed
-	   && varargs_and_saved_regs_size < max_push_offset)
-    {
-      /* Frame with large local area and outgoing arguments (this pushes the
-	 callee-saves first, followed by the locals and outgoing area):
-	 stp reg1, reg2, [sp, -varargs_and_saved_regs_size]!
-	 stp reg3, reg4, [sp, 16]
-	 sub sp, sp, frame_size - varargs_and_saved_regs_size  */
-      cfun->machine->frame.callee_adjust = varargs_and_saved_regs_size;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
-      cfun->machine->frame.hard_fp_offset = cfun->machine->frame.callee_adjust;
-      cfun->machine->frame.locals_offset = cfun->machine->frame.hard_fp_offset;
     }
   else
     {
@@ -3664,6 +3659,7 @@ aarch64_expand_prologue (void)
   HOST_WIDE_INT callee_offset = cfun->machine->frame.callee_offset;
   unsigned reg1 = cfun->machine->frame.wb_candidate1;
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  bool emit_frame_chain = cfun->machine->frame.emit_frame_chain;
   rtx_insn *insn;
 
   /* Sign return address for functions.  */
@@ -3696,7 +3692,7 @@ aarch64_expand_prologue (void)
   if (callee_adjust != 0)
     aarch64_push_regs (reg1, reg2, callee_adjust);
 
-  if (frame_pointer_needed)
+  if (emit_frame_chain)
     {
       if (callee_adjust == 0)
 	aarch64_save_callee_saves (DImode, callee_offset, R29_REGNUM,
@@ -3704,14 +3700,14 @@ aarch64_expand_prologue (void)
       insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
 				       GEN_INT (callee_offset)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      RTX_FRAME_RELATED_P (insn) = frame_pointer_needed;
       emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
 
   aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
-			     callee_adjust != 0 || frame_pointer_needed);
+			     callee_adjust != 0 || emit_frame_chain);
   aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
-			     callee_adjust != 0 || frame_pointer_needed);
+			     callee_adjust != 0 || emit_frame_chain);
   aarch64_sub_sp (IP1_REGNUM, final_adjust, !frame_pointer_needed);
 }
 
@@ -4726,16 +4722,20 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
 /* Split an out-of-range address displacement into a base and offset.
    Use 4KB range for 1- and 2-byte accesses and a 16KB range otherwise
    to increase opportunities for sharing the base address of different sizes.
-   For unaligned accesses and TI/TF mode use the signed 9-bit range.  */
+   Unaligned accesses use the signed 9-bit range, TImode/TFmode use
+   the intersection of signed scaled 7-bit and signed 9-bit offset.  */
 static bool
 aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
 {
   HOST_WIDE_INT offset = INTVAL (*disp);
-  HOST_WIDE_INT base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
+  HOST_WIDE_INT base;
 
-  if (mode == TImode || mode == TFmode
-      || (offset & (GET_MODE_SIZE (mode) - 1)) != 0)
+  if (mode == TImode || mode == TFmode)
+    base = (offset + 0x100) & ~0x1f8;
+  else if ((offset & (GET_MODE_SIZE (mode) - 1)) != 0)
     base = (offset + 0x100) & ~0x1ff;
+  else
+    base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
 
   *off = GEN_INT (base);
   *disp = GEN_INT (offset - base);
@@ -5926,6 +5926,7 @@ aarch64_can_eliminate (const int from, const int to)
 	 LR in the function, then we'll want a frame pointer after all, so
 	 prevent this elimination to ensure a frame pointer is used.  */
       if (to == STACK_POINTER_REGNUM
+	  && flag_omit_frame_pointer == 2
 	  && flag_omit_leaf_frame_pointer
 	  && df_regs_ever_live_p (LR_REGNUM))
 	return false;
@@ -8559,9 +8560,11 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return costs->scalar_to_vec_cost;
 
       case unaligned_load:
+      case vector_gather_load:
 	return costs->vec_unalign_load_cost;
 
       case unaligned_store:
+      case vector_scatter_store:
 	return costs->vec_unalign_store_cost;
 
       case cond_branch_taken:
@@ -8963,24 +8966,16 @@ aarch64_parse_override_string (const char* input_string,
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
-  /* The logic here is that if we are disabling all frame pointer generation
-     then we do not need to disable leaf frame pointer generation as a
-     separate operation.  But if we are *only* disabling leaf frame pointer
-     generation then we set flag_omit_frame_pointer to true, but in
-     aarch64_frame_pointer_required we return false only for leaf functions.
+  /* PR 70044: We have to be careful about being called multiple times for the
+     same function.  This means all changes should be repeatable.  */
 
-     PR 70044: We have to be careful about being called multiple times for the
-     same function.  Once we have decided to set flag_omit_frame_pointer just
-     so that we can omit leaf frame pointers, we must then not interpret a
-     second call as meaning that all frame pointer generation should be
-     omitted.  We do this by setting flag_omit_frame_pointer to a special,
-     non-zero value.  */
-  if (opts->x_flag_omit_frame_pointer == 2)
-    opts->x_flag_omit_frame_pointer = 0;
-
-  if (opts->x_flag_omit_frame_pointer)
-    opts->x_flag_omit_leaf_frame_pointer = false;
-  else if (opts->x_flag_omit_leaf_frame_pointer)
+  /* If the frame pointer is enabled, set it to a special value that behaves
+     similar to frame pointer omission.  If we don't do this all leaf functions
+     will get a frame pointer even if flag_omit_leaf_frame_pointer is set.
+     If flag_omit_frame_pointer has this special value, we must force the
+     frame pointer if not in a leaf function.  We also need to force it in a
+     leaf function if flag_omit_frame_pointer is not set or if LR is used.  */
+  if (opts->x_flag_omit_frame_pointer == 0)
     opts->x_flag_omit_frame_pointer = 2;
 
   /* If not optimizing for size, set the default

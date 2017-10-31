@@ -1886,11 +1886,10 @@ evaluate_stmt (gimple *stmt)
 			   / BITS_PER_UNIT - 1);
 	      break;
 
-	    case BUILT_IN_ALLOCA:
-	    case BUILT_IN_ALLOCA_WITH_ALIGN:
-	      align = (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA_WITH_ALIGN
-		       ? TREE_INT_CST_LOW (gimple_call_arg (stmt, 1))
-		       : BIGGEST_ALIGNMENT);
+	    CASE_BUILT_IN_ALLOCA:
+	      align = (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA
+		       ? BIGGEST_ALIGNMENT
+		       : TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)));
 	      val.lattice_val = CONSTANT;
 	      val.value = build_int_cst (TREE_TYPE (gimple_get_lhs (stmt)), 0);
 	      val.mask = ~((HOST_WIDE_INT) align / BITS_PER_UNIT - 1);
@@ -2243,7 +2242,8 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
         /* The heuristic of fold_builtin_alloca_with_align differs before and
 	   after inlining, so we don't require the arg to be changed into a
 	   constant for folding, but just to be constant.  */
-        if (gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN))
+        if (gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN)
+	    || gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX))
           {
             tree new_rhs = fold_builtin_alloca_with_align (stmt);
             if (new_rhs)
@@ -2535,8 +2535,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
       if (!callee
 	  || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
 	  /* All regular builtins are ok, just obviously not alloca.  */
-	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
-	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA_WITH_ALIGN)
+	  || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee)))
 	return NULL_TREE;
 
       if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE)

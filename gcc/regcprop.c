@@ -407,13 +407,9 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
       int use_nregs = hard_regno_nregs (copy_regno, new_mode);
       int copy_offset
 	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
-      int offset
-	= GET_MODE_SIZE (orig_mode) - GET_MODE_SIZE (new_mode) - copy_offset;
-      int byteoffset = offset % UNITS_PER_WORD;
-      int wordoffset = offset - byteoffset;
-
-      offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
-		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
+      unsigned int offset
+	= subreg_size_lowpart_offset (GET_MODE_SIZE (new_mode) + copy_offset,
+				      GET_MODE_SIZE (orig_mode));
       regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
       if (targetm.hard_regno_mode_ok (regno, new_mode))
 	return gen_raw_REG (new_mode, regno);

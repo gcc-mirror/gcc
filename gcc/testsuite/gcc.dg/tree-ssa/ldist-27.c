@@ -11,7 +11,8 @@ struct st
   double c[M][N];
 };
 
-int __attribute__ ((noinline)) foo (struct st *s)
+int __attribute__ ((noinline))
+foo (struct st *s)
 {
   int i, j;
   for (i = 0; i != M;)
@@ -29,9 +30,11 @@ L2:
   return 0;
 }
 
-int main (void)
+struct st s;
+
+int
+main (void)
 {
-  struct st s;
   return foo (&s);
 }
 

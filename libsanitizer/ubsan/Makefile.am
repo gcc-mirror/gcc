@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I $(top_srcdir) -I $(top_srcdir)/include
 # May be used by toolexeclibdir.
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DPIC -DCAN_SANITIZE_UB=1
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DPIC -DCAN_SANITIZE_UB=1 -DUBSAN_CAN_USE_CXXABI=1
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 AM_CXXFLAGS += -std=gnu++11
@@ -24,7 +24,8 @@ ubsan_plugin_files = \
 
 ubsan_files = \
 	$(ubsan_plugin_files) \
-	ubsan_init_standalone.cc
+	ubsan_init_standalone.cc \
+	ubsan_signals_standalone.cc
 
 libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la 

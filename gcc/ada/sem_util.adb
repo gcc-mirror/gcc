@@ -3354,10 +3354,13 @@ package body Sem_Util is
            and then not Comes_From_Source (Par)
          then
             --  Continue to examine the context if the reference appears in a
-            --  subprogram body which was previously an expression function.
+            --  subprogram body which was previously an expression function,
+            --  unless this is during preanalysis (when In_Spec_Expression is
+            --  True), as the body may not yet be inserted in the tree.
 
             if Nkind (Par) = N_Subprogram_Body
               and then Was_Expression_Function (Par)
+              and then not In_Spec_Expression
             then
                null;
 
@@ -12545,10 +12548,8 @@ package body Sem_Util is
                  or else (Present (Renamed_Object (E))
                            and then Is_Aliased_View (Renamed_Object (E)))))
 
-           or else ((Is_Formal (E)
-                      or else Ekind_In (E, E_Generic_In_Out_Parameter,
-                                           E_Generic_In_Parameter))
-                    and then Is_Tagged_Type (Etype (E)))
+           or else ((Is_Formal (E) or else Is_Formal_Object (E))
+                      and then Is_Tagged_Type (Etype (E)))
 
            or else (Is_Concurrent_Type (E) and then In_Open_Scopes (E))
 
@@ -13185,17 +13186,29 @@ package body Sem_Util is
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean
    is
+      Param     : Node_Id;
       Param_Typ : Entity_Id := Empty;
 
    begin
       if Ekind (Proc_Nam) = E_Procedure
         and then Present (Parameter_Specifications (Parent (Proc_Nam)))
       then
-         Param_Typ := Etype (Parameter_Type (First (
-                        Parameter_Specifications (Parent (Proc_Nam)))));
+         Param := Parameter_Type (First (
+                    Parameter_Specifications (Parent (Proc_Nam))));
 
-      --  In this case where an Itype was created, the procedure call has been
-      --  rewritten.
+         --  The formal may be an anonymous access type.
+
+         if Nkind (Param) = N_Access_Definition then
+            Param_Typ := Entity (Subtype_Mark (Param));
+
+         else
+            Param_Typ := Etype (Param);
+         end if;
+
+      --  In the case where an Itype was created for a dispatchin call, the
+      --  procedure call has been rewritten. The actual may be an access to
+      --  interface type in which case it is the designated type that is the
+      --  controlling type.
 
       elsif Present (Associated_Node_For_Itype (Proc_Nam))
         and then Present (Original_Node (Associated_Node_For_Itype (Proc_Nam)))
@@ -13206,6 +13219,10 @@ package body Sem_Util is
          Param_Typ :=
            Etype (First (Parameter_Associations
                           (Associated_Node_For_Itype (Proc_Nam))));
+
+         if Ekind (Param_Typ) = E_Anonymous_Access_Type then
+            Param_Typ := Directly_Designated_Type (Param_Typ);
+         end if;
       end if;
 
       if Present (Param_Typ) then

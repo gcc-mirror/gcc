@@ -97,7 +97,8 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
 
   substring_loc fmt_loc (fmt_string_loc, string_type, char_idx, char_idx,
 			 char_idx);
-  bool warned = format_warning_va (fmt_loc, NULL, NULL, opt, gmsgid, &ap);
+  bool warned = format_warning_va (fmt_loc, UNKNOWN_LOCATION, NULL, opt,
+				   gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -1039,7 +1040,7 @@ static void check_format_types (const substring_loc &fmt_loc,
 				char conversion_char,
 				vec<location_t> *arglocs);
 static void format_type_warning (const substring_loc &fmt_loc,
-				 source_range *param_range,
+				 location_t param_loc,
 				 format_wanted_type *, tree,
 				 tree,
 				 const format_kind_info *fki,
@@ -3073,8 +3074,9 @@ check_format_types (const substring_loc &fmt_loc,
       cur_param = types->param;
       if (!cur_param)
         {
-	  format_type_warning (fmt_loc, NULL, types, wanted_type, NULL, fki,
-			       offset_to_type_start, conversion_char);
+	  format_type_warning (fmt_loc, UNKNOWN_LOCATION, types, wanted_type,
+			       NULL, fki, offset_to_type_start,
+			       conversion_char);
           continue;
         }
 
@@ -3084,23 +3086,15 @@ check_format_types (const substring_loc &fmt_loc,
       orig_cur_type = cur_type;
       char_type_flag = 0;
 
-      source_range param_range;
-      source_range *param_range_ptr;
+      location_t param_loc = UNKNOWN_LOCATION;
       if (EXPR_HAS_LOCATION (cur_param))
-	{
-	  param_range = EXPR_LOCATION_RANGE (cur_param);
-	  param_range_ptr = &param_range;
-	}
+	param_loc = EXPR_LOCATION (cur_param);
       else if (arglocs)
 	{
 	  /* arg_num is 1-based.  */
 	  gcc_assert (types->arg_num > 0);
-	  location_t param_loc = (*arglocs)[types->arg_num - 1];
-	  param_range = get_range_from_loc (line_table, param_loc);
-	  param_range_ptr = &param_range;
+	  param_loc = (*arglocs)[types->arg_num - 1];
 	}
-      else
-	param_range_ptr = NULL;
 
       STRIP_NOPS (cur_param);
 
@@ -3166,7 +3160,7 @@ check_format_types (const substring_loc &fmt_loc,
 	    }
 	  else
 	    {
-	      format_type_warning (fmt_loc, param_range_ptr,
+	      format_type_warning (fmt_loc, param_loc,
 				   types, wanted_type, orig_cur_type, fki,
 				   offset_to_type_start, conversion_char);
 	      break;
@@ -3236,7 +3230,7 @@ check_format_types (const substring_loc &fmt_loc,
 	  && TYPE_PRECISION (cur_type) == TYPE_PRECISION (wanted_type))
 	continue;
       /* Now we have a type mismatch.  */
-      format_type_warning (fmt_loc, param_range_ptr, types,
+      format_type_warning (fmt_loc, param_loc, types,
 			   wanted_type, orig_cur_type, fki,
 			   offset_to_type_start, conversion_char);
     }
@@ -3544,8 +3538,9 @@ get_corrected_substring (const substring_loc &fmt_loc,
 /* Give a warning about a format argument of different type from that expected.
    The range of the diagnostic is taken from WHOLE_FMT_LOC; the caret location
    is based on the location of the char at TYPE->offset_loc.
-   If non-NULL, PARAM_RANGE is the source range of the
-   relevant argument.  WANTED_TYPE is the type the argument should have,
+   PARAM_LOC is the location of the relevant argument, or UNKNOWN_LOCATION
+   if this is unavailable.
+   WANTED_TYPE is the type the argument should have,
    possibly stripped of pointer dereferences.  The description (such as "field
    precision"), the placement in the format string, a possibly more
    friendly name of WANTED_TYPE, and the number of pointer dereferences
@@ -3566,7 +3561,7 @@ get_corrected_substring (const substring_loc &fmt_loc,
                           V~~~~~~~~ : range of WHOLE_FMT_LOC, from cols 23-31
       sprintf (d, "before %-+*.*lld after", int_expr, int_expr, long_expr);
                                 ^ ^                             ^~~~~~~~~
-                                | ` CONVERSION_CHAR: 'd'        *PARAM_RANGE
+                                | ` CONVERSION_CHAR: 'd'        PARAM_LOC
                                 type starts here
 
    OFFSET_TO_TYPE_START is 13, the offset to the "lld" within the
@@ -3574,7 +3569,7 @@ get_corrected_substring (const substring_loc &fmt_loc,
 
 static void
 format_type_warning (const substring_loc &whole_fmt_loc,
-		     source_range *param_range,
+		     location_t param_loc,
 		     format_wanted_type *type,
 		     tree wanted_type, tree arg_type,
 		     const format_kind_info *fki,
@@ -3636,7 +3631,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
     {
       if (arg_type)
 	format_warning_at_substring
-	  (fmt_loc, param_range,
+	  (fmt_loc, param_loc,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
 	   "but argument %d has type %qT",
@@ -3646,7 +3641,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
 	   wanted_type_name, p, arg_num, arg_type);
       else
 	format_warning_at_substring
-	  (fmt_loc, param_range,
+	  (fmt_loc, param_loc,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
 	   gettext (kind_descriptions[kind]),
@@ -3657,7 +3652,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
     {
       if (arg_type)
 	format_warning_at_substring
-	  (fmt_loc, param_range,
+	  (fmt_loc, param_loc,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
 	   "but argument %d has type %qT",
@@ -3667,7 +3662,7 @@ format_type_warning (const substring_loc &whole_fmt_loc,
 	   wanted_type, p, arg_num, arg_type);
       else
 	format_warning_at_substring
-	  (fmt_loc, param_range,
+	  (fmt_loc, param_loc,
 	   corrected_substring, OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
 	   gettext (kind_descriptions[kind]),

@@ -437,9 +437,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET \
-  mmix_starting_frame_offset ()
-
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 #define DYNAMIC_CHAIN_ADDRESS(FRAMEADDR) \
@@ -764,7 +761,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 /* (empty) */
 
 
-/* Node: SDB and DWARF */
+/* Node: DWARF */
 #define DWARF2_DEBUGGING_INFO 1
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 

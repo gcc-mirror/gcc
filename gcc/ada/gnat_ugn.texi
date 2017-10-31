@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 14, 2017
+GNAT User's Guide for Native Platforms , Oct 20, 2017
 
 AdaCore
 
@@ -8809,19 +8809,6 @@ in the compiler sources for details in files @code{scos.ads} and
 @code{scos.adb}.
 @end table
 
-@geindex -fdump-xref (gcc)
-
-
-@table @asis
-
-@item @code{-fdump-xref}
-
-Generates cross reference information in GLI files for C and C++ sources.
-The GLI files have the same syntax as the ALI files for Ada, and can be used
-for source navigation in IDEs and on the command line using e.g. gnatxref
-and the @code{--ext=gli} switch.
-@end table
-
 @geindex -flto (gcc)
 
 
@@ -8830,8 +8817,9 @@ and the @code{--ext=gli} switch.
 @item @code{-flto[=@emph{n}]}
 
 Enables Link Time Optimization. This switch must be used in conjunction
-with the traditional @code{-Ox} switches and instructs the compiler to
-defer most optimizations until the link stage. The advantage of this
+with the @code{-Ox} switches (but not with the @code{-gnatn} switch
+since it is a full replacement for the latter) and instructs the compiler
+to defer most optimizations until the link stage. The advantage of this
 approach is that the compiler can do a whole-program analysis and choose
 the best interprocedural optimization strategy based on a complete view
 of the program, instead of a fragmentary view with the usual approach.
@@ -12474,8 +12462,8 @@ should not complain at you.
 This switch activates warnings for exception usage when pragma Restrictions
 (No_Exception_Propagation) is in effect. Warnings are given for implicit or
 explicit exception raises which are not covered by a local handler, and for
-exception handlers which do not cover a local raise. The default is that these
-warnings are not given.
+exception handlers which do not cover a local raise. The default is that
+these warnings are given for units that contain exception handlers.
 
 @item @code{-gnatw.X}
 
@@ -17949,9 +17937,9 @@ Do not look for library files in the system default directory.
 @item @code{--ext=@emph{extension}}
 
 Specify an alternate ali file extension. The default is @code{ali} and other
-extensions (e.g. @code{gli} for C/C++ sources when using @code{-fdump-xref})
-may be specified via this switch. Note that if this switch overrides the
-default, which means that only the new extension will be considered.
+extensions (e.g. @code{gli} for C/C++ sources) may be specified via this switch.
+Note that if this switch overrides the default, which means that only the
+new extension will be considered.
 @end table
 
 @geindex --RTS (gnatxref)
@@ -22901,12 +22889,12 @@ combine a dimensioned and dimensionless value.  Thus an expression such as
 @code{Acceleration}.
 
 The dimensionality checks for relationals use the same rules as
-for "+" and "-"; thus
+for "+" and "-", except when comparing to a literal; thus
 
 @quotation
 
 @example
-acc > 10.0
+acc > len
 @end example
 @end quotation
 
@@ -22915,12 +22903,21 @@ is equivalent to
 @quotation
 
 @example
-acc-10.0 > 0.0
+acc-len > 0.0
 @end example
 @end quotation
 
-and is thus illegal. Analogously a conditional expression
-requires the same dimension vector for each branch.
+and is thus illegal, but
+
+@quotation
+
+@example
+acc > 10.0
+@end example
+@end quotation
+
+is accepted with a warning. Analogously a conditional expression requires the
+same dimension vector for each branch (with no exception for literals).
 
 The dimension vector of a type conversion @code{T(@emph{expr})} is defined
 as follows, based on the nature of @code{T}:

@@ -741,6 +741,10 @@ Wsuggest-attribute=noreturn
 Common Var(warn_suggest_attribute_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn)).
 
+Wsuggest-attribute=malloc
+Common Var(warn_suggest_attribute_malloc) Warning
+Warn about functions which might be candidates for __attribute__((malloc)).
+
 Wsuggest-final-types
 Common Var(warn_suggest_final_types) Warning
 Warn about C++ polymorphic types where adding final keyword would improve code quality.
@@ -1619,6 +1623,29 @@ Common RejectNegative Joined UInteger
 finline-atomics
 Common Report Var(flag_inline_atomics) Init(1) Optimization
 Inline __atomic operations when a lock free instruction sequence is available.
+
+fcf-protection
+Common RejectNegative Alias(fcf-protection=,full)
+
+fcf-protection=
+Common Report Joined RejectNegative Enum(cf_protection_level) Var(flag_cf_protection) Init(CF_NONE)
+-fcf-protection=[full|branch|return|none]	Instrument functions with checks to verify jump/call/return control-flow transfer
+instructions have valid targets.
+
+Enum
+Name(cf_protection_level) Type(enum cf_protection_level) UnknownError(unknown Cotrol-Flow Protection Level %qs)
+
+EnumValue
+Enum(cf_protection_level) String(full) Value(CF_FULL)
+
+EnumValue
+Enum(cf_protection_level) String(branch) Value(CF_BRANCH)
+
+EnumValue
+Enum(cf_protection_level) String(return) Value(CF_RETURN)
+
+EnumValue
+Enum(cf_protection_level) String(none) Value(CF_NONE)
 
 finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)
@@ -2846,11 +2873,23 @@ Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
 gcoff
-Common Driver JoinedOrMissing Negative(gdwarf)
-Generate debug information in COFF format.
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
+gcoff1
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
+gcoff2
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
+
+gcoff3
+Common Driver Ignore Warn(switch %qs no longer supported)
+Does nothing.  Preserved for backward compatibility.
 
 gcolumn-info
-Common Driver Var(debug_column_info,1) Init(0)
+Common Driver Var(debug_column_info,1) Init(1)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
 
 gdwarf
@@ -2914,7 +2953,7 @@ Common Driver JoinedOrMissing Negative(gxcoff+)
 Generate debug information in XCOFF format.
 
 gxcoff+
-Common Driver JoinedOrMissing Negative(gcoff)
+Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in extended XCOFF format.
 
 Enum

@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 	data reuse.  */
 
 #include "config.h"
+#define INCLUDE_ALGORITHM /* stable_sort */
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -106,6 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
@@ -604,6 +606,10 @@ struct builtin_info
   tree dst_base;
   tree src_base;
   tree size;
+  /* Base and offset part of dst_base after stripping constant offset.  This
+     is only used in memset builtin distribution for now.  */
+  tree dst_base_base;
+  unsigned HOST_WIDE_INT dst_base_offset;
 };
 
 /* Partition for loop distribution.  */
@@ -1283,12 +1289,12 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
   return partition;
 }
 
-/* Given PARTITION of RDG, record single load/store data references for
-   builtin partition in SRC_DR/DST_DR, return false if there is no such
+/* Given PARTITION of LOOP and RDG, record single load/store data references
+   for builtin partition in SRC_DR/DST_DR, return false if there is no such
    data references.  */
 
 static bool
-find_single_drs (struct graph *rdg, partition *partition,
+find_single_drs (struct loop *loop, struct graph *rdg, partition *partition,
 		 data_reference_p *dst_dr, data_reference_p *src_dr)
 {
   unsigned i;
@@ -1344,10 +1350,12 @@ find_single_drs (struct graph *rdg, partition *partition,
       && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (single_st), 1)))
     return false;
 
-  /* Data reference must be executed exactly once per iteration.  */
+  /* Data reference must be executed exactly once per iteration of each
+     loop in the loop nest.  We only need to check dominance information
+     against the outermost one in a perfect loop nest because a bb can't
+     dominate outermost loop's latch without dominating inner loop's.  */
   basic_block bb_st = gimple_bb (DR_STMT (single_st));
-  struct loop *inner = bb_st->loop_father;
-  if (!dominated_by_p (CDI_DOMINATORS, inner->latch, bb_st))
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_st))
     return false;
 
   if (single_ld)
@@ -1365,14 +1373,16 @@ find_single_drs (struct graph *rdg, partition *partition,
 
       /* Load and store must be in the same loop nest.  */
       basic_block bb_ld = gimple_bb (DR_STMT (single_ld));
-      if (inner != bb_ld->loop_father)
+      if (bb_st->loop_father != bb_ld->loop_father)
 	return false;
 
-      /* Data reference must be executed exactly once per iteration.  */
-      if (!dominated_by_p (CDI_DOMINATORS, inner->latch, bb_ld))
+      /* Data reference must be executed exactly once per iteration.
+	 Same as single_st, we only need to check against the outermost
+	 loop.  */
+      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb_ld))
 	return false;
 
-      edge e = single_exit (inner);
+      edge e = single_exit (bb_st->loop_father);
       bool dom_ld = dominated_by_p (CDI_DOMINATORS, e->src, bb_ld);
       bool dom_st = dominated_by_p (CDI_DOMINATORS, e->src, bb_st);
       if (dom_ld != dom_st)
@@ -1500,7 +1510,11 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
   if (!compute_access_range (loop, dr, &base, &size))
     return;
 
-  partition->builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
+  struct builtin_info *builtin;
+  builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
+  builtin->dst_base_base = strip_offset (builtin->dst_base,
+					 &builtin->dst_base_offset);
+  partition->builtin = builtin;
   partition->kind = PKIND_MEMSET;
 }
 
@@ -1611,7 +1625,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
     return;
 
   /* Find single load/store data references for builtin partition.  */
-  if (!find_single_drs (rdg, partition, &single_st, &single_ld))
+  if (!find_single_drs (loop, rdg, partition, &single_st, &single_ld))
     return;
 
   /* Classify the builtin kind.  */
@@ -2476,6 +2490,113 @@ version_for_distribution_p (vec<struct partition *> *partitions,
   return (alias_ddrs->length () > 0);
 }
 
+/* Compare base offset of builtin mem* partitions P1 and P2.  */
+
+static bool
+offset_cmp (struct partition *p1, struct partition *p2)
+{
+  gcc_assert (p1 != NULL && p1->builtin != NULL);
+  gcc_assert (p2 != NULL && p2->builtin != NULL);
+  return p1->builtin->dst_base_offset < p2->builtin->dst_base_offset;
+}
+
+/* Fuse adjacent memset builtin PARTITIONS if possible.  This is a special
+   case optimization transforming below code:
+
+     __builtin_memset (&obj, 0, 100);
+     _1 = &obj + 100;
+     __builtin_memset (_1, 0, 200);
+     _2 = &obj + 300;
+     __builtin_memset (_2, 0, 100);
+
+   into:
+
+     __builtin_memset (&obj, 0, 400);
+
+   Note we don't have dependence information between different partitions
+   at this point, as a result, we can't handle nonadjacent memset builtin
+   partitions since dependence might be broken.  */
+
+static void
+fuse_memset_builtins (vec<struct partition *> *partitions)
+{
+  unsigned i, j;
+  struct partition *part1, *part2;
+
+  for (i = 0; partitions->iterate (i, &part1);)
+    {
+      if (part1->kind != PKIND_MEMSET)
+	{
+	  i++;
+	  continue;
+	}
+
+      /* Find sub-array of memset builtins of the same base.  Index range
+	 of the sub-array is [i, j) with "j > i".  */
+      for (j = i + 1; partitions->iterate (j, &part2); ++j)
+	{
+	  if (part2->kind != PKIND_MEMSET
+	      || !operand_equal_p (part1->builtin->dst_base_base,
+				   part2->builtin->dst_base_base, 0))
+	    break;
+	}
+
+      /* Stable sort is required in order to avoid breaking dependence.  */
+      std::stable_sort (&(*partitions)[i],
+			&(*partitions)[i] + j - i, offset_cmp);
+      /* Continue with next partition.  */
+      i = j;
+    }
+
+  /* Merge all consecutive memset builtin partitions.  */
+  for (i = 0; i < partitions->length () - 1;)
+    {
+      part1 = (*partitions)[i];
+      if (part1->kind != PKIND_MEMSET)
+	{
+	  i++;
+	  continue;
+	}
+
+      part2 = (*partitions)[i + 1];
+      /* Only merge memset partitions of the same base and with constant
+	 access sizes.  */
+      if (part2->kind != PKIND_MEMSET
+	  || TREE_CODE (part1->builtin->size) != INTEGER_CST
+	  || TREE_CODE (part2->builtin->size) != INTEGER_CST
+	  || !operand_equal_p (part1->builtin->dst_base_base,
+			       part2->builtin->dst_base_base, 0))
+	{
+	  i++;
+	  continue;
+	}
+      tree rhs1 = gimple_assign_rhs1 (DR_STMT (part1->builtin->dst_dr));
+      tree rhs2 = gimple_assign_rhs1 (DR_STMT (part2->builtin->dst_dr));
+      int bytev1 = const_with_all_bytes_same (rhs1);
+      int bytev2 = const_with_all_bytes_same (rhs2);
+      /* Only merge memset partitions of the same value.  */
+      if (bytev1 != bytev2 || bytev1 == -1)
+	{
+	  i++;
+	  continue;
+	}
+      wide_int end1 = wi::add (part1->builtin->dst_base_offset,
+			       wi::to_wide (part1->builtin->size));
+      /* Only merge adjacent memset partitions.  */
+      if (wi::ne_p (end1, part2->builtin->dst_base_offset))
+	{
+	  i++;
+	  continue;
+	}
+      /* Merge partitions[i] and partitions[i+1].  */
+      part1->builtin->size = fold_build2 (PLUS_EXPR, sizetype,
+					  part1->builtin->size,
+					  part2->builtin->size);
+      partition_free (part2);
+      partitions->ordered_remove (i + 1);
+    }
+}
+
 /* Fuse PARTITIONS of LOOP if necessary before finalizing distribution.
    ALIAS_DDRS contains ddrs which need runtime alias check.  */
 
@@ -2519,6 +2640,10 @@ finalize_partitions (struct loop *loop, vec<struct partition *> *partitions,
 	}
       partitions->truncate (1);
     }
+
+  /* Fuse memset builtins if possible.  */
+  if (partitions->length () > 1)
+    fuse_memset_builtins (partitions);
 }
 
 /* Distributes the code from LOOP in such a way that producer statements

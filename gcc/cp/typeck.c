@@ -9228,7 +9228,8 @@ check_return_expr (tree retval, bool *no_warning)
 	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 TREE_OPERAND (retval, 0));
-      else if (maybe_warn_about_returning_address_of_local (retval))
+      else if (!processing_template_decl
+	       && maybe_warn_about_returning_address_of_local (retval))
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 build_zero_cst (TREE_TYPE (retval)));
     }

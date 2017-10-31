@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
@@ -159,7 +160,7 @@ package body Sem_Elab is
    --
    --      -  Instantiations
    --
-   --      -  References to variables
+   --      -  Reads of variables
    --
    --      -  Task activation
    --
@@ -175,7 +176,7 @@ package body Sem_Elab is
    --
    --      - For instantiations, the target is the generic template
    --
-   --      - For references to variables, the target is the variable
+   --      - For reads of variables, the target is the variable
    --
    --      - For task activation, the target is the task body
    --
@@ -348,7 +349,7 @@ package body Sem_Elab is
    --           ABE mechanism effectively ignores all calls which cause the
    --           elaboration flow to "leave" the instance.
    --
-   --  -gnatd.o conservarive elaboration order for indirect calls
+   --  -gnatd.o conservative elaboration order for indirect calls
    --
    --           The ABE mechanism treats '[Unrestricted_]Access of an entry,
    --           operator, or subprogram as an immediate invocation of the
@@ -882,6 +883,10 @@ package body Sem_Elab is
    --  Return the top unit which contains arbitrary node or entity N. The unit
    --  is obtained by logically unwinding instantiations and subunits when N
    --  resides within one.
+
+   function Find_Unit_Entity (N : Node_Id) return Entity_Id;
+   pragma Inline (Find_Unit_Entity);
+   --  Return the entity of unit N
 
    function First_Formal_Type (Subp_Id : Entity_Id) return Entity_Id;
    pragma Inline (First_Formal_Type);
@@ -1904,7 +1909,20 @@ package body Sem_Elab is
          Comp_Unit := Parent (Unit_Declaration_Node (Unit_Id));
       end if;
 
-      if Nkind (Comp_Unit) = N_Subunit then
+      --  Handle the case where a subprogram instantiation which acts as a
+      --  compilation unit is expanded into an anonymous package that wraps
+      --  the instantiated subprogram.
+
+      if Nkind (Comp_Unit) = N_Package_Specification
+        and then Nkind_In (Original_Node (Parent (Comp_Unit)),
+                           N_Function_Instantiation,
+                           N_Procedure_Instantiation)
+      then
+         Comp_Unit := Parent (Parent (Comp_Unit));
+
+      --  Handle the case where the compilation unit is a subunit
+
+      elsif Nkind (Comp_Unit) = N_Subunit then
          Comp_Unit := Parent (Comp_Unit);
       end if;
 
@@ -2933,10 +2951,8 @@ package body Sem_Elab is
    --------------------
 
    function Find_Code_Unit (N : Node_Or_Entity_Id) return Entity_Id is
-      N_Unit : constant Node_Id := Unit (Cunit (Get_Code_Unit (N)));
-
    begin
-      return Defining_Entity (N_Unit, Concurrent_Subunit => True);
+      return Find_Unit_Entity (Unit (Cunit (Get_Code_Unit (N))));
    end Find_Code_Unit;
 
    ---------------------------
@@ -3405,11 +3421,46 @@ package body Sem_Elab is
    -------------------
 
    function Find_Top_Unit (N : Node_Or_Entity_Id) return Entity_Id is
-      N_Unit : constant Node_Id := Unit (Cunit (Get_Top_Level_Code_Unit (N)));
+   begin
+      return Find_Unit_Entity (Unit (Cunit (Get_Top_Level_Code_Unit (N))));
+   end Find_Top_Unit;
+
+   ----------------------
+   -- Find_Unit_Entity --
+   ----------------------
+
+   function Find_Unit_Entity (N : Node_Id) return Entity_Id is
+      Context : constant Node_Id := Parent (N);
+      Orig_N  : constant Node_Id := Original_Node (N);
 
    begin
-      return Defining_Entity (N_Unit, Concurrent_Subunit => True);
-   end Find_Top_Unit;
+      --  The unit denotes a package body of an instantiation which acts as
+      --  a compilation unit. The proper entity is that of the package spec.
+
+      if Nkind (N) = N_Package_Body
+        and then Nkind (Orig_N) = N_Package_Instantiation
+        and then Nkind (Context) = N_Compilation_Unit
+      then
+         return Corresponding_Spec (N);
+
+      --  The unit denotes an anonymous package created to wrap a subprogram
+      --  instantiation which acts as a compilation unit. The proper entity is
+      --  that of the "related instance".
+
+      elsif Nkind (N) = N_Package_Declaration
+        and then Nkind_In (Orig_N, N_Function_Instantiation,
+                                   N_Procedure_Instantiation)
+        and then Nkind (Context) = N_Compilation_Unit
+      then
+         return
+           Related_Instance (Defining_Entity (N, Concurrent_Subunit => True));
+
+      --  Otherwise the proper entity is the defining entity
+
+      else
+         return Defining_Entity (N, Concurrent_Subunit => True);
+      end if;
+   end Find_Unit_Entity;
 
    -----------------------
    -- First_Formal_Type --
@@ -5335,8 +5386,8 @@ package body Sem_Elab is
          --  in a great number of contexts. To determine whether a reference is
          --  a read, it is more practical to find out whether it is a write.
 
-         --  A reference is a write when appearing immediately on the left-hand
-         --  side of an assignment.
+         --  A reference is a write when it appears immediately on the left-
+         --  hand side of an assignment.
 
          if Nkind (Context) = N_Assignment_Statement
            and then Name (Context) = Ref
@@ -6283,7 +6334,7 @@ package body Sem_Elab is
       end if;
 
       --  Treat the attribute as an immediate invocation of the target when
-      --  switch -gnatd.o (conservarive elaboration order for indirect calls)
+      --  switch -gnatd.o (conservative elaboration order for indirect calls)
       --  is in effect. Note that the prior elaboration of the unit containing
       --  the target is ensured processing the corresponding call marker.
 
@@ -7796,9 +7847,9 @@ package body Sem_Elab is
       --  ABE ramifications of the instantiation.
 
       if Nkind (Inst) = N_Package_Instantiation then
-         Req_Nam := Name_Elaborate;
-      else
          Req_Nam := Name_Elaborate_All;
+      else
+         Req_Nam := Name_Elaborate;
       end if;
 
       Meet_Elaboration_Requirement
@@ -8155,19 +8206,39 @@ package body Sem_Elab is
       --  listed below are not considered. The categories are:
 
       --   'Access for entries, operators, and subprograms
+      --    Assignments to variables
       --    Calls (includes task activation)
       --    Instantiations
-      --    Variable assignments
-      --    Variable references
+      --    Reads of variables
 
-      elsif Is_Suitable_Access (N)
-        or else Is_Suitable_Variable_Assignment (N)
-        or else Is_Suitable_Variable_Read (N)
-      then
-         null;
+      elsif Is_Suitable_Access (N) then
+
+         --  Signal any enclosing local exception handlers that the 'Access may
+         --  raise Program_Error due to a failed ABE check when switch -gnatd.o
+         --  (conservative elaboration order for indirect calls) is in effect.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         if Debug_Flag_Dot_O then
+            Possible_Local_Raise (N, Standard_Program_Error);
+         end if;
 
       elsif Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N) then
          Declaration_Level_OK := True;
+
+         --  Signal any enclosing local exception handlers that the call or
+         --  instantiation may raise Program_Error due to a failed ABE check.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         Possible_Local_Raise (N, Standard_Program_Error);
+
+      elsif Is_Suitable_Variable_Assignment (N)
+        or else Is_Suitable_Variable_Read (N)
+      then
+         null;
 
       --  Otherwise the input does not denote a suitable scenario
 
@@ -8221,7 +8292,7 @@ package body Sem_Elab is
 
       --  Mark a scenario which may produce run-time conditional ABE checks or
       --  guaranteed ABE failures as recorded. The flag ensures that scenario
-      --  rewritting performed by Atree.Rewrite will be properly reflected in
+      --  rewriting performed by Atree.Rewrite will be properly reflected in
       --  all relevant internal data structures.
 
       if Is_Check_Emitting_Scenario (N) then

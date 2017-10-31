@@ -455,16 +455,19 @@ package Lib is
    function Generate_Code    (U : Unit_Number_Type) return Boolean;
    function Ident_String     (U : Unit_Number_Type) return Node_Id;
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
-   function Is_Predefined_Renaming (U : Unit_Number_Type) return Boolean;
-   function Is_Internal_Unit       (U : Unit_Number_Type) return Boolean;
-   function Is_Predefined_Unit     (U : Unit_Number_Type) return Boolean;
+   function Is_Predefined_Renaming
+                             (U : Unit_Number_Type) return Boolean;
+   function Is_Internal_Unit (U : Unit_Number_Type) return Boolean;
+   function Is_Predefined_Unit
+                             (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
    function Main_CPU         (U : Unit_Number_Type) return Int;
    function Main_Priority    (U : Unit_Number_Type) return Int;
    function Munit_Index      (U : Unit_Number_Type) return Nat;
    function No_Elab_Code_All (U : Unit_Number_Type) return Boolean;
    function OA_Setting       (U : Unit_Number_Type) return Character;
-   function Primary_Stack_Count (U : Unit_Number_Type) return Int;
+   function Primary_Stack_Count
+                             (U : Unit_Number_Type) return Int;
    function Sec_Stack_Count  (U : Unit_Number_Type) return Int;
    function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;

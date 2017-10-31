@@ -142,11 +142,8 @@ isl_id_for_dr (scop_p s)
 /* Extract an affine expression from the ssa_name E.  */
 
 static isl_pw_aff *
-extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
+extract_affine_name (int dimension, __isl_take isl_space *space)
 {
-  isl_id *id = isl_id_for_ssa_name (s, e);
-  int dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
-  isl_id_free (id);
   isl_set *dom = isl_set_universe (isl_space_copy (space));
   isl_aff *aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
   aff = isl_aff_add_coefficient_si (aff, isl_dim_param, dimension, 1);
@@ -211,17 +208,13 @@ wrap (isl_pw_aff *pwaff, unsigned width)
    Otherwise returns -1.  */
 
 static inline int
-parameter_index_in_region_1 (tree name, sese_info_p region)
+parameter_index_in_region (tree name, sese_info_p region)
 {
   int i;
   tree p;
-
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
   FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
       return i;
-
   return -1;
 }
 
@@ -288,10 +281,13 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       break;
 
     case SSA_NAME:
-      gcc_assert (-1 != parameter_index_in_region_1 (e, s->scop_info)
-		  || defined_in_sese_p (e, s->scop_info->region));
-      res = extract_affine_name (s, e, space);
-      break;
+      {
+	gcc_assert (! defined_in_sese_p (e, s->scop_info->region));
+	int dim = parameter_index_in_region (e, s->scop_info);
+	gcc_assert (dim != -1);
+	res = extract_affine_name (dim, space);
+	break;
+      }
 
     case INTEGER_CST:
       res = extract_affine_int (e, space);
@@ -431,54 +427,40 @@ add_conditions_to_domain (poly_bb_p pbb)
    of P.  */
 
 static void
-add_param_constraints (scop_p scop, graphite_dim_t p)
+add_param_constraints (scop_p scop, graphite_dim_t p, tree parameter)
 {
-  tree parameter = scop->scop_info->params[p];
   tree type = TREE_TYPE (parameter);
-  tree lb = NULL_TREE;
-  tree ub = NULL_TREE;
+  wide_int min, max;
 
-  if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
-    lb = lower_bound_in_type (type, type);
+  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
+
+  if (INTEGRAL_TYPE_P (type)
+      && get_range_info (parameter, &min, &max) == VR_RANGE)
+    ;
   else
-    lb = TYPE_MIN_VALUE (type);
-
-  if (POINTER_TYPE_P (type) || !TYPE_MAX_VALUE (type))
-    ub = upper_bound_in_type (type, type);
-  else
-    ub = TYPE_MAX_VALUE (type);
-
-  if (lb)
     {
-      isl_space *space = isl_set_get_space (scop->param_context);
-      isl_constraint *c;
-      isl_val *v;
-
-      c = isl_inequality_alloc (isl_local_space_from_space (space));
-      v = isl_val_int_from_wi (scop->isl_context, wi::to_widest (lb));
-      v = isl_val_neg (v);
-      c = isl_constraint_set_constant_val (c, v);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
-
-      scop->param_context = isl_set_coalesce
-	(isl_set_add_constraint (scop->param_context, c));
+      min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
     }
 
-  if (ub)
-    {
-      isl_space *space = isl_set_get_space (scop->param_context);
-      isl_constraint *c;
-      isl_val *v;
+  isl_space *space = isl_set_get_space (scop->param_context);
+  isl_constraint *c = isl_inequality_alloc (isl_local_space_from_space (space));
+  isl_val *v = isl_val_int_from_wi (scop->isl_context,
+				    widest_int::from (min, TYPE_SIGN (type)));
+  v = isl_val_neg (v);
+  c = isl_constraint_set_constant_val (c, v);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
+  scop->param_context = isl_set_coalesce
+      (isl_set_add_constraint (scop->param_context, c));
 
-      c = isl_inequality_alloc (isl_local_space_from_space (space));
-
-      v = isl_val_int_from_wi (scop->isl_context, wi::to_widest (ub));
-      c = isl_constraint_set_constant_val (c, v);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
-
-      scop->param_context = isl_set_coalesce
-	(isl_set_add_constraint (scop->param_context, c));
-    }
+  space = isl_set_get_space (scop->param_context);
+  c = isl_inequality_alloc (isl_local_space_from_space (space));
+  v = isl_val_int_from_wi (scop->isl_context,
+			   widest_int::from (max, TYPE_SIGN (type)));
+  c = isl_constraint_set_constant_val (c, v);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
+  scop->param_context = isl_set_coalesce
+      (isl_set_add_constraint (scop->param_context, c));
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of
@@ -930,9 +912,8 @@ build_scop_context (scop_p scop)
 
   scop->param_context = isl_set_universe (space);
 
-  graphite_dim_t p;
-  for (p = 0; p < nbp; p++)
-    add_param_constraints (scop, p);
+  FOR_EACH_VEC_ELT (region->params, i, e)
+    add_param_constraints (scop, i, e);
 }
 
 /* Return true when loop A is nested in loop B.  */

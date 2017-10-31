@@ -1314,9 +1314,7 @@ struct mips_cpu_info {
 %{g} %{g0} %{g1} %{g2} %{g3} \
 %{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{gcoff*:-mdebug} %{!gcoff*:-no-mdebug}"
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3}"
 #endif
 
 /* FP_ASM_SPEC represents the floating-point options that must be passed
@@ -2297,14 +2295,6 @@ enum reg_class
 
 #define MIPS_GP_SAVE_AREA_SIZE \
   (TARGET_CALL_CLOBBERED_GP ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0)
-
-/* The offset of the first local variable from the frame pointer.  See
-   mips_compute_frame_info for details about the frame layout.  */
-
-#define STARTING_FRAME_OFFSET				\
-  (FRAME_GROWS_DOWNWARD					\
-   ? 0							\
-   : crtl->outgoing_args_size + MIPS_GP_SAVE_AREA_SIZE)
 
 #define RETURN_ADDR_RTX mips_return_addr
 

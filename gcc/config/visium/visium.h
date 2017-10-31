@@ -727,17 +727,6 @@ enum reg_class
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* `STARTING_FRAME_OFFSET'
-
-   Offset from the frame pointer to the first local variable slot to
-   be allocated.
-
-   If `FRAME_GROWS_DOWNWARD', find the next slot's offset by
-   subtracting the first slot's length from `STARTING_FRAME_OFFSET'.
-   Otherwise, it is found by adding the length of the first slot to
-   the value `STARTING_FRAME_OFFSET'. */
-#define STARTING_FRAME_OFFSET 0
-
 /* `FIRST_PARM_OFFSET (FUNDECL)'
 
    Offset from the argument pointer register to the first argument's
@@ -1538,9 +1527,8 @@ do									\
    automatic variable having address X (an RTL expression).  The
    default computation assumes that X is based on the frame-pointer
    and gives the offset from the frame-pointer.  This is required for
-   targets that produce debugging output for DBX or COFF-style
-   debugging output for SDB and allow the frame-pointer to be
-   eliminated when the `-g' options is used. */
+   targets that produce debugging output for DBX and allow the frame-pointer
+   to be eliminated when the `-g' options is used. */
 #define DEBUGGER_AUTO_OFFSET(X) \
   (GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0)
 

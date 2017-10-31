@@ -362,7 +362,7 @@ rm -f a.out a.exe b.out
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_CXX
-ACX_PROG_GNAT([-I"$srcdir"/ada])
+ACX_PROG_GNAT([-I"$srcdir"/ada/libgnat])
 
 # Do configure tests with the C++ compiler, since that's what we build with.
 AC_LANG(C++)
@@ -4102,6 +4102,11 @@ foo:	nop
 	fi
 	;;
     esac
+
+    gcc_GAS_CHECK_FEATURE([-xbrace_comment], gcc_cv_as_ix86_xbrace_comment,,
+      [-xbrace_comment=no], [.text],,
+      [AC_DEFINE(HAVE_AS_XBRACE_COMMENT_OPTION, 1,
+		[Define if your assembler supports -xbrace_comment option.])])
 
     # Test if the assembler supports the section flag 'e' for specifying
     # an excluded section.

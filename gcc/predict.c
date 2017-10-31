@@ -203,7 +203,7 @@ maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 bool
 maybe_hot_edge_p (edge e)
 {
-  if (!maybe_hot_count_p (cfun, e->count))
+  if (!maybe_hot_count_p (cfun, e->count ()))
     return false;
   return maybe_hot_frequency_p (cfun, EDGE_FREQUENCY (e));
 }
@@ -247,7 +247,7 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 static bool
 unlikely_executed_edge_p (edge e)
 {
-  return (e->count == profile_count::zero ()
+  return (e->count () == profile_count::zero ()
 	  || e->probability == profile_probability::never ())
 	 || (e->flags & (EDGE_EH | EDGE_FAKE));
 }
@@ -259,7 +259,7 @@ probably_never_executed_edge_p (struct function *fun, edge e)
 {
   if (unlikely_executed_edge_p (e))
     return true;
-  return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
+  return probably_never_executed (fun, e->count (), EDGE_FREQUENCY (e));
 }
 
 /* Return true when current function should always be optimized for size.  */
@@ -746,8 +746,8 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
       if (e)
 	{
 	  fprintf (file, " hit ");
-	  e->count.dump (file);
-	  fprintf (file, " (%.1f%%)", e->count.to_gcov_type() * 100.0
+	  e->count ().dump (file);
+	  fprintf (file, " (%.1f%%)", e->count ().to_gcov_type() * 100.0
 		   / bb->count.to_gcov_type ());
 	}
     }
@@ -3199,21 +3199,14 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
   FOR_ALL_BB_FN (bb, fn)
     {
       bb->count = profile_count::uninitialized ();
-
-      edge_iterator ei;
-      edge e;
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	e->count = profile_count::uninitialized ();
     }
 
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_caller)
     {
-      e->count = profile_count::uninitialized ();
       e->frequency = compute_call_stmt_bb_frequency (e->caller->decl,
 						     gimple_bb (e->call_stmt));
     }
-  node->count = profile_count::uninitialized ();
   
   profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
@@ -3396,7 +3389,7 @@ propagate_unlikely_bbs_forward (void)
 	{
 	  bb = worklist.pop ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (!(e->count == profile_count::zero ())
+	    if (!(e->count () == profile_count::zero ())
 		&& !(e->dest->count == profile_count::zero ())
 		&& !e->dest->aux)
 	      {
@@ -3417,8 +3410,6 @@ propagate_unlikely_bbs_forward (void)
 		     bb->index);
 	  bb->count = profile_count::zero ();
 	  bb->frequency = 0;
-          FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->count = profile_count::zero ();
 	}
       else
         bb->aux = NULL;
@@ -3450,20 +3441,16 @@ determine_unlikely_bbs ()
 	}
 
       if (bb->count == profile_count::zero ())
-	{
-	  bb->frequency = 0;
-          FOR_EACH_EDGE (e, ei, bb->preds)
-	    e->count = profile_count::zero ();
-	}
+        bb->frequency = 0;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (!(e->count == profile_count::zero ())
+	if (!(e->probability == profile_probability::never ())
 	    && unlikely_executed_edge_p (e))
 	  {
             if (dump_file && (dump_flags & TDF_DETAILS))
 	      fprintf (dump_file, "Edge %i->%i is locally unlikely\n",
 		       bb->index, e->dest->index);
-	    e->count = profile_count::zero ();
+	    e->probability = profile_probability::never ();
 	  }
 
       gcc_checking_assert (!bb->aux);
@@ -3477,7 +3464,8 @@ determine_unlikely_bbs ()
       {
 	nsuccs[bb->index] = 0;
         FOR_EACH_EDGE (e, ei, bb->succs)
-	  if (!(e->count == profile_count::zero ()))
+	  if (!(e->probability == profile_probability::never ())
+	      && !(e->dest->count == profile_count::zero ()))
 	    nsuccs[bb->index]++;
 	if (!nsuccs[bb->index])
 	  worklist.safe_push (bb);
@@ -3511,9 +3499,9 @@ determine_unlikely_bbs ()
       bb->count = profile_count::zero ();
       bb->frequency = 0;
       FOR_EACH_EDGE (e, ei, bb->preds)
-	if (!(e->count == profile_count::zero ()))
+	if (!(e->probability == profile_probability::never ()))
 	  {
-	    e->count = profile_count::zero ();
+	    e->probability = profile_probability::never ();
 	    if (!(e->src->count == profile_count::zero ()))
 	      {
 	        nsuccs[e->src->index]--;
@@ -3928,8 +3916,6 @@ force_edge_cold (edge e, bool impossible)
   profile_probability prob_sum = profile_probability::never ();
   edge_iterator ei;
   edge e2;
-  profile_count old_count = e->count;
-  profile_probability old_probability = e->probability;
   bool uninitialized_exit = false;
 
   profile_probability goal = (impossible ? profile_probability::never ()
@@ -3937,13 +3923,13 @@ force_edge_cold (edge e, bool impossible)
 
   /* If edge is already improbably or cold, just return.  */
   if (e->probability <= goal
-      && (!impossible || e->count == profile_count::zero ()))
+      && (!impossible || e->count () == profile_count::zero ()))
     return;
   FOR_EACH_EDGE (e2, ei, e->src->succs)
     if (e2 != e)
       {
-	if (e2->count.initialized_p ())
-	  count_sum += e2->count;
+	if (e2->count ().initialized_p ())
+	  count_sum += e2->count ();
 	else
 	  uninitialized_exit = true;
 	if (e2->probability.initialized_p ())
@@ -3956,13 +3942,6 @@ force_edge_cold (edge e, bool impossible)
     {
       if (!(e->probability < goal))
 	e->probability = goal;
-      if (impossible)
-	e->count = profile_count::zero ();
-      else if (old_probability > profile_probability::never ())
-	e->count = e->count.apply_probability (e->probability
-					       / old_probability);
-      else
-        e->count = e->count.apply_scale (1, REG_BR_PROB_BASE);
 
       profile_probability prob_comp = prob_sum / e->probability.invert ();
 
@@ -3971,12 +3950,9 @@ force_edge_cold (edge e, bool impossible)
 		 "probability to other edges.\n",
 		 e->src->index, e->dest->index,
 		 impossible ? "impossible" : "cold");
-      profile_count count_sum2 = count_sum + old_count - e->count;
       FOR_EACH_EDGE (e2, ei, e->src->succs)
 	if (e2 != e)
 	  {
-	    if (count_sum > 0)
-	      e2->count.apply_scale (count_sum2, count_sum);
 	    e2->probability /= prob_comp;
 	  }
       if (current_ir_type () != IR_GIMPLE
@@ -4027,7 +4003,6 @@ force_edge_cold (edge e, bool impossible)
 		fprintf (dump_file,
 			 "Making bb %i impossible and dropping count to 0.\n",
 			 e->src->index);
-	      e->count = profile_count::zero ();
 	      e->src->count = profile_count::zero ();
 	      FOR_EACH_EDGE (e2, ei, e->src->preds)
 		force_edge_cold (e2, impossible);
@@ -4050,10 +4025,10 @@ force_edge_cold (edge e, bool impossible)
 		     impossible ? "impossible" : "cold");
 	  e->src->frequency = MIN (e->src->frequency, impossible ? 0 : 1);
 	  if (impossible)
-	    e->src->count = e->count = profile_count::zero ();
+	    e->src->count = profile_count::zero ();
 	  else
-	    e->src->count = e->count = e->count.apply_scale (e->src->frequency,
-							     old_frequency);
+	    e->src->count = e->count ().apply_scale (e->src->frequency,
+						     old_frequency);
 	  force_edge_cold (single_pred_edge (e->src), impossible);
 	}
       else if (dump_file && (dump_flags & TDF_DETAILS)

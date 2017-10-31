@@ -1322,6 +1322,9 @@ get_stack_check_protect (void)
    REQUIRED_ALIGN is the alignment (in bits) required for the region
    of memory.
 
+   MAX_SIZE is an upper bound for SIZE, if SIZE is not constant, or -1 if
+   no such upper bound is known.
+
    If CANNOT_ACCUMULATE is set to TRUE, the caller guarantees that the
    stack space allocated by the generated code cannot be added with itself
    in the course of the execution of the function.  It is always safe to
@@ -1331,7 +1334,9 @@ get_stack_check_protect (void)
 
 rtx
 allocate_dynamic_stack_space (rtx size, unsigned size_align,
-			      unsigned required_align, bool cannot_accumulate)
+			      unsigned required_align,
+			      HOST_WIDE_INT max_size,
+			      bool cannot_accumulate)
 {
   HOST_WIDE_INT stack_usage_size = -1;
   rtx_code_label *final_label;
@@ -1370,8 +1375,12 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	    }
 	}
 
-      /* If the size is not constant, we can't say anything.  */
-      if (stack_usage_size == -1)
+      /* If the size is not constant, try the maximum size.  */
+      if (stack_usage_size < 0)
+	stack_usage_size = max_size;
+
+      /* If the size is still not constant, we can't say anything.  */
+      if (stack_usage_size < 0)
 	{
 	  current_function_has_unbounded_dynamic_stack_size = 1;
 	  stack_usage_size = 0;

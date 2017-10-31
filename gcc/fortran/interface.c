@@ -1793,13 +1793,27 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 	   || !p->sym->attr.if_source)
 	  && !gfc_fl_struct (p->sym->attr.flavor))
 	{
+	  const char *guessed
+	    = gfc_lookup_function_fuzzy (p->sym->name, p->sym->ns->sym_root);
+
 	  if (p->sym->attr.external)
-	    gfc_error ("Procedure %qs in %s at %L has no explicit interface",
-		       p->sym->name, interface_name, &p->sym->declared_at);
+	    if (guessed)
+	      gfc_error ("Procedure %qs in %s at %L has no explicit interface"
+			 "; did you mean %qs?",
+			 p->sym->name, interface_name, &p->sym->declared_at,
+			 guessed);
+	    else
+	      gfc_error ("Procedure %qs in %s at %L has no explicit interface",
+			 p->sym->name, interface_name, &p->sym->declared_at);
 	  else
-	    gfc_error ("Procedure %qs in %s at %L is neither function nor "
-		       "subroutine", p->sym->name, interface_name,
-		      &p->sym->declared_at);
+	    if (guessed)
+	      gfc_error ("Procedure %qs in %s at %L is neither function nor "
+			 "subroutine; did you mean %qs?", p->sym->name,
+			interface_name, &p->sym->declared_at, guessed);
+	    else
+	      gfc_error ("Procedure %qs in %s at %L is neither function nor "
+			 "subroutine", p->sym->name, interface_name,
+			&p->sym->declared_at);
 	  return true;
 	}
 
@@ -1904,7 +1918,7 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 static void
 check_sym_interfaces (gfc_symbol *sym)
 {
-  char interface_name[100];
+  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("generic interface ''")];
   gfc_interface *p;
 
   if (sym->ns != gfc_current_ns)
@@ -1941,7 +1955,7 @@ check_sym_interfaces (gfc_symbol *sym)
 static void
 check_uop_interfaces (gfc_user_op *uop)
 {
-  char interface_name[100];
+  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("operator interface ''")];
   gfc_user_op *uop2;
   gfc_namespace *ns;
 
@@ -2018,7 +2032,7 @@ void
 gfc_check_interfaces (gfc_namespace *ns)
 {
   gfc_namespace *old_ns, *ns2;
-  char interface_name[100];
+  char interface_name[GFC_MAX_SYMBOL_LEN + sizeof("intrinsic '' operator")];
   int i;
 
   old_ns = gfc_current_ns;
@@ -2778,6 +2792,31 @@ is_procptr_result (gfc_expr *expr)
 }
 
 
+/* Recursively append candidate argument ARG to CANDIDATES.  Store the
+   number of total candidates in CANDIDATES_LEN.  */
+
+static void
+lookup_arg_fuzzy_find_candidates (gfc_formal_arglist *arg,
+				  char **&candidates,
+				  size_t &candidates_len)
+{
+  for (gfc_formal_arglist *p = arg; p && p->sym; p = p->next)
+    vec_push (candidates, candidates_len, p->sym->name);
+}
+
+
+/* Lookup argument ARG fuzzily, taking names in ARGUMENTS into account.  */
+
+static const char*
+lookup_arg_fuzzy (const char *arg, gfc_formal_arglist *arguments)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_arg_fuzzy_find_candidates (arguments, candidates, candidates_len);
+  return gfc_closest_fuzzy_match (arg, candidates);
+}
+
+
 /* Given formal and actual argument lists, see if they are compatible.
    If they are compatible, the actual argument list is sorted to
    correspond with the formal list, and elements for missing optional
@@ -2831,8 +2870,16 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (f == NULL)
 	    {
 	      if (where)
-		gfc_error ("Keyword argument %qs at %L is not in "
-			   "the procedure", a->name, &a->expr->where);
+		{
+		  const char *guessed = lookup_arg_fuzzy (a->name, formal);
+		  if (guessed)
+		    gfc_error ("Keyword argument %qs at %L is not in "
+			       "the procedure; did you mean %qs?",
+			       a->name, &a->expr->where, guessed);
+		  else
+		    gfc_error ("Keyword argument %qs at %L is not in "
+			       "the procedure", a->name, &a->expr->where);
+		}
 	      return false;
 	    }
 
@@ -3552,8 +3599,15 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
     {
       if (sym->ns->has_implicit_none_export && sym->attr.proc == PROC_UNKNOWN)
 	{
-	  gfc_error ("Procedure %qs called at %L is not explicitly declared",
-		     sym->name, where);
+	  const char *guessed
+	    = gfc_lookup_function_fuzzy (sym->name, sym->ns->sym_root);
+	  if (guessed)
+	    gfc_error ("Procedure %qs called at %L is not explicitly declared"
+		       "; did you mean %qs?",
+		       sym->name, where, guessed);
+	  else
+	    gfc_error ("Procedure %qs called at %L is not explicitly declared",
+		       sym->name, where);
 	  return false;
 	}
       if (warn_implicit_interface)

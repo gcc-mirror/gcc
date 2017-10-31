@@ -1,3 +1,391 @@
+2017-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/node_handle.h (_Node_insert_return::get): Avoid
+	use of std::tie and std::get.
+
+	* include/Makefile.am: Put headers in alphabetical order.
+	* include/Makefile.in: Regenerate.
+
+	* include/bits/fs_dir.h (directory_iterator): Remove noexcept from
+	constructors and increment member (LWG 3013).
+	(recursive_directory_iterator): Likewise.
+	* include/bits/fs_ops.h (copy, copy_file, create_directories)
+	(is_empty, remove_all): Remove noexcept (LWG 3013 and LWG 3014).
+	* src/filesystem/std-dir.cc (directory_iterator::increment)
+	(recursive_directory_iterator::increment): Remove noexcept.
+	* src/filesystem/std-ops.cc (copy, copy_file, create_directories)
+	(is_empty, remove_all): Remove noexcept
+
+	* include/bits/fs_dir.h (file_status): Make default constructor
+	non-explicit (LWG 2787).
+	* testsuite/27_io/filesystem/file_status/1.cc: New test.
+	* testsuite/experimental/filesystem/file_status/1.cc: New test.
+
+	* include/std/fstream (basic_filebuf::_If_path): New SFINAE helper.
+	(basic_filebuf::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_ifstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_ifstream::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_ofstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_ofstream::open<Path>(const Path&, const ios_base::openmode&))
+	(basic_fstream<Path>(const Path&, const ios_base::openmode&))
+	(basic_fstream::open<Path>(const Path&, const ios_base::openmode&)):
+	New constructors and member functions.
+	* testsuite/27_io/basic_filebuf/open/char/path.cc: New test.
+	* testsuite/27_io/basic_fstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_fstream/open/char/path.cc: New test.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_ifstream/open/char/path.cc: New test.
+	* testsuite/27_io/basic_ofstream/cons/char/path.cc: New test.
+	* testsuite/27_io/basic_ofstream/open/char/path.cc: New test.
+
+	* include/bits/fs_path.h (path::format): Define new enumeration type.
+	(path(string_type&&), path<Source>(const Source&))
+	(path<InputIterator>(InputIterator, InputIterator))
+	(path<Source>(const Source&, const locale&))
+	(path<InputIterator>(InputIterator, InputIterator, const locale&)):
+	Add format parameter.
+	* testsuite/27_io/filesystem/path/construct/format.cc: New test.
+
+	* include/bits/stl_algo.h (__find_if_not_n, generate_n): Cast to void
+	to ensure overloaded comma not used.
+	* include/bits/stl_algobase.h (__fill_n_a, equal): Likewise.
+	* include/bits/stl_uninitialized.h (__uninitialized_fill_n)
+	(__uninitialized_fill_n_a, __uninitialized_default_n_1)
+	(__uninitialized_default_n_a, __uninitialized_copy_n)
+	(__uninitialized_copy_n_pair): Likewise
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/1.cc:
+	Use test iterator wrappers with overloaded comma operator.
+	* testsuite/25_algorithms/fill_n/1.cc: Likewise.
+	* testsuite/25_algorithms/generate_n/1.cc: New test.
+	* testsuite/25_algorithms/stable_partition/1.cc: New test.
+	* testsuite/util/testsuite_iterators.h (operator,): Add deleted
+	non-member comma operator with iterator wrappers as right operand.
+
+2017-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Deduction guides for associative containers, debug mode deduction
+	guide fixes.
+	* include/bits/stl_iterator.h (__iter_key_t)
+	(__iter_val_t, __iter_to_alloc_t): New.
+	* include/bits/stl_map.h: Add deduction guides.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* testsuite/23_containers/map/cons/deduction.cc: New.
+	* testsuite/23_containers/multimap/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
+2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status, and
+	information on feature-test macros.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/82716
+	* include/std/array (tuple_size, tuple_element): Change class-key
+	from class to struct, to avoid annoying Clang warnings.
+
+	PR libstdc++/79283
+	* src/filesystem/ops.cc (read_symlink): Handle st_size being zero.
+	* src/filesystem/std-ops.cc (read_symlink): Likewise.
+	(do_copy_file) [!NEED_DO_COPY_FILE]: Avoid multiple definitions.
+
+	* src/filesystem/std-path.cc (path::lexically_normal): Add missing
+	step to algorithm, for removing dot-dot elements after root-directory.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/operations/proximate.cc: Likewise.
+	* testsuite/27_io/filesystem/path/append/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: Fix comment.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Use
+	compare_paths for more exhaustive checks. Add extra testcases.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: Remove
+	unused header.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc: Fix
+	comment.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc: Use
+	compare_paths for more exhaustive checks.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h (compare_paths): Also compare native
+	strings.
+
+	PR libstdc++/82706
+	* testsuite/27_io/filesystem/operations/permissions.cc: Fix test.
+
+2017-10-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_normal_mode): Add
+	c++config.h include.
+	(check_v3_target_normal_namespace): New.
+	* testsuite/lib/dg-options.exp (dg-require-normal-namespace): New.
+	* testsuite/18_support/headers/limits/synopsis.cc: Add latter.
+	* testsuite/20_util/from_chars/requirements.cc: Likewise.
+	* testsuite/20_util/headers/functional/synopsis.cc: Likewise.
+	* testsuite/20_util/headers/memory/synopsis.cc: Likewise.
+	* testsuite/20_util/headers/utility/synopsis.cc: Likewise.
+	* testsuite/20_util/to_chars/requirements.cc: Likewise.
+	* testsuite/21_strings/headers/string/synopsis.cc: Likewise.
+	* testsuite/22_locale/headers/locale/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/bitset/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/deque/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/forward_list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/map/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/queue/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/set/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/stack/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++11.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++14.cc: Likewise.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++17.cc: Likewise.
+	* testsuite/26_numerics/complex/abi_tag.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
+	* testsuite/26_numerics/headers/valarray/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/fstream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/ios/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/istream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/ostream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/sstream/synopsis.cc: Likewise.
+	* testsuite/27_io/headers/streambuf/synopsis.cc: Likewise.
+
+2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/gnu/c_locale.cc [_GLIBCXX_LONG_DOUBLE_COMPAT]: Ignore
+	-Wattribute-alias warnings.
+	* src/c++11/istream-inst.cc: Likewise.
+	* src/c++11/locale-inst.cc: Likewise.
+	* src/c++11/ostream-inst.cc: Likewise.
+	* src/c++11/wlocale-inst.cc: Likewise.
+	* src/c++98/hash-long-double-tr1-aux.cc: Likewise.
+
+	* include/bits/string_view.tcc (find_first_of, find_last_of)
+	(find_first_not_of, find_last_not_of): Add noexcept.
+	* include/std/string_view (basic_string_view(const _CharT*))
+	(basic_string_view(const _CharT*, size_type))
+	(front, back, remove_prefix, remove_suffix, find, rfind)
+	(find_first_of, find_first_not_of): Add noexcept.
+	(at(size_type), _S_compare(size_type, size_type)): Replace conditional
+	expressions with if statements.
+	(copy(_CharT*, size_type, size_type), substr(size_type, size_type)):
+	Use _M_check for length checks.
+	(compare(basic_string_view)): Reformat.
+	(_M_check(size_type, const char)): Add noexcept(false).
+	(_M_limit(size_type, size_type)): Use noexcept not _GLIBCXX_NOEXCEPT.
+
+	PR libstdc++/82685
+	* include/experimental/string_view (operator""sv): Add noexcept.
+	* include/std/string_view (operator""sv): Likewise.
+
+2017-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new headers for C++17 filesystem library.
+	* include/Makefile.in: Regenerate.
+	* include/bits/fs_dir.h: New header, based on Filesystem TS code in
+	include/experimental/bits directory.
+	* include/bits/fs_fwd.h: Likewise.
+	* include/bits/fs_ops.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/experimental/bits/fs_dir.h: Rename Doxygen group.
+	* include/experimental/bits/fs_fwd.h: Likewise.
+	* include/experimental/bits/fs_ops.h: Likewise.
+	* include/experimental/bits/fs_path.h: Likewise.
+	* include/experimental/filesystem (filesystem_error::_M_gen_what):
+	Remove inline definition.
+	* include/precompiled/stdc++.h: Add <filesystem> to precompiled
+	header.
+	* include/std/filesystem: New header.
+	* python/libstdcxx/v6/printers.py: Enable printer for std::filesystem
+	paths.
+	* src/filesystem/Makefile.am: Add new files. Compile as C++17.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/filesystem/cow-dir.cc: Update comment.
+	* src/filesystem/cow-ops.cc: Likewise.
+	* src/filesystem/cow-path.cc: Likewise.
+	* src/filesystem/cow-std-dir.cc: New file.
+	* src/filesystem/cow-std-ops.cc: New file.
+	* src/filesystem/cow-std-path.cc: New file.
+	* src/filesystem/dir-common.h (_Dir_base, get_file_type): New header
+	for common code.
+	* src/filesystem/dir.cc (_Dir): Derive from _Dir_base.
+	(open_dir): Move to _Dir_base constructor.
+	(get_file_type): Move to dir-common.h.
+	(recurse): Move to _Dir_base::should_recurse.
+	* src/filesystem/ops-common.h: New header for common code.
+	* src/filesystem/ops.cc (is_set, make_file_type, make_file_status)
+	(is_not_found_errno, file_time, do_copy_file): Move to ops-common.h.
+	* src/filesystem/path.cc (filesystem_error::_M_gen_what): Define.
+	* src/filesystem/std-dir.cc: New file, based on Filesystem TS code.
+	* src/filesystem/std-ops.cc: Likewise.
+	* src/filesystem/std-dir.cc: Likewise.
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: New
+	test.
+	* testsuite/27_io/filesystem/iterators/pop.cc: New test.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	New test.
+	* testsuite/27_io/filesystem/operations/absolute.cc: New test.
+	* testsuite/27_io/filesystem/operations/canonical.cc: New test.
+	* testsuite/27_io/filesystem/operations/copy.cc: New test.
+	* testsuite/27_io/filesystem/operations/copy_file.cc: New test.
+	* testsuite/27_io/filesystem/operations/create_directories.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/create_directory.cc: New test.
+	* testsuite/27_io/filesystem/operations/create_symlink.cc: New test.
+	* testsuite/27_io/filesystem/operations/current_path.cc: New test.
+	* testsuite/27_io/filesystem/operations/equivalent.cc: New test.
+	* testsuite/27_io/filesystem/operations/exists.cc: New test.
+	* testsuite/27_io/filesystem/operations/file_size.cc: New test.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: New test.
+	* testsuite/27_io/filesystem/operations/last_write_time.cc: New test.
+	* testsuite/27_io/filesystem/operations/permissions.cc: New test.
+	* testsuite/27_io/filesystem/operations/proximate.cc: New test.
+	* testsuite/27_io/filesystem/operations/read_symlink.cc: New test.
+	* testsuite/27_io/filesystem/operations/relative.cc: New test.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: New test.
+	* testsuite/27_io/filesystem/operations/space.cc: New test.
+	* testsuite/27_io/filesystem/operations/status.cc: New test.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc: New test.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/weakly_canonical.cc: New test.
+	* testsuite/27_io/filesystem/path/append/path.cc: New test.
+	* testsuite/27_io/filesystem/path/assign/assign.cc: New test.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: New test.
+	* testsuite/27_io/filesystem/path/compare/compare.cc: New test.
+	* testsuite/27_io/filesystem/path/compare/path.cc: New test.
+	* testsuite/27_io/filesystem/path/compare/strings.cc: New test.
+	* testsuite/27_io/filesystem/path/concat/path.cc: New test.
+	* testsuite/27_io/filesystem/path/concat/strings.cc: New test.
+	* testsuite/27_io/filesystem/path/construct/copy.cc: New test.
+	* testsuite/27_io/filesystem/path/construct/default.cc: New test.
+	* testsuite/27_io/filesystem/path/construct/locale.cc: New test.
+	* testsuite/27_io/filesystem/path/construct/range.cc: New test.
+	* testsuite/27_io/filesystem/path/construct/string_view.cc: New test.
+	* testsuite/27_io/filesystem/path/decompose/extension.cc: New test.
+	* testsuite/27_io/filesystem/path/decompose/filename.cc: New test.
+	* testsuite/27_io/filesystem/path/decompose/parent_path.cc: New test.
+	* testsuite/27_io/filesystem/path/decompose/relative_path.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/decompose/root_name.cc: New test.
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc: New test.
+	* testsuite/27_io/filesystem/path/decompose/stem.cc: New test.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: New test.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc: New test.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: New test.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc: New test.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: New test.
+	* testsuite/27_io/filesystem/path/modifiers/clear.cc: New test.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/modifiers/swap.cc: New test.
+	* testsuite/27_io/filesystem/path/native/string.cc: New test.
+	* testsuite/27_io/filesystem/path/nonmember/hash_value.cc: New test.
+	* testsuite/27_io/filesystem/path/query/empty.cc: New test.
+	* testsuite/27_io/filesystem/path/query/has_extension.cc: New test.
+	* testsuite/27_io/filesystem/path/query/has_filename.cc: New test.
+	* testsuite/27_io/filesystem/path/query/has_parent_path.cc: New test.
+	* testsuite/27_io/filesystem/path/query/has_relative_path.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/query/has_root_directory.cc: New
+	test.
+	* testsuite/27_io/filesystem/path/query/has_root_name.cc: New test.
+	* testsuite/27_io/filesystem/path/query/has_root_path.cc: New test.
+	* testsuite/27_io/filesystem/path/query/has_stem.cc: New test.
+	* testsuite/27_io/filesystem/path/query/is_relative.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	Define USE_FILESYSTEM_TS.
+	* testsuite/util/testsuite_fs.h: Allow use with C++17 paths as well
+	as Filesystem TS.
+
+	PR libstdc++/82644
+	* doc/xml/manual/intro.xml: Include new section.
+	* doc/xml/manual/status_cxxis29124.xml: New section on IS 29124
+	status.
+	* include/bits/specfun.h [__STRICT_ANSI__] (hyperg, hypergf, hypergl)
+	(conf_hyperg, conf_hypergf, conf_hypergl): Don't declare.
+	* include/c_compatibility/math.h: Import special functions into
+	global namespace for C++17.
+	* testsuite/26_numerics/headers/cmath/82644.cc: New test.
+	* testsuite/26_numerics/headers/cmath/functions_global_c++17.cc: New
+	test.
+
+2017-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Do not
+	increment past-the-end iterators.
+
+2017-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__cpp_lib_chrono): Update macro value to
+	indicate support for P0505R0.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc: Check
+	for updated macro.
+
+	* include/c_global/cstddef: Define __cpp_lib_byte feature-test macro.
+	* testsuite/18_support/byte/requirements.cc: Check macro.
+
+2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Ensure that error_code arguments are
+	cleared when required.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Remove redundant check.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Ensure that error_code argument is cleared when required.
+
+	* include/experimental/bits/fs_path.h (path::iterator++(int))
+	(path::iterator--(int)): Fix for paths with only one component.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc: Test
+	post-increment and post-decrement.
+
+	* doc/xml/manual/status_cxx2017.xml: Update references to C++17
+	section numbers.
+
+	* testsuite/decimal/conversion-to-integral.cc: Use predefined macro
+	instead of non-standard glibc one.
+
 2017-10-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/82558

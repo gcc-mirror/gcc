@@ -4487,7 +4487,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
 
       int scalar_precision
-	= GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (vectype)));
+	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (TREE_TYPE (vectype)));
       tree cr_index_scalar_type = make_unsigned_type (scalar_precision);
       tree cr_index_vector_type = build_vector_type
 	(cr_index_scalar_type, TYPE_VECTOR_SUBPARTS (vectype));
@@ -5836,9 +5836,12 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  reduc_index = i;
 	  continue;
 	}
-      else
+      else if (tem)
 	{
-	  if (!vectype_in)
+	  /* To properly compute ncopies we are interested in the widest
+	     input type in case we're looking at a widening accumulation.  */
+	  if (!vectype_in
+	      || TYPE_VECTOR_SUBPARTS (vectype_in) > TYPE_VECTOR_SUBPARTS (tem))
 	    vectype_in = tem;
 	}
 
@@ -7224,7 +7227,7 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
   edge preheader = loop_preheader_edge (loop);
   /* Reduce loop iterations by the vectorization factor.  */
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, vf);
-  profile_count freq_h = loop->header->count, freq_e = preheader->count;
+  profile_count freq_h = loop->header->count, freq_e = preheader->count ();
 
   /* Use frequency only if counts are zero.  */
   if (!(freq_h > 0) && !(freq_e > 0))
@@ -7244,16 +7247,13 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
       scale_loop_frequencies (loop, p);
     }
 
-  basic_block exit_bb = single_pred (loop->latch);
   edge exit_e = single_exit (loop);
-  exit_e->count = loop_preheader_edge (loop)->count;
   exit_e->probability = profile_probability::always ()
 				 .apply_scale (1, new_est_niter + 1);
 
   edge exit_l = single_pred_edge (loop->latch);
   profile_probability prob = exit_l->probability;
   exit_l->probability = exit_e->probability.invert ();
-  exit_l->count = exit_bb->count - exit_e->count;
   if (prob.initialized_p () && exit_l->probability.initialized_p ())
     scale_bbs_frequencies (&loop->latch, 1, exit_l->probability / prob);
 }

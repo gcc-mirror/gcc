@@ -2404,7 +2404,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
     case BT_CLASS:
       if (ts->u.derived->components == NULL)
 	return;
-      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
+      if (gfc_bt_struct (ts->type) || ts->type == BT_CLASS)
 	{
 	  gfc_symbol *derived;
 	  gfc_symbol *dtio_sub = NULL;
@@ -2438,7 +2438,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	      function = iocall[IOCALL_X_DERIVED];
 	      break;
 	    }
-	  else if (ts->type == BT_DERIVED)
+	  else if (gfc_bt_struct (ts->type))
 	    {
 	      /* Recurse into the elements of the derived type.  */
 	      expr = gfc_evaluate_now (addr_expr, &se->pre);

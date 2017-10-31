@@ -2399,8 +2399,7 @@ incorporeal_function_p (tree decl)
       const char *name;
 
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-	  && (DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA
-	      || DECL_FUNCTION_CODE (decl) == BUILT_IN_ALLOCA_WITH_ALIGN))
+	  && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (decl)))
 	return true;
 
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
@@ -3784,11 +3783,8 @@ force_const_mem (machine_mode mode, rtx x)
   *slot = desc;
 
   /* Align the location counter as required by EXP's data type.  */
-  align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
-
-  tree type = lang_hooks.types.type_for_mode (mode, 0);
-  if (type != NULL_TREE)
-    align = targetm.constant_alignment (make_tree (type, x), align);
+  machine_mode align_mode = (mode == VOIDmode ? word_mode : mode);
+  align = targetm.static_rtx_alignment (align_mode);
 
   pool->offset += (align / BITS_PER_UNIT) - 1;
   pool->offset &= ~ ((align / BITS_PER_UNIT) - 1);
@@ -3830,7 +3826,6 @@ force_const_mem (machine_mode mode, rtx x)
 
   /* Construct the MEM.  */
   desc->mem = def = gen_const_mem (mode, symbol);
-  set_mem_attributes (def, lang_hooks.types.type_for_mode (mode, 0), 1);
   set_mem_align (def, align);
 
   /* If we're dropping a label to the constant pool, make sure we

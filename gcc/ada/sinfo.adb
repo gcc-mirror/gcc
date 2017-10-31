@@ -203,6 +203,14 @@ package body Sinfo is
       return Flag4 (N);
    end Aliased_Present;
 
+   function Alloc_For_BIP_Return
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      return Flag1 (N);
+   end Alloc_For_BIP_Return;
+
    function All_Others
       (N : Node_Id) return Boolean is
    begin
@@ -3625,6 +3633,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Parameter_Specification);
       Set_Flag4 (N, Val);
    end Set_Aliased_Present;
+
+   procedure Set_Alloc_For_BIP_Return
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Allocator);
+      Set_Flag1 (N, Val);
+   end Set_Alloc_For_BIP_Return;
 
    procedure Set_All_Others
       (N : Node_Id; Val : Boolean := True) is

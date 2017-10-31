@@ -162,7 +162,7 @@ proc gfortran-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 
     if ![info exists DEBUG_TORTURE_OPTIONS] {
        set DEBUG_TORTURE_OPTIONS ""
-       set type_list [list "-gstabs" "-gstabs+" "-gxcoff" "-gxcoff+" "-gcoff" "-gdwarf-2" ]
+       set type_list [list "-gstabs" "-gstabs+" "-gxcoff" "-gxcoff+" "-gdwarf-2" ]
        foreach type $type_list {
            set comp_output [$target_compile \
                    "$srcdir/$subdir/$trivial" "trivial.S" assembly \

@@ -729,6 +729,7 @@ try_eliminate_compare (struct comparison *cmp)
   if (try_merge_compare (cmp))
     return true;
 
+  /* We must have found an interesting "clobber" preceding the compare.  */
   if (cmp->prev_clobber == NULL)
     return false;
 

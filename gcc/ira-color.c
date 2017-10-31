@@ -3005,14 +3005,13 @@ allocno_priority_compare_func (const void *v1p, const void *v2p)
 {
   ira_allocno_t a1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t a2 = *(const ira_allocno_t *) v2p;
-  int pri1, pri2;
+  int pri1, pri2, diff;
 
   /* Assign hard reg to static chain pointer pseudo first when
      non-local goto is used.  */
-  if (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a1)))
-    return 1;
-  else if (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a2)))
-    return -1;
+  if ((diff = (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a2))
+	       - non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a1)))) != 0)
+    return diff;
   pri1 = allocno_priorities[ALLOCNO_NUM (a1)];
   pri2 = allocno_priorities[ALLOCNO_NUM (a2)];
   if (pri2 != pri1)
@@ -3909,7 +3908,7 @@ coalesced_pseudo_reg_freq_compare (const void *v1p, const void *v2p)
 
 /* Widest width in which each pseudo reg is referred to (via subreg).
    It is used for sorting pseudo registers.  */
-static unsigned int *regno_max_ref_width;
+static machine_mode *regno_max_ref_mode;
 
 /* Sort pseudos according their slot numbers (putting ones with
   smaller numbers first, or last when the frame pointer is not
@@ -3922,7 +3921,7 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   ira_allocno_t a1 = ira_regno_allocno_map[regno1];
   ira_allocno_t a2 = ira_regno_allocno_map[regno2];
   int diff, slot_num1, slot_num2;
-  int total_size1, total_size2;
+  machine_mode mode1, mode2;
 
   if (a1 == NULL || ALLOCNO_HARD_REGNO (a1) >= 0)
     {
@@ -3937,11 +3936,11 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   if ((diff = slot_num1 - slot_num2) != 0)
     return (frame_pointer_needed
 	    || (!FRAME_GROWS_DOWNWARD) == STACK_GROWS_DOWNWARD ? diff : -diff);
-  total_size1 = MAX (PSEUDO_REGNO_BYTES (regno1),
-		     regno_max_ref_width[regno1]);
-  total_size2 = MAX (PSEUDO_REGNO_BYTES (regno2),
-		     regno_max_ref_width[regno2]);
-  if ((diff = total_size2 - total_size1) != 0)
+  mode1 = wider_subreg_mode (PSEUDO_REGNO_MODE (regno1),
+			     regno_max_ref_mode[regno1]);
+  mode2 = wider_subreg_mode (PSEUDO_REGNO_MODE (regno2),
+			     regno_max_ref_mode[regno2]);
+  if ((diff = GET_MODE_SIZE (mode2) - GET_MODE_SIZE (mode1)) != 0)
     return diff;
   return regno1 - regno2;
 }
@@ -4145,7 +4144,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
    reload.  */
 void
 ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
-			       unsigned int *reg_max_ref_width)
+			       machine_mode *reg_max_ref_mode)
 {
   int max_regno = max_reg_num ();
   int i, regno, num, slot_num;
@@ -4226,10 +4225,14 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
 	  ira_assert (ALLOCNO_HARD_REGNO (a) < 0);
 	  ALLOCNO_HARD_REGNO (a) = -slot_num;
 	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file, " a%dr%d(%d,%d)",
-		     ALLOCNO_NUM (a), ALLOCNO_REGNO (a), ALLOCNO_FREQ (a),
-		     MAX (PSEUDO_REGNO_BYTES (ALLOCNO_REGNO (a)),
-			  reg_max_ref_width[ALLOCNO_REGNO (a)]));
+	    {
+	      machine_mode mode = wider_subreg_mode
+		(PSEUDO_REGNO_MODE (ALLOCNO_REGNO (a)),
+		 reg_max_ref_mode[ALLOCNO_REGNO (a)]);
+	      fprintf (ira_dump_file, " a%dr%d(%d,%d)",
+		       ALLOCNO_NUM (a), ALLOCNO_REGNO (a), ALLOCNO_FREQ (a),
+		       GET_MODE_SIZE (mode));
+	    }
 
 	  if (a == allocno)
 	    break;
@@ -4240,7 +4243,7 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
   ira_spilled_reg_stack_slots_num = slot_num - 1;
   ira_free (spilled_coalesced_allocnos);
   /* Sort regnos according the slot numbers.  */
-  regno_max_ref_width = reg_max_ref_width;
+  regno_max_ref_mode = reg_max_ref_mode;
   qsort (pseudo_regnos, n, sizeof (int), coalesced_pseudo_reg_slot_compare);
   FOR_EACH_ALLOCNO (a, ai)
     ALLOCNO_ADD_DATA (a) = NULL;

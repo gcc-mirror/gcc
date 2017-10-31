@@ -612,7 +612,6 @@ connect_infinite_loops_to_exit (void)
       basic_block deadend_block = dfs_find_deadend (unvisited_block);
       edge e = make_edge (deadend_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
 			  EDGE_FAKE);
-      e->count = profile_count::zero ();
       e->probability = profile_probability::never ();
       dfs.add_bb (deadend_block);
     }

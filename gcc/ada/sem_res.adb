@@ -4843,9 +4843,8 @@ package body Sem_Res is
              (Comes_From_Source (Parent (N))
                or else
                  (Ekind (Current_Scope) = E_Function
-                   and then Nkind
-                     (Original_Node (Unit_Declaration_Node (Current_Scope)))
-                       = N_Expression_Function))
+                   and then Nkind (Original_Node (Unit_Declaration_Node
+                              (Current_Scope))) = N_Expression_Function))
            and then not In_Instance_Body
          then
             if not OK_For_Limited_Init (Etype (E), Expression (E)) then

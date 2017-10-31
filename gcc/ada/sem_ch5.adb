@@ -1090,12 +1090,14 @@ package body Sem_Ch5 is
       --  the context of the assignment statement. Restore the expander mode
       --  now so that assignment statement can be properly expanded.
 
-      if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
-         Expander_Mode_Restore;
-         Full_Analysis := Save_Full_Analysis;
-      end if;
+      if Nkind (N) = N_Assignment_Statement then
+         if Has_Target_Names (N) then
+            Expander_Mode_Restore;
+            Full_Analysis := Save_Full_Analysis;
+         end if;
 
-      pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
+         pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
+      end if;
    end Analyze_Assignment;
 
    -----------------------------

@@ -1,3 +1,7 @@
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-act.c (objc_common_tree_size): Return size of TYPE nodes.
+
 2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* objc-act.c (objc_decl_method_attributes): Use wi::to_wide when

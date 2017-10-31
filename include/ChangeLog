@@ -1,3 +1,13 @@
+2017-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h: Make include of <memory> conditional on C++11 or
+	later.
+
+2017-10-16  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+	    David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h: New file.
+
 2017-09-15  Yao Qi  <yao.qi@linaro.org>
 	    Pedro Alves  <palves@redhat.com>
 

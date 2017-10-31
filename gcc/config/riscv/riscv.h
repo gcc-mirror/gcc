@@ -446,8 +446,6 @@ enum reg_class
 
 #define FRAME_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET 0
-
 #define RETURN_ADDR_RTX riscv_return_addr
 
 #define ELIMINABLE_REGS							\

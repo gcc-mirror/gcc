@@ -1756,7 +1756,18 @@ package body Exp_Attr is
       --  and access to it must be passed to the function.
 
       if Is_Build_In_Place_Function_Call (Pref) then
-         Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
+
+         --  If attribute is 'Old, the context is a postcondition, and
+         --  the temporary must go in the corresponding subprogram, not
+         --  the postcondition function or any created blocks, as when
+         --  the attribute appears in a quantified expression. This is
+         --  handled below in the expansion of the attribute.
+
+         if Attribute_Name (Parent (Pref)) = Name_Old then
+            null;
+         else
+            Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
+         end if;
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers

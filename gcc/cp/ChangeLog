@@ -1,3 +1,103 @@
+2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (invalid_nontype_parm_type_p): Return a bool instead of an int.
+
+2017-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (sort_labels): Restore function.
+	(pop_labels): Sort labels
+	(identify_goto): Add translation markup.
+
+2017-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	Kill IDENTIFIER_LABEL_VALUE.
+	* cp-tree.h (lang_identifier): Delete label_value slot.
+	(IDENTIFIER_LABEL_VALUE, SET_IDENTIFIER_LABEL_VALUE): Delete.
+	(struct named_label_hasher): Rename to ...
+	(struct named_label_hash): ... here.  Reimplement.
+	(struct language_function): Adjust x_named_labels.
+	* name-lookup.h (struct cp_label_binding): Delete.
+	(struct cp_binding_level): Delete shadowed_labels slot.
+	* decl.c (struct named_label_entry): Add name and outer slots.
+	(pop_label): Rename to ...
+	(check_label_used): ... here.  Don't pop.
+	(note_label, sort_labels): Delete.
+	(pop_labels, pop_local_label): Reimplement.
+	(poplevel): Pop local labels as any other decl. Remove
+	shadowed_labels handling.
+	(named_label_hash::hash, named_label_hash::equal): New.
+	(make_label_decl): Absorb into ...
+	(lookup_label_1): ... here.  Add making_local_p arg, reimplement.
+	(lookup_label, declare_local_label): Adjust.
+	(check_goto, define_label): Adjust.
+	* lex.c (make_conv_op_name): Don't clear IDENTIFIER_LABEL_VALUE.
+	* ptree.c (cxx_print_identifier): Don't print identifier binding.
+
+	* decl.c (identifier_goto): Reduce duplication.
+	(check_previous_goto_1): Likewise.
+	(check_goto): Move var decls to initialization.
+	(check_omp_return, define_label_1, define_label): Likewise.
+
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* decl.c (duplicate_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* decl.c (duplicate_decls): Warn for built-in functions declared as
+	non-function, use OPT_Wbuiltin_declaration_mismatch.
+
+	* decl.c (duplicate_decls): Avoid redundant '+' in warning_at.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80991
+	* pt.c (value_dependent_expression_p, [TRAIT_EXPR]): Handle
+	a TREE_LIST as TRAIT_EXPR_TYPE2.
+
+2017-10-24  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82307
+	* cvt.c (type_promotes_to): Implement C++17, 7.6/4, about unscoped
+	enumeration type whose underlying type is fixed.
+
+2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80449
+	* semantics.c (finish_compound_literal): Check do_auto_deduction
+	return value for error_mark_node.
+
+2017-10-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77369 - wrong noexcept handling in C++14 and below
+	* tree.c (strip_typedefs): Canonicalize TYPE_RAISES_EXCEPTIONS.
+
+2017-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (layout_class_type): Cleanup as-base creation, determine
+	mode here.
+	(finish_struct_1): ... not here.
+
+2017-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82600
+	* typeck.c (check_return_expr): Don't call
+	maybe_warn_about_returning_address_of_local in templates.
+
+2017-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82560
+	* call.c (build_over_call): Don't pass tf_no_cleanup to nested
+	calls.
+
+	PR middle-end/82546
+	* cp-objcp-common.c (cp_tree_size): Reformat.  Adjust returns size
+	of TYPE nodes.
+
 2017-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82357 - bit-field in template

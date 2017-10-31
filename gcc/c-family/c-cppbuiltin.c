@@ -82,6 +82,11 @@ mode_has_fma (machine_mode mode)
       return !!HAVE_fmadf4;
 #endif
 
+#ifdef HAVE_fmakf4	/* PowerPC if long double != __float128.  */
+    case E_KFmode:
+      return !!HAVE_fmakf4;
+#endif
+
 #ifdef HAVE_fmaxf4
     case E_XFmode:
       return !!HAVE_fmaxf4;
@@ -1119,7 +1124,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	       floatn_nx_types[i].extended ? "X" : "");
       sprintf (csuffix, "F%d%s", floatn_nx_types[i].n,
 	       floatn_nx_types[i].extended ? "x" : "");
-      builtin_define_float_constants (prefix, csuffix, "%s", NULL,
+      builtin_define_float_constants (prefix, csuffix, "%s", csuffix,
 				      FLOATN_NX_TYPE_NODE (i));
     }
 

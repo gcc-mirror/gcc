@@ -2694,6 +2694,8 @@ generic:
       if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL,
 						 NULL, false))
 	return false;
+      if (!gfc_use_derived (expr->ts.u.derived))
+	return false;
       return resolve_structure_cons (expr, 0);
     }
 
@@ -2801,6 +2803,43 @@ resolve_specific_f (gfc_expr *expr)
   return true;
 }
 
+/* Recursively append candidate SYM to CANDIDATES.  Store the number of
+   candidates in CANDIDATES_LEN.  */
+
+static void
+lookup_function_fuzzy_find_candidates (gfc_symtree *sym,
+				       char **&candidates,
+				       size_t &candidates_len)
+{
+  gfc_symtree *p;
+
+  if (sym == NULL)
+    return;
+  if ((sym->n.sym->ts.type != BT_UNKNOWN || sym->n.sym->attr.external)
+      && sym->n.sym->attr.flavor == FL_PROCEDURE)
+    vec_push (candidates, candidates_len, sym->name);
+
+  p = sym->left;
+  if (p)
+    lookup_function_fuzzy_find_candidates (p, candidates, candidates_len);
+
+  p = sym->right;
+  if (p)
+    lookup_function_fuzzy_find_candidates (p, candidates, candidates_len);
+}
+
+
+/* Lookup function FN fuzzily, taking names in SYMROOT into account.  */
+
+const char*
+gfc_lookup_function_fuzzy (const char *fn, gfc_symtree *symroot)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_function_fuzzy_find_candidates (symroot, candidates, candidates_len);
+  return gfc_closest_fuzzy_match (fn, candidates);
+}
+
 
 /* Resolve a procedure call not known to be generic nor specific.  */
 
@@ -2851,8 +2890,15 @@ set_type:
 
       if (ts->type == BT_UNKNOWN)
 	{
-	  gfc_error ("Function %qs at %L has no IMPLICIT type",
-		     sym->name, &expr->where);
+	  const char *guessed
+	    = gfc_lookup_function_fuzzy (sym->name, sym->ns->sym_root);
+	  if (guessed)
+	    gfc_error ("Function %qs at %L has no IMPLICIT type"
+		       "; did you mean %qs?",
+		       sym->name, &expr->where, guessed);
+	  else
+	    gfc_error ("Function %qs at %L has no IMPLICIT type",
+		       sym->name, &expr->where);
 	  return false;
 	}
       else
@@ -3713,6 +3759,46 @@ logical_to_bitwise (gfc_expr *e)
   return e;
 }
 
+/* Recursively append candidate UOP to CANDIDATES.  Store the number of
+   candidates in CANDIDATES_LEN.  */
+static void
+lookup_uop_fuzzy_find_candidates (gfc_symtree *uop,
+				  char **&candidates,
+				  size_t &candidates_len)
+{
+  gfc_symtree *p;
+
+  if (uop == NULL)
+    return;
+
+  /* Not sure how to properly filter here.  Use all for a start.
+     n.uop.op is NULL for empty interface operators (is that legal?) disregard
+     these as i suppose they don't make terribly sense.  */
+
+  if (uop->n.uop->op != NULL)
+    vec_push (candidates, candidates_len, uop->name);
+
+  p = uop->left;
+  if (p)
+    lookup_uop_fuzzy_find_candidates (p, candidates, candidates_len);
+
+  p = uop->right;
+  if (p)
+    lookup_uop_fuzzy_find_candidates (p, candidates, candidates_len);
+}
+
+/* Lookup user-operator OP fuzzily, taking names in UOP into account.  */
+
+static const char*
+lookup_uop_fuzzy (const char *op, gfc_symtree *uop)
+{
+  char **candidates = NULL;
+  size_t candidates_len = 0;
+  lookup_uop_fuzzy_find_candidates (uop, candidates, candidates_len);
+  return gfc_closest_fuzzy_match (op, candidates);
+}
+
+
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
@@ -3935,8 +4021,16 @@ resolve_operator (gfc_expr *e)
 
     case INTRINSIC_USER:
       if (e->value.op.uop->op == NULL)
-	sprintf (msg, _("Unknown operator %%<%s%%> at %%L"),
-		 e->value.op.uop->name);
+	{
+	  const char *name = e->value.op.uop->name;
+	  const char *guessed;
+	  guessed = lookup_uop_fuzzy (name, e->value.op.uop->ns->uop_root);
+	  if (guessed)
+	    sprintf (msg, _("Unknown operator %%<%s%%> at %%L; did you mean '%s'?"),
+		name, guessed);
+	  else
+	    sprintf (msg, _("Unknown operator %%<%s%%> at %%L"), name);
+	}
       else if (op2 == NULL)
 	sprintf (msg, _("Operand of user operator %%<%s%%> at %%L is %s"),
 		 e->value.op.uop->name, gfc_typename (&op1->ts));
@@ -10916,6 +11010,8 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_TASK:
+	    case EXEC_OMP_TASKLOOP:
+	    case EXEC_OMP_TASKLOOP_SIMD:
 	    case EXEC_OMP_TEAMS:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
@@ -10931,8 +11027,6 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_DO_SIMD:
 	    case EXEC_OMP_SIMD:
 	    case EXEC_OMP_TARGET_SIMD:
-	    case EXEC_OMP_TASKLOOP:
-	    case EXEC_OMP_TASKLOOP_SIMD:
 	      gfc_resolve_omp_do_blocks (code, ns);
 	      break;
 	    case EXEC_SELECT_TYPE:
@@ -11193,7 +11287,8 @@ start:
 	    {
 	      gfc_iterator *iter = code->ext.iterator;
 	      if (gfc_resolve_iterator (iter, true, false))
-		gfc_resolve_do_iterator (code, iter->var->symtree->n.sym);
+		gfc_resolve_do_iterator (code, iter->var->symtree->n.sym,
+					 true);
 	    }
 	  break;
 
@@ -13844,6 +13939,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 {
   gfc_symbol* super_type;
   gfc_component *c;
+  gfc_formal_arglist *f;
   bool success;
 
   if (sym->attr.unlimited_polymorphic)
@@ -13895,6 +13991,22 @@ resolve_fl_derived0 (gfc_symbol *sym)
       && !sym->attr.is_class
       && !ensure_not_abstract (sym, super_type))
     return false;
+
+  /* Check that there is a component for every PDT parameter.  */
+  if (sym->attr.pdt_template)
+    {
+      for (f = sym->formal; f; f = f->next)
+	{
+	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
+	  if (c == NULL)
+	    {
+	      gfc_error ("Parameterized type %qs does not have a component "
+			 "corresponding to parameter %qs at %L", sym->name,
+			 f->sym->name, &sym->declared_at);
+	      break;
+	    }
+	}
+    }
 
   /* Add derived type to the derived type list.  */
   add_dt_to_dt_list (sym);
@@ -14403,7 +14515,23 @@ resolve_symbol (gfc_symbol *sym)
 
   if (as)
     {
-      gcc_assert (as->type != AS_IMPLIED_SHAPE);
+      /* If AS_IMPLIED_SHAPE makes it to here, it must be a bad
+	 specification expression.  */
+      if (as->type == AS_IMPLIED_SHAPE)
+	{
+	  int i;
+	  for (i=0; i<as->rank; i++)
+	    {
+	      if (as->lower[i] != NULL && as->upper[i] == NULL)
+		{
+		  gfc_error ("Bad specification for assumed size array at %L",
+			     &as->lower[i]->where);
+		  return;
+		}
+	    }
+	  gcc_unreachable();
+	}
+
       if (((as->type == AS_ASSUMED_SIZE && !as->cp_was_assumed)
 	   || as->type == AS_ASSUMED_SHAPE)
 	  && !sym->attr.dummy && !sym->attr.select_type_temporary)
@@ -16244,6 +16372,7 @@ resolve_codes (gfc_namespace *ns)
   bitmap_obstack_initialize (&labels_obstack);
 
   gfc_resolve_oacc_declare (ns);
+  gfc_resolve_omp_local_vars (ns);
   gfc_resolve_code (ns->code, ns);
 
   bitmap_obstack_release (&labels_obstack);

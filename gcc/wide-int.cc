@@ -2146,6 +2146,39 @@ template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
 template void offset_int::dump () const;
 template void widest_int::dump () const;
 
+/* We could add all the above ::dump variants here, but wide_int and
+   widest_int should handle the common cases.  Besides, you can always
+   call the dump method directly.  */
+
+DEBUG_FUNCTION void
+debug (const wide_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const wide_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
 
 #if CHECKING_P
 
@@ -2220,6 +2253,17 @@ test_printing ()
   VALUE_TYPE a = from_int<VALUE_TYPE> (42);
   assert_deceq ("42", a, SIGNED);
   assert_hexeq ("0x2a", a);
+  assert_hexeq ("0x1fffffffffffffffff", wi::shwi (-1, 69));
+  assert_hexeq ("0xffffffffffffffff", wi::mask (64, false, 69));
+  assert_hexeq ("0xffffffffffffffff", wi::mask <widest_int> (64, false));
+  if (WIDE_INT_MAX_PRECISION > 128)
+    {
+      assert_hexeq ("0x20000000000000000fffffffffffffffe",
+		    wi::lshift (1, 129) + wi::lshift (1, 64) - 2);
+      assert_hexeq ("0x200000000000004000123456789abcdef",
+		    wi::lshift (1, 129) + wi::lshift (1, 74)
+		    + wi::lshift (0x1234567, 32) + 0x89abcdef);
+    }
 }
 
 /* Verify that various operations work correctly for VALUE_TYPE,
