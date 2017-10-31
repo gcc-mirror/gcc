@@ -1269,8 +1269,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	{
 	  x = ctx->object;
 	  /* We don't use cp_build_addr_expr here because we don't want to
-	     capture the object argument until we've chosen a non-static member
-	     function.  */
+	     capture the object argument during constexpr evaluation.  */
 	  x = build_address (x);
 	}
       bool lval = false;
