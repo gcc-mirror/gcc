@@ -3055,7 +3055,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   tree fnname;
   tree fns;
 
-  fnname = cp_operator_id (array_p ? VEC_NEW_EXPR : NEW_EXPR);
+  fnname = ovl_op_identifier (false, array_p ? VEC_NEW_EXPR : NEW_EXPR);
 
   member_new_p = !globally_qualified_p
 		 && CLASS_TYPE_P (elt_type)

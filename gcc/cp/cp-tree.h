@@ -245,23 +245,13 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    then deletes the entire object.  */
 #define deleting_dtor_identifier	cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
 
-#define assign_op_identifier (cp_assignment_operator_id (NOP_EXPR))
-#define call_op_identifier (cp_operator_id (CALL_EXPR))
+#define ovl_op_identifier(ISASS, CODE)  (OVL_OP_INFO(ISASS, CODE)->identifier)
+#define assign_op_identifier (ovl_op_identifier (true, NOP_EXPR))
+#define call_op_identifier (ovl_op_identifier (false, CALL_EXPR))
 /* The name used for conversion operators -- but note that actual
    conversion functions use special identifiers outside the identifier
    table.  */
 #define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
-
-/* The name of the identifier used internally to represent operator CODE.  */
-#define cp_operator_id(CODE) \
-  (operator_name_info[(int) (CODE)].identifier)
-
-/* The name of the identifier used to represent assignment operator CODE,
-   both simple (i.e., operator= with CODE == NOP_EXPR) and compound (e.g.,
-   operator+= with CODE == PLUS_EXPR).  Includes copy and move assignment.
-   Use copy_fn_p() to test specifically for copy assignment.  */
-#define cp_assignment_operator_id(CODE)				\
-  (assignment_operator_name_info[(int) (CODE)].identifier)
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
@@ -2809,10 +2799,6 @@ struct GTY(()) lang_decl {
    : false)
 #define SET_VAR_HAD_UNKNOWN_BOUND(NODE) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.unknown_bound_p = true)
-
-/* Set the overloaded operator code for NODE to CODE.  */
-#define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
-  (LANG_DECL_FN_CHECK (NODE)->operator_code = (CODE))
 
 /* True iff decl NODE is for an overloaded operator.  */
 #define DECL_OVERLOADED_OPERATOR_P(NODE)		\
@@ -5505,6 +5491,12 @@ extern GTY(()) operator_name_info_t operator_name_info
 /* Similar, but for assignment operators.  */
 extern GTY(()) operator_name_info_t assignment_operator_name_info
   [(int) MAX_TREE_CODES];
+
+/* Given an ass_op_p boolean and a tree code, return a pointer to its
+   overloaded operator info.  */
+#define OVL_OP_INFO(IS_ASS_P, TREE_CODE)			\
+  (((IS_ASS_P) ? assignment_operator_name_info : operator_name_info)	\
+   + (TREE_CODE))
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */

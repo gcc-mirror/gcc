@@ -1,3 +1,9 @@
+2017-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use ovl_op_identifier.
+	Directly set operator code.
+	(plugin_build_dependent_expr): Use ovl_op_identifier.
+
 2017-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (supplement_binding): Don't use

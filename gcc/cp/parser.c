@@ -15006,7 +15006,7 @@ cp_parser_operator (cp_parser* parser)
      operator token.  */
   if (op != ERROR_MARK)
     {
-      id = assop ? cp_assignment_operator_id (op) : cp_operator_id (op);
+      id = ovl_op_identifier (assop, op);
       if (!consumed)
 	cp_lexer_consume_token (parser->lexer);
     }
@@ -32588,21 +32588,21 @@ cp_parser_omp_clause_reduction (cp_parser *parser, tree list)
 	    code = MIN_EXPR;
 	  else if (strcmp (p, "max") == 0)
 	    code = MAX_EXPR;
-	  else if (id == cp_operator_id (PLUS_EXPR))
+	  else if (id == ovl_op_identifier (false, PLUS_EXPR))
 	    code = PLUS_EXPR;
-	  else if (id == cp_operator_id (MULT_EXPR))
+	  else if (id == ovl_op_identifier (false, MULT_EXPR))
 	    code = MULT_EXPR;
-	  else if (id == cp_operator_id (MINUS_EXPR))
+	  else if (id == ovl_op_identifier (false, MINUS_EXPR))
 	    code = MINUS_EXPR;
-	  else if (id == cp_operator_id (BIT_AND_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_AND_EXPR))
 	    code = BIT_AND_EXPR;
-	  else if (id == cp_operator_id (BIT_IOR_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_IOR_EXPR))
 	    code = BIT_IOR_EXPR;
-	  else if (id == cp_operator_id (BIT_XOR_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_XOR_EXPR))
 	    code = BIT_XOR_EXPR;
-	  else if (id == cp_operator_id (TRUTH_ANDIF_EXPR))
+	  else if (id == ovl_op_identifier (false, TRUTH_ANDIF_EXPR))
 	    code = TRUTH_ANDIF_EXPR;
-	  else if (id == cp_operator_id (TRUTH_ORIF_EXPR))
+	  else if (id == ovl_op_identifier (false, TRUTH_ORIF_EXPR))
 	    code = TRUTH_ORIF_EXPR;
 	  id = omp_reduction_id (code, id, NULL_TREE);
 	  tree scope = parser->scope;
