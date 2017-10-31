@@ -1,5 +1,19 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* color-macros.h: New file.
+	* diagnostic-color.c: Factor out color related to macros to
+	color-macros.h.
+	* doc/gcov.texi: Document -k option.
+	* gcov.c (INCLUDE_STRING): Include string.h.
+	(print_usage): Add -k option.
+	(process_args): Parse it.
+	(pad_count_string): New function.
+	(output_line_beginning): Likewise.
+	(DEFAULT_LINE_START): New macro.
+	(output_lines): Support color output.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/82633
 	* doc/gcov.texi: Document -fkeep-{static,inline}-functions and
 	their interaction with GCOV infrastructure.
