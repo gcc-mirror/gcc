@@ -1629,7 +1629,7 @@ ifeq ($(strip $(filter-out m68k% linux%,$(target_cpu) $(target_os))),)
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
-  s-linux.ads<libgnat/s-linux.ads \
+  s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
