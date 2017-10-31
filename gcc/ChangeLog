@@ -1,3 +1,8 @@
+2017-10-31  Daniel Santos  <daniel.santos@pobox.com>
+
+	config/i386/i386.c (ix86_expand_epilogue): Correct stack
+	calculation.
+
 2017-10-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/81702

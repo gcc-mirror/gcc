@@ -1,3 +1,9 @@
+2017-10-31  Daniel Santos  <daniel.santos@pobox.com>
+
+	gcc.target/i386/pr82002-1.c: New test.
+	gcc.target/i386/pr82002-2a.c: New xfail test.
+	gcc.target/i386/pr82002-2b.c: New xfail test.
+
 2017-10-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/81702

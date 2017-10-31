@@ -13812,7 +13812,7 @@ ix86_expand_epilogue (int style)
 	 the stack pointer, if we will restore SSE regs via sp.  */
       if (TARGET_64BIT
 	  && m->fs.sp_offset > 0x7fffffff
-	  && sp_valid_at (frame.stack_realign_offset)
+	  && sp_valid_at (frame.stack_realign_offset + 1)
 	  && (frame.nsseregs + frame.nregs) != 0)
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
