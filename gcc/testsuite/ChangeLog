@@ -1,6 +1,14 @@
 2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/78293
+	* gfortran.dg/allocatable_function_10.f90: New test.
+	* gfortran.dg/class_array_15.f03: Increase builtin_free count
+	from 11 to 12.
+
+017-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/80554
 	* gfortran.dg/submodule_29.f08: New test.
 

@@ -1,3 +1,14 @@
+2017-11-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+	Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/78293
+	* trans-expr.c (gfc_conv_procedure_call): Prepend deallocation
+	of alloctable components to post, rather than adding to
+	se->post.
+	* trans-stmt.c (gfc_trans_allocate): Move deallocation of expr3
+	allocatable components so that all expr3s are visited.
+
 2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk

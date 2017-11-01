@@ -5492,17 +5492,6 @@ gfc_trans_allocate (gfc_code * code)
 	    }
 	  gfc_add_modify_loc (input_location, &block, var, tmp);
 
-	  /* Deallocate any allocatable components after all the allocations
-	     and assignments of expr3 have been completed.  */
-	  if (code->expr3->ts.type == BT_DERIVED
-	      && code->expr3->rank == 0
-	      && code->expr3->ts.u.derived->attr.alloc_comp)
-	    {
-	      tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
-					       var, 0);
-	      gfc_add_expr_to_block (&post, tmp);
-	    }
-
 	  expr3 = var;
 	  if (se.string_length)
 	    /* Evaluate it assuming that it also is complicated like expr3.  */
@@ -5513,6 +5502,19 @@ gfc_trans_allocate (gfc_code * code)
 	  expr3 = se.expr;
 	  expr3_len = se.string_length;
 	}
+
+      /* Deallocate any allocatable components after all the allocations
+	 and assignments of expr3 have been completed.  */
+      if ((code->expr3->ts.type == BT_DERIVED
+	   || code->expr3->ts.type == BT_CLASS)
+	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_var_needed)
+	  && code->expr3->ts.u.derived->attr.alloc_comp)
+	{
+	  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
+					   expr3, code->expr3->rank);
+	  gfc_prepend_expr_to_block (&post, tmp);
+	}
+
       /* Store what the expr3 is to be used for.  */
       if (e3_is == E3_UNSET)
 	e3_is = expr3 != NULL_TREE ?

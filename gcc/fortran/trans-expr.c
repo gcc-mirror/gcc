@@ -5554,7 +5554,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  tmp = gfc_deallocate_alloc_comp (e->ts.u.derived, tmp, parm_rank);
 
-	  gfc_add_expr_to_block (&se->post, tmp);
+	  gfc_prepend_expr_to_block (&post, tmp);
         }
 
       /* Add argument checking of passing an unallocated/NULL actual to
