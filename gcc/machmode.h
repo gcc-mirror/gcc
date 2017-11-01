@@ -893,6 +893,17 @@ is_complex_float_mode (machine_mode mode, T *cmode)
   return false;
 }
 
+/* Return true if MODE is a scalar integer mode with a precision
+   smaller than LIMIT's precision.  */
+
+inline bool
+is_narrower_int_mode (machine_mode mode, scalar_int_mode limit)
+{
+  scalar_int_mode int_mode;
+  return (is_a <scalar_int_mode> (mode, &int_mode)
+	  && GET_MODE_PRECISION (int_mode) < GET_MODE_PRECISION (limit));
+}
+
 namespace mode_iterator
 {
   /* Start mode iterator *ITER at the first mode in class MCLASS, if any.  */

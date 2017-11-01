@@ -14547,8 +14547,7 @@ rotate_loc_descriptor (rtx rtl, scalar_int_mode mode,
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
   int i;
 
-  if (GET_MODE (rtlop1) != VOIDmode
-      && GET_MODE_BITSIZE (GET_MODE (rtlop1)) < GET_MODE_BITSIZE (mode))
+  if (is_narrower_int_mode (GET_MODE (rtlop1), mode))
     rtlop1 = gen_rtx_ZERO_EXTEND (mode, rtlop1);
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 			    VAR_INIT_STATUS_INITIALIZED);

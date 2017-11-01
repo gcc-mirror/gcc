@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (is_narrower_int_mode): New function
+	* optabs.c (expand_float, expand_fix): Use it.
+	* dwarf2out.c (rotate_loc_descriptor): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (narrower_subreg_mode): New function.
 	* ira-color.c (update_costs_from_allocno): Use it.
 
