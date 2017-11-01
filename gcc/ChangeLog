@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Use
+	aarch64_hard_regno_nregs to get the number of registers
+	in a mode.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/constraints.md (Upl): Rename to...
 	(Uaa): ...this.
 	* config/aarch64/aarch64.md
