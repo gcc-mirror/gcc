@@ -1,4 +1,23 @@
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    David Malcolm  <dmalcolm@redhat.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (vec_duplicate_p): New function.
+	* selftest-rtl.c (assert_rtx_eq_at): New function.
+	* selftest-rtl.h (ASSERT_RTX_EQ): New macro.
+	(assert_rtx_eq_at): Declare.
+	* selftest.h (selftest::simplify_rtx_c_tests): Declare.
+	* selftest-run-tests.c (selftest::run_tests): Call it.
+	* simplify-rtx.c: Include selftest.h and selftest-rtl.h.
+	(simplify_unary_operation_1): Recursively handle vector duplicates.
+	(simplify_binary_operation_1): Likewise.  Handle VEC_SELECTs of
+	vector duplicates.
+	(simplify_subreg): Handle subregs of vector duplicates.
+	(make_test_reg, test_vector_ops_duplicate, test_vector_ops)
+	(selftest::simplify_rtx_c_tests): New functions.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
