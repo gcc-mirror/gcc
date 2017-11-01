@@ -100,7 +100,8 @@ get_identifier_kind_name (tree id)
   /* Keep in sync with cp_id_kind enumeration.  */
   static const char *const names[cik_max] = {
     "normal", "keyword", "constructor", "destructor",
-    "assign-op", "op-assign-op", "simple-op", "conv-op", };
+    "simple-op", "assign-op", "conv-op", "<reserved>udlit-op"
+  };
 
   unsigned kind = 0;
   kind |= IDENTIFIER_KIND_BIT_2 (id) << 2;
@@ -176,9 +177,7 @@ init_operators (void)
 	  else
 	    {
 	      IDENTIFIER_CP_INDEX (ident) = ix;
-	      set_identifier_kind (ident,
-				   op_ptr->flags & OVL_OP_FLAG_ALLOC
-				   ? cik_newdel_op : cik_simple_op);
+	      set_identifier_kind (ident, cik_simple_op);
 	    }
 	}
       if (op_ptr->tree_code)

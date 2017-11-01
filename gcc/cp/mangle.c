@@ -1263,7 +1263,7 @@ write_unqualified_id (tree identifier)
 {
   if (IDENTIFIER_CONV_OP_P (identifier))
     write_conversion_operator_name (TREE_TYPE (identifier));
-  else if (IDENTIFIER_ANY_OP_P (identifier))
+  else if (IDENTIFIER_OVL_OP_P (identifier))
     {
       const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (identifier);
       write_string (ovl_op->mangled_name);
