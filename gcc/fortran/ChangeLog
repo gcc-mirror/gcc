@@ -1,3 +1,13 @@
+2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80850
+	* trans_expr.c (gfc_conv_procedure_call): When passing a class
+	argument to an unlimited polymorphic dummy, it is wrong to cast
+	the passed expression as unlimited, unless it is unlimited. The
+	correct way is to assign to each of the fields and set the _len
+	field to zero.
+
 2017-10-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* check.c (gfc_check_co_reduce): Clarify error message.
