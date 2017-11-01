@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* simplify-rtx.c (simplify_const_unary_operation): Use GET_MODE_NUNITS
+	and CONST_VECTOR_NUNITS instead of computing the number of units from
+	the byte sizes of the vector and element.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* var-tracking.c (INT_MEM_OFFSET): Replace with...
 	(int_mem_offset): ...this new function.
 	(var_mem_set, var_mem_delete_and_set, var_mem_delete)
