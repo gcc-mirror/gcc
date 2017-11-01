@@ -1749,18 +1749,12 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	return gen_const_vec_duplicate (mode, op);
       if (GET_CODE (op) == CONST_VECTOR)
 	{
-	  int elt_size = GET_MODE_UNIT_SIZE (mode);
-          unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
-	  rtvec v = rtvec_alloc (n_elts);
-	  unsigned int i;
-
-	  machine_mode inmode = GET_MODE (op);
-	  int in_elt_size = GET_MODE_UNIT_SIZE (inmode);
-	  unsigned in_n_elts = (GET_MODE_SIZE (inmode) / in_elt_size);
-
+	  unsigned int n_elts = GET_MODE_NUNITS (mode);
+	  unsigned int in_n_elts = CONST_VECTOR_NUNITS (op);
 	  gcc_assert (in_n_elts < n_elts);
 	  gcc_assert ((n_elts % in_n_elts) == 0);
-	  for (i = 0; i < n_elts; i++)
+	  rtvec v = rtvec_alloc (n_elts);
+	  for (unsigned i = 0; i < n_elts; i++)
 	    RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op, i % in_n_elts);
 	  return gen_rtx_CONST_VECTOR (mode, v);
 	}
@@ -3601,9 +3595,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      rtx op0 = XEXP (trueop0, 0);
 	      rtx op1 = XEXP (trueop0, 1);
 
-	      machine_mode opmode = GET_MODE (op0);
-	      int elt_size = GET_MODE_UNIT_SIZE (opmode);
-	      int n_elts = GET_MODE_SIZE (opmode) / elt_size;
+	      int n_elts = GET_MODE_NUNITS (GET_MODE (op0));
 
 	      int i = INTVAL (XVECEXP (trueop1, 0, 0));
 	      int elem;
@@ -3630,21 +3622,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		  mode01 = GET_MODE (op01);
 
 		  /* Find out number of elements of each operand.  */
-		  if (VECTOR_MODE_P (mode00))
-		    {
-		      elt_size = GET_MODE_UNIT_SIZE (mode00);
-		      n_elts00 = GET_MODE_SIZE (mode00) / elt_size;
-		    }
-		  else
-		    n_elts00 = 1;
-
-		  if (VECTOR_MODE_P (mode01))
-		    {
-		      elt_size = GET_MODE_UNIT_SIZE (mode01);
-		      n_elts01 = GET_MODE_SIZE (mode01) / elt_size;
-		    }
-		  else
-		    n_elts01 = 1;
+		  n_elts00 = GET_MODE_NUNITS (mode00);
+		  n_elts01 = GET_MODE_NUNITS (mode01);
 
 		  gcc_assert (n_elts == n_elts00 + n_elts01);
 
@@ -3764,9 +3743,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      rtx subop1 = XEXP (trueop0, 1);
 	      machine_mode mode0 = GET_MODE (subop0);
 	      machine_mode mode1 = GET_MODE (subop1);
-	      int li = GET_MODE_UNIT_SIZE (mode0);
-	      int l0 = GET_MODE_SIZE (mode0) / li;
-	      int l1 = GET_MODE_SIZE (mode1) / li;
+	      int l0 = GET_MODE_NUNITS (mode0);
+	      int l1 = GET_MODE_NUNITS (mode1);
 	      int i0 = INTVAL (XVECEXP (trueop1, 0, 0));
 	      if (i0 == 0 && !side_effects_p (op1) && mode == mode0)
 		{
@@ -3924,14 +3902,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		|| CONST_SCALAR_INT_P (trueop1) 
 		|| CONST_DOUBLE_AS_FLOAT_P (trueop1)))
 	  {
-	    int elt_size = GET_MODE_UNIT_SIZE (mode);
-	    unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+	    unsigned n_elts = GET_MODE_NUNITS (mode);
+	    unsigned in_n_elts = GET_MODE_NUNITS (op0_mode);
 	    rtvec v = rtvec_alloc (n_elts);
 	    unsigned int i;
-	    unsigned in_n_elts = 1;
-
-	    if (VECTOR_MODE_P (op0_mode))
-	      in_n_elts = (GET_MODE_SIZE (op0_mode) / elt_size);
 	    for (i = 0; i < n_elts; i++)
 	      {
 		if (i < in_n_elts)
@@ -4019,16 +3993,12 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       && GET_CODE (op0) == CONST_VECTOR
       && GET_CODE (op1) == CONST_VECTOR)
     {
-      unsigned n_elts = GET_MODE_NUNITS (mode);
-      machine_mode op0mode = GET_MODE (op0);
-      unsigned op0_n_elts = GET_MODE_NUNITS (op0mode);
-      machine_mode op1mode = GET_MODE (op1);
-      unsigned op1_n_elts = GET_MODE_NUNITS (op1mode);
+      unsigned int n_elts = CONST_VECTOR_NUNITS (op0);
+      gcc_assert (n_elts == (unsigned int) CONST_VECTOR_NUNITS (op1));
+      gcc_assert (n_elts == GET_MODE_NUNITS (mode));
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
-      gcc_assert (op0_n_elts == n_elts);
-      gcc_assert (op1_n_elts == n_elts);
       for (i = 0; i < n_elts; i++)
 	{
 	  rtx x = simplify_binary_operation (code, GET_MODE_INNER (mode),
@@ -5705,8 +5675,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
       trueop2 = avoid_constant_pool_reference (op2);
       if (CONST_INT_P (trueop2))
 	{
-	  int elt_size = GET_MODE_UNIT_SIZE (mode);
-	  unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+	  unsigned n_elts = GET_MODE_NUNITS (mode);
 	  unsigned HOST_WIDE_INT sel = UINTVAL (trueop2);
 	  unsigned HOST_WIDE_INT mask;
 	  if (n_elts == HOST_BITS_PER_WIDE_INT)
