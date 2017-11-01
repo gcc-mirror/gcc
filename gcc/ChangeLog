@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/constraints.md (Upl): Rename to...
+	(Uaa): ...this.
+	* config/aarch64/aarch64.md
+	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64, *addsi3_aarch64_uxtw):
+	Update accordingly.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_add_constant_internal)
 	(aarch64_add_constant, aarch64_add_sp, aarch64_sub_sp): Move
 	earlier in file.

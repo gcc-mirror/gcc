@@ -1562,7 +1562,7 @@
     (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r")
     (plus:GPI
      (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Upl")))]
+     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Uaa")))]
   ""
   "@
   add\\t%<w>0, %<w>1, %2
@@ -1580,7 +1580,7 @@
     (match_operand:DI 0 "register_operand" "=rk,rk,rk,r")
     (zero_extend:DI
      (plus:SI (match_operand:SI 1 "register_operand" "%rk,rk,rk,rk")
-              (match_operand:SI 2 "aarch64_pluslong_operand" "I,r,J,Upl"))))]
+	      (match_operand:SI 2 "aarch64_pluslong_operand" "I,r,J,Uaa"))))]
   ""
   "@
   add\\t%w0, %w1, %2
