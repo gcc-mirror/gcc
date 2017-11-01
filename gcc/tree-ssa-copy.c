@@ -489,10 +489,16 @@ init_copy_prop (void)
     }
 }
 
+class copy_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+};
+
 /* Callback for substitute_and_fold to get at the final copy-of values.  */
 
-static tree
-get_value (tree name)
+tree
+copy_folder::get_value (tree name)
 {
   tree val;
   if (SSA_NAME_VERSION (name) >= n_copy_of)
@@ -557,7 +563,8 @@ fini_copy_prop (void)
 	}
     }
 
-  bool changed = substitute_and_fold (get_value, NULL);
+  class copy_folder copy_folder;
+  bool changed = copy_folder.substitute_and_fold ();
   if (changed)
     {
       free_numbers_of_iterations_estimates (cfun);
