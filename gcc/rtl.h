@@ -2772,6 +2772,21 @@ const_vec_duplicate_p (T x, T *elt)
   return false;
 }
 
+/* Return true if X is a vector with a duplicated element value, either
+   constant or nonconstant.  Store the duplicated element in *ELT if so.  */
+
+template <typename T>
+inline bool
+vec_duplicate_p (T x, T *elt)
+{
+  if (GET_CODE (x) == VEC_DUPLICATE)
+    {
+      *elt = XEXP (x, 0);
+      return true;
+    }
+  return const_vec_duplicate_p (x, elt);
+}
+
 /* If X is a vector constant with a duplicated element value, return that
    element value, otherwise return X.  */
 
