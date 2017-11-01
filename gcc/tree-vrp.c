@@ -10530,15 +10530,34 @@ fold_predicate_in (gimple_stmt_iterator *si)
   return false;
 }
 
+class vrp_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+};
+
 /* Callback for substitute_and_fold folding the stmt at *SI.  */
 
-static bool
-vrp_fold_stmt (gimple_stmt_iterator *si)
+bool
+vrp_folder::fold_stmt (gimple_stmt_iterator *si)
 {
   if (fold_predicate_in (si))
     return true;
 
   return simplify_stmt_using_ranges (si);
+}
+
+/* If OP has a value range with a single constant value return that,
+   otherwise return NULL_TREE.  This returns OP itself if OP is a
+   constant.
+
+   Implemented as a pure wrapper right now, but this will change.  */
+
+tree
+vrp_folder::get_value (tree op)
+{
+  return op_with_constant_singleton_value_range (op);
 }
 
 /* Return the LHS of any ASSERT_EXPR where OP appears as the first
@@ -10882,7 +10901,8 @@ vrp_finalize (bool warn_array_bounds_p)
 			  wi::to_wide (vr_value[i]->max));
       }
 
-  substitute_and_fold (op_with_constant_singleton_value_range, vrp_fold_stmt);
+  class vrp_folder vrp_folder;
+  vrp_folder.substitute_and_fold ();
 
   if (warn_array_bounds && warn_array_bounds_p)
     check_all_array_refs ();
@@ -11219,8 +11239,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
 
       /* Try folding stmts with the VR discovered.  */
-      bool did_replace
-	= replace_uses_in (stmt, op_with_constant_singleton_value_range);
+      class vrp_folder vrp_folder;
+      bool did_replace = vrp_folder.replace_uses_in (stmt);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
 	{

@@ -188,7 +188,6 @@ static ccp_prop_value_t *const_val;
 static unsigned n_const_val;
 
 static void canonicalize_value (ccp_prop_value_t *);
-static bool ccp_fold_stmt (gimple_stmt_iterator *);
 static void ccp_lattice_meet (ccp_prop_value_t *, ccp_prop_value_t *);
 
 /* Dump constant propagation value VAL to file OUTF prefixed by PREFIX.  */
@@ -909,6 +908,24 @@ do_dbg_cnt (void)
 }
 
 
+/* We want to provide our own GET_VALUE and FOLD_STMT virtual methods.  */
+class ccp_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+};
+
+/* This method just wraps GET_CONSTANT_VALUE for now.  Over time
+   naked calls to GET_CONSTANT_VALUE should be eliminated in favor
+   of calling member functions.  */
+
+tree
+ccp_folder::get_value (tree op)
+{
+  return get_constant_value (op);
+}
+
 /* Do final substitution of propagated values, cleanup the flowgraph and
    free allocated storage.  If NONZERO_P, record nonzero bits.
 
@@ -967,7 +984,8 @@ ccp_finalize (bool nonzero_p)
     }
 
   /* Perform substitutions based on the known constant values.  */
-  something_changed = substitute_and_fold (get_constant_value, ccp_fold_stmt);
+  class ccp_folder ccp_folder;
+  something_changed = ccp_folder.substitute_and_fold ();
 
   free (const_val);
   const_val = NULL;
@@ -2176,8 +2194,8 @@ fold_builtin_alloca_with_align (gimple *stmt)
 /* Fold the stmt at *GSI with CCP specific information that propagating
    and regular folding does not catch.  */
 
-static bool
-ccp_fold_stmt (gimple_stmt_iterator *gsi)
+bool
+ccp_folder::fold_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
 

@@ -853,7 +853,7 @@ static struct prop_stats_d prop_stats;
    PROP_VALUE. Return true if at least one reference was replaced.  */
 
 bool
-replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value)
+substitute_and_fold_engine::replace_uses_in (gimple *stmt)
 {
   bool replaced = false;
   use_operand_p use;
@@ -862,7 +862,7 @@ replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value)
   FOR_EACH_SSA_USE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       tree tuse = USE_FROM_PTR (use);
-      tree val = (*get_value) (tuse);
+      tree val = get_value (tuse);
 
       if (val == tuse || val == NULL_TREE)
 	continue;
@@ -891,8 +891,8 @@ replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value)
 /* Replace propagated values into all the arguments for PHI using the
    values from PROP_VALUE.  */
 
-static bool
-replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
+bool
+substitute_and_fold_engine::replace_phi_args_in (gphi *phi)
 {
   size_t i;
   bool replaced = false;
@@ -909,7 +909,7 @@ replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
 
       if (TREE_CODE (arg) == SSA_NAME)
 	{
-	  tree val = (*get_value) (arg);
+	  tree val = get_value (arg);
 
 	  if (val && val != arg && may_propagate_copy (arg, val))
 	    {
@@ -960,10 +960,10 @@ class substitute_and_fold_dom_walker : public dom_walker
 {
 public:
     substitute_and_fold_dom_walker (cdi_direction direction,
-				    ssa_prop_get_value_fn get_value_fn_,
-				    ssa_prop_fold_stmt_fn fold_fn_)
-	: dom_walker (direction), get_value_fn (get_value_fn_),
-      fold_fn (fold_fn_), something_changed (false)
+				    class substitute_and_fold_engine *engine)
+	: dom_walker (direction),
+          something_changed (false),
+	  substitute_and_fold_engine (engine)
     {
       stmts_to_remove.create (0);
       stmts_to_fixup.create (0);
@@ -979,12 +979,12 @@ public:
     virtual edge before_dom_children (basic_block);
     virtual void after_dom_children (basic_block) {}
 
-    ssa_prop_get_value_fn get_value_fn;
-    ssa_prop_fold_stmt_fn fold_fn;
     bool something_changed;
     vec<gimple *> stmts_to_remove;
     vec<gimple *> stmts_to_fixup;
     bitmap need_eh_cleanup;
+
+    class substitute_and_fold_engine *substitute_and_fold_engine;
 };
 
 edge
@@ -1001,7 +1001,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	continue;
       if (res && TREE_CODE (res) == SSA_NAME)
 	{
-	  tree sprime = get_value_fn (res);
+	  tree sprime = substitute_and_fold_engine->get_value (res);
 	  if (sprime
 	      && sprime != res
 	      && may_propagate_copy (res, sprime))
@@ -1010,7 +1010,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      continue;
 	    }
 	}
-      something_changed |= replace_phi_args_in (phi, get_value_fn);
+      something_changed |= substitute_and_fold_engine->replace_phi_args_in (phi);
     }
 
   /* Propagate known values into stmts.  In some case it exposes
@@ -1027,7 +1027,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	{
-	  tree sprime = get_value_fn (lhs);
+	  tree sprime = substitute_and_fold_engine->get_value (lhs);
 	  if (sprime
 	      && sprime != lhs
 	      && may_propagate_copy (lhs, sprime)
@@ -1056,7 +1056,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 			   && gimple_call_noreturn_p (stmt));
 
       /* Replace real uses in the statement.  */
-      did_replace |= replace_uses_in (stmt, get_value_fn);
+      did_replace |= substitute_and_fold_engine->replace_uses_in (stmt);
 
       /* If we made a replacement, fold the statement.  */
       if (did_replace)
@@ -1069,16 +1069,13 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
       /* Some statements may be simplified using propagator
 	 specific information.  Do this before propagating
 	 into the stmt to not disturb pass specific information.  */
-      if (fold_fn)
+      update_stmt_if_modified (stmt);
+      if (substitute_and_fold_engine->fold_stmt(&i))
 	{
-	  update_stmt_if_modified (stmt);
-	  if ((*fold_fn)(&i))
-	    {
-	      did_replace = true;
-	      prop_stats.num_stmts_folded++;
-	      stmt = gsi_stmt (i);
-	      gimple_set_modified (stmt, true);
-	    }
+	  did_replace = true;
+	  prop_stats.num_stmts_folded++;
+	  stmt = gsi_stmt (i);
+	  gimple_set_modified (stmt, true);
 	}
 
       /* If this is a control statement the propagator left edges
@@ -1164,19 +1161,15 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
    Return TRUE when something changed.  */
 
 bool
-substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
-		     ssa_prop_fold_stmt_fn fold_fn)
+substitute_and_fold_engine::substitute_and_fold (void)
 {
-  gcc_assert (get_value_fn);
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nSubstituting values and folding statements\n\n");
 
   memset (&prop_stats, 0, sizeof (prop_stats));
 
   calculate_dominance_info (CDI_DOMINATORS);
-  substitute_and_fold_dom_walker walker(CDI_DOMINATORS,
-					get_value_fn, fold_fn);
+  substitute_and_fold_dom_walker walker (CDI_DOMINATORS, this);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* We cannot remove stmts during the BB walk, especially not release

@@ -1,5 +1,39 @@
 2017-11-01  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-ccp.c (ccp_folder): New class derived from
+	substitute_and_fold_engine.
+	(ccp_folder::get_value): New member function.
+	(ccp_folder::fold_stmt): Renamed from ccp_fold_stmt.
+	(ccp_fold_stmt): Remove prototype.
+	(ccp_finalize): Call substitute_and_fold from the ccp_class.
+	* tree-ssa-copy.c (copy_folder): New class derived from
+	substitute_and_fold_engine.
+	(copy_folder::get_value): Renamed from get_value.
+	(fini_copy_prop): Call substitute_and_fold from copy_folder class.
+	* tree-vrp.c (vrp_folder): New class derived from
+	substitute_and_fold_engine.
+	(vrp_folder::fold_stmt): Renamed from vrp_fold_stmt.
+	(vrp_folder::get_value): New member function.
+	(vrp_finalize): Call substitute_and_fold from vrp_folder class.
+	(evrp_dom_walker::before_dom_children): Similarly for replace_uses_in.
+	* tree-ssa-propagate.h (substitute_and_fold_engine): New class to
+	provide a class interface to folder/substitute routines.
+	(ssa_prop_fold_stmt_fn): Remove typedef.
+	(ssa_prop_get_value_fn): Likewise.
+	(subsitute_and_fold): Remove prototype.
+	(replace_uses_in): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold_engine::replace_uses_in):
+	Renamed from replace_uses_in.  Call the virtual member function
+	(substitute_and_fold_engine::replace_phi_args_in): Similarly.
+	(substitute_and_fold_dom_walker): Remove initialization of
+	data member entries for calbacks.  Add substitute_and_fold_engine
+	member and initialize it.
+	(substitute_and_fold_dom_walker::before_dom_children0: Use the
+	member functions for get_value, replace_phi_args_in c
+	replace_uses_in, and fold_stmt calls.
+	(substitute_and_fold_engine::substitute_and_fold): Renamed from
+	substitute_and_fold.  Remove assert.   Update ctor call.
+
 	* tree-ssa-propagate.h (ssa_prop_visit_stmt_fn): Remove typedef.
 	(ssa_prop_visit_phi_fn): Likewise.
 	(class ssa_propagation_engine): New class to provide an interface
