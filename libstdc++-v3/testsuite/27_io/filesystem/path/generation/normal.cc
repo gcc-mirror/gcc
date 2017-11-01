@@ -46,6 +46,10 @@ test02()
   compare_paths( path().lexically_normal(), "" );
 
   compare_paths( path("/..").lexically_normal(), "/" );
+
+  // PR libstdc++/82777
+  compare_paths( path("./a/b/c/../.././b/c").lexically_normal(), "a/b/c" );
+  compare_paths( path("/a/b/c/../.././b/c").lexically_normal(), "/a/b/c" );
 }
 
 void
