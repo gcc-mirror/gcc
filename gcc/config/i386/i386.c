@@ -24334,9 +24334,7 @@ ix86_expand_vec_perm (rtx operands[])
 	  t2 = gen_reg_rtx (V32QImode);
 	  t3 = gen_reg_rtx (V32QImode);
 	  vt2 = GEN_INT (-128);
-	  for (i = 0; i < 32; i++)
-	    vec[i] = vt2;
-	  vt = gen_rtx_CONST_VECTOR (V32QImode, gen_rtvec_v (32, vec));
+	  vt = gen_const_vec_duplicate (V32QImode, vt2);
 	  vt = force_reg (V32QImode, vt);
 	  for (i = 0; i < 32; i++)
 	    vec[i] = i < 16 ? vt2 : const0_rtx;
@@ -24444,9 +24442,7 @@ ix86_expand_vec_perm (rtx operands[])
       vt = GEN_INT (w - 1);
     }
 
-  for (i = 0; i < w; i++)
-    vec[i] = vt;
-  vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
+  vt = gen_const_vec_duplicate (maskmode, vt);
   mask = expand_simple_binop (maskmode, AND, mask, vt,
 			      NULL_RTX, 0, OPTAB_DIRECT);
 
@@ -24536,9 +24532,7 @@ ix86_expand_vec_perm (rtx operands[])
 	  e = w = 4;
 	}
 
-      for (i = 0; i < w; i++)
-	vec[i] = vt;
-      vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
+      vt = gen_const_vec_duplicate (maskmode, vt);
       vt = force_reg (maskmode, vt);
       mask = expand_simple_binop (maskmode, AND, mask, vt,
 				  NULL_RTX, 0, OPTAB_DIRECT);
@@ -41224,7 +41218,7 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
   rtx dup;
 
   /* First attempt to recognize VAL as-is.  */
-  dup = gen_rtx_VEC_DUPLICATE (mode, val);
+  dup = gen_vec_duplicate (mode, val);
   insn = emit_insn (gen_rtx_SET (target, dup));
   if (recog_memoized (insn) < 0)
     {
@@ -46582,7 +46576,7 @@ expand_vec_perm_vpshufb2_vpermq_even_odd (struct expand_vec_perm_d *d)
 static bool
 expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
 {
-  rtx op, dop0, dop1, t, rperm[16];
+  rtx op, dop0, dop1, t;
   unsigned i, odd, c, s, nelt = d->nelt;
   bool end_perm = false;
   machine_mode half_mode;
@@ -46659,9 +46653,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
   dop1 = gen_reg_rtx (half_mode);
   if (odd == 0)
     {
-      for (i = 0; i < nelt / 2; i++)
-	rperm[i] = GEN_INT (c);
-      t = gen_rtx_CONST_VECTOR (half_mode, gen_rtvec_v (nelt / 2, rperm));
+      t = gen_const_vec_duplicate (half_mode, GEN_INT (c));
       t = force_reg (half_mode, t);
       emit_insn (gen_and (dop0, t, gen_lowpart (half_mode, d->op0)));
       emit_insn (gen_and (dop1, t, gen_lowpart (half_mode, d->op1)));

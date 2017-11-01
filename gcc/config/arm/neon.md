@@ -3114,15 +3114,10 @@
   "{
      rtx v_bitmask_cast;
      rtx v_bitmask = gen_reg_rtx (<VCVTF:V_cmp_result>mode);
-     int i, n_elt = GET_MODE_NUNITS (<MODE>mode);
-     rtvec v = rtvec_alloc (n_elt);
-
-     /* Create bitmask for vector select.  */
-     for (i = 0; i < n_elt; ++i)
-       RTVEC_ELT (v, i) = GEN_INT (0x80000000);
+     rtx c = GEN_INT (0x80000000);
 
      emit_move_insn (v_bitmask,
-		     gen_rtx_CONST_VECTOR (<VCVTF:V_cmp_result>mode, v));
+		     gen_const_vec_duplicate (<VCVTF:V_cmp_result>mode, c));
      emit_move_insn (operands[0], operands[2]);
      v_bitmask_cast = simplify_gen_subreg (<MODE>mode, v_bitmask,
 					   <VCVTF:V_cmp_result>mode, 0);

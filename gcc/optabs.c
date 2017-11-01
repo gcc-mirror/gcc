@@ -377,13 +377,8 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
 
   gcc_checking_assert (VECTOR_MODE_P (vmode));
 
-  n = GET_MODE_NUNITS (vmode);
-  vec = rtvec_alloc (n);
-  for (i = 0; i < n; ++i)
-    RTVEC_ELT (vec, i) = op;
-
   if (CONSTANT_P (op))
-    return gen_rtx_CONST_VECTOR (vmode, vec);
+    return gen_const_vec_duplicate (vmode, op);
 
   /* ??? If the target doesn't have a vec_init, then we have no easy way
      of performing this operation.  Most of this sort of generic support
@@ -393,6 +388,10 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   if (icode == CODE_FOR_nothing)
     return NULL;
 
+  n = GET_MODE_NUNITS (vmode);
+  vec = rtvec_alloc (n);
+  for (i = 0; i < n; ++i)
+    RTVEC_ELT (vec, i) = op;
   ret = gen_reg_rtx (vmode);
   emit_insn (GEN_FCN (icode) (ret, gen_rtx_PARALLEL (vmode, vec)));
 
