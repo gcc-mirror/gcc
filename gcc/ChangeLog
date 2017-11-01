@@ -2,6 +2,31 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/rtl.texi (vec_series): Document.
+	(const): Say that the operand can be a vec_series.
+	* rtl.def (VEC_SERIES): New rtx code.
+	* rtl.h (const_vec_series_p_1): Declare.
+	(const_vec_series_p): New function.
+	* emit-rtl.h (gen_const_vec_series): Declare.
+	(gen_vec_series): Likewise.
+	* emit-rtl.c (const_vec_series_p_1, gen_const_vec_series)
+	(gen_vec_series): Likewise.
+	* optabs.c (expand_mult_highpart): Use gen_const_vec_series.
+	* simplify-rtx.c (simplify_unary_operation): Handle negations
+	of vector series.
+	(simplify_binary_operation_series): New function.
+	(simplify_binary_operation_1): Use it.  Handle VEC_SERIES.
+	(test_vector_ops_series): New function.
+	(test_vector_ops): Call it.
+	* config/powerpcspe/altivec.md (altivec_lvsl): Use
+	gen_const_vec_series.
+	(altivec_lvsr): Likewise.
+	* config/rs6000/altivec.md (altivec_lvsl, altivec_lvsr): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/rtl.texi (const): Update description of address constants.
 	Say that vector constants are allowed too.
 	* common.md (E, F): Use CONSTANT_P instead of checking for

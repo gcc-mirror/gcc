@@ -1677,7 +1677,8 @@ are target-specific and typically represent some form of relocation
 operator.  @var{m} should be a valid address mode.
 
 The second use of @code{const} is to wrap a vector operation.
-In this case @var{exp} must be a @code{vec_duplicate} expression.
+In this case @var{exp} must be a @code{vec_duplicate} or
+@code{vec_series} expression.
 
 @findex high
 @item (high:@var{m} @var{exp})
@@ -2722,6 +2723,10 @@ the same submodes as the input vector mode or the scalar modes, and the
 number of output parts must be an integer multiple of the number of input
 parts.
 
+@findex vec_series
+@item (vec_series:@var{m} @var{base} @var{step})
+This operation creates a vector in which element @var{i} is equal to
+@samp{@var{base} + @var{i}*@var{step}}.  @var{m} must be a vector integer mode.
 @end table
 
 @node Conversions

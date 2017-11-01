@@ -927,7 +927,7 @@ static rtx
 simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 {
   enum rtx_code reversed;
-  rtx temp, elt;
+  rtx temp, elt, base, step;
   scalar_int_mode inner, int_mode, op_mode, op0_mode;
 
   switch (code)
@@ -1183,6 +1183,22 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	      if (GET_MODE_PRECISION (int_mode) > isize)
 		return simplify_gen_unary (ZERO_EXTEND, int_mode, temp, inner);
 	      return simplify_gen_unary (TRUNCATE, int_mode, temp, inner);
+	    }
+	}
+
+      if (vec_series_p (op, &base, &step))
+	{
+	  /* Only create a new series if we can simplify both parts.  In other
+	     cases this isn't really a simplification, and it's not necessarily
+	     a win to replace a vector operation with a scalar operation.  */
+	  scalar_mode inner_mode = GET_MODE_INNER (mode);
+	  base = simplify_unary_operation (NEG, inner_mode, base, inner_mode);
+	  if (base)
+	    {
+	      step = simplify_unary_operation (NEG, inner_mode,
+					       step, inner_mode);
+	      if (step)
+		return gen_vec_series (mode, base, step);
 	    }
 	}
       break;
@@ -2156,6 +2172,46 @@ simplify_binary_operation (enum rtx_code code, machine_mode mode,
   return NULL_RTX;
 }
 
+/* Subroutine of simplify_binary_operation_1 that looks for cases in
+   which OP0 and OP1 are both vector series or vector duplicates
+   (which are really just series with a step of 0).  If so, try to
+   form a new series by applying CODE to the bases and to the steps.
+   Return null if no simplification is possible.
+
+   MODE is the mode of the operation and is known to be a vector
+   integer mode.  */
+
+static rtx
+simplify_binary_operation_series (rtx_code code, machine_mode mode,
+				  rtx op0, rtx op1)
+{
+  rtx base0, step0;
+  if (vec_duplicate_p (op0, &base0))
+    step0 = const0_rtx;
+  else if (!vec_series_p (op0, &base0, &step0))
+    return NULL_RTX;
+
+  rtx base1, step1;
+  if (vec_duplicate_p (op1, &base1))
+    step1 = const0_rtx;
+  else if (!vec_series_p (op1, &base1, &step1))
+    return NULL_RTX;
+
+  /* Only create a new series if we can simplify both parts.  In other
+     cases this isn't really a simplification, and it's not necessarily
+     a win to replace a vector operation with a scalar operation.  */
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  rtx new_base = simplify_binary_operation (code, inner_mode, base0, base1);
+  if (!new_base)
+    return NULL_RTX;
+
+  rtx new_step = simplify_binary_operation (code, inner_mode, step0, step1);
+  if (!new_step)
+    return NULL_RTX;
+
+  return gen_vec_series (mode, new_base, new_step);
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -2332,6 +2388,14 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && flag_associative_math)
 	{
 	  tem = simplify_associative_operation (code, mode, op0, op1);
+	  if (tem)
+	    return tem;
+	}
+
+      /* Handle vector series.  */
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  tem = simplify_binary_operation_series (code, mode, op0, op1);
 	  if (tem)
 	    return tem;
 	}
@@ -2546,6 +2610,14 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      || plus_minus_operand_p (op1))
 	  && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
 	return tem;
+
+      /* Handle vector series.  */
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  tem = simplify_binary_operation_series (code, mode, op0, op1);
+	  if (tem)
+	    return tem;
+	}
       break;
 
     case MULT:
@@ -3497,6 +3569,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
     case SS_DIV:
     case US_DIV:
       /* ??? There are simplifications that can be done.  */
+      return 0;
+
+    case VEC_SERIES:
+      if (op1 == CONST0_RTX (GET_MODE_INNER (mode)))
+	return gen_vec_duplicate (mode, op0);
       return 0;
 
     case VEC_SELECT:
@@ -6494,6 +6571,60 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
     }
 }
 
+/* Test vector simplifications involving VEC_SERIES in which the
+   operands and result have vector mode MODE.  SCALAR_REG is a pseudo
+   register that holds one element of MODE.  */
+
+static void
+test_vector_ops_series (machine_mode mode, rtx scalar_reg)
+{
+  /* Test unary cases with VEC_SERIES arguments.  */
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  rtx duplicate = gen_rtx_VEC_DUPLICATE (mode, scalar_reg);
+  rtx neg_scalar_reg = gen_rtx_NEG (inner_mode, scalar_reg);
+  rtx series_0_r = gen_rtx_VEC_SERIES (mode, const0_rtx, scalar_reg);
+  rtx series_0_nr = gen_rtx_VEC_SERIES (mode, const0_rtx, neg_scalar_reg);
+  rtx series_nr_1 = gen_rtx_VEC_SERIES (mode, neg_scalar_reg, const1_rtx);
+  rtx series_r_m1 = gen_rtx_VEC_SERIES (mode, scalar_reg, constm1_rtx);
+  rtx series_r_r = gen_rtx_VEC_SERIES (mode, scalar_reg, scalar_reg);
+  rtx series_nr_nr = gen_rtx_VEC_SERIES (mode, neg_scalar_reg,
+					 neg_scalar_reg);
+  ASSERT_RTX_EQ (series_0_r,
+		 simplify_unary_operation (NEG, mode, series_0_nr, mode));
+  ASSERT_RTX_EQ (series_r_m1,
+		 simplify_unary_operation (NEG, mode, series_nr_1, mode));
+  ASSERT_RTX_EQ (series_r_r,
+		 simplify_unary_operation (NEG, mode, series_nr_nr, mode));
+
+  /* Test that a VEC_SERIES with a zero step is simplified away.  */
+  ASSERT_RTX_EQ (duplicate,
+		 simplify_binary_operation (VEC_SERIES, mode,
+					    scalar_reg, const0_rtx));
+
+  /* Test PLUS and MINUS with VEC_SERIES.  */
+  rtx series_0_1 = gen_const_vec_series (mode, const0_rtx, const1_rtx);
+  rtx series_0_m1 = gen_const_vec_series (mode, const0_rtx, constm1_rtx);
+  rtx series_r_1 = gen_rtx_VEC_SERIES (mode, scalar_reg, const1_rtx);
+  ASSERT_RTX_EQ (series_r_r,
+		 simplify_binary_operation (PLUS, mode, series_0_r,
+					    duplicate));
+  ASSERT_RTX_EQ (series_r_1,
+		 simplify_binary_operation (PLUS, mode, duplicate,
+					    series_0_1));
+  ASSERT_RTX_EQ (series_r_m1,
+		 simplify_binary_operation (PLUS, mode, duplicate,
+					    series_0_m1));
+  ASSERT_RTX_EQ (series_0_r,
+		 simplify_binary_operation (MINUS, mode, series_r_r,
+					    duplicate));
+  ASSERT_RTX_EQ (series_r_m1,
+		 simplify_binary_operation (MINUS, mode, duplicate,
+					    series_0_1));
+  ASSERT_RTX_EQ (series_r_1,
+		 simplify_binary_operation (MINUS, mode, duplicate,
+					    series_0_m1));
+}
+
 /* Verify some simplifications involving vectors.  */
 
 static void
@@ -6506,6 +6637,9 @@ test_vector_ops ()
 	{
 	  rtx scalar_reg = make_test_reg (GET_MODE_INNER (mode));
 	  test_vector_ops_duplicate (mode, scalar_reg);
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	      && GET_MODE_NUNITS (mode) > 2)
+	    test_vector_ops_series (mode, scalar_reg);
 	}
     }
 }

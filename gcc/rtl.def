@@ -710,6 +710,11 @@ DEF_RTL_EXPR(VEC_CONCAT, "vec_concat", "ee", RTX_BIN_ARITH)
    an integer multiple of the number of input parts.  */
 DEF_RTL_EXPR(VEC_DUPLICATE, "vec_duplicate", "e", RTX_UNARY)
 
+/* Creation of a vector in which element I has the value BASE + I * STEP,
+   where BASE is the first operand and STEP is the second.  The result
+   must have a vector integer mode.  */
+DEF_RTL_EXPR(VEC_SERIES, "vec_series", "ee", RTX_BIN_ARITH)
+
 /* Addition with signed saturation */
 DEF_RTL_EXPR(SS_PLUS, "ss_plus", "ee", RTX_COMM_ARITH)
 
