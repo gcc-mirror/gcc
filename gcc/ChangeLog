@@ -1,3 +1,18 @@
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_trn, aarch64_evpc_uzp)
+	(aarch64_evpc_zip, aarch64_evpc_ext, aarch64_evpc_rev)
+	(aarch64_evpc_dup): Generate rtl direcly, rather than using
+	named expanders.
+	(aarch64_expand_vec_perm_const_1): Explicitly check for permutes
+	of a single element.
+	* config/aarch64/iterators.md: Add a comment above the permute
+	unspecs to say that they are generated directly by
+	aarch64_expand_vec_perm_const.
+	* config/aarch64/aarch64-simd.md: Likewise the permute instructions.
+
 2017-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* tree-dump.c (dequeue_and_dump): Use HAS_DECL_ASSEMBLER_NAME_P.
