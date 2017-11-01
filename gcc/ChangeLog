@@ -1,3 +1,10 @@
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (can_change_dest_mode): Reject changes in
+	REGMODE_NATURAL_SIZE.
+
 2017-10-31  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* configure.ac (--enable-libssp): New.
