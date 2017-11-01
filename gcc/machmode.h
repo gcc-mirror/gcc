@@ -652,6 +652,39 @@ GET_MODE_2XWIDER_MODE (const T &m)
 extern const unsigned char mode_complex[NUM_MACHINE_MODES];
 #define GET_MODE_COMPLEX_MODE(MODE) ((machine_mode) mode_complex[MODE])
 
+/* Represents a machine mode that must have a fixed size.  The main
+   use of this class is to represent the modes of objects that always
+   have static storage duration, such as constant pool entries.
+   (No current target supports the concept of variable-size static data.)  */
+class fixed_size_mode
+{
+public:
+  typedef mode_traits<fixed_size_mode>::from_int from_int;
+
+  ALWAYS_INLINE fixed_size_mode () {}
+  ALWAYS_INLINE fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_float_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_mode_pod &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+  ALWAYS_INLINE fixed_size_mode (const complex_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if MODE has a fixed size.  */
+
+inline bool
+fixed_size_mode::includes_p (machine_mode)
+{
+  return true;
+}
+
 extern opt_machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
 /* Return the machine mode to use for a MODE_INT of SIZE bits, if one

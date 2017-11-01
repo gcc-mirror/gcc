@@ -329,7 +329,7 @@ static tree ia64_fold_builtin (tree, int, tree *, bool);
 static tree ia64_builtin_decl (unsigned, bool);
 
 static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
-static machine_mode ia64_get_reg_raw_mode (int regno);
+static fixed_size_mode ia64_get_reg_raw_mode (int regno);
 static section * ia64_hpux_function_section (tree, enum node_frequency,
 					     bool, bool);
 
@@ -11328,7 +11328,7 @@ ia64_dconst_0_375 (void)
   return ia64_dconst_0_375_rtx;
 }
 
-static machine_mode
+static fixed_size_mode
 ia64_get_reg_raw_mode (int regno)
 {
   if (FR_REGNO_P (regno))

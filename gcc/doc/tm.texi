@@ -4551,11 +4551,11 @@ This macro has effect in @option{-fpcc-struct-return} mode, but it does
 nothing when you use @option{-freg-struct-return} mode.
 @end defmac
 
-@deftypefn {Target Hook} machine_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
+@deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw return registers in @code{__builtin_return}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
+@deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw argument registers in @code{__builtin_apply_args}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
 @end deftypefn
 

@@ -3566,7 +3566,7 @@ struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
   rtx constant;
   HOST_WIDE_INT offset;
   hashval_t hash;
-  machine_mode mode;
+  fixed_size_mode mode;
   unsigned int align;
   int labelno;
   int mark;
@@ -3742,10 +3742,11 @@ simplify_subtraction (rtx x)
 }
 
 /* Given a constant rtx X, make (or find) a memory constant for its value
-   and return a MEM rtx to refer to it in memory.  */
+   and return a MEM rtx to refer to it in memory.  IN_MODE is the mode
+   of X.  */
 
 rtx
-force_const_mem (machine_mode mode, rtx x)
+force_const_mem (machine_mode in_mode, rtx x)
 {
   struct constant_descriptor_rtx *desc, tmp;
   struct rtx_constant_pool *pool;
@@ -3754,6 +3755,11 @@ force_const_mem (machine_mode mode, rtx x)
   hashval_t hash;
   unsigned int align;
   constant_descriptor_rtx **slot;
+  fixed_size_mode mode;
+
+  /* We can't force variable-sized objects to memory.  */
+  if (!is_a <fixed_size_mode> (in_mode, &mode))
+    return NULL_RTX;
 
   /* If we're not allowed to drop X into the constant pool, don't.  */
   if (targetm.cannot_force_const_mem (mode, x))
@@ -3859,7 +3865,7 @@ get_pool_constant_mark (rtx addr, bool *pmarked)
 
 /* Similar, return the mode.  */
 
-machine_mode
+fixed_size_mode
 get_pool_mode (const_rtx addr)
 {
   return SYMBOL_REF_CONSTANT (addr)->mode;
@@ -3879,7 +3885,7 @@ constant_pool_empty_p (void)
    in MODE with known alignment ALIGN.  */
 
 static void
-output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
+output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
 {
   switch (GET_MODE_CLASS (mode))
     {

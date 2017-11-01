@@ -3021,7 +3021,7 @@ extern rtx force_const_mem (machine_mode, rtx);
 struct function;
 extern rtx get_pool_constant (const_rtx);
 extern rtx get_pool_constant_mark (rtx, bool *);
-extern machine_mode get_pool_mode (const_rtx);
+extern fixed_size_mode get_pool_mode (const_rtx);
 extern rtx simplify_subtraction (rtx);
 extern void decide_function_section (tree);
 

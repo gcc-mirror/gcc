@@ -2,6 +2,35 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (fixed_size_mode): New class.
+	* rtl.h (get_pool_mode): Return fixed_size_mode.
+	* gengtype.c (main): Add fixed_size_mode.
+	* target.def (get_raw_result_mode): Return a fixed_size_mode.
+	(get_raw_arg_mode): Likewise.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_get_reg_raw_mode): Return a fixed_size_mode.
+	* targhooks.c (default_get_reg_raw_mode): Likewise.
+	* config/ia64/ia64.c (ia64_get_reg_raw_mode): Likewise.
+	* config/mips/mips.c (mips_get_reg_raw_mode): Likewise.
+	* config/msp430/msp430.c (msp430_get_raw_arg_mode): Likewise.
+	(msp430_get_raw_result_mode): Likewise.
+	* config/avr/avr-protos.h (regmask): Use as_a <fixed_side_mode>
+	* dbxout.c (dbxout_parms): Require fixed-size modes.
+	* expr.c (copy_blkmode_from_reg, copy_blkmode_to_reg): Likewise.
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Likewise.
+	* omp-low.c (lower_oacc_reductions): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Take fixed_size_modes.
+	(simplify_subreg): Update accordingly.
+	* varasm.c (constant_descriptor_rtx::mode): Change to fixed_size_mode.
+	(force_const_mem): Update accordingly.  Return NULL_RTX for modes
+	that aren't fixed-size.
+	(get_pool_mode): Return a fixed_size_mode.
+	(output_constant_pool_2): Take a fixed_size_mode.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/rtl.texi (vec_series): Document.
 	(const): Say that the operand can be a vec_series.
 	* rtl.def (VEC_SERIES): New rtx code.
