@@ -1,4 +1,22 @@
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/rtl.texi (const): Update description of address constants.
+	Say that vector constants are allowed too.
+	* common.md (E, F): Use CONSTANT_P instead of checking for
+	CONST_VECTOR.
+	* emit-rtl.c (gen_lowpart_common): Use const_vec_p instead of
+	checking for CONST_VECTOR.
+	* expmed.c (make_tree): Use build_vector_from_val for a CONST
+	VEC_DUPLICATE.
+	* expr.c (expand_expr_real_2): Check for vector modes instead
+	of checking for CONST_VECTOR.
+	* rtl.h (const_vec_p): New function.
+	(const_vec_duplicate_p): Check for a CONST VEC_DUPLICATE.
+	(unwrap_const_vec_duplicate): Handle them here too.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 	    David Malcolm  <dmalcolm@redhat.com>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

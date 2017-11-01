@@ -5244,7 +5244,15 @@ make_tree (tree type, rtx x)
       return fold_convert (type, make_tree (t, XEXP (x, 0)));
 
     case CONST:
-      return make_tree (type, XEXP (x, 0));
+      {
+	rtx op = XEXP (x, 0);
+	if (GET_CODE (op) == VEC_DUPLICATE)
+	  {
+	    tree elt_tree = make_tree (TREE_TYPE (type), XEXP (op, 0));
+	    return build_vector_from_val (type, elt_tree);
+	  }
+	return make_tree (type, op);
+      }
 
     case SYMBOL_REF:
       t = SYMBOL_REF_DECL (x);
