@@ -1,3 +1,8 @@
+2017-11-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/81702
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Remove assert.
+
 2017-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82772
