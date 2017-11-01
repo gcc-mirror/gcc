@@ -2955,6 +2955,16 @@ subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
 }
 
 /* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
+   return the smaller of the two modes if they are different sizes,
+   otherwise return the outer mode.  */
+
+inline machine_mode
+narrower_subreg_mode (machine_mode outermode, machine_mode innermode)
+{
+  return paradoxical_subreg_p (outermode, innermode) ? innermode : outermode;
+}
+
+/* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
    return the mode that is big enough to hold both the outer and inner
    values.  Prefer the outer mode in the event of a tie.  */
 
