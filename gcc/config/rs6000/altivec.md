@@ -2574,13 +2574,10 @@
     emit_insn (gen_altivec_lvsl_direct (operands[0], operands[1]));
   else
     {
-      int i;
-      rtx mask, perm[16], constv, vperm;
+      rtx mask, constv, vperm;
       mask = gen_reg_rtx (V16QImode);
       emit_insn (gen_altivec_lvsl_direct (mask, operands[1]));
-      for (i = 0; i < 16; ++i)
-        perm[i] = GEN_INT (i);
-      constv = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm));
+      constv = gen_const_vec_series (V16QImode, const0_rtx, const1_rtx);
       constv = force_reg (V16QImode, constv);
       vperm = gen_rtx_UNSPEC (V16QImode, gen_rtvec (3, mask, mask, constv),
                               UNSPEC_VPERM);
@@ -2615,13 +2612,10 @@
     emit_insn (gen_altivec_lvsr_direct (operands[0], operands[1]));
   else
     {
-      int i;
-      rtx mask, perm[16], constv, vperm;
+      rtx mask, constv, vperm;
       mask = gen_reg_rtx (V16QImode);
       emit_insn (gen_altivec_lvsr_direct (mask, operands[1]));
-      for (i = 0; i < 16; ++i)
-        perm[i] = GEN_INT (i);
-      constv = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm));
+      constv = gen_const_vec_series (V16QImode, const0_rtx, const1_rtx);
       constv = force_reg (V16QImode, constv);
       vperm = gen_rtx_UNSPEC (V16QImode, gen_rtvec (3, mask, mask, constv),
                               UNSPEC_VPERM);

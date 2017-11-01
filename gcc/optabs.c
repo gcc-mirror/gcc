@@ -5785,13 +5785,13 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
       for (i = 0; i < nunits; ++i)
 	RTVEC_ELT (v, i) = GEN_INT (!BYTES_BIG_ENDIAN + (i & ~1)
 				    + ((i & 1) ? nunits : 0));
+      perm = gen_rtx_CONST_VECTOR (mode, v);
     }
   else
     {
-      for (i = 0; i < nunits; ++i)
-	RTVEC_ELT (v, i) = GEN_INT (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
+      int base = BYTES_BIG_ENDIAN ? 0 : 1;
+      perm = gen_const_vec_series (mode, GEN_INT (base), GEN_INT (2));
     }
-  perm = gen_rtx_CONST_VECTOR (mode, v);
 
   return expand_vec_perm (mode, m1, m2, perm, target);
 }

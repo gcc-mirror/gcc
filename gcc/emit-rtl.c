@@ -5797,6 +5797,69 @@ gen_vec_duplicate (machine_mode mode, rtx x)
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 
+/* A subroutine of const_vec_series_p that handles the case in which
+   X is known to be an integer CONST_VECTOR.  */
+
+bool
+const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  unsigned int nelts = CONST_VECTOR_NUNITS (x);
+  if (nelts < 2)
+    return false;
+
+  scalar_mode inner = GET_MODE_INNER (GET_MODE (x));
+  rtx base = CONST_VECTOR_ELT (x, 0);
+  rtx step = simplify_binary_operation (MINUS, inner,
+					CONST_VECTOR_ELT (x, 1), base);
+  if (rtx_equal_p (step, CONST0_RTX (inner)))
+    return false;
+
+  for (unsigned int i = 2; i < nelts; ++i)
+    {
+      rtx diff = simplify_binary_operation (MINUS, inner,
+					    CONST_VECTOR_ELT (x, i),
+					    CONST_VECTOR_ELT (x, i - 1));
+      if (!rtx_equal_p (step, diff))
+	return false;
+    }
+
+  *base_out = base;
+  *step_out = step;
+  return true;
+}
+
+/* Generate a vector constant of mode MODE in which element I has
+   the value BASE + I * STEP.  */
+
+rtx
+gen_const_vec_series (machine_mode mode, rtx base, rtx step)
+{
+  gcc_assert (CONSTANT_P (base) && CONSTANT_P (step));
+
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  RTVEC_ELT (v, 0) = base;
+  for (int i = 1; i < nunits; ++i)
+    RTVEC_ELT (v, i) = simplify_gen_binary (PLUS, inner_mode,
+					    RTVEC_ELT (v, i - 1), step);
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
+}
+
+/* Generate a vector of mode MODE in which element I has the value
+   BASE + I * STEP.  The result will be a constant if BASE and STEP
+   are both constants.  */
+
+rtx
+gen_vec_series (machine_mode mode, rtx base, rtx step)
+{
+  if (step == const0_rtx)
+    return gen_vec_duplicate (mode, base);
+  if (CONSTANT_P (base) && CONSTANT_P (step))
+    return gen_const_vec_series (mode, base, step);
+  return gen_rtx_VEC_SERIES (mode, base, step);
+}
+
 /* Generate a new vector constant for mode MODE and constant value
    CONSTANT.  */
 

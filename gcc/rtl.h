@@ -2816,6 +2816,51 @@ unwrap_const_vec_duplicate (T x)
   return x;
 }
 
+/* In emit-rtl.c.  */
+extern bool const_vec_series_p_1 (const_rtx, rtx *, rtx *);
+
+/* Return true if X is a constant vector that contains a linear series
+   of the form:
+
+   { B, B + S, B + 2 * S, B + 3 * S, ... }
+
+   for a nonzero S.  Store B and S in *BASE_OUT and *STEP_OUT on sucess.  */
+
+inline bool
+const_vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  if (GET_CODE (x) == CONST_VECTOR
+      && GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
+    return const_vec_series_p_1 (x, base_out, step_out);
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_SERIES)
+    {
+      *base_out = XEXP (XEXP (x, 0), 0);
+      *step_out = XEXP (XEXP (x, 0), 1);
+      return true;
+    }
+  return false;
+}
+
+/* Return true if X is a vector that contains a linear series of the
+   form:
+
+   { B, B + S, B + 2 * S, B + 3 * S, ... }
+
+   where B and S are constant or nonconstant.  Store B and S in
+   *BASE_OUT and *STEP_OUT on sucess.  */
+
+inline bool
+vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  if (GET_CODE (x) == VEC_SERIES)
+    {
+      *base_out = XEXP (x, 0);
+      *step_out = XEXP (x, 1);
+      return true;
+    }
+  return const_vec_series_p (x, base_out, step_out);
+}
+
 /* Return the unpromoted (outer) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
 
 inline scalar_int_mode
