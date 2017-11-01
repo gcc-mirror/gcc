@@ -916,7 +916,7 @@ irange::dump (pretty_printer *buffer) const
 	if (val > 0xffff)
 	  print_hex (val, pp_buffer (buffer)->digit_buffer);
 	else
-	  print_dec (val, pp_buffer (buffer)->digit_buffer, sign);
+	  print_dec (bounds[i], pp_buffer (buffer)->digit_buffer, sign);
 	pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	if (i % 2 == 0)
 	  pp_string (buffer, ", ");
