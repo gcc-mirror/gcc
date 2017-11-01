@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtlhash.c (add_rtx): Use add_hwi for 'w' and add_int for 'i'.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* alias.c (find_base_value, find_base_term): Only process integer
 	truncations.  Check the precision rather than the size.
 
