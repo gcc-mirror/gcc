@@ -1,3 +1,7 @@
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-dump.c (dequeue_and_dump): Use HAS_DECL_ASSEMBLER_NAME_P.
+
 2017-11-01  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* doc/invoke.texi (RISC-V Options): Explicitly name the medlow
