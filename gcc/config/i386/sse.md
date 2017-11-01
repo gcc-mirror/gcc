@@ -11487,13 +11487,7 @@
 		(match_dup 2)))]
   "TARGET_SSE"
 {
-  int i, n = GET_MODE_NUNITS (<MODE>mode);
-  rtvec v = rtvec_alloc (n);
-
-  for (i = 0; i < n; ++i)
-    RTVEC_ELT (v, i) = constm1_rtx;
-
-  operands[2] = force_reg (<MODE>mode, gen_rtx_CONST_VECTOR (<MODE>mode, v));
+  operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
 })
 
 (define_expand "<sse2_avx2>_andnot<mode>3"

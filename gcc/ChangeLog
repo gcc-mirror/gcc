@@ -2,6 +2,49 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* emit-rtl.h (gen_const_vec_duplicate): Declare.
+	(gen_vec_duplicate): Likewise.
+	* emit-rtl.c (gen_const_vec_duplicate_1): New function, split
+	out from...
+	(gen_const_vector): ...here.
+	(gen_const_vec_duplicate, gen_vec_duplicate): New functions.
+	(gen_rtx_CONST_VECTOR): Use gen_const_vec_duplicate for constants
+	whose elements are all equal.
+	* optabs.c (expand_vector_broadcast): Use gen_const_vec_duplicate.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_relational_operation): Likewise.
+	* config/aarch64/aarch64.c (aarch64_simd_gen_const_vector_dup):
+	Likewise.
+	(aarch64_simd_dup_constant): Use gen_vec_duplicate.
+	(aarch64_expand_vector_init): Likewise.
+	* config/arm/arm.c (neon_vdup_constant): Likewise.
+	(neon_expand_vector_init): Likewise.
+	(arm_expand_vec_perm): Use gen_const_vec_duplicate.
+	(arm_block_set_unaligned_vect): Likewise.
+	(arm_block_set_aligned_vect): Likewise.
+	* config/arm/neon.md (neon_copysignf<mode>): Likewise.
+	* config/i386/i386.c (ix86_expand_vec_perm): Likewise.
+	(expand_vec_perm_even_odd_pack): Likewise.
+	(ix86_vector_duplicate_value): Use gen_vec_duplicate.
+	* config/i386/sse.md (one_cmpl<mode>2): Use CONSTM1_RTX.
+	* config/ia64/ia64.c (ia64_expand_vecint_compare): Use
+	gen_const_vec_duplicate.
+	* config/ia64/vect.md (addv2sf3, subv2sf3): Use CONST1_RTX.
+	* config/mips/mips.c (mips_gen_const_int_vector): Use
+	gen_const_vec_duplicate.
+	(mips_expand_vector_init): Use CONST0_RTX.
+	* config/powerpcspe/altivec.md (abs<mode>2, nabs<mode>2): Likewise.
+	(define_split): Use gen_const_vec_duplicate.
+	* config/rs6000/altivec.md (abs<mode>2, nabs<mode>2): Use CONST0_RTX.
+	(define_split): Use gen_const_vec_duplicate.
+	* config/s390/vx-builtins.md (vec_genmask<mode>): Likewise.
+	(vec_ctd_s64, vec_ctd_u64, vec_ctsl, vec_ctul): Likewise.
+	* config/spu/spu.c (spu_const): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (can_change_dest_mode): Reject changes in
 	REGMODE_NATURAL_SIZE.
 

@@ -1707,28 +1707,23 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  gcc_assert (GET_MODE_INNER (mode) == GET_MODE_INNER
 						(GET_MODE (op)));
       }
-      if (CONST_SCALAR_INT_P (op) || CONST_DOUBLE_AS_FLOAT_P (op)
-	  || GET_CODE (op) == CONST_VECTOR)
+      if (CONST_SCALAR_INT_P (op) || CONST_DOUBLE_AS_FLOAT_P (op))
+	return gen_const_vec_duplicate (mode, op);
+      if (GET_CODE (op) == CONST_VECTOR)
 	{
 	  int elt_size = GET_MODE_UNIT_SIZE (mode);
           unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
 	  rtvec v = rtvec_alloc (n_elts);
 	  unsigned int i;
 
-	  if (GET_CODE (op) != CONST_VECTOR)
-	    for (i = 0; i < n_elts; i++)
-	      RTVEC_ELT (v, i) = op;
-	  else
-	    {
-	      machine_mode inmode = GET_MODE (op);
-	      int in_elt_size = GET_MODE_UNIT_SIZE (inmode);
-              unsigned in_n_elts = (GET_MODE_SIZE (inmode) / in_elt_size);
+	  machine_mode inmode = GET_MODE (op);
+	  int in_elt_size = GET_MODE_UNIT_SIZE (inmode);
+	  unsigned in_n_elts = (GET_MODE_SIZE (inmode) / in_elt_size);
 
-	      gcc_assert (in_n_elts < n_elts);
-	      gcc_assert ((n_elts % in_n_elts) == 0);
-	      for (i = 0; i < n_elts; i++)
-	        RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op, i % in_n_elts);
-	    }
+	  gcc_assert (in_n_elts < n_elts);
+	  gcc_assert ((n_elts % in_n_elts) == 0);
+	  for (i = 0; i < n_elts; i++)
+	    RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op, i % in_n_elts);
 	  return gen_rtx_CONST_VECTOR (mode, v);
 	}
     }
@@ -4636,20 +4631,13 @@ simplify_relational_operation (enum rtx_code code, machine_mode mode,
 	    return CONST0_RTX (mode);
 #ifdef VECTOR_STORE_FLAG_VALUE
 	  {
-	    int i, units;
-	    rtvec v;
-
 	    rtx val = VECTOR_STORE_FLAG_VALUE (mode);
 	    if (val == NULL_RTX)
 	      return NULL_RTX;
 	    if (val == const1_rtx)
 	      return CONST1_RTX (mode);
 
-	    units = GET_MODE_NUNITS (mode);
-	    v = rtvec_alloc (units);
-	    for (i = 0; i < units; i++)
-	      RTVEC_ELT (v, i) = val;
-	    return gen_rtx_raw_CONST_VECTOR (mode, v);
+	    return gen_const_vec_duplicate (mode, val);
 	  }
 #else
 	  return NULL_RTX;

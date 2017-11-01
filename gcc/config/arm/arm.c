@@ -12159,7 +12159,7 @@ neon_vdup_constant (rtx vals)
      load.  */
 
   x = copy_to_mode_reg (inner_mode, x);
-  return gen_rtx_VEC_DUPLICATE (mode, x);
+  return gen_vec_duplicate (mode, x);
 }
 
 /* Generate code to load VALS, which is a PARALLEL containing only
@@ -12254,7 +12254,7 @@ neon_expand_vector_init (rtx target, rtx vals)
   if (all_same && GET_MODE_SIZE (inner_mode) <= 4)
     {
       x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
-      emit_insn (gen_rtx_SET (target, gen_rtx_VEC_DUPLICATE (mode, x)));
+      emit_insn (gen_rtx_SET (target, gen_vec_duplicate (mode, x)));
       return;
     }
 
@@ -28756,9 +28756,9 @@ void
 arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
   machine_mode vmode = GET_MODE (target);
-  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  unsigned int nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
-  rtx rmask[MAX_VECT_LEN], mask;
+  rtx mask;
 
   /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
      numbering of elements for big-endian, we must reverse the order.  */
@@ -28767,9 +28767,7 @@ arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   /* The VTBL instruction does not use a modulo index, so we must take care
      of that ourselves.  */
   mask = GEN_INT (one_vector_p ? nelt - 1 : 2 * nelt - 1);
-  for (i = 0; i < nelt; ++i)
-    rmask[i] = mask;
-  mask = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rmask));
+  mask = gen_const_vec_duplicate (vmode, mask);
   sel = expand_simple_binop (vmode, AND, sel, mask, NULL, 0, OPTAB_LIB_WIDEN);
 
   arm_expand_vec_perm_1 (target, op0, op1, sel);
@@ -29823,10 +29821,9 @@ arm_block_set_unaligned_vect (rtx dstbase,
 			      unsigned HOST_WIDE_INT value,
 			      unsigned HOST_WIDE_INT align)
 {
-  unsigned int i, j, nelt_v16, nelt_v8, nelt_mode;
+  unsigned int i, nelt_v16, nelt_v8, nelt_mode;
   rtx dst, mem;
-  rtx val_elt, val_vec, reg;
-  rtx rval[MAX_VECT_LEN];
+  rtx val_vec, reg;
   rtx (*gen_func) (rtx, rtx);
   machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
@@ -29854,12 +29851,9 @@ arm_block_set_unaligned_vect (rtx dstbase,
   mem = adjust_automodify_address (dstbase, mode, dst, offset);
 
   v = sext_hwi (v, BITS_PER_WORD);
-  val_elt = GEN_INT (v);
-  for (j = 0; j < nelt_mode; j++)
-    rval[j] = val_elt;
 
   reg = gen_reg_rtx (mode);
-  val_vec = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt_mode, rval));
+  val_vec = gen_const_vec_duplicate (mode, GEN_INT (v));
   /* Emit instruction loading the constant value.  */
   emit_move_insn (reg, val_vec);
 
@@ -29923,10 +29917,9 @@ arm_block_set_aligned_vect (rtx dstbase,
 			    unsigned HOST_WIDE_INT value,
 			    unsigned HOST_WIDE_INT align)
 {
-  unsigned int i, j, nelt_v8, nelt_v16, nelt_mode;
+  unsigned int i, nelt_v8, nelt_v16, nelt_mode;
   rtx dst, addr, mem;
-  rtx val_elt, val_vec, reg;
-  rtx rval[MAX_VECT_LEN];
+  rtx val_vec, reg;
   machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
   unsigned int offset = 0;
@@ -29948,12 +29941,9 @@ arm_block_set_aligned_vect (rtx dstbase,
   dst = copy_addr_to_reg (XEXP (dstbase, 0));
 
   v = sext_hwi (v, BITS_PER_WORD);
-  val_elt = GEN_INT (v);
-  for (j = 0; j < nelt_mode; j++)
-    rval[j] = val_elt;
 
   reg = gen_reg_rtx (mode);
-  val_vec = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt_mode, rval));
+  val_vec = gen_const_vec_duplicate (mode, GEN_INT (v));
   /* Emit instruction loading the constant value.  */
   emit_move_insn (reg, val_vec);
 
