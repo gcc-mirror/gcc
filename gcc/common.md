@@ -80,14 +80,14 @@
 (define_constraint "E"
   "Matches a floating-point constant."
   (ior (match_test "CONST_DOUBLE_AS_FLOAT_P (op)")
-       (match_test "GET_CODE (op) == CONST_VECTOR
+       (match_test "CONSTANT_P (op)
 		    && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT")))
 
 ;; There is no longer a distinction between "E" and "F".
 (define_constraint "F"
   "Matches a floating-point constant."
   (ior (match_test "CONST_DOUBLE_AS_FLOAT_P (op)")
-       (match_test "GET_CODE (op) == CONST_VECTOR
+       (match_test "CONSTANT_P (op)
 		    && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT")))
 
 (define_constraint "X"

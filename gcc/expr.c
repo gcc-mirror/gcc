@@ -9429,7 +9429,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       /* Careful here: if the target doesn't support integral vector modes,
 	 a constant selection vector could wind up smooshed into a normal
 	 integral constant.  */
-      if (CONSTANT_P (op2) && GET_CODE (op2) != CONST_VECTOR)
+      if (CONSTANT_P (op2) && !VECTOR_MODE_P (GET_MODE (op2)))
 	{
 	  tree sel_type = TREE_TYPE (treeop2);
 	  machine_mode vmode
