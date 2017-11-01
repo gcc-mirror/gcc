@@ -989,7 +989,7 @@ See RS/6000 and PowerPC Options.
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
 -mstrict-align -mno-strict-align @gol
--mcmodel=@var{code-model} @gol
+-mcmodel=medlow -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol}
 
 @emph{RL78 Options}
@@ -21765,9 +21765,18 @@ Use smaller but slower prologue and epilogue code.
 @opindex mstrict-align
 Do not generate unaligned memory accesses.
 
-@item -mcmodel=@var{code-model}
-@opindex mcmodel
-Specify the code model.
+@item -mcmodel=medlow
+@opindex mcmodel=medlow
+Generate code for the medium-low code model. The program and its statically
+defined symbols must lie within a single 2 GiB address range and must lie
+between absolute addresses -2 GiB and +2 GiB. Programs can be statically or
+dynamically linked. This is the default code model.
+
+@item -mcmodel=medany
+@opindex mcmodel=medany
+Generate code for the medium-any code model. The program and its statically
+defined symbols must be within any single 2 GiB address range. Programs can be
+statically or dynamically linked.
 
 @end table
 
