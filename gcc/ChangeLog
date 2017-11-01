@@ -1,3 +1,13 @@
+2017-11-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	PR rtl-optimization/69567
+	PR rtl-optimization/69737
+	PR rtl-optimization/82683
+	* combine.c (distribute_notes) <REG_DEAD>: If the new I2 sets the same
+	register mentioned in the note, drop the note, unless it came from I3,
+	in which case it should go to I3 again.
+
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-ssa-dse.c (normalize_ref): Check whether the ranges overlap
