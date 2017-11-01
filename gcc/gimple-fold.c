@@ -6439,7 +6439,6 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   gcc_assert (init);
   if (init == error_mark_node)
     {
-      gcc_assert (in_lto_p);
       /* Pass down that we lost track of the target.  */
       if (can_refer)
 	*can_refer = false;
