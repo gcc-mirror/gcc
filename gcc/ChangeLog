@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_add_constant_internal)
+	(aarch64_add_constant, aarch64_add_sp, aarch64_sub_sp): Move
+	earlier in file.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_evpc_trn, aarch64_evpc_uzp)
 	(aarch64_evpc_zip, aarch64_evpc_ext, aarch64_evpc_rev)
 	(aarch64_evpc_dup): Generate rtl direcly, rather than using
