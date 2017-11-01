@@ -171,6 +171,8 @@ ranges_overlap_p (HOST_WIDE_INT pos1,
 		  HOST_WIDE_INT pos2,
 		  unsigned HOST_WIDE_INT size2)
 {
+  if (size1 == 0 || size2 == 0)
+    return false;
   if (pos1 >= pos2
       && (size2 == (unsigned HOST_WIDE_INT)-1
 	  || pos1 < (pos2 + (HOST_WIDE_INT) size2)))

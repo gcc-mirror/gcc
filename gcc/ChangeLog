@@ -1,4 +1,9 @@
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-alias.h (ranges_overlap_p): Return false if either
+	range is known to be empty.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
