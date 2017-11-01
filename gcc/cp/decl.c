@@ -1920,8 +1920,8 @@ next_arg:;
       DECL_OVERRIDE_P (newdecl) |= DECL_OVERRIDE_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
       if (DECL_OVERLOADED_OPERATOR_P (olddecl))
-	DECL_OVERLOADED_OPERATOR_CODE (newdecl)
-	  = DECL_OVERLOADED_OPERATOR_CODE (olddecl);
+	DECL_OVERLOADED_OPERATOR_CODE_RAW (newdecl)
+	  = DECL_OVERLOADED_OPERATOR_CODE_RAW (olddecl);
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
 
       /* Optionally warn about more than one declaration for the same
@@ -4444,7 +4444,8 @@ build_library_fn (tree name, enum tree_code operator_code, tree type,
   DECL_EXTERNAL (fn) = 1;
   TREE_PUBLIC (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
-  DECL_OVERLOADED_OPERATOR_CODE (fn) = operator_code;
+  DECL_OVERLOADED_OPERATOR_CODE_RAW (fn)
+    = OVL_OP_INFO (false, operator_code)->ovl_op_code;
   SET_DECL_LANGUAGE (fn, lang_c);
   /* Runtime library routines are, by definition, available in an
      external shared object.  */
@@ -12902,7 +12903,7 @@ grok_op_properties (tree decl, bool complain)
       operator_code = ovl_op->tree_code;
       op_flags = ovl_op->flags;
       gcc_checking_assert (operator_code != ERROR_MARK);
-      DECL_OVERLOADED_OPERATOR_CODE (decl) = operator_code;
+      DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
     }
 
   if (op_flags & OVL_OP_FLAG_ALLOC)
@@ -13046,7 +13047,7 @@ grok_op_properties (tree decl, bool complain)
 	  const ovl_op_info_t *ovl_op = &ovl_op_info[false][alt];
 	  gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
 	  operator_code = ovl_op->tree_code;
-	  DECL_OVERLOADED_OPERATOR_CODE (decl) = operator_code;
+	  DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
 	}
       else if (arity != 2)
 	{

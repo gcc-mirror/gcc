@@ -1412,7 +1412,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	DECL_CXX_DESTRUCTOR_P (decl) = 1;
       else if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
 	       && opcode != ERROR_MARK)
-	DECL_OVERLOADED_OPERATOR_CODE (decl) = opcode;
+	DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op_mapping[opcode];
     }
   else if (RECORD_OR_UNION_CODE_P (code))
     {
