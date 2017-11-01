@@ -13263,7 +13263,6 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
-  rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -13300,48 +13299,8 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
     }
   out = d->target;
 
-  if (odd)
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_trn2v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_trn2v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_trn2v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_trn2v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_trn2v4si; break;
-	case E_V2SImode: gen = gen_aarch64_trn2v2si; break;
-	case E_V2DImode: gen = gen_aarch64_trn2v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_trn2v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_trn2v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_trn2v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_trn2v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_trn2v2df; break;
-	default:
-	  return false;
-	}
-    }
-  else
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_trn1v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_trn1v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_trn1v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_trn1v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_trn1v4si; break;
-	case E_V2SImode: gen = gen_aarch64_trn1v2si; break;
-	case E_V2DImode: gen = gen_aarch64_trn1v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_trn1v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_trn1v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_trn1v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_trn1v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_trn1v2df; break;
-	default:
-	  return false;
-	}
-    }
-
-  emit_insn (gen (out, in0, in1));
+  emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
+				      odd ? UNSPEC_TRN2 : UNSPEC_TRN1));
   return true;
 }
 
@@ -13351,7 +13310,6 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
-  rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -13387,48 +13345,8 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
     }
   out = d->target;
 
-  if (odd)
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_uzp2v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_uzp2v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_uzp2v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_uzp2v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_uzp2v4si; break;
-	case E_V2SImode: gen = gen_aarch64_uzp2v2si; break;
-	case E_V2DImode: gen = gen_aarch64_uzp2v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_uzp2v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_uzp2v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_uzp2v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_uzp2v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_uzp2v2df; break;
-	default:
-	  return false;
-	}
-    }
-  else
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_uzp1v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_uzp1v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_uzp1v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_uzp1v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_uzp1v4si; break;
-	case E_V2SImode: gen = gen_aarch64_uzp1v2si; break;
-	case E_V2DImode: gen = gen_aarch64_uzp1v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_uzp1v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_uzp1v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_uzp1v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_uzp1v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_uzp1v2df; break;
-	default:
-	  return false;
-	}
-    }
-
-  emit_insn (gen (out, in0, in1));
+  emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
+				      odd ? UNSPEC_UZP2 : UNSPEC_UZP1));
   return true;
 }
 
@@ -13438,7 +13356,6 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
   unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
-  rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -13479,48 +13396,8 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
     }
   out = d->target;
 
-  if (high)
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_zip2v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_zip2v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_zip2v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_zip2v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_zip2v4si; break;
-	case E_V2SImode: gen = gen_aarch64_zip2v2si; break;
-	case E_V2DImode: gen = gen_aarch64_zip2v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_zip2v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_zip2v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_zip2v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_zip2v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_zip2v2df; break;
-	default:
-	  return false;
-	}
-    }
-  else
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_zip1v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_zip1v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_zip1v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_zip1v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_zip1v4si; break;
-	case E_V2SImode: gen = gen_aarch64_zip1v2si; break;
-	case E_V2DImode: gen = gen_aarch64_zip1v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_zip1v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_zip1v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_zip1v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_zip1v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_zip1v2df; break;
-	default:
-	  return false;
-	}
-    }
-
-  emit_insn (gen (out, in0, in1));
+  emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
+				      high ? UNSPEC_ZIP2 : UNSPEC_ZIP1));
   return true;
 }
 
@@ -13530,7 +13407,6 @@ static bool
 aarch64_evpc_ext (struct expand_vec_perm_d *d)
 {
   unsigned int i, nelt = d->perm.length ();
-  rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
   unsigned int location = d->perm[0]; /* Always < nelt.  */
@@ -13546,24 +13422,6 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 	}
       if (d->perm[i] != required)
         return false;
-    }
-
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_aarch64_extv16qi; break;
-    case E_V8QImode: gen = gen_aarch64_extv8qi; break;
-    case E_V4HImode: gen = gen_aarch64_extv4hi; break;
-    case E_V8HImode: gen = gen_aarch64_extv8hi; break;
-    case E_V2SImode: gen = gen_aarch64_extv2si; break;
-    case E_V4SImode: gen = gen_aarch64_extv4si; break;
-    case E_V4HFmode: gen = gen_aarch64_extv4hf; break;
-    case E_V8HFmode: gen = gen_aarch64_extv8hf; break;
-    case E_V2SFmode: gen = gen_aarch64_extv2sf; break;
-    case E_V4SFmode: gen = gen_aarch64_extv4sf; break;
-    case E_V2DImode: gen = gen_aarch64_extv2di; break;
-    case E_V2DFmode: gen = gen_aarch64_extv2df; break;
-    default:
-      return false;
     }
 
   /* Success! */
@@ -13584,7 +13442,10 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
     }
 
   offset = GEN_INT (location);
-  emit_insn (gen (d->target, d->op0, d->op1, offset));
+  emit_set_insn (d->target,
+		 gen_rtx_UNSPEC (d->vmode,
+				 gen_rtvec (3, d->op0, d->op1, offset),
+				 UNSPEC_EXT));
   return true;
 }
 
@@ -13593,55 +13454,21 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_rev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, nelt = d->perm.length ();
-  rtx (*gen) (rtx, rtx);
+  unsigned int i, j, diff, size, unspec, nelt = d->perm.length ();
 
   if (!d->one_vector_p)
     return false;
 
   diff = d->perm[0];
-  switch (diff)
-    {
-    case 7:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_rev64v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_rev64v8qi;  break;
-	default:
-	  return false;
-	}
-      break;
-    case 3:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_rev32v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_rev32v8qi;  break;
-	case E_V8HImode: gen = gen_aarch64_rev64v8hi;  break;
-	case E_V4HImode: gen = gen_aarch64_rev64v4hi;  break;
-	default:
-	  return false;
-	}
-      break;
-    case 1:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_rev16v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_rev16v8qi;  break;
-	case E_V8HImode: gen = gen_aarch64_rev32v8hi;  break;
-	case E_V4HImode: gen = gen_aarch64_rev32v4hi;  break;
-	case E_V4SImode: gen = gen_aarch64_rev64v4si;  break;
-	case E_V2SImode: gen = gen_aarch64_rev64v2si;  break;
-	case E_V4SFmode: gen = gen_aarch64_rev64v4sf;  break;
-	case E_V2SFmode: gen = gen_aarch64_rev64v2sf;  break;
-	case E_V8HFmode: gen = gen_aarch64_rev64v8hf;  break;
-	case E_V4HFmode: gen = gen_aarch64_rev64v4hf;  break;
-	default:
-	  return false;
-	}
-      break;
-    default:
-      return false;
-    }
+  size = (diff + 1) * GET_MODE_UNIT_SIZE (d->vmode);
+  if (size == 8)
+    unspec = UNSPEC_REV64;
+  else if (size == 4)
+    unspec = UNSPEC_REV32;
+  else if (size == 2)
+    unspec = UNSPEC_REV16;
+  else
+    return false;
 
   for (i = 0; i < nelt ; i += diff + 1)
     for (j = 0; j <= diff; j += 1)
@@ -13660,14 +13487,14 @@ aarch64_evpc_rev (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  emit_insn (gen (d->target, d->op0));
+  emit_set_insn (d->target, gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0),
+					    unspec));
   return true;
 }
 
 static bool
 aarch64_evpc_dup (struct expand_vec_perm_d *d)
 {
-  rtx (*gen) (rtx, rtx, rtx);
   rtx out = d->target;
   rtx in0;
   machine_mode vmode = d->vmode;
@@ -13689,25 +13516,9 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   in0 = d->op0;
   lane = GEN_INT (elt); /* The pattern corrects for big-endian.  */
 
-  switch (vmode)
-    {
-    case E_V16QImode: gen = gen_aarch64_dup_lanev16qi; break;
-    case E_V8QImode: gen = gen_aarch64_dup_lanev8qi; break;
-    case E_V8HImode: gen = gen_aarch64_dup_lanev8hi; break;
-    case E_V4HImode: gen = gen_aarch64_dup_lanev4hi; break;
-    case E_V4SImode: gen = gen_aarch64_dup_lanev4si; break;
-    case E_V2SImode: gen = gen_aarch64_dup_lanev2si; break;
-    case E_V2DImode: gen = gen_aarch64_dup_lanev2di; break;
-    case E_V8HFmode: gen = gen_aarch64_dup_lanev8hf; break;
-    case E_V4HFmode: gen = gen_aarch64_dup_lanev4hf; break;
-    case E_V4SFmode: gen = gen_aarch64_dup_lanev4sf; break;
-    case E_V2SFmode: gen = gen_aarch64_dup_lanev2sf; break;
-    case E_V2DFmode: gen = gen_aarch64_dup_lanev2df; break;
-    default:
-      return false;
-    }
-
-  emit_insn (gen (out, in0, lane));
+  rtx parallel = gen_rtx_PARALLEL (vmode, gen_rtvec (1, lane));
+  rtx select = gen_rtx_VEC_SELECT (GET_MODE_INNER (vmode), in0, parallel);
+  emit_set_insn (out, gen_rtx_VEC_DUPLICATE (vmode, select));
   return true;
 }
 
@@ -13760,7 +13571,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       std::swap (d->op0, d->op1);
     }
 
-  if (TARGET_SIMD)
+  if (TARGET_SIMD && nelt > 1)
     {
       if (aarch64_evpc_rev (d))
 	return true;
