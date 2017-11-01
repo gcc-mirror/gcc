@@ -1367,15 +1367,14 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	      || ALLOCNO_ASSIGNED_P (another_allocno))
 	    continue;
 
-	  if (GET_MODE_SIZE (ALLOCNO_MODE (cp->second)) < GET_MODE_SIZE (mode))
-	    /* If we have different modes use the smallest one.  It is
-	       a sub-register move.  It is hard to predict what LRA
-	       will reload (the pseudo or its sub-register) but LRA
-	       will try to minimize the data movement.  Also for some
-	       register classes bigger modes might be invalid,
-	       e.g. DImode for AREG on x86.  For such cases the
-	       register move cost will be maximal. */
-	    mode = ALLOCNO_MODE (cp->second);
+	  /* If we have different modes use the smallest one.  It is
+	     a sub-register move.  It is hard to predict what LRA
+	     will reload (the pseudo or its sub-register) but LRA
+	     will try to minimize the data movement.  Also for some
+	     register classes bigger modes might be invalid,
+	     e.g. DImode for AREG on x86.  For such cases the
+	     register move cost will be maximal.  */
+	  mode = narrower_subreg_mode (mode, ALLOCNO_MODE (cp->second));
 	  
 	  cost = (cp->second == allocno
 		  ? ira_register_move_cost[mode][rclass][aclass]
