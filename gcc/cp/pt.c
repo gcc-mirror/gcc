@@ -5566,7 +5566,7 @@ push_template_decl_real (tree decl, bool is_friend)
 	  (TI_ARGS (tinfo),
 	   TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (tmpl)))))
 	{
-	  error ("template arguments to %qD do not match original"
+	  error ("template arguments to %qD do not match original "
 		 "template %qD", decl, DECL_TEMPLATE_RESULT (tmpl));
 	  if (!uses_template_parms (TI_ARGS (tinfo)))
 	    inform (input_location, "use %<template<>%> for"
@@ -12197,7 +12197,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	 We also deal with the peculiar case:
 
 	 template <class T> struct S {
-	 template <class U> friend void f();
+	   template <class U> friend void f();
 	 };
 	 template <class U> void f() {}
 	 template S<int>;

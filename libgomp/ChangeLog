@@ -1,3 +1,10 @@
+2017-10-31  Tom de Vries  <tom@codesourcery.com>
+
+	* plugin/plugin-hsa.c (HSA_LOG): Remove semicolon after
+	"do {} while (false)".
+	(init_single_kernel, GOMP_OFFLOAD_async_run): Add missing semicolon
+	after HSA_DEBUG call.
+
 2017-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* target.c (struct gomp_coalesce_buf): New type.

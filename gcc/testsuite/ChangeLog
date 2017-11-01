@@ -1,5 +1,10 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
+	* g++.dg/gcov/loop.C: New test.
+	* lib/gcov.exp: Support human readable format for counts.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/gcov/ternary.C: New test.
 	* g++.dg/gcov/gcov-threads-1.C (main): Update expected line
 	count.

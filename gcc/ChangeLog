@@ -1,3 +1,41 @@
+2017-10-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* builtins.def (DEF_FLOATN_BUILTIN): Change most _Float<N> and
+	_Float<N>X built-in functions so that the variant without the
+	"__builtin_" prefix is only enabled for the GNU C and Objective C
+	languages when they are in non-strict ANSI/ISO mode.
+	(DEF_EXT_LIB_FLOATN_NX_BUILTINS): Likewise.
+	* target.def (floatn_builtin_p): Add a target hook to control
+	whether _Float<N> and _Float<N>X built-in functions without the
+	"__builtin_" prefix are enabled, and return true for C and
+	Objective C in the default hook.  Include langhooks.h in
+	targhooks.c.
+	* targhooks.h (default_floatn_builtin_p): Likewise.
+	* targhooks.c (default_floatn_builtin_p): Likewise.
+	* doc/tm.texi.in (TARGET_FLOATN_BUILTIN_P): Document the
+	floatn_builtin_p target hook.
+	* doc/tm.texi (TARGET_FLOATN_BUILTIN_P): Likewise.
+
+2017-10-31  Matthew Fortune  <matthew.fortune@imgtec.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/81803
+	* lra-constraints.c (curr_insn_transform): Also reload the whole
+	register for a strict subreg no wider than a word if this is for
+	a WORD_REGISTER_OPERATIONS target.
+
+2017-10-31  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in: Skip over inlines from timevar.h.
+
+2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov.texi: Document new option.
+	* gcov.c (print_usage): Likewise print it.
+	(process_args): Support the argument.
+	(format_count): New function.
+	(format_gcov): Use the function.
+
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (struct name_map): do not use typedef.
@@ -76,7 +114,7 @@
 	PR target/82772
 	* config/alpha/sync.md (fetchop_constr) <and>: Change to "rINM".
 
-2017-10-31  Segher Boessenkool  <segher@kernel.crsahing.org>
+2017-10-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/82674
 	* config/rs6000/rs6000.md (allocate_stack): Force update interval

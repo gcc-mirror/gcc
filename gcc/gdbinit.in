@@ -252,6 +252,9 @@ skip file is-a.h
 # And line-map.h.
 skip file line-map.h
 
+# And timevar.h.
+skip file timevar.h
+
 # Likewise, skip various inline functions in rtl.h.
 skip rtx_expr_list::next
 skip rtx_expr_list::element

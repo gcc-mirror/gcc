@@ -249,9 +249,9 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define assign_op_identifier (ovl_op_info[true][OVL_OP_NOP_EXPR].identifier)
 #define call_op_identifier (ovl_op_info[false][OVL_OP_CALL_EXPR].identifier)
 /* The name used for conversion operators -- but note that actual
-   conversion funcg1tions use special identifiers outside the identifier
+   conversion functions use special identifiers outside the identifier
    table.  */
-#define conv_op_identifier 		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
+#define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
@@ -5475,15 +5475,16 @@ enum auto_deduction_context
 
 extern void init_reswords (void);
 
+/* Various flags for the overloaded operator information.  */
 enum ovl_op_flags
   {
     OVL_OP_FLAG_NONE = 0,
     OVL_OP_FLAG_UNARY = 1,
     OVL_OP_FLAG_BINARY = 2,
     OVL_OP_FLAG_AMBIARY = 3,
-    OVL_OP_FLAG_ALLOC = 4,  	// operator new or delete
-    OVL_OP_FLAG_DELETE = 1,	// operator delete
-    OVL_OP_FLAG_VEC = 2		// vector new or delete
+    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete  */
+    OVL_OP_FLAG_DELETE = 1,	/* operator delete  */
+    OVL_OP_FLAG_VEC = 2		/* vector new or delete  */
   };
 
 enum ovl_op_code
@@ -6088,7 +6089,6 @@ extern int decls_match				(tree, tree);
 extern bool maybe_version_functions		(tree, tree);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
-extern tree lookup_label			(tree);
 extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);
 extern bool check_omp_return			(void);

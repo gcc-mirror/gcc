@@ -12876,8 +12876,8 @@ grok_ctor_properties (const_tree ctype, const_tree decl)
   return true;
 }
 
-/* DECL is a declaration for an overloaded operator.  If COMPLAIN is true,
-   errors are issued for invalid declarations.  */
+/* DECL is a declaration for an overloaded or conversion operator.  If
+   COMPLAIN is true, errors are issued for invalid declarations.  */
 
 bool
 grok_op_properties (tree decl, bool complain)
@@ -13014,7 +13014,7 @@ grok_op_properties (tree decl, bool complain)
     }
 
   if (operator_code == CALL_EXPR)
-    /* There are no restrictions on the arguments to an overloaded
+    /* There are no further restrictions on the arguments to an overloaded
        "operator ()".  */
     return true;
 

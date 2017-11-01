@@ -4284,6 +4284,17 @@ ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,
 if @var{extended} is false, 16 or greater than 128 and a multiple of 32.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_FLOATN_BUILTIN_P (int @var{func})
+Define this to return true if the @code{_Float@var{n}} and
+@code{_Float@var{n}x} built-in functions should implicitly enable the
+built-in function without the @code{__builtin_} prefix in addition to the
+normal built-in function with the @code{__builtin_} prefix.  The default is
+to only enable built-in functions without the @code{__builtin_} prefix for
+the GNU C langauge.  In strict ANSI/ISO mode, the built-in function without
+the @code{__builtin_} prefix is not enabled.  The argument @code{FUNC} is the
+@code{enum built_in_function} id of the function to be enabled.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (machine_mode @var{mode})
 Define this to return nonzero for machine modes for which the port has
 small register classes.  If this target hook returns nonzero for a given
