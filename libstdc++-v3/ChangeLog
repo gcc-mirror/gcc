@@ -1,3 +1,14 @@
+2017-11-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter.__init__): Strip
+	typename versioned namespace before the substitution.
+	(StdExpOptionalPrinter.__init__): Likewise.
+	(StdVariantPrinter.__init__): Likewise.
+	(Printer.add_version): Inject versioned namespace after std or
+	__gnu_cxx.
+	(build_libstdcxx_dictionary): Adapt add_version usages, always pass
+	namespace first and symbol second.
+
 2017-11-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/82777
