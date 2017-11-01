@@ -1,5 +1,13 @@
 2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	Backported from trunk
+	PR fortran/80554
+	* decl.c (build_sym): In a submodule allow overriding of host
+	associated symbols from the ancestor module with a new
+	declaration.
+
+2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	Backport from trunk
 	PR fortran/80850
 	* trans_expr.c (gfc_conv_procedure_call): When passing a class

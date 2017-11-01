@@ -1,3 +1,9 @@
+2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/80554
+	* gfortran.dg/submodule_29.f08: New test.
+
 2017-11-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/81702
