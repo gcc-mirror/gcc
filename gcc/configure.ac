@@ -5756,10 +5756,25 @@ if test x$gcc_cv_solaris_crts = xyes; then
   	    [Define if the system-provided CRTs are present on Solaris.])
 fi
 
+AC_ARG_ENABLE(libssp,
+[AS_HELP_STRING([--enable-libssp], [enable linking against libssp])],
+[case "${enableval}" in
+  yes|no)
+    ;;
+  *)
+    AC_MSG_ERROR([unknown libssp setting $enableval])
+    ;;
+esac], [])
+
 # Test for stack protector support in target C library.
 AC_CACHE_CHECK(__stack_chk_fail in target C library,
-      gcc_cv_libc_provides_ssp,
-      [gcc_cv_libc_provides_ssp=no
+  gcc_cv_libc_provides_ssp,
+  [gcc_cv_libc_provides_ssp=no
+  if test "x$enable_libssp" = "xno"; then
+    gcc_cv_libc_provides_ssp=yes
+  elif test "x$enable_libssp" = "xyes"; then
+    gcc_cv_libc_provides_ssp=no
+  else
     case "$target" in
        *-*-musl*)
 	 # All versions of musl provide stack protector
@@ -5796,8 +5811,9 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
 	 AC_CHECK_FUNC(__stack_chk_fail,[gcc_cv_libc_provides_ssp=yes],
            [echo "no __stack_chk_fail on this target"])
         ;;
-  *) gcc_cv_libc_provides_ssp=no ;;
-    esac])
+       *) gcc_cv_libc_provides_ssp=no ;;
+    esac
+  fi])
 
 if test x$gcc_cv_libc_provides_ssp = xyes; then
   AC_DEFINE(TARGET_LIBC_PROVIDES_SSP, 1,

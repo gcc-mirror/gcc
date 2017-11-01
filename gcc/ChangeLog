@@ -1,3 +1,12 @@
+2017-10-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* configure.ac (--enable-libssp): New.
+	(gcc_cv_libc_provides_ssp): Check for explicit setting before
+	trying to determine target-specific default.  Adjust indentation.
+	* configure: Regenerated.
+	* doc/install.texi (Configuration): Expand --disable-libssp
+	documentation.
+
 2017-10-31  Daniel Santos  <daniel.santos@pobox.com>
 
 	config/i386/i386.c (ix86_expand_epilogue): Correct stack
