@@ -1265,30 +1265,8 @@ write_unqualified_id (tree identifier)
     write_conversion_operator_name (TREE_TYPE (identifier));
   else if (IDENTIFIER_ANY_OP_P (identifier))
     {
-      const char *mangled_name = NULL;
-      bool assop = IDENTIFIER_ASSIGN_OP_P (identifier);
-
-      /* Unfortunately, there is no easy way to go from the
-	 name of the operator back to the corresponding tree
-	 code.  */
-      for (unsigned i = 0; i < MAX_TREE_CODES; ++i)
-	{
-	  const ovl_op_info_t *ovl_op = OVL_OP_INFO (assop, i);
-
-	  if (ovl_op->identifier == identifier)
-	    {
-	      /* The ABI says that we prefer binary operator
-		 names to unary operator names.  */
-	      if (ovl_op->flags == OVL_OP_FLAG_BINARY)
-		{
-		  mangled_name = ovl_op->mangled_name;
-		  break;
-		}
-	      else if (!mangled_name)
-		mangled_name = ovl_op->mangled_name;
-	    }
-	}
-      write_string (mangled_name);
+      const ovl_op_info_t *ovl_op = IDENTIFIER_OVL_OP_INFO (identifier);
+      write_string (ovl_op->mangled_name);
     }
   else if (UDLIT_OPER_P (identifier))
     write_literal_operator_name (identifier);

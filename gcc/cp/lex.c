@@ -77,7 +77,20 @@ cxx_finish (void)
   c_common_finish ();
 }
 
-ovl_op_info_t ovl_op_info[2][MAX_TREE_CODES];
+ovl_op_info_t ovl_op_info[2][OVL_OP_MAX] = 
+  {
+    {
+      {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
+      {NULL_TREE, NULL, NULL, NOP_EXPR, OVL_OP_NOP_EXPR, 0},
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) \
+      {NULL_TREE, NAME, MANGLING, CODE, OVL_OP_##CODE, FLAGS},
+#define OPERATOR_TRANSITION }, {			\
+      {NULL_TREE, NULL, NULL, ERROR_MARK, OVL_OP_ERROR_MARK, 0},
+#include "operators.def"
+    }
+  };
+unsigned char ovl_op_mapping[MAX_TREE_CODES];
+unsigned char ovl_op_alternate[OVL_OP_MAX];
 
 /* Get the name of the kind of identifier T.  */
 
@@ -129,26 +142,77 @@ set_operator_ident (ovl_op_info_t *ptr)
   return ident;
 }
 
+/* Initialize data structures that keep track of operator names.  */
+
 static void
 init_operators (void)
 {
-  tree identifier;
-  ovl_op_info_t *oni;
+  /* We rely on both these being zero.  */
+  gcc_checking_assert (!OVL_OP_ERROR_MARK && !ERROR_MARK);
 
-#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS, KIND)			\
-  oni = OVL_OP_INFO (KIND == cik_assign_op, CODE);			\
-  oni->name = NAME;							\
-  oni->mangled_name = MANGLING;						\
-  oni->tree_code = CODE;						\
-  oni->flags = FLAGS;							\
-  if (NAME) {								\
-    identifier = set_operator_ident (oni);				\
-    if (KIND != cik_simple_op || !IDENTIFIER_ANY_OP_P (identifier))	\
-      set_identifier_kind (identifier, KIND);				\
-  }
+  /* This loop iterates backwards because we need to move the
+     assignment operators down to their correct slots.  I.e. morally
+     equivalent to an overlapping memmove where dest > src.  Slot
+     zero is for error_mark, so hae no operator. */
+  for (unsigned ix = OVL_OP_MAX; --ix;)
+    {
+      ovl_op_info_t *op_ptr = &ovl_op_info[false][ix];
 
-#include "operators.def"
-#undef DEF_OPERATOR
+      if (op_ptr->name)
+	{
+	  /* Make sure it fits in lang_decl_fn::operator_code. */
+	  gcc_checking_assert (op_ptr->ovl_op_code < (1 << 6));
+	  tree ident = set_operator_ident (op_ptr);
+	  if (unsigned index = IDENTIFIER_CP_INDEX (ident))
+	    {
+	      ovl_op_info_t *bin_ptr = &ovl_op_info[false][index];
+
+	      /* They should only differ in unary/binary ness.  */
+	      gcc_checking_assert ((op_ptr->flags ^ bin_ptr->flags)
+				   == OVL_OP_FLAG_AMBIARY);
+	      bin_ptr->flags |= op_ptr->flags;
+	      ovl_op_alternate[index] = ix;
+	    }
+	  else
+	    {
+	      IDENTIFIER_CP_INDEX (ident) = ix;
+	      set_identifier_kind (ident,
+				   op_ptr->flags & OVL_OP_FLAG_ALLOC
+				   ? cik_newdel_op : cik_simple_op);
+	    }
+	}
+      if (op_ptr->tree_code)
+	{
+	  gcc_checking_assert (op_ptr->ovl_op_code == ix
+			       && !ovl_op_mapping[op_ptr->tree_code]);
+	  ovl_op_mapping[op_ptr->tree_code] = op_ptr->ovl_op_code;
+	}
+
+      ovl_op_info_t *as_ptr = &ovl_op_info[true][ix];
+      if (as_ptr->name)
+	{
+	  /* These will be placed at the start of the array, move to
+	     the correct slot and initialize.  */
+	  if (as_ptr->ovl_op_code != ix)
+	    {
+	      ovl_op_info_t *dst_ptr = &ovl_op_info[true][as_ptr->ovl_op_code];
+	      gcc_assert (as_ptr->ovl_op_code > ix && !dst_ptr->tree_code);
+	      memcpy (dst_ptr, as_ptr, sizeof (*dst_ptr));
+	      memset (as_ptr, 0, sizeof (*as_ptr));
+	      as_ptr = dst_ptr;
+	    }
+
+	  tree ident = set_operator_ident (as_ptr);
+	  gcc_checking_assert (!IDENTIFIER_CP_INDEX (ident));
+	  IDENTIFIER_CP_INDEX (ident) = as_ptr->ovl_op_code;
+	  set_identifier_kind (ident, cik_assign_op);
+
+	  gcc_checking_assert (!ovl_op_mapping[as_ptr->tree_code]
+			       || (ovl_op_mapping[as_ptr->tree_code]
+				   == as_ptr->ovl_op_code));
+	  ovl_op_mapping[as_ptr->tree_code] = as_ptr->ovl_op_code;
+	}
+    }
 }
 
 /* Initialize the reserved words.  */

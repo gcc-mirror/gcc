@@ -1072,6 +1072,11 @@ enum cp_identifier_kind {
    & IDENTIFIER_KIND_BIT_1 (NODE)		\
    & IDENTIFIER_KIND_BIT_0 (NODE))
 
+/* Access a C++-specific index for identifier NODE.
+   Used to optimize operator mappings etc.  */
+#define IDENTIFIER_CP_INDEX(NODE)		\
+  (IDENTIFIER_NODE_CHECK(NODE)->base.u.bits.address_space)
+
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(TYPE) \
   (LANG_TYPE_CLASS_CHECK (TYPE)->fields_readonly)
@@ -5477,12 +5482,25 @@ extern void init_reswords (void);
 /* Various flags for the overloaded operator information.  */
 enum ovl_op_flags
   {
-    OVL_OP_FLAG_NONE = 0,
-    OVL_OP_FLAG_UNARY = 1,
-    OVL_OP_FLAG_BINARY = 2,
-    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete  */
-    OVL_OP_FLAG_DELETE = 1,	/* operator delete  */
-    OVL_OP_FLAG_VEC = 2		/* vector new or delete  */
+    OVL_OP_FLAG_NONE = 0,	/* Don't care.  */
+    OVL_OP_FLAG_UNARY = 1,	/* Is unary.  */
+    OVL_OP_FLAG_BINARY = 2,	/* Is binary.  */
+    OVL_OP_FLAG_AMBIARY = 3,	/* May be unary or binary.  */
+    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete.  */
+    OVL_OP_FLAG_DELETE = 1,	/* operator delete.  */
+    OVL_OP_FLAG_VEC = 2		/* vector new or delete.  */
+  };
+
+/* Compressed operator codes.  Order is determined by operators.def
+   and does not match that of tree_codes.  */
+enum ovl_op_code
+  {
+    OVL_OP_ERROR_MARK,
+    OVL_OP_NOP_EXPR,
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) OVL_OP_##CODE,
+#define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
+#include "operators.def"
+    OVL_OP_MAX
   };
 
 struct GTY(()) ovl_op_info_t {
@@ -5492,19 +5510,29 @@ struct GTY(()) ovl_op_info_t {
   const char *name;
   /* The mangled name of the operator.  */
   const char *mangled_name;
-  /* The tree code.  */
+  /* The (regular) tree code.  */
   enum tree_code tree_code : 16;
+  /* The (compressed) operator code.  */
+  enum ovl_op_code ovl_op_code : 8;
   /* The ovl_op_flags of the operator */
   unsigned flags : 8;
 };
 
-/* Overloaded operator info indexed by ass_op_p & tree_code.  */
-extern GTY(()) ovl_op_info_t ovl_op_info[2][MAX_TREE_CODES];
+/* Overloaded operator info indexed by ass_op_p & ovl_op_code.  */
+extern GTY(()) ovl_op_info_t ovl_op_info[2][OVL_OP_MAX];
+/* Mapping from tree_codes to ovl_op_codes.  */
+extern GTY(()) unsigned char ovl_op_mapping[MAX_TREE_CODES];
+/* Mapping for ambi-ary operators from the binary to the unary.  */
+extern GTY(()) unsigned char ovl_op_alternate[OVL_OP_MAX];
 
 /* Given an ass_op_p boolean and a tree code, return a pointer to its
    overloaded operator info.  */
 #define OVL_OP_INFO(IS_ASS_P, TREE_CODE)			\
-  (&ovl_op_info[(IS_ASS_P) != 0][(TREE_CODE)])
+  (&ovl_op_info[(IS_ASS_P) != 0][ovl_op_mapping[(TREE_CODE)]])
+/* Overloaded operator info for an identifier for which
+   IDENTIFIER_ANY_OP_P is true.  */
+#define IDENTIFIER_OVL_OP_INFO(NODE) \
+  (&ovl_op_info[IDENTIFIER_ASSIGN_OP_P (NODE)][IDENTIFIER_CP_INDEX (NODE)])
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */

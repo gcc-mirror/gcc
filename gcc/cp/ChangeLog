@@ -1,3 +1,25 @@
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (IDENTIFIER_CP_INDEX): Define.
+	(enum ovl_op_flags): Add OVL_OP_FLAG_AMBIARY.
+	(enum ovl_op_code): New.
+	(struct ovl_op_info): Add ovl_op_code field.
+	(ovl_op_info): Size by OVL_OP_MAX.
+	(ovl_op_mapping, ovl_op_alternate): Declare.
+	(OVL_OP_INFO): Adjust for mapping array.
+	(IDENTIFIER_OVL_OP_INFO): New.
+	* decl.c (ambi_op_p, unary_op_p): Delete.
+	(grok_op_properties): Use IDENTIFIER_OVL_OP_INFO and
+	ovl_op_alternate.
+	* lex.c (ovl_op_info): Adjust and static initialize.
+	(ovl_op_mappings, ovl_op_alternate): Define.
+	(init_operators): Iterate over ovl_op_info array and init mappings
+	& alternate arrays.
+	* mangle.c (write_unqualified_id): Use IDENTIFIER_OVL_OP_INFO.
+	* operators.def (DEF_OPERATOR): Remove KIND parm.
+	(DEF_SIMPLE_OPERATOR): Delete.
+	(OPERATOR_TRANSITION): Expand if defined.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* pt.c (listify): Use %< and %> for description of #include.
