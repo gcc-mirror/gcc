@@ -1,5 +1,11 @@
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-ssa-dse.c (normalize_ref): Check whether the ranges overlap
+	and return false if not.
+	(clear_bytes_written_by, live_bytes_read): Update accordingly.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-ssa-alias.h (ranges_overlap_p): Return false if either
 	range is known to be empty.
 
