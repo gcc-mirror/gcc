@@ -171,6 +171,13 @@ struct ccp_prop_value_t {
     widest_int mask;
 };
 
+class ccp_propagate : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
+
 /* Array of propagated constant values.  After propagation,
    CONST_VAL[I].VALUE holds the constant value for SSA_NAME(I).  If
    the constant is held in an SSA name representing a memory store
@@ -1064,8 +1071,8 @@ ccp_lattice_meet (ccp_prop_value_t *val1, ccp_prop_value_t *val2)
    PHI node is determined calling ccp_lattice_meet with all the arguments
    of the PHI node that are incoming via executable edges.  */
 
-static enum ssa_prop_result
-ccp_visit_phi_node (gphi *phi)
+enum ssa_prop_result
+ccp_propagate::visit_phi (gphi *phi)
 {
   unsigned i;
   ccp_prop_value_t new_val;
@@ -2378,8 +2385,8 @@ visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
    value, set *TAKEN_EDGE_P accordingly.  If STMT produces a varying
    value, return SSA_PROP_VARYING.  */
 
-static enum ssa_prop_result
-ccp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
+enum ssa_prop_result
+ccp_propagate::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   tree def;
   ssa_op_iter iter;
@@ -2441,7 +2448,8 @@ do_ssa_ccp (bool nonzero_p)
   calculate_dominance_info (CDI_DOMINATORS);
 
   ccp_initialize ();
-  ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
+  class ccp_propagate ccp_propagate;
+  ccp_propagate.ssa_propagate ();
   if (ccp_finalize (nonzero_p || flag_ipa_bit_cp))
     {
       todo = (TODO_cleanup_cfg | TODO_update_ssa);

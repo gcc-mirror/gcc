@@ -1,3 +1,40 @@
+2017-11-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-propagate.h (ssa_prop_visit_stmt_fn): Remove typedef.
+	(ssa_prop_visit_phi_fn): Likewise.
+	(class ssa_propagation_engine): New class to provide an interface
+	into ssa_propagate.
+	* tree-ssa-propagate.c (ssa_prop_visit_stmt): Remove file scoped
+	variable.
+	(ssa_prop_visit_phi): Likewise.
+	(ssa_propagation_engine::simulate_stmt): Moved into class.
+	Call visit_phi/visit_stmt from the class rather than via
+	file scoped static variables.
+	(ssa_propagation_engine::simulate_block): Moved into class.
+	(ssa_propagation_engine::process_ssa_edge_worklist): Similarly.
+	(ssa_propagation_engine::ssa_propagate): Similarly.  No longer
+	set file scoped statics for the visit_stmt/visit_phi callbacks.
+	* tree-complex.c (complex_propagate): New class derived from
+	ssa_propagation_engine.
+	(complex_propagate::visit_stmt): Renamed from complex_visit_stmt.
+	(complex_propagate::visit_phi): Renamed from complex_visit_phi.
+	(tree_lower_complex): Call ssa_propagate via the complex_propagate
+	class.
+	* tree-ssa-ccp.c: (ccp_propagate): New class derived from
+	ssa_propagation_engine.
+	(ccp_propagate::visit_phi): Renamed from ccp_visit_phi_node.
+	(ccp_propagate::visit_stmt): Renamed from ccp_visit_stmt.
+	(do_ssa_ccp): Call ssa_propagate from the ccp_propagate class.
+	* tree-ssa-copy.c (copy_prop): New class derived from
+	ssa_propagation_engine.
+	(copy_prop::visit_stmt): Renamed from copy_prop_visit_stmt.
+	(copy_prop::visit_phi): Renamed from copy_prop_visit_phi_node.
+	(execute_copy_prop): Call ssa_propagate from the copy_prop class.
+	* tree-vrp.c (vrp_prop): New class derived from ssa_propagation_engine.
+	(vrp_prop::visit_stmt): Renamed from vrp_visit_stmt.
+	(vrp_prop::visit_phi): Renamed from vrp_visit_phi_node.
+	(execute_vrp): Call ssa_propagate from the vrp_prop class.
+
 2017-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/82778

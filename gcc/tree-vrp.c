@@ -8086,6 +8086,13 @@ extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
     vrp_visit_switch_stmt (as_a <gswitch *> (stmt), taken_edge_p);
 }
 
+class vrp_prop : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
+
 /* Evaluate statement STMT.  If the statement produces a useful range,
    return SSA_PROP_INTERESTING and record the SSA name with the
    interesting range into *OUTPUT_P.
@@ -8095,8 +8102,8 @@ extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
 
    If STMT produces a varying value, return SSA_PROP_VARYING.  */
 
-static enum ssa_prop_result
-vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
+enum ssa_prop_result
+vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   value_range vr = VR_INITIALIZER;
   tree lhs = gimple_get_lhs (stmt);
@@ -9187,8 +9194,8 @@ update_range:
    edges.  If a valid value range can be derived from all the incoming
    value ranges, set a new range for the LHS of PHI.  */
 
-static enum ssa_prop_result
-vrp_visit_phi_node (gphi *phi)
+enum ssa_prop_result
+vrp_prop::visit_phi (gphi *phi)
 {
   tree lhs = PHI_RESULT (phi);
   value_range vr_result = VR_INITIALIZER;
@@ -11463,7 +11470,8 @@ execute_vrp (bool warn_array_bounds_p)
 
   vrp_initialize_lattice ();
   vrp_initialize ();
-  ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
+  class vrp_prop vrp_prop;
+  vrp_prop.ssa_propagate ();
   vrp_finalize (warn_array_bounds_p);
 
   /* We must identify jump threading opportunities before we release

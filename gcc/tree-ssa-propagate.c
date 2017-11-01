@@ -108,10 +108,6 @@
      [3] Advanced Compiler Design and Implementation,
 	 Steven Muchnick, Morgan Kaufmann, 1997, Section 12.6  */
 
-/* Function pointers used to parameterize the propagation engine.  */
-static ssa_prop_visit_stmt_fn ssa_prop_visit_stmt;
-static ssa_prop_visit_phi_fn ssa_prop_visit_phi;
-
 /* Worklist of control flow edge destinations.  This contains
    the CFG order number of the blocks so we can iterate in CFG
    order by visiting in bit-order.  */
@@ -217,8 +213,8 @@ add_control_edge (edge e)
 
 /* Simulate the execution of STMT and update the work lists accordingly.  */
 
-static void
-simulate_stmt (gimple *stmt)
+void
+ssa_propagation_engine::simulate_stmt (gimple *stmt)
 {
   enum ssa_prop_result val = SSA_PROP_NOT_INTERESTING;
   edge taken_edge = NULL;
@@ -234,11 +230,11 @@ simulate_stmt (gimple *stmt)
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
-      val = ssa_prop_visit_phi (as_a <gphi *> (stmt));
+      val = visit_phi (as_a <gphi *> (stmt));
       output_name = gimple_phi_result (stmt);
     }
   else
-    val = ssa_prop_visit_stmt (stmt, &taken_edge, &output_name);
+    val = visit_stmt (stmt, &taken_edge, &output_name);
 
   if (val == SSA_PROP_VARYING)
     {
@@ -321,8 +317,8 @@ simulate_stmt (gimple *stmt)
    when an SSA edge is added to it in simulate_stmt.  Return true if a stmt
    was simulated.  */
 
-static void
-process_ssa_edge_worklist ()
+void
+ssa_propagation_engine::process_ssa_edge_worklist (void)
 {
   /* Process the next entry from the worklist.  */
   unsigned stmt_uid = bitmap_first_set_bit (ssa_edge_worklist);
@@ -345,8 +341,8 @@ process_ssa_edge_worklist ()
 /* Simulate the execution of BLOCK.  Evaluate the statement associated
    with each variable reference inside the block.  */
 
-static void
-simulate_block (basic_block block)
+void
+ssa_propagation_engine::simulate_block (basic_block block)
 {
   gimple_stmt_iterator gsi;
 
@@ -781,19 +777,15 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
     return false;
 }
 
-
 /* Entry point to the propagation engine.
 
-   VISIT_STMT is called for every statement visited.
-   VISIT_PHI is called for every PHI node visited.  */
+   The VISIT_STMT virtual function is called for every statement
+   visited and the VISIT_PHI virtual function is called for every PHI
+   node visited.  */
 
 void
-ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
-	       ssa_prop_visit_phi_fn visit_phi)
+ssa_propagation_engine::ssa_propagate (void)
 {
-  ssa_prop_visit_stmt = visit_stmt;
-  ssa_prop_visit_phi = visit_phi;
-
   ssa_prop_init ();
 
   /* Iterate until the worklists are empty.  */
