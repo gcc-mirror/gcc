@@ -3699,7 +3699,7 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 
   /* Try widening multiplication.  */
   moptab = unsignedp ? umul_widen_optab : smul_widen_optab;
-  if (widening_optab_handler (moptab, wider_mode, mode) != CODE_FOR_nothing
+  if (convert_optab_handler (moptab, wider_mode, mode) != CODE_FOR_nothing
       && mul_widen_cost (speed, wider_mode) < max_cost)
     {
       tem = expand_binop (wider_mode, moptab, op0, narrow_op1, 0,
@@ -3738,7 +3738,7 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 
   /* Try widening multiplication of opposite signedness, and adjust.  */
   moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
-  if (widening_optab_handler (moptab, wider_mode, mode) != CODE_FOR_nothing
+  if (convert_optab_handler (moptab, wider_mode, mode) != CODE_FOR_nothing
       && size - 1 < BITS_PER_WORD
       && (mul_widen_cost (speed, wider_mode)
 	  + 2 * shift_cost (speed, mode, size-1)

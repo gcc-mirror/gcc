@@ -2,6 +2,36 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs-query.h (convert_optab_p): New function, split out from...
+	(convert_optab_handler): ...here.
+	(widening_optab_handler): Delete.
+	(find_widening_optab_handler): Remove permit_non_widening parameter.
+	(find_widening_optab_handler_and_mode): Likewise.  Provide an
+	override that operates on mode class wrappers.
+	* optabs-query.c (widening_optab_handler): Delete.
+	(find_widening_optab_handler_and_mode): Remove permit_non_widening
+	parameter.  Assert that the two modes are the same class and that
+	the "from" mode is narrower than the "to" mode.  Use
+	convert_optab_handler instead of widening_optab_handler.
+	* expmed.c (expmed_mult_highpart_optab): Use convert_optab_handler
+	instead of widening_optab_handler.
+	* expr.c (expand_expr_real_2): Update calls to
+	find_widening_optab_handler.
+	* optabs.c (expand_widen_pattern_expr): Likewise.
+	(expand_binop_directly): Take the insn_code as a parameter.
+	(expand_binop): Only call find_widening_optab_handler for
+	conversion optabs; use optab_handler otherwise.  Update calls
+	to find_widening_optab_handler and expand_binop_directly.
+	Use convert_optab_handler instead of widening_optab_handler.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Update calls to
+	find_widening_optab_handler and use scalar_mode rather than
+	machine_mode.
+	(convert_plusminus_to_widen): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (fixed_size_mode): New class.
 	* rtl.h (get_pool_mode): Return fixed_size_mode.
 	* gengtype.c (main): Add fixed_size_mode.
