@@ -6939,18 +6939,16 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  /* The cost is one per vector-register copied.  */
 	  if (VECTOR_MODE_P (GET_MODE (op0)) && REG_P (op1))
 	    {
-	      int n_minus_1 = (GET_MODE_SIZE (GET_MODE (op0)) - 1)
-			      / GET_MODE_SIZE (V4SImode);
-	      *cost = COSTS_N_INSNS (n_minus_1 + 1);
+	      int nregs = aarch64_hard_regno_nregs (V0_REGNUM, GET_MODE (op0));
+	      *cost = COSTS_N_INSNS (nregs);
 	    }
 	  /* const0_rtx is in general free, but we will use an
 	     instruction to set a register to 0.  */
 	  else if (REG_P (op1) || op1 == const0_rtx)
 	    {
 	      /* The cost is 1 per register copied.  */
-	      int n_minus_1 = (GET_MODE_SIZE (GET_MODE (op0)) - 1)
-			      / UNITS_PER_WORD;
-	      *cost = COSTS_N_INSNS (n_minus_1 + 1);
+	      int nregs = aarch64_hard_regno_nregs (R0_REGNUM, GET_MODE (op0));
+	      *cost = COSTS_N_INSNS (nregs);
 	    }
           else
 	    /* Cost is just the cost of the RHS of the set.  */
