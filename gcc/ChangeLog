@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* var-tracking.c (INT_MEM_OFFSET): Replace with...
+	(int_mem_offset): ...this new function.
+	(var_mem_set, var_mem_delete_and_set, var_mem_delete)
+	(find_mem_expr_in_1pdv, dataflow_set_preserve_mem_locs)
+	(same_variable_part_p, use_type, add_stores, vt_get_decl_and_offset):
+	Update accordingly.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lower-subreg.c (interesting_mode_p): New function.
 	(compute_costs, find_decomposable_subregs, decompose_register)
 	(simplify_subreg_concatn, can_decompose_p, resolve_simple_move)
