@@ -942,6 +942,7 @@ enable_fix_cortex_a53_843419
 with_glibc_version
 enable_gnu_unique_object
 enable_linker_build_id
+enable_libssp
 enable_default_ssp
 with_long_double_128
 with_gc
@@ -1682,6 +1683,7 @@ Optional Features:
                           extension on glibc systems
   --enable-linker-build-id
                           compiler will always pass --build-id to linker
+  --enable-libssp         enable linking against libssp
   --enable-default-ssp    enable Stack Smashing Protection as default
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
@@ -18440,7 +18442,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18443 "configure"
+#line 18445 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18546,7 +18548,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18549 "configure"
+#line 18551 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -29040,6 +29042,18 @@ $as_echo "#define HAVE_SOLARIS_CRTS 1" >>confdefs.h
 
 fi
 
+# Check whether --enable-libssp was given.
+if test "${enable_libssp+set}" = set; then :
+  enableval=$enable_libssp; case "${enableval}" in
+  yes|no)
+    ;;
+  *)
+    as_fn_error "unknown libssp setting $enableval" "$LINENO" 5
+    ;;
+esac
+fi
+
+
 # Test for stack protector support in target C library.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking __stack_chk_fail in target C library" >&5
 $as_echo_n "checking __stack_chk_fail in target C library... " >&6; }
@@ -29047,6 +29061,11 @@ if test "${gcc_cv_libc_provides_ssp+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_libc_provides_ssp=no
+  if test "x$enable_libssp" = "xno"; then
+    gcc_cv_libc_provides_ssp=yes
+  elif test "x$enable_libssp" = "xyes"; then
+    gcc_cv_libc_provides_ssp=no
+  else
     case "$target" in
        *-*-musl*)
 	 # All versions of musl provide stack protector
@@ -29094,8 +29113,9 @@ else
 fi
 
         ;;
-  *) gcc_cv_libc_provides_ssp=no ;;
+       *) gcc_cv_libc_provides_ssp=no ;;
     esac
+  fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_libc_provides_ssp" >&5
 $as_echo "$gcc_cv_libc_provides_ssp" >&6; }
