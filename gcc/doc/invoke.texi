@@ -21769,8 +21769,8 @@ Do not generate unaligned memory accesses.
 @opindex mcmodel=medlow
 Generate code for the medium-low code model. The program and its statically
 defined symbols must lie within a single 2 GiB address range and must lie
-between absolute addresses -2 GiB and +2 GiB. Programs can be statically or
-dynamically linked. This is the default code model.
+between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be
+statically or dynamically linked. This is the default code model.
 
 @item -mcmodel=medany
 @opindex mcmodel=medany
