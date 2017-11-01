@@ -9073,9 +9073,9 @@ check_return_expr (tree retval, bool *no_warning)
     }
 
   /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
-  if (DECL_OVERLOADED_OPERATOR_P (current_function_decl)
-      && (DECL_OVERLOADED_OPERATOR_IS (current_function_decl,  NEW_EXPR)
-	  || DECL_OVERLOADED_OPERATOR_IS (current_function_decl, VEC_NEW_EXPR))
+  if (IDENTIFIER_OVL_OP_P (DECL_NAME (current_function_decl))
+      && ((IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (current_function_decl))
+	   & (OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE)) == OVL_OP_FLAG_ALLOC)
       && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
       && ! flag_check_new
       && retval && null_ptr_cst_p (retval))

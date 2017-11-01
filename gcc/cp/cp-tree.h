@@ -996,9 +996,9 @@ enum cp_identifier_kind {
   cik_dtor = 3,		/* Destructor (in-chg, deleting, complete or
 			   base).  */
   cik_simple_op = 4,	/* Non-assignment operator name.  */
-  cik_newdel_op = 5,	/* New or delete operator name.  */
-  cik_assign_op = 6,	/* An assignment operator name.  */
-  cik_conv_op = 7,	/* Conversion operator name.  */
+  cik_assign_op = 5,	/* An assignment operator name.  */
+  cik_conv_op = 6,	/* Conversion operator name.  */
+  cik_reserved_for_udlit = 7,	/* Not yet in use  */
   cik_max
 };
 
@@ -1053,24 +1053,22 @@ enum cp_identifier_kind {
 #define IDENTIFIER_ANY_OP_P(NODE)		\
   (IDENTIFIER_KIND_BIT_2 (NODE))
 
-/* True if this identifier is for new or delete operator.  Value 5.  */
-#define IDENTIFIER_NEWDEL_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
-   & (!IDENTIFIER_KIND_BIT_1 (NODE))		\
-   & IDENTIFIER_KIND_BIT_0 (NODE))
+/* True if this identifier is for an overloaded operator. Values 4, 5.  */
+#define IDENTIFIER_OVL_OP_P(NODE)		\
+  (IDENTIFIER_ANY_OP_P (NODE)			\
+   & (!IDENTIFIER_KIND_BIT_1 (NODE)))
 
-/* True if this identifier is for any assignment. Values 6.  */
+/* True if this identifier is for any assignment. Values 5.  */
 #define IDENTIFIER_ASSIGN_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
-   & IDENTIFIER_KIND_BIT_1 (NODE)		\
-   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+  (IDENTIFIER_OVL_OP_P (NODE)			\
+   & IDENTIFIER_KIND_BIT_0 (NODE))
 
 /* True if this identifier is the name of a type-conversion
    operator.  Value 7.  */
 #define IDENTIFIER_CONV_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
+  (IDENTIFIER_ANY_OP_P (NODE)			\
    & IDENTIFIER_KIND_BIT_1 (NODE)		\
-   & IDENTIFIER_KIND_BIT_0 (NODE))
+   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
 
 /* Access a C++-specific index for identifier NODE.
    Used to optimize operator mappings etc.  */
@@ -5529,9 +5527,11 @@ extern GTY(()) unsigned char ovl_op_alternate[OVL_OP_MAX];
 #define OVL_OP_INFO(IS_ASS_P, TREE_CODE)			\
   (&ovl_op_info[(IS_ASS_P) != 0][ovl_op_mapping[(TREE_CODE)]])
 /* Overloaded operator info for an identifier for which
-   IDENTIFIER_ANY_OP_P is true.  */
+   IDENTIFIER_OVL_OP_P is true.  */
 #define IDENTIFIER_OVL_OP_INFO(NODE) \
-  (&ovl_op_info[IDENTIFIER_ASSIGN_OP_P (NODE)][IDENTIFIER_CP_INDEX (NODE)])
+  (&ovl_op_info[IDENTIFIER_KIND_BIT_0 (NODE)][IDENTIFIER_CP_INDEX (NODE)])
+#define IDENTIFIER_OVL_OP_FLAGS(NODE) \
+  (IDENTIFIER_OVL_OP_INFO (NODE)->flags)
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */

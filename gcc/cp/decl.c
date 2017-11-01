@@ -11744,7 +11744,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
       && !(identifier_p (unqualified_id)
-	   && IDENTIFIER_NEWDEL_OP_P (unqualified_id)))
+	   && IDENTIFIER_OVL_OP_P (unqualified_id)
+	   && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id) & OVL_OP_FLAG_ALLOC)))
     {
       cp_cv_quals real_quals = memfn_quals;
       if (cxx_dialect < cxx14 && constexpr_p
@@ -11857,7 +11858,9 @@ grokdeclarator (const cp_declarator *declarator,
 
 		if (virtualp
 		    && identifier_p (unqualified_id)
-		    && IDENTIFIER_NEWDEL_OP_P (unqualified_id))
+		    && IDENTIFIER_OVL_OP_P (unqualified_id)
+		    && (IDENTIFIER_OVL_OP_FLAGS (unqualified_id)
+			& OVL_OP_FLAG_ALLOC))
 		  {
 		    error ("%qD cannot be declared %<virtual%>, since it "
 			   "is always static", unqualified_id);
