@@ -1,3 +1,21 @@
+2017-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from trunk
+	* gcc.dg/vect/vect-align-1.c: Fix vect_hw_misalign condition.
+	* gcc.dg/vect/vect-align-2.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-1.c: Likewise
+
+2017-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from trunk
+	* gcc.dg/vect/vect-multitypes-1.c: Correct target selector.
+
+2017-11-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from trunk
+	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
+	Fix arm check.
+
 2017-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk
