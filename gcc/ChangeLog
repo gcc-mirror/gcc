@@ -1,3 +1,25 @@
+2017-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82778
+	PR rtl-optimization/82597
+	* compare-elim.c (struct comparison): Add in_a_setter field.
+	(find_comparison_dom_walker::before_dom_children): Remove killed
+	bitmap and df_simulate_find_defs call, instead walk the defs.
+	Compute last_setter and initialize in_a_setter.  Merge definitions
+	with first initialization for a few variables.
+	(try_validate_parallel): Use insn_invalid_p instead of
+	recog_memoized.  Return insn rather than just the pattern.
+	(try_merge_compare): Fix up comment.  Don't uselessly test if
+	in_a is a REG_P.  Use cmp->in_a_setter instead of walking UD
+	chains.
+	(execute_compare_elim_after_reload): Remove df_chain_add_problem
+	call.
+
+2017-11-01  Michael Collison  <michael.collison@arm.com>
+
+	PR rtl-optimization/82597
+	* gcc.dg/pr82597.c: New test.
+
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -1,3 +1,13 @@
+2017-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82778
+	* g++.dg/opt/pr82778.C: New test.
+
+2017-11-01  Michael Collison  <michael.collison@arm.com>
+
+	PR rtl-optimization/82597
+	* gcc.dg/pr82597.c: New test.
+
 2017-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/alpha/sqrt.c: New test.
