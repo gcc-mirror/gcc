@@ -1872,10 +1872,12 @@ default_dwarf_frame_reg_mode (int regno)
 /* To be used by targets where reg_raw_mode doesn't return the right
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
-machine_mode
+fixed_size_mode
 default_get_reg_raw_mode (int regno)
 {
-  return reg_raw_mode[regno];
+  /* Targets must override this hook if the underlying register is
+     variable-sized.  */
+  return as_a <fixed_size_mode> (reg_raw_mode[regno]);
 }
 
 /* Return true if a leaf function should stay leaf even with profiling

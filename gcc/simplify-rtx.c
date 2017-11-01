@@ -48,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 static rtx neg_const_int (machine_mode, const_rtx);
 static bool plus_minus_operand_p (const_rtx);
 static rtx simplify_plus_minus (enum rtx_code, machine_mode, rtx, rtx);
-static rtx simplify_immed_subreg (machine_mode, rtx, machine_mode,
-				  unsigned int);
 static rtx simplify_associative_operation (enum rtx_code, machine_mode,
 					   rtx, rtx);
 static rtx simplify_relational_operation_1 (enum rtx_code, machine_mode,
@@ -5806,8 +5804,8 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
    and then repacking them again for OUTERMODE.  */
 
 static rtx
-simplify_immed_subreg (machine_mode outermode, rtx op,
-		       machine_mode innermode, unsigned int byte)
+simplify_immed_subreg (fixed_size_mode outermode, rtx op,
+		       fixed_size_mode innermode, unsigned int byte)
 {
   enum {
     value_bit = 8,
@@ -6175,7 +6173,18 @@ simplify_subreg (machine_mode outermode, rtx op,
       || CONST_DOUBLE_AS_FLOAT_P (op)
       || GET_CODE (op) == CONST_FIXED
       || GET_CODE (op) == CONST_VECTOR)
-    return simplify_immed_subreg (outermode, op, innermode, byte);
+    {
+      /* simplify_immed_subreg deconstructs OP into bytes and constructs
+	 the result from bytes, so it only works if the sizes of the modes
+	 are known at compile time.  Cases that apply to general modes
+	 should be handled here before calling simplify_immed_subreg.  */
+      fixed_size_mode fs_outermode, fs_innermode;
+      if (is_a <fixed_size_mode> (outermode, &fs_outermode)
+	  && is_a <fixed_size_mode> (innermode, &fs_innermode))
+	return simplify_immed_subreg (fs_outermode, op, fs_innermode, byte);
+
+      return NULL_RTX;
+    }
 
   /* Changing mode twice with SUBREG => just change it once,
      or not at all if changing back op starting mode.  */

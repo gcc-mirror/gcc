@@ -236,7 +236,7 @@ extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
 extern machine_mode default_dwarf_frame_reg_mode (int);
-extern machine_mode default_get_reg_raw_mode (int);
+extern fixed_size_mode default_get_reg_raw_mode (int);
 extern bool default_keep_leaf_when_profiled ();
 
 extern void *default_get_pch_validity (size_t *);

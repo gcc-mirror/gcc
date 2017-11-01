@@ -415,8 +415,11 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
     The awkwardness comes from the fact that bitpos is counted from the
     most significant bit of a byte.  */
 
+  /* We must be dealing with fixed-size data at this point, since the
+     total size is also fixed.  */
+  fixed_size_mode mode = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (expr)));
   /* Allocate an extra byte so that we have space to shift into.  */
-  unsigned int byte_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr))) + 1;
+  unsigned int byte_size = GET_MODE_SIZE (mode) + 1;
   unsigned char *tmpbuf = XALLOCAVEC (unsigned char, byte_size);
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are

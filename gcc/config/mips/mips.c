@@ -1132,7 +1132,6 @@ static rtx mips_find_pic_call_symbol (rtx_insn *, rtx, bool);
 static int mips_register_move_cost (machine_mode, reg_class_t,
 				    reg_class_t);
 static unsigned int mips_function_arg_boundary (machine_mode, const_tree);
-static machine_mode mips_get_reg_raw_mode (int regno);
 static rtx mips_gen_const_int_vector_shuffle (machine_mode, int);
 
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
@@ -6111,7 +6110,7 @@ mips_function_arg_boundary (machine_mode mode, const_tree type)
 
 /* Implement TARGET_GET_RAW_RESULT_MODE and TARGET_GET_RAW_ARG_MODE.  */
 
-static machine_mode
+static fixed_size_mode
 mips_get_reg_raw_mode (int regno)
 {
   if (TARGET_FLOATXX && FP_REG_P (regno))
