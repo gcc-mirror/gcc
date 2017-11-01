@@ -1470,7 +1470,7 @@ gen_lowpart_common (machine_mode mode, rtx x)
 	return gen_rtx_fmt_e (GET_CODE (x), int_mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
-	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
+	   || GET_CODE (x) == CONCAT || const_vec_p (x)
 	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x))
     return lowpart_subreg (mode, x, innermode);
 
@@ -5757,32 +5757,123 @@ init_emit (void)
 #endif
 }
 
-/* Generate a vector constant for mode MODE and constant value CONSTANT.  */
+/* Like gen_const_vec_duplicate, but ignore const_tiny_rtx.  */
+
+static rtx
+gen_const_vec_duplicate_1 (machine_mode mode, rtx el)
+{
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  for (int i = 0; i < nunits; ++i)
+    RTVEC_ELT (v, i) = el;
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
+}
+
+/* Generate a vector constant of mode MODE in which every element has
+   value ELT.  */
+
+rtx
+gen_const_vec_duplicate (machine_mode mode, rtx elt)
+{
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  if (elt == CONST0_RTX (inner_mode))
+    return CONST0_RTX (mode);
+  else if (elt == CONST1_RTX (inner_mode))
+    return CONST1_RTX (mode);
+  else if (elt == CONSTM1_RTX (inner_mode))
+    return CONSTM1_RTX (mode);
+
+  return gen_const_vec_duplicate_1 (mode, elt);
+}
+
+/* Return a vector rtx of mode MODE in which every element has value X.
+   The result will be a constant if X is constant.  */
+
+rtx
+gen_vec_duplicate (machine_mode mode, rtx x)
+{
+  if (CONSTANT_P (x))
+    return gen_const_vec_duplicate (mode, x);
+  return gen_rtx_VEC_DUPLICATE (mode, x);
+}
+
+/* A subroutine of const_vec_series_p that handles the case in which
+   X is known to be an integer CONST_VECTOR.  */
+
+bool
+const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  unsigned int nelts = CONST_VECTOR_NUNITS (x);
+  if (nelts < 2)
+    return false;
+
+  scalar_mode inner = GET_MODE_INNER (GET_MODE (x));
+  rtx base = CONST_VECTOR_ELT (x, 0);
+  rtx step = simplify_binary_operation (MINUS, inner,
+					CONST_VECTOR_ELT (x, 1), base);
+  if (rtx_equal_p (step, CONST0_RTX (inner)))
+    return false;
+
+  for (unsigned int i = 2; i < nelts; ++i)
+    {
+      rtx diff = simplify_binary_operation (MINUS, inner,
+					    CONST_VECTOR_ELT (x, i),
+					    CONST_VECTOR_ELT (x, i - 1));
+      if (!rtx_equal_p (step, diff))
+	return false;
+    }
+
+  *base_out = base;
+  *step_out = step;
+  return true;
+}
+
+/* Generate a vector constant of mode MODE in which element I has
+   the value BASE + I * STEP.  */
+
+rtx
+gen_const_vec_series (machine_mode mode, rtx base, rtx step)
+{
+  gcc_assert (CONSTANT_P (base) && CONSTANT_P (step));
+
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  RTVEC_ELT (v, 0) = base;
+  for (int i = 1; i < nunits; ++i)
+    RTVEC_ELT (v, i) = simplify_gen_binary (PLUS, inner_mode,
+					    RTVEC_ELT (v, i - 1), step);
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
+}
+
+/* Generate a vector of mode MODE in which element I has the value
+   BASE + I * STEP.  The result will be a constant if BASE and STEP
+   are both constants.  */
+
+rtx
+gen_vec_series (machine_mode mode, rtx base, rtx step)
+{
+  if (step == const0_rtx)
+    return gen_vec_duplicate (mode, base);
+  if (CONSTANT_P (base) && CONSTANT_P (step))
+    return gen_const_vec_series (mode, base, step);
+  return gen_rtx_VEC_SERIES (mode, base, step);
+}
+
+/* Generate a new vector constant for mode MODE and constant value
+   CONSTANT.  */
 
 static rtx
 gen_const_vector (machine_mode mode, int constant)
 {
-  rtx tem;
-  rtvec v;
-  int units, i;
-  machine_mode inner;
-
-  units = GET_MODE_NUNITS (mode);
-  inner = GET_MODE_INNER (mode);
+  machine_mode inner = GET_MODE_INNER (mode);
 
   gcc_assert (!DECIMAL_FLOAT_MODE_P (inner));
 
-  v = rtvec_alloc (units);
+  rtx el = const_tiny_rtx[constant][(int) inner];
+  gcc_assert (el);
 
-  /* We need to call this function after we set the scalar const_tiny_rtx
-     entries.  */
-  gcc_assert (const_tiny_rtx[constant][(int) inner]);
-
-  for (i = 0; i < units; ++i)
-    RTVEC_ELT (v, i) = const_tiny_rtx[constant][(int) inner];
-
-  tem = gen_rtx_raw_CONST_VECTOR (mode, v);
-  return tem;
+  return gen_const_vec_duplicate_1 (mode, el);
 }
 
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
@@ -5790,28 +5881,12 @@ gen_const_vector (machine_mode mode, int constant)
 rtx
 gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
 {
-  machine_mode inner = GET_MODE_INNER (mode);
-  int nunits = GET_MODE_NUNITS (mode);
-  rtx x;
-  int i;
-
-  /* Check to see if all of the elements have the same value.  */
-  x = RTVEC_ELT (v, nunits - 1);
-  for (i = nunits - 2; i >= 0; i--)
-    if (RTVEC_ELT (v, i) != x)
-      break;
+  gcc_assert (GET_MODE_NUNITS (mode) == GET_NUM_ELEM (v));
 
   /* If the values are all the same, check to see if we can use one of the
      standard constant vectors.  */
-  if (i == -1)
-    {
-      if (x == CONST0_RTX (inner))
-	return CONST0_RTX (mode);
-      else if (x == CONST1_RTX (inner))
-	return CONST1_RTX (mode);
-      else if (x == CONSTM1_RTX (inner))
-	return CONSTM1_RTX (mode);
-    }
+  if (rtvec_all_equal_p (v))
+    return gen_const_vec_duplicate (mode, RTVEC_ELT (v, 0));
 
   return gen_rtx_raw_CONST_VECTOR (mode, v);
 }

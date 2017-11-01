@@ -1349,6 +1349,7 @@ static rtx
 find_base_value (rtx src)
 {
   unsigned int regno;
+  scalar_int_mode int_mode;
 
 #if defined (FIND_BASE_TERM)
   /* Try machine-dependent ways to find the base term.  */
@@ -1475,7 +1476,8 @@ find_base_value (rtx src)
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
 	break;
-      if (GET_MODE_SIZE (GET_MODE (src)) < GET_MODE_SIZE (Pmode))
+      if (!is_a <scalar_int_mode> (GET_MODE (src), &int_mode)
+	  || GET_MODE_PRECISION (int_mode) < GET_MODE_PRECISION (Pmode))
 	break;
       /* Fall through.  */
     case HIGH:
@@ -1876,6 +1878,7 @@ find_base_term (rtx x)
   cselib_val *val;
   struct elt_loc_list *l, *f;
   rtx ret;
+  scalar_int_mode int_mode;
 
 #if defined (FIND_BASE_TERM)
   /* Try machine-dependent ways to find the base term.  */
@@ -1893,7 +1896,8 @@ find_base_term (rtx x)
 	 address modes depending on the address space.  */
       if (!target_default_pointer_address_modes_p ())
 	return 0;
-      if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (Pmode))
+      if (!is_a <scalar_int_mode> (GET_MODE (x), &int_mode)
+	  || GET_MODE_PRECISION (int_mode) < GET_MODE_PRECISION (Pmode))
 	return 0;
       /* Fall through.  */
     case HIGH:

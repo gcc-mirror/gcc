@@ -61,33 +61,32 @@ extern void internal_error_no_backtrace (const char *, ...)
 extern bool warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool warning_n (location_t, int, int, const char *, const char *, ...)
     ATTRIBUTE_GCC_DIAG(4,6) ATTRIBUTE_GCC_DIAG(5,6);
+extern bool warning_n (rich_location *, int, int, const char *,
+		       const char *, ...)
+    ATTRIBUTE_GCC_DIAG(4, 6) ATTRIBUTE_GCC_DIAG(5, 6);
 extern bool warning_at (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool warning_at_rich_loc (rich_location *, int, const char *, ...)
+extern bool warning_at (rich_location *, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool warning_at_rich_loc_n (rich_location *, int, int, const char *,
-				  const char *, ...)
-    ATTRIBUTE_GCC_DIAG(4, 6) ATTRIBUTE_GCC_DIAG(5, 6);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void error_n (location_t, int, const char *, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,5) ATTRIBUTE_GCC_DIAG(4,5);
 extern void error_at (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void error_at_rich_loc (rich_location *, const char *, ...)
+extern void error_at (rich_location *, const char *, ...)
   ATTRIBUTE_GCC_DIAG(2,3);
 extern void fatal_error (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3)
      ATTRIBUTE_NORETURN;
 /* Pass one of the OPT_W* from options.h as the second parameter.  */
 extern bool pedwarn (location_t, int, const char *, ...)
      ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_at_rich_loc (rich_location *, int, const char *, ...)
+extern bool pedwarn (rich_location *, int, const char *, ...)
      ATTRIBUTE_GCC_DIAG(3,4);
 extern bool permerror (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern bool permerror_at_rich_loc (rich_location *, const char *,
+extern bool permerror (rich_location *, const char *,
 				   ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void inform (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void inform_at_rich_loc (rich_location *, const char *,
-				...) ATTRIBUTE_GCC_DIAG(2,3);
+extern void inform (rich_location *, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void inform_n (location_t, int, const char *, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,5) ATTRIBUTE_GCC_DIAG(4,5);
 extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);

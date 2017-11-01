@@ -1903,8 +1903,6 @@ rtx
 spu_const (machine_mode mode, HOST_WIDE_INT val)
 {
   rtx inner;
-  rtvec v;
-  int units, i;
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
 	      || GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -1923,14 +1921,7 @@ spu_const (machine_mode mode, HOST_WIDE_INT val)
   else 
     inner = hwint_to_const_double (GET_MODE_INNER (mode), val);
 
-  units = GET_MODE_NUNITS (mode);
-
-  v = rtvec_alloc (units);
-
-  for (i = 0; i < units; ++i)
-    RTVEC_ELT (v, i) = inner;
-
-  return gen_rtx_CONST_VECTOR (mode, v);
+  return gen_const_vec_duplicate (mode, inner);
 }
 
 /* Create a MODE vector constant from 4 ints. */

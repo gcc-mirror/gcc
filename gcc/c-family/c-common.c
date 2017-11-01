@@ -2694,9 +2694,9 @@ binary_op_error (rich_location *richloc, enum tree_code code,
     default:
       gcc_unreachable ();
     }
-  error_at_rich_loc (richloc,
-		     "invalid operands to binary %s (have %qT and %qT)",
-		     opname, type0, type1);
+  error_at (richloc,
+	    "invalid operands to binary %s (have %qT and %qT)",
+	    opname, type0, type1);
 }
 
 /* Given an expression as a tree, return its original type.  Do this
@@ -5944,7 +5944,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
       else
 	message = catenate_messages (gmsgid, " before %s'\\x%x'");
 
-      error_at_rich_loc (richloc, message, prefix, val);
+      error_at (richloc, message, prefix, val);
       free (message);
       message = NULL;
     }
@@ -5972,7 +5972,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
   else if (token_type == CPP_NAME)
     {
       message = catenate_messages (gmsgid, " before %qE");
-      error_at_rich_loc (richloc, message, value);
+      error_at (richloc, message, value);
       free (message);
       message = NULL;
     }
@@ -5985,16 +5985,16 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
   else if (token_type < N_TTYPES)
     {
       message = catenate_messages (gmsgid, " before %qs token");
-      error_at_rich_loc (richloc, message, cpp_type2name (token_type, token_flags));
+      error_at (richloc, message, cpp_type2name (token_type, token_flags));
       free (message);
       message = NULL;
     }
   else
-    error_at_rich_loc (richloc, gmsgid);
+    error_at (richloc, gmsgid);
 
   if (message)
     {
-      error_at_rich_loc (richloc, message);
+      error_at (richloc, message);
       free (message);
     }
 #undef catenate_messages

@@ -2749,12 +2749,22 @@ extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
 
+/* Return true if X is some form of vector constant.  */
+
+inline bool
+const_vec_p (const_rtx x)
+{
+  return VECTOR_MODE_P (GET_MODE (x)) && CONSTANT_P (x);
+}
+
 /* Return true if X is a vector constant with a duplicated element value.  */
 
 inline bool
 const_vec_duplicate_p (const_rtx x)
 {
-  return GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0));
+  return ((GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
+	  || (GET_CODE (x) == CONST
+	      && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE));
 }
 
 /* Return true if X is a vector constant with a duplicated element value.
@@ -2764,12 +2774,32 @@ template <typename T>
 inline bool
 const_vec_duplicate_p (T x, T *elt)
 {
-  if (const_vec_duplicate_p (x))
+  if (GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
     {
       *elt = CONST_VECTOR_ELT (x, 0);
       return true;
     }
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
+    {
+      *elt = XEXP (XEXP (x, 0), 0);
+      return true;
+    }
   return false;
+}
+
+/* Return true if X is a vector with a duplicated element value, either
+   constant or nonconstant.  Store the duplicated element in *ELT if so.  */
+
+template <typename T>
+inline bool
+vec_duplicate_p (T x, T *elt)
+{
+  if (GET_CODE (x) == VEC_DUPLICATE)
+    {
+      *elt = XEXP (x, 0);
+      return true;
+    }
+  return const_vec_duplicate_p (x, elt);
 }
 
 /* If X is a vector constant with a duplicated element value, return that
@@ -2779,9 +2809,56 @@ template <typename T>
 inline T
 unwrap_const_vec_duplicate (T x)
 {
-  if (const_vec_duplicate_p (x))
-    x = CONST_VECTOR_ELT (x, 0);
+  if (GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
+    return CONST_VECTOR_ELT (x, 0);
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
+    return XEXP (XEXP (x, 0), 0);
   return x;
+}
+
+/* In emit-rtl.c.  */
+extern bool const_vec_series_p_1 (const_rtx, rtx *, rtx *);
+
+/* Return true if X is a constant vector that contains a linear series
+   of the form:
+
+   { B, B + S, B + 2 * S, B + 3 * S, ... }
+
+   for a nonzero S.  Store B and S in *BASE_OUT and *STEP_OUT on sucess.  */
+
+inline bool
+const_vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  if (GET_CODE (x) == CONST_VECTOR
+      && GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
+    return const_vec_series_p_1 (x, base_out, step_out);
+  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_SERIES)
+    {
+      *base_out = XEXP (XEXP (x, 0), 0);
+      *step_out = XEXP (XEXP (x, 0), 1);
+      return true;
+    }
+  return false;
+}
+
+/* Return true if X is a vector that contains a linear series of the
+   form:
+
+   { B, B + S, B + 2 * S, B + 3 * S, ... }
+
+   where B and S are constant or nonconstant.  Store B and S in
+   *BASE_OUT and *STEP_OUT on sucess.  */
+
+inline bool
+vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  if (GET_CODE (x) == VEC_SERIES)
+    {
+      *base_out = XEXP (x, 0);
+      *step_out = XEXP (x, 1);
+      return true;
+    }
+  return const_vec_series_p (x, base_out, step_out);
 }
 
 /* Return the unpromoted (outer) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
@@ -2878,6 +2955,16 @@ subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
 }
 
 /* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
+   return the smaller of the two modes if they are different sizes,
+   otherwise return the outer mode.  */
+
+inline machine_mode
+narrower_subreg_mode (machine_mode outermode, machine_mode innermode)
+{
+  return paradoxical_subreg_p (outermode, innermode) ? innermode : outermode;
+}
+
+/* Given that a subreg has outer mode OUTERMODE and inner mode INNERMODE,
    return the mode that is big enough to hold both the outer and inner
    values.  Prefer the outer mode in the event of a tie.  */
 
@@ -2944,7 +3031,7 @@ extern rtx force_const_mem (machine_mode, rtx);
 struct function;
 extern rtx get_pool_constant (const_rtx);
 extern rtx get_pool_constant_mark (rtx, bool *);
-extern machine_mode get_pool_mode (const_rtx);
+extern fixed_size_mode get_pool_mode (const_rtx);
 extern rtx simplify_subtraction (rtx);
 extern void decide_function_section (tree);
 

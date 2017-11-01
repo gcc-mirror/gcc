@@ -1402,16 +1402,17 @@ msp430_return_in_memory (const_tree ret_type, const_tree fntype ATTRIBUTE_UNUSED
 #undef  TARGET_GET_RAW_ARG_MODE
 #define TARGET_GET_RAW_ARG_MODE msp430_get_raw_arg_mode
 
-static machine_mode
+static fixed_size_mode
 msp430_get_raw_arg_mode (int regno)
 {
-  return (regno == ARG_POINTER_REGNUM) ? VOIDmode : Pmode;
+  return as_a <fixed_size_mode> (regno == ARG_POINTER_REGNUM
+				 ? VOIDmode : Pmode);
 }
 
 #undef  TARGET_GET_RAW_RESULT_MODE
 #define TARGET_GET_RAW_RESULT_MODE msp430_get_raw_result_mode
 
-static machine_mode
+static fixed_size_mode
 msp430_get_raw_result_mode (int regno ATTRIBUTE_UNUSED)
 {
   return Pmode;

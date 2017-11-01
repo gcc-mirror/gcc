@@ -1,3 +1,303 @@
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-dse.c (normalize_ref): Check whether the ranges overlap
+	and return false if not.
+	(clear_bytes_written_by, live_bytes_read): Update accordingly.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-ssa-alias.h (ranges_overlap_p): Return false if either
+	range is known to be empty.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* simplify-rtx.c (simplify_const_unary_operation): Use GET_MODE_NUNITS
+	and CONST_VECTOR_NUNITS instead of computing the number of units from
+	the byte sizes of the vector and element.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* var-tracking.c (INT_MEM_OFFSET): Replace with...
+	(int_mem_offset): ...this new function.
+	(var_mem_set, var_mem_delete_and_set, var_mem_delete)
+	(find_mem_expr_in_1pdv, dataflow_set_preserve_mem_locs)
+	(same_variable_part_p, use_type, add_stores, vt_get_decl_and_offset):
+	Update accordingly.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lower-subreg.c (interesting_mode_p): New function.
+	(compute_costs, find_decomposable_subregs, decompose_register)
+	(simplify_subreg_concatn, can_decompose_p, resolve_simple_move)
+	(resolve_clobber, dump_choices): Use it.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtlhash.c (add_rtx): Use add_hwi for 'w' and add_int for 'i'.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* alias.c (find_base_value, find_base_term): Only process integer
+	truncations.  Check the precision rather than the size.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (is_narrower_int_mode): New function
+	* optabs.c (expand_float, expand_fix): Use it.
+	* dwarf2out.c (rotate_loc_descriptor): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (narrower_subreg_mode): New function.
+	* ira-color.c (update_costs_from_allocno): Use it.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* optabs-query.h (convert_optab_p): New function, split out from...
+	(convert_optab_handler): ...here.
+	(widening_optab_handler): Delete.
+	(find_widening_optab_handler): Remove permit_non_widening parameter.
+	(find_widening_optab_handler_and_mode): Likewise.  Provide an
+	override that operates on mode class wrappers.
+	* optabs-query.c (widening_optab_handler): Delete.
+	(find_widening_optab_handler_and_mode): Remove permit_non_widening
+	parameter.  Assert that the two modes are the same class and that
+	the "from" mode is narrower than the "to" mode.  Use
+	convert_optab_handler instead of widening_optab_handler.
+	* expmed.c (expmed_mult_highpart_optab): Use convert_optab_handler
+	instead of widening_optab_handler.
+	* expr.c (expand_expr_real_2): Update calls to
+	find_widening_optab_handler.
+	* optabs.c (expand_widen_pattern_expr): Likewise.
+	(expand_binop_directly): Take the insn_code as a parameter.
+	(expand_binop): Only call find_widening_optab_handler for
+	conversion optabs; use optab_handler otherwise.  Update calls
+	to find_widening_optab_handler and expand_binop_directly.
+	Use convert_optab_handler instead of widening_optab_handler.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Update calls to
+	find_widening_optab_handler and use scalar_mode rather than
+	machine_mode.
+	(convert_plusminus_to_widen): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (fixed_size_mode): New class.
+	* rtl.h (get_pool_mode): Return fixed_size_mode.
+	* gengtype.c (main): Add fixed_size_mode.
+	* target.def (get_raw_result_mode): Return a fixed_size_mode.
+	(get_raw_arg_mode): Likewise.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_get_reg_raw_mode): Return a fixed_size_mode.
+	* targhooks.c (default_get_reg_raw_mode): Likewise.
+	* config/ia64/ia64.c (ia64_get_reg_raw_mode): Likewise.
+	* config/mips/mips.c (mips_get_reg_raw_mode): Likewise.
+	* config/msp430/msp430.c (msp430_get_raw_arg_mode): Likewise.
+	(msp430_get_raw_result_mode): Likewise.
+	* config/avr/avr-protos.h (regmask): Use as_a <fixed_side_mode>
+	* dbxout.c (dbxout_parms): Require fixed-size modes.
+	* expr.c (copy_blkmode_from_reg, copy_blkmode_to_reg): Likewise.
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Likewise.
+	* omp-low.c (lower_oacc_reductions): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Take fixed_size_modes.
+	(simplify_subreg): Update accordingly.
+	* varasm.c (constant_descriptor_rtx::mode): Change to fixed_size_mode.
+	(force_const_mem): Update accordingly.  Return NULL_RTX for modes
+	that aren't fixed-size.
+	(get_pool_mode): Return a fixed_size_mode.
+	(output_constant_pool_2): Take a fixed_size_mode.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/rtl.texi (vec_series): Document.
+	(const): Say that the operand can be a vec_series.
+	* rtl.def (VEC_SERIES): New rtx code.
+	* rtl.h (const_vec_series_p_1): Declare.
+	(const_vec_series_p): New function.
+	* emit-rtl.h (gen_const_vec_series): Declare.
+	(gen_vec_series): Likewise.
+	* emit-rtl.c (const_vec_series_p_1, gen_const_vec_series)
+	(gen_vec_series): Likewise.
+	* optabs.c (expand_mult_highpart): Use gen_const_vec_series.
+	* simplify-rtx.c (simplify_unary_operation): Handle negations
+	of vector series.
+	(simplify_binary_operation_series): New function.
+	(simplify_binary_operation_1): Use it.  Handle VEC_SERIES.
+	(test_vector_ops_series): New function.
+	(test_vector_ops): Call it.
+	* config/powerpcspe/altivec.md (altivec_lvsl): Use
+	gen_const_vec_series.
+	(altivec_lvsr): Likewise.
+	* config/rs6000/altivec.md (altivec_lvsl, altivec_lvsr): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/rtl.texi (const): Update description of address constants.
+	Say that vector constants are allowed too.
+	* common.md (E, F): Use CONSTANT_P instead of checking for
+	CONST_VECTOR.
+	* emit-rtl.c (gen_lowpart_common): Use const_vec_p instead of
+	checking for CONST_VECTOR.
+	* expmed.c (make_tree): Use build_vector_from_val for a CONST
+	VEC_DUPLICATE.
+	* expr.c (expand_expr_real_2): Check for vector modes instead
+	of checking for CONST_VECTOR.
+	* rtl.h (const_vec_p): New function.
+	(const_vec_duplicate_p): Check for a CONST VEC_DUPLICATE.
+	(unwrap_const_vec_duplicate): Handle them here too.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    David Malcolm  <dmalcolm@redhat.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (vec_duplicate_p): New function.
+	* selftest-rtl.c (assert_rtx_eq_at): New function.
+	* selftest-rtl.h (ASSERT_RTX_EQ): New macro.
+	(assert_rtx_eq_at): Declare.
+	* selftest.h (selftest::simplify_rtx_c_tests): Declare.
+	* selftest-run-tests.c (selftest::run_tests): Call it.
+	* simplify-rtx.c: Include selftest.h and selftest-rtl.h.
+	(simplify_unary_operation_1): Recursively handle vector duplicates.
+	(simplify_binary_operation_1): Likewise.  Handle VEC_SELECTs of
+	vector duplicates.
+	(simplify_subreg): Handle subregs of vector duplicates.
+	(make_test_reg, test_vector_ops_duplicate, test_vector_ops)
+	(selftest::simplify_rtx_c_tests): New functions.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* emit-rtl.h (gen_const_vec_duplicate): Declare.
+	(gen_vec_duplicate): Likewise.
+	* emit-rtl.c (gen_const_vec_duplicate_1): New function, split
+	out from...
+	(gen_const_vector): ...here.
+	(gen_const_vec_duplicate, gen_vec_duplicate): New functions.
+	(gen_rtx_CONST_VECTOR): Use gen_const_vec_duplicate for constants
+	whose elements are all equal.
+	* optabs.c (expand_vector_broadcast): Use gen_const_vec_duplicate.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_relational_operation): Likewise.
+	* config/aarch64/aarch64.c (aarch64_simd_gen_const_vector_dup):
+	Likewise.
+	(aarch64_simd_dup_constant): Use gen_vec_duplicate.
+	(aarch64_expand_vector_init): Likewise.
+	* config/arm/arm.c (neon_vdup_constant): Likewise.
+	(neon_expand_vector_init): Likewise.
+	(arm_expand_vec_perm): Use gen_const_vec_duplicate.
+	(arm_block_set_unaligned_vect): Likewise.
+	(arm_block_set_aligned_vect): Likewise.
+	* config/arm/neon.md (neon_copysignf<mode>): Likewise.
+	* config/i386/i386.c (ix86_expand_vec_perm): Likewise.
+	(expand_vec_perm_even_odd_pack): Likewise.
+	(ix86_vector_duplicate_value): Use gen_vec_duplicate.
+	* config/i386/sse.md (one_cmpl<mode>2): Use CONSTM1_RTX.
+	* config/ia64/ia64.c (ia64_expand_vecint_compare): Use
+	gen_const_vec_duplicate.
+	* config/ia64/vect.md (addv2sf3, subv2sf3): Use CONST1_RTX.
+	* config/mips/mips.c (mips_gen_const_int_vector): Use
+	gen_const_vec_duplicate.
+	(mips_expand_vector_init): Use CONST0_RTX.
+	* config/powerpcspe/altivec.md (abs<mode>2, nabs<mode>2): Likewise.
+	(define_split): Use gen_const_vec_duplicate.
+	* config/rs6000/altivec.md (abs<mode>2, nabs<mode>2): Use CONST0_RTX.
+	(define_split): Use gen_const_vec_duplicate.
+	* config/s390/vx-builtins.md (vec_genmask<mode>): Likewise.
+	(vec_ctd_s64, vec_ctd_u64, vec_ctsl, vec_ctul): Likewise.
+	* config/spu/spu.c (spu_const): Likewise.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (can_change_dest_mode): Reject changes in
+	REGMODE_NATURAL_SIZE.
+
+2017-10-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* configure.ac (--enable-libssp): New.
+	(gcc_cv_libc_provides_ssp): Check for explicit setting before
+	trying to determine target-specific default.  Adjust indentation.
+	* configure: Regenerated.
+	* doc/install.texi (Configuration): Expand --disable-libssp
+	documentation.
+
+2017-10-31  Daniel Santos  <daniel.santos@pobox.com>
+
+	config/i386/i386.c (ix86_expand_epilogue): Correct stack
+	calculation.
+
+2017-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/81702
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Remove assert.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* auto-profile.c (autofdo_source_profile::read): Use
+	UNKNOWN_LOCATION rather than 0.
+	* diagnostic-core.h (warning_at_rich_loc): Rename to...
+	(warning_at): ...this overload.
+	(warning_at_rich_loc_n): Rename to...
+	(warning_n): ...this overload.
+	(error_at_rich_loc): Rename to...
+	(error_at): ...this overload.
+	(pedwarn_at_rich_loc): Rename to...
+	(pedwarn): ...this overload.
+	(permerror_at_rich_loc): Rename to...
+	(permerror): ...this overload.
+	(inform_at_rich_loc): Rename to...
+	(inform): ...this overload.
+	* diagnostic.c: (diagnostic_n_impl): Delete location_t-based decl.
+	(diagnostic_n_impl_richloc): Rename to...
+	(diagnostic_n_impl): ...this rich_location *-based decl.
+	(inform_at_rich_loc): Rename to...
+	(inform): ...this, and add an assertion.
+	(inform_n): Update for removal of location_t-based diagnostic_n_impl.
+	(warning_at_rich_loc): Rename to...
+	(warning_at): ...this, and add an assertion.
+	(warning_at_rich_loc_n): Rename to...
+	(warning_n): ...this, and add an assertion.
+	(warning_n): Update location_t-based implementation for removal of
+	location_t-based diagnostic_n_impl.
+	(pedwarn_at_rich_loc): Rename to...
+	(pedwarn): ...this, and add an assertion.
+	(permerror_at_rich_loc): Rename to...
+	(permerror): ...this, and add an assertion.
+	(error_n): Update for removal of location_t-based diagnostic_n_impl.
+	(error_at_rich_loc): Rename to...
+	(error_at): ...this, and add an assertion.
+	* gcc.c (do_spec_1): Use UNKNOWN_LOCATION rather than 0.
+	(driver::do_spec_on_infiles): Likewise.
+	* substring-locations.c (format_warning_va): Update for renaming
+	of inform_at_rich_loc.
+
 2017-10-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* builtins.def (DEF_FLOATN_BUILTIN): Change most _Float<N> and

@@ -3399,7 +3399,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
 	    inform (location_of (closure),
 		    "the lambda has no capture-default");
 	  else if (TYPE_CLASS_SCOPE_P (closure))
-	    inform (0, "lambda in local class %q+T cannot "
+	    inform (UNKNOWN_LOCATION, "lambda in local class %q+T cannot "
 		    "capture variables from the enclosing context",
 		    TYPE_CONTEXT (closure));
 	  inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);

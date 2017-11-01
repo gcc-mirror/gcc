@@ -2406,10 +2406,9 @@ build_component_ref (location_t loc, tree datum, tree component,
 	      gcc_rich_location rich_loc (reported_loc);
 	      if (component_loc != UNKNOWN_LOCATION)
 		rich_loc.add_fixit_misspelled_id (component_loc, guessed_id);
-	      error_at_rich_loc
-		(&rich_loc,
-		 "%qT has no member named %qE; did you mean %qE?",
-		 type, component, guessed_id);
+	      error_at (&rich_loc,
+			"%qT has no member named %qE; did you mean %qE?",
+			type, component, guessed_id);
 	    }
 	  else
 	    error_at (loc, "%qT has no member named %qE", type, component);
@@ -2483,9 +2482,9 @@ build_component_ref (location_t loc, tree datum, tree component,
       rich_location richloc (line_table, loc);
       /* "loc" should be the "." token.  */
       richloc.add_fixit_replace ("->");
-      error_at_rich_loc (&richloc,
-			 "%qE is a pointer; did you mean to use %<->%>?",
-			 datum);
+      error_at (&richloc,
+		"%qE is a pointer; did you mean to use %<->%>?",
+		datum);
       return error_mark_node;
     }
   else if (code != ERROR_MARK)
@@ -4276,8 +4275,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    {
 	      gcc_rich_location richloc (location);
 	      richloc.add_fixit_insert_before (location, "!");
-	      inform_at_rich_loc (&richloc, "did you mean to use logical "
-				  "not?");
+	      inform (&richloc, "did you mean to use logical not?");
 	    }
 	  if (!noconvert)
 	    arg = default_conversion (arg);
@@ -8256,9 +8254,9 @@ pop_init_level (location_t loc, int implicit,
       && !constructor_zeroinit)
     {
       gcc_assert (initializer_stack->missing_brace_richloc);
-      warning_at_rich_loc (initializer_stack->missing_brace_richloc,
-			   OPT_Wmissing_braces,
-			   "missing braces around initializer");
+      warning_at (initializer_stack->missing_brace_richloc,
+		  OPT_Wmissing_braces,
+		  "missing braces around initializer");
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
@@ -8580,10 +8578,9 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 	{
 	  gcc_rich_location rich_loc (fieldname_loc);
 	  rich_loc.add_fixit_misspelled_id (fieldname_loc, guessed_id);
-	  error_at_rich_loc
-	    (&rich_loc,
-	     "%qT has no member named %qE; did you mean %qE?",
-	     constructor_type, fieldname, guessed_id);
+	  error_at (&rich_loc,
+		    "%qT has no member named %qE; did you mean %qE?",
+		    constructor_type, fieldname, guessed_id);
 	}
       else
 	error_at (fieldname_loc, "%qT has no member named %qE",

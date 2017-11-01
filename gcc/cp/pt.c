@@ -25132,9 +25132,9 @@ listify (tree arg)
     {    
       gcc_rich_location richloc (input_location);
       maybe_add_include_fixit (&richloc, "<initializer_list>");
-      error_at_rich_loc (&richloc,
-                         "deducing from brace-enclosed initializer list"
-                         " requires #include <initializer_list>");
+      error_at (&richloc,
+		"deducing from brace-enclosed initializer list"
+		" requires %<#include <initializer_list>%>");
 
       return error_mark_node;
     }

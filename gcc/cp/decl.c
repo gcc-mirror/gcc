@@ -13048,9 +13048,9 @@ grok_op_properties (tree decl, bool complain)
 	     unary one.  */
 	  unsigned alt = ovl_op_alternate[ovl_op_mapping [operator_code]];
 	  const ovl_op_info_t *ovl_op = &ovl_op_info[false][alt];
-	  DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
-	  operator_code = ovl_op->tree_code;
 	  gcc_checking_assert (ovl_op->flags == OVL_OP_FLAG_UNARY);
+	  operator_code = ovl_op->tree_code;
+	  DECL_OVERLOADED_OPERATOR_CODE_RAW (decl) = ovl_op->ovl_op_code;
 	}
       else if (arity != 2)
 	{

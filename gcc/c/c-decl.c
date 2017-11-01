@@ -3119,10 +3119,10 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	{
 	  gcc_rich_location richloc (loc);
 	  richloc.add_fixit_replace (hint);
-	  warned = pedwarn_at_rich_loc
-	    (&richloc, OPT_Wimplicit_function_declaration,
-	     "implicit declaration of function %qE; did you mean %qs?",
-	     id, hint);
+	  warned = pedwarn (&richloc, OPT_Wimplicit_function_declaration,
+			    "implicit declaration of function %qE;"
+			    " did you mean %qs?",
+			    id, hint);
 	}
       else
 	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
@@ -3132,7 +3132,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
     {
       gcc_rich_location richloc (loc);
       richloc.add_fixit_replace (hint);
-      warned = warning_at_rich_loc
+      warned = warning_at
 	(&richloc, OPT_Wimplicit_function_declaration,
 	 G_("implicit declaration of function %qE; did you mean %qs?"),
 	 id, hint);
@@ -3401,10 +3401,9 @@ implicitly_declare (location_t loc, tree functionid)
 		    {
 		      rich_location richloc (line_table, loc);
 		      maybe_add_include_fixit (&richloc, header);
-		      inform_at_rich_loc
-			(&richloc,
-			 "include %qs or provide a declaration of %qD",
-			 header, decl);
+		      inform (&richloc,
+			      "include %qs or provide a declaration of %qD",
+			      header, decl);
 		    }
 		  newtype = TREE_TYPE (decl);
 		}
@@ -3472,10 +3471,10 @@ undeclared_variable (location_t loc, tree id)
 	{
 	  gcc_rich_location richloc (loc);
 	  richloc.add_fixit_replace (guessed_id);
-	  error_at_rich_loc (&richloc,
-			     "%qE undeclared here (not in a function);"
-			     " did you mean %qs?",
-			     id, guessed_id);
+	  error_at (&richloc,
+		    "%qE undeclared here (not in a function);"
+		    " did you mean %qs?",
+		    id, guessed_id);
 	}
       else
 	error_at (loc, "%qE undeclared here (not in a function)", id);
@@ -3490,11 +3489,10 @@ undeclared_variable (location_t loc, tree id)
 	    {
 	      gcc_rich_location richloc (loc);
 	      richloc.add_fixit_replace (guessed_id);
-	      error_at_rich_loc
-		(&richloc,
-		 "%qE undeclared (first use in this function);"
-		 " did you mean %qs?",
-		 id, guessed_id);
+	      error_at (&richloc,
+			"%qE undeclared (first use in this function);"
+			" did you mean %qs?",
+			id, guessed_id);
 	    }
 	  else
 	    error_at (loc, "%qE undeclared (first use in this function)", id);

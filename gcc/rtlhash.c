@@ -77,11 +77,11 @@ add_rtx (const_rtx x, hash &hstate)
     switch (fmt[i])
       {
       case 'w':
-	hstate.add_object (XWINT (x, i));
+	hstate.add_hwi (XWINT (x, i));
 	break;
       case 'n':
       case 'i':
-	hstate.add_object (XINT (x, i));
+	hstate.add_int (XINT (x, i));
 	break;
       case 'V':
       case 'E':

@@ -3294,9 +3294,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	{
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_replace (suggestion);
-	  error_at_rich_loc (&richloc,
-			     "%qE does not name a type; did you mean %qs?",
-			     id, suggestion);
+	  error_at (&richloc,
+		    "%qE does not name a type; did you mean %qs?",
+		    id, suggestion);
 	}
       else
 	error_at (location, "%qE does not name a type", id);
@@ -4107,9 +4107,9 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 		{
 		  rich_location rich_loc (line_table, tok->location);
 		  rich_loc.add_range (last_tok_loc, false);
-		  error_at_rich_loc (&rich_loc,
-				     "unsupported non-standard concatenation "
-				     "of string literals");
+		  error_at (&rich_loc,
+			    "unsupported non-standard concatenation "
+			    "of string literals");
 		}
 	    }
 
@@ -6163,9 +6163,9 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_replace ("::");
-	      error_at_rich_loc (&richloc,
-				 "found %<:%> in nested-name-specifier, "
-				 "expected %<::%>");
+	      error_at (&richloc,
+			"found %<:%> in nested-name-specifier, "
+			"expected %<::%>");
 	      token->type = CPP_SCOPE;
 	    }
 
@@ -9097,8 +9097,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  gcc_rich_location rich_loc (input_location);
 		  maybe_add_cast_fixit (&rich_loc, open_paren_loc, close_paren_loc,
 					expr, type);
-		  warning_at_rich_loc (&rich_loc, OPT_Wold_style_cast,
-				       "use of old-style cast to %q#T", type);
+		  warning_at (&rich_loc, OPT_Wold_style_cast,
+			      "use of old-style cast to %q#T", type);
 		}
 
 	      /* Only type conversions to integral or enumeration types
@@ -13549,7 +13549,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
-	      error_at_rich_loc (&richloc, "%<friend%> used outside of class");
+	      error_at (&richloc, "%<friend%> used outside of class");
 	      cp_lexer_purge_token (parser->lexer);
 	    }
 	  else
@@ -13615,9 +13615,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		 we're complaining about C++0x compatibility.  */
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
-	      warning_at_rich_loc (&richloc, OPT_Wc__11_compat,
-				   "%<auto%> changes meaning in C++11; "
-				   "please remove it");
+	      warning_at (&richloc, OPT_Wc__11_compat,
+			  "%<auto%> changes meaning in C++11; "
+			  "please remove it");
 
               /* Set the storage class anyway.  */
               cp_parser_set_storage_class (parser, decl_specs, RID_AUTO,
@@ -17661,9 +17661,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_range (input_location, false);
 	  richloc.add_fixit_remove ();
-	  pedwarn_at_rich_loc (&richloc, 0, "elaborated-type-specifier for "
-			       "a scoped enum must not use the %qD keyword",
-			       token->u.value);
+	  pedwarn (&richloc, 0, "elaborated-type-specifier for "
+		   "a scoped enum must not use the %qD keyword",
+		   token->u.value);
 	  /* Consume the `struct' or `class' and parse it anyway.  */
 	  cp_lexer_consume_token (parser->lexer);
 	}
@@ -20659,7 +20659,7 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 	{
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_fixit_remove ();
-	  error_at_rich_loc (&richloc, "duplicate cv-qualifier");
+	  error_at (&richloc, "duplicate cv-qualifier");
 	  cp_lexer_purge_token (parser->lexer);
 	}
       else
@@ -20808,7 +20808,7 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
 	{
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_fixit_remove ();
-	  error_at_rich_loc (&richloc, "duplicate virt-specifier");
+	  error_at (&richloc, "duplicate virt-specifier");
 	  cp_lexer_purge_token (parser->lexer);
 	}
       else
@@ -22606,14 +22606,14 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  richloc.add_fixit_insert_before (next_loc, ";");
 
 	if (CLASSTYPE_DECLARED_CLASS (type))
-	  error_at_rich_loc (&richloc,
-			     "expected %<;%> after class definition");
+	  error_at (&richloc,
+		    "expected %<;%> after class definition");
 	else if (TREE_CODE (type) == RECORD_TYPE)
-	  error_at_rich_loc (&richloc,
-			     "expected %<;%> after struct definition");
+	  error_at (&richloc,
+		    "expected %<;%> after struct definition");
 	else if (TREE_CODE (type) == UNION_TYPE)
-	  error_at_rich_loc (&richloc,
-			     "expected %<;%> after union definition");
+	  error_at (&richloc,
+		    "expected %<;%> after union definition");
 	else
 	  gcc_unreachable ();
 
@@ -23060,9 +23060,9 @@ cp_parser_class_head (cp_parser* parser,
       rich_location richloc (line_table, reported_loc);
       richloc.add_fixit_insert_before (class_head_start_location,
                                        "template <> ");
-      error_at_rich_loc
-        (&richloc,
-         "an explicit specialization must be preceded by %<template <>%>");
+      error_at (&richloc,
+		"an explicit specialization must be preceded by"
+		" %<template <>%>");
       invalid_explicit_specialization_p = true;
       /* Take the same action that would have been taken by
 	 cp_parser_explicit_specialization.  */
@@ -23530,7 +23530,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
-	      pedwarn_at_rich_loc (&richloc, OPT_Wpedantic, "extra %<;%>");
+	      pedwarn (&richloc, OPT_Wpedantic, "extra %<;%>");
 	    }
 	}
       else
@@ -23873,9 +23873,9 @@ cp_parser_member_declaration (cp_parser* parser)
 			= cp_lexer_consume_token (parser->lexer)->location;
 		      gcc_rich_location richloc (semicolon_loc);
 		      richloc.add_fixit_remove ();
-		      warning_at_rich_loc (&richloc, OPT_Wextra_semi,
-					   "extra %<;%> after in-class "
-					   "function definition");
+		      warning_at (&richloc, OPT_Wextra_semi,
+				  "extra %<;%> after in-class "
+				  "function definition");
 		    }
 		  goto out;
 		}
@@ -23918,8 +23918,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		  cp_token *token = cp_lexer_previous_token (parser->lexer);
 		  gcc_rich_location richloc (token->location);
 		  richloc.add_fixit_remove ();
-		  error_at_rich_loc (&richloc, "stray %<,%> at end of "
-				     "member declaration");
+		  error_at (&richloc, "stray %<,%> at end of "
+			    "member declaration");
 		}
 	    }
 	  /* If the next token isn't a `;', then we have a parse error.  */
@@ -23932,8 +23932,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      cp_token *token = cp_lexer_previous_token (parser->lexer);
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_insert_after (";");
-	      error_at_rich_loc (&richloc, "expected %<;%> at end of "
-				 "member declaration");
+	      error_at (&richloc, "expected %<;%> at end of "
+			"member declaration");
 
 	      /* Assume that the user meant to provide a semicolon.  If
 		 we were to cp_parser_skip_to_end_of_statement, we might
@@ -27544,8 +27544,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_fixit_replace ("> >");
-	  error_at_rich_loc (&richloc, "%<>>%> should be %<> >%> "
-			     "within a nested template argument list");
+	  error_at (&richloc, "%<>>%> should be %<> >%> "
+		    "within a nested template argument list");
 
 	  token->type = CPP_GREATER;
 	}
@@ -28174,7 +28174,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    {
 	      gcc_rich_location richloc (location);
 	      richloc.add_fixit_remove ();
-	      error_at_rich_loc (&richloc, "duplicate %qD", token->u.value);
+	      error_at (&richloc, "duplicate %qD", token->u.value);
 	    }
 	}
       else
@@ -28198,7 +28198,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();
-	  error_at_rich_loc (&richloc, "duplicate %qs", decl_spec_names[ds]);
+	  error_at (&richloc, "duplicate %qs", decl_spec_names[ds]);
 	}
     }
 }

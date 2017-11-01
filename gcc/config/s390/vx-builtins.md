@@ -91,12 +91,10 @@
    (match_operand:QI    2 "const_int_operand" "C")]
   "TARGET_VX"
 {
-  int nunits = GET_MODE_NUNITS (<VI_HW:MODE>mode);
   int bitlen = GET_MODE_UNIT_BITSIZE (<VI_HW:MODE>mode);
   /* To bit little endian style.  */
   int end = bitlen - 1 - INTVAL (operands[1]);
   int start = bitlen - 1 - INTVAL (operands[2]);
-  rtx const_vec[16];
   int i;
   unsigned HOST_WIDE_INT mask;
   bool swapped_p = false;
@@ -116,13 +114,11 @@
   if (swapped_p)
     mask = ~mask;
 
-  for (i = 0; i < nunits; i++)
-    const_vec[i] = GEN_INT (trunc_int_for_mode (mask,
-			      GET_MODE_INNER (<VI_HW:MODE>mode)));
+  rtx mask_rtx = gen_int_mode (mask, GET_MODE_INNER (<VI_HW:MODE>mode));
 
   emit_insn (gen_rtx_SET (operands[0],
-			  gen_rtx_CONST_VECTOR (<VI_HW:MODE>mode,
-						gen_rtvec_v (nunits, const_vec))));
+			  gen_const_vec_duplicate (<VI_HW:MODE>mode,
+						   mask_rtx)));
   DONE;
 })
 
@@ -1623,7 +1619,7 @@
   real_2expN (&f, -INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
 })
 
@@ -1654,7 +1650,7 @@
   real_2expN (&f, -INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
 })
 
@@ -1686,7 +1682,7 @@
   real_2expN (&f, INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
   operands[4] = gen_reg_rtx (V2DFmode);
 })
@@ -1719,7 +1715,7 @@
   real_2expN (&f, INTVAL (operands[2]), DFmode);
   c = const_double_from_real_value (f, DFmode);
 
-  operands[3] = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, c, c));
+  operands[3] = gen_const_vec_duplicate (V2DFmode, c);
   operands[3] = force_reg (V2DFmode, operands[3]);
   operands[4] = gen_reg_rtx (V2DFmode);
 })

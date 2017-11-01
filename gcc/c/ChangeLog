@@ -1,3 +1,19 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (implicit_decl_warning): Update for renaming of
+	pedwarn_at_rich_loc and warning_at_rich_loc.
+	(implicitly_declare): Likewise for renaming of inform_at_rich_loc.
+	(undeclared_variable): Likewise for renaming of error_at_rich_loc.
+	* c-parser.c (c_parser_declaration_or_fndef): Likewise.
+	(c_parser_struct_or_union_specifier): Likewise for renaming of
+	pedwarn_at_rich_loc.
+	(c_parser_parameter_declaration): Likewise for renaming of
+	error_at_rich_loc.
+	* c-typeck.c (build_component_ref): Likewise.
+	(build_unary_op): Likewise for renaming of inform_at_rich_loc.
+	(pop_init_level): Likewise for renaming of warning_at_rich_loc.
+	(set_init_label): Likewise for renaming of error_at_rich_loc.
+
 2017-10-30  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_statement): Parse conditional

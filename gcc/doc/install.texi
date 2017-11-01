@@ -1640,7 +1640,8 @@ not be built.
 
 @item --disable-libssp
 Specify that the run-time libraries for stack smashing protection
-should not be built.
+should not be built or linked against.  On many targets library support
+is provided by the C library instead.
 
 @item --disable-libquadmath
 Specify that the GCC quad-precision math library should not be built.

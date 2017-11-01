@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "varasm.h"
 #include "flags.h"
+#include "selftest.h"
+#include "selftest-rtl.h"
 
 /* Simplification and canonicalization of RTL.  */
 
@@ -46,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 static rtx neg_const_int (machine_mode, const_rtx);
 static bool plus_minus_operand_p (const_rtx);
 static rtx simplify_plus_minus (enum rtx_code, machine_mode, rtx, rtx);
-static rtx simplify_immed_subreg (machine_mode, rtx, machine_mode,
-				  unsigned int);
 static rtx simplify_associative_operation (enum rtx_code, machine_mode,
 					   rtx, rtx);
 static rtx simplify_relational_operation_1 (enum rtx_code, machine_mode,
@@ -925,7 +925,7 @@ static rtx
 simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 {
   enum rtx_code reversed;
-  rtx temp;
+  rtx temp, elt, base, step;
   scalar_int_mode inner, int_mode, op_mode, op0_mode;
 
   switch (code)
@@ -1181,6 +1181,22 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	      if (GET_MODE_PRECISION (int_mode) > isize)
 		return simplify_gen_unary (ZERO_EXTEND, int_mode, temp, inner);
 	      return simplify_gen_unary (TRUNCATE, int_mode, temp, inner);
+	    }
+	}
+
+      if (vec_series_p (op, &base, &step))
+	{
+	  /* Only create a new series if we can simplify both parts.  In other
+	     cases this isn't really a simplification, and it's not necessarily
+	     a win to replace a vector operation with a scalar operation.  */
+	  scalar_mode inner_mode = GET_MODE_INNER (mode);
+	  base = simplify_unary_operation (NEG, inner_mode, base, inner_mode);
+	  if (base)
+	    {
+	      step = simplify_unary_operation (NEG, inner_mode,
+					       step, inner_mode);
+	      if (step)
+		return gen_vec_series (mode, base, step);
 	    }
 	}
       break;
@@ -1684,6 +1700,28 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
       break;
     }
 
+  if (VECTOR_MODE_P (mode) && vec_duplicate_p (op, &elt))
+    {
+      /* Try applying the operator to ELT and see if that simplifies.
+	 We can duplicate the result if so.
+
+	 The reason we don't use simplify_gen_unary is that it isn't
+	 necessarily a win to convert things like:
+
+	   (neg:V (vec_duplicate:V (reg:S R)))
+
+	 to:
+
+	   (vec_duplicate:V (neg:S (reg:S R)))
+
+	 The first might be done entirely in vector registers while the
+	 second might need a move between register files.  */
+      temp = simplify_unary_operation (code, GET_MODE_INNER (mode),
+				       elt, GET_MODE_INNER (GET_MODE (op)));
+      if (temp)
+	return gen_vec_duplicate (mode, temp);
+    }
+
   return 0;
 }
 
@@ -1707,28 +1745,17 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  gcc_assert (GET_MODE_INNER (mode) == GET_MODE_INNER
 						(GET_MODE (op)));
       }
-      if (CONST_SCALAR_INT_P (op) || CONST_DOUBLE_AS_FLOAT_P (op)
-	  || GET_CODE (op) == CONST_VECTOR)
+      if (CONST_SCALAR_INT_P (op) || CONST_DOUBLE_AS_FLOAT_P (op))
+	return gen_const_vec_duplicate (mode, op);
+      if (GET_CODE (op) == CONST_VECTOR)
 	{
-	  int elt_size = GET_MODE_UNIT_SIZE (mode);
-          unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+	  unsigned int n_elts = GET_MODE_NUNITS (mode);
+	  unsigned int in_n_elts = CONST_VECTOR_NUNITS (op);
+	  gcc_assert (in_n_elts < n_elts);
+	  gcc_assert ((n_elts % in_n_elts) == 0);
 	  rtvec v = rtvec_alloc (n_elts);
-	  unsigned int i;
-
-	  if (GET_CODE (op) != CONST_VECTOR)
-	    for (i = 0; i < n_elts; i++)
-	      RTVEC_ELT (v, i) = op;
-	  else
-	    {
-	      machine_mode inmode = GET_MODE (op);
-	      int in_elt_size = GET_MODE_UNIT_SIZE (inmode);
-              unsigned in_n_elts = (GET_MODE_SIZE (inmode) / in_elt_size);
-
-	      gcc_assert (in_n_elts < n_elts);
-	      gcc_assert ((n_elts % in_n_elts) == 0);
-	      for (i = 0; i < n_elts; i++)
-	        RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op, i % in_n_elts);
-	    }
+	  for (unsigned i = 0; i < n_elts; i++)
+	    RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op, i % in_n_elts);
 	  return gen_rtx_CONST_VECTOR (mode, v);
 	}
     }
@@ -2137,6 +2164,46 @@ simplify_binary_operation (enum rtx_code code, machine_mode mode,
   return NULL_RTX;
 }
 
+/* Subroutine of simplify_binary_operation_1 that looks for cases in
+   which OP0 and OP1 are both vector series or vector duplicates
+   (which are really just series with a step of 0).  If so, try to
+   form a new series by applying CODE to the bases and to the steps.
+   Return null if no simplification is possible.
+
+   MODE is the mode of the operation and is known to be a vector
+   integer mode.  */
+
+static rtx
+simplify_binary_operation_series (rtx_code code, machine_mode mode,
+				  rtx op0, rtx op1)
+{
+  rtx base0, step0;
+  if (vec_duplicate_p (op0, &base0))
+    step0 = const0_rtx;
+  else if (!vec_series_p (op0, &base0, &step0))
+    return NULL_RTX;
+
+  rtx base1, step1;
+  if (vec_duplicate_p (op1, &base1))
+    step1 = const0_rtx;
+  else if (!vec_series_p (op1, &base1, &step1))
+    return NULL_RTX;
+
+  /* Only create a new series if we can simplify both parts.  In other
+     cases this isn't really a simplification, and it's not necessarily
+     a win to replace a vector operation with a scalar operation.  */
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  rtx new_base = simplify_binary_operation (code, inner_mode, base0, base1);
+  if (!new_base)
+    return NULL_RTX;
+
+  rtx new_step = simplify_binary_operation (code, inner_mode, step0, step1);
+  if (!new_step)
+    return NULL_RTX;
+
+  return gen_vec_series (mode, new_base, new_step);
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -2146,7 +2213,7 @@ static rtx
 simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 			     rtx op0, rtx op1, rtx trueop0, rtx trueop1)
 {
-  rtx tem, reversed, opleft, opright;
+  rtx tem, reversed, opleft, opright, elt0, elt1;
   HOST_WIDE_INT val;
   scalar_int_mode int_mode, inner_mode;
 
@@ -2313,6 +2380,14 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && flag_associative_math)
 	{
 	  tem = simplify_associative_operation (code, mode, op0, op1);
+	  if (tem)
+	    return tem;
+	}
+
+      /* Handle vector series.  */
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  tem = simplify_binary_operation_series (code, mode, op0, op1);
 	  if (tem)
 	    return tem;
 	}
@@ -2527,6 +2602,14 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      || plus_minus_operand_p (op1))
 	  && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
 	return tem;
+
+      /* Handle vector series.  */
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  tem = simplify_binary_operation_series (code, mode, op0, op1);
+	  if (tem)
+	    return tem;
+	}
       break;
 
     case MULT:
@@ -3480,6 +3563,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* ??? There are simplifications that can be done.  */
       return 0;
 
+    case VEC_SERIES:
+      if (op1 == CONST0_RTX (GET_MODE_INNER (mode)))
+	return gen_vec_duplicate (mode, op0);
+      return 0;
+
     case VEC_SELECT:
       if (!VECTOR_MODE_P (mode))
 	{
@@ -3488,6 +3576,9 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  gcc_assert (GET_CODE (trueop1) == PARALLEL);
 	  gcc_assert (XVECLEN (trueop1, 0) == 1);
 	  gcc_assert (CONST_INT_P (XVECEXP (trueop1, 0, 0)));
+
+	  if (vec_duplicate_p (trueop0, &elt0))
+	    return elt0;
 
 	  if (GET_CODE (trueop0) == CONST_VECTOR)
 	    return CONST_VECTOR_ELT (trueop0, INTVAL (XVECEXP
@@ -3504,9 +3595,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      rtx op0 = XEXP (trueop0, 0);
 	      rtx op1 = XEXP (trueop0, 1);
 
-	      machine_mode opmode = GET_MODE (op0);
-	      int elt_size = GET_MODE_UNIT_SIZE (opmode);
-	      int n_elts = GET_MODE_SIZE (opmode) / elt_size;
+	      int n_elts = GET_MODE_NUNITS (GET_MODE (op0));
 
 	      int i = INTVAL (XVECEXP (trueop1, 0, 0));
 	      int elem;
@@ -3533,21 +3622,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		  mode01 = GET_MODE (op01);
 
 		  /* Find out number of elements of each operand.  */
-		  if (VECTOR_MODE_P (mode00))
-		    {
-		      elt_size = GET_MODE_UNIT_SIZE (mode00);
-		      n_elts00 = GET_MODE_SIZE (mode00) / elt_size;
-		    }
-		  else
-		    n_elts00 = 1;
-
-		  if (VECTOR_MODE_P (mode01))
-		    {
-		      elt_size = GET_MODE_UNIT_SIZE (mode01);
-		      n_elts01 = GET_MODE_SIZE (mode01) / elt_size;
-		    }
-		  else
-		    n_elts01 = 1;
+		  n_elts00 = GET_MODE_NUNITS (mode00);
+		  n_elts01 = GET_MODE_NUNITS (mode01);
 
 		  gcc_assert (n_elts == n_elts00 + n_elts01);
 
@@ -3571,9 +3647,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 				    tmp_op, gen_rtx_PARALLEL (VOIDmode, vec));
 	      return tmp;
 	    }
-	  if (GET_CODE (trueop0) == VEC_DUPLICATE
-	      && GET_MODE (XEXP (trueop0, 0)) == mode)
-	    return XEXP (trueop0, 0);
 	}
       else
 	{
@@ -3581,6 +3654,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  gcc_assert (GET_MODE_INNER (mode)
 		      == GET_MODE_INNER (GET_MODE (trueop0)));
 	  gcc_assert (GET_CODE (trueop1) == PARALLEL);
+
+	  if (vec_duplicate_p (trueop0, &elt0))
+	    /* It doesn't matter which elements are selected by trueop1,
+	       because they are all the same.  */
+	    return gen_vec_duplicate (mode, elt0);
 
 	  if (GET_CODE (trueop0) == CONST_VECTOR)
 	    {
@@ -3665,9 +3743,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      rtx subop1 = XEXP (trueop0, 1);
 	      machine_mode mode0 = GET_MODE (subop0);
 	      machine_mode mode1 = GET_MODE (subop1);
-	      int li = GET_MODE_UNIT_SIZE (mode0);
-	      int l0 = GET_MODE_SIZE (mode0) / li;
-	      int l1 = GET_MODE_SIZE (mode1) / li;
+	      int l0 = GET_MODE_NUNITS (mode0);
+	      int l1 = GET_MODE_NUNITS (mode1);
 	      int i0 = INTVAL (XVECEXP (trueop1, 0, 0));
 	      if (i0 == 0 && !side_effects_p (op1) && mode == mode0)
 		{
@@ -3825,14 +3902,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		|| CONST_SCALAR_INT_P (trueop1) 
 		|| CONST_DOUBLE_AS_FLOAT_P (trueop1)))
 	  {
-	    int elt_size = GET_MODE_UNIT_SIZE (mode);
-	    unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+	    unsigned n_elts = GET_MODE_NUNITS (mode);
+	    unsigned in_n_elts = GET_MODE_NUNITS (op0_mode);
 	    rtvec v = rtvec_alloc (n_elts);
 	    unsigned int i;
-	    unsigned in_n_elts = 1;
-
-	    if (VECTOR_MODE_P (op0_mode))
-	      in_n_elts = (GET_MODE_SIZE (op0_mode) / elt_size);
 	    for (i = 0; i < n_elts; i++)
 	      {
 		if (i < in_n_elts)
@@ -3882,6 +3955,32 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       gcc_unreachable ();
     }
 
+  if (mode == GET_MODE (op0)
+      && mode == GET_MODE (op1)
+      && vec_duplicate_p (op0, &elt0)
+      && vec_duplicate_p (op1, &elt1))
+    {
+      /* Try applying the operator to ELT and see if that simplifies.
+	 We can duplicate the result if so.
+
+	 The reason we don't use simplify_gen_binary is that it isn't
+	 necessarily a win to convert things like:
+
+	   (plus:V (vec_duplicate:V (reg:S R1))
+		   (vec_duplicate:V (reg:S R2)))
+
+	 to:
+
+	   (vec_duplicate:V (plus:S (reg:S R1) (reg:S R2)))
+
+	 The first might be done entirely in vector registers while the
+	 second might need a move between register files.  */
+      tem = simplify_binary_operation (code, GET_MODE_INNER (mode),
+				       elt0, elt1);
+      if (tem)
+	return gen_vec_duplicate (mode, tem);
+    }
+
   return 0;
 }
 
@@ -3894,16 +3993,12 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       && GET_CODE (op0) == CONST_VECTOR
       && GET_CODE (op1) == CONST_VECTOR)
     {
-      unsigned n_elts = GET_MODE_NUNITS (mode);
-      machine_mode op0mode = GET_MODE (op0);
-      unsigned op0_n_elts = GET_MODE_NUNITS (op0mode);
-      machine_mode op1mode = GET_MODE (op1);
-      unsigned op1_n_elts = GET_MODE_NUNITS (op1mode);
+      unsigned int n_elts = CONST_VECTOR_NUNITS (op0);
+      gcc_assert (n_elts == (unsigned int) CONST_VECTOR_NUNITS (op1));
+      gcc_assert (n_elts == GET_MODE_NUNITS (mode));
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
-      gcc_assert (op0_n_elts == n_elts);
-      gcc_assert (op1_n_elts == n_elts);
       for (i = 0; i < n_elts; i++)
 	{
 	  rtx x = simplify_binary_operation (code, GET_MODE_INNER (mode),
@@ -4636,20 +4731,13 @@ simplify_relational_operation (enum rtx_code code, machine_mode mode,
 	    return CONST0_RTX (mode);
 #ifdef VECTOR_STORE_FLAG_VALUE
 	  {
-	    int i, units;
-	    rtvec v;
-
 	    rtx val = VECTOR_STORE_FLAG_VALUE (mode);
 	    if (val == NULL_RTX)
 	      return NULL_RTX;
 	    if (val == const1_rtx)
 	      return CONST1_RTX (mode);
 
-	    units = GET_MODE_NUNITS (mode);
-	    v = rtvec_alloc (units);
-	    for (i = 0; i < units; i++)
-	      RTVEC_ELT (v, i) = val;
-	    return gen_rtx_raw_CONST_VECTOR (mode, v);
+	    return gen_const_vec_duplicate (mode, val);
 	  }
 #else
 	  return NULL_RTX;
@@ -5587,8 +5675,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
       trueop2 = avoid_constant_pool_reference (op2);
       if (CONST_INT_P (trueop2))
 	{
-	  int elt_size = GET_MODE_UNIT_SIZE (mode);
-	  unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+	  unsigned n_elts = GET_MODE_NUNITS (mode);
 	  unsigned HOST_WIDE_INT sel = UINTVAL (trueop2);
 	  unsigned HOST_WIDE_INT mask;
 	  if (n_elts == HOST_BITS_PER_WIDE_INT)
@@ -5686,8 +5773,8 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
    and then repacking them again for OUTERMODE.  */
 
 static rtx
-simplify_immed_subreg (machine_mode outermode, rtx op,
-		       machine_mode innermode, unsigned int byte)
+simplify_immed_subreg (fixed_size_mode outermode, rtx op,
+		       fixed_size_mode innermode, unsigned int byte)
 {
   enum {
     value_bit = 8,
@@ -6037,11 +6124,36 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (outermode == innermode && !byte)
     return op;
 
+  if (byte % GET_MODE_UNIT_SIZE (innermode) == 0)
+    {
+      rtx elt;
+
+      if (VECTOR_MODE_P (outermode)
+	  && GET_MODE_INNER (outermode) == GET_MODE_INNER (innermode)
+	  && vec_duplicate_p (op, &elt))
+	return gen_vec_duplicate (outermode, elt);
+
+      if (outermode == GET_MODE_INNER (innermode)
+	  && vec_duplicate_p (op, &elt))
+	return elt;
+    }
+
   if (CONST_SCALAR_INT_P (op)
       || CONST_DOUBLE_AS_FLOAT_P (op)
       || GET_CODE (op) == CONST_FIXED
       || GET_CODE (op) == CONST_VECTOR)
-    return simplify_immed_subreg (outermode, op, innermode, byte);
+    {
+      /* simplify_immed_subreg deconstructs OP into bytes and constructs
+	 the result from bytes, so it only works if the sizes of the modes
+	 are known at compile time.  Cases that apply to general modes
+	 should be handled here before calling simplify_immed_subreg.  */
+      fixed_size_mode fs_outermode, fs_innermode;
+      if (is_a <fixed_size_mode> (outermode, &fs_outermode)
+	  && is_a <fixed_size_mode> (innermode, &fs_innermode))
+	return simplify_immed_subreg (fs_outermode, op, fs_innermode, byte);
+
+      return NULL_RTX;
+    }
 
   /* Changing mode twice with SUBREG => just change it once,
      or not at all if changing back op starting mode.  */
@@ -6342,3 +6454,182 @@ simplify_rtx (const_rtx x)
     }
   return NULL;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Make a unique pseudo REG of mode MODE for use by selftests.  */
+
+static rtx
+make_test_reg (machine_mode mode)
+{
+  static int test_reg_num = LAST_VIRTUAL_REGISTER + 1;
+
+  return gen_rtx_REG (mode, test_reg_num++);
+}
+
+/* Test vector simplifications involving VEC_DUPLICATE in which the
+   operands and result have vector mode MODE.  SCALAR_REG is a pseudo
+   register that holds one element of MODE.  */
+
+static void
+test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
+{
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  rtx duplicate = gen_rtx_VEC_DUPLICATE (mode, scalar_reg);
+  unsigned int nunits = GET_MODE_NUNITS (mode);
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      /* Test some simple unary cases with VEC_DUPLICATE arguments.  */
+      rtx not_scalar_reg = gen_rtx_NOT (inner_mode, scalar_reg);
+      rtx duplicate_not = gen_rtx_VEC_DUPLICATE (mode, not_scalar_reg);
+      ASSERT_RTX_EQ (duplicate,
+		     simplify_unary_operation (NOT, mode,
+					       duplicate_not, mode));
+
+      rtx neg_scalar_reg = gen_rtx_NEG (inner_mode, scalar_reg);
+      rtx duplicate_neg = gen_rtx_VEC_DUPLICATE (mode, neg_scalar_reg);
+      ASSERT_RTX_EQ (duplicate,
+		     simplify_unary_operation (NEG, mode,
+					       duplicate_neg, mode));
+
+      /* Test some simple binary cases with VEC_DUPLICATE arguments.  */
+      ASSERT_RTX_EQ (duplicate,
+		     simplify_binary_operation (PLUS, mode, duplicate,
+						CONST0_RTX (mode)));
+
+      ASSERT_RTX_EQ (duplicate,
+		     simplify_binary_operation (MINUS, mode, duplicate,
+						CONST0_RTX (mode)));
+
+      ASSERT_RTX_PTR_EQ (CONST0_RTX (mode),
+			 simplify_binary_operation (MINUS, mode, duplicate,
+						    duplicate));
+    }
+
+  /* Test a scalar VEC_SELECT of a VEC_DUPLICATE.  */
+  rtx zero_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
+  ASSERT_RTX_PTR_EQ (scalar_reg,
+		     simplify_binary_operation (VEC_SELECT, inner_mode,
+						duplicate, zero_par));
+
+  /* And again with the final element.  */
+  rtx last_index = gen_int_mode (GET_MODE_NUNITS (mode) - 1, word_mode);
+  rtx last_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, last_index));
+  ASSERT_RTX_PTR_EQ (scalar_reg,
+		     simplify_binary_operation (VEC_SELECT, inner_mode,
+						duplicate, last_par));
+
+  /* Test a scalar subreg of a VEC_DUPLICATE.  */
+  unsigned int offset = subreg_lowpart_offset (inner_mode, mode);
+  ASSERT_RTX_EQ (scalar_reg,
+		 simplify_gen_subreg (inner_mode, duplicate,
+				      mode, offset));
+
+  machine_mode narrower_mode;
+  if (nunits > 2
+      && mode_for_vector (inner_mode, 2).exists (&narrower_mode)
+      && VECTOR_MODE_P (narrower_mode))
+    {
+      /* Test VEC_SELECT of a vector.  */
+      rtx vec_par
+	= gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, const1_rtx, const0_rtx));
+      rtx narrower_duplicate
+	= gen_rtx_VEC_DUPLICATE (narrower_mode, scalar_reg);
+      ASSERT_RTX_EQ (narrower_duplicate,
+		     simplify_binary_operation (VEC_SELECT, narrower_mode,
+						duplicate, vec_par));
+
+      /* Test a vector subreg of a VEC_DUPLICATE.  */
+      unsigned int offset = subreg_lowpart_offset (narrower_mode, mode);
+      ASSERT_RTX_EQ (narrower_duplicate,
+		     simplify_gen_subreg (narrower_mode, duplicate,
+					  mode, offset));
+    }
+}
+
+/* Test vector simplifications involving VEC_SERIES in which the
+   operands and result have vector mode MODE.  SCALAR_REG is a pseudo
+   register that holds one element of MODE.  */
+
+static void
+test_vector_ops_series (machine_mode mode, rtx scalar_reg)
+{
+  /* Test unary cases with VEC_SERIES arguments.  */
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  rtx duplicate = gen_rtx_VEC_DUPLICATE (mode, scalar_reg);
+  rtx neg_scalar_reg = gen_rtx_NEG (inner_mode, scalar_reg);
+  rtx series_0_r = gen_rtx_VEC_SERIES (mode, const0_rtx, scalar_reg);
+  rtx series_0_nr = gen_rtx_VEC_SERIES (mode, const0_rtx, neg_scalar_reg);
+  rtx series_nr_1 = gen_rtx_VEC_SERIES (mode, neg_scalar_reg, const1_rtx);
+  rtx series_r_m1 = gen_rtx_VEC_SERIES (mode, scalar_reg, constm1_rtx);
+  rtx series_r_r = gen_rtx_VEC_SERIES (mode, scalar_reg, scalar_reg);
+  rtx series_nr_nr = gen_rtx_VEC_SERIES (mode, neg_scalar_reg,
+					 neg_scalar_reg);
+  ASSERT_RTX_EQ (series_0_r,
+		 simplify_unary_operation (NEG, mode, series_0_nr, mode));
+  ASSERT_RTX_EQ (series_r_m1,
+		 simplify_unary_operation (NEG, mode, series_nr_1, mode));
+  ASSERT_RTX_EQ (series_r_r,
+		 simplify_unary_operation (NEG, mode, series_nr_nr, mode));
+
+  /* Test that a VEC_SERIES with a zero step is simplified away.  */
+  ASSERT_RTX_EQ (duplicate,
+		 simplify_binary_operation (VEC_SERIES, mode,
+					    scalar_reg, const0_rtx));
+
+  /* Test PLUS and MINUS with VEC_SERIES.  */
+  rtx series_0_1 = gen_const_vec_series (mode, const0_rtx, const1_rtx);
+  rtx series_0_m1 = gen_const_vec_series (mode, const0_rtx, constm1_rtx);
+  rtx series_r_1 = gen_rtx_VEC_SERIES (mode, scalar_reg, const1_rtx);
+  ASSERT_RTX_EQ (series_r_r,
+		 simplify_binary_operation (PLUS, mode, series_0_r,
+					    duplicate));
+  ASSERT_RTX_EQ (series_r_1,
+		 simplify_binary_operation (PLUS, mode, duplicate,
+					    series_0_1));
+  ASSERT_RTX_EQ (series_r_m1,
+		 simplify_binary_operation (PLUS, mode, duplicate,
+					    series_0_m1));
+  ASSERT_RTX_EQ (series_0_r,
+		 simplify_binary_operation (MINUS, mode, series_r_r,
+					    duplicate));
+  ASSERT_RTX_EQ (series_r_m1,
+		 simplify_binary_operation (MINUS, mode, duplicate,
+					    series_0_1));
+  ASSERT_RTX_EQ (series_r_1,
+		 simplify_binary_operation (MINUS, mode, duplicate,
+					    series_0_m1));
+}
+
+/* Verify some simplifications involving vectors.  */
+
+static void
+test_vector_ops ()
+{
+  for (unsigned int i = 0; i < NUM_MACHINE_MODES; ++i)
+    {
+      machine_mode mode = (machine_mode) i;
+      if (VECTOR_MODE_P (mode))
+	{
+	  rtx scalar_reg = make_test_reg (GET_MODE_INNER (mode));
+	  test_vector_ops_duplicate (mode, scalar_reg);
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	      && GET_MODE_NUNITS (mode) > 2)
+	    test_vector_ops_series (mode, scalar_reg);
+	}
+    }
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+simplify_rtx_c_tests ()
+{
+  test_vector_ops ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

@@ -264,7 +264,7 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
       || ops->code == WIDEN_MULT_MINUS_EXPR)
     icode = find_widening_optab_handler (widen_pattern_optab,
 					 TYPE_MODE (TREE_TYPE (ops->op2)),
-					 tmode0, 0);
+					 tmode0);
   else
     icode = optab_handler (widen_pattern_optab, tmode0);
   gcc_assert (icode != CODE_FOR_nothing);
@@ -377,13 +377,8 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
 
   gcc_checking_assert (VECTOR_MODE_P (vmode));
 
-  n = GET_MODE_NUNITS (vmode);
-  vec = rtvec_alloc (n);
-  for (i = 0; i < n; ++i)
-    RTVEC_ELT (vec, i) = op;
-
   if (CONSTANT_P (op))
-    return gen_rtx_CONST_VECTOR (vmode, vec);
+    return gen_const_vec_duplicate (vmode, op);
 
   /* ??? If the target doesn't have a vec_init, then we have no easy way
      of performing this operation.  Most of this sort of generic support
@@ -393,6 +388,10 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   if (icode == CODE_FOR_nothing)
     return NULL;
 
+  n = GET_MODE_NUNITS (vmode);
+  vec = rtvec_alloc (n);
+  for (i = 0; i < n; ++i)
+    RTVEC_ELT (vec, i) = op;
   ret = gen_reg_rtx (vmode);
   emit_insn (GEN_FCN (icode) (ret, gen_rtx_PARALLEL (vmode, vec)));
 
@@ -980,17 +979,14 @@ avoid_expensive_constant (machine_mode mode, optab binoptab,
 }
 
 /* Helper function for expand_binop: handle the case where there
-   is an insn that directly implements the indicated operation.
+   is an insn ICODE that directly implements the indicated operation.
    Returns null if this is not possible.  */
 static rtx
-expand_binop_directly (machine_mode mode, optab binoptab,
+expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
 		       rtx op0, rtx op1,
 		       rtx target, int unsignedp, enum optab_methods methods,
 		       rtx_insn *last)
 {
-  machine_mode from_mode = widened_mode (mode, op0, op1);
-  enum insn_code icode = find_widening_optab_handler (binoptab, mode,
-						      from_mode, 1);
   machine_mode xmode0 = insn_data[(int) icode].operand[1].mode;
   machine_mode xmode1 = insn_data[(int) icode].operand[2].mode;
   machine_mode mode0, mode1, tmp_mode;
@@ -1114,6 +1110,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
     = (methods == OPTAB_LIB || methods == OPTAB_LIB_WIDEN
        ? OPTAB_WIDEN : methods);
   enum mode_class mclass;
+  enum insn_code icode;
   machine_mode wider_mode;
   scalar_int_mode int_mode;
   rtx libfunc;
@@ -1147,23 +1144,30 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   /* If we can do it with a three-operand insn, do so.  */
 
-  if (methods != OPTAB_MUST_WIDEN
-      && find_widening_optab_handler (binoptab, mode,
-				      widened_mode (mode, op0, op1), 1)
-	    != CODE_FOR_nothing)
+  if (methods != OPTAB_MUST_WIDEN)
     {
-      temp = expand_binop_directly (mode, binoptab, op0, op1, target,
-				    unsignedp, methods, last);
-      if (temp)
-	return temp;
+      if (convert_optab_p (binoptab))
+	{
+	  machine_mode from_mode = widened_mode (mode, op0, op1);
+	  icode = find_widening_optab_handler (binoptab, mode, from_mode);
+	}
+      else
+	icode = optab_handler (binoptab, mode);
+      if (icode != CODE_FOR_nothing)
+	{
+	  temp = expand_binop_directly (icode, mode, binoptab, op0, op1,
+					target, unsignedp, methods, last);
+	  if (temp)
+	    return temp;
+	}
     }
 
   /* If we were trying to rotate, and that didn't work, try rotating
      the other direction before falling back to shifts and bitwise-or.  */
   if (((binoptab == rotl_optab
-	&& optab_handler (rotr_optab, mode) != CODE_FOR_nothing)
+	&& (icode = optab_handler (rotr_optab, mode)) != CODE_FOR_nothing)
        || (binoptab == rotr_optab
-	   && optab_handler (rotl_optab, mode) != CODE_FOR_nothing))
+	   && (icode = optab_handler (rotl_optab, mode)) != CODE_FOR_nothing))
       && is_int_mode (mode, &int_mode))
     {
       optab otheroptab = (binoptab == rotl_optab ? rotr_optab : rotl_optab);
@@ -1179,7 +1183,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 			       gen_int_mode (bits, GET_MODE (op1)), op1,
 			       NULL_RTX, unsignedp, OPTAB_DIRECT);
 
-      temp = expand_binop_directly (int_mode, otheroptab, op0, newop1,
+      temp = expand_binop_directly (icode, int_mode, otheroptab, op0, newop1,
 				    target, unsignedp, methods, last);
       if (temp)
 	return temp;
@@ -1226,7 +1230,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       else if (binoptab == rotr_optab)
 	otheroptab = vrotr_optab;
 
-      if (otheroptab && optab_handler (otheroptab, mode) != CODE_FOR_nothing)
+      if (otheroptab
+	  && (icode = optab_handler (otheroptab, mode)) != CODE_FOR_nothing)
 	{
 	  /* The scalar may have been extended to be too wide.  Truncate
 	     it back to the proper size to fit in the broadcast vector.  */
@@ -1240,7 +1245,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  rtx vop1 = expand_vector_broadcast (mode, op1);
 	  if (vop1)
 	    {
-	      temp = expand_binop_directly (mode, otheroptab, op0, vop1,
+	      temp = expand_binop_directly (icode, mode, otheroptab, op0, vop1,
 					    target, unsignedp, methods, last);
 	      if (temp)
 		return temp;
@@ -1263,7 +1268,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 		&& (find_widening_optab_handler ((unsignedp
 						  ? umul_widen_optab
 						  : smul_widen_optab),
-						 next_mode, mode, 0)
+						 next_mode, mode)
 		    != CODE_FOR_nothing)))
 	  {
 	    rtx xop0 = op0, xop1 = op1;
@@ -1694,7 +1699,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && optab_handler (add_optab, word_mode) != CODE_FOR_nothing)
     {
       rtx product = NULL_RTX;
-      if (widening_optab_handler (umul_widen_optab, int_mode, word_mode)
+      if (convert_optab_handler (umul_widen_optab, int_mode, word_mode)
 	  != CODE_FOR_nothing)
 	{
 	  product = expand_doubleword_mult (int_mode, op0, op1, target,
@@ -1704,7 +1709,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	}
 
       if (product == NULL_RTX
-	  && (widening_optab_handler (smul_widen_optab, int_mode, word_mode)
+	  && (convert_optab_handler (smul_widen_optab, int_mode, word_mode)
 	      != CODE_FOR_nothing))
 	{
 	  product = expand_doubleword_mult (int_mode, op0, op1, target,
@@ -1797,10 +1802,13 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
+      /* This code doesn't make sense for conversion optabs, since we
+	 wouldn't then want to extend the operands to be the same size
+	 as the result.  */
+      gcc_assert (!convert_optab_p (binoptab));
       FOR_EACH_WIDER_MODE (wider_mode, mode)
 	{
-	  if (find_widening_optab_handler (binoptab, wider_mode, mode, 1)
-		  != CODE_FOR_nothing
+	  if (optab_handler (binoptab, wider_mode)
 	      || (methods == OPTAB_LIB
 		  && optab_libfunc (binoptab, wider_mode)))
 	    {
@@ -4803,7 +4811,7 @@ expand_float (rtx to, rtx from, int unsignedp)
       rtx value;
       convert_optab tab = unsignedp ? ufloat_optab : sfloat_optab;
 
-      if (GET_MODE_PRECISION (GET_MODE (from)) < GET_MODE_PRECISION (SImode))
+      if (is_narrower_int_mode (GET_MODE (from), SImode))
 	from = convert_to_mode (SImode, from, unsignedp);
 
       libfunc = convert_optab_libfunc (tab, GET_MODE (to), GET_MODE (from));
@@ -4985,7 +4993,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
      that the mode of TO is at least as wide as SImode, since those are the
      only library calls we know about.  */
 
-  if (GET_MODE_PRECISION (GET_MODE (to)) < GET_MODE_PRECISION (SImode))
+  if (is_narrower_int_mode (GET_MODE (to), SImode))
     {
       target = gen_reg_rtx (SImode);
 
@@ -5786,13 +5794,13 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
       for (i = 0; i < nunits; ++i)
 	RTVEC_ELT (v, i) = GEN_INT (!BYTES_BIG_ENDIAN + (i & ~1)
 				    + ((i & 1) ? nunits : 0));
+      perm = gen_rtx_CONST_VECTOR (mode, v);
     }
   else
     {
-      for (i = 0; i < nunits; ++i)
-	RTVEC_ELT (v, i) = GEN_INT (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
+      int base = BYTES_BIG_ENDIAN ? 0 : 1;
+      perm = gen_const_vec_series (mode, GEN_INT (base), GEN_INT (2));
     }
-  perm = gen_rtx_CONST_VECTOR (mode, v);
 
   return expand_vec_perm (mode, m1, m2, perm, target);
 }

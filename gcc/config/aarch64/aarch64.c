@@ -11721,16 +11721,8 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
 rtx
 aarch64_simd_gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)
 {
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  int i;
-
-  rtx cache = GEN_INT (val);
-
-  for (i=0; i < nunits; i++)
-    RTVEC_ELT (v, i) = cache;
-
-  return gen_rtx_CONST_VECTOR (mode, v);
+  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
+  return gen_const_vec_duplicate (mode, c);
 }
 
 /* Check OP is a legal scalar immediate for the MOVI instruction.  */
@@ -11942,7 +11934,7 @@ aarch64_simd_dup_constant (rtx vals)
      single ARM register.  This will be cheaper than a vector
      load.  */
   x = copy_to_mode_reg (inner_mode, x);
-  return gen_rtx_VEC_DUPLICATE (mode, x);
+  return gen_vec_duplicate (mode, x);
 }
 
 
@@ -12041,7 +12033,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   if (all_same)
     {
       rtx x = copy_to_mode_reg (inner_mode, v0);
-      aarch64_emit_move (target, gen_rtx_VEC_DUPLICATE (mode, x));
+      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
       return;
     }
 
@@ -12082,7 +12074,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 
       /* Create a duplicate of the most common element.  */
       rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
-      aarch64_emit_move (target, gen_rtx_VEC_DUPLICATE (mode, x));
+      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
 
       /* Insert the rest.  */
       for (int i = 0; i < n_elts; i++)

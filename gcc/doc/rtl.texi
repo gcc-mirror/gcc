@@ -1667,14 +1667,18 @@ Usually that is the only mode for which a label is directly valid.
 
 @findex const
 @item (const:@var{m} @var{exp})
-Represents a constant that is the result of an assembly-time
-arithmetic computation.  The operand, @var{exp}, is an expression that
-contains only constants (@code{const_int}, @code{symbol_ref} and
-@code{label_ref} expressions) combined with @code{plus} and
-@code{minus}.  However, not all combinations are valid, since the
-assembler cannot do arbitrary arithmetic on relocatable symbols.
+Wraps an rtx computation @var{exp} whose inputs and result do not
+change during the execution of a thread.  There are two valid uses.
+The first is to represent a global or thread-local address calculation.
+In this case @var{exp} should contain @code{const_int},
+@code{symbol_ref}, @code{label_ref} or @code{unspec} expressions,
+combined with @code{plus} and @code{minus}.  Any such @code{unspec}s
+are target-specific and typically represent some form of relocation
+operator.  @var{m} should be a valid address mode.
 
-@var{m} should be @code{Pmode}.
+The second use of @code{const} is to wrap a vector operation.
+In this case @var{exp} must be a @code{vec_duplicate} or
+@code{vec_series} expression.
 
 @findex high
 @item (high:@var{m} @var{exp})
@@ -2719,6 +2723,10 @@ the same submodes as the input vector mode or the scalar modes, and the
 number of output parts must be an integer multiple of the number of input
 parts.
 
+@findex vec_series
+@item (vec_series:@var{m} @var{base} @var{step})
+This operation creates a vector in which element @var{i} is equal to
+@samp{@var{base} + @var{i}*@var{step}}.  @var{m} must be a vector integer mode.
 @end table
 
 @node Conversions

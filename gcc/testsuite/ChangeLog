@@ -1,3 +1,35 @@
+2017-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/alpha/sqrt.c: New test.
+
+2017-10-31  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr82002-1.c: New test.
+	* gcc.target/i386/pr82002-2a.c: New xfail test.
+	* gcc.target/i386/pr82002-2b.c: New xfail test.
+
+2017-10-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/81702
+	* g++.dg/tree-ssa/pr81702.C: New test.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/jit.exp (jit-dg-test): If PRESERVE_EXECUTABLES is set in
+	the environment, don't delete the generated executable.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/cpp0x/auto21.C: Update dg-error to reflect addition of quotes.
+	* g++.dg/cpp0x/missing-initializer_list-include.C: Likewise.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree): Update
+	for renaming of error_at_rich_loc and inform_at_rich_loc.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Likewise for renaming of warning_at_rich_loc.
+
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/loop.C: New test.
@@ -6,8 +38,7 @@
 2017-10-31  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/ternary.C: New test.
-	* g++.dg/gcov/gcov-threads-1.C (main): Update expected line
-	count.
+	* g++.dg/gcov/gcov-threads-1.C (main): Update expected line count.
 	* lib/gcov.exp: Support new format for intermediate file format.
 
 2017-11-01  Julia Koval  <julia.koval@intel.com>

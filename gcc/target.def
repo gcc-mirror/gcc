@@ -5042,7 +5042,7 @@ DEFHOOK
  "This target hook returns the mode to be used when accessing raw return\
  registers in @code{__builtin_return}.  Define this macro if the value\
  in @var{reg_raw_mode} is not correct.",
- machine_mode, (int regno),
+ fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 
 /* Return a mode wide enough to copy any argument value that might be
@@ -5052,7 +5052,7 @@ DEFHOOK
  "This target hook returns the mode to be used when accessing raw argument\
  registers in @code{__builtin_apply_args}.  Define this macro if the value\
  in @var{reg_raw_mode} is not correct.",
- machine_mode, (int regno),
+ fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 
 HOOK_VECTOR_END (calls)
