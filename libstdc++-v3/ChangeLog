@@ -1,3 +1,12 @@
+2017-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82777
+	* src/filesystem/std-path.cc (path::lexically_normal): Remove dot-dot
+	elements correctly.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Add testcase.
+	* testsuite/util/testsuite_fs.h (compare_paths): Improve exception
+	text.
+
 2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am (stamp-bits-sup): Do not create broken symlink
