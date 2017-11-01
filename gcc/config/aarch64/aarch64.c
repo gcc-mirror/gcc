@@ -1964,6 +1964,87 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   return num_insns;
 }
 
+/* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to hold a
+   temporary value if necessary.  FRAME_RELATED_P should be true if
+   the RTX_FRAME_RELATED flag should be set and CFA adjustments added
+   to the generated instructions.  If SCRATCHREG is known to hold
+   abs (delta), EMIT_MOVE_IMM can be set to false to avoid emitting the
+   immediate again.
+
+   Since this function may be used to adjust the stack pointer, we must
+   ensure that it cannot cause transient stack deallocation (for example
+   by first incrementing SP and then decrementing when adjusting by a
+   large immediate).  */
+
+static void
+aarch64_add_constant_internal (scalar_int_mode mode, int regnum,
+			       int scratchreg, HOST_WIDE_INT delta,
+			       bool frame_related_p, bool emit_move_imm)
+{
+  HOST_WIDE_INT mdelta = abs_hwi (delta);
+  rtx this_rtx = gen_rtx_REG (mode, regnum);
+  rtx_insn *insn;
+
+  if (!mdelta)
+    return;
+
+  /* Single instruction adjustment.  */
+  if (aarch64_uimm12_shift (mdelta))
+    {
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      return;
+    }
+
+  /* Emit 2 additions/subtractions if the adjustment is less than 24 bits.
+     Only do this if mdelta is not a 16-bit move as adjusting using a move
+     is better.  */
+  if (mdelta < 0x1000000 && !aarch64_move_imm (mdelta, mode))
+    {
+      HOST_WIDE_INT low_off = mdelta & 0xfff;
+
+      low_off = delta < 0 ? -low_off : low_off;
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      return;
+    }
+
+  /* Emit a move immediate if required and an addition/subtraction.  */
+  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
+  if (emit_move_imm)
+    aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (mdelta), true, mode);
+  insn = emit_insn (delta < 0 ? gen_sub2_insn (this_rtx, scratch_rtx)
+			      : gen_add2_insn (this_rtx, scratch_rtx));
+  if (frame_related_p)
+    {
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      rtx adj = plus_constant (mode, this_rtx, delta);
+      add_reg_note (insn , REG_CFA_ADJUST_CFA, gen_rtx_SET (this_rtx, adj));
+    }
+}
+
+static inline void
+aarch64_add_constant (scalar_int_mode mode, int regnum, int scratchreg,
+		      HOST_WIDE_INT delta)
+{
+  aarch64_add_constant_internal (mode, regnum, scratchreg, delta, false, true);
+}
+
+static inline void
+aarch64_add_sp (int scratchreg, HOST_WIDE_INT delta, bool emit_move_imm)
+{
+  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, delta,
+				 true, emit_move_imm);
+}
+
+static inline void
+aarch64_sub_sp (int scratchreg, HOST_WIDE_INT delta, bool frame_related_p)
+{
+  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, -delta,
+				 frame_related_p, true);
+}
 
 void
 aarch64_expand_mov_immediate (rtx dest, rtx imm)
@@ -2073,88 +2154,6 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
   aarch64_internal_mov_immediate (dest, imm, true,
 				  as_a <scalar_int_mode> (mode));
-}
-
-/* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to hold a
-   temporary value if necessary.  FRAME_RELATED_P should be true if
-   the RTX_FRAME_RELATED flag should be set and CFA adjustments added
-   to the generated instructions.  If SCRATCHREG is known to hold
-   abs (delta), EMIT_MOVE_IMM can be set to false to avoid emitting the
-   immediate again.
-
-   Since this function may be used to adjust the stack pointer, we must
-   ensure that it cannot cause transient stack deallocation (for example
-   by first incrementing SP and then decrementing when adjusting by a
-   large immediate).  */
-
-static void
-aarch64_add_constant_internal (scalar_int_mode mode, int regnum,
-			       int scratchreg, HOST_WIDE_INT delta,
-			       bool frame_related_p, bool emit_move_imm)
-{
-  HOST_WIDE_INT mdelta = abs_hwi (delta);
-  rtx this_rtx = gen_rtx_REG (mode, regnum);
-  rtx_insn *insn;
-
-  if (!mdelta)
-    return;
-
-  /* Single instruction adjustment.  */
-  if (aarch64_uimm12_shift (mdelta))
-    {
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      return;
-    }
-
-  /* Emit 2 additions/subtractions if the adjustment is less than 24 bits.
-     Only do this if mdelta is not a 16-bit move as adjusting using a move
-     is better.  */
-  if (mdelta < 0x1000000 && !aarch64_move_imm (mdelta, mode))
-    {
-      HOST_WIDE_INT low_off = mdelta & 0xfff;
-
-      low_off = delta < 0 ? -low_off : low_off;
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      return;
-    }
-
-  /* Emit a move immediate if required and an addition/subtraction.  */
-  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
-  if (emit_move_imm)
-    aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (mdelta), true, mode);
-  insn = emit_insn (delta < 0 ? gen_sub2_insn (this_rtx, scratch_rtx)
-			      : gen_add2_insn (this_rtx, scratch_rtx));
-  if (frame_related_p)
-    {
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      rtx adj = plus_constant (mode, this_rtx, delta);
-      add_reg_note (insn , REG_CFA_ADJUST_CFA, gen_rtx_SET (this_rtx, adj));
-    }
-}
-
-static inline void
-aarch64_add_constant (scalar_int_mode mode, int regnum, int scratchreg,
-		      HOST_WIDE_INT delta)
-{
-  aarch64_add_constant_internal (mode, regnum, scratchreg, delta, false, true);
-}
-
-static inline void
-aarch64_add_sp (int scratchreg, HOST_WIDE_INT delta, bool emit_move_imm)
-{
-  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, delta,
-				 true, emit_move_imm);
-}
-
-static inline void
-aarch64_sub_sp (int scratchreg, HOST_WIDE_INT delta, bool frame_related_p)
-{
-  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, -delta,
-				 frame_related_p, true);
 }
 
 static bool
