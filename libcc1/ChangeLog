@@ -1,3 +1,8 @@
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use
+	DECL_OVERLOADED_OPERATOR_CODE_RAW.
+
 2017-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_decl): Use ovl_op_identifier.
