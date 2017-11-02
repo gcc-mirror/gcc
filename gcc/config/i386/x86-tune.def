@@ -220,10 +220,15 @@ DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
    as "add mem, reg".  */
 DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMONT | m_PPRO))
 
-/* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.   */
+/* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.
+
+   Core2 and nehalem has stall of 7 cycles for partial flag register stalls.
+   Sandy bridge and Ivy bridge generate extra uop.  On Haswell this extra uop
+   is output only when the values needs to be really merged, which is not
+   done by GCC generated code.  */
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
-          ~(m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL
-	   |  m_KNL | m_KNM | m_GENERIC))
+          ~(m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
+	    | m_BONNELL | m_SILVERMONT | m_INTEL |  m_KNL | m_KNM | m_GENERIC))
 
 /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
    for DFmode copies */
