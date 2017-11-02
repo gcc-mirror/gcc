@@ -10,5 +10,5 @@ foo (void)
   __asm__ ("# naked");
 }
 /* { dg-final { scan-assembler "# naked" } } */
-/* { dg-final { scan-assembler-not "push" } } */
-/* { dg-final { scan-assembler-not "pop" } } */
+/* { dg-final { scan-assembler-not "(?n)^\\s*push" } } */
+/* { dg-final { scan-assembler-not "(?n)^\\s*pop" } } */
