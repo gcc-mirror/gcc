@@ -1,5 +1,11 @@
 2017-11-02  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (IDENTIFIER_NEWDEL_OP_P): Restore, adjust.
+	(IDENTIFIER_NEW_OP_P): New.
+	* decl.c (grokdeclarator): Restore IDENTIFIER_NEWDEL_OP_P use.
+	* pt.c (push_template_decl_real): Likewise.
+	* typeck.c (check_return_expr): Use IDENTIFIER_NEW_OP_P.
+
 	PR c++/82710
 	* decl.c (grokdeclarator): Don't warn when parens protect a return
 	type from a qualified name.
@@ -8,16 +14,16 @@
 
 	* cp-tree.h (enum cp_identifier_kind): Delete cik_newdel_op.
 	Renumber and reserve udlit value.
-	(IDENTIFIER_NEWDEL_OP): Delete.
-	(IDENTIFIER_OVL_OP): New.
-	(IDENTIFIER_ASSIGN_OP): Adjust.
-	(IDENTIFIER_CONV_OP): Adjust.
+	(IDENTIFIER_NEWDEL_OP_P): Delete.
+	(IDENTIFIER_OVL_OP_P): New.
+	(IDENTIFIER_ASSIGN_OP_P): Adjust.
+	(IDENTIFIER_CONV_OP_P): Adjust.
 	(IDENTIFIER_OVL_OP_INFO): Adjust.
 	(IDENTIFIER_OVL_OP_FLAGS): New.
 	* decl.c (grokdeclarator): Use IDENTIFIER_OVL_OP_FLAGS.
 	* lex.c (get_identifier_kind_name): Adjust.
 	(init_operators): Don't special case new/delete ops.
-	* mangle.c (write_unqualified_id): Use IDENTIFIER_OVL_OP.
+	* mangle.c (write_unqualified_id): Use IDENTIFIER_OVL_OP_P.
 	* pt.c (push_template_decl_real): Use IDENTIFIER_OVL_OP_FLAGS.
 	* typeck.c (check_return_expr): Likewise.
 
