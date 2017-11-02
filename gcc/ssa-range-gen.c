@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 //#define trace_path  dump_file
 #define trace_path  ((FILE *)0)
 
+//#define trace_cache dump_file
+#define trace_cache ((FILE *)0)
+
  /* Given a logical STMT, calculate true and false for each potential path 
     and resolve the outcome based on the logical operator.  */
 bool
@@ -566,7 +569,12 @@ ssa_range_cache::set_range (const basic_block bb, const irange& r)
 {
   irange_storage *m = tab[bb->index];
 
-  if (m)
+  if (trace_cache)
+    {
+      fprintf (dump_file, "Setting range for bb%d to ", bb->index);
+      r.dump (dump_file);
+    }
+  if (m && m != type_range)
     m->set_irange (r);
   else
     m = irange_storage::ggc_alloc_init (r);
@@ -577,6 +585,9 @@ ssa_range_cache::set_range (const basic_block bb, const irange& r)
 void
 ssa_range_cache::set_range_for_type (const basic_block bb)
 {
+  if (trace_cache)
+    fprintf (dump_file, "  Setting range for bb%d to range for type\n",
+	     bb->index);
   tab[bb->index] = type_range;
 }
 
@@ -585,11 +596,17 @@ bool
 ssa_range_cache::get_range (irange& r, const basic_block bb)
 {
   irange_storage *m = tab[bb->index];
+  if (trace_cache)
+    fprintf (dump_file, "  Getting range for bb%d ", bb->index);
   if (m)
     {
       r.set_range (m, type);
+      if (trace_cache)
+	r.dump (dump_file);
       return true;
     }
+  if (trace_cache)
+    fprintf (dump_file, "return false\n");
   return false;
 }
 
@@ -598,6 +615,9 @@ ssa_range_cache::get_range (irange& r, const basic_block bb)
 bool
 ssa_range_cache::range_p (const basic_block bb)
 {
+  if (trace_cache)
+    fprintf (dump_file, " range_p for BB%d is %d\n", bb->index,
+	     (tab[bb->index] != NULL) );
   return tab[bb->index] != NULL;
 }
 
@@ -637,9 +657,15 @@ range_cache::~range_cache ()
 ssa_range_cache&
 range_cache::operator[] (tree name)
 {
+  if (trace_cache)
+    print_generic_expr (dump_file, name, 0);
   unsigned v = SSA_NAME_VERSION (name);
   if (!ssa_ranges[v])
-    ssa_ranges[v] = new ssa_range_cache (TREE_TYPE (name));
+    {
+      ssa_ranges[v] = new ssa_range_cache (TREE_TYPE (name));
+      if (trace_cache)
+	fprintf (dump_file, " : Allocating new range vector :  ");
+    }
 
   return *(ssa_ranges[v]);
 }
@@ -765,6 +791,8 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     return;
 
   /* Avoid infinite recursion by marking this block as calculated.  */
+  if (trace_cache)
+    fprintf (dump_file, "intial value ");
   block_cache[name].set_range_for_type (bb);
 
   if (trace_path)
@@ -835,6 +863,8 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
       fprintf (dump_file, "Finished processing preds.  final result: ");
       block_result.dump (dump_file);
     }
+  if (trace_cache)
+    fprintf (dump_file, "Final value ");
   if (block_result.range_for_type_p ())
     block_cache[name].set_range_for_type (bb);
   else
