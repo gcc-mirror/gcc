@@ -39,6 +39,7 @@
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:-lc}} \
+                   %{mcompress:--relax} \
                    %{msim:-Tsim.ld}"
 
 #undef  LINK_SPEC
@@ -199,12 +200,12 @@ enum reg_class
 
 #define GLOBAL_ASM_OP "\t.global\t"
 
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+#define JUMP_TABLES_IN_TEXT_SECTION (TARGET_NOPM ? 0 : 1)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-    fprintf (FILE, "\tjmp\t.L%d\n", VALUE);				\
+    fprintf (FILE, "\t.long\t.L%d\n", VALUE);				\
 
 /* Passing Arguments in Registers */
 
@@ -469,7 +470,7 @@ do { \
 #define ADDR_SPACE_PM 1
 
 #define REGISTER_TARGET_PRAGMAS() do { \
-  c_register_addr_space ("__flash__", ADDR_SPACE_PM); \
+  c_register_addr_space ("__flash__", TARGET_NOPM ? 0 : ADDR_SPACE_PM); \
 } while (0);
 
 extern int ft32_is_mem_pm(rtx o);

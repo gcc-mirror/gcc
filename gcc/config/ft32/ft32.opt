@@ -29,3 +29,15 @@ Use LRA instead of reload.
 mnodiv
 Target Report Mask(NODIV)
 Avoid use of the DIV and MOD instructions
+
+mft32b
+Target Report Mask(FT32B)
+target the FT32B architecture
+
+mcompress
+Target Report Mask(COMPRESS)
+enable FT32B code compression
+
+mnopm
+Target Report Mask(NOPM)
+Avoid placing any readable data in program memory

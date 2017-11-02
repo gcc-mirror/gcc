@@ -1,3 +1,12 @@
+2017-11-02  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/ft32.c (ft32_addr_space_legitimate_address_p): increase
+	offset range for FT32B.
+	* config/ft32/ft32.h: option "mcompress" enables relaxation.
+	* config/ft32/ft32.md: Add TARGET_NOPM.
+	* config/ft32/ft32.opt: Add mft32b, mcompress, mnopm.
+	* gcc/doc/invoke.texi: Add mft32b, mcompress, mnopm.
+
 2017-11-02  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.h (MALLOC_ABI_ALIGNMENT): New define.
