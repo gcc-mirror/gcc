@@ -1,3 +1,7 @@
+2017-11-02  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.h (MALLOC_ABI_ALIGNMENT): New define.
+
 2017-11-02  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-sprintf.c (sprintf_dom_walker): Remove
