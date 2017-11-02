@@ -1,3 +1,21 @@
+2017-11-02  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/79868
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse):
+	Remove second argument from aarch64_process_target_attr call.
+	* config/aarch64/aarch64-protos.h (aarch64_process_target_attr):
+	Ditto.
+	* config/aarch64/aarch64.c (aarch64_attribute_info): Change
+	field type.
+	(aarch64_handle_attr_arch): Remove second argument.
+	(aarch64_handle_attr_cpu): Ditto.
+	(aarch64_handle_attr_tune): Ditto.
+	(aarch64_handle_attr_isa_flags): Ditto.
+	(aarch64_process_one_target_attr): Ditto.
+	(aarch64_process_target_attr): Ditto.
+	(aarch64_option_valid_attribute_p): Remove second argument.
+	on aarch64_process_target_attr call.
+
 2017-11-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic.c: Include "selftest-diagnostic.h".
