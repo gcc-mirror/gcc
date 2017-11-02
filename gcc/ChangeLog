@@ -1,3 +1,9 @@
+2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82765
+	* varasm.c (decode_addr_const): Make offset HOST_WIDE_INT.
+	Truncate ARRAY_REF index and element size.
+
 2017-11-01  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* doc/invoke.texi (RISC-V Options): Use "@minus{}2 GB", not "-2 GB".
