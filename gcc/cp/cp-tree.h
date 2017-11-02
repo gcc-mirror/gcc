@@ -1070,6 +1070,17 @@ enum cp_identifier_kind {
    & IDENTIFIER_KIND_BIT_1 (NODE)		\
    & (!IDENTIFIER_KIND_BIT_0 (NODE)))
 
+/* True if this identifier is a new or delete operator.  */
+#define IDENTIFIER_NEWDEL_OP_P(NODE)		\
+  (IDENTIFIER_OVL_OP_P (NODE)			\
+   && IDENTIFIER_OVL_OP_FLAGS (NODE) & OVL_OP_FLAG_ALLOC)
+
+/* True if this identifier is a new operator.  */
+#define IDENTIFIER_NEW_OP_P(NODE)					\
+  (IDENTIFIER_OVL_OP_P (NODE)						\
+   && (IDENTIFIER_OVL_OP_FLAGS (NODE)					\
+       & (OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE)) == OVL_OP_FLAG_ALLOC)
+
 /* Access a C++-specific index for identifier NODE.
    Used to optimize operator mappings etc.  */
 #define IDENTIFIER_CP_INDEX(NODE)		\
