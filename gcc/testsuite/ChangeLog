@@ -1,3 +1,7 @@
+2017-11-02  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/implied_do_io_1.f90: Fix scan-tree-dump-times pattern.
+
 2017-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/82778
