@@ -1,5 +1,12 @@
 2017-11-02  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic.c: Include "selftest-diagnostic.h".
+	(selftest::assert_location_text): New function.
+	(selftest::test_diagnostic_get_location_text): New function.
+	(selftest::diagnostic_c_tests): Call it.
+
+2017-11-02  David Malcolm  <dmalcolm@redhat.com>
+
 	* Makefile.in (OBJS-libcommon): Add selftest-diagnostic.o.
 	* diagnostic-show-locus.c: Include "selftest-diagnostic.h".
 	(class selftest::test_diagnostic_context): Move to...
