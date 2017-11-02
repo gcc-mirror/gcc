@@ -1,5 +1,8 @@
 2017-11-02  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/82710
+	* g++.dg/warn/pr82710.C: New.
+
 	* g++.dg/lang-dump.C: New.
 
 2017-11-02  Richard Biener  <rguenther@suse.de>
