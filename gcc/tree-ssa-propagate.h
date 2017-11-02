@@ -81,13 +81,15 @@ class ssa_propagation_engine
 {
  public:
 
-  /* Main interface into the propagation engine.  */
-  void ssa_propagate (void);
+  virtual ~ssa_propagation_engine (void) { }
 
   /* Virtual functions the clients must provide to visit statements
      and phi nodes respectively.  */
   virtual enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) = 0;
   virtual enum ssa_prop_result visit_phi (gphi *) = 0;
+
+  /* Main interface into the propagation engine.  */
+  void ssa_propagate (void);
 
  private:
   /* Internal implementation details.  */
@@ -100,10 +102,12 @@ class ssa_propagation_engine
 class substitute_and_fold_engine
 {
  public:
-  bool substitute_and_fold (void);
-  bool replace_uses_in (gimple *);
+  virtual ~substitute_and_fold_engine (void) { }
   virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
   virtual tree get_value (tree) { return NULL_TREE; }
+
+  bool substitute_and_fold (void);
+  bool replace_uses_in (gimple *);
   bool replace_phi_args_in (gphi *);
 };
 
