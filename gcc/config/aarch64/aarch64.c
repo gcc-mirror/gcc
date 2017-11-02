@@ -9551,9 +9551,8 @@ enum aarch64_attr_opt_type
    ATTR_TYPE specifies the type of behavior of the attribute as described
    in the definition of enum aarch64_attr_opt_type.
    ALLOW_NEG is true if the attribute supports a "no-" form.
-   HANDLER is the function that takes the attribute string and whether
-   it is a pragma or attribute and handles the option.  It is needed only
-   when the ATTR_TYPE is aarch64_attr_custom.
+   HANDLER is the function that takes the attribute string as an argument
+   It is needed only when the ATTR_TYPE is aarch64_attr_custom.
    OPT_NUM is the enum specifying the option that the attribute modifies.
    This is needed for attributes that mirror the behavior of a command-line
    option, that is it has ATTR_TYPE aarch64_attr_mask, aarch64_attr_bool or
@@ -9564,15 +9563,14 @@ struct aarch64_attribute_info
   const char *name;
   enum aarch64_attr_opt_type attr_type;
   bool allow_neg;
-  bool (*handler) (const char *, const char *);
+  bool (*handler) (const char *);
   enum opt_code opt_num;
 };
 
-/* Handle the ARCH_STR argument to the arch= target attribute.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+/* Handle the ARCH_STR argument to the arch= target attribute.  */
 
 static bool
-aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
+aarch64_handle_attr_arch (const char *str)
 {
   const struct processor *tmp_arch = NULL;
   enum aarch64_parse_opt_result parse_res
@@ -9589,15 +9587,14 @@ aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_MISSING_ARG:
-	error ("missing architecture name in 'arch' target %s", pragma_or_attr);
+	error ("missing name in %<target(\"arch=\")%> pragma or attribute");
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for 'arch' target %s", str, pragma_or_attr);
+	error ("invalid name (\"%s\") in %<target(\"arch=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_arch (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %qs for 'arch' target %s",
-	       str, pragma_or_attr);
+	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
 	break;
       default:
 	gcc_unreachable ();
@@ -9606,11 +9603,10 @@ aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
   return false;
 }
 
-/* Handle the argument CPU_STR to the cpu= target attribute.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+/* Handle the argument CPU_STR to the cpu= target attribute.  */
 
 static bool
-aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
+aarch64_handle_attr_cpu (const char *str)
 {
   const struct processor *tmp_cpu = NULL;
   enum aarch64_parse_opt_result parse_res
@@ -9630,15 +9626,14 @@ aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_MISSING_ARG:
-	error ("missing cpu name in 'cpu' target %s", pragma_or_attr);
+	error ("missing name in %<target(\"cpu=\")%> pragma or attribute");
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for 'cpu' target %s", str, pragma_or_attr);
+	error ("invalid name (\"%s\") in %<target(\"cpu=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %qs for 'cpu' target %s",
-	       str, pragma_or_attr);
+	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
 	break;
       default:
 	gcc_unreachable ();
@@ -9647,11 +9642,10 @@ aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
   return false;
 }
 
-/* Handle the argument STR to the tune= target attribute.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+/* Handle the argument STR to the tune= target attribute.  */
 
 static bool
-aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
+aarch64_handle_attr_tune (const char *str)
 {
   const struct processor *tmp_tune = NULL;
   enum aarch64_parse_opt_result parse_res
@@ -9668,7 +9662,7 @@ aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for 'tune' target %s", str, pragma_or_attr);
+	error ("invalid name (\"%s\") in %<target(\"tune=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
       default:
@@ -9681,11 +9675,10 @@ aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
 /* Parse an architecture extensions target attribute string specified in STR.
    For example "+fp+nosimd".  Show any errors if needed.  Return TRUE
    if successful.  Update aarch64_isa_flags to reflect the ISA features
-   modified.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+   modified.  */
 
 static bool
-aarch64_handle_attr_isa_flags (char *str, const char *pragma_or_attr)
+aarch64_handle_attr_isa_flags (char *str)
 {
   enum aarch64_parse_opt_result parse_res;
   unsigned long isa_flags = aarch64_isa_flags;
@@ -9709,13 +9702,11 @@ aarch64_handle_attr_isa_flags (char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_MISSING_ARG:
-	error ("missing feature modifier in target %s %qs",
-	       pragma_or_attr, str);
+	error ("missing value in %<target()%> pragma or attribute");
 	break;
 
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier in target %s %qs",
-	       pragma_or_attr, str);
+	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
 	break;
 
       default:
@@ -9753,12 +9744,10 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
 };
 
 /* Parse ARG_STR which contains the definition of one target attribute.
-   Show appropriate errors if any or return true if the attribute is valid.
-   PRAGMA_OR_ATTR holds the string to use in error messages about whether
-   we're processing a target attribute or pragma.  */
+   Show appropriate errors if any or return true if the attribute is valid.  */
 
 static bool
-aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
+aarch64_process_one_target_attr (char *arg_str)
 {
   bool invert = false;
 
@@ -9766,7 +9755,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 
   if (len == 0)
     {
-      error ("malformed target %s", pragma_or_attr);
+      error ("malformed %<target()%> pragma or attribute");
       return false;
     }
 
@@ -9782,7 +9771,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
      through the machinery for the rest of the target attributes in this
      function.  */
   if (*str_to_check == '+')
-    return aarch64_handle_attr_isa_flags (str_to_check, pragma_or_attr);
+    return aarch64_handle_attr_isa_flags (str_to_check);
 
   if (len > 3 && strncmp (str_to_check, "no-", 3) == 0)
     {
@@ -9814,8 +9803,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 
       if (attr_need_arg_p ^ (arg != NULL))
 	{
-	  error ("target %s %qs does not accept an argument",
-		  pragma_or_attr, str_to_check);
+	  error ("pragma or attribute %<target(\"%s\")%> does not accept an argument", str_to_check);
 	  return false;
 	}
 
@@ -9823,8 +9811,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 	 then we can't match.  */
       if (invert && !p_attr->allow_neg)
 	{
-	  error ("target %s %qs does not allow a negated form",
-		  pragma_or_attr, str_to_check);
+	  error ("pragma or attribute %<target(\"%s\")%> does not allow a negated form", str_to_check);
 	  return false;
 	}
 
@@ -9834,7 +9821,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 	   For example, cpu=, arch=, tune=.  */
 	  case aarch64_attr_custom:
 	    gcc_assert (p_attr->handler);
-	    if (!p_attr->handler (arg, pragma_or_attr))
+	    if (!p_attr->handler (arg))
 	      return false;
 	    break;
 
@@ -9878,8 +9865,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 		}
 	      else
 		{
-		  error ("target %s %s=%s is not valid",
-			 pragma_or_attr, str_to_check, arg);
+		  error ("pragma or attribute %<target(\"%s=%s\")%> is not valid", str_to_check, arg);
 		}
 	      break;
 	    }
@@ -9913,12 +9899,10 @@ num_occurences_in_str (char c, char *str)
 }
 
 /* Parse the tree in ARGS that contains the target attribute information
-   and update the global target options space.  PRAGMA_OR_ATTR is a string
-   to be used in error messages, specifying whether this is processing
-   a target attribute or a target pragma.  */
+   and update the global target options space.  */
 
 bool
-aarch64_process_target_attr (tree args, const char* pragma_or_attr)
+aarch64_process_target_attr (tree args)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {
@@ -9927,7 +9911,7 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 	  tree head = TREE_VALUE (args);
 	  if (head)
 	    {
-	      if (!aarch64_process_target_attr (head, pragma_or_attr))
+	      if (!aarch64_process_target_attr (head))
 		return false;
 	    }
 	  args = TREE_CHAIN (args);
@@ -9948,7 +9932,7 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 
   if (len == 0)
     {
-      error ("malformed target %s value", pragma_or_attr);
+      error ("malformed %<target()%> pragma or attribute");
       return false;
     }
 
@@ -9963,9 +9947,9 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
   while (token)
     {
       num_attrs++;
-      if (!aarch64_process_one_target_attr (token, pragma_or_attr))
+      if (!aarch64_process_one_target_attr (token))
 	{
-	  error ("target %s %qs is invalid", pragma_or_attr, token);
+	  error ("pragma or attribute %<target(\"%s\")%> is not valid", token);
 	  return false;
 	}
 
@@ -9974,8 +9958,7 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 
   if (num_attrs != num_commas + 1)
     {
-      error ("malformed target %s list %qs",
-	      pragma_or_attr, TREE_STRING_POINTER (args));
+      error ("malformed %<target(\"%s\")%> pragma or attribute", TREE_STRING_POINTER (args));
       return false;
     }
 
@@ -10034,8 +10017,7 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
     cl_target_option_restore (&global_options,
 			TREE_TARGET_OPTION (target_option_current_node));
 
-
-  ret = aarch64_process_target_attr (args, "attribute");
+  ret = aarch64_process_target_attr (args);
 
   /* Set up any additional state.  */
   if (ret)
