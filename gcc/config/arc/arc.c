@@ -7183,6 +7183,12 @@ hwloop_optimize (hwloop_info loop)
 	fprintf (dump_file, ";; loop %d too long\n", loop->loop_no);
       return false;
     }
+  else if (!loop->length)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d is empty\n", loop->loop_no);
+      return false;
+    }
 
   /* Check if we use a register or not.  */
   if (!REG_P (loop->iter_reg))
@@ -7254,8 +7260,11 @@ hwloop_optimize (hwloop_info loop)
       && INSN_P (last_insn)
       && (JUMP_P (last_insn) || CALL_P (last_insn)
 	  || GET_CODE (PATTERN (last_insn)) == SEQUENCE
-	  || get_attr_type (last_insn) == TYPE_BRCC
-	  || get_attr_type (last_insn) == TYPE_BRCC_NO_DELAY_SLOT))
+	  /* At this stage we can have (insn (clobber (mem:BLK
+	     (reg)))) instructions, ignore them.  */
+	  || (GET_CODE (PATTERN (last_insn)) != CLOBBER
+	      && (get_attr_type (last_insn) == TYPE_BRCC
+		  || get_attr_type (last_insn) == TYPE_BRCC_NO_DELAY_SLOT))))
     {
       if (loop->length + 2 > ARC_MAX_LOOP_LENGTH)
 	{

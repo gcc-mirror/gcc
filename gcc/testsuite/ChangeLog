@@ -1,3 +1,7 @@
+2017-11-02  Claudiu Zissulescu <claziss@synopsys.com>
+
+	* gcc.target/arc/loop-1.c: Add test.
+
 2017-11-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/82415
