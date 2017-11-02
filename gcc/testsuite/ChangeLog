@@ -4101,6 +4101,11 @@
 	PR lto/79587
 	* gcc.dg/tree-prof/pr79587.c: New test.
 
+2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/68644
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Skip for powerpc*-*-*.
+
 2017-02-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79535
