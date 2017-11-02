@@ -1,3 +1,8 @@
+2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82795
+	* tree-if-conv.c (predicate_mem_writes): Remove bogus assert.
+
 2017-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Don't require
