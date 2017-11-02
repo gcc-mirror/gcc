@@ -2587,15 +2587,25 @@ if test $in_tree_ld != yes ; then
   else
     case "${target}" in
       *-*-solaris2*)
-	# See acinclude.m4 (gcc_SUN_LD_VERSION) for the version number
-	# format.
+	# Solaris 2 ld -V output looks like this for a regular version:
 	#
-	# Don't reuse gcc_gv_sun_ld_vers_* in case a linker other than
-	# /usr/ccs/bin/ld has been configured.
+	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
+	#
+	# but test versions add stuff at the end:
+	#
+	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
+	#
+	# In Solaris 11.4, this was changed to
+	#
+	# ld: Solaris ELF Utilities: 11.4-1.3123
+	#
+	# ld and ld.so.1 are guaranteed to be updated in lockstep, so ld version
+	# numbers can be used in ld.so.1 feature checks even if a different
+	# linker is configured.
 	ld_ver=`$gcc_cv_ld -V 2>&1`
-	if echo "$ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
+	if echo "$ld_ver" | $EGREP 'Solaris Link Editors|Solaris ELF Utilities' > /dev/null; then
 	  ld_vers=`echo $ld_ver | sed -n \
-	    -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
+	    -e 's,^.*: \(5\|1[0-9]\)\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\2,p'`
 	  ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
 	  ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
 	fi

@@ -1,3 +1,12 @@
+2017-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Don't require
+	gcc_SUN_LD_VERSION.
+	(gcc_GAS_CHECK_FEATURE): Remove.
+	* configure.ac (ld_vers) <*-*-solaris2*>: Move comments from
+	gcc_AC_INITFINI_ARRAY here.  Update for Solaris 11.4 changes.
+	* configure: Regenerate.
+
 2017-11-02  Claudiu Zissulescu <claziss@synopsys.com>
 
 	* config/arc/arc.c (hwloop_optimize): Account for empty
