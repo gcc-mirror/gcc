@@ -1,3 +1,9 @@
+2017-11-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/82415
+	* gcc.target/i386/naked-1.c: Make scan patterns more precise.
+	* gcc.target/i386/naked-2.c: Same.
+
 2017-11-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82765
