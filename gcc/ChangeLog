@@ -1,3 +1,8 @@
+2017-11-02  Claudiu Zissulescu <claziss@synopsys.com>
+
+	* config/arc/arc.c (hwloop_optimize): Account for empty
+	body loops.
+
 2017-11-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82765
