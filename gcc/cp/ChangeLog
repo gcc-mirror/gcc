@@ -1,3 +1,9 @@
+2017-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82710
+	* decl.c (grokdeclarator): Don't warn when parens protect a return
+	type from a qualified name.
+
 2017-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (enum cp_identifier_kind): Delete cik_newdel_op.
