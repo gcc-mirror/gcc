@@ -1,3 +1,11 @@
+2017-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add selftest-diagnostic.o.
+	* diagnostic-show-locus.c: Include "selftest-diagnostic.h".
+	(class selftest::test_diagnostic_context): Move to...
+	* selftest-diagnostic.c: New file.
+	* selftest-diagnostic.h: New file.
+
 2017-11-02  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/ft32.c (ft32_addr_space_legitimate_address_p): increase
