@@ -1,3 +1,14 @@
+2017-11-02  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/79868
+	* gcc.target/aarch64/spellcheck_1.c: Update dg-error string to match
+	new format.
+	* gcc.target/aarch64/spellcheck_2.c: Ditto.
+	* gcc.target/aarch64/spellcheck_3.c: Ditto.
+	* gcc.target/aarch64/target_attr_11.c: Ditto.
+	* gcc.target/aarch64/target_attr_12.c: Ditto.
+	* gcc.target/aarch64/target_attr_17.c: Ditto.
+
 2017-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82710
