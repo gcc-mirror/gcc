@@ -1,3 +1,7 @@
+2017-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune.def (X86_TUNE_USE_INCDEC): Enable for Haswell+.
+
 2017-11-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82795
