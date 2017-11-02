@@ -743,7 +743,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msmall-model  -mno-lsim}
 
 @emph{FT32 Options}
-@gccoptlist{-msim  -mlra  -mnodiv}
+@gccoptlist{-msim  -mlra  -mnodiv  -mft32b  -mcompress  -mnopm}
 
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
@@ -17767,6 +17767,18 @@ so by default the compiler uses standard reload.
 @item -mnodiv
 @opindex mnodiv
 Do not use div and mod instructions.
+
+@item -mft32b
+@opindex mft32b
+Enable use of the extended instructions of the FT32B processor.
+
+@item -mcompress
+@opindex mcompress
+Compress all code using the Ft32B code compression scheme.
+
+@item -mnopm
+@opindex  mnopm
+Do not generate code that reads program memory.
 
 @end table
 
