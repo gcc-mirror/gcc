@@ -717,22 +717,20 @@ op_ir (opm_mode mode, irange& r, const wide_int& lh, const irange& rh)
     {
       lb = rh.lower_bound (x);
       ub = rh.upper_bound (x);
-      if (mode == OPM_ADD)
+      switch (mode)
         {
-	  lb = wi::add (lh, lb, s, &ov_lb);
-	  ub = wi::add (lh, ub, s, &ov_ub);
-	  add_to_range (r, lb, ov_lb, ub, ov_ub);
+        case OPM_ADD:
+	  new_lb = wi::add (lh, lb, s, &ov_lb);
+	  new_ub = wi::add (lh, ub, s, &ov_ub);
+	  break;
+        case OPM_SUB:
+	  new_lb = wi::sub (lh, ub, s, &ov_lb);
+	  new_ub = wi::sub (lh, lb, s, &ov_ub);
+	  break;
+	default:
+	 gcc_unreachable ();
 	}
-      else
-        {
-	  lb = wi::sub (lh, lb, s, &ov_lb);
-	  ub = wi::sub (lh, ub, s, &ov_ub);
-	  /* 10 - [1, 20] gives us [9, -10] which requires reversing bounds. */
-	  if (wi::le_p (lb, ub, s))
-	    add_to_range (r, lb, ov_lb, ub, ov_ub);
-	  else
-	    add_to_range (r, ub, ov_ub, lb, ov_lb);
-	}
+      add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
     }
   return true;
 }
@@ -752,17 +750,20 @@ op_ri (opm_mode mode, irange& r, const irange& lh, const wide_int& rh)
     {
       lb = lh.lower_bound (x);
       ub = lh.upper_bound (x);
-      if (mode == OPM_ADD)
+      switch (mode)
         {
-	  lb = wi::add (lb, rh, s, &ov_lb);
-	  ub = wi::add (ub, rh, s, &ov_ub);
+	case OPM_ADD:
+	  new_lb = wi::add (lb, rh, s, &ov_lb);
+	  new_ub = wi::add (ub, rh, s, &ov_ub);
+	  break;
+	case OPM_SUB:
+	  new_lb = wi::sub (lb, rh, s, &ov_lb);
+	  new_ub = wi::sub (ub, rh, s, &ov_ub);
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      else
-        {
-	  lb = wi::sub (lb, rh, s, &ov_lb);
-	  ub = wi::sub (ub, rh, s, &ov_ub);
-	}
-      add_to_range (r, lb, ov_lb, ub, ov_ub);
+      add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
     }
   return true;
 }
@@ -777,6 +778,12 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
       return true;
     }
 
+  // There is a bug in 128 bit operations which dont set the overflow
+  // bits properly. PR 82547.  This can cause an ICE because we dont
+  // properly handle the overflow, resulting in ranges with LB and UB reversed.
+  if (TYPE_PRECISION (lh.get_type ()) > HOST_BITS_PER_WIDE_INT)
+    return false;
+
   if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
     op_ir (mode, r, lh.upper_bound (), rh);
   else
@@ -784,30 +791,32 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
       op_ri (mode, r, lh, rh.upper_bound ());
     else
       {
-	wide_int lb, ub;
+	wide_int lb, ub, new_lb, new_ub;
 	bool ov_lb, ov_ub;
 	const_tree type = lh.get_type ();
 	signop s = TYPE_SIGN (type);
 
-	/* Forget about complexity of any multi-ranges. */
-	if (mode == OPM_ADD)
+	switch (mode)
 	  {
+	  case OPM_ADD:
 	    /* Add the 2 lower and upper bounds togther and see what we get.  */
-	    lb = wi::add (lh.lower_bound (), rh.lower_bound (), s, &ov_lb);
-	    ub = wi::add (lh.upper_bound (), rh.upper_bound (), s, &ov_ub);
-	  }
-	else
-	  {
+	    new_lb = wi::add (lh.lower_bound (), rh.lower_bound (), s, &ov_lb);
+	    new_ub = wi::add (lh.upper_bound (), rh.upper_bound (), s, &ov_ub);
+	    break;
+	  case OPM_SUB:
 	    /* New possible range is [lb1-ub2, ub1-lb2].  */
-	    lb = wi::sub (lh.lower_bound (), rh.upper_bound (), s, &ov_lb);
-	    lb = wi::sub (lh.upper_bound (), rh.lower_bound (), s, &ov_ub);
+	    new_lb = wi::sub (lh.lower_bound (), rh.upper_bound (), s, &ov_lb);
+	    new_ub = wi::sub (lh.upper_bound (), rh.lower_bound (), s, &ov_ub);
+	    break;
+	  default:
+	    gcc_unreachable ();
 	  }
 
 	/* If both overflow, we can't be sure of the final range. */
 	if (ov_lb && ov_ub)
 	  r.set_range_for_type (type);
 	else
-	  set_range (type, r, lb, ov_lb, ub, ov_ub);
+	  set_range (type, r, new_lb, ov_lb, new_ub, ov_ub);
       }
   return true;
 }
@@ -1421,7 +1430,7 @@ irange_op_table::irange_op_table ()
   irange_tree[EQ_EXPR] = &op_equal;
 
   irange_tree[PLUS_EXPR] = &op_plus;
-//  irange_tree[MINUS_EXPR] = &op_minus;
+  irange_tree[MINUS_EXPR] = &op_minus;
   
   irange_tree[NOP_EXPR] = &op_cast;
   irange_tree[CONVERT_EXPR] = &op_cast;
