@@ -1,5 +1,7 @@
 2017-11-03  Nathan Sidwell  <nathan@acm.org>
 
+	* lib/scanlang.exp: Fix error message to refer to scan-lang-dump.
+
 	PR c++/82710
 	* g++.dg/warn/pr82710.C: More cases.
 

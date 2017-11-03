@@ -28,11 +28,11 @@ load_lib scandump.exp
 proc scan-lang-dump { args } {
 
     if { [llength $args] < 2 } {
-	error "scan-tree-dump: too few arguments"
+	error "scan-lang-dump: too few arguments"
 	return
     }
     if { [llength $args] > 3 } {
-	error "scan-tree-dump: too many arguments"
+	error "scan-lang-dump: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {
