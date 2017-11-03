@@ -1,3 +1,9 @@
+2017-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82710
+	* decl.c (grokdeclarator): Protect MAYBE_CLASS things from paren
+	warning too.
+
 2017-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81957
