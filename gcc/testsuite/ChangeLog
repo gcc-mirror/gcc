@@ -1,3 +1,7 @@
+2017-11-03  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/stack-check-12.c: New test.
+
 2017-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78821
