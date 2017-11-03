@@ -1,3 +1,8 @@
+2017-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81735
+	* gfortran.dg/pr81735.f90: New test.
+
 2017-11-01  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from trunk
