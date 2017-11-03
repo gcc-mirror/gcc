@@ -25,7 +25,7 @@
 # naming files '*_[a-z].C'
 
 # { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
-# { dg-module-do [link|run] [xfail] } # link [and run]
+# { dg-module-do [link|run] [xfail] [options] } # link [and run]
 
 load_lib g++-dg.exp
 load_lib mpx-dg.exp
@@ -109,7 +109,7 @@ proc module_bmi_p { src ifs } {
 # link and maybe run a set of object files
 # dg-module-do WHAT OPTIONS WHEN
 proc dg-module-do { args } {
-    if { [llength $args] > 3 } {
+    if { [llength $args] > 4 } {
 	error "[lindex $args 0]: too many arguments"
 	return
     }
@@ -137,7 +137,6 @@ proc module_do_it { do_what testcase asm_list } {
 	    "P" { }
 	}
     }
-
     set ok 1
     # make sure all asms are around
     foreach asm $asm_list {
@@ -147,8 +146,8 @@ proc module_do_it { do_what testcase asm_list } {
     }
 
     set options {}
-    if { [llength $do_what] > 2 } {
-	set options [lindex $do_what 2]
+    if { [llength $do_what] > 3 } {
+	lappend options "additional_flags=[lindex $do_what 3]"
     }
 
     set execname "./[file tail $testcase].exe"
@@ -241,26 +240,6 @@ foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
 	    cleanup_module_files $mod_files
 	}
     }
-}
-
-# special-case test for module wrapper
-remote_download host $srcdir/$subdir/hello.cc
-set mod_files [list hello.cc]
-set module_bmis {}
-set module_do {}
-dg-test -keep-output $srcdir/$subdir/main.cc "" "-fmodules -fmodule-path=."
-set asm_list {main.o hello.o}
-set testcase $subdir/main.cc
-lappend mod_files [module_bmi_p $testcase $module_bmis]
-set ok 1
-if { $module_do != "" } {
-    set ok [module_do_it $module_do $testcase $asm_list]
-}
-if { $ok } {
-    foreach asm $asm_list {
-	file_on_host delete $asm
-    }
-    cleanup_module_files $mod_files
 }
 
 dg-finish

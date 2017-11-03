@@ -58,6 +58,8 @@ CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 
 ifdef REVISION_DATESTAMP
 CFLAGS-cp/module.o += -DMODULE_STAMP=$(subst -,,$(REVISION_DATESTAMP))LL
+# We want to rebuild module if the timestamp changes
+cp/module.o : $(REVISION)
 endif
 
 # Create the compiler driver for g++.

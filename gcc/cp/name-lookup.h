@@ -362,5 +362,7 @@ extern unsigned get_ident_in_namespace (tree ctx, unsigned mod,
 					tree name, tree decl);
 extern tree find_by_ident_in_namespace (tree ctx, unsigned mod,
 					tree name, unsigned key);
+extern unsigned get_ident_in_class (tree ctx, tree name, tree decl);
+extern tree find_by_ident_in_class (tree ctx, tree name, unsigned key);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

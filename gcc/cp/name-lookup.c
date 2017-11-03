@@ -1547,6 +1547,36 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
   return val;
 }
 
+/* We're about to lookup NAME in KLASS.  Make sure any lazily declared
+   members are now declared.  */
+
+static void
+maybe_lazily_declare (tree klass, tree name)
+{
+  /* Lazily declare functions, if we're going to search these.  */
+  if (IDENTIFIER_CTOR_P (name))
+    {
+      if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
+	lazily_declare_fn (sfk_constructor, klass);
+      if (CLASSTYPE_LAZY_COPY_CTOR (klass))
+	lazily_declare_fn (sfk_copy_constructor, klass);
+      if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
+	lazily_declare_fn (sfk_move_constructor, klass);
+    }
+  else if (IDENTIFIER_DTOR_P (name))
+    {
+      if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
+	lazily_declare_fn (sfk_destructor, klass);
+    }
+  else if (name == cp_assignment_operator_id (NOP_EXPR))
+    {
+      if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
+	lazily_declare_fn (sfk_copy_assignment, klass);
+      if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
+	lazily_declare_fn (sfk_move_assignment, klass);
+    }
+}
+
 /* Look for NAME's binding in exactly KLASS.  See
    get_class_binding_direct for argument description.  Does lazy
    special function creation as necessary.  */
@@ -1557,30 +1587,7 @@ get_class_binding (tree klass, tree name, int type_or_fns)
   klass = complete_type (klass);
 
   if (COMPLETE_TYPE_P (klass))
-    {
-      /* Lazily declare functions, if we're going to search these.  */
-      if (IDENTIFIER_CTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
-	    lazily_declare_fn (sfk_constructor, klass);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (klass))
-	    lazily_declare_fn (sfk_copy_constructor, klass);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
-	    lazily_declare_fn (sfk_move_constructor, klass);
-	}
-      else if (IDENTIFIER_DTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
-	    lazily_declare_fn (sfk_destructor, klass);
-	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
-	    lazily_declare_fn (sfk_copy_assignment, klass);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
-	    lazily_declare_fn (sfk_move_assignment, klass);
-	}
-    }
+    maybe_lazily_declare (klass, name);
 
   return get_class_binding_direct (klass, name, type_or_fns);
 }
@@ -3638,10 +3645,36 @@ get_ident_in_namespace (tree ctx, unsigned mod, tree name, tree decl)
   unsigned key = 0;
 
   if (MAYBE_STAT_TYPE (binding) != decl)
-    for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); key++, iter; ++iter)
-      if (*iter == decl)
-	break;
+    for (ovl_iterator iter (MAYBE_STAT_DECL (binding));
+	 key++, *iter != decl; ++iter)
+      continue;
 
+  return key;
+}
+
+/* CTX contains DECL binding for NAME.  Determine a distinguishing KEY
+   so we can find it again upon import.  */
+
+unsigned
+get_ident_in_class (tree klass, tree name, tree decl)
+{
+  tree lookup = IDENTIFIER_CONV_OP_P (name) ? conv_op_identifier : name;
+  unsigned key = 0;
+
+  gcc_assert (COMPLETE_TYPE_P (klass));
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+    {
+      tree binding = member_vec_binary_search (member_vec, lookup);
+
+      if (MAYBE_STAT_TYPE (binding) != decl)
+	for (ovl_iterator iter (MAYBE_STAT_DECL (binding));
+	     ++key, *iter != decl; ++iter)
+	  continue;
+    }
+  else
+    for (tree binding = TYPE_FIELDS (klass); binding != decl;
+	 binding = DECL_CHAIN (binding))
+      key++;
   return key;
 }
 
@@ -3677,6 +3710,42 @@ find_by_ident_in_namespace (tree ctx, unsigned mod, tree name, unsigned key)
   if (decl && TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
     decl = NULL_TREE;
+
+  return decl;
+}
+
+/* CTX contains DECL binding for NAME.  Determine a distinguishing KEY
+   so we can find it again upon import.  */
+
+tree
+find_by_ident_in_class (tree klass, tree name, unsigned key)
+{
+  tree lookup = IDENTIFIER_CONV_OP_P (name) ? conv_op_identifier : name;
+  tree decl = NULL_TREE;
+
+  gcc_assert (COMPLETE_TYPE_P (klass));
+  /* The originating module might not have lazily declared members,
+     but the referencing module will have done so.  We need to repeat
+     that declaration at this point.  */
+  maybe_lazily_declare (klass, name);
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
+    {
+      if (tree binding = member_vec_binary_search (member_vec, lookup))
+	{
+	  if (!key)
+	    decl = MAYBE_STAT_TYPE (binding);
+	  else
+	    for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
+	      if (!--key)
+		{
+		  decl = *iter;
+		  break;
+		}
+	}
+    }
+  else
+    for (decl = TYPE_FIELDS (klass); decl && key--; decl = DECL_CHAIN (decl))
+      continue;
 
   return decl;
 }

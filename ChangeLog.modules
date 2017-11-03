@@ -1,3 +1,26 @@
+2017-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	Virtual bases!
+	gcc/cp/
+	* Make-lang.in: module.o depends on revision
+	* class.c (layout_class_type): Unnamed types do not get base
+	types.
+	* cxx-module-wrapper.sh: Invoke make.  Strip bad args.
+	* module.c (module_context): Allow NULL context.
+	(cpms_{in,out}::define_class): Deal with classtype_as_base.
+	(cpms_{in,out}::tag_definition): Allow raw class.
+	(cpms_{in,out}:ident_imported_decl: Rework class scope.
+	(cpms_out::tree_node): Deal with NULL module context.
+	* name-lookup.c (maybe_lazily_declare): Break out of ...
+	(get_class_binding): ... here.  Call it.
+	(get_ident_in_class, find_by_ident_in_class): New.
+	* name-lookup.h	(get_ident_in_class, find_by_ident_in_class): Declare.
+	gcc/testsuite/
+	* g++.dg/modules/class-7_[abc].C: New.
+	* g++.dg/modules/main.cc: Move to ...
+	* g++.dg/modules/main_a.C: ... here. Adjust.
+	* g++.dg/modules/modules.exp: Remove main.cc exceptionalism.
+
 2017-10-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

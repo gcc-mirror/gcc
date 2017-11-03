@@ -6218,29 +6218,14 @@ layout_class_type (tree t, tree *virtuals_p)
      that the type is laid out they are no longer important.  */
   remove_zero_width_bit_fields (t);
 
-  if (ANON_AGGR_TYPE_P (t))
-    ;
+  if (TYPE_UNNAMED_P (t))
+    CLASSTYPE_AS_BASE (t) = t;
   else if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
       /* T needs a different layout as a base (eliding virtual bases
 	 or whatever).  Create that version.  */
       tree base_t = make_node (TREE_CODE (t));
 
-#if 0
-      // FIXME: Needed for modules, but currently kills an lto
-      // testcase with debug info confusion
-      /* Make an artificial typedef for the base.  */
-      tree base_name = build_lang_decl (TYPE_DECL, as_base_identifier, base_t);
-      DECL_ARTIFICIAL (base_name) = true;
-      DECL_SOURCE_LOCATION (base_name) = BUILTINS_LOCATION;
-      DECL_CONTEXT (base_name) = t;
-      set_underlying_type (base_name);
-      TYPE_DECL_SUPPRESS_DEBUG(base_name) = true;
-
-      /* Chain it into the field list.  */
-      TREE_CHAIN (base_name) = TYPE_FIELDS (t);
-      TYPE_FIELDS (t) = base_name;
-#endif
       TYPE_CONTEXT (base_t) = t;
 
       /* If the ABI version is not at least two, and the last

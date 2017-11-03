@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libiberty.h"
 #include "tree-diagnostic.h"
 
-/* Id for dumping the class heirarchy.  */
+/* Id for dumping module information.  */
 int module_dump_id;
  
 /* State of a particular module. */
@@ -304,7 +304,7 @@ module_import_bitmap (unsigned ix)
 }
 
 /* Return the context that controls what module DECL is in.  That is
-   the outermost-non-namespace context.  */
+   the outermost non-namespace context.  */
 
 tree
 module_context (tree decl)
@@ -314,11 +314,10 @@ module_context (tree decl)
       tree outer = CP_DECL_CONTEXT (decl);
       if (TYPE_P (outer))
 	{
-	  // FIXME CLASSTYPE_AS_BASE doesn't have a name.
 	  if (tree name = TYPE_NAME (outer))
 	    outer = name;
 	  else
-	    outer = TYPE_NAME (CP_TYPE_CONTEXT (outer));
+	    return NULL_TREE;
 	}
       if (TREE_CODE (outer) == NAMESPACE_DECL)
 	break;
@@ -2227,7 +2226,11 @@ cpms_out::define_class (tree type, tree maybe_template)
     {
       tree_node (CLASSTYPE_PRIMARY_BINFO (type));
       tree_vec (CLASSTYPE_VBASECLASSES (type));
-
+      tree as_base = CLASSTYPE_AS_BASE (type);
+      if (as_base && as_base != type)
+	tag_definition (CLASSTYPE_AS_BASE (type), NULL_TREE);
+      else
+	tree_node (as_base);
       tree_vec (CLASSTYPE_MEMBER_VEC (type));
       tree_node (CLASSTYPE_FRIEND_CLASSES (type));
       tree_node (CLASSTYPE_LAMBDA_EXPR (type));
@@ -2253,9 +2256,13 @@ cpms_out::define_class (tree type, tree maybe_template)
 
   /* Now define all the members.  */
   for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
-    // FIXME:non-members and whatnot
+    // FIXME:non-methods and whatnot
     if (DECL_DECLARES_FUNCTION_P (member))
       maybe_tag_definition (member);
+    else if (TREE_CODE (member) == RECORD_TYPE)
+      maybe_tag_definition (member);
+
+  /* End of definitions.  */
   tree_node (NULL_TREE);
 }
 
@@ -2276,6 +2283,7 @@ cpms_in::define_class (tree type, tree maybe_template)
   tree binfo = tree_node ();
   vec<tree, va_gc> *member_vec = NULL;
   tree primary = NULL_TREE;
+  tree as_base = NULL_TREE;
   vec<tree, va_gc> *vbases = NULL;
   vec<tree, va_gc> *pure_virts = NULL;
   vec<tree_pair_s, va_gc> *vcall_indices = NULL;
@@ -2288,7 +2296,7 @@ cpms_in::define_class (tree type, tree maybe_template)
     {
       primary = tree_node ();
       vbases = tree_vec ();
-
+      as_base = tree_node ();
       member_vec = tree_vec ();
       friends = tree_node ();
       lambda = tree_node ();
@@ -2323,6 +2331,7 @@ cpms_in::define_class (tree type, tree maybe_template)
     {
       CLASSTYPE_PRIMARY_BINFO (type) = primary;
       CLASSTYPE_VBASECLASSES (type) = vbases;
+      CLASSTYPE_AS_BASE (type) = as_base;
 
       CLASSTYPE_FRIEND_CLASSES (type) = friends;
       CLASSTYPE_LAMBDA_EXPR (type) = lambda;
@@ -2354,15 +2363,6 @@ cpms_in::define_class (tree type, tree maybe_template)
     if (r.error ())
       break;
 
-  if (TYPE_LANG_SPECIFIC (type))
-    {
-      if (tree tdef
-	  = get_class_binding_direct (type, as_base_identifier, true))
-	CLASSTYPE_AS_BASE (type) = TREE_TYPE (tdef);
-      else
-	CLASSTYPE_AS_BASE (type) = type;
-    }
-  
   return type;
 }
 
@@ -2429,6 +2429,7 @@ cpms_out::tag_definition (tree t, tree maybe_template)
   tag (rt_definition);
   tree_node (maybe_template);
 
+ again:
   switch (TREE_CODE (t))
     {
     default:
@@ -2438,15 +2439,11 @@ cpms_out::tag_definition (tree t, tree maybe_template)
       break;
     case TYPE_DECL:
       t = TREE_TYPE (t);
-      switch (TREE_CODE (t))
-	{
-	default:
-	  gcc_unreachable ();
-	case RECORD_TYPE:
-	case UNION_TYPE:
-	  define_class (t, maybe_template);
-	  break;
-	}
+      goto again;
+      
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      define_class (t, maybe_template);
       break;
     }
 }
@@ -2464,6 +2461,7 @@ cpms_in::tag_definition ()
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
+ again:
   switch (TREE_CODE (t))
     {
     default:
@@ -2479,16 +2477,11 @@ cpms_in::tag_definition ()
 
     case TYPE_DECL:
       t = TREE_TYPE (t);
-      switch (TREE_CODE (t))
-	{
-	default:
-	  t = NULL_TREE;
-	  break;
-
-	case RECORD_TYPE:
-	case UNION_TYPE:
-	  t = define_class (t, maybe_template);
-	}
+      goto again;
+      
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      t = define_class (t, maybe_template);
       break;
     }
 
@@ -4108,55 +4101,46 @@ cpms_in::lang_type_vals (tree t)
 void
 cpms_out::ident_imported_decl (tree ctx, unsigned mod, tree decl)
 {
-  if (TREE_CODE (ctx) == NAMESPACE_DECL)
-    {
-      unsigned key = get_ident_in_namespace (ctx, mod, DECL_NAME (decl), decl);
-      w.u (key);
-    }
-  else if (TYPE_P (ctx))
-    {
-      // FIXME: use get_class_binding_direct
-      /* Until class scopes look like namespace scopes, we'll have to
-	 search the TYPE_FIELDS and TYPE_METHODS array.  Ew.  */
-      int key = 0;
-      tree probe = TYPE_FIELDS (ctx);
+  unsigned key = 0;
+  tree name = DECL_NAME (decl);
 
-      for (; probe != decl; probe = TREE_CHAIN (probe))
-	key++;
-      w.s (key);
+  switch (TREE_CODE (ctx))
+    {
+    case NAMESPACE_DECL:
+      key = get_ident_in_namespace (ctx, mod, name, decl);
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      key = get_ident_in_class (ctx, name, decl);
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    gcc_unreachable ();
+  w.u (key);
 }
 
 tree
 cpms_in::ident_imported_decl (tree ctx, unsigned mod, tree name)
 {
-  tree res;
+  unsigned key = r.u ();
+  tree res = NULL_TREE;
 
-  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+  switch (TREE_CODE (ctx))
     {
-      unsigned key = r.u ();
+    case NAMESPACE_DECL:
       res = find_by_ident_in_namespace (ctx, mod, name, key);
-    }
-  else if (TYPE_P (ctx))
-    {
-      // FIXME: See above
-      /* Until class scopes look like namespace scopes, we'll have to
-	 search the TYPE_FIELDS and TYPE_METHODS array.  Ew.  */
-      int key = r.s ();
-      tree probe = TYPE_FIELDS (ctx);
+      break;
+      
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      res = find_by_ident_in_class (ctx, name, key);
+      break;
 
-      for (; key; probe = TREE_CHAIN (probe))
-	{
-	  if (!probe)
-	    break;
-	  key--;
-	}
-      res = probe;
+    default:
+      gcc_unreachable ();
     }
-  else
-    gcc_unreachable ();
 
   return res;
 }
@@ -4386,7 +4370,8 @@ cpms_out::tree_node (tree t)
       tree_node (DECL_NAME (t));
 
       tree module_ctx = module_context (t);
-      unsigned node_module = MAYBE_DECL_MODULE_INDEX (module_ctx);
+      unsigned node_module = module_ctx ? MAYBE_DECL_MODULE_INDEX (module_ctx)
+	: GLOBAL_MODULE_INDEX;
       w.u ((node_module << 1) | (module_ctx == t));
       if (node_module >= IMPORTED_MODULE_BASE)
 	{
@@ -4603,7 +4588,6 @@ cpms_in::tree_node ()
 	      else
 		error ("failed to find %<%E@%E%>",
 		       name, module_name (node_module));
-	      r.bad ();
 	      t = NULL_TREE;
 	    }
 	  dump () && dump ("Importing %P@%I",
@@ -4625,6 +4609,8 @@ cpms_in::tree_node ()
       if (!tree_node_raw (code, t, name, ctx, set_module))
 	goto barf;
     }
+  else if (!t)
+    goto barf;
   else if (TREE_TYPE (t) && !r.u ())
     {
       tree type = TREE_TYPE (t);

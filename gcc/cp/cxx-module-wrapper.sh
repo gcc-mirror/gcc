@@ -25,30 +25,56 @@
 # lto-wrapper.
 
 # FIXME this is a Quick and Dirty Hack.  It is not robust
+# The API is not stable and can change at a moment's notice.
+# It'd be nice to inform the driver that we're compiling
+# an additional file, so it doesn't compile it itself
+# It'd also be nice to do some kind of locking so parallel makes 'just work'
 
 shopt -s extglob nullglob
 
 progname=${0##*/}
+if test "$#" -ne 4 ; then
+  echo "usage: ${progname} module-name bmi-file original-source importing-file" >&2
+  exit 1
+fi
+
 module=$1
 bmi=$2
 source=$3
 importer=$4
 
-args=$(eval echo $COLLECT_GCC_OPTIONS)
-gcc="$COLLECT_GCC"
+# If we're inside make and there's a Makefile, just invoke make for the bmi.
+if test ${MAKELEVEL:=0} -gt 0 -a -e Makefile ; then
+  exec make ${MAKEFLAGS} $bmi
+fi
+
+verbose=false
+ign=false
+cmd="$COLLECT_GCC"
+for arg in $(eval echo $COLLECT_GCC_OPTIONS)
+do
+  $ign || case "$arg" in
+    ('-v') verbose=true ;;
+    ('-S') ign=true ;;
+    ('-c') ign=true ;;
+    ('-o') ign=true ;;
+    (*)  ;;
+  esac
+  $ign || cmd+=" $arg"
+  test "$arg" = '-o' || ign=false
+done
 
 module=${bmi%.nms}
-for root in . ${CXX_MODULE_PATH//:/\ } ; do
+for root in $(dirname $source) . ${CXX_MODULE_PATH//:/\ } ; do
   src=$(echo $root/$module.@(cc|C|ccm))
   test $src && break
 done
 src=${src#./}
 if test $src ; then
-    echo "$progname: note: Compiling module interface $module ($src)" >&2
-    case " $args " in
-	(' -v ') set -x ;;
-    esac
-    exec $gcc $args -c -fmodule-root=$root -fmodule-output=$root/$bmi $src
+    echo "$progname: note: compiling module interface $module ($src)" >&2
+    cmd+=" -fmodule-output=$bmi -c $src"
+    $verbose && set -x
+    exec $cmd
 fi
 echo "$progname: cannot find source for module $module" >&2
 exit 1
