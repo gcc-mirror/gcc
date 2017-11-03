@@ -476,38 +476,6 @@ read_profile_edge_counts (gcov_type *exec_counts)
     return num_edges;
 }
 
-#define OVERLAP_BASE 10000
-
-/* Compare the static estimated profile to the actual profile, and
-   return the "degree of overlap" measure between them.
-
-   Degree of overlap is a number between 0 and OVERLAP_BASE. It is
-   the sum of each basic block's minimum relative weights between
-   two profiles. And overlap of OVERLAP_BASE means two profiles are
-   identical.  */
-
-static int
-compute_frequency_overlap (void)
-{
-  gcov_type count_total = 0, freq_total = 0;
-  int overlap = 0;
-  basic_block bb;
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    {
-      count_total += bb_gcov_count (bb);
-      freq_total += bb->frequency;
-    }
-
-  if (count_total == 0 || freq_total == 0)
-    return 0;
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    overlap += MIN (bb_gcov_count (bb) * OVERLAP_BASE / count_total,
-		    bb->frequency * OVERLAP_BASE / freq_total);
-
-  return overlap;
-}
 
 /* Compute the branch probabilities for the various branches.
    Annotate them accordingly.  
@@ -676,14 +644,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    }
 	}
     }
-  if (dump_file)
-    {
-      int overlap = compute_frequency_overlap ();
-      gimple_dump_cfg (dump_file, dump_flags);
-      fprintf (dump_file, "Static profile overlap: %d.%d%%\n",
-	       overlap / (OVERLAP_BASE / 100),
-	       overlap % (OVERLAP_BASE / 100));
-    }
 
   total_num_passes += passes;
   if (dump_file)
@@ -829,10 +789,18 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
 
-  FOR_ALL_BB_FN (bb, cfun)
-    {
+  /* If we have real data, use them!  */
+  if (bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun))
+      || !flag_guess_branch_prob)
+    FOR_ALL_BB_FN (bb, cfun)
       bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
-    }
+  /* If function was not trained, preserve local estimates including statically
+     determined zero counts.  */
+  else
+    FOR_ALL_BB_FN (bb, cfun)
+      if (!(bb->count == profile_count::zero ()))
+        bb->count = bb->count.global0 ();
+
   bb_gcov_counts.release ();
   delete edge_gcov_counts;
   edge_gcov_counts = NULL;

@@ -68,6 +68,7 @@ init_flow (struct function *the_fun)
   if (!the_fun->cfg)
     the_fun->cfg = ggc_cleared_alloc<control_flow_graph> ();
   n_edges_for_fn (the_fun) = 0;
+  the_fun->cfg->count_max = profile_count::uninitialized ();
   ENTRY_BLOCK_PTR_FOR_FN (the_fun)
     = alloc_block ();
   ENTRY_BLOCK_PTR_FOR_FN (the_fun)->index = ENTRY_BLOCK;
@@ -447,13 +448,18 @@ check_bb_profile (basic_block bb, FILE * file, int indent)
     }
   if (bb != ENTRY_BLOCK_PTR_FOR_FN (fun))
     {
-      int sum = 0;
+      profile_count sum = profile_count::zero ();
       FOR_EACH_EDGE (e, ei, bb->preds)
-	sum += EDGE_FREQUENCY (e);
-      if (abs (sum - bb->frequency) > 100)
-	fprintf (file,
-		 ";; %sInvalid sum of incoming frequencies %i, should be %i\n",
-		 s_indent, sum, bb->frequency);
+	sum += e->count ();
+      if (sum.differs_from_p (bb->count))
+	{
+	  fprintf (file, ";; %sInvalid sum of incoming counts ",
+		   s_indent);
+	  sum.dump (file);
+	  fprintf (file, ", should be ");
+	  bb->count.dump (file);
+	  fprintf (file, "\n");
+	}
     }
   if (BB_PARTITION (bb) == BB_COLD_PARTITION)
     {
@@ -751,7 +757,6 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, dump_flags_t flags,
 	      fputs (", count ", outf);
 	      bb->count.dump (outf);
 	    }
-	  fprintf (outf, ", freq %i", bb->frequency);
 	  if (maybe_hot_bb_p (fun, bb))
 	    fputs (", maybe hot", outf);
 	  if (probably_never_executed_bb_p (fun, bb))
@@ -843,15 +848,15 @@ brief_dump_cfg (FILE *file, dump_flags_t flags)
     }
 }
 
-/* An edge originally destinating BB of FREQUENCY and COUNT has been proved to
+/* An edge originally destinating BB of COUNT has been proved to
    leave the block by TAKEN_EDGE.  Update profile of BB such that edge E can be
    redirected to destination of TAKEN_EDGE.
 
    This function may leave the profile inconsistent in the case TAKEN_EDGE
-   frequency or count is believed to be lower than FREQUENCY or COUNT
+   frequency or count is believed to be lower than COUNT
    respectively.  */
 void
-update_bb_profile_for_threading (basic_block bb, int edge_frequency,
+update_bb_profile_for_threading (basic_block bb, 
 				 profile_count count, edge taken_edge)
 {
   edge c;
@@ -866,16 +871,10 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
     }
   bb->count -= count;
 
-  bb->frequency -= edge_frequency;
-  if (bb->frequency < 0)
-    bb->frequency = 0;
-
   /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
      Watch for overflows.  */
-  if (bb->frequency)
-    /* FIXME: We should get edge frequency as count.  */
-    prob = profile_probability::probability_in_gcov_type
-		 (edge_frequency, bb->frequency);
+  if (bb->count.nonzero_p ())
+    prob = count.probability_in (bb->count);
   else
     prob = profile_probability::never ();
   if (prob > taken_edge->probability)
@@ -899,9 +898,9 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
   if (prob == profile_probability::never ())
     {
       if (dump_file)
-	fprintf (dump_file, "Edge frequencies of bb %i has been reset, "
-		 "frequency of block should end up being 0, it is %i\n",
-		 bb->index, bb->frequency);
+	fprintf (dump_file, "Edge probabilities of bb %i has been reset, "
+		 "count of block should end up being 0, it is non-zero\n",
+		 bb->index);
       EDGE_SUCC (bb, 0)->probability = profile_probability::guessed_always ();
       ei = ei_start (bb->succs);
       ei_next (&ei);
@@ -942,17 +941,9 @@ scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
 
   for (i = 0; i < nbbs; i++)
     {
-      bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
-      /* Make sure the frequencies do not grow over BB_FREQ_MAX.  */
-      if (bbs[i]->frequency > BB_FREQ_MAX)
-	bbs[i]->frequency = BB_FREQ_MAX;
       bbs[i]->count = bbs[i]->count.apply_scale (num, den);
     }
 }
-
-/* numbers smaller than this value are safe to multiply without getting
-   64bit overflow.  */
-#define MAX_SAFE_MULTIPLIER (1 << (sizeof (int64_t) * 4 - 1))
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
    by NUM/DEN, in gcov_type arithmetic.  More accurate than previous
@@ -962,28 +953,9 @@ scale_bbs_frequencies_gcov_type (basic_block *bbs, int nbbs, gcov_type num,
 				 gcov_type den)
 {
   int i;
-  gcov_type fraction = RDIV (num * 65536, den);
 
-  gcc_assert (fraction >= 0);
-
-  if (num < MAX_SAFE_MULTIPLIER)
-    for (i = 0; i < nbbs; i++)
-      {
-	bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
-	if (bbs[i]->count <= MAX_SAFE_MULTIPLIER)
-	  bbs[i]->count = bbs[i]->count.apply_scale (num, den);
-	else
-	  bbs[i]->count = bbs[i]->count.apply_scale (fraction, 65536);
-      }
-   else
-    for (i = 0; i < nbbs; i++)
-      {
-	if (sizeof (gcov_type) > sizeof (int))
-	  bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
-	else
-	  bbs[i]->frequency = RDIV (bbs[i]->frequency * fraction, 65536);
-	bbs[i]->count = bbs[i]->count.apply_scale (fraction, 65536);
-      }
+  for (i = 0; i < nbbs; i++)
+    bbs[i]->count = bbs[i]->count.apply_scale (num, den);
 }
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
@@ -994,13 +966,9 @@ scale_bbs_frequencies_profile_count (basic_block *bbs, int nbbs,
 				     profile_count num, profile_count den)
 {
   int i;
-
-  for (i = 0; i < nbbs; i++)
-    {
-      bbs[i]->frequency = RDIV (bbs[i]->frequency * num.to_gcov_type (),
-				den.to_gcov_type ());
+  if (num == profile_count::zero () || den.nonzero_p ())
+    for (i = 0; i < nbbs; i++)
       bbs[i]->count = bbs[i]->count.apply_scale (num, den);
-    }
 }
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
@@ -1013,10 +981,7 @@ scale_bbs_frequencies (basic_block *bbs, int nbbs,
   int i;
 
   for (i = 0; i < nbbs; i++)
-    {
-      bbs[i]->frequency = p.apply (bbs[i]->frequency);
-      bbs[i]->count = bbs[i]->count.apply_probability (p);
-    }
+    bbs[i]->count = bbs[i]->count.apply_probability (p);
 }
 
 /* Helper types for hash tables.  */

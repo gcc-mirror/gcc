@@ -1,3 +1,221 @@
+2017-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* asan.c (create_cond_insert_point): Maintain profile.
+	* ipa-utils.c (ipa_merge_profiles): Be sure only IPA profiles are
+	merged.
+	* basic-block.h (struct basic_block_def): Remove frequency.
+	(EDGE_FREQUENCY): Use to_frequency
+	* bb-reorder.c (push_to_next_round_p): Use only IPA counts for global
+	heuristics.
+	(find_traces): Update to use to_frequency.
+	(find_traces_1_round): Likewise; use only IPA counts.
+	(bb_to_key): Likewise.
+	(connect_traces): Use IPA counts only.
+	(copy_bb_p): Update to use to_frequency.
+	(fix_up_crossing_landing_pad): Likewise.
+	(sanitize_hot_paths): Likewise.
+	* bt-load.c (basic_block_freq): Likewise.
+	* cfg.c (init_flow): Set count_max to uninitialized.
+	(check_bb_profile): Remove frequencies; check counts.
+	(dump_bb_info): Do not dump frequencies.
+	(update_bb_profile_for_threading): Update counts only.
+	(scale_bbs_frequencies_int): Likewise.
+	(MAX_SAFE_MULTIPLIER): Remove.
+	(scale_bbs_frequencies_gcov_type): Update counts only.
+	(scale_bbs_frequencies_profile_count): Update counts only.
+	(scale_bbs_frequencies): Update counts only.
+	* cfg.h (struct control_flow_graph): Add count-max.
+	(update_bb_profile_for_threading): Update prototype.
+	* cfgbuild.c (find_bb_boundaries): Do not update frequencies.
+	(find_many_sub_basic_blocks): Likewise.
+	* cfgcleanup.c (try_forward_edges): Likewise.
+	(try_crossjump_to_edge): Likewise.
+	* cfgexpand.c (expand_gimple_cond): Likewise.
+	(expand_gimple_tailcall): Likewise.
+	(construct_init_block): Likewise.
+	(construct_exit_block): Likewise.
+	* cfghooks.c (verify_flow_info): Check consistency of counts.
+	(dump_bb_for_graph): Do not dump frequencies.
+	(split_block_1): Do not update frequencies.
+	(split_edge): Do not update frequencies.
+	(make_forwarder_block): Do not update frequencies.
+	(duplicate_block): Do not update frequencies.
+	(account_profile_record): Do not update frequencies.
+	* cfgloop.c (find_subloop_latch_edge_by_profile): Use IPA counts
+	for global heuristics.
+	* cfgloopanal.c (average_num_loop_insns): Update to use to_frequency.
+	(expected_loop_iterations_unbounded): Use counts only.
+	* cfgloopmanip.c (scale_loop_profile): Simplify.
+	(create_empty_loop_on_edge): Simplify
+	(loopify): Simplify
+	(duplicate_loop_to_header_edge): Simplify
+	* cfgrtl.c (force_nonfallthru_and_redirect): Update profile.
+	(update_br_prob_note): Take care of removing note when profile
+	becomes undefined.
+	(relink_block_chain): Do not dump frequency.
+	(rtl_account_profile_record): Use to_frequency.
+	* cgraph.c (symbol_table::create_edge): Convert count to ipa count.
+	(cgraph_edge::redirect_call_stmt_to_calle): Conver tcount to ipa count.
+	(cgraph_update_edges_for_call_stmt_node): Likewise.
+	(cgraph_edge::verify_count_and_frequency): Update.
+	(cgraph_node::verify_node): Temporarily disable frequency verification.
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use
+	to_cgraph_frequency.
+	(cgraph_edge::rebuild_edges): Convert to ipa counts.
+	* cgraphunit.c (init_lowered_empty_function): Do not initialize
+	frequencies.
+	(cgraph_node::expand_thunk): Update profile.
+	* except.c (dw2_build_landing_pads): Do not update frequency.
+	* final.c (compute_alignments): Use to_frequency.
+	(dump_basic_block_info): Do not dump frequency.
+	* gimple-pretty-print.c (dump_profile): Do not dump frequency.
+	(dump_gimple_bb_header): Do not dump frequency.
+	* gimple-ssa-isolate-paths.c (isolate_path): Do not update frequency;
+	do update count.
+	* gimple-streamer-in.c (input_bb): Do not stream frequency.
+	* gimple-streamer-out.c (output_bb): Do not stream frequency.
+	* haifa-sched.c (sched_pressure_start_bb): Use to_freuqency.
+	(init_before_recovery): Do not update frequency.
+	(sched_create_recovery_edges): Do not update frequency.
+	* hsa-gen.c (convert_switch_statements): Do not update frequency.
+	* ipa-cp.c (ipcp_propagate_stage): Update search for max_count.
+	(ipa_cp_c_finalize): Set max_count to uninitialized.
+	* ipa-fnsummary.c (get_minimal_bb): Use counts.
+	(param_change_prob): Use counts.
+	* ipa-profile.c (ipa_profile_generate_summary): Do not summarize
+	local profiles.
+	* ipa-split.c (consider_split): Use to_frequency.
+	(split_function): Use to_frequency.
+	* ira-build.c (loop_compare_func): Likewise.
+	(mark_loops_for_removal): Likewise.
+	(mark_all_loops_for_removal): Likewise.
+	* loop-doloop.c (doloop_modify): Do not update frequency.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Do not update
+	frequency.
+	* lto-streamer-in.c (input_function): Update count_max.
+	* omp-expand.c (expand_omp_taskreg): Update count_max.
+	* omp-simd-clone.c (simd_clone_adjust): Update profile.
+	* predict.c (maybe_hot_frequency_p): Use to_frequency.
+	(maybe_hot_count_p): Use ipa counts only.
+	(maybe_hot_bb_p): Simplify.
+	(maybe_hot_edge_p): Simplify.
+	(probably_never_executed): Do not take frequency argument.
+	(probably_never_executed_bb_p): Do not pass frequency.
+	(probably_never_executed_edge_p): Likewise.
+	(combine_predictions_for_bb): Check that profile is nonzero.
+	(propagate_freq): Do not set frequency.
+	(drop_profile): Simplify.
+	(counts_to_freqs): Simplify.
+	(expensive_function_p): Use to_frequency.
+	(propagate_unlikely_bbs_forward): Simplify.
+	(determine_unlikely_bbs): Simplify.
+	(estimate_bb_frequencies): Add hack to silence graphite issues.
+	(compute_function_frequency): Use ipa counts.
+	(pass_profile::execute): Update.
+	(rebuild_frequencies): Use counts only.
+	(force_edge_cold): Use counts only.
+	* profile-count.c (profile_count::dump): Dump new count types.
+	(profile_count::differs_from_p): Check compatiblity.
+	(profile_count::to_frequency): New function.
+	(profile_count::to_cgraph_frequency): New function.
+	* profile-count.h (struct function): Declare.
+	(enum profile_quality): Add profile_guessed_local and
+	profile_guessed_global0.
+	(class profile_proability): Decrease number of bits to 29;
+	update from_reg_br_prob_note and to_reg_br_prob_note.
+	(class profile_count: Update comment; decrease number of bits
+	to 61. Check compatibility.
+	(profile_count::compatible_p): New private member function.
+	(profile_count::ipa_p): New member function.
+	(profile_count::operator<): Handle global zero correctly.
+	(profile_count::operator>): Handle global zero correctly.
+	(profile_count::operator<=): Handle global zero correctly.
+	(profile_count::operator>=): Handle global zero correctly.
+	(profile_count::nonzero_p): New member function.
+	(profile_count::force_nonzero): New member function.
+	(profile_count::max): New member function.
+	(profile_count::apply_scale): Handle IPA scalling.
+	(profile_count::guessed_local): New member function.
+	(profile_count::global0): New member function.
+	(profile_count::ipa): New member function.
+	(profile_count::to_frequency): Declare.
+	(profile_count::to_cgraph_frequency): Declare.
+	* profile.c (OVERLAP_BASE): Delete.
+	(compute_frequency_overlap): Delete.
+	(compute_branch_probabilities): Do not use compute_frequency_overlap.
+	* regs.h (REG_FREQ_FROM_BB): Use to_frequency.
+	* sched-ebb.c (rank): Use counts only.
+	* shrink-wrap.c (handle_simple_exit): Use counts only.
+	(try_shrink_wrapping): Use counts only.
+	(place_prologue_for_one_component): Use counts only.
+	* tracer.c (find_best_predecessor): Use to_frequency.
+	(find_trace): Use to_frequency.
+	(tail_duplicate): Use to_frequency.
+	* trans-mem.c (expand_transaction): Do not update frequency.
+	* tree-call-cdce.c: Do not update frequency. 
+	* tree-cfg.c (gimple_find_sub_bbs): Likewise.
+	(gimple_merge_blocks): Likewise.
+	(gimple_split_edge): Likewise.
+	(gimple_duplicate_sese_region): Likewise.
+	(gimple_duplicate_sese_tail): Likewise.
+	(move_sese_region_to_fn): Likewise.
+	(gimple_account_profile_record): Likewise.
+	(insert_cond_bb): Likewise.
+	* tree-complex.c (expand_complex_div_wide): Likewise.
+	* tree-eh.c (lower_resx): Update profile.
+	* tree-inline.c (copy_bb): Simplify count scaling; do not scale
+	frequencies.
+	(initialize_cfun): Do not initialize frequencies
+	(freqs_to_counts): Delete.
+	(copy_cfg_body): Ignore count parameter.
+	(copy_body): Update.
+	(expand_call_inline): Update count_max.
+	(optimize_inline_calls): Update count_max.
+	(tree_function_versioning): Update count_max.
+	* tree-ssa-coalesce.c (coalesce_cost_bb): Use to_frequency.
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Do not update
+	frequency.
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Use counts only.
+	* tree-ssa-loop-ivcanon.c (unloop_loops): Do not update freuqency.
+	(try_peel_loop): Likewise.
+	* tree-ssa-loop-ivopts.c (get_scaled_computation_cost_at): Use
+	to_frequency.
+	* tree-ssa-loop-manip.c (niter_for_unrolled_loop): Pass -1.
+	(tree_transform_and_unroll_loop): Do not use frequencies
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations):
+	Use reliable prediction only.
+	* tree-ssa-loop-unswitch.c (hoist_guard): Do not use frequencies.
+	* tree-ssa-sink.c (select_best_block): Use to_frequency.
+	* tree-ssa-tail-merge.c (replace_block_by): Temporarily disable
+	probability scaling.
+	* tree-ssa-threadupdate.c (create_block_for_threading): Do
+	not update frequency
+	(any_remaining_duplicated_blocks): Likewise.
+	(update_profile): Likewise.
+	(estimated_freqs_path): Delete.
+	(freqs_to_counts_path): Delete.
+	(clear_counts_path): Delete.
+	(ssa_fix_duplicate_block_edges): Likewise.
+	(duplicate_thread_path): Likewise.
+	* tree-switch-conversion.c (gen_inbound_check): Use counts.
+	* tree-tailcall.c (decrease_profile): Do not update frequency.
+	(eliminate_tail_call): Likewise.
+	* tree-vect-loop-manip.c (vect_do_peeling): Likewise.
+	* tree-vect-loop.c (scale_profile_for_vect_loop): Likewise.
+	(optimize_mask_stores): Likewise.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Likewise.
+	* ubsan.c (ubsan_expand_null_ifn): Update profile.
+	(ubsan_expand_ptr_ifn): Update profile.
+	* value-prof.c (gimple_ic): Simplify.
+	* value-prof.h (gimple_ic): Update prototype.
+	* ipa-inline-transform.c (inline_transform): Fix scaling conditoins.
+	* ipa-inline.c (compute_uninlined_call_time): Be sure that
+	counts are nonzero.
+	(want_inline_self_recursive_call_p): Likewise.
+	(resolve_noninline_speculation): Only cummulate defined counts.
+	(inline_small_functions): Use nonzero_p.
+	(ipa_inline): Do not access freed node.
+
 2017-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_override_options_internal):

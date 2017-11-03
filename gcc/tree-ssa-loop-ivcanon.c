@@ -647,7 +647,6 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
 
       add_bb_to_loop (latch_edge->dest, current_loops->tree_root);
       latch_edge->dest->count = profile_count::zero ();
-      latch_edge->dest->frequency = 0;
       set_immediate_dominator (CDI_DOMINATORS, latch_edge->dest, latch_edge->src);
 
       gsi = gsi_start_bb (latch_edge->dest);
@@ -1090,7 +1089,6 @@ try_peel_loop (struct loop *loop,
 	}
     }
   profile_count entry_count = profile_count::zero ();
-  int entry_freq = 0;
 
   edge e;
   edge_iterator ei;
@@ -1099,15 +1097,10 @@ try_peel_loop (struct loop *loop,
       {
 	if (e->src->count.initialized_p ())
 	  entry_count = e->src->count + e->src->count;
-	entry_freq += e->src->frequency;
 	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
       }
   profile_probability p = profile_probability::very_unlikely ();
-  if (loop->header->count > 0)
-    p = entry_count.probability_in (loop->header->count);
-  else if (loop->header->frequency)
-    p = profile_probability::probability_in_gcov_type
-		 (entry_freq, loop->header->frequency);
+  p = entry_count.probability_in (loop->header->count);
   scale_loop_profile (loop, p, 0);
   bitmap_set_bit (peeled_loops, loop->num);
   return true;

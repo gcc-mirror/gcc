@@ -3917,8 +3917,8 @@ sched_pressure_start_bb (basic_block bb)
       - call_saved_regs_num[cl]).  */
   {
     int i;
-    int entry_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
-    int bb_freq = bb->frequency;
+    int entry_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun);
+    int bb_freq = bb->count.to_frequency (cfun);
 
     if (bb_freq == 0)
       {
@@ -8141,8 +8141,6 @@ init_before_recovery (basic_block *before_recovery_ptr)
 
       single->count = last->count;
       empty->count = last->count;
-      single->frequency = last->frequency;
-      empty->frequency = last->frequency;
       BB_COPY_PARTITION (single, last);
       BB_COPY_PARTITION (empty, last);
 
@@ -8236,7 +8234,6 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
      in sel-sched.c `check_ds' in create_speculation_check.  */
   e->probability = profile_probability::very_unlikely ();
   rec->count = e->count ();
-  rec->frequency = EDGE_FREQUENCY (e);
   e2->probability = e->probability.invert ();
 
   rtx_code_label *label = block_label (second_bb);

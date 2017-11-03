@@ -179,53 +179,54 @@ ipa_profile_generate_summary (void)
   hash_table<histogram_hash> hashtable (10);
   
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-    FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
-      {
-	int time = 0;
-	int size = 0;
-        for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	  {
-	    gimple *stmt = gsi_stmt (gsi);
-	    if (gimple_code (stmt) == GIMPLE_CALL
-		&& !gimple_call_fndecl (stmt))
-	      {
-		histogram_value h;
-		h = gimple_histogram_value_of_type
-		      (DECL_STRUCT_FUNCTION (node->decl),
-		       stmt, HIST_TYPE_INDIR_CALL);
-		/* No need to do sanity check: gimple_ic_transform already
-		   takes away bad histograms.  */
-		if (h)
-		  {
-		    /* counter 0 is target, counter 1 is number of execution we called target,
-		       counter 2 is total number of executions.  */
-		    if (h->hvalue.counters[2])
-		      {
-			struct cgraph_edge * e = node->get_edge (stmt);
-			if (e && !e->indirect_unknown_callee)
-			  continue;
-			e->indirect_info->common_target_id
-			  = h->hvalue.counters [0];
-			e->indirect_info->common_target_probability
-			  = GCOV_COMPUTE_SCALE (h->hvalue.counters [1], h->hvalue.counters [2]);
-			if (e->indirect_info->common_target_probability > REG_BR_PROB_BASE)
-			  {
-			    if (dump_file)
-			      fprintf (dump_file, "Probability capped to 1\n");
-			    e->indirect_info->common_target_probability = REG_BR_PROB_BASE;
-			  }
-		      }
-		    gimple_remove_histogram_value (DECL_STRUCT_FUNCTION (node->decl),
-						    stmt, h);
-		  }
-	      }
-	    time += estimate_num_insns (stmt, &eni_time_weights);
-	    size += estimate_num_insns (stmt, &eni_size_weights);
-	  }
-	if (bb->count.initialized_p ())
-	  account_time_size (&hashtable, histogram, bb->count.to_gcov_type (),
-			     time, size);
-      }
+    if (ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (node->decl))->count.ipa_p ())
+      FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
+	{
+	  int time = 0;
+	  int size = 0;
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (gimple_code (stmt) == GIMPLE_CALL
+		  && !gimple_call_fndecl (stmt))
+		{
+		  histogram_value h;
+		  h = gimple_histogram_value_of_type
+			(DECL_STRUCT_FUNCTION (node->decl),
+			 stmt, HIST_TYPE_INDIR_CALL);
+		  /* No need to do sanity check: gimple_ic_transform already
+		     takes away bad histograms.  */
+		  if (h)
+		    {
+		      /* counter 0 is target, counter 1 is number of execution we called target,
+			 counter 2 is total number of executions.  */
+		      if (h->hvalue.counters[2])
+			{
+			  struct cgraph_edge * e = node->get_edge (stmt);
+			  if (e && !e->indirect_unknown_callee)
+			    continue;
+			  e->indirect_info->common_target_id
+			    = h->hvalue.counters [0];
+			  e->indirect_info->common_target_probability
+			    = GCOV_COMPUTE_SCALE (h->hvalue.counters [1], h->hvalue.counters [2]);
+			  if (e->indirect_info->common_target_probability > REG_BR_PROB_BASE)
+			    {
+			      if (dump_file)
+				fprintf (dump_file, "Probability capped to 1\n");
+			      e->indirect_info->common_target_probability = REG_BR_PROB_BASE;
+			    }
+			}
+		      gimple_remove_histogram_value (DECL_STRUCT_FUNCTION (node->decl),
+						      stmt, h);
+		    }
+		}
+	      time += estimate_num_insns (stmt, &eni_time_weights);
+	      size += estimate_num_insns (stmt, &eni_size_weights);
+	    }
+	  if (bb->count.ipa_p () && bb->count.initialized_p ())
+	    account_time_size (&hashtable, histogram, bb->count.ipa ().to_gcov_type (),
+			       time, size);
+	}
   histogram.qsort (cmp_counts);
 }
 

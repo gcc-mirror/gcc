@@ -2516,7 +2516,6 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   redirect_edge_succ (false_edge, new_bb);
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count ();
-  new_bb->frequency = EDGE_FREQUENCY (false_edge);
   loop_p loop = find_common_loop (bb->loop_father, dest->loop_father);
   add_bb_to_loop (new_bb, loop);
   if (loop->latch == bb
@@ -3847,11 +3846,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
       if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
 	{
 	  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	    {
-	      e->dest->frequency -= EDGE_FREQUENCY (e);
-	      if (e->dest->frequency < 0)
-		e->dest->frequency = 0;
-	    }
+	    e->dest->count -= e->count ();
 	  probability += e->probability;
 	  remove_edge (e);
 	}
@@ -5860,7 +5855,6 @@ construct_init_block (void)
   init_block = create_basic_block (NEXT_INSN (get_insns ()),
 				   get_last_insn (),
 				   ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  init_block->frequency = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
   init_block->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
   if (e)
@@ -5924,7 +5918,7 @@ construct_exit_block (void)
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
   /* But make sure exit_block starts with RETURN_LABEL, otherwise the
-     bb frequency counting will be confused.  Any instructions before that
+     bb count counting will be confused.  Any instructions before that
      label are emitted for the case where PREV_BB falls through into the
      exit block, so append those instructions to prev_bb in that case.  */
   if (NEXT_INSN (head) != return_label)
@@ -5937,7 +5931,6 @@ construct_exit_block (void)
 	}
     }
   exit_block = create_basic_block (NEXT_INSN (head), end, prev_bb);
-  exit_block->frequency = EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency;
   exit_block->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
   add_bb_to_loop (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
@@ -5957,10 +5950,7 @@ construct_exit_block (void)
     if (e2 != e)
       {
 	exit_block->count -= e2->count ();
-	exit_block->frequency -= EDGE_FREQUENCY (e2);
       }
-  if (exit_block->frequency < 0)
-    exit_block->frequency = 0;
   update_bb_for_insn (exit_block);
 }
 

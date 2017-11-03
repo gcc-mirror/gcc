@@ -1601,12 +1601,9 @@ init_lowered_empty_function (tree decl, bool in_ssa, profile_count count)
 
   /* Create BB for body of the function and connect it properly.  */
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   bb = create_basic_block (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun));
   bb->count = count;
-  bb->frequency = BB_FREQ_MAX;
   e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
   e->probability = profile_probability::always ();
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
@@ -1852,8 +1849,12 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
 
+      profile_count cfg_count = count;
+      if (!cfg_count.initialized_p ())
+	cfg_count = profile_count::from_gcov_type (BB_FREQ_MAX).guessed_local ();
+
       bb = then_bb = else_bb = return_bb
-	= init_lowered_empty_function (thunk_fndecl, true, count);
+	= init_lowered_empty_function (thunk_fndecl, true, cfg_count);
 
       bsi = gsi_start_bb (bb);
 
@@ -1966,14 +1967,11 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		     adjustment, because that's why we're emitting a
 		     thunk.  */
 		  then_bb = create_basic_block (NULL, bb);
-		  then_bb->count = count - count.apply_scale (1, 16);
-		  then_bb->frequency = BB_FREQ_MAX - BB_FREQ_MAX / 16;
+		  then_bb->count = cfg_count - cfg_count.apply_scale (1, 16);
 		  return_bb = create_basic_block (NULL, then_bb);
-		  return_bb->count = count;
-		  return_bb->frequency = BB_FREQ_MAX;
+		  return_bb->count = cfg_count;
 		  else_bb = create_basic_block (NULL, else_bb);
-		  then_bb->count = count.apply_scale (1, 16);
-		  then_bb->frequency = BB_FREQ_MAX / 16;
+		  else_bb->count = cfg_count.apply_scale (1, 16);
 		  add_bb_to_loop (then_bb, bb->loop_father);
 		  add_bb_to_loop (return_bb, bb->loop_father);
 		  add_bb_to_loop (else_bb, bb->loop_father);
@@ -2028,8 +2026,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	}
 
       cfun->gimple_df->in_ssa_p = true;
+      counts_to_freqs ();
       profile_status_for_fn (cfun)
-        = count.initialized_p () ? PROFILE_READ : PROFILE_GUESSED;
+        = cfg_count.initialized_p () && cfg_count.ipa_p ()
+	  ? PROFILE_READ : PROFILE_GUESSED;
       /* FIXME: C++ FE should stop setting TREE_ASM_WRITTEN on thunks.  */
       TREE_ASM_WRITTEN (thunk_fndecl) = false;
       delete_unreachable_blocks ();

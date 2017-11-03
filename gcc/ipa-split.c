@@ -444,7 +444,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 
   /* Do not split when we would end up calling function anyway.  */
   if (incoming_freq
-      >= (ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency
+      >= (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun)
 	  * PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100))
     {
       /* When profile is guessed, we can not expect it to give us
@@ -454,13 +454,14 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	 is likely noticeable win.  */
       if (back_edge
 	  && profile_status_for_fn (cfun) != PROFILE_READ
-	  && incoming_freq < ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
+	  && incoming_freq
+		 < ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "  Split before loop, accepting despite low frequencies %i %i.\n",
 		     incoming_freq,
-		     ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency);
+		     ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun));
 	}
       else
 	{
@@ -714,8 +715,10 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
      out smallest size of header.
      In future we might re-consider this heuristics.  */
   if (!best_split_point.split_bbs
-      || best_split_point.entry_bb->frequency > current->entry_bb->frequency
-      || (best_split_point.entry_bb->frequency == current->entry_bb->frequency
+      || best_split_point.entry_bb->count.to_frequency (cfun)
+	 > current->entry_bb->count.to_frequency (cfun)
+      || (best_split_point.entry_bb->count.to_frequency (cfun)
+	  == current->entry_bb->count.to_frequency (cfun)
 	  && best_split_point.split_size < current->split_size))
 	
     {
@@ -1285,7 +1288,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	  FOR_EACH_EDGE (e, ei, return_bb->preds)
 	    if (bitmap_bit_p (split_point->split_bbs, e->src->index))
 	      {
-		new_return_bb->frequency += EDGE_FREQUENCY (e);
+		new_return_bb->count += e->count ();
 		redirect_edge_and_branch (e, new_return_bb);
 		redirected = true;
 		break;

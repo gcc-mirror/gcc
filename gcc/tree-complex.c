@@ -1191,7 +1191,6 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       bb_join = e->dest;
       bb_true = create_empty_bb (bb_cond);
       bb_false = create_empty_bb (bb_true);
-      bb_true->frequency = bb_false->frequency = bb_cond->frequency / 2;
       bb_true->count = bb_false->count
 	 = bb_cond->count.apply_probability (profile_probability::even ());
 

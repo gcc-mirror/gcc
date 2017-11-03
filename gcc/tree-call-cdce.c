@@ -906,7 +906,6 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
      Here we take the second approach because it's slightly simpler
      and because it's easy to see that it doesn't lose profile counts.  */
   bi_call_bb->count = profile_count::zero ();
-  bi_call_bb->frequency = 0;
   while (!edges.is_empty ())
     {
       edge_pair e = edges.pop ();
@@ -919,16 +918,10 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       nocall_edge->probability = profile_probability::always ()
 				 - call_edge->probability;
 
-      unsigned int call_frequency
-	 = call_edge->probability.apply (src_bb->frequency);
-
       bi_call_bb->count += call_edge->count ();
-      bi_call_bb->frequency += call_frequency;
 
       if (nocall_edge->dest != join_tgt_bb)
-	{
-	  nocall_edge->dest->frequency = src_bb->frequency - call_frequency;
-	}
+	nocall_edge->dest->count = src_bb->count - bi_call_bb->count;
     }
 
   if (dom_info_available_p (CDI_DOMINATORS))

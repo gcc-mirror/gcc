@@ -4457,8 +4457,8 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 static comp_cost
 get_scaled_computation_cost_at (ivopts_data *data, gimple *at, comp_cost cost)
 {
-   int loop_freq = data->current_loop->header->frequency;
-   int bb_freq = gimple_bb (at)->frequency;
+   int loop_freq = data->current_loop->header->count.to_frequency (cfun);
+   int bb_freq = gimple_bb (at)->count.to_frequency (cfun);
    if (loop_freq != 0)
      {
        gcc_assert (cost.scratch <= cost.cost);
