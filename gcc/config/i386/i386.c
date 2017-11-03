@@ -13167,8 +13167,12 @@ ix86_expand_prologue (void)
       && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
 	  || flag_stack_clash_protection))
     {
-      /* We expect the GP registers to be saved when probes are used.  */
-      gcc_assert (int_registers_saved);
+      /* This assert wants to verify that integer registers were saved
+	 prior to probing.  This is necessary when probing may be implemented
+	 as a function call (Windows).  It is not necessary for stack clash
+	 protection probing.  */
+      if (!flag_stack_clash_protection)
+	gcc_assert (int_registers_saved);
 
       if (flag_stack_clash_protection)
 	{
