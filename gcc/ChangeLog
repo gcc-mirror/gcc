@@ -1,3 +1,8 @@
+2017-11-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (move_from_CR_ov_bit): Change condition to
+	TARGET_PAIRED_FLOAT.
+
 2017-11-03  Siddhesh Poyarekar  <siddhesh.poyarekar@linaro.org>
 	    Jim Wilson  <jim.wilson@linaro.org>
 
