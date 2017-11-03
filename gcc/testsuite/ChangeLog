@@ -1,3 +1,9 @@
+2017-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/82828
+	PR rtl-optimization/70263
+	* gcc.target/i386/pr70263-2.c: Fix invalid testcase.
+
 2017-11-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/negneg-1.c: New file.
