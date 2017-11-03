@@ -1,5 +1,8 @@
 2017-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/type_traits (endian): Define new enumeration type.
+	* testsuite/20_util/endian/1.cc: New test.
+
 	* include/bits/node_handle.h (_Node_insert_return::get): Remove, as
 	per P0508R0.
 
