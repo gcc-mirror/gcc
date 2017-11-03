@@ -2771,6 +2771,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       else
 	fprintf (dump_file, "\nTrying %d -> %d:\n",
 		 INSN_UID (i2), INSN_UID (i3));
+
+      if (i0)
+	dump_insn_slim (dump_file, i0);
+      if (i1)
+	dump_insn_slim (dump_file, i1);
+      dump_insn_slim (dump_file, i2);
+      dump_insn_slim (dump_file, i3);
     }
 
   /* If multiple insns feed into one of I2 or I3, they can be in any
