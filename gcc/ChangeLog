@@ -1,3 +1,12 @@
+2017-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/60580
+	* config/aarch64/aarch64.c (aarch64_frame_pointer_required)
+	Check special value of flag_omit_frame_pointer.
+	(aarch64_can_eliminate): Likewise.
+	(aarch64_override_options_after_change_1): Simplify handling of
+	-fomit-frame-pointer and -fomit-leaf-frame-pointer.
+
 2017-11-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/81702
