@@ -1,3 +1,13 @@
+2017-11-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs60000-protos.h (rs6000_emit_sISEL): Delete.
+	(rs6000_emit_int_cmove): New declaration.
+	* config/rs6000/rs6000.c (rs6000_emit_int_cmove): Delete declaration.
+	(rs6000_emit_sISEL): Delete.
+	(rs6000_emit_int_cmove): Make non-static.
+	* config/rs6000/rs6000.md (cstore<mode>4): Use rs6000_emit_int_cmove
+	instead of rs6000_emit_sISEL.
+
 2017-11-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* asan.c (create_cond_insert_point): Maintain profile.
