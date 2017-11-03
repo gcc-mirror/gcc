@@ -2908,8 +2908,7 @@ aarch64_frame_pointer_required (void)
 
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
-   and LR may be omitted).  If the function is not a leaf, ensure LR is
-   saved at the bottom of the callee-save area.  */
+   and LR may be omitted).  */
 static void
 aarch64_layout_frame (void)
 {
@@ -2965,13 +2964,6 @@ aarch64_layout_frame (void)
       cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
       cfun->machine->frame.wb_candidate2 = R30_REGNUM;
       offset = 2 * UNITS_PER_WORD;
-    }
-  else if (!crtl->is_leaf)
-    {
-      /* Ensure LR is saved at the bottom of the callee-saves.  */
-      cfun->machine->frame.reg_offset[R30_REGNUM] = 0;
-      cfun->machine->frame.wb_candidate1 = R30_REGNUM;
-      offset = UNITS_PER_WORD;
     }
 
   /* Now assign stack slots for them.  */
