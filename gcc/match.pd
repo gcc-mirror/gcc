@@ -1503,12 +1503,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        t1 = TYPE_OVERFLOW_WRAPS (type) ? type : TREE_TYPE (@1);
     }
     (convert (plus (convert:t1 @0) (convert:t1 @1))))))
- /* -(-A) -> A */
+ /* -(T)(-A) -> (T)A
+    Sign-extension is ok except for INT_MIN, which thankfully cannot
+    happen without overflow.  */
  (simplify
-  (negate (convert? (negate @1)))
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
-       && !TYPE_OVERFLOW_SANITIZED (type))
+  (negate (convert (negate @1)))
+  (if (INTEGRAL_TYPE_P (type)
+       && (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@1))
+	   || (!TYPE_UNSIGNED (TREE_TYPE (@1))
+	       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@1))))
+       && !TYPE_OVERFLOW_SANITIZED (type)
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
    (convert @1)))
+ (simplify
+  (negate (convert negate_expr_p@1))
+  (if (SCALAR_FLOAT_TYPE_P (type)
+       && ((DECIMAL_FLOAT_TYPE_P (type)
+	    == DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@1))
+	    && TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (@1)))
+	   || !HONOR_SIGN_DEPENDENT_ROUNDING (type)))
+   (convert (negate @1))))
+ (simplify
+  (negate (nop_convert (negate @1)))
+  (if (!TYPE_OVERFLOW_SANITIZED (type)
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
+   (view_convert @1)))
 
  /* We can't reassociate floating-point unless -fassociative-math
     or fixed-point plus or minus because of saturation to +-Inf.  */
