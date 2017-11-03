@@ -1,3 +1,10 @@
+2017-11-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/negneg-1.c: New file.
+	* gcc.dg/tree-ssa/negneg-2.c: Likewise.
+	* gcc.dg/tree-ssa/negneg-3.c: Likewise.
+	* gcc.dg/tree-ssa/negneg-4.c: Likewise.
+
 2017-11-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/no-strict-overflow-3.c (foo): Update magic
