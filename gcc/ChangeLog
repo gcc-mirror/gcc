@@ -1,3 +1,8 @@
+2017-11-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine (try_combine): Print the insns input to try_combine to the
+	dump file.
+
 2017-11-02  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/79868
