@@ -1,5 +1,11 @@
 2017-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p):
+	Return true for more constants, symbols and label references.
+	(aarch64_valid_floating_const): Remove unused function.
+
+2017-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	PR target/82786
 	* config/aarch64/aarch64.c (aarch64_layout_frame):
 	Undo forcing of LR at bottom of frame.
