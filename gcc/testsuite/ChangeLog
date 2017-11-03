@@ -1,3 +1,9 @@
+2017-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gcc.dg/store_merging_13.c: New test.
+	* gcc.dg/store_merging_14.c: New test.
+
 2017-11-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/large_real_kind_2.F90: Test passes on FreeBSD.  Remove
