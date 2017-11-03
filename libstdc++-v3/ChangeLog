@@ -1,3 +1,8 @@
+2017-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/node_handle.h (_Node_insert_return::get): Remove, as
+	per P0508R0.
+
 2017-11-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter.__init__): Strip
