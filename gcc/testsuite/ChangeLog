@@ -1,3 +1,8 @@
+2017-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81957
+	* g++.dg/cpp0x/variadic-crash5.C: New.
+
 2017-11-02  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/79868

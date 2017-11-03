@@ -1,3 +1,13 @@
+2017-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81957
+	* pt.c (make_pack_expansion): Add tsubst_flags_t parameter.
+	(expand_integer_pack, convert_template_argument, coerce_template_parms,
+	gen_elem_of_pack_expansion_instantiation, tsubst_pack_expansion,
+	unify): Adjust calls.
+	* tree.c (cp_build_qualified_type_real): Likewise.
+	* cp-tree.h (make_pack_expansion): Adjust declaration.
+
 2017-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (IDENTIFIER_NEWDEL_OP_P): Restore, adjust.
