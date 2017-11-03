@@ -1,3 +1,8 @@
+2017-11-03  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/riscv/riscv.c (riscv_legitimize_move): Handle
+	non-legitimate address.
+
 2017-11-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*lt0_disi): Delete.
