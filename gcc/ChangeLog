@@ -1,3 +1,11 @@
+2017-11-03  Siddhesh Poyarekar  <siddhesh.poyarekar@linaro.org>
+	    Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (saphira): New CPU.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* doc/invoke.texi (AArch64 Options/-mtune): Add "saphira".
+	* gcc/config/aarch64/aarch64.c (saphira_tunings): New tuning table.
+
 2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
 
 	* config/arc/arc.c (arc_save_restore): Corrected CFA note.
