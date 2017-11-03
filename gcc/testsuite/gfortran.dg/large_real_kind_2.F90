@@ -1,6 +1,5 @@
 ! { dg-do run }
 ! { dg-require-effective-target fortran_large_real }
-! { dg-xfail-if "" { "*-*-freebsd*" } }
 
 ! Testing library calls on large real kinds (larger than kind=8)
   implicit none
