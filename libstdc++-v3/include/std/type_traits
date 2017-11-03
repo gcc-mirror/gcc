@@ -2664,7 +2664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void operator=(__nonesuch const&) = delete;
   };
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_is_invocable 201703
 
   /// std::invoke_result
@@ -2739,7 +2739,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       = is_nothrow_invocable_r<_Fn, _Args...>::value;
 #endif // C++17
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_type_trait_variable_templates 201510L
 template <typename _Tp>
   inline constexpr bool is_void_v = is_void<_Tp>::value;
@@ -2942,6 +2942,16 @@ template <typename _From, typename _To>
 #undef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 
 #endif // C++17
+
+#if __cplusplus > 201703L
+  /// Byte order
+  enum class endian
+  {
+    little = __ORDER_LITTLE_ENDIAN__,
+    big    = __ORDER_BIG_ENDIAN__,
+    native = __BYTE_ORDER__
+  };
+#endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
