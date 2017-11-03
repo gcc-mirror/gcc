@@ -1,3 +1,55 @@
+2017-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gimple-ssa-store-merging.c: Update the file comment.
+	(MAX_STORE_ALIAS_CHECKS): Define.
+	(struct store_operand_info): New type.
+	(store_operand_info::store_operand_info): New constructor.
+	(struct store_immediate_info): Add rhs_code and ops data members.
+	(store_immediate_info::store_immediate_info): Add rhscode, op0r
+	and op1r arguments to the ctor, initialize corresponding data members.
+	(struct merged_store_group): Add load_align_base and load_align
+	data members.
+	(merged_store_group::merged_store_group): Initialize them.
+	(merged_store_group::do_merge): Update them.
+	(merged_store_group::apply_stores): Pick the constant for
+	encode_tree_to_bitpos from one of the two operands, or skip
+	encode_tree_to_bitpos if neither operand is a constant.
+	(class pass_store_merging): Add process_store method decl.  Remove
+	bool argument from terminate_all_aliasing_chains method decl.
+	(pass_store_merging::terminate_all_aliasing_chains): Remove
+	var_offset_p argument and corresponding handling.
+	(stmts_may_clobber_ref_p): New function.
+	(compatible_load_p): New function.
+	(imm_store_chain_info::coalesce_immediate_stores): Terminate group
+	if there is overlap and rhs_code is not INTEGER_CST.  For
+	non-overlapping stores terminate group if rhs is not mergeable.
+	(get_alias_type_for_stmts): Change first argument from
+	auto_vec<gimple *> & to vec<gimple *> &.  Add IS_LOAD, CLIQUEP and
+	BASEP arguments.  If IS_LOAD is true, look at rhs1 of the stmts
+	instead of lhs.  Compute *CLIQUEP and *BASEP in addition to the
+	alias type.
+	(get_location_for_stmts): Change first argument from
+	auto_vec<gimple *> & to vec<gimple *> &.
+	(struct split_store): Remove orig_stmts data member, add orig_stores.
+	(split_store::split_store): Create orig_stores rather than orig_stmts.
+	(find_constituent_stmts): Renamed to ...
+	(find_constituent_stores): ... this.  Change second argument from
+	vec<gimple *> * to vec<store_immediate_info *> *, push pointers
+	to info structures rather than the statements.
+	(split_group): Rename ALLOW_UNALIGNED argument to
+	ALLOW_UNALIGNED_STORE, add ALLOW_UNALIGNED_LOAD argument and handle
+	it.  Adjust find_constituent_stores caller.
+	(imm_store_chain_info::output_merged_store): Handle rhs_code other
+	than INTEGER_CST, adjust split_group, get_alias_type_for_stmts and
+	get_location_for_stmts callers.  Set MR_DEPENDENCE_CLIQUE and
+	MR_DEPENDENCE_BASE on the MEM_REFs if they are the same in all stores.
+	(mem_valid_for_store_merging): New function.
+	(handled_load): New function.
+	(pass_store_merging::process_store): New method.
+	(pass_store_merging::execute): Use process_store method.  Adjust
+	terminate_all_aliasing_chains caller.
+
 2017-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p):
