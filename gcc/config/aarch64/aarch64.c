@@ -10371,51 +10371,49 @@ aarch64_legitimate_pic_operand_p (rtx x)
   return true;
 }
 
-/* Return true if X holds either a quarter-precision or
-     floating-point +0.0 constant.  */
-static bool
-aarch64_valid_floating_const (rtx x)
-{
-  if (!CONST_DOUBLE_P (x))
-    return false;
-
-  /* This call determines which constants can be used in mov<mode>
-     as integer moves instead of constant loads.  */
-  if (aarch64_float_const_rtx_p (x))
-    return true;
-
-  return aarch64_float_const_representable_p (x);
-}
+/* Implement TARGET_LEGITIMATE_CONSTANT_P hook.  Return true for constants
+   that should be rematerialized rather than spilled.  */
 
 static bool
 aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
+  /* Support CSE and rematerialization of common constants.  */
+  if (CONST_INT_P (x) || CONST_DOUBLE_P (x) || GET_CODE (x) == CONST_VECTOR)
+    return true;
+
   /* Do not allow vector struct mode constants.  We could support
      0 and -1 easily, but they need support in aarch64-simd.md.  */
-  if (TARGET_SIMD && aarch64_vect_struct_mode_p (mode))
+  if (aarch64_vect_struct_mode_p (mode))
     return false;
 
-  /* For these cases we never want to use a literal load.
-     As such we have to prevent the compiler from forcing these
-     to memory.  */
-  if ((GET_CODE (x) == CONST_VECTOR
-       && aarch64_simd_valid_immediate (x, mode, false, NULL))
-      || CONST_INT_P (x)
-      || aarch64_valid_floating_const (x)
-      || aarch64_can_const_movi_rtx_p (x, mode)
-      || aarch64_float_const_rtx_p (x))
-	return !targetm.cannot_force_const_mem (mode, x);
+  /* Do not allow wide int constants - this requires support in movti.  */
+  if (CONST_WIDE_INT_P (x))
+    return false;
 
-  if (GET_CODE (x) == HIGH
-      && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
-    return true;
+  /* Do not allow const (plus (anchor_symbol, const_int)).  */
+  if (GET_CODE (x) == CONST)
+    {
+      rtx offset;
+
+      split_const (x, &x, &offset);
+
+      if (SYMBOL_REF_P (x) && SYMBOL_REF_ANCHOR_P (x))
+	return false;
+    }
+
+  if (GET_CODE (x) == HIGH)
+    x = XEXP (x, 0);
 
   /* Treat symbols as constants.  Avoid TLS symbols as they are complex,
      so spilling them is better than rematerialization.  */
   if (SYMBOL_REF_P (x) && !SYMBOL_REF_TLS_MODEL (x))
     return true;
 
-  return aarch64_constant_address_p (x);
+  /* Label references are always constant.  */
+  if (GET_CODE (x) == LABEL_REF)
+    return true;
+
+  return false;
 }
 
 rtx
