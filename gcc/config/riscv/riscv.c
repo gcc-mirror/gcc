@@ -1332,6 +1332,22 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       return true;
     }
 
+  /* RISC-V GCC may generate non-legitimate address due to we provide some
+     pattern for optimize access PIC local symbol and it's make GCC generate
+     unrecognizable instruction during optmizing.  */
+
+  if (MEM_P (dest) && !riscv_legitimate_address_p (mode, XEXP (dest, 0),
+						   reload_completed))
+    {
+      XEXP (dest, 0) = riscv_force_address (XEXP (dest, 0), mode);
+    }
+
+  if (MEM_P (src) && !riscv_legitimate_address_p (mode, XEXP (src, 0),
+						  reload_completed))
+    {
+      XEXP (src, 0) = riscv_force_address (XEXP (src, 0), mode);
+    }
+
   return false;
 }
 
