@@ -1,3 +1,10 @@
+2017-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from 7-branch
+	PR fortran/81735
+	* trans-decl.c (gfc_trans_deferred_vars): Correct case where
+	'tmp' can be used unititialized.
+
 2017-11-01  Andre Vehreschild  <vehre@gcc.gnu.org>
 	Paul Thomas  <pault@gcc.gnu.org>
 

@@ -4364,7 +4364,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    && sym->ts.u.cl->passed_length)
 		tmp = gfc_null_and_pass_deferred_len (sym, &init, &loc);
 	      else
-		gfc_restore_backend_locus (&loc);
+		{
+		  gfc_restore_backend_locus (&loc);
+		  tmp = NULL_TREE;
+		}
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
