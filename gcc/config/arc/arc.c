@@ -2823,12 +2823,23 @@ arc_save_restore (rtx base_reg,
 	  else
 	    {
 	      insn = frame_insn (insn);
-	      if (epilogue_p)
-		for (r = start_call; r <= end_call; r++)
-		  {
-		    rtx reg = gen_rtx_REG (SImode, r);
-		    add_reg_note (insn, REG_CFA_RESTORE, reg);
-		  }
+	      for (r = start_call, off = 0;
+		   r <= end_call;
+		   r++, off += UNITS_PER_WORD)
+		{
+		  rtx reg = gen_rtx_REG (SImode, r);
+		  if (epilogue_p)
+		      add_reg_note (insn, REG_CFA_RESTORE, reg);
+		  else
+		    {
+		      rtx mem = gen_rtx_MEM (SImode, plus_constant (Pmode,
+								    base_reg,
+								    off));
+
+		      add_reg_note (insn, REG_CFA_OFFSET,
+				    gen_rtx_SET (mem, reg));
+		    }
+		}
 	    }
 	  offset += off;
 	}
@@ -3068,6 +3079,19 @@ arc_expand_prologue (void)
       /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
       arc_save_restore (stack_pointer_rtx, gmask, 0, &first_offset);
       frame_size_to_allocate -= cfun->machine->frame_info.reg_size;
+    }
+
+  /* In the case of millicode thunk, we need to restore the clobbered
+     blink register.  */
+  if (cfun->machine->frame_info.millicode_end_reg > 0
+      && arc_must_save_return_addr (cfun))
+    {
+      HOST_WIDE_INT tmp = cfun->machine->frame_info.reg_size;
+      emit_insn (gen_rtx_SET (gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM),
+			      gen_rtx_MEM (Pmode,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
+							  tmp))));
     }
 
   /* Save frame pointer if needed.  First save the FP on stack, if not

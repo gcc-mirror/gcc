@@ -1,3 +1,9 @@
+2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
+
+	* config/arc/arc.c (arc_save_restore): Corrected CFA note.
+	(arc_expand_prologue): Restore blink for millicode.
+	* config/arc/linux.h (LINK_EH_SPEC): Defined.
+
 2017-11-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/82809

@@ -1,3 +1,10 @@
+2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
+	    Vineet Gupta <vgupta@synopsys.com>
+
+	* config.host (arc*-*-linux*): Set md_unwind_header variable.
+	* config/arc/linux-unwind-reg.def: New file.
+	* config/arc/linux-unwind-reg.h: Likewise.
+
 2017-10-23  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/subdi3.S: New assembly file.
