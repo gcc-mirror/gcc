@@ -9110,6 +9110,11 @@ aarch64_override_options_internal (struct gcc_options *opts)
 			   opts->x_param_values,
 			   global_options_set.x_param_values);
 
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
+
   /* Enable sw prefetching at specified optimization level for
      CPUS that have prefetch.  Lower optimization level threshold by 1
      when profiling is enabled.  */
