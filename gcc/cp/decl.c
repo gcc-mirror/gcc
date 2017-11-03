@@ -10795,13 +10795,15 @@ grokdeclarator (const cp_declarator *declarator,
 	 to be a constructor call.  */
       if (decl_context != PARM
 	  && declarator->parenthesized != UNKNOWN_LOCATION
-	  /* If the type is a class and the inner name used a global
-	     namespace qualifier, we need the parens.  Unfortunately
-	     all we can tell is that a qualified name was used.  */
-	  && !(CLASS_TYPE_P (type)
-	       && inner_declarator
+	  /* If the type is class-like and the inner name used a
+	     global namespace qualifier, we need the parens.
+	     Unfortunately all we can tell is whether a qualified name
+	     was used or not.  */
+	  && !(inner_declarator
 	       && inner_declarator->kind == cdk_id
-	       && inner_declarator->u.id.qualifying_scope))
+	       && inner_declarator->u.id.qualifying_scope
+	       && (MAYBE_CLASS_TYPE_P (type)
+		   || TREE_CODE (type) == ENUMERAL_TYPE)))
 	warning_at (declarator->parenthesized, OPT_Wparentheses,
 		    "unnecessary parentheses in declaration of %qs", name);
       if (declarator->kind == cdk_id || declarator->kind == cdk_decomp)
