@@ -1,3 +1,25 @@
+2017-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/no-strict-overflow-3.c (foo): Update magic
+	value to not clash with frequency.
+	* gcc.dg/strict-overflow-3.c (foo): Likewise.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Update template.
+	* gcc.dg/tree-ssa/dump-2.c: Update template.
+	* gcc.dg/tree-ssa/ifc-10.c: Update template.
+	* gcc.dg/tree-ssa/ifc-11.c: Update template.
+	* gcc.dg/tree-ssa/ifc-12.c: Update template.
+	* gcc.dg/tree-ssa/ifc-20040816-1.c: Update template.
+	* gcc.dg/tree-ssa/ifc-20040816-2.c: Update template.
+	* gcc.dg/tree-ssa/ifc-5.c: Update template.
+	* gcc.dg/tree-ssa/ifc-8.c: Update template.
+	* gcc.dg/tree-ssa/ifc-9.c: Update template.
+	* gcc.dg/tree-ssa/ifc-cd.c: Update template.
+	* gcc.dg/tree-ssa/ifc-pr56541.c: Update template.
+	* gcc.dg/tree-ssa/ifc-pr68583.c: Update template.
+	* gcc.dg/tree-ssa/ifc-pr69489-1.c: Update template.
+	* gcc.dg/tree-ssa/ifc-pr69489-2.c: Update template.
+	* gcc.target/i386/pr61403.c: Update template.
+
 2017-11-03  Nathan Sidwell  <nathan@acm.org>
 
 	* lib/scanlang.exp: Fix error message to refer to scan-lang-dump.

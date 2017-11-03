@@ -42,7 +42,11 @@ profile_count::dump (FILE *f) const
   else
     {
       fprintf (f, "%" PRId64, m_val);
-      if (m_quality == profile_adjusted)
+      if (m_quality == profile_guessed_local)
+	fprintf (f, " (estimated locally)");
+      else if (m_quality == profile_guessed_global0)
+	fprintf (f, " (estimated locally, globally 0)");
+      else if (m_quality == profile_adjusted)
 	fprintf (f, " (adjusted)");
       else if (m_quality == profile_afdo)
 	fprintf (f, " (auto FDO)");
@@ -65,6 +69,7 @@ profile_count::debug () const
 bool
 profile_count::differs_from_p (profile_count other) const
 {
+  gcc_checking_assert (compatible_p (other));
   if (!initialized_p () || !other.initialized_p ())
     return false;
   if ((uint64_t)m_val - (uint64_t)other.m_val < 100
@@ -212,4 +217,41 @@ slow_safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
     }
   *res = (uint64_t) -1;
   return false;
+}
+
+/* Return count as frequency within FUN scaled in range 0 to REG_FREQ_MAX
+   Used for legacy code and should not be used anymore.  */
+
+int
+profile_count::to_frequency (struct function *fun) const
+{
+  if (!initialized_p ())
+    return BB_FREQ_MAX;
+  if (*this == profile_count::zero ())
+    return 0;
+  gcc_assert (REG_BR_PROB_BASE == BB_FREQ_MAX
+	      && fun->cfg->count_max.initialized_p ());
+  profile_probability prob = probability_in (fun->cfg->count_max);
+  if (!prob.initialized_p ())
+    return REG_BR_PROB_BASE;
+  return prob.to_reg_br_prob_base ();
+}
+
+/* Return count as frequency within FUN scaled in range 0 to CGRAPH_FREQ_MAX
+   where CGRAPH_FREQ_BASE means that count equals to entry block count.
+   Used for legacy code and should not be used anymore.  */
+
+int
+profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
+{
+  if (!initialized_p ())
+    return CGRAPH_FREQ_BASE;
+  if (*this == profile_count::zero ())
+    return 0;
+  gcc_checking_assert (entry_bb_count.initialized_p ());
+  uint64_t scale;
+  if (!safe_scale_64bit (!entry_bb_count.m_val ? m_val + 1 : m_val,
+			 CGRAPH_FREQ_BASE, MAX (1, entry_bb_count.m_val), &scale))
+    return CGRAPH_FREQ_MAX;
+  return MIN (scale, CGRAPH_FREQ_MAX);
 }

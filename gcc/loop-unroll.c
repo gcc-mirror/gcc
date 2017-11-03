@@ -863,7 +863,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   unsigned i, j;
   profile_probability p;
   basic_block preheader, *body, swtch, ezc_swtch = NULL;
-  int may_exit_copy, iter_freq, new_freq;
+  int may_exit_copy;
   profile_count iter_count, new_count;
   unsigned n_peel;
   edge e;
@@ -970,12 +970,10 @@ unroll_loop_runtime_iterations (struct loop *loop)
   /* Record the place where switch will be built for preconditioning.  */
   swtch = split_edge (loop_preheader_edge (loop));
 
-  /* Compute frequency/count increments for each switch block and initialize
+  /* Compute count increments for each switch block and initialize
      innermost switch block.  Switch blocks and peeled loop copies are built
      from innermost outward.  */
-  iter_freq = new_freq = swtch->frequency / (max_unroll + 1);
   iter_count = new_count = swtch->count.apply_scale (1, max_unroll + 1);
-  swtch->frequency = new_freq;
   swtch->count = new_count;
 
   for (i = 0; i < n_peel; i++)
@@ -995,8 +993,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       p = profile_probability::always ().apply_scale (1, i + 2);
 
       preheader = split_edge (loop_preheader_edge (loop));
-      /* Add in frequency/count of edge from switch block.  */
-      preheader->frequency += iter_freq;
+      /* Add in count of edge from switch block.  */
       preheader->count += iter_count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p,
@@ -1009,9 +1006,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       swtch = split_edge_and_insert (single_pred_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_succ_edge (swtch)->probability = p.invert ();
-      new_freq += iter_freq;
       new_count += iter_count;
-      swtch->frequency = new_freq;
       swtch->count = new_count;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
@@ -1024,12 +1019,10 @@ unroll_loop_runtime_iterations (struct loop *loop)
       p = profile_probability::always ().apply_scale (1, max_unroll + 1);
       swtch = ezc_swtch;
       preheader = split_edge (loop_preheader_edge (loop));
-      /* Recompute frequency/count adjustments since initial peel copy may
+      /* Recompute count adjustments since initial peel copy may
 	 have exited and reduced those values that were computed above.  */
-      iter_freq = swtch->frequency / (max_unroll + 1);
       iter_count = swtch->count.apply_scale (1, max_unroll + 1);
-      /* Add in frequency/count of edge from switch block.  */
-      preheader->frequency += iter_freq;
+      /* Add in count of edge from switch block.  */
       preheader->count += iter_count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p,

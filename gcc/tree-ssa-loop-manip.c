@@ -1122,6 +1122,9 @@ niter_for_unrolled_loop (struct loop *loop, unsigned factor)
      converts back.  */
   gcov_type new_est_niter = est_niter / factor;
 
+  if (est_niter == -1)
+    return -1;
+
   /* Without profile feedback, loops for which we do not know a better estimate
      are assumed to roll 10 times.  When we unroll such loop, it appears to
      roll too little, and it may even seem to be cold.  To avoid this, we
@@ -1370,14 +1373,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   freq_h = loop->header->count;
   freq_e = (loop_preheader_edge (loop))->count ();
-  /* Use frequency only if counts are zero.  */
-  if (!(freq_h > 0) && !(freq_e > 0))
-    {
-      freq_h = profile_count::from_gcov_type (loop->header->frequency);
-      freq_e = profile_count::from_gcov_type
-		 (EDGE_FREQUENCY (loop_preheader_edge (loop)));
-    }
-  if (freq_h > 0)
+  if (freq_h.nonzero_p ())
     {
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
@@ -1392,7 +1388,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 				.apply_scale (1, new_est_niter + 1);
 
   rest->count += new_exit->count ();
-  rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
   prob = new_nonexit->probability;

@@ -366,7 +366,6 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 				 - inner_taken->probability;
 
   outer_to_inner->probability = profile_probability::always ();
-  inner_cond_bb->frequency = outer_cond_bb->frequency;
   outer2->probability = profile_probability::never ();
 }
 

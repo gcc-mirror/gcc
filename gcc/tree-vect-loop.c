@@ -7229,20 +7229,14 @@ scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, vf);
   profile_count freq_h = loop->header->count, freq_e = preheader->count ();
 
-  /* Use frequency only if counts are zero.  */
-  if (!(freq_h > 0) && !(freq_e > 0))
-    {
-      freq_h = profile_count::from_gcov_type (loop->header->frequency);
-      freq_e = profile_count::from_gcov_type (EDGE_FREQUENCY (preheader));
-    }
-  if (freq_h > 0)
+  if (freq_h.nonzero_p ())
     {
       profile_probability p;
 
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
-      if (!(freq_e > profile_count::from_gcov_type (1)))
-       freq_e = profile_count::from_gcov_type (1);
+      if (!(freq_e == profile_count::zero ()))
+        freq_e = freq_e.force_nonzero ();
       p = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h);
       scale_loop_frequencies (loop, p);
     }
@@ -7781,7 +7775,7 @@ optimize_mask_stores (struct loop *loop)
       efalse = make_edge (bb, store_bb, EDGE_FALSE_VALUE);
       /* Put STORE_BB to likely part.  */
       efalse->probability = profile_probability::unlikely ();
-      store_bb->frequency = PROB_ALWAYS - EDGE_FREQUENCY (efalse);
+      store_bb->count = efalse->count ();
       make_single_succ_edge (store_bb, join_bb, EDGE_FALLTHRU);
       if (dom_info_available_p (CDI_DOMINATORS))
 	set_immediate_dominator (CDI_DOMINATORS, store_bb, bb);

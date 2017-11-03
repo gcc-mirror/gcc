@@ -3901,7 +3901,7 @@ estimate_numbers_of_iterations (struct loop *loop)
      recomputing iteration bounds later in the compilation process will just
      introduce random roundoff errors.  */
   if (!loop->any_estimate
-      && loop->header->count > 0)
+      && loop->header->count.reliable_p ())
     {
       gcov_type nit = expected_loop_iterations_unbounded (loop);
       bound = gcov_type_to_wide_int (nit);

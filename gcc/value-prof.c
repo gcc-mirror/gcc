@@ -583,7 +583,7 @@ static bool
 check_counter (gimple *stmt, const char * name,
 	       gcov_type *count, gcov_type *all, profile_count bb_count_d)
 {
-  gcov_type bb_count = bb_count_d.to_gcov_type ();
+  gcov_type bb_count = bb_count_d.ipa ().to_gcov_type ();
   if (*all != bb_count || *count > *all)
     {
       location_t locus;
@@ -1299,7 +1299,7 @@ check_ic_target (gcall *call_stmt, struct cgraph_node *target)
 
 gcall *
 gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
-	   profile_probability prob, profile_count count, profile_count all)
+	   profile_probability prob)
 {
   gcall *dcall_stmt;
   gassign *load_stmt;
@@ -1354,11 +1354,11 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   /* Edge e_cd connects cond_bb to dcall_bb, etc; note the first letters. */
   e_cd = split_block (cond_bb, cond_stmt);
   dcall_bb = e_cd->dest;
-  dcall_bb->count = count;
+  dcall_bb->count = cond_bb->count.apply_probability (prob);
 
   e_di = split_block (dcall_bb, dcall_stmt);
   icall_bb = e_di->dest;
-  icall_bb->count = all - count;
+  icall_bb->count = cond_bb->count - dcall_bb->count;
 
   /* Do not disturb existing EH edges from the indirect call.  */
   if (!stmt_ends_bb_p (icall_stmt))
@@ -1376,7 +1376,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   if (e_ij != NULL)
     {
       join_bb = e_ij->dest;
-      join_bb->count = all;
+      join_bb->count = cond_bb->count;
     }
 
   e_cd->flags = (e_cd->flags & ~EDGE_FALLTHRU) | EDGE_TRUE_VALUE;
@@ -1518,7 +1518,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   count = histogram->hvalue.counters [1];
   all = histogram->hvalue.counters [2];
 
-  bb_all = gimple_bb (stmt)->count.to_gcov_type ();
+  bb_all = gimple_bb (stmt)->count.ipa ().to_gcov_type ();
   /* The order of CHECK_COUNTER calls is important -
      since check_counter can correct the third parameter
      and we want to make count <= all <= bb_all. */

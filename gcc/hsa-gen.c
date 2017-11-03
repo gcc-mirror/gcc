@@ -6374,7 +6374,7 @@ convert_switch_statements (void)
 
 		edge next_edge = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
 		next_edge->probability = new_edge->probability.invert ();
-		next_bb->frequency = EDGE_FREQUENCY (next_edge);
+		next_bb->count = next_edge->count ();
 		cur_bb = next_bb;
 	      }
 	    else /* Link last IF statement and default label

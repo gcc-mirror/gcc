@@ -164,7 +164,7 @@ coalesce_cost (int frequency, bool optimize_for_size)
 static inline int
 coalesce_cost_bb (basic_block bb)
 {
-  return coalesce_cost (bb->frequency, optimize_bb_for_size_p (bb));
+  return coalesce_cost (bb->count.to_frequency (cfun), optimize_bb_for_size_p (bb));
 }
 
 

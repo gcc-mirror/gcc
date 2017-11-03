@@ -1443,10 +1443,10 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
     }
 
   /* frequencies of the new BBs */
-  bb1->frequency = EDGE_FREQUENCY (e01);
-  bb2->frequency = EDGE_FREQUENCY (e02);
+  bb1->count = e01->count ();
+  bb2->count = e02->count ();
   if (!info->default_case_nonstandard)
-    bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
+    bbf->count = e1f->count () + e2f->count ();
 
   /* Tidy blocks that have become unreachable.  */
   prune_bbs (bbd, info->final_bb,

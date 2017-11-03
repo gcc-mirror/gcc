@@ -213,9 +213,10 @@ average_num_loop_insns (const struct loop *loop)
 	if (NONDEBUG_INSN_P (insn))
 	  binsns++;
 
-      ratio = loop->header->frequency == 0
+      ratio = loop->header->count.to_frequency (cfun) == 0
 	      ? BB_FREQ_MAX
-	      : (bb->frequency * BB_FREQ_MAX) / loop->header->frequency;
+	      : (bb->count.to_frequency (cfun) * BB_FREQ_MAX)
+		 / loop->header->count.to_frequency (cfun);
       ninsns += binsns * ratio;
     }
   free (bbs);
@@ -245,8 +246,8 @@ expected_loop_iterations_unbounded (const struct loop *loop,
   /* If we have no profile at all, use AVG_LOOP_NITER.  */
   if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
     expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
-  else if (loop->latch && (loop->latch->count.reliable_p ()
-			   || loop->header->count.reliable_p ()))
+  else if (loop->latch && (loop->latch->count.initialized_p ()
+			   || loop->header->count.initialized_p ()))
     {
       profile_count count_in = profile_count::zero (),
 		    count_latch = profile_count::zero ();
@@ -258,45 +259,25 @@ expected_loop_iterations_unbounded (const struct loop *loop,
 	  count_in += e->count ();
 
       if (!count_latch.initialized_p ())
-	;
-      else if (!(count_in > profile_count::zero ()))
+	expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+      else if (!count_in.nonzero_p ())
 	expected = count_latch.to_gcov_type () * 2;
       else
 	{
 	  expected = (count_latch.to_gcov_type () + count_in.to_gcov_type ()
 		      - 1) / count_in.to_gcov_type ();
-	  if (read_profile_p)
+	  if (read_profile_p
+	      && count_latch.reliable_p () && count_in.reliable_p ())
 	    *read_profile_p = true;
 	}
     }
-  if (expected == -1)
-    {
-      int freq_in, freq_latch;
-
-      freq_in = 0;
-      freq_latch = 0;
-
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (flow_bb_inside_loop_p (loop, e->src))
-	  freq_latch += EDGE_FREQUENCY (e);
-	else
-	  freq_in += EDGE_FREQUENCY (e);
-
-      if (freq_in == 0)
-	{
-	  /* If we have no profile at all, use AVG_LOOP_NITER iterations.  */
-	  if (!freq_latch)
-	    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
-	  else
-	    expected = freq_latch * 2;
-	}
-      else
-        expected = (freq_latch + freq_in - 1) / freq_in;
-    }
+  else
+    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
 
   HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
   if (max != -1 && max < expected)
     return max;
+ 
   return expected;
 }
 

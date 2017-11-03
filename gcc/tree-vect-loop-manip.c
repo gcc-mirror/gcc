@@ -1843,7 +1843,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
 	  /* Simply propagate profile info from guard_bb to guard_to which is
 	     a merge point of control flow.  */
-	  guard_to->frequency = guard_bb->frequency;
 	  guard_to->count = guard_bb->count;
 	  /* Scale probability of epilog loop back.
 	     FIXME: We should avoid scaling down and back up.  Profile may

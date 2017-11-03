@@ -804,6 +804,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
      this edge is unlikely taken, so set up the probability accordingly.  */
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
   e->probability = profile_probability::very_unlikely ();
+  then_bb->count = e->count ();
 
   /* Connect 'then block' with the 'else block'.  This is needed
      as the ubsan routines we call in the 'then block' are not noreturn.
@@ -1085,6 +1086,7 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
 	 accordingly.  */
       e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();
+      then_bb->count = e->count ();
     }
   else
     {
@@ -1098,12 +1100,14 @@ ubsan_expand_ptr_ifn (gimple_stmt_iterator *gsip)
 
       e = make_edge (cond_neg_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();
+      then_bb->count = e->count ();
 
       cond_pos_bb = create_empty_bb (cond_bb);
       add_bb_to_loop (cond_pos_bb, cond_bb->loop_father);
 
       e = make_edge (cond_bb, cond_pos_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::even ();
+      cond_pos_bb->count = e->count ();
 
       e = make_edge (cond_pos_bb, then_bb, EDGE_TRUE_VALUE);
       e->probability = profile_probability::very_unlikely ();

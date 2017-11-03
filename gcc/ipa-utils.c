@@ -524,7 +524,14 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	  unsigned int i;
 
 	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
-	  if (!dstbb->count.initialized_p ())
+
+	  /* Either sum the profiles if both are IPA and not global0, or
+	     pick more informative one (that is nonzero IPA if other is
+	     uninitialized, guessed or global0).   */
+	  if (!dstbb->count.ipa ().initialized_p ()
+	      || (dstbb->count.ipa () == profile_count::zero ()
+		  && (srcbb->count.ipa ().initialized_p ()
+		      && !(srcbb->count.ipa () == profile_count::zero ()))))
 	    {
 	      dstbb->count = srcbb->count;
 	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
@@ -535,7 +542,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		    dste->probability = srce->probability;
 		}
 	    }	
-	  else if (srcbb->count.initialized_p ())
+	  else if (srcbb->count.ipa ().initialized_p ()
+		   && !(srcbb->count.ipa () == profile_count::zero ()))
 	    {
 	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 		{
@@ -556,7 +564,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	{
 	  if (e->speculative)
 	    continue;
-	  e->count = gimple_bb (e->call_stmt)->count;
+	  e->count = gimple_bb (e->call_stmt)->count.ipa ();
 	  e->frequency = compute_call_stmt_bb_frequency
 			     (dst->decl,
 			      gimple_bb (e->call_stmt));
@@ -634,7 +642,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	      ipa_ref *ref;
 
 	      e2->speculative_call_info (direct, indirect, ref);
-	      e->count = count;
+	      e->count = count.ipa ();
 	      e->frequency = freq;
 	      int prob = direct->count.probability_in (e->count)
 			 .to_reg_br_prob_base ();
@@ -643,7 +651,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	    }
 	  else
 	    {
-	      e->count = count;
+	      e->count = count.ipa ();
 	      e->frequency = freq;
 	    }
 	}

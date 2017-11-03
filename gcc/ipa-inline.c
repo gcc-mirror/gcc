@@ -640,8 +640,8 @@ compute_uninlined_call_time (struct cgraph_edge *edge,
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
 
-  if (edge->count > profile_count::zero ()
-      && caller->count > profile_count::zero ())
+  if (edge->count.nonzero_p ()
+      && caller->count.nonzero_p ())
     uninlined_call_time *= (sreal)edge->count.to_gcov_type ()
 			   / caller->count.to_gcov_type ();
   if (edge->frequency)
@@ -665,8 +665,8 @@ compute_inlined_call_time (struct cgraph_edge *edge,
 			 : edge->caller);
   sreal caller_time = ipa_fn_summaries->get (caller)->time;
 
-  if (edge->count > profile_count::zero ()
-      && caller->count > profile_count::zero ())
+  if (edge->count.nonzero_p ()
+      && caller->count.nonzero_p ())
     time *= (sreal)edge->count.to_gcov_type () / caller->count.to_gcov_type ();
   if (edge->frequency)
     time *= cgraph_freq_base_rec * edge->frequency;
@@ -733,7 +733,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl)
-	    || e->count > profile_count::zero ())
+	    || e->count.nonzero_p ())
 	   && ipa_fn_summaries->get (callee)->min_size
 		- ipa_call_summaries->get (e)->call_stmt_size
 	      > 16 * MAX_INLINE_INSNS_SINGLE)
@@ -843,7 +843,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
       reason = "recursive call is cold";
       want_inline = false;
     }
-  else if (outer_node->count == profile_count::zero ())
+  else if (!outer_node->count.nonzero_p ())
     {
       reason = "not executed in profile";
       want_inline = false;
@@ -881,7 +881,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
       int i;
       for (i = 1; i < depth; i++)
 	max_prob = max_prob * max_prob / CGRAPH_FREQ_BASE;
-      if (max_count > profile_count::zero () && edge->count > profile_count::zero ()
+      if (max_count.nonzero_p () && edge->count.nonzero_p () 
 	  && (edge->count.to_gcov_type () * CGRAPH_FREQ_BASE
 	      / outer_node->count.to_gcov_type ()
 	      >= max_prob))
@@ -889,7 +889,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
 	  reason = "profile of recursive call is too large";
 	  want_inline = false;
 	}
-      if (max_count == profile_count::zero ()
+      if (!max_count.nonzero_p ()
 	  && (edge->frequency * CGRAPH_FREQ_BASE / caller_freq
 	      >= max_prob))
 	{
@@ -915,7 +915,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
      methods.  */
   else
     {
-      if (max_count > profile_count::zero () && edge->count.initialized_p ()
+      if (max_count.nonzero_p () && edge->count.initialized_p ()
 	  && (edge->count.to_gcov_type () * 100
 	      / outer_node->count.to_gcov_type ()
 	      <= PARAM_VALUE (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY)))
@@ -923,7 +923,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
 	  reason = "profile of recursive call is too small";
 	  want_inline = false;
 	}
-      else if ((max_count == profile_count::zero ()
+      else if ((!max_count.nonzero_p ()
 	        || !edge->count.initialized_p ())
 	       && (edge->frequency * 100 / caller_freq
 	           <= PARAM_VALUE (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY)))
@@ -1070,7 +1070,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
      then calls without.
   */
   else if (opt_for_fn (caller->decl, flag_guess_branch_prob)
-	   || caller->count > profile_count::zero ())
+	   || caller->count.nonzero_p ())
     {
       sreal numerator, denominator;
       int overall_growth;
@@ -1080,7 +1080,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   - inlined_time);
       if (numerator == 0)
 	numerator = ((sreal) 1 >> 8);
-      if (caller->count > profile_count::zero ())
+      if (caller->count.nonzero_p ())
 	numerator *= caller->count.to_gcov_type ();
       else if (caller->count.initialized_p ())
 	numerator = numerator >> 11;
@@ -1521,7 +1521,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	{
 	  fprintf (dump_file,
 		   "   Inlining call of depth %i", depth);
-	  if (node->count > profile_count::zero ())
+	  if (node->count.nonzero_p ())
 	    {
 	      fprintf (dump_file, " called approx. %.2f times per call",
 		       (double)curr->count.to_gcov_type ()
@@ -1684,7 +1684,8 @@ resolve_noninline_speculation (edge_heap_t *edge_heap, struct cgraph_edge *edge)
 				  ? node->global.inlined_to : node;
       auto_bitmap updated_nodes;
 
-      spec_rem += edge->count;
+      if (edge->count.initialized_p ())
+        spec_rem += edge->count;
       edge->resolve_speculation ();
       reset_edge_caches (where);
       ipa_update_overall_fn_summary (where);
@@ -1789,8 +1790,7 @@ inline_small_functions (void)
 	  }
 
 	for (edge = node->callers; edge; edge = edge->next_caller)
-	  if (!(max_count >= edge->count))
-	    max_count = edge->count;
+	  max_count = max_count.max (edge->count);
       }
   ipa_free_postorder_info ();
   initialize_growth_caches ();
@@ -2049,7 +2049,7 @@ inline_small_functions (void)
       update_caller_keys (&edge_heap, where, updated_nodes, NULL);
       /* Offline copy count has possibly changed, recompute if profile is
 	 available.  */
-      if (max_count > profile_count::zero ())
+      if (max_count.nonzero_p ())
         {
 	  struct cgraph_node *n = cgraph_node::get (edge->callee->decl);
 	  if (n != edge->callee && n->analyzed)
@@ -2392,6 +2392,7 @@ ipa_inline (void)
     ipa_dump_fn_summaries (dump_file);
 
   nnodes = ipa_reverse_postorder (order);
+  spec_rem = profile_count::zero ();
 
   FOR_EACH_FUNCTION (node)
     {
@@ -2487,8 +2488,9 @@ ipa_inline (void)
 	      next = edge->next_callee;
 	      if (edge->speculative && !speculation_useful_p (edge, false))
 		{
+		  if (edge->count.initialized_p ())
+		    spec_rem += edge->count;
 		  edge->resolve_speculation ();
-		  spec_rem += edge->count;
 		  update = true;
 		  remove_functions = true;
 		}

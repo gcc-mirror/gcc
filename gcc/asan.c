@@ -1801,6 +1801,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
     ? profile_probability::very_unlikely ()
     : profile_probability::very_likely ();
   e->probability = fallthrough_probability.invert ();
+  then_bb->count = e->count ();
   if (create_then_fallthru_edge)
     make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 

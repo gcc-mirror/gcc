@@ -226,7 +226,8 @@ select_best_block (basic_block early_bb,
   /* If BEST_BB is at the same nesting level, then require it to have
      significantly lower execution frequency to avoid gratutious movement.  */
   if (bb_loop_depth (best_bb) == bb_loop_depth (early_bb)
-      && best_bb->frequency < (early_bb->frequency * threshold / 100.0))
+      && best_bb->count.to_frequency (cfun)
+	 < (early_bb->count.to_frequency (cfun) * threshold / 100.0))
     return best_bb;
 
   /* No better block found, so return EARLY_BB, which happens to be the

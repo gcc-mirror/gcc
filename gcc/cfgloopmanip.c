@@ -536,7 +536,6 @@ scale_loop_profile (struct loop *loop, profile_probability p,
       if (e)
 	{
 	  edge other_e;
-	  int freq_delta;
 	  profile_count count_delta;
 
           FOR_EACH_EDGE (other_e, ei, e->src->succs)
@@ -545,23 +544,18 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 	      break;
 
 	  /* Probability of exit must be 1/iterations.  */
-	  freq_delta = EDGE_FREQUENCY (e);
 	  count_delta = e->count ();
 	  e->probability = profile_probability::always ()
 				.apply_scale (1, iteration_bound);
 	  other_e->probability = e->probability.invert ();
-	  freq_delta -= EDGE_FREQUENCY (e);
 	  count_delta -= e->count ();
 
-	  /* If latch exists, change its frequency and count, since we changed
+	  /* If latch exists, change its count, since we changed
 	     probability of exit.  Theoretically we should update everything from
 	     source of exit edge to latch, but for vectorizer this is enough.  */
 	  if (loop->latch
 	      && loop->latch != e->src)
 	    {
-	      loop->latch->frequency += freq_delta;
-	      if (loop->latch->frequency < 0)
-		loop->latch->frequency = 0;
 	      loop->latch->count += count_delta;
 	    }
 	}
@@ -571,7 +565,6 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 	 we look at the actual profile, if it is available.  */
       p = p.apply_scale (iteration_bound, iterations);
 
-      bool determined = false;
       if (loop->header->count.initialized_p ())
 	{
 	  profile_count count_in = profile_count::zero ();
@@ -584,20 +577,7 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 	    {
 	      p = count_in.probability_in (loop->header->count.apply_scale
 						 (iteration_bound, 1));
-	      determined = true;
 	    }
-	}
-      if (!determined && loop->header->frequency)
-	{
-	  int freq_in = 0;
-
-	  FOR_EACH_EDGE (e, ei, loop->header->preds)
-	    if (e->src != loop->latch)
-	      freq_in += EDGE_FREQUENCY (e);
-
-	  if (freq_in != 0)
-	    p = profile_probability::probability_in_gcov_type
-			 (freq_in * iteration_bound, loop->header->frequency);
 	}
       if (!(p > profile_probability::never ()))
 	p = profile_probability::very_unlikely ();
@@ -800,7 +780,7 @@ create_empty_loop_on_edge (edge entry_edge,
   loop->latch = loop_latch;
   add_loop (loop, outer);
 
-  /* TODO: Fix frequencies and counts.  */
+  /* TODO: Fix counts.  */
   scale_loop_frequencies (loop, profile_probability::even ());
 
   /* Update dominators.  */
@@ -866,13 +846,11 @@ loopify (edge latch_edge, edge header_edge,
   basic_block pred_bb = header_edge->src;
   struct loop *loop = alloc_loop ();
   struct loop *outer = loop_outer (succ_bb->loop_father);
-  int freq;
   profile_count cnt;
 
   loop->header = header_edge->dest;
   loop->latch = latch_edge->src;
 
-  freq = EDGE_FREQUENCY (header_edge);
   cnt = header_edge->count ();
 
   /* Redirect edges.  */
@@ -901,10 +879,9 @@ loopify (edge latch_edge, edge header_edge,
     remove_bb_from_loops (switch_bb);
   add_bb_to_loop (switch_bb, outer);
 
-  /* Fix frequencies.  */
+  /* Fix counts.  */
   if (redirect_all_edges)
     {
-      switch_bb->frequency = freq;
       switch_bb->count = cnt;
     }
   scale_loop_frequencies (loop, false_scale);
@@ -1167,7 +1144,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
     {
       /* Calculate coefficients by that we have to scale frequencies
 	 of duplicated loop bodies.  */
-      freq_in = header->frequency;
+      freq_in = header->count.to_frequency (cfun);
       freq_le = EDGE_FREQUENCY (latch_edge);
       if (freq_in == 0)
 	freq_in = 1;

@@ -676,9 +676,9 @@ inline_transform (struct cgraph_node *node)
     {
       profile_count num = node->count;
       profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-      bool scale = num.initialized_p ()
-		   && (den > 0 || num == profile_count::zero ())
-		   && !(num == den);
+      bool scale = num.initialized_p () && den.ipa_p ()
+		   && (den.nonzero_p () || num == profile_count::zero ())
+		   && !(num == den.ipa ());
       if (scale)
 	{
 	  if (dump_file)

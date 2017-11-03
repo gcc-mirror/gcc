@@ -3221,7 +3221,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
   vec<tree> vargs = vNULL;
   size_t i, nargs;
   tree lhs, rtype, ratype;
-  vec<constructor_elt, va_gc> *ret_ctor_elts;
+  vec<constructor_elt, va_gc> *ret_ctor_elts = NULL;
 
   /* Is STMT a vectorizable call?   */
   if (!is_gimple_call (stmt))

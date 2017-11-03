@@ -82,21 +82,17 @@ debug_gimple_stmt (gimple *gs)
    by xstrdup_for_dump.  */
 
 static const char *
-dump_profile (int frequency, profile_count &count)
+dump_profile (profile_count &count)
 {
-  float minimum = 0.01f;
-
-  gcc_assert (0 <= frequency && frequency <= REG_BR_PROB_BASE);
-  float fvalue = frequency * 100.0f / REG_BR_PROB_BASE;
-  if (fvalue < minimum && frequency > 0)
-    return "[0.01%]";
-
   char *buf;
-  if (count.initialized_p ())
-    buf = xasprintf ("[%.2f%%] [count: %" PRId64 "]", fvalue,
+  if (!count.initialized_p ())
+    return NULL;
+  if (count.ipa_p ())
+    buf = xasprintf ("[count: %" PRId64 "]",
 		     count.to_gcov_type ());
-  else
-    buf = xasprintf ("[%.2f%%] [count: INV]", fvalue);
+  else if (count.initialized_p ())
+    buf = xasprintf ("[local count: %" PRId64 "]",
+		     count.to_gcov_type ());
 
   const char *ret = xstrdup_for_dump (buf);
   free (buf);
@@ -2695,8 +2691,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	fprintf (outf, "%*sbb_%d:\n", indent, "", bb->index);
       else
 	fprintf (outf, "%*s<bb %d> %s:\n",
-		 indent, "", bb->index, dump_profile (bb->frequency,
-						      bb->count));
+		 indent, "", bb->index, dump_profile (bb->count));
     }
 }
 

@@ -71,6 +71,9 @@ struct GTY(()) control_flow_graph {
   /* Maximal number of entities in the single jumptable.  Used to estimate
      final flowgraph size.  */
   int max_jumptable_ents;
+
+  /* Maximal count of BB in function.  */
+  profile_count count_max;
 };
 
 
@@ -103,7 +106,7 @@ extern void debug_bb (basic_block);
 extern basic_block debug_bb_n (int);
 extern void dump_bb_info (FILE *, basic_block, int, dump_flags_t, bool, bool);
 extern void brief_dump_cfg (FILE *, dump_flags_t);
-extern void update_bb_profile_for_threading (basic_block, int, profile_count, edge);
+extern void update_bb_profile_for_threading (basic_block, profile_count, edge);
 extern void scale_bbs_frequencies_int (basic_block *, int, int, int);
 extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
 					     gcov_type);

@@ -1530,8 +1530,6 @@ static void
 replace_block_by (basic_block bb1, basic_block bb2)
 {
   edge pred_edge;
-  edge e1, e2;
-  edge_iterator ei;
   unsigned int i;
   gphi *bb2_phi;
 
@@ -1560,9 +1558,13 @@ replace_block_by (basic_block bb1, basic_block bb2)
 
   bb2->count += bb1->count;
 
+  /* FIXME: Fix merging of probabilities.  They need to be redistributed
+     according to the relative counts of merged BBs.  */
+#if 0
   /* Merge the outgoing edge counts from bb1 onto bb2.  */
   profile_count out_sum = profile_count::zero ();
   int out_freq_sum = 0;
+  edge e1, e2;
 
   /* Recompute the edge probabilities from the new merged edge count.
      Use the sum of the new merged edge counts computed above instead
@@ -1580,7 +1582,6 @@ replace_block_by (basic_block bb1, basic_block bb2)
 	out_sum += e1->count ();
       out_freq_sum += EDGE_FREQUENCY (e1);
     }
-
   FOR_EACH_EDGE (e1, ei, bb1->succs)
     {
       e2 = find_edge (bb2, e1->dest);
@@ -1589,9 +1590,9 @@ replace_block_by (basic_block bb1, basic_block bb2)
 	{
 	  e2->probability = e2->count ().probability_in (bb2->count);
 	}
-      else if (bb1->frequency && bb2->frequency)
+      else if (bb1->count.to_frequency (cfun) && bb2->count.to_frequency (cfun))
 	e2->probability = e1->probability;
-      else if (bb2->frequency && !bb1->frequency)
+      else if (bb2->count.to_frequency (cfun) && !bb1->count.to_frequency (cfun))
 	;
       else if (out_freq_sum)
 	e2->probability = profile_probability::from_reg_br_prob_base
@@ -1600,9 +1601,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
 				     out_freq_sum));
       out_sum += e2->count ();
     }
-  bb2->frequency += bb1->frequency;
-  if (bb2->frequency > BB_FREQ_MAX)
-    bb2->frequency = BB_FREQ_MAX;
+#endif
 
   /* Move over any user labels from bb1 after the bb2 labels.  */
   gimple_stmt_iterator gsi1 = gsi_start_bb (bb1);
