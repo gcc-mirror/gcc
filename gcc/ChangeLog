@@ -70,6 +70,7 @@
 
 2017-11-03  Jeff Law  <law@redhat.com>
 
+	PR target/82823
 	* config/i386/i386.c (ix86_expand_prologue): Tighten assert
 	for int_registers_saved.
 
