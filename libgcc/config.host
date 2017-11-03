@@ -390,6 +390,7 @@ arc*-*-linux*)
 	tmake_file="${tmake_file} t-slibgcc-libgcc t-slibgcc-nolc-override arc/t-arc-uClibc arc/t-arc"
 	extra_parts="$extra_parts crti.o crtn.o"
 	extra_parts="$extra_parts crttls.o"
+	md_unwind_header=arc/linux-unwind.h
 	;;
 arm-wrs-vxworks|arm-wrs-vxworks7)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"

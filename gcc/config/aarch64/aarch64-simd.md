@@ -5369,6 +5369,9 @@
 [(set_attr "type" "multiple")]
 )
 
+;; This instruction's pattern is generated directly by
+;; aarch64_expand_vec_perm_const, so any changes to the pattern would
+;; need corresponding changes there.
 (define_insn "aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(unspec:VALL_F16 [(match_operand:VALL_F16 1 "register_operand" "w")
@@ -5379,7 +5382,10 @@
   [(set_attr "type" "neon_permute<q>")]
 )
 
-;; Note immediate (third) operand is lane index not byte index.
+;; This instruction's pattern is generated directly by
+;; aarch64_expand_vec_perm_const, so any changes to the pattern would
+;; need corresponding changes there.  Note that the immediate (third)
+;; operand is a lane index not a byte index.
 (define_insn "aarch64_ext<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
         (unspec:VALL_F16 [(match_operand:VALL_F16 1 "register_operand" "w")
@@ -5395,6 +5401,9 @@
   [(set_attr "type" "neon_ext<q>")]
 )
 
+;; This instruction's pattern is generated directly by
+;; aarch64_expand_vec_perm_const, so any changes to the pattern would
+;; need corresponding changes there.
 (define_insn "aarch64_rev<REVERSE:rev_op><mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(unspec:VALL_F16 [(match_operand:VALL_F16 1 "register_operand" "w")]

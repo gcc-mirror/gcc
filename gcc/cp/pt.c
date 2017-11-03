@@ -3435,7 +3435,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
 	  call = copy_node (call);
 	  CALL_EXPR_ARG (call, 0) = hi;
 	}
-      tree ex = make_pack_expansion (call);
+      tree ex = make_pack_expansion (call, complain);
       tree vec = make_tree_vec (1);
       TREE_VEC_ELT (vec, 0) = ex;
       return vec;
@@ -3724,7 +3724,7 @@ uses_parameter_packs (tree t)
    EXPR_PACK_EXPANSION, TYPE_PACK_EXPANSION, or TREE_LIST,
    respectively.  */
 tree 
-make_pack_expansion (tree arg)
+make_pack_expansion (tree arg, tsubst_flags_t complain)
 {
   tree result;
   tree parameter_packs = NULL_TREE;
@@ -3770,7 +3770,9 @@ make_pack_expansion (tree arg)
 
       if (parameter_packs == NULL_TREE)
         {
-          error ("base initializer expansion %qT contains no parameter packs", arg);
+	  if (complain & tf_error)
+	    error ("base initializer expansion %qT contains no parameter packs",
+		   arg);
           delete ppd.visited;
           return error_mark_node;
         }
@@ -3834,10 +3836,13 @@ make_pack_expansion (tree arg)
   /* Make sure we found some parameter packs.  */
   if (parameter_packs == NULL_TREE)
     {
-      if (TYPE_P (arg))
-        error ("expansion pattern %qT contains no argument packs", arg);
-      else
-        error ("expansion pattern %qE contains no argument packs", arg);
+      if (complain & tf_error)
+	{
+	  if (TYPE_P (arg))
+	    error ("expansion pattern %qT contains no argument packs", arg);
+	  else
+	    error ("expansion pattern %qE contains no argument packs", arg);
+	}
       return error_mark_node;
     }
   PACK_EXPANSION_PARAMETER_PACKS (result) = parameter_packs;
@@ -7696,7 +7701,7 @@ convert_template_argument (tree parm,
                       if (DECL_TEMPLATE_TEMPLATE_PARM_P (val))
                         val = TREE_TYPE (val);
 		      if (TREE_CODE (orig_arg) == TYPE_PACK_EXPANSION)
-			val = make_pack_expansion (val);
+			val = make_pack_expansion (val, complain);
                     }
 		}
 	      else
@@ -8190,7 +8195,7 @@ coerce_template_parms (tree parms,
 	      else if (TYPE_P (conv) && !TYPE_P (pattern))
 		/* Recover from missing typename.  */
 		TREE_VEC_ELT (inner_args, arg_idx)
-		  = make_pack_expansion (conv);
+		  = make_pack_expansion (conv, complain);
 
               /* We don't know how many args we have yet, just
                  use the unconverted ones for now.  */
@@ -11163,7 +11168,7 @@ gen_elem_of_pack_expansion_instantiation (tree pattern,
       the Ith element resulting from the substituting is going to
       be a pack expansion as well.  */
   if (ith_elem_is_expansion)
-    t = make_pack_expansion (t);
+    t = make_pack_expansion (t, complain);
 
   return t;
 }
@@ -11575,7 +11580,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       /* We got some full packs, but we can't substitute them in until we
 	 have values for all the packs.  So remember these until then.  */
 
-      t = make_pack_expansion (pattern);
+      t = make_pack_expansion (pattern, complain);
       PACK_EXPANSION_EXTRA_ARGS (t) = args;
       return t;
     }
@@ -11590,7 +11595,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 			 /*integral_constant_expression_p=*/false);
       else
 	t = tsubst (pattern, args, complain, in_decl);
-      t = make_pack_expansion (t);
+      t = make_pack_expansion (t, complain);
       return t;
     }
 
@@ -21325,7 +21330,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  if (REFERENCE_REF_P (arg))
 	    arg = TREE_OPERAND (arg, 0);
 	  if (pexp)
-	    arg = make_pack_expansion (arg);
+	    arg = make_pack_expansion (arg, complain);
 	  return unify (tparms, targs, TREE_OPERAND (parm, 0), arg,
 			strict, explain_p);
 	}

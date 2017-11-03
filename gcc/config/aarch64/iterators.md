@@ -322,16 +322,21 @@
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_TBX		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
+
+    ;; The following permute unspecs are generated directly by
+    ;; aarch64_expand_vec_perm_const, so any changes to the underlying
+    ;; instructions would need a corresponding change there.
     UNSPEC_ZIP1		; Used in vector permute patterns.
     UNSPEC_ZIP2		; Used in vector permute patterns.
     UNSPEC_UZP1		; Used in vector permute patterns.
     UNSPEC_UZP2		; Used in vector permute patterns.
     UNSPEC_TRN1		; Used in vector permute patterns.
     UNSPEC_TRN2		; Used in vector permute patterns.
-    UNSPEC_EXT		; Used in aarch64-simd.md.
+    UNSPEC_EXT		; Used in vector permute patterns.
     UNSPEC_REV64	; Used in vector reverse patterns (permute).
     UNSPEC_REV32	; Used in vector reverse patterns (permute).
     UNSPEC_REV16	; Used in vector reverse patterns (permute).
+
     UNSPEC_AESE		; Used in aarch64-simd.md.
     UNSPEC_AESD         ; Used in aarch64-simd.md.
     UNSPEC_AESMC        ; Used in aarch64-simd.md.

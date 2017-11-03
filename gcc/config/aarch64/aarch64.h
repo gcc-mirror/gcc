@@ -111,6 +111,9 @@
 
 #define STRUCTURE_SIZE_BOUNDARY		8
 
+/* Heap alignment (same as BIGGEST_ALIGNMENT and STACK_BOUNDARY).  */
+#define MALLOC_ABI_ALIGNMENT  128
+
 /* Defined by the ABI */
 #define WCHAR_TYPE "unsigned int"
 #define WCHAR_TYPE_SIZE			32

@@ -8086,6 +8086,13 @@ extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
     vrp_visit_switch_stmt (as_a <gswitch *> (stmt), taken_edge_p);
 }
 
+class vrp_prop : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
+
 /* Evaluate statement STMT.  If the statement produces a useful range,
    return SSA_PROP_INTERESTING and record the SSA name with the
    interesting range into *OUTPUT_P.
@@ -8095,8 +8102,8 @@ extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
 
    If STMT produces a varying value, return SSA_PROP_VARYING.  */
 
-static enum ssa_prop_result
-vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
+enum ssa_prop_result
+vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   value_range vr = VR_INITIALIZER;
   tree lhs = gimple_get_lhs (stmt);
@@ -9187,8 +9194,8 @@ update_range:
    edges.  If a valid value range can be derived from all the incoming
    value ranges, set a new range for the LHS of PHI.  */
 
-static enum ssa_prop_result
-vrp_visit_phi_node (gphi *phi)
+enum ssa_prop_result
+vrp_prop::visit_phi (gphi *phi)
 {
   tree lhs = PHI_RESULT (phi);
   value_range vr_result = VR_INITIALIZER;
@@ -10523,15 +10530,34 @@ fold_predicate_in (gimple_stmt_iterator *si)
   return false;
 }
 
+class vrp_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+};
+
 /* Callback for substitute_and_fold folding the stmt at *SI.  */
 
-static bool
-vrp_fold_stmt (gimple_stmt_iterator *si)
+bool
+vrp_folder::fold_stmt (gimple_stmt_iterator *si)
 {
   if (fold_predicate_in (si))
     return true;
 
   return simplify_stmt_using_ranges (si);
+}
+
+/* If OP has a value range with a single constant value return that,
+   otherwise return NULL_TREE.  This returns OP itself if OP is a
+   constant.
+
+   Implemented as a pure wrapper right now, but this will change.  */
+
+tree
+vrp_folder::get_value (tree op)
+{
+  return op_with_constant_singleton_value_range (op);
 }
 
 /* Return the LHS of any ASSERT_EXPR where OP appears as the first
@@ -10875,7 +10901,8 @@ vrp_finalize (bool warn_array_bounds_p)
 			  wi::to_wide (vr_value[i]->max));
       }
 
-  substitute_and_fold (op_with_constant_singleton_value_range, vrp_fold_stmt);
+  class vrp_folder vrp_folder;
+  vrp_folder.substitute_and_fold ();
 
   if (warn_array_bounds && warn_array_bounds_p)
     check_all_array_refs ();
@@ -11212,8 +11239,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
 
       /* Try folding stmts with the VR discovered.  */
-      bool did_replace
-	= replace_uses_in (stmt, op_with_constant_singleton_value_range);
+      class vrp_folder vrp_folder;
+      bool did_replace = vrp_folder.replace_uses_in (stmt);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
 	{
@@ -11463,7 +11490,8 @@ execute_vrp (bool warn_array_bounds_p)
 
   vrp_initialize_lattice ();
   vrp_initialize ();
-  ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
+  class vrp_prop vrp_prop;
+  vrp_prop.ssa_propagate ();
   vrp_finalize (warn_array_bounds_p);
 
   /* We must identify jump threading opportunities before we release

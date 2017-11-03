@@ -120,7 +120,7 @@ class sprintf_dom_walker : public dom_walker
   sprintf_dom_walker () : dom_walker (CDI_DOMINATORS) {}
   ~sprintf_dom_walker () {}
 
-  virtual edge before_dom_children (basic_block) FINAL OVERRIDE;
+  edge before_dom_children (basic_block) FINAL OVERRIDE;
   bool handle_gimple_call (gimple_stmt_iterator *);
 
   struct call_info;

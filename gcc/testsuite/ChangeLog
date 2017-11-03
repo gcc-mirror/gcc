@@ -1,3 +1,64 @@
+2017-11-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/pr82809.c: New test.
+
+2017-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81957
+	* g++.dg/cpp0x/variadic-crash5.C: New.
+
+2017-11-02  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/79868
+	* gcc.target/aarch64/spellcheck_1.c: Update dg-error string to match
+	new format.
+	* gcc.target/aarch64/spellcheck_2.c: Ditto.
+	* gcc.target/aarch64/spellcheck_3.c: Ditto.
+	* gcc.target/aarch64/target_attr_11.c: Ditto.
+	* gcc.target/aarch64/target_attr_12.c: Ditto.
+	* gcc.target/aarch64/target_attr_17.c: Ditto.
+
+2017-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82710
+	* g++.dg/warn/pr82710.C: New.
+
+	* g++.dg/lang-dump.C: New.
+
+2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82795
+	* gcc.target/i386/pr82795.c: New testcase.
+
+2017-11-02  Claudiu Zissulescu <claziss@synopsys.com>
+
+	* gcc.target/arc/loop-1.c: Add test.
+
+2017-11-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/82415
+	* gcc.target/i386/naked-1.c: Make scan patterns more precise.
+	* gcc.target/i386/naked-2.c: Same.
+
+2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82765
+	* gcc.dg/pr82765.c: New testcase.
+
+2017-11-02  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/implied_do_io_1.f90: Fix scan-tree-dump-times pattern.
+
+2017-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82778
+	* g++.dg/opt/pr82778.C: New test.
+
+2017-11-01  Michael Collison  <michael.collison@arm.com>
+
+	PR rtl-optimization/82597
+	* gcc.dg/pr82597.c: New test.
+
 2017-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/alpha/sqrt.c: New test.
@@ -60,6 +121,10 @@
 	* g++.dg/other/i386-2.C: Ditto.
 	* g++.dg/other/i386-3.C: Ditto.
 
+2017-11-01  Michael Collison  <michael.collison@arm.com>
+
+	PR rtl-optimization/82597
+	* gcc.dg/pr82597.c: New test.
 
 2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -12789,6 +12854,11 @@
 
 	PR lto/79587
 	* gcc.dg/tree-prof/pr79587.c: New test.
+
+2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/68644
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Skip for powerpc*-*-*.
 
 2017-02-21  Marek Polacek  <polacek@redhat.com>
 

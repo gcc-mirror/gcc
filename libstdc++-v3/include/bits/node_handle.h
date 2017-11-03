@@ -282,54 +282,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Iterator		position = _Iterator();
       bool		inserted = false;
       _NodeHandle	node;
-
-      template<size_t _Idx>
-	decltype(auto) get() &
-	{
-	  static_assert(_Idx < 3);
-	  if constexpr (_Idx == 0)
-	    return inserted;
-	  else if constexpr (_Idx == 1)
-	    return position;
-	  else if constexpr (_Idx == 2)
-	    return node;
-	}
-
-      template<size_t _Idx>
-	decltype(auto) get() const &
-	{
-	  static_assert(_Idx < 3);
-	  if constexpr (_Idx == 0)
-	    return inserted;
-	  else if constexpr (_Idx == 1)
-	    return position;
-	  else if constexpr (_Idx == 2)
-	    return node;
-	}
-
-      template<size_t _Idx>
-	decltype(auto) get() &&
-	{
-	  static_assert(_Idx < 3);
-	  if constexpr (_Idx == 0)
-	    return std::move(inserted);
-	  else if constexpr (_Idx == 1)
-	    return std::move(position);
-	  else if constexpr (_Idx == 2)
-	    return std::move(node);
-	}
-
-      template<size_t _Idx>
-	decltype(auto) get() const &&
-	{
-	  static_assert(_Idx < 3);
-	  if constexpr (_Idx == 0)
-	    return std::move(inserted);
-	  else if constexpr (_Idx == 1)
-	    return std::move(position);
-	  else if constexpr (_Idx == 2)
-	    return std::move(node);
-	}
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -68,6 +68,13 @@ struct prop_value_t {
     tree value;
 };
 
+class copy_prop : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
+
 static prop_value_t *copy_of;
 static unsigned n_copy_of;
 
@@ -263,8 +270,8 @@ copy_prop_visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
    If the new value produced by STMT is varying, return
    SSA_PROP_VARYING.  */
 
-static enum ssa_prop_result
-copy_prop_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
+enum ssa_prop_result
+copy_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
 {
   enum ssa_prop_result retval;
 
@@ -317,8 +324,8 @@ copy_prop_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *result_p)
 /* Visit PHI node PHI.  If all the arguments produce the same value,
    set it to be the value of the LHS of PHI.  */
 
-static enum ssa_prop_result
-copy_prop_visit_phi_node (gphi *phi)
+enum ssa_prop_result
+copy_prop::visit_phi (gphi *phi)
 {
   enum ssa_prop_result retval;
   unsigned i;
@@ -482,10 +489,16 @@ init_copy_prop (void)
     }
 }
 
+class copy_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+};
+
 /* Callback for substitute_and_fold to get at the final copy-of values.  */
 
-static tree
-get_value (tree name)
+tree
+copy_folder::get_value (tree name)
 {
   tree val;
   if (SSA_NAME_VERSION (name) >= n_copy_of)
@@ -550,7 +563,8 @@ fini_copy_prop (void)
 	}
     }
 
-  bool changed = substitute_and_fold (get_value, NULL);
+  class copy_folder copy_folder;
+  bool changed = copy_folder.substitute_and_fold ();
   if (changed)
     {
       free_numbers_of_iterations_estimates (cfun);
@@ -601,7 +615,8 @@ static unsigned int
 execute_copy_prop (void)
 {
   init_copy_prop ();
-  ssa_propagate (copy_prop_visit_stmt, copy_prop_visit_phi_node);
+  class copy_prop copy_prop;
+  copy_prop.ssa_propagate ();
   if (fini_copy_prop ())
     return TODO_cleanup_cfg;
   return 0;

@@ -97,6 +97,9 @@ struct comparison
   /* The insn prior to the comparison insn that clobbers the flags.  */
   rtx_insn *prev_clobber;
 
+  /* The insn prior to the comparison insn that sets in_a REG.  */
+  rtx_insn *in_a_setter;
+
   /* The two values being compared.  These will be either REGs or
      constants.  */
   rtx in_a, in_b;
@@ -309,26 +312,22 @@ can_eliminate_compare (rtx compare, rtx eh_note, struct comparison *cmp)
 edge
 find_comparison_dom_walker::before_dom_children (basic_block bb)
 {
-  struct comparison *last_cmp;
-  rtx_insn *insn, *next, *last_clobber;
-  bool last_cmp_valid;
+  rtx_insn *insn, *next;
   bool need_purge = false;
-  bitmap killed;
-
-  killed = BITMAP_ALLOC (NULL);
+  rtx_insn *last_setter[FIRST_PSEUDO_REGISTER];
 
   /* The last comparison that was made.  Will be reset to NULL
      once the flags are clobbered.  */
-  last_cmp = NULL;
+  struct comparison *last_cmp = NULL;
 
   /* True iff the last comparison has not been clobbered, nor
      have its inputs.  Used to eliminate duplicate compares.  */
-  last_cmp_valid = false;
+  bool last_cmp_valid = false;
 
   /* The last insn that clobbered the flags, if that insn is of
      a form that may be valid for eliminating a following compare.
      To be reset to NULL once the flags are set otherwise.  */
-  last_clobber = NULL;
+  rtx_insn *last_clobber = NULL;
 
   /* Propagate the last live comparison throughout the extended basic block. */
   if (single_pred_p (bb))
@@ -338,6 +337,7 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	last_cmp_valid = last_cmp->inputs_valid;
     }
 
+  memset (last_setter, 0, sizeof (last_setter));
   for (insn = BB_HEAD (bb); insn; insn = next)
     {
       rtx src;
@@ -345,10 +345,6 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
       next = (insn == BB_END (bb) ? NULL : NEXT_INSN (insn));
       if (!NONDEBUG_INSN_P (insn))
 	continue;
-
-      /* Compute the set of registers modified by this instruction.  */
-      bitmap_clear (killed);
-      df_simulate_find_defs (insn, killed);
 
       src = conforming_compare (insn);
       if (src)
@@ -373,6 +369,13 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	  last_cmp->in_b = XEXP (src, 1);
 	  last_cmp->eh_note = eh_note;
 	  last_cmp->orig_mode = GET_MODE (src);
+	  if (last_cmp->in_b == const0_rtx
+	      && last_setter[REGNO (last_cmp->in_a)])
+	    {
+	      rtx set = single_set (last_setter[REGNO (last_cmp->in_a)]);
+	      if (set && rtx_equal_p (SET_DEST (set), last_cmp->in_a))
+		last_cmp->in_a_setter = last_setter[REGNO (last_cmp->in_a)];
+	    }
 	  all_compares.safe_push (last_cmp);
 
 	  /* It's unusual, but be prepared for comparison patterns that
@@ -388,27 +391,35 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	    find_flags_uses_in_insn (last_cmp, insn);
 
 	  /* Notice if this instruction kills the flags register.  */
-	  if (bitmap_bit_p (killed, targetm.flags_regnum))
-	    {
-	      /* See if this insn could be the "clobber" that eliminates
-		 a future comparison.   */
-	      last_clobber = (arithmetic_flags_clobber_p (insn) ? insn : NULL);
+	  df_ref def;
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (DF_REF_REGNO (def) == targetm.flags_regnum)
+	      {
+		/* See if this insn could be the "clobber" that eliminates
+		   a future comparison.   */
+		last_clobber = (arithmetic_flags_clobber_p (insn)
+				? insn : NULL);
 
-	      /* In either case, the previous compare is no longer valid.  */
-	      last_cmp = NULL;
-	      last_cmp_valid = false;
-	    }
+		/* In either case, the previous compare is no longer valid.  */
+		last_cmp = NULL;
+		last_cmp_valid = false;
+		break;
+	      }
 	}
 
-      /* Notice if any of the inputs to the comparison have changed.  */
-      if (last_cmp_valid
-	  && (bitmap_bit_p (killed, REGNO (last_cmp->in_a))
-	      || (REG_P (last_cmp->in_b)
-		  && bitmap_bit_p (killed, REGNO (last_cmp->in_b)))))
-	last_cmp_valid = false;
+      /* Notice if any of the inputs to the comparison have changed
+	 and remember last insn that sets each register.  */
+      df_ref def;
+      FOR_EACH_INSN_DEF (def, insn)
+	{
+	  if (last_cmp_valid
+	      && (DF_REF_REGNO (def) == REGNO (last_cmp->in_a)
+		  || (REG_P (last_cmp->in_b)
+		      && DF_REF_REGNO (def) == REGNO (last_cmp->in_b))))
+	    last_cmp_valid = false;
+	  last_setter[DF_REF_REGNO (def)] = insn;
+	}
     }
-
-  BITMAP_FREE (killed);
 
   /* Remember the live comparison for subsequent members of
      the extended basic block.  */
@@ -625,13 +636,19 @@ can_merge_compare_into_arith (rtx_insn *cmp_insn, rtx_insn *arith_insn)
 static rtx
 try_validate_parallel (rtx set_a, rtx set_b)
 {
-  rtx par
-    = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set_a, set_b));
+  rtx par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set_a, set_b));
+  rtx_insn *insn = make_insn_raw (par);
 
-  rtx_insn *insn;
-  insn = gen_rtx_INSN (VOIDmode, 0, 0, 0, par, 0, -1, 0);
+  if (insn_invalid_p (insn, false))
+    {
+      crtl->emit.x_cur_insn_uid--;
+      return NULL_RTX;
+    }
 
-  return recog_memoized (insn) > 0 ? par : NULL_RTX;
+  SET_PREV_INSN (insn) = NULL_RTX;
+  SET_NEXT_INSN (insn) = NULL_RTX;
+  INSN_LOCATION (insn) = 0;
+  return insn;
 }
 
 /* For a comparison instruction described by CMP check if it compares a
@@ -643,7 +660,7 @@ try_validate_parallel (rtx set_a, rtx set_b)
    <instructions that don't read the condition register>
    I2: CC := CMP R1 0
    I2 can be merged with I1 into:
-   I1: { R1 := R2 + R3 ; CC := CMP (R2 + R3) 0 }
+   I1: { CC := CMP (R2 + R3) 0 ; R1 := R2 + R3 }
    This catches cases where R1 is used between I1 and I2 and therefore
    combine and other RTL optimisations will not try to propagate it into
    I2.  Return true if we succeeded in merging CMP.  */
@@ -653,7 +670,7 @@ try_merge_compare (struct comparison *cmp)
 {
   rtx_insn *cmp_insn = cmp->insn;
 
-  if (!REG_P (cmp->in_a) || cmp->in_b != const0_rtx)
+  if (cmp->in_b != const0_rtx || cmp->in_a_setter == NULL)
     return false;
   rtx in_a = cmp->in_a;
   df_ref use;
@@ -664,24 +681,8 @@ try_merge_compare (struct comparison *cmp)
   if (!use)
     return false;
 
-  /* Validate the data flow information before attempting to
-     find the instruction that defines in_a.  */
-
-  struct df_link *ref_chain;
-  ref_chain = DF_REF_CHAIN (use);
-  if (!ref_chain || !ref_chain->ref
-      || !DF_REF_INSN_INFO (ref_chain->ref) || ref_chain->next != NULL)
-    return false;
-
-  rtx_insn *def_insn = DF_REF_INSN (ref_chain->ref);
-  /* We found the insn that defines in_a.  Only consider the cases where
-     it is in the same block as the comparison.  */
-  if (BLOCK_FOR_INSN (cmp_insn) != BLOCK_FOR_INSN (def_insn))
-    return false;
-
+  rtx_insn *def_insn = cmp->in_a_setter;
   rtx set = single_set (def_insn);
-  if (!set)
-    return false;
 
   if (!can_merge_compare_into_arith (cmp_insn, def_insn))
     return false;
@@ -855,7 +856,6 @@ try_eliminate_compare (struct comparison *cmp)
 static unsigned int
 execute_compare_elim_after_reload (void)
 {
-  df_chain_add_problem (DF_UD_CHAIN + DF_DU_CHAIN);
   df_analyze ();
 
   gcc_checking_assert (!all_compares.exists ());

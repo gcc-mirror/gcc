@@ -457,7 +457,7 @@ bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
 
 void aarch64_init_builtins (void);
 
-bool aarch64_process_target_attr (tree, const char*);
+bool aarch64_process_target_attr (tree);
 void aarch64_override_options_internal (struct gcc_options *);
 
 rtx aarch64_expand_builtin (tree exp,

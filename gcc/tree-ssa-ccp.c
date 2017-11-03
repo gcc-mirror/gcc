@@ -171,6 +171,13 @@ struct ccp_prop_value_t {
     widest_int mask;
 };
 
+class ccp_propagate : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
+
 /* Array of propagated constant values.  After propagation,
    CONST_VAL[I].VALUE holds the constant value for SSA_NAME(I).  If
    the constant is held in an SSA name representing a memory store
@@ -181,7 +188,6 @@ static ccp_prop_value_t *const_val;
 static unsigned n_const_val;
 
 static void canonicalize_value (ccp_prop_value_t *);
-static bool ccp_fold_stmt (gimple_stmt_iterator *);
 static void ccp_lattice_meet (ccp_prop_value_t *, ccp_prop_value_t *);
 
 /* Dump constant propagation value VAL to file OUTF prefixed by PREFIX.  */
@@ -902,6 +908,24 @@ do_dbg_cnt (void)
 }
 
 
+/* We want to provide our own GET_VALUE and FOLD_STMT virtual methods.  */
+class ccp_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+};
+
+/* This method just wraps GET_CONSTANT_VALUE for now.  Over time
+   naked calls to GET_CONSTANT_VALUE should be eliminated in favor
+   of calling member functions.  */
+
+tree
+ccp_folder::get_value (tree op)
+{
+  return get_constant_value (op);
+}
+
 /* Do final substitution of propagated values, cleanup the flowgraph and
    free allocated storage.  If NONZERO_P, record nonzero bits.
 
@@ -960,7 +984,8 @@ ccp_finalize (bool nonzero_p)
     }
 
   /* Perform substitutions based on the known constant values.  */
-  something_changed = substitute_and_fold (get_constant_value, ccp_fold_stmt);
+  class ccp_folder ccp_folder;
+  something_changed = ccp_folder.substitute_and_fold ();
 
   free (const_val);
   const_val = NULL;
@@ -1064,8 +1089,8 @@ ccp_lattice_meet (ccp_prop_value_t *val1, ccp_prop_value_t *val2)
    PHI node is determined calling ccp_lattice_meet with all the arguments
    of the PHI node that are incoming via executable edges.  */
 
-static enum ssa_prop_result
-ccp_visit_phi_node (gphi *phi)
+enum ssa_prop_result
+ccp_propagate::visit_phi (gphi *phi)
 {
   unsigned i;
   ccp_prop_value_t new_val;
@@ -2169,8 +2194,8 @@ fold_builtin_alloca_with_align (gimple *stmt)
 /* Fold the stmt at *GSI with CCP specific information that propagating
    and regular folding does not catch.  */
 
-static bool
-ccp_fold_stmt (gimple_stmt_iterator *gsi)
+bool
+ccp_folder::fold_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
@@ -2378,8 +2403,8 @@ visit_cond_stmt (gimple *stmt, edge *taken_edge_p)
    value, set *TAKEN_EDGE_P accordingly.  If STMT produces a varying
    value, return SSA_PROP_VARYING.  */
 
-static enum ssa_prop_result
-ccp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
+enum ssa_prop_result
+ccp_propagate::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   tree def;
   ssa_op_iter iter;
@@ -2441,7 +2466,8 @@ do_ssa_ccp (bool nonzero_p)
   calculate_dominance_info (CDI_DOMINATORS);
 
   ccp_initialize ();
-  ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
+  class ccp_propagate ccp_propagate;
+  ccp_propagate.ssa_propagate ();
   if (ccp_finalize (nonzero_p || flag_ipa_bit_cp))
     {
       todo = (TODO_cleanup_cfg | TODO_update_ssa);

@@ -1208,7 +1208,7 @@ cp_build_qualified_type_real (tree type,
       tree t = PACK_EXPANSION_PATTERN (type);
 
       t = cp_build_qualified_type_real (t, type_quals, complain);
-      return make_pack_expansion (t);
+      return make_pack_expansion (t, complain);
     }
 
   /* A reference or method type shall not be cv-qualified.

@@ -2247,10 +2247,7 @@ predicate_mem_writes (loop_p loop)
 					 TREE_OPERAND (cond, 0),
 					 TREE_OPERAND (cond, 1));
 		  else
-		    {
-		      gcc_assert (TREE_CODE (cond) == SSA_NAME);
-		      mask = cond;
-		    }
+		    mask = cond;
 
 		  if (swap)
 		    {

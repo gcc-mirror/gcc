@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "edit-context.h"
 #include "selftest.h"
+#include "selftest-diagnostic.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -1627,6 +1628,45 @@ test_print_parseable_fixits_replace ()
 		pp_formatted_text (&pp));
 }
 
+/* Verify that
+     diagnostic_get_location_text (..., SHOW_COLUMN)
+   generates EXPECTED_LOC_TEXT, given FILENAME, LINE, COLUMN, with
+   colorization disabled.  */
+
+static void
+assert_location_text (const char *expected_loc_text,
+		      const char *filename, int line, int column,
+		      bool show_column)
+{
+  test_diagnostic_context dc;
+  dc.show_column = show_column;
+
+  expanded_location xloc;
+  xloc.file = filename;
+  xloc.line = line;
+  xloc.column = column;
+  xloc.data = NULL;
+  xloc.sysp = false;
+
+  char *actual_loc_text = diagnostic_get_location_text (&dc, xloc);
+  ASSERT_STREQ (expected_loc_text, actual_loc_text);
+  free (actual_loc_text);
+}
+
+/* Verify that diagnostic_get_location_text works as expected.  */
+
+static void
+test_diagnostic_get_location_text ()
+{
+  const char *old_progname = progname;
+  progname = "PROGNAME";
+  assert_location_text ("PROGNAME:", NULL, 0, 0, true);
+  assert_location_text ("<built-in>:", "<built-in>", 42, 10, true);
+  assert_location_text ("foo.c:42:10:", "foo.c", 42, 10, true);
+  assert_location_text ("foo.c:42:", "foo.c", 42, 10, false);
+  progname = old_progname;
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1637,6 +1677,7 @@ diagnostic_c_tests ()
   test_print_parseable_fixits_insert ();
   test_print_parseable_fixits_remove ();
   test_print_parseable_fixits_replace ();
+  test_diagnostic_get_location_text ();
 }
 
 } // namespace selftest

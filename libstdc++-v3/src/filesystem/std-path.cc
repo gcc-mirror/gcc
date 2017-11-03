@@ -388,10 +388,35 @@ path::lexically_normal() const
 #endif
       if (is_dotdot(p))
 	{
-	  if (ret.has_filename() && !is_dotdot(ret.filename()))
-	    ret.remove_filename();
-	  else if (ret.has_filename() || !ret.has_root_directory())
-	    ret /= p;
+	  if (ret.has_filename())
+	    {
+	      // remove a non-dot-dot filename immediately followed by /..
+	      if (!is_dotdot(ret.filename()))
+		ret.remove_filename();
+	      else
+		ret /= p;
+	    }
+	  else if (!ret.has_relative_path())
+	    {
+	      if (!ret.is_absolute())
+		ret /= p;
+	    }
+	  else
+	    {
+	      // Got a path with a relative path (i.e. at least one non-root
+	      // element) and no filename at the end (i.e. empty last element),
+	      // so must have a trailing slash. See what is before it.
+	      auto elem = std::prev(ret.end(), 2);
+	      if (elem->has_filename() && !is_dotdot(*elem))
+		{
+		  // Remove the filename before the trailing slash
+		  // (equiv. to ret = ret.parent_path().remove_filename())
+		  ret._M_pathname.erase(elem._M_cur->_M_pos);
+		  ret._M_cmpts.erase(elem._M_cur, ret._M_cmpts.end());
+		}
+	      else // ???
+		ret /= p;
+	    }
 	}
       else if (is_dot(p))
 	ret /= path();

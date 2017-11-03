@@ -1591,7 +1591,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
-	selftest.o
+	selftest.o selftest-diagnostic.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.

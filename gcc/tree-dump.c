@@ -337,7 +337,8 @@ dequeue_and_dump (dump_info_p di)
       /* All declarations have names.  */
       if (DECL_NAME (t))
 	dump_child ("name", DECL_NAME (t));
-      if (DECL_ASSEMBLER_NAME_SET_P (t)
+      if (HAS_DECL_ASSEMBLER_NAME_P (t)
+	  && DECL_ASSEMBLER_NAME_SET_P (t)
 	  && DECL_ASSEMBLER_NAME (t) != DECL_NAME (t))
 	dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
       if (DECL_ABSTRACT_ORIGIN (t))

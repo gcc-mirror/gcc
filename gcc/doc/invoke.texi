@@ -743,7 +743,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msmall-model  -mno-lsim}
 
 @emph{FT32 Options}
-@gccoptlist{-msim  -mlra  -mnodiv}
+@gccoptlist{-msim  -mlra  -mnodiv  -mft32b  -mcompress  -mnopm}
 
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
@@ -989,7 +989,7 @@ See RS/6000 and PowerPC Options.
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
 -mstrict-align -mno-strict-align @gol
--mcmodel=@var{code-model} @gol
+-mcmodel=medlow -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol}
 
 @emph{RL78 Options}
@@ -17768,6 +17768,18 @@ so by default the compiler uses standard reload.
 @opindex mnodiv
 Do not use div and mod instructions.
 
+@item -mft32b
+@opindex mft32b
+Enable use of the extended instructions of the FT32B processor.
+
+@item -mcompress
+@opindex mcompress
+Compress all code using the Ft32B code compression scheme.
+
+@item -mnopm
+@opindex  mnopm
+Do not generate code that reads program memory.
+
 @end table
 
 @node FRV Options
@@ -21765,9 +21777,18 @@ Use smaller but slower prologue and epilogue code.
 @opindex mstrict-align
 Do not generate unaligned memory accesses.
 
-@item -mcmodel=@var{code-model}
-@opindex mcmodel
-Specify the code model.
+@item -mcmodel=medlow
+@opindex mcmodel=medlow
+Generate code for the medium-low code model. The program and its statically
+defined symbols must lie within a single 2 GiB address range and must lie
+between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be
+statically or dynamically linked. This is the default code model.
+
+@item -mcmodel=medany
+@opindex mcmodel=medany
+Generate code for the medium-any code model. The program and its statically
+defined symbols must be within any single 2 GiB address range. Programs can be
+statically or dynamically linked.
 
 @end table
 

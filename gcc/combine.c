@@ -2478,12 +2478,6 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
       != REGMODE_NATURAL_SIZE (GET_MODE (x)))
     return false;
 
-  /* Don't change between modes with different underlying register sizes,
-     since this could lead to invalid subregs.  */
-  if (REGMODE_NATURAL_SIZE (mode)
-      != REGMODE_NATURAL_SIZE (GET_MODE (x)))
-    return false;
-
   regno = REGNO (x);
   /* Allow hard registers if the new mode is legal, and occupies no more
      registers than the old mode.  */
@@ -2777,6 +2771,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       else
 	fprintf (dump_file, "\nTrying %d -> %d:\n",
 		 INSN_UID (i2), INSN_UID (i3));
+
+      if (i0)
+	dump_insn_slim (dump_file, i0);
+      if (i1)
+	dump_insn_slim (dump_file, i1);
+      dump_insn_slim (dump_file, i2);
+      dump_insn_slim (dump_file, i3);
     }
 
   /* If multiple insns feed into one of I2 or I3, they can be in any
@@ -14360,6 +14361,17 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		  && CALL_P (from_insn)
 		  && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
 		place = from_insn;
+	      else if (i2 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
+		{
+		  /* If the new I2 sets the same register that is marked
+		     dead in the note, we do not in general know where to
+		     put the note.  One important case we _can_ handle is
+		     when the note comes from I3.  */
+		  if (from_insn == i3)
+		    place = i3;
+		  else
+		    break;
+		}
 	      else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 		place = i3;
 	      else if (i2 != 0 && next_nonnote_nondebug_insn (i2) == i3
@@ -14373,11 +14385,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		       || rtx_equal_p (XEXP (note, 0), elim_i0))
 		break;
 	      tem_insn = i3;
-	      /* If the new I2 sets the same register that is marked dead
-		 in the note, we do not know where to put the note.
-		 Give up.  */
-	      if (i2 != 0 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
-		break;
 	    }
 
 	  if (place == 0)

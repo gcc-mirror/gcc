@@ -1,3 +1,28 @@
+2017-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/node_handle.h (_Node_insert_return::get): Remove, as
+	per P0508R0.
+
+2017-11-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter.__init__): Strip
+	typename versioned namespace before the substitution.
+	(StdExpOptionalPrinter.__init__): Likewise.
+	(StdVariantPrinter.__init__): Likewise.
+	(Printer.add_version): Inject versioned namespace after std or
+	__gnu_cxx.
+	(build_libstdcxx_dictionary): Adapt add_version usages, always pass
+	namespace first and symbol second.
+
+2017-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82777
+	* src/filesystem/std-path.cc (path::lexically_normal): Remove dot-dot
+	elements correctly.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Add testcase.
+	* testsuite/util/testsuite_fs.h (compare_paths): Improve exception
+	text.
+
 2017-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am (stamp-bits-sup): Do not create broken symlink

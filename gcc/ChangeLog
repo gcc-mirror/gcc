@@ -1,3 +1,263 @@
+2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
+
+	* config/arc/arc.c (arc_save_restore): Corrected CFA note.
+	(arc_expand_prologue): Restore blink for millicode.
+	* config/arc/linux.h (LINK_EH_SPEC): Defined.
+
+2017-11-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/82809
+	* config/i386/i386.c (ix86_vector_duplicate_value): Use
+	gen_vec_duplicate after forcing the scalar into a register.
+
+2017-11-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine (try_combine): Print the insns input to try_combine to the
+	dump file.
+
+2017-11-02  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/79868
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse):
+	Remove second argument from aarch64_process_target_attr call.
+	* config/aarch64/aarch64-protos.h (aarch64_process_target_attr):
+	Ditto.
+	* config/aarch64/aarch64.c (aarch64_attribute_info): Change
+	field type.
+	(aarch64_handle_attr_arch): Remove second argument.
+	(aarch64_handle_attr_cpu): Ditto.
+	(aarch64_handle_attr_tune): Ditto.
+	(aarch64_handle_attr_isa_flags): Ditto.
+	(aarch64_process_one_target_attr): Ditto.
+	(aarch64_process_target_attr): Ditto.
+	(aarch64_option_valid_attribute_p): Remove second argument.
+	on aarch64_process_target_attr call.
+
+2017-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c: Include "selftest-diagnostic.h".
+	(selftest::assert_location_text): New function.
+	(selftest::test_diagnostic_get_location_text): New function.
+	(selftest::diagnostic_c_tests): Call it.
+
+2017-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add selftest-diagnostic.o.
+	* diagnostic-show-locus.c: Include "selftest-diagnostic.h".
+	(class selftest::test_diagnostic_context): Move to...
+	* selftest-diagnostic.c: New file.
+	* selftest-diagnostic.h: New file.
+
+2017-11-02  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/ft32.c (ft32_addr_space_legitimate_address_p): increase
+	offset range for FT32B.
+	* config/ft32/ft32.h: option "mcompress" enables relaxation.
+	* config/ft32/ft32.md: Add TARGET_NOPM.
+	* config/ft32/ft32.opt: Add mft32b, mcompress, mnopm.
+	* gcc/doc/invoke.texi: Add mft32b, mcompress, mnopm.
+
+2017-11-02  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.h (MALLOC_ABI_ALIGNMENT): New define.
+
+2017-11-02  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-sprintf.c (sprintf_dom_walker): Remove
+	virtual keyword on FINAL OVERRIDE members.
+
+	* tree-ssa-propagate.h (ssa_propagation_engine): Group
+	virtuals together.  Add virtual destructor.
+	(substitute_and_fold_engine): Similarly.
+
+2017-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* x86-tune.def (X86_TUNE_USE_INCDEC): Enable for Haswell+.
+
+2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82795
+	* tree-if-conv.c (predicate_mem_writes): Remove bogus assert.
+
+2017-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Don't require
+	gcc_SUN_LD_VERSION.
+	(gcc_GAS_CHECK_FEATURE): Remove.
+	* configure.ac (ld_vers) <*-*-solaris2*>: Move comments from
+	gcc_AC_INITFINI_ARRAY here.  Update for Solaris 11.4 changes.
+	* configure: Regenerate.
+
+2017-11-02  Claudiu Zissulescu <claziss@synopsys.com>
+
+	* config/arc/arc.c (hwloop_optimize): Account for empty
+	body loops.
+
+2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82765
+	* varasm.c (decode_addr_const): Make offset HOST_WIDE_INT.
+	Truncate ARRAY_REF index and element size.
+
+2017-11-01  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* doc/invoke.texi (RISC-V Options): Use "@minus{}2 GB", not "-2 GB".
+
+2017-11-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-ccp.c (ccp_folder): New class derived from
+	substitute_and_fold_engine.
+	(ccp_folder::get_value): New member function.
+	(ccp_folder::fold_stmt): Renamed from ccp_fold_stmt.
+	(ccp_fold_stmt): Remove prototype.
+	(ccp_finalize): Call substitute_and_fold from the ccp_class.
+	* tree-ssa-copy.c (copy_folder): New class derived from
+	substitute_and_fold_engine.
+	(copy_folder::get_value): Renamed from get_value.
+	(fini_copy_prop): Call substitute_and_fold from copy_folder class.
+	* tree-vrp.c (vrp_folder): New class derived from
+	substitute_and_fold_engine.
+	(vrp_folder::fold_stmt): Renamed from vrp_fold_stmt.
+	(vrp_folder::get_value): New member function.
+	(vrp_finalize): Call substitute_and_fold from vrp_folder class.
+	(evrp_dom_walker::before_dom_children): Similarly for replace_uses_in.
+	* tree-ssa-propagate.h (substitute_and_fold_engine): New class to
+	provide a class interface to folder/substitute routines.
+	(ssa_prop_fold_stmt_fn): Remove typedef.
+	(ssa_prop_get_value_fn): Likewise.
+	(subsitute_and_fold): Remove prototype.
+	(replace_uses_in): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold_engine::replace_uses_in):
+	Renamed from replace_uses_in.  Call the virtual member function
+	(substitute_and_fold_engine::replace_phi_args_in): Similarly.
+	(substitute_and_fold_dom_walker): Remove initialization of
+	data member entries for calbacks.  Add substitute_and_fold_engine
+	member and initialize it.
+	(substitute_and_fold_dom_walker::before_dom_children0: Use the
+	member functions for get_value, replace_phi_args_in c
+	replace_uses_in, and fold_stmt calls.
+	(substitute_and_fold_engine::substitute_and_fold): Renamed from
+	substitute_and_fold.  Remove assert.   Update ctor call.
+
+	* tree-ssa-propagate.h (ssa_prop_visit_stmt_fn): Remove typedef.
+	(ssa_prop_visit_phi_fn): Likewise.
+	(class ssa_propagation_engine): New class to provide an interface
+	into ssa_propagate.
+	* tree-ssa-propagate.c (ssa_prop_visit_stmt): Remove file scoped
+	variable.
+	(ssa_prop_visit_phi): Likewise.
+	(ssa_propagation_engine::simulate_stmt): Moved into class.
+	Call visit_phi/visit_stmt from the class rather than via
+	file scoped static variables.
+	(ssa_propagation_engine::simulate_block): Moved into class.
+	(ssa_propagation_engine::process_ssa_edge_worklist): Similarly.
+	(ssa_propagation_engine::ssa_propagate): Similarly.  No longer
+	set file scoped statics for the visit_stmt/visit_phi callbacks.
+	* tree-complex.c (complex_propagate): New class derived from
+	ssa_propagation_engine.
+	(complex_propagate::visit_stmt): Renamed from complex_visit_stmt.
+	(complex_propagate::visit_phi): Renamed from complex_visit_phi.
+	(tree_lower_complex): Call ssa_propagate via the complex_propagate
+	class.
+	* tree-ssa-ccp.c: (ccp_propagate): New class derived from
+	ssa_propagation_engine.
+	(ccp_propagate::visit_phi): Renamed from ccp_visit_phi_node.
+	(ccp_propagate::visit_stmt): Renamed from ccp_visit_stmt.
+	(do_ssa_ccp): Call ssa_propagate from the ccp_propagate class.
+	* tree-ssa-copy.c (copy_prop): New class derived from
+	ssa_propagation_engine.
+	(copy_prop::visit_stmt): Renamed from copy_prop_visit_stmt.
+	(copy_prop::visit_phi): Renamed from copy_prop_visit_phi_node.
+	(execute_copy_prop): Call ssa_propagate from the copy_prop class.
+	* tree-vrp.c (vrp_prop): New class derived from ssa_propagation_engine.
+	(vrp_prop::visit_stmt): Renamed from vrp_visit_stmt.
+	(vrp_prop::visit_phi): Renamed from vrp_visit_phi_node.
+	(execute_vrp): Call ssa_propagate from the vrp_prop class.
+
+2017-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82778
+	PR rtl-optimization/82597
+	* compare-elim.c (struct comparison): Add in_a_setter field.
+	(find_comparison_dom_walker::before_dom_children): Remove killed
+	bitmap and df_simulate_find_defs call, instead walk the defs.
+	Compute last_setter and initialize in_a_setter.  Merge definitions
+	with first initialization for a few variables.
+	(try_validate_parallel): Use insn_invalid_p instead of
+	recog_memoized.  Return insn rather than just the pattern.
+	(try_merge_compare): Fix up comment.  Don't uselessly test if
+	in_a is a REG_P.  Use cmp->in_a_setter instead of walking UD
+	chains.
+	(execute_compare_elim_after_reload): Remove df_chain_add_problem
+	call.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Use
+	aarch64_hard_regno_nregs to get the number of registers
+	in a mode.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/constraints.md (Upl): Rename to...
+	(Uaa): ...this.
+	* config/aarch64/aarch64.md
+	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64, *addsi3_aarch64_uxtw):
+	Update accordingly.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_add_constant_internal)
+	(aarch64_add_constant, aarch64_add_sp, aarch64_sub_sp): Move
+	earlier in file.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_trn, aarch64_evpc_uzp)
+	(aarch64_evpc_zip, aarch64_evpc_ext, aarch64_evpc_rev)
+	(aarch64_evpc_dup): Generate rtl direcly, rather than using
+	named expanders.
+	(aarch64_expand_vec_perm_const_1): Explicitly check for permutes
+	of a single element.
+	* config/aarch64/iterators.md: Add a comment above the permute
+	unspecs to say that they are generated directly by
+	aarch64_expand_vec_perm_const.
+	* config/aarch64/aarch64-simd.md: Likewise the permute instructions.
+
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-dump.c (dequeue_and_dump): Use HAS_DECL_ASSEMBLER_NAME_P.
+
+2017-11-01  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* doc/invoke.texi (RISC-V Options): Explicitly name the medlow
+	and medany code models, and describe what they do.
+
+2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	Revert accidental duplicate:
+
+	* combine.c (can_change_dest_mode): Reject changes in
+	REGMODE_NATURAL_SIZE.
+
+2017-11-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	PR rtl-optimization/69567
+	PR rtl-optimization/69737
+	PR rtl-optimization/82683
+	* combine.c (distribute_notes) <REG_DEAD>: If the new I2 sets the same
+	register mentioned in the note, drop the note, unless it came from I3,
+	in which case it should go to I3 again.
+
 2017-11-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-ssa-dse.c (normalize_ref): Check whether the ranges overlap
@@ -28227,11 +28487,6 @@
 	* doc/invoke.texi: Replace inequality signs with square brackets
 	for -Wnormalized.
 
-2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-
-	PR tree-optimization/68644
-	* gcc.dg/tree-ssa/ivopts-lt-2.c: Skip for powerpc*-*-*.
-
 2017-02-22  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	PR target/78660
@@ -29803,8 +30058,6 @@
 	PR tree-optimization/79276
 	* tree-vrp.c (process_assert_insertions): Properly adjust common
 	when removing a duplicate.
-
-	* gcc.dg/torture/pr79276.c: New testcase.
 
 2017-01-30  Richard Biener  <rguenther@suse.de>
 
