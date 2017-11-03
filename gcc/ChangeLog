@@ -1,3 +1,9 @@
+2017-11-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/82809
+	* config/i386/i386.c (ix86_vector_duplicate_value): Use
+	gen_vec_duplicate after forcing the scalar into a register.
+
 2017-11-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine (try_combine): Print the insns input to try_combine to the

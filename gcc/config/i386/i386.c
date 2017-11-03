@@ -41232,7 +41232,7 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
       reg = force_reg (innermode, val);
       if (GET_MODE (reg) != innermode)
 	reg = gen_lowpart (innermode, reg);
-      XEXP (dup, 0) = reg;
+      SET_SRC (PATTERN (insn)) = gen_vec_duplicate (mode, reg);
       seq = get_insns ();
       end_sequence ();
       if (seq)
