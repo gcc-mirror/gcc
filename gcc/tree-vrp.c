@@ -10970,33 +10970,17 @@ evrp_dom_walker::try_find_new_range (tree name,
 edge
 evrp_dom_walker::before_dom_children (basic_block bb)
 {
-  tree op0 = NULL_TREE;
-  edge_iterator ei;
-  edge e;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Visiting BB%d\n", bb->index);
 
   stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
 
-  edge pred_e = NULL;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      /* Ignore simple backedges from this to allow recording conditions
-	 in loop headers.  */
-      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-	continue;
-      if (! pred_e)
-	pred_e = e;
-      else
-	{
-	  pred_e = NULL;
-	  break;
-	}
-    }
+  edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
   if (pred_e)
     {
       gimple *stmt = last_stmt (pred_e->src);
+      tree op0 = NULL_TREE;
+
       if (stmt
 	  && gimple_code (stmt) == GIMPLE_COND
 	  && (op0 = gimple_cond_lhs (stmt))
@@ -11040,6 +11024,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 
   /* Visit PHI stmts and discover any new VRs possible.  */
   bool has_unvisited_preds = false;
+  edge_iterator ei;
+  edge e;
   FOR_EACH_EDGE (e, ei, bb->preds)
     if (e->flags & EDGE_EXECUTABLE
 	&& !(e->src->flags & BB_VISITED))
