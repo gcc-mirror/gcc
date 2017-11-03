@@ -4847,34 +4847,18 @@ sccvn_dom_walker::after_dom_children (basic_block bb)
 edge
 sccvn_dom_walker::before_dom_children (basic_block bb)
 {
-  edge e;
-  edge_iterator ei;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Visiting BB %d\n", bb->index);
 
   /* If we have a single predecessor record the equivalence from a
      possible condition on the predecessor edge.  */
-  edge pred_e = NULL;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      /* Ignore simple backedges from this to allow recording conditions
-         in loop headers.  */
-      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-	continue;
-      if (! pred_e)
-	pred_e = e;
-      else
-	{
-	  pred_e = NULL;
-	  break;
-	}
-    }
+  edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
   if (pred_e)
     {
       /* Check if there are multiple executable successor edges in
 	 the source block.  Otherwise there is no additional info
 	 to be recorded.  */
+      edge_iterator ei;
       edge e2;
       FOR_EACH_EDGE (e2, ei, pred_e->src->succs)
 	if (e2 != pred_e
