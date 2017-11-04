@@ -1,5 +1,10 @@
 2017-11-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/70330
+	* gfortran.dg/pr70330.f90: New test.
+
+2017-11-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/29600
 	* gfortran.dg/minmaxloc_8.f90: New test.
 
