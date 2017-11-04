@@ -1,3 +1,11 @@
+2017-11-04  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR libgcc/82635
+	* config/i386/freebsd-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Use a
+	sysctl to determine whether we're in a trampoline.
+	Keep the pattern matching method for systems without
+	KERN_PROC_SIGTRAMP sysctl.
+
 2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
 	    Vineet Gupta <vgupta@synopsys.com>
 
