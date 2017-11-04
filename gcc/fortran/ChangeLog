@@ -1,3 +1,12 @@
+2017-11-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-expr.c (gfc_trans_assignment_1): Character kind conversion may
+	create a loop variant temporary, too.
+	* trans-intrinsic.c (conv_caf_send): Treat char arrays as arrays and
+	not as scalars.
+	* trans.c (get_array_span): Take the character kind into account when
+	doing pointer arithmetic.
+
 2017-11-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/81735
