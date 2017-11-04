@@ -11517,12 +11517,15 @@ choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
    an alignment value (in bits) that is preferred or zero and will
    recieve the alignment of the base register that was selected,
    irrespective of rather or not CFA_OFFSET is a multiple of that
-   alignment value.
+   alignment value.  If it is possible for the base register offset to be
+   non-immediate then SCRATCH_REGNO should specify a scratch register to
+   use.
 
    The valid base registers are taken from CFUN->MACHINE->FS.  */
 
 static rtx
-choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align)
+choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align,
+		 unsigned int scratch_regno = INVALID_REGNUM)
 {
   rtx base_reg = NULL;
   HOST_WIDE_INT base_offset = 0;
@@ -11536,6 +11539,19 @@ choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align)
     choose_basereg (cfa_offset, base_reg, base_offset, 0, align);
 
   gcc_assert (base_reg != NULL);
+
+  rtx base_offset_rtx = GEN_INT (base_offset);
+
+  if (!x86_64_immediate_operand (base_offset_rtx, Pmode))
+    {
+      gcc_assert (scratch_regno != INVALID_REGNUM);
+
+      rtx scratch_reg = gen_rtx_REG (Pmode, scratch_regno);
+      emit_move_insn (scratch_reg, base_offset_rtx);
+
+      return gen_rtx_PLUS (Pmode, base_reg, scratch_reg);
+    }
+
   return plus_constant (Pmode, base_reg, base_offset);
 }
 
@@ -12801,23 +12817,19 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
   rtx sym, addr;
   rtx rax = gen_rtx_REG (word_mode, AX_REG);
   const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
-  HOST_WIDE_INT allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
   /* AL should only be live with sysv_abi.  */
   gcc_assert (!ix86_eax_live_at_start_p ());
+  gcc_assert (m->fs.sp_offset >= frame.sse_reg_save_offset);
 
   /* Setup RAX as the stub's base pointer.  We use stack_realign_offset rather
      we've actually realigned the stack or not.  */
   align = GET_MODE_ALIGNMENT (V4SFmode);
   addr = choose_baseaddr (frame.stack_realign_offset
-			  + xlogue.get_stub_ptr_offset (), &align);
+			  + xlogue.get_stub_ptr_offset (), &align, AX_REG);
   gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
-  emit_insn (gen_rtx_SET (rax, addr));
 
-  /* Allocate stack if not already done.  */
-  if (allocate > 0)
-      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				GEN_INT (-allocate), -1, false);
+  emit_insn (gen_rtx_SET (rax, addr));
 
   /* Get the stub symbol.  */
   sym = xlogue.get_stub_rtx (frame_pointer_needed ? XLOGUE_STUB_SAVE_HFP
@@ -12849,6 +12861,7 @@ ix86_expand_prologue (void)
   HOST_WIDE_INT allocate;
   bool int_registers_saved;
   bool sse_registers_saved;
+  bool save_stub_call_needed;
   rtx static_chain = NULL_RTX;
 
   if (ix86_function_naked (current_function_decl))
@@ -13024,6 +13037,8 @@ ix86_expand_prologue (void)
 
   int_registers_saved = (frame.nregs == 0);
   sse_registers_saved = (frame.nsseregs == 0);
+  save_stub_call_needed = (m->call_ms2sysv);
+  gcc_assert (sse_registers_saved || !save_stub_call_needed);
 
   if (frame_pointer_needed && !m->fs.fp_valid)
     {
@@ -13118,10 +13133,28 @@ ix86_expand_prologue (void)
 	 target.  */
       if (TARGET_SEH)
 	m->fs.sp_valid = false;
-    }
 
-  if (m->call_ms2sysv)
-    ix86_emit_outlined_ms2sysv_save (frame);
+      /* If SP offset is non-immediate after allocation of the stack frame,
+	 then emit SSE saves or stub call prior to allocating the rest of the
+	 stack frame.  This is less efficient for the out-of-line stub because
+	 we can't combine allocations across the call barrier, but it's better
+	 than using a scratch register.  */
+      else if (!x86_64_immediate_operand (GEN_INT (frame.stack_pointer_offset
+						   - m->fs.sp_realigned_offset),
+					  Pmode))
+	{
+	  if (!sse_registers_saved)
+	    {
+	      ix86_emit_save_sse_regs_using_mov (frame.sse_reg_save_offset);
+	      sse_registers_saved = true;
+	    }
+	  else if (save_stub_call_needed)
+	    {
+	      ix86_emit_outlined_ms2sysv_save (frame);
+	      save_stub_call_needed = false;
+	    }
+	}
+    }
 
   allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
@@ -13349,6 +13382,8 @@ ix86_expand_prologue (void)
     ix86_emit_save_regs_using_mov (frame.reg_save_offset);
   if (!sse_registers_saved)
     ix86_emit_save_sse_regs_using_mov (frame.sse_reg_save_offset);
+  else if (save_stub_call_needed)
+    ix86_emit_outlined_ms2sysv_save (frame);
 
   /* For the mcount profiling on 32 bit PIC mode we need to emit SET_GOT
      in PROLOGUE.  */
@@ -13589,8 +13624,9 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
 
   /* Setup RSI as the stub's base pointer.  */
   align = GET_MODE_ALIGNMENT (V4SFmode);
-  tmp = choose_baseaddr (rsi_offset, &align);
+  tmp = choose_baseaddr (rsi_offset, &align, SI_REG);
   gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
+
   emit_insn (gen_rtx_SET (rsi, tmp));
 
   /* Get a symbol for the stub.  */
