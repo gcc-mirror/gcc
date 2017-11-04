@@ -1,3 +1,8 @@
+2017-11-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82796
+	* gfortran.dg/equiv_pure.f90: New test.
+
 2017-11-03  Jeff Law  <law@redhat.com>
 
 	PR target/82823

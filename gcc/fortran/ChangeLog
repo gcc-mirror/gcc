@@ -1,3 +1,10 @@
+2017-11-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82796
+	* resolve.c (resolve_equivalence): An entity in a common block within
+ 	a module cannot appear in an equivalence statement if the entity is
+	with a pure procedure.
+
 2017-10-31  Jim Wilson  <wilson@tuliptree.org>
 
 	* parse.c (unexpected_eof): Call gcc_unreachable before return.
