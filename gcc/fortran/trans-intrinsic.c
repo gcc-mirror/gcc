@@ -1871,12 +1871,21 @@ conv_caf_send (gfc_code *code) {
   gfc_init_se (&lhs_se, NULL);
   if (lhs_expr->rank == 0)
     {
-      symbol_attribute attr;
-      gfc_clear_attr (&attr);
-      gfc_conv_expr (&lhs_se, lhs_expr);
-      lhs_type = TREE_TYPE (lhs_se.expr);
-      lhs_se.expr = gfc_conv_scalar_to_descriptor (&lhs_se, lhs_se.expr, attr);
-      lhs_se.expr = gfc_build_addr_expr (NULL_TREE, lhs_se.expr);
+      if (lhs_expr->ts.type == BT_CHARACTER && lhs_expr->ts.deferred)
+	{
+	  lhs_se.expr = gfc_get_tree_for_caf_expr (lhs_expr);
+	  lhs_se.expr = gfc_build_addr_expr (NULL_TREE, lhs_se.expr);
+	}
+      else
+	{
+	  symbol_attribute attr;
+	  gfc_clear_attr (&attr);
+	  gfc_conv_expr (&lhs_se, lhs_expr);
+	  lhs_type = TREE_TYPE (lhs_se.expr);
+	  lhs_se.expr = gfc_conv_scalar_to_descriptor (&lhs_se, lhs_se.expr,
+						       attr);
+	  lhs_se.expr = gfc_build_addr_expr (NULL_TREE, lhs_se.expr);
+	}
     }
   else if ((lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
 	   && lhs_caf_attr.codimension)

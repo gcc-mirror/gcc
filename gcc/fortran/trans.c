@@ -320,8 +320,12 @@ get_array_span (tree type, tree decl)
 	  || DECL_CONTEXT (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
 					== DECL_CONTEXT (decl)))
     {
-      span = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-      span = fold_convert (gfc_array_index_type, span);
+      span = fold_convert (gfc_array_index_type,
+			   TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+      span = fold_build2 (MULT_EXPR, gfc_array_index_type,
+			  fold_convert (gfc_array_index_type,
+					TYPE_SIZE_UNIT (TREE_TYPE (type))),
+			  span);
     }
   /* Likewise for class array or pointer array references.  */
   else if (TREE_CODE (decl) == FIELD_DECL
