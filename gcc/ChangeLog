@@ -1,3 +1,13 @@
+2017-11-04  Daniel Santos  <daniel.santos@pobox.com>
+
+	config/i386/i386.c (choose_basereg): Use optional scratch
+	register and add assertion.
+	(x86_emit_outlined_ms2sysv_save): Use scratch register when
+	needed, and don't allocate stack.
+	(ix86_expand_prologue): Rearrange where SSE saves/stub call is
+	emitted, correct wrong allocation with -mcall-ms2sysv-xlogues.
+	(ix86_emit_outlined_ms2sysv_restore): Fix non-immediate offsets.
+
 2017-11-03  Jeff Law  <law@redhat.com>
 
 	* config/i386/i386.c (ix86_emit_restore_reg_using_pop): Prototype.
