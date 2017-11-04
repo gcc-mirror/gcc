@@ -3179,7 +3179,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 bool
 gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 {
-  gfc_expr *a, *m, *d;
+  gfc_expr *a, *m, *d, *k;
 
   a = ap->expr;
   if (!int_or_real_check (a, 0) || !array_check (a, 0))
@@ -3187,6 +3187,7 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 
   d = ap->next->expr;
   m = ap->next->next->expr;
+  k = ap->next->next->next->expr;
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
       && ap->next->name == NULL)
@@ -3212,6 +3213,9 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[2]->name,
 				 gfc_current_intrinsic))
+    return false;
+
+  if (!kind_check (k, 1, BT_INTEGER))
     return false;
 
   return true;

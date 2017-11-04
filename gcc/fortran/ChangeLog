@@ -1,3 +1,21 @@
+2017-11-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/29600
+	* gfortran.h (gfc_check_f): Replace fm3l with fm4l.
+	* intrinsic.h (gfc_resolve_maxloc): Add gfc_expr * to argument
+	list in protoytpe.
+	(gfc_resolve_minloc): Likewise.
+	* check.c (gfc_check_minloc_maxloc): Handle kind argument.
+	* intrinsic.c (add_sym_3_ml): Rename to
+	(add_sym_4_ml): and handle kind argument.
+	(add_function): Replace add_sym_3ml with add_sym_4ml and add
+	extra arguments for maxloc and minloc.
+	(check_specific): Change use of check.f3ml with check.f4ml.
+	* iresolve.c (gfc_resolve_maxloc): Handle kind argument. If
+	the kind is smaller than the smallest library version available,
+	use gfc_default_integer_kind and convert afterwards.
+	(gfc_resolve_minloc): Likewise.
+
 2017-11-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/81735
