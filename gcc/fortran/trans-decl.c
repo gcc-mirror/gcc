@@ -4584,7 +4584,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    && sym->ts.u.cl->passed_length)
 		tmp = gfc_null_and_pass_deferred_len (sym, &init, &loc);
 	      else
-		gfc_restore_backend_locus (&loc);
+		{
+		  gfc_restore_backend_locus (&loc);
+		  tmp = NULL_TREE;
+		}
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
@@ -4636,10 +4639,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
-	      /* TODO find out why this is necessary to stop double calls to
-		 free.  Somebody is reusing the expression in 'tmp' because
-		 it is being used unititialized.  */
-	      tmp = NULL_TREE;
 	    }
 	}
       else if (sym->ts.type == BT_CHARACTER && sym->ts.deferred)
