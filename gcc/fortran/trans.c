@@ -342,7 +342,14 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 	  || TREE_CODE (decl) == FUNCTION_DECL
 	  || DECL_CONTEXT (TYPE_MAXVAL (TYPE_DOMAIN (type)))
 					== DECL_CONTEXT (decl)))
-    span = TYPE_MAXVAL (TYPE_DOMAIN (type));
+    {
+      span = fold_convert (gfc_array_index_type,
+			   TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+      span = fold_build2 (MULT_EXPR, gfc_array_index_type,
+			  fold_convert (gfc_array_index_type,
+					TYPE_SIZE_UNIT (TREE_TYPE (type))),
+			  span);
+    }
   else
     span = NULL_TREE;
 

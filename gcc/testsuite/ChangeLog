@@ -1,3 +1,7 @@
+2017-11-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/send_char_array_1.f90: New test.
+
 2017-11-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/81735
