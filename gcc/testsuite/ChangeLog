@@ -1,3 +1,8 @@
+2017-11-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82796
+	* gfortran.dg/equiv_pure.f90: New test.
+
 2017-11-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.dg/coarray/send_char_array_1.f90: New test.
