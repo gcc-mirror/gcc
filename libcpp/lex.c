@@ -1647,7 +1647,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		    (const uchar *)(STR), (LEN));		\
 	    temp_buffer_len += (LEN);				\
 	  }							\
-      } while (0);
+      } while (0)
 
   orig_base = base;
   ++cur;
