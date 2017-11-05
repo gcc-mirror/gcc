@@ -1,3 +1,24 @@
+2017-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81447
+	* gfortran.dg/class_65.f90: New test.
+	* gfortran.dg/alloc_comp_basics_1.f90: Increase builtin_free
+	count from 18 to 21.
+	* gfortran.dg/allocatable_scalar_9.f90: Increase builtin_free
+	count from 32 to 54.
+	* gfortran.dg/auto_dealloc_1.f90: Increase builtin_free
+	count from 4 to 10.
+	* gfortran.dg/coarray_lib_realloc_1.f90: Increase builtin_free
+	count from 3 to 6. Likewise _gfortran_caf_deregister from 2 to
+	3, builtin_malloc from 1 to 4 and builtin_memcpy|= MEM from
+	2 to 5.
+	* gfortran.dg/finalize_28.f90: Increase builtin_free
+	count from 3 to 6.
+	* gfortran.dg/move_alloc_15.f90: Increase builtin_free and
+	builtin_malloc counts from 11 to 14.
+	* gfortran.dg/typebound_proc_27.f03: Increase builtin_free
+	count from 7 to 10. Likewise builtin_malloc from 12 to 15.
+
 2017-11-04  Daniel Santos  <daniel.santos@pobox.com>
 
 	gcc.target/i386/pr82002-2a.c: Change from xfail to fail.
