@@ -1,5 +1,10 @@
 2017-11-04  Andrew Waterman  <andrew@sifive.com>
 
+	* config/riscv/riscv.c (riscv_option_override): Conditionally set
+	TARGET_STRICT_ALIGN based upon -mtune argument.
+
+2017-11-04  Andrew Waterman  <andrew@sifive.com>
+
 	* config/riscv/riscv.h (SLOW_BYTE_ACCESS): Change to 1.
 
 2017-11-04  Daniel Santos  <daniel.santos@pobox.com>
