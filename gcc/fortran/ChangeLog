@@ -1,3 +1,19 @@
+2017-11-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/82471
+	* lang.opt (ffrontend-loop-interchange): New option.
+	(Wfrontend-loop-interchange): New option.
+	* options.c (gfc_post_options): Handle ffrontend-loop-interchange.
+	* frontend-passes.c (gfc_run_passes): Run
+	optimize_namespace if flag_frontend_optimize or
+	flag_frontend_loop_interchange are set.
+	(optimize_namespace): Run functions according to flags set;
+	also call index_interchange.
+	(ind_type): New function.
+	(has_var): New function.
+	(index_cost): New function.
+	(loop_comp): New function.
+
 2017-11-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78641

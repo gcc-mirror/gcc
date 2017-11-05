@@ -245,6 +245,10 @@ Wextra
 Fortran Warning
 ; Documented in common
 
+Wfrontend-loop-interchange
+Fortran Var(flag_warn_frontend_loop_interchange)
+Warn if loops have been interchanged.
+
 Wfunction-elimination
 Fortran Warning Var(warn_function_elimination)
 Warn about function call elimination.
@@ -547,6 +551,10 @@ Allow arbitrary character line width in free mode.
 ffree-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_free_line_length) Init(132)
 -ffree-line-length-<n>	Use n as character line width in free mode.
+
+ffrontend-loop-interchange
+Fortran Var(flag_frontend_loop_interchange) Init(-1)
+Try to interchange loops if profitable.
 
 ffrontend-optimize
 Fortran Var(flag_frontend_optimize) Init(-1)
