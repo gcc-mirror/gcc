@@ -21,14 +21,14 @@ x = y
 end
 
 ! For comp%ii: End of scope of x + y (2x) and for the LHS of the assignment (1x)
-! { dg-final { scan-tree-dump-times "__builtin_free" 3 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 6 "original" } }
 
 ! For comp%CAF:  End of scope of x + y (2x); no LHS freeing for the CAF in assignment
-! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister" 2 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister" 3 "original" } }
 
 ! Only malloc "ii":
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 4 "original" } }
 
 ! But copy "ii" and "CAF":
-! { dg-final { scan-tree-dump-times "__builtin_memcpy|= MEM" 2 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_memcpy|= MEM" 5 "original" } }
 
