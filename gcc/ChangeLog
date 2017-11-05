@@ -1,3 +1,9 @@
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* graphite-scop-detection.c (DEBUG_PRINT): Remove semicolon after
+	"do {} while (0)".
+
 2017-11-04  Michael Clark  <michaeljclark@mac.com>
 
 	* config/riscv/riscv.c (riscv_print_operand): Add a 'i' format.
