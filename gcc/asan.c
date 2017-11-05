@@ -2805,14 +2805,17 @@ initialize_sanitizer_builtins (void)
 #define ATTR_PURE_NOTHROW_LEAF_LIST ECF_PURE | ATTR_NOTHROW_LEAF_LIST
 #undef DEF_BUILTIN_STUB
 #define DEF_BUILTIN_STUB(ENUM, NAME)
-#undef DEF_SANITIZER_BUILTIN
-#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+#undef DEF_SANITIZER_BUILTIN_1
+#define DEF_SANITIZER_BUILTIN_1(ENUM, NAME, TYPE, ATTRS)		\
   do {									\
     decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
 				 BUILT_IN_NORMAL, NAME, NULL_TREE);	\
     set_call_expr_flags (decl, ATTRS);					\
     set_builtin_decl (ENUM, decl, true);				\
-  } while (0);
+  } while (0)
+#undef DEF_SANITIZER_BUILTIN
+#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
+  DEF_SANITIZER_BUILTIN_1 (ENUM, NAME, TYPE, ATTRS);
 
 #include "sanitizer.def"
 
@@ -2821,10 +2824,11 @@ initialize_sanitizer_builtins (void)
      DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
   if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
       && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
-    DEF_SANITIZER_BUILTIN (BUILT_IN_OBJECT_SIZE, "object_size",
-			   BT_FN_SIZE_CONST_PTR_INT,
-			   ATTR_PURE_NOTHROW_LEAF_LIST)
+    DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
+			     BT_FN_SIZE_CONST_PTR_INT,
+			     ATTR_PURE_NOTHROW_LEAF_LIST);
 
+#undef DEF_SANITIZER_BUILTIN_1
 #undef DEF_SANITIZER_BUILTIN
 #undef DEF_BUILTIN_STUB
 }

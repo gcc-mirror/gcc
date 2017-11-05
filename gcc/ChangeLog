@@ -1,6 +1,14 @@
 2017-11-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/82784
+	* asan.c (DEF_SANITIZER_BUILTIN_1): Factor out of ...
+	(DEF_SANITIZER_BUILTIN): ... here.
+	(initialize_sanitizer_builtins): Use DEF_SANITIZER_BUILTIN_1 instead of
+	DEF_SANITIZER_BUILTIN in if stmt.  Add missing semicolon.
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
 	* config/elfos.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Remove semicolon after
 	macro body.
 	(ASM_OUTPUT_CASE_LABEL): Add semicolon after
