@@ -1,3 +1,7 @@
+2017-11-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Move docs.oracle.com references to https.
+
 2017-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (endian): Define new enumeration type.
