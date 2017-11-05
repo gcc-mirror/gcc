@@ -1,3 +1,13 @@
+2017-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/81447
+	PR fortran/82783
+	* resolve.c (resolve_component): There is no need to resolve
+	the components of a use associated vtype.
+	(resolve_fl_derived): Unconditionally generate a vtable for any
+	module derived type, as long as the standard is F2003 or later
+	and it is not a vtype or a PDT template.
+
 2017-11-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/82784

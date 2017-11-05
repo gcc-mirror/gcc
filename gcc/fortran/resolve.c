@@ -13496,6 +13496,9 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   if (c->attr.artificial)
     return true;
 
+  if (sym->attr.vtype && sym->attr.use_assoc)
+    return true;
+
   /* F2008, C442.  */
   if ((!sym->attr.is_class || c != sym->components)
       && c->attr.codimension
@@ -14074,6 +14077,20 @@ resolve_fl_derived (gfc_symbol *sym)
   /* Resolve the type-bound procedures.  */
   if (!resolve_typebound_procedures (sym))
     return false;
+
+  /* Generate module vtables subject to their accessibility and their not
+     being vtables or pdt templates. If this is not done class declarations
+     in external procedures wind up with their own version and so SELECT TYPE
+     fails because the vptrs do not have the same address.  */
+  if (gfc_option.allow_std & GFC_STD_F2003
+      && sym->ns->proc_name
+      && sym->ns->proc_name->attr.flavor == FL_MODULE
+      && sym->attr.access != ACCESS_PRIVATE
+      && !(sym->attr.use_assoc || sym->attr.vtype || sym->attr.pdt_template))
+    {
+      gfc_symbol *vtab = gfc_find_derived_vtab (sym);
+      gfc_set_sym_referenced (vtab);
+    }
 
   return true;
 }
@@ -15943,7 +15960,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    {
 	      gfc_use_rename *r;
 	      for (r = sym->ns->use_stmts->rename; r; r = r->next)
-		if (strcmp(r->use_name, sym->name) == 0) saw_sym = true; 
+		if (strcmp(r->use_name, sym->name) == 0) saw_sym = true;
 	    }
 	  else
 	    saw_sym = true;
