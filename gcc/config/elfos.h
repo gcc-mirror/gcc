@@ -135,15 +135,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN ((FILE), 2);
+  ASM_OUTPUT_ALIGN ((FILE), 2)
 #endif
 
 #undef  ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
   do									\
     {									\
-      ASM_OUTPUT_BEFORE_CASE_LABEL (FILE, PREFIX, NUM, JUMPTABLE)	\
-	(*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);			\
+      ASM_OUTPUT_BEFORE_CASE_LABEL (FILE, PREFIX, NUM, JUMPTABLE);	\
+      (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
     }									\
   while (0)
 

@@ -2953,7 +2953,7 @@ do {									\
       if (JUMP_TABLES_IN_TEXT_SECTION)					\
 	mips_set_text_contents_type (STREAM, "__jump_", NUM, FALSE);	\
     }									\
-  while (0);
+  while (0)
 
 /* Reset text marking to code after an inline jump table.  Like with
    the beginning of a jump table use the label number to keep symbols

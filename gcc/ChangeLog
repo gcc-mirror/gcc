@@ -1,6 +1,19 @@
 2017-11-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/82784
+	* config/elfos.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Remove semicolon after
+	macro body.
+	(ASM_OUTPUT_CASE_LABEL): Add semicolon after
+	ASM_OUTPUT_BEFORE_CASE_LABEL call.
+	* config/arc/arc.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Remove semicolon
+	after macro body.
+	* config/m68k/m68kelf.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Same.
+	* config/mips/mips.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Same.
+	* config/v850/v850.h (ASM_OUTPUT_BEFORE_CASE_LABEL): Same.
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
 	* graphite-scop-detection.c (DEBUG_PRINT): Remove semicolon after
 	"do {} while (0)".
 
