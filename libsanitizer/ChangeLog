@@ -1,3 +1,10 @@
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* asan/asan_poisoning.cc (CHECK_SMALL_REGION): Remove semicolon after
+	"do {} while (0)".
+	* lsan/lsan_common.cc (LOG_POINTERS, LOG_THREADS): Same.
+
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/82595
