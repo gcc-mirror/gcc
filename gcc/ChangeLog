@@ -1,3 +1,23 @@
+2017-11-04  Michael Clark  <michaeljclark@mac.com>
+
+	* config/riscv/riscv.c (riscv_print_operand): Add a 'i' format.
+	config/riscv/riscv.md (addsi3): Use 'i' for immediates.
+	(adddi3): Likewise.
+	(*addsi3_extended): Likewise.
+	(*addsi3_extended2): Likewise.
+	(<optab>si3): Likewise.
+	(<optab>di3): Likewise.
+	(<optab><mode>3): Likewise.
+	(<*optabe>si3_internal): Likewise.
+	(zero_extendqi<SUPERQI:mode>2): Likewise.
+	(*add<mode>hi3): Likewise.
+	(*xor<mode>hi3): Likewise.
+	(<optab>di3): Likewise.
+	(*<optab>si3_extend): Likewise.
+	(*sge<u>_<X:mode><GPR:mode>): Likewise.
+	(*slt<u>_<X:mode><GPR:mode>): Likewise.
+	(*sle<u>_<X:mode><GPR:mode>): Likewise.
+
 2017-11-04  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/riscv.c (riscv_option_override): Conditionally set
