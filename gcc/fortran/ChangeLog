@@ -1,3 +1,9 @@
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* parse.c (match, matcha, matchs, matcho, matchds, matchdo): Remove
+	semicolon after "do {} while (0)".
+
 2017-11-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-expr.c (gfc_trans_assignment_1): Character kind conversion may
