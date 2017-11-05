@@ -132,7 +132,7 @@ use_modules (void)
 	return st;						\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 
 /* This is a specialist version of decode_statement that is used
@@ -606,7 +606,7 @@ decode_statement (void)
 	return st;						\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 static gfc_statement
 decode_oacc_directive (void)
@@ -728,7 +728,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 /* Like match, but don't match anything if not -fopenmp
    and if spec_only, goto do_spec_only without actually matching.  */
@@ -746,7 +746,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 /* Like match, but set a flag simd_matched if keyword matched.  */
 #define matchds(keyword, subr, st)				\
@@ -759,7 +759,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 /* Like match, but don't match anything if not -fopenmp.  */
 #define matchdo(keyword, subr, st)				\
@@ -774,7 +774,7 @@ decode_oacc_directive (void)
 	}							\
       else							\
 	undo_new_statement ();				  	\
-    } while (0);
+    } while (0)
 
 static gfc_statement
 decode_omp_directive (void)
