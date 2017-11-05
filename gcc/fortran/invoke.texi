@@ -149,8 +149,9 @@ and warnings}.
 -Wdo-subscript -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only -Wintrinsics-std @gol
 -Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
--Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
--Wtarget-lifetime -fmax-errors=@var{n} -fsyntax-only -pedantic -pedantic-errors
+-Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs @gol
+-Wrealloc-lhs-all -Wfrontend-loop-interchange -Wtarget-lifetime @gol
+-fmax-errors=@var{n} -fsyntax-only -pedantic -pedantic-errors @gol
 }
 
 @item Debugging Options
@@ -183,6 +184,7 @@ and warnings}.
 -fbounds-check -fcheck-array-temporaries @gol
 -fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
 -fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
+-ffrontend-loop-interchange @gol
 -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
 -finit-derived @gol
@@ -909,6 +911,13 @@ option does @emph{not} imply @option{-Wconversion}.
 Enables some warning options for usages of language features which
 may be problematic. This currently includes @option{-Wcompare-reals},
 @option{-Wunused-parameter} and @option{-Wdo-subscript}.
+
+@item -Wfrontend-loop-interchange
+@opindex @code{Wfrontend-loop-interchange}
+@cindex warnings, loop interchange
+@cindex loop interchange, warning
+Enable warning for loop interchanges performed by the
+@option{-ffrontend-loop-interchange} option.
 
 @item -Wimplicit-interface
 @opindex @code{Wimplicit-interface}
@@ -1782,6 +1791,14 @@ expressions, removing unnecessary calls to @code{TRIM} in comparisons
 and assignments and replacing @code{TRIM(a)} with
 @code{a(1:LEN_TRIM(a))}.  It can be deselected by specifying
 @option{-fno-frontend-optimize}.
+
+@item -ffrontend-loop-interchange
+@opindex @code{frontend-loop-interchange}
+@cindex loop interchange, Fortran
+Attempt to interchange loops in the Fortran front end where
+profitable.  Enabled by default by any @option{-O} option.
+At the moment, this option only affects @code{FORALL} and
+@code{DO CONCURRENT} statements with several forall triplets.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
