@@ -1,3 +1,9 @@
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* lex.c (BUF_APPEND): Remove semicolon after
+	"do {} while (0)".
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* directives.c (_cpp_handle_directive): Update for renaming of
