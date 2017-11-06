@@ -1,3 +1,15 @@
+2017-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/optional/cons/deduction.cc: Avoid -Wreturn-type
+	warnings.
+	* testsuite/20_util/pair/cons/deduction.cc: Likewise.
+	* testsuite/20_util/pair/traits.cc: Likewise.
+	* testsuite/20_util/tuple/cons/deduction.cc: Likewise.
+	* testsuite/20_util/variant/compile.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/try_emplace/1.cc: Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/try_emplace.cc:
+	Likewise.
+
 2017-11-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml: Move docs.oracle.com references to https.

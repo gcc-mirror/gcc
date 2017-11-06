@@ -39,6 +39,7 @@ struct Val
   {
     val = other.val;
     other.moved_from_assign = true;
+    return *this;
   }
 };
 
