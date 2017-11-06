@@ -1602,21 +1602,20 @@ extract_range_from_ssa_name (value_range *vr, tree var)
 }
 
 
-/* Wrapper around int_const_binop.  If the operation overflows and
-   overflow is undefined, then adjust the result to be
-   -INF or +INF depending on CODE, VAL1 and VAL2.  Sets *OVERFLOW_P
-   to whether the operation overflowed.  For division by zero
-   the result is indeterminate but *OVERFLOW_P is set.  */
+/* Wrapper around int_const_binop.  Return true if we can compute the
+   result; i.e. if the operation doesn't overflow or if the overflow is
+   undefined.  In the latter case (if the operation overflows and
+   overflow is undefined), then adjust the result to be -INF or +INF
+   depending on CODE, VAL1 and VAL2.  Return the value in *RES.
 
-static wide_int
-vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
-		     bool *overflow_p)
+   Return false for division by zero, for which the result is
+   indeterminate.  */
+
+static bool
+vrp_int_const_binop (enum tree_code code, tree val1, tree val2, wide_int *res)
 {
   bool overflow = false;
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
-  wide_int res;
-
-  *overflow_p = false;
 
   switch (code)
     {
@@ -1637,57 +1636,45 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
 	  /* It's unclear from the C standard whether shifts can overflow.
 	     The following code ignores overflow; perhaps a C standard
 	     interpretation ruling is needed.  */
-	  res = wi::rshift (wi::to_wide (val1), wval2, sign);
+	  *res = wi::rshift (wi::to_wide (val1), wval2, sign);
 	else
-	  res = wi::lshift (wi::to_wide (val1), wval2);
+	  *res = wi::lshift (wi::to_wide (val1), wval2);
 	break;
       }
 
     case MULT_EXPR:
-      res = wi::mul (wi::to_wide (val1),
-		     wi::to_wide (val2), sign, &overflow);
+      *res = wi::mul (wi::to_wide (val1),
+		      wi::to_wide (val2), sign, &overflow);
       break;
 
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
       if (val2 == 0)
-	{
-	  *overflow_p = true;
-	  return res;
-	}
+	return false;
       else
-	res = wi::div_trunc (wi::to_wide (val1),
-			     wi::to_wide (val2), sign, &overflow);
+	*res = wi::div_trunc (wi::to_wide (val1),
+			      wi::to_wide (val2), sign, &overflow);
       break;
 
     case FLOOR_DIV_EXPR:
       if (val2 == 0)
-	{
-	  *overflow_p = true;
-	  return res;
-	}
-      res = wi::div_floor (wi::to_wide (val1),
-			   wi::to_wide (val2), sign, &overflow);
+	return false;
+      *res = wi::div_floor (wi::to_wide (val1),
+			    wi::to_wide (val2), sign, &overflow);
       break;
 
     case CEIL_DIV_EXPR:
       if (val2 == 0)
-	{
-	  *overflow_p = true;
-	  return res;
-	}
-      res = wi::div_ceil (wi::to_wide (val1),
-			  wi::to_wide (val2), sign, &overflow);
+	return false;
+      *res = wi::div_ceil (wi::to_wide (val1),
+			   wi::to_wide (val2), sign, &overflow);
       break;
 
     case ROUND_DIV_EXPR:
       if (val2 == 0)
-	{
-	  *overflow_p = 0;
-	  return res;
-	}
-      res = wi::div_round (wi::to_wide (val1),
-			   wi::to_wide (val2), sign, &overflow);
+	return false;
+      *res = wi::div_round (wi::to_wide (val1),
+			    wi::to_wide (val2), sign, &overflow);
       break;
 
     default:
@@ -1730,16 +1717,15 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
 	  || code == CEIL_DIV_EXPR
 	  || code == EXACT_DIV_EXPR
 	  || code == ROUND_DIV_EXPR)
-	return wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)),
+	*res = wi::max_value (TYPE_PRECISION (TREE_TYPE (val1)),
 			      TYPE_SIGN (TREE_TYPE (val1)));
       else
-	return wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
+	*res = wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
 			      TYPE_SIGN (TREE_TYPE (val1)));
+      return true;
     }
 
-  *overflow_p = overflow;
-
-  return res;
+  return !overflow;
 }
 
 
@@ -1835,7 +1821,6 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
 {
   enum value_range_type rtype;
   wide_int val, min, max;
-  bool sop;
   tree type;
 
   /* Multiplications, divisions and shifts are a bit tricky to handle,
@@ -1866,58 +1851,50 @@ extract_range_from_multiplicative_op_1 (value_range *vr,
   signop sgn = TYPE_SIGN (type);
 
   /* Compute the 4 cross operations and their minimum and maximum value.  */
-  sop = false;
-  val = vrp_int_const_binop (code, vr0->min, vr1->min, &sop);
-  if (! sop)
-    min = max = val;
-
-  if (vr1->max == vr1->min)
-    ;
-  else if (! sop)
-    {
-      val = vrp_int_const_binop (code, vr0->min, vr1->max, &sop);
-      if (! sop)
-	{
-	  if (wi::lt_p (val, min, sgn))
-	    min = val;
-	  else if (wi::gt_p (val, max, sgn))
-	    max = val;
-	}
-    }
-
-  if (vr0->max == vr0->min)
-    ;
-  else if (! sop)
-    {
-      val = vrp_int_const_binop (code, vr0->max, vr1->min, &sop);
-      if (! sop)
-	{
-	  if (wi::lt_p (val, min, sgn))
-	    min = val;
-	  else if (wi::gt_p (val, max, sgn))
-	    max = val;
-	}
-    }
-
-  if (vr0->min == vr0->max || vr1->min == vr1->max)
-    ;
-  else if (! sop)
-    {
-      val = vrp_int_const_binop (code, vr0->max, vr1->max, &sop);
-      if (! sop)
-	{
-	  if (wi::lt_p (val, min, sgn))
-	    min = val;
-	  else if (wi::gt_p (val, max, sgn))
-	    max = val;
-	}
-    }
-
-  /* If either operation overflowed, drop to VARYING.  */
-  if (sop)
+  if (!vrp_int_const_binop (code, vr0->min, vr1->min, &val))
     {
       set_value_range_to_varying (vr);
       return;
+    }
+  min = max = val;
+
+  if (vr1->max != vr1->min)
+    {
+      if (!vrp_int_const_binop (code, vr0->min, vr1->max, &val))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+      if (wi::lt_p (val, min, sgn))
+	min = val;
+      else if (wi::gt_p (val, max, sgn))
+	max = val;
+    }
+
+  if (vr0->max != vr0->min)
+    {
+      if (!vrp_int_const_binop (code, vr0->max, vr1->min, &val))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+      if (wi::lt_p (val, min, sgn))
+	min = val;
+      else if (wi::gt_p (val, max, sgn))
+	max = val;
+    }
+
+  if (vr0->min != vr0->max && vr1->min != vr1->max)
+    {
+      if (!vrp_int_const_binop (code, vr0->max, vr1->max, &val))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+      if (wi::lt_p (val, min, sgn))
+	min = val;
+      else if (wi::gt_p (val, max, sgn))
+	max = val;
     }
 
   /* If the new range has its limits swapped around (MIN > MAX),

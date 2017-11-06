@@ -1,3 +1,10 @@
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vrp.c (vrp_int_const_binop): Return true on success and
+	return the value by pointer.
+	(extract_range_from_multiplicative_op_1): Update accordingly.
+	Return as soon as an operation fails.
+
 2017-11-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/82784
