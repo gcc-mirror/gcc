@@ -1,3 +1,43 @@
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/dfp/call-by-value.c (foo32): Return a default
+	value of change return type to void.
+	(foo64): Likewise.
+	(foo128): Likewise.
+	* g++.dg/bprob/g++-bprob-1.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-template.C (f): Likewise.
+	* g++.dg/cpp0x/range-for6.C (foo): Likewise.
+	* g++.dg/cpp0x/udlit-template.C: Likewise.
+	* g++.dg/cpp1z/eval-order3.C (struct A): Likewise.
+	(operator>>): Likewise.
+	* g++.dg/expr/cond12.C (struct X): Likewise.
+	(X::operator=): Likewise.
+	* g++.dg/gcov/gcov-1.C: Likewise.
+	* g++.dg/gcov/gcov-threads-1.C (ContentionNoDeadlock_thread): Likewise.
+	* g++.dg/ipa/devirt-21.C: Likewise.
+	* g++.dg/ipa/devirt-23.C: Likewise.
+	* g++.dg/ipa/devirt-34.C (t): Likewise.
+	* g++.dg/missing-return.C: New test. Likewise.
+	* g++.dg/opt/20050511-1.C (bar): Likewise.
+	* g++.dg/opt/const3.C (A::foo1): Likewise.
+	(A::foo2): Likewise.
+	* g++.dg/opt/pr23299.C (E::c): Likewise.
+	* g++.dg/other/copy2.C (A::operator=): Likewise.
+	* g++.dg/overload/addr1.C: Likewise.
+	* g++.dg/pr48484.C: Likewise.
+	* g++.dg/tls/thread_local3.C (thread_main): Likewise.
+	* g++.dg/tls/thread_local3g.C (thread_main): Likewise.
+	* g++.dg/tls/thread_local5.C (thread_main): Likewise.
+	* g++.dg/tls/thread_local5g.C (thread_main): Likewise.
+	* g++.dg/tls/thread_local6.C (thread_main): Likewise.
+	* g++.dg/tls/thread_local6g.C (thread_main): Likewise.
+	* g++.dg/torture/pr34850.C (OctetString::operator^=): Likewise.
+	* g++.dg/tree-prof/pr79259.C (fn2): Likewise.
+	* g++.dg/tree-ssa/pr33604.C (struct Value): Likewise.
+	* g++.dg/tree-ssa/pr81408.C (struct p): Likewise.
+	(av): Likewise.
+	* g++.dg/warn/string1.C (test): Likewise.
+
 2017-11-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/82471

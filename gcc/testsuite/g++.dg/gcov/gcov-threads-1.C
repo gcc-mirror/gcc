@@ -19,6 +19,8 @@ static void *ContentionNoDeadlock_thread(void *start)
       for (int32_t i = NR - 1; i >= starti; --i)
 	pthread_mutex_unlock (&cndMs[i]);
   }
+
+  return 0;
 }
 int main(int argc, char **argv) {
   for (unsigned i = 0; i < NR; i++)
