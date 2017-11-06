@@ -14303,6 +14303,77 @@ swap_selector_for_mode (machine_mode mode)
   return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm)));
 }
 
+rtx
+swap_endian_selector_for_mode (machine_mode mode)
+{
+  unsigned int le_swap1[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  unsigned int le_swap2[16] = {7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
+  unsigned int le_swap4[16] = {3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
+  unsigned int le_swap8[16] = {1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
+  unsigned int le_swap16[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
+  unsigned int be_swap1[16] = {15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0};
+  unsigned int be_swap2[16] = {7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
+  unsigned int be_swap4[16] = {3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
+  unsigned int be_swap8[16] = {1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
+  unsigned int be_swap16[16] = {15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0};
+  unsigned int *swaparray, i;
+  rtx perm[16];
+
+  if (VECTOR_ELT_ORDER_BIG)
+    switch (mode)
+      {
+      case E_V1TImode:
+	swaparray = le_swap1;
+	break;
+      case E_V2DFmode:
+      case E_V2DImode:
+	swaparray = le_swap2;
+	break;
+      case E_V4SFmode:
+      case E_V4SImode:
+	swaparray = le_swap4;
+	break;
+      case E_V8HImode:
+	swaparray = le_swap8;
+	break;
+      case E_V16QImode:
+	swaparray = le_swap16;
+	break;
+      default:
+	gcc_unreachable ();
+      }
+  else
+    switch (mode)
+      {
+      case E_V1TImode:
+	swaparray = be_swap1;
+	break;
+      case E_V2DFmode:
+      case E_V2DImode:
+	swaparray = be_swap2;
+	break;
+      case E_V4SFmode:
+      case E_V4SImode:
+	swaparray = be_swap4;
+	break;
+      case E_V8HImode:
+	swaparray = be_swap8;
+	break;
+      case E_V16QImode:
+	swaparray = be_swap16;
+	break;
+      default:
+	gcc_unreachable ();
+      }
+
+  for (i = 0; i < 16; ++i)
+    perm[i] = GEN_INT (swaparray[i]);
+
+  return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode,
+						     gen_rtvec_v (16, perm)));
+}
+
 /* Generate code for an "lvxl", or "lve*x" built-in for a little endian target
    with -maltivec=be specified.  Issue the load followed by an element-
    reversing permute.  */
