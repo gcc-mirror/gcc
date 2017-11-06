@@ -787,6 +787,15 @@ finish_static_data_member_decl (tree decl,
       && TYPE_DOMAIN (TREE_TYPE (decl)) == NULL_TREE)
     SET_VAR_HAD_UNKNOWN_BOUND (decl);
 
+  if (init)
+    {
+      /* Similarly to start_decl_1, we want to complete the type in order
+	 to do the right thing in cp_apply_type_quals_to_decl, possibly
+	 clear TYPE_QUAL_CONST (c++/65579).  */
+      tree type = TREE_TYPE (decl) = complete_type (TREE_TYPE (decl));
+      cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
+    }
+
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
 }
 
