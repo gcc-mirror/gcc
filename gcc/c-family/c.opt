@@ -960,7 +960,7 @@ C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code.
 
 Wreturn-type
-C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall) Init(-1)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++).
 
 Wscalar-storage-order

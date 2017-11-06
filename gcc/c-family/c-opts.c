@@ -989,6 +989,9 @@ c_common_post_options (const char **pfilename)
 	flag_extern_tls_init = 1;
     }
 
+  if (warn_return_type == -1)
+    warn_return_type = c_dialect_cxx ();
+
   if (num_in_fnames > 1)
     error ("too many filenames given.  Type %s --help for usage",
 	   progname);

@@ -1,3 +1,10 @@
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82404
+	* c-opts.c (c_common_post_options): Set -Wreturn-type for C++
+	FE.
+	* c.opt: Set default value of warn_return_type.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (binary_op_error): Update for renaming of
