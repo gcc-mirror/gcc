@@ -1,3 +1,8 @@
+2017-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* collect2.c (add_lto_object): Compile for OBJECT_COFF.
+	(scan_prog_file): Don't skip PASS_LTOINFO. Scan for LTO objects.
+
 2017-11-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/82826
