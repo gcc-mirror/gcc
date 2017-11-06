@@ -1,3 +1,10 @@
+2017-11-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (*p9_vadu<mode>3) Rename to
+	p9_vadu<mode>3.
+	(usadv16qi): New define_expand.
+	(usadv8hi): New define_expand.
+
 2017-11-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/82832
