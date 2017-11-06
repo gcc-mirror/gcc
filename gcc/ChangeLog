@@ -1,3 +1,11 @@
+2017-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/82826
+	* ipa-fnsummary.c (ipa_fnsummary_c_finalize): New function.
+	* ipa-fnsummary.h (ipa_fnsummary_c_finalize): New decl.
+	* toplev.c: Include "ipa-fnsummary.h".
+	(toplev::finalize): Call ipa_fnsummary_c_finalize.
+
 2017-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82838

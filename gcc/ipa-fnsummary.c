@@ -3619,3 +3619,12 @@ make_pass_ipa_fn_summary (gcc::context *ctxt)
 {
   return new pass_ipa_fn_summary (ctxt);
 }
+
+/* Reset all state within ipa-fnsummary.c so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_fnsummary_c_finalize (void)
+{
+  ipa_free_fn_summary ();
+}

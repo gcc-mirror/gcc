@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "edit-context.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
+#include "ipa-fnsummary.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -2236,6 +2237,7 @@ toplev::finalize (void)
 
   /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
   ipa_reference_c_finalize ();
+  ipa_fnsummary_c_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();
