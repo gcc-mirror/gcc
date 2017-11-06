@@ -1,6 +1,16 @@
 2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk
+	PR fortran/78641
+	* resolve.c (resolve_ordinary_assign): Do not add the _data
+	component for class valued array constructors being assigned
+	to derived type arrays.
+	* trans-array.c (gfc_trans_array_ctor_element): Take the _data
+	of class valued elements for assignment to derived type arrays.
+
+2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
 	PR fortran/69739
 	* trans-expr.c (gfc_map_intrinsic_function): Return false for
 	bounds without the DIM argument instead of ICEing.
