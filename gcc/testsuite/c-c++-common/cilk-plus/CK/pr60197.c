@@ -1,6 +1,6 @@
 /* PR c/60197 */
 /* { dg-do compile } */
-/* { dg-options "-fcilkplus" } */
+/* { dg-options "-fcilkplus -Wno-return-type" } */
 
 extern int foo (void);
 extern int bar (int);

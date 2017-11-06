@@ -19,4 +19,6 @@ foo (float *x, short *y)
   __m64 c = _mm_cvtps_pi16 (b);
   __builtin_memcpy (y, &c, sizeof (short) * 4);
   y[0] = bar (y[0]);
+
+  return 0;
 }

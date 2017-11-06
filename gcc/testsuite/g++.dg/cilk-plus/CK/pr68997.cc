@@ -16,7 +16,7 @@ struct A2 {
 };
 
 A2 fa2 () {
-  A2 ();
+  return A2 ();
 }
 
 struct B1 {

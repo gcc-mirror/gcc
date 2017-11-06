@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fcilkplus" } */
+/* { dg-options "-fcilkplus -Wno-return-type" } */
 
 int main (void)
 {

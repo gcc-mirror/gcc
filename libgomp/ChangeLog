@@ -1,3 +1,14 @@
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	* testsuite/libgomp.c++/loop-2.C: Return a value
+	for functions with non-void return type, or change type to void,
+	or add -Wno-return-type for test.
+	* testsuite/libgomp.c++/loop-4.C: Likewise.
+	* testsuite/libgomp.c++/parallel-1.C: Likewise.
+	* testsuite/libgomp.c++/shared-1.C: Likewise.
+	* testsuite/libgomp.c++/single-1.C: Likewise.
+	* testsuite/libgomp.c++/single-2.C: Likewise.
+
 2017-10-31  Tom de Vries  <tom@codesourcery.com>
 
 	* plugin/plugin-hsa.c (HSA_LOG): Remove semicolon after

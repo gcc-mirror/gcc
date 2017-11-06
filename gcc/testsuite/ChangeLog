@@ -1,3 +1,34 @@
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/cilk-plus/AN/pr57541-2.c (foo1): Return a value
+	for functions with non-void return type, or change type to void,
+	or add -Wno-return-type for test.
+	(foo2): Likewise.
+	* c-c++-common/cilk-plus/AN/pr57541.c (foo): Likewise.
+	(foo1): Likewise.
+	* c-c++-common/cilk-plus/CK/errors.c: Likewise.
+	* c-c++-common/cilk-plus/CK/pr60197.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawn_in_return.c: Likewise.
+	* c-c++-common/fold-masked-cmp-1.c (test_pic): Likewise.
+	(test_exe): Likewise.
+	* c-c++-common/fold-masked-cmp-2.c (test_exe): Likewise.
+	* g++.dg/cilk-plus/AN/builtin_fn_mutating_tplt.cc (my_func): Likewise.
+	* g++.dg/cilk-plus/CK/pr68997.cc (fa2): Likewise.
+	* g++.dg/eh/sighandle.C (dosegv): Likewise.
+	* g++.dg/ext/vector14.C (foo): Likewise.
+	(main): Likewise.
+	* g++.dg/graphite/pr41305.C: Likewise.
+	* g++.dg/graphite/pr42930.C: Likewise.
+	* g++.dg/opt/pr46640.C (struct QBasicAtomicInt): Likewise.
+	(makeDir): Likewise.
+	* g++.dg/other/i386-8.C (foo): Likewise.
+	* g++.dg/pr45788.C: Likewise.
+	* g++.dg/pr64688.C (at_c): Likewise.
+	* g++.dg/pr65032.C (G::DecodeVorbis): Likewise.
+	* g++.dg/pr71633.C (c3::fn2): Likewise.
+	* g++.dg/stackprotectexplicit2.C (A): Likewise.
+	* g++.old-deja/g++.law/weak.C (main): Likewise.
+
 2017-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/gcov: New directory.

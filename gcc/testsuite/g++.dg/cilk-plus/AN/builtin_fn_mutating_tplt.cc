@@ -15,6 +15,8 @@ T my_func (T *x, T y)
     *x = y;
   else
     *x = *x;
+
+  return T();
 }
 
 template <class T> T my_func (T *x, T y);
