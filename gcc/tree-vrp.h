@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VRP_H
 #define GCC_TREE_VRP_H
 
-/* Type of value ranges.  See value_range_d In tree-vrp.c for a
+/* Type of value ranges.  See value_range below for a
    description of these types.  */
 enum value_range_type { VR_UNDEFINED, VR_RANGE,
 			VR_ANTI_RANGE, VR_VARYING, VR_LAST };
