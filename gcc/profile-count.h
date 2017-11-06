@@ -949,9 +949,9 @@ public:
 	return num;
       if (!initialized_p () || !num.initialized_p () || !den.initialized_p ())
 	return profile_count::uninitialized ();
-      gcc_checking_assert (den.m_val);
       if (num == den)
 	return *this;
+      gcc_checking_assert (den.m_val);
 
       profile_count ret;
       uint64_t val;

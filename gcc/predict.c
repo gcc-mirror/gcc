@@ -3324,8 +3324,7 @@ counts_to_freqs (void)
   basic_block bb;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    if (!(bb->count < true_count_max))
-      true_count_max = true_count_max.max (bb->count);
+    true_count_max = true_count_max.max (bb->count);
 
   cfun->cfg->count_max = true_count_max;
 
