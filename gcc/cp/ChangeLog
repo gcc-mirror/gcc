@@ -1,3 +1,9 @@
+2017-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65579
+	* decl2.c (finish_static_data_member_decl): If there's an initializer,
+	complete the type and re-apply the quals.
+
 2017-11-06  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/82404

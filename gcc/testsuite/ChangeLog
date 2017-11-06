@@ -1,3 +1,8 @@
+2017-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65579
+	* g++.dg/cpp0x/constexpr-template11.C: New.
+
 2017-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82838
