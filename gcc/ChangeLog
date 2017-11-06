@@ -1,3 +1,8 @@
+2017-11-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_insn_cost): Handle TYPE_MFCR and
+	TYPE_MFCRF.
+
 2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vrp.c (vrp_int_const_binop): Return true on success and
