@@ -266,4 +266,6 @@ void estimate_node_size_and_time (struct cgraph_node *node,
 				  vec<inline_param_summary>
 				  inline_param_summary);
 
+void ipa_fnsummary_c_finalize (void);
+
 #endif /* GCC_IPA_FNSUMMARY_H */
