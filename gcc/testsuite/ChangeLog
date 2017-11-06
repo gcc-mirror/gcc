@@ -1,6 +1,12 @@
 2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk
+	PR fortran/78641
+	* gfortran.dg/class_66.f90: New test.
+
+2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
 	PR fortran/69739
 	* gfortran.dg/pr69739.f90: New test.
 

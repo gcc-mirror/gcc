@@ -1441,6 +1441,17 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 	    }
 	}
     }
+  else if (GFC_CLASS_TYPE_P (TREE_TYPE (se->expr))
+	   && !GFC_CLASS_TYPE_P (gfc_get_element_type (TREE_TYPE (desc))))
+    {
+      /* Assignment of a CLASS array constructor to a derived type array.  */
+      if (expr->expr_type == EXPR_FUNCTION)
+	se->expr = gfc_evaluate_now (se->expr, pblock);
+      se->expr = gfc_class_data_get (se->expr);
+      se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+      se->expr = fold_convert (TREE_TYPE (tmp), se->expr);
+      gfc_add_modify (&se->pre, tmp, se->expr);
+    }
   else
     {
       /* TODO: Should the frontend already have done this conversion?  */
