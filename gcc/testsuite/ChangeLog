@@ -1,3 +1,35 @@
+2017-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.c-torture/execute/pr23135.c: Move dg-add-options after
+	dg-options.
+	* gcc.dg/torture/pr78305.c: Move dg-do as first directive.
+	* gcc.misc-tests/gcov-3.c: Likewise.
+	* gcc.target/arm/cmse/baseline/cmse-11.c: Move dg-options before dg-add-options.
+	* gcc.target/arm/cmse/baseline/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/baseline/cmse-2.c: Likewise.
+	* gcc.target/arm/cmse/baseline/cmse-6.c: Likewise.
+	* gcc.target/arm/cmse/baseline/softfp.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/lp1189445.c: Likewise.
+
 2017-11-06  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
 
 	PR c++/80955
