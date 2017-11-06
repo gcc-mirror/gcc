@@ -1,3 +1,7 @@
+2017-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_post_options): Clear warn_return_type.
+
 2017-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/82785
