@@ -2,6 +2,30 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_simd_vect_par_cnst_half):
+	Take the number of units too.
+	* config/aarch64/aarch64.c (aarch64_simd_vect_par_cnst_half): Likewise.
+	(aarch64_simd_check_vect_par_cnst_half): Update call accordingly,
+	but check for a vector mode before rather than after the call.
+	* config/aarch64/aarch64-simd.md (aarch64_split_simd_mov<mode>)
+	(move_hi_quad_<mode>, vec_unpack<su>_hi_<mode>)
+	(vec_unpack<su>_lo_<mode, vec_widen_<su>mult_lo_<mode>)
+	(vec_widen_<su>mult_hi_<mode>, vec_unpacks_lo_<mode>)
+	(vec_unpacks_hi_<mode>, aarch64_saddl2<mode>, aarch64_uaddl2<mode>)
+	(aarch64_ssubl2<mode>, aarch64_usubl2<mode>, widen_ssum<mode>3)
+	(widen_usum<mode>3, aarch64_saddw2<mode>, aarch64_uaddw2<mode>)
+	(aarch64_ssubw2<mode>, aarch64_usubw2<mode>, aarch64_sqdmlal2<mode>)
+	(aarch64_sqdmlsl2<mode>, aarch64_sqdmlal2_lane<mode>)
+	(aarch64_sqdmlal2_laneq<mode>, aarch64_sqdmlsl2_lane<mode>)
+	(aarch64_sqdmlsl2_laneq<mode>, aarch64_sqdmlal2_n<mode>)
+	(aarch64_sqdmlsl2_n<mode>, aarch64_sqdmull2<mode>)
+	(aarch64_sqdmull2_lane<mode>, aarch64_sqdmull2_laneq<mode>)
+	(aarch64_sqdmull2_n<mode>): Update accordingly.
+
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_reverse_mask): Take
 	the number of units too.
 	* config/aarch64/aarch64.c (aarch64_reverse_mask): Likewise.

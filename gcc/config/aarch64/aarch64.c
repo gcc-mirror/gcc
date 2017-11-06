@@ -11757,12 +11757,12 @@ Architecture    3   2   1   0           3   2   1   0
 
 Low Mask:         { 2, 3 }                { 0, 1 }
 High Mask:        { 0, 1 }                { 2, 3 }
-*/
+
+   MODE Is the mode of the vector and NUNITS is the number of units in it.  */
 
 rtx
-aarch64_simd_vect_par_cnst_half (machine_mode mode, bool high)
+aarch64_simd_vect_par_cnst_half (machine_mode mode, int nunits, bool high)
 {
-  int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits / 2);
   int high_base = nunits / 2;
   int low_base = 0;
@@ -11791,13 +11791,14 @@ bool
 aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
 				       bool high)
 {
-  rtx ideal = aarch64_simd_vect_par_cnst_half (mode, high);
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  rtx ideal = aarch64_simd_vect_par_cnst_half (mode, GET_MODE_NUNITS (mode),
+					       high);
   HOST_WIDE_INT count_op = XVECLEN (op, 0);
   HOST_WIDE_INT count_ideal = XVECLEN (ideal, 0);
   int i = 0;
-
-  if (!VECTOR_MODE_P (mode))
-    return false;
 
   if (count_op != count_ideal)
     return false;
