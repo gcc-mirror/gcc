@@ -14,6 +14,6 @@ f (void)
 /* { dg-final { scan-assembler-not "or\[ql\]" } } */
 /* { dg-final { scan-assembler "pushl	%esi" { target ia32 } } } */
 /* { dg-final { scan-assembler "popl	%esi" { target ia32 } } }*/
-/* { dg-final { scan-assembler "pushq	%rax" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "popq	%rax" { target { ! ia32 } } } }*/
+/* { dg-final { scan-assembler "pushq	%rax" { target ! { ia32 } } } } */
+/* { dg-final { scan-assembler "popq	%rax" { target ! { ia32 } } } }*/
 
