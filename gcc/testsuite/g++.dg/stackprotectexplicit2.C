@@ -7,6 +7,7 @@ int A()
 {
 	int A[23];
 	char b[22];
+	return 0;
 }
 
 int __attribute__((stack_protect)) B()

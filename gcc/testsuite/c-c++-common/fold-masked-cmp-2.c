@@ -36,6 +36,8 @@ int test_exe (struct bfd_link_info *info)
 {
   if (bfd_link_executable (info))
     result++;
+
+  return 0;
 }
 
 /* { dg-final { scan-assembler-times "testn?b" 2 } } */

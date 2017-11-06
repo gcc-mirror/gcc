@@ -1,3 +1,13 @@
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	* testsuite/27_io/basic_fstream/cons/char/path.cc (main):
+	  Return a value for functions with non-void return type,
+	  or change type to void, or add -Wno-return-type for test.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc (main):
+	Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/path.cc (main):
+	Likewise.
+
 2017-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/20_util/optional/cons/deduction.cc: Avoid -Wreturn-type
