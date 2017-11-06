@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_reverse_mask): Take
+	the number of units too.
+	* config/aarch64/aarch64.c (aarch64_reverse_mask): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_load_lanesoi<mode>)
+	(vec_store_lanesoi<mode>, vec_load_lanesci<mode>)
+	(vec_store_lanesci<mode>, vec_load_lanesxi<mode>)
+	(vec_store_lanesxi<mode>): Update accordingly.
+
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_endian_lane_rtx): Declare.
 	* config/aarch64/aarch64.c (aarch64_endian_lane_rtx): New function.
 	* config/aarch64/aarch64.h (ENDIAN_LANE_N): Take the number

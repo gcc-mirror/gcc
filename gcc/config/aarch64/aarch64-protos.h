@@ -352,7 +352,7 @@ bool aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode, rtx, rtx);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, machine_mode);
-rtx aarch64_reverse_mask (machine_mode);
+rtx aarch64_reverse_mask (machine_mode, unsigned int);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, scalar_int_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned,
