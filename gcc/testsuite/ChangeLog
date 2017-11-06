@@ -1,3 +1,9 @@
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.c-torture/compile/pr82816.c: New test.
+
 2017-11-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/sad-vectorize-1.c: New file.
