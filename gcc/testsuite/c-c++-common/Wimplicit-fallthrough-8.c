@@ -4,7 +4,7 @@
 
 extern void grace (int);
 
-int
+void
 fn1 (int i)
 {
   switch (i)
@@ -16,7 +16,7 @@ fn1 (int i)
 done:;
 }
 
-int
+void
 fn2 (int i)
 {
   switch (i)
@@ -32,7 +32,7 @@ fn2 (int i)
 done:;
 }
 
-int
+void
 fn3 (int i)
 {
   switch (i)
@@ -46,7 +46,7 @@ fn3 (int i)
 done:;
 }
 
-int
+void
 fn4 (int i)
 {
   switch (i)
@@ -64,7 +64,7 @@ fn4 (int i)
 done:;
 }
 
-int
+void
 fn5 (int i)
 {
   switch (i)
@@ -83,7 +83,7 @@ fn5 (int i)
 done:;
 }
 
-int
+void
 fn6 (int i)
 {
   switch (i)

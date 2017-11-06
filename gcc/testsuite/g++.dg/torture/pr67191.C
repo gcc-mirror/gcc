@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename> class A;
 template <typename _Tp> using __allocator_base = _Tp;

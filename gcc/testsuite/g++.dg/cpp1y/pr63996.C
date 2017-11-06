@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-additional-options "-Wno-return-type" }
 
 constexpr int
 foo (int i)

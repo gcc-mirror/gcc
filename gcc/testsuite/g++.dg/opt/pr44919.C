@@ -1,5 +1,6 @@
 // { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } }
 // { dg-options "-O3 -fselective-scheduling2" }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std {
 
@@ -9,7 +10,7 @@ template<typename _Tp> class new_allocator { public: typedef size_t size_type; t
 template<typename _Tp> class allocator: public new_allocator<_Tp> { public: typedef size_t size_type; template<typename _Tp1> struct rebind { typedef allocator<_Tp1> other; }; };
 
 class back_insert_iterator { };
-template<typename _Container> back_insert_iterator back_inserter(_Container& __x) { };
+template<typename _Container> back_insert_iterator back_inserter(_Container& __x) { return back_insert_iterator(); };
 
 class vector { };
 
@@ -99,6 +100,7 @@ namespace internal {
   };
   template <class K> Object intersection( const typename K::Segment_2 &seg, const typename K::Iso_rectangle_2 &iso, const K&) {
     typedef Segment_2_Iso_rectangle_2_pair<K> is_t; is_t ispair(&seg, &iso); switch (ispair.intersection_type()) { }
+    return Object();
   }
   template <class K> typename Segment_2_Iso_rectangle_2_pair<K>::Intersection_results Segment_2_Iso_rectangle_2_pair<K>::intersection_type() const {
     typedef typename K::RT RT;

@@ -12,7 +12,7 @@ template<NameProvider... ColSpec>
 void getTable(const ColSpec&...)
 {}
 
-int f()
+void f()
 {
   getTable(7, 'a'); // { dg-error "cannot call" }
 };

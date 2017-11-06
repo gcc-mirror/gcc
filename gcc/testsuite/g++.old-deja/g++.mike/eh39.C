@@ -18,6 +18,7 @@ D::D() try : B() {
   throw;
 }
 
+int
 main() {
   try {
     D d;

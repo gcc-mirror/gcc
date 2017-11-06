@@ -5,7 +5,7 @@
 // C++ version of Wparentheses-11.c
 int foo (int);
 
-int
+void
 bar (int a, int b, int c)
 {
   foo (!a & b); /* { dg-warning "parentheses" "correct warning" } */
@@ -156,7 +156,7 @@ bar (int a, int b, int c)
 }
 
 
-int
+void
 baz (int a, int b, int c)
 {
   foo (!a & (b << c));/* { dg-warning "parentheses" "correct warning" } */

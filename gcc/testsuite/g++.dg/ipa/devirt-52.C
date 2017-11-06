@@ -1,6 +1,7 @@
 // PR middle-end/77259
 // { dg-do compile { target c++11 } }
 // { dg-options "-O2" }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename, typename = int> class A;
 template <typename, typename> struct A

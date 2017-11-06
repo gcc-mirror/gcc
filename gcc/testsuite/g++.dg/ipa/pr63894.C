@@ -43,4 +43,5 @@ J::m_fn3 (G *p1)
   p1->m_fn1 (0, D (0, D::BOX, 0));
   K *d = new (0) K (0, m_fn2 (0));
   m_fn3 (d);
+  return true;
 }

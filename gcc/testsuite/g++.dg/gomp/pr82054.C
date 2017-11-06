@@ -10,4 +10,6 @@ a::b ()
 {
 #pragma omp parallel
   ;
+
+  return true;
 }

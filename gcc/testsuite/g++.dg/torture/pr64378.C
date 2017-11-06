@@ -5,7 +5,7 @@ struct data {
 };
 
 struct top {
-  virtual int topf() {}
+  virtual int topf() { return 0; }
 };
 
 struct child1: top {

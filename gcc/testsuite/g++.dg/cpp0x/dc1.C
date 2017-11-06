@@ -27,7 +27,7 @@ struct D : public C {
 	D (int _i) : C(), i(_i) { }
 	D () : D(-1) { }
 	virtual ~D() { }
-	virtual int f () { }
+	virtual int f () { return 0; }
 };
 
 void f_D () { C* c = new D(); }

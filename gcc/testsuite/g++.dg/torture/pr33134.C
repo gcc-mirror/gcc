@@ -18,4 +18,5 @@ bool fxsaveGIF (FXStream &store)
   c1 = 0x80;
   c1 |= (bitsperpixel - 1) << 4;
   store << c1;
+  return true;
 }

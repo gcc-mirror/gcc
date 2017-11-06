@@ -1,5 +1,602 @@
 2017-11-06  Martin Liska  <mliska@suse.cz>
 
+	* c-c++-common/Wimplicit-fallthrough-8.c: Return a value for
+	functions with non-void return type, or change type to void, or
+	add -Wno-return-type for test.
+	* c-c++-common/asan/pr63638.c (f): Likewise.
+	* c-c++-common/goacc/parallel-1.c (firstprivate): Likewise.
+	* c-c++-common/gomp/sink-1.c (depend): Likewise.
+	* c-c++-common/missing-symbol.c: Likewise.
+	* c-c++-common/pr36513-2.c (main2): Likewise.
+	* c-c++-common/pr36513.c (main1): Likewise.
+	* c-c++-common/pr49706-2.c: Likewise.
+	* c-c++-common/pr65120.c: Likewise.
+	* c-c++-common/tm/volatile-1.c (f): Likewise.
+	* c-c++-common/vector-1.c (f): Likewise.
+	* c-c++-common/vector-2.c (f): Likewise.
+	* g++.dg/abi/abi-tag14.C (f): Likewise.
+	(g): Likewise.
+	* g++.dg/abi/abi-tag18.C (f): Likewise.
+	* g++.dg/abi/abi-tag18a.C (f): Likewise.
+	* g++.dg/abi/covariant2.C (struct c3): Likewise.
+	(struct c7): Likewise.
+	* g++.dg/abi/covariant3.C (c1::f6): Likewise.
+	* g++.dg/abi/mangle7.C (f1): Likewise.
+	* g++.dg/asan/pr81340.C (class e): Likewise.
+	(e::f): Likewise.
+	* g++.dg/concepts/fn8.C (struct S): Likewise.
+	* g++.dg/concepts/pr65575.C (f): Likewise.
+	* g++.dg/concepts/template-parm11.C (f): Likewise.
+	* g++.dg/conversion/op6.C: Likewise.
+	* g++.dg/cpp0x/Wunused-variable-1.C (foo): Likewise.
+	* g++.dg/cpp0x/access01.C: Likewise.
+	* g++.dg/cpp0x/alignas3.C (class alignas): Likewise.
+	* g++.dg/cpp0x/auto2.C (f): Likewise.
+	(struct A): Likewise.
+	(main): Likewise.
+	* g++.dg/cpp0x/constexpr-array17.C (struct D): Likewise.
+	* g++.dg/cpp0x/constexpr-defarg2.C (a): Likewise.
+	(B::foo): Likewise.
+	(B::bar): Likewise.
+	* g++.dg/cpp0x/constexpr-memfn1.C (struct Y): Likewise.
+	* g++.dg/cpp0x/dc1.C (struct D): Likewise.
+	* g++.dg/cpp0x/dc3.C (struct D): Likewise.
+	* g++.dg/cpp0x/decltype12.C: Likewise.
+	* g++.dg/cpp0x/decltype17.C (main): Likewise.
+	* g++.dg/cpp0x/decltype3.C: Likewise.
+	* g++.dg/cpp0x/decltype41.C (struct C): Likewise.
+	(struct D): Likewise.
+	* g++.dg/cpp0x/defaulted28.C (f): Likewise.
+	* g++.dg/cpp0x/enum_base3.C (struct D): Likewise.
+	* g++.dg/cpp0x/gen-attrs-4.C (five): Likewise.
+	* g++.dg/cpp0x/initlist96.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-58566.C (struct A): Likewise.
+	* g++.dg/cpp0x/lambda/lambda-conv10.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-conv12.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-defarg3.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ice3.C (Klass::dostuff): Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ice5.C (foo): Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nested2.C (f1): Likewise.
+	* g++.dg/cpp0x/lambda/lambda-template12.C (class X): Likewise.
+	* g++.dg/cpp0x/lambda/lambda-template2.C (struct T): Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this12.C (struct A): Likewise.
+	* g++.dg/cpp0x/nolinkage1.C (main): Likewise.
+	* g++.dg/cpp0x/nolinkage1a.cc (dummy): Likewise.
+	* g++.dg/cpp0x/nsdmi-template5.C: Likewise.
+	* g++.dg/cpp0x/parse1.C (B::B): Likewise.
+	* g++.dg/cpp0x/pr34054.C (foo): Likewise.
+	* g++.dg/cpp0x/pr47416.C: Likewise.
+	* g++.dg/cpp0x/pr58781.C: Likewise.
+	* g++.dg/cpp0x/pr70538.C: Likewise.
+	* g++.dg/cpp0x/pr81325.C: Likewise.
+	* g++.dg/cpp0x/range-for13.C (begin): Likewise.
+	(end): Likewise.
+	* g++.dg/cpp0x/range-for14.C (begin): Likewise.
+	(end): Likewise.
+	* g++.dg/cpp0x/rv2n.C (test2_18): Likewise.
+	(test2_28): Likewise.
+	(test2_38): Likewise.
+	(test2_58): Likewise.
+	(test2_68): Likewise.
+	(test2_78): Likewise.
+	* g++.dg/cpp0x/rv3n.C (test3_128): Likewise.
+	* g++.dg/cpp0x/static_assert10.C (foo): Likewise.
+	* g++.dg/cpp0x/static_assert11.C (struct A): Likewise.
+	* g++.dg/cpp0x/static_assert12.C: Likewise.
+	* g++.dg/cpp0x/static_assert13.C: Likewise.
+	* g++.dg/cpp0x/trailing1.C (struct A): Likewise.
+	* g++.dg/cpp0x/trailing5.C (foo): Likewise.
+	(bar): Likewise.
+	* g++.dg/cpp0x/variadic114.C: Likewise.
+	* g++.dg/cpp0x/variadic57.C (Dims...>::foo): Likewise.
+	(bar): Likewise.
+	* g++.dg/cpp0x/variadic65.C: Likewise.
+	* g++.dg/cpp0x/variadic66.C (bind): Likewise.
+	* g++.dg/cpp0x/variadic97.C: Likewise.
+	* g++.dg/cpp0x/variadic98.C (__attribute__): Likewise.
+	* g++.dg/cpp1y/auto-fn11.C: Likewise.
+	* g++.dg/cpp1y/auto-fn29.C: Likewise.
+	* g++.dg/cpp1y/auto-fn38.C: Likewise.
+	* g++.dg/cpp1y/constexpr-return2.C: Likewise.
+	* g++.dg/cpp1y/lambda-init7.C (foo): Likewise.
+	* g++.dg/cpp1y/pr63996.C: Likewise.
+	* g++.dg/cpp1y/pr65202.C: Likewise.
+	* g++.dg/cpp1y/pr66443-cxx14.C (Ok): Likewise.
+	* g++.dg/cpp1y/pr79253.C (struct D): Likewise.
+	* g++.dg/cpp1y/static_assert1.C: Likewise.
+	* g++.dg/cpp1y/static_assert2.C: Likewise.
+	* g++.dg/cpp1y/var-templ44.C: Likewise.
+	* g++.dg/cpp1z/fold6.C (f): Likewise.
+	* g++.dg/cpp1z/inline-var2.C (foo): Likewise.
+	* g++.dg/cpp1z/lambda-this1.C (struct B): Likewise.
+	* g++.dg/cpp1z/static_assert-nomsg.C: Likewise.
+	* g++.dg/debug/dwarf-eh-personality-1.C (foobar): Likewise.
+	* g++.dg/debug/dwarf2/dwarf4-typedef.C (struct B): Likewise.
+	* g++.dg/debug/dwarf2/icf.C: Likewise.
+	* g++.dg/debug/dwarf2/pr61433.C (main): Likewise.
+	* g++.dg/debug/nullptr01.C (g): Likewise.
+	* g++.dg/debug/pr16792.C (foo): Likewise.
+	* g++.dg/debug/pr46241.C (class btCollisionWorld): Likewise.
+	* g++.dg/debug/pr46338.C (struct S): Likewise.
+	* g++.dg/debug/pr47106.C (baz): Likewise.
+	(bar): Likewise.
+	(foo): Likewise.
+	* g++.dg/debug/pr71057.C (fn1): Likewise.
+	* g++.dg/debug/pr71432.C (class CLIParameterType): Likewise.
+	(CLIParameterType::checkSwitched): Likewise.
+	* g++.dg/debug/pr80461.C (struct B): Likewise.
+	* g++.dg/dfp/44473-1.C (bar): Likewise.
+	* g++.dg/dfp/44473-2.C (bar): Likewise.
+	(foo): Likewise.
+	* g++.dg/eh/builtin1.C: Likewise.
+	* g++.dg/eh/builtin2.C: Likewise.
+	* g++.dg/eh/builtin3.C: Likewise.
+	* g++.dg/eh/pr45569.C (j): Likewise.
+	* g++.dg/eh/unwind2.C: Likewise.
+	* g++.dg/expr/bitfield11.C: Likewise.
+	* g++.dg/expr/static_cast7.C (f): Likewise.
+	* g++.dg/ext/altivec-14.C: Likewise.
+	* g++.dg/ext/asm13.C (fn1): Likewise.
+	* g++.dg/ext/builtin-object-size3.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign_odr.C (main): Likewise.
+	(S::operator=): Likewise.
+	* g++.dg/ext/label7.C (f): Likewise.
+	* g++.dg/ext/label8.C (f): Likewise.
+	* g++.dg/ext/tmplattr7.C (test): Likewise.
+	* g++.dg/ext/vector8.C (f): Likewise.
+	* g++.dg/ext/visibility/anon1.C: Likewise.
+	* g++.dg/ext/visibility/anon2.C (f): Likewise.
+	* g++.dg/ext/visibility/namespace1.C (__attribute): Likewise.
+	* g++.dg/ext/vla16.C (fn1): Likewise.
+	* g++.dg/goacc/reference.C: Likewise.
+	* g++.dg/gomp/pr37189.C: Likewise.
+	* g++.dg/gomp/pr39495-1.C: Likewise.
+	* g++.dg/gomp/pr39495-2.C: Likewise.
+	* g++.dg/gomp/pr82054.C: Likewise.
+	* g++.dg/inherit/covariant10.C (struct c6): Likewise.
+	(struct c17): Likewise.
+	* g++.dg/inherit/covariant11.C (struct c1): Likewise.
+	(struct c3): Likewise.
+	(struct c11): Likewise.
+	(struct c15): Likewise.
+	* g++.dg/inherit/protected1.C (A::operator==): Likewise.
+	* g++.dg/init/inline1.C (struct A): Likewise.
+	* g++.dg/init/new18.C: Likewise.
+	* g++.dg/init/reference2.C (f): Likewise.
+	* g++.dg/init/reference3.C: Likewise.
+	* g++.dg/init/switch1.C (f): Likewise.
+	* g++.dg/ipa/devirt-10.C (struct wxDCBase): Likewise.
+	* g++.dg/ipa/devirt-13.C (main): Likewise.
+	* g++.dg/ipa/devirt-14.C (main): Likewise.
+	* g++.dg/ipa/devirt-15.C (main): Likewise.
+	* g++.dg/ipa/devirt-16.C (main): Likewise.
+	* g++.dg/ipa/devirt-17.C (main): Likewise.
+	* g++.dg/ipa/devirt-18.C (main): Likewise.
+	* g++.dg/ipa/devirt-19.C: Likewise.
+	* g++.dg/ipa/devirt-21.C (main): Likewise.
+	* g++.dg/ipa/devirt-23.C (main): Likewise.
+	* g++.dg/ipa/devirt-38.C: Likewise.
+	* g++.dg/ipa/devirt-40.C (A::m_fn1): Likewise.
+	* g++.dg/ipa/devirt-41.C (main): Likewise.
+	* g++.dg/ipa/devirt-42.C (main): Likewise.
+	* g++.dg/ipa/devirt-44.C (struct A): Likewise.
+	(main): Likewise.
+	* g++.dg/ipa/devirt-45.C (struct A): Likewise.
+	(main): Likewise.
+	* g++.dg/ipa/devirt-48.C (struct B): Likewise.
+	(struct D): Likewise.
+	* g++.dg/ipa/devirt-52.C: Likewise.
+	* g++.dg/ipa/nothrow-1.C (main): Likewise.
+	* g++.dg/ipa/pr43812.C (LocalSurface::bbox): Likewise.
+	* g++.dg/ipa/pr44372.C: Likewise.
+	* g++.dg/ipa/pr45572-1.C (fgetc_unlocked): Likewise.
+	(putc_unlocked): Likewise.
+	(getline): Likewise.
+	(ferror_unlocked): Likewise.
+	* g++.dg/ipa/pr58371.C: Likewise.
+	* g++.dg/ipa/pr59176.C: Likewise.
+	* g++.dg/ipa/pr60640-1.C (class G): Likewise.
+	* g++.dg/ipa/pr61540.C (struct top): Likewise.
+	* g++.dg/ipa/pr63470.C (class FTjackSupport): Likewise.
+	* g++.dg/ipa/pr63587-1.C: Likewise.
+	* g++.dg/ipa/pr63587-2.C: Likewise.
+	* g++.dg/ipa/pr63838.C (__attribute__): Likewise.
+	* g++.dg/ipa/pr63894.C (J::m_fn3): Likewise.
+	* g++.dg/ipa/pr64068.C (class A): Likewise.
+	(A::m_fn2): Likewise.
+	(class C): Likewise.
+	* g++.dg/ipa/pr64896.C (struct D): Likewise.
+	* g++.dg/ipa/pr65002.C: Likewise.
+	* g++.dg/ipa/pr65008.C (__attribute__): Likewise.
+	* g++.dg/ipa/pr65465.C (struct D): Likewise.
+	* g++.dg/ipa/pr66896.C (struct A): Likewise.
+	* g++.dg/ipa/pr68851.C (class G): Likewise.
+	(C::checkPseudoClass): Likewise.
+	* g++.dg/ipa/pr78211.C: Likewise.
+	* g++.dg/ipa/pr79931.C (AttrImpl::insertBefore): Likewise.
+	* g++.dg/ipa/pure-const-1.C (main): Likewise.
+	* g++.dg/ipa/pure-const-2.C (main): Likewise.
+	* g++.dg/ipa/pure-const-3.C (main): Likewise.
+	* g++.dg/ipa/remref-1.C (main): Likewise.
+	* g++.dg/ipa/remref-2.C (main): Likewise.
+	* g++.dg/lookup/builtin2.C (f): Likewise.
+	* g++.dg/lookup/crash3.C (struct A): Likewise.
+	(struct B): Likewise.
+	(crash): Likewise.
+	* g++.dg/lookup/friend20.C: Likewise.
+	* g++.dg/lookup/pr80891-5.C (vf2_subgraph_iso): Likewise.
+	* g++.dg/lookup/struct2.C (A::c): Likewise.
+	* g++.dg/lto/20080709_0.C (f): Likewise.
+	* g++.dg/lto/20080907_0.C: Likewise.
+	* g++.dg/lto/20080915_0.C (struct Baz): Likewise.
+	* g++.dg/lto/20080916_0.C (g): Likewise.
+	* g++.dg/lto/20081022_0.C (main): Likewise.
+	* g++.dg/lto/20081023_0.C (main): Likewise.
+	* g++.dg/lto/20081118_0.C (foo::method): Likewise.
+	* g++.dg/lto/20081118_1.C (bar::method): Likewise.
+	* g++.dg/lto/20081120-1_0.C: Likewise.
+	* g++.dg/lto/20081120-1_1.C: Likewise.
+	* g++.dg/lto/20081127_1.C (main): Likewise.
+	* g++.dg/lto/20081217-2_0.C (struct A): Likewise.
+	* g++.dg/lto/20090303_0.C: Likewise.
+	* g++.dg/lto/20090311-1_0.C: Likewise.
+	* g++.dg/lto/20090312_0.C: Likewise.
+	* g++.dg/lto/20090315_0.C (main): Likewise.
+	* g++.dg/lto/20091002-1_0.C: Likewise.
+	* g++.dg/lto/20091002-2_0.C (class DataArray): Likewise.
+	* g++.dg/lto/20091002-3_0.C (class DataArray): Likewise.
+	* g++.dg/lto/20091004-1_0.C: Likewise.
+	* g++.dg/lto/20091004-2_0.C: Likewise.
+	* g++.dg/lto/20091004-3_1.C (All_Torus_Intersections): Likewise.
+	* g++.dg/lto/20100721-1_0.C (__gthread_active_p): Likewise.
+	* g++.dg/lto/20101010-1_0.C: Likewise.
+	* g++.dg/lto/20101010-2_0.C: Likewise.
+	* g++.dg/lto/pr45679-1_0.C: Likewise.
+	* g++.dg/lto/pr45679-1_1.C: Likewise.
+	* g++.dg/lto/pr45679-2_0.C: Likewise.
+	* g++.dg/lto/pr48042_0.C (B::x): Likewise.
+	* g++.dg/lto/pr51650-1_0.C (fn): Likewise.
+	(main): Likewise.
+	* g++.dg/lto/pr51650-3_0.C (fn): Likewise.
+	(main): Likewise.
+	* g++.dg/lto/pr63270_1.C: Likewise.
+	* g++.dg/lto/pr65193_0.C: Likewise.
+	* g++.dg/lto/pr65302_0.C: Likewise.
+	* g++.dg/lto/pr65316_0.C: Likewise.
+	* g++.dg/lto/pr65475c_0.C: Likewise.
+	* g++.dg/lto/pr65549_0.C (main): Likewise.
+	* g++.dg/lto/pr69077_0.C (cWeightedStdDev::netPack): Likewise.
+	* g++.dg/lto/pr69589_0.C: Likewise.
+	* g++.dg/opt/combine.C (qvariant_cast): Likewise.
+	(QScriptDebuggerBackendPrivate::trace): Likewise.
+	* g++.dg/opt/complex3.C (j): Likewise.
+	* g++.dg/opt/covariant1.C (struct T): Likewise.
+	* g++.dg/opt/declone3.C (Item::m_fn1): Likewise.
+	* g++.dg/opt/dump1.C (__attribute__): Likewise.
+	* g++.dg/opt/inline15.C (struct C): Likewise.
+	(fn2): Likewise.
+	* g++.dg/opt/local1.C (h): Likewise.
+	* g++.dg/opt/memcpy1.C (csBoxClipper::Clip): Likewise.
+	* g++.dg/opt/new1.C: Likewise.
+	* g++.dg/opt/nrv8.C (main): Likewise.
+	* g++.dg/opt/pr23299.C (struct A): Likewise.
+	(struct B): Likewise.
+	(struct C): Likewise.
+	* g++.dg/opt/pr27826.C (struct Geometry): Likewise.
+	* g++.dg/opt/pr44919.C (back_inserter): Likewise.
+	* g++.dg/opt/pr47615.C (main): Likewise.
+	* g++.dg/opt/pr55329.C (struct A): Likewise.
+	* g++.dg/opt/pr61456.C (Set): Likewise.
+	* g++.dg/opt/pr65003.C (D::foo): Likewise.
+	(F::foo): Likewise.
+	* g++.dg/opt/pr65554.C: Likewise.
+	* g++.dg/opt/pr69432.C (struct C): Likewise.
+	* g++.dg/opt/pr78373.C (struct D): Likewise.
+	(Traits>::m_fn4): Likewise.
+	* g++.dg/opt/pr79267.C (struct F): Likewise.
+	* g++.dg/opt/pr82159-2.C: Likewise.
+	* g++.dg/other/array3.C (reserve): Likewise.
+	* g++.dg/other/crash-5.C (f): Likewise.
+	* g++.dg/other/crash-8.C: Likewise.
+	* g++.dg/other/error34.C (S): Likewise.
+	* g++.dg/other/pr22003.C (c3::func): Likewise.
+	* g++.dg/other/pr24623.C (RefCountPointer): Likewise.
+	* g++.dg/other/pr29610.C (struct __normal_iterator): Likewise.
+	(Painter::for_each): Likewise.
+	(Painter::redraw_window): Likewise.
+	* g++.dg/other/pr42645-1.C (struct S): Likewise.
+	* g++.dg/other/pr42645-2.C (foo): Likewise.
+	(f3): Likewise.
+	* g++.dg/other/pr52048.C: Likewise.
+	* g++.dg/other/typedef3.C (XalanCProcessor::getParseOption): Likewise.
+	* g++.dg/overload/defarg4.C (class foo): Likewise.
+	(bar::Initialize): Likewise.
+	* g++.dg/overload/operator5.C (equalIgnoringCase): Likewise.
+	* g++.dg/overload/ref-conv1.C: Likewise.
+	* g++.dg/overload/template5.C (test): Likewise.
+	* g++.dg/parse/crash40.C (class AAA): Likewise.
+	* g++.dg/parse/crash61.C: Likewise.
+	* g++.dg/parse/crash67.C: Likewise.
+	* g++.dg/parse/ctor5.C: Likewise.
+	* g++.dg/parse/defarg4.C (Foo): Likewise.
+	* g++.dg/parse/defarg6.C: Likewise.
+	* g++.dg/parse/error5.C (class Foo): Likewise.
+	* g++.dg/parse/expr2.C (foo): Likewise.
+	* g++.dg/parse/friend7.C: Likewise.
+	* g++.dg/parse/namespace1.C (bar): Likewise.
+	* g++.dg/parse/namespace9.C (g): Likewise.
+	* g++.dg/parse/ret-type2.C: Likewise.
+	* g++.dg/parse/typedef8.C (foo): Likewise.
+	* g++.dg/pch/static-1.C (LocalStaticTest): Likewise.
+	(main): Likewise.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C (test_structure_references): Likewise.
+	(test_postfix_incdec): Likewise.
+	(test_sizeof): Likewise.
+	(test_alignof): Likewise.
+	(test_prefix_incdec): Likewise.
+	* g++.dg/plugin/dumb-plugin-test-1.C (func): Likewise.
+	* g++.dg/plugin/self-assign-test-1.C (func): Likewise.
+	* g++.dg/plugin/self-assign-test-2.C (func): Likewise.
+	* g++.dg/plugin/self-assign-test-3.C (func): Likewise.
+	* g++.dg/pr55513.C (main): Likewise.
+	* g++.dg/pr55604.C (main): Likewise.
+	* g++.dg/pr57662.C: Likewise.
+	* g++.dg/pr58389.C (F::m_fn1): Likewise.
+	* g++.dg/pr59510.C: Likewise.
+	* g++.dg/pr67989.C: Likewise.
+	* g++.dg/pr70590-2.C: Likewise.
+	* g++.dg/pr70590.C: Likewise.
+	* g++.dg/pr70965.C (foo): Likewise.
+	* g++.dg/pr77550.C: Likewise.
+	* g++.dg/pr80287.C (struct A): Likewise.
+	* g++.dg/pr80707.C (A::m_fn1): Likewise.
+	* g++.dg/pr81194.C: Likewise.
+	* g++.dg/spellcheck-identifiers.C: Likewise.
+	* g++.dg/tc1/dr152.C: Likewise.
+	* g++.dg/template/aggr-init1.C (CreateA): Likewise.
+	* g++.dg/template/anon1.C (struct x): Likewise.
+	(struct vector): Likewise.
+	* g++.dg/template/array29.C: Likewise.
+	* g++.dg/template/array7.C (bar): Likewise.
+	* g++.dg/template/canon-type-8.C: Likewise.
+	* g++.dg/template/conv1.C (First::Foo): Likewise.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/crash23.C (f): Likewise.
+	* g++.dg/template/crash8.C (struct bar): Likewise.
+	* g++.dg/template/defarg4.C (struct A): Likewise.
+	* g++.dg/template/dependent-expr9.C: Likewise.
+	* g++.dg/template/error10.C (Btest): Likewise.
+	* g++.dg/template/friend32.C (f): Likewise.
+	* g++.dg/template/init6.C (Graph::Inner::get): Likewise.
+	(main): Likewise.
+	* g++.dg/template/memfriend7.C (A::h): Likewise.
+	* g++.dg/template/new10.C (Analyzer::ReadDictionary): Likewise.
+	* g++.dg/template/nontype12.C (baz): Likewise.
+	* g++.dg/template/overload12.C (foo2): Likewise.
+	* g++.dg/template/overload5.C (foo::f): Likewise.
+	* g++.dg/template/overload8.C (struct A): Likewise.
+	* g++.dg/template/partial10.C (fn): Likewise.
+	(main): Likewise.
+	* g++.dg/template/partial9.C (f): Likewise.
+	* g++.dg/template/qual1.C (shift_compare): Likewise.
+	* g++.dg/template/show-template-tree-3.C: Likewise.
+	* g++.dg/template/sizeof8.C (S<sizeof): Likewise.
+	* g++.dg/template/sizeof9.C (d): Likewise.
+	* g++.dg/template/spec6.C: Likewise.
+	* g++.dg/template/spec7.C (h): Likewise.
+	* g++.dg/template/typedef8.C: Likewise.
+	* g++.dg/template/using20.C (f): Likewise.
+	* g++.dg/template/vla1.C (label): Likewise.
+	* g++.dg/tm/cgraph_edge.C: Likewise.
+	* g++.dg/tm/pr46646.C: Likewise.
+	* g++.dg/tm/pr47554.C (class list): Likewise.
+	* g++.dg/tm/pr47573.C (getStringHeight): Likewise.
+	* g++.dg/tm/unsafe1.C (f): Likewise.
+	* g++.dg/tm/unsafe2.C (g): Likewise.
+	* g++.dg/torture/pr70971.C: Likewise.
+	* g++.dg/torture/20070621-1.C: Likewise.
+	* g++.dg/torture/20090329-1.C: Likewise.
+	* g++.dg/torture/20141013.C: Likewise.
+	* g++.dg/torture/pr33134.C (fxsaveGIF): Likewise.
+	* g++.dg/torture/pr33340.C (new): Likewise.
+	* g++.dg/torture/pr33627.C (class pf_Frag): Likewise.
+	* g++.dg/torture/pr34222.C (readFloat): Likewise.
+	* g++.dg/torture/pr34241.C (test): Likewise.
+	* g++.dg/torture/pr34641.C: Likewise.
+	* g++.dg/torture/pr34850.C (OctetString::operator^=): Likewise.
+	* g++.dg/torture/pr35164-1.C: Likewise.
+	* g++.dg/torture/pr36745.C: Likewise.
+	* g++.dg/torture/pr38705.C (S::bar): Likewise.
+	* g++.dg/torture/pr38811.C (AbcAbcdTracer::TestIsoAbcde): Likewise.
+	* g++.dg/torture/pr39362.C: Likewise.
+	* g++.dg/torture/pr39732.C (f): Likewise.
+	* g++.dg/torture/pr40991.C: Likewise.
+	* g++.dg/torture/pr41775.C: Likewise.
+	* g++.dg/torture/pr42183.C: Likewise.
+	* g++.dg/torture/pr42450.C: Likewise.
+	* g++.dg/torture/pr42704.C: Likewise.
+	* g++.dg/torture/pr42760.C (baz): Likewise.
+	(bar): Likewise.
+	* g++.dg/torture/pr42773.C (Cell::obscuringCells): Likewise.
+	* g++.dg/torture/pr42883.C: Likewise.
+	* g++.dg/torture/pr43905.C (struct Matrix): Likewise.
+	* g++.dg/torture/pr44148.C: Likewise.
+	* g++.dg/torture/pr44295.C: Likewise.
+	* g++.dg/torture/pr44357.C: Likewise.
+	* g++.dg/torture/pr44813.C: Likewise.
+	* g++.dg/torture/pr45580.C: Likewise.
+	* g++.dg/torture/pr45874.C (Mpeg2FrameConstructor::ParsePictureHeader): Likewise.
+	* g++.dg/torture/pr45877.C: Likewise.
+	* g++.dg/torture/pr46383.C: Likewise.
+	* g++.dg/torture/pr46469.C (__attribute__): Likewise.
+	(identifierByPthreadHandle): Likewise.
+	* g++.dg/torture/pr47313.C: Likewise.
+	* g++.dg/torture/pr48271.C: Likewise.
+	* g++.dg/torture/pr49615.C (Dispatch): Likewise.
+	(C::f): Likewise.
+	* g++.dg/torture/pr49770.C (main): Likewise.
+	* g++.dg/torture/pr49938.C: Likewise.
+	* g++.dg/torture/pr51436.C: Likewise.
+	* g++.dg/torture/pr51482.C (anim_track_bez_wvect::tangent): Likewise.
+	* g++.dg/torture/pr51737.C (id_state::start_file): Likewise.
+	* g++.dg/torture/pr51959.C: Likewise.
+	* g++.dg/torture/pr52772.C (class c6): Likewise.
+	* g++.dg/torture/pr52918-2.C (__cxa_allocate_exception): Likewise.
+	* g++.dg/torture/pr53011.C: Likewise.
+	* g++.dg/torture/pr53602.C: Likewise.
+	* g++.dg/torture/pr53752.C: Likewise.
+	* g++.dg/torture/pr54838.C: Likewise.
+	* g++.dg/torture/pr54902.C: Likewise.
+	* g++.dg/torture/pr56029.C: Likewise.
+	* g++.dg/torture/pr56768.C (operator!=): Likewise.
+	* g++.dg/torture/pr57107.C: Likewise.
+	* g++.dg/torture/pr57140.C: Likewise.
+	* g++.dg/torture/pr57235.C: Likewise.
+	* g++.dg/torture/pr58252.C: Likewise.
+	* g++.dg/torture/pr58555.C: Likewise.
+	* g++.dg/torture/pr59208.C (get_dbx_doc): Likewise.
+	* g++.dg/torture/pr60438-1.C (foo): Likewise.
+	* g++.dg/torture/pr60746.C (Two::run): Likewise.
+	* g++.dg/torture/pr61554.C: Likewise.
+	* g++.dg/torture/pr63419.C: Likewise.
+	* g++.dg/torture/pr63476.C: Likewise.
+	* g++.dg/torture/pr63512.C (C::m_fn3): Likewise.
+	* g++.dg/torture/pr64282.C (class H): Likewise.
+	* g++.dg/torture/pr64378.C (struct top): Likewise.
+	* g++.dg/torture/pr64565.C: Likewise.
+	* g++.dg/torture/pr64568-2.C: Likewise.
+	* g++.dg/torture/pr64669.C (Lex::advance_one_char): Likewise.
+	* g++.dg/torture/pr64686.C (B::m_fn1): Likewise.
+	* g++.dg/torture/pr64978.C (B::m_fn2): Likewise.
+	* g++.dg/torture/pr64995.C (A::m_fn2): Likewise.
+	* g++.dg/torture/pr65655.C: Likewise.
+	* g++.dg/torture/pr65851.C: Likewise.
+	* g++.dg/torture/pr67055.C: Likewise.
+	* g++.dg/torture/pr67191.C: Likewise.
+	* g++.dg/torture/pr68852.C: Likewise.
+	* g++.dg/torture/pr69264.C: Likewise.
+	* g++.dg/torture/pr77674.C: Likewise.
+	* g++.dg/torture/pr77947.C (B::m_fn2): Likewise.
+	* g++.dg/torture/pr78268.C: Likewise.
+	* g++.dg/torture/pr78507.C: Likewise.
+	* g++.dg/torture/pr78692.C (F::g): Likewise.
+	* g++.dg/torture/pr80171.C: Likewise.
+	* g++.dg/torture/pr82154.C (class f): Likewise.
+	(f::k): Likewise.
+	* g++.dg/tree-ssa/copyprop.C: Likewise.
+	* g++.dg/tree-ssa/pr22444.C: Likewise.
+	* g++.dg/tree-ssa/pr23948.C (make_scheduler_request): Likewise.
+	* g++.dg/tree-ssa/pr24172.C (dummy): Likewise.
+	* g++.dg/tree-ssa/pr24351-3.C: Likewise.
+	* g++.dg/tree-ssa/pr27283.C: Likewise.
+	* g++.dg/tree-ssa/pr27291.C: Likewise.
+	* g++.dg/tree-ssa/pr27548.C: Likewise.
+	* g++.dg/tree-ssa/pr34355.C (Parse_Float): Likewise.
+	* g++.dg/tree-ssa/pr42337.C: Likewise.
+	* g++.dg/tree-ssa/pred-1.C (main): Likewise.
+	* g++.dg/ubsan/pr65019.C (C::foo): Likewise.
+	* g++.dg/ubsan/pr65583.C: Likewise.
+	* g++.dg/vect/pr60836.cc (norm_): Likewise.
+	* g++.dg/vect/pr68145.cc: Likewise.
+	* g++.dg/vect/pr70729-nest.cc (my_alloc): Likewise.
+	* g++.dg/vect/pr70729.cc (my_alloc): Likewise.
+	* g++.dg/warn/Waddress-3.C: Likewise.
+	* g++.dg/warn/Wconversion-null-2.C (warn_for___null): Likewise.
+	* g++.dg/warn/Wnull-conversion-2.C (main): Likewise.
+	* g++.dg/warn/Wparentheses-10.C: Likewise.
+	* g++.dg/warn/Wparentheses-11.C: Likewise.
+	* g++.dg/warn/Wparentheses-12.C: Likewise.
+	* g++.dg/warn/Wparentheses-25.C: Likewise.
+	* g++.dg/warn/Wparentheses-6.C: Likewise.
+	* g++.dg/warn/Wparentheses-7.C: Likewise.
+	* g++.dg/warn/Wparentheses-8.C: Likewise.
+	* g++.dg/warn/Wparentheses-9.C: Likewise.
+	* g++.dg/warn/Wshadow-5.C: Likewise.
+	* g++.dg/warn/Wtype-limits-Wextra.C (ff): Likewise.
+	(gg): Likewise.
+	* g++.dg/warn/Wtype-limits-no.C (ff): Likewise.
+	(gg): Likewise.
+	* g++.dg/warn/Wtype-limits.C (ff): Likewise.
+	(gg): Likewise.
+	* g++.dg/warn/Wunused-local-typedefs.C: Likewise.
+	* g++.dg/warn/Wzero-as-null-pointer-constant-5.C: Likewise.
+	* g++.dg/warn/pmf1.C (a::f): Likewise.
+	* g++.old-deja/g++.benjamin/p13417.C: Likewise.
+	* g++.old-deja/g++.brendan/crash24.C (main): Likewise.
+	* g++.old-deja/g++.ext/constructor.C: Likewise.
+	* g++.old-deja/g++.ext/namedret1.C (f): Likewise.
+	* g++.old-deja/g++.ext/namedret3.C: Likewise.
+	* g++.old-deja/g++.ext/return1.C: Likewise.
+	* g++.old-deja/g++.jason/anon4.C (main): Likewise.
+	* g++.old-deja/g++.jason/enum6.C: Likewise.
+	* g++.old-deja/g++.jason/lineno2.C (main): Likewise.
+	* g++.old-deja/g++.jason/lineno3.C: Likewise.
+	* g++.old-deja/g++.jason/lineno4.C: Likewise.
+	* g++.old-deja/g++.jason/new2.C (main): Likewise.
+	* g++.old-deja/g++.jason/new4.C (main): Likewise.
+	* g++.old-deja/g++.jason/shadow1.C (main): Likewise.
+	* g++.old-deja/g++.jason/tempcons.C (struct A): Likewise.
+	* g++.old-deja/g++.jason/thunk2.C (main): Likewise.
+	* g++.old-deja/g++.law/builtin1.C (main): Likewise.
+	* g++.old-deja/g++.law/enum9.C: Likewise.
+	* g++.old-deja/g++.law/except3.C: Likewise.
+	* g++.old-deja/g++.law/init6.C: Likewise.
+	* g++.old-deja/g++.law/profile1.C (main): Likewise.
+	* g++.old-deja/g++.law/shadow2.C (main): Likewise.
+	* g++.old-deja/g++.law/temps4.C (main): Likewise.
+	* g++.old-deja/g++.mike/bool2.C (main): Likewise.
+	* g++.old-deja/g++.mike/eh1.C: Likewise.
+	* g++.old-deja/g++.mike/eh10.C: Likewise.
+	* g++.old-deja/g++.mike/eh13.C (main): Likewise.
+	* g++.old-deja/g++.mike/eh16.C: Likewise.
+	* g++.old-deja/g++.mike/eh17.C: Likewise.
+	* g++.old-deja/g++.mike/eh2.C: Likewise.
+	* g++.old-deja/g++.mike/eh23.C: Likewise.
+	* g++.old-deja/g++.mike/eh24.C: Likewise.
+	* g++.old-deja/g++.mike/eh25.C: Likewise.
+	* g++.old-deja/g++.mike/eh26.C: Likewise.
+	* g++.old-deja/g++.mike/eh27.C: Likewise.
+	* g++.old-deja/g++.mike/eh28.C: Likewise.
+	* g++.old-deja/g++.mike/eh29.C: Likewise.
+	* g++.old-deja/g++.mike/eh30.C: Likewise.
+	* g++.old-deja/g++.mike/eh31.C: Likewise.
+	* g++.old-deja/g++.mike/eh35.C: Likewise.
+	* g++.old-deja/g++.mike/eh36.C: Likewise.
+	* g++.old-deja/g++.mike/eh37.C: Likewise.
+	* g++.old-deja/g++.mike/eh38.C: Likewise.
+	* g++.old-deja/g++.mike/eh39.C: Likewise.
+	* g++.old-deja/g++.mike/eh40.C: Likewise.
+	* g++.old-deja/g++.mike/eh47.C: Likewise.
+	* g++.old-deja/g++.mike/eh50.C: Likewise.
+	* g++.old-deja/g++.mike/eh51.C: Likewise.
+	* g++.old-deja/g++.mike/eh7.C: Likewise.
+	* g++.old-deja/g++.mike/eh8.C: Likewise.
+	* g++.old-deja/g++.mike/eh9.C: Likewise.
+	* g++.old-deja/g++.mike/mangle1.C: Likewise.
+	* g++.old-deja/g++.mike/p5958.C: Likewise.
+	* g++.old-deja/g++.mike/p6004.C: Likewise.
+	* g++.old-deja/g++.mike/p700.C: Likewise.
+	* g++.old-deja/g++.mike/p7912.C: Likewise.
+	* g++.old-deja/g++.mike/p811.C (main): Likewise.
+	* g++.old-deja/g++.mike/virt4.C (main): Likewise.
+	* g++.old-deja/g++.oliva/nameret1.C: Likewise.
+	* g++.old-deja/g++.oliva/nameret2.C: Likewise.
+	* g++.old-deja/g++.other/decl1.C (bar): Likewise.
+	* g++.old-deja/g++.other/expr1.C (struct T): Likewise.
+	(main): Likewise.
+	* g++.old-deja/g++.other/inline8.C (main): Likewise.
+	* g++.old-deja/g++.other/loop1.C: Likewise.
+	* g++.old-deja/g++.other/syntax1.C (main): Likewise.
+	* g++.old-deja/g++.pt/repo3.C (main): Likewise.
+	* g++.old-deja/g++.robertl/eb27.C (main): Likewise.
+	* g++.old-deja/g++.robertl/eb83.C (main): Likewise.
+	* gcc.dg/pr44545.c: Likewise.
+	* obj-c++.dg/comp-types-8.mm: Likewise.
+	* obj-c++.dg/demangle-3.mm: Likewise.
+	* obj-c++.dg/super-class-1.mm: Likewise.
+
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
 	* c-c++-common/dfp/call-by-value.c (foo32): Return a default
 	value of change return type to void.
 	(foo64): Likewise.

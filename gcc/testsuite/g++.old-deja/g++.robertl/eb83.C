@@ -8,11 +8,13 @@ test_swap(int& x, int& y) throw()
   y = tmp;
 }
 
+int
 main()
 {
   int i = 5;
   int j = 7;
   test_swap(i, j);
+  return 0;
 }
 
 /* { dg-final { cleanup-coverage-files } } */

@@ -1,4 +1,6 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-return-type" }
+
 template<typename T, typename U>
 struct is_same
 {

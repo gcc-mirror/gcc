@@ -35,4 +35,6 @@ parallel_clauses (void)
 
 #pragma acc parallel firstprivate (a, b)
   ;
+
+  return 0;
 }

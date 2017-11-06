@@ -34,7 +34,7 @@ struct c28 : virtual c0, virtual c11 {
     virtual c18* f6();
 };
 
-c0 *c1::f6 () {}
+c0 *c1::f6 () { return 0; }
 void c5::foo () {}
 void c10::foo () {}
 void c18::bar () {}

@@ -37,4 +37,5 @@ void * __cxa_allocate_exception(size_t thrown_size) throw()
   void *ret;
   if (! ret)     
     __scoped_lock sentry(emergency_mutex);
+  return 0;
 }

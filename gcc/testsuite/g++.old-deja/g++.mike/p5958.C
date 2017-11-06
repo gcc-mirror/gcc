@@ -4,6 +4,7 @@
 
 class A { };
 
+int
 main() {
   int i = 1;
   if (1 not_eq 1)

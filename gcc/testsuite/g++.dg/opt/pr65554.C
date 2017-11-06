@@ -24,6 +24,7 @@ namespace std
     {
       int _Num = p2 - p1;
       __builtin_memmove (0, p1, sizeof (_Tp) * _Num);
+      return 0;
     }
   };
   template <int, typename _II, typename _OI> void __copy_move_a (_II p1, _II p2, _OI p3)
@@ -68,6 +69,7 @@ namespace std
     template <typename _InputIterator, typename _ForwardIterator> static _ForwardIterator __uninit_copy (_InputIterator p1, _InputIterator p2, _ForwardIterator p3)
     {
       copy (p1, p2, p3);
+      return _ForwardIterator();
     }
   };
   template <typename _InputIterator, typename _ForwardIterator> void

@@ -8,7 +8,7 @@
 vector float a;
 vector int a1;
 
-int f(void)
+void f(void)
 {
  a =  ~a; /* { dg-error "" } */
  a1 =  ~a1;

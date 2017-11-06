@@ -1,6 +1,7 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options "-O2  -w" } */
 /* { dg-extra-ld-options { -O2 -Wno-odr -r -nostdlib } } */
+/* { dg-lto-options { "-O2 -w -Wno-return-type" } } */
+
 namespace std
 {
 template < class > struct char_traits;

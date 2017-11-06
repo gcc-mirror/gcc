@@ -4,6 +4,7 @@
 template<int> int foo()
 {
   [] (void i) { return 0; } (0); // { dg-error "incomplete|invalid|no match" }
+  return 0;
 }
 
 void bar()

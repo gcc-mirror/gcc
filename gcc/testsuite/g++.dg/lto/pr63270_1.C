@@ -48,6 +48,7 @@ namespace v8
     };
     int PreParser::ParseMemberWithNewPrefixesExpression ( bool * )
     {
+      return 0;
     }
   }
 }

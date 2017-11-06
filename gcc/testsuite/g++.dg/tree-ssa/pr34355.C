@@ -24,4 +24,5 @@ double Parse_Float ()
   EXPRESS Express = {1.0, 2.0, 3.0, 4.0, 5.0};
 
   Parse_Rel_Factor (Express, &Terms);
+  return 0.0;
 }

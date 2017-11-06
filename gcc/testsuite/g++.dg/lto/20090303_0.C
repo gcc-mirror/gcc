@@ -16,6 +16,8 @@ void Test() {
  int int_set_;
  foobar (&int_set_, &test_ints[j]);
 }
+
+int
 main()
 {
   Test();

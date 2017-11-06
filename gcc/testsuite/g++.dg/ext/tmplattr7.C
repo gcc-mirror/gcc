@@ -8,4 +8,4 @@ bool test(const List<int> &);
 
 int i = bar(List<int>());
 
-bool test(const List<int> &) {}
+bool test(const List<int> &) { return true; }

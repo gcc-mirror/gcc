@@ -49,6 +49,7 @@ template <class T> int A<T*>::h()
 {
   C c;
   c.ii = 0;				// { dg-error "context" }
+  return 0;
 }
 
 template <class T> void A<T*>::i(char)
@@ -93,6 +94,7 @@ int A<char>::h()
 {
   C c;
   c.ii = 0;				// { dg-error "context" }
+  return 0;
 }
 
 void A<char>::i(char)

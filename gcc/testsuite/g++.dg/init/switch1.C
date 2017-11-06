@@ -1,4 +1,4 @@
-int f(int c)
+void f(int c)
 {
   switch (c)
   {

@@ -6,15 +6,15 @@ extern "C" void abort ();
 
 struct A
 {
-  virtual int a () {}
+  virtual int a () { return 0; }
 };
 struct B : public A
 {
-  virtual int b () {}
+  virtual int b () { return 1; }
 };
 struct C : public A
 {
-  virtual int c () {}
+  virtual int c () { return 2; }
 };
 struct D
 {

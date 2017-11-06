@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "-Wno-deprecated" }
+// { dg-additional-options "-Wno-return-type" }
 /* bug.cc */
 /* simple program to demonstrate the bug with named return values in gcc
 */
@@ -39,4 +40,5 @@ int main()
    std::cout << x << std::endl;
    y = x + test<int>(2); 
    std::cout << y << std::endl;
+   return 0;
 }

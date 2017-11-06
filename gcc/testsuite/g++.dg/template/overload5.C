@@ -24,5 +24,6 @@ int foo::f()
 
   f_obj<&foo::g> c;   // OK
   f_obj<foo::g>  d;   // OK
+  return 0;
 }
 

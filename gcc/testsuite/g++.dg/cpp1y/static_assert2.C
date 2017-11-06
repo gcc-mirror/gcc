@@ -19,6 +19,7 @@ template<typename T>
   {
     static_assert(is_float<T>::value, ""); // { dg-error "static assertion failed" }
     static_assert(is_float<T>::value); // { dg-error "static assertion failed" }
+    return T();
   }
 
 int
