@@ -93,8 +93,6 @@
 	(ix86_expand_prologue): Likewise.
 
 2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
-	    Alan Hayward  <alan.hayward@arm.com>
-	    David Sherwood  <david.sherwood@arm.com>
 
 	PR tree-optimization/82816
 	* tree-ssa-math-opts.c (convert_mult_to_widen): Return false
