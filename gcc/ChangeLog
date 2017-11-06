@@ -1,3 +1,11 @@
+2017-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/67591
+	* config/arm/arm.md (*sub_shiftsi): Add predicable_short_it
+	attribute.
+	(*cmp_ite0): Add enabled_for_depr_it attribute.
+	(*cmp_ite1): Likewise.
+
 2017-11-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_insn_cost): Handle TYPE_MFCR and

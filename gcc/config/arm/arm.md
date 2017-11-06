@@ -8906,6 +8906,7 @@
   "TARGET_32BIT"
   "sub%?\\t%0, %1, %3%S2"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "3")
    (set_attr "arch" "32,a")
    (set_attr "type" "alus_shift_imm,alus_shift_reg")])
@@ -9344,6 +9345,7 @@
   }"
   [(set_attr "conds" "set")
    (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_depr_it" "yes,no,no,no,no,no,no,no,no")
    (set_attr "type" "multiple")
    (set_attr_alternative "length"
       [(const_int 6)
@@ -9427,6 +9429,7 @@
   }"
   [(set_attr "conds" "set")
    (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_depr_it" "yes,no,no,no,no,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
