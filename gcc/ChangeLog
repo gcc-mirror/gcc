@@ -1,3 +1,14 @@
+2017-11-06  Jeff Law  <law@redhat.com>
+
+	PR target/82788
+	* config/i386/i386.c (PROBE_INTERVAL): Remove.
+	(get_probe_interval): New functions.
+	(ix86_adjust_stack_and_probe_stack_clash): Use get_probe_interval.
+	(ix86_adjust_stack_and_probe): Likewise.
+	(output_adjust_stack_and_probe): Likewise.
+	(ix86_emit_probe_stack_range): Likewise.
+	(ix86_expand_prologue): Likewise.
+
 2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
