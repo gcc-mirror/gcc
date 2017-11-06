@@ -1642,10 +1642,14 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
       else if (operand_equal_p (base_addr, op.base_addr, 0))
 	load_addr[j] = addr;
       else
-	load_addr[j]
-	  = force_gimple_operand_1 (unshare_expr (op.base_addr),
-				    &seq, is_gimple_mem_ref_addr,
-				    NULL_TREE);
+	{
+	  gimple_seq this_seq;
+	  load_addr[j]
+	    = force_gimple_operand_1 (unshare_expr (op.base_addr),
+				      &this_seq, is_gimple_mem_ref_addr,
+				      NULL_TREE);
+	  gimple_seq_add_seq_without_update (&seq, this_seq);
+	}
     }
 
   FOR_EACH_VEC_ELT (split_stores, i, split_store)

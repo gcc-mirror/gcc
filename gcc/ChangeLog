@@ -1,3 +1,10 @@
+2017-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82838
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Call force_gimple_operand_1
+	on a separate gimple_seq which is then appended to seq.
+
 2017-11-06  Jeff Law  <law@redhat.com>
 
 	PR target/82788
