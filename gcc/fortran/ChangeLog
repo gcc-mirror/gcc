@@ -1,3 +1,10 @@
+2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/69739
+	* trans-expr.c (gfc_map_intrinsic_function): Return false for
+	bounds without the DIM argument instead of ICEing.
+
 2017-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/82796
