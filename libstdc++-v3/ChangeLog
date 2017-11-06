@@ -1,3 +1,7 @@
+2017-11-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/libstdc++-prettyprinters/tr1.cc:  Compile with -O0.
+
 2017-11-06  Martin Liska  <mliska@suse.cz>
 
 	* testsuite/27_io/basic_fstream/cons/char/path.cc (main):
