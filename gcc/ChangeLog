@@ -1,3 +1,10 @@
+2017-11-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
+	of struct ix86_frame.
+	(ix86_initial_elimination_offset): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+
 2017-11-06  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-vrp.h (enum value_range_type): Update stale comment.
