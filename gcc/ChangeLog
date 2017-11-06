@@ -1,3 +1,14 @@
+2017-11-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.md (predicable_short_it): Change default to "no",
+	improve documentation, remove uses that are identical to the default.
+	(enabled_for_depr_it): Rename to enabled_for_short_it.
+	* gcc/config/arm/arm-fixed.md (predicable_short_it): Remove default uses.
+	* gcc/config/arm/ldmstm.md (predicable_short_it): Likewise.
+	* gcc/config/arm/sync.md (predicable_short_it): Likewise.
+	* gcc/config/arm/thumb2.md (predicable_short_it): Likewise.
+	* gcc/config/arm/vfp.md (predicable_short_it): Likewise.
+
 2017-11-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/82748

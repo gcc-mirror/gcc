@@ -34,7 +34,6 @@
   "TARGET_THUMB2"
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
    (set_attr "type" "alu_shift_imm")]
 )
@@ -57,7 +56,7 @@
                    (match_dup 2)))]
   ""
   [(set_attr "conds" "clob")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "length" "6,6,10")
    (set_attr "type" "multiple")]
 )
@@ -78,7 +77,7 @@
                    (match_dup 2)))]
   ""
   [(set_attr "conds" "clob")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "length" "6,6,10")
    (set_attr "type" "multiple")]
 )
@@ -100,7 +99,7 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "6,6,10")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "type" "multiple")]
 )
 
@@ -121,7 +120,7 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "6,6,10")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "type" "multiple")]
 )
 
@@ -172,8 +171,7 @@
   [(set_attr "conds" "*,clob,clob")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "predicable_short_it" "no")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "ce_count" "2")
    (set_attr "length" "8,6,10")
    (set_attr "type" "multiple")]
@@ -226,8 +224,7 @@
   [(set_attr "conds" "*,clob,clob")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")
-   (set_attr "predicable_short_it" "no")
+   (set_attr "enabled_for_short_it" "yes,yes,no")
    (set_attr "ce_count" "2")
    (set_attr "length" "8,6,10")
    (set_attr "type" "multiple")]
@@ -354,7 +351,7 @@
                          (const_int 0)))]
   ""
   [(set_attr "conds" "use")
-   (set_attr "enabled_for_depr_it" "yes,no")
+   (set_attr "enabled_for_short_it" "yes,no")
    (set_attr "length" "8,10")
    (set_attr "type" "multiple")]
 )
@@ -504,7 +501,7 @@
     DONE;
   }
   [(set_attr "length" "4,4,6,6,6,6,10,8,10,10,10,6")
-   (set_attr "enabled_for_depr_it" "yes,yes,no,no,no,no,no,no,no,no,no,yes")
+   (set_attr "enabled_for_short_it" "yes,yes,no,no,no,no,no,no,no,no,no,yes")
    (set_attr "conds" "use")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 2 "const_int_operand" "")
@@ -1044,7 +1041,6 @@
    ldrsb%?\\t%0, %1"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
@@ -1058,7 +1054,6 @@
    ldrh%?\\t%0, %1"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
@@ -1072,7 +1067,6 @@
    ldrb%?\\t%0, %1\\t%@ zero_extendqisi2"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
@@ -1538,7 +1532,6 @@
   "TARGET_THUMB2"
   "orn%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "type" "logic_reg")]
 )
 
@@ -1551,7 +1544,6 @@
   "TARGET_THUMB2"
   "orn%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
    (set_attr "type" "alu_shift_imm")]
 )
