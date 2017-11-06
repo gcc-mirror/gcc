@@ -4178,9 +4178,7 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping *mapping)
       if (arg2 && arg2->expr_type == EXPR_CONSTANT)
 	d = mpz_get_si (arg2->value.integer) - 1;
       else
-	/* TODO: If the need arises, this could produce an array of
-	   ubound/lbounds.  */
-	gcc_unreachable ();
+	return false;
 
       if (expr->value.function.isym->id == GFC_ISYM_LBOUND)
 	{
