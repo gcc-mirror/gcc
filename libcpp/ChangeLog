@@ -1,3 +1,11 @@
+2017-11-06  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+
+	PR c++/80955
+	* lex.c (lex_string): When checking for a valid macro for the
+	warning related to -Wliteral-suffix (CPP_W_LITERAL_SUFFIX),
+	check that the macro name does not start with an underscore
+	before calling is_macro().
+
 2017-11-05  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/82784

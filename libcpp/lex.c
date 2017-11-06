@@ -1871,8 +1871,9 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
 	 literal thus breaking the program.
-	 Try to identify macros with is_macro. A warning is issued. */
-      if (is_macro (pfile, cur))
+	 Try to identify macros with is_macro. A warning is issued.
+	 The macro name should not start with '_' for this warning. */
+      if ((*cur != '_') && is_macro (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
@@ -2001,8 +2002,9 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
       /* If a string format macro, say from inttypes.h, is placed touching
 	 a string literal it could be parsed as a C++11 user-defined string
 	 literal thus breaking the program.
-	 Try to identify macros with is_macro. A warning is issued. */
-      if (is_macro (pfile, cur))
+	 Try to identify macros with is_macro. A warning is issued.
+	 The macro name should not start with '_' for this warning. */
+      if ((*cur != '_') && is_macro (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
