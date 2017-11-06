@@ -1474,7 +1474,7 @@ check-am:
 	@for f in $(TEST_PACKAGES); do \
 	   rm -f $$f-testsum $$f-testlog; \
 	 done
-	-@$(MAKE) -k $(TEST_PACKAGES)
+	-@$(MAKE) $(AM_MAKEFLAGS) -k $(TEST_PACKAGES)
 	@for f in $(TEST_PACKAGES); do \
 	  if test -f $$f-testsum; then \
 	    cat $$f-testsum >> libgo.sum; \
@@ -1488,7 +1488,7 @@ check-multi:
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=check-am multi-do # $(MAKE)
 
 bench:
-	-@$(MAKE) -k $(TEST_PACKAGES) GOBENCH=.
+	-@$(MAKE) $(AM_MAKEFLAGS) -k $(TEST_PACKAGES) GOBENCH=.
 
 MOSTLYCLEANFILES = \
 	s-runtime_sysinfo s-sigtab s-runtime-inc s-zstdpkglist \
