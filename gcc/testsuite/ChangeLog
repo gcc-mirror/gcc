@@ -1,3 +1,8 @@
+2017-11-06  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+
+	PR c++/80955
+	* g++.dg/cpp0x/udlit-macros.C: New.
+
 2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69739
