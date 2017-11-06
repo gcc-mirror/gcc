@@ -5239,7 +5239,7 @@
   "TARGET_SIMD"
 {
   if (aarch64_expand_vec_perm_const (operands[0], operands[1],
-				     operands[2], operands[3]))
+				     operands[2], operands[3], <nunits>))
     DONE;
   else
     FAIL;
@@ -5253,7 +5253,7 @@
   "TARGET_SIMD"
 {
   aarch64_expand_vec_perm (operands[0], operands[1],
-			   operands[2], operands[3]);
+			   operands[2], operands[3], <nunits>);
   DONE;
 })
 

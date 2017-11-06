@@ -471,11 +471,11 @@ tree aarch64_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
-extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
+extern void aarch64_expand_vec_perm (rtx, rtx, rtx, rtx, unsigned int);
 extern bool aarch64_madd_needs_nop (rtx_insn *);
 extern void aarch64_final_prescan_insn (rtx_insn *);
 extern bool
-aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
+aarch64_expand_vec_perm_const (rtx, rtx, rtx, rtx, unsigned int);
 void aarch64_atomic_assign_expand_fenv (tree *, tree *, tree *);
 int aarch64_ccmp_mode_to_code (machine_mode mode);
 
