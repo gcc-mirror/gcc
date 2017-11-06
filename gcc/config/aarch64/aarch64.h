@@ -913,8 +913,8 @@ extern enum aarch64_code_model aarch64_cmodel;
    || (MODE) == V4SFmode || (MODE) == V8HFmode || (MODE) == V2DImode \
    || (MODE) == V2DFmode)
 
-#define ENDIAN_LANE_N(mode, n)  \
-  (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)
+#define ENDIAN_LANE_N(NUNITS, N) \
+  (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
 
 /* Support for a configure-time default CPU, etc.  We currently support
    --with-arch and --with-cpu.  Both are ignored if either is specified

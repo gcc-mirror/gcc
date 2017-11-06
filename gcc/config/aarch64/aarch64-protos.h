@@ -425,6 +425,7 @@ void aarch64_simd_emit_reg_reg_move (rtx *, machine_mode, unsigned int);
 rtx aarch64_simd_expand_builtin (int, tree, rtx);
 
 void aarch64_simd_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
+rtx aarch64_endian_lane_rtx (machine_mode, unsigned int);
 
 void aarch64_split_128bit_move (rtx, rtx);
 

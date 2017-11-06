@@ -1,3 +1,49 @@
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_endian_lane_rtx): Declare.
+	* config/aarch64/aarch64.c (aarch64_endian_lane_rtx): New function.
+	* config/aarch64/aarch64.h (ENDIAN_LANE_N): Take the number
+	of units rather than the mode.
+	* config/aarch64/iterators.md (nunits): New mode attribute.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args):
+	Use aarch64_endian_lane_rtx instead of GEN_INT (ENDIAN_LANE_N ...).
+	* config/aarch64/aarch64-simd.md (aarch64_dup_lane<mode>)
+	(aarch64_dup_lane_<vswap_width_name><mode>, *aarch64_mul3_elt<mode>)
+	(*aarch64_mul3_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_mul3_elt_to_64v2df, *aarch64_mla_elt<mode>): Likewise.
+	(*aarch64_mla_elt_<vswap_width_name><mode>, *aarch64_mls_elt<mode>)
+	(*aarch64_mls_elt_<vswap_width_name><mode>, *aarch64_fma4_elt<mode>)
+	(*aarch64_fma4_elt_<vswap_width_name><mode>):: Likewise.
+	(*aarch64_fma4_elt_to_64v2df, *aarch64_fnma4_elt<mode>): Likewise.
+	(*aarch64_fnma4_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_fnma4_elt_to_64v2df, reduc_plus_scal_<mode>): Likewise.
+	(reduc_plus_scal_v4sf, reduc_<maxmin_uns>_scal_<mode>): Likewise.
+	(reduc_<maxmin_uns>_scal_<mode>): Likewise.
+	(*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>): Likewise.
+	(*aarch64_get_lane_zero_extendsi<mode>): Likewise.
+	(aarch64_get_lane<mode>, *aarch64_mulx_elt_<vswap_width_name><mode>)
+	(*aarch64_mulx_elt<mode>, *aarch64_vgetfmulx<mode>): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>, aarch64_sq<r>dmulh_laneq<mode>)
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>): Likewise.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_laneq<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_laneq<mode>_internal): Likewise.
+	(aarch64_sqdmull_lane<mode>, aarch64_sqdmull_laneq<mode>): Likewise.
+	(aarch64_sqdmull2_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull2_laneq<mode>_internal): Likewise.
+	(aarch64_vec_load_lanesoi_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesoi_lane<mode>): Likewise.
+	(aarch64_vec_load_lanesci_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesci_lane<mode>): Likewise.
+	(aarch64_vec_load_lanesxi_lane<mode>): Likewise.
+	(aarch64_vec_store_lanesxi_lane<mode>): Likewise.
+	(aarch64_simd_vec_set<mode>): Update use of ENDIAN_LANE_N.
+	(aarch64_simd_vec_setv2di): Likewise.
+
 2017-11-06  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (P8V_BUILTIN_VEC_REVB): Add power 8

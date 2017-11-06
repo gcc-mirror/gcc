@@ -11833,6 +11833,15 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   }
 }
 
+/* Peform endian correction on lane number N, which indexes a vector
+   of mode MODE, and return the result as an SImode rtx.  */
+
+rtx
+aarch64_endian_lane_rtx (machine_mode mode, unsigned int n)
+{
+  return gen_int_mode (ENDIAN_LANE_N (GET_MODE_NUNITS (mode), n), SImode);
+}
+
 /* Return TRUE if OP is a valid vector addressing mode.  */
 bool
 aarch64_simd_mem_operand_p (rtx op)
