@@ -450,6 +450,17 @@
 (define_mode_attr rtn [(DI "d") (SI "")])
 (define_mode_attr vas [(DI "") (SI ".2s")])
 
+;; Map a vector to the number of units in it, if the size of the mode
+;; is constant.
+(define_mode_attr nunits [(V8QI "8") (V16QI "16")
+			  (V4HI "4") (V8HI "8")
+			  (V2SI "2") (V4SI "4")
+				     (V2DI "2")
+			  (V4HF "4") (V8HF "8")
+			  (V2SF "2") (V4SF "4")
+			  (V1DF "1") (V2DF "2")
+			  (DI "1") (DF "1")])
+
 ;; Map a floating point or integer mode to the appropriate register name prefix
 (define_mode_attr s [(HF "h") (SF "s") (DF "d") (SI "s") (DI "d")])
 
