@@ -1556,10 +1556,11 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
 
 /* If a function that should end with a return in non-void
    function doesn't obviously end with return, add ubsan
-   instrumentation code to verify it at runtime.  */
+   instrumentation code to verify it at runtime.  If -fsanitize=return
+   is not enabled, instrument __builtin_unreachable.  */
 
 static void
-cp_ubsan_maybe_instrument_return (tree fndecl)
+cp_maybe_instrument_return (tree fndecl)
 {
   if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
       || DECL_CONSTRUCTOR_P (fndecl)
@@ -1600,7 +1601,16 @@ cp_ubsan_maybe_instrument_return (tree fndecl)
   tree *p = &DECL_SAVED_TREE (fndecl);
   if (TREE_CODE (*p) == BIND_EXPR)
     p = &BIND_EXPR_BODY (*p);
-  t = ubsan_instrument_return (DECL_SOURCE_LOCATION (fndecl));
+
+  location_t loc = DECL_SOURCE_LOCATION (fndecl);
+  if (sanitize_flags_p (SANITIZE_RETURN, fndecl))
+    t = ubsan_instrument_return (loc);
+  else
+    {
+      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
+      t = build_call_expr_loc (BUILTINS_LOCATION, fndecl, 0);
+    }
+
   append_to_statement_list (t, p);
 }
 
@@ -1674,9 +1684,7 @@ cp_genericize (tree fndecl)
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl), true);
 
-  if (sanitize_flags_p (SANITIZE_RETURN)
-      && current_function_decl != NULL_TREE)
-    cp_ubsan_maybe_instrument_return (fndecl);
+  cp_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */
   c_genericize (fndecl);

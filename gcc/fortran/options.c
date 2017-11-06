@@ -435,6 +435,9 @@ gfc_post_options (const char **pfilename)
     gfc_fatal_error ("Maximum subrecord length cannot exceed %d",
 		     MAX_SUBRECORD_LENGTH);
 
+  if (warn_return_type == -1)
+    warn_return_type = 0;
+
   gfc_cpp_post_options ();
 
   if (gfc_option.allow_std & GFC_STD_F2008)

@@ -1,3 +1,15 @@
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82404
+	* constexpr.c (cxx_eval_builtin_function_call): Handle
+	__builtin_unreachable call.
+	(get_function_named_in_call): Declare function earlier.
+	(constexpr_fn_retval): Skip __builtin_unreachable.
+	* cp-gimplify.c (cp_ubsan_maybe_instrument_return): Rename to
+	...
+	(cp_maybe_instrument_return): ... this.
+	(cp_genericize): Call the function unconditionally.
+
 2017-11-03  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82710
