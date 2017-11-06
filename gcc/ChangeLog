@@ -1,3 +1,7 @@
+2017-11-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-vrp.h (enum value_range_type): Update stale comment.
+
 2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
