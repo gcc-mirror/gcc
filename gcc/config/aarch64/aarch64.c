@@ -13699,16 +13699,18 @@ aarch64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
   return ret;
 }
 
+/* Generate a byte permute mask for a register of mode MODE,
+   which has NUNITS units.  */
+
 rtx
-aarch64_reverse_mask (machine_mode mode)
+aarch64_reverse_mask (machine_mode mode, unsigned int nunits)
 {
   /* We have to reverse each vector because we dont have
      a permuted load that can reverse-load according to ABI rules.  */
   rtx mask;
   rtvec v = rtvec_alloc (16);
-  int i, j;
-  int nunits = GET_MODE_NUNITS (mode);
-  int usize = GET_MODE_UNIT_SIZE (mode);
+  unsigned int i, j;
+  unsigned int usize = GET_MODE_UNIT_SIZE (mode);
 
   gcc_assert (BYTES_BIG_ENDIAN);
   gcc_assert (AARCH64_VALID_SIMD_QREG_MODE (mode));
