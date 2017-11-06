@@ -10,6 +10,8 @@ t(struct B *b)
 {
   struct A *a=b;
   a->t();
+
+  return 0;
 }
 
 /* We should guess that the pointer of type B probably points to an instance

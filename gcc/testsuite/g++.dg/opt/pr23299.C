@@ -50,6 +50,8 @@ E::c ()
   if (x > 10)
     throw 1;
   x |= 2;
+
+  return x;
 }
 
 int

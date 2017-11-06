@@ -12,7 +12,7 @@ class MultiTermDocs : public virtual B {
 protected:
   A readerTermDocs;
   A subReaders;
-  virtual B *m_fn1(int *) {}
+  virtual B *m_fn1(int *) { return NULL; }
   virtual inline  ~MultiTermDocs();
   inline void wrap(void)
   {

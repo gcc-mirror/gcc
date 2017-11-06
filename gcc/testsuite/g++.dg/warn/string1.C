@@ -15,4 +15,6 @@ int test() {
   //
   std::string s = "";
   s += 'x' + "y";	      // { dg-warning "bounds of constant string" }
+
+  return 0;
 }
