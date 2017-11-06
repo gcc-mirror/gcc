@@ -31,8 +31,8 @@ struct Poison
 
 struct ThrowingCopy
 {
-  ThrowingCopy(const ThrowingCopy&) {}
-  ThrowingCopy& operator=(const ThrowingCopy&) {}
+  ThrowingCopy(const ThrowingCopy&);
+  ThrowingCopy& operator=(const ThrowingCopy&);
 };
 
 int main()

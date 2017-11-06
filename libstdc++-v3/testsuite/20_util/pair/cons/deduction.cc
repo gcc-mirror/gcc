@@ -30,8 +30,8 @@ template<typename T, typename U>
 struct MoveOnly
 {
   MoveOnly() = default;
-  MoveOnly(MoveOnly&&) {}
-  MoveOnly& operator=(MoveOnly&&) {}
+  MoveOnly(MoveOnly&&);
+  MoveOnly& operator=(MoveOnly&&);
 };
 
 void
