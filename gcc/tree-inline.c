@@ -1770,8 +1770,18 @@ copy_bb (copy_body_data *id, basic_block bb,
   basic_block copy_basic_block;
   tree decl;
   basic_block prev;
-  bool scale = !num.initialized_p ()
-	       || (den.nonzero_p () || num == profile_count::zero ());
+
+  /* We always must scale to be sure counters end up compatible.
+     If den is zero, just force it nonzero and hope for reasonable
+     approximation.
+     When num is forced nonzero, also update den, so we do not scale profile
+     to 0.   */
+  if (!(num == den)
+      && !(den.force_nonzero () == den))
+    {
+      den = den.force_nonzero ();
+      num = num.force_nonzero ();
+    }
 
   /* Search for previous copied basic block.  */
   prev = bb->prev_bb;
@@ -1781,10 +1791,7 @@ copy_bb (copy_body_data *id, basic_block bb,
   /* create_basic_block() will append every new block to
      basic_block_info automatically.  */
   copy_basic_block = create_basic_block (NULL, (basic_block) prev->aux);
-  if (scale)
-    copy_basic_block->count = bb->count.apply_scale (num, den);
-  else if (num.initialized_p ())
-    copy_basic_block->count = bb->count;
+  copy_basic_block->count = bb->count.apply_scale (num, den);
 
   copy_gsi = gsi_start_bb (copy_basic_block);
 
@@ -2690,6 +2697,18 @@ copy_cfg_body (copy_body_data * id, profile_count,
   int last;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
   profile_count num = entry_block_map->count;
+
+  /* We always must scale to be sure counters end up compatible.
+     If den is zero, just force it nonzero and hope for reasonable
+     approximation.
+     When num is forced nonzero, also update den, so we do not scale profile
+     to 0.   */
+  if (!(num == den)
+      && !(den.force_nonzero () == den))
+    {
+      den = den.force_nonzero ();
+      num = num.force_nonzero ();
+    }
 
   cfun_to_copy = id->src_cfun = DECL_STRUCT_FUNCTION (callee_fndecl);
 

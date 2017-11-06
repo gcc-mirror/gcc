@@ -59,7 +59,18 @@ update_noncloned_frequencies (struct cgraph_node *node,
 			      profile_count den)
 {
   struct cgraph_edge *e;
-  bool scale = (num == profile_count::zero () || den > 0);
+
+  /* We always must scale to be sure counters end up compatible.
+     If den is zero, just force it nonzero and hope for reasonable
+     approximation.
+     When num is forced nonzero, also update den, so we do not scale profile
+     to 0.   */
+  if (!(num == den)
+      && !(den.force_nonzero () == den))
+    {
+      den = den.force_nonzero ();
+      num = num.force_nonzero ();
+    }
 
   /* We do not want to ignore high loop nest after freq drops to 0.  */
   if (!freq_scale)
@@ -71,19 +82,16 @@ update_noncloned_frequencies (struct cgraph_node *node,
         e->frequency = CGRAPH_FREQ_MAX;
       if (!e->inline_failed)
         update_noncloned_frequencies (e->callee, freq_scale, num, den);
-      if (scale)
-	e->count = e->count.apply_scale (num, den);
+      e->count = e->count.apply_scale (num, den);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
       e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
       if (e->frequency > CGRAPH_FREQ_MAX)
         e->frequency = CGRAPH_FREQ_MAX;
-      if (scale)
-	e->count = e->count.apply_scale (num, den);
+      e->count = e->count.apply_scale (num, den);
     }
-  if (scale)
-    node->count = node->count.apply_scale (num, den);
+  node->count = node->count.apply_scale (num, den);
 }
 
 /* We removed or are going to remove the last call to NODE.
@@ -692,7 +700,10 @@ inline_transform (struct cgraph_node *node)
 
 	  basic_block bb;
 	  FOR_ALL_BB_FN (bb, cfun)
-	    bb->count = bb->count.apply_scale (num, den);
+	    if (num == profile_count::zero ())
+	      bb->count = bb->count.global0 ();
+	    else
+	      bb->count = bb->count.apply_scale (num, den);
 	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
 	}
       todo = optimize_inline_calls (current_function_decl);

@@ -1,3 +1,14 @@
+2017-11-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/82832
+	* ipa-inline-transform.c (update_noncloned_frequencies): Always
+	scale.
+	(inline_transform): Likewise.
+	* predict.c (counts_to_freqs): Remove useless conditional.
+	* profile-count.h (profile_count::apply_scale): Move sanity check.
+	* tree-inline.c (copy_bb): Always scale.
+	(copy_cfg_body): Likewise.
+
 2017-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/67591
