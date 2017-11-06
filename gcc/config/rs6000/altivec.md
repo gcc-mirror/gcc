@@ -4020,7 +4020,7 @@
   "TARGET_P9_VECTOR")
 
 ;; Vector absolute difference unsigned
-(define_insn "*p9_vadu<mode>3"
+(define_insn "p9_vadu<mode>3"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (unspec:VI [(match_operand:VI 1 "register_operand" "v")
 		    (match_operand:VI 2 "register_operand" "v")]
@@ -4183,6 +4183,49 @@
   "TARGET_P9_VECTOR"
   "vbpermd %0,%1,%2"
   [(set_attr "type" "vecsimple")])
+
+;; Support for SAD (sum of absolute differences).
+
+;; Due to saturating semantics, we can't combine the sum-across
+;; with the vector accumulate in vsum4ubs.  A vadduwm is needed.
+(define_expand "usadv16qi"
+  [(use (match_operand:V4SI 0 "register_operand"))
+   (use (match_operand:V16QI 1 "register_operand"))
+   (use (match_operand:V16QI 2 "register_operand"))
+   (use (match_operand:V4SI 3 "register_operand"))]
+  "TARGET_P9_VECTOR"
+{
+  rtx absd = gen_reg_rtx (V16QImode);
+  rtx zero = gen_reg_rtx (V4SImode);
+  rtx psum = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_p9_vaduv16qi3 (absd, operands[1], operands[2]));
+  emit_insn (gen_altivec_vspltisw (zero, const0_rtx));
+  emit_insn (gen_altivec_vsum4ubs (psum, absd, zero));
+  emit_insn (gen_addv4si3 (operands[0], psum, operands[3]));
+  DONE;
+})
+
+;; Since vsum4shs is saturating and further performs signed
+;; arithmetic, we can't combine the sum-across with the vector
+;; accumulate in vsum4shs.  A vadduwm is needed.
+(define_expand "usadv8hi"
+  [(use (match_operand:V4SI 0 "register_operand"))
+   (use (match_operand:V8HI 1 "register_operand"))
+   (use (match_operand:V8HI 2 "register_operand"))
+   (use (match_operand:V4SI 3 "register_operand"))]
+  "TARGET_P9_VECTOR"
+{
+  rtx absd = gen_reg_rtx (V8HImode);
+  rtx zero = gen_reg_rtx (V4SImode);
+  rtx psum = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_p9_vaduv8hi3 (absd, operands[1], operands[2]));
+  emit_insn (gen_altivec_vspltisw (zero, const0_rtx));
+  emit_insn (gen_altivec_vsum4shs (psum, absd, zero));
+  emit_insn (gen_addv4si3 (operands[0], psum, operands[3]));
+  DONE;
+})
 
 ;; Decimal Integer operations
 (define_int_iterator UNSPEC_BCD_ADD_SUB [UNSPEC_BCDADD UNSPEC_BCDSUB])
