@@ -35038,6 +35038,8 @@ rs6000_insn_cost (rtx_insn *insn, bool speed)
 
     case TYPE_SYNC:
     case TYPE_LOAD_L:
+    case TYPE_MFCR:
+    case TYPE_MFCRF:
       cost = COSTS_N_INSNS (n + 2);
       break;
 
