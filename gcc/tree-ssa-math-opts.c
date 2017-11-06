@@ -3259,6 +3259,9 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
 
   to_mode = SCALAR_INT_TYPE_MODE (type);
   from_mode = SCALAR_INT_TYPE_MODE (type1);
+  if (to_mode == from_mode)
+    return false;
+
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
 
@@ -3449,6 +3452,9 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 
   to_mode = SCALAR_TYPE_MODE (type);
   from_mode = SCALAR_TYPE_MODE (type1);
+  if (to_mode == from_mode)
+    return false;
+
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
   optype = type1;

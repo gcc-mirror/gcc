@@ -1,3 +1,12 @@
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	PR tree-optimization/82816
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Return false
+	if the modes of the two types are the same.
+	(convert_plusminus_to_widen): Likewise.
+
 2017-11-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (*p9_vadu<mode>3) Rename to
