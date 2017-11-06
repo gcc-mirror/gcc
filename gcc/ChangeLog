@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_expand_vec_perm)
+	(aarch64_expand_vec_perm_const): Take the number of units too.
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm)
+	(aarch64_expand_vec_perm_const): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_perm_const<mode>)
+	(vec_perm<mode>): Update accordingly.
+
+2017-11-06  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_simd_vect_par_cnst_half):
 	Take the number of units too.
 	* config/aarch64/aarch64.c (aarch64_simd_vect_par_cnst_half): Likewise.

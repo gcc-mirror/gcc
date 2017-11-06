@@ -13242,11 +13242,14 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
     }
 }
 
+/* Expand a vec_perm with the operands given by TARGET, OP0, OP1 and SEL.
+   NELT is the number of elements in the vector.  */
+
 void
-aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
+aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel,
+			 unsigned int nelt)
 {
   machine_mode vmode = GET_MODE (target);
-  unsigned int nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
   rtx mask;
 
@@ -13602,13 +13605,15 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-/* Expand a vec_perm_const pattern.  */
+/* Expand a vec_perm_const pattern with the operands given by TARGET,
+   OP0, OP1 and SEL.  NELT is the number of elements in the vector.  */
 
 bool
-aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
+aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel,
+			       unsigned int nelt)
 {
   struct expand_vec_perm_d d;
-  int i, nelt, which;
+  unsigned int i, which;
 
   d.target = target;
   d.op0 = op0;
@@ -13618,12 +13623,11 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.testing_p = false;
 
-  nelt = GET_MODE_NUNITS (d.vmode);
   d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      unsigned int ei = INTVAL (e) & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
       d.perm.quick_push (ei);
     }
