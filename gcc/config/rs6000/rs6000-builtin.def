@@ -1850,6 +1850,13 @@ BU_P6_64BIT_2 (CMPB,     "cmpb",	CONST,	cmpbdi3)
 /* 1 argument VSX instructions added in ISA 2.07.  */
 BU_P8V_VSX_1 (XSCVSPDPN,      "xscvspdpn",	CONST,	vsx_xscvspdpn)
 BU_P8V_VSX_1 (XSCVDPSPN,      "xscvdpspn",	CONST,	vsx_xscvdpspn)
+BU_P8V_VSX_1 (REVB_V1TI,      "revb_v1ti",	CONST,	revb_v1ti)
+BU_P8V_VSX_1 (REVB_V2DI,      "revb_v2di",	CONST,	revb_v2di)
+BU_P8V_VSX_1 (REVB_V4SI,      "revb_v4si",	CONST,	revb_v4si)
+BU_P8V_VSX_1 (REVB_V8HI,      "revb_v8hi",	CONST,	revb_v8hi)
+BU_P8V_VSX_1 (REVB_V16QI,     "revb_v16qi",	CONST,	revb_v16qi)
+BU_P8V_VSX_1 (REVB_V2DF,      "revb_v2df",	CONST,	revb_v2df)
+BU_P8V_VSX_1 (REVB_V4SF,      "revb_v4sf",	CONST,	revb_v4sf)
 
 /* 1 argument altivec instructions added in ISA 2.07.  */
 BU_P8V_AV_1 (ABS_V2DI,	      "abs_v2di",	CONST,	absv2di2)
@@ -1959,6 +1966,7 @@ BU_P8V_OVERLOAD_1 (VPOPCNTUH,	"vpopcntuh")
 BU_P8V_OVERLOAD_1 (VPOPCNTUW,	"vpopcntuw")
 BU_P8V_OVERLOAD_1 (VPOPCNTUD,	"vpopcntud")
 BU_P8V_OVERLOAD_1 (VGBBD,	"vgbbd")
+BU_P8V_OVERLOAD_1 (REVB,	"revb")
 
 /* ISA 2.07 vector overloaded 2 argument functions.  */
 BU_P8V_OVERLOAD_2 (EQV,		"eqv")
@@ -2069,8 +2077,6 @@ BU_P9V_OVERLOAD_1 (VSTDCN,	"scalar_test_neg")
 BU_P9V_OVERLOAD_1 (VSTDCNQP,	"scalar_test_neg_qp")
 BU_P9V_OVERLOAD_1 (VSTDCNDP,	"scalar_test_neg_dp")
 BU_P9V_OVERLOAD_1 (VSTDCNSP,	"scalar_test_neg_sp")
-
-BU_P9V_OVERLOAD_1 (REVB,	"revb")
 
 BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth")
 BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl")

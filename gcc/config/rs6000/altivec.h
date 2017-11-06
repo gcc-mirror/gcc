@@ -415,6 +415,7 @@
 #define vec_vsubuqm __builtin_vec_vsubuqm
 #define vec_vupkhsw __builtin_vec_vupkhsw
 #define vec_vupklsw __builtin_vec_vupklsw
+#define vec_revb __builtin_vec_revb
 #endif
 
 #ifdef __POWER9_VECTOR__
@@ -478,8 +479,6 @@
 
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
-
-#define vec_revb __builtin_vec_revb
 #endif
 
 /* Predicates.

@@ -73,6 +73,13 @@
 			     (TF	"FLOAT128_VECTOR_P (TFmode)")
 			     TI])
 
+(define_mode_attr VSX_XXBR  [(V8HI  "h")
+			     (V4SI  "w")
+			     (V4SF  "w")
+			     (V2DF  "d")
+			     (V2DI  "d")
+			     (V1TI  "q")])
+
 ;; Map into the appropriate load/store name based on the type
 (define_mode_attr VSm  [(V16QI "vw4")
 			(V8HI  "vw4")
@@ -272,6 +279,9 @@
 ;; Iterators for loading constants with xxspltib
 (define_mode_iterator VSINT_84  [V4SI V2DI DI SI])
 (define_mode_iterator VSINT_842 [V8HI V4SI V2DI])
+
+;; Vector reverse byte modes
+(define_mode_iterator VEC_REVB [V8HI V4SI V2DI V4SF V2DF V1TI])
 
 ;; Iterator for ISA 3.0 vector extract/insert of small integer vectors.
 ;; VSX_EXTRACT_I2 doesn't include V4SImode because SI extracts can be
@@ -4775,6 +4785,37 @@
   "TARGET_P9_VECTOR"
   "xxbrw %x0,%x1"
   [(set_attr "type" "vecperm")])
+
+;; Swap all bytes in each element of vector
+(define_expand "revb_<mode>"
+  [(set (match_operand:VEC_REVB 0 "vsx_register_operand")
+	(bswap:VEC_REVB (match_operand:VEC_REVB 1 "vsx_register_operand")))]
+  ""
+{
+  if (TARGET_P9_VECTOR)
+    emit_insn (gen_p9_xxbr<VSX_XXBR>_<mode> (operands[0], operands[1]));
+  else
+    {
+      /* Want to have the elements in reverse order relative
+	 to the endian mode in use, i.e. in LE mode, put elements
+	 in BE order.  */
+      rtx sel = swap_endian_selector_for_mode(<MODE>mode);
+      emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
+					   operands[1], sel));
+    }
+
+  DONE;
+})
+
+;; Reversing bytes in vector char is just a NOP.
+(define_expand "revb_v16qi"
+  [(set (match_operand:V16QI 0 "vsx_register_operand")
+	(bswap:V16QI (match_operand:V16QI 1 "vsx_register_operand")))]
+  ""
+{
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
 
 ;; Swap all bytes in each 16-bit element
 (define_insn "p9_xxbrh_v8hi"

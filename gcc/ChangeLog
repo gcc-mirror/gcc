@@ -1,3 +1,19 @@
+2017-11-06  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (P8V_BUILTIN_VEC_REVB): Add power 8
+	definitions.
+	(P9V_BUILTIN_VEC_REVB): Remove the power 9 instance definitions.
+	* config/rs6000/altivec.h (vec_revb): Change the #define from power 9
+	to power 8.
+	* config/rs6000/r6000-protos.h (swap_endian_selector_for_mode): Add new
+	extern declaration.
+	* config/rs6000/rs6000.c (swap_endian_selector_for_mode): Add function.
+	* config/rs6000/rs6000-builtin.def (BU_P8V_VSX_1, BU_P8V_OVERLOAD_1):
+	Add power 8 macro expansions.
+	(BU_P9V_OVERLOAD_1): Remove power 9 overload expansion.
+	* config/rs6000/vsx.md (revb_<mode>): Add define_expand to generate
+	power 8 instructions.  (VSX_XXBR): Add iterator.
+
 2017-11-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.md (predicable_short_it): Change default to "no",
