@@ -1,3 +1,9 @@
+2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/69739
+	* gfortran.dg/pr69739.f90: New test.
+
 2017-11-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/82796
