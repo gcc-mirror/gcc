@@ -33,9 +33,11 @@ class C {
 unsigned long C::m_fn1() {
 CellHierarchy:
   m_fn2().m_fn1();
+  return 0;
 }
 
 unsigned long C::m_fn3() {
 CellHierarchy:
   m_fn2().m_fn1();
+  return 0;
 }

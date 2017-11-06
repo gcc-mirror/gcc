@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 // { dg-additional-options "-mcpu=970 -maltivec" { target powerpc*-*-* } }
 
 typedef union {

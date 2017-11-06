@@ -2,6 +2,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-xfail-if "" { powerpc-ibm-aix* } }
 // { dg-options "-O -fcompare-debug -fno-inline -fno-ipa-pure-const -fipa-sra" }
+// { dg-additional-options "-Wno-return-type" }
 
 template <class T>
 struct A
@@ -21,4 +22,5 @@ auto k(T t, U u, V v) -> decltype (t.U::template B<V>::MEM)
 int main()
 {
   k( C(), A<int>(), D() );
+  return 0;
 }

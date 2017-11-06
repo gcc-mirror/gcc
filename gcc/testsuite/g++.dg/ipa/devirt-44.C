@@ -2,7 +2,7 @@
 /* { dg-options "-O3 -fno-ipa-cp -fdump-ipa-inline-details -fno-early-inlining" } */
 struct A {
   virtual int foo () {return 1;}
-  int wrapfoo () {foo();}
+  void wrapfoo () {foo();}
   A() {wrapfoo();}
 };
 struct B:A {virtual int foo () {return 2;}};
@@ -17,7 +17,7 @@ test (struct A *a)
     __builtin_abort ();
 }
 
-main()
+int main()
 {
   struct B a;
   dostuff (&a);

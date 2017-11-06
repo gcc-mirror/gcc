@@ -1,7 +1,7 @@
 // PR c++/32121
 // { dg-do compile }
 
-int f (void)
+void f (void)
 {
   __label__ a, b;
   __label__ c;

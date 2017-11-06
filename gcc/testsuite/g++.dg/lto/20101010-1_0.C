@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-lto-options "-Wno-return-type" }
 
 typedef long size_t;
 template < class, class > struct pair

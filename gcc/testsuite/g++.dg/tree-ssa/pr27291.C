@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 namespace std
 {

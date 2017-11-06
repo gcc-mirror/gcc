@@ -48,7 +48,7 @@ void warn_for_NULL()
   NULL && NULL; // No warning: converting NULL to bool is OK
 }
 
-int warn_for___null()
+void warn_for___null()
 {
   int i = __null; // { dg-warning "" } converting __null to non-pointer type
   float z = __null; // { dg-warning "" } converting __null to non-pointer type

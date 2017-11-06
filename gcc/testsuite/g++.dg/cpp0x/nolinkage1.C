@@ -18,4 +18,4 @@ static void g()
   A<B> a;
 }
 
-int main() { g(); f(0); }
+int main() { g(); f(0); return 0; }

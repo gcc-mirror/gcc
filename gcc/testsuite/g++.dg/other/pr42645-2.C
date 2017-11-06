@@ -8,7 +8,7 @@ struct C
   C ();
 };
 
-static inline C *foo () {}
+static inline C *foo () { return 0; }
 
 extern void f4 ();
 
@@ -16,6 +16,7 @@ static inline int
 f3 ()
 {
   f4 ();
+  return 0;
 }
 
 static inline void

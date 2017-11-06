@@ -24,6 +24,7 @@ bool test ()
   return true;
 }
 
+int
 main ()
 {
   f (test);

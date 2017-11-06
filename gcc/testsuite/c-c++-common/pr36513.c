@@ -11,5 +11,7 @@ int main1 ()
 		  && (t) == '\0' 
 		  ? (char *) __rawmemchr (s, t) 
 		  : __builtin_strchr (s, t)));
+
+  return 0;
 }
 

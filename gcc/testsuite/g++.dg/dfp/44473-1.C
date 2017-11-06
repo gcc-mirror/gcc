@@ -1,4 +1,5 @@
 /* { dg-do assemble } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 /* Minimized from the testcase in PR c++/44473; mangling of decimal types
    did not include CV qualifiers. */
@@ -119,4 +120,5 @@ bool
 bar ()
 {
   vec.push_back (std::decimal::decimal32 (0));
+  return true;
 }

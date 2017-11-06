@@ -1,5 +1,6 @@
 // PR c++/69889
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename F> struct Tag {
   static void fp() { f()(0); }

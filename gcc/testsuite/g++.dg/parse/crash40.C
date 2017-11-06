@@ -15,12 +15,12 @@ class AA
 struct BB : AA {};
 
 class AAA {
-  int get() const {}
+  int get() const { return 0; }
 };
 struct BBB {
   static BBB *foo();
 private:
-  int get() const {} /* { dg-message "private" } */
+  int get() const { return 1; } /* { dg-message "private" } */
 };
 template<bool> struct S {
   S(unsigned int = BBB::foo()->AAA::get()); /* { dg-error "is not a base of" } */

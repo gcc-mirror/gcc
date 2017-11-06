@@ -69,6 +69,7 @@ foo (inline int var31)				// { dg-error "'var31' declared as an 'inline' paramet
 {
   inline int var32;				// { dg-error "'inline' specifier invalid for variable 'var32' declared at block scope" }
   static inline int var33;			// { dg-error "'inline' specifier invalid for variable 'var33' declared at block scope" }
+  return 0;
 }
 template <typename A, typename B, typename C>
 struct Y

@@ -30,6 +30,7 @@ template <typename BaseT> struct D
          typename BaseT::callback_type p3)
   {
     p3.on_extended_iso_date ();
+    return char_type();
   }
 };
 struct F

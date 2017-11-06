@@ -36,6 +36,7 @@ void my_terminate() {
   exit (0);		// double faults should call terminate
 }
 
+int
 main() {
   std::set_terminate (my_terminate);
   try {

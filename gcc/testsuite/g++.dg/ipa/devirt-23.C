@@ -41,7 +41,7 @@ MultiTermDocs::~MultiTermDocs() {
 
 B *C::m_fn1(int *) { abort (); }
 
-main()
+int main()
 {
   class C c;
 }

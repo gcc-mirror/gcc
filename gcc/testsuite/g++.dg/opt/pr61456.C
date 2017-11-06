@@ -14,6 +14,7 @@ typedef decltype (&Funcs::f1) pfunc;
 static int Set (Funcs * f, const pfunc & fp)
 {
   (f->*fp) ();
+  return 0;
 }
 
 void

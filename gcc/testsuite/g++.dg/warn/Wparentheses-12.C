@@ -7,7 +7,7 @@ int foo (int);
 
 int a, b, c;
 
-int
+void
 bar (void)
 {
   if (a)

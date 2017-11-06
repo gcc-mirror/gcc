@@ -1,6 +1,7 @@
 /* PR target/36745 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIC" } */
+/* { dg-additional-options "-Wno-return-type" } */
 /* { dg-require-effective-target fpic } */
 
 typedef __SIZE_TYPE__ size_t;

@@ -97,6 +97,8 @@ public:
 
     mapped_type&       operator[](const key_type& __k)       {
         insert(value_type(__k, mapped_type()));
+	static mapped_type a;
+	return a;
     }
 
 };

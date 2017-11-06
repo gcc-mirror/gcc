@@ -18,7 +18,7 @@ bar (T &)
 {
 }
 
-int
+void
 foo ()
 {
   T t;

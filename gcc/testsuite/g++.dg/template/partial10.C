@@ -10,9 +10,10 @@
 template <class Fn> void def(Fn fn) {}
 
 template <class T1, class T2> T2 fn(T1, T2);
-template <class T1> int fn(T1) { }
+template <class T1> int fn(T1) { return 0; }
 
 int main()
 {
   def(fn<int>);
+  return 0;
 }

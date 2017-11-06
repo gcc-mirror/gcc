@@ -26,6 +26,8 @@ struct A {
 A a;
 
 extern int foo();
+
+int
 main()
 {
   a.x = 4 + c.x;

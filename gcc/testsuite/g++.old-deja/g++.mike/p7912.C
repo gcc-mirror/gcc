@@ -12,6 +12,7 @@ public:
 };
 
 
+int
 main()
 {
   try {

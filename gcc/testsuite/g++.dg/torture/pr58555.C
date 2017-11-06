@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
+
 template <typename _Tp> _Tp *__addressof(_Tp &) {}
 template <typename _Tp> class A {
 public:
