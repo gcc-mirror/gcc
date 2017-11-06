@@ -614,7 +614,7 @@ static const char *const target_machine = TARGET_MACHINE;
 
    Return 0 if not found, otherwise return its name, allocated with malloc.  */
 
-#ifdef OBJECT_FORMAT_NONE
+#if defined (OBJECT_FORMAT_NONE) || defined (OBJECT_FORMAT_COFF)
 
 /* Add an entry for the object file NAME to object file list LIST.
    New entries are added at the end of the list. The original pointer
@@ -634,7 +634,7 @@ add_lto_object (struct lto_object_list *list, const char *name)
 
   list->last = n;
 }
-#endif /* OBJECT_FORMAT_NONE */
+#endif
 
 
 /* Perform a link-time recompilation and relink if any of the object
@@ -2750,8 +2750,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
   int is_shared = 0;
+  int found_lto = 0;
 
-  if (which_pass != PASS_FIRST && which_pass != PASS_OBJ)
+  if (which_pass != PASS_FIRST && which_pass != PASS_OBJ
+      && which_pass != PASS_LTOINFO)
     return;
 
 #ifdef COLLECT_EXPORT_LIST
@@ -2764,6 +2766,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
      eliminate scan_libraries() function.  */
   do
     {
+      found_lto = 0;
 #endif
       /* Some platforms (e.g. OSF4) declare ldopen as taking a
 	 non-const char * filename parameter, even though it will not
@@ -2805,6 +2808,19 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 		      if (*name == '.')
 			++name;
 #endif
+
+                      if (which_pass == PASS_LTOINFO)
+                        {
+			  if (found_lto)
+			    continue;
+			  if (strncmp (name, "__gnu_lto_v1", 12) == 0)
+			    {
+			      add_lto_object (&lto_objects, prog_name);
+			      found_lto = 1;
+			      break;
+			    }
+			  continue;
+			}
 
 		      switch (is_ctor_dtor (name))
 			{
