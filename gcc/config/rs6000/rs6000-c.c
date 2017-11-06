@@ -683,6 +683,17 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__builtin_vsx_xvnmsubmsp=__builtin_vsx_xvnmsubsp");
     }
 
+  /* Map the old _Float128 'q' builtins into the new 'f128' builtins.  */
+  if (TARGET_FLOAT128_TYPE)
+    {
+      builtin_define ("__builtin_fabsq=__builtin_fabsf128");
+      builtin_define ("__builtin_copysignq=__builtin_copysignf128");
+      builtin_define ("__builtin_nanq=__builtin_nanf128");
+      builtin_define ("__builtin_nansq=__builtin_nansf128");
+      builtin_define ("__builtin_infq=__builtin_inff128");
+      builtin_define ("__builtin_huge_valq=__builtin_huge_valf128");
+    }
+
   /* Tell users they can use __builtin_bswap{16,64}.  */
   builtin_define ("__HAVE_BSWAP__");
 

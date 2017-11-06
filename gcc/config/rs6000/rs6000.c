@@ -16108,39 +16108,11 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
    from ia64.c.  */
 
 static tree
-rs6000_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
-		     tree *args, bool ignore ATTRIBUTE_UNUSED)
+rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
+		     int n_args ATTRIBUTE_UNUSED,
+		     tree *args ATTRIBUTE_UNUSED,
+		     bool ignore ATTRIBUTE_UNUSED)
 {
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    {
-      enum rs6000_builtins fn_code
-	= (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
-      switch (fn_code)
-	{
-	case RS6000_BUILTIN_NANQ:
-	case RS6000_BUILTIN_NANSQ:
-	  {
-	    tree type = TREE_TYPE (TREE_TYPE (fndecl));
-	    const char *str = c_getstr (*args);
-	    int quiet = fn_code == RS6000_BUILTIN_NANQ;
-	    REAL_VALUE_TYPE real;
-
-	    if (str && real_nan (&real, str, quiet, TYPE_MODE (type)))
-	      return build_real (type, real);
-	    return NULL_TREE;
-	  }
-	case RS6000_BUILTIN_INFQ:
-	case RS6000_BUILTIN_HUGE_VALQ:
-	  {
-	    tree type = TREE_TYPE (TREE_TYPE (fndecl));
-	    REAL_VALUE_TYPE inf;
-	    real_inf (&inf);
-	    return build_real (type, inf);
-	  }
-	default:
-	  break;
-	}
-    }
 #ifdef SUBTARGET_FOLD_BUILTIN
   return SUBTARGET_FOLD_BUILTIN (fndecl, n_args, args, ignore);
 #else
@@ -16772,6 +16744,41 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case RS6000_BUILTIN_CPU_SUPPORTS:
       return cpu_expand_builtin (fcode, exp, target);
 
+    case FLOAT128_BUILTIN_SQRTF128_ODD:
+      return rs6000_expand_unop_builtin (TARGET_IEEEQUAD
+					 ? CODE_FOR_sqrttf2_odd
+					 : CODE_FOR_sqrtkf2_odd, exp, target);
+
+    case FLOAT128_BUILTIN_TRUNCF128_ODD:
+      return rs6000_expand_unop_builtin (TARGET_IEEEQUAD
+					 ? CODE_FOR_trunctfdf2_odd
+					 : CODE_FOR_trunckfdf2_odd, exp, target);
+
+    case FLOAT128_BUILTIN_ADDF128_ODD:
+      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
+					  ? CODE_FOR_addtf3_odd
+					  : CODE_FOR_addkf3_odd, exp, target);
+
+    case FLOAT128_BUILTIN_SUBF128_ODD:
+      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
+					  ? CODE_FOR_subtf3_odd
+					  : CODE_FOR_subkf3_odd, exp, target);
+
+    case FLOAT128_BUILTIN_MULF128_ODD:
+      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
+					  ? CODE_FOR_multf3_odd
+					  : CODE_FOR_mulkf3_odd, exp, target);
+
+    case FLOAT128_BUILTIN_DIVF128_ODD:
+      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
+					  ? CODE_FOR_divtf3_odd
+					  : CODE_FOR_divkf3_odd, exp, target);
+
+    case FLOAT128_BUILTIN_FMAF128_ODD:
+      return rs6000_expand_ternop_builtin (TARGET_IEEEQUAD
+					   ? CODE_FOR_fmatf4_odd
+					   : CODE_FOR_fmakf4_odd, exp, target);
+
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
@@ -17101,15 +17108,6 @@ rs6000_init_builtins (void)
   if (TARGET_EXTRA_BUILTINS || TARGET_PAIRED_FLOAT)
     rs6000_common_init_builtins ();
 
-  ftype = build_function_type_list (ieee128_float_type_node,
-				    const_str_type_node, NULL_TREE);
-  def_builtin ("__builtin_nanq", ftype, RS6000_BUILTIN_NANQ);
-  def_builtin ("__builtin_nansq", ftype, RS6000_BUILTIN_NANSQ);
-
-  ftype = build_function_type_list (ieee128_float_type_node, NULL_TREE);
-  def_builtin ("__builtin_infq", ftype, RS6000_BUILTIN_INFQ);
-  def_builtin ("__builtin_huge_valq", ftype, RS6000_BUILTIN_HUGE_VALQ);
-
   ftype = builtin_function_type (DFmode, DFmode, DFmode, VOIDmode,
 				 RS6000_BUILTIN_RECIP, "__builtin_recipdiv");
   def_builtin ("__builtin_recipdiv", ftype, RS6000_BUILTIN_RECIP);
@@ -17158,6 +17156,32 @@ rs6000_init_builtins (void)
 				    NULL_TREE);
   def_builtin ("__builtin_cpu_is", ftype, RS6000_BUILTIN_CPU_IS);
   def_builtin ("__builtin_cpu_supports", ftype, RS6000_BUILTIN_CPU_SUPPORTS);
+
+  ftype = build_function_type_list (ieee128_float_type_node,
+				    ieee128_float_type_node, NULL_TREE);
+  def_builtin ("__builtin_sqrtf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_SQRTF128_ODD);
+  def_builtin ("__builtin_truncf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_TRUNCF128_ODD);
+
+  ftype = build_function_type_list (ieee128_float_type_node,
+				    ieee128_float_type_node,
+				    ieee128_float_type_node, NULL_TREE);
+  def_builtin ("__builtin_addf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_ADDF128_ODD);
+  def_builtin ("__builtin_subf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_SUBF128_ODD);
+  def_builtin ("__builtin_mulf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_MULF128_ODD);
+  def_builtin ("__builtin_divf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_DIVF128_ODD);
+
+  ftype = build_function_type_list (ieee128_float_type_node,
+				    ieee128_float_type_node,
+				    ieee128_float_type_node,
+				    ieee128_float_type_node, NULL_TREE);
+  def_builtin ("__builtin_fmaf128_round_to_odd", ftype,
+	       FLOAT128_BUILTIN_FMAF128_ODD);
 
   /* AIX libm provides clog as __clog.  */
   if (TARGET_XCOFF &&

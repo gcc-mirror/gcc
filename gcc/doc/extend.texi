@@ -15547,35 +15547,18 @@ Additional built-in functions are available for the 64-bit PowerPC
 family of processors, for efficient use of 128-bit floating point
 (@code{__float128}) values.
 
-The following floating-point built-in functions are available with
-@code{-mfloat128} and Altivec support.  All of them implement the
-function that is part of the name.
+Previous versions of GCC supported some 'q' builtins for IEEE 128-bit
+floating point.  These functions are now mapped into the equivalent
+'f128' builtin functions.
 
 @smallexample
-__float128 __builtin_fabsq (__float128)
-__float128 __builtin_copysignq (__float128, __float128)
+__builtin_fabsq is mapped into __builtin_fabsf128
+__builtin_copysignq is mapped into __builtin_copysignf128
+__builtin_infq is mapped into __builtin_inff128
+__builtin_huge_valq is mapped into __builtin_huge_valf128
+__builtin_nanq is mapped into __builtin_nanf128
+__builtin_nansq is mapped into __builtin_nansf128
 @end smallexample
-
-The following built-in functions are available with @code{-mfloat128}
-and Altivec support.
-
-@table @code
-@item __float128 __builtin_infq (void)
-Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
-@findex __builtin_infq
-
-@item __float128 __builtin_huge_valq (void)
-Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
-@findex __builtin_huge_valq
-
-@item __float128 __builtin_nanq (void)
-Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
-@findex __builtin_nanq
-
-@item __float128 __builtin_nansq (void)
-Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
-@findex __builtin_nansq
-@end table
 
 The following built-in functions are available on Linux 64-bit systems
 that use the ISA 3.0 instruction set.

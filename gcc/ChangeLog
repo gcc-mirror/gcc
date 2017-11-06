@@ -1,3 +1,39 @@
+2017-11-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/82748
+	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_1): Delete
+	float128 helper macros, which are no longer used after deleting
+	the old 'q' built-in functions, and moving the round to odd
+	built-in functions to being special built-in functions.
+	(BU_FLOAT128_2): Likewise.
+	(BU_FLOAT128_1_HW): Likewise.
+	(BU_FLOAT128_2_HW): Likewise.
+	(BU_FLOAT128_3_HW): Likewise.
+	(FABSQ): Delete old 'q' built-in functions.
+	(COPYSIGNQ): Likewise.
+	(SQRTF128_ODD): Move round to odd built-in functions to be
+	special built-in functions, so that we can handle
+	-mabi=ieeelongdouble.
+	(TRUNCF128_ODD): Likewise.
+	(ADDF128_ODD): Likewise.
+	(SUBF128_ODD): Likewise.
+	(MULF128_ODD): Likewise.
+	(DIVF128_ODD): Likewise.
+	(FMAF128_ODD): Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Map old 'q'
+	built-in names to 'f128'.
+	* config/rs6000/rs6000.c (rs6000_fold_builtin): Remove folding the
+	old 'q' built-in functions, as the machine independent code for
+	'f128' built-in functions handles this.
+	(rs6000_expand_builtin): Add expansion for float128 round to odd
+	functions, keying off on -mabi=ieeelongdouble of whether to use
+	the KFmode or TFmode variant.
+	(rs6000_init_builtins): Initialize the _Float128 round to odd
+	built-in functions.
+	* doc/extend.texi (PowerPC Built-in Functions): Document the old
+	_Float128 'q' built-in functions are now mapped into the new
+	'f128' built-in functions.
+
 2017-11-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	* collect2.c (add_lto_object): Compile for OBJECT_COFF.
