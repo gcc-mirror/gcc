@@ -9222,7 +9222,7 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
 	        return true;						\
 	      }								\
 	  }								\
-	while (0);
+	while (0)
 
 /* RTX costs.  Make an estimate of the cost of executing the operation
    X, which is contained with an operation with code OUTER_CODE.
@@ -9654,8 +9654,8 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  /* We check both sides of the MINUS for shifter operands since,
 	     unlike PLUS, it's not commutative.  */
 
-	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 0)
-	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 1)
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 0);
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 1);
 
 	  /* Slightly disparage, as we might need to widen the result.  */
 	  *cost += 1;
@@ -9766,7 +9766,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  rtx shift_op, shift_reg;
 	  shift_reg = NULL;
 
-	  HANDLE_NARROW_SHIFT_ARITH (PLUS, 0)
+	  HANDLE_NARROW_SHIFT_ARITH (PLUS, 0);
 
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
