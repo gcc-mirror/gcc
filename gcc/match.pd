@@ -615,7 +615,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (lshift integer_onep@0 (minus@1 INTEGER_CST@2 @3))
   (if (INTEGRAL_TYPE_P (type)
-       && wi::eq_p (@2, TYPE_PRECISION (type) - 1)
+       && wi::eq_p (wi::to_wide (@2), TYPE_PRECISION (type) - 1)
        && single_use (@1))
    (if (TYPE_UNSIGNED (type))
      (rshift (lshift @0 @2) @3)

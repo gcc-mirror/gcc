@@ -1,3 +1,7 @@
+2017-11-07  Richard Biener  <rguenther@suse.de>
+
+	* match.pd: Fix build.
+
 2017-11-07  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 
