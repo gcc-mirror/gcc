@@ -1,6 +1,10 @@
 2017-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82855
+	* config/i386/i386.md (SWI1248_AVX512BWDQ2_64): New mode iterator.
+	(*cmp<mode>_ccz_1): New insn with $k alternative.
+
+	PR target/82855
 	* config/i386/i386.c (ix86_swap_binary_operands_p): Treat
 	RTX_COMM_COMPARE as commutative as well.
 	(ix86_binary_operator_ok): Formatting fix.
