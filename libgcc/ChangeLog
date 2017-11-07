@@ -1,3 +1,13 @@
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* config/aarch64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Remove
+	semicolon after "do {} while (0)".
+	* config/i386/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/ia64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/mips/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/rs6000/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+
 2017-11-04  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	PR libgcc/82635
