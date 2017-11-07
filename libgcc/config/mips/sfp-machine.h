@@ -165,7 +165,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
     _fcsr &= ~(1 << 17);				\
     _fcsr |= _fex | (_fex << FP_EX_CAUSE_SHIFT);	\
     __builtin_mips_set_fcsr (_fcsr);			\
-  } while (0);
+  } while (0)
 
 #else
 #define FP_EX_INVALID           (1 << 4)
