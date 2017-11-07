@@ -605,6 +605,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
 
+/* Fold (1 << (C - x)) where C = precision(type) - 1
+   into ((1 << C) >> x). */
+(simplify
+ (lshift integer_onep@0 (minus@1 INTEGER_CST@2 @3))
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::eq_p (@2, TYPE_PRECISION (type) - 1)
+       && single_use (@1))
+   (if (TYPE_UNSIGNED (type))
+     (rshift (lshift @0 @2) @3)
+   (with
+    { tree utype = unsigned_type_for (type); }
+    (convert (rshift (lshift (convert:utype @0) @2) @3))))))
+
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
 (simplify
  (mult (rdiv@3 REAL_CST@0 @1) REAL_CST@2)
