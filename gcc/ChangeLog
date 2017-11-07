@@ -1,3 +1,11 @@
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* config/arm/arm.c (HANDLE_NARROW_SHIFT_ARITH): Remove semicolon after
+	"while {} do (0)".
+	(arm_rtx_costs_internal): Add missing semicolon after
+	HANDLE_NARROW_SHIFT_ARITH call.
+
 2017-11-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
