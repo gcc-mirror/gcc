@@ -1,3 +1,8 @@
+2017-11-07  Sudakshina Das  <sudi.das@arm.com>
+
+	PR middle-end/80131
+	* match.pd: Simplify 1 << (C - x) where C = precision (x) - 1.
+
 2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd ((a&~b)|(a^b),(a&~b)^~a,(a|b)&~(a^b),a|~(a^b),

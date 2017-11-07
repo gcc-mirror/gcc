@@ -1,3 +1,8 @@
+2017-11-07  Sudakshina Das  <sudi.das@arm.com>
+
+	PR middle-end/80131
+	* testsuite/gcc.dg/pr80131-1.c: New Test.
+
 2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/bitops-1.c: New file.
