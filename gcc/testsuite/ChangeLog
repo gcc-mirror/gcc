@@ -1,8 +1,13 @@
+2017-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80425
+	* gcc.target/i386/pr80425-3.c: New test.
+
 2017-11-07  Andreas Schwab  <schwab@suse.de>
 
 	* g++.dg/pr50763-3.C (evalPoint): Return a value.
 
-2017-10-17  Wilco Dijkstra  <wdijkstr@arm.com>
+2017-11-07  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR tree-optimization/71026

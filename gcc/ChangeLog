@@ -1,3 +1,10 @@
+2017-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80425
+	* config/i386.i386.md (*zero_extendsidi2): Change (?r,*Yj), (?*Yi,r)
+	and (*x,m) to ($r,Yj), ($Yi,r) and ($x,m).
+	(zero-extendsidi peephole2): Remove peephole.
+
 2017-11-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c/53037
@@ -7,15 +14,13 @@
 
 2017-11-07  Andrew Waterman  <andrew@sifive.com>
 
-	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): New
-	prototype.
+	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): New prototype.
 	(riscv_expand_block_move): Likewise.
-	gcc/config/riscv/riscv.h (MOVE_RATIO): Tune cost to movmemsi
+	* config/riscv/riscv.h (MOVE_RATIO): Tune cost to movmemsi
 	implementation.
 	(RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER): New define.
 	(RISCV_MAX_MOVE_BYTES_STRAIGHT): New define.
-	gcc/config/riscv/riscv.c (riscv_block_move_straight): New
-	function.
+	* config/riscv/riscv.c (riscv_block_move_straight): New function.
 	(riscv_adjust_block_mem): Likewise.
 	(riscv_block_move_loop): Likewise.
 	(riscv_expand_block_move): Likewise.
