@@ -1,3 +1,8 @@
+2017-11-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	disable isel if it was not set explicitly.
+
 2017-11-06  James Bowman  <james.bowman@ftdichip.com>
 
 	* gcc/dwarf2out.c (modified_type_die): Retain ADDR_SPACE

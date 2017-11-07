@@ -4798,10 +4798,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* For the E500 family of cores, reset the single/double FP flags to let us
      check that they remain constant across attributes or pragmas.  Also,
      clear a possible request for string instructions, not supported and which
-     we might have silently queried above for -Os. 
-
-     For other families, clear ISEL in case it was set implicitly.
-  */
+     we might have silently queried above for -Os.  */
 
   switch (rs6000_cpu)
     {
@@ -4811,19 +4808,12 @@ rs6000_option_override_internal (bool global_init_p)
     case PROCESSOR_PPCE500MC64:
     case PROCESSOR_PPCE5500:
     case PROCESSOR_PPCE6500:
-
       rs6000_single_float = 0;
       rs6000_double_float = 0;
-
       rs6000_isa_flags &= ~OPTION_MASK_STRING;
-
       break;
 
     default:
-
-      if (cpu_index >= 0 && !(rs6000_isa_flags_explicit & OPTION_MASK_ISEL))
-	rs6000_isa_flags &= ~OPTION_MASK_ISEL;
-
       break;
     }
 
