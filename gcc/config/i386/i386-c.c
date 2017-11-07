@@ -447,7 +447,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__XSAVEC__");
   if (isa_flag & OPTION_MASK_ISA_XSAVES)
     def_or_undef (parse_in, "__XSAVES__");
-  if (isa_flag & OPTION_MASK_ISA_MPX)
+  if (isa_flag2 & OPTION_MASK_ISA_MPX)
     def_or_undef (parse_in, "__MPX__");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
     def_or_undef (parse_in, "__CLWB__");
@@ -457,7 +457,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PKU__");
   if (isa_flag2 & OPTION_MASK_ISA_RDPID)
     def_or_undef (parse_in, "__RDPID__");
-  if (isa_flag2 & OPTION_MASK_ISA_GFNI)
+  if (isa_flag & OPTION_MASK_ISA_GFNI)
     def_or_undef (parse_in, "__GFNI__");
   if (isa_flag2 & OPTION_MASK_ISA_IBT)
     {

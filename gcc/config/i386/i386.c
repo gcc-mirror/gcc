@@ -2743,7 +2743,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
      ISAs come first.  Target string will be displayed in the same order.  */
   static struct ix86_target_opts isa2_opts[] =
   {
-    { "-mgfni",		OPTION_MASK_ISA_GFNI },
+    { "-mmpx",		OPTION_MASK_ISA_MPX },
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
@@ -2754,6 +2754,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
   };
   static struct ix86_target_opts isa_opts[] =
   {
+    { "-mgfni",		OPTION_MASK_ISA_GFNI },
     { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
     { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
     { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
@@ -2811,7 +2812,6 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mlwp",		OPTION_MASK_ISA_LWP },
     { "-mhle",		OPTION_MASK_ISA_HLE },
     { "-mfxsr",		OPTION_MASK_ISA_FXSR },
-    { "-mmpx",		OPTION_MASK_ISA_MPX },
     { "-mclwb",		OPTION_MASK_ISA_CLWB }
   };
 
@@ -4079,8 +4079,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512VL))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VL;
         if (processor_alias_table[i].flags & PTA_MPX
-            && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MPX))
-          opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MPX;
+            && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MPX))
+          opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MPX;
 	if (processor_alias_table[i].flags & PTA_AVX512VBMI
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512VBMI))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VBMI;
@@ -4123,10 +4123,10 @@ ix86_option_override_internal (bool main_args_p,
 	break;
       }
 
-  if (TARGET_X32 && (opts->x_ix86_isa_flags & OPTION_MASK_ISA_MPX))
+  if (TARGET_X32 && (opts->x_ix86_isa_flags2 & OPTION_MASK_ISA_MPX))
     error ("Intel MPX does not support x32");
 
-  if (TARGET_X32 && (ix86_isa_flags & OPTION_MASK_ISA_MPX))
+  if (TARGET_X32 && (ix86_isa_flags2 & OPTION_MASK_ISA_MPX))
     error ("Intel MPX does not support x32");
 
   if (i == pta_size)
@@ -30790,7 +30790,7 @@ ix86_init_mpx_builtins ()
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
-      decl = def_builtin (d->mask, d->name, ftype, d->code);
+      decl = def_builtin2 (d->mask, d->name, ftype, d->code);
 
       /* With no leaf and nothrow flags for MPX builtins
 	 abnormal edges may follow its call when setjmp
@@ -30823,7 +30823,7 @@ ix86_init_mpx_builtins ()
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
-      decl = def_builtin_const (d->mask, d->name, ftype, d->code);
+      decl = def_builtin_const2 (d->mask, d->name, ftype, d->code);
 
       if (decl)
 	{
@@ -35178,10 +35178,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      at all, -m64 is a whole TU option.  */
   if (((ix86_builtins_isa[fcode].isa
 	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
-	    | OPTION_MASK_ISA_64BIT))
+	    | OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_GFNI))
        && !(ix86_builtins_isa[fcode].isa
 	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
-		| OPTION_MASK_ISA_64BIT)
+		| OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_GFNI)
 	    & ix86_isa_flags))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))

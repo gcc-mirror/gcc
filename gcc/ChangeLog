@@ -1,3 +1,22 @@
+2017-11-07  Julia Koval  <julia.koval@intel.com>
+
+	PR target/82812
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET): Remove MPX from flag.
+	(ix86_handle_option): Move MPX to isa_flags2 and GFNI to isa_flags.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Ditto.
+	* config/i386/i386.opt: Ditto.
+	* config/i386/i386.c (ix86_target_string): Ditto.
+	(ix86_option_override_internal): Ditto.
+	(ix86_init_mpx_builtins): Move MPX to args2.
+	(ix86_expand_builtin): Special handling for OPTION_MASK_ISA_GFNI.
+	* config/i386/i386-builtin.def (__builtin_ia32_vgf2p8affineinvqb_v64qi,
+	__builtin_ia32_vgf2p8affineinvqb_v64qi_mask,
+	__builtin_ia32_vgf2p8affineinvqb_v32qi,
+	__builtin_ia32_vgf2p8affineinvqb_v32qi_mask,
+	__builtin_ia32_vgf2p8affineinvqb_v16qi,
+	__builtin_ia32_vgf2p8affineinvqb_v16qi_mask): Move to ARGS array.
+
 2017-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80425

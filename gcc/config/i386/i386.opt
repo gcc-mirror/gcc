@@ -754,7 +754,7 @@ Target Report Mask(ISA_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
 
 mgfni
-Target Report Mask(ISA_GFNI) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA_GFNI) Var(ix86_isa_flags) Save
 Support GFNI built-in functions and code generation.
 
 mbmi
@@ -903,7 +903,7 @@ Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation.
 
 mmpx
-Target Report Mask(ISA_MPX) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_MPX) Var(ix86_isa_flags2) Save
 Support MPX code generation.
 
 mmwaitx
