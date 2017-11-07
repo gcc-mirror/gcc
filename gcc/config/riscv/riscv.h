@@ -808,10 +808,25 @@ while (0)
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
 
-/* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction pairs, we will do a movmem or libcall instead.  */
+/* The maximum number of bytes copied by one iteration of a movmemsi loop.  */
 
-#define MOVE_RATIO(speed) (CLEAR_RATIO (speed) / 2)
+#define RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER (UNITS_PER_WORD * 4)
+
+/* The maximum number of bytes that can be copied by a straight-line
+   movmemsi implementation.  */
+
+#define RISCV_MAX_MOVE_BYTES_STRAIGHT (RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER * 3)
+
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movmem or libcall instead.
+   Do not use move_by_pieces at all when strict alignment is not
+   in effect but the target has slow unaligned accesses; in this
+   case, movmem or libcall is more efficient.  */
+
+#define MOVE_RATIO(speed)						\
+  (!STRICT_ALIGNMENT && riscv_slow_unaligned_access ? 1 :		\
+   (speed) ? RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD :	\
+   CLEAR_RATIO (speed) / 2)
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */

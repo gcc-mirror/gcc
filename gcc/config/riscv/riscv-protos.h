@@ -67,7 +67,9 @@ extern HOST_WIDE_INT riscv_initial_elimination_offset (int, int);
 extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (bool);
 extern bool riscv_can_use_return_insn (void);
-extern rtx riscv_function_value (const_tree, const_tree, machine_mode);
+extern rtx riscv_function_value (const_tree, const_tree, enum machine_mode);
+extern unsigned int riscv_hard_regno_nregs (int, enum machine_mode);
+extern bool riscv_expand_block_move (rtx, rtx, rtx);
 
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
