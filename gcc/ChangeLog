@@ -1,3 +1,8 @@
+2017-11-07  Michael Clark  <michaeljclark@mac.com>
+
+	* config/riscv/linux.h (MUSL_ABI_SUFFIX): New define.
+	(MUSL_DYNAMIC_LINKER): Likewise.
+
 2017-11-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64.md (ashl<mode>3, ashr<mode>3, lshr<mode>3)
