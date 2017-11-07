@@ -1,5 +1,9 @@
 2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.dg/tree-ssa/bitops-1.c: New file.
+
+2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/tree-ssa/negminus.c: New test.
 
 2017-11-06  Jeff Law  <law@redhat.com>
