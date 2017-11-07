@@ -242,8 +242,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET \
   (OPTION_MASK_ISA_MMX_UNSET \
-   | OPTION_MASK_ISA_SSE_UNSET \
-   | OPTION_MASK_ISA_MPX)
+   | OPTION_MASK_ISA_SSE_UNSET)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -265,8 +264,12 @@ ix86_handle_option (struct gcc_options *opts,
 	     general registers are allowed.  */
 	  opts->x_ix86_isa_flags
 	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+	  opts->x_ix86_isa_flags2
+	    &= ~OPTION_MASK_ISA_MPX;
 	  opts->x_ix86_isa_flags_explicit
 	    |= OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+	    |= OPTION_MASK_ISA_MPX;
 
 	  opts->x_target_flags &= ~MASK_80387;
 	}
@@ -493,13 +496,13 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mgfni:
       if (value)
 	{
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_GFNI_SET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_GFNI_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_GFNI_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_GFNI_SET;
 	}
       else
 	{
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_GFNI_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_GFNI_UNSET;
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_GFNI_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_GFNI_UNSET;
 	}
       return true;
 
