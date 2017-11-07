@@ -19778,7 +19778,8 @@ ix86_swap_binary_operands_p (enum rtx_code code, machine_mode mode,
   rtx src2 = operands[2];
 
   /* If the operation is not commutative, we can't do anything.  */
-  if (GET_RTX_CLASS (code) != RTX_COMM_ARITH)
+  if (GET_RTX_CLASS (code) != RTX_COMM_ARITH
+      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
     return false;
 
   /* Highest priority is that src1 should match dst.  */
@@ -20009,7 +20010,7 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
 
   /* If the destination is memory, we must have a matching source operand.  */
   if (MEM_P (dst) && !rtx_equal_p (dst, src1))
-      return false;
+    return false;
 
   /* Source 1 cannot be a constant.  */
   if (CONSTANT_P (src1))

@@ -1,3 +1,32 @@
+2017-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82855
+	* config/i386/i386.c (ix86_swap_binary_operands_p): Treat
+	RTX_COMM_COMPARE as commutative as well.
+	(ix86_binary_operator_ok): Formatting fix.
+	* config/i386/sse.md (*mul<mode>3<mask_name><round_name>,
+	*<code><mode>3<mask_name><round_saeonly_name>,
+	*<code><mode>3<mask_name>, *<code>tf3, *mul<mode>3<mask_name>,
+	*<s>mul<mode>3_highpart<mask_name>,
+	*vec_widen_umult_even_v16si<mask_name>,
+	*vec_widen_umult_even_v8si<mask_name>,
+	*vec_widen_umult_even_v4si<mask_name>,
+	*vec_widen_smult_even_v16si<mask_name>,
+	*vec_widen_smult_even_v8si<mask_name>, *sse4_1_mulv2siv2di3<mask_name>,
+	*avx2_pmaddwd, *sse2_pmaddwd, *<sse4_1_avx2>_mul<mode>3<mask_name>,
+	*avx2_<code><mode>3, *avx512f_<code><mode>3<mask_name>,
+	*sse4_1_<code><mode>3<mask_name>, *<code>v8hi3,
+	*sse4_1_<code><mode>3<mask_name>, *<code>v16qi3, *avx2_eq<mode>3,
+	<avx512>_eq<mode>3<mask_scalar_merge_name>_1, *sse4_1_eqv2di3,
+	*sse2_eq<mode>3, <mask_codefor><code><mode>3<mask_name>,
+	*<code><mode>3, *<sse2_avx2>_uavg<mode>3<mask_name>,
+	*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>, *ssse3_pmulhrswv4hi3): Use
+	!(MEM_P (operands[1]) && MEM_P (operands[2])) condition instead of
+	ix86_binary_operator_ok.  Formatting fixes.
+	(*<plusminus_insn><mode>3<mask_name><round_name>,
+	*<plusminus_insn><mode>3, *<plusminus_insn><mode>3_m): Formatting
+	fixes.
+
 2017-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (GPR2): New mode_iterator.
