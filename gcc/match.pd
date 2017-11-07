@@ -354,6 +354,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (rdiv @0 (rdiv:s @1 @2))
    (mult (rdiv @0 @1) @2)))
 
+/* Simplify x / (- y) to -x / y.  */
+(simplify
+ (rdiv @0 (negate @1))
+ (rdiv (negate @0) @1))
+
 /* Optimize (X & (-A)) / A where A is a power of 2, to X >> log2(A) */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
