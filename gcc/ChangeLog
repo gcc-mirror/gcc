@@ -1,3 +1,10 @@
+2017-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/53037
+	* stor-layout.c: Include attribs.h.
+	(handle_warn_if_not_align): Replace test on TYPE_USER_ALIGN with
+	explicit lookup of "aligned" attribute.
+
 2017-11-07  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): New
