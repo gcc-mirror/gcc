@@ -1,3 +1,7 @@
+2017-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-pretty-print.c (dump_profile): Return "" instead of NULL.
+
 2017-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82855

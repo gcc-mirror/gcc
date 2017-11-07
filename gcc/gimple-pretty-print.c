@@ -86,7 +86,7 @@ dump_profile (profile_count &count)
 {
   char *buf;
   if (!count.initialized_p ())
-    return NULL;
+    return "";
   if (count.ipa_p ())
     buf = xasprintf ("[count: %" PRId64 "]",
 		     count.to_gcov_type ());
