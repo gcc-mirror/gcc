@@ -1,3 +1,8 @@
+2017-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82835
+	* testsuite/libgomp.c++/pr82835.C: New test.
+
 2017-11-06  Martin Liska  <mliska@suse.cz>
 
 	* testsuite/libgomp.c++/loop-2.C: Return a value

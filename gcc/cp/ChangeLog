@@ -1,3 +1,9 @@
+2017-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82835
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): For methods pass i - 1 to
+	convert_default_arg instead of i.
+
 2017-11-06  Jason Merrill  <jason@redhat.com>
 
 	P0704R1 - fixing const-qualified pointers to members
