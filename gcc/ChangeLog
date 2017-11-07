@@ -1,3 +1,9 @@
+2017-11-06  James Bowman  <james.bowman@ftdichip.com>
+
+	* gcc/dwarf2out.c (modified_type_die): Retain ADDR_SPACE
+	qualifiers.
+        (add_type_attribute) likewise.
+
 2017-11-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
