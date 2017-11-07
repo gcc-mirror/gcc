@@ -1,5 +1,10 @@
 2017-11-07  Tom de Vries  <tom@codesourcery.com>
 
+	* config/rs6000/aix-unwind.h (REGISTER_CFA_OFFSET_FOR): Remove semicolon
+	after "do {} while (0)".
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
 	PR other/82784
 	* config/aarch64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Remove
 	semicolon after "do {} while (0)".
