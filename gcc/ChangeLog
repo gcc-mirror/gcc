@@ -1,3 +1,14 @@
+2017-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2017-10-31  Matthew Fortune  <matthew.fortune@imgtec.com>
+                    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/81803
+	* lra-constraints.c (curr_insn_transform): Also reload the whole
+	register for a strict subreg no wider than a word if this is for
+	a WORD_REGISTER_OPERATIONS target.
+
 2017-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/60580

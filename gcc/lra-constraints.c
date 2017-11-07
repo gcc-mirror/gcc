@@ -4222,8 +4222,9 @@ curr_insn_transform (bool check_only_p)
 	      reg = SUBREG_REG (*loc);
 	      byte = SUBREG_BYTE (*loc);
 	      if (REG_P (reg)
-		  /* Strict_low_part requires reload the register not
-		     the sub-register.	*/
+		  /* Strict_low_part requires reloading the register and not
+		     just the subreg.  Likewise for a strict subreg no wider
+		     than a word for WORD_REGISTER_OPERATIONS targets.  */
 		  && (curr_static_id->operand[i].strict_low
 		      || (GET_MODE_SIZE (mode)
 			  <= GET_MODE_SIZE (GET_MODE (reg))
@@ -4235,7 +4236,11 @@ curr_insn_transform (bool check_only_p)
 			  && (goal_alt[i] == NO_REGS
 			      || (simplify_subreg_regno
 				  (ira_class_hard_regs[goal_alt[i]][0],
-				   GET_MODE (reg), byte, mode) >= 0)))))
+				   GET_MODE (reg), byte, mode) >= 0)))
+		      || (GET_MODE_PRECISION (mode)
+			  < GET_MODE_PRECISION (GET_MODE (reg))
+			  && GET_MODE_SIZE (GET_MODE (reg)) <= UNITS_PER_WORD
+			  && WORD_REGISTER_OPERATIONS)))
 		{
 		  /* An OP_INOUT is required when reloading a subreg of a
 		     mode wider than a word to ensure that data beyond the
