@@ -1,3 +1,9 @@
+2017-11-06  Jason Merrill  <jason@redhat.com>
+
+	P0704R1 - fixing const-qualified pointers to members
+	* typeck2.c (build_m_component_ref): Also accept in lower stds with
+	a pedwarn.
+
 2017-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65579

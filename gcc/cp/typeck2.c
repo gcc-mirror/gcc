@@ -1922,17 +1922,26 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 		       ptrmem_type);
 	      return error_mark_node;
 	    }
-	  else if (!lval
-		   && !FUNCTION_RVALUE_QUALIFIED (type)
-		   && (cxx_dialect < cxx2a
-		       || ((type_memfn_quals (type)
-			    & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))
-			   != TYPE_QUAL_CONST)))
+	  else if (!lval && !FUNCTION_RVALUE_QUALIFIED (type))
 	    {
-	      if (complain & tf_error)
-		error ("pointer-to-member-function type %qT requires an lvalue",
-		       ptrmem_type);
-	      return error_mark_node;
+	      if ((type_memfn_quals (type)
+		   & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))
+		  != TYPE_QUAL_CONST)
+		{
+		  if (complain & tf_error)
+		    error ("pointer-to-member-function type %qT requires "
+			   "an lvalue", ptrmem_type);
+		  return error_mark_node;
+		}
+	      else if (cxx_dialect < cxx2a)
+		{
+		  if (complain & tf_warning_or_error)
+		    pedwarn (input_location, OPT_Wpedantic,
+			     "pointer-to-member-function type %qT requires "
+			     "an lvalue before C++2a", ptrmem_type);
+		  else
+		    return error_mark_node;
+		}
 	    }
 	}
       return build2 (OFFSET_REF, type, datum, component);
