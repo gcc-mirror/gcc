@@ -1,3 +1,8 @@
+2017-11-07 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* Make-lang.in (CP_PLUGIN_HEADERS): Add operators.def since included
+	in cp-tree.h.
+
 2017-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82835
