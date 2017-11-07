@@ -1,5 +1,10 @@
 2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd ((a&~b)|(a^b),(a&~b)^~a,(a|b)&~(a^b),a|~(a^b),
+	(a|b)|(a&^b),(a&b)|~(a^b),~(~a&b),~X^Y): New transformations.
+
+2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
+
 	* fold-const.c (negate_expr_p) [PLUS_EXPR, MINUS_EXPR]: Handle
 	non-scalar integral types.
 	* match.pd (negate_expr_p): Handle MINUS_EXPR.
