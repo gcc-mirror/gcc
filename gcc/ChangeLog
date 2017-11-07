@@ -1,5 +1,15 @@
 2017-11-07  Tom de Vries  <tom@codesourcery.com>
 
+	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Remove semicolon
+	after "do {} while (0)".
+	* config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/rs6000/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
 	PR other/82784
 	* config/arm/arm.c (HANDLE_NARROW_SHIFT_ARITH): Remove semicolon after
 	"while {} do (0)".
