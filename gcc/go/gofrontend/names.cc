@@ -238,8 +238,8 @@ int
 Gogo::nested_function_num(const std::string& name)
 {
   std::string n(Gogo::unpack_hidden_name(name));
-  go_assert(n.compare(0, 8, ".$nested") == 0);
-  return strtol(n.substr(8).c_str(), NULL, 0);
+  go_assert(n.compare(0, 7, "$nested") == 0);
+  return strtol(n.substr(7).c_str(), NULL, 0);
 }
 
 // Return the name to use for a sink function, a function whose name
