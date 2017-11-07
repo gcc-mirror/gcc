@@ -1,5 +1,15 @@
 2017-11-07  Tom de Vries  <tom@codesourcery.com>
 
+	* config/powerpcspe/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Remove
+	semicolon after "do {} while (0)".
+	* config/powerpcspe/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/powerpcspe/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/powerpcspe/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/powerpcspe/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/powerpcspe/aix71.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
 	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Remove semicolon
 	after "do {} while (0)".
 	* config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Same.

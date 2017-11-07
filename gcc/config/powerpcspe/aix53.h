@@ -39,7 +39,7 @@ do {									\
     {									\
       error ("-maix64 required: 64-bit computation with 32-bit addressing not yet supported"); \
     }									\
-} while (0);
+} while (0)
 
 #undef ASM_SPEC
 #define ASM_SPEC "-u %{maix64:-a64 %{!mcpu*:-mppc64}} %(asm_cpu)"
