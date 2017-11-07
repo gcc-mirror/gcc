@@ -1717,6 +1717,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
   if (arg2)
     defparm = TREE_CHAIN (defparm);
 
+  bool is_method = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE;
   if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
     {
       tree inner_type = TREE_TYPE (arg1);
@@ -1765,8 +1766,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
-					   TREE_PURPOSE (parm), fn, i,
-					   tf_warning_or_error);
+					   TREE_PURPOSE (parm), fn,
+					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
       t = fold_convert (void_type_node, t);
       t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
@@ -1798,8 +1799,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
-					   TREE_PURPOSE (parm),
-					   fn, i, tf_warning_or_error);
+					   TREE_PURPOSE (parm), fn,
+					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
       t = fold_convert (void_type_node, t);
       return fold_build_cleanup_point_expr (TREE_TYPE (t), t);
