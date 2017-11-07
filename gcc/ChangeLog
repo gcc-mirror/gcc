@@ -1,3 +1,18 @@
+2017-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (GPR2): New mode_iterator.
+	("cstore<mode>4"): Don't always expand with rs6000_emit_int_cmove for
+	eq and ne if TARGET_ISEL.
+	(cmp): New code_iterator.
+	(UNS, UNSU_, UNSIK): New code_attrs.
+	(<code><GPR:mode><GPR2:mode>2_isel): New define_insn_and_split.
+	("eq<mode>3"): New define_expand, rename the define_insn_and_split
+	to...
+	("eq<mode>3"): ... this.
+	("ne<mode>3"): New define_expand, rename the define_insn_and_split
+	to...
+	("ne<mode>3"): ... this.
+
 2017-11-07  Julia Koval  <julia.koval@intel.com>
 
 	PR target/82812
