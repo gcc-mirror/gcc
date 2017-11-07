@@ -1436,6 +1436,19 @@
   DONE;
 })
 
+(define_expand "movmemsi"
+  [(parallel [(set (match_operand:BLK 0 "general_operand")
+		   (match_operand:BLK 1 "general_operand"))
+	      (use (match_operand:SI 2 ""))
+	      (use (match_operand:SI 3 "const_int_operand"))])]
+  ""
+{
+  if (riscv_expand_block_move (operands[0], operands[1], operands[2]))
+    DONE;
+  else
+    FAIL;
+})
+
 ;; Expand in-line code to clear the instruction cache between operand[0] and
 ;; operand[1].
 (define_expand "clear_cache"

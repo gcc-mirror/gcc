@@ -2642,6 +2642,162 @@ riscv_legitimize_call_address (rtx addr)
   return addr;
 }
 
+/* Emit straight-line code to move LENGTH bytes from SRC to DEST.
+   Assume that the areas do not overlap.  */
+
+static void
+riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
+{
+  HOST_WIDE_INT offset, delta;
+  unsigned HOST_WIDE_INT bits;
+  int i;
+  enum machine_mode mode;
+  rtx *regs;
+
+  bits = MAX (BITS_PER_UNIT,
+	      MIN (BITS_PER_WORD, MIN (MEM_ALIGN (src), MEM_ALIGN (dest))));
+
+  mode = mode_for_size (bits, MODE_INT, 0);
+  delta = bits / BITS_PER_UNIT;
+
+  /* Allocate a buffer for the temporary registers.  */
+  regs = XALLOCAVEC (rtx, length / delta);
+
+  /* Load as many BITS-sized chunks as possible.  Use a normal load if
+     the source has enough alignment, otherwise use left/right pairs.  */
+  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+    {
+      regs[i] = gen_reg_rtx (mode);
+      riscv_emit_move (regs[i], adjust_address (src, mode, offset));
+    }
+
+  /* Copy the chunks to the destination.  */
+  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+    riscv_emit_move (adjust_address (dest, mode, offset), regs[i]);
+
+  /* Mop up any left-over bytes.  */
+  if (offset < length)
+    {
+      src = adjust_address (src, BLKmode, offset);
+      dest = adjust_address (dest, BLKmode, offset);
+      move_by_pieces (dest, src, length - offset,
+		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), 0);
+    }
+}
+
+/* Helper function for doing a loop-based block operation on memory
+   reference MEM.  Each iteration of the loop will operate on LENGTH
+   bytes of MEM.
+
+   Create a new base register for use within the loop and point it to
+   the start of MEM.  Create a new memory reference that uses this
+   register.  Store them in *LOOP_REG and *LOOP_MEM respectively.  */
+
+static void
+riscv_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
+		       rtx *loop_reg, rtx *loop_mem)
+{
+  *loop_reg = copy_addr_to_reg (XEXP (mem, 0));
+
+  /* Although the new mem does not refer to a known location,
+     it does keep up to LENGTH bytes of alignment.  */
+  *loop_mem = change_address (mem, BLKmode, *loop_reg);
+  set_mem_align (*loop_mem, MIN (MEM_ALIGN (mem), length * BITS_PER_UNIT));
+}
+
+/* Move LENGTH bytes from SRC to DEST using a loop that moves BYTES_PER_ITER
+   bytes at a time.  LENGTH must be at least BYTES_PER_ITER.  Assume that
+   the memory regions do not overlap.  */
+
+static void
+riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
+		      HOST_WIDE_INT bytes_per_iter)
+{
+  rtx label, src_reg, dest_reg, final_src, test;
+  HOST_WIDE_INT leftover;
+
+  leftover = length % bytes_per_iter;
+  length -= leftover;
+
+  /* Create registers and memory references for use within the loop.  */
+  riscv_adjust_block_mem (src, bytes_per_iter, &src_reg, &src);
+  riscv_adjust_block_mem (dest, bytes_per_iter, &dest_reg, &dest);
+
+  /* Calculate the value that SRC_REG should have after the last iteration
+     of the loop.  */
+  final_src = expand_simple_binop (Pmode, PLUS, src_reg, GEN_INT (length),
+				   0, 0, OPTAB_WIDEN);
+
+  /* Emit the start of the loop.  */
+  label = gen_label_rtx ();
+  emit_label (label);
+
+  /* Emit the loop body.  */
+  riscv_block_move_straight (dest, src, bytes_per_iter);
+
+  /* Move on to the next block.  */
+  riscv_emit_move (src_reg, plus_constant (Pmode, src_reg, bytes_per_iter));
+  riscv_emit_move (dest_reg, plus_constant (Pmode, dest_reg, bytes_per_iter));
+
+  /* Emit the loop condition.  */
+  test = gen_rtx_NE (VOIDmode, src_reg, final_src);
+  if (Pmode == DImode)
+    emit_jump_insn (gen_cbranchdi4 (test, src_reg, final_src, label));
+  else
+    emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
+
+  /* Mop up any left-over bytes.  */
+  if (leftover)
+    riscv_block_move_straight (dest, src, leftover);
+  else
+    emit_insn(gen_nop ());
+}
+
+/* Expand a movmemsi instruction, which copies LENGTH bytes from
+   memory reference SRC to memory reference DEST.  */
+
+bool
+riscv_expand_block_move (rtx dest, rtx src, rtx length)
+{
+  if (CONST_INT_P (length))
+    {
+      HOST_WIDE_INT factor, align;
+
+      align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
+      factor = BITS_PER_WORD / align;
+
+      if (optimize_function_for_size_p (cfun)
+	  && INTVAL (length) * factor * UNITS_PER_WORD > MOVE_RATIO (false))
+	return false;
+
+      if (INTVAL (length) <= RISCV_MAX_MOVE_BYTES_STRAIGHT / factor)
+	{
+	  riscv_block_move_straight (dest, src, INTVAL (length));
+	  return true;
+	}
+      else if (optimize && align >= BITS_PER_WORD)
+	{
+	  unsigned min_iter_words
+	    = RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD;
+	  unsigned iter_words = min_iter_words;
+	  HOST_WIDE_INT bytes = INTVAL (length), words = bytes / UNITS_PER_WORD;
+
+	  /* Lengthen the loop body if it shortens the tail.  */
+	  for (unsigned i = min_iter_words; i < min_iter_words * 2 - 1; i++)
+	    {
+	      unsigned cur_cost = iter_words + words % iter_words;
+	      unsigned new_cost = i + words % i;
+	      if (new_cost <= cur_cost)
+		iter_words = i;
+	    }
+
+	  riscv_block_move_loop (dest, src, bytes, iter_words * UNITS_PER_WORD);
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Print symbolic operand OP, which is part of a HIGH or LO_SUM
    in context CONTEXT.  HI_RELOC indicates a high-part reloc.  */
 

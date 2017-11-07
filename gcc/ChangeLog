@@ -1,3 +1,19 @@
+2017-11-07  Andrew Waterman  <andrew@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): New
+	prototype.
+	(riscv_expand_block_move): Likewise.
+	gcc/config/riscv/riscv.h (MOVE_RATIO): Tune cost to movmemsi
+	implementation.
+	(RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER): New define.
+	(RISCV_MAX_MOVE_BYTES_STRAIGHT): New define.
+	gcc/config/riscv/riscv.c (riscv_block_move_straight): New
+	function.
+	(riscv_adjust_block_mem): Likewise.
+	(riscv_block_move_loop): Likewise.
+	(riscv_expand_block_move): Likewise.
+	gcc/config/riscv/riscv.md (movmemsi): New pattern.
+
 2017-11-07  Michael Clark  <michaeljclark@mac.com>
 
 	* config/riscv/linux.h (MUSL_ABI_SUFFIX): New define.
