@@ -1,3 +1,9 @@
+2017-11-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64.md (ashl<mode>3, ashr<mode>3, lshr<mode>3)
+	(rotr<mode>3, rotl<mode>3): Use aarch64_reg_or_imm instead of
+	nonmmory_operand.
+
 2017-11-07  Richard Biener  <rguenther@suse.de>
 
 	* match.pd: Fix build.

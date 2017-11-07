@@ -3958,7 +3958,7 @@
 (define_expand "<optab><mode>3"
   [(set (match_operand:GPI 0 "register_operand")
 	(ASHIFT:GPI (match_operand:GPI 1 "register_operand")
-		    (match_operand:QI 2 "nonmemory_operand")))]
+		    (match_operand:QI 2 "aarch64_reg_or_imm")))]
   ""
   {
     if (CONST_INT_P (operands[2]))
@@ -3994,7 +3994,7 @@
 (define_expand "rotr<mode>3"
   [(set (match_operand:GPI 0 "register_operand")
 	(rotatert:GPI (match_operand:GPI 1 "register_operand")
-		      (match_operand:QI 2 "nonmemory_operand")))]
+		      (match_operand:QI 2 "aarch64_reg_or_imm")))]
   ""
   {
     if (CONST_INT_P (operands[2]))
@@ -4014,7 +4014,7 @@
 (define_expand "rotl<mode>3"
   [(set (match_operand:GPI 0 "register_operand")
 	(rotatert:GPI (match_operand:GPI 1 "register_operand")
-		      (match_operand:QI 2 "nonmemory_operand")))]
+		      (match_operand:QI 2 "aarch64_reg_or_imm")))]
   ""
   {
     /* (SZ - cnt) % SZ == -cnt % SZ */
