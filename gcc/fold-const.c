@@ -428,7 +428,7 @@ negate_expr_p (tree t)
     case PLUS_EXPR:
       if (HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
 	  || HONOR_SIGNED_ZEROS (element_mode (type))
-	  || (INTEGRAL_TYPE_P (type)
+	  || (ANY_INTEGRAL_TYPE_P (type)
 	      && ! TYPE_OVERFLOW_WRAPS (type)))
 	return false;
       /* -(A + B) -> (-B) - A.  */
@@ -441,7 +441,7 @@ negate_expr_p (tree t)
       /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
       return !HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
 	     && !HONOR_SIGNED_ZEROS (element_mode (type))
-	     && (! INTEGRAL_TYPE_P (type)
+	     && (! ANY_INTEGRAL_TYPE_P (type)
 		 || TYPE_OVERFLOW_WRAPS (type));
 
     case MULT_EXPR:

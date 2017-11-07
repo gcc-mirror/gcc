@@ -958,6 +958,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match negate_expr_p
  VECTOR_CST
  (if (FLOAT_TYPE_P (TREE_TYPE (type)) || TYPE_OVERFLOW_WRAPS (type))))
+(match negate_expr_p
+ (minus @0 @1)
+ (if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
+      || (FLOAT_TYPE_P (type)
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	  && !HONOR_SIGNED_ZEROS (type)))))
 
 /* (-A) * (-B) -> A * B  */
 (simplify
@@ -972,6 +978,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
       && !HONOR_SIGNED_ZEROS (element_mode (type)))
   (minus (negate @1) @0)))
+
+/* -(A - B) -> B - A.  */
+(simplify
+ (negate (minus @0 @1))
+ (if ((ANY_INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_SANITIZED (type))
+      || (FLOAT_TYPE_P (type)
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	  && !HONOR_SIGNED_ZEROS (type)))
+  (minus @1 @0)))
 
 /* A - B -> A + (-B) if B is easily negatable.  */
 (simplify
@@ -1081,6 +1096,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (element_precision (type) <= element_precision (TREE_TYPE (@0))
       || !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (convert (minus @0 { build_each_one_cst (TREE_TYPE (@0)); }))))
+
+/* Convert - (~A) to A + 1.  */
+(simplify
+ (negate (nop_convert (bit_not @0)))
+ (plus (view_convert @0) { build_each_one_cst (type); }))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify

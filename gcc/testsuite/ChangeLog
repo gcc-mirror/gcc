@@ -1,3 +1,7 @@
+2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/negminus.c: New test.
+
 2017-11-06  Jeff Law  <law@redhat.com>
 
 	* gcc.target/i386/stack-check-12.c: Revert to initial version.  Then..

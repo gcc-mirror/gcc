@@ -1,3 +1,10 @@
+2017-11-07  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (negate_expr_p) [PLUS_EXPR, MINUS_EXPR]: Handle
+	non-scalar integral types.
+	* match.pd (negate_expr_p): Handle MINUS_EXPR.
+	(-(A-B), -(~A)): New transformations.
+
 2017-11-07  Tom de Vries  <tom@codesourcery.com>
 
 	* config/powerpcspe/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Remove
