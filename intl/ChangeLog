@@ -1,3 +1,8 @@
+2017-11-07  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac: Invoke AM_GNU_GETTEXT with need_ngettext.
+	* configure: Regenerate.
+
 2016-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure: Regenerate.
