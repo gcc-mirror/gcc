@@ -1,5 +1,10 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* lib-xref.ads, lib-xref-spark_specific.adb (Traverse_Declarations):
+	Remove Inside_Stubs parameter.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* spark_xrefs.ads (SPARK_Xref_Record): Referenced object is now
 	represented by Entity_Id.
 	(SPARK_Scope_Record): Referenced scope (e.g. subprogram) is now
