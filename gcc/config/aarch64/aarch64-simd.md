@@ -2940,9 +2940,9 @@
 
 (define_insn "*aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
-        (vec_concat:<VDBL>
-	   (match_operand:VD_BHSI 1 "general_operand" "w,?r,m")
-	   (match_operand:VD_BHSI 2 "aarch64_simd_imm_zero" "Dz,Dz,Dz")))]
+	(vec_concat:<VDBL>
+	  (match_operand:VDC 1 "general_operand" "w,?r,m")
+	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "@
    mov\\t%0.8b, %1.8b
@@ -2956,8 +2956,8 @@
 (define_insn "*aarch64_combinez_be<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
-	   (match_operand:VD_BHSI 2 "aarch64_simd_imm_zero" "Dz,Dz,Dz")
-	   (match_operand:VD_BHSI 1 "general_operand" "w,?r,m")))]
+	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")
+	  (match_operand:VDC 1 "general_operand" "w,?r,m")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "@
    mov\\t%0.8b, %1.8b

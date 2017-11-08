@@ -364,6 +364,9 @@
   return aarch64_simd_imm_zero_p (op, mode);
 })
 
+(define_special_predicate "aarch64_simd_or_scalar_imm_zero"
+  (match_test "aarch64_simd_imm_zero_p (op, mode)"))
+
 (define_special_predicate "aarch64_simd_imm_minus_one"
   (match_code "const_vector")
 {
