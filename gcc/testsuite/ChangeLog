@@ -1,3 +1,8 @@
+2017-11-08  Steven G. Kargl  <kargl@kgcc.gnu.org>
+
+	PR Fortran/82841
+	* gfortran.dg/transfer_simplify_11.f90: New test.
+
 2017-11-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/82884
