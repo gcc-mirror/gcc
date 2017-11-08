@@ -1,3 +1,11 @@
+2017-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82855
+	* config/i386/sse.md (<avx512>_eq<mode>3<mask_scalar_merge_name>,
+	<avx512>_eq<mode>3<mask_scalar_merge_name>_1): Use
+	nonimmediate_operand predicate for operand 1 instead of
+	register_operand.
+
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (store_pair_lanes<mode>):

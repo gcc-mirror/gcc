@@ -11127,7 +11127,7 @@
 (define_expand "<avx512>_eq<mode>3<mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
 	(unspec:<avx512fmaskmode>
-	  [(match_operand:VI12_AVX512VL 1 "register_operand")
+	  [(match_operand:VI12_AVX512VL 1 "nonimmediate_operand")
 	   (match_operand:VI12_AVX512VL 2 "nonimmediate_operand")]
 	  UNSPEC_MASKED_EQ))]
   "TARGET_AVX512BW"
@@ -11136,7 +11136,7 @@
 (define_expand "<avx512>_eq<mode>3<mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
 	(unspec:<avx512fmaskmode>
-	  [(match_operand:VI48_AVX512VL 1 "register_operand")
+	  [(match_operand:VI48_AVX512VL 1 "nonimmediate_operand")
 	   (match_operand:VI48_AVX512VL 2 "nonimmediate_operand")]
 	  UNSPEC_MASKED_EQ))]
   "TARGET_AVX512F"
@@ -11145,7 +11145,7 @@
 (define_insn "<avx512>_eq<mode>3<mask_scalar_merge_name>_1"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
 	(unspec:<avx512fmaskmode>
-	  [(match_operand:VI12_AVX512VL 1 "register_operand" "%v")
+	  [(match_operand:VI12_AVX512VL 1 "nonimmediate_operand" "%v")
 	   (match_operand:VI12_AVX512VL 2 "nonimmediate_operand" "vm")]
 	  UNSPEC_MASKED_EQ))]
   "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
@@ -11158,7 +11158,7 @@
 (define_insn "<avx512>_eq<mode>3<mask_scalar_merge_name>_1"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
 	(unspec:<avx512fmaskmode>
-	  [(match_operand:VI48_AVX512VL 1 "register_operand" "%v")
+	  [(match_operand:VI48_AVX512VL 1 "nonimmediate_operand" "%v")
 	   (match_operand:VI48_AVX512VL 2 "nonimmediate_operand" "vm")]
 	  UNSPEC_MASKED_EQ))]
   "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
