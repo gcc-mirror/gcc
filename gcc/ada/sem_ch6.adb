@@ -1510,6 +1510,7 @@ package body Sem_Ch6 is
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
       Update_Use_Clause_Chain;
+      Validate_Categorization_Dependency (N, Gen_Id);
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -10118,7 +10119,6 @@ package body Sem_Ch6 is
 
          function Visible_Part_Type (T : Entity_Id) return Boolean is
             P : constant Node_Id := Unit_Declaration_Node (Scope (T));
-            N : Node_Id;
 
          begin
             --  If the entity is a private type, then it must be declared in a
@@ -10126,34 +10126,19 @@ package body Sem_Ch6 is
 
             if Ekind (T) in Private_Kind then
                return True;
+
+            elsif Is_Type (T) and then Has_Private_Declaration (T) then
+               return True;
+
+            elsif Is_List_Member (Declaration_Node (T))
+              and then List_Containing (Declaration_Node (T)) =
+                         Visible_Declarations (Specification (P))
+            then
+               return True;
+
+            else
+               return False;
             end if;
-
-            --  Otherwise, we traverse the visible part looking for its
-            --  corresponding declaration. We cannot use the declaration
-            --  node directly because in the private part the entity of a
-            --  private type is the one in the full view, which does not
-            --  indicate that it is the completion of something visible.
-
-            N := First (Visible_Declarations (Specification (P)));
-            while Present (N) loop
-               if Nkind (N) = N_Full_Type_Declaration
-                 and then Present (Defining_Identifier (N))
-                 and then T = Defining_Identifier (N)
-               then
-                  return True;
-
-               elsif Nkind_In (N, N_Private_Type_Declaration,
-                                  N_Private_Extension_Declaration)
-                 and then Present (Defining_Identifier (N))
-                 and then T = Full_View (Defining_Identifier (N))
-               then
-                  return True;
-               end if;
-
-               Next (N);
-            end loop;
-
-            return False;
          end Visible_Part_Type;
 
       --  Start of processing for Check_For_Primitive_Subprogram

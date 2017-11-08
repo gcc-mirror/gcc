@@ -23,7 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Output; use Output;
+with Output;   use Output;
+with Sem_Util; use Sem_Util;
 
 package body SPARK_Xrefs is
 
@@ -81,17 +82,13 @@ package body SPARK_Xrefs is
             Write_Int (Int (ASR.Scope_Num));
             Write_Str ("  Scope_Name = """);
 
-            if ASR.Scope_Name /= null then
-               Write_Str (ASR.Scope_Name.all);
-            end if;
+            Write_Str (Unique_Name (ASR.Scope_Id));
 
             Write_Char ('"');
             Write_Str  ("  From = ");
             Write_Int  (Int (ASR.From_Xref));
             Write_Str  ("  To = ");
             Write_Int  (Int (ASR.To_Xref));
-            Write_Str  ("  Scope_Entity = ");
-            Write_Int  (Int (ASR.Scope_Entity));
             Write_Eol;
          end;
       end loop;
@@ -111,9 +108,7 @@ package body SPARK_Xrefs is
             Write_Int  (Int (Index));
             Write_Str (".  Entity_Name = """);
 
-            if AXR.Entity_Name /= null then
-               Write_Str (AXR.Entity_Name.all);
-            end if;
+            Write_Str (Unique_Name (AXR.Entity));
 
             Write_Char ('"');
             Write_Str ("  File_Num = ");

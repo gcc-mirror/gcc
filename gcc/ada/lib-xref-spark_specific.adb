@@ -66,9 +66,6 @@ package body SPARK_Specific is
    -- Local Variables --
    ---------------------
 
-   Heap : Entity_Id := Empty;
-   --  A special entity which denotes the heap object
-
    package Drefs is new Table.Table (
      Table_Component_Type => Xref_Entry,
      Table_Index_Type     => Xref_Entry_Number,
@@ -164,14 +161,13 @@ package body SPARK_Specific is
          --  range.
 
          SPARK_Scope_Table.Append
-           ((Scope_Name     => new String'(Unique_Name (E)),
+           ((Scope_Id       => E,
              File_Num       => Dspec,
              Scope_Num      => Scope_Id,
              Spec_File_Num  => 0,
              Spec_Scope_Num => 0,
              From_Xref      => 1,
-             To_Xref        => 0,
-             Scope_Entity   => E));
+             To_Xref        => 0));
 
          Scope_Id := Scope_Id + 1;
       end Add_SPARK_Scope;
@@ -351,7 +347,7 @@ package body SPARK_Specific is
 
       function Entity_Of_Scope (S : Scope_Index) return Entity_Id is
       begin
-         return SPARK_Scope_Table.Table (S).Scope_Entity;
+         return SPARK_Scope_Table.Table (S).Scope_Id;
       end Entity_Of_Scope;
 
       -------------------
@@ -423,7 +419,7 @@ package body SPARK_Specific is
          function Is_Past_Scope_Entity return Boolean is
          begin
             for Index in SPARK_Scope_Table.First .. S - 1 loop
-               if SPARK_Scope_Table.Table (Index).Scope_Entity = E then
+               if SPARK_Scope_Table.Table (Index).Scope_Id = E then
                   return True;
                end if;
             end loop;
@@ -435,7 +431,7 @@ package body SPARK_Specific is
 
       begin
          for Index in S .. SPARK_Scope_Table.Last loop
-            if SPARK_Scope_Table.Table (Index).Scope_Entity = E then
+            if SPARK_Scope_Table.Table (Index).Scope_Id = E then
                return True;
             end if;
          end loop;
@@ -634,7 +630,7 @@ package body SPARK_Specific is
          declare
             S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
          begin
-            Set_Scope_Num (S.Scope_Entity, S.Scope_Num);
+            Set_Scope_Num (S.Scope_Id, S.Scope_Num);
          end;
       end loop;
 
@@ -800,10 +796,10 @@ package body SPARK_Specific is
             end if;
 
             SPARK_Xref_Table.Append (
-              (Entity_Name => new String'(Unique_Name (Ref.Ent)),
-               File_Num    => Dependency_Num (Ref.Lun),
-               Scope_Num   => Get_Scope_Num (Ref.Ref_Scope),
-               Rtype       => Typ));
+              (Entity    => Unique_Entity (Ref.Ent),
+               File_Num  => Dependency_Num (Ref.Lun),
+               Scope_Num => Get_Scope_Num (Ref.Ref_Scope),
+               Rtype     => Typ));
          end;
       end loop;
 
@@ -948,7 +944,7 @@ package body SPARK_Specific is
             declare
                Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
             begin
-               Entity_Hash_Table.Set (Srec.Scope_Entity, S);
+               Entity_Hash_Table.Set (Srec.Scope_Id, S);
             end;
          end loop;
 
@@ -959,14 +955,14 @@ package body SPARK_Specific is
                Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
 
                Spec_Entity : constant Entity_Id :=
-                               Unique_Entity (Srec.Scope_Entity);
+                               Unique_Entity (Srec.Scope_Id);
                Spec_Scope  : constant Scope_Index :=
                                Entity_Hash_Table.Get (Spec_Entity);
 
             begin
                --  Generic spec may be missing in which case Spec_Scope is zero
 
-               if Spec_Entity /= Srec.Scope_Entity
+               if Spec_Entity /= Srec.Scope_Id
                  and then Spec_Scope /= 0
                then
                   Srec.Spec_File_Num :=
