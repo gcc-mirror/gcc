@@ -29,10 +29,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "convert.h"
 
+#include "gfortran.h"
+#include "trans.h"
+#include "trans-types.h"
+
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for a GIMPLE `if' or `while' statement.
 
-   The resulting type should always be `boolean_type_node'.  */
+   The resulting type should always be `logical_type_node'.  */
 
 static tree
 truthvalue_conversion (tree expr)
@@ -40,25 +44,29 @@ truthvalue_conversion (tree expr)
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
     case BOOLEAN_TYPE:
-      if (TREE_TYPE (expr) == boolean_type_node)
+      if (TREE_TYPE (expr) == logical_type_node)
 	return expr;
       else if (COMPARISON_CLASS_P (expr))
 	{
-	  TREE_TYPE (expr) = boolean_type_node;
+	  TREE_TYPE (expr) = logical_type_node;
 	  return expr;
 	}
       else if (TREE_CODE (expr) == NOP_EXPR)
         return fold_build1_loc (input_location, NOP_EXPR,
-			    boolean_type_node, TREE_OPERAND (expr, 0));
+				logical_type_node,
+				TREE_OPERAND (expr, 0));
       else
-        return fold_build1_loc (input_location, NOP_EXPR, boolean_type_node,
+        return fold_build1_loc (input_location, NOP_EXPR,
+				logical_type_node,
 				expr);
 
     case INTEGER_TYPE:
       if (TREE_CODE (expr) == INTEGER_CST)
-	return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
+	return integer_zerop (expr) ? logical_false_node
+	  : logical_true_node;
       else
-        return fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+        return fold_build2_loc (input_location, NE_EXPR,
+				logical_type_node,
 				expr, build_int_cst (TREE_TYPE (expr), 0));
 
     default:

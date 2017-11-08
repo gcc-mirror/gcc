@@ -1,4 +1,127 @@
- 2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
+2017-11-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 82869
+	* convert.c (truthvalue_conversion): Use logical_type_node.
+	* trans-array.c (gfc_trans_allocate_array_storage): Likewise.
+	(gfc_trans_create_temp_array): Likewise.
+	(gfc_trans_array_ctor_element): Likewise.
+	(gfc_trans_array_constructor_value): Likewise.
+	(trans_array_constructor): Likewise.
+	(trans_array_bound_check): Likewise.
+	(gfc_conv_array_ref): Likewise.
+	(gfc_trans_scalarized_loop_end): Likewise.
+	(gfc_conv_array_extent_dim): Likewise.
+	(gfc_array_init_size): Likewise.
+	(gfc_array_allocate): Likewise.
+	(gfc_trans_array_bounds): Likewise.
+	(gfc_trans_dummy_array_bias): Likewise.
+	(gfc_conv_array_parameter): Likewise.
+	(duplicate_allocatable): Likewise.
+	(duplicate_allocatable_coarray): Likewise.
+	(structure_alloc_comps): Likewise
+	(get_std_lbound): Likewise
+	(gfc_alloc_allocatable_for_assignment): Likewise
+	* trans-decl.c (add_argument_checking): Likewise
+	(gfc_generate_function_code): Likewise
+	* trans-expr.c (gfc_copy_class_to_class): Likewise
+	(gfc_trans_class_array_init_assign): Likewise
+	(gfc_trans_class_init_assign): Likewise
+	(gfc_conv_expr_present): Likewise
+	(gfc_conv_substring): Likewise
+	(gfc_conv_cst_int_power): Likewise
+	(gfc_conv_expr_op): Likewise
+	(gfc_conv_procedure_call): Likewise
+	(fill_with_spaces): Likewise
+	(gfc_trans_string_copy): Likewise
+	(gfc_trans_alloc_subarray_assign): Likewise
+	(gfc_trans_pointer_assignment): Likewise
+	(gfc_trans_scalar_assign): Likewise
+	(fcncall_realloc_result): Likewise
+	(alloc_scalar_allocatable_for_assignment): Likewise
+	(trans_class_assignment): Likewise
+	(gfc_trans_assignment_1): Likewise
+	* trans-intrinsic.c (build_fixbound_expr): Likewise
+	(gfc_conv_intrinsic_aint): Likewise
+	(gfc_trans_same_strlen_check): Likewise
+	(conv_caf_send): Likewise
+	(trans_this_image): Likewise
+	(conv_intrinsic_image_status): Likewise
+	(trans_image_index): Likewise
+	(gfc_conv_intrinsic_bound): Likewise
+	(conv_intrinsic_cobound): Likewise
+	(gfc_conv_intrinsic_mod): Likewise
+	(gfc_conv_intrinsic_dshift): Likewise
+	(gfc_conv_intrinsic_dim): Likewise
+	(gfc_conv_intrinsic_sign): Likewise
+	(gfc_conv_intrinsic_ctime): Likewise
+	(gfc_conv_intrinsic_fdate): Likewise
+	(gfc_conv_intrinsic_ttynam): Likewise
+	(gfc_conv_intrinsic_minmax): Likewise
+	(gfc_conv_intrinsic_minmax_char): Likewise
+	(gfc_conv_intrinsic_anyall): Likewise
+	(gfc_conv_intrinsic_arith): Likewise
+	(gfc_conv_intrinsic_minmaxloc): Likewise
+	(gfc_conv_intrinsic_minmaxval): Likewise
+	(gfc_conv_intrinsic_btest): Likewise
+	(gfc_conv_intrinsic_bitcomp): Likewise
+	(gfc_conv_intrinsic_shift): Likewise
+	(gfc_conv_intrinsic_ishft): Likewise
+	(gfc_conv_intrinsic_ishftc): Likewise
+	(gfc_conv_intrinsic_leadz): Likewise
+	(gfc_conv_intrinsic_trailz): Likewise
+	(gfc_conv_intrinsic_mask): Likewise
+	(gfc_conv_intrinsic_spacing): Likewise
+	(gfc_conv_intrinsic_rrspacing): Likewise
+	(gfc_conv_intrinsic_size): Likewise
+	(gfc_conv_intrinsic_sizeof): Likewise
+	(gfc_conv_intrinsic_transfer): Likewise
+	(gfc_conv_allocated): Likewise
+	(gfc_conv_associated): Likewise
+	(gfc_conv_same_type_as): Likewise
+	(gfc_conv_intrinsic_trim): Likewise
+	(gfc_conv_intrinsic_repeat): Likewise
+	(conv_isocbinding_function): Likewise
+	(conv_intrinsic_ieee_is_normal): Likewise
+	(conv_intrinsic_ieee_is_negative): Likewise
+	(conv_intrinsic_ieee_copy_sign): Likewise
+	(conv_intrinsic_move_alloc): Likewise
+	* trans-io.c (set_parameter_value_chk): Likewise
+	(set_parameter_value_inquire): Likewise
+	(set_string): Likewise
+	* trans-openmp.c (gfc_walk_alloc_comps): Likewise
+	(gfc_omp_clause_default_ctor): Likewise
+	(gfc_omp_clause_copy_ctor): Likewise
+	(gfc_omp_clause_assign_op): Likewise
+	(gfc_omp_clause_dtor): Likewise
+	(gfc_omp_finish_clause): Likewise
+	(gfc_trans_omp_clauses): Likewise
+	(gfc_trans_omp_do): Likewise
+	* trans-stmt.c (gfc_trans_goto): Likewise
+	(gfc_trans_sync): Likewise
+	(gfc_trans_arithmetic_if): Likewise
+	(gfc_trans_simple_do): Likewise
+	(gfc_trans_do): Likewise
+	(gfc_trans_forall_loop): Likewise
+	(gfc_trans_where_2): Likewise
+	(gfc_trans_allocate): Likewise
+	(gfc_trans_deallocate): Likewise
+	* trans-types.c (gfc_init_types): Initialize logical_type_node and
+	their true/false trees.
+	(gfc_get_array_descr_info): Use logical_type_node.
+	* trans-types.h (logical_type_node): New tree.
+	(logical_true_node): Likewise.
+	(logical_false_node): Likewise.
+	* trans.c (gfc_trans_runtime_check): Use logical_type_node.
+	(gfc_call_malloc): Likewise
+	(gfc_allocate_using_malloc): Likewise
+	(gfc_allocate_allocatable): Likewise
+	(gfc_add_comp_finalizer_call): Likewise
+	(gfc_add_finalizer_call): Likewise
+	(gfc_deallocate_with_status): Likewise
+	(gfc_deallocate_scalar_with_status): Likewise
+	(gfc_call_realloc): Likewise
+
+2017-11-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69739
 	* trans-expr.c (gfc_map_intrinsic_function): Return false for

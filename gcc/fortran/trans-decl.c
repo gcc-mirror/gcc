@@ -5784,7 +5784,7 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	/* Build the condition.  For optional arguments, an actual length
 	   of 0 is also acceptable if the associated string is NULL, which
 	   means the argument was not passed.  */
-	cond = fold_build2_loc (input_location, comparison, boolean_type_node,
+	cond = fold_build2_loc (input_location, comparison, logical_type_node,
 				cl->passed_length, cl->backend_decl);
 	if (fsym->attr.optional)
 	  {
@@ -5793,7 +5793,7 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    tree absent_failed;
 
 	    not_0length = fold_build2_loc (input_location, NE_EXPR,
-					   boolean_type_node,
+					   logical_type_node,
 					   cl->passed_length,
 					   build_zero_cst (gfc_charlen_type_node));
 	    /* The symbol needs to be referenced for gfc_get_symbol_decl.  */
@@ -5801,11 +5801,11 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    not_absent = gfc_conv_expr_present (fsym);
 
 	    absent_failed = fold_build2_loc (input_location, TRUTH_OR_EXPR,
-					     boolean_type_node, not_0length,
+					     logical_type_node, not_0length,
 					     not_absent);
 
 	    cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
-				    boolean_type_node, cond, absent_failed);
+				    logical_type_node, cond, absent_failed);
 	  }
 
 	/* Build the runtime check.  */
@@ -6376,13 +6376,13 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       msg = xasprintf ("Recursive call to nonrecursive procedure '%s'",
 		       sym->name);
-      recurcheckvar = gfc_create_var (boolean_type_node, "is_recursive");
+      recurcheckvar = gfc_create_var (logical_type_node, "is_recursive");
       TREE_STATIC (recurcheckvar) = 1;
-      DECL_INITIAL (recurcheckvar) = boolean_false_node;
+      DECL_INITIAL (recurcheckvar) = logical_false_node;
       gfc_add_expr_to_block (&init, recurcheckvar);
       gfc_trans_runtime_check (true, false, recurcheckvar, &init,
 			       &sym->declared_at, msg);
-      gfc_add_modify (&init, recurcheckvar, boolean_true_node);
+      gfc_add_modify (&init, recurcheckvar, logical_true_node);
       free (msg);
     }
 
@@ -6511,7 +6511,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
       && !is_recursive && !flag_openmp && recurcheckvar != NULL_TREE)
     {
-      gfc_add_modify (&cleanup, recurcheckvar, boolean_false_node);
+      gfc_add_modify (&cleanup, recurcheckvar, logical_false_node);
       recurcheckvar = NULL;
     }
 
