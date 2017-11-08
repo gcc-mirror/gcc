@@ -2735,6 +2735,10 @@ package Sem_Util is
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
 
+   function Within_Subprogram_Call (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N appears in an entry, function, or
+   --  procedure call.
+
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node
    --  for the incorrectly typed construct (Etype (Expr) is the type found),

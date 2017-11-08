@@ -7255,9 +7255,11 @@ package body Exp_Util is
                   null;
                end if;
 
-            --  Special case: a call marker
+            --  Special case: a marker
 
-            when N_Call_Marker =>
+            when N_Call_Marker
+               | N_Variable_Reference_Marker
+            =>
                if Is_List_Member (P) then
                   Insert_List_Before_And_Analyze (P, Ins_Actions);
                   return;

@@ -293,7 +293,7 @@ package body Sem_Elab is
    --  |       |                                                            |
    --  |       +--> Process_Variable_Assignment                             |
    --  |       |                                                            |
-   --  |       +--> Process_Variable_Read                                   |
+   --  |       +--> Process_Variable_Reference                              |
    --  |                                                                    |
    --  +------------------------- Processing phase -------------------------+
 
@@ -683,10 +683,6 @@ package body Sem_Elab is
    --  variable.
 
    type Variable_Attributes is record
-      SPARK_Mode_On : Boolean;
-      --  This flag is set when the variable appears in a region subject to
-      --  pragma SPARK_Mode with value On, or starts one such region.
-
       Unit_Id : Entity_Id;
       --  This attribute denotes the entity of the compilation unit where the
       --  variable resides.
@@ -965,16 +961,16 @@ package body Sem_Elab is
    --  information message, otherwise it emits an error. If flag In_SPARK
    --  is set, then string " in SPARK" is added to the end of the message.
 
-   procedure Info_Variable_Read
+   procedure Info_Variable_Reference
      (Ref      : Node_Id;
       Var_Id   : Entity_Id;
       Info_Msg : Boolean;
       In_SPARK : Boolean);
-   pragma Inline (Info_Variable_Read);
-   --  Output information concerning reference Ref which reads variable Var_Id.
-   --  If flag Info_Msg is set, the routine emits an information message,
-   --  otherwise it emits an error. If flag In_SPARK is set, then string " in
-   --  SPARK" is added to the end of the message.
+   pragma Inline (Info_Variable_Reference);
+   --  Output information concerning reference Ref which mentions variable
+   --  Var_Id. If flag Info_Msg is set, the routine emits an information
+   --  message, otherwise it emits an error. If flag In_SPARK is set, then
+   --  string " in SPARK" is added to the end of the message.
 
    function Insertion_Node (N : Node_Id; Ins_Nod : Node_Id) return Node_Id;
    pragma Inline (Insertion_Node);
@@ -1166,10 +1162,10 @@ package body Sem_Elab is
    --  Determine whether arbitrary node N denotes a suitable assignment for ABE
    --  processing.
 
-   function Is_Suitable_Variable_Read (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Variable_Read);
-   --  Determine whether arbitrary node N is a suitable variable read for ABE
-   --  processing.
+   function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean;
+   pragma Inline (Is_Suitable_Variable_Reference);
+   --  Determine whether arbitrary node N is a suitable variable reference for
+   --  ABE processing.
 
    function Is_Task_Entry (Id : Entity_Id) return Boolean;
    pragma Inline (Is_Task_Entry);
@@ -1418,9 +1414,16 @@ package body Sem_Elab is
    --  Perform ABE checks and diagnostics for assignment statement Asmt that
    --  updates the value of variable Var_Id using the SPARK rules.
 
-   procedure Process_Variable_Read (Ref : Node_Id);
-   --  Perform ABE checks and diagnostics for reference Ref that reads a
-   --  variable.
+   procedure Process_Variable_Reference (Ref : Node_Id);
+   --  Top level dispatcher for processing of variable references. Perform ABE
+   --  checks and diagnostics for variable reference Ref.
+
+   procedure Process_Variable_Reference_Read
+     (Ref    : Node_Id;
+      Var_Id : Entity_Id;
+      Attrs  : Variable_Attributes);
+   --  Perform ABE checks and diagnostics for reference Ref described by its
+   --  attributes Attrs, that reads variable Var_Id.
 
    procedure Push_Active_Scenario (N : Node_Id);
    pragma Inline (Push_Active_Scenario);
@@ -1647,6 +1650,12 @@ package body Sem_Elab is
       if ASIS_Mode then
          return;
 
+      --  Nothing to do when the call is being preanalyzed as the marker will
+      --  be inserted in the wrong place.
+
+      elsif Preanalysis_Active then
+         return;
+
       --  Nothing to do when the input does not denote a call or a requeue
 
       elsif not Nkind_In (N, N_Entry_Call_Statement,
@@ -1654,12 +1663,6 @@ package body Sem_Elab is
                              N_Procedure_Call_Statement,
                              N_Requeue_Statement)
       then
-         return;
-
-      --  Nothing to do when the call is being preanalyzed as the marker will
-      --  be inserted in the wrong place.
-
-      elsif Preanalysis_Active then
          return;
 
       --  Nothing to do when the call is analyzed/resolved too early within an
@@ -1807,6 +1810,146 @@ package body Sem_Elab is
 
       Record_Elaboration_Scenario (Marker);
    end Build_Call_Marker;
+
+   -------------------------------------
+   -- Build_Variable_Reference_Marker --
+   -------------------------------------
+
+   procedure Build_Variable_Reference_Marker
+     (N     : Node_Id;
+      Read  : Boolean;
+      Write : Boolean)
+   is
+      function In_Pragma (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod appears within a pragma
+
+      ---------------
+      -- In_Pragma --
+      ---------------
+
+      function In_Pragma (Nod : Node_Id) return Boolean is
+         Par : Node_Id;
+
+      begin
+         Par := Nod;
+         while Present (Par) loop
+            if Nkind (Par) = N_Pragma then
+               return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end In_Pragma;
+
+      --  Local variables
+
+      Marker    : Node_Id;
+      Prag      : Node_Id;
+      Var_Attrs : Variable_Attributes;
+      Var_Id    : Entity_Id;
+
+   --  Start of processing for Build_Variable_Reference_Marker
+
+   begin
+      --  Nothing to do for ASIS. As a result, ABE checks and diagnostics are
+      --  not performed in this mode.
+
+      if ASIS_Mode then
+         return;
+
+      --  Nothing to do when the reference is being preanalyzed as the marker
+      --  will be inserted in the wrong place.
+
+      elsif Preanalysis_Active then
+         return;
+
+      --  Nothing to do when the input does not denote a reference
+
+      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
+         return;
+
+      --  Nothing to do for internally-generated references
+
+      elsif not Comes_From_Source (N) then
+         return;
+
+      --  Nothing to do when the reference is erroneous, left in a bad state,
+      --  or does not denote a variable.
+
+      elsif not (Present (Entity (N))
+                  and then Ekind (Entity (N)) = E_Variable
+                  and then Entity (N) /= Any_Id)
+      then
+         return;
+      end if;
+
+      Extract_Variable_Reference_Attributes
+        (Ref    => N,
+         Var_Id => Var_Id,
+         Attrs  => Var_Attrs);
+
+      Prag := SPARK_Pragma (Var_Id);
+
+      if Comes_From_Source (Var_Id)
+
+         --  Both the variable and the reference must appear in SPARK_Mode On
+         --  regions because this scenario falls under the SPARK rules.
+
+         and then Present (Prag)
+         and then Get_SPARK_Mode_From_Annotation (Prag) = On
+         and then Is_SPARK_Mode_On_Node (N)
+
+         --  The reference must not be considered when it appears in a pragma.
+         --  If the pragma has run-time semantics, then the reference will be
+         --  reconsidered once the pragma is expanded.
+
+         --  Performance note: parent traversal
+
+         and then not In_Pragma (N)
+      then
+         null;
+
+      --  Otherwise the reference is not suitable for ABE processing. This
+      --  prevents the generation of variable markers which will never play
+      --  a role in ABE diagnostics.
+
+      else
+         return;
+      end if;
+
+      --  At this point it is known that the variable reference will play some
+      --  role in ABE checks and diagnostics. Create a corresponding variable
+      --  marker in case the original variable reference is folded or optimized
+      --  away.
+
+      Marker := Make_Variable_Reference_Marker (Sloc (N));
+
+      --  Inherit the attributes of the original variable reference
+
+      Set_Target   (Marker, Var_Id);
+      Set_Is_Read  (Marker, Read);
+      Set_Is_Write (Marker, Write);
+
+      --  The marker is inserted prior to the original variable reference. The
+      --  insertion must take place even when the reference does not occur in
+      --  the main unit to keep the tree symmetric. This ensures that internal
+      --  name serialization is consistent in case the variable marker causes
+      --  the tree to transform in some way.
+
+      Insert_Action (N, Marker);
+
+      --  The marker becomes the "corresponding" scenario for the reference.
+      --  Save the marker for later processing for the ABE phase.
+
+      Record_Elaboration_Scenario (Marker);
+   end Build_Variable_Reference_Marker;
 
    ---------------------------------
    -- Check_Elaboration_Scenarios --
@@ -2990,14 +3133,45 @@ package body Sem_Elab is
       Var_Id : out Entity_Id;
       Attrs  : out Variable_Attributes)
    is
+      function Get_Renamed_Variable (Id : Entity_Id) return Entity_Id;
+      --  Obtain the ultimate renamed variable of variable Id
+
+      --------------------------
+      -- Get_Renamed_Variable --
+      --------------------------
+
+      function Get_Renamed_Variable (Id : Entity_Id) return Entity_Id is
+         Ren_Id : Entity_Id;
+
+      begin
+         Ren_Id := Id;
+         while Present (Renamed_Entity (Ren_Id))
+           and then Nkind (Renamed_Entity (Ren_Id)) in N_Entity
+         loop
+            Ren_Id := Renamed_Entity (Ren_Id);
+         end loop;
+
+         return Ren_Id;
+      end Get_Renamed_Variable;
+
+   --  Start of processing for Extract_Variable_Reference_Attributes
+
    begin
-      --  Traverse a possible chain of renamings to obtain the original
-      --  variable being referenced.
+      --  Extraction for variable reference markers
 
-      Var_Id := Get_Renamed_Entity (Entity (Ref));
+      if Nkind (Ref) = N_Variable_Reference_Marker then
+         Var_Id := Target (Ref);
 
-      Attrs.SPARK_Mode_On := Is_SPARK_Mode_On_Node (Ref);
-      Attrs.Unit_Id       := Find_Top_Unit (Var_Id);
+      --  Extraction for expanded names and identifiers
+
+      else
+         Var_Id := Entity (Ref);
+      end if;
+
+      --  Obtain the original variable which the reference mentions
+
+      Var_Id        := Get_Renamed_Variable (Var_Id);
+      Attrs.Unit_Id := Find_Top_Unit (Var_Id);
 
       --  At this point certain attributes should always be available
 
@@ -4284,24 +4458,26 @@ package body Sem_Elab is
          In_SPARK => In_SPARK);
    end Info_Instantiation;
 
-   ------------------------
-   -- Info_Variable_Read --
-   ------------------------
+   -----------------------------
+   -- Info_Variable_Reference --
+   -----------------------------
 
-   procedure Info_Variable_Read
+   procedure Info_Variable_Reference
      (Ref      : Node_Id;
       Var_Id   : Entity_Id;
       Info_Msg : Boolean;
       In_SPARK : Boolean)
    is
    begin
-      Elab_Msg_NE
-        (Msg      => "read of variable & during elaboration",
-         N        => Ref,
-         Id       => Var_Id,
-         Info_Msg => Info_Msg,
-         In_SPARK => In_SPARK);
-   end Info_Variable_Read;
+      if Is_Read (Ref) then
+         Elab_Msg_NE
+           (Msg      => "read of variable & during elaboration",
+            N        => Ref,
+            Id       => Var_Id,
+            Info_Msg => Info_Msg,
+            In_SPARK => In_SPARK);
+      end if;
+   end Info_Variable_Reference;
 
    --------------------
    -- Insertion_Node --
@@ -5258,7 +5434,7 @@ package body Sem_Elab is
           or else Is_Suitable_Call (N)
           or else Is_Suitable_Instantiation (N)
           or else Is_Suitable_Variable_Assignment (N)
-          or else Is_Suitable_Variable_Read (N);
+          or else Is_Suitable_Variable_Reference (N);
    end Is_Suitable_Scenario;
 
    -------------------------------------
@@ -5355,187 +5531,19 @@ package body Sem_Elab is
           and then Corresponding_Body (Var_Unit) = N_Unit_Id;
    end Is_Suitable_Variable_Assignment;
 
-   -------------------------------
-   -- Is_Suitable_Variable_Read --
-   -------------------------------
+   ------------------------------------
+   -- Is_Suitable_Variable_Reference --
+   ------------------------------------
 
-   function Is_Suitable_Variable_Read (N : Node_Id) return Boolean is
-      function In_Pragma (Nod : Node_Id) return Boolean;
-      --  Determine whether arbitrary node Nod appears within a pragma
-
-      function Is_Variable_Read (Ref : Node_Id) return Boolean;
-      --  Determine whether variable reference Ref constitutes a read
-
-      ---------------
-      -- In_Pragma --
-      ---------------
-
-      function In_Pragma (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind (Par) = N_Pragma then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end In_Pragma;
-
-      ----------------------
-      -- Is_Variable_Read --
-      ----------------------
-
-      function Is_Variable_Read (Ref : Node_Id) return Boolean is
-         function Is_Out_Actual (Call : Node_Id) return Boolean;
-         --  Determine whether the corresponding formal of actual Ref which
-         --  appears in call Call has mode OUT.
-
-         -------------------
-         -- Is_Out_Actual --
-         -------------------
-
-         function Is_Out_Actual (Call : Node_Id) return Boolean is
-            Actual     : Node_Id;
-            Call_Attrs : Call_Attributes;
-            Formal     : Entity_Id;
-            Target_Id  : Entity_Id;
-
-         begin
-            Extract_Call_Attributes
-              (Call      => Call,
-               Target_Id => Target_Id,
-               Attrs     => Call_Attrs);
-
-            --  Inspect the actual and formal parameters, trying to find the
-            --  corresponding formal for Ref.
-
-            Actual := First_Actual (Call);
-            Formal := First_Formal (Target_Id);
-            while Present (Actual) and then Present (Formal) loop
-               if Actual = Ref then
-                  return Ekind (Formal) = E_Out_Parameter;
-               end if;
-
-               Next_Actual (Actual);
-               Next_Formal (Formal);
-            end loop;
-
-            return False;
-         end Is_Out_Actual;
-
-         --  Local variables
-
-         Context : constant Node_Id := Parent (Ref);
-
-      --  Start of processing for Is_Variable_Read
-
-      begin
-         --  The majority of variable references are reads, and they can appear
-         --  in a great number of contexts. To determine whether a reference is
-         --  a read, it is more practical to find out whether it is a write.
-
-         --  A reference is a write when it appears immediately on the left-
-         --  hand side of an assignment.
-
-         if Nkind (Context) = N_Assignment_Statement
-           and then Name (Context) = Ref
-         then
-            return False;
-
-         --  A reference is a write when it acts as an actual in a subprogram
-         --  call and the corresponding formal has mode OUT.
-
-         elsif Nkind_In (Context, N_Function_Call,
-                                  N_Procedure_Call_Statement)
-           and then Is_Out_Actual (Context)
-         then
-            return False;
-         end if;
-
-         --  Any other reference is a read
-
-         return True;
-      end Is_Variable_Read;
-
-      --  Local variables
-
-      Prag   : Node_Id;
-      Var_Id : Entity_Id;
-
-   --  Start of processing for Is_Suitable_Variable_Read
-
+   function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean is
    begin
-      --  This scenario is relevant only when the static model is in effect
-      --  because it is graph-dependent and does not involve any run-time
-      --  checks. Allowing it in the dynamic model would create confusing
-      --  noise.
+      --  Expanded names and identifiers are intentionally ignored because they
+      --  be folded, optimized away, etc. Variable references markers play the
+      --  role of variable references and provide a uniform foundation for ABE
+      --  processing.
 
-      if not Static_Elaboration_Checks then
-         return False;
-
-      --  Attributes and operator sumbols are not considered to be suitable
-      --  references even though they are part of predicate Is_Entity_Name.
-
-      elsif not Nkind_In (N, N_Expanded_Name, N_Identifier) then
-         return False;
-
-      --  Nothing to do for internally-generated references because they are
-      --  assumed to be ABE safe.
-
-      elsif not Comes_From_Source (N) then
-         return False;
-      end if;
-
-      --  Sanitize the reference
-
-      Var_Id := Entity (N);
-
-      if No (Var_Id) then
-         return False;
-
-      elsif Var_Id = Any_Id then
-         return False;
-
-      elsif Ekind (Var_Id) /= E_Variable then
-         return False;
-      end if;
-
-      Prag := SPARK_Pragma (Var_Id);
-
-      --  To qualify, the reference must meet the following prerequisites:
-
-      return
-        Comes_From_Source (Var_Id)
-
-          --  Both the variable and the reference must appear in SPARK_Mode On
-          --  regions because this scenario falls under the SPARK rules.
-
-          and then Present (Prag)
-          and then Get_SPARK_Mode_From_Annotation (Prag) = On
-          and then Is_SPARK_Mode_On_Node (N)
-
-          --  The reference must denote a variable read
-
-          and then Is_Variable_Read (N)
-
-          --  The reference must not be considered when it appears in a pragma.
-          --  If the pragma has run-time semantics, then the reference will be
-          --  reconsidered once the pragma is expanded.
-
-          --  Performance note: parent traversal
-
-          and then not In_Pragma (N);
-   end Is_Suitable_Variable_Read;
+      return Nkind (N) = N_Variable_Reference_Marker;
+   end Is_Suitable_Variable_Reference;
 
    -------------------
    -- Is_Task_Entry --
@@ -5710,8 +5718,8 @@ package body Sem_Elab is
                Info_Msg => False,
                In_SPARK => True);
 
-         elsif Is_Suitable_Variable_Read (N) then
-            Info_Variable_Read
+         elsif Is_Suitable_Variable_Reference (N) then
+            Info_Variable_Reference
               (Ref      => N,
                Var_Id   => Target_Id,
                Info_Msg => False,
@@ -5875,8 +5883,8 @@ package body Sem_Elab is
       procedure Output_Variable_Assignment (N : Node_Id);
       --  Emit a specific diagnostic message for assignment statement N
 
-      procedure Output_Variable_Read (N : Node_Id);
-      --  Emit a specific diagnostic message for reference N which reads a
+      procedure Output_Variable_Reference (N : Node_Id);
+      --  Emit a specific diagnostic message for reference N which mentions a
       --  variable.
 
       -------------------
@@ -6206,11 +6214,11 @@ package body Sem_Elab is
          Error_Msg_NE ("\\  variable & assigned #", Error_Nod, Var_Id);
       end Output_Variable_Assignment;
 
-      --------------------------
-      -- Output_Variable_Read --
-      --------------------------
+      -------------------------------
+      -- Output_Variable_Reference --
+      -------------------------------
 
-      procedure Output_Variable_Read (N : Node_Id) is
+      procedure Output_Variable_Reference (N : Node_Id) is
          Dummy  : Variable_Attributes;
          Var_Id : Entity_Id;
 
@@ -6221,8 +6229,11 @@ package body Sem_Elab is
             Attrs  => Dummy);
 
          Error_Msg_Sloc := Sloc (N);
-         Error_Msg_NE ("\\  variable & read #", Error_Nod, Var_Id);
-      end Output_Variable_Read;
+
+         if Is_Read (N) then
+            Error_Msg_NE ("\\  variable & read #", Error_Nod, Var_Id);
+         end if;
+      end Output_Variable_Reference;
 
       --  Local variables
 
@@ -6283,10 +6294,10 @@ package body Sem_Elab is
          elsif Nkind (N) = N_Assignment_Statement then
             Output_Variable_Assignment (N);
 
-         --  Variable read
+         --  Variable references
 
-         elsif Is_Suitable_Variable_Read (N) then
-            Output_Variable_Read (N);
+         elsif Is_Suitable_Variable_Reference (N) then
+            Output_Variable_Reference (N);
 
          else
             pragma Assert (False);
@@ -8140,11 +8151,11 @@ package body Sem_Elab is
       end if;
    end Process_Variable_Assignment_SPARK;
 
-   ---------------------------
-   -- Process_Variable_Read --
-   ---------------------------
+   --------------------------------
+   -- Process_Variable_Reference --
+   --------------------------------
 
-   procedure Process_Variable_Read (Ref : Node_Id) is
+   procedure Process_Variable_Reference (Ref : Node_Id) is
       Var_Attrs : Variable_Attributes;
       Var_Id    : Entity_Id;
 
@@ -8154,6 +8165,24 @@ package body Sem_Elab is
          Var_Id => Var_Id,
          Attrs  => Var_Attrs);
 
+      if Is_Read (Ref) then
+         Process_Variable_Reference_Read
+           (Ref    => Ref,
+            Var_Id => Var_Id,
+            Attrs  => Var_Attrs);
+      end if;
+   end Process_Variable_Reference;
+
+   -------------------------------------
+   -- Process_Variable_Reference_Read --
+   -------------------------------------
+
+   procedure Process_Variable_Reference_Read
+     (Ref    : Node_Id;
+      Var_Id : Entity_Id;
+      Attrs  : Variable_Attributes)
+   is
+   begin
       --  Output relevant information when switch -gnatel (info messages on
       --  implicit Elaborate[_All] pragmas) is in effect.
 
@@ -8169,7 +8198,7 @@ package body Sem_Elab is
       --  Nothing to do when the variable appears within the main unit because
       --  diagnostics on reads are relevant only for external variables.
 
-      if Is_Same_Unit (Var_Attrs.Unit_Id, Cunit_Entity (Main_Unit)) then
+      if Is_Same_Unit (Attrs.Unit_Id, Cunit_Entity (Main_Unit)) then
          null;
 
       --  Nothing to do when the variable is already initialized. Note that the
@@ -8181,7 +8210,7 @@ package body Sem_Elab is
       --  Nothing to do when the external unit guarantees the initialization of
       --  the variable by means of pragma Elaborate_Body.
 
-      elsif Has_Pragma_Elaborate_Body (Var_Attrs.Unit_Id) then
+      elsif Has_Pragma_Elaborate_Body (Attrs.Unit_Id) then
          null;
 
       --  A variable read imposes an Elaborate requirement on the context of
@@ -8194,7 +8223,7 @@ package body Sem_Elab is
             Target_Id => Var_Id,
             Req_Nam   => Name_Elaborate);
       end if;
-   end Process_Variable_Read;
+   end Process_Variable_Reference_Read;
 
    --------------------------
    -- Push_Active_Scenario --
@@ -8271,10 +8300,21 @@ package body Sem_Elab is
       elsif Is_Suitable_Variable_Assignment (N) then
          Process_Variable_Assignment (N);
 
-      --  Variable read
+      --  Variable references
 
-      elsif Is_Suitable_Variable_Read (N) then
-         Process_Variable_Read (N);
+      elsif Is_Suitable_Variable_Reference (N) then
+
+         --  In general, only variable references found within the main unit
+         --  are processed because the ALI information supplied to binde is for
+         --  the main unit only. However, to preserve the consistency of the
+         --  tree and ensure proper serialization of internal names, external
+         --  variable references also receive corresponding variable reference
+         --  markers (see Build_Varaible_Reference_Marker). Regardless of the
+         --  reason, external variable references must not be processed.
+
+         if In_Main_Context (N) then
+            Process_Variable_Reference (N);
+         end if;
       end if;
 
       --  Remove the current scenario from the stack of active scenarios once
@@ -8365,7 +8405,7 @@ package body Sem_Elab is
          Possible_Local_Raise (N, Standard_Program_Error);
 
       elsif Is_Suitable_Variable_Assignment (N)
-        or else Is_Suitable_Variable_Read (N)
+        or else Is_Suitable_Variable_Reference (N)
       then
          null;
 

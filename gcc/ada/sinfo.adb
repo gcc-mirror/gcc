@@ -2090,6 +2090,14 @@ package body Sinfo is
       return Flag4 (N);
    end Is_Qualified_Universal_Literal;
 
+   function Is_Read
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
+      return Flag1 (N);
+   end Is_Read;
+
    function Is_Recorded_Scenario
       (N : Node_Id) return Boolean is
    begin
@@ -2178,6 +2186,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Body);
       return Flag5 (N);
    end Is_Task_Master;
+
+   function Is_Write
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
+      return Flag2 (N);
+   end Is_Write;
 
    function Iteration_Scheme
       (N : Node_Id) return Node_Id is
@@ -3277,7 +3293,8 @@ package body Sinfo is
       (N : Node_Id) return Entity_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Call_Marker);
+        or else NT (N).Nkind = N_Call_Marker
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Node1 (N);
    end Target;
 
@@ -5512,6 +5529,14 @@ package body Sinfo is
       Set_Flag4 (N, Val);
    end Set_Is_Qualified_Universal_Literal;
 
+   procedure Set_Is_Read
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
+      Set_Flag1 (N, Val);
+   end Set_Is_Read;
+
    procedure Set_Is_Recorded_Scenario
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5600,6 +5625,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Task_Body);
       Set_Flag5 (N, Val);
    end Set_Is_Task_Master;
+
+   procedure Set_Is_Write
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
+      Set_Flag2 (N, Val);
+   end Set_Is_Write;
 
    procedure Set_Iteration_Scheme
       (N : Node_Id; Val : Node_Id) is
@@ -6699,7 +6732,8 @@ package body Sinfo is
       (N : Node_Id; Val : Entity_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Call_Marker);
+        or else NT (N).Nkind = N_Call_Marker
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Node1 (N, Val); -- semantic field, no parent set
    end Set_Target;
 

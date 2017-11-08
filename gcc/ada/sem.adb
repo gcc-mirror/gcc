@@ -612,10 +612,12 @@ package body Sem is
          when N_With_Clause =>
             Analyze_With_Clause (N);
 
-         --  A call to analyze a call marker is ignored because the node does
-         --  not have any static and run-time semantics.
+         --  A call to analyze a marker is ignored because the node does not
+         --  have any static and run-time semantics.
 
-         when N_Call_Marker =>
+         when N_Call_Marker
+            | N_Variable_Reference_Marker
+         =>
             null;
 
          --  A call to analyze the Empty node is an error, but most likely it

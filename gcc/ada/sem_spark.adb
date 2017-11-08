@@ -2349,6 +2349,7 @@ package body Sem_SPARK is
             | N_With_Clause
             | N_Use_Type_Clause
             | N_Validate_Unchecked_Conversion
+            | N_Variable_Reference_Marker
          =>
             null;
 

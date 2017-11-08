@@ -14865,10 +14865,6 @@ package body Sem_Util is
       function Within_Check (Nod : Node_Id) return Boolean;
       --  Determine whether an arbitrary node appears in a check node
 
-      function Within_Subprogram_Call (Nod : Node_Id) return Boolean;
-      --  Determine whether an arbitrary node appears in an entry, function, or
-      --  procedure call.
-
       function Within_Volatile_Function (Id : Entity_Id) return Boolean;
       --  Determine whether an arbitrary entity appears in a volatile function
 
@@ -14930,36 +14926,6 @@ package body Sem_Util is
 
          return False;
       end Within_Check;
-
-      ----------------------------
-      -- Within_Subprogram_Call --
-      ----------------------------
-
-      function Within_Subprogram_Call (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         --  Climb the parent chain looking for a function or procedure call
-
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind_In (Par, N_Entry_Call_Statement,
-                              N_Function_Call,
-                              N_Procedure_Call_Statement)
-            then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end Within_Subprogram_Call;
 
       ------------------------------
       -- Within_Volatile_Function --
@@ -24240,6 +24206,36 @@ package body Sem_Util is
    begin
       return Scope_Within_Or_Same (Scope (E), S);
    end Within_Scope;
+
+   ----------------------------
+   -- Within_Subprogram_Call --
+   ----------------------------
+
+   function Within_Subprogram_Call (N : Node_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      --  Climb the parent chain looking for a function or procedure call
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind_In (Par, N_Entry_Call_Statement,
+                           N_Function_Call,
+                           N_Procedure_Call_Statement)
+         then
+            return True;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end Within_Subprogram_Call;
 
    ----------------
    -- Wrong_Type --

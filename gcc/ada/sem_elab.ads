@@ -34,6 +34,15 @@ package Sem_Elab is
    --  Create a call marker for call or requeue statement N and record it for
    --  later processing by the ABE mechanism.
 
+   procedure Build_Variable_Reference_Marker
+     (N     : Node_Id;
+      Read  : Boolean;
+      Write : Boolean);
+   --  Create a variable reference marker for arbitrary node N if it mentions a
+   --  variable, and record it for later processing by the ABE mechanism. Flag
+   --  Read should be set when the reference denotes a read. Flag Write should
+   --  be set when the reference denotes a write.
+
    procedure Check_Elaboration_Scenarios;
    --  Examine each scenario recorded during analysis/resolution and apply the
    --  Ada or SPARK elaboration rules taking into account the model in effect.
