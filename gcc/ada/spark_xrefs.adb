@@ -86,12 +86,6 @@ package body SPARK_Xrefs is
             end if;
 
             Write_Char ('"');
-            Write_Str  ("  Line = ");
-            Write_Int  (Int (ASR.Line));
-            Write_Str  ("  Col = ");
-            Write_Int  (Int (ASR.Col));
-            Write_Str  ("  Type = ");
-            Write_Char (ASR.Stype);
             Write_Str  ("  From = ");
             Write_Int  (Int (ASR.From_Xref));
             Write_Str  ("  To = ");
@@ -122,18 +116,10 @@ package body SPARK_Xrefs is
             end if;
 
             Write_Char ('"');
-            Write_Str ("  Entity_Line = ");
-            Write_Int (Int (AXR.Entity_Line));
-            Write_Str ("  Entity_Col = ");
-            Write_Int (Int (AXR.Entity_Col));
             Write_Str ("  File_Num = ");
             Write_Int (Int (AXR.File_Num));
             Write_Str ("  Scope_Num = ");
             Write_Int (Int (AXR.Scope_Num));
-            Write_Str ("  Line = ");
-            Write_Int (Int (AXR.Line));
-            Write_Str ("  Col = ");
-            Write_Int (Int (AXR.Col));
             Write_Str ("  Type = ");
             Write_Char (AXR.Rtype);
             Write_Eol;

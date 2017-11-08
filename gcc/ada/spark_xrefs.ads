@@ -69,19 +69,6 @@ package SPARK_Xrefs is
       Entity_Name : String_Ptr;
       --  Pointer to entity name in ALI file
 
-      Entity_Line : Nat;
-      --  Line number for the entity referenced
-
-      Etype : Character;
-      --  Indicates type of entity, using code used in ALI file:
-      --    > = IN parameter
-      --    < = OUT parameter
-      --    = = IN OUT parameter
-      --    * = all other cases
-
-      Entity_Col : Nat;
-      --  Column number for the entity referenced
-
       File_Num : Nat;
       --  File dependency number for the cross-reference. Note that if no file
       --  entry is present explicitly, this is just a copy of the reference for
@@ -92,18 +79,12 @@ package SPARK_Xrefs is
       --  present explicitly, this is just a copy of the reference for the
       --  current cross-reference section.
 
-      Line : Nat;
-      --  Line number for the reference
-
       Rtype : Character;
       --  Indicates type of the reference, using code used in ALI file:
       --    r = reference
       --    c = reference to constant object
       --    m = modification
       --    s = call
-
-      Col : Nat;
-      --  Column number for the reference
    end record;
 
    package SPARK_Xref_Table is new Table.Table (
@@ -144,20 +125,6 @@ package SPARK_Xrefs is
       Spec_Scope_Num : Nat;
       --  Set to the scope number for the scope corresponding to the spec of
       --  the current scope entity, if different, or else 0.
-
-      Line : Nat;
-      --  Line number for the scope
-
-      Stype : Character;
-      --  Indicates type of scope, using code used in ALI file:
-      --    K = package
-      --    T = task
-      --    U = procedure
-      --    V = function
-      --    Y = entry
-
-      Col : Nat;
-      --  Column number for the scope
 
       From_Xref : Xref_Index;
       --  Starting index in Xref table for this scope

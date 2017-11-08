@@ -1,3 +1,18 @@
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* spark_xrefs.ads (SPARK_Xref_Record): Remove inessential components.
+	(SPARK_Scope_Record): Remove inessential components.
+	* spark_xrefs.adb (dspark): Remove pretty-printing of removed record
+	components.
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Remove setting of
+	removed record components.
+	(Add_SPARK_Xrefs): Remove setting of removed record components.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Remove dead check for
+	empty entities.
+
 2017-11-08  Javier Miranda  <miranda@adacore.com>
 
 	* sem_disp.adb (Is_Inherited_Public_Operation): Extend the
