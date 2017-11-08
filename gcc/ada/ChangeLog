@@ -1,3 +1,72 @@
+2017-11-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type, Update_Use_Clause_Chain): Do not report
+	about unused use-type or use-package clauses inside inlined bodies.
+
+2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Ensure_Prior_Elaboration): Add new parameter
+	In_Partial_Fin along with a comment on its usage. Do not guarantee the
+	prior elaboration of a unit when the need came from a partial
+	finalization context.
+	(In_Initialization_Context): Relocated to Process_Call.
+	(Is_Partial_Finalization_Proc): New routine.
+	(Process_Access): Add new parameter In_Partial_Fin along with a comment
+	on its usage.
+	(Process_Activation_Call): Add new parameter In_Partial_Fin along with
+	a comment on its usage.
+	(Process_Activation_Conditional_ABE_Impl): Add new parameter
+	In_Partial_Fin along with a comment on its usage. Do not emit any ABE
+	diagnostics when the activation occurs in a partial finalization
+	context.
+	(Process_Activation_Guaranteed_ABE_Impl): Add new parameter
+	In_Partial_Fin along with a comment on its usage.
+	(Process_Call): Add new parameter In_Partial_Fin along with a comment
+	on its usage. A call is within a partial finalization context when it
+	targets a finalizer or primitive [Deep_]Finalize, and the call appears
+	in initialization actions. Pass this information down to the recursive
+	steps of the Processing phase.
+	(Process_Call_Ada): Add new parameter In_Partial_Fin along with a
+	comment on its usage. Remove the guard which suppresses the generation
+	of implicit Elaborate[_All] pragmas. This is now done in
+	Ensure_Prior_Elaboration.
+	(Process_Call_Conditional_ABE): Add new parameter In_Partial_Fin along
+	with a comment on its usage. Do not emit any ABE diagnostics when the
+	call occurs in a partial finalization context.
+	(Process_Call_SPARK): Add new parameter In_Partial_Fin along with a
+	comment on its usage.
+	(Process_Instantiation): Add new parameter In_Partial_Fin along with a
+	comment on its usage.
+	(Process_Instantiation_Ada): Add new parameter In_Partial_Fin along
+	with a comment on its usage.
+	(Process_Instantiation_Conditional_ABE): Add new parameter
+	In_Partial_Fin along with a comment on its usage. Do not emit any ABE
+	diagnostics when the instantiation occurs in a partial finalization
+	context.
+	(Process_Instantiation_SPARK): Add new parameter In_Partial_Fin along
+	with a comment on its usage.
+	(Process_Scenario): Add new parameter In_Partial_Fin along  with a
+	comment on its usage.
+	(Process_Single_Activation): Add new parameter In_Partial_Fin along
+	with a comment on its usage.
+	(Traverse_Body): Add new parameter In_Partial_Fin along with a comment
+	on its usage.
+
+2017-11-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb: Add optional parameter to Error_Msg.
+
+2017-11-08  Jerome Lambourg  <lambourg@adacore.com>
+
+	* fname.adb (Is_Internal_File_Name): Do not check the 8+3 naming schema
+	for the Interfaces.* hierarchy as longer unit names are now allowed.
+
+2017-11-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Subprogram_Name): Emit sloc for the enclosing
+	subprogram as well.  Support more cases of entities.
+	(Append_Entity_Name): Add some defensive code.
+
 2017-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_post_options): Clear warn_return_type.

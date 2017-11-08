@@ -14317,7 +14317,7 @@ package body Sem_Ch13 is
                if Source_Siz /= Target_Siz then
                   Error_Msg
                     ("?z?types for unchecked conversion have different sizes!",
-                     Eloc);
+                     Eloc, Act_Unit);
 
                   if All_Errors_Mode then
                      Error_Msg_Name_1 := Chars (Source);
@@ -14353,17 +14353,17 @@ package body Sem_Ch13 is
                            if Bytes_Big_Endian then
                               Error_Msg
                                 ("\?z?target value will include ^ undefined "
-                                 & "low order bits!", Eloc);
+                                 & "low order bits!", Eloc, Act_Unit);
                            else
                               Error_Msg
                                 ("\?z?target value will include ^ undefined "
-                                 & "high order bits!", Eloc);
+                                 & "high order bits!", Eloc, Act_Unit);
                            end if;
 
                         else
                            Error_Msg
                              ("\?z?^ trailing bits of target value will be "
-                              & "undefined!", Eloc);
+                              & "undefined!", Eloc, Act_Unit);
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
@@ -14371,17 +14371,17 @@ package body Sem_Ch13 is
                            if Bytes_Big_Endian then
                               Error_Msg
                                 ("\?z?^ low order bits of source will be "
-                                 & "ignored!", Eloc);
+                                 & "ignored!", Eloc, Act_Unit);
                            else
                               Error_Msg
                                 ("\?z?^ high order bits of source will be "
-                                 & "ignored!", Eloc);
+                                 & "ignored!", Eloc, Act_Unit);
                            end if;
 
                         else
                            Error_Msg
                              ("\?z?^ trailing bits of source will be "
-                              & "ignored!", Eloc);
+                              & "ignored!", Eloc, Act_Unit);
                         end if;
                      end if;
                   end if;
@@ -14435,10 +14435,10 @@ package body Sem_Ch13 is
                            Error_Msg_Node_2 := D_Source;
                            Error_Msg
                              ("?z?alignment of & (^) is stricter than "
-                              & "alignment of & (^)!", Eloc);
+                              & "alignment of & (^)!", Eloc, Act_Unit);
                            Error_Msg
                              ("\?z?resulting access value may have invalid "
-                              & "alignment!", Eloc);
+                              & "alignment!", Eloc, Act_Unit);
                         end if;
                      end;
                   end if;

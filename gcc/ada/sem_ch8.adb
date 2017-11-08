@@ -9057,6 +9057,7 @@ package body Sem_Ch8 is
               and then Comes_From_Source (Curr)
               and then not Is_Effective_Use_Clause (Curr)
               and then not In_Instance
+              and then not In_Inlined_Body
             then
                --  We are dealing with a potentially unused use_package_clause
 
@@ -9865,6 +9866,7 @@ package body Sem_Ch8 is
 
         and then not Spec_Reloaded_For_Body
         and then not In_Instance
+        and then not In_Inlined_Body
       then
          --  The type already has a use clause
 
