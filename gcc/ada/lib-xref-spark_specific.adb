@@ -230,14 +230,14 @@ package body SPARK_Specific is
          return;
       end if;
 
-      Traverse_Scopes (CU => Cunit (Uspec), Inside_Stubs => True);
+      Traverse_Scopes (CU => Cunit (Uspec));
 
       --  When two units are present for the same compilation unit, as it
       --  happens for library-level instantiations of generics, then add all
       --  scopes to the same SPARK file.
 
       if Ubody /= No_Unit then
-         Traverse_Scopes (CU => Cunit (Ubody), Inside_Stubs => True);
+         Traverse_Scopes (CU => Cunit (Ubody));
       end if;
 
       --  Make entry for new file in file table
@@ -1156,10 +1156,7 @@ package body SPARK_Specific is
    -- Traverse_Compilation_Unit --
    -------------------------------
 
-   procedure Traverse_Compilation_Unit
-     (CU           : Node_Id;
-      Inside_Stubs : Boolean)
-   is
+   procedure Traverse_Compilation_Unit (CU : Node_Id) is
       procedure Traverse_Block                      (N : Node_Id);
       procedure Traverse_Declaration_Or_Statement   (N : Node_Id);
       procedure Traverse_Declarations_And_HSS       (N : Node_Id);
@@ -1195,7 +1192,7 @@ package body SPARK_Specific is
                                         N_Subprogram_Body_Stub,
                                         N_Task_Body_Stub));
 
-            return Inside_Stubs and then Present (Library_Unit (N));
+            return Present (Library_Unit (N));
          end Traverse_Stub;
 
       --  Start of processing for Traverse_Declaration_Or_Statement
