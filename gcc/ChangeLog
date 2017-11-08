@@ -1,5 +1,9 @@
 2017-11-08  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_can_eliminate): Simplify logic.
+
+2017-11-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_frame_pointer_required)
 	Remove.
 	(aarch64_layout_frame): Initialise emit_frame_chain.

@@ -5913,26 +5913,14 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 }
 
 static bool
-aarch64_can_eliminate (const int from, const int to)
+aarch64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  /* If we need a frame pointer, we must eliminate FRAME_POINTER_REGNUM into
-     HARD_FRAME_POINTER_REGNUM and not into STACK_POINTER_REGNUM.  */
+  gcc_assert (from == ARG_POINTER_REGNUM || from == FRAME_POINTER_REGNUM);
 
+  /* If we need a frame pointer, ARG_POINTER_REGNUM and FRAME_POINTER_REGNUM
+     can only eliminate to HARD_FRAME_POINTER_REGNUM.  */
   if (frame_pointer_needed)
-    {
-      if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-	return true;
-      if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-	return false;
-      if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM
-	  && !cfun->calls_alloca)
-	return true;
-      if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-	return true;
-
-      return false;
-    }
-
+    return to == HARD_FRAME_POINTER_REGNUM;
   return true;
 }
 
