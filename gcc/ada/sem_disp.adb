@@ -2371,11 +2371,19 @@ package body Sem_Disp is
    -----------------------------------
 
    function Is_Inherited_Public_Operation (Op : Entity_Id) return Boolean is
-      Prim      : constant Entity_Id := Alias (Op);
-      Scop      : constant Entity_Id := Scope (Prim);
+      Prim      : Entity_Id := Op;
+      Scop      : Entity_Id := Prim;
       Pack_Decl : Node_Id;
 
    begin
+      --  Locate the ultimate non-hidden alias entity
+
+      while Present (Alias (Prim)) and then not Is_Hidden (Alias (Prim)) loop
+         pragma Assert (Alias (Prim) /= Prim);
+         Prim := Alias (Prim);
+         Scop := Scope (Prim);
+      end loop;
+
       if Comes_From_Source (Prim) and then Ekind (Scop) = E_Package then
          Pack_Decl := Unit_Declaration_Node (Scop);
          return Nkind (Pack_Decl) = N_Package_Declaration

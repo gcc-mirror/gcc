@@ -273,6 +273,7 @@ package body Einfo is
    --    Entry_Max_Queue_Lengths_Array   Node35
    --    Import_Pragma                   Node35
 
+   --    Nested_Scenarios                Elist36
    --    Validated_Object                Node36
 
    --    Class_Wide_Clone                Node38
@@ -2866,6 +2867,14 @@ package body Einfo is
            or else Ekind_In (Id, E_Subprogram_Type, E_Entry_Family));
       return Flag22 (Id);
    end Needs_No_Actuals;
+
+   function Nested_Scenarios (Id : E) return L is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function,
+                                   E_Procedure,
+                                   E_Subprogram_Body));
+      return Elist36 (Id);
+   end Nested_Scenarios;
 
    function Never_Set_In_Source (Id : E) return B is
    begin
@@ -6070,6 +6079,14 @@ package body Einfo is
            or else Ekind_In (Id, E_Subprogram_Type, E_Entry_Family));
       Set_Flag22 (Id, V);
    end Set_Needs_No_Actuals;
+
+   procedure Set_Nested_Scenarios (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function,
+                                   E_Procedure,
+                                   E_Subprogram_Body));
+      Set_Elist36 (Id, V);
+   end Set_Nested_Scenarios;
 
    procedure Set_Never_Set_In_Source (Id : E; V : B := True) is
    begin
@@ -11118,6 +11135,12 @@ package body Einfo is
    procedure Write_Field36_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Function
+            | E_Procedure
+            | E_Subprogram_Body
+         =>
+            Write_Str ("Nested_Scenarios");
+
          when E_Variable =>
             Write_Str ("Validated_Object");
 

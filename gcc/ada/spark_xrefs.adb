@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Output;          use Output;
-with Put_SPARK_Xrefs;
+with Output; use Output;
 
 package body SPARK_Xrefs is
 
@@ -152,55 +151,5 @@ package body SPARK_Xrefs is
       SPARK_Scope_Table.Init;
       SPARK_Xref_Table.Init;
    end Initialize_SPARK_Tables;
-
-   ------------
-   -- pspark --
-   ------------
-
-   procedure pspark is
-
-      procedure Write_Info_Char (C : Character) renames Write_Char;
-      --  Write one character
-
-      procedure Write_Info_Str (Val : String) renames Write_Str;
-      --  Write string
-
-      function Write_Info_Col return Positive;
-      --  Return next column for writing
-
-      procedure Write_Info_Initiate (Key : Character) renames Write_Char;
-      --  Start new one and write one character;
-
-      procedure Write_Info_Nat (N : Nat);
-      --  Write value of N
-
-      procedure Write_Info_Terminate renames Write_Eol;
-      --  Terminate current line
-
-      --------------------
-      -- Write_Info_Col --
-      --------------------
-
-      function Write_Info_Col return Positive is
-      begin
-         return Positive (Column);
-      end Write_Info_Col;
-
-      --------------------
-      -- Write_Info_Nat --
-      --------------------
-
-      procedure Write_Info_Nat (N : Nat) is
-      begin
-         Write_Int (N);
-      end Write_Info_Nat;
-
-      procedure Debug_Put_SPARK_Xrefs is new Put_SPARK_Xrefs;
-
-   --  Start of processing for pspark
-
-   begin
-      Debug_Put_SPARK_Xrefs;
-   end pspark;
 
 end SPARK_Xrefs;

@@ -1,3 +1,49 @@
+2017-11-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_disp.adb (Is_Inherited_Public_Operation): Extend the
+	functionality of this routine to handle multiple levels of derivations.
+
+2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Elist36 is now used as Nested_Scenarios.
+	(Nested_Scenarios): New routine.
+	(Set_Nested_Scenarios): New routine.
+	(Write_Field36_Name): New routine.
+	* einfo.ads: Add new attribute Nested_Scenarios along with occurrences
+	in entities.
+	(Nested_Scenarios): New routine along with pragma Inline.
+	(Set_Nested_Scenarios): New routine along with pragma Inline.
+	* sem_elab.adb (Find_And_Process_Nested_Scenarios): New routine.
+	(Process_Nested_Scenarios): New routine.
+	(Traverse_Body): When a subprogram body is traversed for the first
+	time, find, save, and process all suitable scenarios found within.
+	Subsequent traversals of the same subprogram body utilize the saved
+	scenarios.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Remove detection of
+	protected operations.
+	(Add_SPARK_Xrefs): Simplify detection of empty entities.
+	* get_spark_xrefs.ads, get_spark_xrefs.adb, put_spark_xrefs.ads,
+	put_spark_xrefs.adb, spark_xrefs_test.adb: Remove code for writing,
+	reading and testing SPARK cross-references stored in the ALI files.
+	* lib-xref.ads (Output_SPARK_Xrefs): Remove.
+	* lib-writ.adb (Write_ALI): Do not write SPARK cross-references to the
+	ALI file.
+	* spark_xrefs.ads, spark_xrefs.adb (pspark): Remove, together
+	with description of the SPARK xrefs ALI format.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Remove get_spark_refs.o
+	and put_spark_refs.o.
+
+2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Do not finalize the object
+	when the associated access type is subject to pragma
+	No_Heap_Finalization.
+	* exp_intr.adb (Expand_Unc_Deallocation): Use the available view of the
+	designated type in case it comes from a limited withed unit.
+
 2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Save and restore relevant

@@ -26,9 +26,7 @@
 --  This package contains for collecting and outputting cross-reference
 --  information.
 
-with Einfo;           use Einfo;
-with Lib.Util;        use Lib.Util;
-with Put_SPARK_Xrefs;
+with Einfo; use Einfo;
 
 package Lib.Xref is
 
@@ -646,11 +644,6 @@ package Lib.Xref is
       --  Collect SPARK cross-reference information from library units (for
       --  files and scopes) and from shared cross-references. Fill in the
       --  tables in library package called SPARK_Xrefs.
-
-      procedure Output_SPARK_Xrefs is new Put_SPARK_Xrefs;
-      --  Output SPARK cross-reference information to the ALI files, based on
-      --  the information collected in the tables in library package called
-      --  SPARK_Xrefs, and using routines in Lib.Util.
 
       generic
          with procedure Process (N : Node_Id) is <>;
