@@ -104,11 +104,8 @@ package SPARK_Xrefs is
       Entity : Entity_Id;
       --  Entity that is represented by the scope
 
-      File_Num : Nat;
-      --  Set to the file dependency number for the scope
-
       Scope_Num : Pos;
-      --  Set to the scope number for the scope
+      --  Set to the scope number within the enclosing unit
 
       From_Xref : Xref_Index;
       --  Starting index in Xref table for this scope

@@ -161,11 +161,10 @@ package body SPARK_Specific is
          --  range.
 
          SPARK_Scope_Table.Append
-           ((Entity         => E,
-             File_Num       => Dspec,
-             Scope_Num      => Scope_Id,
-             From_Xref      => 1,
-             To_Xref        => 0));
+           ((Entity    => E,
+             Scope_Num => Scope_Id,
+             From_Xref => 1,
+             To_Xref   => 0));
 
          Scope_Id := Scope_Id + 1;
       end Add_SPARK_Scope;

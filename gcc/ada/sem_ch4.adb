@@ -418,7 +418,7 @@ package body Sem_Ch4 is
    --  Delta aggregates have a base component that determines the type of the
    --  enclosing aggregate so its type can be ascertained earlier. This also
    --  allows delta aggregates to appear in the context of a record type with
-   --  a private extension, as per the latest update of AI2-0127.
+   --  a private extension, as per the latest update of AI12-0127.
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin

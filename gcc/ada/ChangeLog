@@ -1,5 +1,15 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* spark_xrefs.ads (SPARK_Scope_Record): Remove File_Num component.
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Skip initialization of
+	removed component.
+
+2017-11-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb: Minor typo fix.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* spark_xrefs.ads (SPARK_Scope_Record): Remove Spec_File_Num and
 	Spec_Scope_Num components.
 	* spark_xrefs.adb (dspark): Skip pretty-printing to removed components.
