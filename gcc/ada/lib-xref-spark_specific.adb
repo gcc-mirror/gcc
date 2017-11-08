@@ -657,7 +657,6 @@ package body SPARK_Specific is
       Prev_Loc   : Source_Ptr;
       Prev_Typ   : Character;
       Ref_Count  : Nat;
-      Ref_Name   : String_Ptr;
       Scope_Id   : Scope_Index;
 
    --  Start of processing for Add_SPARK_Xrefs
@@ -818,10 +817,6 @@ package body SPARK_Specific is
                pragma Assert (Scope_Id <= SPARK_Scope_Table.Last);
             end loop;
 
-            if Present (Ref.Ent) then
-               Ref_Name := new String'(Unique_Name (Ref.Ent));
-            end if;
-
             if Ref.Ent = Heap then
                Line := 0;
                Col  := 0;
@@ -845,7 +840,7 @@ package body SPARK_Specific is
             end if;
 
             SPARK_Xref_Table.Append (
-              (Entity_Name => Ref_Name,
+              (Entity_Name => new String'(Unique_Name (Ref.Ent)),
                Entity_Line => Line,
                Etype       => Get_Entity_Type (Ref.Ent),
                Entity_Col  => Col,
