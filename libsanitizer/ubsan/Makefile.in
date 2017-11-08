@@ -111,8 +111,7 @@ am__objects_1 = ubsan_diag.lo ubsan_flags.lo ubsan_handlers.lo \
 	ubsan_handlers_cxx.lo ubsan_init.lo ubsan_type_hash.lo \
 	ubsan_type_hash_itanium.lo ubsan_type_hash_win.lo \
 	ubsan_value.lo
-am__objects_2 = $(am__objects_1) ubsan_init_standalone.lo \
-	ubsan_signals_standalone.lo
+am__objects_2 = $(am__objects_1)
 am_libubsan_la_OBJECTS = $(am__objects_2)
 libubsan_la_OBJECTS = $(am_libubsan_la_OBJECTS)
 libubsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -306,11 +305,7 @@ ubsan_plugin_files = \
 	ubsan_type_hash_win.cc \
 	ubsan_value.cc
 
-ubsan_files = \
-	$(ubsan_plugin_files) \
-	ubsan_init_standalone.cc \
-	ubsan_signals_standalone.cc
-
+ubsan_files = $(ubsan_plugin_files)
 libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
@@ -436,8 +431,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_handlers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_handlers_cxx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_init.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_init_standalone.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_signals_standalone.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash_itanium.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ubsan_type_hash_win.Plo@am__quote@
