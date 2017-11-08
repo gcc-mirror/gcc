@@ -2516,6 +2516,104 @@ __gnat_install_handler (void)
   __gnat_handler_installed = 1;
 }
 
+#elif defined(__QNX__)
+
+/***************/
+/* QNX Section */
+/***************/
+
+#include <signal.h>
+#include <unistd.h>
+#include <string.h>
+#include "sigtramp.h"
+
+void
+__gnat_map_signal (int sig,
+		   siginfo_t *si ATTRIBUTE_UNUSED,
+		   void *mcontext ATTRIBUTE_UNUSED)
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  switch(sig)
+  {
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+    case SIGILL:
+      exception = &constraint_error;
+      msg = "SIGILL";
+      break;
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "stack overflow or erroneous memory access";
+      break;
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+    Raise_From_Signal_Handler (exception, msg);
+}
+
+static void
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
+{
+  __gnat_sigtramp (sig, (void *) si, (void *) ucontext,
+		   (__sigtramphandler_t *)&__gnat_map_signal);
+}
+
+void
+__gnat_install_handler (void)
+{
+  struct sigaction act;
+  int err;
+
+  act.sa_handler = __gnat_error_handler;
+  act.sa_flags = SA_NODEFER | SA_SIGINFO;
+  sigemptyset (&act.sa_mask);
+
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGFPE) != 's') {
+    err = sigaction (SIGFPE,  &act, NULL);
+    if (err == -1) {
+      err = errno;
+      perror ("error while attaching SIGFPE");
+      perror (strerror (err));
+    }
+  }
+  if (__gnat_get_interrupt_state (SIGILL) != 's') {
+    sigaction (SIGILL,  &act, NULL);
+    if (err == -1) {
+      err = errno;
+      perror ("error while attaching SIGFPE");
+      perror (strerror (err));
+    }
+  }
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's') {
+    sigaction (SIGSEGV, &act, NULL);
+    if (err == -1) {
+      err = errno;
+      perror ("error while attaching SIGFPE");
+      perror (strerror (err));
+    }
+  }
+  if (__gnat_get_interrupt_state (SIGBUS) != 's') {
+    sigaction (SIGBUS,  &act, NULL);
+    if (err == -1) {
+      err = errno;
+      perror ("error while attaching SIGFPE");
+      perror (strerror (err));
+    }
+  }
+  __gnat_handler_installed = 1;
+}
+
 #elif defined (__DJGPP__)
 
 void
@@ -2648,7 +2746,7 @@ __gnat_install_handler (void)
 
 #if defined (_WIN32) || defined (__INTERIX) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
-  || defined (__OpenBSD__) || defined (__DragonFly__)
+  || defined (__OpenBSD__) || defined (__DragonFly__) || defined(__QNX__)
 
 #define HAVE_GNAT_INIT_FLOAT
 

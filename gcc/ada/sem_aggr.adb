@@ -418,6 +418,13 @@ package body Sem_Aggr is
    --  array of characters is expected. This procedure simply rewrites the
    --  string as an aggregate, prior to resolution.
 
+   ---------------------------------
+   --  Delta aggregate processing --
+   ---------------------------------
+
+   procedure Resolve_Delta_Array_Aggregate  (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Delta_Record_Aggregate (N : Node_Id; Typ : Entity_Id);
+
    ------------------------
    -- Array_Aggr_Subtype --
    ------------------------
@@ -2759,9 +2766,230 @@ package body Sem_Aggr is
 
    procedure Resolve_Delta_Aggregate (N : Node_Id; Typ : Entity_Id) is
       Base   : constant Node_Id := Expression (N);
+
+   begin
+      if not Is_Composite_Type (Typ) then
+         Error_Msg_N ("not a composite type", N);
+      end if;
+
+      Analyze_And_Resolve (Base, Typ);
+
+      if Is_Array_Type (Typ) then
+         Resolve_Delta_Array_Aggregate (N, Typ);
+      else
+         Resolve_Delta_Record_Aggregate (N, Typ);
+      end if;
+
+      Set_Etype (N, Typ);
+   end Resolve_Delta_Aggregate;
+
+   -----------------------------------
+   -- Resolve_Delta_Array_Aggregate --
+   -----------------------------------
+
+   procedure Resolve_Delta_Array_Aggregate (N : Node_Id; Typ : Entity_Id) is
       Deltas : constant List_Id := Component_Associations (N);
+      Assoc      : Node_Id;
+      Choice     : Node_Id;
+      Index_Type : Entity_Id;
+
+   begin
+      Index_Type := Etype (First_Index (Typ));
+      Assoc := First (Deltas);
+      while Present (Assoc) loop
+         if Nkind (Assoc) = N_Iterated_Component_Association then
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Others_Choice then
+                  Error_Msg_N
+                    ("others not allowed in delta aggregate", Choice);
+
+               else
+                  Analyze_And_Resolve (Choice, Index_Type);
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            declare
+               Id  : constant Entity_Id := Defining_Identifier (Assoc);
+               Ent : constant Entity_Id :=
+                       New_Internal_Entity
+                         (E_Loop, Current_Scope, Sloc (Assoc), 'L');
+
+            begin
+               Set_Etype  (Ent, Standard_Void_Type);
+               Set_Parent (Ent, Assoc);
+
+               if No (Scope (Id)) then
+                  Enter_Name (Id);
+                  Set_Etype (Id, Index_Type);
+                  Set_Ekind (Id, E_Variable);
+                  Set_Scope (Id, Ent);
+               end if;
+
+               Push_Scope (Ent);
+               Analyze_And_Resolve
+                 (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
+               End_Scope;
+            end;
+
+         else
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Others_Choice then
+                  Error_Msg_N
+                    ("others not allowed in delta aggregate", Choice);
+
+               else
+                  Analyze (Choice);
+                  if Is_Entity_Name (Choice)
+                    and then Is_Type (Entity (Choice))
+                  then
+                     --  Choice covers a range of values.
+                     if Base_Type (Entity (Choice)) /=
+                        Base_Type (Index_Type)
+                     then
+                        Error_Msg_NE
+                          ("choice does mat match index type of",
+                           Choice, Typ);
+                     end if;
+                  else
+                     Resolve (Choice, Index_Type);
+                  end if;
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
+         end if;
+
+         Next (Assoc);
+      end loop;
+   end Resolve_Delta_Array_Aggregate;
+
+   ------------------------------------
+   -- Resolve_Delta_Record_Aggregate --
+   ------------------------------------
+
+   procedure Resolve_Delta_Record_Aggregate (N   : Node_Id; Typ : Entity_Id) is
+      Deltas : constant List_Id := Component_Associations (N);
+      Assoc      : Node_Id;
+      Choice     : Node_Id;
+      Comp_Type  : Entity_Id;
+
+      --  Variables used to verify that discriminant-dependent components
+      --  appear in the same variant.
+
+      Variant  : Node_Id;
+      Comp_Ref : Entity_Id;
+
+      procedure Check_Variant (Id : Entity_Id);
+      --  If a given component of the delta aggregate appears in a variant
+      --  part, verify that it is within the same variant as that of previous
+      --  specified variant components of the delta.
+
+      function Nested_In (V1, V2 : Node_Id) return Boolean;
+      --  Determine whether variant V1 is within variant V2.
 
       function Get_Component_Type (Nam : Node_Id) return Entity_Id;
+      --  Locate component with a given name and return its type. If none
+      --  found report error.
+
+      function Variant_Depth (N : Node_Id) return Integer;
+      --  Determine the distance of a variant to the enclosing type
+      --  declaration.
+
+      --------------------
+      --  Check_Variant --
+      --------------------
+
+      procedure Check_Variant (Id : Entity_Id) is
+         Comp         : Entity_Id;
+         Comp_Variant : Node_Id;
+
+      begin
+         if not Has_Discriminants (Typ) then
+            return;
+         end if;
+
+         Comp := First_Entity (Typ);
+         while Present (Comp) loop
+            exit when Chars (Comp) = Chars (Id);
+            Next_Component (Comp);
+         end loop;
+
+         --  Find the variant, if any, whose component list includes the
+         --  component declaration.
+
+         Comp_Variant := Parent (Parent (List_Containing (Parent (Comp))));
+         if Nkind (Comp_Variant) = N_Variant then
+            if No (Variant) then
+               Variant  := Comp_Variant;
+               Comp_Ref := Comp;
+
+            elsif Variant /= Comp_Variant then
+               declare
+                  D1 : constant Integer := Variant_Depth (Variant);
+                  D2 : constant Integer := Variant_Depth (Comp_Variant);
+
+               begin
+                  if D1 = D2
+                    or else
+                     (D1 > D2 and then not Nested_In (Variant, Comp_Variant))
+                    or else
+                     (D2 > D1 and then not Nested_In (Comp_Variant, Variant))
+                  then
+                     Error_Msg_Node_2 := Comp_Ref;
+                     Error_Msg_NE
+                       ("& and & appear in different variants", Id, Comp);
+
+                  --  Otherwise retain the deeper variant for subsequent tests
+
+                  elsif D2 > D1 then
+                     Variant := Comp_Variant;
+                  end if;
+               end;
+            end if;
+         end if;
+      end Check_Variant;
+
+      ---------------
+      -- Nested_In --
+      ---------------
+
+      function Nested_In (V1, V2 : Node_Id) return Boolean is
+         Par : Node_Id;
+      begin
+         Par := Parent (V1);
+         while Nkind (Par) /= N_Full_Type_Declaration loop
+            if Par = V2 then
+               return True;
+            end if;
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end Nested_In;
+
+      -------------------
+      -- Variant_Depth --
+      -------------------
+
+      function Variant_Depth (N : Node_Id) return Integer is
+         Depth : Integer;
+         Par   : Node_Id;
+      begin
+         Depth := 0;
+         Par   := Parent (N);
+         while Nkind (Par) /= N_Full_Type_Declaration loop
+            Depth := Depth + 1;
+            Par := Parent (Par);
+         end loop;
+
+         return Depth;
+      end Variant_Depth;
 
       ------------------------
       -- Get_Component_Type --
@@ -2789,113 +3017,27 @@ package body Sem_Aggr is
          return Any_Type;
       end Get_Component_Type;
 
-      --  Local variables
-
-      Assoc      : Node_Id;
-      Choice     : Node_Id;
-      Comp_Type  : Entity_Id;
-      Index_Type : Entity_Id;
-
-   --  Start of processing for Resolve_Delta_Aggregate
+   --  Start of processing for Resolve_Delta_Record_Aggregate
 
    begin
-      if not Is_Composite_Type (Typ) then
-         Error_Msg_N ("not a composite type", N);
-      end if;
+      Variant := Empty;
+      Assoc := First (Deltas);
 
-      Analyze_And_Resolve (Base, Typ);
-
-      if Is_Array_Type (Typ) then
-         Index_Type := Etype (First_Index (Typ));
-         Assoc := First (Deltas);
-         while Present (Assoc) loop
-            if Nkind (Assoc) = N_Iterated_Component_Association then
-               Choice := First (Choice_List (Assoc));
-               while Present (Choice) loop
-                  if Nkind (Choice) = N_Others_Choice then
-                     Error_Msg_N
-                       ("others not allowed in delta aggregate", Choice);
-
-                  else
-                     Analyze_And_Resolve (Choice, Index_Type);
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               declare
-                  Id  : constant Entity_Id := Defining_Identifier (Assoc);
-                  Ent : constant Entity_Id :=
-                          New_Internal_Entity
-                            (E_Loop, Current_Scope, Sloc (Assoc), 'L');
-
-               begin
-                  Set_Etype  (Ent, Standard_Void_Type);
-                  Set_Parent (Ent, Assoc);
-
-                  if No (Scope (Id)) then
-                     Enter_Name (Id);
-                     Set_Etype (Id, Index_Type);
-                     Set_Ekind (Id, E_Variable);
-                     Set_Scope (Id, Ent);
-                  end if;
-
-                  Push_Scope (Ent);
-                  Analyze_And_Resolve
-                    (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
-                  End_Scope;
-               end;
-
-            else
-               Choice := First (Choice_List (Assoc));
-               while Present (Choice) loop
-                  if Nkind (Choice) = N_Others_Choice then
-                     Error_Msg_N
-                       ("others not allowed in delta aggregate", Choice);
-
-                  else
-                     Analyze (Choice);
-                     if Is_Entity_Name (Choice)
-                       and then Is_Type (Entity (Choice))
-                     then
-                        --  Choice covers a range of values.
-                        if Base_Type (Entity (Choice)) /=
-                           Base_Type (Index_Type)
-                        then
-                           Error_Msg_NE
-                             ("choice does mat match index type of",
-                              Choice, Typ);
-                        end if;
-                     else
-                        Resolve (Choice, Index_Type);
-                     end if;
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               Analyze_And_Resolve (Expression (Assoc), Component_Type (Typ));
+      while Present (Assoc) loop
+         Choice := First (Choice_List (Assoc));
+         while Present (Choice) loop
+            Comp_Type := Get_Component_Type (Choice);
+            if Comp_Type /= Any_Type then
+               Check_Variant (Choice);
             end if;
 
-            Next (Assoc);
+            Next (Choice);
          end loop;
 
-      else
-         Assoc := First (Deltas);
-         while Present (Assoc) loop
-            Choice := First (Choice_List (Assoc));
-            while Present (Choice) loop
-               Comp_Type := Get_Component_Type (Choice);
-               Next (Choice);
-            end loop;
-
-            Analyze_And_Resolve (Expression (Assoc), Comp_Type);
-            Next (Assoc);
-         end loop;
-      end if;
-
-      Set_Etype (N, Typ);
-   end Resolve_Delta_Aggregate;
+         Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+         Next (Assoc);
+      end loop;
+   end Resolve_Delta_Record_Aggregate;
 
    ---------------------------------
    -- Resolve_Extension_Aggregate --

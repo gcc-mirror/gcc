@@ -5143,6 +5143,38 @@ package body Sem_Res is
 
             if not Is_Static_Coextension (N) then
                Set_Is_Dynamic_Coextension (N);
+
+               --  ??? We currently do not handle finalization and deallocation
+               --  of coextensions properly so let's at least warn the user
+               --  about it.
+
+               if Is_Controlled_Active (Desig_T) then
+                  if Is_Controlled_Active
+                       (Defining_Identifier
+                         (Parent (Associated_Node_For_Itype (Typ))))
+                  then
+                     Error_Msg_N
+                       ("info: coextension will not be finalized when its "
+                        & "associated owner is finalized", N);
+                  else
+                     Error_Msg_N
+                       ("info: coextension will not be finalized when its "
+                        & "associated owner is deallocated", N);
+                  end if;
+               else
+                  if Is_Controlled_Active
+                       (Defining_Identifier
+                          (Parent (Associated_Node_For_Itype (Typ))))
+                  then
+                     Error_Msg_N
+                       ("info: coextension will not be deallocated when its "
+                        & "associated owner is finalized", N);
+                  else
+                     Error_Msg_N
+                       ("info: coextension will not be deallocated when its "
+                        & "associated owner is deallocated", N);
+                  end if;
+               end if;
             end if;
 
          --  Cleanup for potential static coextensions
