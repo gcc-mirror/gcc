@@ -2566,12 +2566,15 @@ typedef struct mips_args {
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
-  if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)				\
-    asm_fprintf ((FILE), "%U%s",					\
-		 XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));	\
-  else									\
-    asm_fprintf ((FILE), "%U%s", (NAME))
+#define ASM_OUTPUT_LABELREF(FILE,NAME)					\
+  do {									\
+    if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)			\
+      asm_fprintf ((FILE), "%U%s",					\
+		   XSTR (XEXP (DECL_RTL (current_function_decl),	\
+			       0), 0));					\
+    else								\
+      asm_fprintf ((FILE), "%U%s", (NAME));				\
+  } while (0)
 
 /* Flag to mark a function decl symbol that requires a long call.  */
 #define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 0)
