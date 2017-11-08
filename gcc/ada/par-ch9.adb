@@ -101,6 +101,7 @@ package body Ch9 is
          Scan; -- past BODY
          Name_Node := P_Defining_Identifier (C_Is);
          Scope.Table (Scope.Last).Labl := Name_Node;
+         Current_Node := Name_Node;
 
          if Token = Tok_Left_Paren then
             Error_Msg_SC ("discriminant part not allowed in task body");
@@ -168,6 +169,7 @@ package body Ch9 is
             Name_Node := P_Defining_Identifier;
             Set_Defining_Identifier (Task_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
             Set_Discriminant_Specifications
               (Task_Node, P_Known_Discriminant_Part_Opt);
 
@@ -176,6 +178,7 @@ package body Ch9 is
             Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Task_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
 
             if Token = Tok_Left_Paren then
                Error_Msg_SC ("discriminant part not allowed for single task");
@@ -447,6 +450,7 @@ package body Ch9 is
          Scan; -- past BODY
          Name_Node := P_Defining_Identifier (C_Is);
          Scope.Table (Scope.Last).Labl := Name_Node;
+         Current_Node := Name_Node;
 
          if Token = Tok_Left_Paren then
             Error_Msg_SC ("discriminant part not allowed in protected body");
@@ -501,6 +505,7 @@ package body Ch9 is
             Name_Node := P_Defining_Identifier (C_Is);
             Set_Defining_Identifier (Protected_Node, Name_Node);
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
             Set_Discriminant_Specifications
               (Protected_Node, P_Known_Discriminant_Part_Opt);
 
@@ -517,6 +522,7 @@ package body Ch9 is
             end if;
 
             Scope.Table (Scope.Last).Labl := Name_Node;
+            Current_Node := Name_Node;
          end if;
 
          P_Aspect_Specifications (Protected_Node, Semicolon => False);
@@ -1049,6 +1055,7 @@ package body Ch9 is
       Accept_Node := New_Node (N_Accept_Statement, Token_Ptr);
       Scan; -- past ACCEPT
       Scope.Table (Scope.Last).Labl := Token_Node;
+      Current_Node := Token_Node;
 
       Set_Entry_Direct_Name (Accept_Node, P_Identifier (C_Do));
 
@@ -1197,6 +1204,7 @@ package body Ch9 is
       Name_Node := P_Defining_Identifier;
       Set_Defining_Identifier (Entry_Node, Name_Node);
       Scope.Table (Scope.Last).Labl := Name_Node;
+      Current_Node := Name_Node;
 
       Formal_Part_Node := P_Entry_Body_Formal_Part;
       Set_Entry_Body_Formal_Part (Entry_Node, Formal_Part_Node);

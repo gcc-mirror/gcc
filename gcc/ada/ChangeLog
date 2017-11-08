@@ -1,5 +1,21 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* spark_xrefs.ads (SPARK_Xref_Record): Replace file and scope indices
+	with Entity_Id of the reference.
+	* spark_xrefs.adb (dspark): Adapt pretty-printing routine.
+	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Store Entity_Id of the
+	reference, not the file and scope indices.
+
+2017-11-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* errout.ads (Current_Node): New.
+	* errout.adb (Error_Msg): Use Current_Node.
+	* par-ch6.adb, par-ch7.adb, par-ch9.adb, par-util.adb: Set Current_Node
+	when relevant.
+	* style.adb: Call Error_Msg_N when possible.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* spark_xrefs.ads (SPARK_Scope_Record): Rename Scope_Id component to
 	Entity.
 	* lib-xref-spark_specific.adb, spark_xrefs.adb: Propagate renaming of

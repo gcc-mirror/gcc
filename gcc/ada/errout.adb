@@ -307,7 +307,7 @@ package body Errout is
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
    begin
-      Error_Msg (Msg, Flag_Location, Empty);
+      Error_Msg (Msg, Flag_Location, Current_Node);
    end Error_Msg;
 
    procedure Error_Msg

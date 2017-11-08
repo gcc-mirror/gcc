@@ -336,6 +336,7 @@ package body Ch6 is
       end if;
 
       Scope.Table (Scope.Last).Labl := Name_Node;
+      Current_Node := Name_Node;
       Ignore (Tok_Colon);
 
       --  Deal with generic instantiation, the one case in which we do not

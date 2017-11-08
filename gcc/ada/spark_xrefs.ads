@@ -67,17 +67,10 @@ package SPARK_Xrefs is
 
    type SPARK_Xref_Record is record
       Entity : Entity_Id;
-      --  Pointer to entity name in ALI file
+      --  Referenced entity
 
-      File_Num : Nat;
-      --  File dependency number for the cross-reference. Note that if no file
-      --  entry is present explicitly, this is just a copy of the reference for
-      --  the current cross-reference section.
-
-      Scope_Num : Nat;
-      --  Scope number for the cross-reference. Note that if no scope entry is
-      --  present explicitly, this is just a copy of the reference for the
-      --  current cross-reference section.
+      Ref_Scope : Entity_Id;
+      --  Scope where the reference occurs
 
       Rtype : Character;
       --  Indicates type of the reference, using code used in ALI file:
