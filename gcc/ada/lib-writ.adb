@@ -1572,7 +1572,6 @@ package body Lib.Writ is
       if Opt.Xref_Active and then GNATprove_Mode then
          SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
                                              Num_Sdep   => Num_Sdep);
-         SPARK_Specific.Output_SPARK_Xrefs;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

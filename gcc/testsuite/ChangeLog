@@ -1,3 +1,9 @@
+2017-11-08  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/overriding_ops2.adb, gnat.dg/overriding_ops2.ads,
+	gnat.dg/overriding_ops2_pkg.ads, gnat.dg/overriding_ops2_pkg-high.ads:
+	New testcase.
+
 2017-11-08  Andreas Schwab  <schwab@suse.de>
 
 	* c-c++-common/torture/aarch64-vect-lane-2.c (search_line_fast):

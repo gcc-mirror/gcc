@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Csets;    use Csets;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Lib.Util; use Lib.Util;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Restrict; use Restrict;

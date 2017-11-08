@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
@@ -8502,84 +8503,172 @@ package body Sem_Elab is
       In_Partial_Fin : Boolean;
       In_Task_Body   : Boolean)
    is
-      function Is_Potential_Scenario (Nod : Node_Id) return Traverse_Result;
-      --  Determine whether arbitrary node Nod denotes a suitable scenario and
-      --  if so, process it.
+      procedure Find_And_Process_Nested_Scenarios;
+      pragma Inline (Find_And_Process_Nested_Scenarios);
+      --  Examine the declarations and statements of subprogram body N for
+      --  suitable scenarios. Save each discovered scenario and process it
+      --  accordingly.
 
-      procedure Traverse_Potential_Scenarios is
-        new Traverse_Proc (Is_Potential_Scenario);
+      procedure Process_Nested_Scenarios (Nested : Elist_Id);
+      pragma Inline (Process_Nested_Scenarios);
+      --  Invoke Process_Scenario on each individual scenario whith appears in
+      --  list Nested.
 
-      procedure Traverse_List (List : List_Id);
-      --  Inspect list List for suitable elaboration scenarios and process them
+      ---------------------------------------
+      -- Find_And_Process_Nested_Scenarios --
+      ---------------------------------------
 
-      ---------------------------
-      -- Is_Potential_Scenario --
-      ---------------------------
+      procedure Find_And_Process_Nested_Scenarios is
+         Body_Id : constant Entity_Id := Defining_Entity (N);
 
-      function Is_Potential_Scenario (Nod : Node_Id) return Traverse_Result is
+         function Is_Potential_Scenario
+           (Nod : Node_Id) return Traverse_Result;
+         --  Determine whether arbitrary node Nod denotes a suitable scenario.
+         --  If it does, save it in the Nested_Scenarios list of the subprogram
+         --  body, and process it.
+
+         procedure Save_Scenario (Nod : Node_Id);
+         pragma Inline (Save_Scenario);
+         --  Save scenario Nod in the Nested_Scenarios list of the subprogram
+         --  body.
+
+         procedure Traverse_List (List : List_Id);
+         pragma Inline (Traverse_List);
+         --  Invoke Traverse_Potential_Scenarios on each node in list List
+
+         procedure Traverse_Potential_Scenarios is
+           new Traverse_Proc (Is_Potential_Scenario);
+
+         ---------------------------
+         -- Is_Potential_Scenario --
+         ---------------------------
+
+         function Is_Potential_Scenario
+           (Nod : Node_Id) return Traverse_Result
+         is
+         begin
+            --  Special cases
+
+            --  Skip constructs which do not have elaboration of their own and
+            --  need to be elaborated by other means such as invocation, task
+            --  activation, etc.
+
+            if Is_Non_Library_Level_Encapsulator (Nod) then
+               return Skip;
+
+            --  Terminate the traversal of a task body with an accept statement
+            --  when no entry calls in elaboration are allowed because the task
+            --  will block at run-time and the remaining statements will not be
+            --  executed.
+
+            elsif Nkind_In (Original_Node (Nod), N_Accept_Statement,
+                                                 N_Selective_Accept)
+              and then Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
+            then
+               return Abandon;
+
+            --  Certain nodes carry semantic lists which act as repositories
+            --  until expansion transforms the node and relocates the contents.
+            --  Examine these lists in case expansion is disabled.
+
+            elsif Nkind_In (Nod, N_And_Then, N_Or_Else) then
+               Traverse_List (Actions (Nod));
+
+            elsif Nkind_In (Nod, N_Elsif_Part, N_Iteration_Scheme) then
+               Traverse_List (Condition_Actions (Nod));
+
+            elsif Nkind (Nod) = N_If_Expression then
+               Traverse_List (Then_Actions (Nod));
+               Traverse_List (Else_Actions (Nod));
+
+            elsif Nkind_In (Nod, N_Component_Association,
+                                 N_Iterated_Component_Association)
+            then
+               Traverse_List (Loop_Actions (Nod));
+
+            --  General case
+
+            --  Save a suitable scenario in the Nested_Scenarios list of the
+            --  subprogram body. As a result any subsequent traversals of the
+            --  subprogram body started from a different top level scenario no
+            --  longer need to reexamine the tree.
+
+            elsif Is_Suitable_Scenario (Nod) then
+               Save_Scenario (Nod);
+               Process_Scenario (Nod, In_Partial_Fin, In_Task_Body);
+            end if;
+
+            return OK;
+         end Is_Potential_Scenario;
+
+         -------------------
+         -- Save_Scenario --
+         -------------------
+
+         procedure Save_Scenario (Nod : Node_Id) is
+            Nested : Elist_Id;
+
+         begin
+            Nested := Nested_Scenarios (Body_Id);
+
+            if No (Nested) then
+               Nested := New_Elmt_List;
+               Set_Nested_Scenarios (Body_Id, Nested);
+            end if;
+
+            Append_Elmt (Nod, Nested);
+         end Save_Scenario;
+
+         -------------------
+         -- Traverse_List --
+         -------------------
+
+         procedure Traverse_List (List : List_Id) is
+            Item : Node_Id;
+
+         begin
+            Item := First (List);
+            while Present (Item) loop
+               Traverse_Potential_Scenarios (Item);
+               Next (Item);
+            end loop;
+         end Traverse_List;
+
+      --  Start of processing for Find_And_Process_Nested_Scenarios
+
       begin
-         --  Special cases
+         --  Examine the declarations for suitable scenarios
 
-         --  Skip constructs which do not have elaboration of their own and
-         --  need to be elaborated by other means such as invocation, task
-         --  activation, etc.
+         Traverse_List (Declarations (N));
 
-         if Is_Non_Library_Level_Encapsulator (Nod) then
-            return Skip;
+         --  Examine the handled sequence of statements. This also includes any
+         --  exceptions handlers.
 
-         --  Terminate the traversal of a task body with an accept statement
-         --  when no entry calls in elaboration are allowed because the task
-         --  will block at run-time and none of the remaining statements will
-         --  be executed.
+         Traverse_Potential_Scenarios (Handled_Statement_Sequence (N));
+      end Find_And_Process_Nested_Scenarios;
 
-         elsif Nkind_In (Original_Node (Nod), N_Accept_Statement,
-                                              N_Selective_Accept)
-           and then Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
-         then
-            return Abandon;
+      ------------------------------
+      -- Process_Nested_Scenarios --
+      ------------------------------
 
-         --  Certain nodes carry semantic lists which act as repositories until
-         --  expansion transforms the node and relocates the contents. Examine
-         --  these lists in case expansion is disabled.
-
-         elsif Nkind_In (Nod, N_And_Then, N_Or_Else) then
-            Traverse_List (Actions (Nod));
-
-         elsif Nkind_In (Nod, N_Elsif_Part, N_Iteration_Scheme) then
-            Traverse_List (Condition_Actions (Nod));
-
-         elsif Nkind (Nod) = N_If_Expression then
-            Traverse_List (Then_Actions (Nod));
-            Traverse_List (Else_Actions (Nod));
-
-         elsif Nkind_In (Nod, N_Component_Association,
-                              N_Iterated_Component_Association)
-         then
-            Traverse_List (Loop_Actions (Nod));
-
-         --  General case
-
-         elsif Is_Suitable_Scenario (Nod) then
-            Process_Scenario (Nod, In_Partial_Fin, In_Task_Body);
-         end if;
-
-         return OK;
-      end Is_Potential_Scenario;
-
-      -------------------
-      -- Traverse_List --
-      -------------------
-
-      procedure Traverse_List (List : List_Id) is
-         Item : Node_Id;
+      procedure Process_Nested_Scenarios (Nested : Elist_Id) is
+         Nested_Elmt : Elmt_Id;
 
       begin
-         Item := First (List);
-         while Present (Item) loop
-            Traverse_Potential_Scenarios (Item);
-            Next (Item);
+         Nested_Elmt := First_Elmt (Nested);
+         while Present (Nested_Elmt) loop
+            Process_Scenario
+              (N              => Node (Nested_Elmt),
+               In_Partial_Fin => In_Partial_Fin,
+               In_Task_Body   => In_Task_Body);
+
+            Next_Elmt (Nested_Elmt);
          end loop;
-      end Traverse_List;
+      end Process_Nested_Scenarios;
+
+      --  Local variables
+
+      Nested : Elist_Id;
 
    --  Start of processing for Traverse_Body
 
@@ -8605,14 +8694,23 @@ package body Sem_Elab is
          Visited_Bodies.Set (N, True);
       end if;
 
-      --  Examine the declarations for suitable scenarios
+      Nested := Nested_Scenarios (Defining_Entity (N));
 
-      Traverse_List (Declarations (N));
+      --  The subprogram body was already examined as part of the elaboration
+      --  graph starting from a different top level scenario. There is no need
+      --  to traverse the declarations and statements again because this will
+      --  yield the exact same scenarios. Use the nested scenarios collected
+      --  during the first inspection of the body.
 
-      --  Examine the handled sequence of statements. This also includes any
-      --  exceptions handlers.
+      if Present (Nested) then
+         Process_Nested_Scenarios (Nested);
 
-      Traverse_Potential_Scenarios (Handled_Statement_Sequence (N));
+      --  Otherwise examine the declarations and statements of the subprogram
+      --  body for suitable scenarios, save and process them accordingly.
+
+      else
+         Find_And_Process_Nested_Scenarios;
+      end if;
    end Traverse_Body;
 
    ---------------------------------

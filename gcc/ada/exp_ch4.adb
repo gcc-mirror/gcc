@@ -630,7 +630,9 @@ package body Exp_Ch4 is
 
             --    [Deep_]Finalize (Obj_Ref.all);
 
-            if Needs_Finalization (DesigT) then
+            if Needs_Finalization (DesigT)
+              and then not No_Heap_Finalization (PtrT)
+            then
                Fin_Call :=
                  Make_Final_Call
                    (Obj_Ref =>

@@ -3531,6 +3531,14 @@ package Einfo is
 --       interpreted as an indexing of the result of the call. It is also
 --       used to resolve various cases of entry calls.
 
+--    Nested_Scenarios (Elist36)
+--       Present in [stand alone] subprogram bodies. The list contains all
+--       nested scenarios (see the terminology in Sem_Elab) which appear within
+--       the declarations, statements, and exception handlers of the subprogram
+--       body. The list improves the performance of the ABE Processing phase by
+--       avoiding a full tree traversal when the same subprogram body is part
+--       of several distinct paths in the elaboration graph.
+
 --    Never_Set_In_Source (Flag115)
 --       Defined in all entities, but can be set only for variables and
 --       parameters. This flag is set if the object is never assigned a value
@@ -6076,6 +6084,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
+   --    Nested_Scenarios                    (Elist36)
    --    Class_Wide_Clone                    (Node38)
    --    Protected_Subprogram                (Node39)   (non-generic case only)
    --    SPARK_Pragma                        (Node40)
@@ -6398,6 +6407,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
+   --    Nested_Scenarios                    (Elist36)
    --    Class_Wide_Clone                    (Node38)
    --    Protected_Subprogram                (Node39)   (non-generic case only)
    --    SPARK_Pragma                        (Node40)
@@ -6592,6 +6602,7 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    Anonymous_Masters                   (Elist29)
    --    Contract                            (Node34)
+   --    Nested_Scenarios                    (Elist36)
    --    SPARK_Pragma                        (Node40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    SPARK_Pragma_Inherited              (Flag265)
@@ -7308,6 +7319,7 @@ package Einfo is
    function Must_Have_Preelab_Init              (Id : E) return B;
    function Needs_Debug_Info                    (Id : E) return B;
    function Needs_No_Actuals                    (Id : E) return B;
+   function Nested_Scenarios                    (Id : E) return L;
    function Never_Set_In_Source                 (Id : E) return B;
    function Next_Inlined_Subprogram             (Id : E) return E;
    function No_Dynamic_Predicate_On_Actual      (Id : E) return B;
@@ -8005,6 +8017,7 @@ package Einfo is
    procedure Set_Must_Have_Preelab_Init          (Id : E; V : B := True);
    procedure Set_Needs_Debug_Info                (Id : E; V : B := True);
    procedure Set_Needs_No_Actuals                (Id : E; V : B := True);
+   procedure Set_Nested_Scenarios                (Id : E; V : L);
    procedure Set_Never_Set_In_Source             (Id : E; V : B := True);
    procedure Set_Next_Inlined_Subprogram         (Id : E; V : E);
    procedure Set_No_Dynamic_Predicate_On_Actual  (Id : E; V : B := True);
@@ -8857,6 +8870,7 @@ package Einfo is
    pragma Inline (Must_Have_Preelab_Init);
    pragma Inline (Needs_Debug_Info);
    pragma Inline (Needs_No_Actuals);
+   pragma Inline (Nested_Scenarios);
    pragma Inline (Never_Set_In_Source);
    pragma Inline (Next_Index);
    pragma Inline (Next_Inlined_Subprogram);
@@ -9343,6 +9357,7 @@ package Einfo is
    pragma Inline (Set_Must_Have_Preelab_Init);
    pragma Inline (Set_Needs_Debug_Info);
    pragma Inline (Set_Needs_No_Actuals);
+   pragma Inline (Set_Nested_Scenarios);
    pragma Inline (Set_Never_Set_In_Source);
    pragma Inline (Set_Next_Inlined_Subprogram);
    pragma Inline (Set_No_Dynamic_Predicate_On_Actual);
