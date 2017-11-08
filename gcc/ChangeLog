@@ -1,5 +1,13 @@
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-simd.md (store_pair_lanes<mode>):
+	New pattern.
+	* config/aarch64/constraints.md (Uml): New constraint.
+	* config/aarch64/predicates.md (aarch64_mem_pair_lanes_operand): New
+	predicate.
+
+2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* simplify-rtx.c (simplify_ternary_operation): Simplify vec_merge
 	of two vec_duplicates into a vec_concat.
 

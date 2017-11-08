@@ -171,6 +171,15 @@
        (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
 						  PARALLEL, 1)")))
 
+;; Used for storing two 64-bit values in an AdvSIMD register using an STP
+;; as a 128-bit vec_concat.
+(define_memory_constraint "Uml"
+  "@internal
+  A memory address suitable for a load/store pair operation."
+  (and (match_code "mem")
+       (match_test "aarch64_legitimate_address_p (DFmode, XEXP (op, 0),
+						   PARALLEL, 1)")))
+
 (define_memory_constraint "Utv"
   "@internal
    An address valid for loading/storing opaque structure
