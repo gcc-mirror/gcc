@@ -75,7 +75,6 @@ package SPARK_Xrefs is
       Rtype : Character;
       --  Indicates type of the reference, using code used in ALI file:
       --    r = reference
-      --    c = reference to constant object
       --    m = modification
       --    s = call
    end record;

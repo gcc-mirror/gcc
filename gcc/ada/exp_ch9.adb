@@ -12909,8 +12909,8 @@ package body Exp_Ch9 is
       end if;
 
       --  If the type of the dispatching object is an access type then return
-      --  an explicit dereference  of a copy of the object, and note that
-      --  this is the controlling actual of the call.
+      --  an explicit dereference  of a copy of the object, and note that this
+      --  is the controlling actual of the call.
 
       if Is_Access_Type (Etype (Object)) then
          Object :=
@@ -14590,9 +14590,9 @@ package body Exp_Ch9 is
 
             --    Jnn'unchecked_access
 
-            --  and add it to aggegate for access to formals. Note that
-            --  the actual may be by-copy but still be a controlling actual
-            --  if it is an access to class-wide interface.
+            --  and add it to aggegate for access to formals. Note that the
+            --  actual may be by-copy but still be a controlling actual if it
+            --  is an access to class-wide interface.
 
             if not Is_Controlling_Actual (Actual) then
                Append_To (Params,

@@ -414,12 +414,44 @@ package body Sem_Ch4 is
    -----------------------
 
    --  Most of the analysis of Aggregates requires that the type be known,
-   --  and is therefore put off until resolution.
+   --  and is therefore put off until resolution of the context.
+   --  Delta aggregates have a base component that determines the type of the
+   --  enclosing aggregate so its type can be ascertained earlier. This also
+   --  allows delta aggregates to appear in the context of a record type with
+   --  a private extension, as per the latest update of AI2-0127.
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin
       if No (Etype (N)) then
-         Set_Etype (N, Any_Composite);
+         if Nkind (N) = N_Delta_Aggregate then
+            declare
+               Base : constant Node_Id := Expression (N);
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               Analyze (Base);
+
+               --  If the base is overloaded, propagate interpretations
+               --  to the enclosing aggregate.
+
+               if Is_Overloaded (Base) then
+                  Get_First_Interp (Base, I, It);
+                  Set_Etype (N, Any_Type);
+
+                  while Present (It.Nam) loop
+                     Add_One_Interp (N, It.Typ, It.Typ);
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+               else
+                  Set_Etype (N, Etype (Base));
+               end if;
+            end;
+
+         else
+            Set_Etype (N, Any_Composite);
+         end if;
       end if;
    end Analyze_Aggregate;
 

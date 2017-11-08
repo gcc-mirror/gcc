@@ -1,3 +1,7 @@
+2017-11-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/delta_aggr.adb: New testcase.
+
 2017-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/pr57878.C (__sso_string_base::_M_get_allocator): Return

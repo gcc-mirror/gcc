@@ -597,6 +597,7 @@ package body Sem_Util is
 
       procedure Inner (E : Entity_Id) is
          Scop : Node_Id;
+
       begin
          --  If entity has an internal name, skip by it, and print its scope.
          --  Note that we strip a final R from the name before the test; this
@@ -13198,14 +13199,14 @@ package body Sem_Util is
       if Ekind (Proc_Nam) = E_Procedure
         and then Present (Parameter_Specifications (Parent (Proc_Nam)))
       then
-         Param := Parameter_Type (First (
-                    Parameter_Specifications (Parent (Proc_Nam))));
+         Param :=
+           Parameter_Type
+             (First (Parameter_Specifications (Parent (Proc_Nam))));
 
-         --  The formal may be an anonymous access type.
+         --  The formal may be an anonymous access type
 
          if Nkind (Param) = N_Access_Definition then
             Param_Typ := Entity (Subtype_Mark (Param));
-
          else
             Param_Typ := Etype (Param);
          end if;
@@ -23329,6 +23330,7 @@ package body Sem_Util is
          declare
             H  : Entity_Id := Homonym (N);
             Nr : Nat := 1;
+
          begin
             while Present (H) loop
                if Scope (H) = Scope (N) then
