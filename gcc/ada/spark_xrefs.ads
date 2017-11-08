@@ -66,7 +66,7 @@ package SPARK_Xrefs is
    --  until a proper value is determined.
 
    type SPARK_Xref_Record is record
-      Entity_Name : String_Ptr;
+      Entity : Entity_Id;
       --  Pointer to entity name in ALI file
 
       File_Num : Nat;
@@ -109,7 +109,7 @@ package SPARK_Xrefs is
    --  determined.
 
    type SPARK_Scope_Record is record
-      Scope_Name : String_Ptr;
+      Scope_Id : Entity_Id;
       --  Pointer to scope name in ALI file
 
       File_Num : Nat;
@@ -131,12 +131,6 @@ package SPARK_Xrefs is
 
       To_Xref : Xref_Index;
       --  Ending index in Xref table for this scope
-
-      --  The following component is only used in-memory, not printed out in
-      --  ALI file.
-
-      Scope_Entity : Entity_Id := Empty;
-      --  Entity (subprogram or package) for the scope
    end record;
 
    package SPARK_Scope_Table is new Table.Table (
@@ -192,6 +186,11 @@ package SPARK_Xrefs is
    Name_Of_Heap_Variable : constant String := "__HEAP";
    --  Name of special variable used in effects to denote reads and writes
    --  through explicit dereference.
+
+   Heap : Entity_Id := Empty;
+   --  A special entity which denotes the heap object; it should be considered
+   --  constant, but needs to be variable, because it can only be initialized
+   --  after the node tables are created.
 
    -----------------
    -- Subprograms --

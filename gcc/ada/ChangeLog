@@ -1,5 +1,34 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* spark_xrefs.ads (SPARK_Xref_Record): Referenced object is now
+	represented by Entity_Id.
+	(SPARK_Scope_Record): Referenced scope (e.g. subprogram) is now
+	represented by Entity_Id; this information is not repeated as
+	Scope_Entity.
+	(Heap): Moved from lib-xref-spark_specific.adb, to reside next to
+	Name_Of_Heap_Variable.
+	* spark_xrefs.adb (dspark): Adapt debug routine to above changes in
+	data types.
+	* lib-xref-spark_specific.adb: Adapt routines for populating SPARK
+	scope and xrefs tables to above changes in data types.
+
+2017-11-08  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Mark_Use_Clauses): Add condition to always mark the
+	primitives of generic actuals.
+	(Mark_Use_Type): Add recursive call to properly mark class-wide type's
+	base type clauses as per ARM 8.4 (8.2/3).
+
+2017-11-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Generic_Subprobram_Body): Validate
+	categorization dependency of the body, as is done for non-generic
+	units.
+	(New_Overloaded_Entity, Visible_Part_Type): Remove linear search
+	through declarations (Simple optimization, no behavior change).
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* spark_xrefs.ads (SPARK_Xref_Record): Remove inessential components.
 	(SPARK_Scope_Record): Remove inessential components.
 	* spark_xrefs.adb (dspark): Remove pretty-printing of removed record

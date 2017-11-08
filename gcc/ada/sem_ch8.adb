@@ -8320,6 +8320,7 @@ package body Sem_Ch8 is
 
       procedure Mark_Use_Type (E : Entity_Id) is
          Curr : Node_Id;
+         Base : Entity_Id;
 
       begin
          --  Ignore void types and unresolved string literals and primitives
@@ -8331,12 +8332,22 @@ package body Sem_Ch8 is
             return;
          end if;
 
+         --  Primitives with class-wide operands might additionally render
+         --  their base type's use_clauses effective - so do a recursive check
+         --  here.
+
+         Base := Base_Type (Etype (E));
+
+         if Ekind (Base) = E_Class_Wide_Type then
+            Mark_Use_Type (Base);
+         end if;
+
          --  The package containing the type or operator function being used
          --  may be in use as well, so mark any use_package_clauses for it as
          --  effective. There are also additional sanity checks performed here
          --  for ignoring previous errors.
 
-         Mark_Use_Package (Scope (Base_Type (Etype (E))));
+         Mark_Use_Package (Scope (Base));
 
          if Nkind (E) in N_Op
            and then Present (Entity (E))
@@ -8345,7 +8356,7 @@ package body Sem_Ch8 is
             Mark_Use_Package (Scope (Entity (E)));
          end if;
 
-         Curr := Current_Use_Clause (Base_Type (Etype (E)));
+         Curr := Current_Use_Clause (Base);
          while Present (Curr)
             and then not Is_Effective_Use_Clause (Curr)
          loop
@@ -8397,7 +8408,9 @@ package body Sem_Ch8 is
                  or else Ekind_In (Id, E_Generic_Function,
                                        E_Generic_Procedure))
            and then (Is_Potentially_Use_Visible (Id)
-                      or else Is_Intrinsic_Subprogram (Id))
+                      or else Is_Intrinsic_Subprogram (Id)
+                      or else (Ekind_In (Id, E_Function, E_Procedure)
+                                and then Is_Generic_Actual_Subprogram (Id)))
          then
             Mark_Parameters (Id);
          end if;
