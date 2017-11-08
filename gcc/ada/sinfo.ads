@@ -1863,6 +1863,10 @@ package Sinfo is
    --    the resolution of accidental overloading of binary or unary operators
    --    which may occur in instances.
 
+   --  Is_Read (Flag1-Sem)
+   --    Present in variable reference markers. Set when the original variable
+   --    reference constitues a read of the variable.
+
    --  Is_Recorded_Scenario (Flag6-Sem)
    --    Present in call marker and instantiation nodes. Set when the scenario
    --    was saved by the ABE Recording phase. This flag aids the ABE machinery
@@ -1915,6 +1919,10 @@ package Sinfo is
    --    A flag set in a Subprogram_Body, Block_Statement or Task_Body node to
    --    indicate that the construct is a task master (i.e. has declared tasks
    --    or declares an access to a task type).
+
+   --  Is_Write (Flag2-Sem)
+   --    Present in variable reference markers. Set when the original variable
+   --    reference constitues a write of the variable.
 
    --  Itype (Node1-Sem)
    --    Used in N_Itype_Reference node to reference an itype for which it is
@@ -2318,8 +2326,9 @@ package Sinfo is
    --    only execute if invalid values are present).
 
    --  Target (Node1-Sem)
-   --    Present in call marker nodes. References the entity of the entry,
-   --    operator, or subprogram invoked by the related call or requeue.
+   --    Present in call and variable reference marker nodes. References the
+   --    entity of the original entity, operator, or subprogram being invoked,
+   --    or the original variable being read or written.
 
    --  Target_Type (Node2-Sem)
    --    Used in an N_Validate_Unchecked_Conversion node to point to the target
@@ -8455,6 +8464,37 @@ package Sinfo is
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the VALIDATE keyword in the file output.
 
+      -------------------------------
+      -- Variable_Reference_Marker --
+      -------------------------------
+
+      --  This node is created during the analysis of direct or expanded names,
+      --  and the resolution of entry and subprogram calls. It performs several
+      --  functions:
+
+      --    * Variable reference markers provide a uniform model for handling
+      --      variable references by the ABE mechanism, regardless of whether
+      --      expansion took place.
+
+      --    * The variable reference marker captures the entity of the variable
+      --      being read or written.
+
+      --    * The variable reference markers aid the ABE Processing phase by
+      --      signaling the presence of a call in case the original variable
+      --      reference was transformed by expansion.
+
+      --  Sprint syntax:  r#target#  --  for a read
+      --                 rw#target#  --  for a read/write
+      --                  w#target#  --  for a write
+
+      --  The Sprint syntax shown above is not enabled by default
+
+      --  N_Variable_Reference_Marker
+      --  Sloc points to Sloc of original variable reference
+      --  Target (Node1-Sem)
+      --  Is_Read (Flag1-Sem)
+      --  Is_Write (Flag2-Sem)
+
    -----------
    -- Empty --
    -----------
@@ -8877,6 +8917,7 @@ package Sinfo is
       N_Triggering_Alternative,
       N_Use_Type_Clause,
       N_Validate_Unchecked_Conversion,
+      N_Variable_Reference_Marker,
       N_Variant,
       N_Variant_Part,
       N_With_Clause,
@@ -9733,6 +9774,9 @@ package Sinfo is
    function Is_Qualified_Universal_Literal
      (N : Node_Id) return Boolean;    -- Flag4
 
+   function Is_Read
+     (N : Node_Id) return Boolean;    -- Flag1
+
    function Is_Recorded_Scenario
      (N : Node_Id) return Boolean;    -- Flag6
 
@@ -9759,6 +9803,9 @@ package Sinfo is
 
    function Is_Task_Master
      (N : Node_Id) return Boolean;    -- Flag5
+
+   function Is_Write
+     (N : Node_Id) return Boolean;    -- Flag2
 
    function Iteration_Scheme
      (N : Node_Id) return Node_Id;    -- Node2
@@ -10822,6 +10869,9 @@ package Sinfo is
    procedure Set_Is_Qualified_Universal_Literal
      (N : Node_Id; Val : Boolean := True);    -- Flag4
 
+   procedure Set_Is_Read
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
+
    procedure Set_Is_Recorded_Scenario
      (N : Node_Id; Val : Boolean := True);    -- Flag6
 
@@ -10848,6 +10898,9 @@ package Sinfo is
 
    procedure Set_Is_Task_Master
      (N : Node_Id; Val : Boolean := True);    -- Flag5
+
+   procedure Set_Is_Write
+     (N : Node_Id; Val : Boolean := True);    -- Flag2
 
    procedure Set_Iteration_Scheme
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -13023,6 +13076,13 @@ package Sinfo is
         4 => False,   --  unused
         5 => False),  --  unused
 
+     N_Variable_Reference_Marker =>
+       (1 => False,   --  Target (Node1-Sem)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
+
    --  Entries for Empty, Error and Unused. Even thought these have a Chars
    --  field for debugging purposes, they are not really syntactic fields, so
    --  we mark all fields as unused.
@@ -13276,6 +13336,7 @@ package Sinfo is
    pragma Inline (Is_Prefixed_Call);
    pragma Inline (Is_Protected_Subprogram_Body);
    pragma Inline (Is_Qualified_Universal_Literal);
+   pragma Inline (Is_Read);
    pragma Inline (Is_Recorded_Scenario);
    pragma Inline (Is_Source_Call);
    pragma Inline (Is_SPARK_Mode_On_Node);
@@ -13285,6 +13346,7 @@ package Sinfo is
    pragma Inline (Is_Task_Allocation_Block);
    pragma Inline (Is_Task_Body_Procedure);
    pragma Inline (Is_Task_Master);
+   pragma Inline (Is_Write);
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
    pragma Inline (Kill_Range_Check);
@@ -13634,6 +13696,7 @@ package Sinfo is
    pragma Inline (Set_Is_Prefixed_Call);
    pragma Inline (Set_Is_Protected_Subprogram_Body);
    pragma Inline (Set_Is_Qualified_Universal_Literal);
+   pragma Inline (Set_Is_Read);
    pragma Inline (Set_Is_Recorded_Scenario);
    pragma Inline (Set_Is_Source_Call);
    pragma Inline (Set_Is_SPARK_Mode_On_Node);
@@ -13643,6 +13706,7 @@ package Sinfo is
    pragma Inline (Set_Is_Task_Allocation_Block);
    pragma Inline (Set_Is_Task_Body_Procedure);
    pragma Inline (Set_Is_Task_Master);
+   pragma Inline (Set_Is_Write);
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Itype);

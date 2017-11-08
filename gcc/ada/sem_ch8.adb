@@ -5358,6 +5358,8 @@ package body Sem_Ch8 is
 
       --  Local variables
 
+      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+
       Nested_Inst : Entity_Id := Empty;
       --  The entity of a nested instance which appears within Inst (if any)
 
@@ -5895,9 +5897,20 @@ package body Sem_Ch8 is
    <<Done>>
       Check_Restriction_No_Use_Of_Entity (N);
 
-      --  Save the scenario for later examination by the ABE Processing phase
+      --  Annotate the tree by creating a variable reference marker in case the
+      --  original variable reference is folded or optimized away. The variable
+      --  reference marker is automatically saved for later examination by the
+      --  ABE Processing phase. Variable references which act as actuals in a
+      --  call require special processing and are left to Resolve_Actuals. The
+      --  reference is a write when it appears on the left hand side of an
+      --  assignment.
 
-      Record_Elaboration_Scenario (N);
+      if not Within_Subprogram_Call (N) then
+         Build_Variable_Reference_Marker
+           (N     => N,
+            Read  => not Is_Assignment_LHS,
+            Write => Is_Assignment_LHS);
+      end if;
    end Find_Direct_Name;
 
    ------------------------
@@ -5969,8 +5982,10 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Selector  : constant Node_Id := Selector_Name (N);
-      Candidate : Entity_Id        := Empty;
+      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+      Selector          : constant Node_Id := Selector_Name (N);
+
+      Candidate : Entity_Id := Empty;
       P_Name    : Entity_Id;
       Id        : Entity_Id;
 
@@ -6529,9 +6544,20 @@ package body Sem_Ch8 is
 
       Check_Restriction_No_Use_Of_Entity (N);
 
-      --  Save the scenario for later examination by the ABE Processing phase
+      --  Annotate the tree by creating a variable reference marker in case the
+      --  original variable reference is folded or optimized away. The variable
+      --  reference marker is automatically saved for later examination by the
+      --  ABE Processing phase. Variable references which act as actuals in a
+      --  call require special processing and are left to Resolve_Actuals. The
+      --  reference is a write when it appears on the left hand side of an
+      --  assignment.
 
-      Record_Elaboration_Scenario (N);
+      if not Within_Subprogram_Call (N) then
+         Build_Variable_Reference_Marker
+           (N     => N,
+            Read  => not Is_Assignment_LHS,
+            Write => Is_Assignment_LHS);
+      end if;
    end Find_Expanded_Name;
 
    --------------------

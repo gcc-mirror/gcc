@@ -3744,6 +3744,21 @@ package body Sem_Res is
            and then Is_Entity_Name (A)
            and then Comes_From_Source (A)
          then
+            --  Annotate the tree by creating a variable reference marker when
+            --  the actual denotes a variable reference, in case the reference
+            --  is folded or optimized away. The variable reference marker is
+            --  automatically saved for later examination by the ABE Processing
+            --  phase. The status of the reference is set as follows:
+
+            --    status   mode
+            --    read     IN, IN OUT
+            --    write    IN OUT, OUT
+
+            Build_Variable_Reference_Marker
+              (N     => A,
+               Read  => Ekind (F) /= E_Out_Parameter,
+               Write => Ekind (F) /= E_In_Parameter);
+
             Orig_A := Entity (A);
 
             if Present (Orig_A) then

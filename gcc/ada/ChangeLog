@@ -1,3 +1,52 @@
+2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Save and restore relevant
+	SPARK-related flags.  Add ??? comment.
+	* exp_util.adb (Insert_Actions): Add an entry for node
+	N_Variable_Reference_Marker.
+	* sem.adb (Analyze): Add an entry for node N_Variable_Reference_Marker.
+	* sem_ch8.adb (Find_Direct_Name): Add constant Is_Assignment_LHS. Build
+	and record a variable reference marker for the current name.
+	(Find_Expanded_Name): Add constant Is_Assignment_LHS. Build and record
+	a variable reference marker for the current name.
+	* sem_elab.adb (Build_Variable_Reference_Marker): New routine.
+	(Extract_Variable_Reference_Attributes): Reimplemented.
+	(Info_Scenario): Add output for variable references and remove output
+	for variable reads.
+	(Info_Variable_Read): Removed.
+	(Info_Variable_Reference): New routine.
+	(Is_Suitable_Scenario): Variable references are now suitable scenarios
+	while variable reads are not.
+	(Output_Active_Scenarios): Add output for variable references and
+	remove output for variable reads.
+	(Output_Variable_Read): Removed.
+	(Output_Variable_Reference): New routine.
+	(Process_Variable_Read): Removed.
+	(Process_Variable_Reference): New routine.
+	(Process_Variable_Reference_Read): New routine.
+	* sem_elab.ads (Build_Variable_Reference_Marker): New routine.
+	* sem_res.adb (Resolve_Actuals): Build and record a variable reference
+	marker for the current actual.
+	* sem_spark.adb (Check_Node): Add an entry for node
+	N_Variable_Reference_Marker.
+	* sem_util.adb (Within_Subprogram_Call): Moved to the library level.
+	* sem_util.ads (Within_Subprogram_Call): Moved to the library level.
+	* sinfo.adb (Is_Read): New routine.
+	(Is_Write): New routine.
+	(Target): Updated to handle variable reference markers.
+	(Set_Is_Read): New routine.
+	(Set_Is_Write): New routine.
+	(Set_Target): Updated to handle variable reference markers.
+	* sinfo.ads: Add new attributes Is_Read and Is_Write along with
+	occurrences in nodes. Update attribute Target. Add new node
+	kind N_Variable_Reference_Marker.
+	(Is_Read): New routine along with pragma Inline.
+	(Is_Write): New routine along with pragma Inline.
+	(Set_Is_Read): New routine along with pragma Inline.
+	(Set_Is_Write): New routine along with pragma Inline.
+	* sprint.adb (Sprint_Node_Actual): Add an entry for node
+	N_Variable_Reference_Marker.
+
 2017-11-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_util.adb (Subprogram_Name): Append suffix for overloaded

@@ -3459,6 +3459,25 @@ package body Sprint is
             Sprint_Node (Target_Type (Node));
             Write_Str (");");
 
+         when N_Variable_Reference_Marker =>
+            null;
+
+            --  Enable the following code for debugging purposes only
+
+            --  if Is_Read (Node) and then Is_Write (Node) then
+            --     Write_Indent_Str ("rw#");
+
+            --  elsif Is_Read (Node) then
+            --     Write_Indent_Str ("r#");
+
+            --  else
+            --     pragma Assert (Is_Write (Node));
+            --     Write_Indent_Str ("w#");
+            --  end if;
+
+            --  Write_Id (Target (Node));
+            --  Write_Char ('#');
+
          when N_Variant =>
             Write_Indent_Str_Sloc ("when ");
             Sprint_Bar_List (Discrete_Choices (Node));

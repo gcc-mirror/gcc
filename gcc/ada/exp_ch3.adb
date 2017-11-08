@@ -6727,8 +6727,11 @@ package body Exp_Ch3 is
                   declare
                      New_Id    : constant Entity_Id := Defining_Identifier (N);
                      Next_Temp : constant Entity_Id := Next_Entity (New_Id);
-                     S_Flag    : constant Boolean   :=
+                     Save_CFS  : constant Boolean   :=
                                    Comes_From_Source (Def_Id);
+                     Save_SP   : constant Node_Id   := SPARK_Pragma (Def_Id);
+                     Save_SPI  : constant Boolean   :=
+                                   SPARK_Pragma_Inherited (Def_Id);
 
                   begin
                      Set_Next_Entity (New_Id, Next_Entity (Def_Id));
@@ -6740,8 +6743,20 @@ package body Exp_Ch3 is
                      Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
+
+                     --  ??? This is extremely dangerous!!! Exchanging entities
+                     --  is very low level, and as a result it resets flags and
+                     --  fields which belong to the original Def_Id. Several of
+                     --  these attributes are saved and restored, but there may
+                     --  be many more that need to be preserverd.
+
                      Exchange_Entities (Defining_Identifier (N), Def_Id);
-                     Set_Comes_From_Source (Def_Id, S_Flag);
+
+                     --  Restore clobbered attributes
+
+                     Set_Comes_From_Source      (Def_Id, Save_CFS);
+                     Set_SPARK_Pragma           (Def_Id, Save_SP);
+                     Set_SPARK_Pragma_Inherited (Def_Id, Save_SPI);
                   end;
                end;
             end if;
