@@ -1,3 +1,8 @@
+2017-11-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Subprogram_Name): Append suffix for overloaded
+	subprograms.
+
 2017-11-08  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch8.adb (Use_One_Type, Update_Use_Clause_Chain): Do not report
