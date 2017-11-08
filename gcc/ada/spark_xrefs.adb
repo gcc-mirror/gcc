@@ -104,10 +104,9 @@ package body SPARK_Xrefs is
             Write_Str (Unique_Name (AXR.Entity));
 
             Write_Char ('"');
-            Write_Str ("  File_Num = ");
-            Write_Int (Int (AXR.File_Num));
-            Write_Str ("  Scope_Num = ");
-            Write_Int (Int (AXR.Scope_Num));
+            Write_Str ("  Reference_Scope = ");
+            Write_Str (Unique_Name (AXR.Ref_Scope));
+            Write_Char ('"');
             Write_Str ("  Type = ");
             Write_Char (AXR.Rtype);
             Write_Eol;

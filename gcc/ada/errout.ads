@@ -68,6 +68,10 @@ package Errout is
    --  error message tag. The -gnatw.d switch sets this flag True, -gnatw.D
    --  sets this flag False.
 
+   Current_Node : Node_Id := Empty;
+   --  Used by Error_Msg as a default Node_Id.
+   --  Relevant only when Opt.Include_Subprogram_In_Messages is set.
+
    -----------------------------------
    -- Suppression of Error Messages --
    -----------------------------------

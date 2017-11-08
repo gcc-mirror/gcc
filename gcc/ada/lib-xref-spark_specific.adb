@@ -773,8 +773,7 @@ package body SPARK_Specific is
 
             SPARK_Xref_Table.Append (
               (Entity    => Unique_Entity (Ref.Ent),
-               File_Num  => Dependency_Num (Ref.Lun),
-               Scope_Num => Get_Scope_Num (Ref.Ref_Scope),
+               Ref_Scope => Ref.Ref_Scope,
                Rtype     => Typ));
          end;
       end loop;
