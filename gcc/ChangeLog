@@ -1,3 +1,8 @@
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_CASE_END): Remove semicolon after
+	"do {} while (0)".
+
 2017-11-08  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82792

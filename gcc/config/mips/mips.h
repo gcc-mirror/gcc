@@ -2963,7 +2963,7 @@ do {									\
   do									\
     if (JUMP_TABLES_IN_TEXT_SECTION)					\
       mips_set_text_contents_type (STREAM, "__jend_", NUM, TRUE);	\
-  while (0);
+  while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter
