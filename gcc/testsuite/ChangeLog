@@ -1,5 +1,9 @@
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/store_v2vec_lanes.c: New test.
+
+2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/load_v2vec_lanes_1.c: New test.
 
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>

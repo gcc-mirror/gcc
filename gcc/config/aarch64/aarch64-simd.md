@@ -2949,6 +2949,18 @@
   [(set_attr "type" "neon_load1_1reg_q")]
 )
 
+(define_insn "store_pair_lanes<mode>"
+  [(set (match_operand:<VDBL> 0 "aarch64_mem_pair_lanes_operand" "=Uml, Uml")
+	(vec_concat:<VDBL>
+	   (match_operand:VDC 1 "register_operand" "w, r")
+	   (match_operand:VDC 2 "register_operand" "w, r")))]
+  "TARGET_SIMD"
+  "@
+   stp\\t%d1, %d2, %0
+   stp\\t%x1, %x2, %0"
+  [(set_attr "type" "neon_stp, store_16")]
+)
+
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 
