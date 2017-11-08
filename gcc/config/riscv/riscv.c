@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "diagnostic.h"
 #include "builtins.h"
+#include "predict.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -217,7 +218,7 @@ struct riscv_cpu_info {
 /* Global variables for machine-dependent things.  */
 
 /* Whether unaligned accesses execute very slowly.  */
-static bool riscv_slow_unaligned_access_p;
+bool riscv_slow_unaligned_access_p;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -2657,7 +2658,7 @@ riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   bits = MAX (BITS_PER_UNIT,
 	      MIN (BITS_PER_WORD, MIN (MEM_ALIGN (src), MEM_ALIGN (dest))));
 
-  mode = mode_for_size (bits, MODE_INT, 0);
+  mode = mode_for_size (bits, MODE_INT, 0).require ();
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
