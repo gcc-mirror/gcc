@@ -1,5 +1,30 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Remove special-case
+	for constants (with variable input).
+	(Is_Constant_Object_Without_Variable_Input): Remove.
+
+2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb, sem_disp.adb, sem_util.adb: Minor reformatting.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* spark_xrefs.ads (Rtype): Remove special-casing of constants for SPARK
+	cross-references.
+	(dspark): Remove hardcoded table bound.
+
+2017-11-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Aggregate): For Ada2020 delta aggregates, use
+	the type of the base of the construct to determine the type (or
+	candidate interpretations) of the delta aggregate. This allows the
+	construct to appear in a context that expects a private extension.
+	* sem_res.adb (Resolve): Handle properly a delta aggregate with an
+	overloaded base.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* spark_xrefs.ads (SPARK_Xref_Record): Replace file and scope indices
 	with Entity_Id of the reference.
 	* spark_xrefs.adb (dspark): Adapt pretty-printing routine.

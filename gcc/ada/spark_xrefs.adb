@@ -39,7 +39,7 @@ package body SPARK_Xrefs is
       Write_Line ("SPARK Xrefs File Table");
       Write_Line ("----------------------");
 
-      for Index in 1 .. SPARK_File_Table.Last loop
+      for Index in SPARK_File_Table.First .. SPARK_File_Table.Last loop
          declare
             AFR : SPARK_File_Record renames SPARK_File_Table.Table (Index);
 
@@ -62,7 +62,7 @@ package body SPARK_Xrefs is
       Write_Line ("SPARK Xrefs Scope Table");
       Write_Line ("-----------------------");
 
-      for Index in 1 .. SPARK_Scope_Table.Last loop
+      for Index in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
          declare
             ASR : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
 
@@ -92,7 +92,7 @@ package body SPARK_Xrefs is
       Write_Line ("SPARK Xref Table");
       Write_Line ("----------------");
 
-      for Index in 1 .. SPARK_Xref_Table.Last loop
+      for Index in SPARK_Xref_Table.First .. SPARK_Xref_Table.Last loop
          declare
             AXR : SPARK_Xref_Record renames SPARK_Xref_Table.Table (Index);
 

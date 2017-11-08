@@ -252,11 +252,6 @@ package body SPARK_Specific is
       function Get_Scope_Num (E : Entity_Id) return Nat;
       --  Return the scope number associated with the entity E
 
-      function Is_Constant_Object_Without_Variable_Input
-        (E : Entity_Id) return Boolean;
-      --  Return True if E is known to have no variable input, as defined in
-      --  SPARK RM.
-
       function Is_Future_Scope_Entity
         (E : Entity_Id;
          S : Scope_Index) return Boolean;
@@ -331,50 +326,6 @@ package body SPARK_Specific is
       -------------------
 
       function Get_Scope_Num (E : Entity_Id) return Nat renames Scopes.Get;
-
-      -----------------------------------------------
-      -- Is_Constant_Object_Without_Variable_Input --
-      -----------------------------------------------
-
-      function Is_Constant_Object_Without_Variable_Input
-        (E : Entity_Id) return Boolean
-      is
-      begin
-         case Ekind (E) is
-
-            --  A constant is known to have no variable input if its
-            --  initializing expression is static (a value which is
-            --  compile-time-known is not guaranteed to have no variable input
-            --  as defined in the SPARK RM). Otherwise, the constant may or not
-            --  have variable input.
-
-            when E_Constant =>
-               declare
-                  Decl : Node_Id;
-               begin
-                  if Present (Full_View (E)) then
-                     Decl := Parent (Full_View (E));
-                  else
-                     Decl := Parent (E);
-                  end if;
-
-                  if Is_Imported (E) then
-                     return False;
-                  else
-                     pragma Assert (Present (Expression (Decl)));
-                     return Is_Static_Expression (Expression (Decl));
-                  end if;
-               end;
-
-            when E_In_Parameter
-               | E_Loop_Parameter
-            =>
-               return True;
-
-            when others =>
-               return False;
-         end case;
-      end Is_Constant_Object_Without_Variable_Input;
 
       ----------------------------
       -- Is_Future_Scope_Entity --
@@ -729,7 +680,6 @@ package body SPARK_Specific is
          declare
             Ref_Entry : Xref_Entry renames Xrefs.Table (Rnums (Refno));
             Ref       : Xref_Key   renames Ref_Entry.Key;
-            Typ       : Character;
 
          begin
             --  If this assertion fails, the scope which we are looking for is
@@ -757,24 +707,10 @@ package body SPARK_Specific is
                pragma Assert (Scope_Id <= SPARK_Scope_Table.Last);
             end loop;
 
-            --  References to constant objects without variable inputs (see
-            --  SPARK RM 3.3.1) are considered specially in SPARK section,
-            --  because these will be translated as constants in the
-            --  intermediate language for formal verification, and should
-            --  therefore never appear in frame conditions. Other constants may
-            --  later be treated the same, up to GNATprove to decide based on
-            --  its flow analysis.
-
-            if Is_Constant_Object_Without_Variable_Input (Ref.Ent) then
-               Typ := 'c';
-            else
-               Typ := Ref.Typ;
-            end if;
-
             SPARK_Xref_Table.Append (
               (Entity    => Unique_Entity (Ref.Ent),
                Ref_Scope => Ref.Ref_Scope,
-               Rtype     => Typ));
+               Rtype     => Ref.Typ));
          end;
       end loop;
 

@@ -2439,13 +2439,11 @@ package body Sem_Res is
                   Set_Entity (N, Seen);
                   Generate_Reference (Seen, N);
 
-               elsif Nkind (N) = N_Case_Expression then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_Character_Literal then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_If_Expression then
+               elsif Nkind_In (N, N_Case_Expression,
+                                  N_Character_Literal,
+                                  N_If_Expression,
+                                  N_Delta_Aggregate)
+               then
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
