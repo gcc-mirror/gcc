@@ -1,5 +1,10 @@
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* simplify-rtx.c (simplify_ternary_operation): Simplify vec_merge
+	of two vec_duplicates into a vec_concat.
+
+2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* simplify-rtx.c (simplify_ternary_operation, VEC_MERGE):
 	Simplify vec_merge of vec_duplicate and vec_concat.
 	* config/aarch64/constraints.md (Utq): New constraint.
