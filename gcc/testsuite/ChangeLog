@@ -1,3 +1,8 @@
+2017-11-08  Andreas Schwab  <schwab@suse.de>
+
+	* c-c++-common/torture/aarch64-vect-lane-2.c (search_line_fast):
+	Change type to void.
+
 2017-11-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR 82869
