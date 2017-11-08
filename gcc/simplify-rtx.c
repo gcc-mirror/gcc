@@ -5765,6 +5765,25 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		std::swap (newop0, newop1);
 	      return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
 	    }
+	  /* Replace (vec_merge (vec_duplicate x) (vec_concat (y) (z)) (const_int N))
+	     with (vec_concat x z) if N == 1, or (vec_concat y x) if N == 2.
+	     Only applies for vectors of two elements.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE
+	      && GET_CODE (op1) == VEC_CONCAT
+	      && GET_MODE_NUNITS (GET_MODE (op0)) == 2
+	      && GET_MODE_NUNITS (GET_MODE (op1)) == 2
+	      && IN_RANGE (sel, 1, 2))
+	    {
+	      rtx newop0 = XEXP (op0, 0);
+	      rtx newop1 = XEXP (op1, 2 - sel);
+	      rtx otherop = XEXP (op1, sel - 1);
+	      if (sel == 2)
+		std::swap (newop0, newop1);
+	      /* Don't want to throw away the other part of the vec_concat if
+		 it has side-effects.  */
+	      if (!side_effects_p (otherop))
+		return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
+	    }
 	}
 
       if (rtx_equal_p (op0, op1)

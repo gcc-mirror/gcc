@@ -2935,6 +2935,20 @@
   [(set_attr "type" "neon_to_gp<q>, neon_dup<q>, neon_store1_one_lane<q>")]
 )
 
+(define_insn "load_pair_lanes<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand" "=w")
+	(vec_concat:<VDBL>
+	   (match_operand:VDC 1 "memory_operand" "Utq")
+	   (match_operand:VDC 2 "memory_operand" "m")))]
+  "TARGET_SIMD && !STRICT_ALIGNMENT
+   && rtx_equal_p (XEXP (operands[2], 0),
+		   plus_constant (Pmode,
+				  XEXP (operands[1], 0),
+				  GET_MODE_SIZE (<MODE>mode)))"
+  "ldr\\t%q0, %1"
+  [(set_attr "type" "neon_load1_1reg_q")]
+)
+
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 

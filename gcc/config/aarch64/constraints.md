@@ -178,6 +178,13 @@
   (and (match_code "mem")
        (match_test "aarch64_simd_mem_operand_p (op)")))
 
+(define_memory_constraint "Utq"
+  "@internal
+   An address valid for loading or storing a 128-bit AdvSIMD register"
+  (and (match_code "mem")
+       (match_test "aarch64_legitimate_address_p (V2DImode, XEXP (op, 0),
+						  MEM, 1)")))
+
 (define_constraint "Ufc"
   "A floating point constant which can be used with an\
    FMOV immediate operation."

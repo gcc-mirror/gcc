@@ -1,5 +1,9 @@
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/load_v2vec_lanes_1.c: New test.
+
+2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/construct_lane_zero_1.c: New test.
 
 2017-11-08  Ed Schonberg  <schonberg@adacore.com>
