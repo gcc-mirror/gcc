@@ -1,5 +1,8 @@
 2017-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/pr57878.C (__sso_string_base::_M_get_allocator): Return
+	a value.
+
 	PR tree-optimization/78821
 	* gcc.dg/store_merging_2.c: Expect 3 store mergings instead of 2.
 	* gcc.dg/store_merging_13.c (f7, f8, f9, f10, f11, f12, f13): New
