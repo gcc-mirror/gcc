@@ -1,3 +1,13 @@
+2017-11-08  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/riscv/riscv-protos.h (riscv_slow_unaligned_access_p):
+	New extern.
+	(MOVE_RATIO): Use riscv_slow_unaligned_access_p.
+	config/riscv/riscv.c (predict.h): New include.
+	(riscv_slow_unaligned_access_p): No longer static.
+	(riscv_block_move_straight): Add require.
+	config/riscv/riscv-protos.h (riscv_hard_regno_nregs): Delete.
+
 2017-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82855
