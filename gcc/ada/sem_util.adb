@@ -141,7 +141,9 @@ package body Sem_Util is
 
    function Subprogram_Name (N : Node_Id) return String;
    --  Return the fully qualified name of the enclosing subprogram for the
-   --  given node N.
+   --  given node N, with file:line:col information appended, e.g.
+   --  "subp:file:line:col", corresponding to the source location of the
+   --  body of the subprogram.
 
    ------------------------------
    --  Abstract_Interface_List --
@@ -594,6 +596,7 @@ package body Sem_Util is
       -----------
 
       procedure Inner (E : Entity_Id) is
+         Scop : Node_Id;
       begin
          --  If entity has an internal name, skip by it, and print its scope.
          --  Note that we strip a final R from the name before the test; this
@@ -615,21 +618,23 @@ package body Sem_Util is
             end if;
          end;
 
+         Scop := Scope (E);
+
          --  Just print entity name if its scope is at the outer level
 
-         if Scope (E) = Standard_Standard then
+         if Scop = Standard_Standard then
             null;
 
          --  If scope comes from source, write scope and entity
 
-         elsif Comes_From_Source (Scope (E)) then
-            Append_Entity_Name (Temp, Scope (E));
+         elsif Comes_From_Source (Scop) then
+            Append_Entity_Name (Temp, Scop);
             Append (Temp, '.');
 
          --  If in wrapper package skip past it
 
-         elsif Is_Wrapper_Package (Scope (E)) then
-            Append_Entity_Name (Temp, Scope (Scope (E)));
+         elsif Present (Scop) and then Is_Wrapper_Package (Scop) then
+            Append_Entity_Name (Temp, Scope (Scop));
             Append (Temp, '.');
 
          --  Otherwise nothing to output (happens in unnamed block statements)
@@ -23295,6 +23300,7 @@ package body Sem_Util is
    function Subprogram_Name (N : Node_Id) return String is
       Buf : Bounded_String;
       Ent : Node_Id := N;
+      Nod : Node_Id;
 
    begin
       while Present (Ent) loop
@@ -23303,17 +23309,32 @@ package body Sem_Util is
                Ent := Defining_Unit_Name (Specification (Ent));
                exit;
 
-            when N_Package_Body
+            when N_Subprogram_Declaration =>
+               Nod := Corresponding_Body (Ent);
+
+               if Present (Nod) then
+                  Ent := Nod;
+               else
+                  Ent := Defining_Unit_Name (Specification (Ent));
+               end if;
+
+               exit;
+
+            when N_Subprogram_Instantiation
+               | N_Package_Body
                | N_Package_Specification
-               | N_Subprogram_Specification
             =>
                Ent := Defining_Unit_Name (Ent);
                exit;
 
+            when N_Protected_Type_Declaration =>
+               Ent := Corresponding_Body (Ent);
+               exit;
+
             when N_Protected_Body
-               | N_Protected_Type_Declaration
                | N_Task_Body
             =>
+               Ent := Defining_Identifier (Ent);
                exit;
 
             when others =>
@@ -23324,17 +23345,31 @@ package body Sem_Util is
       end loop;
 
       if No (Ent) then
-         return "unknown subprogram";
+         return "unknown subprogram:unknown file:0:0";
       end if;
 
       --  If the subprogram is a child unit, use its simple name to start the
       --  construction of the fully qualified name.
 
       if Nkind (Ent) = N_Defining_Program_Unit_Name then
-         Append_Entity_Name (Buf, Defining_Identifier (Ent));
-      else
-         Append_Entity_Name (Buf, Ent);
+         Ent := Defining_Identifier (Ent);
       end if;
+
+      Append_Entity_Name (Buf, Ent);
+
+      --  Append source location of Ent to Buf so that the string will
+      --  look like "subp:file:line:col".
+
+      declare
+         Loc : constant Source_Ptr := Sloc (Ent);
+      begin
+         Append (Buf, ':');
+         Append (Buf, Reference_Name (Get_Source_File_Index (Loc)));
+         Append (Buf, ':');
+         Append (Buf, Nat (Get_Logical_Line_Number (Loc)));
+         Append (Buf, ':');
+         Append (Buf, Nat (Get_Column_Number (Loc)));
+      end;
 
       return +Buf;
    end Subprogram_Name;
