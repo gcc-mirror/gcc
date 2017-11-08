@@ -1,3 +1,7 @@
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Fix abbreviations for SI units.
+
 2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc_update (files_and_dependencies): Handle libbacktrace.
