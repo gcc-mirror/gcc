@@ -11279,6 +11279,7 @@ package body Exp_Ch4 is
          elsif In_Instance_Body
            and then Ekind (Operand_Type) = E_Anonymous_Access_Type
            and then Nkind (Operand) = N_Selected_Component
+           and then Ekind (Entity (Selector_Name (Operand))) = E_Discriminant
            and then Object_Access_Level (Operand) >
                       Type_Access_Level (Target_Type)
          then

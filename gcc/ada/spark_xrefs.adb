@@ -69,10 +69,6 @@ package body SPARK_Xrefs is
          begin
             Write_Str ("  ");
             Write_Int (Int (Index));
-            Write_Str (".  File_Num = ");
-            Write_Int (Int (ASR.File_Num));
-            Write_Str ("  Scope_Num = ");
-            Write_Int (Int (ASR.Scope_Num));
             Write_Str ("  Scope_Name = """);
 
             Write_Str (Unique_Name (ASR.Entity));

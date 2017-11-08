@@ -110,14 +110,6 @@ package SPARK_Xrefs is
       Scope_Num : Pos;
       --  Set to the scope number for the scope
 
-      Spec_File_Num : Nat;
-      --  Set to the file dependency number for the scope corresponding to the
-      --  spec of the current scope entity, if different, or else 0.
-
-      Spec_Scope_Num : Nat;
-      --  Set to the scope number for the scope corresponding to the spec of
-      --  the current scope entity, if different, or else 0.
-
       From_Xref : Xref_Index;
       --  Starting index in Xref table for this scope
 
