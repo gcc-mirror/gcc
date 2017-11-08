@@ -1,3 +1,8 @@
+2017-11-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82884
+	* arith.c (gfc_hollerith2character): Clear pad.
+
 2017-11-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR 82869
