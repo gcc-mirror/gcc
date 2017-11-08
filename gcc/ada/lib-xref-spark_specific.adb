@@ -164,8 +164,6 @@ package body SPARK_Specific is
            ((Entity         => E,
              File_Num       => Dspec,
              Scope_Num      => Scope_Id,
-             Spec_File_Num  => 0,
-             Spec_Scope_Num => 0,
              From_Xref      => 1,
              To_Xref        => 0));
 
@@ -835,55 +833,6 @@ package body SPARK_Specific is
 
          Sdep := Sdep_Next;
       end loop;
-
-      --  Fill in the spec information when relevant
-
-      declare
-         package Entity_Hash_Table is new
-           GNAT.HTable.Simple_HTable
-             (Header_Num => Entity_Hashed_Range,
-              Element    => Scope_Index,
-              No_Element => 0,
-              Key        => Entity_Id,
-              Hash       => Entity_Hash,
-              Equal      => "=");
-
-      begin
-         --  Fill in the hash-table
-
-         for S in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
-            declare
-               Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
-            begin
-               Entity_Hash_Table.Set (Srec.Entity, S);
-            end;
-         end loop;
-
-         --  Use the hash-table to locate spec entities
-
-         for S in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
-            declare
-               Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
-
-               Spec_Entity : constant Entity_Id :=
-                               Unique_Entity (Srec.Entity);
-               Spec_Scope  : constant Scope_Index :=
-                               Entity_Hash_Table.Get (Spec_Entity);
-
-            begin
-               --  Generic spec may be missing in which case Spec_Scope is zero
-
-               if Spec_Entity /= Srec.Entity
-                 and then Spec_Scope /= 0
-               then
-                  Srec.Spec_File_Num :=
-                    SPARK_Scope_Table.Table (Spec_Scope).File_Num;
-                  Srec.Spec_Scope_Num :=
-                    SPARK_Scope_Table.Table (Spec_Scope).Scope_Num;
-               end if;
-            end;
-         end loop;
-      end;
 
       --  Generate SPARK cross-reference information
 

@@ -1,5 +1,21 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* spark_xrefs.ads (SPARK_Scope_Record): Remove Spec_File_Num and
+	Spec_Scope_Num components.
+	* spark_xrefs.adb (dspark): Skip pretty-printing to removed components.
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Skip initialization of
+	removed components.
+	(Collect_SPARK_Xrefs): Skip setting proper values of removed
+	components.
+
+2017-11-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Add test that the selector
+	name is a discriminant in check for unconditional accessibility
+	violation within instances.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Remove special-case
 	for constants (with variable input).
 	(Is_Constant_Object_Without_Variable_Input): Remove.
