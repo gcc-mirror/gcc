@@ -48,13 +48,6 @@ package body SPARK_Xrefs is
             Write_Int (Int (Index));
             Write_Str (".  File_Num = ");
             Write_Int (Int (AFR.File_Num));
-            Write_Str ("  File_Name = """);
-
-            if AFR.File_Name /= null then
-               Write_Str (AFR.File_Name.all);
-            end if;
-
-            Write_Char ('"');
             Write_Str ("  From = ");
             Write_Int (Int (AFR.From_Scope));
             Write_Str ("  To = ");

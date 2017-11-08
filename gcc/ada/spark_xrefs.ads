@@ -154,13 +154,6 @@ package SPARK_Xrefs is
    --  entries have been constructed.
 
    type SPARK_File_Record is record
-      File_Name : String_Ptr;
-      --  Pointer to file name in ALI file
-
-      Unit_File_Name : String_Ptr;
-      --  Pointer to file name for unit in ALI file, when File_Name refers to a
-      --  subunit; otherwise null.
-
       File_Num : Nat;
       --  Dependency number in ALI file
 

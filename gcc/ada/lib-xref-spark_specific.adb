@@ -208,11 +208,6 @@ package body SPARK_Specific is
       procedure Traverse_Scopes is new
         Traverse_Compilation_Unit (Detect_And_Add_SPARK_Scope);
 
-      --  Local variables
-
-      File_Name      : String_Ptr;
-      Unit_File_Name : String_Ptr;
-
    --  Start of processing for Add_SPARK_File
 
    begin
@@ -240,29 +235,10 @@ package body SPARK_Specific is
          Traverse_Scopes (CU => Cunit (Ubody));
       end if;
 
-      --  Make entry for new file in file table
-
-      Get_Name_String (Reference_Name (File));
-      File_Name := new String'(Name_Buffer (1 .. Name_Len));
-
-      --  For subunits, also retrieve the file name of the unit. Only do so if
-      --  unit has an associated compilation unit.
-
-      if Present (Cunit (Unit (File)))
-        and then Nkind (Unit (Cunit (Unit (File)))) = N_Subunit
-      then
-         Get_Name_String (Reference_Name (Main_Source_File));
-         Unit_File_Name := new String'(Name_Buffer (1 .. Name_Len));
-      else
-         Unit_File_Name := null;
-      end if;
-
       SPARK_File_Table.Append (
-        (File_Name      => File_Name,
-         Unit_File_Name => Unit_File_Name,
-         File_Num       => Dspec,
-         From_Scope     => From,
-         To_Scope       => SPARK_Scope_Table.Last));
+        (File_Num   => Dspec,
+         From_Scope => From,
+         To_Scope   => SPARK_Scope_Table.Last));
    end Add_SPARK_File;
 
    ---------------------
