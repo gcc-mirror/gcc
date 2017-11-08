@@ -2891,21 +2891,6 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
-static bool
-aarch64_frame_pointer_required (void)
-{
-  /* Use the frame pointer if enabled and it is not a leaf function, unless
-     leaf frame pointer omission is disabled.  If the frame pointer is enabled,
-     force the frame pointer in leaf functions which use LR.  */
-  if (flag_omit_frame_pointer == 2
-      && !(flag_omit_leaf_frame_pointer
-	   && crtl->is_leaf
-	   && !df_regs_ever_live_p (LR_REGNUM)))
-    return true;
-
-  return false;
-}
-
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
    and LR may be omitted).  */
@@ -2921,6 +2906,14 @@ aarch64_layout_frame (void)
   /* Force a frame chain for EH returns so the return address is at FP+8.  */
   cfun->machine->frame.emit_frame_chain
     = frame_pointer_needed || crtl->calls_eh_return;
+
+  /* Emit a frame chain if the frame pointer is enabled.
+     If -momit-leaf-frame-pointer is used, do not use a frame chain
+     in leaf functions which do not use LR.  */
+  if (flag_omit_frame_pointer == 2
+      && !(flag_omit_leaf_frame_pointer && crtl->is_leaf
+	   && !df_regs_ever_live_p (LR_REGNUM)))
+    cfun->machine->frame.emit_frame_chain = true;
 
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
@@ -5938,17 +5931,6 @@ aarch64_can_eliminate (const int from, const int to)
 	return true;
 
       return false;
-    }
-  else
-    {
-      /* If we decided that we didn't need a leaf frame pointer but then used
-	 LR in the function, then we'll want a frame pointer after all, so
-	 prevent this elimination to ensure a frame pointer is used.  */
-      if (to == STACK_POINTER_REGNUM
-	  && flag_omit_frame_pointer == 2
-	  && flag_omit_leaf_frame_pointer
-	  && df_regs_ever_live_p (LR_REGNUM))
-	return false;
     }
 
   return true;
@@ -15260,9 +15242,6 @@ aarch64_run_selftests (void)
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P aarch64_function_value_regno_p
-
-#undef TARGET_FRAME_POINTER_REQUIRED
-#define TARGET_FRAME_POINTER_REQUIRED aarch64_frame_pointer_required
 
 #undef TARGET_GIMPLE_FOLD_BUILTIN
 #define TARGET_GIMPLE_FOLD_BUILTIN aarch64_gimple_fold_builtin
