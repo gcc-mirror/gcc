@@ -104,6 +104,90 @@ f6 (struct S *p, struct S *q)
   p->g = pg;
 }
 
+__attribute__((noipa)) void
+f7 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a |= q->a;
+  p->b |= q->b;
+  p->c |= q->c;
+  p->d |= q->d;
+  p->e |= q->e;
+  p->f |= q->f;
+  p->g |= q->g;
+}
+
+__attribute__((noipa)) void
+f8 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a &= q->a;
+  p->b &= q->b;
+  p->c &= q->c;
+  p->d &= q->d;
+  p->e &= q->e;
+  p->f &= q->f;
+  p->g &= q->g;
+}
+
+__attribute__((noipa)) void
+f9 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a ^= q->a;
+  p->b ^= q->b;
+  p->c ^= q->c;
+  p->d ^= q->d;
+  p->e ^= q->e;
+  p->f ^= q->f;
+  p->g ^= q->g;
+}
+
+__attribute__((noipa)) void
+f10 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a = ~q->a;
+  p->b = ~q->b;
+  p->c = ~q->c;
+  p->d = ~q->d;
+  p->e = ~q->e;
+  p->f = ~q->f;
+  p->g = ~q->g;
+}
+
+__attribute__((noipa)) void
+f11 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a = p->a | (unsigned char) ~q->a;
+  p->b = p->b | (unsigned char) ~q->b;
+  p->c = p->c | (unsigned short) ~q->c;
+  p->d = p->d | (unsigned char) ~q->d;
+  p->e = p->e | (unsigned char) ~q->e;
+  p->f = p->f | (unsigned char) ~q->f;
+  p->g = p->g | (unsigned char) ~q->g;
+}
+
+__attribute__((noipa)) void
+f12 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a = p->a & (unsigned char) ~q->a;
+  p->b = p->b & (unsigned char) ~q->b;
+  p->c = p->c & (unsigned short) ~q->c;
+  p->d = p->d & (unsigned char) ~q->d;
+  p->e = p->e & (unsigned char) ~q->e;
+  p->f = p->f & (unsigned char) ~q->f;
+  p->g = p->g & (unsigned char) ~q->g;
+}
+
+__attribute__((noipa)) void
+f13 (struct S *__restrict p, struct S *__restrict q)
+{
+  p->a = p->a ^ (unsigned char) ~q->a;
+  p->b = p->b ^ (unsigned char) ~q->b;
+  p->c = p->c ^ (unsigned short) ~q->c;
+  p->d = p->d ^ (unsigned char) ~q->d;
+  p->e = p->e ^ (unsigned char) ~q->e;
+  p->f = p->f ^ (unsigned char) ~q->f;
+  p->g = p->g ^ (unsigned char) ~q->g;
+}
+
 struct S s = { 20, 21, 22, 23, 24, 25, 26, 27 };
 struct S t = { 0x71, 0x72, 0x7f04, 0x78, 0x31, 0x32, 0x34, 0xf1f2f3f4f5f6f7f8ULL };
 struct S u = { 28, 29, 30, 31, 32, 33, 34, 35 };
@@ -151,7 +235,62 @@ main ()
       || s.e != (40 ^ 0x31) || s.f != (41 ^ 0x32)
       || s.g != (42 ^ 0x34) || s.h != 27)
     __builtin_abort ();
+  f3 (&s, &v);
+  f7 (&s, &t);
+  asm volatile ("" : : : "memory");
+  if (s.a != (36 | 0x71) || s.b != (37 | 0x72)
+      || s.c != (38 | 0x7f04) || s.d != (39 | 0x78)
+      || s.e != (40 | 0x31) || s.f != (41 | 0x32)
+      || s.g != (42 | 0x34) || s.h != 27)
+    __builtin_abort ();
+  f3 (&s, &u);
+  f8 (&s, &t);
+  asm volatile ("" : : : "memory");
+  if (s.a != (28 & 0x71) || s.b != (29 & 0x72)
+      || s.c != (30 & 0x7f04) || s.d != (31 & 0x78)
+      || s.e != (32 & 0x31) || s.f != (33 & 0x32)
+      || s.g != (34 & 0x34) || s.h != 27)
+    __builtin_abort ();
+  f2 (&s, &v);
+  f9 (&s, &t);
+  asm volatile ("" : : : "memory");
+  if (s.a != (36 ^ 0x71) || s.b != (37 ^ 0x72)
+      || s.c != (38 ^ 0x7f04) || s.d != (39 ^ 0x78)
+      || s.e != (40 ^ 0x31) || s.f != (41 ^ 0x32)
+      || s.g != (42 ^ 0x34) || s.h != 27)
+    __builtin_abort ();
+  f10 (&s, &u);
+  asm volatile ("" : : : "memory");
+  if (s.a != (unsigned char) ~28 || s.b != (unsigned char) ~29
+      || s.c != (unsigned short) ~30 || s.d != (unsigned char) ~31
+      || s.e != (unsigned char) ~32 || s.f != (unsigned char) ~33
+      || s.g != (unsigned char) ~34 || s.h != 27)
+    __builtin_abort ();
+  f3 (&s, &v);
+  f11 (&s, &t);
+  asm volatile ("" : : : "memory");
+  if (s.a != (36 | (unsigned char) ~0x71) || s.b != (37 | (unsigned char) ~0x72)
+      || s.c != (38 | (unsigned short) ~0x7f04) || s.d != (39 | (unsigned char) ~0x78)
+      || s.e != (40 | (unsigned char) ~0x31) || s.f != (41 | (unsigned char) ~0x32)
+      || s.g != (42 | (unsigned char) ~0x34) || s.h != 27)
+    __builtin_abort ();
+  f3 (&s, &u);
+  f12 (&s, &t);
+  asm volatile ("" : : : "memory");
+  if (s.a != (28 & (unsigned char) ~0x71) || s.b != (29 & (unsigned char) ~0x72)
+      || s.c != (30 & (unsigned short) ~0x7f04) || s.d != (31 & (unsigned char) ~0x78)
+      || s.e != (32 & (unsigned char) ~0x31) || s.f != (33 & (unsigned char) ~0x32)
+      || s.g != (34 & (unsigned char) ~0x34) || s.h != 27)
+    __builtin_abort ();
+  f2 (&s, &v);
+  f13 (&s, &t);
+  asm volatile ("" : : : "memory");
+  if (s.a != (36 ^ (unsigned char) ~0x71) || s.b != (37 ^ (unsigned char) ~0x72)
+      || s.c != (38 ^ (unsigned short) ~0x7f04) || s.d != (39 ^ (unsigned char) ~0x78)
+      || s.e != (40 ^ (unsigned char) ~0x31) || s.f != (41 ^ (unsigned char) ~0x32)
+      || s.g != (42 ^ (unsigned char) ~0x34) || s.h != 27)
+    __builtin_abort ();
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Merging successful" 6 "store-merging" } } */
+/* { dg-final { scan-tree-dump-times "Merging successful" 13 "store-merging" } } */

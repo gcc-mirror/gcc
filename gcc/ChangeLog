@@ -1,3 +1,21 @@
+2017-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gimple-ssa-store-merging.c (struct store_operand_info): Add bit_not_p
+	data member.
+	(store_operand_info::store_operand_info): Initialize it to false.
+	(pass_store_merging::terminate_all_aliasing_chains): Rewritten to use
+	ref_maybe_used_by_stmt_p and stmt_may_clobber_ref_p on lhs of each
+	store in the group, and if chain_info is non-NULL, to ignore altogether
+	that chain.
+	(compatible_load_p): Fail if bit_not_p does not match.
+	(imm_store_chain_info::output_merged_store): Handle bit_not_p loads.
+	(handled_load): Fill in bit_not_p.  Handle BIT_NOT_EXPR.
+	(pass_store_merging::process_store): Adjust
+	terminate_all_aliasing_chains calls to pass NULL in all current spots,
+	call terminate_all_aliasing_chains newly when adding a store into
+	a chain with non-NULL chain_info.
+
 2017-11-08  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_can_eliminate): Simplify logic.
