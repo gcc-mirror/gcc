@@ -1,3 +1,8 @@
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	* gimplify.c (expand_FALLTHROUGH_r): Simplify usage
+	of gimple_call_internal_p.
+
 2017-11-07  Tom de Vries  <tom@codesourcery.com>
 
 	* config/mips/mips.h (ASM_OUTPUT_LABELREF): Wrap in "do {} while (0)".

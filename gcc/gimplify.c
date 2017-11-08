@@ -2223,8 +2223,7 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	  while (!gsi_end_p (gsi2))
 	    {
 	      stmt = gsi_stmt (gsi2);
-	      enum gimple_code gc = gimple_code (stmt);
-	      if (gc == GIMPLE_LABEL)
+	      if (gimple_code (stmt) == GIMPLE_LABEL)
 		{
 		  tree label = gimple_label_label (as_a <glabel *> (stmt));
 		  if (gimple_has_location (stmt) && DECL_ARTIFICIAL (label))
@@ -2233,8 +2232,7 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		      break;
 		    }
 		}
-	      else if (gc == GIMPLE_CALL
-		       && gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+	      else if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
 		;
 	      else
 		/* Something other is not expected.  */
