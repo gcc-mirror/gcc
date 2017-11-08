@@ -1,6 +1,14 @@
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* simplify-rtx.c (simplify_ternary_operation, VEC_MERGE):
+	Simplify vec_merge of vec_duplicate and vec_concat.
+	* config/aarch64/constraints.md (Utq): New constraint.
+	* config/aarch64/aarch64-simd.md (load_pair_lanes<mode>): New
+	define_insn.
+
+2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* simplify-rtx.c (simplify_ternary_operation, VEC_MERGE):
 	Simplify vec_merge of vec_duplicate and const_vector.
 	* config/aarch64/predicates.md (aarch64_simd_or_scalar_imm_zero):
 	New predicate.
