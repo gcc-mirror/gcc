@@ -1,3 +1,9 @@
+2017-11-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 82869
+	* gfortran.dg/logical_temp_io.f90: New test.
+	* gfortran.dg/logical_temp_io_kind8.f90: New test.
+
 2017-11-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-ssa/vrp101.c: Update expected pattern as

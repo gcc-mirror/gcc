@@ -537,9 +537,9 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 
   if (once)
     {
-       tmpvar = gfc_create_var (boolean_type_node, "print_warning");
+       tmpvar = gfc_create_var (logical_type_node, "print_warning");
        TREE_STATIC (tmpvar) = 1;
-       DECL_INITIAL (tmpvar) = boolean_true_node;
+       DECL_INITIAL (tmpvar) = logical_true_node;
        gfc_add_expr_to_block (pblock, tmpvar);
     }
 
@@ -558,7 +558,7 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
   va_end (ap);
 
   if (once)
-    gfc_add_modify (&block, tmpvar, boolean_false_node);
+    gfc_add_modify (&block, tmpvar, logical_false_node);
 
   body = gfc_finish_block (&block);
 
@@ -611,7 +611,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
   if (gfc_option.rtcheck & GFC_RTCHECK_MEM)
     {
       null_result = fold_build2_loc (input_location, EQ_EXPR,
-				     boolean_type_node, res,
+				     logical_type_node, res,
 				     build_int_cst (pvoid_type_node, 0));
       msg = gfc_build_addr_expr (pchar_type_node,
 	      gfc_build_localized_cstring_const ("Memory allocation failed"));
@@ -697,7 +697,7 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
     }
 
   error_cond = fold_build2_loc (input_location, EQ_EXPR,
-				boolean_type_node, pointer,
+				logical_type_node, pointer,
 				build_int_cst (prvoid_type_node, 0));
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			 gfc_unlikely (error_cond, PRED_FORTRAN_FAIL_ALLOC),
@@ -799,7 +799,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
 
   size = fold_convert (size_type_node, size);
   null_mem = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
-					    boolean_type_node, mem,
+					    logical_type_node, mem,
 					    build_int_cst (type, 0)),
 			   PRED_FORTRAN_REALLOC);
 
@@ -877,7 +877,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
 	{
 	  TREE_USED (label_finish) = 1;
 	  tmp = build1_v (GOTO_EXPR, label_finish);
-	  cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				  status, build_zero_cst (TREE_TYPE (status)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 				 gfc_unlikely (cond, PRED_FORTRAN_FAIL_ALLOC),
@@ -1094,12 +1094,12 @@ gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
     {
       tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (array))
 	    ?  gfc_conv_descriptor_data_get (array) : array;
-      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			    tmp, fold_convert (TREE_TYPE (tmp),
 						 null_pointer_node));
     }
   else
-    cond = boolean_true_node;
+    cond = logical_true_node;
 
   if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (array)))
     {
@@ -1115,12 +1115,12 @@ gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
 
   if (!final_expr)
     {
-      tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			     final_fndecl,
 			     fold_convert (TREE_TYPE (final_fndecl),
 					   null_pointer_node));
       cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
-			      boolean_type_node, cond, tmp);
+			      logical_type_node, cond, tmp);
     }
 
   if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
@@ -1216,7 +1216,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
       gfc_init_se (&se, NULL);
       se.want_pointer = 1;
       gfc_conv_expr (&se, final_expr);
-      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			      se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
 
       /* For CLASS(*) not only sym->_vtab->_final can be NULL
@@ -1234,11 +1234,11 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
 	  gfc_conv_expr (&se, vptr_expr);
 	  gfc_free_expr (vptr_expr);
 
-	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   se.expr,
 				   build_int_cst (TREE_TYPE (se.expr), 0));
 	  cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
-				  boolean_type_node, cond2, cond);
+				  logical_type_node, cond2, cond);
 	}
 
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
@@ -1344,7 +1344,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
   else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (pointer)))
     pointer = gfc_conv_descriptor_data_get (pointer);
 
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, pointer,
+  cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node, pointer,
 			  build_int_cst (TREE_TYPE (pointer), 0));
 
   /* When POINTER is NULL, we set STATUS to 1 if it's present, otherwise
@@ -1371,7 +1371,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
       tree cond2;
 
       status_type = TREE_TYPE (TREE_TYPE (status));
-      cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			       status, build_int_cst (TREE_TYPE (status), 0));
       tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
 			     fold_build1_loc (input_location, INDIRECT_REF,
@@ -1404,7 +1404,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	  tree status_type = TREE_TYPE (TREE_TYPE (status));
 	  tree cond2;
 
-	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   status,
 				   build_int_cst (TREE_TYPE (status), 0));
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
@@ -1467,7 +1467,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 
 	  TREE_USED (label_finish) = 1;
 	  tmp = build1_v (GOTO_EXPR, label_finish);
-	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   stat, build_zero_cst (TREE_TYPE (stat)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 				 gfc_unlikely (cond2, PRED_FORTRAN_REALLOC),
@@ -1503,7 +1503,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
       && comp_ref)
     caf_dereg_type = GFC_CAF_COARRAY_DEALLOCATE_ONLY;
 
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, pointer,
+  cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node, pointer,
 			  build_int_cst (TREE_TYPE (pointer), 0));
 
   /* When POINTER is NULL, we set STATUS to 1 if it's present, otherwise
@@ -1530,7 +1530,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
       tree status_type = TREE_TYPE (TREE_TYPE (status));
       tree cond2;
 
-      cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			       status, build_int_cst (TREE_TYPE (status), 0));
       tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
 			     fold_build1_loc (input_location, INDIRECT_REF,
@@ -1575,7 +1575,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
 	  tree status_type = TREE_TYPE (TREE_TYPE (status));
 	  tree cond2;
 
-	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   status,
 				   build_int_cst (TREE_TYPE (status), 0));
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
@@ -1625,7 +1625,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
 
 	  TREE_USED (label_finish) = 1;
 	  tmp = build1_v (GOTO_EXPR, label_finish);
-	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				   stat, build_zero_cst (TREE_TYPE (stat)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 				 gfc_unlikely (cond2, PRED_FORTRAN_REALLOC),
@@ -1668,11 +1668,11 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 			 builtin_decl_explicit (BUILT_IN_REALLOC), 2,
 			 fold_convert (pvoid_type_node, mem), size);
   gfc_add_modify (block, res, fold_convert (type, tmp));
-  null_result = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+  null_result = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
 				 res, build_int_cst (pvoid_type_node, 0));
-  nonzero = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, size,
+  nonzero = fold_build2_loc (input_location, NE_EXPR, logical_type_node, size,
 			     build_int_cst (size_type_node, 0));
-  null_result = fold_build2_loc (input_location, TRUTH_AND_EXPR, boolean_type_node,
+  null_result = fold_build2_loc (input_location, TRUTH_AND_EXPR, logical_type_node,
 				 null_result, nonzero);
   msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
 			     ("Allocation would exceed memory limit"));

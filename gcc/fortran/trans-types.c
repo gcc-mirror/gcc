@@ -62,6 +62,9 @@ tree ppvoid_type_node;
 tree pchar_type_node;
 tree pfunc_type_node;
 
+tree logical_type_node;
+tree logical_true_node;
+tree logical_false_node;
 tree gfc_charlen_type_node;
 
 tree gfc_float128_type_node = NULL_TREE;
@@ -1002,6 +1005,11 @@ gfc_init_types (void)
     = wide_int_to_tree (size_type_node,
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (size_type_node)));
+
+
+  logical_type_node = gfc_get_logical_type (gfc_default_logical_kind);
+  logical_true_node = build_int_cst (logical_type_node, 1);
+  logical_false_node = build_int_cst (logical_type_node, 0);
 
   /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
   gfc_charlen_int_kind = 4;
@@ -3257,11 +3265,11 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   t = build1 (NOP_EXPR, build_pointer_type (ptr_type_node), t);
   info->data_location = build1 (INDIRECT_REF, ptr_type_node, t);
   if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
-    info->allocated = build2 (NE_EXPR, boolean_type_node,
+    info->allocated = build2 (NE_EXPR, logical_type_node,
 			      info->data_location, null_pointer_node);
   else if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
 	   || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)
-    info->associated = build2 (NE_EXPR, boolean_type_node,
+    info->associated = build2 (NE_EXPR, logical_type_node,
 			       info->data_location, null_pointer_node);
   if ((GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK
        || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_CONT)
