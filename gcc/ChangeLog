@@ -1,3 +1,11 @@
+2017-11-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_frame_pointer_required)
+	Remove.
+	(aarch64_layout_frame): Initialise emit_frame_chain.
+	(aarch64_can_eliminate): Remove omit leaf frame pointer code.
+	(TARGET_FRAME_POINTER_REQUIRED): Remove define.
+
 2017-11-08  Martin Liska  <mliska@suse.cz>
 
 	* gimplify.c (expand_FALLTHROUGH_r): Simplify usage
