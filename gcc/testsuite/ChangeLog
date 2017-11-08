@@ -1,3 +1,7 @@
+2017-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/strlenopt-33g.c: Remove duplicate dg-do command.
+
 2017-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.brendan/asm-extn1.C: Accept all sparc* targets.
