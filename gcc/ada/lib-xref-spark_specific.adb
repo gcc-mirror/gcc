@@ -161,7 +161,7 @@ package body SPARK_Specific is
          --  range.
 
          SPARK_Scope_Table.Append
-           ((Scope_Id       => E,
+           ((Entity         => E,
              File_Num       => Dspec,
              Scope_Num      => Scope_Id,
              Spec_File_Num  => 0,
@@ -323,7 +323,7 @@ package body SPARK_Specific is
 
       function Entity_Of_Scope (S : Scope_Index) return Entity_Id is
       begin
-         return SPARK_Scope_Table.Table (S).Scope_Id;
+         return SPARK_Scope_Table.Table (S).Entity;
       end Entity_Of_Scope;
 
       -------------------
@@ -395,7 +395,7 @@ package body SPARK_Specific is
          function Is_Past_Scope_Entity return Boolean is
          begin
             for Index in SPARK_Scope_Table.First .. S - 1 loop
-               if SPARK_Scope_Table.Table (Index).Scope_Id = E then
+               if SPARK_Scope_Table.Table (Index).Entity = E then
                   return True;
                end if;
             end loop;
@@ -407,7 +407,7 @@ package body SPARK_Specific is
 
       begin
          for Index in S .. SPARK_Scope_Table.Last loop
-            if SPARK_Scope_Table.Table (Index).Scope_Id = E then
+            if SPARK_Scope_Table.Table (Index).Entity = E then
                return True;
             end if;
          end loop;
@@ -606,7 +606,7 @@ package body SPARK_Specific is
          declare
             S : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
          begin
-            Set_Scope_Num (S.Scope_Id, S.Scope_Num);
+            Set_Scope_Num (S.Entity, S.Scope_Num);
          end;
       end loop;
 
@@ -920,7 +920,7 @@ package body SPARK_Specific is
             declare
                Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
             begin
-               Entity_Hash_Table.Set (Srec.Scope_Id, S);
+               Entity_Hash_Table.Set (Srec.Entity, S);
             end;
          end loop;
 
@@ -931,14 +931,14 @@ package body SPARK_Specific is
                Srec : SPARK_Scope_Record renames SPARK_Scope_Table.Table (S);
 
                Spec_Entity : constant Entity_Id :=
-                               Unique_Entity (Srec.Scope_Id);
+                               Unique_Entity (Srec.Entity);
                Spec_Scope  : constant Scope_Index :=
                                Entity_Hash_Table.Get (Spec_Entity);
 
             begin
                --  Generic spec may be missing in which case Spec_Scope is zero
 
-               if Spec_Entity /= Srec.Scope_Id
+               if Spec_Entity /= Srec.Entity
                  and then Spec_Scope /= 0
                then
                   Srec.Spec_File_Num :=

@@ -109,8 +109,8 @@ package SPARK_Xrefs is
    --  determined.
 
    type SPARK_Scope_Record is record
-      Scope_Id : Entity_Id;
-      --  Pointer to scope name in ALI file
+      Entity : Entity_Id;
+      --  Entity that is represented by the scope
 
       File_Num : Nat;
       --  Set to the file dependency number for the scope
