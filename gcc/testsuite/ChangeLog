@@ -1,3 +1,8 @@
+2017-11-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82792
+	* g++.dg/asan/pr82792.C: New test.
+
 2017-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82855
