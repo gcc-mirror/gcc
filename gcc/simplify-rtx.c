@@ -5749,6 +5749,22 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		    return op1;
 		}
 	    }
+	  /* Replace (vec_merge (vec_duplicate (X)) (const_vector [A, B])
+	     (const_int N))
+	     with (vec_concat (X) (B)) if N == 1 or
+	     (vec_concat (A) (X)) if N == 2.  */
+	  if (GET_CODE (op0) == VEC_DUPLICATE
+	      && GET_CODE (op1) == CONST_VECTOR
+	      && CONST_VECTOR_NUNITS (op1) == 2
+	      && GET_MODE_NUNITS (GET_MODE (op0)) == 2
+	      && IN_RANGE (sel, 1, 2))
+	    {
+	      rtx newop0 = XEXP (op0, 0);
+	      rtx newop1 = CONST_VECTOR_ELT (op1, 2 - sel);
+	      if (sel == 2)
+		std::swap (newop0, newop1);
+	      return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
+	    }
 	}
 
       if (rtx_equal_p (op0, op1)

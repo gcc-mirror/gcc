@@ -1,3 +1,14 @@
+2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* simplify-rtx.c (simplify_ternary_operation, VEC_MERGE):
+	Simplify vec_merge of vec_duplicate and const_vector.
+	* config/aarch64/predicates.md (aarch64_simd_or_scalar_imm_zero):
+	New predicate.
+	* config/aarch64/aarch64-simd.md (*aarch64_combinez<mode>): Use VDC
+	mode iterator.  Update predicate on operand 1 to
+	handle non-const_vec constants.  Delete constraints.
+	(*aarch64_combinez_be<mode>): Likewise for operand 2.
+
 2017-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78821
