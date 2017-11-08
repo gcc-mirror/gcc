@@ -23357,6 +23357,28 @@ package body Sem_Util is
 
       Append_Entity_Name (Buf, Ent);
 
+      --  Append homonym number if needed
+
+      if Nkind (N) in N_Entity and then Has_Homonym (N) then
+         declare
+            H  : Entity_Id := Homonym (N);
+            Nr : Nat := 1;
+         begin
+            while Present (H) loop
+               if Scope (H) = Scope (N) then
+                  Nr := Nr + 1;
+               end if;
+
+               H := Homonym (H);
+            end loop;
+
+            if Nr > 1 then
+               Append (Buf, '#');
+               Append (Buf, Nr);
+            end if;
+         end;
+      end if;
+
       --  Append source location of Ent to Buf so that the string will
       --  look like "subp:file:line:col".
 
