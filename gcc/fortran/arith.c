@@ -2604,6 +2604,7 @@ gfc_hollerith2character (gfc_expr *src, int kind)
   result = gfc_copy_expr (src);
   result->ts.type = BT_CHARACTER;
   result->ts.kind = kind;
+  result->ts.u.pad = 0;
 
   result->value.character.length = result->representation.length;
   result->value.character.string

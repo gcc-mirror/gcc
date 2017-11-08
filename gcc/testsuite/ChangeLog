@@ -1,3 +1,8 @@
+2017-11-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82884
+	* gfortran.dg/hollerith_character_array_constructor.f90: New test.
+
 2017-11-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/store_v2vec_lanes.c: New test.
