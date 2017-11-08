@@ -22,10 +22,7 @@ ubsan_plugin_files = \
 	ubsan_type_hash_win.cc \
 	ubsan_value.cc
 
-ubsan_files = \
-	$(ubsan_plugin_files) \
-	ubsan_init_standalone.cc \
-	ubsan_signals_standalone.cc
+ubsan_files = $(ubsan_plugin_files)
 
 libubsan_la_SOURCES = $(ubsan_files) 
 libubsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la 
