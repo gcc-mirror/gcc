@@ -77,4 +77,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Merging successful" 2 "store-merging" } } */
+/* { dg-final { scan-tree-dump-times "Merging successful" 3 "store-merging" } } */

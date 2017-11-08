@@ -1,3 +1,13 @@
+2017-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gcc.dg/store_merging_2.c: Expect 3 store mergings instead of 2.
+	* gcc.dg/store_merging_13.c (f7, f8, f9, f10, f11, f12, f13): New
+	functions.
+	(main): Test also those.  Expect 13 store mergings instead of 6.
+	* gcc.dg/store_merging_14.c (f7, f8, f9): New functions.
+	(main): Test also those.  Expect 9 store mergings instead of 6.
+
 2017-11-08  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/dwarf-cfa-reg.c: Update.

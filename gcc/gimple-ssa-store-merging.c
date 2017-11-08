@@ -183,12 +183,13 @@ struct store_operand_info
   unsigned HOST_WIDE_INT bitregion_start;
   unsigned HOST_WIDE_INT bitregion_end;
   gimple *stmt;
+  bool bit_not_p;
   store_operand_info ();
 };
 
 store_operand_info::store_operand_info ()
   : val (NULL_TREE), base_addr (NULL_TREE), bitsize (0), bitpos (0),
-    bitregion_start (0), bitregion_end (0), stmt (NULL)
+    bitregion_start (0), bitregion_end (0), stmt (NULL), bit_not_p (false)
 {
 }
 
@@ -910,8 +911,7 @@ private:
 
   void process_store (gimple *);
   bool terminate_and_process_all_chains ();
-  bool terminate_all_aliasing_chains (imm_store_chain_info **,
-				      gimple *);
+  bool terminate_all_aliasing_chains (imm_store_chain_info **, gimple *);
   bool terminate_and_release_chain (imm_store_chain_info *);
 }; // class pass_store_merging
 
@@ -930,13 +930,9 @@ pass_store_merging::terminate_and_process_all_chains ()
   return ret;
 }
 
-/* Terminate all chains that are affected by the assignment to DEST, appearing
-   in statement STMT and ultimately points to the object BASE.  Return true if
-   at least one aliasing chain was terminated.  BASE and DEST are allowed to
-   be NULL_TREE.  In that case the aliasing checks are performed on the whole
-   statement rather than a particular operand in it.  VAR_OFFSET_P signifies
-   whether STMT represents a store to BASE offset by a variable amount.
-   If that is the case we have to terminate any chain anchored at BASE.  */
+/* Terminate all chains that are affected by the statement STMT.
+   CHAIN_INFO is the chain we should ignore from the checks if
+   non-NULL.  */
 
 bool
 pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
@@ -949,14 +945,18 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
   if (!gimple_vuse (stmt))
     return false;
 
-  /* Check if the assignment destination (BASE) is part of a store chain.
-     This is to catch non-constant stores to destinations that may be part
-     of a chain.  */
-  if (chain_info)
+  for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
     {
+      next = cur->next;
+
+      /* We already checked all the stores in chain_info and terminated the
+	 chain if necessary.  Skip it here.  */
+      if (chain_info && *chain_info == cur)
+	continue;
+
       store_immediate_info *info;
       unsigned int i;
-      FOR_EACH_VEC_ELT ((*chain_info)->m_store_info, i, info)
+      FOR_EACH_VEC_ELT (cur->m_store_info, i, info)
 	{
 	  if (ref_maybe_used_by_stmt_p (stmt, gimple_assign_lhs (info->stmt))
 	      || stmt_may_clobber_ref_p (stmt, gimple_assign_lhs (info->stmt)))
@@ -966,34 +966,10 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 		  fprintf (dump_file, "stmt causes chain termination:\n");
 		  print_gimple_stmt (dump_file, stmt, 0);
 		}
-	      terminate_and_release_chain (*chain_info);
+	      terminate_and_release_chain (cur);
 	      ret = true;
 	      break;
 	    }
-	}
-    }
-
-  /* Check for aliasing with all other store chains.  */
-  for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
-    {
-      next = cur->next;
-
-      /* We already checked all the stores in chain_info and terminated the
-	 chain if necessary.  Skip it here.  */
-      if (chain_info && (*chain_info) == cur)
-	continue;
-
-      /* We can't use the base object here as that does not reliably exist.
-	 Build a ao_ref from the base object address (if we know the
-	 minimum and maximum offset and the maximum size we could improve
-	 things here).  */
-      ao_ref chain_ref;
-      ao_ref_init_from_ptr_and_size (&chain_ref, cur->base_addr, NULL_TREE);
-      if (ref_maybe_used_by_stmt_p (stmt, &chain_ref)
-	  || stmt_may_clobber_ref_p_1 (stmt, &chain_ref))
-	{
-	  terminate_and_release_chain (cur);
-	  ret = true;
 	}
     }
 
@@ -1053,6 +1029,7 @@ compatible_load_p (merged_store_group *merged_store,
 {
   store_immediate_info *infof = merged_store->stores[0];
   if (!info->ops[idx].base_addr
+      || info->ops[idx].bit_not_p != infof->ops[idx].bit_not_p
       || (info->ops[idx].bitpos - infof->ops[idx].bitpos
 	  != info->bitpos - infof->bitpos)
       || !operand_equal_p (info->ops[idx].base_addr,
@@ -1755,6 +1732,19 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		      gimple_seq_add_stmt_without_update (&seq, stmt);
 		    }
 		  ops[j] = gimple_assign_lhs (stmt);
+		  if (op.bit_not_p)
+		    {
+		      stmt = gimple_build_assign (make_ssa_name (int_type),
+						  BIT_NOT_EXPR, ops[j]);
+		      gimple_set_location (stmt, load_loc);
+		      ops[j] = gimple_assign_lhs (stmt);
+
+		      if (gsi_bb (load_gsi[j]))
+			gimple_seq_add_stmt_without_update (&load_seq[j],
+							    stmt);
+		      else
+			gimple_seq_add_stmt_without_update (&seq, stmt);
+		    }
 		}
 	      else
 		ops[j] = native_interpret_expr (int_type,
@@ -2100,9 +2090,23 @@ handled_load (gimple *stmt, store_operand_info *op,
 	      unsigned HOST_WIDE_INT bitregion_start,
 	      unsigned HOST_WIDE_INT bitregion_end)
 {
-  if (!is_gimple_assign (stmt) || !gimple_vuse (stmt))
+  if (!is_gimple_assign (stmt))
     return false;
-  if (gimple_assign_load_p (stmt)
+  if (gimple_assign_rhs_code (stmt) == BIT_NOT_EXPR)
+    {
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (rhs1) == SSA_NAME
+	  && has_single_use (rhs1)
+	  && handled_load (SSA_NAME_DEF_STMT (rhs1), op, bitsize, bitpos,
+			   bitregion_start, bitregion_end))
+	{
+	  op->bit_not_p = !op->bit_not_p;
+	  return true;
+	}
+      return false;
+    }
+  if (gimple_vuse (stmt)
+      && gimple_assign_load_p (stmt)
       && !stmt_can_throw_internal (stmt)
       && !gimple_has_volatile_ops (stmt))
     {
@@ -2119,6 +2123,7 @@ handled_load (gimple *stmt, store_operand_info *op,
 	{
 	  op->stmt = stmt;
 	  op->val = mem;
+	  op->bit_not_p = false;
 	  return true;
 	}
     }
@@ -2202,15 +2207,15 @@ pass_store_merging::process_store (gimple *stmt)
 	  }
     }
 
+  if (invalid)
+    {
+      terminate_all_aliasing_chains (NULL, stmt);
+      return;
+    }
+
   struct imm_store_chain_info **chain_info = NULL;
   if (base_addr)
     chain_info = m_stores.get (base_addr);
-
-  if (invalid)
-    {
-      terminate_all_aliasing_chains (chain_info, stmt);
-      return;
-    }
 
   store_immediate_info *info;
   if (chain_info)
@@ -2225,6 +2230,7 @@ pass_store_merging::process_store (gimple *stmt)
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
       (*chain_info)->m_store_info.safe_push (info);
+      terminate_all_aliasing_chains (chain_info, stmt);
       /* If we reach the limit of stores to merge in a chain terminate and
 	 process the chain now.  */
       if ((*chain_info)->m_store_info.length ()
@@ -2239,7 +2245,7 @@ pass_store_merging::process_store (gimple *stmt)
     }
 
   /* Store aliases any existing chain?  */
-  terminate_all_aliasing_chains (chain_info, stmt);
+  terminate_all_aliasing_chains (NULL, stmt);
   /* Start a new chain.  */
   struct imm_store_chain_info *new_chain
     = new imm_store_chain_info (m_stores_head, base_addr);
