@@ -157,7 +157,8 @@ pragma Style_Checks ("M32766");
 # include <_types.h>
 #endif
 
-#if defined (__linux__) || defined (__ANDROID__) || defined (__rtems__)
+#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__) \
+  || defined (__rtems__)
 # include <pthread.h>
 # include <signal.h>
 #endif
@@ -1191,7 +1192,7 @@ CND(MSG_WAITALL, "Wait for full reception")
 #endif
 CND(MSG_NOSIGNAL, "No SIGPIPE on send")
 
-#if defined (__linux__) || defined (__ANDROID__)
+#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__)
 # define MSG_Forced_Flags "MSG_NOSIGNAL"
 #else
 # define MSG_Forced_Flags "0"
@@ -1361,7 +1362,7 @@ CND(SIZEOF_struct_hostent, "struct hostent")
 #define SIZEOF_struct_servent (sizeof (struct servent))
 CND(SIZEOF_struct_servent, "struct servent")
 
-#if defined (__linux__) || defined (__ANDROID__)
+#if defined (__linux__) || defined (__ANDROID__) || defined (__QNX__)
 #define SIZEOF_sigset (sizeof (sigset_t))
 CND(SIZEOF_sigset, "sigset")
 #endif
@@ -1464,7 +1465,7 @@ CNS(CLOCK_RT_Ada, "")
 #endif
 
 #if defined (__APPLE__) || defined (__linux__) || defined (__ANDROID__) \
-  || defined (__rtems__) || defined (DUMMY)
+  || defined (__QNX__) || defined (__rtems__) || defined (DUMMY)
 /*
 
    --  Sizes of pthread data types

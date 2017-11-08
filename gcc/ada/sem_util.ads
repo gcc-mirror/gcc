@@ -769,6 +769,11 @@ package Sem_Util is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
 
+   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id;
+   --  Subsidiary to all Build_DIC_Procedure_xxx routines. Find the type which
+   --  defines the Default_Initial_Condition pragma of type Typ. This is either
+   --  Typ itself or a parent type when the pragma is inherited.
+
    function Find_Enclosing_Iterator_Loop (Id : Entity_Id) return Entity_Id;
    --  Find the nearest iterator loop which encloses arbitrary entity Id. If
    --  such a loop exists, return the entity of its identifier (E_Loop scope),

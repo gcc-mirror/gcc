@@ -349,7 +349,7 @@ package body Exp_SPARK is
       Loc    : constant Source_Ptr := Sloc (N);
       Obj_Id : constant Entity_Id  := Defining_Entity (N);
       Nam    : constant Node_Id    := Name (N);
-      Typ    : constant Entity_Id  := Etype (Subtype_Mark (N));
+      Typ    : constant Entity_Id  := Etype (Obj_Id);
 
    begin
       --  Transform a renaming of the form

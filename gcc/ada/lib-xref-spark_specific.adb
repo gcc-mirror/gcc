@@ -96,6 +96,12 @@ package body SPARK_Specific is
    function Entity_Hash (E : Entity_Id) return Entity_Hashed_Range;
    --  Hash function for hash table
 
+   generic
+      with procedure Process (N : Node_Id) is <>;
+   procedure Traverse_Compilation_Unit (CU : Node_Id);
+   --  Call Process on all declarations within compilation unit CU. Bodies
+   --  of stubs are also traversed, but generic declarations are ignored.
+
    --------------------
    -- Add_SPARK_File --
    --------------------

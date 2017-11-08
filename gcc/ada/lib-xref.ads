@@ -645,12 +645,6 @@ package Lib.Xref is
       --  files and scopes) and from shared cross-references. Fill in the
       --  tables in library package called SPARK_Xrefs.
 
-      generic
-         with procedure Process (N : Node_Id) is <>;
-      procedure Traverse_Compilation_Unit (CU : Node_Id);
-      --  Call Process on all declarations within compilation unit CU. Bodies
-      --  of stubs are also traversed, but generic declarations are ignored.
-
    end SPARK_Specific;
 
    -----------------

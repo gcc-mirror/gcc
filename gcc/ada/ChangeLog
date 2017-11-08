@@ -1,5 +1,46 @@
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
+	* lib-xref.ads, lib-xref-spark_specific.adb
+	(Traverse_Compilation_Unit): Move declaration to package body.
+
+2017-11-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Object_Renaming_Declaration): Obtain
+	the type of the renaming from its defining entity, rather then the
+	subtype mark as there may not be a subtype mark.
+
+2017-11-08  Jerome Lambourg  <lambourg@adacore.com>
+
+	* adaint.c, s-oscons-tmplt.c, init.c, libgnat/system-qnx-aarch64.ads,
+	libgnarl/a-intnam__qnx.ads, libgnarl/s-intman__qnx.adb,
+	libgnarl/s-osinte__qnx.ads, libgnarl/s-qnx.ads,
+	libgnarl/s-taprop__qnx.adb, s-oscons-tmplt.c, sigtramp-qnx.c,
+	terminals.c: Initial port of GNAT for aarch64-qnx
+
+2017-11-08  Elisa Barboni  <barboni@adacore.com>
+
+	* exp_util.adb (Find_DIC_Type): Move...
+	* sem_util.ads, sem_util.adb (Find_DIC_Type): ... here.
+
+2017-11-08  Justin Squirek  <squirek@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Add info messages corresponding to
+	the owner and corresponding coextension.
+
+2017-11-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Aggregate): Divide into the
+	following separate procedures.
+	(Resolve_Delta_Array_Aggregate): Previous code form
+	Resolve_Delta_Aggregate.
+	(Resolve_Delta_Record_Aggregate): Extend previous code to cover latest
+	ARG decisions on the legality rules for delta aggregates for records:
+	in the case of a variant record, components from different variants
+	cannot be specified in the delta aggregate, and this must be checked
+	statically.
+
+2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
+
 	* spark_xrefs.ads (SPARK_Scope_Record): Remove File_Num component.
 	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Skip initialization of
 	removed component.
