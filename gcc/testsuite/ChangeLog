@@ -1,3 +1,8 @@
+2017-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.brendan/asm-extn1.C: Accept all sparc* targets.
+	(main): Add return type.
+
 2017-11-08  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82792
