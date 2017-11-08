@@ -120,14 +120,7 @@ package body SPARK_Specific is
       ---------------------
 
       procedure Add_SPARK_Scope (N : Node_Id) is
-         E   : constant Entity_Id  := Defining_Entity (N);
-         Loc : constant Source_Ptr := Sloc (E);
-
-         --  The character describing the kind of scope is chosen to be the
-         --  same as the one describing the corresponding entity in cross
-         --  references, see Xref_Entity_Letters in lib-xrefs.ads
-
-         Typ : Character;
+         E : constant Entity_Id := Defining_Entity (N);
 
       begin
          --  Ignore scopes without a proper location
@@ -144,18 +137,15 @@ package body SPARK_Specific is
                | E_Generic_Package
                | E_Generic_Procedure
                | E_Package
+               | E_Package_Body
                | E_Procedure
-               | E_Protected_Type
-               | E_Task_Type
-            =>
-               Typ := Xref_Entity_Letters (Ekind (E));
-
-            when E_Package_Body
                | E_Protected_Body
-               | E_Subprogram_Body
+               | E_Protected_Type
                | E_Task_Body
+               | E_Task_Type
+               | E_Subprogram_Body
             =>
-               Typ := Xref_Entity_Letters (Ekind (Unique_Entity (E)));
+               null;
 
             when E_Void =>
 
@@ -179,9 +169,6 @@ package body SPARK_Specific is
              Scope_Num      => Scope_Id,
              Spec_File_Num  => 0,
              Spec_Scope_Num => 0,
-             Line           => Nat (Get_Logical_Line_Number (Loc)),
-             Stype          => Typ,
-             Col            => Nat (Get_Column_Number (Loc)),
              From_Xref      => 1,
              To_Xref        => 0,
              Scope_Entity   => E));
@@ -290,9 +277,6 @@ package body SPARK_Specific is
       function Entity_Of_Scope (S : Scope_Index) return Entity_Id;
       --  Return the entity which maps to the input scope index
 
-      function Get_Entity_Type (E : Entity_Id) return Character;
-      --  Return a character representing the type of entity
-
       function Get_Scope_Num (E : Entity_Id) return Nat;
       --  Return the scope number associated with the entity E
 
@@ -369,20 +353,6 @@ package body SPARK_Specific is
       begin
          return SPARK_Scope_Table.Table (S).Scope_Entity;
       end Entity_Of_Scope;
-
-      ---------------------
-      -- Get_Entity_Type --
-      ---------------------
-
-      function Get_Entity_Type (E : Entity_Id) return Character is
-      begin
-         case Ekind (E) is
-            when E_Out_Parameter    => return '<';
-            when E_In_Out_Parameter => return '=';
-            when E_In_Parameter     => return '>';
-            when others             => return '*';
-         end case;
-      end Get_Entity_Type;
 
       -------------------
       -- Get_Scope_Num --
@@ -651,9 +621,7 @@ package body SPARK_Specific is
 
       --  Local variables
 
-      Col        : Nat;
       From_Index : Xref_Index;
-      Line       : Nat;
       Prev_Loc   : Source_Ptr;
       Prev_Typ   : Character;
       Ref_Count  : Nat;
@@ -817,14 +785,6 @@ package body SPARK_Specific is
                pragma Assert (Scope_Id <= SPARK_Scope_Table.Last);
             end loop;
 
-            if Ref.Ent = Heap then
-               Line := 0;
-               Col  := 0;
-            else
-               Line := Nat (Get_Logical_Line_Number (Ref_Entry.Def));
-               Col  := Nat (Get_Column_Number (Ref_Entry.Def));
-            end if;
-
             --  References to constant objects without variable inputs (see
             --  SPARK RM 3.3.1) are considered specially in SPARK section,
             --  because these will be translated as constants in the
@@ -841,14 +801,9 @@ package body SPARK_Specific is
 
             SPARK_Xref_Table.Append (
               (Entity_Name => new String'(Unique_Name (Ref.Ent)),
-               Entity_Line => Line,
-               Etype       => Get_Entity_Type (Ref.Ent),
-               Entity_Col  => Col,
                File_Num    => Dependency_Num (Ref.Lun),
                Scope_Num   => Get_Scope_Num (Ref.Ref_Scope),
-               Line        => Nat (Get_Logical_Line_Number (Ref.Loc)),
-               Rtype       => Typ,
-               Col         => Nat (Get_Column_Number (Ref.Loc))));
+               Rtype       => Typ));
          end;
       end loop;
 
