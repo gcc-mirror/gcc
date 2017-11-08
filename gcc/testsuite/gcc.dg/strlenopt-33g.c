@@ -1,5 +1,4 @@
 /* { dg-do run { target *-*-linux* *-*-gnu* } } */
-/* { dg-do run } */
 /* { dg-options "-O2 -fdump-tree-strlen" } */
 
 #define USE_GNU
