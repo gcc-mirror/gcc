@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/vect/no-vfa-vect-101.c: Use scan-tree-dump rather than
+	scan-tree-dump-times for vect_multiple_sizes.
+	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102a.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-37.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-79.c: Likewise.
+	* gcc.dg/vect/vect-104.c: Likewise.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lib/target-supports.exp (available_vector_sizes): New proc.
 	(check_effective_target_vect_multiple_sizes): Use it.
 	(check_effective_target_vect64): Likewise.
