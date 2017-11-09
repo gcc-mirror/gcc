@@ -1867,12 +1867,6 @@ package Sinfo is
    --    Present in variable reference markers. Set when the original variable
    --    reference constitues a read of the variable.
 
-   --  Is_Recorded_Scenario (Flag6-Sem)
-   --    Present in call marker and instantiation nodes. Set when the scenario
-   --    was saved by the ABE Recording phase. This flag aids the ABE machinery
-   --    to keep its internal data up-to-date in case the node is transformed
-   --    by Atree.Rewrite.
-
    --  Is_Source_Call (Flag4-Sem)
    --    Present in call marker nodes. Set when the related call came from
    --    source.
@@ -7045,7 +7039,6 @@ package Sinfo is
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
       --  Is_Declaration_Level_Node (Flag5-Sem)
-      --  Is_Recorded_Scenario (Flag6-Sem)
       --  Is_Known_Guaranteed_ABE (Flag18-Sem)
 
       --  N_Procedure_Instantiation
@@ -7059,7 +7052,6 @@ package Sinfo is
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
       --  Is_Declaration_Level_Node (Flag5-Sem)
-      --  Is_Recorded_Scenario (Flag6-Sem)
       --  Must_Override (Flag14) set if overriding indicator present
       --  Must_Not_Override (Flag15) set if not_overriding indicator present
       --  Is_Known_Guaranteed_ABE (Flag18-Sem)
@@ -7075,7 +7067,6 @@ package Sinfo is
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
       --  Is_Declaration_Level_Node (Flag5-Sem)
-      --  Is_Recorded_Scenario (Flag6-Sem)
       --  Must_Override (Flag14) set if overriding indicator present
       --  Must_Not_Override (Flag15) set if not_overriding indicator present
       --  Is_Known_Guaranteed_ABE (Flag18-Sem)
@@ -7833,7 +7824,6 @@ package Sinfo is
       --  Is_Dispatching_Call (Flag3-Sem)
       --  Is_Source_Call (Flag4-Sem)
       --  Is_Declaration_Level_Node (Flag5-Sem)
-      --  Is_Recorded_Scenario (Flag6-Sem)
       --  Is_Known_Guaranteed_ABE (Flag18-Sem)
 
       ------------------------
@@ -9777,9 +9767,6 @@ package Sinfo is
    function Is_Read
      (N : Node_Id) return Boolean;    -- Flag1
 
-   function Is_Recorded_Scenario
-     (N : Node_Id) return Boolean;    -- Flag6
-
    function Is_Source_Call
      (N : Node_Id) return Boolean;    -- Flag4
 
@@ -10871,9 +10858,6 @@ package Sinfo is
 
    procedure Set_Is_Read
      (N : Node_Id; Val : Boolean := True);    -- Flag1
-
-   procedure Set_Is_Recorded_Scenario
-     (N : Node_Id; Val : Boolean := True);    -- Flag6
 
    procedure Set_Is_Source_Call
      (N : Node_Id; Val : Boolean := True);    -- Flag4
@@ -13337,7 +13321,6 @@ package Sinfo is
    pragma Inline (Is_Protected_Subprogram_Body);
    pragma Inline (Is_Qualified_Universal_Literal);
    pragma Inline (Is_Read);
-   pragma Inline (Is_Recorded_Scenario);
    pragma Inline (Is_Source_Call);
    pragma Inline (Is_SPARK_Mode_On_Node);
    pragma Inline (Is_Static_Coextension);
@@ -13697,7 +13680,6 @@ package Sinfo is
    pragma Inline (Set_Is_Protected_Subprogram_Body);
    pragma Inline (Set_Is_Qualified_Universal_Literal);
    pragma Inline (Set_Is_Read);
-   pragma Inline (Set_Is_Recorded_Scenario);
    pragma Inline (Set_Is_Source_Call);
    pragma Inline (Set_Is_SPARK_Mode_On_Node);
    pragma Inline (Set_Is_Static_Coextension);

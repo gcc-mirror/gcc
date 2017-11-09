@@ -1567,13 +1567,6 @@ package body Lib.Writ is
          SCO_Output;
       end if;
 
-      --  Output SPARK cross-reference information if needed
-
-      if Opt.Xref_Active and then GNATprove_Mode then
-         SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
-                                             Num_Sdep   => Num_Sdep);
-      end if;
-
       --  Output final blank line and we are done. This final blank line is
       --  probably junk, but we don't feel like making an incompatible change.
 

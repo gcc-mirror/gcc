@@ -68,7 +68,7 @@ package body Sem_Elab is
    --    * Diagnose at compile-time or install run-time checks to prevent ABE
    --      access to data and behaviour.
    --
-   --      The high level idea is to accurately diagnose ABE issues within a
+   --      The high-level idea is to accurately diagnose ABE issues within a
    --      single unit because the ABE mechanism can inspect the whole unit.
    --      As soon as the elaboration graph extends to an external unit, the
    --      diagnostics stop because the body of the unit may not be available.
@@ -146,8 +146,8 @@ package body Sem_Elab is
    --    the library level if it appears in a package library unit, ignoring
    --    enclosng packages.
    --
-   --  * Non-library level encapsulator - A construct that cannot be elaborated
-   --    on its own and requires elaboration by a top level scenario.
+   --  * Non-library-level encapsulator - A construct that cannot be elaborated
+   --    on its own and requires elaboration by a top-level scenario.
    --
    --  * Scenario - A construct or context which may be elaborated or executed
    --    by elaboration code. The scenarios recognized by the ABE mechanism are
@@ -181,7 +181,7 @@ package body Sem_Elab is
    --
    --      - For task activation, the target is the task body
    --
-   --  * Top level scenario - A scenario which appears in a non-generic main
+   --  * Top-level scenario - A scenario which appears in a non-generic main
    --    unit. Depending on the elaboration model is in effect, the following
    --    addotional restrictions apply:
    --
@@ -198,7 +198,7 @@ package body Sem_Elab is
    --  The Recording phase coincides with the analysis/resolution phase of the
    --  compiler. It has the following objectives:
    --
-   --    * Record all top level scenarios for examination by the Processing
+   --    * Record all top-level scenarios for examination by the Processing
    --      phase.
    --
    --      Saving only a certain number of nodes improves the performance of
@@ -231,9 +231,9 @@ package body Sem_Elab is
    --  and/or inlining of bodies, but before the removal of Ghost code. It has
    --  the following objectives:
    --
-   --    * Examine all top level scenarios saved during the Recording phase
+   --    * Examine all top-level scenarios saved during the Recording phase
    --
-   --      The top level scenarios act as roots for depth-first traversal of
+   --      The top-level scenarios act as roots for depth-first traversal of
    --      the call/instantiation/task activation graph. The traversal stops
    --      when an outgoing edge leaves the main unit.
    --
@@ -420,8 +420,7 @@ package body Sem_Elab is
    --  The following steps describe how to add a new elaboration scenario and
    --  preserve the existing architecture.
    --
-   --    1) If necessary, update predicates Is_Check_Emitting_Scenario and
-   --       Is_Scenario.
+   --    1) If necessary, update predicate Is_Scenario
    --
    --    2) Add predicate Is_Suitable_xxx. Include a call to it in predicate
    --       Is_Suitable_Scenario.
@@ -712,8 +711,28 @@ package body Sem_Elab is
       Hash       => Elaboration_Context_Hash,
       Equal      => "=");
 
+   --  The following table stores a status flag for each top-level scenario
+   --  recorded in table Top_Level_Scenarios.
+
+   Recorded_Top_Level_Scenarios_Max : constant := 503;
+
+   type Recorded_Top_Level_Scenarios_Index is
+     range 0 .. Recorded_Top_Level_Scenarios_Max - 1;
+
+   function Recorded_Top_Level_Scenarios_Hash
+     (Key : Node_Id) return Recorded_Top_Level_Scenarios_Index;
+   --  Obtain the hash value of entity Key
+
+   package Recorded_Top_Level_Scenarios is new Simple_HTable
+     (Header_Num => Recorded_Top_Level_Scenarios_Index,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Node_Id,
+      Hash       => Recorded_Top_Level_Scenarios_Hash,
+      Equal      => "=");
+
    --  The following table stores all active scenarios in a recursive traversal
-   --  starting from a top level scenario. This table must be maintained in a
+   --  starting from a top-level scenario. This table must be maintained in a
    --  FIFO fashion.
 
    package Scenario_Stack is new Table.Table
@@ -724,7 +743,7 @@ package body Sem_Elab is
       Table_Increment      => 100,
       Table_Name           => "Scenario_Stack");
 
-   --  The following table stores all top level scenario saved during the
+   --  The following table stores all top-level scenario saved during the
    --  Recording phase. The contents of this table act as traversal roots
    --  later in the Processing phase. This table must be maintained in a
    --  LIFO fashion.
@@ -738,7 +757,7 @@ package body Sem_Elab is
       Table_Name           => "Top_Level_Scenarios");
 
    --  The following table stores the bodies of all eligible scenarios visited
-   --  during a traversal starting from a top level scenario. The contents of
+   --  during a traversal starting from a top-level scenario. The contents of
    --  this table must be reset upon each new traversal.
 
    Visited_Bodies_Max : constant := 511;
@@ -867,7 +886,7 @@ package body Sem_Elab is
    --  Return the code unit which contains arbitrary node or entity N. This
    --  is the unit of the file which physically contains the related construct
    --  denoted by N except when N is within an instantiation. In that case the
-   --  unit is that of the top level instantiation.
+   --  unit is that of the top-level instantiation.
 
    procedure Find_Elaborated_Units;
    --  Populate table Elaboration_Context with all units which have prior
@@ -1019,11 +1038,6 @@ package body Sem_Elab is
    pragma Inline (Is_Bodiless_Subprogram);
    --  Determine whether subprogram Subp_Id will never have a body
 
-   function Is_Check_Emitting_Scenario (N : Node_Id) return Boolean;
-   pragma Inline (Is_Check_Emitting_Scenario);
-   --  Determine whether arbitrary node N denotes a scenario which may emit a
-   --  conditional ABE check.
-
    function Is_Controlled_Proc
      (Subp_Id  : Entity_Id;
       Subp_Nam : Name_Id) return Boolean;
@@ -1100,6 +1114,11 @@ package body Sem_Elab is
    pragma Inline (Is_Protected_Body_Subp);
    --  Determine whether entity Id denotes the protected or unprotected version
    --  of a protected subprogram.
+
+   function Is_Recorded_Top_Level_Scenario (N : Node_Id) return Boolean;
+   pragma Inline (Is_Recorded_Top_Level_Scenario);
+   --  Determine whether arbitrary node is a recorded top-level scenario which
+   --  appears in table Top_Level_Scenarios.
 
    function Is_Safe_Activation
      (Call      : Node_Id;
@@ -1329,14 +1348,14 @@ package body Sem_Elab is
    --  routine.
 
    procedure Process_Guaranteed_ABE (N : Node_Id);
-   --  Top level dispatcher for processing of scenarios which result in a
+   --  Top-level dispatcher for processing of scenarios which result in a
    --  guaranteed ABE.
 
    procedure Process_Instantiation
      (Exp_Inst       : Node_Id;
       In_Partial_Fin : Boolean;
       In_Task_Body   : Boolean);
-   --  Top level dispatcher for processing of instantiations. Perform ABE
+   --  Top-level dispatcher for processing of instantiations. Perform ABE
    --  checks and diagnostics for expanded instantiation Exp_Inst. Flag
    --  In_Partial_Fin shoud be set when the processing is initiated by a
    --  partial finalization routine. Flag In_Task_Body should be set when
@@ -1393,14 +1412,14 @@ package body Sem_Elab is
      (N              : Node_Id;
       In_Partial_Fin : Boolean := False;
       In_Task_Body   : Boolean := False);
-   --  Top level dispatcher for processing of various elaboration scenarios.
+   --  Top-level dispatcher for processing of various elaboration scenarios.
    --  Perform ABE checks and diagnostics for scenario N. Flag In_Partial_Fin
    --  shoud be set when the processing is initiated by a partial finalization
    --  routine. Flag In_Task_Body should be set when the processing is started
    --  from a task body.
 
    procedure Process_Variable_Assignment (Asmt : Node_Id);
-   --  Top level dispatcher for processing of variable assignments. Perform ABE
+   --  Top-level dispatcher for processing of variable assignments. Perform ABE
    --  checks and diagnostics for assignment statement Asmt.
 
    procedure Process_Variable_Assignment_Ada
@@ -1416,7 +1435,7 @@ package body Sem_Elab is
    --  updates the value of variable Var_Id using the SPARK rules.
 
    procedure Process_Variable_Reference (Ref : Node_Id);
-   --  Top level dispatcher for processing of variable references. Perform ABE
+   --  Top-level dispatcher for processing of variable references. Perform ABE
    --  checks and diagnostics for variable reference Ref.
 
    procedure Process_Variable_Reference_Read
@@ -1432,9 +1451,15 @@ package body Sem_Elab is
 
    function Root_Scenario return Node_Id;
    pragma Inline (Root_Scenario);
-   --  Return the top level scenario which started a recursive search for other
-   --  scenarios. It is assumed that there is a valid top level scenario on the
+   --  Return the top-level scenario which started a recursive search for other
+   --  scenarios. It is assumed that there is a valid top-level scenario on the
    --  active scenario stack.
+
+   procedure Set_Is_Recorded_Top_Level_Scenario
+     (N   : Node_Id;
+      Val : Boolean := True);
+   pragma Inline (Set_Is_Recorded_Top_Level_Scenario);
+   --  Mark scenario N as being recorded in table Top_Level_Scenarios
 
    function Static_Elaboration_Checks return Boolean;
    pragma Inline (Static_Elaboration_Checks);
@@ -1970,12 +1995,12 @@ package body Sem_Elab is
 
       Find_Elaborated_Units;
 
-      --  Examine each top level scenario saved during the Recording phase and
+      --  Examine each top-level scenario saved during the Recording phase and
       --  perform various actions depending on the elaboration model in effect.
 
       for Index in Top_Level_Scenarios.First .. Top_Level_Scenarios.Last loop
 
-         --  Clear the table of visited scenario bodies for each new top level
+         --  Clear the table of visited scenario bodies for each new top-level
          --  scenario.
 
          Visited_Bodies.Reset;
@@ -2046,7 +2071,7 @@ package body Sem_Elab is
 
       Level := Find_Enclosing_Level (Call);
 
-      --  Library level calls are always considered because they are part of
+      --  Library-level calls are always considered because they are part of
       --  the associated unit's elaboration actions.
 
       if Level in Library_Level then
@@ -3589,7 +3614,7 @@ package body Sem_Elab is
                return Declaration_Level;
             end if;
 
-         --  The current construct is a declaration level encapsulator
+         --  The current construct is a declaration-level encapsulator
 
          elsif Nkind_In (Curr, N_Entry_Body,
                                N_Subprogram_Body,
@@ -3612,9 +3637,9 @@ package body Sem_Elab is
                return Declaration_Level;
             end if;
 
-         --  The current construct is a non-library level encapsulator which
+         --  The current construct is a non-library-level encapsulator which
          --  indicates that the node cannot possibly appear at any level.
-         --  Note that this check must come after the declaration level check
+         --  Note that this check must come after the declaration-level check
          --  because both predicates share certain nodes.
 
          elsif Is_Non_Library_Level_Encapsulator (Curr) then
@@ -4103,7 +4128,7 @@ package body Sem_Elab is
       Nested_OK : Boolean := False) return Boolean
    is
       function Find_Enclosing_Context (N : Node_Id) return Node_Id;
-      --  Return the nearest enclosing non-library level or compilation unit
+      --  Return the nearest enclosing non-library-level or compilation unit
       --  node which which encapsulates arbitrary node N. Return Empty is no
       --  such context is available.
 
@@ -4149,7 +4174,7 @@ package body Sem_Elab is
                   return Par;
                end if;
 
-            --  Reaching a compilation unit node without hitting a non-library
+            --  Reaching a compilation unit node without hitting a non-library-
             --  level encapsulator indicates that N is at the library level in
             --  which case the compilation unit is the context.
 
@@ -4231,7 +4256,7 @@ package body Sem_Elab is
 
    procedure Initialize is
    begin
-      --  Set the soft link which enables Atree.Rewrite to update a top level
+      --  Set the soft link which enables Atree.Rewrite to update a top-level
       --  scenario each time it is transformed into another node.
 
       Set_Rewriting_Proc (Update_Elaboration_Scenario'Access);
@@ -4837,19 +4862,6 @@ package body Sem_Elab is
       return False;
    end Is_Bodiless_Subprogram;
 
-   --------------------------------
-   -- Is_Check_Emitting_Scenario --
-   --------------------------------
-
-   function Is_Check_Emitting_Scenario (N : Node_Id) return Boolean is
-   begin
-      return
-        Nkind_In (N, N_Call_Marker,
-                     N_Function_Instantiation,
-                     N_Package_Instantiation,
-                     N_Procedure_Instantiation);
-   end Is_Check_Emitting_Scenario;
-
    ------------------------
    -- Is_Controlled_Proc --
    ------------------------
@@ -5104,6 +5116,15 @@ package body Sem_Elab is
         Ekind_In (Id, E_Function, E_Procedure)
           and then Present (Protected_Subprogram (Id));
    end Is_Protected_Body_Subp;
+
+   ------------------------------------
+   -- Is_Recorded_Top_Level_Scenario --
+   ------------------------------------
+
+   function Is_Recorded_Top_Level_Scenario (N : Node_Id) return Boolean is
+   begin
+      return Recorded_Top_Level_Scenarios.Get (N);
+   end Is_Recorded_Top_Level_Scenario;
 
    ------------------------
    -- Is_Safe_Activation --
@@ -5568,7 +5589,7 @@ package body Sem_Elab is
    begin
       --  The root appears within the declaratons of a block statement, entry
       --  body, subprogram body, or task body ignoring enclosing packages. The
-      --  root is always within the main unit. An up level target is a notion
+      --  root is always within the main unit. An up-level target is a notion
       --  applicable only to the static model because scenarios are reached by
       --  means of graph traversal started from a fixed declarative or library
       --  level.
@@ -5578,7 +5599,7 @@ package body Sem_Elab is
       if Static_Elaboration_Checks
         and then Find_Enclosing_Level (Root) = Declaration_Level
       then
-         --  The target is within the main unit. It acts as an up level target
+         --  The target is within the main unit. It acts as an up-level target
          --  when it appears within a context which encloses the root.
 
          --    package body Main_Unit is
@@ -5594,7 +5615,7 @@ package body Sem_Elab is
             return not In_Same_Context (Root, Target_Decl, Nested_OK => True);
 
          --  Otherwise the target is external to the main unit which makes it
-         --  an up level target.
+         --  an up-level target.
 
          else
             return True;
@@ -5609,14 +5630,32 @@ package body Sem_Elab is
    -------------------------------
 
    procedure Kill_Elaboration_Scenario (N : Node_Id) is
-   begin
-      --  Eliminate the scenario by suppressing the generation of conditional
-      --  ABE checks or guaranteed ABE failures. Note that other diagnostics
-      --  must be carried out ignoring the fact that the scenario is within
-      --  dead code.
+      package Scenarios renames Top_Level_Scenarios;
 
-      if Is_Scenario (N) then
-         Set_Is_Elaboration_Checks_OK_Node (N, False);
+   begin
+      --  Eliminate a recorded top-level scenario when it appears within dead
+      --  code because it will not be executed at elaboration time.
+
+      if Is_Scenario (N)
+        and then Is_Recorded_Top_Level_Scenario (N)
+      then
+         --  Performance node: list traversal
+
+         for Index in Scenarios.First .. Scenarios.Last loop
+            if Scenarios.Table (Index) = N then
+               Scenarios.Table (Index) := Empty;
+
+               --  The top-level scenario is no longer recorded
+
+               Set_Is_Recorded_Top_Level_Scenario (N, False);
+               return;
+            end if;
+         end loop;
+
+         --  A recorded top-level scenario must be in the table of recorded
+         --  top-level scenarios.
+
+         pragma Assert (False);
       end if;
    end Kill_Elaboration_Scenario;
 
@@ -8352,7 +8391,7 @@ package body Sem_Elab is
          return;
       end if;
 
-      --  Ensure that a library level call does not appear in a preelaborated
+      --  Ensure that a library-level call does not appear in a preelaborated
       --  unit. The check must come before ignoring scenarios within external
       --  units or inside generics because calls in those context must also be
       --  verified.
@@ -8426,23 +8465,23 @@ package body Sem_Elab is
 
          Level := Find_Enclosing_Level (N);
 
-         --  Declaration level scenario
+         --  Declaration-level scenario
 
          if Declaration_Level_OK and then Level = Declaration_Level then
             null;
 
-         --  Library level scenario
+         --  Library-level scenario
 
          elsif Level in Library_Level then
             null;
 
-         --  Instantiation library level scenario
+         --  Instantiation library-level scenario
 
          elsif Level = Instantiation then
             null;
 
          --  Otherwise the scenario does not appear at the proper level and
-         --  cannot possibly act as a top level scenario.
+         --  cannot possibly act as a top-level scenario.
 
          else
             return;
@@ -8459,16 +8498,21 @@ package body Sem_Elab is
       --  later processing by the ABE phase.
 
       Top_Level_Scenarios.Append (N);
-
-      --  Mark a scenario which may produce run-time conditional ABE checks or
-      --  guaranteed ABE failures as recorded. The flag ensures that scenario
-      --  rewriting performed by Atree.Rewrite will be properly reflected in
-      --  all relevant internal data structures.
-
-      if Is_Check_Emitting_Scenario (N) then
-         Set_Is_Recorded_Scenario (N);
-      end if;
+      Set_Is_Recorded_Top_Level_Scenario (N);
    end Record_Elaboration_Scenario;
+
+   ---------------------------------------
+   -- Recorded_Top_Level_Scenarios_Hash --
+   ---------------------------------------
+
+   function Recorded_Top_Level_Scenarios_Hash
+     (Key : Node_Id) return Recorded_Top_Level_Scenarios_Index
+   is
+   begin
+      return
+        Recorded_Top_Level_Scenarios_Index
+          (Key mod Recorded_Top_Level_Scenarios_Max);
+   end Recorded_Top_Level_Scenarios_Hash;
 
    -------------------
    -- Root_Scenario --
@@ -8484,6 +8528,18 @@ package body Sem_Elab is
       pragma Assert (Stack.Last >= Stack.First);
       return Stack.Table (Stack.First);
    end Root_Scenario;
+
+   ----------------------------------------
+   -- Set_Is_Recorded_Top_Level_Scenario --
+   ----------------------------------------
+
+   procedure Set_Is_Recorded_Top_Level_Scenario
+     (N   : Node_Id;
+      Val : Boolean := True)
+   is
+   begin
+      Recorded_Top_Level_Scenarios.Set (N, Val);
+   end Set_Is_Recorded_Top_Level_Scenario;
 
    -------------------------------
    -- Static_Elaboration_Checks --
@@ -8590,7 +8646,7 @@ package body Sem_Elab is
 
             --  Save a suitable scenario in the Nested_Scenarios list of the
             --  subprogram body. As a result any subsequent traversals of the
-            --  subprogram body started from a different top level scenario no
+            --  subprogram body started from a different top-level scenario no
             --  longer need to reexamine the tree.
 
             elsif Is_Suitable_Scenario (Nod) then
@@ -8683,7 +8739,7 @@ package body Sem_Elab is
       end if;
 
       --  Nothing to do if the body was already traversed during the processing
-      --  of the same top level scenario.
+      --  of the same top-level scenario.
 
       if Visited_Bodies.Get (N) then
          return;
@@ -8697,7 +8753,7 @@ package body Sem_Elab is
       Nested := Nested_Scenarios (Defining_Entity (N));
 
       --  The subprogram body was already examined as part of the elaboration
-      --  graph starting from a different top level scenario. There is no need
+      --  graph starting from a different top-level scenario. There is no need
       --  to traverse the declarations and statements again because this will
       --  yield the exact same scenarios. Use the nested scenarios collected
       --  during the first inspection of the body.
@@ -8721,14 +8777,18 @@ package body Sem_Elab is
       package Scenarios renames Top_Level_Scenarios;
 
    begin
+      --  Nothing to do when the old and new scenarios are one and the same
+
+      if Old_N = New_N then
+         return;
+
       --  A scenario is being transformed by Atree.Rewrite. Update all relevant
       --  internal data structures to reflect this change. This ensures that a
       --  potential run-time conditional ABE check or a guaranteed ABE failure
       --  is inserted at the proper place in the tree.
 
-      if Is_Check_Emitting_Scenario (Old_N)
-        and then Is_Recorded_Scenario (Old_N)
-        and then Old_N /= New_N
+      elsif Is_Scenario (Old_N)
+        and then Is_Recorded_Top_Level_Scenario (Old_N)
       then
          --  Performance note: list traversal
 
@@ -8736,13 +8796,17 @@ package body Sem_Elab is
             if Scenarios.Table (Index) = Old_N then
                Scenarios.Table (Index) := New_N;
 
-               Set_Is_Recorded_Scenario (Old_N, False);
-               Set_Is_Recorded_Scenario (New_N);
+               --  The old top-level scenario is no longer recorded, but the
+               --  new one is.
+
+               Set_Is_Recorded_Top_Level_Scenario (Old_N, False);
+               Set_Is_Recorded_Top_Level_Scenario (New_N);
                return;
             end if;
          end loop;
 
-         --  A recorded scenario must be in the table of recorded scenarios
+         --  A recorded top-level scenario must be in the table of recorded
+         --  top-level scenarios.
 
          pragma Assert (False);
       end if;
