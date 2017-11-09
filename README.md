@@ -28,7 +28,7 @@ cd oppencoarrays
   --from-url https://github.com/sourceryinstitute/gcc/archive/<release-tag>.tar.gz \
   --install-version <release-tag>
 ```
-where <release-tag> must be replaced with the appropriate string such as teams-20170921.  The final
+where `<release-tag>` must be replaced with the appropriate string such as teams-20170921.  The final
 command above peforms the safest but slowest build, which could take several hours to complete.
 For a speedier build, add the `--disable-bootstrap`, which might fail if the GCC you are using
 to build is too old.  Also, for an interactive build, add `--yes-to-all` to instruct the
@@ -38,8 +38,6 @@ options, including choosing another installation path, execute `./install.sh --h
 
 Next use the resulting compilers to build [MPICH] 3.2 or later:
 ```bash
-#Install the teams-branch release of the GCC fork:
-./install.sh --package gcc --from-url https://github.com/sourceryinstitute/gcc/teams-<release-tag>
 
 # Install MPICH 3.2 or later using the GCC that was installed above:
 export LD_LIBRARY_PATH="${PWD}"/prerequisites/installations/gcc/teams-<release-tag>/lib64
@@ -58,7 +56,7 @@ git checkout opencoarrays-teams
 ./install.sh  \
    --with-mpi "${PWD}"/prerequisites/installations/mpich/<mpich-version-number>/
 ```
-after again replacing text between angular brackets with the appropriate string (<...>) such as "3.2".
+after replacing `<mpich-version-number>` with... wait for it... the MPI version number (3.2 or later). :) 
 Please report any problems with the above steps on our [issues page].
 
 
