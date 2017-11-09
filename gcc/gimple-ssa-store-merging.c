@@ -209,12 +209,13 @@ struct store_immediate_info
   /* INTEGER_CST for constant stores, MEM_REF for memory copy or
      BIT_*_EXPR for logical bitwise operation.  */
   enum tree_code rhs_code;
+  bool bit_not_p;
   /* Operands.  For BIT_*_EXPR rhs_code both operands are used, otherwise
      just the first one.  */
   store_operand_info ops[2];
   store_immediate_info (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 			unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-			gimple *, unsigned int, enum tree_code,
+			gimple *, unsigned int, enum tree_code, bool,
 			const store_operand_info &,
 			const store_operand_info &);
 };
@@ -226,10 +227,11 @@ store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
 					    gimple *st,
 					    unsigned int ord,
 					    enum tree_code rhscode,
+					    bool bitnotp,
 					    const store_operand_info &op0r,
 					    const store_operand_info &op1r)
   : bitsize (bs), bitpos (bp), bitregion_start (brs), bitregion_end (bre),
-    stmt (st), order (ord), rhs_code (rhscode)
+    stmt (st), order (ord), rhs_code (rhscode), bit_not_p (bitnotp)
 #if __cplusplus >= 201103L
     , ops { op0r, op1r }
 {
@@ -1169,7 +1171,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	 Merge it into the current store group.  There can be gaps in between
 	 the stores, but there can't be gaps in between bitregions.  */
       else if (info->bitregion_start <= merged_store->bitregion_end
-	       && info->rhs_code == merged_store->stores[0]->rhs_code)
+	       && info->rhs_code == merged_store->stores[0]->rhs_code
+	       && info->bit_not_p == merged_store->stores[0]->bit_not_p)
 	{
 	  store_immediate_info *infof = merged_store->stores[0];
 
@@ -1386,6 +1389,17 @@ count_multiple_uses (store_immediate_info *info)
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
+      if (info->bit_not_p)
+	{
+	  if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	    ret = 1; /* Fall through below to return
+			the BIT_NOT_EXPR stmt and then
+			BIT_{AND,IOR,XOR}_EXPR and anything it
+			uses.  */
+	  else
+	    /* stmt is after this the BIT_NOT_EXPR.  */
+	    stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	}
       if (!has_single_use (gimple_assign_rhs1 (stmt)))
 	{
 	  ret += 1 + info->ops[0].bit_not_p;
@@ -1479,6 +1493,8 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
+	  if (info->bit_not_p)
+	    total_orig[0]++; /* The orig BIT_NOT_EXPR stmt.  */
 	  total_orig[0]++; /* The orig BIT_*_EXPR stmt.  */
 	  break;
 	default:
@@ -1649,6 +1665,8 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
+	  if (info->bit_not_p)
+	    total_new[0] += ret; /* The new BIT_NOT_EXPR stmt.  */
 	  total_new[0] += ret; /* The new BIT_*_EXPR stmt.  */
 	  break;
 	default:
@@ -1918,6 +1936,17 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	      else
 		gimple_seq_add_stmt_without_update (&seq, stmt);
 	      src = gimple_assign_lhs (stmt);
+	      if (split_store->orig_stores[0]->bit_not_p)
+		{
+		  stmt = gimple_build_assign (make_ssa_name (int_type),
+					      BIT_NOT_EXPR, src);
+		  gimple_set_location (stmt, bit_loc);
+		  if (load_addr[1] == NULL_TREE && gsi_bb (load_gsi[0]))
+		    gimple_seq_add_stmt_without_update (&load_seq[0], stmt);
+		  else
+		    gimple_seq_add_stmt_without_update (&seq, stmt);
+		  src = gimple_assign_lhs (stmt);
+		}
 	      break;
 	    default:
 	      src = ops[0];
@@ -2232,6 +2261,11 @@ handled_load (gimple *stmt, store_operand_info *op,
 	  && handled_load (SSA_NAME_DEF_STMT (rhs1), op, bitsize, bitpos,
 			   bitregion_start, bitregion_end))
 	{
+	  /* Don't allow _1 = load; _2 = ~1; _3 = ~_2; which should have
+	     been optimized earlier, but if allowed here, would confuse the
+	     multiple uses counting.  */
+	  if (op->bit_not_p)
+	    return false;
 	  op->bit_not_p = !op->bit_not_p;
 	  return true;
 	}
@@ -2283,6 +2317,7 @@ pass_store_merging::process_store (gimple *stmt)
 		  || ((bitsize > MAX_BITSIZE_MODE_ANY_INT)
 		       && (TREE_CODE (rhs) != INTEGER_CST)));
   enum tree_code rhs_code = ERROR_MARK;
+  bool bit_not_p = false;
   store_operand_info ops[2];
   if (invalid)
     ;
@@ -2301,7 +2336,17 @@ pass_store_merging::process_store (gimple *stmt)
       else if (handled_load (def_stmt, &ops[0], bitsize, bitpos,
 			     bitregion_start, bitregion_end))
 	rhs_code = MEM_REF;
-      else
+      else if (gimple_assign_rhs_code (def_stmt) == BIT_NOT_EXPR) 
+	{
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && is_gimple_assign (SSA_NAME_DEF_STMT (rhs1)))
+	    {
+	      bit_not_p = true;
+	      def_stmt = SSA_NAME_DEF_STMT (rhs1);
+	    }
+	}
+      if (rhs_code == ERROR_MARK && !invalid)
 	switch ((rhs_code = gimple_assign_rhs_code (def_stmt)))
 	  {
 	  case BIT_AND_EXPR:
@@ -2355,7 +2400,7 @@ pass_store_merging::process_store (gimple *stmt)
       unsigned int ord = (*chain_info)->m_store_info.length ();
       info = new store_immediate_info (bitsize, bitpos, bitregion_start,
 				       bitregion_end, stmt, ord, rhs_code,
-				       ops[0], ops[1]);
+				       bit_not_p, ops[0], ops[1]);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Recording immediate store from stmt:\n");
@@ -2383,7 +2428,7 @@ pass_store_merging::process_store (gimple *stmt)
     = new imm_store_chain_info (m_stores_head, base_addr);
   info = new store_immediate_info (bitsize, bitpos, bitregion_start,
 				   bitregion_end, stmt, 0, rhs_code,
-				   ops[0], ops[1]);
+				   bit_not_p, ops[0], ops[1]);
   new_chain->m_store_info.safe_push (info);
   m_stores.put (base_addr, new_chain);
   if (dump_file && (dump_flags & TDF_DETAILS))
