@@ -272,10 +272,13 @@ set_value_range (value_range *vr, enum value_range_type t, tree min,
   vr->max = max;
 
   /* Since updating the equivalence set involves deep copying the
-     bitmaps, only do it if absolutely necessary.  */
+     bitmaps, only do it if absolutely necessary.
+
+     All equivalence bitmaps are allocated from the same obstack.  So
+     we can use the obstack associated with EQUIV to allocate vr->equiv.  */
   if (vr->equiv == NULL
       && equiv != NULL)
-    vr->equiv = BITMAP_ALLOC (&vrp_equiv_obstack);
+    vr->equiv = BITMAP_ALLOC (equiv->obstack);
 
   if (equiv != vr->equiv)
     {
@@ -8828,7 +8831,9 @@ vrp_intersect_ranges_1 (value_range *vr0, value_range *vr1)
     bitmap_ior_into (vr0->equiv, vr1->equiv);
   else if (vr1->equiv && !vr0->equiv)
     {
-      vr0->equiv = BITMAP_ALLOC (&vrp_equiv_obstack);
+      /* All equivalence bitmaps are allocated from the same obstack.  So
+	 we can use the obstack associated with VR to allocate vr0->equiv.  */
+      vr0->equiv = BITMAP_ALLOC (vr1->equiv->obstack);
       bitmap_copy (vr0->equiv, vr1->equiv);
     }
 }
