@@ -171,8 +171,6 @@ static inline void
 bmp_iter_set_init (sbitmap_iterator *i, const_sbitmap bmp,
 		   unsigned int min, unsigned *bit_no ATTRIBUTE_UNUSED)
 {
-  bitmap_check_index (bmp, min);
-
   i->word_num = min / (unsigned int) SBITMAP_ELT_BITS;
   i->bit_num = min;
   i->size = bmp->size;

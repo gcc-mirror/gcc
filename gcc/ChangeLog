@@ -1,5 +1,10 @@
 2017-11-09  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/82669
+	* sbitmap.h (bmp_iter_set_init): Remove non needed check.
+
+2017-11-09  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/48463
 	* coverage.c (coverage_begin_function): Output also end locus
 	of a function and information whether the function is
