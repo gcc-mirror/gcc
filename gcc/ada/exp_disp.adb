@@ -677,7 +677,8 @@ package body Exp_Disp is
    begin
       return Ada_Version >= Ada_2005
         and then not Is_Interface (Typ)
-        and then Has_Interfaces (Typ);
+        and then Has_Interfaces (Typ)
+        and then not Building_Static_DT (Typ);
    end Elab_Flag_Needed;
 
    -----------------------------
@@ -5513,11 +5514,23 @@ package body Exp_Disp is
 
          else
             declare
-               TSD_Ifaces_List : constant List_Id := New_List;
-               Elmt       : Elmt_Id;
-               Sec_DT_Tag : Node_Id;
+               TSD_Ifaces_List  : constant List_Id := New_List;
+               Elmt             : Elmt_Id;
+               Ifaces_List      : Elist_Id;
+               Ifaces_Comp_List : Elist_Id;
+               Ifaces_Tag_List  : Elist_Id;
+               Offset_To_Top    : Node_Id;
+               Sec_DT_Tag       : Node_Id;
 
             begin
+               --  Collect interfaces information if we need to compute the
+               --  offset to the top using the dummy object.
+
+               if Present (Dummy_Object) then
+                  Collect_Interfaces_Info (Typ,
+                    Ifaces_List, Ifaces_Comp_List, Ifaces_Tag_List);
+               end if;
+
                AI := First_Elmt (Typ_Ifaces);
                while Present (AI) loop
                   if Is_Ancestor (Node (AI), Typ, Use_Full_View => True) then
@@ -5552,6 +5565,46 @@ package body Exp_Disp is
                                          Loc);
                   end if;
 
+                  --  For static dispatch tables compute Offset_To_Top using
+                  --  the dummy object.
+
+                  if Present (Dummy_Object) then
+                     declare
+                        Iface            : constant Node_Id := Node (AI);
+                        Iface_Comp       : Node_Id := Empty;
+                        Iface_Comp_Elmt  : Elmt_Id;
+                        Iface_Elmt       : Elmt_Id;
+
+                     begin
+                        Iface_Elmt      := First_Elmt (Ifaces_List);
+                        Iface_Comp_Elmt := First_Elmt (Ifaces_Comp_List);
+
+                        while Present (Iface_Elmt) loop
+                           if Node (Iface_Elmt) = Iface then
+                              Iface_Comp := Node (Iface_Comp_Elmt);
+                              exit;
+                           end if;
+
+                           Next_Elmt (Iface_Elmt);
+                           Next_Elmt (Iface_Comp_Elmt);
+                        end loop;
+                        pragma Assert (Present (Iface_Comp));
+
+                        Offset_To_Top :=
+                          Make_Op_Minus (Loc,
+                            Make_Attribute_Reference (Loc,
+                              Prefix         =>
+                                Make_Selected_Component (Loc,
+                                  Prefix        =>
+                                    New_Occurrence_Of (Dummy_Object, Loc),
+                                  Selector_Name =>
+                                    New_Occurrence_Of (Iface_Comp, Loc)),
+                              Attribute_Name => Name_Position));
+                     end;
+                  else
+                     Offset_To_Top := Make_Integer_Literal (Loc, 0);
+                  end if;
+
                   Append_To (TSD_Ifaces_List,
                      Make_Aggregate (Loc,
                        Expressions => New_List (
@@ -5569,7 +5622,7 @@ package body Exp_Disp is
 
                         --  Offset_To_Top_Value
 
-                        Make_Integer_Literal (Loc, 0),
+                        Offset_To_Top,
 
                         --  Offset_To_Top_Func
 
@@ -5589,17 +5642,15 @@ package body Exp_Disp is
                Set_Is_Statically_Allocated (ITable,
                  Is_Library_Level_Tagged_Type (Typ));
 
-               --  The table of interfaces is not constant; its slots are
-               --  filled at run time by the IP routine using attribute
-               --  'Position to know the location of the tag components
-               --  (and this attribute cannot be safely used before the
-               --  object is initialized).
+               --  The table of interfaces is constant if we are building a
+               --  static dispatch table; otherwise is not constant because
+               --  its slots are filled at run time by the IP routine.
 
                Append_To (Result,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => ITable,
                    Aliased_Present     => True,
-                   Constant_Present    => False,
+                   Constant_Present    => Present (Dummy_Object),
                    Object_Definition   =>
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>

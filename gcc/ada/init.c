@@ -2568,6 +2568,10 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 		   (__sigtramphandler_t *)&__gnat_map_signal);
 }
 
+/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
+/* sigaltstack is currently not supported by QNX7 */
+char __gnat_alternate_stack[0];
+
 void
 __gnat_install_handler (void)
 {
