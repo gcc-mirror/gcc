@@ -19536,9 +19536,9 @@ package body Sem_Util is
       N : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
    begin
-      Set_Ekind          (N, Kind);
-      Set_Is_Internal    (N, True);
-      Append_Entity      (N, Scope_Id);
+      Set_Ekind       (N, Kind);
+      Set_Is_Internal (N, True);
+      Append_Entity   (N, Scope_Id);
 
       if Kind in Type_Kind then
          Init_Size_Align (N);

@@ -1,3 +1,18 @@
+2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Ignore loop parameters
+	in expression funtions that are expanded into variables.
+
+2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb: Minor whitespace cleanup.
+
+2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
+
+	* libgnarl/s-taprop__qnx.adb: Refine aarch64-qnx. Use the POSIX
+	s-taprop version rather than a custom one.
+	* sigtramp-qnx.c (aarch64-qnx): Implement the signal trampoline.
+
 2017-11-08  Piotr Trojanek  <trojanek@adacore.com>
 
 	* lib-xref.ads, lib-xref-spark_specific.adb
