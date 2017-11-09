@@ -1,7 +1,5 @@
 -- { dg-do compile }
-
-pragma Warnings
-  (Off, "anonymous access-to-controlled object will be finalized when its enclosing unit goes out of scope");
+-- { dg-options "-gnatws" }
 
 with Ada.Finalization; use Ada.Finalization;
 procedure finalized is
