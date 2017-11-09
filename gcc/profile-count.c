@@ -255,3 +255,29 @@ profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
     return CGRAPH_FREQ_MAX;
   return MIN (scale, CGRAPH_FREQ_MAX);
 }
+
+/* We want to scale profile across function boundary from NUM to DEN.
+   Take care of the side case when DEN is zeros.  We still want to behave
+   sanely here which means
+     - scale to profile_count::zero () if NUM is profile_count::zero
+     - do not affect anything if NUM == DEN
+     - preserve counter value but adjust quality in other cases.  */
+
+void
+profile_count::adjust_for_ipa_scaling (profile_count *num,
+				       profile_count *den)
+{
+  /* Scaling is no-op if NUM and DEN are the same.  */
+  if (*num == *den)
+    return;
+  /* Scaling to zero is always zeor.  */
+  if (*num == profile_count::zero ())
+    return;
+  /* If den is non-zero we are safe.  */
+  if (den->force_nonzero () == *den)
+    return;
+  /* Force both to non-zero so we do not push profiles to 0 when
+     both num == 0 and den == 0.  */
+  *den = den->force_nonzero ();
+  *num = num->force_nonzero ();
+}

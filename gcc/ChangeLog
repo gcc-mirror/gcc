@@ -1,3 +1,13 @@
+2017-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/82879
+	* ipa-inline-transform.c (update_noncloned_frequencies): Use
+	profile_count::adjust_for_ipa_scaling.
+	* tree-inline.c (copy_bb, copy_cfg_body): Likewise.
+	* profile-count.c (profile_count::adjust_for_ipa_scaling): New member
+	function.
+	* profile-count.h (profile_count::adjust_for_ipa_scaling): Declare.
+
 2017-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-store-merging.c (count_multiple_uses): New function.

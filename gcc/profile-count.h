@@ -1044,6 +1044,11 @@ public:
   /* Return true if THIS is known to differ significantly from OTHER.  */
   bool differs_from_p (profile_count other) const;
 
+  /* We want to scale profile across function boundary from NUM to DEN.
+     Take care of the side case when NUM and DEN are zeros of incompatible
+     kinds.  */
+  static void adjust_for_ipa_scaling (profile_count *num, profile_count *den);
+
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);
   void stream_out (struct output_block *);
