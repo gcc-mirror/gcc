@@ -2224,13 +2224,13 @@ package body Inline is
       Exit_Lab : Entity_Id        := Empty;
       F        : Entity_Id;
       A        : Node_Id;
-      Lab_Decl : Node_Id;
+      Lab_Decl : Node_Id          := Empty;
       Lab_Id   : Node_Id;
       New_A    : Node_Id;
-      Num_Ret  : Nat := 0;
+      Num_Ret  : Nat              := 0;
       Ret_Type : Entity_Id;
 
-      Targ : Node_Id;
+      Targ : Node_Id := Empty;
       --  The target of the call. If context is an assignment statement then
       --  this is the left-hand side of the assignment, else it is a temporary
       --  to which the return value is assigned prior to rewriting the call.

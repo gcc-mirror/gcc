@@ -2765,7 +2765,6 @@ package body Checks is
       S_Typ   : Entity_Id;
       Arr     : Node_Id   := Empty;  -- initialize to prevent warning
       Arr_Typ : Entity_Id := Empty;  -- initialize to prevent warning
-      OK      : Boolean   := False;  -- initialize to prevent warning
 
       Is_Subscr_Ref : Boolean;
       --  Set true if Expr is a subscript
@@ -2995,10 +2994,11 @@ package body Checks is
               and then Compile_Time_Known_Value (Thi)
             then
                declare
+                  OK  : Boolean := False;  -- initialize to prevent warning
                   Hiv : constant Uint := Expr_Value (Thi);
                   Lov : constant Uint := Expr_Value (Tlo);
-                  Hi  : Uint;
-                  Lo  : Uint;
+                  Hi  : Uint := No_Uint;
+                  Lo  : Uint := No_Uint;
 
                begin
                   --  If range is null, we for sure have a constraint error (we
@@ -4370,8 +4370,8 @@ package body Checks is
       Hi_Left : Uint;
       --  Lo and Hi bounds of left operand
 
-      Lo_Right : Uint;
-      Hi_Right : Uint;
+      Lo_Right : Uint := No_Uint;
+      Hi_Right : Uint := No_Uint;
       --  Lo and Hi bounds of right (or only) operand
 
       Bound : Node_Id;
@@ -4909,8 +4909,8 @@ package body Checks is
       Hi_Left : Ureal;
       --  Lo and Hi bounds of left operand
 
-      Lo_Right : Ureal;
-      Hi_Right : Ureal;
+      Lo_Right : Ureal := No_Ureal;
+      Hi_Right : Ureal := No_Ureal;
       --  Lo and Hi bounds of right (or only) operand
 
       Bound : Node_Id;
@@ -9814,7 +9814,7 @@ package body Checks is
       Do_Access   : Boolean := False;
       Wnode       : Node_Id  := Warn_Node;
       Ret_Result  : Check_Result := (Empty, Empty);
-      Num_Checks  : Integer := 0;
+      Num_Checks  : Natural := 0;
 
       procedure Add_Check (N : Node_Id);
       --  Adds the action given to Ret_Result if N is non-Empty

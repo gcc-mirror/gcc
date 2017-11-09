@@ -101,7 +101,7 @@ package body Sem_Intr is
       Nam  : constant Entity_Id := Entity (Name (N));
       Arg1 : constant Node_Id   := First_Actual (N);
       Typ  : Entity_Id;
-      Rtyp : Entity_Id;
+      Rtyp : Entity_Id := Empty;
       Cnam : Name_Id;
       Unam : Node_Id;
 

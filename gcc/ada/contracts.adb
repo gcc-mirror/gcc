@@ -2393,6 +2393,11 @@ package body Contracts is
             end if;
          end Process_Contract_Cases_For;
 
+         pragma Unmodified (Stmts);
+         --  Stmts is passed as IN OUT to signal that the list can be updated,
+         --  even if the corresponding integer value representing the list does
+         --  not change.
+
       --  Start of processing for Process_Contract_Cases
 
       begin
@@ -2534,6 +2539,11 @@ package body Contracts is
                end if;
             end loop;
          end Process_Spec_Postconditions;
+
+         pragma Unmodified (Stmts);
+         --  Stmts is passed as IN OUT to signal that the list can be updated,
+         --  even if the corresponding integer value representing the list does
+         --  not change.
 
       --  Start of processing for Process_Postconditions
 

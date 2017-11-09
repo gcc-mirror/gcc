@@ -1212,7 +1212,7 @@ package body Sem_Res is
       Func      : constant Entity_Id := Entity (Name (N));
       Is_Binary : constant Boolean   := Present (Act2);
       Op_Node   : Node_Id;
-      Opnd_Type : Entity_Id;
+      Opnd_Type : Entity_Id := Empty;
       Orig_Type : Entity_Id := Empty;
       Pack      : Entity_Id;
 
@@ -1523,6 +1523,7 @@ package body Sem_Res is
             --  Operator may be defined in an extension of System
 
             elsif Present (System_Aux_Id)
+              and then Present (Opnd_Type)
               and then Scope (Opnd_Type) = System_Aux_Id
             then
                null;

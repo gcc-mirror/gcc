@@ -391,7 +391,8 @@ package body Sem_Ch5 is
       T1 : Entity_Id;
       T2 : Entity_Id;
 
-      Save_Full_Analysis : Boolean;
+      Save_Full_Analysis : Boolean := False;
+      --  Force initialization to facilitate static analysis
 
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit

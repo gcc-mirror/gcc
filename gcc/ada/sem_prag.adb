@@ -28747,7 +28747,7 @@ package body Sem_Prag is
       Depends   : Node_Id;
       Formal    : Entity_Id;
       Global    : Node_Id;
-      Spec_Id   : Entity_Id;
+      Spec_Id   : Entity_Id := Empty;
       Subp_Decl : Node_Id;
       Typ       : Entity_Id;
 

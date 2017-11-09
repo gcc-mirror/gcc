@@ -903,13 +903,13 @@ package body Sem_Dim is
       Choice       : Node_Id;
       Dim_Aggr     : Node_Id;
       Dim_Symbol   : Node_Id;
-      Dim_Symbols  : Symbol_Array := No_Symbols;
-      Dim_System   : System_Type  := Null_System;
-      Position     : Nat := 0;
+      Dim_Symbols  : Symbol_Array       := No_Symbols;
+      Dim_System   : System_Type        := Null_System;
+      Position     : Dimension_Position := Invalid_Position;
       Unit_Name    : Node_Id;
-      Unit_Names   : Name_Array   := No_Names;
+      Unit_Names   : Name_Array         := No_Names;
       Unit_Symbol  : Node_Id;
-      Unit_Symbols : Symbol_Array := No_Symbols;
+      Unit_Symbols : Symbol_Array       := No_Symbols;
 
       Errors_Count : Nat;
       --  Errors_Count is a count of errors detected by the compiler so far
@@ -949,12 +949,12 @@ package body Sem_Dim is
       Dim_Aggr     := First (Expressions (Aggr));
       Errors_Count := Serious_Errors_Detected;
       while Present (Dim_Aggr) loop
-         Position := Position + 1;
-
-         if Position > High_Position_Bound then
+         if Position = High_Position_Bound then
             Error_Msg_N ("too many dimensions in system", Aggr);
             exit;
          end if;
+
+         Position := Position + 1;
 
          if Nkind (Dim_Aggr) /= N_Aggregate then
             Error_Msg_N ("aggregate expected", Dim_Aggr);
