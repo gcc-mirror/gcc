@@ -600,7 +600,8 @@
 (define_predicate "constant_call_address_operand"
   (match_code "symbol_ref")
 {
-  if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+  if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC
+      || flag_force_indirect_call)
     return false;
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op))
     return false;

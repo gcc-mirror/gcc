@@ -1,3 +1,9 @@
+2017-11-08  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/force-indirect-call-1.c: New test.
+	* gcc.target/i386/force-indirect-call-2.c: New test.
+	* gcc.target/i386/force-indirect-call-3.c: New test.
+
 2017-11-08  Steven G. Kargl  <kargl@kgcc.gnu.org>
 
 	PR Fortran/82841

@@ -1205,7 +1205,7 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
 -mmwaitx  -mclzero  -mpku  -mthreads @gol
--mcet -mibt -mshstk @gol
+-mcet -mibt -mshstk -mforce-indirect-call @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -26174,6 +26174,12 @@ ABI when targeting Microsoft Windows and the SysV ABI on all other systems.
 You can control this behavior for specific functions by
 using the function attributes @code{ms_abi} and @code{sysv_abi}.
 @xref{Function Attributes}.
+
+@item -mforce-indirect-call
+@opindex mforce-indirect-call
+Force all calls to functions to be indirect. This is useful
+when using Intel Processor Trace where it generates more precise timing
+information for function calls.
 
 @item -mcall-ms2sysv-xlogues
 @opindex mcall-ms2sysv-xlogues
