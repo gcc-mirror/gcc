@@ -438,6 +438,7 @@ get_max_uid (void)
   return crtl->emit.x_cur_insn_uid;
 }
 
+extern bool valid_for_const_vec_duplicate_p (machine_mode, rtx);
 extern rtx gen_const_vec_duplicate (machine_mode, rtx);
 extern rtx gen_vec_duplicate (machine_mode, rtx);
 

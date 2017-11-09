@@ -1625,7 +1625,8 @@ accessed with @code{CONST_FIXED_VALUE_LOW}.
 @item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
 Represents a vector constant.  The square brackets stand for the vector
 containing the constant elements.  @var{x0}, @var{x1} and so on are
-the @code{const_int}, @code{const_double} or @code{const_fixed} elements.
+the @code{const_int}, @code{const_wide_int}, @code{const_double} or
+@code{const_fixed} elements.
 
 The number of units in a @code{const_vector} is obtained with the macro
 @code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.

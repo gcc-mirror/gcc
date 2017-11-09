@@ -1,4 +1,13 @@
 2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/rtl.texi (const_vector): Say that elements can be
+	const_wide_ints too.
+	* emit-rtl.h (valid_for_const_vec_duplicate_p): Declare.
+	* emit-rtl.c (valid_for_const_vec_duplicate_p): New function.
+	(gen_vec_duplicate): Use it instead of CONSTANT_P.
+	* optabs.c (expand_vector_broadcast): Likewise.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
