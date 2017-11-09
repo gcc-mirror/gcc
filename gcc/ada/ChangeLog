@@ -1,3 +1,21 @@
+2017-11-09  Javier Miranda  <miranda@adacore.com>
+
+	* libgnat/s-rident.ads (Static_Dispatch_Tables): New restriction name.
+	* exp_disp.adb (Building_Static_DT): Check restriction.
+	(Building_Static_Secondary_DT): Check restriction.
+	(Make_DT): Initialize the HT_Link to No_Tag.
+	* opt.ads (Static_Dispatch_Tables): Rename flag...
+	(Building_Static_Dispatch_Tables): ... into this.  This will avoid
+	conflict with the restriction name.
+	* gnat1drv.adb: Update.
+	* exp_aggr.adb (Is_Static_Dispatch_Table_Aggregate): Update.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Update.
+
+2017-11-09  Pascal Obry  <obry@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb: Minor code clean-up.  Better using a
+	named number.
+
 2017-11-09  Yannick Moy  <moy@adacore.com>
 
 	* binde.adb (Diagnose_Elaboration_Problem): Mark procedure No_Return.

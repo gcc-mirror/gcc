@@ -281,7 +281,8 @@ package body Exp_Disp is
    ------------------------
 
    function Building_Static_DT (Typ : Entity_Id) return Boolean is
-      Root_Typ : Entity_Id := Root_Type (Typ);
+      Root_Typ  : Entity_Id := Root_Type (Typ);
+      Static_DT : Boolean;
 
    begin
       --  Handle private types
@@ -290,7 +291,7 @@ package body Exp_Disp is
          Root_Typ := Full_View (Root_Typ);
       end if;
 
-      return Static_Dispatch_Tables
+      Static_DT := Building_Static_Dispatch_Tables
         and then Is_Library_Level_Tagged_Type (Typ)
 
          --  If the type is derived from a CPP class we cannot statically
@@ -298,6 +299,12 @@ package body Exp_Disp is
          --  from the CPP side.
 
         and then not Is_CPP_Class (Root_Typ);
+
+      if not Static_DT then
+         Check_Restriction (Static_Dispatch_Tables, Typ);
+      end if;
+
+      return Static_DT;
    end Building_Static_DT;
 
    ----------------------------------
@@ -305,8 +312,9 @@ package body Exp_Disp is
    ----------------------------------
 
    function Building_Static_Secondary_DT (Typ : Entity_Id) return Boolean is
-      Full_Typ : Entity_Id := Typ;
-      Root_Typ : Entity_Id := Root_Type (Typ);
+      Full_Typ  : Entity_Id := Typ;
+      Root_Typ  : Entity_Id := Root_Type (Typ);
+      Static_DT : Boolean;
 
    begin
       --  Handle private types
@@ -319,11 +327,20 @@ package body Exp_Disp is
          Root_Typ := Full_View (Root_Typ);
       end if;
 
-      return Building_Static_DT (Full_Typ)
+      Static_DT := Building_Static_DT (Full_Typ)
         and then not Is_Interface (Full_Typ)
         and then Has_Interfaces (Full_Typ)
         and then (Full_Typ = Root_Typ
                    or else not Is_Variable_Size_Record (Etype (Full_Typ)));
+
+      if not Static_DT
+        and then not Is_Interface (Full_Typ)
+        and then Has_Interfaces (Full_Typ)
+      then
+         Check_Restriction (Static_Dispatch_Tables, Typ);
+      end if;
+
+      return Static_DT;
    end Building_Static_Secondary_DT;
 
    ----------------------------------
@@ -5103,7 +5120,8 @@ package body Exp_Disp is
          Append_To (Result,
            Make_Object_Declaration (Loc,
              Defining_Identifier => HT_Link,
-             Object_Definition   => New_Occurrence_Of (RTE (RE_Tag), Loc)));
+             Object_Definition   => New_Occurrence_Of (RTE (RE_Tag), Loc),
+             Expression          => New_Occurrence_Of (RTE (RE_No_Tag), Loc)));
       end if;
 
       --  Generate code to create the storage for the type specific data object
