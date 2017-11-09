@@ -6189,8 +6189,7 @@ package body Exp_Ch9 is
 
       Cond_Id    : Entity_Id;
       Entry_Body : Node_Id;
-      Func_Body  : Node_Id;
-      pragma Warnings (Off, Func_Body);
+      Func_Body  : Node_Id := Empty;
 
    --  Start of processing for Expand_Entry_Barrier
 

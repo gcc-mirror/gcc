@@ -6639,7 +6639,7 @@ package body Sem_Ch3 is
       Tdef          : constant Node_Id    := Type_Definition (N);
       Indic         : constant Node_Id    := Subtype_Indication (Tdef);
       Parent_Base   : constant Entity_Id  := Base_Type (Parent_Type);
-      Implicit_Base : Entity_Id;
+      Implicit_Base : Entity_Id           := Empty;
       New_Indic     : Node_Id;
 
       procedure Make_Implicit_Base;
@@ -6751,7 +6751,7 @@ package body Sem_Ch3 is
                                                           N_Subtype_Indication;
 
       D_Constraint   : Node_Id;
-      New_Constraint : Elist_Id;
+      New_Constraint : Elist_Id := No_Elist;
       Old_Disc       : Entity_Id;
       New_Disc       : Entity_Id;
       New_N          : Node_Id;

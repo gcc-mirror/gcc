@@ -1,3 +1,75 @@
+2017-11-09  Yannick Moy  <moy@adacore.com>
+
+	* binde.adb (Diagnose_Elaboration_Problem): Mark procedure No_Return.
+	* checks.adb (Apply_Scalar_Range_Check): Rescope variable OK closer to
+	use.  Default initialize Hi, Lo.
+	(Selected_Range_Checks): Retype Num_Checks more precisely.
+	(Determine_Range, Determine_Range_R): Default initialize Hi_Right,
+	Lo_Right.
+	* contracts.adb (Process_Contract_Cases): Mark parameter Stmts as
+	Unmodified.
+	(Process_Postconditions): Mark parameter Stmts as Unmodified.
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Default initialize Blk.
+	* exp_ch4.adb (Expand_N_Allocator): Default initialize Typ.
+	(Expand_Concatenate): Default initialize High_Bound.
+	(Optimize_Length_Comparison): Default initialize Ent, Index.
+	* exp_ch5.adb (Expand_Predicated_Loop): Default initialize L_Hi and
+	L_Lo.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Default initialize
+	Return_Stmt.
+	* exp_ch9.adb (Expand_Entry_Barrier): Default initialize Func_Body and
+	remove pragma Warnings(Off).
+	* exp_imgv.adb (Expand_Image_Attribute): Default initialize Tent.
+	* exp_util.adb (Find_Interface_Tag): Default initialize AI_Tag.
+	* freeze.adb (Check_Component_Storage_Order): Default initialize
+	Comp_Byte_Aligned rather than silencing messages with pragma
+	Warnings(Off), which does not work for CodePeer initialization
+	messages, and given that here the possible read of an unitialized value
+	depends on a proper use of parameters by the caller.
+	* inline.adb (Expand_Inlined_Call): Default initialize Lab_Decl, Targ.
+	* sem_ch12.adb (Build_Operator_Wrapper): Default initialize Expr.
+	* sem_ch3.adb (Build_Derived_Array_Type): Default initialize
+	Implicit_Base.
+	* sem_ch4.adb (List_Operand_Interps): Default initialize Nam and remove
+	pragma Warnings(Off).
+	(Analyze_Case_Expression): Rescope checking block within branch where
+	Others_Present is set by the call to Check_Choices.
+	* sem_ch5.adb (Analyze_Assignment): Default initialize
+	Save_Full_Analysis.
+	* sem_ch6.adb (Analyze_Function_Return): Default initialize Obj_Decl,
+	and restructure code to defend against previous errors, so that, in
+	that case, control does not flow to the elsif condition which read an
+	uninitialized Obj_Decl.
+	* sem_ch9.adb (Analyze_Requeue): Default initialize Synch_Type.
+	(Check_Interfaces): Default initialize Full_T_Ifaces and Priv_T_Ifaces,
+	which seem to be left uninitialized and possibly read in some cases.
+	* sem_dim.adb (Analyze_Aspect_Dimension_System): Retype Position more
+	precisely.  This requires to exchange the test for exiting in case of
+	too many positions and the increment to Position, inside the loop.
+	* sem_eval.adb (Eval_Concatenation): Default initialize Folded_Val,
+	which cannot be read uninitialized, but the reasons for that are quite
+	subtle.
+	* sem_intr.adb (Check_Intrinsic_Call): Default initialize Rtyp.
+	* sem_prag.adb (Collect_Subprogram_Inputs_Outputs): Default initialize
+	Spec_Id.
+	* sem_res.adb (Make_Call_Into_Operator): Default initialize Opnd_Type,
+	and test for presence of non-null Opnd_Type before testing its scope,
+	in a test which would read its value uninitialized, and is very rarely
+	exercized (it depends on the presence of an extension of System).
+	* sem_spark.ads: Update comment to fix name of main analysis procedure.
+	* sem_warn.adb (Warn_On_Known_Condition): Default initialize
+	Test_Result.
+	* set_targ.adb (FailN): Mark procedure with No_Return.
+	* stylesw.adb (Save_Style_Check_Options): Delete useless code to
+	initialize all array Options to white space, as there is already code
+	doing the same for the remaining positions in Options at the end of the
+	procedure.
+
+2017-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch11.adb (Possible_Local_Raise): Do not issue the warning for
+	generic instantiations either.
+
 2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_prag.adb (Analyze_Part_Of): Reword error message.

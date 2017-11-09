@@ -339,9 +339,8 @@ package body Sem_Ch4 is
       --------------------------
 
       procedure List_Operand_Interps (Opnd : Node_Id) is
-         Nam   : Node_Id;
-         pragma Warnings (Off, Nam);
-         Err   : Node_Id := N;
+         Nam : Node_Id := Empty;
+         Err : Node_Id := N;
 
       begin
          if Is_Overloaded (Opnd) then
@@ -1720,11 +1719,11 @@ package body Sem_Ch4 is
       else
          Analyze_Choices (Alternatives (N), Exp_Type);
          Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
-      end if;
 
-      if Exp_Type = Universal_Integer and then not Others_Present then
-         Error_Msg_N
-           ("case on universal integer requires OTHERS choice", Expr);
+         if Exp_Type = Universal_Integer and then not Others_Present then
+            Error_Msg_N
+              ("case on universal integer requires OTHERS choice", Expr);
+         end if;
       end if;
    end Analyze_Case_Expression;
 

@@ -5447,7 +5447,7 @@ package body Exp_Util is
      (T     : Entity_Id;
       Iface : Entity_Id) return Entity_Id
    is
-      AI_Tag : Entity_Id;
+      AI_Tag : Entity_Id := Empty;
       Found  : Boolean   := False;
       Typ    : Entity_Id := T;
 

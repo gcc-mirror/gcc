@@ -1054,7 +1054,7 @@ package body Exp_Attr is
       Base_Typ  : constant Entity_Id := Base_Type (Etype (Pref));
       Exprs     : constant List_Id   := Expressions (N);
       Aux_Decl  : Node_Id;
-      Blk       : Node_Id;
+      Blk       : Node_Id := Empty;
       Decls     : List_Id;
       Installed : Boolean;
       Loc       : Source_Ptr;

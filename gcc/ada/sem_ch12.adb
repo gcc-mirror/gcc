@@ -5895,8 +5895,7 @@ package body Sem_Ch12 is
                     Present (Next_Formal (First_Formal (Formal_Subp)));
 
       Decl    : Node_Id;
-      Expr    : Node_Id;
-      pragma Warnings (Off, Expr);
+      Expr    : Node_Id := Empty;
       F1, F2  : Entity_Id;
       Func    : Entity_Id;
       Op_Name : Name_Id;

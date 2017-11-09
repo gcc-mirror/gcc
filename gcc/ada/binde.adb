@@ -353,6 +353,7 @@ package body Binde is
 
    procedure Diagnose_Elaboration_Problem
      (Elab_Order : in out Unit_Id_Table);
+   pragma No_Return (Diagnose_Elaboration_Problem);
    --  Called when no elaboration order can be found. Outputs an appropriate
    --  diagnosis of the problem, and then abandons the bind.
 

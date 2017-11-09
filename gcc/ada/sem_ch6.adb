@@ -1039,7 +1039,7 @@ package body Sem_Ch6 is
       ---------------------
 
       Expr     : Node_Id;
-      Obj_Decl : Node_Id;
+      Obj_Decl : Node_Id := Empty;
 
    --  Start of processing for Analyze_Function_Return
 
@@ -1190,13 +1190,16 @@ package body Sem_Ch6 is
 
       --  Case of Expr present
 
-      if Present (Expr)
+      if Present (Expr) then
 
-        --  Defend against previous errors
+         --  Defend against previous errors
 
-        and then Nkind (Expr) /= N_Empty
-        and then Present (Etype (Expr))
-      then
+         if Nkind (Expr) = N_Empty
+           or else No (Etype (Expr))
+         then
+            return;
+         end if;
+
          --  Apply constraint check. Note that this is done before the implicit
          --  conversion of the expression done for anonymous access types to
          --  ensure correct generation of the null-excluding check associated
