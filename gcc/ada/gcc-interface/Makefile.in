@@ -887,6 +887,37 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
+# AARCH64 QNX
+ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<libgnarl/a-intnam__qnx.ads \
+  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
+  s-intman.adb<libgnarl/s-intman__qnx.adb \
+  s-osinte.adb<libgnarl/s-osinte__qnx.adb \
+  s-osinte.ads<libgnarl/s-osinte__qnx.ads \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-qnx.ads<libgnarl/s-qnx.ads \
+  s-taprop.adb<libgnarl/s-taprop__qnx.adb \
+  s-taspri.ads<libgnarl/s-taspri__posix.ads \
+  s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  system.ads<libgnat/system-qnx-aarch64.ads
+
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_TASKING_OBJS=s-qnx.o
+  EXTRA_LIBGNAT_OBJS+=sigtramp-qnx.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h
+  EH_MECHANISM=-gcc
+
+  SO_OPTS= -shared-libgcc -Wl,-soname,
+  MISCLIB= - lsocket
+  THREADSLIB =
+  GNATLIB_SHARED = gnatlib-shared-dual
+  LIBRARY_VERSION := $(LIB_VERSION)
+endif
+
 # Sparc Solaris
 ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
