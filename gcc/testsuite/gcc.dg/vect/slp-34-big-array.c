@@ -7,7 +7,6 @@
 
 unsigned short in[N*8];
 unsigned short in2[N*8];
-volatile int y = 0;
 
 int
 main1 ()
@@ -19,8 +18,7 @@ main1 ()
   for (i = 0; i < N*8; i++)
     {
       in[i] = in2[i] = i;
-      if (y) /* Avoid vectorization.  */
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* SLP with unrolling by 8.  */

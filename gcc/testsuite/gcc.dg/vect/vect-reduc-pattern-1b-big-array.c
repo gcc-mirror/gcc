@@ -7,8 +7,6 @@
 unsigned char udata_ch[N];
 #define SUM N*(N-1)
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) int
 foo ()
 {
@@ -18,9 +16,7 @@ foo ()
   for (i = 0; i < N; i++)
     {
       udata_ch[i] = i*2;
-      /* Avoid vectorization.  */
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* widenning sum: sum chars into int.  */

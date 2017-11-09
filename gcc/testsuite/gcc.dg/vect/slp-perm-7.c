@@ -57,8 +57,7 @@ int main (int argc, const char* argv[])
       input2[i] = i%256;
       output[i] = 0;
       output2[i] = 0;
-      if (input[i] > 200)
-        abort ();
+      asm volatile ("" ::: "memory");
     }
 
   foo (input, output, input2, output2);
@@ -70,7 +69,7 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect"  { target vect_perm } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target vect_perm } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm && {! vect_load_lanes } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target vect_load_lanes } } } */
 /* { dg-final { scan-tree-dump "note: Built SLP cancelled: can use load/store-lanes" "vect" { target { vect_perm && vect_load_lanes } } } } */

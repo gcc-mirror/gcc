@@ -12,8 +12,6 @@
 
 int ib[N+OFF] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0, 1, 3, 5, 7, 11, 13, 17};
 
-volatile int y = 0;
-
 __attribute__ ((noinline))
 int main1 (int *ib)
 {
@@ -23,8 +21,7 @@ int main1 (int *ib)
   for (i = OFF; i < N+OFF; i++)
     {
       ib[i] = ib[i%OFF]*(i/OFF);
-      if (y)
-	abort ();
+      asm volatile ("" ::: "memory");
     }
   for (i = 0; i < N; i++)
     {

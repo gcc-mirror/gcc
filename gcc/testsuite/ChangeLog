@@ -1,3 +1,105 @@
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/bb-slp-cond-1.c (main): Add an asm volatile
+	to the set-up loop.
+	* gcc.dg/vect/slp-perm-7.c (main): Prevent vectorisation with
+	asm volatile ("" ::: "memory") instead of a conditional abort.
+	Update the expected vector loop count accordingly.
+	* gcc.dg/vect/slp-perm-9.c (main): Likewise.
+	* gcc.dg/vect/bb-slp-1.c (main1): Prevent vectorisation with
+	asm volatile ("" ::: "memory") instead of a conditional abort.
+	* gcc.dg/vect/slp-23.c (main): Likewise,
+	* gcc.dg/vect/slp-35.c (main): Likewise,
+	* gcc.dg/vect/slp-37.c (main): Likewise,
+	* gcc.dg/vect/slp-perm-4.c (main): Likewise.
+	* gcc.dg/vect/bb-slp-24.c (foo): Likewise.  Remove dummy argument.
+	(main): Update call accordingly.
+	* gcc.dg/vect/bb-slp-25.c (foo, main): As for bb-slp-24.c.
+	* gcc.dg/vect/bb-slp-26.c (foo, main): Likewise.
+	* gcc.dg/vect/bb-slp-29.c (foo, main): Likewise.
+	* gcc.dg/vect/no-vfa-vect-102.c (foo): Delete.
+	(main): Don't initialize it.
+	(main1): Prevent vectorisation with asm volatile ("" ::: "memory")
+	instead of a conditional abort.
+	* gcc.dg/vect/no-vfa-vect-102a.c (foo, main1, main): As for
+	no-vfa-vect-102.c
+	* gcc.dg/vect/vect-103.c (foo, main1, main): Likewise.
+	* gcc.dg/vect/vect-104.c (foo, main1, main): Likewise.
+	* gcc.dg/vect/pr42709.c (main1): Remove dummy argument.
+	Prevent vectorisation with asm volatile ("" ::: "memory")
+	instead of a conditional abort.
+	* gcc.dg/vect/slp-13-big-array.c (y): Delete.
+	(main1): Prevent vectorisation with asm volatile ("" ::: "memory")
+	instead of a conditional abort.
+	* gcc.dg/vect/slp-3-big-array.c (y, main1): As for slp-13-big-array.c.
+	* gcc.dg/vect/slp-34-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/slp-4-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/slp-multitypes-11-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-105.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-105-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-112-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-15-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-2-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-34-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-6-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-73-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-74-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-75-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-76-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-80-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-97-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-all-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-reduc-1char-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-reduc-2char-big-array.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-mult.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i4.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-mult.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2-big-array.c (y, main1):
+	Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c (y, main1): Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7-big-array.c (y, main1):
+	Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7.c (y, main1): Likewise.
+	* gcc.dg/vect/slp-24.c (y): Delete.
+	(main): Prevent vectorisation with asm volatile ("" ::: "memory")
+	instead of a conditional abort.
+	* gcc.dg/vect/slp-24-big-array.c (y, main): As for slp-24.c.
+	* gcc.dg/vect/vect-98-big-array.c (y, main): Likewise.
+	* gcc.dg/vect/vect-bswap16.c (y, main): Likewise.
+	* gcc.dg/vect/vect-bswap32.c (y, main): Likewise.
+	* gcc.dg/vect/vect-bswap64.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-mult-char-ls.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-mult.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-same-dr.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u16-i2.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u16-i4.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u32-i4.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u32-i8.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2-big-array.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-big-array.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7-big-array.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7.c (y, main): Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8.c (y, main): Likewise.
+	* gcc.dg/vect/vect-10-big-array.c (y): Delete.
+	(foo): Prevent vectorisation with asm volatile ("" ::: "memory")
+	instead of a conditional abort.
+	* gcc.dg/vect/vect-double-reduc-6-big-array.c (y, foo): As for
+	vect-10-big-array.c.
+	* gcc.dg/vect/vect-reduc-pattern-1b-big-array.c (y, foo): Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1c-big-array.c (y, foo): Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2b-big-array.c (y, foo): Likewise.
+	* gcc.dg/vect/vect-117.c (foo): Delete.
+	(main): Don't initalize it.
+
 2017-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/compile/pr82879.c: New testcase.

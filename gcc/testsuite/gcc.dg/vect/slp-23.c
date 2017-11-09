@@ -97,8 +97,7 @@ int main (void)
       arr[i].f = i * 5;
       arr[i].g = i - 3;
       arr[i].h = 56;
-      if (arr[i].a == 178)
-         abort(); 
+      asm volatile ("" ::: "memory");
     } 
 
   main1 (arr);
