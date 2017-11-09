@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lib/target-supports.exp (check_effective_target_vect_masked_store):
+	New proc.
+	* gcc.dg/vect/vect-cselim-1.c (foo): Mention that the second loop
+	is vectorizable with masked stores.  Update scan-tree-dump-times
+	accordingly.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lib/target-supports.exp
 	(check_effective_target_vect_align_stack_vars): New proc.
 	* gcc.dg/vect/vect-23.c: Only expect the array to be aligned if
