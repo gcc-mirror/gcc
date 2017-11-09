@@ -1,3 +1,36 @@
+2017-11-09  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-param-manipulation.c: New file.
+	* ipa-param-manipulation.h: Likewise.
+	* Makefile.in (OBJS): Add ipa-param-manipulation.o.
+	(PLUGIN_HEADERS): Addded ipa-param-manipulation.h
+	* ipa-param.h (ipa_parm_op): Moved to ipa-param-manipulation.h.
+	(ipa_parm_adjustment): Likewise.
+	(ipa_parm_adjustment_vec): Likewise.
+	(ipa_get_vector_of_formal_parms): Moved declaration to
+	ipa-param-manipulation.h.
+	(ipa_get_vector_of_formal_parm_types): Likewise.
+	(ipa_modify_formal_parameters): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	(ipa_combine_adjustments): Likewise.
+	(ipa_dump_param_adjustments): Likewise.
+	(ipa_modify_expr): Likewise.
+	(ipa_get_adjustment_candidate): Likewise.
+	* ipa-prop.c (ipa_get_vector_of_formal_parms): Moved to
+	ipa-param-manipulation.c.
+	(ipa_get_vector_of_formal_parm_types): Likewise.
+	(ipa_modify_formal_parameters): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	(ipa_modify_expr): Likewise.
+	(get_ssa_base_param): Likewise.
+	(ipa_get_adjustment_candidate): Likewise.
+	(index_in_adjustments_multiple_times_p): Likewise.
+	(ipa_combine_adjustments): Likewise.
+	(ipa_dump_param_adjustments): Likewise.
+	* tree-sra.c: Also include ipa-param-manipulation.h
+	* omp-simd-clone.c: Include ipa-param-manipulation.h instead of
+	ipa-param.h.
+
 2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

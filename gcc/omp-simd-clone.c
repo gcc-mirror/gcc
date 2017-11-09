@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "cfgloop.h"
 #include "symbol-summary.h"
-#include "ipa-prop.h"
+#include "ipa-param-manipulation.h"
 #include "tree-eh.h"
 #include "varasm.h"
 #include "stringpool.h"
