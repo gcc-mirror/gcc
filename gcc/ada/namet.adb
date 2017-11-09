@@ -159,8 +159,8 @@ package body Namet is
       Append (Buf, Buf2.Chars (1 .. Buf2.Length));
    end Append;
 
-   procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+   procedure Append (Buf : in out Bounded_String; Id : Valid_Name_Id) is
+      pragma Assert (Is_Valid_Name (Id));
 
       Index : constant Int   := Name_Entries.Table (Id).Name_Chars_Index;
       Len   : constant Short := Name_Entries.Table (Id).Name_Len;
@@ -174,7 +174,9 @@ package body Namet is
    -- Append_Decoded --
    --------------------
 
-   procedure Append_Decoded (Buf : in out Bounded_String; Id : Name_Id) is
+   procedure Append_Decoded
+     (Buf : in out Bounded_String; Id : Valid_Name_Id)
+   is
       C    : Character;
       P    : Natural;
       Temp : Bounded_String;
@@ -449,7 +451,7 @@ package body Namet is
 
    procedure Append_Decoded_With_Brackets
      (Buf : in out Bounded_String;
-      Id  : Name_Id)
+      Id  : Valid_Name_Id)
    is
       P : Natural;
 
@@ -596,7 +598,9 @@ package body Namet is
    -- Append_Unqualified --
    ------------------------
 
-   procedure Append_Unqualified (Buf : in out Bounded_String; Id : Name_Id) is
+   procedure Append_Unqualified
+     (Buf : in out Bounded_String; Id : Valid_Name_Id)
+   is
       Temp : Bounded_String;
    begin
       Append (Temp, Id);
@@ -610,7 +614,7 @@ package body Namet is
 
    procedure Append_Unqualified_Decoded
      (Buf : in out Bounded_String;
-      Id  : Name_Id)
+      Id  : Valid_Name_Id)
    is
       Temp : Bounded_String;
    begin
@@ -773,7 +777,7 @@ package body Namet is
    -- Get_Decoded_Name_String --
    -----------------------------
 
-   procedure Get_Decoded_Name_String (Id : Name_Id) is
+   procedure Get_Decoded_Name_String (Id : Valid_Name_Id) is
    begin
       Global_Name_Buffer.Length := 0;
       Append_Decoded (Global_Name_Buffer, Id);
@@ -783,7 +787,7 @@ package body Namet is
    -- Get_Decoded_Name_String_With_Brackets --
    -------------------------------------------
 
-   procedure Get_Decoded_Name_String_With_Brackets (Id : Name_Id) is
+   procedure Get_Decoded_Name_String_With_Brackets (Id : Valid_Name_Id) is
    begin
       Global_Name_Buffer.Length := 0;
       Append_Decoded_With_Brackets (Global_Name_Buffer, Id);
@@ -794,7 +798,7 @@ package body Namet is
    ------------------------
 
    procedure Get_Last_Two_Chars
-     (N  : Name_Id;
+     (N  : Valid_Name_Id;
       C1 : out Character;
       C2 : out Character)
    is
@@ -815,13 +819,13 @@ package body Namet is
    -- Get_Name_String --
    ---------------------
 
-   procedure Get_Name_String (Id : Name_Id) is
+   procedure Get_Name_String (Id : Valid_Name_Id) is
    begin
       Global_Name_Buffer.Length := 0;
       Append (Global_Name_Buffer, Id);
    end Get_Name_String;
 
-   function Get_Name_String (Id : Name_Id) return String is
+   function Get_Name_String (Id : Valid_Name_Id) return String is
       Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       Append (Buf, Id);
@@ -832,7 +836,7 @@ package body Namet is
    -- Get_Name_String_And_Append --
    --------------------------------
 
-   procedure Get_Name_String_And_Append (Id : Name_Id) is
+   procedure Get_Name_String_And_Append (Id : Valid_Name_Id) is
    begin
       Append (Global_Name_Buffer, Id);
    end Get_Name_String_And_Append;
@@ -841,9 +845,9 @@ package body Namet is
    -- Get_Name_Table_Boolean1 --
    -----------------------------
 
-   function Get_Name_Table_Boolean1 (Id : Name_Id) return Boolean is
+   function Get_Name_Table_Boolean1 (Id : Valid_Name_Id) return Boolean is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       return Name_Entries.Table (Id).Boolean1_Info;
    end Get_Name_Table_Boolean1;
 
@@ -851,9 +855,9 @@ package body Namet is
    -- Get_Name_Table_Boolean2 --
    -----------------------------
 
-   function Get_Name_Table_Boolean2 (Id : Name_Id) return Boolean is
+   function Get_Name_Table_Boolean2 (Id : Valid_Name_Id) return Boolean is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       return Name_Entries.Table (Id).Boolean2_Info;
    end Get_Name_Table_Boolean2;
 
@@ -861,9 +865,9 @@ package body Namet is
    -- Get_Name_Table_Boolean3 --
    -----------------------------
 
-   function Get_Name_Table_Boolean3 (Id : Name_Id) return Boolean is
+   function Get_Name_Table_Boolean3 (Id : Valid_Name_Id) return Boolean is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       return Name_Entries.Table (Id).Boolean3_Info;
    end Get_Name_Table_Boolean3;
 
@@ -871,9 +875,9 @@ package body Namet is
    -- Get_Name_Table_Byte --
    -------------------------
 
-   function Get_Name_Table_Byte (Id : Name_Id) return Byte is
+   function Get_Name_Table_Byte (Id : Valid_Name_Id) return Byte is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       return Name_Entries.Table (Id).Byte_Info;
    end Get_Name_Table_Byte;
 
@@ -881,9 +885,9 @@ package body Namet is
    -- Get_Name_Table_Int --
    -------------------------
 
-   function Get_Name_Table_Int (Id : Name_Id) return Int is
+   function Get_Name_Table_Int (Id : Valid_Name_Id) return Int is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       return Name_Entries.Table (Id).Int_Info;
    end Get_Name_Table_Int;
 
@@ -891,7 +895,7 @@ package body Namet is
    -- Get_Unqualified_Decoded_Name_String --
    -----------------------------------------
 
-   procedure Get_Unqualified_Decoded_Name_String (Id : Name_Id) is
+   procedure Get_Unqualified_Decoded_Name_String (Id : Valid_Name_Id) is
    begin
       Global_Name_Buffer.Length := 0;
       Append_Unqualified_Decoded (Global_Name_Buffer, Id);
@@ -901,7 +905,7 @@ package body Namet is
    -- Get_Unqualified_Name_String --
    ---------------------------------
 
-   procedure Get_Unqualified_Name_String (Id : Name_Id) is
+   procedure Get_Unqualified_Name_String (Id : Valid_Name_Id) is
    begin
       Global_Name_Buffer.Length := 0;
       Append_Unqualified (Global_Name_Buffer, Id);
@@ -1032,15 +1036,11 @@ package body Namet is
       return False;
    end Is_Internal_Name;
 
-   function Is_Internal_Name (Id : Name_Id) return Boolean is
+   function Is_Internal_Name (Id : Valid_Name_Id) return Boolean is
       Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
-      if Id in Error_Name_Or_No_Name then
-         return False;
-      else
-         Append (Buf, Id);
-         return Is_Internal_Name (Buf);
-      end if;
+      Append (Buf, Id);
+      return Is_Internal_Name (Buf);
    end Is_Internal_Name;
 
    function Is_Internal_Name return Boolean is
@@ -1066,10 +1066,10 @@ package body Namet is
    -- Is_Operator_Name --
    ----------------------
 
-   function Is_Operator_Name (Id : Name_Id) return Boolean is
+   function Is_Operator_Name (Id : Valid_Name_Id) return Boolean is
       S : Int;
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       S := Name_Entries.Table (Id).Name_Chars_Index;
       return Name_Chars.Table (S + 1) = 'O';
    end Is_Operator_Name;
@@ -1087,7 +1087,7 @@ package body Namet is
    -- Length_Of_Name --
    --------------------
 
-   function Length_Of_Name (Id : Name_Id) return Nat is
+   function Length_Of_Name (Id : Valid_Name_Id) return Nat is
    begin
       return Int (Name_Entries.Table (Id).Name_Len);
    end Length_Of_Name;
@@ -1111,7 +1111,7 @@ package body Namet is
    ----------------
 
    function Name_Enter
-     (Buf : Bounded_String := Global_Name_Buffer) return Name_Id
+     (Buf : Bounded_String := Global_Name_Buffer) return Valid_Name_Id
    is
    begin
       Name_Entries.Append
@@ -1136,7 +1136,7 @@ package body Namet is
       return Name_Entries.Last;
    end Name_Enter;
 
-   function Name_Enter (S : String) return Name_Id is
+   function Name_Enter (S : String) return Valid_Name_Id is
       Buf : Bounded_String (Max_Length => S'Length);
    begin
       Append (Buf, S);
@@ -1157,7 +1157,7 @@ package body Namet is
    ---------------
 
    function Name_Find
-     (Buf : Bounded_String := Global_Name_Buffer) return Name_Id
+     (Buf : Bounded_String := Global_Name_Buffer) return Valid_Name_Id
    is
       New_Id : Name_Id;
       --  Id of entry in hash search, and value to be returned
@@ -1172,7 +1172,7 @@ package body Namet is
       --  Quick handling for one character names
 
       if Buf.Length = 1 then
-         return Name_Id (First_Name_Id + Character'Pos (Buf.Chars (1)));
+         return Valid_Name_Id (First_Name_Id + Character'Pos (Buf.Chars (1)));
 
       --  Otherwise search hash table for existing matching entry
 
@@ -1241,7 +1241,7 @@ package body Namet is
       end if;
    end Name_Find;
 
-   function Name_Find (S : String) return Name_Id is
+   function Name_Find (S : String) return Valid_Name_Id is
       Buf : Bounded_String (Max_Length => S'Length);
    begin
       Append (Buf, S);
@@ -1476,7 +1476,7 @@ package body Namet is
    -- Name_Equals --
    -----------------
 
-   function Name_Equals (N1 : Name_Id; N2 : Name_Id) return Boolean is
+   function Name_Equals (N1, N2 : Valid_Name_Id) return Boolean is
    begin
       return N1 = N2 or else Get_Name_String (N1) = Get_Name_String (N2);
    end Name_Equals;
@@ -1550,9 +1550,9 @@ package body Namet is
    -- Set_Name_Table_Boolean1 --
    -----------------------------
 
-   procedure Set_Name_Table_Boolean1 (Id : Name_Id; Val : Boolean) is
+   procedure Set_Name_Table_Boolean1 (Id : Valid_Name_Id; Val : Boolean) is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       Name_Entries.Table (Id).Boolean1_Info := Val;
    end Set_Name_Table_Boolean1;
 
@@ -1560,9 +1560,9 @@ package body Namet is
    -- Set_Name_Table_Boolean2 --
    -----------------------------
 
-   procedure Set_Name_Table_Boolean2 (Id : Name_Id; Val : Boolean) is
+   procedure Set_Name_Table_Boolean2 (Id : Valid_Name_Id; Val : Boolean) is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       Name_Entries.Table (Id).Boolean2_Info := Val;
    end Set_Name_Table_Boolean2;
 
@@ -1570,9 +1570,9 @@ package body Namet is
    -- Set_Name_Table_Boolean3 --
    -----------------------------
 
-   procedure Set_Name_Table_Boolean3 (Id : Name_Id; Val : Boolean) is
+   procedure Set_Name_Table_Boolean3 (Id : Valid_Name_Id; Val : Boolean) is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       Name_Entries.Table (Id).Boolean3_Info := Val;
    end Set_Name_Table_Boolean3;
 
@@ -1580,9 +1580,9 @@ package body Namet is
    -- Set_Name_Table_Byte --
    -------------------------
 
-   procedure Set_Name_Table_Byte (Id : Name_Id; Val : Byte) is
+   procedure Set_Name_Table_Byte (Id : Valid_Name_Id; Val : Byte) is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       Name_Entries.Table (Id).Byte_Info := Val;
    end Set_Name_Table_Byte;
 
@@ -1590,9 +1590,9 @@ package body Namet is
    -- Set_Name_Table_Int --
    -------------------------
 
-   procedure Set_Name_Table_Int (Id : Name_Id; Val : Int) is
+   procedure Set_Name_Table_Int (Id : Valid_Name_Id; Val : Int) is
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      pragma Assert (Is_Valid_Name (Id));
       Name_Entries.Table (Id).Int_Info := Val;
    end Set_Name_Table_Int;
 
@@ -1734,8 +1734,13 @@ package body Namet is
 
    procedure wn (Id : Name_Id) is
    begin
-      if Id not in Name_Entries.First .. Name_Entries.Last then
-         Write_Str ("<invalid name_id>");
+      if Is_Valid_Name (Id) then
+         declare
+            Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
+         begin
+            Append (Buf, Id);
+            Write_Str (Buf.Chars (1 .. Buf.Length));
+         end;
 
       elsif Id = No_Name then
          Write_Str ("<No_Name>");
@@ -1744,12 +1749,8 @@ package body Namet is
          Write_Str ("<Error_Name>");
 
       else
-         declare
-            Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
-         begin
-            Append (Buf, Id);
-            Write_Str (Buf.Chars (1 .. Buf.Length));
-         end;
+         Write_Str ("<invalid name_id>");
+         Write_Int (Int (Id));
       end if;
 
       Write_Eol;
@@ -1759,26 +1760,22 @@ package body Namet is
    -- Write_Name --
    ----------------
 
-   procedure Write_Name (Id : Name_Id) is
+   procedure Write_Name (Id : Valid_Name_Id) is
       Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
-      if Id >= First_Name_Id then
-         Append (Buf, Id);
-         Write_Str (Buf.Chars (1 .. Buf.Length));
-      end if;
+      Append (Buf, Id);
+      Write_Str (Buf.Chars (1 .. Buf.Length));
    end Write_Name;
 
    ------------------------
    -- Write_Name_Decoded --
    ------------------------
 
-   procedure Write_Name_Decoded (Id : Name_Id) is
+   procedure Write_Name_Decoded (Id : Valid_Name_Id) is
       Buf : Bounded_String;
    begin
-      if Id >= First_Name_Id then
-         Append_Decoded (Buf, Id);
-         Write_Str (Buf.Chars (1 .. Buf.Length));
-      end if;
+      Append_Decoded (Buf, Id);
+      Write_Str (Buf.Chars (1 .. Buf.Length));
    end Write_Name_Decoded;
 
 --  Package initialization, initialize tables
