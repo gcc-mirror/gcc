@@ -16,4 +16,6 @@ foo (double *x, int n)
   return p;
 }
 
-/* { dg-final { scan-tree-dump-not "epilog loop required" "vect" } } */
+/* Until fully-masked loops are supported, we always need an epilog
+   loop for variable-length vectors.  */
+/* { dg-final { scan-tree-dump-not "epilog loop required" "vect" { xfail vect_variable_length } } } */
