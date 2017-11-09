@@ -3,8 +3,12 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS / 8)
+#else
 #define N 16
- 
+#endif
+
 __attribute__ ((noinline))
 int main1 ()
 {  

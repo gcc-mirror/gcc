@@ -3,12 +3,17 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 512
+#define N (VECTOR_BITS * 6 / 16)
+#else
 #define N 200
+#endif
 
 void __attribute__((noinline))
 foo (unsigned char *__restrict__ pInput, unsigned char *__restrict__ pOutput)
 {
-  unsigned char i, a, b, c;
+  unsigned char a, b, c;
+  unsigned int i;
 
   for (i = 0; i < N / 3; i++)
     {
@@ -24,8 +29,9 @@ foo (unsigned char *__restrict__ pInput, unsigned char *__restrict__ pOutput)
 
 int main (int argc, const char* argv[])
 {
-  unsigned char input[N], output[N], i;
+  unsigned char input[N], output[N];
   unsigned char check_results[N];
+  unsigned int i;
 
   check_vect ();
 
