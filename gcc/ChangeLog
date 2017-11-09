@@ -1,3 +1,9 @@
+2017-11-08  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/i386.opt: Add -mforce-indirect-call.
+	* config/i386/predicates.md: Check for flag_force_indirect_call.
+	* doc/invoke.texi: Document -mforce-indirect-call
+
 2017-11-08  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/riscv/riscv-protos.h (riscv_slow_unaligned_access_p):
