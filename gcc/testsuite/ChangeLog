@@ -1,3 +1,8 @@
+2017-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82902
+	* g++.dg/torture/pr82902.C: New testcase.
+
 2017-11-09  Martin Liska  <mliska@suse.cz>
 
 	PR target/82863
