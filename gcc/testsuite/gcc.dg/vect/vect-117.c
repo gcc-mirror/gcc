@@ -17,8 +17,6 @@ static  int c[N][N] = {{ 1, 2, 3, 4, 5},
 		       {34,38,42,46,50},
 		       {55,60,65,70,75}};
 
-volatile int foo;
-
 __attribute__ ((noinline))
 int main1 (int A[N][N], int n) 
 {
@@ -43,7 +41,6 @@ int main (void)
 
   check_vect ();
 
-  foo = 0;
   main1 (a, N);
 
   /* check results: */

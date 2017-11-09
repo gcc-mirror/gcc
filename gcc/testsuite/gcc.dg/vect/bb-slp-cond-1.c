@@ -28,7 +28,10 @@ int main ()
   check_vect ();
 
   for (i = 0; i < N; i++)
-    a[i] = i;
+    {
+      a[i] = i;
+      asm volatile ("" ::: "memory");
+    }
 
   foo (a, 4);
 
