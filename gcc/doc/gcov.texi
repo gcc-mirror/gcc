@@ -193,7 +193,7 @@ Write counts in human readable format (like 24k).
 
 @smallexample
 file:@var{source_file_name}
-function:@var{line_number},@var{execution_count},@var{function_name}
+function:@var{start_line_number},@var{end_line_number},@var{execution_count},@var{function_name}
 lcount:@var{line number},@var{execution_count},@var{has_unexecuted_block}
 branch:@var{line_number},@var{branch_coverage_type}
 
@@ -201,24 +201,55 @@ Where the @var{branch_coverage_type} is
    notexec (Branch not executed)
    taken (Branch executed and taken)
    nottaken (Branch executed, but not taken)
+@end smallexample
 
 There can be multiple @var{file} entries in an intermediate gcov
 file. All entries following a @var{file} pertain to that source file
-until the next @var{file} entry.
-@end smallexample
+until the next @var{file} entry.  If there are multiple functions that
+start on a single line, then corresponding lcount is repeated multiple
+times.
 
 Here is a sample when @option{-i} is used in conjunction with @option{-b} option:
 
 @smallexample
-file:array.cc
-function:11,1,_Z3sumRKSt6vectorIPiSaIS0_EE
-function:22,1,main
-lcount:11,1,0
-lcount:12,1,0
-lcount:14,1,0
-branch:14,taken
-lcount:26,1,0
-branch:28,nottaken
+file:tmp.cpp
+function:7,7,0,_ZN3FooIcEC2Ev
+function:7,7,1,_ZN3FooIiEC2Ev
+function:8,8,0,_ZN3FooIcE3incEv
+function:8,8,2,_ZN3FooIiE3incEv
+function:18,37,1,main
+lcount:7,0,1
+lcount:7,1,0
+lcount:8,0,1
+lcount:8,2,0
+lcount:18,1,0
+lcount:21,1,0
+branch:21,taken
+branch:21,nottaken
+lcount:23,1,0
+branch:23,taken
+branch:23,nottaken
+lcount:24,1,0
+branch:24,taken
+branch:24,nottaken
+lcount:25,1,0
+lcount:27,11,0
+branch:27,taken
+branch:27,taken
+lcount:28,10,0
+lcount:30,1,1
+branch:30,nottaken
+branch:30,taken
+lcount:32,1,0
+branch:32,nottaken
+branch:32,taken
+lcount:33,0,1
+branch:33,notexec
+branch:33,notexec
+lcount:35,1,0
+branch:35,taken
+branch:35,nottaken
+lcount:36,1,0
 @end smallexample
 
 @item -k
@@ -391,79 +422,158 @@ source file compiled with @option{-fprofile-arcs}, an accompanying
 
 Running @command{gcov} with your program's source file names as arguments
 will now produce a listing of the code along with frequency of execution
-for each line.  For example, if your program is called @file{tmp.c}, this
+for each line.  For example, if your program is called @file{tmp.cpp}, this
 is what you see when you use the basic @command{gcov} facility:
 
 @smallexample
-$ gcc -fprofile-arcs -ftest-coverage tmp.c
+$ g++ -fprofile-arcs -ftest-coverage tmp.cpp
 $ a.out
-$ gcov tmp.c
-File 'tmp.c'
-Lines executed:90.00% of 10
-Creating 'tmp.c.gcov'
+$ gcov tmp.cpp -m
+File 'tmp.cpp'
+Lines executed:92.86% of 14
+Creating 'tmp.cpp.gcov'
 @end smallexample
 
-The file @file{tmp.c.gcov} contains output from @command{gcov}.
+The file @file{tmp.cpp.gcov} contains output from @command{gcov}.
 Here is a sample:
 
 @smallexample
-        -:    0:Source:tmp.c
+        -:    0:Source:tmp.cpp
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
         -:    0:Programs:1
         -:    1:#include <stdio.h>
         -:    2:
-        -:    3:int main (void)
-        1:    4:@{
-        1:    5:  int i, total;
-        -:    6:
-        1:    7:  total = 0;
-        -:    8:
-       11:    9:  for (i = 0; i < 10; i++)
-       10:   10:    total += i;
-        -:   11:
-        1:   12:  if (total != 45)
-    #####:   13:    printf ("Failure\n");
-        -:   14:  else
-        1:   15:    printf ("Success\n");
-        1:   16:  return 0;
-        -:   17:@}
+        -:    3:template<class T>
+        -:    4:class Foo
+        -:    5:@{
+        -:    6:  public:
+       1*:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<char>::Foo():
+    #####:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<int>::Foo():
+        1:    7:  Foo(): b (1000) @{@}
+------------------
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+        2:    8:  void inc () @{ b++; @}
+------------------
+        -:    9:
+        -:   10:  private:
+        -:   11:  int b;
+        -:   12:@};
+        -:   13:
+        -:   14:template class Foo<int>;
+        -:   15:template class Foo<char>;
+        -:   16:
+        -:   17:int
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+        -:   22:
+        1:   23:  counter.inc();
+        1:   24:  counter.inc();
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
+       10:   28:    total += i;
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
+        -:   31:
+        1:   32:  if (total != 45)
+    #####:   33:    printf ("Failure\n");
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+        1:   36:  return 0;
+        -:   37:@}
 @end smallexample
+
+Note that line 7 is shown in the report multiple times.  First occurrence
+presents total number of execution of the line and the next two belong
+to instances of class Foo constructors.  As you can also see, line 30 contains
+some unexecuted basic blocks and thus execution count has asterisk symbol.
 
 When you use the @option{-a} option, you will get individual block
 counts, and the output looks like this:
 
 @smallexample
-        -:    0:Source:tmp.c
+        -:    0:Source:tmp.cpp
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
         -:    0:Programs:1
         -:    1:#include <stdio.h>
         -:    2:
-        -:    3:int main (void)
-        1:    4:@{
-        1:    4-block  0
-        1:    5:  int i, total;
-        -:    6:
-        1:    7:  total = 0;
-        -:    8:
-       11:    9:  for (i = 0; i < 10; i++)
-       11:    9-block  0
-       10:   10:    total += i;
-       10:   10-block  0
-        -:   11:
-        1:   12:  if (total != 45)
-        1:   12-block  0
-    #####:   13:    printf ("Failure\n");
-    $$$$$:   13-block  0
-        -:   14:  else
-        1:   15:    printf ("Success\n");
-        1:   15-block  0
-        1:   16:  return 0;
-        1:   16-block  0
-        -:   17:@}
+        -:    3:template<class T>
+        -:    4:class Foo
+        -:    5:@{
+        -:    6:  public:
+       1*:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<char>::Foo():
+    #####:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<int>::Foo():
+        1:    7:  Foo(): b (1000) @{@}
+------------------
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+        2:    8:  void inc () @{ b++; @}
+------------------
+        -:    9:
+        -:   10:  private:
+        -:   11:  int b;
+        -:   12:@};
+        -:   13:
+        -:   14:template class Foo<int>;
+        -:   15:template class Foo<char>;
+        -:   16:
+        -:   17:int
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+        1:   21-block  0
+        -:   22:
+        1:   23:  counter.inc();
+        1:   23-block  0
+        1:   24:  counter.inc();
+        1:   24-block  0
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
+        1:   27-block  0
+       11:   27-block  1
+       10:   28:    total += i;
+       10:   28-block  0
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
+        1:   30-block  0
+    %%%%%:   30-block  1
+        1:   30-block  2
+        -:   31:
+        1:   32:  if (total != 45)
+        1:   32-block  0
+    #####:   33:    printf ("Failure\n");
+    %%%%%:   33-block  0
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+        1:   35-block  0
+        1:   36:  return 0;
+        1:   36-block  0
+        -:   37:@}
 @end smallexample
 
 In this mode, each basic block is only shown on one line -- the last
@@ -477,53 +587,94 @@ block, the branch and call counts of the block will be shown, if the
 
 Because of the way GCC instruments calls, a call count can be shown
 after a line with no individual blocks.
-As you can see, line 13 contains a basic block that was not executed.
+As you can see, line 33 contains a basic block that was not executed.
 
 @need 450
 When you use the @option{-b} option, your output looks like this:
 
 @smallexample
-$ gcov -b tmp.c
-File 'tmp.c'
-Lines executed:90.00% of 10
-Branches executed:80.00% of 5
-Taken at least once:80.00% of 5
-Calls executed:50.00% of 2
-Creating 'tmp.c.gcov'
-@end smallexample
-
-Here is a sample of a resulting @file{tmp.c.gcov} file:
-
-@smallexample
-        -:    0:Source:tmp.c
+        -:    0:Source:tmp.cpp
         -:    0:Graph:tmp.gcno
         -:    0:Data:tmp.gcda
         -:    0:Runs:1
         -:    0:Programs:1
         -:    1:#include <stdio.h>
         -:    2:
-        -:    3:int main (void)
-function main called 1 returned 1 blocks executed 75%
-        1:    4:@{
-        1:    5:  int i, total;
-        -:    6:
-        1:    7:  total = 0;
-        -:    8:
-       11:    9:  for (i = 0; i < 10; i++)
+        -:    3:template<class T>
+        -:    4:class Foo
+        -:    5:@{
+        -:    6:  public:
+       1*:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<char>::Foo():
+function Foo<char>::Foo() called 0 returned 0% blocks executed 0%
+    #####:    7:  Foo(): b (1000) @{@}
+------------------
+Foo<int>::Foo():
+function Foo<int>::Foo() called 1 returned 100% blocks executed 100%
+        1:    7:  Foo(): b (1000) @{@}
+------------------
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+function Foo<char>::inc() called 0 returned 0% blocks executed 0%
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+function Foo<int>::inc() called 2 returned 100% blocks executed 100%
+        2:    8:  void inc () @{ b++; @}
+------------------
+        -:    9:
+        -:   10:  private:
+        -:   11:  int b;
+        -:   12:@};
+        -:   13:
+        -:   14:template class Foo<int>;
+        -:   15:template class Foo<char>;
+        -:   16:
+        -:   17:int
+function main called 1 returned 100% blocks executed 81%
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        -:   22:
+        1:   23:  counter.inc();
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        1:   24:  counter.inc();
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
 branch  0 taken 91% (fallthrough)
 branch  1 taken 9%
-       10:   10:    total += i;
-        -:   11:
-        1:   12:  if (total != 45)
+       10:   28:    total += i;
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
 branch  0 taken 0% (fallthrough)
 branch  1 taken 100%
-    #####:   13:    printf ("Failure\n");
+        -:   31:
+        1:   32:  if (total != 45)
+branch  0 taken 0% (fallthrough)
+branch  1 taken 100%
+    #####:   33:    printf ("Failure\n");
 call    0 never executed
-        -:   14:  else
-        1:   15:    printf ("Success\n");
-call    0 called 1 returned 100%
-        1:   16:  return 0;
-        -:   17:@}
+branch  1 never executed
+branch  2 never executed
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+call    0 returned 100%
+branch  1 taken 100% (fallthrough)
+branch  2 taken 0% (throw)
+        1:   36:  return 0;
+        -:   37:@}
 @end smallexample
 
 For each function, a line is printed showing how many times the function

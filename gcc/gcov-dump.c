@@ -308,9 +308,15 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
 	  
 	  name = gcov_read_string ();
 	  printf (", `%s'", name ? name : "NULL");
+	  unsigned artificial = gcov_read_unsigned ();
 	  name = gcov_read_string ();
 	  printf (" %s", name ? name : "NULL");
-	  printf (":%u", gcov_read_unsigned ());
+	  unsigned line_start = gcov_read_unsigned ();
+	  unsigned column_start = gcov_read_unsigned ();
+	  unsigned line_end = gcov_read_unsigned ();
+	  printf (":%u:%u:%u", line_start, column_start, line_end);
+	  if (artificial)
+	    printf (", artificial");
 	}
     }
 }
