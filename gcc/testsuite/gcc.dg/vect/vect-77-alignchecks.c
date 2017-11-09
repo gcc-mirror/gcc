@@ -3,8 +3,13 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 2 / 32)
+#define OFF (VECTOR_BITS / 32)
+#else
 #define N 8
 #define OFF 8
+#endif
 
 /* Check handling of accesses for which the "initial condition" -
    the expression that represents the first location accessed - is

@@ -4,7 +4,12 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+/* N / 2 bytes has to be worth vectorizing even with peeling.  */
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 4 / 8)
+#else
 #define N 64
+#endif
 
 struct t{
   int k[N];

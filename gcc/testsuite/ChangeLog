@@ -2,6 +2,116 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/vect/tree-vect.h (VECTOR_BITS): Define.
+	* gcc.dg/vect/bb-slp-pr69907.c: Include tree-vect.h.
+	(N): New macro.
+	(foo): Use it instead of hard-coded 320.
+	* gcc.dg/vect/no-scevccp-outer-7.c (N): Redefine if the default
+	value is too small for VECTOR_BITS.
+	* gcc.dg/vect/no-scevccp-vect-iv-3.c (N): Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-31.c (N): Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-36.c (N): Likewise.
+	* gcc.dg/vect/slp-perm-9.c (N): Likewise.
+	* gcc.dg/vect/vect-32.c (N): Likewise.
+	* gcc.dg/vect/vect-75.c (N, OFF): Likewise.
+	* gcc.dg/vect/vect-77-alignchecks.c (N, OFF): Likewise.
+	* gcc.dg/vect/vect-78-alignchecks.c (N, OFF): Likewise.
+	* gcc.dg/vect/vect-89.c (N): Likewise.
+	* gcc.dg/vect/vect-96.c (N): Likewise.
+	* gcc.dg/vect/vect-multitypes-3.c (N): Likewise.
+	* gcc.dg/vect/vect-multitypes-6.c (N): Likewise.
+	* gcc.dg/vect/vect-over-widen-1.c (N): Likewise.
+	* gcc.dg/vect/vect-over-widen-4.c (N): Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1a.c (N): Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1b.c (N): Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2a.c (N): Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-64.c (NINTS): New macro.
+	(N): Redefine in terms of NINTS.
+	(ia, ib, ic): Use NINTS instead of hard-coded constants in the
+	array bounds.
+	* gcc.dg/vect/no-section-anchors-vect-69.c (NINTS): New macro.
+	(N): Redefine in terms of NINTS.
+	(test1): Replace a and b fields with NINTS - 2 ints of padding.
+	(main1): Use NINTS instead of hard-coded constants.
+	* gcc.dg/vect/section-anchors-vect-69.c (NINTS): New macro.
+	(N): Redefine in terms of NINTS.
+	(test1): Replace a and b fields with NINTS - 2 ints of padding.
+	(test2): Remove incorrect comments about alignment.
+	(main1): Use NINTS instead of hard-coded constants.
+	* gcc.dg/vect/pr45752.c (N): Redefine if the default value is
+	too small for VECTOR_BITS.
+	(main): Continue to use canned results for the default value of N,
+	but compute the expected results from scratch for other values.
+	* gcc.dg/vect/slp-perm-1.c (N, main): As for pr45752.c.
+	* gcc.dg/vect/slp-perm-4.c (N, main): Likewise.
+	* gcc.dg/vect/slp-perm-5.c (N, main): Likewise.
+	* gcc.dg/vect/slp-perm-6.c (N, main): Likewise.
+	* gcc.dg/vect/slp-perm-7.c (N, main): Likewise.
+	* gcc.dg/vect/pr65518.c (NINTS, N, RESULT): New macros.
+	(giga): Use NINTS as the array bound.
+	(main): Use NINTS, N and RESULT.
+	* gcc.dg/vect/pr65947-5.c (N): Redefine if the default value is
+	too small for VECTOR_BITS.
+	(main): Fill in any remaining elements of A programmatically.
+	* gcc.dg/vect/pr81136.c: Include tree-vect.h.
+	(a): Use VECTOR_BITS to set the alignment of the target structure.
+	* gcc.dg/vect/slp-19c.c (N): Redefine if the default value is
+	too small for VECTOR_BITS.
+	(main1): Continue to use the canned input for the default value of N,
+	but compute the input from scratch for other values.
+	* gcc.dg/vect/slp-28.c (N): Redefine if the default value is
+	too small for VECTOR_BITS.
+	(in1, in2, in3): Remove initialization.
+	(check1, check2): Delete.
+	(main1): Initialize in1, in2 and in3 here.  Check every element
+	of the vectors and compute the expected values directly instead
+	of using an array.
+	* gcc.dg/vect/slp-perm-8.c (N): Redefine if the default value is
+	too small for VECTOR_BITS.
+	(foo, main): Change type of "i" to int.
+	* gcc.dg/vect/vect-103.c (NINTS): New macro.
+	(N): Redefine in terms of N.
+	(c): Delete.
+	(main1): Use NINTS.  Check the result from a and b directly.
+	* gcc.dg/vect/vect-67.c (NINTS): New macro.
+	(N): Redefine in terms of N.
+	(main1): Use NINTS for the inner array bounds.
+	* gcc.dg/vect/vect-70.c (NINTS, OUTERN): New macros.
+	(N): Redefine in terms of NINTS.
+	(s): Keep the outer dimensions as 4 even if N is larger than 24.
+	(tmp1): New variable.
+	(main1): Only define a local tmp1 if NINTS is relatively small.
+	Use OUTERN for the outer loops and NINTS for the inner loops.
+	* gcc.dg/vect/vect-91.c (OFF): New macro.
+	(a, main3): Use it.
+	* gcc.dg/vect/vect-92.c (NITER): New macro.
+	(main1, main2): Use it.
+	* gcc.dg/vect/vect-93.c (N): Rename to...
+	(N1): ...this.
+	(main): Update accordingly.
+	(N2): New macro.
+	(main1): Use N1 instead of 3001 and N2 insteaed of 10.
+	* gcc.dg/vect/vect-multitypes-1.c (NSHORTS, NINTS): New macros.
+	(N): Redefine in terms of NSHORTS.
+	(main1): Use NINTS - 1 instead of 3 and NSHORTS - 1 instead of 7.
+	(main): Likewise.
+	* gcc.dg/vect/vect-over-widen-3-big-array.c (N): Define to VECTOR_BITS.
+	(foo): Truncate the expected value to the type of *d.
+	* gcc.dg/vect/vect-peel-3.c (NINTS, EXTRA): New macros.
+	(ia, ib, ic, main): Use EXTRA.
+	(main): Use NINTS.
+	(RES_A, RES_B, REC_C): New macros.
+	(RES): Redefine as their sum.
+	* gcc.dg/vect/vect-reduc-or_1.c (N): New macro.
+	(in): Change number of elements to N.
+	(main): Update accordingly.  Calculate the expected result.
+	* gcc.dg/vect/vect-reduc-or_2.c (N, in, main): As for
+	vect-reduc-or-1.c.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/bb-slp-cond-1.c (main): Add an asm volatile
 	to the set-up loop.
 	* gcc.dg/vect/slp-perm-7.c (main): Prevent vectorisation with
