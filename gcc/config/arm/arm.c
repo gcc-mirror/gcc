@@ -19417,7 +19417,12 @@ arm_get_vfp_saved_size (void)
 
 /* Generate a function exit sequence.  If REALLY_RETURN is false, then do
    everything bar the final return instruction.  If simple_return is true,
-   then do not output epilogue, because it has already been emitted in RTL.  */
+   then do not output epilogue, because it has already been emitted in RTL.
+
+   Note: do not forget to update length attribute of corresponding insn pattern
+   when changing assembly output (eg. length attribute of
+   thumb2_cmse_entry_return when updating Armv8-M Mainline Security Extensions
+   register clearing sequences).  */
 const char *
 output_return_instruction (rtx operand, bool really_return, bool reverse,
                            bool simple_return)
@@ -23950,7 +23955,12 @@ thumb_pop (FILE *f, unsigned long mask)
 
 /* Generate code to return from a thumb function.
    If 'reg_containing_return_addr' is -1, then the return address is
-   actually on the stack, at the stack pointer.  */
+   actually on the stack, at the stack pointer.
+
+   Note: do not forget to update length attribute of corresponding insn pattern
+   when changing assembly output (eg. length attribute of epilogue_insns when
+   updating Armv8-M Baseline Security Extensions register clearing
+   sequences).  */
 static void
 thumb_exit (FILE *f, int reg_containing_return_addr)
 {
