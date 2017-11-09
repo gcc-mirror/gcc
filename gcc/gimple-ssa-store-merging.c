@@ -1370,6 +1370,65 @@ find_constituent_stores (struct merged_store_group *group,
   return ret;
 }
 
+/* Return how many SSA_NAMEs used to compute value to store in the INFO
+   store have multiple uses.  If any SSA_NAME has multiple uses, also
+   count statements needed to compute it.  */
+
+static unsigned
+count_multiple_uses (store_immediate_info *info)
+{
+  gimple *stmt = info->stmt;
+  unsigned ret = 0;
+  switch (info->rhs_code)
+    {
+    case INTEGER_CST:
+      return 0;
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	{
+	  ret += 1 + info->ops[0].bit_not_p;
+	  if (info->ops[1].base_addr)
+	    ret += 1 + info->ops[1].bit_not_p;
+	  return ret + 1;
+	}
+      stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+      /* stmt is now the BIT_*_EXPR.  */
+      if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	ret += 1 + info->ops[0].bit_not_p;
+      else if (info->ops[0].bit_not_p)
+	{
+	  gimple *stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	  if (!has_single_use (gimple_assign_rhs1 (stmt2)))
+	    ++ret;
+	}
+      if (info->ops[1].base_addr == NULL_TREE)
+	return ret;
+      if (!has_single_use (gimple_assign_rhs2 (stmt)))
+	ret += 1 + info->ops[1].bit_not_p;
+      else if (info->ops[1].bit_not_p)
+	{
+	  gimple *stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
+	  if (!has_single_use (gimple_assign_rhs1 (stmt2)))
+	    ++ret;
+	}
+      return ret;
+    case MEM_REF:
+      if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	return 1 + info->ops[0].bit_not_p;
+      else if (info->ops[0].bit_not_p)
+	{
+	  stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	  if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	    return 1;
+	}
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Split a merged store described by GROUP by populating the SPLIT_STORES
    vector (if non-NULL) with split_store structs describing the byte offset
    (from the base), the bit size and alignment of each store as well as the
@@ -1385,7 +1444,9 @@ find_constituent_stores (struct merged_store_group *group,
 static unsigned int
 split_group (merged_store_group *group, bool allow_unaligned_store,
 	     bool allow_unaligned_load,
-	     vec<struct split_store *> *split_stores)
+	     vec<struct split_store *> *split_stores,
+	     unsigned *total_orig,
+	     unsigned *total_new)
 {
   unsigned HOST_WIDE_INT pos = group->bitregion_start;
   unsigned HOST_WIDE_INT size = group->bitregion_end - pos;
@@ -1393,12 +1454,41 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
   unsigned HOST_WIDE_INT group_align = group->align;
   unsigned HOST_WIDE_INT align_base = group->align_base;
   unsigned HOST_WIDE_INT group_load_align = group_align;
+  bool any_orig = false;
 
   gcc_assert ((size % BITS_PER_UNIT == 0) && (pos % BITS_PER_UNIT == 0));
 
   unsigned int ret = 0, first = 0;
   unsigned HOST_WIDE_INT try_pos = bytepos;
   group->stores.qsort (sort_by_bitpos);
+
+  if (total_orig)
+    {
+      unsigned int i;
+      store_immediate_info *info = group->stores[0];
+
+      total_new[0] = 0;
+      total_orig[0] = 1; /* The orig store.  */
+      info = group->stores[0];
+      if (info->ops[0].base_addr)
+	total_orig[0] += 1 + info->ops[0].bit_not_p;
+      if (info->ops[1].base_addr)
+	total_orig[0] += 1 + info->ops[1].bit_not_p;
+      switch (info->rhs_code)
+	{
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	  total_orig[0]++; /* The orig BIT_*_EXPR stmt.  */
+	  break;
+	default:
+	  break;
+	}
+      total_orig[0] *= group->stores.length ();
+
+      FOR_EACH_VEC_ELT (group->stores, i, info)
+	total_new[0] += count_multiple_uses (info);
+    }
 
   if (!allow_unaligned_load)
     for (int i = 0; i < 2; ++i)
@@ -1524,12 +1614,46 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	  if (info
 	      && info->bitpos >= try_bitpos
 	      && info->bitpos + info->bitsize <= try_bitpos + try_size)
-	    store->orig = true;
+	    {
+	      store->orig = true;
+	      any_orig = true;
+	    }
 	  split_stores->safe_push (store);
 	}
 
       try_pos += try_size / BITS_PER_UNIT;
       size -= try_size;
+    }
+
+  if (total_orig)
+    {
+      /* If we are reusing some original stores and any of the
+	 original SSA_NAMEs had multiple uses, we need to subtract
+	 those now before we add the new ones.  */
+      if (total_new[0] && any_orig)
+	{
+	  unsigned int i;
+	  struct split_store *store;
+	  FOR_EACH_VEC_ELT (*split_stores, i, store)
+	    if (store->orig)
+	      total_new[0] -= count_multiple_uses (store->orig_stores[0]);
+	}
+      total_new[0] += ret; /* The new store.  */
+      store_immediate_info *info = group->stores[0];
+      if (info->ops[0].base_addr)
+	total_new[0] += ret * (1 + info->ops[0].bit_not_p);
+      if (info->ops[1].base_addr)
+	total_new[0] += ret * (1 + info->ops[1].bit_not_p);
+      switch (info->rhs_code)
+	{
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	  total_new[0] += ret; /* The new BIT_*_EXPR stmt.  */
+	  break;
+	default:
+	  break;
+	}
     }
 
   return ret;
@@ -1564,25 +1688,34 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	 for unaligned and how many stores we'd emit for aligned stores.
 	 Only use unaligned stores if it allows fewer stores than aligned.  */
       unsigned aligned_cnt
-	= split_group (group, false, allow_unaligned_load, NULL);
+	= split_group (group, false, allow_unaligned_load, NULL, NULL, NULL);
       unsigned unaligned_cnt
-	= split_group (group, true, allow_unaligned_load, NULL);
+	= split_group (group, true, allow_unaligned_load, NULL, NULL, NULL);
       if (aligned_cnt <= unaligned_cnt)
 	allow_unaligned_store = false;
     }
+  unsigned total_orig, total_new;
   split_group (group, allow_unaligned_store, allow_unaligned_load,
-	       &split_stores);
+	       &split_stores, &total_orig, &total_new);
 
   if (split_stores.length () >= orig_num_stmts)
     {
       /* We didn't manage to reduce the number of statements.  Bail out.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Exceeded original number of stmts (%u)."
-			      "  Not profitable to emit new sequence.\n",
-		   orig_num_stmts);
-	}
+	fprintf (dump_file, "Exceeded original number of stmts (%u)."
+			    "  Not profitable to emit new sequence.\n",
+		 orig_num_stmts);
       return false;
+    }
+  if (total_orig <= total_new)
+    {
+      /* If number of estimated new statements is above estimated original
+	 statements, bail out too.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Estimated number of original stmts (%u)"
+			    " not larger than estimated number of new"
+			    " stmts (%u).\n",
+		 total_orig, total_new);
     }
 
   gimple_stmt_iterator last_gsi = gsi_for_stmt (group->last_stmt);
@@ -2096,7 +2229,6 @@ handled_load (gimple *stmt, store_operand_info *op,
     {
       tree rhs1 = gimple_assign_rhs1 (stmt);
       if (TREE_CODE (rhs1) == SSA_NAME
-	  && has_single_use (rhs1)
 	  && handled_load (SSA_NAME_DEF_STMT (rhs1), op, bitsize, bitpos,
 			   bitregion_start, bitregion_end))
 	{
@@ -2159,7 +2291,7 @@ pass_store_merging::process_store (gimple *stmt)
       rhs_code = INTEGER_CST;
       ops[0].val = rhs;
     }
-  else if (TREE_CODE (rhs) != SSA_NAME || !has_single_use (rhs))
+  else if (TREE_CODE (rhs) != SSA_NAME)
     invalid = true;
   else
     {
@@ -2179,7 +2311,7 @@ pass_store_merging::process_store (gimple *stmt)
 	    rhs1 = gimple_assign_rhs1 (def_stmt);
 	    rhs2 = gimple_assign_rhs2 (def_stmt);
 	    invalid = true;
-	    if (TREE_CODE (rhs1) != SSA_NAME || !has_single_use (rhs1))
+	    if (TREE_CODE (rhs1) != SSA_NAME)
 	      break;
 	    def_stmt1 = SSA_NAME_DEF_STMT (rhs1);
 	    if (!is_gimple_assign (def_stmt1)
@@ -2188,7 +2320,7 @@ pass_store_merging::process_store (gimple *stmt)
 	      break;
 	    if (rhs_valid_for_store_merging_p (rhs2))
 	      ops[1].val = rhs2;
-	    else if (TREE_CODE (rhs2) != SSA_NAME || !has_single_use (rhs2))
+	    else if (TREE_CODE (rhs2) != SSA_NAME)
 	      break;
 	    else
 	      {
