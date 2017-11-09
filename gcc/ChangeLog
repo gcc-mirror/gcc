@@ -1,3 +1,16 @@
+2017-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-store-merging.c (count_multiple_uses): New function.
+	(split_group): Add total_orig and total_new arguments, estimate the
+	number of statements related to the store group without store merging
+	and with store merging.
+	(imm_store_chain_info::output_merged_store): Adjust split_group
+	callers, punt if estimated number of statements with store merging
+	is not smaller than estimated number of statements without it.
+	Formatting fix.
+	(handled_load): Remove has_single_use checks.
+	(pass_store_merging::process_store): Likewise.
+
 2017-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82902
