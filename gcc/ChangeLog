@@ -1,3 +1,8 @@
+2017-11-09  Jim Wilson  <jimw@sifive.com>
+
+	* collect2.c (OBJECT_FORMAT_COFF): Remove EXTENDED_COFF support.
+	(scan_prog_file): Likewise.
+
 2017-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* bb-reorder.c (max_entry_frequency): Remove.
