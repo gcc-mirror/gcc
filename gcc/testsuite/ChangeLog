@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lib/target-supports.exp (vect_perm_supported): New proc.
+	(check_effective_target_vect_perm3_int): Likewise.
+	(check_effective_target_vect_perm3_short): Likewise.
+	(check_effective_target_vect_perm3_byte): Likewise.
+	* gcc.dg/vect/slp-perm-1.c: Expect SLP load permutation to
+	succeed if vect_perm3_int.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+	* gcc.dg/vect/slp-perm-8.c: Likewise vect_perm3_byte.
+	* gcc.dg/vect/slp-perm-9.c: Likewise vect_perm3_short.
+	Use vect_perm_short instead of vect_perm.  Add a scan-tree-dump-not
+	test for vect_perm3_short targets.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/no-vfa-vect-101.c: Use scan-tree-dump rather than
 	scan-tree-dump-times for vect_multiple_sizes.
 	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.

@@ -1,4 +1,12 @@
 2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/sourcebuild.texi (vect_perm_short, vect_perm_byte): Document
+	previously undocumented selectors.
+	(vect_perm3_byte, vect_perm3_short, vect_perm3_int): Document.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/rtl.texi (const_vector): Say that elements can be
 	const_wide_ints too.
