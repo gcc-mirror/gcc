@@ -1,3 +1,12 @@
+2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gcc-interface/Makefile.in: Add rules to build aarch64-qnx runtimes.
+
+2017-11-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Add processing for
+	N_Variable_Reference_Marker nodes.
+
 2017-11-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Handle properly
