@@ -1,3 +1,7 @@
+2017-11-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb, freeze.adb: Minor reformatting.
+
 2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
 
 	* gcc-interface/Makefile.in: Add rules to build aarch64-qnx runtimes.
