@@ -18,5 +18,5 @@ int t(b *a)
 /* The memory access is through a pointer of type c which means
    *ptr is not aligned.  */
 
-/* { dg-final { scan-tree-dump "can't force alignment" "vect" } } */
-/* { dg-final { scan-tree-dump-not "misalign = 0" "vect" } } */
+/* { dg-final { scan-tree-dump "can't force alignment" "vect" { xfail vect_element_align_preferred } } } */
+/* { dg-final { scan-tree-dump-not "misalign = 0" "vect" { xfail vect_element_align_preferred } } } */

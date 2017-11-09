@@ -3290,7 +3290,8 @@ proc check_effective_target_vect_peeling_profitable { } {
     } else {
 	set et_vect_peeling_profitable_saved($et_index) 1
         if { ([istarget s390*-*-*]
-	      && [check_effective_target_s390_vx]) } {
+	      && [check_effective_target_s390_vx])
+	     || [check_effective_target_vect_element_align_preferred] } {
 	    set et_vect_peeling_profitable_saved($et_index) 0
         }
     }
@@ -6340,6 +6341,13 @@ proc check_effective_target_vect_natural_alignment { } {
     verbose "check_effective_target_vect_natural_alignment:\
 	     returning $et_vect_natural_alignment" 2
     return $et_vect_natural_alignment
+}
+
+# Return 1 if the target doesn't prefer any alignment beyond element
+# alignment during vectorization.
+
+proc check_effective_target_vect_element_align_preferred { } {
+    return [check_effective_target_vect_variable_length]
 }
 
 # Return 1 if vector alignment (for types of size 32 bit or less) is reachable, 0 otherwise.

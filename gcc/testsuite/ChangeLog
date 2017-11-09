@@ -2,6 +2,30 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lib/target-supports.exp
+	(check_effective_target_vect_element_align_preferred): New proc.
+	(check_effective_target_vect_peeling_profitable): Test it.
+	* gcc.dg/vect/no-section-anchors-vect-31.c: Don't expect peeling
+	if vect_element_align_preferred.
+	* gcc.dg/vect/no-section-anchors-vect-64.c: Likewise.
+	* gcc.dg/vect/pr65310.c: Likewise.
+	* gcc.dg/vect/vect-26.c: Likewise.
+	* gcc.dg/vect/vect-54.c: Likewise.
+	* gcc.dg/vect/vect-56.c: Likewise.
+	* gcc.dg/vect/vect-58.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/vect-89-big-array.c: Likewise.
+	* gcc.dg/vect/vect-89.c: Likewise.
+	* gcc.dg/vect/vect-92.c: Likewise.
+	* gcc.dg/vect/vect-peel-1.c: Likewise.
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Expect the step to
+	divide the alignment if vect_element_align_preferred.
+	* gcc.dg/vect/vect-outer-3a.c: Likewise.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lib/target-supports.exp (vect_perm_supported): New proc.
 	(check_effective_target_vect_perm3_int): Likewise.
 	(check_effective_target_vect_perm3_short): Likewise.

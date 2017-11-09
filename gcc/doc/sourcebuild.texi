@@ -1383,6 +1383,10 @@ have different type from the value operands.
 @item vect_double
 Target supports hardware vectors of @code{double}.
 
+@item vect_element_align_preferred
+The target's preferred vector alignment is the same as the element
+alignment.
+
 @item vect_float
 Target supports hardware vectors of @code{float}.
 
