@@ -1520,6 +1520,27 @@ package body Sem_Ch4 is
               and then Present (Non_Limited_View (Etype (N)))
             then
                Set_Etype (N, Non_Limited_View (Etype (N)));
+
+            --  If there is no completion for the type, this may be because
+            --  there is only a limited view of it and there is nothing in
+            --  the context of the current unit that has required a regular
+            --  compilation of the unit containing the type. We recognize
+            --  this unusual case by the fact that that unit is not analyzed.
+            --  Note that the call being analyzed is in a different unit from
+            --  the function declaration, and nothing indicates that the type
+            --  is a limited view.
+
+            elsif Ekind (Scope (Etype (N))) = E_Package
+              and then Present (Limited_View (Scope (Etype (N))))
+              and then not Analyzed (Unit_Declaration_Node (Scope (Etype (N))))
+            then
+               Error_Msg_NE ("cannot call function that returns "
+                 & "limited view of}", N, Etype (N));
+               Error_Msg_NE
+                 ("\there must be a regular with_clause for package& "
+                   & "in the current unit, or in some unit in its context",
+                    N, Scope (Etype (N)));
+               Set_Etype (N, Any_Type);
             end if;
          end if;
       end if;
@@ -8681,7 +8702,8 @@ package body Sem_Ch4 is
          else
             --  The type of the subprogram may be a limited view obtained
             --  transitively from another unit. If full view is available,
-            --  use it to analyze call.
+            --  use it to analyze call. If there is no nonlimited view, then
+            --  this is diagnosed when analyzing the rewritten call.
 
             declare
                T : constant Entity_Id := Etype (Subprog);

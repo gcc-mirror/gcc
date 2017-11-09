@@ -3821,7 +3821,10 @@ package body Sem_Ch8 is
             Check_In_Previous_With_Clause (N, Name (N));
          end if;
 
-         Use_One_Package (N, Name (N));
+         --  Force the use_clause when we are in a generic instance because the
+         --  scope of the package has changed and we must ensure visibility.
+
+         Use_One_Package (N, Name (N), Force => In_Instance);
 
          --  Capture the first Ghost package and the first living package
 

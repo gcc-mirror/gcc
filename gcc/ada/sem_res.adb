@@ -1030,7 +1030,7 @@ package body Sem_Res is
          if Nkind (N) in N_Has_Etype and then Etype (N) = Any_Type then
             return;
          elsif Nkind (N) in N_Has_Chars
-           and then Chars (N) in Error_Name_Or_No_Name
+           and then not Is_Valid_Name (Chars (N))
          then
             return;
          end if;

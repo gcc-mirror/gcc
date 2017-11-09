@@ -1,3 +1,39 @@
+2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Reword error message.
+	(Get_SPARK_Mode_Type): Do not raise Program_Error in case pragma
+	SPARK_Mode appears with an illegal mode, treat this as a non-existent
+	mode.
+
+2017-11-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): Reject a call to a function that returns
+	a limited view of a type T declared in unit U1, when the function is
+	declared in another unit U2 and the call appears in a procedure within
+	another unit.
+
+2017-11-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Package): Force installation of use_clauses
+	when processing generic instances.
+
+2017-11-09  Bob Duff  <duff@adacore.com>
+
+	* namet.ads, namet.adb (Valid_Name_Id): New subtype that excludes
+	Error_Name and No_Name.  Use this (versus Name_Id) to indicate which
+	objects can have those special values. Valid_Name_Id could usefully be
+	used all over the compiler front end, but that's too much trouble for
+	now. If we did that, we might want to rename:
+	Name_Id --> Optional_Name_Id, Valid_Name_Id --> Name_Id.
+	For parameters of type Valid_Name_Id, remove some redundant tests,
+	including the ones found by CodePeer.  Use Is_Valid_Name instead of
+	membership test when appropriate.
+	(Error_Name_Or_No_Name): Delete this; it's no longer needed.
+	* sem_ch2.adb (Analyze_Identifier): Use "not Is_Valid_Name" instead of
+	"in Error_Name_Or_No_Name".
+	(Check_Parameterless_Call): Use "not Is_Valid_Name" instead of "in
+	Error_Name_Or_No_Name".
+
 2017-11-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Suppress warnings in codepeer

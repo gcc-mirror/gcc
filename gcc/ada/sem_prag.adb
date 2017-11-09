@@ -3287,8 +3287,8 @@ package body Sem_Prag is
 
                if not Is_Child_Or_Sibling (Pack_Id, Scope (Encap_Id)) then
                   SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state or public "
-                     & "descendant of & (SPARK RM 7.2.6(3))",
+                    ("indicator Part_Of must denote abstract state of & "
+                     & "or of its public descendant (SPARK RM 7.2.6(3))",
                      Indic, Parent_Unit);
                   return;
 
@@ -3301,8 +3301,8 @@ package body Sem_Prag is
 
                else
                   SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state or public "
-                     & "descendant of & (SPARK RM 7.2.6(3))",
+                    ("indicator Part_Of must denote abstract state of & "
+                     & "or of its public descendant (SPARK RM 7.2.6(3))",
                      Indic, Parent_Unit);
                   return;
                end if;
@@ -29364,10 +29364,11 @@ package body Sem_Prag is
       elsif N = Name_Off then
          return Off;
 
-      --  Any other argument is illegal
+      --  Any other argument is illegal. Assume that no SPARK mode applies to
+      --  avoid potential cascaded errors.
 
       else
-         raise Program_Error;
+         return None;
       end if;
    end Get_SPARK_Mode_Type;
 
