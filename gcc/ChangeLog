@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-ssa-loop-ivopts.c (get_address_cost): Try using a
+	scaled index even if the unscaled address was invalid.
+	Don't increase the complexity of using a scale in that case.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/rtl.texi: Rewrite the subreg rules so that they partition
 	the inner register into REGMODE_NATURAL_SIZE bytes rather than
 	UNITS_PER_WORD bytes.
