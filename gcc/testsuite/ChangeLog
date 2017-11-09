@@ -3,6 +3,37 @@
 	    David Sherwood  <david.sherwood@arm.com>
 
 	* lib/target-supports.exp
+	(check_effective_target_vect_align_stack_vars): New proc.
+	* gcc.dg/vect/vect-23.c: Only expect the array to be aligned if
+	vect_align_stack_vars.
+	* gcc.dg/vect/vect-24.c: Likewise.
+	* gcc.dg/vect/vect-25.c: Likewise.
+	* gcc.dg/vect/vect-26.c: Likewise.
+	* gcc.dg/vect/vect-32-big-array.c: Likewise.
+	* gcc.dg/vect/vect-32.c: Likewise.
+	* gcc.dg/vect/vect-40.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Likewise.
+	* gcc.dg/vect/vect-46.c: Likewise.
+	* gcc.dg/vect/vect-48.c: Likewise.
+	* gcc.dg/vect/vect-52.c: Likewise.
+	* gcc.dg/vect/vect-54.c: Likewise.
+	* gcc.dg/vect/vect-62.c: Likewise.
+	* gcc.dg/vect/vect-67.c: Likewise.
+	* gcc.dg/vect/vect-75-big-array.c: Likewise.
+	* gcc.dg/vect/vect-75.c: Likewise.
+	* gcc.dg/vect/vect-77-alignchecks.c: Likewise.
+	* gcc.dg/vect/vect-78-alignchecks.c: Likewise.
+	* gcc.dg/vect/vect-89-big-array.c: Likewise.
+	* gcc.dg/vect/vect-89.c: Likewise.
+	* gcc.dg/vect/vect-96.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-3.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-6.c: Likewise.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp
 	(check_effective_target_vect_variable_length): New proc.
 	* gcc.dg/vect/pr60482.c: XFAIL test for no epilog loop if
 	vect_variable_length.
