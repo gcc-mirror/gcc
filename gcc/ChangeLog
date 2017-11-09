@@ -1,3 +1,8 @@
+2017-11-09  Andre McCurdy  <armccurdy@gmail.com>
+
+	* config/arm/arm-cores.def: Fix missing FL_LPAE flag for armv7ve
+	compatible cores.
+
 2017-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline
