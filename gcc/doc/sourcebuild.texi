@@ -1373,6 +1373,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 @subsubsection Vector-specific attributes
 
 @table @code
+@item vect_align_stack_vars
+The target's ABI allows stack variables to be aligned to the preferred
+vector alignment.
+
 @item vect_condition
 Target supports vector conditional operations.
 

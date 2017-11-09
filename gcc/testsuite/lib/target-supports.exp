@@ -6350,6 +6350,12 @@ proc check_effective_target_vect_element_align_preferred { } {
     return [check_effective_target_vect_variable_length]
 }
 
+# Return 1 if we can align stack data to the preferred vector alignment.
+
+proc check_effective_target_vect_align_stack_vars { } {
+    return 1
+}
+
 # Return 1 if vector alignment (for types of size 32 bit or less) is reachable, 0 otherwise.
 
 proc check_effective_target_vector_alignment_reachable { } {
