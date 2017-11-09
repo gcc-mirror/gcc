@@ -1,5 +1,8 @@
 2017-11-09  Jeff Law  <law@redhat.com>
 
+	* tree-vrp.c (vrp_prop): Move class to earlier point in the file.
+	(vrp_folder): Likewise.
+
 	* tree-vrp.c (set_value_range): Do not reference vrp_equiv_obstack.
 	Get it from the existing bitmap instead.
 	(vrp_intersect_ranges_1): Likewise.

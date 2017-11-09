@@ -6635,6 +6635,13 @@ insert_range_assertions (void)
   BITMAP_FREE (need_assert_for);
 }
 
+class vrp_prop : public ssa_propagation_engine
+{
+ public:
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
+
 /* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible arrays
    and "struct" hacks. If VRP can determine that the
    array subscript is a constant, check if it is outside valid
@@ -8065,13 +8072,6 @@ extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
     vrp_visit_switch_stmt (as_a <gswitch *> (stmt), taken_edge_p);
 }
-
-class vrp_prop : public ssa_propagation_engine
-{
- public:
-  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
-  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
-};
 
 /* Evaluate statement STMT.  If the statement produces a useful range,
    return SSA_PROP_INTERESTING and record the SSA name with the
@@ -10450,6 +10450,13 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
   return false;
 }
 
+class vrp_folder : public substitute_and_fold_engine
+{
+ public:
+  tree get_value (tree) FINAL OVERRIDE;
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+};
+
 /* If the statement pointed by SI has a predicate whose value can be
    computed using the value range information computed by VRP, compute
    its value and return true.  Otherwise, return false.  */
@@ -10511,13 +10518,6 @@ fold_predicate_in (gimple_stmt_iterator *si)
 
   return false;
 }
-
-class vrp_folder : public substitute_and_fold_engine
-{
- public:
-  tree get_value (tree) FINAL OVERRIDE;
-  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
-};
 
 /* Callback for substitute_and_fold folding the stmt at *SI.  */
 
