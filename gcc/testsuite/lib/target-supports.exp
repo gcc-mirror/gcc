@@ -6399,6 +6399,15 @@ proc check_effective_target_vect_element_align { } {
     return $et_vect_element_align($et_index)
 }
 
+# Return 1 if we expect to see unaligned accesses in at least some
+# vector dumps.
+
+proc check_effective_target_vect_unaligned_possible { } {
+    return [expr { ![check_effective_target_vect_element_align_preferred]
+		   && (![check_effective_target_vect_no_align]
+		       || [check_effective_target_vect_hw_misalign]) }]
+}
+
 # Return 1 if the target supports vector LOAD_LANES operations, 0 otherwise.
 
 proc check_effective_target_vect_load_lanes { } {

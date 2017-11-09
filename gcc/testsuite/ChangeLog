@@ -3,6 +3,44 @@
 	    David Sherwood  <david.sherwood@arm.com>
 
 	* lib/target-supports.exp
+	(check_effective_target_vect_unaligned_possible): New proc.
+	* gcc.dg/vect/slp-25.c: Extend XFAIL of peeling for alignment from
+	vect_no_align && { ! vect_hw_misalign } to ! vect_unaligned_possible.
+	* gcc.dg/vect/vect-multitypes-1.c: Likewise.
+	* gcc.dg/vect/vect-109.c: XFAIL vectorisation of an unaligned
+	access to ! vect_unaligned_possible.
+	* gcc.dg/vect/vect-33.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Likewise.
+	* gcc.dg/vect/vect-56.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/vect-96.c: Likewise.
+	* gcc.dg/vect/vect-peel-1.c: Likewise.
+	* gcc.dg/vect/vect-27.c: Extend XFAIL of unaligned vectorization from
+	vect_no_align && { ! vect_hw_misalign } to ! vect_unaligned_possible.
+	* gcc.dg/vect/vect-29.c: Likewise.
+	* gcc.dg/vect/vect-44.c: Likewise.
+	* gcc.dg/vect/vect-48.c: Likewise.
+	* gcc.dg/vect/vect-50.c: Likewise.
+	* gcc.dg/vect/vect-52.c: Likewise.
+	* gcc.dg/vect/vect-72.c: Likewise.
+	* gcc.dg/vect/vect-75-big-array.c: Likewise.
+	* gcc.dg/vect/vect-75.c: Likewise.
+	* gcc.dg/vect/vect-77-alignchecks.c: Likewise.
+	* gcc.dg/vect/vect-77-global.c: Likewise.
+	* gcc.dg/vect/vect-78-alignchecks.c: Likewise.
+	* gcc.dg/vect/vect-78-global.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-3.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-4.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-6.c: Likewise.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+	* gcc.dg/vect/vect-peel-3.c: Likewise, and also for peeling
+	for alignment.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp
 	(check_effective_target_vect_element_align_preferred): New proc.
 	(check_effective_target_vect_peeling_profitable): Test it.
 	* gcc.dg/vect/no-section-anchors-vect-31.c: Don't expect peeling

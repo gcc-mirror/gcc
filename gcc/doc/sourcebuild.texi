@@ -1481,6 +1481,11 @@ Like @code{vect_perm3_byte}, but for 16-bit elements.
 @item vect_shift
 Target supports a hardware vector shift operation.
 
+@item vect_unaligned_possible
+Target prefers vectors to have an alignment greater than element
+alignment, but also allows unaligned vector accesses in some
+circumstances.
+
 @item vect_widen_sum_hi_to_si
 Target supports a vector widening summation of @code{short} operands
 into @code{int} results, or can promote (unpack) from @code{short}
