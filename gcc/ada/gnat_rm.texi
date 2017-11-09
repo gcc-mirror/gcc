@@ -13141,7 +13141,7 @@ type @code{Character}).
 
 @geindex Static_Dispatch_Tables
 
-[GNAT] This restriction ensures at compile time that all the artifacts
+[GNAT] This restriction checks at compile time that all the artifacts
 associated with dispatch tables can be placed in read-only memory.
 
 @node SPARK_05,,Static_Dispatch_Tables,Program Unit Level Restrictions

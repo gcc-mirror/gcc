@@ -3821,10 +3821,7 @@ package body Sem_Ch8 is
             Check_In_Previous_With_Clause (N, Name (N));
          end if;
 
-         --  Force the use_clause when we are in a generic instance because the
-         --  scope of the package has changed and we must ensure visibility.
-
-         Use_One_Package (N, Name (N), Force => In_Instance);
+         Use_One_Package (N, Name (N));
 
          --  Capture the first Ghost package and the first living package
 
@@ -9443,7 +9440,10 @@ package body Sem_Ch8 is
 
          --  Warn about detected redundant clauses
 
-         elsif In_Open_Scopes (P) and not Force then
+         elsif not Force
+           and then In_Open_Scopes (P)
+           and then not Is_Hidden_Open_Scope (P)
+         then
             if Warn_On_Redundant_Constructs and then P = Current_Scope then
                Error_Msg_NE -- CODEFIX
                  ("& is already use-visible within itself?r?",

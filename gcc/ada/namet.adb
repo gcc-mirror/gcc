@@ -261,8 +261,10 @@ package body Namet is
                   declare
                      W2 : constant Word := Hex (2);
                   begin
-                     pragma Assume (W2 <= 255);
-                     --  Add assumption to facilitate static analysis
+                     pragma Assert (W2 <= 255);
+                     --  Add assumption to facilitate static analysis. Note
+                     --  that we cannot use pragma Assume for bootstrap
+                     --  reasons.
                      Insert_Character (Character'Val (W2));
                   end;
                end if;
@@ -759,7 +761,7 @@ package body Namet is
 
       Write_Eol;
       Write_Str ("Average number of probes for lookup = ");
-      pragma Assume (Nsyms /= 0);
+      pragma Assert (Nsyms /= 0);
       --  Add assumption to facilitate static analysis. Here Nsyms cannot be
       --  zero because many symbols are added to the table by default.
       Probes := Probes / Nsyms;
