@@ -6186,7 +6186,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	   a constant.  But if more than one register is involved,
 	   this probably loses.  */
 	else if (REG_P (target) && TREE_STATIC (exp)
-		 && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
+		 && (GET_MODE_SIZE (GET_MODE (target))
+		     <= REGMODE_NATURAL_SIZE (GET_MODE (target))))
 	  {
 	    emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 	    cleared = 1;

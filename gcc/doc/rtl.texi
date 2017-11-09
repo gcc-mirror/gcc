@@ -1925,19 +1925,32 @@ false.
 When @var{m1} is at least as narrow as @var{m2} the @code{subreg}
 expression is called @dfn{normal}.
 
+@findex REGMODE_NATURAL_SIZE
 Normal @code{subreg}s restrict consideration to certain bits of
-@var{reg}.  There are two cases.  If @var{m1} is smaller than a word,
-the @code{subreg} refers to the least-significant part (or
-@dfn{lowpart}) of one word of @var{reg}.  If @var{m1} is word-sized or
-greater, the @code{subreg} refers to one or more complete words.
+@var{reg}.  For this purpose, @var{reg} is divided into
+individually-addressable blocks in which each block has:
 
-When used as an lvalue, @code{subreg} is a word-based accessor.
-Storing to a @code{subreg} modifies all the words of @var{reg} that
-overlap the @code{subreg}, but it leaves the other words of @var{reg}
+@smallexample
+REGMODE_NATURAL_SIZE (@var{m2})
+@end smallexample
+
+bytes.  Usually the value is @code{UNITS_PER_WORD}; that is,
+most targets usually treat each word of a register as being
+independently addressable.
+
+There are two types of normal @code{subreg}.  If @var{m1} is known
+to be no bigger than a block, the @code{subreg} refers to the
+least-significant part (or @dfn{lowpart}) of one block of @var{reg}.
+If @var{m1} is known to be larger than a block, the @code{subreg} refers
+to two or more complete blocks.
+
+When used as an lvalue, @code{subreg} is a block-based accessor.
+Storing to a @code{subreg} modifies all the blocks of @var{reg} that
+overlap the @code{subreg}, but it leaves the other blocks of @var{reg}
 alone.
 
-When storing to a normal @code{subreg} that is smaller than a word,
-the other bits of the referenced word are usually left in an undefined
+When storing to a normal @code{subreg} that is smaller than a block,
+the other bits of the referenced block are usually left in an undefined
 state.  This laxity makes it easier to generate efficient code for
 such instructions.  To represent an instruction that preserves all the
 bits outside of those in the @code{subreg}, use @code{strict_low_part}
@@ -1995,10 +2008,11 @@ number of undefined bits.  For example:
 (subreg:PSI (reg:SI 0) 0)
 @end smallexample
 
+@findex REGMODE_NATURAL_SIZE
 accesses the whole of @samp{(reg:SI 0)}, but the exact relationship
 between the @code{PSImode} value and the @code{SImode} value is not
-defined.  If we assume @samp{UNITS_PER_WORD <= 4}, then the following
-two @code{subreg}s:
+defined.  If we assume @samp{REGMODE_NATURAL_SIZE (DImode) <= 4},
+then the following two @code{subreg}s:
 
 @smallexample
 (subreg:PSI (reg:DI 0) 0)
@@ -2009,7 +2023,7 @@ represent independent 4-byte accesses to the two halves of
 @samp{(reg:DI 0)}.  Both @code{subreg}s have an unknown number
 of undefined bits.
 
-If @samp{UNITS_PER_WORD <= 2} then these two @code{subreg}s:
+If @samp{REGMODE_NATURAL_SIZE (PSImode) <= 2} then these two @code{subreg}s:
 
 @smallexample
 (subreg:HI (reg:PSI 0) 0)
@@ -2882,7 +2896,7 @@ The presence of @code{strict_low_part} says that the part of the
 register which is meaningful in mode @var{n}, but is not part of
 mode @var{m}, is not to be altered.  Normally, an assignment to such
 a subreg is allowed to have undefined effects on the rest of the
-register when @var{m} is less than a word.
+register when @var{m} is smaller than @samp{REGMODE_NATURAL_SIZE (@var{n})}.
 @end table
 
 @node Side Effects

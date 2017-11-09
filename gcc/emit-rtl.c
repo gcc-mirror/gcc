@@ -816,6 +816,8 @@ validate_subreg (machine_mode omode, machine_mode imode,
   if (offset >= isize)
     return false;
 
+  unsigned int regsize = REGMODE_NATURAL_SIZE (imode);
+
   /* ??? This should not be here.  Temporarily continue to allow word_mode
      subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
      Generally, backends are doing something sketchy but it'll take time to
@@ -824,7 +826,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     ;
   /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
      is the culprit here, and not the backends.  */
-  else if (osize >= UNITS_PER_WORD && isize >= osize)
+  else if (osize >= regsize && isize >= osize)
     ;
   /* Allow component subregs of complex and vector.  Though given the below
      extraction rules, it's not always clear what that means.  */
@@ -876,17 +878,23 @@ validate_subreg (machine_mode omode, machine_mode imode,
     }
 
   /* For pseudo registers, we want most of the same checks.  Namely:
-     If the register no larger than a word, the subreg must be lowpart.
-     If the register is larger than a word, the subreg must be the lowpart
-     of a subword.  A subreg does *not* perform arbitrary bit extraction.
-     Given that we've already checked mode/offset alignment, we only have
-     to check subword subregs here.  */
-  if (osize < UNITS_PER_WORD
+
+     Assume that the pseudo register will be allocated to hard registers
+     that can hold REGSIZE bytes each.  If OSIZE is not a multiple of REGSIZE,
+     the remainder must correspond to the lowpart of the containing hard
+     register.  If BYTES_BIG_ENDIAN, the lowpart is at the highest offset,
+     otherwise it is at the lowest offset.
+
+     Given that we've already checked the mode and offset alignment,
+     we only have to check subblock subregs here.  */
+  if (osize < regsize
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
-      machine_mode wmode = isize > UNITS_PER_WORD ? word_mode : imode;
-      unsigned int low_off = subreg_lowpart_offset (omode, wmode);
-      if (offset % UNITS_PER_WORD != low_off)
+      unsigned int block_size = MIN (isize, regsize);
+      unsigned int offset_within_block = offset % block_size;
+      if (BYTES_BIG_ENDIAN
+	  ? offset_within_block != block_size - osize
+	  : offset_within_block != 0)
 	return false;
     }
   return true;
@@ -1439,14 +1447,21 @@ gen_lowpart_common (machine_mode mode, rtx x)
   if (innermode == mode)
     return x;
 
-  /* MODE must occupy no more words than the mode of X.  */
-  if ((msize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD
-      > ((xsize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-    return 0;
-
-  /* Don't allow generating paradoxical FLOAT_MODE subregs.  */
-  if (SCALAR_FLOAT_MODE_P (mode) && msize > xsize)
-    return 0;
+  if (SCALAR_FLOAT_MODE_P (mode))
+    {
+      /* Don't allow paradoxical FLOAT_MODE subregs.  */
+      if (msize > xsize)
+	return 0;
+    }
+  else
+    {
+      /* MODE must occupy no more of the underlying registers than X.  */
+      unsigned int regsize = REGMODE_NATURAL_SIZE (innermode);
+      unsigned int mregs = CEIL (msize, regsize);
+      unsigned int xregs = CEIL (xsize, regsize);
+      if (mregs > xregs)
+	return 0;
+    }
 
   scalar_int_mode int_mode, int_innermode, from_mode;
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)

@@ -1,3 +1,19 @@
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/rtl.texi: Rewrite the subreg rules so that they partition
+	the inner register into REGMODE_NATURAL_SIZE bytes rather than
+	UNITS_PER_WORD bytes.
+	* emit-rtl.c (validate_subreg): Divide subregs into blocks
+	based on REGMODE_NATURAL_SIZE of the inner mode.
+	(gen_lowpart_common): Split the SCALAR_FLOAT_MODE_P and
+	!SCALAR_FLOAT_MODE_P cases.  Use REGMODE_NATURAL_SIZE for the latter.
+	* expmed.c (lowpart_bit_field_p): Divide the value up into
+	chunks of REGMODE_NATURAL_SIZE rather than UNITS_PER_WORD.
+	* expr.c (store_constructor): Use REGMODE_NATURAL_SIZE to test
+	whether something is likely to occupy more than one register.
+
 2017-11-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/82879
