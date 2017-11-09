@@ -5547,6 +5547,78 @@ proc check_effective_target_vect_perm { } {
     return $et_vect_perm_saved($et_index)
 }
 
+# Return 1 if, for some VF:
+#
+# - the target's default vector size is VF * ELEMENT_BITS bits
+#
+# - it is possible to implement the equivalent of:
+#
+#      int<ELEMENT_BITS>_t s1[COUNT][COUNT * VF], s2[COUNT * VF];
+#      for (int i = 0; i < COUNT; ++i)
+#        for (int j = 0; j < COUNT * VF; ++j)
+#          s1[i][j] = s2[j - j % COUNT + i]
+#
+#   using only a single 2-vector permute for each vector in s1.
+#
+# E.g. for COUNT == 3 and vector length 4, the two arrays would be:
+#
+#    s2    | a0 a1 a2 a3 | b0 b1 b2 b3 | c0 c1 c2 c3
+#    ------+-------------+-------------+------------
+#    s1[0] | a0 a0 a0 a3 | a3 a3 b2 b2 | b2 c1 c1 c1
+#    s1[1] | a1 a1 a1 b0 | b0 b0 b3 b3 | b3 c2 c2 c2
+#    s1[2] | a2 a2 a2 b1 | b1 b1 c0 c0 | c0 c3 c3 c3
+#
+# Each s1 permute requires only two of a, b and c.
+#
+# The distance between the start of vector n in s1[0] and the start
+# of vector n in s2 is:
+#
+#    A = (n * VF) % COUNT
+#
+# The corresponding value for the end of vector n is:
+#
+#    B = (n * VF + VF - 1) % COUNT
+#
+# Subtracting i from each value gives the corresponding difference
+# for s1[i].  The condition being tested by this function is false
+# iff A - i > 0 and B - i < 0 for some i and n, such that the first
+# element for s1[i] comes from vector n - 1 of s2 and the last element
+# comes from vector n + 1 of s2.  The condition is therefore true iff
+# A <= B for all n.  This is turn means the condition is true iff:
+#
+#    (n * VF) % COUNT + (VF - 1) % COUNT < COUNT
+#
+# for all n.  COUNT - (n * VF) % COUNT is bounded by gcd (VF, COUNT),
+# and will be that value for at least one n in [0, COUNT), so we want:
+#
+#    (VF - 1) % COUNT < gcd (VF, COUNT)
+
+proc vect_perm_supported { count element_bits } {
+    set vector_bits [lindex [available_vector_sizes] 0]
+    if { $vector_bits <= 0 } {
+	return 0
+    }
+    set vf [expr { $vector_bits / $element_bits }]
+
+    # Compute gcd (VF, COUNT).
+    set gcd $vf
+    set temp1 $count
+    while { $temp1 > 0 } {
+	set temp2 [expr { $gcd % $temp1 }]
+	set gcd $temp1
+	set temp1 $temp2
+    }
+    return [expr { ($vf - 1) % $count < $gcd }]
+}
+
+# Return 1 if the target supports SLP permutation of 3 vectors when each
+# element has 32 bits.
+
+proc check_effective_target_vect_perm3_int { } {
+    return [expr { [check_effective_target_vect_perm]
+		   && [vect_perm_supported 3 32] }]
+}
+
 # Return 1 if the target plus current options supports vector permutation
 # on byte-sized elements, 0 otherwise.
 #
@@ -5578,6 +5650,14 @@ proc check_effective_target_vect_perm_byte { } {
     return $et_vect_perm_byte_saved($et_index)
 }
 
+# Return 1 if the target supports SLP permutation of 3 vectors when each
+# element has 8 bits.
+
+proc check_effective_target_vect_perm3_byte { } {
+    return [expr { [check_effective_target_vect_perm_byte]
+		   && [vect_perm_supported 3 8] }]
+}
+
 # Return 1 if the target plus current options supports vector permutation
 # on short-sized elements, 0 otherwise.
 #
@@ -5607,6 +5687,14 @@ proc check_effective_target_vect_perm_short { } {
     verbose "check_effective_target_vect_perm_short:\
 	     returning $et_vect_perm_short_saved($et_index)" 2
     return $et_vect_perm_short_saved($et_index)
+}
+
+# Return 1 if the target supports SLP permutation of 3 vectors when each
+# element has 16 bits.
+
+proc check_effective_target_vect_perm3_short { } {
+    return [expr { [check_effective_target_vect_perm_short]
+		   && [vect_perm_supported 3 16] }]
 }
 
 # Return 1 if the target plus current options supports folding of

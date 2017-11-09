@@ -1448,6 +1448,32 @@ element types.
 @item vect_perm
 Target supports vector permutation.
 
+@item vect_perm_byte
+Target supports permutation of vectors with 8-bit elements.
+
+@item vect_perm_short
+Target supports permutation of vectors with 16-bit elements.
+
+@item vect_perm3_byte
+Target supports permutation of vectors with 8-bit elements, and for the
+default vector length it is possible to permute:
+@example
+@{ a0, a1, a2, b0, b1, b2, @dots{} @}
+@end example
+to:
+@example
+@{ a0, a0, a0, b0, b0, b0, @dots{} @}
+@{ a1, a1, a1, b1, b1, b1, @dots{} @}
+@{ a2, a2, a2, b2, b2, b2, @dots{} @}
+@end example
+using only two-vector permutes, regardless of how long the sequence is.
+
+@item vect_perm3_int
+Like @code{vect_perm3_byte}, but for 32-bit elements.
+
+@item vect_perm3_short
+Like @code{vect_perm3_byte}, but for 16-bit elements.
+
 @item vect_shift
 Target supports a hardware vector shift operation.
 
