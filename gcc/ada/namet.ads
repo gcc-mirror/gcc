@@ -358,7 +358,9 @@ package Namet is
    --  names, since these are efficiently located without hashing by Name_Find
    --  in any case.
 
-   function Name_Equals (N1, N2 : Valid_Name_Id) return Boolean;
+   function Name_Equals
+     (N1 : Valid_Name_Id;
+      N2 : Valid_Name_Id) return Boolean;
    --  Return whether N1 and N2 denote the same character sequence
 
    function Get_Name_String (Id : Valid_Name_Id) return String;

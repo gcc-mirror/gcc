@@ -175,7 +175,8 @@ package body Namet is
    --------------------
 
    procedure Append_Decoded
-     (Buf : in out Bounded_String; Id : Valid_Name_Id)
+     (Buf : in out Bounded_String;
+      Id  : Valid_Name_Id)
    is
       C    : Character;
       P    : Natural;
@@ -599,7 +600,8 @@ package body Namet is
    ------------------------
 
    procedure Append_Unqualified
-     (Buf : in out Bounded_String; Id : Valid_Name_Id)
+     (Buf : in out Bounded_String;
+      Id  : Valid_Name_Id)
    is
       Temp : Bounded_String;
    begin
@@ -1476,7 +1478,10 @@ package body Namet is
    -- Name_Equals --
    -----------------
 
-   function Name_Equals (N1, N2 : Valid_Name_Id) return Boolean is
+   function Name_Equals
+     (N1 : Valid_Name_Id;
+      N2 : Valid_Name_Id) return Boolean
+   is
    begin
       return N1 = N2 or else Get_Name_String (N1) = Get_Name_String (N2);
    end Name_Equals;

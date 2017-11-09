@@ -68,9 +68,7 @@ package body Sem_Ch2 is
       --  this is the result of some kind of previous error generating a
       --  junk identifier.
 
-      if not Is_Valid_Name (Chars (N))
-        and then Total_Errors_Detected /= 0
-      then
+      if not Is_Valid_Name (Chars (N)) and then Total_Errors_Detected /= 0 then
          return;
       else
          Find_Direct_Name (N);

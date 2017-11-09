@@ -2765,7 +2765,7 @@ package body Sem_Aggr is
    -----------------------------
 
    procedure Resolve_Delta_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Base   : constant Node_Id := Expression (N);
+      Base : constant Node_Id := Expression (N);
 
    begin
       if not Is_Composite_Type (Typ) then
@@ -2789,12 +2789,14 @@ package body Sem_Aggr is
 
    procedure Resolve_Delta_Array_Aggregate (N : Node_Id; Typ : Entity_Id) is
       Deltas : constant List_Id := Component_Associations (N);
+
       Assoc      : Node_Id;
       Choice     : Node_Id;
       Index_Type : Entity_Id;
 
    begin
       Index_Type := Etype (First_Index (Typ));
+
       Assoc := First (Deltas);
       while Present (Assoc) loop
          if Nkind (Assoc) = N_Iterated_Component_Association then
@@ -2843,10 +2845,12 @@ package body Sem_Aggr is
 
                else
                   Analyze (Choice);
+
                   if Is_Entity_Name (Choice)
                     and then Is_Type (Entity (Choice))
                   then
-                     --  Choice covers a range of values.
+                     --  Choice covers a range of values
+
                      if Base_Type (Entity (Choice)) /=
                         Base_Type (Index_Type)
                      then
@@ -2874,28 +2878,17 @@ package body Sem_Aggr is
    ------------------------------------
 
    procedure Resolve_Delta_Record_Aggregate (N   : Node_Id; Typ : Entity_Id) is
-      Deltas : constant List_Id := Component_Associations (N);
-      Assoc      : Node_Id;
-      Choice     : Node_Id;
-      Comp_Type  : Entity_Id;
-
-      --  Variables used to verify that discriminant-dependent components
-      --  appear in the same variant.
-
-      Variant  : Node_Id;
-      Comp_Ref : Entity_Id;
-
       procedure Check_Variant (Id : Entity_Id);
       --  If a given component of the delta aggregate appears in a variant
       --  part, verify that it is within the same variant as that of previous
       --  specified variant components of the delta.
 
-      function Nested_In (V1, V2 : Node_Id) return Boolean;
-      --  Determine whether variant V1 is within variant V2.
-
       function Get_Component_Type (Nam : Node_Id) return Entity_Id;
-      --  Locate component with a given name and return its type. If none
-      --  found report error.
+      --  Locate component with a given name and return its type. If none found
+      --  report error.
+
+      function Nested_In (V1 : Node_Id; V2 : Node_Id) return Boolean;
+      --  Determine whether variant V1 is within variant V2
 
       function Variant_Depth (N : Node_Id) return Integer;
       --  Determine the distance of a variant to the enclosing type
@@ -2907,12 +2900,16 @@ package body Sem_Aggr is
 
       procedure Check_Variant (Id : Entity_Id) is
          Comp         : Entity_Id;
+         Comp_Ref     : Entity_Id;
          Comp_Variant : Node_Id;
+         Variant      : Node_Id;
 
       begin
          if not Has_Discriminants (Typ) then
             return;
          end if;
+
+         Variant := Empty;
 
          Comp := First_Entity (Typ);
          while Present (Comp) loop
@@ -2937,9 +2934,9 @@ package body Sem_Aggr is
                begin
                   if D1 = D2
                     or else
-                     (D1 > D2 and then not Nested_In (Variant, Comp_Variant))
+                      (D1 > D2 and then not Nested_In (Variant, Comp_Variant))
                     or else
-                     (D2 > D1 and then not Nested_In (Comp_Variant, Variant))
+                      (D2 > D1 and then not Nested_In (Comp_Variant, Variant))
                   then
                      Error_Msg_Node_2 := Comp_Ref;
                      Error_Msg_NE
@@ -2955,42 +2952,6 @@ package body Sem_Aggr is
          end if;
       end Check_Variant;
 
-      ---------------
-      -- Nested_In --
-      ---------------
-
-      function Nested_In (V1, V2 : Node_Id) return Boolean is
-         Par : Node_Id;
-      begin
-         Par := Parent (V1);
-         while Nkind (Par) /= N_Full_Type_Declaration loop
-            if Par = V2 then
-               return True;
-            end if;
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end Nested_In;
-
-      -------------------
-      -- Variant_Depth --
-      -------------------
-
-      function Variant_Depth (N : Node_Id) return Integer is
-         Depth : Integer;
-         Par   : Node_Id;
-      begin
-         Depth := 0;
-         Par   := Parent (N);
-         while Nkind (Par) /= N_Full_Type_Declaration loop
-            Depth := Depth + 1;
-            Par := Parent (Par);
-         end loop;
-
-         return Depth;
-      end Variant_Depth;
-
       ------------------------
       -- Get_Component_Type --
       ------------------------
@@ -3000,7 +2961,6 @@ package body Sem_Aggr is
 
       begin
          Comp := First_Entity (Typ);
-
          while Present (Comp) loop
             if Chars (Comp) = Chars (Nam) then
                if Ekind (Comp) = E_Discriminant then
@@ -3017,16 +2977,62 @@ package body Sem_Aggr is
          return Any_Type;
       end Get_Component_Type;
 
+      ---------------
+      -- Nested_In --
+      ---------------
+
+      function Nested_In (V1, V2 : Node_Id) return Boolean is
+         Par : Node_Id;
+
+      begin
+         Par := Parent (V1);
+         while Nkind (Par) /= N_Full_Type_Declaration loop
+            if Par = V2 then
+               return True;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end Nested_In;
+
+      -------------------
+      -- Variant_Depth --
+      -------------------
+
+      function Variant_Depth (N : Node_Id) return Integer is
+         Depth : Integer;
+         Par   : Node_Id;
+
+      begin
+         Depth := 0;
+         Par   := Parent (N);
+         while Nkind (Par) /= N_Full_Type_Declaration loop
+            Depth := Depth + 1;
+            Par   := Parent (Par);
+         end loop;
+
+         return Depth;
+      end Variant_Depth;
+
+      --  Local variables
+
+      Deltas : constant List_Id := Component_Associations (N);
+
+      Assoc     : Node_Id;
+      Choice    : Node_Id;
+      Comp_Type : Entity_Id;
+
    --  Start of processing for Resolve_Delta_Record_Aggregate
 
    begin
-      Variant := Empty;
       Assoc := First (Deltas);
-
       while Present (Assoc) loop
          Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
             Comp_Type := Get_Component_Type (Choice);
+
             if Comp_Type /= Any_Type then
                Check_Variant (Choice);
             end if;

@@ -412,12 +412,12 @@ package body Sem_Ch4 is
    -- Analyze_Aggregate --
    -----------------------
 
-   --  Most of the analysis of Aggregates requires that the type be known,
-   --  and is therefore put off until resolution of the context.
-   --  Delta aggregates have a base component that determines the type of the
-   --  enclosing aggregate so its type can be ascertained earlier. This also
-   --  allows delta aggregates to appear in the context of a record type with
-   --  a private extension, as per the latest update of AI12-0127.
+   --  Most of the analysis of Aggregates requires that the type be known, and
+   --  is therefore put off until resolution of the context. Delta aggregates
+   --  have a base component that determines the enclosing aggregate type so
+   --  its type can be ascertained earlier. This also allows delta aggregates
+   --  to appear in the context of a record type with a private extension, as
+   --  per the latest update of AI12-0127.
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin
@@ -425,14 +425,15 @@ package body Sem_Ch4 is
          if Nkind (N) = N_Delta_Aggregate then
             declare
                Base : constant Node_Id := Expression (N);
+
                I  : Interp_Index;
                It : Interp;
 
             begin
                Analyze (Base);
 
-               --  If the base is overloaded, propagate interpretations
-               --  to the enclosing aggregate.
+               --  If the base is overloaded, propagate interpretations to the
+               --  enclosing aggregate.
 
                if Is_Overloaded (Base) then
                   Get_First_Interp (Base, I, It);
@@ -1533,12 +1534,15 @@ package body Sem_Ch4 is
               and then Present (Limited_View (Scope (Etype (N))))
               and then not Analyzed (Unit_Declaration_Node (Scope (Etype (N))))
             then
-               Error_Msg_NE ("cannot call function that returns "
-                 & "limited view of}", N, Etype (N));
                Error_Msg_NE
-                 ("\there must be a regular with_clause for package& "
-                   & "in the current unit, or in some unit in its context",
-                    N, Scope (Etype (N)));
+                 ("cannot call function that returns limited view of}",
+                  N, Etype (N));
+
+               Error_Msg_NE
+                 ("\there must be a regular with_clause for package & in the "
+                  & "current unit, or in some unit in its context",
+                  N, Scope (Etype (N)));
+
                Set_Etype (N, Any_Type);
             end if;
          end if;
