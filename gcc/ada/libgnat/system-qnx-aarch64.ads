@@ -95,22 +95,20 @@ package System is
 
    --  Priority-related Declarations (RM D.1)
 
-   --  0 .. 98 corresponds to the system priority range 1 .. 99.
-   --
    --  If the scheduling policy is SCHED_FIFO or SCHED_RR the runtime makes use
    --  of the entire range provided by the system.
    --
    --  If the scheduling policy is SCHED_OTHER the only valid system priority
    --  is 1 and other values are simply ignored.
 
-   Max_Priority           : constant Positive := 97;
-   Max_Interrupt_Priority : constant Positive := 98;
+   Max_Priority           : constant Positive := 62;
+   Max_Interrupt_Priority : constant Positive := 63;
 
-   subtype Any_Priority       is Integer      range  0 .. 98;
-   subtype Priority           is Any_Priority range  0 .. 97;
-   subtype Interrupt_Priority is Any_Priority range 98 .. 98;
+   subtype Any_Priority       is Integer      range  0 .. 63;
+   subtype Priority           is Any_Priority range  0 .. 62;
+   subtype Interrupt_Priority is Any_Priority range 63 .. 63;
 
-   Default_Priority : constant Priority := 48;
+   Default_Priority : constant Priority := 31;
 
 private
 

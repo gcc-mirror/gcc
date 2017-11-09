@@ -1,3 +1,60 @@
+2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp-qnx.c: Fix obvious typo.
+
+2017-11-09  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Monotonic_Clock): Minor reformatting.
+
+2017-11-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve): If expression is an entity whose type has
+	implicit dereference, generate reference to it, because no reference is
+	generated for an overloaded entity during analysis, given that its
+	identity may not be known.
+
+2017-11-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Thunk): Replace substraction of
+	offset-to-top field by addition.
+	(Make_Secondary_DT): Initialize the offset-to-top field with a negative
+	offset.
+	* exp_ch3.adb (Build_Offset_To_Top_Function): Build functions that
+	return a negative offset-to-top value.
+	(Initialize_Tag): Invoke runtime services Set_Dynamic_Offset_To_Top and
+	Set_Static_Offset_To_Top passing a negative offet-to-top value;
+	initialize also the offset-to-top field with a negative offset.
+	* libgnat/a-tags.adb (Base_Address): Displace the pointer by means of
+	an addition since the offset-to-top field is now a negative value.
+	(Displace): Displace the pointer to the object means of a substraction
+	since it is now a negative value.
+	(Set_Dynamic_Offset_to_top): Displace the pointer to the object by
+	means of a substraction since it is now a negative value.
+
+2017-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Call Errout.Finalize (Last_Call => True)
+	before Errout.Output_Messages also in the case of compilation errors.
+
+2017-11-09  Javier Miranda  <miranda@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst (Interfacing with C++ at
+	the Class Level): Fix error interfacing with C strings.
+	* gnat_ugn.texi: Regenerate.
+
+2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
+
+	* system-qnx-aarch64.ads: Fix the priority constants.
+	* s-osinte__qnx.ads: Fix constants for handling the locking protocols
+	and scheduling.
+	* s-osinte__qnx.adb: New file , prevents the use of priority 0 that
+	corresponds to an idle priority on QNX.
+
+2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb, sem_util.adb, sem_elab.adb: Fix minor typos in
+	comments.
+
 2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
 
 	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs): Ignore loop parameters

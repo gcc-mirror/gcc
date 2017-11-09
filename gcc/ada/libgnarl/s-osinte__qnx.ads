@@ -238,7 +238,7 @@ package System.OS_Interface is
    -- Priority Scheduling --
    -------------------------
 
-   SCHED_OTHER : constant := 0;
+   SCHED_OTHER : constant := 3;
    SCHED_FIFO  : constant := 1;
    SCHED_RR    : constant := 2;
 
@@ -285,7 +285,7 @@ package System.OS_Interface is
 
    PTHREAD_CREATE_DETACHED : constant := 1;
 
-   PTHREAD_SCOPE_PROCESS : constant := 1;
+   PTHREAD_SCOPE_PROCESS : constant := 4;
    PTHREAD_SCOPE_SYSTEM  : constant := 0;
 
    --  Read/Write lock not supported on Android.
@@ -426,8 +426,9 @@ package System.OS_Interface is
    -- POSIX.1c  Section 13 --
    --------------------------
 
-   PTHREAD_PRIO_PROTECT : constant := 0;
-   PTHREAD_PRIO_INHERIT : constant := 1;
+   PTHREAD_PRIO_INHERIT : constant := 0;
+   PTHREAD_PRIO_NONE    : constant := 1;
+   PTHREAD_PRIO_PROTECT : constant := 2;
 
    function pthread_mutexattr_setprotocol
      (attr     : access pthread_mutexattr_t;

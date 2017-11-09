@@ -217,9 +217,9 @@ TCR("ret")
   CFI_COMMON_REGS \
   TCR("# Push FP and LR on stack") \
   TCR("stp x29, x30, [sp, #-16]!") \
-  TCR("# Push CFA register on stack") \
-  TCR("str x" S(CFA_REG) ", [sp, #-8]!" \
-  TCR("# Set the CFA register to x2 value") \
+  TCR("# Push register used to hold the CFA on stack") \
+  TCR("str x" S(CFA_REG) ", [sp, #-8]!")  \
+  TCR("# Set the CFA: x2 value") \
   TCR("mov x" S(CFA_REG) ", x2") \
   TCR("# Call the handler") \
   TCR("blr x3") \

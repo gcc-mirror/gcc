@@ -1180,6 +1180,7 @@ begin
       if Compilation_Errors then
          Treepr.Tree_Dump;
          Post_Compilation_Validation_Checks;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Namet.Finalize;
 
@@ -1190,7 +1191,6 @@ begin
             Tree_Gen;
          end if;
 
-         Errout.Finalize (Last_Call => True);
          Exit_Program (E_Errors);
       end if;
 
