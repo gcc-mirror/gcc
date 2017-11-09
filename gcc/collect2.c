@@ -2641,17 +2641,6 @@ scan_libraries (const char *prog_name)
 
 #ifdef OBJECT_FORMAT_COFF
 
-#if defined (EXTENDED_COFF)
-
-#   define GCC_SYMBOLS(X)	(SYMHEADER (X).isymMax + SYMHEADER (X).iextMax)
-#   define GCC_SYMENT		SYMR
-#   define GCC_OK_SYMBOL(X)	((X).st == stProc || (X).st == stGlobal)
-#   define GCC_SYMINC(X)	(1)
-#   define GCC_SYMZERO(X)	(SYMHEADER (X).isymMax)
-#   define GCC_CHECK_HDR(X)	(PSYMTAB (X) != 0)
-
-#else
-
 #   define GCC_SYMBOLS(X)	(HEADER (ldptr).f_nsyms)
 #   define GCC_SYMENT		SYMENT
 #   if defined (C_WEAKEXT)
@@ -2688,8 +2677,6 @@ scan_libraries (const char *prog_name)
      (((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
        || (HEADER (X).f_magic == 0757 && aix64_flag)) \
       && !(HEADER (X).f_flags & F_LOADONLY))
-#endif
-
 #endif
 
 #ifdef COLLECT_EXPORT_LIST
@@ -2920,16 +2907,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 			}
 
 		      if (debug)
-#if !defined(EXTENDED_COFF)
 			fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
 				 symbol.n_scnum, symbol.n_sclass,
 				 (symbol.n_type ? "0" : ""), symbol.n_type,
 				 name);
-#else
-			fprintf (stderr,
-				 "\tiss = %5d, value = %5ld, index = %5d, name = %s\n",
-				 symbol.iss, (long) symbol.value, symbol.index, name);
-#endif
 		    }
 		}
 	    }
