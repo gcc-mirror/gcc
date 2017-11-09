@@ -1,3 +1,42 @@
+2017-11-09  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/48463
+	* coverage.c (coverage_begin_function): Output also end locus
+	of a function and information whether the function is
+	artificial.
+	* gcov-dump.c (tag_function): Parse and print the information.
+	* gcov.c (INCLUDE_MAP): Add include.
+	(INCLUDE_SET): Likewise.
+	(struct line_info): Move earlier in the source file because
+	of vector<line_info> in function_info structure.
+	(line_info::line_info): Likewise.
+	(line_info::has_block): Likewise.
+	(struct source_info): Add new member index.
+	(source_info::get_functions_at_location): New function.
+	(function_info::group_line_p): New function.
+	(output_intermediate_line): New function.
+	(output_intermediate_file): Use the mentioned function.
+	(struct function_start): New.
+	(struct function_start_pair_hash): Likewise.
+	(process_file): Add code that identifies group functions.
+	Assign lines either to global or function scope.
+	(generate_results): Skip artificial functions.
+	(find_source): Assign index for each source file.
+	(read_graph_file): Read new flag artificial and end_line.
+	(add_line_counts): Assign it either to global of function scope.
+	(accumulate_line_counts): Isolate core of the function to
+	accumulate_line_info and call it for both function and global
+	scope lines.
+	(accumulate_line_info): New function.
+	(output_line_beginning): Fix GNU coding style.
+	(print_source_line): New function.
+	(output_line_details): Likewise.
+	(output_function_details): Likewise.
+	(output_lines): Iterate both source (global) scope and function
+	scope.
+	(struct function_line_start_cmp): New class.
+	* doc/gcov.texi: Reflect changes in documentation.
+
 2017-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/82837
