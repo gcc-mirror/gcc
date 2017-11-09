@@ -146,4 +146,15 @@ package GNAT.Threads is
    --  Given a low level Id, as returned by Create_Thread, return a Task_Id,
    --  so that operations in Ada.Task_Identification can be used.
 
+   function Make_Independent return Boolean;
+   --  If a procedure loads a shared library containing tasks, and that
+   --  procedure is considered to be a master by the compiler (because it
+   --  contains tasks or class-wide objects that might contain tasks),
+   --  then the tasks in the shared library need to call Make_Independent
+   --  because otherwise they will depend on the procedure that loaded the
+   --  shared library.
+   --
+   --  See System.Tasking.Utilities.Make_Independent in s-tasuti.ads for
+   --  further documentation.
+
 end GNAT.Threads;

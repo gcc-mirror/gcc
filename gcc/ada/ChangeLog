@@ -1,5 +1,62 @@
 2017-11-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Handle properly
+	the pragma Compile_Time_Error when it appears in a generic package
+	declaration and uses an expanded name to denote the current unit.
+
+2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
+
+	* libgnarl/s-taprop__qnx.adb: Fix incorrect casing for pthread_self.
+	* tracebak.c: Add support for tracebacks in QNX.
+
+2017-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Size_OK): Bump base limit from 50000 to 500000.
+
+2017-11-09  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb, set_targ.adb: Remove pragma Annotate for CodePeer
+	justification.
+
+2017-11-09  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Document packages
+	needed on GNU/Linux by GNAT.
+	* gnat_ugn.texi: Regenerate.
+
+2017-11-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Contracts): Remove the three parameter
+	version. This routine now only analyzes contracts and does not perform
+	any freezing actions.
+	(Analyze_Previous_Contracts): Removed.
+	(Freeze_Previous_Contracts): New routine.
+	* contracts.ads (Analyze_Previous_Contracts): Removed.
+	(Freeze_Previous_Contracts): New routine.
+	* sem_ch3.adb (Analyze_Declarations): Analyze the contract of an
+	enclosing package spec regardless of whether the list denotes the
+	visible or private declarations.  Fix the removal of partial state
+	refinements when the context is a package spec.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Freeze previous
+	contracts.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Freeze previous contracts.
+	* sem_ch9.adb (Analyze_Entry_Body): Freeze previous contracts.
+	(Analyze_Protected_Body): Freeze previous contracts.
+	(Analyze_Task_Body): Freeze previous contracts.
+	* sem_prag.adb: Comment reformatting.
+
+2017-11-09  Bob Duff  <duff@adacore.com>
+
+	* libgnarl/g-thread.ads, libgnarl/g-thread.adb: (Make_Independent):
+	Export this so users can use it without importing
+	System.Tasking.Utilities.
+	* libgnarl/s-tassta.adb (Vulnerable_Complete_Task): Relax assertion
+	that fails when Make_Independent is called on a user task.
+	* libgnarl/s-taskin.ads (Master_Of_Task): Avoid unusual
+	capitalization style ((style) bad casing of "Master_of_Task").
+
+2017-11-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Correct use of
 	uninitialized variable uncovered by Codepeer.
 

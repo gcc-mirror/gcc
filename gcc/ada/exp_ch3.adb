@@ -2544,8 +2544,8 @@ package body Exp_Ch3 is
                  and then Has_Interfaces (Rec_Type)
                then
                   declare
-                     Elab_List              : List_Id := New_List;
                      Elab_Sec_DT_Stmts_List : constant List_Id := New_List;
+                     Elab_List              : List_Id          := New_List;
 
                   begin
                      Init_Secondary_Tags

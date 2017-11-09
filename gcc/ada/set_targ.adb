@@ -604,10 +604,6 @@ package body Set_Targ is
       procedure Check_Spaces is
       begin
          if N > Buflen or else Buffer (N) /= ' ' then
-            pragma Annotate
-              (CodePeer, False_Positive, "condition predetermined",
-               "N may be less than Buflen when calling Check_Spaces");
-
             FailN ("missing space for");
          end if;
 

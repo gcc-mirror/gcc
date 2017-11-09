@@ -151,7 +151,7 @@ package body System.Tasking.Stages is
       --  duplicate master ids. For example, suppose we have three nested
       --  task bodies T1,T2,T3. And suppose T1 also calls P which calls Q (and
       --  both P and Q are task masters). Q will have the same master id as
-      --  Master_of_Task of T3. Previous versions of this would abort T3 when
+      --  Master_Of_Task of T3. Previous versions of this would abort T3 when
       --  Q calls Complete_Master, which was completely wrong.
 
    begin
@@ -160,7 +160,7 @@ package body System.Tasking.Stages is
          P := C.Common.Parent;
 
          if P = Self_ID then
-            if C.Master_of_Task = Self_ID.Master_Within then
+            if C.Master_Of_Task = Self_ID.Master_Within then
                pragma Debug
                  (Debug.Trace (Self_ID, "Aborting", 'X', C));
                Utilities.Abort_One_Task (Self_ID, C);
@@ -304,7 +304,7 @@ package body System.Tasking.Stages is
                P.Alive_Count := P.Alive_Count + 1;
 
                if P.Common.State = Master_Completion_Sleep and then
-                 C.Master_of_Task = P.Master_Within
+                 C.Master_Of_Task = P.Master_Within
                then
                   pragma Assert (Self_ID /= P);
                   P.Common.Wait_Count := P.Common.Wait_Count + 1;
@@ -498,7 +498,7 @@ package body System.Tasking.Stages is
       --  has already awaited its dependent tasks. This raises Program_Error,
       --  by 4.8(10.3/2). See AI-280. Ignore this check for foreign threads.
 
-      if Self_ID.Master_of_Task /= Foreign_Task_Level
+      if Self_ID.Master_Of_Task /= Foreign_Task_Level
         and then Master > Self_ID.Master_Within
       then
          raise Program_Error with
@@ -559,10 +559,10 @@ package body System.Tasking.Stages is
 
       P := Self_ID;
 
-      if P.Master_of_Task <= Independent_Task_Level then
+      if P.Master_Of_Task <= Independent_Task_Level then
          P := Environment_Task;
       else
-         while P /= null and then P.Master_of_Task >= Master loop
+         while P /= null and then P.Master_Of_Task >= Master loop
             P := P.Common.Parent;
          end loop;
       end if;
@@ -621,13 +621,13 @@ package body System.Tasking.Stages is
          --  a regular library level task, otherwise the run-time will get
          --  confused when waiting for these tasks to terminate.
 
-         T.Master_of_Task := Library_Task_Level;
+         T.Master_Of_Task := Library_Task_Level;
 
       else
-         T.Master_of_Task := Master;
+         T.Master_Of_Task := Master;
       end if;
 
-      T.Master_Within := T.Master_of_Task + 1;
+      T.Master_Within := T.Master_Of_Task + 1;
 
       for L in T.Entry_Calls'Range loop
          T.Entry_Calls (L).Self := T;
@@ -710,7 +710,7 @@ package body System.Tasking.Stages is
 
       pragma Debug
         (Debug.Trace
-           (Self_ID, "Created task in " & T.Master_of_Task'Img, 'C', T));
+           (Self_ID, "Created task in " & T.Master_Of_Task'Img, 'C', T));
    end Create_Task;
 
    --------------------
@@ -988,11 +988,11 @@ package body System.Tasking.Stages is
 
       Initialization.Defer_Abort_Nestable (Self_ID);
 
-      --  Loop through the From chain, changing their Master_of_Task fields,
+      --  Loop through the From chain, changing their Master_Of_Task fields,
       --  and to find the end of the chain.
 
       loop
-         C.Master_of_Task := New_Master;
+         C.Master_Of_Task := New_Master;
          exit when C.Common.Activation_Link = null;
          C := C.Common.Activation_Link;
       end loop;
@@ -1094,7 +1094,7 @@ package body System.Tasking.Stages is
       pragma Assert (Self_ID.Deferral_Level = 1);
 
       Debug.Master_Hook
-        (Self_ID, Self_ID.Common.Parent, Self_ID.Master_of_Task);
+        (Self_ID, Self_ID.Common.Parent, Self_ID.Master_Of_Task);
 
       if Use_Alternate_Stack then
          Self_ID.Common.Task_Alternate_Stack := Task_Alternate_Stack'Address;
@@ -1307,7 +1307,7 @@ package body System.Tasking.Stages is
       --  environment task), because they are implementation artifacts that
       --  should be invisible to Ada programs.
 
-      elsif Self_ID.Master_of_Task /= Independent_Task_Level then
+      elsif Self_ID.Master_Of_Task /= Independent_Task_Level then
 
          --  Look for a fall-back handler following the master relationship
          --  for the task. As specified in ARM C.7.3 par. 9/2, "the fall-back
@@ -1377,7 +1377,7 @@ package body System.Tasking.Stages is
 
    procedure Terminate_Task (Self_ID : Task_Id) is
       Environment_Task : constant Task_Id := STPO.Environment_Task;
-      Master_of_Task   : Integer;
+      Master_Of_Task   : Integer;
       Deallocate       : Boolean;
 
    begin
@@ -1397,12 +1397,12 @@ package body System.Tasking.Stages is
          Lock_RTS;
       end if;
 
-      Master_of_Task := Self_ID.Master_of_Task;
+      Master_Of_Task := Self_ID.Master_Of_Task;
 
       --  Check if the current task is an independent task If so, decrement
       --  the Independent_Task_Count value.
 
-      if Master_of_Task = Independent_Task_Level then
+      if Master_Of_Task = Independent_Task_Level then
          if Single_Lock then
             Utilities.Independent_Task_Count :=
               Utilities.Independent_Task_Count - 1;
@@ -1439,7 +1439,7 @@ package body System.Tasking.Stages is
          Free_Task (Self_ID);
       end if;
 
-      if Master_of_Task > 0 then
+      if Master_Of_Task > 0 then
          STPO.Exit_Task;
       end if;
    end Terminate_Task;
@@ -1606,11 +1606,11 @@ package body System.Tasking.Stages is
 
          C := All_Tasks_List;
          while C /= null loop
-            if C.Common.Activator = Self_ID and then C.Master_of_Task = CM then
+            if C.Common.Activator = Self_ID and then C.Master_Of_Task = CM then
                return False;
             end if;
 
-            if C.Common.Parent = Self_ID and then C.Master_of_Task = CM then
+            if C.Common.Parent = Self_ID and then C.Master_Of_Task = CM then
                Write_Lock (C);
 
                if C.Common.State = Unactivated then
@@ -1662,9 +1662,9 @@ package body System.Tasking.Stages is
 
          --  Terminate unactivated (never-to-be activated) tasks
 
-         if C.Common.Activator = Self_ID and then C.Master_of_Task = CM then
+         if C.Common.Activator = Self_ID and then C.Master_Of_Task = CM then
 
-            --  Usually, C.Common.Activator = Self_ID implies C.Master_of_Task
+            --  Usually, C.Common.Activator = Self_ID implies C.Master_Of_Task
             --  = CM. The only case where C is pending activation by this
             --  task, but the master of C is not CM is in Ada 2005, when C is
             --  part of a return object of a build-in-place function.
@@ -1681,7 +1681,7 @@ package body System.Tasking.Stages is
 
          --  Count it if directly dependent on this master
 
-         if C.Common.Parent = Self_ID and then C.Master_of_Task = CM then
+         if C.Common.Parent = Self_ID and then C.Master_Of_Task = CM then
             Write_Lock (C);
 
             if C.Awake_Count /= 0 then
@@ -1781,7 +1781,7 @@ package body System.Tasking.Stages is
 
          C := All_Tasks_List;
          while C /= null loop
-            if C.Common.Parent = Self_ID and then C.Master_of_Task = CM then
+            if C.Common.Parent = Self_ID and then C.Master_Of_Task = CM then
                Write_Lock (C);
 
                pragma Assert (C.Awake_Count = 0);
@@ -1840,7 +1840,7 @@ package body System.Tasking.Stages is
          --  while the task calls Free_Task itself, in Terminate_Task.
 
          if C.Common.Parent = Self_ID
-           and then C.Master_of_Task >= CM
+           and then C.Master_Of_Task >= CM
            and then not C.Free_On_Termination
          then
             if P /= null then
@@ -1912,7 +1912,7 @@ package body System.Tasking.Stages is
 
          if (T.Common.Parent /= null
               and then T.Common.Parent.Common.Parent /= null)
-           or else T.Master_of_Task > Library_Task_Level
+           or else T.Master_Of_Task > Library_Task_Level
          then
             Initialization.Task_Lock (Self_ID);
 
@@ -1977,7 +1977,7 @@ package body System.Tasking.Stages is
       pragma Assert (Self_ID = Self);
       pragma Assert
         (Self_ID.Master_Within in
-           Self_ID.Master_of_Task + 1 ..  Self_ID.Master_of_Task + 3);
+           Self_ID.Master_Of_Task .. Self_ID.Master_Of_Task + 3);
       pragma Assert (Self_ID.Common.Wait_Count = 0);
       pragma Assert (Self_ID.Open_Accepts = null);
       pragma Assert (Self_ID.ATC_Nesting_Level = 1);
@@ -2007,10 +2007,10 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
-      --  If Self_ID.Master_Within = Self_ID.Master_of_Task + 2 we may have
+      --  If Self_ID.Master_Within = Self_ID.Master_Of_Task + 2 we may have
       --  dependent tasks for which we need to wait. Otherwise we just exit.
 
-      if Self_ID.Master_Within = Self_ID.Master_of_Task + 2 then
+      if Self_ID.Master_Within = Self_ID.Master_Of_Task + 2 then
          Vulnerable_Complete_Master (Self_ID);
       end if;
    end Vulnerable_Complete_Task;

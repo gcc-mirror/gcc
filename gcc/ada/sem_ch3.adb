@@ -2818,19 +2818,23 @@ package body Sem_Ch3 is
       if Present (L) then
          Context := Parent (L);
 
-         --  Analyze the contracts of packages and their bodies
+         --  Certain contract annocations have forward visibility semantics and
+         --  must be analyzed after all declarative items have been processed.
+         --  This timing ensures that entities referenced by such contracts are
+         --  visible.
 
-         if Nkind (Context) = N_Package_Specification
-           and then L = Visible_Declarations (Context)
-         then
-            Analyze_Package_Contract (Defining_Entity (Context));
+         --  Analyze the contract of an immediately enclosing package spec or
+         --  body first because other contracts may depend on its information.
 
-         elsif Nkind (Context) = N_Package_Body then
+         if Nkind (Context) = N_Package_Body then
             Analyze_Package_Body_Contract (Defining_Entity (Context));
+
+         elsif Nkind (Context) = N_Package_Specification then
+            Analyze_Package_Contract (Defining_Entity (Context));
          end if;
 
-         --  Analyze the contracts of various constructs now due to the delayed
-         --  visibility needs of their aspects and pragmas.
+         --  Analyze the contracts of various constructs in the declarative
+         --  list.
 
          Analyze_Contracts (L);
 
@@ -2848,13 +2852,13 @@ package body Sem_Ch3 is
             Remove_Visible_Refinements (Corresponding_Spec (Context));
             Remove_Partial_Visible_Refinements (Corresponding_Spec (Context));
 
-         elsif Nkind (Context) = N_Package_Declaration then
+         elsif Nkind (Context) = N_Package_Specification then
 
             --  Partial state refinements are visible up to the end of the
             --  package spec declarations. Hide the partial state refinements
             --  from visibility to restore the original state conditions.
 
-            Remove_Partial_Visible_Refinements (Corresponding_Spec (Context));
+            Remove_Partial_Visible_Refinements (Defining_Entity (Context));
          end if;
 
          --  Verify that all abstract states found in any package declared in

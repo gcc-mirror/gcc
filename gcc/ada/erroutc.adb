@@ -512,9 +512,6 @@ package body Erroutc is
                   --  so now we output a tab to match up with the text.
 
                   if Src (P) = ASCII.HT then
-                     pragma Annotate
-                       (CodePeer, False_Positive, "validity check",
-                        "Src(P) is initialized at this point");
                      Write_Char (ASCII.HT);
                      P := P + 1;
 
