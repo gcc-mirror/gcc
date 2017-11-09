@@ -1,5 +1,11 @@
 2017-11-09  Martin Liska  <mliska@suse.cz>
 
+	PR target/82863
+	* emit-rtl.c (init_emit_regs): Initialize split_branch_probability to
+	uninitialized.
+
+2017-11-09  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/82669
 	* sbitmap.h (bmp_iter_set_init): Remove non needed check.
 

@@ -5952,6 +5952,8 @@ init_emit_regs (void)
 	}
       mode_mem_attrs[i] = attrs;
     }
+
+  split_branch_probability = profile_probability::uninitialized ();
 }
 
 /* Initialize global machine_mode variables.  */
