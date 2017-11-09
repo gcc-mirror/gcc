@@ -2787,7 +2787,6 @@ package body Freeze is
                      elsif Csiz mod System_Storage_Unit = 0
                        and then Is_Composite_Type (Ctyp)
                      then
-
                         Set_Is_Packed            (Base_Type (Arr), True);
                         Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         Set_Is_Bit_Packed_Array  (Base_Type (Arr), False);

@@ -11011,11 +11011,11 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
-      --  If this is an elementary or a small not by-reference record type, and
+      --  If this is an elementary or a small not-by-reference record type, and
       --  we need to capture the value, just make a constant; this is cheap and
       --  objects of both kinds of types can be bit aligned, so it might not be
       --  possible to generate a reference to them. Likewise if this is not a
-      --  name reference, except for a type conversion because we would enter
+      --  name reference, except for a type conversion, because we would enter
       --  an infinite recursion with Checks.Apply_Predicate_Check if the target
       --  type has predicates (and type conversions need a specific treatment
       --  anyway, see below). Also do it if we have a volatile reference and
