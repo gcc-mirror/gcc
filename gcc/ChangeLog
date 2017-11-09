@@ -1,5 +1,81 @@
 2017-11-09  Jeff Law  <law@redhat.com>
 
+	* vr-values.h: New file with vr_values class.
+	* tree-vrp.c: Include vr-values.h
+	(vrp_value_range_pool, vrp_equiv_obstack, num_vr_values): Move static
+	data objects into the vr_values class.
+	(vr_value, values_propagated, vr_phi_edge_counts): Likewise.
+	(get_value_range): Make it a member function within vr_values class.
+	(set_defs_to_varying, update_value_range, add_equivalence): Likewise.
+	(vrp_stmt_computes_nonzero_p, op_with_boolean_value_range_p): Likewise.
+	(op_with_constant_singleton_value_range): Likewise.
+	(extract_range_for_var_from_comparison_expr): Likewise.
+	(extract_range_from_assert, extract_range_from_ssa_name): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(extract_range_from_cond_expr, extrat_range_from_comparison): Likewise.
+	(check_for_binary_op_overflow, extract_range_basic): Likewise.
+	(extract_range_from_assignment, adjust_range_with_scev): Likewise.
+	(dump_all_value_ranges, get_vr_for_comparison): Likewise.
+	(compare_name_with_value, compare_names): Likewise.
+	(vrp_evaluate_conditional_warnv_with_ops_using_ranges): Likewise.
+	(vrp_evaluate_conditional_warnv_with_ops): Likewise.  Remove prototype.
+	(vrp_evaluate_conditional, vrp_visit_cond_stmt): Likewise.
+	(vrp_visit_switch_stmt, extract_range_from_stmt): Likewise.
+	(extract_range_from_phi_node): Likewise.
+	(simplify_truth_ops_using_ranges): Likewise.
+	(simplify_div_or_mod_using_ranges): Likewise.
+	(simplify_min_or_max_using_ranges, simplify_abs_using_ranges): Likewise.
+	(simplify_bit_ops_using_ranges, simplify_cond_using_ranges_1): Likewise.
+	(simplify_cond_using_ranges_2, simplify_switch_using_ranges): Likewise.
+	(simplify_float_conversion_using_ranges): Likewise.
+	(simplify_internal_call_using_ranges): Likewise.
+	(two_valued_val_range_p, simplify_stmt_using_ranges): Likewise.
+	(vrp_visit_assignment_or_call): Likewise.  Smuggle class instance
+	poitner via x_vr_values for calls into gimple folder.
+	(vrp_initialize_lattice): Make this the vr_values ctor.
+	(vrp_free_lattice): Make this the vr_values dtor.
+	(set_vr_value): New function.
+	(class vrp_prop): Add vr_values data member.  Add various member
+	functions as well as member functions that delegate to vr_values.
+	(check_array_ref): Make a member function within vrp_prop class.
+	(search_for_addr_array, vrp_initialize): Likewise.
+	(vrp_finalize): Likewise.  Revamp to avoid direct access to
+	vr_value, values_propagated, etc.
+	(check_array_bounds): Extract vrp_prop class instance pointer from
+	walk info structure.  Use it to call member functions.
+	(check_all_array_refs): Make a member function within vrp_prop class.
+	Smuggle class instance pointer via walk info structure.
+	(x_vr_values): New local static.
+	(vrp_valueize): Use x_vr_values to get class instance.
+	(vr_valueize_1): Likewise.
+	(class vrp_folder): Add vr_values data member.  Add various member
+	functions as well as member functions that delegate to vr_values.
+	(fold_predicate_in): Make a mber fucntion within vrp_folder class.
+	(simplify_stmt_for_jump_threading): Extract smuggled vr_values
+	class instance from vr_values.  Use it to call member functions.
+	(vrp_dom_walker): Add vr_values data member.
+	(vrp_dom_walker::after_dom_children): Smuggle vr_values class
+	instance via x_vr_values.
+	(identify_jump_threads): Accept vr_values as argument.  Store
+	it into the walker structure.
+	(evrp_dom_walker): Add vr_values class data member.  Add various
+	delegators.
+	(evrp_dom_walker::try_find_new_range): Use vr_values data
+	member to access the memory allocator.
+	(evrp_dom_walker::before_dom_children): Store vr_values class
+	instance into the vrp_folder class.
+	(evrp_dom_walker::push_value_range): Rework to avoid direct
+	access to num_vr_values and vr_value.
+	(evrp_dom_walker::pop_value_range): Likewise.
+	(execute_early_vrp): Remove call to vrp_initialize_lattice.
+	Use vr_values to get to dump_all_value_ranges member function.
+	Remove call to vrp_free_lattice.  Call vrp_initialize, vrp_finalize,
+	and simplify_cond_using_ranges_2 via vrp_prop class instance.
+	Pass vr_values class instance down to identify_jump_threads.  
+	Remove call to vrp_free_lattice.
+	(debug_all_value_ranges): Remove.
+
 	* tree-vrp.c (vrp_prop): Move class to earlier point in the file.
 	(vrp_folder): Likewise.
 
