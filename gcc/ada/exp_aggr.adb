@@ -7533,7 +7533,7 @@ package body Exp_Aggr is
       Typ : constant Entity_Id := Base_Type (Etype (N));
 
    begin
-      return Static_Dispatch_Tables
+      return Building_Static_Dispatch_Tables
         and then Tagged_Type_Expansion
         and then RTU_Loaded (Ada_Tags)
 

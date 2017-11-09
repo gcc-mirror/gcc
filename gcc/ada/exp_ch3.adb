@@ -6280,7 +6280,7 @@ package body Exp_Ch3 is
       --  Force construction of dispatch tables of library level tagged types
 
       if Tagged_Type_Expansion
-        and then Static_Dispatch_Tables
+        and then Building_Static_Dispatch_Tables
         and then Is_Library_Level_Entity (Def_Id)
         and then Is_Library_Level_Tagged_Type (Base_Typ)
         and then Ekind_In (Base_Typ, E_Record_Type,

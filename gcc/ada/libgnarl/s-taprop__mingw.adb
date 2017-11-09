@@ -976,7 +976,7 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      if T.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= Null_Thread_Id then
 
          --  This task has been activated. Close the thread handle. This
          --  is needed to release system resources.
