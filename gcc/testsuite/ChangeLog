@@ -1,3 +1,7 @@
+2017-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/pr82879.c: New testcase.
+
 2017-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82902

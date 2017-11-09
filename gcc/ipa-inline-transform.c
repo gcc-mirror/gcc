@@ -60,17 +60,7 @@ update_noncloned_frequencies (struct cgraph_node *node,
 {
   struct cgraph_edge *e;
 
-  /* We always must scale to be sure counters end up compatible.
-     If den is zero, just force it nonzero and hope for reasonable
-     approximation.
-     When num is forced nonzero, also update den, so we do not scale profile
-     to 0.   */
-  if (!(num == den)
-      && !(den.force_nonzero () == den))
-    {
-      den = den.force_nonzero ();
-      num = num.force_nonzero ();
-    }
+  profile_count::adjust_for_ipa_scaling (&num, &den);
 
   /* We do not want to ignore high loop nest after freq drops to 0.  */
   if (!freq_scale)
