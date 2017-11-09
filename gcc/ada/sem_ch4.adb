@@ -5043,10 +5043,13 @@ package body Sem_Ch4 is
                   end if;
                end if;
 
-               Next_Entity (Comp);
+               --  Do not examine private operations if not within scope of
+               --  the synchronized type.
+
                exit when not In_Scope
                  and then
                    Comp = First_Private_Entity (Base_Type (Prefix_Type));
+               Next_Entity (Comp);
          end loop;
 
          --  If the scope is a current instance, the prefix cannot be an

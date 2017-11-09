@@ -1,3 +1,32 @@
+2017-11-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Correct use of
+	uninitialized variable uncovered by Codepeer.
+
+2017-11-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* namet.adb: Replace pragma Assume by pragma Assert to fix bootstrap.
+
+2017-11-09  Javier Miranda  <miranda@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	(Static_Dispatch_Tables): Minor rewording.
+	* gnat_rm.texi: Regenerate.
+
+2017-11-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Package): Remove forced installation of
+	use_clauses within instances.
+	(Use_One_Package): Add condition to check for "hidden" open scopes to
+	avoid skipping over packages that have not been properly installed even
+	though they are visible.
+
+2017-11-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Reject properly a call to a
+	private operation of a protected type, when the type has no visible
+	operations.
+
 2017-11-09  Javier Miranda  <miranda@adacore.com>
 
 	* rtsfind.ads (RE_Id, RE_Unit_Table): Add RE_HT_Link.
