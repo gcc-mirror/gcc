@@ -6433,6 +6433,12 @@ proc check_effective_target_vect_load_lanes { } {
     return $et_vect_load_lanes
 }
 
+# Return 1 if the target supports vector masked stores.
+
+proc check_effective_target_vect_masked_store { } {
+    return 0
+}
+
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
 
 proc check_effective_target_vect_condition { } {

@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/sourcebuild.texi (vect_masked_store): Document.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/sourcebuild.texi (vect_align_stack_vars): Document.
 
 2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>

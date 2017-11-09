@@ -1403,6 +1403,9 @@ Target supports hardware vectors of @code{long}.
 @item vect_long_long
 Target supports hardware vectors of @code{long long}.
 
+@item vect_masked_store
+Target supports vector masked stores.
+
 @item vect_aligned_arrays
 Target aligns arrays to vector alignment boundary.
 
