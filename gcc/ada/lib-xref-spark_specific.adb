@@ -608,9 +608,11 @@ package body SPARK_Specific is
               --  the analysis of the expanded body. We don't lose any globals
               --  by discarding them, because such loop parameters can only be
               --  accessed locally from within the expression function body.
+              --  Note: some loop parameters are expanded into variables; they
+              --  also must be ignored.
 
               and then not
-                (Ekind (Ref.Ent) = E_Loop_Parameter
+                (Ekind_In (Ref.Ent, E_Loop_Parameter, E_Variable)
                   and then Scope_Within
                              (Ref.Ent, Unique_Entity (Ref.Ref_Scope))
                   and then Is_Expression_Function (Ref.Ref_Scope))
