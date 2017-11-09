@@ -2882,7 +2882,7 @@ package body Sem_Aggr is
       --  Variables used to verify that discriminant-dependent components
       --  appear in the same variant.
 
-      Comp_Ref : Entity_Id;
+      Comp_Ref : Entity_Id := Empty; -- init to avoid warning
       Variant  : Node_Id;
 
       procedure Check_Variant (Id : Entity_Id);
@@ -2941,6 +2941,7 @@ package body Sem_Aggr is
                     or else
                       (D2 > D1 and then not Nested_In (Comp_Variant, Variant))
                   then
+                     pragma Assert (Present (Comp_Ref));
                      Error_Msg_Node_2 := Comp_Ref;
                      Error_Msg_NE
                        ("& and & appear in different variants", Id, Comp);
@@ -3025,7 +3026,7 @@ package body Sem_Aggr is
 
       Assoc     : Node_Id;
       Choice    : Node_Id;
-      Comp_Type : Entity_Id;
+      Comp_Type : Entity_Id := Empty; -- init to avoid warning
 
    --  Start of processing for Resolve_Delta_Record_Aggregate
 
@@ -3045,6 +3046,7 @@ package body Sem_Aggr is
             Next (Choice);
          end loop;
 
+         pragma Assert (Present (Comp_Type));
          Analyze_And_Resolve (Expression (Assoc), Comp_Type);
          Next (Assoc);
       end loop;

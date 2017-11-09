@@ -1360,6 +1360,8 @@ package body Sem_Ch13 is
    -----------------------------------
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
+      pragma Assert (Present (E));
+
       procedure Decorate (Asp : Node_Id; Prag : Node_Id);
       --  Establish linkages between an aspect and its corresponding pragma
 
@@ -1578,6 +1580,7 @@ package body Sem_Ch13 is
       Ent    : Node_Id;
 
       L : constant List_Id := Aspect_Specifications (N);
+      pragma Assert (Present (L));
 
       Ins_Node : Node_Id := N;
       --  Insert pragmas/attribute definition clause after this node when no
@@ -1604,8 +1607,6 @@ package body Sem_Ch13 is
       --  about delay issues, since the pragmas themselves deal with delay
       --  of visibility for the expression analysis. Thus, we just insert
       --  the pragma after the node N.
-
-      pragma Assert (Present (L));
 
       --  Loop through aspects
 
@@ -1906,9 +1907,6 @@ package body Sem_Ch13 is
             -----------------------------------------
 
             procedure Analyze_Aspect_Implicit_Dereference is
-               Disc        : Entity_Id;
-               Parent_Disc : Entity_Id;
-
             begin
                if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
@@ -1924,45 +1922,56 @@ package body Sem_Ch13 is
 
                   --  Missing synchronized types???
 
-                  Disc := First_Discriminant (E);
-                  while Present (Disc) loop
-                     if Chars (Expr) = Chars (Disc)
-                       and then Ekind_In (Etype (Disc),
-                                          E_Anonymous_Access_Subprogram_Type,
-                                          E_Anonymous_Access_Type)
-                     then
-                        Set_Has_Implicit_Dereference (E);
-                        Set_Has_Implicit_Dereference (Disc);
-                        exit;
+                  declare
+                     Disc : Entity_Id := First_Discriminant (E);
+                  begin
+                     while Present (Disc) loop
+                        if Chars (Expr) = Chars (Disc)
+                          and then Ekind_In
+                            (Etype (Disc),
+                             E_Anonymous_Access_Subprogram_Type,
+                             E_Anonymous_Access_Type)
+                        then
+                           Set_Has_Implicit_Dereference (E);
+                           Set_Has_Implicit_Dereference (Disc);
+                           exit;
+                        end if;
+
+                        Next_Discriminant (Disc);
+                     end loop;
+
+                     --  Error if no proper access discriminant
+
+                     if Present (Disc) then
+                        --  For a type extension, check whether parent has
+                        --  a reference discriminant, to verify that use is
+                        --  proper.
+
+                        if Is_Derived_Type (E)
+                          and then Has_Discriminants (Etype (E))
+                        then
+                           declare
+                              Parent_Disc : constant Entity_Id :=
+                                Get_Reference_Discriminant (Etype (E));
+                           begin
+                              if Present (Parent_Disc)
+                                and then Corresponding_Discriminant (Disc) /=
+                                           Parent_Disc
+                              then
+                                 Error_Msg_N
+                                   ("reference discriminant does not match "
+                                      & "discriminant of parent type", Expr);
+                              end if;
+                           end;
+                        end if;
+
+                     else
+                        Error_Msg_NE
+                          ("not an access discriminant of&", Expr, E);
                      end if;
-
-                     Next_Discriminant (Disc);
-                  end loop;
-
-                  --  Error if no proper access discriminant
-
-                  if No (Disc) then
-                     Error_Msg_NE ("not an access discriminant of&", Expr, E);
-                     return;
-                  end if;
+                  end;
                end if;
 
-               --  For a type extension, check whether parent has a
-               --  reference discriminant, to verify that use is proper.
-
-               if Is_Derived_Type (E)
-                 and then Has_Discriminants (Etype (E))
-               then
-                  Parent_Disc := Get_Reference_Discriminant (Etype (E));
-
-                  if Present (Parent_Disc)
-                    and then Corresponding_Discriminant (Disc) /= Parent_Disc
-                  then
-                     Error_Msg_N
-                       ("reference discriminant does not match discriminant "
-                        & "of parent type", Expr);
-                  end if;
-               end if;
             end Analyze_Aspect_Implicit_Dereference;
 
             -----------------------
@@ -6529,7 +6538,7 @@ package body Sem_Ch13 is
       Max : Uint;
       --  Minimum and maximum values of entries
 
-      Max_Node : Node_Id;
+      Max_Node : Node_Id := Empty; -- init to avoid warning
       --  Pointer to node for literal providing max value
 
    begin
@@ -8384,7 +8393,7 @@ package body Sem_Ch13 is
       --  This is the expression for the result of the function. It is
       --  is build by connecting the component predicates with AND THEN.
 
-      Expr_M : Node_Id;
+      Expr_M : Node_Id := Empty; -- init to avoid warning
       --  This is the corresponding return expression for the Predicate_M
       --  function. It differs in that raise expressions are marked for
       --  special expansion (see Process_REs).
@@ -9925,7 +9934,7 @@ package body Sem_Ch13 is
       --  this tagged type and the parent component. Tagged_Parent will point
       --  to this parent type. For all other cases, Tagged_Parent is Empty.
 
-      Parent_Last_Bit : Uint;
+      Parent_Last_Bit : Uint := No_Uint; -- init to avoid warning
       --  Relevant only if Tagged_Parent is set, Parent_Last_Bit indicates the
       --  last bit position for any field in the parent type. We only need to
       --  check overlap for fields starting below this point.

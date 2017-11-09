@@ -15448,7 +15448,7 @@ package body Sem_Util is
       Anc_Part : Node_Id;
       Assoc    : Node_Id;
       Choice   : Node_Id;
-      Comp_Typ : Entity_Id;
+      Comp_Typ : Entity_Id := Empty; -- init to avoid warning
       Expr     : Node_Id;
 
    begin
@@ -15524,6 +15524,7 @@ package body Sem_Util is
          --  The type of the choice must have preelaborable initialization if
          --  the association carries a <>.
 
+         pragma Assert (Present (Comp_Typ));
          if Box_Present (Assoc) then
             if not Has_Preelaborable_Initialization (Comp_Typ) then
                return False;
@@ -17558,8 +17559,8 @@ package body Sem_Util is
       L_Ndims : constant Nat := Number_Dimensions (L_Typ);
       R_Ndims : constant Nat := Number_Dimensions (R_Typ);
 
-      L_Index : Node_Id;
-      R_Index : Node_Id;
+      L_Index : Node_Id := Empty; -- init to ...
+      R_Index : Node_Id := Empty; -- ...avoid warnings
       L_Low   : Node_Id;
       L_High  : Node_Id;
       L_Len   : Uint;

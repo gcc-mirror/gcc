@@ -4761,7 +4761,7 @@ package body Sem_Ch12 is
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
 
       Curr_Scope  : Entity_Id := Empty;
-      List        : Elist_Id;
+      List        : Elist_Id := No_Elist; -- init to avoid warning
       N_Instances : Nat := 0;
       Num_Inner   : Nat := 0;
       Num_Scopes  : Nat := 0;
@@ -5136,7 +5136,7 @@ package body Sem_Ch12 is
                     Chars => New_External_Name
                                (Chars (Defining_Entity (N)), 'R'));
 
-      Act_Decl_Id : Entity_Id;
+      Act_Decl_Id : Entity_Id := Empty; -- init to avoid warning
       Act_Decl    : Node_Id;
       Act_Spec    : Node_Id;
       Act_Tree    : Node_Id;

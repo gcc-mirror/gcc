@@ -12355,7 +12355,7 @@ package body Exp_Ch9 is
       Call           : Node_Id;
       Call_Ent       : Entity_Id;
       Conc_Typ_Stmts : List_Id;
-      Concval        : Node_Id;
+      Concval        : Node_Id := Empty; -- init to avoid warning
       D_Alt          : constant Node_Id := Delay_Alternative (N);
       D_Conv         : Node_Id;
       D_Disc         : Node_Id;

@@ -404,7 +404,7 @@ package body Sem_Disp is
       Func                   : Entity_Id;
       Subp_Entity            : Entity_Id;
       Indeterm_Ancestor_Call : Boolean := False;
-      Indeterm_Ctrl_Type     : Entity_Id;
+      Indeterm_Ctrl_Type     : Entity_Id := Empty; -- init to avoid warning
 
       Static_Tag : Node_Id := Empty;
       --  If a controlling formal has a statically tagged actual, the tag of

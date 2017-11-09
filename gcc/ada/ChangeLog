@@ -1,3 +1,16 @@
+2017-11-09  Javier Miranda  <miranda@adacore.com>
+
+	* rtsfind.ads (RE_Id, RE_Unit_Table): Add RE_HT_Link.
+	* exp_disp.adb (Make_DT): Initialize the HT_Link field of the TSD only
+	if available.
+
+2017-11-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb, exp_ch9.adb, exp_prag.adb, par-ch3.adb, sem_aggr.adb,
+	sem_ch12.adb, sem_ch13.adb, sem_ch4.adb, sem_disp.adb, sem_prag.adb,
+	sem_res.adb, sem_util.adb: Get rid of warnings about uninitialized
+	variables.
+
 2017-11-09  Yannick Moy  <moy@adacore.com>
 
 	* exp_disp.adb (Make_DT): Default initialize Ifaces_List and
