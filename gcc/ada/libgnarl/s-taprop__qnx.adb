@@ -645,7 +645,7 @@ package body System.Task_Primitives.Operations is
         (T.Common.LL.Thread, To_Target_Priority (Prio));
       pragma Assert (Result = 0);
 
-      if T.Common.LL.Thread = Pthread_Self
+      if T.Common.LL.Thread = pthread_self
         and then Old > Prio
       then
          --  When lowering the priority via a pthread_setschedprio, QNX ensures

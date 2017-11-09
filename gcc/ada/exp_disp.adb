@@ -291,14 +291,15 @@ package body Exp_Disp is
          Root_Typ := Full_View (Root_Typ);
       end if;
 
-      Static_DT := Building_Static_Dispatch_Tables
-        and then Is_Library_Level_Tagged_Type (Typ)
+      Static_DT :=
+        Building_Static_Dispatch_Tables
+          and then Is_Library_Level_Tagged_Type (Typ)
 
-         --  If the type is derived from a CPP class we cannot statically
-         --  build the dispatch tables because we must inherit primitives
-         --  from the CPP side.
+          --  If the type is derived from a CPP class we cannot statically
+          --  build the dispatch tables because we must inherit primitives
+          --  from the CPP side.
 
-        and then not Is_CPP_Class (Root_Typ);
+          and then not Is_CPP_Class (Root_Typ);
 
       if not Static_DT then
          Check_Restriction (Static_Dispatch_Tables, Typ);
@@ -327,11 +328,12 @@ package body Exp_Disp is
          Root_Typ := Full_View (Root_Typ);
       end if;
 
-      Static_DT := Building_Static_DT (Full_Typ)
-        and then not Is_Interface (Full_Typ)
-        and then Has_Interfaces (Full_Typ)
-        and then (Full_Typ = Root_Typ
-                   or else not Is_Variable_Size_Record (Etype (Full_Typ)));
+      Static_DT :=
+        Building_Static_DT (Full_Typ)
+          and then not Is_Interface (Full_Typ)
+          and then Has_Interfaces (Full_Typ)
+          and then (Full_Typ = Root_Typ
+                     or else not Is_Variable_Size_Record (Etype (Full_Typ)));
 
       if not Static_DT
         and then not Is_Interface (Full_Typ)
@@ -5535,8 +5537,8 @@ package body Exp_Disp is
                AI := First_Elmt (Typ_Ifaces);
                while Present (AI) loop
                   if Is_Ancestor (Node (AI), Typ, Use_Full_View => True) then
-                     Sec_DT_Tag :=
-                       New_Occurrence_Of (DT_Ptr, Loc);
+                     Sec_DT_Tag := New_Occurrence_Of (DT_Ptr, Loc);
+
                   else
                      Elmt :=
                        Next_Elmt
@@ -5544,9 +5546,9 @@ package body Exp_Disp is
                      pragma Assert (Has_Thunks (Node (Elmt)));
 
                      while Is_Tag (Node (Elmt))
-                        and then not
-                          Is_Ancestor (Node (AI), Related_Type (Node (Elmt)),
-                                       Use_Full_View => True)
+                       and then not
+                         Is_Ancestor (Node (AI), Related_Type (Node (Elmt)),
+                                      Use_Full_View => True)
                      loop
                         pragma Assert (Has_Thunks (Node (Elmt)));
                         Next_Elmt (Elmt);
@@ -5561,9 +5563,10 @@ package body Exp_Disp is
                      pragma Assert (Ekind (Node (Elmt)) = E_Constant
                        and then not
                          Has_Thunks (Node (Next_Elmt (Next_Elmt (Elmt)))));
+
                      Sec_DT_Tag :=
-                       New_Occurrence_Of (Node (Next_Elmt (Next_Elmt (Elmt))),
-                                         Loc);
+                       New_Occurrence_Of
+                         (Node (Next_Elmt (Next_Elmt (Elmt))), Loc);
                   end if;
 
                   --  For static dispatch tables compute Offset_To_Top using
@@ -5589,6 +5592,7 @@ package body Exp_Disp is
                            Next_Elmt (Iface_Elmt);
                            Next_Elmt (Iface_Comp_Elmt);
                         end loop;
+
                         pragma Assert (Present (Iface_Comp));
 
                         Offset_To_Top :=
@@ -5607,8 +5611,8 @@ package body Exp_Disp is
                   end if;
 
                   Append_To (TSD_Ifaces_List,
-                     Make_Aggregate (Loc,
-                       Expressions => New_List (
+                    Make_Aggregate (Loc,
+                      Expressions => New_List (
 
                         --  Iface_Tag
 
@@ -5631,9 +5635,7 @@ package body Exp_Disp is
 
                         --  Secondary_DT
 
-                        Unchecked_Convert_To (RTE (RE_Tag), Sec_DT_Tag)
-
-                        )));
+                        Unchecked_Convert_To (RTE (RE_Tag), Sec_DT_Tag))));
 
                   Next_Elmt (AI);
                end loop;
@@ -5661,10 +5663,11 @@ package body Exp_Disp is
                            Constraints => New_List (
                              Make_Integer_Literal (Loc, Num_Ifaces)))),
 
-                   Expression           => Make_Aggregate (Loc,
-                     Expressions => New_List (
-                       Make_Integer_Literal (Loc, Num_Ifaces),
-                       Make_Aggregate (Loc, TSD_Ifaces_List)))));
+                   Expression           =>
+                     Make_Aggregate (Loc,
+                       Expressions => New_List (
+                         Make_Integer_Literal (Loc, Num_Ifaces),
+                         Make_Aggregate (Loc, TSD_Ifaces_List)))));
 
                Append_To (Result,
                  Make_Attribute_Definition_Clause (Loc,

@@ -4991,7 +4991,7 @@ package body Exp_Util is
 
    --        is transformed into
 
-   --     Val : Constrained_Subtype_of_T := Maybe_Modified_Expr;
+   --     Val : Constrained_Subtype_Of_T := Maybe_Modified_Expr;
    --
    --  Here are the main cases :
    --

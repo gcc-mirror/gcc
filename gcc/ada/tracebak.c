@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2016, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2017, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -499,6 +499,18 @@ struct layout
         || ((*((ptr) - 5) & 0xff) == 0x9a) \
         || ((*((ptr) - 1) & 0xff) == 0xff) \
         || (((*(ptr) & 0xd0ff) == 0xd0ff))))
+
+/*----------------------------- qnx ----------------------------------*/
+
+#elif defined (__QNX__)
+
+#define USE_GCC_UNWINDER
+
+#if defined (__aarch64__)
+#define PC_ADJUST -4
+#else
+#error Unhandled QNX architecture.
+#endif
 
 /*----------------------------- ia64 ---------------------------------*/
 

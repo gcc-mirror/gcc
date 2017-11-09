@@ -707,9 +707,9 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      --  A [generic] package body "freezes" the contract of the nearest
-      --  enclosing package body and all other contracts encountered in the
-      --  same declarative part up to and excluding the package body:
+      --  A [generic] package body freezes the contract of the nearest
+      --  enclosing package body and all other contracts encountered in
+      --  the same declarative part up to and excluding the package body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)
@@ -726,21 +726,21 @@ package body Sem_Ch7 is
 
       --  This ensures that any annotations referenced by the contract of a
       --  [generic] subprogram body declared within the current package body
-      --  are available. This form of "freezing" is decoupled from the usual
+      --  are available. This form of freezing is decoupled from the usual
       --  Freeze_xxx mechanism because it must also work in the context of
       --  generics where normal freezing is disabled.
 
-      --  Only bodies coming from source should cause this type of "freezing".
+      --  Only bodies coming from source should cause this type of freezing.
       --  Instantiated generic bodies are excluded because their processing is
       --  performed in a separate compilation pass which lacks enough semantic
       --  information with respect to contract analysis. It is safe to suppress
-      --  the "freezing" of contracts in this case because this action already
+      --  the freezing of contracts in this case because this action already
       --  took place at the end of the enclosing declarative part.
 
       if Comes_From_Source (N)
         and then not Is_Generic_Instance (Spec_Id)
       then
-         Analyze_Previous_Contracts (N);
+         Freeze_Previous_Contracts (N);
       end if;
 
       --  A package body is Ghost when the corresponding spec is Ghost. Set
@@ -875,10 +875,6 @@ package body Sem_Ch7 is
       then
          Declare_Inherited_Private_Subprograms (Spec_Id);
       end if;
-
-      --  A package body "freezes" the contract of its initial declaration.
-      --  This analysis depends on attribute Corresponding_Spec being set. Only
-      --  bodies coming from source shuld cause this type of "freezing".
 
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));

@@ -668,18 +668,18 @@ end GNAT.Altivec;
 --  type of A.  The quad-word operations are only implemented by one
 --  Altivec primitive operation.  That means that, if QW_Operation is a
 --  quad-word operation, we should have:
---  QW_Operation (To_Type_of_A (B)) = QW_Operation (A)
+--  QW_Operation (To_Type_Of_A (B)) = QW_Operation (A)
 
 --  That is true iff:
---  To_Quad_Word (To_Type_of_A (B)) = To_Quad_Word (A)
+--  To_Quad_Word (To_Type_Of_A (B)) = To_Quad_Word (A)
 
 --  As To_Quad_Word is a bijection. we have:
---  To_Type_of_A (B) = A
+--  To_Type_Of_A (B) = A
 
 --  resp. any combination of A, B, C:
---  To_Type_of_A (C) = A
---  To_Type_of_B (A) = B
---  To_Type_of_C (B) = C
+--  To_Type_Of_A (C) = A
+--  To_Type_Of_B (A) = B
+--  To_Type_Of_C (B) = C
 --  ...
 
 --  Making sure that the properties described above are verified by the
