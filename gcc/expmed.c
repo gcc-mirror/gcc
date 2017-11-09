@@ -506,12 +506,13 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
 		     unsigned HOST_WIDE_INT bitsize,
 		     machine_mode struct_mode)
 {
+  unsigned HOST_WIDE_INT regsize = REGMODE_NATURAL_SIZE (struct_mode);
   if (BYTES_BIG_ENDIAN)
     return (bitnum % BITS_PER_UNIT == 0
 	    && (bitnum + bitsize == GET_MODE_BITSIZE (struct_mode)
-		|| (bitnum + bitsize) % BITS_PER_WORD == 0));
+		|| (bitnum + bitsize) % (regsize * BITS_PER_UNIT) == 0));
   else
-    return bitnum % BITS_PER_WORD == 0;
+    return bitnum % (regsize * BITS_PER_UNIT) == 0;
 }
 
 /* Return true if -fstrict-volatile-bitfields applies to an access of OP0
