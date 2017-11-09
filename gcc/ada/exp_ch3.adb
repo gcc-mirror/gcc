@@ -2544,6 +2544,7 @@ package body Exp_Ch3 is
                  and then Has_Interfaces (Rec_Type)
                then
                   declare
+                     Elab_List              : List_Id := New_List;
                      Elab_Sec_DT_Stmts_List : constant List_Id := New_List;
 
                   begin
@@ -2555,24 +2556,30 @@ package body Exp_Ch3 is
                         Fixed_Comps    => True,
                         Variable_Comps => False);
 
-                     Append_To (Elab_Sec_DT_Stmts_List,
-                       Make_Assignment_Statement (Loc,
-                         Name       =>
-                           New_Occurrence_Of
-                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
-                         Expression =>
-                           New_Occurrence_Of (Standard_False, Loc)));
-
-                     Prepend_List_To (Body_Stmts, New_List (
+                     Elab_List := New_List (
                        Make_If_Statement (Loc,
                          Condition       => New_Occurrence_Of (Set_Tag, Loc),
-                         Then_Statements => Init_Tags_List),
+                         Then_Statements => Init_Tags_List));
 
-                       Make_If_Statement (Loc,
-                         Condition       =>
-                           New_Occurrence_Of
-                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
-                         Then_Statements => Elab_Sec_DT_Stmts_List)));
+                     if Elab_Flag_Needed (Rec_Type) then
+                        Append_To (Elab_Sec_DT_Stmts_List,
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                              New_Occurrence_Of
+                                (Access_Disp_Table_Elab_Flag (Rec_Type),
+                                 Loc),
+                            Expression =>
+                              New_Occurrence_Of (Standard_False, Loc)));
+
+                        Append_To (Elab_List,
+                          Make_If_Statement (Loc,
+                            Condition       =>
+                              New_Occurrence_Of
+                                (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
+                            Then_Statements => Elab_Sec_DT_Stmts_List));
+                     end if;
+
+                     Prepend_List_To (Body_Stmts, Elab_List);
                   end;
                else
                   Prepend_To (Body_Stmts,
@@ -8588,7 +8595,9 @@ package body Exp_Ch3 is
             --       Offset_Value => n,
             --       Offset_Func  => null);
 
-            if RTE_Available (RE_Register_Interface_Offset) then
+            if not Building_Static_Secondary_DT (Typ)
+              and then RTE_Available (RE_Register_Interface_Offset)
+            then
                Append_To (Stmts_List,
                  Make_Procedure_Call_Statement (Loc,
                    Name                   =>

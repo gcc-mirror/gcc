@@ -1,3 +1,70 @@
+2017-11-09  Pascal Obry  <obry@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb: On Windows, initialize the thead handle
+	only for foreign threads.  We initialize the thread handle only if not
+	yet initialized. This happens in Enter_Task for foreign threads only.
+	But for native threads (Ada tasking) we do want to keep the real
+	handle (from Create_Task) to be able to free the corresponding
+	resources in Finalize_TCB (CloseHandle).
+
+2017-11-09  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Default initialize P_Type,
+	P_Base_Type.
+	(Error_Attr_P): Fix name in pragma No_Return.
+	(Unexpected_Argument): Add pragma No_Return.
+	(Placement_Error): Add pragma No_Return.
+
+2017-11-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Elab_Flag_Needed): Elaboration flag not needed when the
+	dispatch table is statically built.
+	(Make_DT): Declare constant the Interface_Table object associated with
+	an statically built dispatch table. For this purpose the Offset_To_Top
+	value of each interface is computed using the dummy object.
+	* exp_ch3.adb (Build_Init_Procedure): Do not generate code initializing
+	the Offset_To_Top field of secondary dispatch tables when the dispatch
+	table is statically built.
+	(Initialize_Tag): Do not generate calls to Register_Interface_Offset
+	when the dispatch table is statically built.
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Document the new GNAT restriction Static_Dispatch_Tables.
+	* gnat_rm.texi: Regenerate.
+
+2017-11-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Record_Aggregate): Reorder declarations
+	to avoid a dormant bug.
+
+2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Define missing __gnat_alternate_stack for QNX. Set it to 0,
+	as such capability is not available on the OS.
+	* link.c: Make sure linker options for QNX are correct.
+	* libgnarl/s-osinte__qnx.ads: Add some missing bindings to pthread.
+	* libgnarl/s-taprop__qnx.adb: New, derived from s-taprop__posix.adb. This brings
+	in particular a workaround with locks priority ceiling where a higher
+	priority task is allowed to lock a lower ceiling priority lock. This
+	also fixes the scheduling of FIFO tasks when the priority of a task is
+	lowered.
+	* libgnat/system-qnx-aarch64.ads: Fix priority ranges.
+
+2017-11-09  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Output_Error_Msgs): Justify CodePeer false positive
+	message.
+	* gnatbind.adb (Scan_Bind_Arg): Simplify test to remove always true
+	condition.
+	* namet.adb (Copy_One_Character): Add assumption for static analysis,
+	as knowledge that Hex(2) is in the range 0..255 is too complex for
+	CodePeer.
+	(Finalize): Add assumption for static analysis, as the fact that there
+	are symbols in the table depends on a global invariant at this point in
+	the program.
+	* set_targ.adb (Check_Spaces): Justify CodePeer false positive message.
+	* stylesw.adb (Save_Style_Check_Options): Rewrite to avoid test always
+	true.
+
 2017-11-09  Javier Miranda  <miranda@adacore.com>
 
 	* libgnat/s-rident.ads (Static_Dispatch_Tables): New restriction name.

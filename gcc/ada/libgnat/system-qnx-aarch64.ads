@@ -95,20 +95,22 @@ package System is
 
    --  Priority-related Declarations (RM D.1)
 
+   --  System priority is Ada priority + 1, so lies in the range 1 .. 63.
+   --
    --  If the scheduling policy is SCHED_FIFO or SCHED_RR the runtime makes use
    --  of the entire range provided by the system.
    --
    --  If the scheduling policy is SCHED_OTHER the only valid system priority
    --  is 1 and other values are simply ignored.
 
-   Max_Priority           : constant Positive := 62;
-   Max_Interrupt_Priority : constant Positive := 63;
+   Max_Priority           : constant Positive := 61;
+   Max_Interrupt_Priority : constant Positive := 62;
 
-   subtype Any_Priority       is Integer      range  0 .. 63;
-   subtype Priority           is Any_Priority range  0 .. 62;
-   subtype Interrupt_Priority is Any_Priority range 63 .. 63;
+   subtype Any_Priority       is Integer      range  0 .. 62;
+   subtype Priority           is Any_Priority range  0 .. 61;
+   subtype Interrupt_Priority is Any_Priority range 62 .. 62;
 
-   Default_Priority : constant Priority := 31;
+   Default_Priority : constant Priority := 30;
 
 private
 

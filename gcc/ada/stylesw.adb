@@ -161,7 +161,8 @@ package body Stylesw is
       if Style_Check_Comments then
          if Style_Check_Comments_Spacing = 2 then
             Add ('c', Style_Check_Comments);
-         elsif Style_Check_Comments_Spacing = 1 then
+         else
+            pragma Assert (Style_Check_Comments_Spacing = 1);
             Add ('C', Style_Check_Comments);
          end if;
       end if;

@@ -141,7 +141,7 @@ package System.OS_Interface is
       SIGKILL, SIGSTOP);
       --  These two signals actually can't be masked (POSIX won't allow it)
 
-   Reserved : constant Signal_Set := (SIGKILL, SIGSTOP, SIGSEGV);
+   Reserved : constant Signal_Set := (SIGABRT, SIGKILL, SIGSTOP, SIGSEGV);
 
    type sigset_t is private;
 
@@ -160,18 +160,18 @@ package System.OS_Interface is
    function sigemptyset (set : access sigset_t) return int;
    pragma Import (C, sigemptyset, "sigemptyset");
 
-   type union_type_3 is new String (1 .. 116);
+   type pad7 is array (1 .. 7) of int;
    type siginfo_t is record
       si_signo : int;
       si_code  : int;
       si_errno : int;
-      X_data   : union_type_3;
+      X_data   : pad7;
    end record;
    pragma Convention (C, siginfo_t);
 
    type struct_sigaction is record
       sa_handler  : System.Address;
-      sa_flags    : Interfaces.C.int;
+      sa_flags    : int;
       sa_mask     : sigset_t;
    end record;
    pragma Convention (C, struct_sigaction);
@@ -228,19 +228,13 @@ package System.OS_Interface is
    function To_Timespec (D : Duration) return timespec;
    pragma Inline (To_Timespec);
 
-   function sysconf (name : int) return long;
-   pragma Import (C, sysconf);
-
-   SC_CLK_TCK          : constant := 2;
-   SC_NPROCESSORS_ONLN : constant := 84;
-
    -------------------------
    -- Priority Scheduling --
    -------------------------
 
-   SCHED_OTHER : constant := 3;
    SCHED_FIFO  : constant := 1;
    SCHED_RR    : constant := 2;
+   SCHED_OTHER : constant := 3;
 
    function To_Target_Priority
      (Prio : System.Any_Priority) return Interfaces.C.int
@@ -270,11 +264,8 @@ package System.OS_Interface is
    function Thread_Body_Access is new
      Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
-   type pthread_t is new unsigned_long;
+   type pthread_t is new int;
    subtype Thread_Id is pthread_t;
-
-   function To_pthread_t is
-     new Ada.Unchecked_Conversion (unsigned_long, pthread_t);
 
    type pthread_mutex_t      is limited private;
    type pthread_cond_t       is limited private;
@@ -285,8 +276,11 @@ package System.OS_Interface is
 
    PTHREAD_CREATE_DETACHED : constant := 1;
 
-   PTHREAD_SCOPE_PROCESS : constant := 4;
-   PTHREAD_SCOPE_SYSTEM  : constant := 0;
+   PTHREAD_SCOPE_PROCESS  : constant := 4;
+   PTHREAD_SCOPE_SYSTEM   : constant := 0;
+
+   PTHREAD_INHERIT_SCHED  : constant := 0;
+   PTHREAD_EXPLICIT_SCHED : constant := 2;
 
    --  Read/Write lock not supported on Android.
 
@@ -306,15 +300,16 @@ package System.OS_Interface is
 
    function sigaltstack
      (ss  : not null access stack_t;
-      oss : access stack_t) return int;
-   pragma Import (C, sigaltstack, "sigaltstack");
+      oss : access stack_t) return int
+   is (0);
+   --  Not supported on QNX
 
    Alternate_Stack : aliased System.Address;
    --  Dummy definition: alternate stack not available due to missing
-   --  sigaltstack
+   --  sigaltstack in QNX
 
    Alternate_Stack_Size : constant := 0;
-   --  This must be in keeping with init.c:__gnat_alternate_stack
+   --  This must be kept in sync with init.c:__gnat_alternate_stack
 
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target
@@ -327,10 +322,10 @@ package System.OS_Interface is
    pragma Import (C, Get_Page_Size, "getpagesize");
    --  Returns the size of a page
 
-   PROT_NONE  : constant := 0;
-   PROT_READ  : constant := 1;
-   PROT_WRITE : constant := 2;
-   PROT_EXEC  : constant := 4;
+   PROT_NONE  : constant := 16#00_00#;
+   PROT_READ  : constant := 16#01_00#;
+   PROT_WRITE : constant := 16#02_00#;
+   PROT_EXEC  : constant := 16#04_00#;
    PROT_ALL   : constant := PROT_READ + PROT_WRITE + PROT_EXEC;
    PROT_ON    : constant := PROT_READ;
    PROT_OFF   : constant := PROT_ALL;
@@ -358,10 +353,7 @@ package System.OS_Interface is
      (how  : int;
       set  : access sigset_t;
       oset : access sigset_t) return int;
-   pragma Import (C, pthread_sigmask, "sigprocmask");
-   --  pthread_sigmask maybe be broken due to mismatch between sigset_t and
-   --  kernel_sigset_t, substitute sigprocmask temporarily.  ???
-   --  pragma Import (C, pthread_sigmask, "pthread_sigmask");
+   pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
    --------------------------
    -- POSIX.1c  Section 11 --
@@ -388,6 +380,12 @@ package System.OS_Interface is
 
    function pthread_mutex_unlock (mutex : access pthread_mutex_t) return int;
    pragma Import (C, pthread_mutex_unlock, "pthread_mutex_unlock");
+
+   function pthread_mutex_setprioceiling
+     (mutex       : access pthread_mutex_t;
+      prioceiling : int;
+      old_ceiling : access int) return int;
+   pragma Import (C, pthread_mutex_setprioceiling);
 
    function pthread_condattr_init
      (attr : access pthread_condattr_t) return int;
@@ -432,14 +430,36 @@ package System.OS_Interface is
 
    function pthread_mutexattr_setprotocol
      (attr     : access pthread_mutexattr_t;
-      protocol : int) return int is (0);
+      protocol : int) return int;
+   pragma Import (C, pthread_mutexattr_setprotocol);
+
+   function pthread_mutexattr_getprotocol
+     (attr     : access pthread_mutexattr_t;
+      protocol : access int) return int;
+   pragma Import (C, pthread_mutexattr_getprotocol);
 
    function pthread_mutexattr_setprioceiling
      (attr        : access pthread_mutexattr_t;
-      prioceiling : int) return int is (0);
+      prioceiling : int) return int;
+   pragma Import (C, pthread_mutexattr_setprioceiling);
+
+   function pthread_mutexattr_getprioceiling
+     (attr        : access pthread_mutexattr_t;
+      prioceiling : access int) return int;
+   pragma Import (C, pthread_mutexattr_getprioceiling);
+
+   function pthread_mutex_getprioceiling
+     (attr        : access pthread_mutex_t;
+      prioceiling : access int) return int;
+   pragma Import (C, pthread_mutex_getprioceiling);
+
+   type pad8 is array (1 .. 8) of int;
+   pragma Convention (C, pad8);
 
    type struct_sched_param is record
-      sched_priority : int;  --  scheduling priority
+      sched_priority    : int := 0;  --  scheduling priority
+      sched_curpriority : int := 0;
+      reserved          : pad8 := (others => 0);
    end record;
    pragma Convention (C, struct_sched_param);
 
@@ -448,6 +468,27 @@ package System.OS_Interface is
       policy : int;
       param  : access struct_sched_param) return int;
    pragma Import (C, pthread_setschedparam, "pthread_setschedparam");
+
+   function pthread_getschedparam
+     (thread : pthread_t;
+      policy : access int;
+      param  : access struct_sched_param) return int;
+   pragma Import (C, pthread_getschedparam, "pthread_getschedparam");
+
+   function pthread_setschedprio
+     (thread   : pthread_t;
+      priority : int) return int;
+   pragma Import (C, pthread_setschedprio);
+
+   function pthread_attr_setschedparam
+     (attr   : access pthread_attr_t;
+      param  : access struct_sched_param) return int;
+   pragma Import (C, pthread_attr_setschedparam);
+
+   function pthread_attr_setinheritsched
+     (attr         : access pthread_attr_t;
+      inheritsched : int) return int;
+   pragma Import (C, pthread_attr_setinheritsched);
 
    function pthread_attr_setscope
      (attr  : access pthread_attr_t;
@@ -478,13 +519,12 @@ package System.OS_Interface is
    function pthread_attr_setdetachstate
      (attr        : access pthread_attr_t;
       detachstate : int) return int;
-   pragma Import
-     (C, pthread_attr_setdetachstate, "pthread_attr_setdetachstate");
+   pragma Import (C, pthread_attr_setdetachstate);
 
    function pthread_attr_setstacksize
      (attr      : access pthread_attr_t;
       stacksize : size_t) return int;
-   pragma Import (C, pthread_attr_setstacksize, "pthread_attr_setstacksize");
+   pragma Import (C, pthread_attr_setstacksize);
 
    function pthread_create
      (thread        : access pthread_t;
@@ -522,53 +562,10 @@ package System.OS_Interface is
       destructor : destructor_pointer) return int;
    pragma Import (C, pthread_key_create, "pthread_key_create");
 
-   CPU_SETSIZE : constant := 1_024;
-   --  Size of the cpu_set_t mask on most linux systems (SUSE 11 uses 4_096).
-   --  This is kept for backward compatibility (System.Task_Info uses it), but
-   --  the run-time library does no longer rely on static masks, using
-   --  dynamically allocated masks instead.
-
-   type bit_field is array (1 .. CPU_SETSIZE) of Boolean;
-   for bit_field'Size use CPU_SETSIZE;
-   pragma Pack (bit_field);
-   pragma Convention (C, bit_field);
-
-   type cpu_set_t is record
-      bits : bit_field;
-   end record;
-   pragma Convention (C, cpu_set_t);
-
-   type cpu_set_t_ptr is access all cpu_set_t;
-   --  In the run-time library we use this pointer because the size of type
-   --  cpu_set_t varies depending on the glibc version. Hence, objects of type
-   --  cpu_set_t are allocated dynamically using the number of processors
-   --  available in the target machine (value obtained at execution time).
-
-   function CPU_ALLOC (count : size_t) return cpu_set_t_ptr;
-   pragma Import (C, CPU_ALLOC, "__gnat_cpu_alloc");
-   --  Wrapper around the CPU_ALLOC C macro
-
-   function CPU_ALLOC_SIZE (count : size_t) return size_t;
-   pragma Import (C, CPU_ALLOC_SIZE, "__gnat_cpu_alloc_size");
-   --  Wrapper around the CPU_ALLOC_SIZE C macro
-
-   procedure CPU_FREE (cpuset : cpu_set_t_ptr);
-   pragma Import (C, CPU_FREE, "__gnat_cpu_free");
-   --  Wrapper around the CPU_FREE C macro
-
-   procedure CPU_ZERO (count : size_t; cpuset : cpu_set_t_ptr);
-   pragma Import (C, CPU_ZERO, "__gnat_cpu_zero");
-   --  Wrapper around the CPU_ZERO_S C macro
-
-   procedure CPU_SET (cpu : int; count : size_t; cpuset : cpu_set_t_ptr);
-   pragma Import (C, CPU_SET, "__gnat_cpu_set");
-   --  Wrapper around the CPU_SET_S C macro
-
 private
 
-   type sigset_t is new Interfaces.C.unsigned_long;
+   type sigset_t is array (1 .. 2) of Interfaces.Unsigned_32;
    pragma Convention (C, sigset_t);
-   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pid_t is new int;
 
@@ -615,6 +612,6 @@ private
    pragma Convention (C, pthread_cond_t);
    for pthread_cond_t'Alignment use unsigned_long_long_t'Alignment;
 
-   type pthread_key_t is new unsigned;
+   type pthread_key_t is new int;
 
 end System.OS_Interface;

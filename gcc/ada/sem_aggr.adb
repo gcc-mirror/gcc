@@ -2877,7 +2877,14 @@ package body Sem_Aggr is
    -- Resolve_Delta_Record_Aggregate --
    ------------------------------------
 
-   procedure Resolve_Delta_Record_Aggregate (N   : Node_Id; Typ : Entity_Id) is
+   procedure Resolve_Delta_Record_Aggregate (N : Node_Id; Typ : Entity_Id) is
+
+      --  Variables used to verify that discriminant-dependent components
+      --  appear in the same variant.
+
+      Comp_Ref : Entity_Id;
+      Variant  : Node_Id;
+
       procedure Check_Variant (Id : Entity_Id);
       --  If a given component of the delta aggregate appears in a variant
       --  part, verify that it is within the same variant as that of previous
@@ -2900,16 +2907,12 @@ package body Sem_Aggr is
 
       procedure Check_Variant (Id : Entity_Id) is
          Comp         : Entity_Id;
-         Comp_Ref     : Entity_Id;
          Comp_Variant : Node_Id;
-         Variant      : Node_Id;
 
       begin
          if not Has_Discriminants (Typ) then
             return;
          end if;
-
-         Variant := Empty;
 
          Comp := First_Entity (Typ);
          while Present (Comp) loop
@@ -3027,6 +3030,8 @@ package body Sem_Aggr is
    --  Start of processing for Resolve_Delta_Record_Aggregate
 
    begin
+      Variant := Empty;
+
       Assoc := First (Deltas);
       while Present (Assoc) loop
          Choice := First (Choice_List (Assoc));

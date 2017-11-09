@@ -258,7 +258,13 @@ package body Namet is
                   --  simply use their normal representation.
 
                else
-                  Insert_Character (Character'Val (Hex (2)));
+                  declare
+                     W2 : constant Word := Hex (2);
+                  begin
+                     pragma Assume (W2 <= 255);
+                     --  Add assumption to facilitate static analysis
+                     Insert_Character (Character'Val (W2));
+                  end;
                end if;
 
             --  WW (wide wide character insertion)
@@ -753,6 +759,9 @@ package body Namet is
 
       Write_Eol;
       Write_Str ("Average number of probes for lookup = ");
+      pragma Assume (Nsyms /= 0);
+      --  Add assumption to facilitate static analysis. Here Nsyms cannot be
+      --  zero because many symbols are added to the table by default.
       Probes := Probes / Nsyms;
       Write_Int (Probes / 200);
       Write_Char ('.');
