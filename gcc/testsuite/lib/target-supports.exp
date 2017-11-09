@@ -6714,6 +6714,12 @@ proc check_effective_target_vect_multiple_sizes { } {
     return [expr { [llength [available_vector_sizes]] > 1 }]
 }
 
+# Return true if variable-length vectors are supported.
+
+proc check_effective_target_vect_variable_length { } {
+    return [expr { [lindex [available_vector_sizes] 0] == 0 }]
+}
+
 # Return 1 if the target supports vectors of 64 bits.
 
 proc check_effective_target_vect64 { } {

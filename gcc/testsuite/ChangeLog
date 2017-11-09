@@ -3,6 +3,21 @@
 	    David Sherwood  <david.sherwood@arm.com>
 
 	* lib/target-supports.exp
+	(check_effective_target_vect_variable_length): New proc.
+	* gcc.dg/vect/pr60482.c: XFAIL test for no epilog loop if
+	vect_variable_length.
+	* gcc.dg/vect/slp-reduc-6.c: XFAIL two-operation SLP if
+	vect_variable_length.
+	* gcc.dg/vect/vect-alias-check-5.c: XFAIL alias optimization if
+	vect_variable_length.
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: XFAIL predictive
+	commoning optimization if vect_variable_length.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp
 	(check_effective_target_vect_unaligned_possible): New proc.
 	* gcc.dg/vect/slp-25.c: Extend XFAIL of peeling for alignment from
 	vect_no_align && { ! vect_hw_misalign } to ! vect_unaligned_possible.
