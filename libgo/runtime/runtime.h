@@ -211,6 +211,8 @@ extern	uint32	runtime_panicking(void)
 extern	bool	runtime_isstarted;
 extern	bool	runtime_isarchive;
 
+extern	void	panicmem(void) __asm__ (GOSYM_PREFIX "runtime.panicmem");
+
 /*
  * common functions and data
  */
