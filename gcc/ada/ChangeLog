@@ -1,3 +1,51 @@
+2017-11-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Suppress warnings in codepeer
+	mode here unless -gnateC is specified.
+	* switch-c.adb (Scan_Front_End_Switches): Do not suppress warnings with
+	-gnatC here.
+
+2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Remove processing of the frontend xrefs as
+	part of the ALI writing; they are now processed directly from memory
+	when requested by the backend.
+	* lib-xref.ads (Collect_SPARK_Xrefs): Remove.
+	(Iterate_SPARK_Xrefs): New routine for iterating over frontend xrefs.
+	* lib-xref-spark_specific.adb (Traverse_Compilation_Unit): Remove.
+	(Add_SPARK_File): Remove.
+	(Add_SPARK_Xref): Refactored from removed code; filters xref entries
+	that are trivially uninteresting to the SPARK backend.
+	* spark_xrefs.ads: Remove code that is no longer needed.
+	* spark_xrefs.adb (dspark): Adapt to use Iterate_SPARK_Xrefs.
+
+2017-11-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb: Update the documentation on adding a new elaboration
+	schenario. Add new hash table Recorded_Top_Level_Scenarios.
+	(Is_Check_Emitting_Scenario): Removed.
+	(Is_Recorded_Top_Level_Scenario): New routine.
+	(Kill_Elaboration_Scenario): Reimplemented.
+	(Record_Elaboration_Scenario): Mark the scenario as recorded.
+	(Set_Is_Recorded_Top_Level_Scenario): New routine.
+	(Update_Elaboration_Scenario): Reimplemented.
+	* sinfo.adb (Is_Recorded_Scenario): Removed.
+	(Set_Is_Recorded_Scenario): Removed.
+	* sinfo.ads: Remove attribute Is_Recorded_Scenario along with
+	occurrences in nodes.
+	(Is_Recorded_Scenario): Removed along with pragma Inline.
+	(Set_Is_Recorded_Scenario): Removed along with pragma Inline.
+
+2017-11-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Change "designate" to "denote" in
+	error message.
+
+2017-11-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Add warning messages corresponding
+	to the allocation of an anonymous access-to-controlled object.
+
 2017-11-09  Jerome Lambourg  <lambourg@adacore.com>
 
 	* sigtramp-qnx.c: Fix obvious typo.

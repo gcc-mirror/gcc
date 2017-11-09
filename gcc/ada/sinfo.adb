@@ -2098,17 +2098,6 @@ package body Sinfo is
       return Flag1 (N);
    end Is_Read;
 
-   function Is_Recorded_Scenario
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Call_Marker
-        or else NT (N).Nkind = N_Function_Instantiation
-        or else NT (N).Nkind = N_Package_Instantiation
-        or else NT (N).Nkind = N_Procedure_Instantiation);
-      return Flag6 (N);
-   end Is_Recorded_Scenario;
-
    function Is_Source_Call
       (N : Node_Id) return Boolean is
    begin
@@ -5536,17 +5525,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag1 (N, Val);
    end Set_Is_Read;
-
-   procedure Set_Is_Recorded_Scenario
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Call_Marker
-        or else NT (N).Nkind = N_Function_Instantiation
-        or else NT (N).Nkind = N_Package_Instantiation
-        or else NT (N).Nkind = N_Procedure_Instantiation);
-      Set_Flag6 (N, Val);
-   end Set_Is_Recorded_Scenario;
 
    procedure Set_Is_Source_Call
       (N : Node_Id; Val : Boolean := True) is

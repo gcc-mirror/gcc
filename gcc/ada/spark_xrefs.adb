@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Lib.Xref;
 with Output;   use Output;
 with Sem_Util; use Sem_Util;
 
@@ -33,92 +34,48 @@ package body SPARK_Xrefs is
    ------------
 
    procedure dspark is
+
+      procedure Dump (Index : Nat; AXR : SPARK_Xref_Record);
+
+      procedure Dump_SPARK_Xrefs is new
+        Lib.Xref.SPARK_Specific.Iterate_SPARK_Xrefs (Dump);
+
+      ----------
+      -- Dump --
+      ----------
+
+      procedure Dump (Index : Nat; AXR : SPARK_Xref_Record) is
+      begin
+         Write_Str  ("  ");
+         Write_Int  (Index);
+         Write_Char ('.');
+
+         Write_Str  (" Entity = " & Unique_Name (AXR.Entity));
+         Write_Str  (" (");
+         Write_Int  (Nat (AXR.Entity));
+         Write_Str  (")");
+
+         Write_Str  (" Scope = " & Unique_Name (AXR.Ref_Scope));
+         Write_Str  (" (");
+         Write_Int  (Nat (AXR.Ref_Scope));
+         Write_Str  (")");
+
+         Write_Str  (" Ref_Type = '" & AXR.Rtype & "'");
+
+         Write_Eol;
+      end Dump;
+
+   --  Start of processing for dspark
+
    begin
-      --  Dump SPARK cross-reference file table
-
-      Write_Line ("SPARK Xrefs File Table");
-      Write_Line ("----------------------");
-
-      for Index in SPARK_File_Table.First .. SPARK_File_Table.Last loop
-         declare
-            AFR : SPARK_File_Record renames SPARK_File_Table.Table (Index);
-
-         begin
-            Write_Str ("  ");
-            Write_Int (Int (Index));
-            Write_Str (".  File_Num = ");
-            Write_Int (Int (AFR.File_Num));
-            Write_Str ("  From = ");
-            Write_Int (Int (AFR.From_Scope));
-            Write_Str ("  To = ");
-            Write_Int (Int (AFR.To_Scope));
-            Write_Eol;
-         end;
-      end loop;
-
-      --  Dump SPARK cross-reference scope table
-
-      Write_Eol;
-      Write_Line ("SPARK Xrefs Scope Table");
-      Write_Line ("-----------------------");
-
-      for Index in SPARK_Scope_Table.First .. SPARK_Scope_Table.Last loop
-         declare
-            ASR : SPARK_Scope_Record renames SPARK_Scope_Table.Table (Index);
-
-         begin
-            Write_Str ("  ");
-            Write_Int (Int (Index));
-            Write_Str ("  Scope_Name = """);
-
-            Write_Str (Unique_Name (ASR.Entity));
-
-            Write_Char ('"');
-            Write_Str  ("  From = ");
-            Write_Int  (Int (ASR.From_Xref));
-            Write_Str  ("  To = ");
-            Write_Int  (Int (ASR.To_Xref));
-            Write_Eol;
-         end;
-      end loop;
-
       --  Dump SPARK cross-reference table
 
       Write_Eol;
       Write_Line ("SPARK Xref Table");
       Write_Line ("----------------");
 
-      for Index in SPARK_Xref_Table.First .. SPARK_Xref_Table.Last loop
-         declare
-            AXR : SPARK_Xref_Record renames SPARK_Xref_Table.Table (Index);
+      Dump_SPARK_Xrefs;
 
-         begin
-            Write_Str  ("  ");
-            Write_Int  (Int (Index));
-            Write_Str (".  Entity_Name = """);
-
-            Write_Str (Unique_Name (AXR.Entity));
-
-            Write_Char ('"');
-            Write_Str ("  Reference_Scope = ");
-            Write_Str (Unique_Name (AXR.Ref_Scope));
-            Write_Char ('"');
-            Write_Str ("  Type = ");
-            Write_Char (AXR.Rtype);
-            Write_Eol;
-         end;
-      end loop;
    end dspark;
-
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize_SPARK_Tables is
-   begin
-      SPARK_File_Table.Init;
-      SPARK_Scope_Table.Init;
-      SPARK_Xref_Table.Init;
-   end Initialize_SPARK_Tables;
 
 end SPARK_Xrefs;

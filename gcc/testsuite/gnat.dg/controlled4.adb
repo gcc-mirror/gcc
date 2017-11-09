@@ -1,5 +1,8 @@
 --  { dg-do compile }
 
+pragma Warnings
+  (Off, "anonymous access-to-controlled object will be finalized when its enclosing unit goes out of scope");
+
 package body controlled4 is
    procedure Test_Suite is
    begin

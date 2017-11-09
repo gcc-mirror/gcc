@@ -3327,7 +3327,7 @@ package body Sem_Prag is
          elsif Placement = Private_State_Space then
             if Scope (Encap_Id) /= Pack_Id then
                SPARK_Msg_NE
-                 ("indicator Part_Of must designate an abstract state of "
+                 ("indicator Part_Of must denote an abstract state of "
                   & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                SPARK_Msg_NE

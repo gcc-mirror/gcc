@@ -5161,11 +5161,11 @@ package body Sem_Res is
                          (Parent (Associated_Node_For_Itype (Typ))))
                   then
                      Error_Msg_N
-                       ("info: coextension will not be finalized when its "
+                       ("??coextension will not be finalized when its "
                         & "associated owner is finalized", N);
                   else
                      Error_Msg_N
-                       ("info: coextension will not be finalized when its "
+                       ("??coextension will not be finalized when its "
                         & "associated owner is deallocated", N);
                   end if;
                else
@@ -5174,12 +5174,12 @@ package body Sem_Res is
                           (Parent (Associated_Node_For_Itype (Typ))))
                   then
                      Error_Msg_N
-                       ("info: coextension will not be deallocated when its "
-                        & "associated owner is finalized", N);
+                       ("??coextension will not be deallocated when "
+                        & "its associated owner is finalized", N);
                   else
                      Error_Msg_N
-                       ("info: coextension will not be deallocated when its "
-                        & "associated owner is deallocated", N);
+                       ("??coextension will not be deallocated when "
+                        & "its associated owner is deallocated", N);
                   end if;
                end if;
             end if;
@@ -5189,6 +5189,19 @@ package body Sem_Res is
          else
             Set_Is_Dynamic_Coextension (N, False);
             Set_Is_Static_Coextension  (N, False);
+
+            --  ??? It seems we also do not properly finalize anonymous
+            --  access-to-controlled objects within their declared scope and
+            --  instead finalize them with their associated unit. Warn the
+            --  user about it here.
+
+            if Ekind (Typ) = E_Anonymous_Access_Type
+               and then Is_Controlled_Active (Desig_T)
+            then
+               Error_Msg_N ("??anonymous access-to-controlled object will "
+                            & "be finalized when its enclosing unit goes out "
+                            & "of scope", N);
+            end if;
          end if;
       end if;
 

@@ -383,6 +383,14 @@ procedure Gnat1drv is
 
          Relaxed_RM_Semantics := True;
 
+         if not Generate_CodePeer_Messages then
+            --  Suppress compiler warnings by default when generating SCIL for
+            --  CodePeer, except when combined with -gnateC where we do want
+            --  to emit GNAT warnings.
+
+            Warning_Mode := Suppress;
+         end if;
+
          --  Disable all simple value propagation. This is an optimization
          --  which is valuable for code optimization, and also for generation
          --  of compiler warnings, but these are being turned off by default,
