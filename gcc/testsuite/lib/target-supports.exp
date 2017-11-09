@@ -6581,46 +6581,38 @@ foreach N {2 3 4 8} {
     }]
 }
 
+# Return the list of vector sizes (in bits) that each target supports.
+# A vector length of "0" indicates variable-length vectors.
+
+proc available_vector_sizes { } {
+    set result {}
+    if { [istarget aarch64*-*-*] } {
+	lappend result 128 64
+    } elseif { [istarget arm*-*-*]
+		&& [check_effective_target_arm_neon_ok] } {
+	lappend result 128 64
+    } elseif { (([istarget i?86-*-*] || [istarget x86_64-*-*])
+		 && ([check_avx_available] && ![check_prefer_avx128])) } {
+	lappend result 256 128
+    } elseif { [istarget sparc*-*-*] } {
+	lappend result 64
+    } else {
+	# The traditional default asumption.
+	lappend result 128
+    }
+    return $result
+}
+
 # Return 1 if the target supports multiple vector sizes
 
 proc check_effective_target_vect_multiple_sizes { } {
-    global et_vect_multiple_sizes_saved
-    global et_index
-
-    set et_vect_multiple_sizes_saved($et_index) 0
-    if { [istarget aarch64*-*-*]
-	 || [is-effective-target arm_neon]
-	 || (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	     && ([check_avx_available] && ![check_prefer_avx128])) } {
-	set et_vect_multiple_sizes_saved($et_index) 1
-    }
-
-    verbose "check_effective_target_vect_multiple_sizes:\
-	     returning $et_vect_multiple_sizes_saved($et_index)" 2
-    return $et_vect_multiple_sizes_saved($et_index)
+    return [expr { [llength [available_vector_sizes]] > 1 }]
 }
 
 # Return 1 if the target supports vectors of 64 bits.
 
 proc check_effective_target_vect64 { } {
-    global et_vect64_saved
-    global et_index
-
-    if [info exists et_vect64_saved($et_index)] {
-        verbose "check_effective_target_vect64: using cached result" 2
-    } else {
-	set et_vect64_saved($et_index) 0
-        if { ([is-effective-target arm_neon]
-	      && [check_effective_target_arm_little_endian])
-	     || [istarget aarch64*-*-*]
-             || [istarget sparc*-*-*] } {
-	   set et_vect64_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect64:\
-	     returning $et_vect64_saved($et_index)" 2
-    return $et_vect64_saved($et_index)
+    return [expr { [lsearch -exact [available_vector_sizes] 64] >= 0 }]
 }
 
 # Return 1 if the target supports vector copysignf calls.
@@ -7747,11 +7739,7 @@ proc check_avx_available { } {
 # Return true if 32- and 16-bytes vectors are available.
 
 proc check_effective_target_vect_sizes_32B_16B { } {
-  if { [check_avx_available] && ![check_prefer_avx128] } {
-     return 1;
-  } else {
-    return 0;
-  }
+    return [expr { [available_vector_sizes] == [list 256 128] }]
 }
 
 # Return true if 16- and 8-bytes vectors are available.

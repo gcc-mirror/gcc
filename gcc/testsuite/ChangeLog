@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lib/target-supports.exp (available_vector_sizes): New proc.
+	(check_effective_target_vect_multiple_sizes): Use it.
+	(check_effective_target_vect64): Likewise.
+	(check_effective_target_vect_sizes_32B_16B): Likewise.
+
+2017-11-09  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/tree-vect.h (VECTOR_BITS): Define.
 	* gcc.dg/vect/bb-slp-pr69907.c: Include tree-vect.h.
 	(N): New macro.
