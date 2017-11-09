@@ -683,6 +683,8 @@ try_merge_compare (struct comparison *cmp)
 
   rtx_insn *def_insn = cmp->in_a_setter;
   rtx set = single_set (def_insn);
+  if (!set)
+    return false;
 
   if (!can_merge_compare_into_arith (cmp_insn, def_insn))
     return false;
