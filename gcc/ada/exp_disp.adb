@@ -5516,8 +5516,8 @@ package body Exp_Disp is
             declare
                TSD_Ifaces_List  : constant List_Id := New_List;
                Elmt             : Elmt_Id;
-               Ifaces_List      : Elist_Id;
-               Ifaces_Comp_List : Elist_Id;
+               Ifaces_List      : Elist_Id := No_Elist;
+               Ifaces_Comp_List : Elist_Id := No_Elist;
                Ifaces_Tag_List  : Elist_Id;
                Offset_To_Top    : Node_Id;
                Sec_DT_Tag       : Node_Id;

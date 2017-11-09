@@ -1,3 +1,8 @@
+2017-11-09  Yannick Moy  <moy@adacore.com>
+
+	* exp_disp.adb (Make_DT): Default initialize Ifaces_List and
+	Ifaces_Comp_List.
+
 2017-11-09  Pascal Obry  <obry@adacore.com>
 
 	* libgnarl/s-taprop__mingw.adb: On Windows, initialize the thead handle
