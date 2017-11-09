@@ -1262,8 +1262,13 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 static int
 symbol_rank (gfc_symbol *sym)
 {
-  gfc_array_spec *as;
-  as = (sym->ts.type == BT_CLASS) ? CLASS_DATA (sym)->as : sym->as;
+  gfc_array_spec *as = NULL;
+
+  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym) && CLASS_DATA (sym)->as)
+    as = CLASS_DATA (sym)->as;
+  else
+    as = sym->as;
+
   return as ? as->rank : 0;
 }
 

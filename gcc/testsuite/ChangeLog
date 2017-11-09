@@ -1,3 +1,8 @@
+2017-11-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/78814
+	* gfortran.dg/interface_40.f90: New testcase.
+
 2017-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/controlled2.adb, gnat.dg/controlled4.adb,
