@@ -171,6 +171,7 @@ typedef struct GTY(()) machine_function
   bool gpr_is_wrapped_separately[32];
   bool fpr_is_wrapped_separately[32];
   bool lr_is_wrapped_separately;
+  bool toc_is_wrapped_separately;
 } machine_function;
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
@@ -4425,6 +4426,13 @@ rs6000_option_override_internal (bool global_init_p)
       && !TARGET_QUAD_MEMORY_ATOMIC
       && ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) == 0))
     rs6000_isa_flags |= OPTION_MASK_QUAD_MEMORY_ATOMIC;
+
+  /* If we can shrink-wrap the TOC register save separately, then use
+     -msave-toc-indirect unless explicitly disabled.  */
+  if ((rs6000_isa_flags_explicit & OPTION_MASK_SAVE_TOC_INDIRECT) == 0
+      && flag_shrink_wrap_separate
+      && optimize_function_for_speed_p (cfun))
+    rs6000_isa_flags |= OPTION_MASK_SAVE_TOC_INDIRECT;
 
   /* Enable power8 fusion if we are tuning for power8, even if we aren't
      generating power8 instructions.  */
@@ -26721,6 +26729,7 @@ rs6000_get_separate_components (void)
 	      && !(info->savres_strategy & REST_MULTIPLE));
 
   /* Component 0 is the save/restore of LR (done via GPR0).
+     Component 2 is the save of the TOC (GPR2).
      Components 13..31 are the save/restore of GPR13..GPR31.
      Components 46..63 are the save/restore of FPR14..FPR31.  */
 
@@ -26795,6 +26804,10 @@ rs6000_get_separate_components (void)
 	bitmap_set_bit (components, 0);
     }
 
+  /* Optimize saving the TOC.  This is component 2.  */
+  if (cfun->machine->save_toc_in_prologue)
+    bitmap_set_bit (components, 2);
+
   return components;
 }
 
@@ -26832,6 +26845,12 @@ rs6000_components_for_bb (basic_block bb)
       || bitmap_bit_p (gen, LR_REGNO)
       || bitmap_bit_p (kill, LR_REGNO))
     bitmap_set_bit (components, 0);
+
+  /* The TOC save.  */
+  if (bitmap_bit_p (in, TOC_REGNUM)
+      || bitmap_bit_p (gen, TOC_REGNUM)
+      || bitmap_bit_p (kill, TOC_REGNUM))
+    bitmap_set_bit (components, 2);
 
   return components;
 }
@@ -26885,6 +26904,14 @@ rs6000_emit_prologue_components (sbitmap components)
       rtx lr = gen_rtx_REG (reg_mode, LR_REGNO);
       rtx mem = copy_rtx (SET_DEST (single_set (insn)));
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, lr));
+    }
+
+  /* Prologue for TOC.  */
+  if (bitmap_bit_p (components, 2))
+    {
+      rtx reg = gen_rtx_REG (reg_mode, TOC_REGNUM);
+      rtx sp_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      emit_insn (gen_frame_store (reg, sp_reg, RS6000_TOC_SAVE_SLOT));
     }
 
   /* Prologue for the GPRs.  */
@@ -27011,6 +27038,9 @@ rs6000_set_handled_components (sbitmap components)
 
   if (bitmap_bit_p (components, 0))
     cfun->machine->lr_is_wrapped_separately = true;
+
+  if (bitmap_bit_p (components, 2))
+    cfun->machine->toc_is_wrapped_separately = true;
 }
 
 /* VRSAVE is a bit vector representing which AltiVec registers
@@ -27968,7 +27998,8 @@ rs6000_emit_prologue (void)
      unwinder to interpret it.  R2 changes, apart from the
      calls_eh_return case earlier in this function, are handled by
      linux-unwind.h frob_update_context.  */
-  if (rs6000_save_toc_in_prologue_p ())
+  if (rs6000_save_toc_in_prologue_p ()
+      && !cfun->machine->toc_is_wrapped_separately)
     {
       rtx reg = gen_rtx_REG (reg_mode, TOC_REGNUM);
       emit_insn (gen_frame_store (reg, sp_reg_rtx, RS6000_TOC_SAVE_SLOT));

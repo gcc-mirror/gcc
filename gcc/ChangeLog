@@ -1,3 +1,17 @@
+2017-11-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (machine_function): Add a bool,
+	"toc_is_wrapped_separately".
+	(rs6000_option_override_internal): Enable OPTION_MASK_SAVE_TOC_INDIRECT
+	if it wasn't explicitly set or unset, we are optimizing for speed, and
+	doing separate shrink-wrapping.
+	(rs6000_get_separate_components): Enable the TOC component if
+	saving the TOC register in the prologue.
+	(rs6000_components_for_bb): Handle the TOC component.
+	(rs6000_emit_prologue_components): Store the TOC register where needed.
+	(rs6000_set_handled_components): Mark TOC as handled, if handled.
+	(rs6000_emit_prologue): Don't save the TOC if that is already done.
+
 2017-11-09  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-param-manipulation.c: New file.
