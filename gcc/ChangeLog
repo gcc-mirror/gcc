@@ -1,3 +1,16 @@
+2017-11-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* bb-reorder.c (max_entry_frequency): Remove.
+	(find_traces, rotate_loop, mark_bb_visited, connect_better_edge_p,
+	connect_traces, push_to_next_round_p): Remove prototypes.
+	(find_traces_1_round): Use counts only.
+	(push_to_next_round_p): Likewise.
+	(find_traces): Likewise.
+	(rotate_loop): Likewise.
+	(find_traces_1_round): Likewise.
+	(connect_traces): Likewise.
+	(edge_order): Likewise.
+
 2017-11-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (output_return_instruction): Add comments to
