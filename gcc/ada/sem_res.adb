@@ -2442,8 +2442,8 @@ package body Sem_Res is
 
                elsif Nkind_In (N, N_Case_Expression,
                                   N_Character_Literal,
-                                  N_If_Expression,
-                                  N_Delta_Aggregate)
+                                  N_Delta_Aggregate,
+                                  N_If_Expression)
                then
                   Set_Etype (N, Expr_Type);
 
@@ -5197,11 +5197,11 @@ package body Sem_Res is
             --  user about it here.
 
             if Ekind (Typ) = E_Anonymous_Access_Type
-               and then Is_Controlled_Active (Desig_T)
+              and then Is_Controlled_Active (Desig_T)
             then
-               Error_Msg_N ("??anonymous access-to-controlled object will "
-                            & "be finalized when its enclosing unit goes out "
-                            & "of scope", N);
+               Error_Msg_N
+                 ("??anonymous access-to-controlled object will be finalized "
+                  & "when its enclosing unit goes out of scope", N);
             end if;
          end if;
       end if;
@@ -7276,9 +7276,13 @@ package body Sem_Res is
       elsif Ekind (E) = E_Generic_Function then
          Error_Msg_N ("illegal use of generic function", N);
 
-      --  In Ada 83 an OUT parameter cannot be read
+      --  In Ada 83 an OUT parameter cannot be read, but attributes of
+      --  array types (i.e. bounds and length) are legal.
 
       elsif Ekind (E) = E_Out_Parameter
+        and then (Nkind (Parent (N)) /= N_Attribute_Reference
+                   or else Is_Scalar_Type (Etype (E)))
+
         and then (Nkind (Parent (N)) in N_Op
                    or else Nkind (Parent (N)) = N_Explicit_Dereference
                    or else Is_Assignment_Or_Object_Expression

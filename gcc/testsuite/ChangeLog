@@ -1,5 +1,13 @@
 2017-11-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/unreferenced.adb: New testcase.
+
+2017-11-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/out_param.adb: New testcase.
+
+2017-11-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/elab3.adb, gnat.dg/elab3.ads, gnat.dg/elab3_pkg.adb,
 	gnat.dg/elab3_pkg.ads: New testcase.
 
