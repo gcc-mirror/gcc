@@ -28398,8 +28398,8 @@ package body Sem_Prag is
             end if;
          end if;
 
-      --  When the item appears in the private state space of a packge, it must
-      --  be a part of some state declared by the said package.
+      --  When the item appears in the private state space of a package, it
+      --  must be a part of some state declared by the said package.
 
       else pragma Assert (Placement = Private_State_Space);
 
@@ -29290,7 +29290,7 @@ package body Sem_Prag is
       elsif Present (Corresponding_Aspect (Prag)) then
          return Parent (Corresponding_Aspect (Prag));
 
-      --  No candidate packge [body] found
+      --  No candidate package [body] found
 
       else
          return Empty;

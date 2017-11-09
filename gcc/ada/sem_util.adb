@@ -4031,7 +4031,7 @@ package body Sem_Util is
          if SPARK_Mode_Is_Off (Pack) then
             null;
 
-         --  State refinement can only occur in a completing packge body. Do
+         --  State refinement can only occur in a completing package body. Do
          --  not verify proper state refinement when the body is subject to
          --  pragma SPARK_Mode Off because this disables the requirement for
          --  state refinement.

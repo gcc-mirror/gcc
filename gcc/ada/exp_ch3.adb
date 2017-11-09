@@ -2176,7 +2176,7 @@ package body Exp_Ch3 is
             --  Generate
             --    function Fxx (O : in Rec_Typ) return Storage_Offset is
             --    begin
-            --       return O.Iface_Comp'Position;
+            --       return -O.Iface_Comp'Position;
             --    end Fxx;
 
             Body_Node := New_Node (N_Subprogram_Body, Loc);
@@ -2199,15 +2199,16 @@ package body Exp_Ch3 is
                 Statements     => New_List (
                   Make_Simple_Return_Statement (Loc,
                     Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         =>
-                          Make_Selected_Component (Loc,
-                            Prefix        =>
-                              Unchecked_Convert_To (Acc_Type,
-                                Make_Identifier (Loc, Name_uO)),
-                            Selector_Name =>
-                              New_Occurrence_Of (Iface_Comp, Loc)),
-                        Attribute_Name => Name_Position)))));
+                      Make_Op_Minus (Loc,
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            Make_Selected_Component (Loc,
+                              Prefix        =>
+                                Unchecked_Convert_To (Acc_Type,
+                                  Make_Identifier (Loc, Name_uO)),
+                              Selector_Name =>
+                                New_Occurrence_Of (Iface_Comp, Loc)),
+                          Attribute_Name => Name_Position))))));
 
             Set_Ekind       (Func_Id, E_Function);
             Set_Mechanism   (Func_Id, Default_Mechanism);
@@ -8516,13 +8517,14 @@ package body Exp_Ch3 is
 
                   Unchecked_Convert_To
                     (RTE (RE_Storage_Offset),
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         Make_Selected_Component (Loc,
-                           Prefix        => New_Copy_Tree (Target),
-                           Selector_Name =>
-                             New_Occurrence_Of (Tag_Comp, Loc)),
-                       Attribute_Name => Name_Position)),
+                     Make_Op_Minus (Loc,
+                       Make_Attribute_Reference (Loc,
+                         Prefix         =>
+                           Make_Selected_Component (Loc,
+                             Prefix        => New_Copy_Tree (Target),
+                             Selector_Name =>
+                               New_Occurrence_Of (Tag_Comp, Loc)),
+                         Attribute_Name => Name_Position))),
 
                   Unchecked_Convert_To (RTE (RE_Offset_To_Top_Function_Ptr),
                     Make_Attribute_Reference (Loc,
@@ -8545,12 +8547,13 @@ package body Exp_Ch3 is
                       New_Occurrence_Of (Offset_To_Top_Comp, Loc)),
 
                 Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix       =>
-                      Make_Selected_Component (Loc,
-                        Prefix        => New_Copy_Tree (Target),
-                        Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
-                  Attribute_Name => Name_Position)));
+                  Make_Op_Minus (Loc,
+                    Make_Attribute_Reference (Loc,
+                      Prefix       =>
+                        Make_Selected_Component (Loc,
+                          Prefix        => New_Copy_Tree (Target),
+                          Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
+                    Attribute_Name => Name_Position))));
 
          --  Normal case: No discriminants in the parent type
 
@@ -8567,13 +8570,14 @@ package body Exp_Ch3 is
                    Iface_Tag    => New_Occurrence_Of (Iface_Tag, Loc),
                    Offset_Value =>
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           Make_Selected_Component (Loc,
-                             Prefix        => New_Copy_Tree (Target),
-                             Selector_Name =>
-                               New_Occurrence_Of (Tag_Comp, Loc)),
-                         Attribute_Name => Name_Position))));
+                       Make_Op_Minus (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         =>
+                             Make_Selected_Component (Loc,
+                               Prefix        => New_Copy_Tree (Target),
+                               Selector_Name =>
+                                 New_Occurrence_Of (Tag_Comp, Loc)),
+                           Attribute_Name => Name_Position)))));
             end if;
 
             --  Generate:
@@ -8602,13 +8606,14 @@ package body Exp_Ch3 is
                      New_Occurrence_Of (Standard_True, Loc),
 
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           Make_Selected_Component (Loc,
-                             Prefix         => New_Copy_Tree (Target),
-                             Selector_Name  =>
-                               New_Occurrence_Of (Tag_Comp, Loc)),
-                         Attribute_Name => Name_Position)),
+                       Make_Op_Minus (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         =>
+                             Make_Selected_Component (Loc,
+                               Prefix         => New_Copy_Tree (Target),
+                               Selector_Name  =>
+                                 New_Occurrence_Of (Tag_Comp, Loc)),
+                           Attribute_Name => Name_Position))),
 
                      Make_Null (Loc))));
             end if;
@@ -8712,15 +8717,10 @@ package body Exp_Ch3 is
             --  Initialize secondary tags
 
             else
-               Append_To (Init_Tags_List,
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix => New_Copy_Tree (Target),
-                       Selector_Name =>
-                         New_Occurrence_Of (Node (Iface_Comp_Elmt), Loc)),
-                   Expression =>
-                     New_Occurrence_Of (Node (Iface_Tag_Elmt), Loc)));
+               Initialize_Tag (Full_Typ,
+                 Iface     => Node (Iface_Elmt),
+                 Tag_Comp  => Tag_Comp,
+                 Iface_Tag => Node (Iface_Tag_Elmt));
             end if;
 
          --  Otherwise generate code to initialize the tag

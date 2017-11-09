@@ -2448,11 +2448,18 @@ package body Sem_Res is
 
                --  AI05-0139-2: Expression is overloaded because type has
                --  implicit dereference. If type matches context, no implicit
-               --  dereference is involved.
+               --  dereference is involved. If the expression is an entity,
+               --  generate a reference to it, as this is not done for an
+               --  overloaded construct during analysis.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);
                   Set_Is_Overloaded (N, False);
+
+                  if Is_Entity_Name (N) then
+                     Generate_Reference (Entity (N), N);
+                  end if;
+
                   exit Interp_Loop;
 
                elsif Is_Overloaded (N)

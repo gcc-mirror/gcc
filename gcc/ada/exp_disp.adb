@@ -1884,7 +1884,7 @@ package body Exp_Disp is
             --  Generate:
             --     type T is access all <<type of the target formal>>
             --     S : Storage_Offset := Storage_Offset!(Formal)
-            --                            - Offset_To_Top (address!(Formal))
+            --                            + Offset_To_Top (address!(Formal))
 
             Decl_2 :=
               Make_Full_Type_Declaration (Loc,
@@ -1918,7 +1918,7 @@ package body Exp_Disp is
                 Object_Definition   =>
                   New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
                 Expression          =>
-                  Make_Op_Subtract (Loc,
+                  Make_Op_Add (Loc,
                     Left_Opnd  =>
                       Unchecked_Convert_To
                         (RTE (RE_Storage_Offset),
@@ -1942,7 +1942,7 @@ package body Exp_Disp is
 
             --  Generate:
             --     S1 : Storage_Offset := Storage_Offset!(Formal'Address)
-            --                             - Offset_To_Top (Formal'Address)
+            --                             + Offset_To_Top (Formal'Address)
             --     S2 : Addr_Ptr := Addr_Ptr!(S1)
 
             New_Arg :=
@@ -1969,7 +1969,7 @@ package body Exp_Disp is
                 Object_Definition   =>
                   New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
                 Expression          =>
-                  Make_Op_Subtract (Loc,
+                  Make_Op_Add (Loc,
                     Left_Opnd =>
                       Unchecked_Convert_To
                         (RTE (RE_Storage_Offset),
@@ -4234,14 +4234,15 @@ package body Exp_Disp is
 
          else
             Append_To (DT_Aggr_List,
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  Make_Selected_Component (Loc,
-                    Prefix        =>
-                      New_Occurrence_Of (Dummy_Object, Loc),
-                    Selector_Name =>
-                      New_Occurrence_Of (Iface_Comp, Loc)),
-                Attribute_Name => Name_Position));
+              Make_Op_Minus (Loc,
+                Make_Attribute_Reference (Loc,
+                  Prefix         =>
+                    Make_Selected_Component (Loc,
+                      Prefix        =>
+                        New_Occurrence_Of (Dummy_Object, Loc),
+                      Selector_Name =>
+                        New_Occurrence_Of (Iface_Comp, Loc)),
+                  Attribute_Name => Name_Position)));
          end if;
 
          --  Generate the Object Specific Data table required to dispatch calls

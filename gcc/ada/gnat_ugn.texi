@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Oct 20, 2017
+GNAT User's Guide for Native Platforms , Nov 09, 2017
 
 AdaCore
 
@@ -6456,7 +6456,7 @@ package Animals is
 
   type Dog is new Animal and Carnivore and Domestic with record
     Tooth_Count : Natural;
-    Owner       : String (1 .. 30);
+    Owner       : Chars_Ptr;
   end record;
   pragma Import (C_Plus_Plus, Dog);
 

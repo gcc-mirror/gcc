@@ -128,7 +128,7 @@ package body Sem_Elab is
    --  * Declaration level - A type of enclosing level. A scenario or target is
    --    at the declaration level when it appears within the declarations of a
    --    block statement, entry body, subprogram body, or task body, ignoring
-   --    enclosing packges.
+   --    enclosing packages.
    --
    --  * Generic library level - A type of enclosing level. A scenario or
    --    target is at the generic library level if it appears in a generic
