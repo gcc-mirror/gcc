@@ -1,3 +1,10 @@
+2017-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/82837
+	* dwarf2out.c (const_ok_for_output_1): Reject NEG in addition to NOT.
+	(mem_loc_descriptor): Handle (const (neg (...))) as (neg (const (...)))
+	and similarly for not instead of neg.
+
 2017-11-08  Andi Kleen  <ak@linux.intel.com>
 
 	* config/i386/i386.opt: Add -mforce-indirect-call.
