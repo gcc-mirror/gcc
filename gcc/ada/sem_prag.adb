@@ -5817,8 +5817,8 @@ package body Sem_Prag is
 
             procedure Check_Grouping (L : List_Id) is
                HSS  : Node_Id;
-               Prag : Node_Id;
                Stmt : Node_Id;
+               Prag : Node_Id := Empty; -- init to avoid warning
 
             begin
                --  Inspect the list of declarations or statements looking for
@@ -5872,16 +5872,15 @@ package body Sem_Prag is
 
                      else
                         while Present (Stmt) loop
-
                            --  The current pragma is either the first pragma
-                           --  of the group or is a member of the group. Stop
-                           --  the search as the placement is legal.
+                           --  of the group or is a member of the group.
+                           --  Stop the search as the placement is legal.
 
                            if Stmt = N then
                               raise Stop_Search;
 
-                           --  Skip group members, but keep track of the last
-                           --  pragma in the group.
+                           --  Skip group members, but keep track of the
+                           --  last pragma in the group.
 
                            elsif Is_Loop_Pragma (Stmt) then
                               Prag := Stmt;
@@ -11390,6 +11389,7 @@ package body Sem_Prag is
                         SPARK_Msg_N
                           ("expression of external state property must be "
                            & "static", Expr);
+                        return;
                      end if;
 
                   --  The lack of expression defaults the property to True
@@ -16474,6 +16474,20 @@ package body Sem_Prag is
                   return;
                end if;
 
+               --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
+               --  By_Protected_Procedure to the primitive procedure of a task
+               --  interface.
+
+               if Chars (Arg2) = Name_By_Protected_Procedure
+                 and then Is_Interface (Typ)
+                 and then Is_Task_Interface (Typ)
+               then
+                  Error_Pragma_Arg
+                    ("implementation kind By_Protected_Procedure cannot be "
+                     & "applied to a task interface primitive", Arg2);
+                  return;
+               end if;
+
             --  Procedures declared inside a protected type must be accepted
 
             elsif Ekind (Proc_Id) = E_Procedure
@@ -16486,20 +16500,6 @@ package body Sem_Prag is
             else
                Error_Pragma_Arg
                  ("pragma % must be applied to a primitive procedure", Arg1);
-               return;
-            end if;
-
-            --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
-            --  By_Protected_Procedure to the primitive procedure of a task
-            --  interface.
-
-            if Chars (Arg2) = Name_By_Protected_Procedure
-              and then Is_Interface (Typ)
-              and then Is_Task_Interface (Typ)
-            then
-               Error_Pragma_Arg
-                 ("implementation kind By_Protected_Procedure cannot be "
-                  & "applied to a task interface primitive", Arg2);
                return;
             end if;
 
@@ -24253,11 +24253,16 @@ package body Sem_Prag is
                               else
                                  OK := Set_Warning_Switch (Chr);
                               end if;
-                           end if;
 
-                           if not OK then
+                              if not OK then
+                                 Error_Pragma_Arg
+                                   ("invalid warning switch character " & Chr,
+                                    Arg1);
+                              end if;
+
+                           else
                               Error_Pragma_Arg
-                                ("invalid warning switch character " & Chr,
+                                ("invalid wide character in warning switch ",
                                  Arg1);
                            end if;
 

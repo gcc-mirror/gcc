@@ -3144,12 +3144,12 @@ package body Sem_Res is
       Loc    : constant Source_Ptr := Sloc (N);
       A      : Node_Id;
       A_Id   : Entity_Id;
-      A_Typ  : Entity_Id;
+      A_Typ  : Entity_Id := Empty; -- init to avoid warning
       F      : Entity_Id;
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
-      Real_F : Entity_Id;
+      Real_F : Entity_Id := Empty; -- init to avoid warning
 
       Real_Subp : Entity_Id;
       --  If the subprogram being called is an inherited operation for

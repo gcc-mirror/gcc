@@ -10749,6 +10749,8 @@ package body Exp_Ch4 is
 
                      if Present (Stored) then
                         Elmt := First_Elmt (Stored);
+                     else
+                        Elmt := No_Elmt; -- init to avoid warning
                      end if;
 
                      Cons := New_List;

@@ -5390,7 +5390,8 @@ package body Exp_Disp is
              Make_Attribute_Reference (Loc,
                Prefix         => New_Occurrence_Of (HT_Link, Loc),
                Attribute_Name => Name_Address)));
-      else
+
+      elsif RTE_Record_Component_Available (RE_HT_Link) then
          Append_To (TSD_Aggr_List,
            Unchecked_Convert_To (RTE (RE_Tag_Ptr),
              New_Occurrence_Of (RTE (RE_Null_Address), Loc)));

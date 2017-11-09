@@ -631,6 +631,7 @@ package Rtsfind is
      RE_Get_Offset_Index,                -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
      RE_Get_Tagged_Kind,                 -- Ada.Tags
+     RE_HT_Link,                         -- Ada.Tags
      RE_Idepth,                          -- Ada.Tags
      RE_Interfaces_Array,                -- Ada.Tags
      RE_Interfaces_Table,                -- Ada.Tags
@@ -1866,6 +1867,7 @@ package Rtsfind is
      RE_Get_Offset_Index                 => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
      RE_Get_Tagged_Kind                  => Ada_Tags,
+     RE_HT_Link                          => Ada_Tags,
      RE_Idepth                           => Ada_Tags,
      RE_Interfaces_Array                 => Ada_Tags,
      RE_Interfaces_Table                 => Ada_Tags,

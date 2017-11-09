@@ -1075,12 +1075,11 @@ package body Sem_Ch4 is
 
             else
                declare
-                  Outermost : Node_Id;
+                  Outermost : Node_Id := Empty; -- init to avoid warning
                   P         : Node_Id := N;
 
                begin
                   while Present (P) loop
-
                      --  For object declarations we can climb to the node from
                      --  its object definition branch or from its initializing
                      --  expression. We prefer to mark the child node as the
@@ -1095,7 +1094,7 @@ package body Sem_Ch4 is
                         Outermost := P;
                      end if;
 
-                     --  Avoid climbing more than needed!
+                     --  Avoid climbing more than needed
 
                      exit when Stop_Subtree_Climbing (Nkind (P))
                        or else (Nkind (P) = N_Range
@@ -9151,9 +9150,8 @@ package body Sem_Ch4 is
 
          declare
             Dup_Call_Node : constant Node_Id := New_Copy (New_Call_Node);
-            CW_Result     : Boolean;
-            Prim_Result   : Boolean;
-            pragma Unreferenced (CW_Result);
+            Ignore        : Boolean;
+            Prim_Result   : Boolean := False;
 
          begin
             if not CW_Test_Only then
@@ -9168,7 +9166,7 @@ package body Sem_Ch4 is
             --  was found in order to report ambiguous calls.
 
             if not Prim_Result then
-               CW_Result :=
+               Ignore :=
                  Try_Class_Wide_Operation
                    (Call_Node       => New_Call_Node,
                     Node_To_Replace => Node_To_Replace);
@@ -9178,7 +9176,7 @@ package body Sem_Ch4 is
             --  decoration if there is no ambiguity).
 
             else
-               CW_Result :=
+               Ignore :=
                  Try_Class_Wide_Operation
                    (Call_Node       => Dup_Call_Node,
                     Node_To_Replace => Node_To_Replace);
