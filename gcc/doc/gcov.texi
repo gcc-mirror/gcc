@@ -374,7 +374,7 @@ marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
 is reachable via non-exceptional or exceptional paths.
 Executed basic blocks having a statement with zero @var{execution_count}
 end with @samp{*} character and are colored with magenta color with @option{-k}
-option.
+option.  The functionality is not supported in Ada.
 
 Note that GCC can completely remove the bodies of functions that are
 not needed -- for instance if they are inlined everywhere.  Such functions
