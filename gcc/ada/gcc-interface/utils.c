@@ -4660,6 +4660,7 @@ convert (tree type, tree expr)
       return fold (convert_to_real (type, expr));
 
     case RECORD_TYPE:
+      /* Do a normal conversion between scalar and justified modular type.  */
       if (TYPE_JUSTIFIED_MODULAR_P (type) && !AGGREGATE_TYPE_P (etype))
 	{
 	  vec<constructor_elt, va_gc> *v;
@@ -4671,9 +4672,27 @@ convert (tree type, tree expr)
 	  return gnat_build_constructor (type, v);
 	}
 
-      /* ... fall through ... */
+      /* In these cases, assume the front-end has validated the conversion.
+	 If the conversion is valid, it will be a bit-wise conversion, so
+	 it can be viewed as an unchecked conversion.  */
+      return unchecked_convert (type, expr, false);
 
     case ARRAY_TYPE:
+      /* Do a normal conversion between unconstrained and constrained array
+	 type, assuming the latter is a constrained version of the former.  */
+      if (TREE_CODE (expr) == INDIRECT_REF
+	  && ecode == ARRAY_TYPE
+	  && TREE_TYPE (etype) == TREE_TYPE (type))
+	{
+	  tree ptr_type = build_pointer_type (type);
+	  tree t = build_unary_op (INDIRECT_REF, NULL_TREE,
+				   fold_convert (ptr_type,
+						 TREE_OPERAND (expr, 0)));
+	  TREE_READONLY (t) = TREE_READONLY (expr);
+	  TREE_THIS_NOTRAP (t) = TREE_THIS_NOTRAP (expr);
+	  return t;
+	}
+
       /* In these cases, assume the front-end has validated the conversion.
 	 If the conversion is valid, it will be a bit-wise conversion, so
 	 it can be viewed as an unchecked conversion.  */
