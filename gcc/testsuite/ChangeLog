@@ -1,3 +1,16 @@
+2017-11-10  Julia Koval  <julia.koval@intel.com>
+
+	 * gcc.target/i386/avx-1.c: Handle new intrinsics.
+	 * gcc.target/i386/avx512f-gf2p8affineqb-2.c: New runtime tests.
+	 * gcc.target/i386/avx512vl-gf2p8affineqb-2.c: Ditto.
+	 * gcc.target/i386/gfni-1.c: Add tests for GF2P8AFFINE.
+	 * gcc.target/i386/gfni-2.c: Ditto.
+	 * gcc.target/i386/gfni-3.c: Ditto.
+	 * gcc.target/i386/gfni-4.c: Ditto.
+	 * gcc.target/i386/sse-13.c: Handle new tests.
+	 * gcc.target/i386/sse-14.c: Handle new tests.
+	 * gcc.target/i386/sse-23.c: Handle new tests.
+
 2017-11-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/bitfield-4.x: New file.

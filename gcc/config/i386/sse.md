@@ -158,6 +158,7 @@
 
   ;; For GFNI support
   UNSPEC_GF2P8AFFINEINV
+  UNSPEC_GF2P8AFFINE
 ])
 
 (define_c_enum "unspecv" [
@@ -19985,6 +19986,23 @@
    gf2p8affineinvqb\t{%3, %2, %0| %0, %2, %3}
    vgf2p8affineinvqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}
    vgf2p8affineinvqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}"
+  [(set_attr "isa" "noavx,avx,avx512bw")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vgf2p8affineqb_<mode><mask_name>"
+  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
+	(unspec:VI1_AVX512F [(match_operand:VI1_AVX512F 1 "register_operand" "%0,x,v")
+			       (match_operand:VI1_AVX512F 2 "nonimmediate_operand" "xBm,xm,vm")
+			       (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
+			      UNSPEC_GF2P8AFFINE))]
+  "TARGET_GFNI"
+  "@
+   gf2p8affineqb\t{%3, %2, %0| %0, %2, %3}
+   vgf2p8affineqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}
+   vgf2p8affineqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}"
   [(set_attr "isa" "noavx,avx,avx512bw")
    (set_attr "prefix_data16" "1,*,*")
    (set_attr "prefix_extra" "1")
