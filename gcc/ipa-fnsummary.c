@@ -244,7 +244,6 @@ redirect_to_unreachable (struct cgraph_edge *e)
     e->redirect_callee (target);
   struct ipa_call_summary *es = ipa_call_summaries->get (e);
   e->inline_failed = CIF_UNREACHABLE;
-  e->frequency = 0;
   e->count = profile_count::zero ();
   es->call_stmt_size = 0;
   es->call_stmt_time = 0;
@@ -823,7 +822,7 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	       indent, "", callee->name (), callee->order,
 	       !edge->inline_failed
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
-	       indent, "", es->loop_depth, edge->frequency,
+	       indent, "", es->loop_depth, edge->frequency (),
 	       es->call_stmt_size, es->call_stmt_time,
 	       (int) ipa_fn_summaries->get (callee)->size / ipa_fn_summary::size_scale,
 	       (int) ipa_fn_summaries->get (callee)->estimated_stack_size);
@@ -865,7 +864,7 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
 	       " time: %2i",
 	       indent, "",
 	       es->loop_depth,
-	       edge->frequency, es->call_stmt_size, es->call_stmt_time);
+	       edge->frequency (), es->call_stmt_size, es->call_stmt_time);
       if (es->predicate)
 	{
 	  fprintf (f, "predicate: ");
@@ -2579,9 +2578,9 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   if (min_size)
     *min_size += cur_size;
   if (prob == REG_BR_PROB_BASE)
-    *time += ((sreal)(call_time * e->frequency)) / CGRAPH_FREQ_BASE;
+    *time += ((sreal)(call_time * e->frequency ())) / CGRAPH_FREQ_BASE;
   else
-    *time += ((sreal)call_time) * (prob * e->frequency)
+    *time += ((sreal)call_time) * (prob * e->frequency ())
 	      / (CGRAPH_FREQ_BASE * REG_BR_PROB_BASE);
 }
 
@@ -3059,7 +3058,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 				      toplev_predicate);
       if (p != false && nonconstp != false)
 	{
-	  sreal add_time = ((sreal)e->time * edge->frequency) / CGRAPH_FREQ_BASE;
+	  sreal add_time = ((sreal)e->time * edge->frequency ()) / CGRAPH_FREQ_BASE;
 	  int prob = e->nonconst_predicate.probability (callee_info->conds,
 							clause, es->param);
 	  add_time = add_time * prob / REG_BR_PROB_BASE;

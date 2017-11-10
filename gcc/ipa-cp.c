@@ -498,7 +498,7 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
 	  fprintf (f, " [from:");
 	  for (s = val->sources; s; s = s->next)
 	    fprintf (f, " %i(%i)", s->cs->caller->order,
-		     s->cs->frequency);
+		     s->cs->frequency ());
 	  fprintf (f, "]");
 	}
 
@@ -677,9 +677,9 @@ gather_caller_stats (struct cgraph_node *node, void *data)
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (!cs->caller->thunk.thunk_p)
       {
-        if (cs->count.initialized_p ())
-	  stats->count_sum += cs->count;
-	stats->freq_sum += cs->frequency;
+        if (cs->count.ipa ().initialized_p ())
+	  stats->count_sum += cs->count.ipa ();
+	stats->freq_sum += cs->frequency ();
 	stats->n_calls++;
 	if (cs->maybe_hot_p ())
 	  stats->n_hot_calls ++;
@@ -731,7 +731,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
      significantly.  */
   if (max_count > profile_count::zero ())
     {
-      if (stats.count_sum > node->count.apply_scale (90, 100))
+      if (stats.count_sum > node->count.ipa ().apply_scale (90, 100))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Considering %s for cloning; "
@@ -3272,7 +3272,7 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
       }
     if (node->definition && !node->alias)
       overall_size += ipa_fn_summaries->get (node)->self_size;
-    max_count = max_count.max (node->count);
+    max_count = max_count.max (node->count.ipa ());
   }
 
   max_new_size = overall_size;
@@ -3550,9 +3550,9 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 	  if (cgraph_edge_brings_value_p (cs, src, dest))
 	    {
 	      count++;
-	      freq += cs->frequency;
-	      if (cs->count.initialized_p ())
-	        cnt += cs->count;
+	      freq += cs->frequency ();
+	      if (cs->count.ipa ().initialized_p ())
+	        cnt += cs->count.ipa ();
 	      hot |= cs->maybe_hot_p ();
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
@@ -3662,7 +3662,7 @@ update_profiling_info (struct cgraph_node *orig_node,
   profile_count new_sum, orig_sum;
   profile_count remainder, orig_node_count = orig_node->count;
 
-  if (!(orig_node_count > profile_count::zero ()))
+  if (!(orig_node_count.ipa () > profile_count::zero ()))
     return;
 
   init_caller_stats (&stats);
@@ -3701,7 +3701,7 @@ update_profiling_info (struct cgraph_node *orig_node,
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)
     /* FIXME: why we care about non-zero frequency here?  */
-    if (cs->frequency)
+    if (cs->frequency ())
       cs->count = cs->count.apply_scale (new_sum, orig_node_count);
     else
       cs->count = profile_count::zero ();
@@ -3741,7 +3741,7 @@ update_specialized_profile (struct cgraph_node *new_node,
   orig_node->count -= redirected_sum;
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)
-    if (cs->frequency)
+    if (cs->frequency ())
       cs->count += cs->count.apply_scale (redirected_sum, new_node_count);
     else
       cs->count = profile_count::zero ();
@@ -4463,8 +4463,8 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 
 	      cs->redirect_callee_duplicating_thunks (val->spec_node);
 	      val->spec_node->expand_all_artificial_thunks ();
-	      if (cs->count.initialized_p ())
-	        redirected_sum = redirected_sum + cs->count;
+	      if (cs->count.ipa ().initialized_p ())
+	        redirected_sum = redirected_sum + cs->count.ipa ();
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}

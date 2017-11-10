@@ -340,7 +340,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 		  && edge->caller->global.inlined_to->frequency
 		     != NODE_FREQUENCY_UNLIKELY_EXECUTED)))
 	  d->maybe_unlikely_executed = false;
-      if (!edge->frequency)
+      if (!edge->frequency ())
 	continue;
       switch (edge->caller->frequency)
         {
@@ -431,11 +431,11 @@ ipa_propagate_frequency (struct cgraph_node *node)
     }
 
   /* With profile we can decide on hot/normal based on count.  */
-  if (node->count.initialized_p ())
+  if (node->count. ipa().initialized_p ())
     {
       bool hot = false;
-      if (!(node->count == profile_count::zero ())
-	  && node->count >= get_hot_bb_threshold ())
+      if (!(node->count. ipa() == profile_count::zero ())
+	  && node->count. ipa() >= get_hot_bb_threshold ())
 	hot = true;
       if (!hot)
 	hot |= contains_hot_call_p (node);
@@ -667,9 +667,7 @@ ipa_profile (void)
 		      e->make_speculative
 			(n2,
 			 e->count.apply_probability
-				     (e->indirect_info->common_target_probability),
-			 apply_scale (e->frequency,
-				      e->indirect_info->common_target_probability));
+				     (e->indirect_info->common_target_probability));
 		      update = true;
 		    }
 		}

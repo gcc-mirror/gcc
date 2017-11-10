@@ -9225,7 +9225,7 @@ execute_fixup_cfg (void)
   gimple_stmt_iterator gsi;
   int todo = 0;
   cgraph_node *node = cgraph_node::get (current_function_decl);
-  profile_count num = node->count;
+  profile_count num = node->count.ipa ();
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   bool scale = num.initialized_p () && den.ipa_p ()
 	       && (den.nonzero_p () || num == profile_count::zero ())
@@ -9241,7 +9241,15 @@ execute_fixup_cfg (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (scale)
-        bb->count = bb->count.apply_scale (num, den);
+	{
+	  if (num == profile_count::zero ())
+	    {
+	      if (!(bb->count == profile_count::zero ()))
+	        bb->count = bb->count.global0 ();
+	    }
+	  else
+            bb->count = bb->count.apply_scale (num, den);
+	}
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -9331,11 +9339,8 @@ execute_fixup_cfg (void)
 	      if (!cfun->after_inlining)
 		{
 		  gcall *call_stmt = dyn_cast <gcall *> (stmt);
-		  int freq
-		    = compute_call_stmt_bb_frequency (current_function_decl,
-						      bb);
 		  node->create_edge (cgraph_node::get_create (fndecl),
-				     call_stmt, bb->count, freq);
+				     call_stmt, bb->count);
 		}
 	    }
 	}

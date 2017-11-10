@@ -404,17 +404,18 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
   /* FIXME when we merge in unknown profile, we ought to set counts as
      unsafe.  */
-  if (!src->count.initialized_p ())
+  if (!src->count.initialized_p ()
+      || !(src->count.ipa () == src->count))
     return;
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Merging profiles of %s to %s\n",
 	       src->dump_name (), dst->dump_name ());
     }
-  if (dst->count.initialized_p ())
-    dst->count += src->count;
-  else
-    dst->count = src->count;
+  if (dst->count.initialized_p () && dst->count.ipa () == dst->count)
+    dst->count += src->count.ipa ();
+  else 
+    dst->count = src->count.ipa ();
 
   /* This is ugly.  We need to get both function bodies into memory.
      If declaration is merged, we need to duplicate it to be able
@@ -564,18 +565,12 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	{
 	  if (e->speculative)
 	    continue;
-	  e->count = gimple_bb (e->call_stmt)->count.ipa ();
-	  e->frequency = compute_call_stmt_bb_frequency
-			     (dst->decl,
-			      gimple_bb (e->call_stmt));
+	  e->count = gimple_bb (e->call_stmt)->count;
 	}
       for (e = dst->indirect_calls, e2 = src->indirect_calls; e;
 	   e2 = (e2 ? e2->next_callee : NULL), e = e->next_callee)
 	{
 	  profile_count count = gimple_bb (e->call_stmt)->count;
-	  int freq = compute_call_stmt_bb_frequency
-			(dst->decl,
-			 gimple_bb (e->call_stmt));
 	  /* When call is speculative, we need to re-distribute probabilities
 	     the same way as they was.  This is not really correct because
 	     in the other copy the speculation may differ; but probably it
@@ -624,12 +619,6 @@ ipa_merge_profiles (struct cgraph_node *dst,
 			   indirect->count += indirect2->count;
 			}
 		    }
-		  int  prob = direct->count.probability_in (direct->count
-							    + indirect->count).
-			      to_reg_br_prob_base ();
-		  direct->frequency = RDIV (freq * prob, REG_BR_PROB_BASE);
-		  indirect->frequency = RDIV (freq * (REG_BR_PROB_BASE - prob),
-					      REG_BR_PROB_BASE);
 		}
 	      else
 		/* At the moment we should have only profile feedback based
@@ -642,18 +631,11 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	      ipa_ref *ref;
 
 	      e2->speculative_call_info (direct, indirect, ref);
-	      e->count = count.ipa ();
-	      e->frequency = freq;
-	      int prob = direct->count.probability_in (e->count)
-			 .to_reg_br_prob_base ();
-	      e->make_speculative (direct->callee, direct->count,
-				   RDIV (freq * prob, REG_BR_PROB_BASE));
+	      e->count = count;
+	      e->make_speculative (direct->callee, direct->count);
 	    }
 	  else
-	    {
-	      e->count = count.ipa ();
-	      e->frequency = freq;
-	    }
+	    e->count = count;
 	}
       if (!preserve_body)
         src->release_body ();
