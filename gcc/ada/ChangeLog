@@ -1,3 +1,10 @@
+2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert) <RECORD_TYPE>: Add comment and do
+	not fall through to the next case.
+	<ARRAY_TYPE>: Deal specially with a dereference from another array
+	type with the same element type.
+
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
