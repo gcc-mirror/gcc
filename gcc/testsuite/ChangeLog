@@ -1,3 +1,7 @@
+2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt69.adb: New test.
+
 2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/82913
