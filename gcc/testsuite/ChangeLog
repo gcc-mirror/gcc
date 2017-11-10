@@ -1,3 +1,23 @@
+2017-11-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/scanasm.exp (scan-assembler): Extract filename from testname used
+	in summary.
+	(scan-assembler-not): Likewise.
+	(scan-hidden): Likewise.
+	(scan-not-hidden): Likewise.
+	(scan-stack-usage): Likewise.
+	(scan-stack-usage-not): Likewise.
+	(scan-assembler-times): Likewise.
+	(scan-assembler-dem): Likewise.
+	(scan-assembler-dem-not): Likewise.
+	(object-size): Likewise.
+	(scan-lto-assembler): Likewise.
+	* lib/scandump.exp (scan-dump): Likewise.
+	(scan-dump-times): Likewise.
+	(scan-dump-not): Likewise.
+	(scan-dump-dem): Likewise.
+	(scan-dump-dem-not): Likewise
+
 2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt69.adb: New test.
