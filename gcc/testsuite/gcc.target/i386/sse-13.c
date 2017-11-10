@@ -627,5 +627,12 @@
 #define __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v16qi_mask(A, B, 1, D, E) 
 #define __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v32qi_mask(A, B, 1, D, E) 
 #define __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineinvqb_v64qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineqb_v16qi(A, B, C) __builtin_ia32_vgf2p8affineqb_v16qi(A, B, 1) 
+#define __builtin_ia32_vgf2p8affineqb_v32qi(A, B, C) __builtin_ia32_vgf2p8affineqb_v32qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineqb_v64qi(A, B, C) __builtin_ia32_vgf2p8affineqb_v64qi(A, B, 1)
+#define __builtin_ia32_vgf2p8affineqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v16qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, 1, D, E) 
+#define __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, 1, D, E) 
+
 
 #include <x86intrin.h>
