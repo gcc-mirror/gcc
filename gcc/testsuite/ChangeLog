@@ -1,3 +1,73 @@
+2017-11-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/bitfield-4.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-4.c: Remove code and include
+	above file.
+	* gcc.target/arm/cmse/mainline/bitfield-4.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-5.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-5.c: Remove code and include
+	above file.
+	* gcc.target/arm/cmse/mainline/bitfield-5.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-6.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-6.c: Remove code and include
+	above file.
+	* gcc.target/arm/cmse/mainline/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-7.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-7.c: Remove code and include
+	above file.
+	* gcc.target/arm/cmse/mainline/bitfield-7.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-8.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-8.c: Remove code and include
+	above file.
+	* gcc.target/arm/cmse/mainline/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-9.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-9.c: Remove code and include
+	above file.
+	* gcc.target/arm/cmse/mainline/bitfield-9.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-and-union.x: New file.
+	* gcc.target/arm/cmse/baseline/bitfield-and-union-1.c: Rename into ...
+	* gcc.target/arm/cmse/baseline/bitfield-and-union.c: This.  Remove code
+	and include above bitfield-and-union.x file.
+	* gcc.target/arm/cmse/mainline/bitfield-and-union-1.c: Rename into ...
+	* gcc.target/arm/cmse/mainline/bitfield-and-union.c: this.  Remove code
+	and include above bitfield-and-union.x file.
+	* gcc.target/arm/cmse/cmse-13.x: New file.
+	* gcc.target/arm/cmse/baseline/cmse-13.c: Remove code and include above
+	file.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/cmse-5.x: New file.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-5.c: Remove code and
+	include above file.
+	* gcc.target/arm/cmse/mainline/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/cmse-7.x: New file.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: Remove code and
+	include above file.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/cmse-8.x: New file.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: Remove code and
+	include above file.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/union-1.x: New file.
+	* gcc.target/arm/cmse/baseline/union-1.c: Remove code and include above
+	file.
+	* gcc.target/arm/cmse/mainline/union-1.c: Likewise.
+	* gcc.target/arm/cmse/union-2.x: New file.
+	* gcc.target/arm/cmse/baseline/union-2.c: Remove code and include above
+	file.
+	* gcc.target/arm/cmse/mainline/union-2.c: Likewise.
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
