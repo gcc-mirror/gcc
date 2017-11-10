@@ -1,3 +1,14 @@
+2017-11-10  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/82702
+	* gcov.c (main): Handle intermediate files in a different
+	way.
+	(get_gcov_intermediate_filename): New function.
+	(output_gcov_file): Remove support of intermediate files.
+	(generate_results): Allocate intermediate file.
+	(release_structures): Clean-up properly fn_end.
+	(output_intermediate_file): Start iterating with line 1.
+
 2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82929
