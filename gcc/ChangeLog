@@ -1,3 +1,8 @@
+2017-11-10  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-predcom.c (determine_roots_comp): Avoid memory leak by freeing
+	reference of trivial component.
+
 2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/82916
