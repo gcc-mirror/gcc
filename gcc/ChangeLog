@@ -15,7 +15,7 @@
 	(vrp_operand_equal_p, range_includes_zero_p): Likewise.
 	(infer_value_range, register_edge_assert_for): Likewise.
 	(stmt_interesting_for_vrp): Likewise.
-	* tree-vrp.c: Move all methods for evrp class into tree-evrp.c.
+	* tree-vrp.c: Move all methods for evrp class into gimple-ssa-evrp.c.
 	(set_value_range_to_varying): No longer static.
 	(vrp_operand_equal_p, range_includes_zero_p): Likewise.
 	(infer_value_range, register_edge_assert_for): Likewise.
