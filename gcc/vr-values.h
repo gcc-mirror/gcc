@@ -116,4 +116,6 @@ class vr_values
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
 };
 
+#define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
+
 #endif /* GCC_VR_VALUES_H */
