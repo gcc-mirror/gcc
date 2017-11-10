@@ -1,5 +1,10 @@
 2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/82916
+	* gimple-ssa-store-merging.c
+	(pass_store_merging::terminate_all_aliasing_chains): For
+	gimple_store_p stmts also call refs_output_dependent_p.
+
 	PR rtl-optimization/82913
 	* compare-elim.c (try_merge_compare): Punt if def_insn is not
 	single set.
