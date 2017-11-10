@@ -1,3 +1,8 @@
+2017-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82934
+	* gfortran.dg/allocate_assumed_charlen_1.f90: New test.
+
 2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/82916
