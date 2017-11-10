@@ -1331,7 +1331,14 @@ determine_roots_comp (struct loop *loop,
 
   /* Trivial component.  */
   if (comp->refs.length () <= 1)
-    return;
+    {
+      if (comp->refs.length () == 1)
+	{
+	  free (comp->refs[0]);
+	  comp->refs.truncate (0);
+	}
+      return;
+    }
 
   comp->refs.qsort (order_drefs);
   FOR_EACH_VEC_ELT (comp->refs, i, a)
