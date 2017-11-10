@@ -1,3 +1,13 @@
+2017-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm.c
+	(arm_option_override): Refactor.
+	(arm_option_reconfigure_globals): New.
+	(arm_options_perform_arch_sanity_checks): New.
+	* config/arm/arm-protos.h (arm_option_reconfigure_globals): New prototype.
+	(arm_options_perform_arch_sanity_checks): Likewise
+
 2017-11-10  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* rs6000/power9.md (power9-qpdiv): Correct DFU pipe usage.
