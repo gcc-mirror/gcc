@@ -60,4 +60,28 @@ extern void extract_range_from_unary_expr (value_range *vr,
 					   value_range *vr0_,
 					   tree op0_type);
 
+extern bool vrp_operand_equal_p (const_tree, const_tree);
+
+struct assert_info
+{
+  /* Predicate code for the ASSERT_EXPR.  Must be COMPARISON_CLASS_P.  */
+  enum tree_code comp_code;
+
+  /* Name to register the assert for.  */
+  tree name;
+
+  /* Value being compared against.  */
+  tree val;
+
+  /* Expression to compare.  */
+  tree expr;
+};
+
+extern void register_edge_assert_for (tree, edge, enum tree_code,
+				      tree, tree, vec<assert_info> &);
+extern bool stmt_interesting_for_vrp (gimple *);
+extern void set_value_range_to_varying (value_range *);
+extern int range_includes_zero_p (tree, tree);
+extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
+
 #endif /* GCC_TREE_VRP_H */
