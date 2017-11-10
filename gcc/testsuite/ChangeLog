@@ -1,3 +1,9 @@
+2017-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82929
+	* gcc.dg/pr82929.c: New test.
+	* g++.dg/opt/pr82929.C: New test.
+
 2017-11-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_arm_soft_ok):
