@@ -1,3 +1,13 @@
+2017-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82929
+	* gimple-ssa-store-merging.c (struct store_immediate_info): Add
+	ops_swapped_p non-static data member.
+	(store_immediate_info::store_immediate_info): Clear it.
+	(imm_store_chain_info::coalesce_immediate_stores): If swapping
+	ops set ops_swapped_p.
+	(count_multiple_uses): Handle ops_swapped_p.
+
 2017-11-10  Martin Liska  <mliska@suse.cz>
 
 	* coverage.c (coverage_init): Stream information about

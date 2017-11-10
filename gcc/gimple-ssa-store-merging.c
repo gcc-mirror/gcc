@@ -209,7 +209,11 @@ struct store_immediate_info
   /* INTEGER_CST for constant stores, MEM_REF for memory copy or
      BIT_*_EXPR for logical bitwise operation.  */
   enum tree_code rhs_code;
+  /* True if BIT_{AND,IOR,XOR}_EXPR result is inverted before storing.  */
   bool bit_not_p;
+  /* True if ops have been swapped and thus ops[1] represents
+     rhs1 of BIT_{AND,IOR,XOR}_EXPR and ops[0] represents rhs2.  */
+  bool ops_swapped_p;
   /* Operands.  For BIT_*_EXPR rhs_code both operands are used, otherwise
      just the first one.  */
   store_operand_info ops[2];
@@ -231,7 +235,8 @@ store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
 					    const store_operand_info &op0r,
 					    const store_operand_info &op1r)
   : bitsize (bs), bitpos (bp), bitregion_start (brs), bitregion_end (bre),
-    stmt (st), order (ord), rhs_code (rhscode), bit_not_p (bitnotp)
+    stmt (st), order (ord), rhs_code (rhscode), bit_not_p (bitnotp),
+    ops_swapped_p (false)
 #if __cplusplus >= 201103L
     , ops { op0r, op1r }
 {
@@ -1189,7 +1194,10 @@ imm_store_chain_info::coalesce_immediate_stores ()
 		  == info->bitpos - infof->bitpos)
 	      && operand_equal_p (info->ops[1].base_addr,
 				  infof->ops[0].base_addr, 0))
-	    std::swap (info->ops[0], info->ops[1]);
+	    {
+	      std::swap (info->ops[0], info->ops[1]);
+	      info->ops_swapped_p = true;
+	    }
 	  if ((!infof->ops[0].base_addr
 	       || compatible_load_p (merged_store, info, base_addr, 0))
 	      && (!infof->ops[1].base_addr
@@ -1413,18 +1421,21 @@ count_multiple_uses (store_immediate_info *info)
       stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
       /* stmt is now the BIT_*_EXPR.  */
       if (!has_single_use (gimple_assign_rhs1 (stmt)))
-	ret += 1 + info->ops[0].bit_not_p;
-      else if (info->ops[0].bit_not_p)
+	ret += 1 + info->ops[info->ops_swapped_p].bit_not_p;
+      else if (info->ops[info->ops_swapped_p].bit_not_p)
 	{
 	  gimple *stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
 	  if (!has_single_use (gimple_assign_rhs1 (stmt2)))
 	    ++ret;
 	}
       if (info->ops[1].base_addr == NULL_TREE)
-	return ret;
+	{
+	  gcc_checking_assert (!info->ops_swapped_p);
+	  return ret;
+	}
       if (!has_single_use (gimple_assign_rhs2 (stmt)))
-	ret += 1 + info->ops[1].bit_not_p;
-      else if (info->ops[1].bit_not_p)
+	ret += 1 + info->ops[1 - info->ops_swapped_p].bit_not_p;
+      else if (info->ops[1 - info->ops_swapped_p].bit_not_p)
 	{
 	  gimple *stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
 	  if (!has_single_use (gimple_assign_rhs1 (stmt2)))
