@@ -1,3 +1,12 @@
+2017-11-10  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* rs6000/power9.md (power9-qpdiv): Correct DFU pipe usage.
+	(power9-qpmul): New.
+	* rs6000/rs6000.md ("type" attr): Add qmul.
+	(mul<mode>3, fma<mode>4_hw, *fms<mode>4_hw, *nfma<mode>4_hw,
+	*nfms<mode>4_hw, mul<mode>3_odd, fma<mode>4_odd, *fms<mode>4_odd,
+	*nfma<mode>4_odd, *nfms<mode>4_odd): Change type to qmul.
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
