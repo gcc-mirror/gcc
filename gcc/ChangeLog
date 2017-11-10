@@ -1,3 +1,17 @@
+2017-11-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (bswaphi2_reg): On ISA 3.0 systems,
+	enable generating XXBRH if the value is in a vector register.
+	(bswapsi2_reg): On ISA 3.0 systems, enable generating XXBRW if the
+	value is in a vector register.
+	(bswapdi2_reg): On ISA 3.0 systems, always use XXBRD to do
+	register to register bswap64's instead of doing the GPR sequence
+	used on previous machines.
+	(bswapdi2_xxbrd): New insn.
+	(bswapdi2_reg): Disallow on ISA 3.0.
+	(register to register bswap64 splitter): Do not split the insn on
+	ISA 3.0 systems that use XXBRD.
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
