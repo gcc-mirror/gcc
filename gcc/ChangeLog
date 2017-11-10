@@ -1,3 +1,10 @@
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* config/darwin-c.c (framework_construct_pathname): Replace strncpy
+	with memcpy.
+	(find_subframework_file): Same.
+
 2017-11-10  Jeff Law  <law@redhat.com>
 
 	* vr-values.h (VR_INITIALIZER): Move #define here.
