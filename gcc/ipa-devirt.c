@@ -3566,7 +3566,7 @@ ipa_devirt (void)
 	    bool final;
 
 	    if (final_warning_records)
-	      final_warning_records->dyn_count = e->count;
+	      final_warning_records->dyn_count = e->count.ipa ();
 
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
@@ -3727,8 +3727,7 @@ ipa_devirt (void)
 		nconverted++;
 		update = true;
 		e->make_speculative
-		  (likely_target, e->count.apply_scale (8, 10),
-		   e->frequency * 8 / 10);
+		  (likely_target, e->count.apply_scale (8, 10));
 	      }
 	  }
       if (update)

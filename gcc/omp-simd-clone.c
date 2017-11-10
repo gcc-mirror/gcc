@@ -1389,10 +1389,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	      (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)), seq);
 
 	    entry_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-	    int freq = compute_call_stmt_bb_frequency (current_function_decl,
-						       entry_bb);
 	    node->create_edge (cgraph_node::get_create (fn),
-			       call, entry_bb->count, freq);
+			       call, entry_bb->count);
 
 	    imm_use_iterator iter;
 	    use_operand_p use_p;

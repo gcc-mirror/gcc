@@ -620,7 +620,7 @@ cgraph_node::analyze (void)
     {
       cgraph_node *t = cgraph_node::get (thunk.alias);
 
-      create_edge (t, NULL, t->count, CGRAPH_FREQ_BASE);
+      create_edge (t, NULL, t->count);
       callees->can_throw_external = !TREE_NOTHROW (t->decl);
       /* Target code in expand_thunk may need the thunk's target
 	 to be analyzed, so recurse here.  */
@@ -1950,7 +1950,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      resbnd = chkp_insert_retbnd_call (NULL, restmp, &bsi);
 	      create_edge (get_create (gimple_call_fndecl (gsi_stmt (bsi))),
 			   as_a <gcall *> (gsi_stmt (bsi)),
-			   callees->count, callees->frequency);
+			   callees->count);
 	    }
 
 	  if (restmp && !this_adjusting
@@ -2759,7 +2759,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
 
   memset (&thunk, 0, sizeof (cgraph_thunk_info));
   thunk.thunk_p = true;
-  create_edge (target, NULL, count, CGRAPH_FREQ_BASE);
+  create_edge (target, NULL, count);
   callees->can_throw_external = !TREE_NOTHROW (target->decl);
 
   tree arguments = DECL_ARGUMENTS (decl);

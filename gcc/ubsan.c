@@ -675,12 +675,10 @@ ubsan_create_edge (gimple *stmt)
 {
   gcall *call_stmt = dyn_cast <gcall *> (stmt);
   basic_block bb = gimple_bb (stmt);
-  int freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
   cgraph_node *node = cgraph_node::get (current_function_decl);
   tree decl = gimple_call_fndecl (call_stmt);
   if (decl)
-    node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count,
-		       freq);
+    node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count);
 }
 
 /* Expand the UBSAN_BOUNDS special builtin function.  */

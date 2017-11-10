@@ -5065,9 +5065,7 @@ ipa_tm_insert_irr_call (struct cgraph_node *node, struct tm_region *region,
 
   node->create_edge (cgraph_node::get_create
 		       (builtin_decl_explicit (BUILT_IN_TM_IRREVOCABLE)),
-		     g, gimple_bb (g)->count,
-		     compute_call_stmt_bb_frequency (node->decl,
-						     gimple_bb (g)));
+		     g, gimple_bb (g)->count);
 }
 
 /* Construct a call to TM_GETTMCLONE and insert it before GSI.  */
@@ -5116,9 +5114,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
-  node->create_edge (cgraph_node::get_create (gettm_fn), g, gimple_bb (g)->count,
-		     compute_call_stmt_bb_frequency (node->decl,
-						     gimple_bb (g)));
+  node->create_edge (cgraph_node::get_create (gettm_fn), g, gimple_bb (g)->count);
 
   /* Cast return value from tm_gettmclone* into appropriate function
      pointer.  */

@@ -3222,11 +3222,10 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
   pop_cfun ();
 
   struct cgraph_edge *e;
-  for (e = node->callees; e; e = e->next_caller)
-    {
-      e->frequency = compute_call_stmt_bb_frequency (e->caller->decl,
-						     gimple_bb (e->call_stmt));
-    }
+  for (e = node->callees; e; e = e->next_callee)
+    e->count = gimple_bb (e->call_stmt)->count;
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    e->count = gimple_bb (e->call_stmt)->count;
   
   profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);

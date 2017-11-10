@@ -1,3 +1,87 @@
+2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.c (afdo_indirect_call): Drop frequency.
+	* cgraph.c (symbol_table::create_edge): Drop frequency argument.
+	(cgraph_node::create_edge): Drop frequency argument.
+	(cgraph_node::create_indirect_edge): Drop frequency argument.
+	(cgraph_edge::make_speculative): Drop frequency arguments.
+	(cgraph_edge::resolve_speculation): Do not update frequencies
+	(cgraph_edge::dump_edge_flags): Do not dump frequency.
+	(cgraph_node::dump): Check consistency in IPA mode.
+	(cgraph_edge::maybe_hot_p): Use IPA counter.
+	(cgraph_edge::verify_count_and_frequency): Rename to ...
+	(cgraph_edge::verify_count): ... this one; drop frequency checking.
+	(cgraph_node::verify_node): Update.
+	* cgraph.h (struct cgraph_edge): Drop frequency.
+	(cgraph_edge::frequency): New function.
+	* cgraphbuild.c (pass_build_cgraph_edges::execute): Donot pass
+	frequencies.
+	(cgraph_edge::rebuild_edges): Likewise.
+	* cgraphclones.c (cgraph_edge::clone): Scale only counts.
+	(duplicate_thunk_for_node): Do not pass frequency.
+	(cgraph_node::create_clone): Scale only counts.
+	(cgraph_node::create_virtual_clone): Do not pass frequency.
+	(cgraph_node::create_edge_including_clones): Do not pass frequency.
+	(cgraph_node::create_version_clone): Do not pass frequency.
+	* cgraphunit.c (cgraph_node::analyze): Do not pass frequency.
+	(cgraph_node::expand_thunk): Do not pass frequency.
+	(cgraph_node::create_wrapper): Do not pass frequency.
+	* gimple-iterator.c (update_call_edge_frequencies): Do not pass
+	frequency.
+	* gimple-streamer-in.c (input_bb): Scale only IPA counts.
+	* ipa-chkp.c (chkp_produce_thunks): Do not pass frequency.
+	* ipa-cp.c (ipcp_lattice::print): Use frequency function.
+	(gather_caller_stats): Use frequency function.
+	(ipcp_cloning_candidate_p): Use frequency function.
+	(ipcp_propagate_stage): Use frequency function.
+	(get_info_about_necessary_edges): Use frequency function.
+	(update_profiling_info): Update only IPA profile.
+	(update_specialized_profile): Use frequency functoin.
+	(perhaps_add_new_callers): Update only IPA profile.
+	* ipa-devirt.c (ipa_devirt): Use IPA profile.
+	* ipa-fnsummary.c (redirect_to_unreachable): Do not set frequrency.
+	(dump_ipa_call_summary): Use frequency function.
+	(estimate_edge_size_and_time): Use frequency function.
+	(ipa_merge_fn_summary_after_inlining): Use frequency function.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Use IPA profile.
+	* ipa-inline-transform.c (update_noncloned_frequencies): Rename to ..
+	(update_noncloned_counts): ... ths one; scale counts only.
+	(clone_inlined_nodes): Do not scale frequency.
+	(inline_call): Do not pass frequency.
+	* ipa-inline.c (compute_uninlined_call_time): Use IPA profile.
+	(compute_inlined_call_time): Use IPA profile.
+	(want_inline_small_function_p): Use IPA profile.
+	(want_inline_self_recursive_call_p): Use IPA profile.
+	(edge_badness): Use IPA profile.
+	(lookup_recursive_calls): Use IPA profile.
+	(recursive_inlining): Do not pass frequency.
+	(resolve_noninline_speculation): Do not update frequency.
+	(inline_small_functions): Collect max of IPA profile.
+	(dump_overall_stats): Dump IPA porfile.
+	(dump_inline_stats): Dump IPA porfile.
+	(ipa_inline): Collect IPA stats.
+	* ipa-inline.h (clone_inlined_nodes): Update prototype.
+	* ipa-profile.c (ipa_propagate_frequency_1): Use frequency function.
+	(ipa_propagate_frequency): Use frequency function.
+	(ipa_profile): Cleanup.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Do not pass frequency
+	* ipa-utils.c (ipa_merge_profiles): Merge all profiles.
+	* lto-cgraph.c (lto_output_edge): Do not stream frequency.
+	(input_node): Do not stream frequency.
+	(input_edge): Do not stream frequency.
+	(merge_profile_summaries): Scale only IPA profiles.
+	* omp-simd-clone.c (simd_clone_adjust): Do not pass frequency.
+	* predict.c (drop_profile): Do not recompute frequency.
+	* trans-mem.c (ipa_tm_insert_irr_call): Do not pass frequency.
+	(ipa_tm_insert_gettmclone_call): Do not pass frequency.
+	* tree-cfg.c (execute_fixup_cfg): Drop profile to global0 if needed.
+	* tree-chkp.c (chkp_copy_bounds_for_assign): Do not pass frequency.
+	* tree-emutls.c (gen_emutls_addr): Do not pass frequency.
+	* tree-inline.c (copy_bb): Do not scale frequency.
+	(expand_call_inline): Do not scale frequency.
+	(tree_function_versioning): Do not scale frequency.
+	* ubsan.c (ubsan_create_edge): Do not pass frequency.
+
 2017-11-10  Julia Koval  <julia.koval@intel.com>
 
 	 * config/i386/gfniintrin.h (_mm_gf2p8affine_epi64_epi8,

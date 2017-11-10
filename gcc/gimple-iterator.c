@@ -83,7 +83,6 @@ static void
 update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 {
   struct cgraph_node *cfun_node = NULL;
-  int bb_freq = 0;
   gimple_seq_node n;
 
   for (n = first; n ; n = n->next)
@@ -94,15 +93,11 @@ update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 	/* These function calls are expensive enough that we want
 	   to avoid calling them if we never see any calls.  */
 	if (cfun_node == NULL)
-	  {
-	    cfun_node = cgraph_node::get (current_function_decl);
-	    bb_freq = (compute_call_stmt_bb_frequency
-		       (current_function_decl, bb));
-	  }
+	  cfun_node = cgraph_node::get (current_function_decl);
 
 	e = cfun_node->get_edge (n);
 	if (e != NULL)
-	  e->frequency = bb_freq;
+	  e->count = bb->count;
       }
 }
 

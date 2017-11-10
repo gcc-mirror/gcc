@@ -1061,7 +1061,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   /* FIXME: Count should be initialized.  */
   struct cgraph_edge *new_edge
       = indirect_edge->make_speculative (direct_call,
-					 profile_count::uninitialized (), 0);
+					 profile_count::uninitialized ());
   new_edge->redirect_call_stmt_to_callee ();
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);

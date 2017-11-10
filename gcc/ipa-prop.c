@@ -2982,7 +2982,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 	}
       /* make_speculative will update ie's cost to direct call cost. */
       ie = ie->make_speculative
-	     (callee, ie->count.apply_scale (8, 10), ie->frequency * 8 / 10);
+	     (callee, ie->count.apply_scale (8, 10));
     }
 
   return ie;
