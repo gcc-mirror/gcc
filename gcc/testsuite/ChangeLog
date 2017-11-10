@@ -1,3 +1,10 @@
+2017-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/82916
+	* gcc.dg/store_merging_2.c: Only expect 2 successful mergings instead
+	of 3.
+	* gcc.dg/pr82916.c: New test.
+
 2017-11-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/scanasm.exp (scan-assembler): Extract filename from testname used

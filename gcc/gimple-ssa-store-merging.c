@@ -947,6 +947,7 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
   if (!gimple_vuse (stmt))
     return false;
 
+  tree store_lhs = gimple_store_p (stmt) ? gimple_get_lhs (stmt) : NULL_TREE;
   for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
     {
       next = cur->next;
@@ -960,8 +961,10 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
       unsigned int i;
       FOR_EACH_VEC_ELT (cur->m_store_info, i, info)
 	{
-	  if (ref_maybe_used_by_stmt_p (stmt, gimple_assign_lhs (info->stmt))
-	      || stmt_may_clobber_ref_p (stmt, gimple_assign_lhs (info->stmt)))
+	  tree lhs = gimple_assign_lhs (info->stmt);
+	  if (ref_maybe_used_by_stmt_p (stmt, lhs)
+	      || stmt_may_clobber_ref_p (stmt, lhs)
+	      || (store_lhs && refs_output_dependent_p (store_lhs, lhs)))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
