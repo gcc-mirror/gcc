@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mforce-indirect-call" } */
-/* { dg-final { scan-assembler-times "call\[ \\t\]+\\*%" 2 } } */
-/* { dg-final { scan-assembler-times "jmp\[ \\t\]+\\*%" 1 } } */
+/* { dg-final { scan-assembler-times "(?:call|jmp)\[ \\t\]+\\*%" 3 } } */
+
 int x;
 int y;
 
