@@ -5,13 +5,7 @@
 /* { dg-skip-if "Do not combine float-abi= hard | soft | softfp" {*-*-*} {"-mfloat-abi=soft" -mfloat-abi=softfp } {""} } */
 /* { dg-skip-if "Skip these if testing single precision" {*-*-*} {"-mfpu=*-sp-*"} {""} } */
 
-int __attribute__ ((cmse_nonsecure_call)) (*bar) (double);
-
-int
-foo (int a)
-{
-  return bar (2.0) + a + 1;
-}
+#include "../../cmse-8.x"
 
 /* Checks for saving and clearing prior to function call.  */
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */

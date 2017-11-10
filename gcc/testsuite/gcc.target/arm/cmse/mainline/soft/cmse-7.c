@@ -4,13 +4,7 @@
 /* { dg-add-options arm_arch_v8m_main } */
 /* { dg-skip-if "Do not combine float-abi= hard | soft | softfp" {*-*-*} {"-mfloat-abi=hard" -mfloat-abi=softfp } {""} } */
 
-int __attribute__ ((cmse_nonsecure_call)) (*bar) (void);
-
-int
-foo (int a)
-{
-  return bar () + a + 1;
-}
+#include "../../cmse-7.x"
 
 /* Checks for saving and clearing prior to function call.  */
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */
