@@ -1,3 +1,8 @@
+2017-11-10  Stephen Crane <sjc@immunant.com>
+
+	* plugin-api.h: Add plugin API for processing plugin-added
+	input files.
+
 2017-10-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* unique-ptr.h: Make include of <memory> conditional on C++11 or
