@@ -1,3 +1,9 @@
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* ada/adadecode.c (__gnat_decode): Use memcpy instead of strncpy.
+	* ada/argv.c (__gnat_fill_arg, __gnat_fill_env): Same.
+
 2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert) <RECORD_TYPE>: Add comment and do

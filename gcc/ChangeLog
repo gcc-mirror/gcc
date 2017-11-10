@@ -1,3 +1,26 @@
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* builtins.c (compute_objsize): Handle arrays that
+	compute_builtin_object_size likes to fail for.  Make extern.
+	* builtins.h (compute_objsize): Declare.
+	(check_strncpy_sizes): New function.
+	(expand_builtin_strncpy): Call check_strncpy_sizes.
+	* gimple-fold.c (gimple_fold_builtin_strncpy): Implement
+	-Wstringop-truncation.
+	(gimple_fold_builtin_strncat): Same.
+	* gimple.c (gimple_build_call_from_tree): Set call location.
+	* tree-ssa-strlen.c (strlen_to_stridx): New global variable.
+	(maybe_diag_bound_equal_length, is_strlen_related_p): New functions.
+	(handle_builtin_stxncpy, handle_builtin_strncat): Same.
+	(handle_builtin_strlen): Use strlen_to_stridx.
+	(strlen_optimize_stmt): Handle flavors of strncat, strncpy, and
+	stpncpy.
+	Use strlen_to_stridx.
+	(pass_strlen::execute): Release strlen_to_stridx.
+	* doc/invoke.texi (-Wsizeof-pointer-memaccess): Document enhancement.
+	(-Wstringop-truncation): Document new option.
+
 2017-11-10  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/82702
