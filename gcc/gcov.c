@@ -784,11 +784,13 @@ main (int argc, char **argv)
 	printf ("Processing file %d out of %d\n", argno - first_arg + 1,
 		argc - first_arg);
       process_file (argv[argno]);
+
+      if (flag_intermediate_format || argno == argc - 1)
+	{
+	  generate_results (argv[argno]);
+	  release_structures ();
+	}
     }
-
-  generate_results (multiple_files ? NULL : argv[argc - 1]);
-
-  release_structures ();
 
   return 0;
 }
@@ -991,6 +993,31 @@ output_intermediate_line (FILE *f, line_info *line, unsigned line_num)
       }
 }
 
+/* Get the name of the gcov file.  The return value must be free'd.
+
+   It appends the '.gcov' extension to the *basename* of the file.
+   The resulting file name will be in PWD.
+
+   e.g.,
+   input: foo.da,       output: foo.da.gcov
+   input: a/b/foo.cc,   output: foo.cc.gcov  */
+
+static char *
+get_gcov_intermediate_filename (const char *file_name)
+{
+  const char *gcov = ".gcov";
+  char *result;
+  const char *cptr;
+
+  /* Find the 'basename'.  */
+  cptr = lbasename (file_name);
+
+  result = XNEWVEC (char, strlen (cptr) + strlen (gcov) + 1);
+  sprintf (result, "%s%s", cptr, gcov);
+
+  return result;
+}
+
 /* Output the result in intermediate format used by 'lcov'.
 
 The intermediate format contains a single file named 'foo.cc.gcov',
@@ -1017,7 +1044,7 @@ output_intermediate_file (FILE *gcov_file, source_info *src)
 	       flag_demangled_names ? (*it)->demangled_name : (*it)->name);
     }
 
-  for (unsigned line_num = 0; line_num <= src->lines.size (); line_num++)
+  for (unsigned line_num = 1; line_num <= src->lines.size (); line_num++)
     {
       vector<function_t *> fns = src->get_functions_at_location (line_num);
 
@@ -1200,19 +1227,16 @@ output_gcov_file (const char *file_name, source_info *src)
     {
       FILE *gcov_file = fopen (gcov_file_name, "w");
       if (gcov_file)
-        {
-          fnotice (stdout, "Creating '%s'\n", gcov_file_name);
-
-	  if (flag_intermediate_format)
-	    output_intermediate_file (gcov_file, src);
-	  else
-	    output_lines (gcov_file, src);
-          if (ferror (gcov_file))
-            fnotice (stderr, "Error writing output file '%s'\n", gcov_file_name);
-          fclose (gcov_file);
-        }
+	{
+	  fnotice (stdout, "Creating '%s'\n", gcov_file_name);
+	  output_lines (gcov_file, src);
+	  if (ferror (gcov_file))
+	    fnotice (stderr, "Error writing output file '%s'\n",
+		     gcov_file_name);
+	  fclose (gcov_file);
+	}
       else
-        fnotice (stderr, "Could not open output file '%s'\n", gcov_file_name);
+	fnotice (stderr, "Could not open output file '%s'\n", gcov_file_name);
     }
   else
     {
@@ -1226,6 +1250,8 @@ static void
 generate_results (const char *file_name)
 {
   function_t *fn;
+  FILE *gcov_intermediate_file = NULL;
+  char *gcov_intermediate_filename = NULL;
 
   for (fn = functions; fn; fn = fn->next)
     {
@@ -1256,6 +1282,19 @@ generate_results (const char *file_name)
 	file_name = canonicalize_name (file_name);
     }
 
+  if (flag_gcov_file && flag_intermediate_format)
+    {
+      /* Open the intermediate file.  */
+      gcov_intermediate_filename = get_gcov_intermediate_filename (file_name);
+      gcov_intermediate_file = fopen (gcov_intermediate_filename, "w");
+      if (!gcov_intermediate_file)
+	{
+	  fnotice (stderr, "Cannot open intermediate output file %s\n",
+		   gcov_intermediate_filename);
+	  return;
+	}
+    }
+
   for (vector<source_info>::iterator it = sources.begin ();
        it != sources.end (); it++)
     {
@@ -1280,9 +1319,21 @@ generate_results (const char *file_name)
       total_executed += src->coverage.lines_executed;
       if (flag_gcov_file)
 	{
-	  output_gcov_file (file_name, src);
-          fnotice (stdout, "\n");
-        }
+	  if (flag_intermediate_format)
+	    /* Output the intermediate format without requiring source
+	       files.  This outputs a section to a *single* file.  */
+	    output_intermediate_file (gcov_intermediate_file, src);
+	  else
+	    output_gcov_file (file_name, src);
+	  fnotice (stdout, "\n");
+	}
+    }
+
+  if (flag_gcov_file && flag_intermediate_format)
+    {
+      /* Now we've finished writing the intermediate file.  */
+      fclose (gcov_intermediate_file);
+      XDELETEVEC (gcov_intermediate_filename);
     }
 
   if (!file_name)
@@ -1296,11 +1347,16 @@ release_structures (void)
 {
   function_t *fn;
 
+  sources.resize (0);
+  names.resize (0);
+
   while ((fn = functions))
     {
       functions = fn->next;
       delete fn;
     }
+
+  fn_end = &functions;
 }
 
 /* Generate the names of the graph and data files.  If OBJECT_DIRECTORY
