@@ -1,3 +1,10 @@
+2017-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82934
+	* trans-stmt.c (gfc_trans_allocate): Remove the gcc_assert on
+	null string length for assumed length typespec and set
+	expr3_esize to NULL_TREE;
+
 2017-11-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78619

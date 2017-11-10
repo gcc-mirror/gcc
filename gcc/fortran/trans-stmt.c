@@ -5913,10 +5913,9 @@ gfc_trans_allocate (gfc_code * code)
       if (code->ext.alloc.ts.type != BT_CHARACTER)
 	expr3_esize = TYPE_SIZE_UNIT (
 	      gfc_typenode_for_spec (&code->ext.alloc.ts));
-      else
+      else if (code->ext.alloc.ts.u.cl->length != NULL)
 	{
 	  gfc_expr *sz;
-	  gcc_assert (code->ext.alloc.ts.u.cl->length != NULL);
 	  sz = gfc_copy_expr (code->ext.alloc.ts.u.cl->length);
 	  gfc_init_se (&se_sz, NULL);
 	  gfc_conv_expr (&se_sz, sz);
@@ -5930,6 +5929,8 @@ gfc_trans_allocate (gfc_code * code)
 					 tmp, se_sz.expr);
 	  expr3_esize = gfc_evaluate_now (expr3_esize, &block);
 	}
+      else
+	expr3_esize = NULL_TREE;
     }
 
   /* The routine gfc_trans_assignment () already implements all
