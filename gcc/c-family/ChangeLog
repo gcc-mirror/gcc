@@ -1,3 +1,10 @@
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-common.c (catenate_strings): Use memcpy instead of strncpy.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Handle arrays.
+	* c.opt (-Wstringop-truncation): New option.
+
 2017-11-06  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/82404

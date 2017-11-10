@@ -1,3 +1,8 @@
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* objc-encoding.c (encode_type): Use memcpy instead of strncpy.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* objc-gnu-runtime-abi-01.c (objc_gnu_runtime_abi_01_init): Use

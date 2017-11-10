@@ -1,3 +1,17 @@
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-c++-common/Wsizeof-pointer-memaccess3.c: New test.
+	* c-c++-common/Wstringop-overflow.c: Same.
+	* c-c++-common/Wstringop-truncation.c: Same.
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Adjust.
+	* c-c++-common/attr-nonstring-2.c: New test.
+	* gcc/testsuite/gcc.dg/builtin-stpncpy.c: Adjust.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Same.
+	* gcc.dg/torture/pr63554.c: Same.
+	* gcc.dg/Walloca-1.c: Disable macro tracking.
+
 2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82929

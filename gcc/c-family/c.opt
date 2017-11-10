@@ -744,6 +744,10 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Ini
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
 
+Wstringop-truncation
+C ObjC C++ ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ ObjC++, Wall)
+Warn about truncation in string manipulation functions like strncat and strncpy.
+
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes.
