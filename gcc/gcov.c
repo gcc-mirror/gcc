@@ -424,6 +424,9 @@ static char *bbg_file_name;
 /* Stamp of the bbg file */
 static unsigned bbg_stamp;
 
+/* Supports has_unexecuted_blocks functionality.  */
+static unsigned bbg_supports_has_unexecuted_blocks;
+
 /* Name and file pointer of the input file for the count data (gcda).  */
 
 static char *da_file_name;
@@ -1492,6 +1495,7 @@ read_graph_file (void)
 	       bbg_file_name, v, e);
     }
   bbg_stamp = gcov_read_unsigned ();
+  bbg_supports_has_unexecuted_blocks = gcov_read_unsigned ();
 
   while ((tag = gcov_read_unsigned ()))
     {
@@ -2732,7 +2736,8 @@ output_line_beginning (FILE *f, bool exists, bool unexceptional,
       if (count > 0)
 	{
 	  s = format_gcov (count, 0, -1);
-	  if (has_unexecuted_block)
+	  if (has_unexecuted_block
+	      && bbg_supports_has_unexecuted_blocks)
 	    {
 	      if (flag_use_colors)
 		{

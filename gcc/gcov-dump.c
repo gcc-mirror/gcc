@@ -217,6 +217,11 @@ dump_gcov_file (const char *filename)
     printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
   }
 
+  /* Support for unexecuted basic blocks.  */
+  unsigned support_unexecuted_blocks = gcov_read_unsigned ();
+  if (!support_unexecuted_blocks)
+    printf ("%s: has_unexecuted_block is not supported\n", filename);
+
   while (1)
     {
       gcov_position_t base, position = gcov_position ();

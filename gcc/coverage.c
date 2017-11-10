@@ -1269,6 +1269,9 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	  gcov_write_unsigned (GCOV_VERSION);
 	  gcov_write_unsigned (bbg_file_stamp);
+
+	  /* Do not support has_unexecuted_blocks for Ada.  */
+	  gcov_write_unsigned (strcmp (lang_hooks.name, "GNU Ada") != 0);
 	}
     }
 
