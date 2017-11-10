@@ -3414,6 +3414,19 @@ proc check_effective_target_arm_vect_no_misalign { } {
 }
 
 
+# Return 1 if this is an ARM target supporting -mfloat-abi=soft.  Some
+# multilibs may be incompatible with this option.
+
+proc check_effective_target_arm_soft_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_soft_ok executable {
+	    int main() { return 0;}
+	} "-mfloat-abi=soft"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=vfp
 # -mfloat-abi=softfp.  Some multilibs may be incompatible with these
 # options.

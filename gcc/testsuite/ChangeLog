@@ -1,3 +1,10 @@
+2017-11-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_arm_soft_ok):
+	New function.
+	* gcc.target/arm/copysign_softfloat_1.c: Require arm_soft_ok
+	effective target.
+
 2017-11-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82934
