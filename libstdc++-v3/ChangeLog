@@ -1,3 +1,9 @@
+2017-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82917
+	* include/std/fstream (basic_ifstream::open, basic_ofstream::open)
+	(basic_fstream::open): Fix missing return.
+
 2017-11-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/ops-common.h (make_file_type) [S_ISSOCK]: Only use

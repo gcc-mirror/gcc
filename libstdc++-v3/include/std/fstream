@@ -663,7 +663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Path>
 	auto
 	open(const _Path& __s, ios_base::openmode __mode = ios_base::in)
-	-> decltype(_M_filebuf.open(__s, __mode))
+	-> decltype((void)_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
@@ -891,7 +891,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Path>
 	auto
 	open(const _Path& __s, ios_base::openmode __mode = ios_base::out)
-	-> decltype(_M_filebuf.open(__s, __mode))
+	-> decltype((void)_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
@@ -1118,7 +1118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto
 	open(const _Path& __s,
 	     ios_base::openmode __mode = ios_base::in | ios_base::out)
-	-> decltype(_M_filebuf.open(__s, __mode))
+	-> decltype((void)_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
