@@ -1,5 +1,6 @@
 // PR c++/79176
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target lto }
 // { dg-options "-flto -Os" }
 
 struct A {};

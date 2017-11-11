@@ -1,3 +1,33 @@
+2017-11-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+        * c-c++-common/Wunused-var-16.c: Add -fno-common additional option on
+	hppa*-*-hpux*
+        * c-c++-common/builtin-shuffle-1.c: Likewise.
+
+	2017-02-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/pr79296.C: Move dg-do compile directive first.
+
+	2017-02-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/complit15.C: Require LTO.
+
+	2017-01-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/opt/declone3.C: Require LTO.
+
+	2017-03-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr79732.c: Require alias support.
+
+	2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/coarray_43.f90: Add "-latomic" option if
+	libatomic_available.
+
 2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt69.adb: New test.
