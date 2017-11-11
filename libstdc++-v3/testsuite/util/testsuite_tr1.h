@@ -162,7 +162,7 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
   struct ThrowMoveConsClass
   {
-    ThrowMoveConsClass(ThrowMoveConsClass&&) THROW(int);
+    ThrowMoveConsClass(ThrowMoveConsClass&&) noexcept(false);
   };
 
   struct NoexceptExplicitClass
