@@ -1,3 +1,8 @@
+2017-11-10  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/82886
+	* gfortran.dg/init_flag_16.f03: New testcase.
+
 2017-11-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-xxbr-3.c: New test.
