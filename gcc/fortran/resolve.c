@@ -5834,7 +5834,9 @@ update_compcall_arglist (gfc_expr* e)
       return true;
     }
 
-  gcc_assert (tbp->pass_arg_num > 0);
+  if (tbp->pass_arg_num <= 0)
+    return false;
+
   e->value.compcall.actual = update_arglist_pass (e->value.compcall.actual, po,
 						  tbp->pass_arg_num,
 						  tbp->pass_arg);
