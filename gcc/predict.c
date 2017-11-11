@@ -137,12 +137,12 @@ maybe_hot_frequency_p (struct function *fun, int freq)
   if (profile_status_for_fn (fun) == PROFILE_ABSENT)
     return true;
   if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && freq < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.to_frequency (cfun) * 2 / 3))
+      && freq < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.to_frequency (fun) * 2 / 3))
     return false;
   if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0)
     return false;
   if (freq * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)
-      < ENTRY_BLOCK_PTR_FOR_FN (fun)->count.to_frequency (cfun))
+      < ENTRY_BLOCK_PTR_FOR_FN (fun)->count.to_frequency (fun))
     return false;
   return true;
 }
