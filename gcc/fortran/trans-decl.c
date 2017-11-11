@@ -3363,7 +3363,7 @@ gfc_build_intrinsic_function_decls (void)
 	    jtype = gfc_get_int_type (ikinds[jkind]);
 	    if (itype && jtype)
 	      {
-		sprintf(name, PREFIX("pow_i%d_i%d"), ikinds[ikind],
+		sprintf (name, PREFIX("pow_i%d_i%d"), ikinds[ikind],
 			ikinds[jkind]);
 		gfor_fndecl_math_powi[jkind][ikind].integer =
 		  gfc_build_library_function_decl (get_identifier (name),
@@ -3378,7 +3378,7 @@ gfc_build_intrinsic_function_decls (void)
 	    rtype = gfc_get_real_type (rkinds[rkind]);
 	    if (rtype && itype)
 	      {
-		sprintf(name, PREFIX("pow_r%d_i%d"), rkinds[rkind],
+		sprintf (name, PREFIX("pow_r%d_i%d"), rkinds[rkind],
 			ikinds[ikind]);
 		gfor_fndecl_math_powi[rkind][ikind].real =
 		  gfc_build_library_function_decl (get_identifier (name),
@@ -3390,7 +3390,7 @@ gfc_build_intrinsic_function_decls (void)
 	    ctype = gfc_get_complex_type (rkinds[rkind]);
 	    if (ctype && itype)
 	      {
-		sprintf(name, PREFIX("pow_c%d_i%d"), rkinds[rkind],
+		sprintf (name, PREFIX("pow_c%d_i%d"), rkinds[rkind],
 			ikinds[ikind]);
 		gfor_fndecl_math_powi[rkind][ikind].cmplx =
 		  gfc_build_library_function_decl (get_identifier (name),
