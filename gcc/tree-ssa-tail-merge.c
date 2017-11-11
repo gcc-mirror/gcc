@@ -1556,52 +1556,33 @@ replace_block_by (basic_block bb1, basic_block bb2)
 		   pred_edge, UNKNOWN_LOCATION);
     }
 
-  bb2->count += bb1->count;
 
-  /* FIXME: Fix merging of probabilities.  They need to be redistributed
-     according to the relative counts of merged BBs.  */
-#if 0
   /* Merge the outgoing edge counts from bb1 onto bb2.  */
-  profile_count out_sum = profile_count::zero ();
-  int out_freq_sum = 0;
   edge e1, e2;
+  edge_iterator ei;
 
-  /* Recompute the edge probabilities from the new merged edge count.
-     Use the sum of the new merged edge counts computed above instead
-     of bb2's merged count, in case there are profile count insanities
-     making the bb count inconsistent with the edge weights.  */
-  FOR_EACH_EDGE (e1, ei, bb1->succs)
-    {
-      if (e1->count ().initialized_p ())
-	out_sum += e1->count ();
-      out_freq_sum += EDGE_FREQUENCY (e1);
-    }
-  FOR_EACH_EDGE (e1, ei, bb2->succs)
-    {
-      if (e1->count ().initialized_p ())
-	out_sum += e1->count ();
-      out_freq_sum += EDGE_FREQUENCY (e1);
-    }
-  FOR_EACH_EDGE (e1, ei, bb1->succs)
-    {
-      e2 = find_edge (bb2, e1->dest);
-      gcc_assert (e2);
-      if (out_sum > 0 && e2->count ().initialized_p ())
-	{
-	  e2->probability = e2->count ().probability_in (bb2->count);
-	}
-      else if (bb1->count.to_frequency (cfun) && bb2->count.to_frequency (cfun))
-	e2->probability = e1->probability;
-      else if (bb2->count.to_frequency (cfun) && !bb1->count.to_frequency (cfun))
-	;
-      else if (out_freq_sum)
-	e2->probability = profile_probability::from_reg_br_prob_base
-		(GCOV_COMPUTE_SCALE (EDGE_FREQUENCY (e1)
-				     + EDGE_FREQUENCY (e2),
-				     out_freq_sum));
-      out_sum += e2->count ();
-    }
-#endif
+  if (bb2->count.initialized_p ())
+    FOR_EACH_EDGE (e1, ei, bb1->succs)
+      {
+        e2 = find_edge (bb2, e1->dest);
+        gcc_assert (e2);
+
+	/* If probabilities are same, we are done.
+	   If counts are nonzero we can distribute accordingly. In remaining
+	   cases just avreage the values and hope for the best.  */
+	if (e1->probability == e2->probability)
+	  ;
+	else if (bb1->count.nonzero_p () || bb2->count.nonzero_p ())
+	  e2->probability
+	     = e2->probability
+		 * bb2->count.probability_in (bb1->count + bb2->count)
+	       + e1->probability
+		 * bb1->count.probability_in (bb1->count + bb2->count);
+	else
+	  e2->probability = e2->probability * profile_probability::even ()
+			    + e1->probability * profile_probability::even ();
+      }
+  bb2->count += bb1->count;
 
   /* Move over any user labels from bb1 after the bb2 labels.  */
   gimple_stmt_iterator gsi1 = gsi_start_bb (bb1);
