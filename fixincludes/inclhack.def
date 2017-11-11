@@ -2251,16 +2251,34 @@ fix = {
 };
 
 /*
- *  Fix C99 constant in __POINTER_SET define.
+ *  The definitions for PTHREAD_MUTEX_INITIALIZER and similar initializers
+ *  in pthread.h need to be constant expressions to be standard complient.
+ *  As a result, we need to remove the void * casts in the initializers
+ *  (see hpux11_pthread_const) and to change the __(M|C|RW)POINTER defines
+ *  to use the long type.
+ */
+fix = {
+    hackname  = hpux11_pthread_pointer;
+    mach      = "*-hp-hpux11.[0-3]*";
+    files     = sys/pthread.h;
+    select    = "(void[ \t]*\\*)(m|c|rw)(_ptr)";
+
+    c_fix     = format;
+    c_fix_arg = "long\t%2%3";
+    test_text = "#define __MPOINTER\t\tvoid\t *m_ptr";
+};
+
+/*
+ *  Remove void pointer cast and fix C99 constant in __POINTER_SET defines.
  */
 fix = {
     hackname  = hpux11_pthread_const;
     mach      = "*-hp-hpux11.[0-3]*";
     files     = sys/pthread.h;
-    select    = "^#define[ \t]*__POINTER_SET[ \t]*\\(\\(void \\*\\) 1LL\\)";
+    select    = "^(#define[ \t]+__POINTER_SET[ \t0,]*)(.*\\))";
 
     c_fix     = format;
-    c_fix_arg = "#define __POINTER_SET\t\t((void *) 1L)";
+    c_fix_arg = "%11";
     test_text = "#define __POINTER_SET\t\t((void *) 1LL)";
 };
 

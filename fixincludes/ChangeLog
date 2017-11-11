@@ -1,3 +1,14 @@
+2017-11-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2017-02-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/68739
+	* inclhack.def (hpux11_pthread_pointer): New fix.
+	(hpux11_pthread_const): Adjust to remove void * cast from define.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/pthread.h [HPUX11_PTHREAD_CONST_CHECK]: Update tests.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
