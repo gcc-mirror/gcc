@@ -1,5 +1,9 @@
 2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Do not compute freq_sum.
+
+2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c (maybe_hot_frequency_p): Do not use cfun.
 
 2017-11-10  Jan Hubicka  <hubicka@ucw.cz>

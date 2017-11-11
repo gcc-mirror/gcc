@@ -1781,7 +1781,6 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   struct prev_flag_edges *prev_edges = (struct prev_flag_edges *) ex->aux;
   bool irr = ex->flags & EDGE_IRREDUCIBLE_LOOP;
 
-  int freq_sum = 0;
   profile_count count_sum = profile_count::zero ();
   int nbbs = 0, ncount = 0;
   profile_probability flag_probability = profile_probability::uninitialized ();
@@ -1803,7 +1802,6 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   for (hash_set<basic_block>::iterator it = flag_bbs->begin ();
        it != flag_bbs->end (); ++it)
     {
-       freq_sum += (*it)->count.to_frequency (cfun);
        if ((*it)->count.initialized_p ())
          count_sum += (*it)->count, ncount ++;
        if (dominated_by_p (CDI_DOMINATORS, ex->src, *it))
