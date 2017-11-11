@@ -1,3 +1,13 @@
+2017-11-10  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/82886
+	* gfortran.h (gfc_build_init_expr): New prototype.
+	* invoke.texi (finit-derived): Update documentation.
+	* expr.c (gfc_build_init_expr): New, from gfc_build_default_init_expr.
+	(gfc_build_default_init_expr): Redirect to gfc_build_init_expr(,,false)
+	(component_initializer): Force building initializers using
+	gfc_build_init_expr(,,true).
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
