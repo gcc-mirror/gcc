@@ -1,3 +1,9 @@
+2017-11-11  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/82948
+	* prefic.c (translate_name): Replace strncpy with memcpy to
+	avoid -Wstringop-truncation.
+
 2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-im.c (execute_sm_if_changed): Do not compute freq_sum.
