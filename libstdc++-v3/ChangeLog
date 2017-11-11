@@ -1,5 +1,7 @@
 2017-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/util/testsuite_tr1.h (ThrowMoveConsClass): Use noexcept.
+
 	PR libstdc++/82917
 	* include/std/fstream (basic_ifstream::open, basic_ofstream::open)
 	(basic_fstream::open): Fix missing return.
