@@ -1,5 +1,9 @@
 2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (maybe_hot_frequency_p): Do not use cfun.
+
+2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-tail-merge.c (replace_block_by): Fix and re-enable profile
 	merging.
 
