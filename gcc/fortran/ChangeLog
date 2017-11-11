@@ -1,3 +1,9 @@
+2017-11-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82932
+	* resolve.c (update_compcall_arglist): Improve error recovery,
+	remove a gcc_assert.
+
 2017-11-10  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/82886
