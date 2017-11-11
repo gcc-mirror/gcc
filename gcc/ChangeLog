@@ -1,5 +1,8 @@
 2017-11-11  Martin Sebor  <msebor@redhat.com>
 
+	PR c/81117
+	* doc/extend.texi (attribute nonstring): Remove spurious argument.
+
 	PR bootstrap/82948
 	* prefic.c (translate_name): Replace strncpy with memcpy to
 	avoid -Wstringop-truncation.

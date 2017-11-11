@@ -5969,7 +5969,7 @@ The @code{deprecated} attribute can also be used for functions and
 types (@pxref{Common Function Attributes},
 @pxref{Common Type Attributes}).
 
-@item nonstring (@var{nonstring})
+@item nonstring
 @cindex @code{nonstring} variable attribute
 The @code{nonstring} variable attribute specifies that an object or member
 declaration with type array of @code{char} or pointer to @code{char} is
