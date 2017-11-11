@@ -107,4 +107,9 @@
 #undef y
 #endif
 
+#ifdef __hpux__
+#undef d
+#undef r
+#endif
+
 #include <bits/stdc++.h>
