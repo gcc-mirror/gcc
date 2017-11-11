@@ -4975,7 +4975,7 @@ gfc_ref_this_image (gfc_ref *ref)
 }
 
 gfc_expr *
-gfc_find_team_co(gfc_expr *e)
+gfc_find_team_co (gfc_expr *e)
 {
   gfc_ref *ref;
 
@@ -4993,7 +4993,7 @@ gfc_find_team_co(gfc_expr *e)
 }
 
 gfc_expr *
-gfc_find_stat_co(gfc_expr *e)
+gfc_find_stat_co (gfc_expr *e)
 {
   gfc_ref *ref;
 
