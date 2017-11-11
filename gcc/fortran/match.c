@@ -3401,11 +3401,6 @@ gfc_match_change_team (void)
   
   new_st.op = EXEC_CHANGE_TEAM;
 
-  /* if (gfc_match ("%e", &teamid) != MATCH_YES) */
-  /*   goto syntax; */
-  /* m = gfc_match_char (','); */
-  /* if (m == MATCH_ERROR) */
-  /*   goto syntax; */
   if (gfc_match ("%e", &team) != MATCH_YES)
     goto syntax;
 
