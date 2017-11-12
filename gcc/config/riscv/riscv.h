@@ -585,12 +585,15 @@ typedef struct {
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
-  if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)				\
-    asm_fprintf ((FILE), "%U%s",					\
-		 XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));	\
-  else									\
-    asm_fprintf ((FILE), "%U%s", (NAME))
+#define ASM_OUTPUT_LABELREF(FILE,NAME)					\
+  do {									\
+    if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)			\
+      asm_fprintf ((FILE), "%U%s",					\
+		   XSTR (XEXP (DECL_RTL (current_function_decl),	\
+			       0), 0));					\
+    else								\
+      asm_fprintf ((FILE), "%U%s", (NAME));				\
+  } while (0)
 
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #define CASE_VECTOR_MODE SImode
