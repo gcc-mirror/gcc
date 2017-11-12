@@ -170,7 +170,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   do {							\
     fputs (user_label_prefix, (FILE));			\
     fputs ((NAME), (FILE));				\
-  } while (0);
+  } while (0)
 #endif
 
 /* Allow target to print debug info labels specially.  This is useful for

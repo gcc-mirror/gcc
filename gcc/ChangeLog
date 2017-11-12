@@ -1,3 +1,11 @@
+2017-11-12  Tom de Vries  <tom@codesourcery.com>
+
+	* config/cr16/cr16.h (ASM_OUTPUT_LABELREF): Remove semicolon after macro
+	body.
+	* config/powerpcspe/xcoff.h (ASM_OUTPUT_LABELREF): Same.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_LABELREF): Same.
+	* defaults.h (ASM_OUTPUT_LABELREF): Same.
+
 2017-11-11  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
