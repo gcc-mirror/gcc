@@ -444,7 +444,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef  ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)			\
-  default_elf_asm_output_ascii ((FILE), (STR), (LENGTH));
+  default_elf_asm_output_ascii ((FILE), (STR), (LENGTH))
 
 /* Allow the use of the -frecord-gcc-switches switch via the
    elf_record_gcc_switches function defined in varasm.c.  */

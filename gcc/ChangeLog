@@ -1,5 +1,9 @@
 2017-11-12  Tom de Vries  <tom@codesourcery.com>
 
+	* config/elfos.h (ASM_OUTPUT_ASCII): Remove semicolon after macro body.
+
+2017-11-12  Tom de Vries  <tom@codesourcery.com>
+
 	* config/cr16/cr16.h (ASM_OUTPUT_LABELREF): Remove semicolon after macro
 	body.
 	* config/powerpcspe/xcoff.h (ASM_OUTPUT_LABELREF): Same.
