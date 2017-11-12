@@ -479,7 +479,7 @@ struct cumulative_args
 
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME) \
-  asm_fprintf (STREAM, "%U%s", (*targetm.strip_name_encoding) (NAME));
+  asm_fprintf (STREAM, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
 #define ASM_OUTPUT_SYMBOL_REF(STREAM, SYMBOL)   \
   do                                            \
