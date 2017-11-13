@@ -525,10 +525,9 @@ compile_file (void)
       /* Do dbx symbols.  */
       timevar_push (TV_SYMOUT);
 
-    #if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
-      if (dwarf2out_do_frame ())
-	dwarf2out_frame_finish ();
-    #endif
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
+      dwarf2out_frame_finish ();
+#endif
 
       (*debug_hooks->finish) (main_input_filename);
       timevar_pop (TV_SYMOUT);

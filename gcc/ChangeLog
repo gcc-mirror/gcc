@@ -1,3 +1,19 @@
+2017-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/81351
+	* debug.h (dwarf2out_do_eh_frame): Declare.
+	* dwarf2cfi.c (dwarf2out_do_eh_frame): New predicate.
+	(dwarf2out_do_frame): Use it.
+	(dwarf2out_do_cfi_asm): Likewise.
+	* dwarf2out.c (dwarf2out_frame_finish): Likewise.
+	(dwarf2out_assembly_start): Likewise.
+	(dwarf2out_begin_prologue): Fix comment.
+	* toplev.c (compile_file): Always call dwarf2out_frame_finish
+	if the target needs either debug or unwind DWARF2 info.
+	* lto-opts.c (lto_write_options): Do not save -fexceptions,
+	-fnon-call-exceptions, -ffp-contract, -fmath-errno, -fsigned-zeros,
+	-ftrapping-math, -ftrapv and -fwrapv.
+
 2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_edge::sreal_frequency): New function.
