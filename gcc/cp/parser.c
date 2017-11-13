@@ -11931,7 +11931,8 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 	{
 	  iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
 				  iter_type);
-	  iter_decl = build_x_indirect_ref (input_location, iter_decl, RO_NULL,
+	  iter_decl = build_x_indirect_ref (input_location, iter_decl,
+					    RO_UNARY_STAR,
 					    tf_warning_or_error);
 	  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
 						iter_decl, auto_node);
@@ -12048,7 +12049,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 
   /* The declaration is initialized with *__begin inside the loop body.  */
   cp_finish_decl (range_decl,
-		  build_x_indirect_ref (input_location, begin, RO_NULL,
+		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
 					tf_warning_or_error),
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING);
@@ -20843,7 +20844,7 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
   /* Clear this first to avoid shortcut in cp_build_indirect_ref.  */
   current_class_ptr = NULL_TREE;
   current_class_ref
-    = cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
+    = cp_build_fold_indirect_ref (this_parm);
   current_class_ptr = this_parm;
 }
 

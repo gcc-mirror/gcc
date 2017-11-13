@@ -298,8 +298,7 @@ cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 
       /* Compute the location of the vtpr.  */
       tree vtbl_ptr
-	= build_vfield_ref (cp_build_indirect_ref (base_ptr, RO_NULL,
-						   tf_warning_or_error),
+	= build_vfield_ref (cp_build_fold_indirect_ref (base_ptr),
 			    TREE_TYPE (binfo));
       gcc_assert (vtbl_ptr != error_mark_node);
 

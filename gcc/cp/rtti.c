@@ -206,8 +206,7 @@ build_headof (tree exp)
   index = build_int_cst (NULL_TREE,
 			 -2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
 
-  offset = build_vtbl_ref (cp_build_indirect_ref (exp, RO_NULL, 
-                                                  tf_warning_or_error), 
+  offset = build_vtbl_ref (cp_build_fold_indirect_ref (exp),
                            index);
 
   type = cp_build_qualified_type (ptr_type_node,
@@ -303,7 +302,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
     /* Otherwise return the type_info for the static type of the expr.  */
     t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
 
-  return cp_build_indirect_ref (t, RO_NULL, complain);
+  return cp_build_fold_indirect_ref (t);
 }
 
 static bool
@@ -365,7 +364,7 @@ build_typeid (tree exp, tsubst_flags_t complain)
       exp = cp_build_addr_expr (exp, complain);
       exp = save_expr (exp);
       cond = cp_convert (boolean_type_node, exp, complain);
-      exp = cp_build_indirect_ref (exp, RO_NULL, complain);
+      exp = cp_build_fold_indirect_ref (exp);
     }
 
   exp = get_tinfo_decl_dynamic (exp, complain);
@@ -529,7 +528,7 @@ get_typeid (tree type, tsubst_flags_t complain)
   if (!type)
     return error_mark_node;
 
-  return cp_build_indirect_ref (get_tinfo_ptr (type), RO_NULL, complain);
+  return cp_build_fold_indirect_ref (get_tinfo_ptr (type));
 }
 
 /* Check whether TEST is null before returning RESULT.  If TEST is used in

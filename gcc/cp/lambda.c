@@ -557,8 +557,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	{
 	  gcc_assert (POINTER_TYPE_P (type));
 	  type = TREE_TYPE (type);
-	  initializer = cp_build_indirect_ref (initializer, RO_NULL,
-					       tf_warning_or_error);
+	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
 
       if (dependent_type_p (type))
@@ -862,8 +861,7 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
   if (tree lam = resolvable_dummy_lambda (object))
     if (tree cap = lambda_expr_this_capture (lam, add_capture_p))
       if (cap != error_mark_node)
-	object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
-				       RO_NULL, tf_warning_or_error);
+	object = build_fold_indirect_ref (cap);
 
   return object;
 }
@@ -1154,8 +1152,7 @@ maybe_add_lambda_conv_op (tree type)
 	 return expression for a deduced return call op to allow for simple
 	 implementation of the conversion operator.  */
 
-      tree instance = cp_build_indirect_ref (thisarg, RO_NULL,
-					     tf_warning_or_error);
+      tree instance = cp_build_fold_indirect_ref (thisarg);
       tree objfn = build_min (COMPONENT_REF, NULL_TREE,
 			      instance, DECL_NAME (callop), NULL_TREE);
       int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
