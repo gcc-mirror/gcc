@@ -154,9 +154,6 @@ get_bool_state (irange& r, const irange& lhs, const_tree val_type)
       return BRS_EMPTY;
     }
 
-  // there are multiple types of boolean nodes.  for instance
-  // gcc_assert (lhs.valid_p () && lhs.get_type () == boolean_type_node);
-
   // if the bounds arent the same, then its not a constant.  */
   if (!wi::eq_p (lhs.upper_bound (), lhs.lower_bound ()))
     {
@@ -810,7 +807,7 @@ op_ri (opm_mode mode, irange& r, const irange& lh, const wide_int& rh)
 	    }
 	  break;
 	default:
-	  gcc_unreachable ();
+	  return false;
 	}
       add_to_range (r, new_lb, ov_lb, new_ub, ov_ub);
     }
@@ -1138,10 +1135,12 @@ operator_cast::fold_range (irange& r, const irange& lh, const irange& rh) const
       /* Handle conversion so they become the same type.  */
       r = lh;
       r.cast (rh.get_type ());
+      r.intersect (rh);
     }
-  /* If they are the same type, the result should be the intersection of
-     the two ranges.  */
-  r = irange_intersect (lh, rh);
+  else
+    /* If they are the same type, the result should be the intersection of
+       the two ranges.  */
+    r = irange_intersect (lh, rh);
   return true;
 }
 
