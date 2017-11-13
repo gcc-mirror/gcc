@@ -601,6 +601,8 @@ public:
 
  */
 
+class sreal;
+
 class GTY(()) profile_count
 {
   /* Use 62bit to hold basic block counters.  Should be at least
@@ -1034,6 +1036,7 @@ public:
 
   int to_frequency (struct function *fun) const;
   int to_cgraph_frequency (profile_count entry_bb_count) const;
+  sreal to_sreal_scale (profile_count in, bool *known = NULL) const;
 
   /* Output THIS to F.  */
   void dump (FILE *f) const;

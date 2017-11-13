@@ -129,8 +129,8 @@ static int overall_size;
 static profile_count max_count;
 static profile_count spec_rem;
 
-/* Pre-computed constants 1/CGRAPH_FREQ_BASE and 1/100. */
-static sreal cgraph_freq_base_rec, percent_rec;
+/* Pre-computed constant 1/100. */
+static sreal percent_rec;
 
 /* Return false when inlining edge E would lead to violating
    limits on function unit growth or stack usage growth.  
@@ -644,8 +644,9 @@ compute_uninlined_call_time (struct cgraph_edge *edge,
       && caller->count.ipa ().nonzero_p ())
     uninlined_call_time *= (sreal)edge->count.ipa ().to_gcov_type ()
 			   / caller->count.ipa ().to_gcov_type ();
-  if (edge->frequency ())
-    uninlined_call_time *= cgraph_freq_base_rec * edge->frequency ();
+  sreal freq = edge->sreal_frequency ();
+  if (freq != 0)
+    uninlined_call_time *= freq;
   else
     uninlined_call_time = uninlined_call_time >> 11;
 
@@ -668,8 +669,9 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   if (edge->count.ipa ().nonzero_p ()
       && caller->count.ipa ().nonzero_p ())
     time *= (sreal)edge->count.to_gcov_type () / caller->count.to_gcov_type ();
-  if (edge->frequency ())
-    time *= cgraph_freq_base_rec * edge->frequency ();
+  sreal freq = edge->sreal_frequency ();
+  if (freq != 0)
+    time *= freq;
   else
     time = time >> 11;
 
@@ -2390,7 +2392,6 @@ ipa_inline (void)
   int cold;
   bool remove_functions = false;
 
-  cgraph_freq_base_rec = (sreal) 1 / (sreal) CGRAPH_FREQ_BASE;
   percent_rec = (sreal) 1 / (sreal) 100;
 
   order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
