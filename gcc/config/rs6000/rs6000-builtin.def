@@ -1079,6 +1079,7 @@ BU_ALTIVEC_2 (VSUM4SBS,	      "vsum4sbs",	CONST,	altivec_vsum4sbs)
 BU_ALTIVEC_2 (VSUM4SHS,	      "vsum4shs",	CONST,	altivec_vsum4shs)
 BU_ALTIVEC_2 (VSUM2SWS,	      "vsum2sws",	CONST,	altivec_vsum2sws)
 BU_ALTIVEC_2 (VSUMSWS,	      "vsumsws",	CONST,	altivec_vsumsws)
+BU_ALTIVEC_2 (VSUMSWS_BE,     "vsumsws_be",	CONST,	altivec_vsumsws_direct)
 BU_ALTIVEC_2 (VXOR,	      "vxor",		CONST,	xorv4si3)
 BU_ALTIVEC_2 (COPYSIGN_V4SF,  "copysignfp",	CONST,	vector_copysignv4sf3)
 

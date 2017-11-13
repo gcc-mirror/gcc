@@ -1,3 +1,7 @@
+2017-11-13 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtin-vec-sums-be-int.c: New test file.
+
 2017-11-13  Tom Tromey  <tom@tromey.com>
 
 	* c-c++-common/cpp/va-opt-pedantic.c: New file.

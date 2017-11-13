@@ -1,3 +1,7 @@
+2017-11-13  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vsumsws_be): Add define_expand.
+
 2017-11-13  Tom Tromey  <tom@tromey.com>
 
 	* doc/cpp.texi (Variadic Macros): Document __VA_OPT__.
