@@ -56,6 +56,32 @@ along with GCC; see the file COPYING3.  If not see
 //#define trace_cache dump_file
 #define trace_cache ((FILE *)0)
 
+
+// Internally, the range operators all use boolen_type_node when comparisons
+// and such are made to create ranges for logical operations.
+// some languages, such as fortran, may use boolean types with different
+// precisions and these are incompatible.   This routine will look at the 
+// 2 ranges, and if there is a mismatch between the boolean types, will vhange
+// the range generated one from the default node to the other type.
+static void
+normalize_bool_type (irange& r1, irange& r2)
+{
+  const_tree t1 = r1.get_type ();
+  const_tree t2 = r2.get_type ();
+  if (TREE_CODE (t1) != BOOLEAN_TYPE || TREE_CODE (t2) != BOOLEAN_TYPE)
+    return;
+
+  if (t1 == t2)
+    return;
+
+  /* If neither is boolean_type_node, assume they are compatible.  */
+  if (t1 == boolean_type_node)
+      r1.cast (t2);
+  else
+    if (t2 == boolean_type_node)
+      r2.cast (t1);
+}
+
  /* Given a logical STMT, calculate true and false for each potential path 
     and resolve the outcome based on the logical operator.  */
 bool
@@ -646,7 +672,7 @@ range_cache::range_cache ()
 range_cache::~range_cache ()
 {
   unsigned x;
-  for (x = 0; x < num_ssa_names; ++x)
+  for (x = 0; x < ssa_ranges.length (); ++x)
     {
       if (ssa_ranges[x])
 	delete ssa_ranges[x];
@@ -758,14 +784,24 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 {
   basic_block bb = e->src;
 
-  /* Get the range for the def and possible basic block.  */
-  if (!path_range_entry (r, name, bb))
-    return false;
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
+  if (stmt && gimple_bb (stmt) == e->src)
+    {
+      if (!path_range_of_def (r, stmt, gimple_bb (stmt), NULL))
+        r.set_range (name);
+    }
+  else
+    /* Get the range for the def and possible basic block.  */
+    if (!path_range_entry (r, name, bb))
+      return false;
 
   /* Now intersect it with what we know about this edge.  */
   irange edge_range;
   if (range_on_edge (edge_range, name, e))
-    r.intersect (edge_range);
+    {
+      normalize_bool_type (edge_range, r);
+      r.intersect (edge_range);
+    }
   return true;
 
 }
@@ -911,6 +947,81 @@ path_ranger::path_range_stmt (irange& r, tree name, gimple *g)
     }
 #endif
   return range_on_stmt (r, name, g);
+}
+
+// Attempt to evaluate NAME within the basic block it is defined as far
+// as possible. IF a PHI si encountered at the beginning of the block, either
+// fully evalaute it, or if E is provided, use just the value from that edge.
+bool
+path_ranger::path_range_of_def (irange &r, gimple *g, basic_block bb, edge e)
+{
+  tree name = gimple_get_lhs (g);
+  tree arg;
+  irange range_op1, range_op2;
+
+  if (bb != gimple_bb (g))
+    return false;
+
+  // Note that since we are remaining within BB, we do not attempt to further
+  // evaluate any of the arguments of a PHI at this point.
+  // a recursive call could be made to evaluate any SSA_NAMEs on their
+  // repsective edgesin PATH form, but we leave that as something to look into
+  // later.  For the moment, just pick up any edge information since its cheap.
+  if (is_a <gphi *> (g))
+    {
+      gphi *phi = as_a <gphi *> (g);
+      tree phi_def = gimple_phi_result (phi);
+      irange tmp;
+      unsigned x;
+
+      if (e)
+        {
+	  gcc_assert (e->dest == bb);
+          arg = gimple_phi_arg_def (phi, e->dest_idx);
+	  // Pick up anything simple we might know about the incoming edge. 
+	  if (!range_on_edge (r, arg, e))
+	    return get_operand_range (r, arg);
+	  return true;
+	}
+
+      r.clear (TREE_TYPE (phi_def));
+      for (x = 0; x < gimple_phi_num_args (phi); x++)
+        {
+	  arg = gimple_phi_arg_def (phi, x);
+	  e = gimple_phi_arg_edge (phi, x);
+	  if (!range_on_edge (range_op2, arg, e))
+	    if (!get_operand_range (range_op2, arg))
+	      return false;
+	  r.union_ (range_op2);
+	  if (r.range_for_type_p ())
+	    return true;
+	}
+      return true;
+    }
+
+  name = gimple_get_lhs (g);
+  if (!name)
+    return false;
+
+  range_stmt rn(g);
+  if (!rn.valid())
+    return false;
+
+  if (!rn.ssa_operand1 () ||
+      !path_range_of_def (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()),
+			  bb, e))
+    get_operand_range (range_op1, rn.operand1 ());
+
+  // If this is a unary operation, call fold now.  
+  if (!rn.operand2 ())
+    return rn.fold (r, &range_op1, NULL);
+  
+  if (!rn.ssa_operand2 () ||
+      !path_range_of_def (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()),
+			  bb, e))
+    get_operand_range (range_op2, rn.operand2 ());
+ 
+  return rn.fold (r, &range_op1, &range_op2);
 }
 
 /* Calculate the known range for NAME on a path of basic blocks in

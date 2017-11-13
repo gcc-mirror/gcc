@@ -115,6 +115,8 @@ public:
   bool path_range_entry (irange& r, tree name, basic_block bb);
   bool path_range_stmt (irange& r, tree name, gimple *g);
   bool path_range (irange &r, tree name, const vec<basic_block> &bbs);
+  // Evaluate expression within this BB as much as possible.
+  bool path_range_of_def (irange& r, gimple *g, basic_block bb, edge e = NULL);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
