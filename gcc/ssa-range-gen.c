@@ -1035,13 +1035,16 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 
 /* Calculate the known range for NAME on a path of basic blocks in
    BBS.  If such a range exists, store it in R and return TRUE,
-   otherwise return FALSE.  */
+   otherwise return FALSE.
+
+   DIR is FORWARD if BBS[0] is the definition and the last block is
+   the use.  DIR is REVERSE if the blocks are in reverse order.  */
 
 bool
-path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs)
+path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
+			 enum path_range_direction dir)
 {
-  /* Handle paths in which the blocks are reversed.  */
-  if (bbs.length () > 1 && find_edge (bbs[1], bbs[0]))
+  if (dir == REVERSE)
     return path_range_reverse (r, name, bbs);
 
   /* ?? Should we start with a known range for NAME?  */
