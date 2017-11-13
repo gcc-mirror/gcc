@@ -392,10 +392,8 @@ public:
   unsigned src;  /* Source file */
 };
 
-/* Holds a list of function basic block graphs.  */
-
-static function_t *functions;
-static function_t **fn_end = &functions;
+/* Vector of all functions.  */
+static vector<function_t *> functions;
 
 /* Vector of source files.  */
 static vector<source_info> sources;
@@ -535,8 +533,8 @@ static void generate_results (const char *);
 static void create_file_names (const char *);
 static char *canonicalize_name (const char *);
 static unsigned find_source (const char *);
-static function_t *read_graph_file (void);
-static int read_count_file (function_t *);
+static void read_graph_file (void);
+static int read_count_file (void);
 static void solve_flow_graph (function_t *);
 static void find_exception_blocks (function_t *);
 static void add_branch_counts (coverage_t *, const arc_t *);
@@ -1125,42 +1123,40 @@ struct function_start_pair_hash : typed_noop_remove <function_start>
 static void
 process_file (const char *file_name)
 {
-  function_t *fns;
-
   create_file_names (file_name);
-  fns = read_graph_file ();
-  if (!fns)
+  read_graph_file ();
+  if (functions.empty ())
     return;
 
-  read_count_file (fns);
+  read_count_file ();
 
   hash_map<function_start_pair_hash, function_t *> fn_map;
 
   /* Identify group functions.  */
-  for (function_t *f = fns; f; f = f->next)
-    if (!f->artificial)
+  for (vector<function_t *>::iterator it = functions.begin ();
+       it != functions.end (); it++)
+    if (!(*it)->artificial)
       {
 	function_start needle;
-	needle.source_file_idx = f->src;
-	needle.start_line = f->start_line;
+	needle.source_file_idx = (*it)->src;
+	needle.start_line = (*it)->start_line;
 
 	function_t **slot = fn_map.get (needle);
 	if (slot)
 	  {
-	    gcc_assert ((*slot)->end_line == f->end_line);
+	    gcc_assert ((*slot)->end_line == (*it)->end_line);
 	    (*slot)->is_group = 1;
-	    f->is_group = 1;
+	    (*it)->is_group = 1;
 	  }
 	else
-	  fn_map.put (needle, f);
+	  fn_map.put (needle, *it);
       }
 
-  while (fns)
+  for (vector<function_t *>::iterator it = functions.begin ();
+       it != functions.end (); it++)
     {
-      function_t *fn = fns;
+      function_t *fn = *it;
 
-      fns = fn->next;
-      fn->next = NULL;
       if (fn->counts || no_data_file)
 	{
 	  unsigned src = fn->src;
@@ -1207,14 +1203,12 @@ process_file (const char *file_name)
 	      if (fn->has_catch)
 		find_exception_blocks (fn);
 	    }
-
-	  *fn_end = fn;
-	  fn_end = &fn->next;
 	}
       else
-	/* The function was not in the executable -- some other
-	   instance must have been selected.  */
-	delete fn;
+	{
+	  /* The function was not in the executable -- some other
+	     instance must have been selected.  */
+	}
     }
 }
 
@@ -1249,12 +1243,13 @@ output_gcov_file (const char *file_name, source_info *src)
 static void
 generate_results (const char *file_name)
 {
-  function_t *fn;
   FILE *gcov_intermediate_file = NULL;
   char *gcov_intermediate_filename = NULL;
 
-  for (fn = functions; fn; fn = fn->next)
+  for (vector<function_t *>::iterator it = functions.begin ();
+       it != functions.end (); it++)
     {
+      function_t *fn = *it;
       coverage_t coverage;
       if (fn->artificial)
 	continue;
@@ -1345,18 +1340,13 @@ generate_results (const char *file_name)
 static void
 release_structures (void)
 {
-  function_t *fn;
+  for (vector<function_t *>::iterator it = functions.begin ();
+       it != functions.end (); it++)
+    delete (*it);
 
   sources.resize (0);
   names.resize (0);
-
-  while ((fn = functions))
-    {
-      functions = fn->next;
-      delete fn;
-    }
-
-  fn_end = &functions;
+  functions.resize (0);
 }
 
 /* Generate the names of the graph and data files.  If OBJECT_DIRECTORY
@@ -1514,29 +1504,26 @@ find_source (const char *file_name)
   return idx;
 }
 
-/* Read the notes file.  Return list of functions read -- in reverse order.  */
+/* Read the notes file.  Save functions to FUNCTIONS global vector.  */
 
-static function_t *
+static void
 read_graph_file (void)
 {
   unsigned version;
   unsigned current_tag = 0;
-  function_t *fn = NULL;
-  function_t *fns = NULL;
-  function_t **fns_end = &fns;
   unsigned tag;
 
   if (!gcov_open (bbg_file_name, 1))
     {
       fnotice (stderr, "%s:cannot open notes file\n", bbg_file_name);
-      return fns;
+      return;
     }
   bbg_file_time = gcov_time ();
   if (!gcov_magic (gcov_read_unsigned (), GCOV_NOTE_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov notes file\n", bbg_file_name);
       gcov_close ();
-      return fns;
+      return;
     }
 
   version = gcov_read_unsigned ();
@@ -1553,6 +1540,7 @@ read_graph_file (void)
   bbg_stamp = gcov_read_unsigned ();
   bbg_supports_has_unexecuted_blocks = gcov_read_unsigned ();
 
+  function_t *fn = NULL;
   while ((tag = gcov_read_unsigned ()))
     {
       unsigned length = gcov_read_unsigned ();
@@ -1574,7 +1562,8 @@ read_graph_file (void)
 	  unsigned start_column = gcov_read_unsigned ();
 	  unsigned end_line = gcov_read_unsigned ();
 
-	  fn = new function_t;
+	  fn = new function_t ();
+	  functions.push_back (fn);
 	  fn->name = function_name;
 	  if (flag_demangled_names)
 	    {
@@ -1591,9 +1580,6 @@ read_graph_file (void)
 	  fn->end_line = end_line;
 	  fn->artificial = artificial;
 
-	  fn->next = NULL;
-	  *fns_end = fn;
-	  fns_end = &fn->next;
 	  current_tag = tag;
 	}
       else if (fn && tag == GCOV_TAG_BLOCKS)
@@ -1719,17 +1705,15 @@ read_graph_file (void)
     }
   gcov_close ();
 
-  if (!fns)
+  if (functions.empty ())
     fnotice (stderr, "%s:no functions found\n", bbg_file_name);
-
-  return fns;
 }
 
 /* Reads profiles from the count file and attach to each
    function. Return nonzero if fatal error.  */
 
 static int
-read_count_file (function_t *fns)
+read_count_file (void)
 {
   unsigned ix;
   unsigned version;
@@ -1786,26 +1770,20 @@ read_count_file (function_t *fns)
       else if (tag == GCOV_TAG_FUNCTION && length == GCOV_TAG_FUNCTION_LENGTH)
 	{
 	  unsigned ident;
-	  struct function_info *fn_n;
 
 	  /* Try to find the function in the list.  To speed up the
 	     search, first start from the last function found.  */
 	  ident = gcov_read_unsigned ();
-	  fn_n = fns;
-	  for (fn = fn ? fn->next : NULL; ; fn = fn->next)
+
+	  fn = NULL;
+	  for (vector<function_t *>::reverse_iterator it = functions.rbegin ();
+	       it != functions.rend (); it++)
 	    {
-	      if (fn)
-		;
-	      else if ((fn = fn_n))
-		fn_n = NULL;
-	      else
+	      if ((*it)->ident == ident)
 		{
-		  fnotice (stderr, "%s:unknown function '%u'\n",
-			   da_file_name, ident);
+		  fn = *it;
 		  break;
 		}
-	      if (fn->ident == ident)
-		break;
 	    }
 
 	  if (!fn)
