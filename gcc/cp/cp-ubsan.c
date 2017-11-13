@@ -205,7 +205,7 @@ cp_ubsan_check_member_access_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (TREE_CODE (t) == ADDR_EXPR)
 	{
 	  *walk_subtrees = 0;
-	  t = TREE_OPERAND (stmt, 0);
+	  t = TREE_OPERAND (t, 0);
 	  cp_walk_tree (&t, cp_ubsan_check_member_access_r, data, ucmd->pset);
 	}
       break;
