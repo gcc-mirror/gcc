@@ -1,3 +1,10 @@
+2017-11-13  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (maybe_line_and_column): New.
+	(diagnostic_get_location_text): Use it.
+	(diagnostic_report_current_module): Likewise.
+	(test_diagnostic_get_location_text): Add tests.
+
 2017-11-13  Luis Machado  <luis.machado@linaro.org>
 
 	* doc/md.texi (Specifying processor pipeline description): Fix

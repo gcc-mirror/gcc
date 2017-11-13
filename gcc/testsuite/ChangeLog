@@ -1,6 +1,58 @@
+2017-11-13  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/gcc-dg.exp (process-message): Use -: for no column.
+	* c-c++-common/cilk-plus/CK/cilk_for_grain_errors.c: Mark elided
+	column messages.
+	* c-c++-common/cpp/pr58844-1.c: Likewise.
+	* c-c++-common/cpp/pr58844-2.c: Likewise.
+	* c-c++-common/cpp/warning-zero-location.c: Likewise.
+	* g++.dg/diagnostic/pr77949.C: Likewise.
+	* g++.dg/gomp/macro-4.C: Likewise.
+	* gcc.dg/Wunknownprag.c: Likewise.
+	* gcc.dg/builtin-redefine.c: Likewise.
+	* gcc.dg/cpp/Wunknown-pragmas-1.c: Likewise.
+	* gcc.dg/cpp/Wunused.c: Likewise.
+	* gcc.dg/cpp/misspelled-directive-1.c: Likewise.
+	* gcc.dg/cpp/redef2.c: Likewise.
+	* gcc.dg/cpp/redef3.c: Likewise.
+	* gcc.dg/cpp/redef4.c: Likewise.
+	* gcc.dg/cpp/trad/Wunused.c: Likewise.
+	* gcc.dg/cpp/trad/argcount.c: Likewise.
+	* gcc.dg/cpp/trad/comment-3.c: Likewise.
+	* gcc.dg/cpp/trad/comment.c: Likewise.
+	* gcc.dg/cpp/trad/defined.c: Likewise.
+	* gcc.dg/cpp/trad/directive.c: Likewise.
+	* gcc.dg/cpp/trad/funlike-3.c: Likewise.
+	* gcc.dg/cpp/trad/funlike.c: Likewise.
+	* gcc.dg/cpp/trad/literals-2.c: Likewise.
+	* gcc.dg/cpp/trad/macro.c: Likewise.
+	* gcc.dg/cpp/trad/pr65238-4.c: Likewise.
+	* gcc.dg/cpp/trad/recurse-1.c: Likewise.
+	* gcc.dg/cpp/trad/recurse-2.c: Likewise.
+	* gcc.dg/cpp/trad/redef2.c: Likewise.
+	* gcc.dg/cpp/ucnid-11.c: Likewise.
+	* gcc.dg/cpp/unc1.c: Likewise.
+	* gcc.dg/cpp/unc2.c: Likewise.
+	* gcc.dg/cpp/unc3.c: Likewise.
+	* gcc.dg/cpp/unc4.c: Likewise.
+	* gcc.dg/cpp/undef2.c: Likewise.
+	* gcc.dg/cpp/warn-redefined-2.c: Likewise.
+	* gcc.dg/cpp/warn-redefined.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros-2.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros.c: Likewise.
+	* gcc.dg/empty-source-2.c: Likewise.
+	* gcc.dg/empty-source-3.c: Likewise.
+	* gcc.dg/gomp/macro-4.c: Likewise.
+	* gcc.dg/noncompile/pr35447-1.c: Likewise.
+	* gcc.dg/plugin/location-overflow-test-1.c: Likewise.
+	* gcc.dg/pr20245-1.c: Likewise.
+	* gcc.dg/pr28419.c: Likewise.
+	* gcc.dg/rtl/truncated-rtl-file.c: Likewise.
+	* gcc.dg/unclosed-init.c: Likewise.
+
 2017-11-13  Charles Baylis  <charles.baylis@linaro.org>
 
-        * gfortran.dg/ieee/ieee_8.f90: xfail for aarch64*-*-gnu*
+	* gfortran.dg/ieee/ieee_8.f90: xfail for aarch64*-*-gnu*
 
 2017-11-13  Jakub Jelinek  <jakub@redhat.com>
 
