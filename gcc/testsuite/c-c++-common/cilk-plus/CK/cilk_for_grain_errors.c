@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   _Cilk_for (int ii = 0; ii < 10; ii++)
     Array1[ii] = 0;
 
-#pragma cilk grainsiz = 2 /* { dg-warning "ignoring #pragma cilk grainsiz" } */
+#pragma cilk grainsiz = 2 /* { dg-warning "-:ignoring #pragma cilk grainsiz" } */
   _Cilk_for (int ii = 0; ii < 10; ii++)
     Array1[ii] = 0;
 
