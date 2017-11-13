@@ -1,3 +1,26 @@
+2017-11-13  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins):
+	Add support for builtins:
+	unsigned int vec_first_{,miss}_match_{,or_eos}index,
+	vector {un,}signed {char,int,short},
+	vector {un,}signed {char,int,short}) arguments.
+	* config/rs6000/rs6000-builtin.def (VFIRSTMATCHINDEX,
+	VFIRSTMATCHOREOSINDEX, VFIRSTMISMATCHINDEX, VFIRSTMISMATCHOREOSINDEX):
+	Add BU_P9V_AV_2 expansions for the builtins.
+	* config/rs6000/altivec.h (vec_first_match_index,
+	vec_first_mismatch_index, vec_first_match_or_eos_index,
+	vec_first_mismatch_or_eos_index): Add #defines for the builtins.
+	* config/rs6000/rs6000-protos.h (bytes_in_mode): Add
+	new extern declaration.
+	* config/rs6000/rs6000.c (bytes_in_mode): Add new function.
+	* config/rs6000/vsx.md (first_match_index_<mode>,
+	first_match_or_eos_index_<mode>, first_mismatch_index_<mode>,
+	first_mismatch_or_eos_index_<mode>): Add define expand.
+	(vctzlsbb_<mode>): Add mode field to define_insn for vctzlsbb.
+	* doc/extend.texi: Update the built-in documenation file for the new
+	built-in functions.
+
 2017-11-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* match.pd: Convert fminf<N>, fminf<N>x, fmax<N>, and fmax<N>x

@@ -15875,6 +15875,51 @@ signed int vec_cntlz_lsbb (vector unsigned char);
 signed int vec_cnttz_lsbb (vector signed char);
 signed int vec_cnttz_lsbb (vector unsigned char);
 
+unsigned int vec_first_match_index (vector signed char, vector signed char);
+unsigned int vec_first_match_index (vector unsigned char,
+                                    vector unsigned char);
+unsigned int vec_first_match_index (vector signed int, vector signed int);
+unsigned int vec_first_match_index (vector unsigned int, vector unsigned int);
+unsigned int vec_first_match_index (vector signed short, vector signed short);
+unsigned int vec_first_match_index (vector unsigned short,
+                                    vector unsigned short);
+unsigned int vec_first_match_or_eos_index (vector signed char,
+                                           vector signed char);
+unsigned int vec_first_match_or_eos_index (vector unsigned char,
+                                           vector unsigned char);
+unsigned int vec_first_match_or_eos_index (vector signed int,
+                                           vector signed int);
+unsigned int vec_first_match_or_eos_index (vector unsigned int,
+                                           vector unsigned int);
+unsigned int vec_first_match_or_eos_index (vector signed short,
+                                           vector signed short);
+unsigned int vec_first_match_or_eos_index (vector unsigned short,
+                                           vector unsigned short);
+unsigned int vec_first_mismatch_index (vector signed char,
+                                       vector signed char);
+unsigned int vec_first_mismatch_index (vector unsigned char,
+                                       vector unsigned char);
+unsigned int vec_first_mismatch_index (vector signed int,
+                                       vector signed int);
+unsigned int vec_first_mismatch_index (vector unsigned int,
+                                       vector unsigned int);
+unsigned int vec_first_mismatch_index (vector signed short,
+                                       vector signed short);
+unsigned int vec_first_mismatch_index (vector unsigned short,
+                                       vector unsigned short);
+unsigned int vec_first_mismatch_or_eos_index (vector signed char,
+                                              vector signed char);
+unsigned int vec_first_mismatch_or_eos_index (vector unsigned char,
+                                              vector unsigned char);
+unsigned int vec_first_mismatch_or_eos_index (vector signed int,
+                                              vector signed int);
+unsigned int vec_first_mismatch_or_eos_index (vector unsigned int,
+                                              vector unsigned int);
+unsigned int vec_first_mismatch_or_eos_index (vector signed short,
+                                              vector signed short);
+unsigned int vec_first_mismatch_or_eos_index (vector unsigned short,
+                                              vector unsigned short);
+
 vector unsigned short vec_pack_to_short_fp32 (vector float, vector float);
 
 vector signed char vec_xl_be (signed long long, signed char *);

@@ -418,6 +418,10 @@
    UNSPEC_VCMPNEZW
    UNSPEC_XXEXTRACTUW
    UNSPEC_XXINSERTW
+   UNSPEC_VSX_FIRST_MATCH_INDEX
+   UNSPEC_VSX_FIRST_MATCH_EOS_INDEX
+   UNSPEC_VSX_FIRST_MISMATCH_INDEX
+   UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX
   ])
 
 ;; VSX moves
@@ -4345,6 +4349,149 @@
   "vcmpnez<VSX_EXTRACT_WIDTH>. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
+;; Return first position of match between vectors
+(define_expand "first_match_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec:SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+	       (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MATCH_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+
+  rtx cmp_result = gen_reg_rtx (<MODE>mode);
+  rtx not_result = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
+					     operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (not_result, cmp_result));
+
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], not_result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, not_result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
+;; Return first position of match between vectors or end of string (EOS)
+(define_expand "first_match_or_eos_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+   (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MATCH_EOS_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+  rtx cmpz1_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz2_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz_result = gen_reg_rtx (<MODE>mode);
+  rtx and_result = gen_reg_rtx (<MODE>mode);
+  rtx result = gen_reg_rtx (<MODE>mode);
+  rtx vzero = gen_reg_rtx (<MODE>mode);
+
+  /* Vector with zeros in elements that correspond to zeros in operands.  */
+  emit_move_insn (vzero, CONST0_RTX (<MODE>mode));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz1_result, operands[1], vzero));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz2_result, operands[2], vzero));
+  emit_insn (gen_and<mode>3 (and_result, cmpz1_result, cmpz2_result));
+
+  /* Vector with ones in elments that do not match.  */
+  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmpz_result, operands[1],
+                                             operands[2]));
+
+  /* Create vector with ones in elements where there was a zero in one of
+     the source elements or the elements that match.  */
+  emit_insn (gen_nand<mode>3 (result, and_result, cmpz_result));
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
+;; Return first position of mismatch between vectors
+(define_expand "first_mismatch_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+   (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MISMATCH_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+  rtx cmp_result = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
+					    operands[2]));
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], cmp_result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, cmp_result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
+;; Return first position of mismatch between vectors or end of string (EOS)
+(define_expand "first_mismatch_or_eos_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+   (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+  rtx cmpz1_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz2_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz_result = gen_reg_rtx (<MODE>mode);
+  rtx not_cmpz_result = gen_reg_rtx (<MODE>mode);
+  rtx and_result = gen_reg_rtx (<MODE>mode);
+  rtx result = gen_reg_rtx (<MODE>mode);
+  rtx vzero = gen_reg_rtx (<MODE>mode);
+
+  /* Vector with zeros in elements that correspond to zeros in operands.  */
+  emit_move_insn (vzero, CONST0_RTX (<MODE>mode));
+
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz1_result, operands[1], vzero));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz2_result, operands[2], vzero));
+  emit_insn (gen_and<mode>3 (and_result, cmpz1_result, cmpz2_result));
+
+  /* Vector with ones in elments that match.  */
+  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmpz_result, operands[1],
+                                             operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (not_cmpz_result, cmpz_result));
+
+  /* Create vector with ones in elements where there was a zero in one of
+     the source elements or the elements did not match.  */
+  emit_insn (gen_nand<mode>3 (result, and_result, not_cmpz_result));
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
 ;; Load VSX Vector with Length
 (define_expand "lxvl"
   [(set (match_dup 3)
@@ -4524,10 +4671,10 @@
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "vctzlsbb"
+(define_insn "vctzlsbb_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
-	 [(match_operand:V16QI 1 "altivec_register_operand" "v")]
+	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
 	 UNSPEC_VCTZLSBB))]
   "TARGET_P9_VECTOR"
   "vctzlsbb %0,%1"

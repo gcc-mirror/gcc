@@ -420,6 +420,10 @@
 
 #ifdef __POWER9_VECTOR__
 /* Vector additions added in ISA 3.0.  */
+#define vec_first_match_index __builtin_vec_first_match_index
+#define vec_first_match_or_eos_index __builtin_vec_first_match_or_eos_index
+#define vec_first_mismatch_index __builtin_vec_first_mismatch_index
+#define vec_first_mismatch_or_eos_index __builtin_vec_first_mismatch_or_eos_index
 #define vec_pack_to_short_fp32 __builtin_vec_convert_4f32_8i16
 #define vec_parity_lsbb __builtin_vec_vparity_lsbb
 #define vec_vctz __builtin_vec_vctz
