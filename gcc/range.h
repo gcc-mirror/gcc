@@ -122,6 +122,7 @@ class irange
       nz.set_range (type, 0, 0, INVERSE);
       return *this == nz;
     }
+  inline bool singleton_p (wide_int &) const;
 
   void dump () const;
   void dump (pretty_printer *pp) const;
@@ -147,6 +148,20 @@ class irange
   irange &intersect (const irange &r);
   irange &invert ();
 };
+
+/* Return TRUE if range contains exactly one element.  If so, set ELEM
+   to said element.  */
+
+inline bool
+irange::singleton_p (wide_int &elem) const
+{
+  if (num_pairs () == 1 && bounds[0] == bounds[1])
+    {
+      elem = bounds[0];
+      return true;
+    }
+  return false;
+}
 
 /* Return R1 U R2.  */
 static inline
