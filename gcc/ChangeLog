@@ -1,5 +1,15 @@
 2017-11-13  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (function_info::function_info): Remove num_counts
+	and add vector<gcov_type>.
+	(function_info::~function_info): Use the vector.
+	(process_file): Likewise.
+	(read_graph_file): Likewise.
+	(read_count_file): Likewise.
+	(solve_flow_graph): Likewise.
+
+2017-11-13  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (function_info::is_artificial): New function.
 	(process_file): Erase all artificial early.
 	(generate_results): Skip as all artificial are already
