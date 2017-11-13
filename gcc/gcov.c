@@ -265,8 +265,7 @@ typedef struct function_info
   unsigned blocks_executed;
 
   /* Raw arc coverage counts.  */
-  gcov_type *counts;
-  unsigned num_counts;
+  vector<gcov_type> counts;
 
   /* First line number.  */
   unsigned start_line;
@@ -562,8 +561,8 @@ extern int main (int, char **);
 function_info::function_info (): name (NULL), demangled_name (NULL),
   ident (0), lineno_checksum (0), cfg_checksum (0), has_catch (0),
   artificial (0), is_group (0),
-  blocks (), blocks_executed (0), counts (NULL), num_counts (0),
-  start_line (0), start_column (0), end_line (0), src (0), lines (), next (NULL)
+  blocks (), blocks_executed (0), counts (),
+  start_line (0), start_column (), end_line (0), src (0), lines (), next (NULL)
 {
 }
 
@@ -579,7 +578,6 @@ function_info::~function_info ()
 	  free (arc);
 	}
     }
-  free (counts);
   if (flag_demangled_names && demangled_name != name)
     free (demangled_name);
   free (name);
@@ -1170,7 +1168,7 @@ process_file (const char *file_name)
       function_t *fn = *it;
       unsigned src = fn->src;
 
-      if (fn->counts || no_data_file)
+      if (!fn->counts.empty () || no_data_file)
 	{
 	  source_info *s = &sources[src];
 	  s->functions.push_back (fn);
@@ -1662,7 +1660,7 @@ read_graph_file (void)
 		}
 
 	      if (!arc->on_tree)
-		fn->num_counts++;
+		fn->counts.push_back (0);
 	    }
 
 	  if (mark_catches)
@@ -1813,13 +1811,10 @@ read_count_file (void)
 	}
       else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
-	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->num_counts))
+	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->counts.size ()))
 	    goto mismatch;
 
-	  if (!fn->counts)
-	    fn->counts = XCNEWVEC (gcov_type, fn->num_counts);
-
-	  for (ix = 0; ix != fn->num_counts; ix++)
+	  for (ix = 0; ix != fn->counts.size (); ix++)
 	    fn->counts[ix] += gcov_read_counter ();
 	}
       gcov_sync (base, length);
@@ -1846,7 +1841,7 @@ solve_flow_graph (function_t *fn)
 {
   unsigned ix;
   arc_t *arc;
-  gcov_type *count_ptr = fn->counts;
+  gcov_type *count_ptr = &fn->counts.front ();
   block_t *blk;
   block_t *valid_blocks = NULL;    /* valid, but unpropagated blocks.  */
   block_t *invalid_blocks = NULL;  /* invalid, but inferable blocks.  */
