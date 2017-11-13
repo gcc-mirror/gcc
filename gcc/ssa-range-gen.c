@@ -787,7 +787,7 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
   gimple *stmt = SSA_NAME_DEF_STMT (name);
   if (stmt && gimple_bb (stmt) == e->src)
     {
-      if (!path_range_of_def (r, stmt, gimple_bb (stmt), NULL))
+      if (!path_range_of_def (r, stmt))
         r.set_range (name);
     }
   else
@@ -950,7 +950,7 @@ path_ranger::path_range_stmt (irange& r, tree name, gimple *g)
 }
 
 // Attempt to evaluate NAME within the basic block it is defined as far
-// as possible. IF a PHI si encountered at the beginning of the block, either
+// as possible. IF a PHI is encountered at the beginning of the block, either
 // fully evalaute it, or if E is provided, use just the value from that edge.
 bool
 path_ranger::path_range_of_def (irange &r, gimple *g, basic_block bb, edge e)
@@ -959,8 +959,14 @@ path_ranger::path_range_of_def (irange &r, gimple *g, basic_block bb, edge e)
   tree arg;
   irange range_op1, range_op2;
 
-  if (bb != gimple_bb (g))
-    return false;
+  if (bb == NULL)
+    bb = gimple_bb (g);
+  else
+    if (bb != gimple_bb (g))
+      return false;
+
+  /* If an edge is provided, it must be an incoming edge to this BB.  */
+  gcc_assert (!e || e->dest == bb);
 
   // Note that since we are remaining within BB, we do not attempt to further
   // evaluate any of the arguments of a PHI at this point.
