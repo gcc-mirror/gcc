@@ -1803,7 +1803,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
-(for minmax (min max FMIN FMAX)
+(for minmax (min max FMIN FMIN_FN FMAX FMAX_FN)
  (simplify
   (minmax @0 @0)
   @0))
@@ -1881,7 +1881,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
    (minmax @1 (convert @2)))))
 
-(for minmax (FMIN FMAX)
+(for minmax (FMIN FMIN_FN FMAX FMAX_FN)
  /* If either argument is NaN, return the other one.  Avoid the
     transformation if we get (and honor) a signalling NaN.  */
  (simplify
@@ -1899,11 +1899,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (FMIN @0 @1)
   (min @0 @1))
  (simplify
+  (FMIN_FN @0 @1)
+  (min @0 @1))
+ (simplify
   (FMAX @0 @1)
+  (max @0 @1))
+ (simplify
+  (FMAX_FN @0 @1)
   (max @0 @1)))
 /* min (-A, -B) -> -max (A, B)  */
-(for minmax (min max FMIN FMAX)
-     maxmin (max min FMAX FMIN)
+(for minmax (min max FMIN FMIN_FN FMAX FMAX_FN)
+     maxmin (max min FMAX FMAX_FN FMIN FMAX_FN)
  (simplify
   (minmax (negate:s@2 @0) (negate:s@3 @1))
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))
