@@ -1,5 +1,20 @@
 2017-11-13  Jason Merrill  <jason@redhat.com>
 
+	Capture adjustments for P0588R1.
+	* semantics.c (process_outer_var_ref): Capture variables when
+	they are named; complain about non-capture uses when odr-used.
+	* expr.c (mark_use): Rvalue use looks through capture proxy.
+	* constexpr.c (potential_constant_expression_1): Improve error about
+	use of captured variable.
+	* lambda.c (need_generic_capture, dependent_capture_r)
+	(do_dependent_capture, processing_nonlambda_template): Remove.
+	* call.c (build_this): Remove uses of the above.
+	* decl.c (cp_finish_decl): Likewise.
+	* semantics.c (maybe_cleanup_point_expr)
+	(maybe_cleanup_point_expr_void, finish_goto_stmt)
+	(maybe_convert_cond): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+
 	Defer folding of *&.
 	* typeck.c (cp_build_fold_indirect_ref): New.
 	(cp_build_indirect_ref_1): Split out from cp_build_indirect_ref.

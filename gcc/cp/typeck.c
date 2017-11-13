@@ -9158,7 +9158,7 @@ check_return_expr (tree retval, bool *no_warning)
     dependent:
       /* We should not have changed the return value.  */
       gcc_assert (retval == saved_retval);
-      return do_dependent_capture (retval, /*force*/true);
+      return retval;
     }
 
   /* The fabled Named Return Value optimization, as per [class.copy]/15:
