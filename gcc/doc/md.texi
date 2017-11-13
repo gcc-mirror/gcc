@@ -9617,7 +9617,7 @@ their result is ready in two cycles.  The simple integer insns are
 issued into the first pipeline unless it is reserved, otherwise they
 are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
-pipeline and their results are ready correspondingly in 8 and 4
+pipeline and their results are ready correspondingly in 9 and 4
 cycles.  The integer division is not pipelined, i.e.@: the subsequent
 integer division insn can not be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
@@ -9634,7 +9634,7 @@ incurred.  To describe all of this we could specify
 (define_insn_reservation "mult" 4 (eq_attr "type" "mult")
                          "i1_pipeline, nothing*2, (port0 | port1)")
 
-(define_insn_reservation "div" 8 (eq_attr "type" "div")
+(define_insn_reservation "div" 9 (eq_attr "type" "div")
                          "i1_pipeline, div*7, div + (port0 | port1)")
 
 (define_insn_reservation "float" 3 (eq_attr "type" "float")
