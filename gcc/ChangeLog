@@ -1,5 +1,22 @@
 2017-11-13  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct function_info): Remove typedef for function_t.
+	(struct source_info): Likewise.
+	(source_info::get_functions_at_location): Likewise.
+	(solve_flow_graph): Likewise.
+	(find_exception_blocks): Likewise.
+	(add_line_counts): Likewise.
+	(output_intermediate_file): Likewise.
+	(process_file): Likewise.
+	(generate_results): Likewise.
+	(release_structures): Likewise.
+	(read_graph_file): Likewise.
+	(read_count_file): Likewise.
+	(accumulate_line_counts): Likewise.
+	(output_lines): Likewise.
+
+2017-11-13  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (function_info::function_info): Remove num_counts
 	and add vector<gcov_type>.
 	(function_info::~function_info): Use the vector.
