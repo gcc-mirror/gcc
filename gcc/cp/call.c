@@ -10647,6 +10647,16 @@ perform_direct_initialization_if_possible (tree type,
 			      LOOKUP_NORMAL, complain);
   if (!conv || conv->bad_p)
     expr = NULL_TREE;
+  else if (processing_template_decl && conv->kind != ck_identity)
+    {
+      /* In a template, we are only concerned about determining the
+	 type of non-dependent expressions, so we do not have to
+	 perform the actual conversion.  But for initializers, we
+	 need to be able to perform it at instantiation
+	 (or instantiate_non_dependent_expr) time.  */
+      expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
+      IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
+    }
   else
     expr = convert_like_real (conv, expr, NULL_TREE, 0,
 			      /*issue_conversion_warnings=*/false,
