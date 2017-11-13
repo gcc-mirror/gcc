@@ -1,3 +1,8 @@
+2017-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (linenum_type): Move this typedef and the
+	comment describing column numbering to near the top of the file.
+
 2017-11-06  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
 
 	PR c++/80955
