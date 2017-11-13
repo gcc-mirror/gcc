@@ -1766,6 +1766,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
      When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
      per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
   int frequency ();
+
+  /* Expected frequency of executions within the function.  */
+  sreal sreal_frequency ();
 private:
   /* Remove the edge from the list of the callers of the callee.  */
   void remove_caller (void);
@@ -3119,6 +3122,7 @@ cgraph_edge::frequency ()
 				    ? caller->global.inlined_to->count
 				    : caller->count);
 }
+
 
 /* Return true if the TM_CLONE bit is set for a given FNDECL.  */
 static inline bool

@@ -1,3 +1,19 @@
+2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_edge::sreal_frequency): New function.
+	* cgraph.h (cgraph_edge::sreal_frequency): Declare.
+	* ipa-fnsummary.c (dump_ipa_call_summary): Use sreal_frequency.
+	(estimate_edge_size_and_time): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	* ipa-inline.c (cgraph_freq_base_rec): Remove.
+	(compute_uninlined_call_time): Use sreal_frequency.
+	(compute_inlined_call_time): Likewise.
+	(ipa_inline): Do not initialize cgraph_freq_base_rec.
+	* profile-count.c: Include sreal.h.
+	(profile_count::to_sreal_scale): New.
+	* profile-count.h: Forward declare sreal.
+	(profile_count::to_sreal_scale): Declare.
+
 2017-11-13  Nathan Sidwell  <nathan@acm.org>
 
 	* diagnostic.c (maybe_line_and_column): New.

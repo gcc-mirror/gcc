@@ -3880,4 +3880,16 @@ cgraph_node::has_thunk_p (cgraph_node *node, void *)
   return false;
 }
 
+/* Expected frequency of executions within the function.
+   When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
+   per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
+
+sreal
+cgraph_edge::sreal_frequency ()
+{
+  return count.to_sreal_scale (caller->global.inlined_to
+			       ? caller->global.inlined_to->count
+			       : caller->count);
+}
+
 #include "gt-cgraph.h"

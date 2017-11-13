@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "cgraph.h"
 #include "wide-int.h"
+#include "sreal.h"
 
 /* Dump THIS to F.  */
 
@@ -254,6 +255,32 @@ profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
 			 CGRAPH_FREQ_BASE, MAX (1, entry_bb_count.m_val), &scale))
     return CGRAPH_FREQ_MAX;
   return MIN (scale, CGRAPH_FREQ_MAX);
+}
+
+/* Return THIS/IN as sreal value.  */
+
+sreal
+profile_count::to_sreal_scale (profile_count in, bool *known) const
+{
+  if (!initialized_p ())
+    {
+      if (known)
+	*known = false;
+      return CGRAPH_FREQ_BASE;
+    }
+  if (known)
+    *known = true;
+  if (*this == profile_count::zero ())
+    return 0;
+  gcc_checking_assert (in.initialized_p ());
+
+  if (!in.m_val)
+    {
+      if (!m_val)
+	return 1;
+      return m_val * 4;
+    }
+  return (sreal)m_val / (sreal)in.m_val;
 }
 
 /* We want to scale profile across function boundary from NUM to DEN.

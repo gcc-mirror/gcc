@@ -817,12 +817,12 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
       int i;
 
       fprintf (f,
-	       "%*s%s/%i %s\n%*s  loop depth:%2i freq:%4i size:%2i"
+	       "%*s%s/%i %s\n%*s  loop depth:%2i freq:%4.2f size:%2i"
 	       " time: %2i callee size:%2i stack:%2i",
 	       indent, "", callee->name (), callee->order,
 	       !edge->inline_failed
 	       ? "inlined" : cgraph_inline_failed_string (edge-> inline_failed),
-	       indent, "", es->loop_depth, edge->frequency (),
+	       indent, "", es->loop_depth, edge->sreal_frequency ().to_double (),
 	       es->call_stmt_size, es->call_stmt_time,
 	       (int) ipa_fn_summaries->get (callee)->size / ipa_fn_summary::size_scale,
 	       (int) ipa_fn_summaries->get (callee)->estimated_stack_size);
@@ -860,11 +860,12 @@ dump_ipa_call_summary (FILE *f, int indent, struct cgraph_node *node,
   for (edge = node->indirect_calls; edge; edge = edge->next_callee)
     {
       struct ipa_call_summary *es = ipa_call_summaries->get (edge);
-      fprintf (f, "%*sindirect call loop depth:%2i freq:%4i size:%2i"
+      fprintf (f, "%*sindirect call loop depth:%2i freq:%4.2f size:%2i"
 	       " time: %2i",
 	       indent, "",
 	       es->loop_depth,
-	       edge->frequency (), es->call_stmt_size, es->call_stmt_time);
+	       edge->sreal_frequency ().to_double (), es->call_stmt_size,
+	       es->call_stmt_time);
       if (es->predicate)
 	{
 	  fprintf (f, "predicate: ");
@@ -2578,10 +2579,10 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   if (min_size)
     *min_size += cur_size;
   if (prob == REG_BR_PROB_BASE)
-    *time += ((sreal)(call_time * e->frequency ())) / CGRAPH_FREQ_BASE;
+    *time += ((sreal)call_time) * e->sreal_frequency ();
   else
-    *time += ((sreal)call_time) * (prob * e->frequency ())
-	      / (CGRAPH_FREQ_BASE * REG_BR_PROB_BASE);
+    *time += ((sreal)call_time * prob) * e->sreal_frequency ()
+	      / CGRAPH_FREQ_BASE;
 }
 
 
@@ -3058,7 +3059,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 				      toplev_predicate);
       if (p != false && nonconstp != false)
 	{
-	  sreal add_time = ((sreal)e->time * edge->frequency ()) / CGRAPH_FREQ_BASE;
+	  sreal add_time = ((sreal)e->time * edge->sreal_frequency ());
 	  int prob = e->nonconst_predicate.probability (callee_info->conds,
 							clause, es->param);
 	  add_time = add_time * prob / REG_BR_PROB_BASE;
