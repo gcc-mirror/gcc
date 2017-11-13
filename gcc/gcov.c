@@ -79,7 +79,7 @@ struct source_info;
 
 /* Describes an arc between two basic blocks.  */
 
-typedef struct arc_info
+struct arc_info
 {
   /* source and destination blocks.  */
   struct block_info *src;
@@ -113,7 +113,7 @@ typedef struct arc_info
   /* Links to next arc on src and dst lists.  */
   struct arc_info *succ_next;
   struct arc_info *pred_next;
-} arc_t;
+};
 
 /* Describes which locations (lines and files) are associated with
    a basic block.  */
@@ -137,8 +137,8 @@ typedef struct block_info
   block_info ();
 
   /* Chain of exit and entry arcs.  */
-  arc_t *succ;
-  arc_t *pred;
+  arc_info *succ;
+  arc_info *pred;
 
   /* Number of unprocessed exit and entry arcs.  */
   gcov_type num_succ;
@@ -166,7 +166,7 @@ typedef struct block_info
   {
     /* Single line graph cycle workspace.  Used for all-blocks
        mode.  */
-    arc_t *arc;
+    arc_info *arc;
     unsigned ident;
   } cycle; /* Used in all-blocks mode, after blocks are linked onto
 	     lines.  */
@@ -200,7 +200,7 @@ struct line_info
   gcov_type count;
 
   /* Branches from blocks that end on this line.  */
-  vector<arc_t *> branches;
+  vector<arc_info *> branches;
 
   /* blocks which start on this line.  Used in all-blocks mode.  */
   vector<block_t *> blocks;
@@ -544,14 +544,14 @@ static void read_graph_file (void);
 static int read_count_file (void);
 static void solve_flow_graph (function_info *);
 static void find_exception_blocks (function_info *);
-static void add_branch_counts (coverage_t *, const arc_t *);
+static void add_branch_counts (coverage_t *, const arc_info *);
 static void add_line_counts (coverage_t *, function_info *);
 static void executed_summary (unsigned, unsigned);
 static void function_summary (const coverage_t *, const char *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_info *);
 static void output_gcov_file (const char *, source_info *);
-static int output_branch_count (FILE *, int, const arc_t *);
+static int output_branch_count (FILE *, int, const arc_info *);
 static void output_lines (FILE *, const source_info *);
 static char *make_gcov_file_name (const char *, const char *);
 static char *mangle_name (const char *, char *);
@@ -570,7 +570,7 @@ function_info::~function_info ()
 {
   for (int i = blocks.size () - 1; i >= 0; i--)
     {
-      arc_t *arc, *arc_n;
+      arc_info *arc, *arc_n;
 
       for (arc = blocks[i].succ; arc; arc = arc_n)
 	{
@@ -600,7 +600,7 @@ bool function_info::group_line_p (unsigned n, unsigned src_idx)
    simple paths)--the node is unblocked only when it participates in a cycle.
    */
 
-typedef vector<arc_t *> arc_vector_t;
+typedef vector<arc_info *> arc_vector_t;
 typedef vector<const block_t *> block_vector_t;
 
 /* Enum with types of loop in CFG.  */
@@ -682,7 +682,7 @@ circuit (block_t *v, arc_vector_t &path, block_t *start,
   blocked.push_back (v);
   block_lists.push_back (block_vector_t ());
 
-  for (arc_t *arc = v->succ; arc; arc = arc->succ_next)
+  for (arc_info *arc = v->succ; arc; arc = arc->succ_next)
     {
       block_t *w = arc->dst;
       if (w < start || !linfo.has_block (w))
@@ -701,7 +701,7 @@ circuit (block_t *v, arc_vector_t &path, block_t *start,
   if (result != NO_LOOP)
     unblock (v, blocked, block_lists);
   else
-    for (arc_t *arc = v->succ; arc; arc = arc->succ_next)
+    for (arc_info *arc = v->succ; arc; arc = arc->succ_next)
       {
 	block_t *w = arc->dst;
 	if (w < start || !linfo.has_block (w))
@@ -973,7 +973,7 @@ output_intermediate_line (FILE *f, line_info *line, unsigned line_num)
 	   format_gcov (line->count, 0, -1),
 	   line->has_unexecuted_block);
 
-  vector<arc_t *>::const_iterator it;
+  vector<arc_info *>::const_iterator it;
   if (flag_branches)
     for (it = line->branches.begin (); it != line->branches.end ();
 	 it++)
@@ -1621,7 +1621,7 @@ read_graph_file (void)
 
 	      if (dest >= fn->blocks.size ())
 		goto corrupt;
-	      arc = XCNEW (arc_t);
+	      arc = XCNEW (arc_info);
 
 	      arc->dst = &fn->blocks[dest];
 	      arc->src = src_blk;
@@ -1840,7 +1840,7 @@ static void
 solve_flow_graph (function_info *fn)
 {
   unsigned ix;
-  arc_t *arc;
+  arc_info *arc;
   gcov_type *count_ptr = &fn->counts.front ();
   block_t *blk;
   block_t *valid_blocks = NULL;    /* valid, but unpropagated blocks.  */
@@ -1849,7 +1849,7 @@ solve_flow_graph (function_info *fn)
   /* The arcs were built in reverse order.  Fix that now.  */
   for (ix = fn->blocks.size (); ix--;)
     {
-      arc_t *arc_p, *arc_n;
+      arc_info *arc_p, *arc_n;
 
       for (arc_p = NULL, arc = fn->blocks[ix].succ; arc;
 	   arc_p = arc, arc = arc_n)
@@ -1942,12 +1942,12 @@ solve_flow_graph (function_info *fn)
 	 smart sort.  */
       if (out_of_order)
 	{
-	  arc_t *start = blk->succ;
+	  arc_info *start = blk->succ;
 	  unsigned changes = 1;
 
 	  while (changes)
 	    {
-	      arc_t *arc, *arc_p, *arc_n;
+	      arc_info *arc, *arc_p, *arc_n;
 
 	      changes = 0;
 	      for (arc_p = NULL, arc = start; (arc_n = arc->succ_next);)
@@ -1985,7 +1985,7 @@ solve_flow_graph (function_info *fn)
       while ((blk = invalid_blocks))
 	{
 	  gcov_type total = 0;
-	  const arc_t *arc;
+	  const arc_info *arc;
 
 	  invalid_blocks = blk->chain;
 	  blk->invalid_chain = 0;
@@ -2007,7 +2007,7 @@ solve_flow_graph (function_info *fn)
       while ((blk = valid_blocks))
 	{
 	  gcov_type total;
-	  arc_t *arc, *inv_arc;
+	  arc_info *arc, *inv_arc;
 
 	  valid_blocks = blk->chain;
 	  blk->valid_chain = 0;
@@ -2115,7 +2115,7 @@ find_exception_blocks (function_info *fn)
   for (ix = 1; ix;)
     {
       block_t *block = queue[--ix];
-      const arc_t *arc;
+      const arc_info *arc;
 
       for (arc = block->succ; arc; arc = arc->succ_next)
 	if (!arc->fake && !arc->is_throw && arc->dst->exceptional)
@@ -2130,7 +2130,7 @@ find_exception_blocks (function_info *fn)
 /* Increment totals in COVERAGE according to arc ARC.  */
 
 static void
-add_branch_counts (coverage_t *coverage, const arc_t *arc)
+add_branch_counts (coverage_t *coverage, const arc_info *arc)
 {
   if (arc->is_call_non_return)
     {
@@ -2547,7 +2547,7 @@ add_line_counts (coverage_t *coverage, function_info *fn)
 
 	      if (flag_branches)
 		{
-		  arc_t *arc;
+		  arc_info *arc;
 
 		  for (arc = block->succ; arc; arc = arc->succ_next)
 		    line->branches.push_back (arc);
@@ -2585,10 +2585,10 @@ static void accumulate_line_info (line_info *line, source_info *src,
       for (vector<block_t *>::iterator it = line->blocks.begin ();
 	   it != line->blocks.end (); it++)
 	{
-	  for (arc_t *arc = (*it)->pred; arc; arc = arc->pred_next)
+	  for (arc_info *arc = (*it)->pred; arc; arc = arc->pred_next)
 	    if (!line->has_block (arc->src))
 	      count += arc->count;
-	  for (arc_t *arc = (*it)->succ; arc; arc = arc->succ_next)
+	  for (arc_info *arc = (*it)->succ; arc; arc = arc->succ_next)
 	    arc->cs_count = arc->count;
 	}
 
@@ -2673,7 +2673,7 @@ accumulate_line_counts (source_info *src)
    anything is output.  */
 
 static int
-output_branch_count (FILE *gcov_file, int ix, const arc_t *arc)
+output_branch_count (FILE *gcov_file, int ix, const arc_info *arc)
 {
   if (arc->is_call_non_return)
     {
@@ -2842,7 +2842,7 @@ output_line_details (FILE *f, const line_info *line, unsigned line_num)
 {
   if (flag_all_blocks)
     {
-      arc_t *arc;
+      arc_info *arc;
       int ix, jx;
 
       ix = jx = 0;
@@ -2870,7 +2870,7 @@ output_line_details (FILE *f, const line_info *line, unsigned line_num)
       int ix;
 
       ix = 0;
-      for (vector<arc_t *>::const_iterator it = line->branches.begin ();
+      for (vector<arc_info *>::const_iterator it = line->branches.begin ();
 	   it != line->branches.end (); it++)
 	ix += output_branch_count (f, ix, (*it));
     }
@@ -2884,7 +2884,7 @@ output_function_details (FILE *f, const function_info *fn)
   if (!flag_branches)
     return;
 
-  arc_t *arc = fn->blocks[EXIT_BLOCK].pred;
+  arc_info *arc = fn->blocks[EXIT_BLOCK].pred;
   gcov_type return_count = fn->blocks[EXIT_BLOCK].count;
   gcov_type called_count = fn->blocks[ENTRY_BLOCK].count;
 
