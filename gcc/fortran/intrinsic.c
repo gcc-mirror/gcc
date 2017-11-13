@@ -1940,9 +1940,7 @@ add_functions (void)
 
   add_sym_1 ("get_team", GFC_ISYM_GET_TEAM, CLASS_TRANSFORMATIONAL,
 	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008_TS,
-	     gfc_check_get_team,
-	     NULL,
-	     gfc_resolve_get_team,
+	     gfc_check_get_team, NULL, gfc_resolve_get_team,
 	     "level", BT_INTEGER, di, OPTIONAL);
 
   add_sym_0 ("getuid", GFC_ISYM_GETUID, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,

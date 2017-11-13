@@ -234,7 +234,7 @@ coarray:
       team_just_seen = false;
       stat_just_seen = false;
 
-      if (gfc_match(" , team = %e",&tmp) == MATCH_YES && ar->stat == NULL)
+      if (gfc_match (" , team = %e", &tmp) == MATCH_YES && ar->stat == NULL)
 	{
 	  ar->team = tmp;
 	  team_just_seen = true;
@@ -246,7 +246,7 @@ coarray:
 	  return MATCH_ERROR;
 	}
       
-      if (gfc_match(" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
+      if (gfc_match (" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
 	{
 	  ar->stat = tmp;
 	  stat_just_seen = true;

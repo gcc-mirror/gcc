@@ -735,16 +735,13 @@ gfc_trans_change_team (gfc_code *code)
     {
       gfc_se argse;
       tree team_type;
-      /* gfc_init_se (&argse, NULL); */
-      /* gfc_conv_expr_val (&argse, code->expr1); */
-      /* team_id = fold_convert (integer_type_node, argse.expr); */
+
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, code->expr1);
       team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
 
       return build_call_expr_loc (input_location,
-				  gfor_fndecl_caf_change_team, 2,
-				  team_type,
+				  gfor_fndecl_caf_change_team, 2, team_type,
 				  build_int_cst (integer_type_node, 0));
     }
   else
@@ -785,9 +782,7 @@ gfc_trans_sync_team (gfc_code *code)
     {
       gfc_se argse;
       tree team_type;
-      /* gfc_init_se (&argse, NULL); */
-      /* gfc_conv_expr_val (&argse, code->expr1); */
-      /* team_id = fold_convert (integer_type_node, argse.expr); */
+
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, code->expr1);
       team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
