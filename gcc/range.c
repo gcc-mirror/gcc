@@ -30,6 +30,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "selftest.h"
 
+static bool
+range_compatible_p (const_tree t1, const_tree t2)
+{
+  if (POINTER_TYPE_P (t1) && POINTER_TYPE_P (t2))
+    return true;
+  return types_compatible_p (const_cast <tree> (t1), const_cast <tree> (t2));
+}
+
 /* Subtract 1 from X and set OVERFLOW if the operation overflows.  */
 
 static wide_int inline
@@ -198,8 +206,7 @@ irange::irange (const irange &r)
 bool
 irange::operator== (const irange &r) const
 {
-  if (!types_compatible_p (const_cast <tree> (type),
-			   const_cast <tree> (r.type))
+  if (!range_compatible_p (type, r.type)
       || nitems != r.nitems || overflow != r.overflow)
     return false;
   for (unsigned i = 0; i < nitems; ++i)
@@ -695,8 +702,7 @@ irange::union_ (const wide_int &x, const wide_int &y)
 irange &
 irange::union_ (const irange &r)
 {
-  gcc_assert (types_compatible_p (const_cast <tree> (type),
-				  const_cast <tree> (r.type)));
+  gcc_assert (range_compatible_p (type, r.type));
 
   if (empty_p ())
     {
@@ -754,8 +760,7 @@ irange::intersect (const wide_int &x, const wide_int &y)
 irange &
 irange::intersect (const irange &r)
 {
-  gcc_assert (types_compatible_p (const_cast <tree> (type),
-				  const_cast <tree> (r.type)));
+  gcc_assert (range_compatible_p (type, r.type));
   irange orig_range (*this);
 
   /* Intersection with an empty range is an empty range.  */
