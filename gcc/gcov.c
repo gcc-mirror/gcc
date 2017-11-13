@@ -302,7 +302,7 @@ struct function_line_start_cmp
 
 /* Describes coverage of a file or function.  */
 
-typedef struct coverage_info
+struct coverage_info
 {
   int lines;
   int lines_executed;
@@ -315,7 +315,7 @@ typedef struct coverage_info
   int calls_executed;
 
   char *name;
-} coverage_t;
+};
 
 /* Describes a file mentioned in the block graph.  Contains an array
    of line info.  */
@@ -337,7 +337,7 @@ struct source_info
   /* Vector of line information.  */
   vector<line_info> lines;
 
-  coverage_t coverage;
+  coverage_info coverage;
 
   /* Functions in this source file.  These are in ascending line
      number order.  */
@@ -544,10 +544,10 @@ static void read_graph_file (void);
 static int read_count_file (void);
 static void solve_flow_graph (function_info *);
 static void find_exception_blocks (function_info *);
-static void add_branch_counts (coverage_t *, const arc_info *);
-static void add_line_counts (coverage_t *, function_info *);
+static void add_branch_counts (coverage_info *, const arc_info *);
+static void add_line_counts (coverage_info *, function_info *);
 static void executed_summary (unsigned, unsigned);
-static void function_summary (const coverage_t *, const char *);
+static void function_summary (const coverage_info *, const char *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_info *);
 static void output_gcov_file (const char *, source_info *);
@@ -981,8 +981,8 @@ output_intermediate_line (FILE *f, line_info *line, unsigned line_num)
 	if (!(*it)->is_unconditional && !(*it)->is_call_non_return)
 	  {
 	    const char *branch_type;
-	    /* branch:<line_num>,<branch_coverage_type>
-	       branch_coverage_type
+	    /* branch:<line_num>,<branch_coverage_infoype>
+	       branch_coverage_infoype
 	       : notexec (Branch not executed)
 	       : taken (Branch executed and taken)
 	       : nottaken (Branch executed, but not taken)
@@ -1264,7 +1264,7 @@ generate_results (const char *file_name)
        it != functions.end (); it++)
     {
       function_info *fn = *it;
-      coverage_t coverage;
+      coverage_info coverage;
 
       memset (&coverage, 0, sizeof (coverage));
       coverage.name = flag_demangled_names ? fn->demangled_name : fn->name;
@@ -2130,7 +2130,7 @@ find_exception_blocks (function_info *fn)
 /* Increment totals in COVERAGE according to arc ARC.  */
 
 static void
-add_branch_counts (coverage_t *coverage, const arc_info *arc)
+add_branch_counts (coverage_info *coverage, const arc_info *arc)
 {
   if (arc->is_call_non_return)
     {
@@ -2242,7 +2242,7 @@ executed_summary (unsigned lines, unsigned executed)
 /* Output summary info for a function or file.  */
 
 static void
-function_summary (const coverage_t *coverage, const char *title)
+function_summary (const coverage_info *coverage, const char *title)
 {
   fnotice (stdout, "%s '%s'\n", title, coverage->name);
   executed_summary (coverage->lines, coverage->lines_executed);
@@ -2479,7 +2479,7 @@ mangle_name (char const *base, char *ptr)
    the appropriate basic block.  */
 
 static void
-add_line_counts (coverage_t *coverage, function_info *fn)
+add_line_counts (coverage_info *coverage, function_info *fn)
 {
   bool has_any_line = false;
   /* Scan each basic block.  */
