@@ -478,6 +478,9 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 
+  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  unsigned char va_opt;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 

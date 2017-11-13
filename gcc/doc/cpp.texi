@@ -1675,20 +1675,27 @@ macro.  We could define @code{eprintf} like this, instead:
 @end smallexample
 
 @noindent
-This formulation looks more descriptive, but unfortunately it is less
-flexible: you must now supply at least one argument after the format
-string.  In standard C, you cannot omit the comma separating the named
-argument from the variable arguments.  Furthermore, if you leave the
-variable argument empty, you will get a syntax error, because
-there will be an extra comma after the format string.
+This formulation looks more descriptive, but historically it was less
+flexible: you had to supply at least one argument after the format
+string.  In standard C, you could not omit the comma separating the
+named argument from the variable arguments.  (Note that this
+restriction has been lifted in C++2a, and never existed in GNU C; see
+below.)
+
+Furthermore, if you left the variable argument empty, you would have
+gotten a syntax error, because there would have been an extra comma
+after the format string.
 
 @smallexample
 eprintf("success!\n", );
      @expansion{} fprintf(stderr, "success!\n", );
 @end smallexample
 
-GNU CPP has a pair of extensions which deal with this problem.  First,
-you are allowed to leave the variable argument out entirely:
+This has been fixed in C++2a, and GNU CPP also has a pair of
+extensions which deal with this problem.
+
+First, in GNU CPP, and in C++ beginning in C++2a, you are allowed to
+leave the variable argument out entirely:
 
 @smallexample
 eprintf ("success!\n")
@@ -1696,8 +1703,24 @@ eprintf ("success!\n")
 @end smallexample
 
 @noindent
-Second, the @samp{##} token paste operator has a special meaning when
-placed between a comma and a variable argument.  If you write
+Second, C++2a introduces the @code{@w{__VA_OPT__}} function macro.
+This macro may only appear in the definition of a variadic macro.  If
+the variable argument has any tokens, then a @code{@w{__VA_OPT__}}
+invocation expands to its argument; but if the variable argument does
+not have any tokens, the @code{@w{__VA_OPT__}} expands to nothing:
+
+@smallexample
+#define eprintf(format, @dots{}) \\
+  fprintf (stderr, format __VA_OPT__(,) __VA_ARGS__)
+@end smallexample
+
+@code{@w{__VA_OPT__}} is also available in GNU C and GNU C++.
+
+Historically, GNU CPP has also had another extension to handle the
+trailing comma: the @samp{##} token paste operator has a special
+meaning when placed between a comma and a variable argument.  Despite
+the introduction of @code{@w{__VA_OPT__}}, this extension remains
+supported in GNU CPP, for backward compatibility.  If you write
 
 @smallexample
 #define eprintf(format, @dots{}) fprintf (stderr, format, ##__VA_ARGS__)
@@ -1729,6 +1752,9 @@ be used as a macro name, macro argument name, or within a different type
 of macro.  It may also be forbidden in open text; the standard is
 ambiguous.  We recommend you avoid using it except for its defined
 purpose.
+
+Likewise, C++ forbids @code{@w{__VA_OPT__}} anywhere outside the
+replacement list of a variadic macro.
 
 Variadic macros became a standard part of the C language with C99.  
 GNU CPP previously supported them

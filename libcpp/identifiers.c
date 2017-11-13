@@ -70,6 +70,8 @@ _cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
   s->n_false		= cpp_lookup (pfile, DSC("false"));
   s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
   s->n__VA_ARGS__->flags |= NODE_DIAGNOSTIC;
+  s->n__VA_OPT__        = cpp_lookup (pfile, DSC("__VA_OPT__"));
+  s->n__VA_OPT__->flags |= NODE_DIAGNOSTIC;
   s->n__has_include__   = cpp_lookup (pfile, DSC("__has_include__"));
   s->n__has_include_next__ = cpp_lookup (pfile, DSC("__has_include_next__"));
 }

@@ -1352,6 +1352,28 @@ forms_identifier_p (cpp_reader *pfile, int first,
   return false;
 }
 
+/* Helper function to issue error about improper __VA_OPT__ use.  */
+static void
+maybe_va_opt_error (cpp_reader *pfile)
+{
+  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, va_opt))
+    {
+      /* __VA_OPT__ should not be accepted at all, but allow it in
+	 system headers.  */
+      if (!cpp_in_system_header (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "__VA_OPT__ is not available until C++2a");
+    }
+  else if (!pfile->state.va_args_ok)
+    {
+      /* __VA_OPT__ should only appear in the replacement list of a
+	 variadic macro.  */
+      cpp_error (pfile, CPP_DL_PEDWARN,
+		 "__VA_OPT__ can only appear in the expansion"
+		 " of a C++2a variadic macro");
+    }
+}
+
 /* Helper function to get the cpp_hashnode of the identifier BASE.  */
 static cpp_hashnode *
 lex_identifier_intern (cpp_reader *pfile, const uchar *base)
@@ -1395,6 +1417,9 @@ lex_identifier_intern (cpp_reader *pfile, const uchar *base)
 		       "__VA_ARGS__ can only appear in the expansion"
 		       " of a C99 variadic macro");
 	}
+
+      if (result == pfile->spec_nodes.n__VA_OPT__)
+	maybe_va_opt_error (pfile);
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
@@ -1484,6 +1509,11 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 		       "__VA_ARGS__ can only appear in the expansion"
 		       " of a C99 variadic macro");
 	}
+
+      /* __VA_OPT__ should only appear in the replacement list of a
+	 variadic macro.  */
+      if (result == pfile->spec_nodes.n__VA_OPT__)
+	maybe_va_opt_error (pfile);
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
