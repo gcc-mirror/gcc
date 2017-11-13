@@ -1286,8 +1286,6 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	  && is_dummy_object (x))
 	{
 	  x = ctx->object;
-	  /* We don't use cp_build_addr_expr here because we don't want to
-	     capture the object argument during constexpr evaluation.  */
 	  x = build_address (x);
 	}
       bool lval = false;
@@ -5289,7 +5287,25 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
-	return RECUR (DECL_VALUE_EXPR (t), rval);
+	{
+	  if (now && is_normal_capture_proxy (t))
+	    {
+	      /* -- in a lambda-expression, a reference to this or to a
+		 variable with automatic storage duration defined outside that
+		 lambda-expression, where the reference would be an
+		 odr-use.  */
+	      if (flags & tf_error)
+		{
+		  tree cap = DECL_CAPTURED_VARIABLE (t);
+		  error ("lambda capture of %qE is not a constant expression",
+			 cap);
+		  if (!want_rval && decl_constant_var_p (cap))
+		    inform (input_location, "because it is used as a glvalue");
+		}
+	      return false;
+	    }
+	  return RECUR (DECL_VALUE_EXPR (t), rval);
+	}
       if (want_rval
 	  && !var_in_maybe_constexpr_fn (t)
 	  && !type_dependent_expression_p (t)

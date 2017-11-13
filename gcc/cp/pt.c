@@ -9500,16 +9500,6 @@ in_template_function (void)
   return ret;
 }
 
-/* Returns true iff we are currently within a template other than a
-   default-capturing generic lambda, so we don't need to worry about semantic
-   processing.  */
-
-bool
-processing_nonlambda_template (void)
-{
-  return processing_template_decl && !need_generic_capture ();
-}
-
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 bool

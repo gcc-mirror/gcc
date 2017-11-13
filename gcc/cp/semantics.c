@@ -410,8 +410,6 @@ maybe_cleanup_point_expr (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
     expr = fold_build_cleanup_point_expr (TREE_TYPE (expr), expr);
-  else
-    expr = do_dependent_capture (expr);
   return expr;
 }
 
@@ -425,8 +423,6 @@ maybe_cleanup_point_expr_void (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
     expr = fold_build_cleanup_point_expr (void_type_node, expr);
-  else
-    expr = do_dependent_capture (expr);
   return expr;
 }
 
@@ -633,8 +629,6 @@ finish_goto_stmt (tree destination)
 	    = fold_build_cleanup_point_expr (TREE_TYPE (destination),
 					     destination);
 	}
-      else
-	destination = do_dependent_capture (destination);
     }
 
   check_goto (destination);
@@ -656,7 +650,7 @@ maybe_convert_cond (tree cond)
 
   /* Wait until we instantiate templates before doing conversion.  */
   if (processing_template_decl)
-    return do_dependent_capture (cond);
+    return cond;
 
   if (warn_sequence_point)
     verify_sequence_points (cond);
@@ -3291,10 +3285,14 @@ outer_automatic_var_p (tree decl)
 }
 
 /* DECL satisfies outer_automatic_var_p.  Possibly complain about it or
-   rewrite it for lambda capture.  */
+   rewrite it for lambda capture.
+
+   If ODR_USE is true, we're being called from mark_use, and we complain about
+   use of constant variables.  If ODR_USE is false, we're being called for the
+   id-expression, and we do lambda capture.  */
 
 tree
-process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
+process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 {
   if (cp_unevaluated_operand)
     /* It's not a use (3.2) if we're in an unevaluated context.  */
@@ -3315,12 +3313,6 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
 
-  /* Core issue 696: Only an odr-use of an outer automatic variable causes a
-     capture (or error), and a constant variable can decay to a prvalue
-     constant without odr-use.  So don't capture yet.  */
-  if (decl_constant_var_p (decl) && !force_use)
-    return decl;
-
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
       /* Check whether we've already built a proxy.  */
@@ -3336,7 +3328,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
 	    return d;
 	  else
 	    /* We need to capture an outer proxy.  */
-	    return process_outer_var_ref (d, complain, force_use);
+	    return process_outer_var_ref (d, complain, odr_use);
 	}
     }
 
@@ -3382,12 +3374,19 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
 	error ("cannot capture member %qD of anonymous union", decl);
       return error_mark_node;
     }
-  if (context == containing_function)
+  /* Do lambda capture when processing the id-expression, not when
+     odr-using a variable.  */
+  if (!odr_use && context == containing_function)
     {
       decl = add_default_capture (lambda_stack,
 				  /*id=*/DECL_NAME (decl),
 				  initializer);
     }
+  /* Only an odr-use of an outer automatic variable causes an
+     error, and a constant variable can decay to a prvalue
+     constant without odr-use.  So don't complain yet.  */
+  else if (!odr_use && decl_constant_var_p (decl))
+    return decl;
   else if (lambda_expr)
     {
       if (complain & tf_error)

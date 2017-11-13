@@ -6844,8 +6844,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  DECL_INITIAL (decl) = NULL_TREE;
 	}
 
-      init = do_dependent_capture (init);
-
       /* Generally, initializers in templates are expanded when the
 	 template is instantiated.  But, if DECL is a variable constant
 	 then it can be used in future constant expressions, so its value
