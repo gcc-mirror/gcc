@@ -853,7 +853,6 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
 
   if (m->id == GFC_ISYM_NONE)
     {
-      printf ("Id %d none %d\n",id,GFC_ISYM_NONE);
       gfc_internal_error ("Intrinsic function %qs (%d) not recognized",
 			  expr->value.function.name, id);
     }
