@@ -6820,6 +6820,9 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
     {
       tree base;
 
+      if (processing_template_decl)
+	return expr;
+
       /* There is a standard conversion from "D*" to "B*" even if "B"
 	 is ambiguous or inaccessible.  If this is really a
 	 static_cast, then we check both for inaccessibility and
@@ -6864,6 +6867,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       && reference_related_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
+      if (processing_template_decl)
+	return expr;
       if (clk == clk_ordinary)
 	{
 	  /* Handle the (non-bit-field) lvalue case here by casting to
@@ -6911,6 +6916,9 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 						      c_cast_p, complain);
   if (result)
     {
+      if (processing_template_decl)
+	return expr;
+
       result = convert_from_reference (result);
 
       /* [expr.static.cast]
@@ -6952,7 +6960,11 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
        || SCALAR_FLOAT_TYPE_P (type))
       && (INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
 	  || SCALAR_FLOAT_TYPE_P (intype)))
-    return ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL, complain);
+    {
+      if (processing_template_decl)
+	return expr;
+      return ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL, complain);
+    }
 
   if (TYPE_PTR_P (type) && TYPE_PTR_P (intype)
       && CLASS_TYPE_P (TREE_TYPE (type))
@@ -6964,6 +6976,9 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 		      complain))
     {
       tree base;
+
+      if (processing_template_decl)
+	return expr;
 
       if (!c_cast_p
 	  && check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR,
@@ -7019,6 +7034,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 						   STATIC_CAST_EXPR,
 						   complain))
 	    return error_mark_node;
+	  if (processing_template_decl)
+	    return expr;
 	  return convert_ptrmem (type, expr, /*allow_inverse_p=*/1,
 				 c_cast_p, complain);
 	}
@@ -7038,6 +7055,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	  && check_for_casting_away_constness (intype, type, STATIC_CAST_EXPR,
 					       complain))
 	return error_mark_node;
+      if (processing_template_decl)
+	return expr;
       return build_nop (type, expr);
     }
 
