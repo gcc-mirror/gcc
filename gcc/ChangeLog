@@ -1,5 +1,12 @@
 2017-11-13  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (function_info::is_artificial): New function.
+	(process_file): Erase all artificial early.
+	(generate_results): Skip as all artificial are already
+	removed.
+
+2017-11-13  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (read_graph_file): Store to global vector of functions.
 	(read_count_file): Iterate the vector.
 	(process_file): Likewise.
