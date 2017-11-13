@@ -241,8 +241,7 @@ extern void dwarf2out_vms_end_prologue (unsigned int, const char *);
 extern void dwarf2out_vms_begin_epilogue (unsigned int, const char *);
 extern void dwarf2out_end_epilogue (unsigned int, const char *);
 extern void dwarf2out_frame_finish (void);
-/* Decide whether we want to emit frame unwind information for the current
-   translation unit.  */
+extern bool dwarf2out_do_eh_frame (void);
 extern bool dwarf2out_do_frame (void);
 extern bool dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);

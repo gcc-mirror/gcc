@@ -263,7 +263,6 @@ static GTY(()) int dw2_string_counter;
 static GTY(()) bool have_multiple_function_sections = false;
 
 /* Whether the default text and cold text sections have been used at all.  */
-
 static GTY(()) bool text_section_used = false;
 static GTY(()) bool cold_text_section_used = false;
 
@@ -1060,7 +1059,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   dup_label = xstrdup (label);
   current_function_func_begin_label = dup_label;
 
-  /* We can elide the fde allocation if we're not emitting debug info.  */
+  /* We can elide FDE allocation if we're not emitting frame unwind info.  */
   if (!do_frame)
     return;
 
@@ -1180,8 +1179,7 @@ dwarf2out_frame_finish (void)
     output_call_frame_info (0);
 
   /* Output another copy for the unwinder.  */
-  if ((flag_unwind_tables || flag_exceptions)
-      && targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
+  if (dwarf2out_do_eh_frame ())
     output_call_frame_info (1);
 }
 
@@ -27522,8 +27520,7 @@ dwarf2out_assembly_start (void)
 
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
       && dwarf2out_do_cfi_asm ()
-      && (!(flag_unwind_tables || flag_exceptions)
-	  || targetm_common.except_unwind_info (&global_options) != UI_DWARF2))
+      && !dwarf2out_do_eh_frame ())
     fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
 }
 
