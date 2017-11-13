@@ -1024,13 +1024,13 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 
   // If this is a unary operation, call fold now.  
   if (!rn.operand2 ())
-    return rn.fold (r, &range_op1, NULL);
+    return rn.fold (r, range_op1);
   
   if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
       !path_range_of_def (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
     get_operand_range (range_op2, rn.operand2 ());
  
-  return rn.fold (r, &range_op1, &range_op2);
+  return rn.fold (r, range_op1, range_op2);
 }
 
 /* Calculate the known range for NAME on a path of basic blocks in

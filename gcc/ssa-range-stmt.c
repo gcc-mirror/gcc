@@ -177,7 +177,7 @@ range_stmt::from_stmt (gimple *s)
 	      if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
 		op2 = gimple_assign_rhs2 (g);
 	      else
-	        /* Unary operations often need the type, think casting.  */
+	        /* Unary operations require the type of op1 as op2.  */
 		if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS
 		    || get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
 		  op2 = TREE_TYPE (op1);
@@ -340,167 +340,115 @@ range_stmt::operator= (gimple *s)
    an ssa_name with no range.  */
 
 bool
-range_stmt::fold (irange &res, irange* value1, irange* value2) const
+range_stmt::fold (irange &res, const irange& r1) const
 {
-  bool result = false;
-  tree lhs;
-  irange r1, r2;
+  irange r2;
   irange_operator *handler = irange_op_handler (code);
-  
   gcc_assert (handler != NULL);
-
 
   switch (state)
     {
       case RS_I:
-	if (!value1)
-	  {
-	    r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
-	    value1 = &r1;
-	  }
 	r2.clear ();
-	result = handler->fold_range (res, *value1, r2);
-	break;
-
-      case RS_II:
-	if (value1 && value2)
-	  return handler->fold_range (res, *value1, *value2);
-        gcc_assert (!value1 && !value2);
-	r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
-	r2.set_range (TREE_TYPE (operand2 ()), operand2 (), operand2 ());
-	result = handler->fold_range (res, r1, r2);
 	break;
 
       case RS_S:
         {
-	  lhs = gimple_get_lhs (g);
 	  /* Single ssa operations require the LHS type as the second range.  */
+	  tree lhs = gimple_get_lhs (g);
 	  if (lhs)
 	    r2.set_range_for_type (TREE_TYPE (lhs));
 	  else
 	    r2.clear ();
-	  value2 = &r2;
-	  result = handler->fold_range (res, *value1, *value2);
-	break;
-      }
+	  break;
+	}
 
-      case RS_SI:
-        if (!value2)
-	  {
-	    r2.set_range (TREE_TYPE (operand2 ()), operand2 (), operand2 ());
-	    value2 = &r2;
-	  }
-	result = handler->fold_range(res, *value1, *value2);
+      default:
+        error ("Called singular fold on 2 element statement.");
 	break;
+    }
 
-      case RS_IS:
-	/* Allows calling with (NULL, range) in addition to (range).  */
-        /* One param or the other needs to be non-null.  */
-	if (value1 && value2)
-	  result = handler->fold_range (res, *value1, *value2);
-	else
-	  {
-	    gcc_assert (!value1 != !value2);
-	    r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
-	    if (value1)
-	      result = handler->fold_range (res, r1, *value1);
-	    else
-	      result = handler->fold_range (res, r1, *value2);
-	  }
-	break;
+  return handler->fold_range (res, r1, r2);
+}
 
-      case RS_SS:
-        gcc_assert (value1 && value2);
-	result = handler->fold_range(res, *value1, *value2);
-	break;
+bool
+range_stmt::fold (irange &res, const irange& r1, const irange& r2) const
+{
+  irange_operator *handler = irange_op_handler (code);
+  gcc_assert (handler != NULL);
+
+  // WHen folding single operand operations, override the op2 parameter. */
+  if (state == RS_S || state == RS_I)
+    return fold (res, r1);
+  return handler->fold_range (res, r1, r2);
+}
+
+
+bool
+range_stmt::fold (irange &res) const
+{
+  irange r1, r2;
   
+  switch (state)
+    {
+      case RS_I:
+      case RS_S:
+        get_operand_range (r1, operand1 ());
+	return fold (res, r1);
+
+      case RS_II:
+      case RS_SI:
+      case RS_IS:
+      case RS_SS:
+	get_operand_range (r1, operand1 ());
+	get_operand_range (r2, operand2 ());
+        break;
+
+      default:
+        gcc_unreachable ();
+	break;
+    }
+  return fold (res, r1, r2);
+}
+
+
+bool
+range_stmt::fold (irange& res, tree name, const irange& name_range) const
+{
+  irange r1, r2;
+
+  switch (state)
+    {
+      case RS_I:
+      case RS_S:
+        if (ssa1 == name)
+	  r1 = name_range;
+	else
+	  get_operand_range (r1, operand1 ());
+	return fold (res, r1);
+	break;
+
+      case RS_II:
+      case RS_SI:
+      case RS_IS:
+      case RS_SS:
+	if (ssa1 == name)
+	  r1 = name_range;
+	else
+	  get_operand_range (r1, operand1 ());
+
+	if (ssa2 == name)
+	  r2 = name_range;
+	else
+	  get_operand_range (r2, operand2 ());
+	break;
+
       default:
         gcc_unreachable ();
 	break;
     }
 
-  return result;
-}
-
-
-/* Resolve the expression using whatever we know about the global state of
-   any SSA_NAMEs involved.  This will ensure we can always get a range,
-   if it is possible. 
-   Return TRUE if a range is calculated. */
-   
-bool
-range_stmt::fold (irange& r, FILE *trace) const
-{
-  irange r1, r2;
-  irange *r1p = NULL, *r2p = NULL;
-  bool res;
-
-  if (trace)
-    {
-      fprintf (trace, "Calling fold() on : ");
-      dump (trace);
-    }
-
-  if (ssa1)
-    {
-      r1 = ssa1;
-      r1p = &r1;
-      if (trace)
-        {
-	  fprintf (trace, "  name1 range = ");
-	  r1.dump ();
-	}
-    }
-
-  if (ssa2)
-    {
-      r2 = ssa2;
-      r2p = &r2;
-      if (trace)
-        {
-	  fprintf (trace, "  name2 range = ");
-	  r2.dump ();
-	}
-    }
-
-  res = fold (r, r1p, r2p);
-  if (trace)
-    {
-      fprintf (trace, "\nFold Result range : ");
-      r.dump (trace);
-      fprintf (trace, "\n");
-    }
-
-  return res;
-}
-
-bool
-range_stmt::fold (irange& r, tree name, const irange& name_range) const
-{
-  irange r1, r2;
-  irange *r1p = NULL, *r2p = NULL;
-  bool res;
-
-  if (ssa1)
-    {
-      if (ssa1 == name)
-        r1 = name_range;
-      else
-	r1 = ssa1;
-      r1p = &r1;
-    }
-
-  if (ssa2)
-    {
-      if (ssa2 == name)
-        r2 = name_range;
-      else
-	r2 = ssa2;
-      r2p = &r2;
-    }
-
-  res = fold (r, r1p, r2p);
-  return res;
+  return fold (res, r1, r2);
 }
 
 bool
