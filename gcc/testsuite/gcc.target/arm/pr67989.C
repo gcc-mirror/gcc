@@ -2,7 +2,8 @@
 /* { dg-options "-std=c++11 -O2" } */
 /* { dg-require-effective-target arm_arch_v4t_ok } */
 /* { dg-add-options arm_arch_v4t } */
-/* { dg-additional-options "-marm" } */
+/* { dg-additional-options "-marm -Wno-return-type" } */
+
 
 /* Duplicate version of the test in g++.dg to be able to run this test only if
    ARMv4t in ARM execution state can be targetted.  Newer architecture don't

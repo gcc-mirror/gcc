@@ -1,3 +1,8 @@
+2017-11-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr67989.C: Add -Wno-return-type to
+	dg-additional-options.
+
 2017-11-13  Nathan Sidwell  <nathan@acm.org>
 
 	* lib/gcc-dg.exp (process-message): Use -: for no column.
