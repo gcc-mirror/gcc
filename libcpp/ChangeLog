@@ -1,3 +1,22 @@
+2017-11-13  Tom Tromey  <tom@tromey.com>
+
+	* pch.c (cpp_read_state): Set n__VA_OPT__.
+	* macro.c (vaopt_state): New class.
+	(_cpp_arguments_ok): Check va_opt flag.
+	(replace_args, create_iso_definition): Use vaopt_state.
+	* lex.c (lex_identifier_intern): Possibly issue errors for
+	__VA_OPT__.
+	(lex_identifier): Likewise.
+	(maybe_va_opt_error): New function.
+	* internal.h (struct lexer_state) <va_args_ok>: Update comment.
+	(struct spec_nodes) <n__VA_OPT__>: New field.
+	* init.c (struct lang_flags) <va_opt>: New field.
+	(lang_defaults): Add entries for C++2A.  Update all entries for
+	va_opt.
+	(cpp_set_lang): Initialize va_opt.
+	* include/cpplib.h (struct cpp_options) <va_opt>: New field.
+	* identifiers.c (_cpp_init_hashtable): Initialize n__VA_OPT__.
+
 2017-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (linenum_type): Move this typedef and the

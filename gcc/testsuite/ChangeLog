@@ -1,3 +1,9 @@
+2017-11-13  Tom Tromey  <tom@tromey.com>
+
+	* c-c++-common/cpp/va-opt-pedantic.c: New file.
+	* c-c++-common/cpp/va-opt.c: New file.
+	* c-c++-common/cpp/va-opt-error.c: New file.
+
 2017-11-13  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-6-p9-runnable.c: Add new runnable test.

@@ -1,3 +1,7 @@
+2017-11-13  Tom Tromey  <tom@tromey.com>
+
+	* doc/cpp.texi (Variadic Macros): Document __VA_OPT__.
+
 2017-11-13  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins):
