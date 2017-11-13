@@ -1,6 +1,14 @@
 2017-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/82934
+	* trans-stmt.c (gfc_trans_allocate): Remove the gcc_assert on
+	null string length for assumed length typespec and set
+	expr3_esize to NULL_TREE;
+
+2017-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/78619
 	* check.c (same_type_check): Introduce a new argument 'assoc'
 	with default value false. If this is true, use the symbol type
