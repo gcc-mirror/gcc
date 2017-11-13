@@ -1,3 +1,9 @@
+2017-11-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 82869
+	* gfortran.dg/logical_temp_io.f90: New test.
+	* gfortran.dg/logical_temp_io_kind8.f90: New test.
+
 2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt69.adb: New test.
