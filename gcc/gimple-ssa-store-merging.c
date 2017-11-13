@@ -1198,10 +1198,12 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      std::swap (info->ops[0], info->ops[1]);
 	      info->ops_swapped_p = true;
 	    }
-	  if ((!infof->ops[0].base_addr
-	       || compatible_load_p (merged_store, info, base_addr, 0))
-	      && (!infof->ops[1].base_addr
-		  || compatible_load_p (merged_store, info, base_addr, 1)))
+	  if ((infof->ops[0].base_addr
+	       ? compatible_load_p (merged_store, info, base_addr, 0)
+	       : !info->ops[0].base_addr)
+	      && (infof->ops[1].base_addr
+		  ? compatible_load_p (merged_store, info, base_addr, 1)
+		  : !info->ops[1].base_addr))
 	    {
 	      merged_store->merge_into (info);
 	      continue;
