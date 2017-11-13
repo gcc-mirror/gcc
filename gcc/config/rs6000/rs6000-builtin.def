@@ -2006,6 +2006,31 @@ BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
 BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
 BU_P9V_AV_2 (CONVERT_4F32_8I16, "convert_4f32_8i16", CONST, convert_4f32_8i16)
 
+BU_P9V_AV_2 (VFIRSTMATCHINDEX_V16QI, "first_match_index_v16qi",
+	     CONST, first_match_index_v16qi)
+BU_P9V_AV_2 (VFIRSTMATCHINDEX_V8HI, "first_match_index_v8hi",
+	     CONST, first_match_index_v8hi)
+BU_P9V_AV_2 (VFIRSTMATCHINDEX_V4SI, "first_match_index_v4si",
+	     CONST, first_match_index_v4si)
+BU_P9V_AV_2 (VFIRSTMATCHOREOSINDEX_V16QI, "first_match_or_eos_index_v16qi",
+	     CONST, first_match_or_eos_index_v16qi)
+BU_P9V_AV_2 (VFIRSTMATCHOREOSINDEX_V8HI, "first_match_or_eos_index_v8hi",
+	     CONST, first_match_or_eos_index_v8hi)
+BU_P9V_AV_2 (VFIRSTMATCHOREOSINDEX_V4SI, "first_match_or_eos_index_v4si",
+	     CONST, first_match_or_eos_index_v4si)
+BU_P9V_AV_2 (VFIRSTMISMATCHINDEX_V16QI, "first_mismatch_index_v16qi",
+	     CONST, first_mismatch_index_v16qi)
+BU_P9V_AV_2 (VFIRSTMISMATCHINDEX_V8HI, "first_mismatch_index_v8hi",
+	     CONST, first_mismatch_index_v8hi)
+BU_P9V_AV_2 (VFIRSTMISMATCHINDEX_V4SI, "first_mismatch_index_v4si",
+	     CONST, first_mismatch_index_v4si)
+BU_P9V_AV_2 (VFIRSTMISMATCHOREOSINDEX_V16QI, "first_mismatch_or_eos_index_v16qi",
+	     CONST, first_mismatch_or_eos_index_v16qi)
+BU_P9V_AV_2 (VFIRSTMISMATCHOREOSINDEX_V8HI, "first_mismatch_or_eos_index_v8hi",
+	     CONST, first_mismatch_or_eos_index_v8hi)
+BU_P9V_AV_2 (VFIRSTMISMATCHOREOSINDEX_V4SI, "first_mismatch_or_eos_index_v4si",
+	     CONST, first_mismatch_or_eos_index_v4si)
+
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
 BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
@@ -2082,6 +2107,11 @@ BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth")
 BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl")
 
 /* ISA 3.0 vector scalar overloaded 2 argument functions.  */
+BU_P9V_OVERLOAD_2 (VFIRSTMATCHINDEX,	"first_match_index")
+BU_P9V_OVERLOAD_2 (VFIRSTMISMATCHINDEX,	"first_mismatch_index")
+BU_P9V_OVERLOAD_2 (VFIRSTMATCHOREOSINDEX,	"first_match_or_eos_index")
+BU_P9V_OVERLOAD_2 (VFIRSTMISMATCHOREOSINDEX,	"first_mismatch_or_eos_index")
+
 BU_P9V_OVERLOAD_2 (VSIEDP,	"scalar_insert_exp")
 
 BU_P9V_OVERLOAD_2 (VSTDC,	"scalar_test_data_class")
@@ -2149,7 +2179,9 @@ BU_P9V_64BIT_AV_X (XST_LEN_R,	"xst_len_r",	MISC)
 
 /* 1 argument vector functions added in ISA 3.0 (power9). */
 BU_P9V_AV_1 (VCLZLSBB, "vclzlsbb",		CONST,	vclzlsbb)
-BU_P9V_AV_1 (VCTZLSBB, "vctzlsbb",		CONST,	vctzlsbb)
+BU_P9V_AV_1 (VCTZLSBB_V16QI, "vctzlsbb_v16qi",	CONST,	vctzlsbb_v16qi)
+BU_P9V_AV_1 (VCTZLSBB_V8HI, "vctzlsbb_v8hi",	CONST,	vctzlsbb_v8hi)
+BU_P9V_AV_1 (VCTZLSBB_V4SI, "vctzlsbb_v4si",	CONST,	vctzlsbb_v4si)
 
 /* Built-in support for Power9 "VSU option" string operations includes
    new awareness of the "vector compare not equal" (vcmpneb, vcmpneb.,

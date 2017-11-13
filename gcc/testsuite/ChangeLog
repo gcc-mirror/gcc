@@ -1,3 +1,9 @@
+2017-11-13  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-6-p9-runnable.c: Add new runnable test.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-2.c: Update expected error
+	message.
+
 2017-11-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/float128-minmax.c: New test.
