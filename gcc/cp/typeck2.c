@@ -1792,7 +1792,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  return expr;
 	}
 
-      return cp_build_indirect_ref (last_rval, RO_NULL, complain);
+      return cp_build_indirect_ref (last_rval, RO_ARROW, complain);
     }
 
   if (complain & tf_error)
@@ -1893,7 +1893,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	 value stored in the pointer-to-data-member.  */
       ptype = build_pointer_type (type);
       datum = fold_build_pointer_plus (fold_convert (ptype, datum), component);
-      datum = cp_build_indirect_ref (datum, RO_NULL, complain);
+      datum = cp_build_fold_indirect_ref (datum);
       if (datum == error_mark_node)
 	return error_mark_node;
 

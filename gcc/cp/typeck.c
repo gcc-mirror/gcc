@@ -2356,7 +2356,7 @@ build_class_member_access_expr (cp_expr object, tree member,
   {
     tree temp = unary_complex_lvalue (ADDR_EXPR, object);
     if (temp)
-      object = cp_build_indirect_ref (temp, RO_NULL, complain);
+      object = cp_build_fold_indirect_ref (temp);
   }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
@@ -3035,19 +3035,18 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
     return rval;
 }
 
-/* Helper function called from c-common.  */
-tree
-build_indirect_ref (location_t /*loc*/,
-		    tree ptr, ref_operator errorstring)
-{
-  return cp_build_indirect_ref (ptr, errorstring, tf_warning_or_error);
-}
+/* The implementation of the above, and of indirection implied by other
+   constructs.  If DO_FOLD is true, fold away INDIRECT_REF of ADDR_EXPR.  */
 
-tree
-cp_build_indirect_ref (tree ptr, ref_operator errorstring, 
-                       tsubst_flags_t complain)
+static tree
+cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
+			 tsubst_flags_t complain, bool do_fold)
 {
   tree pointer, type;
+
+  /* RO_NULL should only be used with the folding entry points below, not
+     cp_build_indirect_ref.  */
+  gcc_checking_assert (errorstring != RO_NULL || do_fold);
 
   if (ptr == current_class_ptr
       || (TREE_CODE (ptr) == NOP_EXPR
@@ -3092,7 +3091,7 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
             error ("%qT is not a pointer-to-object type", type);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (pointer) == ADDR_EXPR
+      else if (do_fold && TREE_CODE (pointer) == ADDR_EXPR
 	       && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0))))
 	/* The POINTER was something like `&x'.  We simplify `*&x' to
 	   `x'.  */
@@ -3139,6 +3138,34 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
     invalid_indirection_error (input_location, type, errorstring);
 
   return error_mark_node;
+}
+
+/* Entry point used by c-common, which expects folding.  */
+
+tree
+build_indirect_ref (location_t /*loc*/,
+		    tree ptr, ref_operator errorstring)
+{
+  return cp_build_indirect_ref_1 (ptr, errorstring, tf_warning_or_error, true);
+}
+
+/* Entry point used by internal indirection needs that don't correspond to any
+   syntactic construct.  */
+
+tree
+cp_build_fold_indirect_ref (tree pointer)
+{
+  return cp_build_indirect_ref_1 (pointer, RO_NULL, tf_warning_or_error, true);
+}
+
+/* Entry point used by indirection needs that correspond to some syntactic
+   construct.  */
+
+tree
+cp_build_indirect_ref (tree ptr, ref_operator errorstring,
+		       tsubst_flags_t complain)
+{
+  return cp_build_indirect_ref_1 (ptr, errorstring, complain, false);
 }
 
 /* This handles expressions of the form "a[i]", which denotes
@@ -3477,13 +3504,13 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
       /* Next extract the vtable pointer from the object.  */
       vtbl = build1 (NOP_EXPR, build_pointer_type (vtbl_ptr_type_node),
 		     instance_ptr);
-      vtbl = cp_build_indirect_ref (vtbl, RO_NULL, complain);
+      vtbl = cp_build_fold_indirect_ref (vtbl);
       if (vtbl == error_mark_node)
 	return error_mark_node;
 
       /* Finally, extract the function pointer from the vtable.  */
       e2 = fold_build_pointer_plus_loc (input_location, vtbl, idx);
-      e2 = cp_build_indirect_ref (e2, RO_NULL, complain);
+      e2 = cp_build_fold_indirect_ref (e2);
       if (e2 == error_mark_node)
 	return error_mark_node;
       TREE_CONSTANT (e2) = 1;

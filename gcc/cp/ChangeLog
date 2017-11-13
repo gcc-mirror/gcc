@@ -1,5 +1,16 @@
 2017-11-13  Jason Merrill  <jason@redhat.com>
 
+	Defer folding of *&.
+	* typeck.c (cp_build_fold_indirect_ref): New.
+	(cp_build_indirect_ref_1): Split out from cp_build_indirect_ref.
+	Add 'fold' parameter.
+	* cp-tree.h: Declare cp_build_fold_indirect_ref.
+	* call.c, class.c, cp-ubsan.c, decl.c, except.c, init.c, lambda.c,
+	parser.c, rtti.c, tree.c, typeck.c, typeck2.c: Use it.
+	* parser.c (do_range_for_auto_deduction): Use RO_UNARY_STAR.
+	(cp_convert_range_for): Likewise.
+	* typeck2.c (build_x_arrow): Use RO_ARROW.
+
 	* cp-ubsan.c (cp_ubsan_check_member_access_r): Fix handling of
 	INDIRECT_REF of ADDR_EXPR.
 
