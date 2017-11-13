@@ -284,6 +284,9 @@ static void dwarf2out_note_section_used (void);
    personality CFI.  */
 static GTY(()) rtx current_unit_personality;
 
+/* Whether an eh_frame section is required.  */
+static GTY(()) bool do_eh_frame = false;
+
 /* .debug_rnglists next index.  */
 static unsigned int rnglist_idx;
 
@@ -1063,6 +1066,10 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   if (!do_frame)
     return;
 
+  /* Unlike the debug version, the EH version of frame unwind info is a per-
+     function setting so we need to record whether we need it for the unit.  */
+  do_eh_frame |= dwarf2out_do_eh_frame ();
+
   /* Cater to the various TARGET_ASM_OUTPUT_MI_THUNK implementations that
      emit insns as rtx but bypass the bulk of rest_of_compilation, which
      would include pass_dwarf2_frame.  If we've not created the FDE yet,
@@ -1179,7 +1186,7 @@ dwarf2out_frame_finish (void)
     output_call_frame_info (0);
 
   /* Output another copy for the unwinder.  */
-  if (dwarf2out_do_eh_frame ())
+  if (do_eh_frame)
     output_call_frame_info (1);
 }
 

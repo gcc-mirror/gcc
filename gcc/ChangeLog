@@ -1,3 +1,10 @@
+2017-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/81351
+	* dwarf2out.c (do_eh_frame): New static variable.
+	(dwarf2out_begin_prologue): Set it.
+	(dwarf2out_frame_finish): Test it instead of dwarf2out_do_eh_frame.
+
 2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-coalesce.c (coalesce_cost): Fix formating.
