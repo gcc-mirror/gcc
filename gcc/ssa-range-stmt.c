@@ -349,16 +349,22 @@ range_stmt::fold (irange &res, irange* value1, irange* value2) const
   
   gcc_assert (handler != NULL);
 
+
   switch (state)
     {
       case RS_I:
-        gcc_assert (!value1 && !value2);
-	r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
+	if (!value1)
+	  {
+	    r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
+	    value1 = &r1;
+	  }
 	r2.clear ();
-	result = handler->fold_range (res, r1, r2);
+	result = handler->fold_range (res, *value1, r2);
 	break;
 
       case RS_II:
+	if (value1 && value2)
+	  return handler->fold_range (res, *value1, *value2);
         gcc_assert (!value1 && !value2);
 	r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
 	r2.set_range (TREE_TYPE (operand2 ()), operand2 (), operand2 ());
@@ -367,32 +373,40 @@ range_stmt::fold (irange &res, irange* value1, irange* value2) const
 
       case RS_S:
         {
-	  gcc_assert (value1 && !value2);
 	  lhs = gimple_get_lhs (g);
 	  /* Single ssa operations require the LHS type as the second range.  */
 	  if (lhs)
 	    r2.set_range_for_type (TREE_TYPE (lhs));
 	  else
 	    r2.clear ();
-	  result = handler->fold_range (res, *value1, r2);
+	  value2 = &r2;
+	  result = handler->fold_range (res, *value1, *value2);
 	break;
       }
 
       case RS_SI:
-        gcc_assert (value1 && !value2);
-	r2.set_range (TREE_TYPE (operand2 ()), operand2 (), operand2 ());
-	result = handler->fold_range(res, *value1, r2);
+        if (!value2)
+	  {
+	    r2.set_range (TREE_TYPE (operand2 ()), operand2 (), operand2 ());
+	    value2 = &r2;
+	  }
+	result = handler->fold_range(res, *value1, *value2);
 	break;
 
       case RS_IS:
 	/* Allows calling with (NULL, range) in addition to (range).  */
         /* One param or the other needs to be non-null.  */
-        gcc_assert (!value1 != !value2);
-	r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
-	if (value1)
-	  result = handler->fold_range (res, r1, *value1);
+	if (value1 && value2)
+	  result = handler->fold_range (res, *value1, *value2);
 	else
-	  result = handler->fold_range (res, r1, *value2);
+	  {
+	    gcc_assert (!value1 != !value2);
+	    r1.set_range (TREE_TYPE (operand1 ()), operand1 (), operand1 ());
+	    if (value1)
+	      result = handler->fold_range (res, r1, *value1);
+	    else
+	      result = handler->fold_range (res, r1, *value2);
+	  }
 	break;
 
       case RS_SS:
