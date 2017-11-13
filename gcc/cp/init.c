@@ -2758,7 +2758,7 @@ malloc_alignment ()
 static bool
 std_placement_new_fn_p (tree alloc_fn)
 {
-  if ((cxx_dialect > cxx14) && DECL_NAMESPACE_SCOPE_P (alloc_fn))
+  if (DECL_NAMESPACE_SCOPE_P (alloc_fn))
     {
       tree first_arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
       if ((TREE_VALUE (first_arg) == ptr_type_node)

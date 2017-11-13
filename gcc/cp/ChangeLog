@@ -1,3 +1,10 @@
+2017-11-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Remove the null check from placement new in all modes
+	* init.c (build_new_1): Don't do a null check for
+	a namespace-scope non-replaceable placement new
+	in any mode unless -fcheck-new is provided.
+
 2017-11-07 Boris Kolpackov  <boris@codesynthesis.com>
 
 	* Make-lang.in (CP_PLUGIN_HEADERS): Add operators.def since included
