@@ -1,5 +1,8 @@
 2017-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/78821
+	* gcc.dg/store_merging_15.c: New test.
+
 	PR tree-optimization/82954
 	* gcc.c-torture/execute/pr82954.c: New test.
 

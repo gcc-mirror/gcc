@@ -1039,7 +1039,6 @@ compatible_load_p (merged_store_group *merged_store,
 {
   store_immediate_info *infof = merged_store->stores[0];
   if (!info->ops[idx].base_addr
-      || info->ops[idx].bit_not_p != infof->ops[idx].bit_not_p
       || (info->ops[idx].bitpos - infof->ops[idx].bitpos
 	  != info->bitpos - infof->bitpos)
       || !operand_equal_p (info->ops[idx].base_addr,
@@ -1179,8 +1178,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	 Merge it into the current store group.  There can be gaps in between
 	 the stores, but there can't be gaps in between bitregions.  */
       else if (info->bitregion_start <= merged_store->bitregion_end
-	       && info->rhs_code == merged_store->stores[0]->rhs_code
-	       && info->bit_not_p == merged_store->stores[0]->bit_not_p)
+	       && info->rhs_code == merged_store->stores[0]->rhs_code)
 	{
 	  store_immediate_info *infof = merged_store->stores[0];
 
@@ -1501,16 +1499,14 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       total_orig[0] = 1; /* The orig store.  */
       info = group->stores[0];
       if (info->ops[0].base_addr)
-	total_orig[0] += 1 + info->ops[0].bit_not_p;
+	total_orig[0]++;
       if (info->ops[1].base_addr)
-	total_orig[0] += 1 + info->ops[1].bit_not_p;
+	total_orig[0]++;
       switch (info->rhs_code)
 	{
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
-	  if (info->bit_not_p)
-	    total_orig[0]++; /* The orig BIT_NOT_EXPR stmt.  */
 	  total_orig[0]++; /* The orig BIT_*_EXPR stmt.  */
 	  break;
 	default:
@@ -1519,7 +1515,12 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       total_orig[0] *= group->stores.length ();
 
       FOR_EACH_VEC_ELT (group->stores, i, info)
-	total_new[0] += count_multiple_uses (info);
+	{
+	  total_new[0] += count_multiple_uses (info);
+	  total_orig[0] += (info->bit_not_p
+			    + info->ops[0].bit_not_p
+			    + info->ops[1].bit_not_p);
+	}
     }
 
   if (!allow_unaligned_load)
@@ -1659,13 +1660,13 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 
   if (total_orig)
     {
+      unsigned int i;
+      struct split_store *store;
       /* If we are reusing some original stores and any of the
 	 original SSA_NAMEs had multiple uses, we need to subtract
 	 those now before we add the new ones.  */
       if (total_new[0] && any_orig)
 	{
-	  unsigned int i;
-	  struct split_store *store;
 	  FOR_EACH_VEC_ELT (*split_stores, i, store)
 	    if (store->orig)
 	      total_new[0] -= count_multiple_uses (store->orig_stores[0]);
@@ -1673,24 +1674,103 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       total_new[0] += ret; /* The new store.  */
       store_immediate_info *info = group->stores[0];
       if (info->ops[0].base_addr)
-	total_new[0] += ret * (1 + info->ops[0].bit_not_p);
+	total_new[0] += ret;
       if (info->ops[1].base_addr)
-	total_new[0] += ret * (1 + info->ops[1].bit_not_p);
+	total_new[0] += ret;
       switch (info->rhs_code)
 	{
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
-	  if (info->bit_not_p)
-	    total_new[0] += ret; /* The new BIT_NOT_EXPR stmt.  */
 	  total_new[0] += ret; /* The new BIT_*_EXPR stmt.  */
 	  break;
 	default:
 	  break;
 	}
+      FOR_EACH_VEC_ELT (*split_stores, i, store)
+	{
+	  unsigned int j;
+	  bool bit_not_p[3] = { false, false, false };
+	  /* If all orig_stores have certain bit_not_p set, then
+	     we'd use a BIT_NOT_EXPR stmt and need to account for it.
+	     If some orig_stores have certain bit_not_p set, then
+	     we'd use a BIT_XOR_EXPR with a mask and need to account for
+	     it.  */
+	  FOR_EACH_VEC_ELT (store->orig_stores, j, info)
+	    {
+	      if (info->ops[0].bit_not_p)
+		bit_not_p[0] = true;
+	      if (info->ops[1].bit_not_p)
+		bit_not_p[1] = true;
+	      if (info->bit_not_p)
+		bit_not_p[2] = true;
+	    }
+	  total_new[0] += bit_not_p[0] + bit_not_p[1] + bit_not_p[2];
+	}
+
     }
 
   return ret;
+}
+
+/* Return the operation through which the operand IDX (if < 2) or
+   result (IDX == 2) should be inverted.  If NOP_EXPR, no inversion
+   is done, if BIT_NOT_EXPR, all bits are inverted, if BIT_XOR_EXPR,
+   the bits should be xored with mask.  */
+
+static enum tree_code
+invert_op (split_store *split_store, int idx, tree int_type, tree &mask)
+{
+  unsigned int i;
+  store_immediate_info *info;
+  unsigned int cnt = 0;
+  FOR_EACH_VEC_ELT (split_store->orig_stores, i, info)
+    {
+      bool bit_not_p = idx < 2 ? info->ops[idx].bit_not_p : info->bit_not_p;
+      if (bit_not_p)
+	++cnt;
+    }
+  mask = NULL_TREE;
+  if (cnt == 0)
+    return NOP_EXPR;
+  if (cnt == split_store->orig_stores.length ())
+    return BIT_NOT_EXPR;
+
+  unsigned HOST_WIDE_INT try_bitpos = split_store->bytepos * BITS_PER_UNIT;
+  unsigned buf_size = split_store->size / BITS_PER_UNIT;
+  unsigned char *buf
+    = XALLOCAVEC (unsigned char, buf_size);
+  memset (buf, ~0U, buf_size);
+  FOR_EACH_VEC_ELT (split_store->orig_stores, i, info)
+    {
+      bool bit_not_p = idx < 2 ? info->ops[idx].bit_not_p : info->bit_not_p;
+      if (!bit_not_p)
+	continue;
+      /* Clear regions with bit_not_p and invert afterwards, rather than
+	 clear regions with !bit_not_p, so that gaps in between stores aren't
+	 set in the mask.  */
+      unsigned HOST_WIDE_INT bitsize = info->bitsize;
+      unsigned int pos_in_buffer = 0;
+      if (info->bitpos < try_bitpos)
+	{
+	  gcc_assert (info->bitpos + bitsize > try_bitpos);
+	  bitsize -= (try_bitpos - info->bitpos);
+	}
+      else
+	pos_in_buffer = info->bitpos - try_bitpos;
+      if (pos_in_buffer + bitsize > split_store->size)
+	bitsize = split_store->size - pos_in_buffer;
+      unsigned char *p = buf + (pos_in_buffer / BITS_PER_UNIT);
+      if (BYTES_BIG_ENDIAN)
+	clear_bit_region_be (p, (BITS_PER_UNIT - 1
+				 - (pos_in_buffer % BITS_PER_UNIT)), bitsize);
+      else
+	clear_bit_region (p, pos_in_buffer % BITS_PER_UNIT, bitsize);
+    }
+  for (unsigned int i = 0; i < buf_size; ++i)
+    buf[i] = ~buf[i];
+  mask = native_interpret_expr (int_type, buf, buf_size);
+  return BIT_XOR_EXPR;
 }
 
 /* Given a merged store group GROUP output the widened version of it.
@@ -1899,10 +1979,13 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		      gimple_seq_add_stmt_without_update (&seq, stmt);
 		    }
 		  ops[j] = gimple_assign_lhs (stmt);
-		  if (op.bit_not_p)
+		  tree xor_mask;
+		  enum tree_code inv_op
+		    = invert_op (split_store, j, int_type, xor_mask);
+		  if (inv_op != NOP_EXPR)
 		    {
 		      stmt = gimple_build_assign (make_ssa_name (int_type),
-						  BIT_NOT_EXPR, ops[j]);
+						  inv_op, ops[j], xor_mask);
 		      gimple_set_location (stmt, load_loc);
 		      ops[j] = gimple_assign_lhs (stmt);
 
@@ -1952,10 +2035,13 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	      else
 		gimple_seq_add_stmt_without_update (&seq, stmt);
 	      src = gimple_assign_lhs (stmt);
-	      if (split_store->orig_stores[0]->bit_not_p)
+	      tree xor_mask;
+	      enum tree_code inv_op;
+	      inv_op = invert_op (split_store, 2, int_type, xor_mask);
+	      if (inv_op != NOP_EXPR)
 		{
 		  stmt = gimple_build_assign (make_ssa_name (int_type),
-					      BIT_NOT_EXPR, src);
+					      inv_op, src, xor_mask);
 		  gimple_set_location (stmt, bit_loc);
 		  if (load_addr[1] == NULL_TREE && gsi_bb (load_gsi[0]))
 		    gimple_seq_add_stmt_without_update (&load_seq[0], stmt);
