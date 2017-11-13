@@ -131,7 +131,7 @@ struct block_location_info
 /* Describes a basic block. Contains lists of arcs to successor and
    predecessor blocks.  */
 
-typedef struct block_info
+struct block_info
 {
   /* Constructor.  */
   block_info ();
@@ -175,7 +175,7 @@ typedef struct block_info
      line.  */
   struct block_info *chain;
 
-} block_t;
+};
 
 block_info::block_info (): succ (NULL), pred (NULL), num_succ (0), num_pred (0),
   id (0), count (0), count_valid (0), valid_chain (0), invalid_chain (0),
@@ -194,7 +194,7 @@ struct line_info
   line_info ();
 
   /* Return true when NEEDLE is one of basic blocks the line belongs to.  */
-  bool has_block (block_t *needle);
+  bool has_block (block_info *needle);
 
   /* Execution count.  */
   gcov_type count;
@@ -203,7 +203,7 @@ struct line_info
   vector<arc_info *> branches;
 
   /* blocks which start on this line.  Used in all-blocks mode.  */
-  vector<block_t *> blocks;
+  vector<block_info *> blocks;
 
   unsigned exists : 1;
   unsigned unexceptional : 1;
@@ -216,7 +216,7 @@ line_info::line_info (): count (0), branches (), blocks (), exists (false),
 }
 
 bool
-line_info::has_block (block_t *needle)
+line_info::has_block (block_info *needle)
 {
   return std::find (blocks.begin (), blocks.end (), needle) != blocks.end ();
 }
@@ -261,7 +261,7 @@ struct function_info
      at blocks[0] and the exit block is at blocks[1].  */
 #define ENTRY_BLOCK (0)
 #define EXIT_BLOCK (1)
-  vector<block_t> blocks;
+  vector<block_info> blocks;
   unsigned blocks_executed;
 
   /* Raw arc coverage counts.  */
@@ -601,7 +601,7 @@ bool function_info::group_line_p (unsigned n, unsigned src_idx)
    */
 
 typedef vector<arc_info *> arc_vector_t;
-typedef vector<const block_t *> block_vector_t;
+typedef vector<const block_info *> block_vector_t;
 
 /* Enum with types of loop in CFG.  */
 
@@ -646,7 +646,7 @@ handle_cycle (const arc_vector_t &edges, int64_t &count)
    blocked by U in BLOCK_LISTS.  */
 
 static void
-unblock (const block_t *u, block_vector_t &blocked,
+unblock (const block_info *u, block_vector_t &blocked,
 	 vector<block_vector_t > &block_lists)
 {
   block_vector_t::iterator it = find (blocked.begin (), blocked.end (), u);
@@ -671,7 +671,7 @@ unblock (const block_t *u, block_vector_t &blocked,
    Returns what type of loop it contains.  */
 
 static loop_type
-circuit (block_t *v, arc_vector_t &path, block_t *start,
+circuit (block_info *v, arc_vector_t &path, block_info *start,
 	 block_vector_t &blocked, vector<block_vector_t> &block_lists,
 	 line_info &linfo, int64_t &count)
 {
@@ -684,7 +684,7 @@ circuit (block_t *v, arc_vector_t &path, block_t *start,
 
   for (arc_info *arc = v->succ; arc; arc = arc->succ_next)
     {
-      block_t *w = arc->dst;
+      block_info *w = arc->dst;
       if (w < start || !linfo.has_block (w))
 	continue;
 
@@ -703,7 +703,7 @@ circuit (block_t *v, arc_vector_t &path, block_t *start,
   else
     for (arc_info *arc = v->succ; arc; arc = arc->succ_next)
       {
-	block_t *w = arc->dst;
+	block_info *w = arc->dst;
 	if (w < start || !linfo.has_block (w))
 	  continue;
 
@@ -732,7 +732,7 @@ get_cycles_count (line_info &linfo, bool handle_negative_cycles = true)
 
   loop_type result = NO_LOOP;
   gcov_type count = 0;
-  for (vector<block_t *>::iterator it = linfo.blocks.begin ();
+  for (vector<block_info *>::iterator it = linfo.blocks.begin ();
        it != linfo.blocks.end (); it++)
     {
       arc_vector_t path;
@@ -1177,7 +1177,7 @@ process_file (const char *file_name)
 	  for (unsigned block_no = 0; block_no != fn->blocks.size ();
 	       block_no++)
 	    {
-	      block_t *block = &fn->blocks[block_no];
+	      block_info *block = &fn->blocks[block_no];
 	      for (unsigned i = 0; i < block->locations.size (); i++)
 		{
 		  /* Sort lines of locations.  */
@@ -1607,7 +1607,7 @@ read_graph_file (void)
 	  unsigned src = gcov_read_unsigned ();
 	  fn->blocks[src].id = src;
 	  unsigned num_dests = GCOV_TAG_ARCS_NUM (length);
-	  block_t *src_blk = &fn->blocks[src];
+	  block_info *src_blk = &fn->blocks[src];
 	  unsigned mark_catches = 0;
 	  struct arc_info *arc;
 
@@ -1680,7 +1680,7 @@ read_graph_file (void)
       else if (fn && tag == GCOV_TAG_LINES)
 	{
 	  unsigned blockno = gcov_read_unsigned ();
-	  block_t *block = &fn->blocks[blockno];
+	  block_info *block = &fn->blocks[blockno];
 
 	  if (blockno >= fn->blocks.size ())
 	    goto corrupt;
@@ -1842,9 +1842,9 @@ solve_flow_graph (function_info *fn)
   unsigned ix;
   arc_info *arc;
   gcov_type *count_ptr = &fn->counts.front ();
-  block_t *blk;
-  block_t *valid_blocks = NULL;    /* valid, but unpropagated blocks.  */
-  block_t *invalid_blocks = NULL;  /* invalid, but inferable blocks.  */
+  block_info *blk;
+  block_info *valid_blocks = NULL;    /* valid, but unpropagated blocks.  */
+  block_info *invalid_blocks = NULL;  /* invalid, but inferable blocks.  */
 
   /* The arcs were built in reverse order.  Fix that now.  */
   for (ix = fn->blocks.size (); ix--;)
@@ -1895,7 +1895,7 @@ solve_flow_graph (function_info *fn)
   for (unsigned i = 0; i < fn->blocks.size (); i++)
     {
       blk = &fn->blocks[i];
-      block_t const *prev_dst = NULL;
+      block_info const *prev_dst = NULL;
       int out_of_order = 0;
       int non_fake_succ = 0;
 
@@ -2013,7 +2013,7 @@ solve_flow_graph (function_info *fn)
 	  blk->valid_chain = 0;
 	  if (blk->num_succ == 1)
 	    {
-	      block_t *dst;
+	      block_info *dst;
 
 	      total = blk->count;
 	      inv_arc = NULL;
@@ -2049,7 +2049,7 @@ solve_flow_graph (function_info *fn)
 	    }
 	  if (blk->num_pred == 1)
 	    {
-	      block_t *src;
+	      block_info *src;
 
 	      total = blk->count;
 	      inv_arc = NULL;
@@ -2103,7 +2103,7 @@ static void
 find_exception_blocks (function_info *fn)
 {
   unsigned ix;
-  block_t **queue = XALLOCAVEC (block_t *, fn->blocks.size ());
+  block_info **queue = XALLOCAVEC (block_info *, fn->blocks.size ());
 
   /* First mark all blocks as exceptional.  */
   for (ix = fn->blocks.size (); ix--;)
@@ -2114,7 +2114,7 @@ find_exception_blocks (function_info *fn)
   queue[0]->exceptional = 0;
   for (ix = 1; ix;)
     {
-      block_t *block = queue[--ix];
+      block_info *block = queue[--ix];
       const arc_info *arc;
 
       for (arc = block->succ; arc; arc = arc->succ_next)
@@ -2486,7 +2486,7 @@ add_line_counts (coverage_t *coverage, function_info *fn)
   for (unsigned ix = 0; ix != fn->blocks.size (); ix++)
     {
       line_info *line = NULL;
-      block_t *block = &fn->blocks[ix];
+      block_info *block = &fn->blocks[ix];
       if (block->count && ix && ix + 1 != fn->blocks.size ())
 	fn->blocks_executed++;
       for (unsigned i = 0; i < block->locations.size (); i++)
@@ -2582,7 +2582,7 @@ static void accumulate_line_info (line_info *line, source_info *src,
       gcov_type count = 0;
 
       /* Cycle detection.  */
-      for (vector<block_t *>::iterator it = line->blocks.begin ();
+      for (vector<block_info *>::iterator it = line->blocks.begin ();
 	   it != line->blocks.end (); it++)
 	{
 	  for (arc_info *arc = (*it)->pred; arc; arc = arc->pred_next)
@@ -2846,7 +2846,7 @@ output_line_details (FILE *f, const line_info *line, unsigned line_num)
       int ix, jx;
 
       ix = jx = 0;
-      for (vector<block_t *>::const_iterator it = line->blocks.begin ();
+      for (vector<block_info *>::const_iterator it = line->blocks.begin ();
 	   it != line->blocks.end (); it++)
 	{
 	  if (!(*it)->is_call_return)

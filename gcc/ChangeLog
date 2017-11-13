@@ -1,5 +1,22 @@
 2017-11-13  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct block_info): Remove typedef for block_t.
+	(struct line_info): Likewise.
+	(line_info::has_block): Likewise.
+	(EXIT_BLOCK): Likewise.
+	(unblock): Likewise.
+	(circuit): Likewise.
+	(get_cycles_count): Likewise.
+	(process_file): Likewise.
+	(read_graph_file): Likewise.
+	(solve_flow_graph): Likewise.
+	(find_exception_blocks): Likewise.
+	(add_line_counts): Likewise.
+	(accumulate_line_info): Likewise.
+	(output_line_details): Likewise.
+
+2017-11-13  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (struct arc_info): Remove typedef for arc_t.
 	(struct line_info): Likewise.
 	(add_branch_counts): Likewise.
