@@ -836,7 +836,7 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
     res = op_ir (mode, r, lh.upper_bound (), rh);
   else
     if (wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
-      res = op_ri (mode, r, lh, rh.upper_bound ());\
+      res = op_ri (mode, r, lh, rh.upper_bound ());
 
   if (!res)
     {
