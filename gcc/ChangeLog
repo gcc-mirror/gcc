@@ -1,5 +1,22 @@
 2017-11-13  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct arc_info): Remove typedef for arc_t.
+	(struct line_info): Likewise.
+	(add_branch_counts): Likewise.
+	(output_branch_count): Likewise.
+	(function_info::~function_info): Likewise.
+	(circuit): Likewise.
+	(output_intermediate_line): Likewise.
+	(read_graph_file): Likewise.
+	(solve_flow_graph): Likewise.
+	(find_exception_blocks): Likewise.
+	(add_line_counts): Likewise.
+	(accumulate_line_info): Likewise.
+	(output_line_details): Likewise.
+	(output_function_details): Likewise.
+
+2017-11-13  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (struct function_info): Remove typedef for function_t.
 	(struct source_info): Likewise.
 	(source_info::get_functions_at_location): Likewise.
