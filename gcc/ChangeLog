@@ -1,3 +1,15 @@
+2017-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gimple-ssa-store-merging.c (compatible_load_p): Don't require
+	that bit_not_p is the same.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
+	(split_group): Count precisely bit_not_p bits in each statement.
+	(invert_op): New function.
+	(imm_store_chain_info::output_merged_store): Use invert_op to
+	emit BIT_XOR_EXPR with a xor_mask instead of BIT_NOT_EXPR if some
+	but not all orig_stores have BIT_NOT_EXPR in the corresponding spots.
+
 2017-11-13  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (struct coverage_info): Remove typedef of coverage_t.
