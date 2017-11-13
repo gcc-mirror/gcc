@@ -1,3 +1,7 @@
+2017-11-13  Charles Baylis  <charles.baylis@linaro.org>
+
+        * gfortran.dg/ieee/ieee_8.f90: xfail for aarch64*-*-gnu*
+
 2017-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78821
