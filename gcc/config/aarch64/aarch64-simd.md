@@ -173,7 +173,7 @@
 	(vec_select:<VEL> (match_operand:VALL_F16 1 "register_operand" "w")
 			(parallel [(match_operand 2 "const_int_operand" "n")])))]
   "TARGET_SIMD
-   && ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])) == 0"
+   && ENDIAN_LANE_N (<nunits>, INTVAL (operands[2])) == 0"
   "str\\t%<Vetype>1, %0"
   [(set_attr "type" "neon_store1_1reg<q>")]
 )
@@ -450,8 +450,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   {
-    operands[4]
-      = GEN_INT (ENDIAN_LANE_N (V8QImode, INTVAL (operands[4])));
+    operands[4] = aarch64_endian_lane_rtx (V8QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
   [(set_attr "type" "neon_dot")]
@@ -466,8 +465,7 @@
 		DOTPROD)))]
   "TARGET_DOTPROD"
   {
-    operands[4]
-      = GEN_INT (ENDIAN_LANE_N (V16QImode, INTVAL (operands[4])));
+    operands[4] = aarch64_endian_lane_rtx (V16QImode, INTVAL (operands[4]));
     return "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.4b[%4]";
   }
   [(set_attr "type" "neon_dot")]
@@ -734,9 +732,9 @@
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
-    int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
+    int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
     operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
-    operands[4] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[4])));
+    operands[4] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[4]));
 
     return "ins\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
   }
@@ -755,10 +753,10 @@
 	    (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_SIMD"
   {
-    int elt = ENDIAN_LANE_N (<MODE>mode, exact_log2 (INTVAL (operands[2])));
+    int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
     operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
-    operands[4] = GEN_INT (ENDIAN_LANE_N (<VSWAP_WIDTH>mode,
-			   INTVAL (operands[4])));
+    operands[4] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode,
+					   INTVAL (operands[4]));
 
     return "ins\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
   }

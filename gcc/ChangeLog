@@ -1,3 +1,13 @@
+2017-11-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (aarch64_store_lane0<mode>):
+	Upddate call to ENDIAN_LANE_N.
+	(aarch64_<sur>dot_lane<vsi2qi>): Use aarch64_endian_lane_rtx.
+	(aarch64_<sur>dot_laneq<vsi2qi>): Likewise.
+	(*aarch64_simd_vec_copy_lane<mode>): Update calls to ENDIAN_LANE_N
+	and use aarch64_endian_lane_rtx.
+	(*aarch64_simd_vec_copy_lane_<vswap_width_name><mode>): Likewise.
+
 2017-11-12  Tom de Vries  <tom@codesourcery.com>
 
 	* config/riscv/riscv.h (ASM_OUTPUT_LABELREF): Wrap in do {} while (0).
