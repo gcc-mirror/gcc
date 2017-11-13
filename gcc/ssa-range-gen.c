@@ -949,21 +949,26 @@ path_ranger::path_range_stmt (irange& r, tree name, gimple *g)
   return range_on_stmt (r, name, g);
 }
 
+
+static inline bool
+ssa_name_same_bb_p (tree name, basic_block bb)
+{
+  gimple *g = SSA_NAME_DEF_STMT (name);
+  if (!g || gimple_bb (g) != bb)
+   return false;
+  return true;
+}
+
 // Attempt to evaluate NAME within the basic block it is defined as far
 // as possible. IF a PHI is encountered at the beginning of the block, either
 // fully evalaute it, or if E is provided, use just the value from that edge.
 bool
-path_ranger::path_range_of_def (irange &r, gimple *g, basic_block bb, edge e)
+path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 {
   tree name = gimple_get_lhs (g);
+  basic_block bb = gimple_bb (g);
   tree arg;
   irange range_op1, range_op2;
-
-  if (bb == NULL)
-    bb = gimple_bb (g);
-  else
-    if (bb != gimple_bb (g))
-      return false;
 
   /* If an edge is provided, it must be an incoming edge to this BB.  */
   gcc_assert (!e || e->dest == bb);
@@ -1013,18 +1018,16 @@ path_ranger::path_range_of_def (irange &r, gimple *g, basic_block bb, edge e)
   if (!rn.valid())
     return false;
 
-  if (!rn.ssa_operand1 () ||
-      !path_range_of_def (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()),
-			  bb, e))
+  if (!rn.ssa_operand1 () || !ssa_name_same_bb_p (rn.ssa_operand1 (), bb) ||
+      !path_range_of_def (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()), e))
     get_operand_range (range_op1, rn.operand1 ());
 
   // If this is a unary operation, call fold now.  
   if (!rn.operand2 ())
     return rn.fold (r, &range_op1, NULL);
   
-  if (!rn.ssa_operand2 () ||
-      !path_range_of_def (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()),
-			  bb, e))
+  if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
+      !path_range_of_def (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
     get_operand_range (range_op2, rn.operand2 ());
  
   return rn.fold (r, &range_op1, &range_op2);
