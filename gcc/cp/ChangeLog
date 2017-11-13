@@ -1,5 +1,8 @@
 2017-11-13  Jason Merrill  <jason@redhat.com>
 
+	* cp-ubsan.c (cp_ubsan_check_member_access_r): Fix handling of
+	INDIRECT_REF of ADDR_EXPR.
+
 	PR c++/82360 - ICE with static_cast in template.
 	* call.c (perform_direct_initialization_if_possible): Check
 	processing_template_decl.
