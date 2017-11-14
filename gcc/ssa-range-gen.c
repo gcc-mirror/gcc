@@ -445,7 +445,7 @@ gori::range_on_edge (irange& r, tree name, edge e)
   gimple *stmt;
   basic_block bb = e->src;
 
-  if (!irange_ssa (name))
+  if (!valid_irange_ssa (name))
     return false;
 
   if (!range_p (bb, name))
@@ -712,7 +712,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
   gimple *def_stmt;
   basic_block def_bb;
 
-  if (!irange_ssa (name))
+  if (!valid_irange_ssa (name))
     return false;
 
   def_stmt = SSA_NAME_DEF_STMT (name);

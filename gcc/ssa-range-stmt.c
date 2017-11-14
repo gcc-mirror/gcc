@@ -99,83 +99,63 @@ range_stmt::handler () const
 }
 
 /* Intialize the state based on the operands to the expression.  */
-enum range_stmt_state
-range_stmt::determine_state (tree t1, tree t2)
+bool
+range_stmt::validate_operands ()
 {
-  enum range_stmt_state st = RS_INV;
-  ssa1 = irange_ssa (t1);
-  ssa2 = irange_ssa (t2);
+  ssa1 = valid_irange_ssa (op1);
+  ssa2 = valid_irange_ssa (op2);
 
-  if (!t2)
+  if (!op2)
     {
-      /* Check for unary cases.  */
-      if (ssa1)
-	st = RS_S;
-      else
-	if (TREE_CODE (t1) == INTEGER_CST && !TREE_OVERFLOW (t1))
-	  st = RS_I;
+      if (ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1)))
+	return true;
     }
   else
     {
-      /* Binary cases.  */
-      if (ssa1)
-	{
-	  if (ssa2)
-	    {
-	      /* Resolving 2 SSA names is only allowed with relational and
-		 logical operations.  */
-	      if ((code >= LT_EXPR && code <= NE_EXPR)
-	          || logical_expr_p (TREE_TYPE (t1)))
-		st = RS_SS;
-	    }
-	  else
-	    if (TREE_CODE (t2) == INTEGER_CST && !TREE_OVERFLOW (t2))
-	      st = RS_SI;
-	}
-      else
-	if (TREE_CODE (t1) == INTEGER_CST && !TREE_OVERFLOW (t1))
-	  {
-	    if (ssa2)
-	      st = RS_IS;
-	    else
-	      if (TREE_CODE (t2) == INTEGER_CST && !TREE_OVERFLOW (t2))
-		st = RS_II;
-	  }
+      if (ssa1 && ssa2 && ((code >= LT_EXPR && code <= NE_EXPR)
+			   || logical_expr_p (TREE_TYPE (op1))))
+	return true;
+      if ((ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1)))
+	  && (ssa2 || (TREE_CODE (op2) == INTEGER_CST && !TREE_OVERFLOW (op2))))
+	return true;
     }
-  return st;
+  return false;
 }
 
 /* Build a range node from a stmt, if it possible.  */
 void
 range_stmt::from_stmt (gimple *s)
 {
-  state = RS_INV;  /* Assume invalid state.  */
+  g = NULL;
   switch (gimple_code (s))
     {
       case GIMPLE_COND:
         {
-	  gcond *g = as_a <gcond *> (s);
-	  code  = gimple_cond_code (g);
+	  gcond *gc = as_a <gcond *> (s);
+	  code  = gimple_cond_code (gc);
 	  if (irange_op_handler (code))
 	    {
-	      op1 = gimple_cond_lhs (g);
-	      op2 = gimple_cond_rhs (g);
-	      state = determine_state (op1, op2);
+	      g = s;
+	      op1 = gimple_cond_lhs (gc);
+	      op2 = gimple_cond_rhs (gc);
+	      if (validate_operands ())
+	        g = s;;
 	    }
 	  break;
 	}
       case GIMPLE_ASSIGN:
 	{
-	  gassign *g = as_a <gassign *> (s);
-	  code = gimple_assign_rhs_code (g);
+	  gassign *ga = as_a <gassign *> (s);
+	  code = gimple_assign_rhs_code (ga);
 	  if (irange_op_handler (code))
 	    {
-	      op1 = gimple_assign_rhs1 (g);
+	      op1 = gimple_assign_rhs1 (ga);
 	      if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
-		op2 = gimple_assign_rhs2 (g);
+		op2 = gimple_assign_rhs2 (ga);
 	      else
 		op2 = NULL;
-	      state = determine_state (op1, op2);
+	      if (validate_operands ())
+	        g = s;
 	    }
 	  break;
 	}
@@ -278,21 +258,18 @@ range_stmt::logical_expr (irange& r, const irange& lhs, const irange& op1_true,
 
 range_stmt::range_stmt ()
 {
-  state = RS_INV;
   g = NULL;
 }
 
 range_stmt::range_stmt (gimple *s)
 {
   from_stmt (s);
-  g = s;
 }
 
 range_stmt&
 range_stmt::operator= (gimple *s)
 {
   from_stmt (s);
-  g = s;
   return *this;
 }
 
@@ -310,28 +287,12 @@ range_stmt::fold (irange &res, const irange& r1) const
   irange_operator *handler = irange_op_handler (code);
   gcc_assert (handler != NULL);
 
-  switch (state)
-    {
-      case RS_I:
-	r2.clear ();
-	break;
-
-      case RS_S:
-        {
-	  /* Single ssa operations require the LHS type as the second range.  */
-	  tree lhs = gimple_get_lhs (g);
-	  if (lhs)
-	    r2.set_range_for_type (TREE_TYPE (lhs));
-	  else
-	    r2.clear ();
-	  break;
-	}
-
-      default:
-        error ("Called singular fold on 2 element statement.");
-	break;
-    }
-
+  /* Single ssa operations require the LHS type as the second range.  */
+  tree lhs = gimple_get_lhs (g);
+  if (lhs)
+    r2.set_range_for_type (TREE_TYPE (lhs));
+  else
+    r2.clear ();
   return handler->fold_range (res, r1, r2);
 }
 
@@ -341,9 +302,8 @@ range_stmt::fold (irange &res, const irange& r1, const irange& r2) const
   irange_operator *handler = irange_op_handler (code);
   gcc_assert (handler != NULL);
 
-  // When folding single operand operations, override the op2 parameter. */
-  if (state == RS_S || state == RS_I)
-    return fold (res, r1);
+  // Make sure this isnt a unary operation being passsed a second range.
+  gcc_assert (op2);
   return handler->fold_range (res, r1, r2);
 }
 
@@ -353,25 +313,14 @@ range_stmt::fold (irange &res) const
 {
   irange r1, r2;
   
-  switch (state)
+  if (!op2)
     {
-      case RS_I:
-      case RS_S:
-        get_operand_range (r1, operand1 ());
-	return fold (res, r1);
-
-      case RS_II:
-      case RS_SI:
-      case RS_IS:
-      case RS_SS:
-	get_operand_range (r1, operand1 ());
-	get_operand_range (r2, operand2 ());
-        break;
-
-      default:
-        gcc_unreachable ();
-	break;
+      get_operand_range (r1, op1);
+      return fold (res, r1);
     }
+
+  get_operand_range (r1, op1);
+  get_operand_range (r2, op2);
   return fold (res, r1, r2);
 }
 
@@ -381,36 +330,24 @@ range_stmt::fold (irange& res, tree name, const irange& name_range) const
 {
   irange r1, r2;
 
-  switch (state)
+  if (!op2)
     {
-      case RS_I:
-      case RS_S:
-        if (ssa1 == name)
-	  r1 = name_range;
-	else
-	  get_operand_range (r1, operand1 ());
-	return fold (res, r1);
-	break;
-
-      case RS_II:
-      case RS_SI:
-      case RS_IS:
-      case RS_SS:
-	if (ssa1 == name)
-	  r1 = name_range;
-	else
-	  get_operand_range (r1, operand1 ());
-
-	if (ssa2 == name)
-	  r2 = name_range;
-	else
-	  get_operand_range (r2, operand2 ());
-	break;
-
-      default:
-        gcc_unreachable ();
-	break;
+      if (ssa1 == name)
+	r1 = name_range;
+      else
+	get_operand_range (r1, op1);
+      return fold (res, r1);
     }
+
+  if (ssa1 == name)
+    r1 = name_range;
+  else
+    get_operand_range (r1, op1);
+
+  if (ssa2 == name)
+    r2 = name_range;
+  else
+    get_operand_range (r2, op2);
 
   return fold (res, r1, r2);
 }
@@ -442,47 +379,13 @@ void
 range_stmt::dump (FILE *f) const
 {
   print_gimple_stmt (f, g, 0, 0);
-  switch (state)
-  {
-    case RS_INV:
-      fprintf (f, "RS_INV  ");
-      return;
 
-    case RS_I:
-      fprintf (f, "RS_I  ");
-      irange_op_handler (code)->dump (f);
-      break;
-    case RS_S:
-      fprintf (f, "RS_S  ");
-      irange_op_handler (code)->dump (f);
-      break;
-    case RS_II:
-      fprintf (f, "RS_II ");
-      break;
-    case RS_SI:
-      fprintf (f, "RS_SI ");
-      break;
-    case RS_IS:
-      fprintf (f, "RS_IS ");
-      break;
-    case RS_SS:
-      fprintf (f, "RS_SS ");
-      break;
-    default:
-      gcc_unreachable ();
-  }
-
-  if (state == RS_I || state == RS_S)
-    {
-      irange_op_handler (code)->dump (f);
-      fprintf (f, " (");
-      print_generic_expr (f, TREE_TYPE (op1), TDF_SLIM);
-      fprintf (f, ") ");
-    }
+  if (!op2)
+    irange_op_handler (code)->dump (f);
 
   print_generic_expr (f, op1, TDF_SLIM);
 
-  if (state != RS_I && state != RS_S)
+  if (op2)
     {
       irange_op_handler (code)->dump (f);
       print_generic_expr (f, op2, TDF_SLIM);
