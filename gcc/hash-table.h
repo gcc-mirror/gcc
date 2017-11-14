@@ -1044,7 +1044,9 @@ gt_ggc_mx (hash_table<E> *h)
 	  || table::is_deleted (h->m_entries[i]))
 	continue;
 
-      E::ggc_mx (h->m_entries[i]);
+      /* Use ggc_maxbe_mx so we don't mark right away for cache tables; we'll
+	 mark in gt_cleare_cache if appropriate.  */
+      E::ggc_maybe_mx (h->m_entries[i]);
     }
 }
 
@@ -1094,7 +1096,6 @@ template<typename H>
 inline void
 gt_cleare_cache (hash_table<H> *h)
 {
-  extern void gt_ggc_mx (typename H::value_type &t);
   typedef hash_table<H> table;
   if (!h)
     return;
@@ -1106,7 +1107,7 @@ gt_cleare_cache (hash_table<H> *h)
 	if (res == 0)
 	  h->clear_slot (&*iter);
 	else if (res != -1)
-	  gt_ggc_mx (*iter);
+	  H::ggc_mx (*iter);
       }
 }
 

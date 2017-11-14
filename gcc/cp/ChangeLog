@@ -1,3 +1,11 @@
+2017-11-14  Jason Merrill  <jason@redhat.com>
+
+	Use GTY((cache)) on some hash tables.
+	* decl.c (decomp_type_table): Use tree_cache_map.
+	* init.c (nsdmi_inst): Likewise.
+	* pt.c (defarg_ints): Likewise.
+	* cp-objcp-common.c (cp_get_debug_type): Likewise.
+
 2017-11-13  Jason Merrill  <jason@redhat.com>
 
 	Capture adjustments for P0588R1.
