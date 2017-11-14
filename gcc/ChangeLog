@@ -1,5 +1,8 @@
 2017-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.md (bswapdi2): On 32-bit ISA 3.0, don't
+	generate the XXBRD instruction.
+
 	* config/rs6000/rs6000-c.c (is_float128_p): New helper function.
 	(rs6000_builtin_type_compatible): Treat _Float128 and long double
 	as being compatible if -mabi=ieeelongdouble.
