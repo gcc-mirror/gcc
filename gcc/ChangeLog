@@ -1,5 +1,11 @@
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-threadupdate.c (compute_path_counts): Remove
+	unused path_in_freq_ptr parameter.
+	(ssa_fix_duplicate_block_edges): Do not pass around path_in_freq
+
+2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (edge_badness): Dump sreal frequency.
 	(compute_inlined_call_time): Match natural implementaiton ...
 	* ipa-fnsummary.c (estimate_edge_size_and_time): ... here; remove
