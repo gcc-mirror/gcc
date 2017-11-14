@@ -1,3 +1,10 @@
+2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-split.c (struct split_point): Add count.
+	(consider_split): Do not compute incoming frequency; compute incoming
+	count and store it to split_point.
+	(split_function): Set count of the call to split part correctly.
+
 2017-11-13  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_vsumsws_be): Add define_expand.
