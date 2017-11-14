@@ -1,3 +1,10 @@
+2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (edge_badness): Dump sreal frequency.
+	(compute_inlined_call_time): Match natural implementaiton ...
+	* ipa-fnsummary.c (estimate_edge_size_and_time): ... here; remove
+	forgotten division by CGRAPH_FREQ_BASE.
+
 2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc (*-*-solaris2*): Enable default_use_cxa_atexit since
