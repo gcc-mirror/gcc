@@ -1,3 +1,11 @@
+2017-11-13  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/78240
+	* decl.c (match_clist_expr): Replace gcc_assert with proper
+	handling of bad result from spec_size().
+	* resolve.c (check_data_variable): Avoid NULL dereference when passing
+	locus to gfc_error.
+
 2017-11-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/82932
