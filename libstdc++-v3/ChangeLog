@@ -1,3 +1,13 @@
+2017-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2733 and LWG 2759
+	* include/experimental/numeric (gcd): Reject cv-qualified bool.
+	(lcm): Likewise.
+	* include/std/numeric (gcd): Likewise.
+	(lcm): Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Add tests and adjust.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+
 2017-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wbuffer_convert::_M_conv_get): Fix typo.

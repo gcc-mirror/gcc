@@ -26,14 +26,29 @@ test01()
   std::lcm(true, 1);    // { dg-error "from here" }
   std::lcm(1, true);    // { dg-error "from here" }
   std::lcm(true, true); // { dg-error "from here" }
+  std::lcm<const bool, int>(true, 1);    // { dg-error "from here" }
+  std::lcm<int, const bool>(1, true);    // { dg-error "from here" }
+  std::lcm<const bool, const bool>(true, true); // { dg-error "from here" }
+  std::lcm<const bool&, int>(true, 1);    // { dg-error "from here" }
+  std::lcm<int, const bool&>(1, true);    // { dg-error "from here" }
+  std::lcm<const bool&, const bool&>(true, true); // { dg-error "from here" }
+  std::lcm<const volatile bool, int>(true, 1);    // { dg-error "from here" }
+  std::lcm<int, const volatile bool>(1, true);    // { dg-error "from here" }
+  std::lcm<const volatile bool,
+	   const volatile bool>(true, true); // { dg-error "from here" }
+  std::lcm<volatile bool, int>(true, 1);    // { dg-error "from here" }
+  std::lcm<int, volatile bool>(1, true);    // { dg-error "from here" }
+  std::lcm<volatile bool,
+	   volatile bool>(true, true); // { dg-error "from here" }
   std::lcm(0.1, 1);     // { dg-error "from here" }
   std::lcm(1, 0.1);     // { dg-error "from here" }
   std::lcm(0.1, 0.1);   // { dg-error "from here" }
+  std::lcm<const int&, const int&>(0.1, 0.1);   // { dg-error "from here" }
 }
 
-// { dg-error "integers" "" { target *-*-* } 146 }
-// { dg-error "integers" "" { target *-*-* } 147 }
-// { dg-error "not bools" "" { target *-*-* } 148 }
-// { dg-error "not bools" "" { target *-*-* } 149 }
+// { dg-error "integers" "" { target *-*-* } 148 }
+// { dg-error "integers" "" { target *-*-* } 149 }
+// { dg-error "not bools" "" { target *-*-* } 150 }
+// { dg-error "not bools" "" { target *-*-* } 152 }
 // { dg-prune-output "deleted function" }
 // { dg-prune-output "invalid operands" }
