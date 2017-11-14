@@ -1,3 +1,49 @@
+2017-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (is_float128_p): New helper function.
+	(rs6000_builtin_type_compatible): Treat _Float128 and long double
+	as being compatible if -mabi=ieeelongdouble.
+	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_HW_1): New macros
+	to setup float128 built-ins with hardware support.
+	(BU_FLOAT128_HW_2): Likewise.
+	(BU_FLOAT128_HW_3): Likewise.
+	(BU_FLOAT128_HW_VSX_1): Likewise.
+	(BU_FLOAT128_HW_VSX_2): Likewise.
+	(scalar_extract_expq): Change float128 built-in functions to
+	accommodate having both KFmode and TFmode functions.  Use the
+	KFmode variant as the default.
+	(scalar_extract_sigq): Likewise.
+	(scalar_test_neg_qp): Likewise.
+	(scalar_insert_exp_q): Likewise.
+	(scalar_insert_exp_qp): Likewise.
+	(scalar_test_data_class_qp): Likewise.
+	(sqrtf128_round_to_odd): Delete processing the round to odd
+	built-in functions as special built-in functions, and define them
+	as float128 built-ins.  Use the KFmode variant as the default.
+	(truncf128_round_to_odd): Likewise.
+	(addf128_round_to_odd): Likewise.
+	(subf128_round_to_odd): Likewise.
+	(mulf128_round_to_odd): Likewise.
+	(divf128_round_to_odd): Likewise.
+	(fmaf128_round_to_odd): Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Add
+	support for KFmode and TFmode xststdcqp calls.
+	(rs6000_expand_builtin): If long double is IEEE 128-bit floating
+	point, switch the built-in handlers for the get/set float128
+	exponent, get float128 mantissa, float128 test built-ins, and the
+	float128 round to odd built-in functions.  Eliminate creating the
+	float128 round to odd built-in functions as special built-ins.
+	(rs6000_init_builtins): Eliminate special creation of the float128
+	round to odd built-in functions.
+	* config/rs6000/vsx.md (xsxexpqp_<mode>): Change float128 built-in
+	function insns to support both TFmode and KFmode variants.
+	(xsxsigqp_<mode>): Likewise.
+	(xsiexpqpf_<mode>): Likewise.
+	(xsiexpqp_<mode>): Likewise.
+	(xststdcqp_<mode>): Likewise.
+	(xststdcnegqp_<mode>): Likewise.
+	(xststdcqp_<mode>): Likewise.
+
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-threadupdate.c (compute_path_counts): Remove
