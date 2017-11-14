@@ -135,8 +135,6 @@ better_p (const_edge e1, const_edge e2)
   if (e1->count ().initialized_p () && e2->count ().initialized_p ()
       && ((e1->count () > e2->count ()) || (e1->count () < e2->count  ())))
     return e1->count () > e2->count ();
-  if (EDGE_FREQUENCY (e1) != EDGE_FREQUENCY (e2))
-    return EDGE_FREQUENCY (e1) > EDGE_FREQUENCY (e2);
   /* This is needed to avoid changes in the decision after
      CFG is modified.  */
   if (e1->src != e2->src)
