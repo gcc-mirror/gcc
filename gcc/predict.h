@@ -89,7 +89,7 @@ extern void guess_outgoing_edge_probabilities (basic_block);
 extern void tree_guess_outgoing_edge_probabilities (basic_block);
 extern void tree_estimate_probability (bool);
 extern void handle_missing_profiles (void);
-extern bool counts_to_freqs (void);
+extern bool update_max_bb_count (void);
 extern bool expensive_function_p (int);
 extern void estimate_bb_frequencies (bool);
 extern void compute_function_frequency (void);

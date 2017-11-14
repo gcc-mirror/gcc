@@ -558,7 +558,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	    }
 	}
       push_cfun (dstcfun);
-      counts_to_freqs ();
+      update_max_bb_count ();
       compute_function_frequency ();
       pop_cfun ();
       for (e = dst->callees; e; e = e->next_callee)

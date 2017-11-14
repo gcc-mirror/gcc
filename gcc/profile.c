@@ -497,7 +497,11 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
   /* Very simple sanity checks so we catch bugs in our profiling code.  */
   if (!profile_info)
-    return;
+    {
+      if (dump_file)
+	fprintf (dump_file, "Profile info is missing; giving up\n");
+      return;
+    }
 
   bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun));
   edge_gcov_counts = new hash_map<edge,gcov_type>;
@@ -805,7 +809,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   delete edge_gcov_counts;
   edge_gcov_counts = NULL;
 
-  counts_to_freqs ();
+  update_max_bb_count ();
 
   if (dump_file)
     {

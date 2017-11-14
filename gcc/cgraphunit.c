@@ -2026,7 +2026,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	}
 
       cfun->gimple_df->in_ssa_p = true;
-      counts_to_freqs ();
+      update_max_bb_count ();
       profile_status_for_fn (cfun)
         = cfg_count.initialized_p () && cfg_count.ipa_p ()
 	  ? PROFILE_READ : PROFILE_GUESSED;

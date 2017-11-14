@@ -673,11 +673,6 @@ gimple_value_profile_transformations (void)
         }
     }
 
-  if (changed)
-    {
-      counts_to_freqs ();
-    }
-
   return changed;
 }
 

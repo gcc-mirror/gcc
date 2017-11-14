@@ -1,5 +1,28 @@
 2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	* auto-profile.c (afdo_annotate_cfg): Use update_max_bb_count.
+	* cgraphunit.c (cgraph_node::expand_thunk): Use update_max_bb_count.
+	* ipa-utils.c (ipa_merge_profiles): Use update_max_bb_count.
+	* lto-streamer-in.c (input_function): Use update_max_bb_count.
+	* omp-expand.c (expand_omp_taskreg): Use update_max_bb_count.
+	* predict.c (maybe_hot_frequency_p): Inline to ...
+	(maybe_hot_count_p): ... here; rewrite to counts.
+	(counts_to_freqs): Rename to ...
+	(update_max_bb_count): ... this one.
+	(expensive_function_p): Use counts.
+	(estimate_bb_frequencies): Update.
+	(rebuild_frequencies): Update.
+	* predict.h (counts_to_freqs): Rename to ...
+	(update_max_bb_count): ... this one.
+	* profile.c (compute_branch_probabilities): Add debug info
+	* tree-inline.c (expand_call_inline): Update debug info.
+	(optimize_inline_calls): Use update_max_bb_count..
+	(tree_function_versioning): Use update_max_bb_count..
+	* value-prof.c (gimple_value_profile_transformations):
+	Do not use update_max_bb_count.
+
+2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (compute_uninlined_call_time, compute_inlined_call_time):
 	always use frequencies.
 

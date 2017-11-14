@@ -121,32 +121,6 @@ static const struct predictor_info predictor_info[]= {
 };
 #undef DEF_PREDICTOR
 
-/* Return TRUE if frequency FREQ is considered to be hot.  */
-
-static inline bool
-maybe_hot_frequency_p (struct function *fun, int freq)
-{
-  struct cgraph_node *node = cgraph_node::get (fun->decl);
-  if (!profile_info || profile_status_for_fn (fun) != PROFILE_READ)
-    {
-      if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-        return false;
-      if (node->frequency == NODE_FREQUENCY_HOT)
-        return true;
-    }
-  if (profile_status_for_fn (fun) == PROFILE_ABSENT)
-    return true;
-  if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && freq < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.to_frequency (fun) * 2 / 3))
-    return false;
-  if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0)
-    return false;
-  if (freq * PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)
-      < ENTRY_BLOCK_PTR_FOR_FN (fun)->count.to_frequency (fun))
-    return false;
-  return true;
-}
-
 static gcov_type min_count = -1;
 
 /* Determine the threshold for hot BB counts.  */
@@ -179,10 +153,30 @@ maybe_hot_count_p (struct function *fun, profile_count count)
 {
   if (!count.initialized_p ())
     return true;
-  if (!count.ipa_p ())
-    return maybe_hot_frequency_p (fun, count.to_frequency (fun));
   if (count.ipa () == profile_count::zero ())
     return false;
+  if (!count.ipa_p ())
+    {
+      struct cgraph_node *node = cgraph_node::get (fun->decl);
+      if (!profile_info || profile_status_for_fn (fun) != PROFILE_READ)
+	{
+	  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+	    return false;
+	  if (node->frequency == NODE_FREQUENCY_HOT)
+	    return true;
+	}
+      if (profile_status_for_fn (fun) == PROFILE_ABSENT)
+	return true;
+      if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+	  && count < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (2, 3)))
+	return false;
+      if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0)
+	return false;
+      if (count.apply_scale (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION), 1)
+	  < ENTRY_BLOCK_PTR_FOR_FN (fun)->count)
+	return false;
+      return true;
+    }
   /* Code executed at most once is not hot.  */
   if (count <= MAX (profile_info ? profile_info->runs : 1, 1))
     return false;
@@ -3317,7 +3311,7 @@ handle_missing_profiles (void)
    Return nonzero iff there was any nonzero execution count.  */
 
 bool
-counts_to_freqs (void)
+update_max_bb_count (void)
 {
   profile_count true_count_max = profile_count::uninitialized ();
   basic_block bb;
@@ -3327,7 +3321,7 @@ counts_to_freqs (void)
 
   cfun->cfg->count_max = true_count_max;
 
-  return true_count_max.nonzero_p ();
+  return true_count_max.ipa ().nonzero_p ();
 }
 
 /* Return true if function is likely to be expensive, so there is no point to
@@ -3338,30 +3332,37 @@ counts_to_freqs (void)
 bool
 expensive_function_p (int threshold)
 {
-  unsigned int sum = 0;
   basic_block bb;
-  unsigned int limit;
 
   /* We can not compute accurately for large thresholds due to scaled
      frequencies.  */
   gcc_assert (threshold <= BB_FREQ_MAX);
 
-  /* Frequencies are out of range.  This either means that function contains
-     internal loop executing more than BB_FREQ_MAX times or profile feedback
-     is available and function has not been executed at all.  */
-  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun) == 0)
+  /* If profile was scaled in a way entry block has count 0, then the function
+     is deifnitly taking a lot of time.  */
+  if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.nonzero_p ())
     return true;
 
   /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
-  limit = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun) * threshold;
+  profile_count limit = ENTRY_BLOCK_PTR_FOR_FN
+			   (cfun)->count.apply_scale (threshold, 1);
+  profile_count sum = profile_count::zero ();
   FOR_EACH_BB_FN (bb, cfun)
     {
       rtx_insn *insn;
 
+      if (!bb->count.initialized_p ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Function is considered expensive because"
+		     " count of bb %i is not initialized\n", bb->index);
+	  return true;
+	}
+
       FOR_BB_INSNS (bb, insn)
 	if (active_insn_p (insn))
 	  {
-	    sum += bb->count.to_frequency (cfun);
+	    sum += bb->count;
 	    if (sum > limit)
 	      return true;
 	}
@@ -3521,7 +3522,7 @@ estimate_bb_frequencies (bool force)
   determine_unlikely_bbs ();
 
   if (force || profile_status_for_fn (cfun) != PROFILE_READ
-      || !counts_to_freqs ())
+      || !update_max_bb_count ())
     {
       static int real_values_initialized = 0;
 
@@ -3873,7 +3874,7 @@ rebuild_frequencies (void)
       loop_optimizer_finalize ();
     }
   else if (profile_status_for_fn (cfun) == PROFILE_READ)
-    counts_to_freqs ();
+    update_max_bb_count ();
   else
     gcc_unreachable ();
   timevar_pop (TV_REBUILD_FREQUENCIES);
