@@ -1,3 +1,13 @@
+2017-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Remove first_p
+	paramter and handling.
+	(cleanup_control_flow_bb): Likewise.
+	(cleanup_control_flow_pre): New helper performing a DFS walk
+	to call cleanup_control_flow_bb in PRE order.
+	(cleanup_tree_cfg_1): Do the first phase of cleanup_control_flow_bb
+	via cleanup_control_flow_pre.
+
 2017-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md
