@@ -1,3 +1,8 @@
+2017-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/bsl-idiom.c: New.
+	* gcc.target/aarch64/copysign-bsl.c: New.
+
 2017-11-14  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/Wstringop-truncation.c: Require effective target alloca.
