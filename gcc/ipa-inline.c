@@ -670,8 +670,7 @@ compute_inlined_call_time (struct cgraph_edge *edge,
 
   /* This calculation should match one in ipa-inline-analysis.c
      (estimate_edge_size_and_time).  */
-  time -= (sreal) edge->frequency ()
-	   * ipa_call_summaries->get (edge)->call_stmt_time / CGRAPH_FREQ_BASE;
+  time -= (sreal)ipa_call_summaries->get (edge)->call_stmt_time * freq;
   time += caller_time;
   if (time <= 0)
     time = ((sreal) 1) >> 8;
@@ -1164,7 +1163,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   " overall growth %i (current) %i (original)"
 		   " %i (compensated)\n",
 		   badness.to_double (),
-		  (double)edge->frequency () / CGRAPH_FREQ_BASE,
+		   edge->sreal_frequency ().to_double (),
 		   edge->count.ipa ().initialized_p () ? edge->count.ipa ().to_gcov_type () : -1,
 		   caller->count.ipa ().initialized_p () ? caller->count.ipa ().to_gcov_type () : -1,
 		   compute_uninlined_call_time (edge,

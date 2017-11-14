@@ -2581,8 +2581,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   if (prob == REG_BR_PROB_BASE)
     *time += ((sreal)call_time) * e->sreal_frequency ();
   else
-    *time += ((sreal)call_time * prob) * e->sreal_frequency ()
-	      / CGRAPH_FREQ_BASE;
+    *time += ((sreal)call_time * prob) * e->sreal_frequency ();
 }
 
 
