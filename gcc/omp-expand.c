@@ -1399,7 +1399,7 @@ expand_omp_taskreg (struct omp_region *region)
 
       if (optimize)
 	optimize_omp_library_calls (entry_stmt);
-      counts_to_freqs ();
+      update_max_bb_count ();
       cgraph_edge::rebuild_edges ();
 
       /* Some EH regions might become dead, see PR34608.  If

@@ -1571,7 +1571,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   if (max_count > profile_count::zero ())
     {
       afdo_calculate_branch_prob (&annotated_bb, &annotated_edge);
-      counts_to_freqs ();
+      update_max_bb_count ();
       profile_status_for_fn (cfun) = PROFILE_READ;
     }
   if (flag_value_profile_transformations)

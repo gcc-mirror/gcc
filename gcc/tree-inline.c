@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "sreal.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -4670,11 +4671,12 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Inlining ");
-      print_generic_expr (dump_file, id->src_fn);
-      fprintf (dump_file, " to ");
-      print_generic_expr (dump_file, id->dst_fn);
-      fprintf (dump_file, " with frequency %i\n", cg_edge->frequency ());
+      fprintf (dump_file, "Inlining %s to %s with frequency %4.2f\n",
+	       xstrdup_for_dump (id->src_node->dump_name ()),
+	       xstrdup_for_dump (id->dst_node->dump_name ()),
+	       cg_edge->sreal_frequency ().to_double ());
+      id->src_node->dump (dump_file);
+      id->dst_node->dump (dump_file);
     }
 
   /* This is it.  Duplicate the callee body.  Assume callee is
@@ -5057,7 +5059,7 @@ optimize_inline_calls (tree fn)
     }
 
   /* Fold queued statements.  */
-  counts_to_freqs ();
+  update_max_bb_count ();
   fold_marked_statements (last, id.statements_to_fold);
   delete id.statements_to_fold;
 
@@ -6034,7 +6036,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  counts_to_freqs ();
+  update_max_bb_count ();
   fold_marked_statements (0, id.statements_to_fold);
   delete id.statements_to_fold;
   delete_unreachable_blocks_update_callgraph (&id);
