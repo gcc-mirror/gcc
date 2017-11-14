@@ -691,8 +691,7 @@ static bool
 compute_path_counts (struct redirection_data *rd,
 		     ssa_local_info_t *local_info,
 		     profile_count *path_in_count_ptr,
-		     profile_count *path_out_count_ptr,
-		     int *path_in_freq_ptr)
+		     profile_count *path_out_count_ptr)
 {
   edge e = rd->incoming_edges->e;
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
@@ -700,7 +699,6 @@ compute_path_counts (struct redirection_data *rd,
   profile_count nonpath_count = profile_count::zero ();
   bool has_joiner = false;
   profile_count path_in_count = profile_count::zero ();
-  int path_in_freq = 0;
 
   /* Start by accumulating incoming edge counts to the path's first bb
      into a couple buckets:
@@ -740,7 +738,6 @@ compute_path_counts (struct redirection_data *rd,
 	     source block.  */
 	  gcc_assert (ein_path->last ()->e == elast);
 	  path_in_count += ein->count ();
-	  path_in_freq += EDGE_FREQUENCY (ein);
 	}
       else if (!ein_path)
 	{
@@ -750,10 +747,6 @@ compute_path_counts (struct redirection_data *rd,
 	    nonpath_count += ein->count ();
 	}
     }
-
-  /* This is needed due to insane incoming frequencies.  */
-  if (path_in_freq > BB_FREQ_MAX)
-    path_in_freq = BB_FREQ_MAX;
 
   /* Now compute the fraction of the total count coming into the first
      path bb that is from the current threading path.  */
@@ -843,7 +836,6 @@ compute_path_counts (struct redirection_data *rd,
 
   *path_in_count_ptr = path_in_count;
   *path_out_count_ptr = path_out_count;
-  *path_in_freq_ptr = path_in_freq;
   return has_joiner;
 }
 
@@ -954,7 +946,6 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
   edge elast = path->last ()->e;
   profile_count path_in_count = profile_count::zero ();
   profile_count path_out_count = profile_count::zero ();
-  int path_in_freq = 0;
 
   /* First determine how much profile count to move from original
      path to the duplicate path.  This is tricky in the presence of
@@ -963,8 +954,7 @@ ssa_fix_duplicate_block_edges (struct redirection_data *rd,
      non-joiner case the path_in_count and path_out_count should be the
      same.  */
   bool has_joiner = compute_path_counts (rd, local_info,
-					 &path_in_count, &path_out_count,
-					 &path_in_freq);
+					 &path_in_count, &path_out_count);
 
   for (unsigned int count = 0, i = 1; i < path->length (); i++)
     {
