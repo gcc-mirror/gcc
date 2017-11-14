@@ -404,15 +404,22 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
 /* Make sure two expressions have the same type.  */
 
 static bool
-same_type_check (gfc_expr *e, int n, gfc_expr *f, int m)
+same_type_check (gfc_expr *e, int n, gfc_expr *f, int m, bool assoc = false)
 {
   gfc_typespec *ets = &e->ts;
   gfc_typespec *fts = &f->ts;
 
-  if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
-    ets = &e->symtree->n.sym->ts;
-  if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
-    fts = &f->symtree->n.sym->ts;
+  if (assoc)
+    {
+      /* Procedure pointer component expressions have the type of the interface
+	 procedure. If they are being tested for association with a procedure
+	 pointer (ie. not a component), the type of the procedure must be
+	 determined.  */
+      if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
+	ets = &e->symtree->n.sym->ts;
+      if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
+	fts = &f->symtree->n.sym->ts;
+    }
 
   if (gfc_compare_types (ets, fts))
     return true;
@@ -968,7 +975,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     }
 
   t = true;
-  if (!same_type_check (pointer, 0, target, 1))
+  if (!same_type_check (pointer, 0, target, 1, true))
     t = false;
   if (!rank_check (target, 0, pointer->rank))
     t = false;
