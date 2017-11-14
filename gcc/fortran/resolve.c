@@ -15286,7 +15286,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
       if (!gfc_array_size (e, &size))
 	{
 	  gfc_error ("Nonconstant array section at %L in DATA statement",
-		     &e->where);
+		     where);
 	  mpz_clear (offset);
 	  return false;
 	}

@@ -1,3 +1,9 @@
+2017-11-13  Fritz Reese <fritzoreese@gmail.com>
+
+	PR fortran/78240
+	* gfortran.dg/dec_structure_23.f90: New.
+	* gfortran.dg/pr78240.f90: New.
+
 2017-11-13 Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtin-vec-sums-be-int.c: New test file.
