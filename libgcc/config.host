@@ -277,7 +277,7 @@ case ${host} in
   tmake_file="$tmake_file $cpu_type/t-sol2"
   extra_parts="gmon.o crtbegin.o crtend.o"
   if test "${libgcc_cv_solaris_crts}" = yes; then
-    # Solaris 11.x and 12 provide crt1.o, crti.o, and crtn.o as part of the
+    # Solaris 11.4 provides crt1.o, crti.o, and crtn.o as part of the
     # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
     extra_parts="$extra_parts crtp.o crtpg.o"
     # If the Solaris CRTs are present, both ld and gld will have PIE support.

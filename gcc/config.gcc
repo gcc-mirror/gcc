@@ -860,8 +860,8 @@ case ${target} in
   sol2_tm_file_tail="${cpu_type}/sol2.h sol2.h"
   sol2_tm_file="${sol2_tm_file_head} ${sol2_tm_file_tail}"
   case ${target} in
-    *-*-solaris2.1[2-9]*)
-      # __cxa_atexit was introduced in Solaris 12.
+    *-*-solaris2.1[1-9]*)
+      # __cxa_atexit was introduced in Solaris 11.4.
       default_use_cxa_atexit=yes
       ;;
   esac
