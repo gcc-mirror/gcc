@@ -640,10 +640,6 @@ compute_uninlined_call_time (struct cgraph_edge *edge,
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
 
-  if (edge->count.ipa ().nonzero_p ()
-      && caller->count.ipa ().nonzero_p ())
-    uninlined_call_time *= (sreal)edge->count.ipa ().to_gcov_type ()
-			   / caller->count.ipa ().to_gcov_type ();
   sreal freq = edge->sreal_frequency ();
   if (freq != 0)
     uninlined_call_time *= freq;
@@ -666,9 +662,6 @@ compute_inlined_call_time (struct cgraph_edge *edge,
 			 : edge->caller);
   sreal caller_time = ipa_fn_summaries->get (caller)->time;
 
-  if (edge->count.ipa ().nonzero_p ()
-      && caller->count.ipa ().nonzero_p ())
-    time *= (sreal)edge->count.to_gcov_type () / caller->count.to_gcov_type ();
   sreal freq = edge->sreal_frequency ();
   if (freq != 0)
     time *= freq;
@@ -1954,7 +1947,7 @@ inline_small_functions (void)
 		   ? gimple_lineno ((const gimple *) edge->call_stmt)
 		   : -1,
 		   badness.to_double (),
-		   edge->frequency () / (double)CGRAPH_FREQ_BASE);
+		   edge->sreal_frequency ().to_double ());
 	  if (edge->count.ipa ().initialized_p ())
 	    {
 	      fprintf (dump_file, " Called ");
