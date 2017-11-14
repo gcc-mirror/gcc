@@ -129,6 +129,10 @@ struct split_point
   /* Basic block where we split (that will become entry point of new function.  */
   basic_block entry_bb;
 
+  /* Count for entering the split part.
+     This is not count of the entry_bb because it may be in loop.  */
+  profile_count count;
+
   /* Basic blocks we are splitting away.  */
   bitmap split_bbs;
 
@@ -426,7 +430,6 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   edge_iterator ei;
   gphi_iterator bsi;
   unsigned int i;
-  int incoming_freq = 0;
   tree retval;
   tree retbnd;
   bool back_edge = false;
@@ -434,18 +437,21 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_split_point (dump_file, current);
 
+  current->count = profile_count::zero ();
   FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
     {
       if (e->flags & EDGE_DFS_BACK)
 	back_edge = true;
       if (!bitmap_bit_p (current->split_bbs, e->src->index))
-        incoming_freq += EDGE_FREQUENCY (e);
+	current->count += e->count ();
     }
 
-  /* Do not split when we would end up calling function anyway.  */
-  if (incoming_freq
-      >= (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun)
-	  * PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100))
+  /* Do not split when we would end up calling function anyway.
+     Compares are three state, use !(...<...) to also give up when outcome
+     is unknown.  */
+  if (!(current->count
+       < (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale
+	   (PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY), 100))))
     {
       /* When profile is guessed, we can not expect it to give us
 	 realistic estimate on likelyness of function taking the
@@ -454,14 +460,17 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	 is likely noticeable win.  */
       if (back_edge
 	  && profile_status_for_fn (cfun) != PROFILE_READ
-	  && incoming_freq
-		 < ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun))
+	  && current->count
+		 < ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "  Split before loop, accepting despite low frequencies %i %i.\n",
-		     incoming_freq,
-		     ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun));
+	    {
+	      fprintf (dump_file,
+		       "  Split before loop, accepting despite low counts");
+	      current->count.dump (dump_file);
+	      fprintf (dump_file, " ");
+	      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.dump (dump_file);
+	    }
 	}
       else
 	{
@@ -711,14 +720,13 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Accepted!\n");
 
-  /* At the moment chose split point with lowest frequency and that leaves
+  /* At the moment chose split point with lowest count and that leaves
      out smallest size of header.
      In future we might re-consider this heuristics.  */
   if (!best_split_point.split_bbs
-      || best_split_point.entry_bb->count.to_frequency (cfun)
-	 > current->entry_bb->count.to_frequency (cfun)
-      || (best_split_point.entry_bb->count.to_frequency (cfun)
-	  == current->entry_bb->count.to_frequency (cfun)
+      || best_split_point.count
+	 > current->count
+      || (best_split_point.count == current->count 
 	  && best_split_point.split_size < current->split_size))
 	
     {
@@ -1446,6 +1454,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
       }
     else
       break;
+  call_bb->count = split_point->count;
   e = split_block (split_point->entry_bb, last_stmt);
   remove_edge (e);
 
