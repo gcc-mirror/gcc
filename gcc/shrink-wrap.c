@@ -880,18 +880,17 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
      the correct answer for reducible flow graphs; for irreducible flow graphs
      our profile is messed up beyond repair anyway.  */
 
-  gcov_type num = 0;
-  gcov_type den = 0;
+  profile_count num = profile_count::zero ();
+  profile_count den = profile_count::zero ();
 
   FOR_EACH_EDGE (e, ei, pro->preds)
     if (!dominated_by_p (CDI_DOMINATORS, e->src, pro))
       {
-	num += EDGE_FREQUENCY (e);
-	den += e->src->count.to_frequency (cfun);
+	if (e->count ().initialized_p ())
+	  num += e->count ();
+	if (e->src->count.initialized_p ())
+	  den += e->src->count;
       }
-
-  if (den == 0)
-    den = 1;
 
   /* All is okay, so do it.  */
 
@@ -919,8 +918,9 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
 	if (dump_file)
 	  fprintf (dump_file, "Duplicated %d to %d\n", bb->index, dup->index);
-
-	bb->count = bb->count.apply_scale (num, den);
+	
+	if (num == profile_count::zero () || den.nonzero_p ())
+	  bb->count = bb->count.apply_scale (num, den);
 	dup->count -= bb->count;
       }
 
