@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc*-*-* && p8vector_hw } } } */
+/* { dg-do run { target { powerpc*-*-* && { lp64 && p8vector_hw } } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8  -O3" } */
 
@@ -52,10 +52,10 @@ main()
   for (i = 0; i < 16; i++) {
     if (result_bc[i] != expected_bc[i])
 #ifdef DEBUG
-       printf("arg_bc[%d] = 0x%x, result_bc[%d] = 0x%x, expected_bc[%d] = 0x%x\n",
-	      i, arg_bc[i], i, result_bc[i], i, expected_bc[i]);
+      printf("arg_bc[%d] = 0x%x, result_bc[%d] = 0x%x, expected_bc[%d] = 0x%x\n",
+	     i, arg_bc[i], i, result_bc[i], i, expected_bc[i]);
 #else
-    abort();
+      abort();
 #endif
   }
 
@@ -70,10 +70,10 @@ main()
   for (i = 0; i < 16; i++) {
     if (result_uc[i] != expected_uc[i])
 #ifdef DEBUG
-       printf("arg_uc[%d] = 0x%x, result_uc[%d] = 0x%x, expected_uc[%d] = 0x%x\n",
-	      i, arg_uc[i], i, result_uc[i], i, expected_uc[i]);
+      printf("arg_uc[%d] = 0x%x, result_uc[%d] = 0x%x, expected_uc[%d] = 0x%x\n",
+	     i, arg_uc[i], i, result_uc[i], i, expected_uc[i]);
 #else
-    abort();
+      abort();
 #endif
   }
 
@@ -88,10 +88,10 @@ main()
   for (i = 0; i < 16; i++) {
     if (result_sc[i] != expected_sc[i])
 #ifdef DEBUG
-      printf("arg_sc[%d] = 0x%x, result_sc[%d] = 0x%x, expected_sc[%d] = 0x%x\n",
+	printf("arg_sc[%d] = 0x%x, result_sc[%d] = 0x%x, expected_sc[%d] = 0x%x\n",
 	     i, arg_sc[i], i, result_sc[i], i, expected_sc[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -106,10 +106,10 @@ main()
   for (i = 0; i < 8; i++) {
     if (result_bsi[i] != expected_bsi[i])
 #ifdef DEBUG
-       printf("arg_bsi[%d] = 0x%x, result_bsi[%d] = 0x%x, expected_bsi[%d] = 0x%x\n",
+	printf("arg_bsi[%d] = 0x%x, result_bsi[%d] = 0x%x, expected_bsi[%d] = 0x%x\n",
 	      i, arg_bsi[i], i, result_bsi[i], i, expected_bsi[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -123,10 +123,10 @@ main()
   for (i = 0; i < 8; i++) {
     if (result_usi[i] != expected_usi[i])
 #ifdef DEBUG
-      printf("arg_usi[%d] = 0x%x, result_usi[%d] = 0x%x, expected_usi[%d] = 0x%x\n",
+	printf("arg_usi[%d] = 0x%x, result_usi[%d] = 0x%x, expected_usi[%d] = 0x%x\n",
 	     i, arg_usi[i], i, result_usi[i], i, expected_usi[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -140,10 +140,10 @@ main()
   for (i = 0; i < 8; i++) {
     if (result_si[i] != expected_si[i])
 #ifdef DEBUG
-       printf("arg_si[%d] = 0x%x, result_si[%d] = 0x%x, expected_si[%d] = 0x%x\n",
-	      i, arg_si[i], i, result_si[i], i, expected_si[i]);
+	printf("arg_si[%d] = 0x%x, result_si[%d] = 0x%x, expected_si[%d] = 0x%x\n",
+	     i, arg_si[i], i, result_si[i], i, expected_si[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -157,10 +157,10 @@ main()
   for (i = 0; i < 4; i++) {
     if (result_bi[i] != expected_bi[i])
 #ifdef DEBUG
-      printf("arg_bi[%d] = 0x%x, result_bi[%d] = 0x%x, expected_bi[%d] = 0x%x\n",
+	printf("arg_bi[%d] = 0x%x, result_bi[%d] = 0x%x, expected_bi[%d] = 0x%x\n",
 	     i, arg_bi[i], i, result_bi[i], i, expected_bi[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -174,10 +174,10 @@ main()
   for (i = 0; i < 4; i++) {
     if (result_ui[i] != expected_ui[i])
 #ifdef DEBUG
-      printf("arg_ui[%d] = 0x%x, result_ui[%d] = 0x%x, expected_ui[%d] = 0x%x\n",
+	printf("arg_ui[%d] = 0x%x, result_ui[%d] = 0x%x, expected_ui[%d] = 0x%x\n",
 	     i, arg_ui[i], i, result_ui[i], i, expected_ui[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -189,10 +189,10 @@ main()
   for (i = 0; i < 4; i++) {
     if (result_int[i] != expected_int[i])
 #ifdef DEBUG
-      printf("arg_int[%d] = 0x%x, result_int[%d] = 0x%x, expected_int[%d] = 0x%x\n",
+	printf("arg_int[%d] = 0x%x, result_int[%d] = 0x%x, expected_int[%d] = 0x%x\n",
 	     i, arg_int[i], i, result_int[i], i, expected_int[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -207,10 +207,10 @@ main()
   for (i = 0; i < 2; i++) {
     if (result_blli[i] != expected_blli[i])
 #ifdef DEBUG
-      printf("arg_blli[%d] = 0x%x, result_blli[%d] = 0x%llx, expected_blli[%d] = 0x%llx\n",
+	printf("arg_blli[%d] = 0x%x, result_blli[%d] = 0x%llx, expected_blli[%d] = 0x%llx\n",
 	     i, arg_blli[i], i, result_blli[i], i, expected_blli[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -224,10 +224,10 @@ main()
   for (i = 0; i < 2; i++) {
     if (result_ulli[i] != expected_ulli[i])
 #ifdef DEBUG
-      printf("arg_ulli[%d] = 0x%x, result_ulli[%d] = 0x%llx, expected_ulli[%d] = 0x%llx\n",
+	printf("arg_ulli[%d] = 0x%x, result_ulli[%d] = 0x%llx, expected_ulli[%d] = 0x%llx\n",
 	     i, arg_ulli[i], i, result_ulli[i], i, expected_ulli[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -240,10 +240,10 @@ main()
   for (i = 0; i < 2; i++) {
     if (result_lli[i] != expected_lli[i])
 #ifdef DEBUG
-      printf("arg_lli[%d] = 0x%x, result_lli[%d] = 0x%llx, expected_lli[%d] = 0x%llx\n",
+	printf("arg_lli[%d] = 0x%x, result_lli[%d] = 0x%llx, expected_lli[%d] = 0x%llx\n",
 	     i, arg_lli[i], i, result_lli[i], i, expected_lli[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 
@@ -270,7 +270,7 @@ main()
        printf("expected_uint128[0] =  %llx ", expected_uint128[0] >> 64);
        printf(" %llx\n", expected_uint128[0] & 0xFFFFFFFFFFFFFFFF);
 #else
-    abort();
+       abort();
 #endif
     }
 
@@ -296,7 +296,7 @@ main()
        printf("expected_int128[0] =  %llx ", expected_int128[0] >> 64);
        printf(" %llx\n", expected_int128[0] & 0xFFFFFFFFFFFFFFFF);
 #else
-    abort();
+       abort();
 #endif
     }
 
@@ -313,14 +313,12 @@ main()
 
   for (i = 0; i < 4; i++) {
     if (result_f[i] != expected_f[i])
-      {
 #ifdef DEBUG
 	printf("    arg_f[%d] = %f, result_f[%d] = %f, expected_f[%d] = %f\n",
-	       i, arg_f[i], i, result_f[i], i, expected_f[i]);
+	     i, arg_f[i], i, result_f[i], i, expected_f[i]);
 #else
 	abort();
 #endif
-      }
   }
 
   /* 64-bit floats */
@@ -335,10 +333,10 @@ main()
   for (i = 0; i < 2; i++) {
     if (result_d[i] != expected_d[i])
 #ifdef DEBUG
-      printf("arg_d[%d] = %f, result_d[%d] = %f, expected_d[%d] = %f\n",
+	printf("arg_d[%d] = %f, result_d[%d] = %f, expected_d[%d] = %f\n",
 	     i, arg_d[i], i, result_d[i], i, expected_d[i]);
 #else
-    abort();
+	abort();
 #endif
   }
 }

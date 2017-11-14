@@ -1,3 +1,10 @@
+2017-11-14  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000.c (swap_endian_selector_for_mode): Remove
+	le_ and be_ prefixes to swap* variables.  Remove
+	if (VECTOR_ELT_ORDER_BIG) statement. Remove E_V16QImode case
+	statements.
+	
 2017-11-14  Jason Merrill  <jason@redhat.com>
 
 	Support GTY((cache)) on hash_map.
