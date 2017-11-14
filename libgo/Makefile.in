@@ -1218,7 +1218,7 @@ extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
 @HAVE_STAT_TIMESPEC_FALSE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = 
 
-# Solaris 12 changed the type of fields in struct stat.
+# Solaris 11.4 changed the type of fields in struct stat.
 # Use a build tag, based on a configure check, to cope.
 @HAVE_STAT_TIMESPEC_TRUE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = --tag=solaristag
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
