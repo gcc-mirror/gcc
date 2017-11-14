@@ -1,3 +1,9 @@
+2017-11-14  Carl Love  <cel@us.ibm.com>
+
+	* builtins-revb-runnable.c (dg-do run): Add lp64 directive.  Fix
+	indentation of printf and abort statements.
+	* p9-xxbr-1.c (dg-do compile): Add lp64 && p9vector_h directives.
+
 2017-11-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/bsl-idiom.c: New.
