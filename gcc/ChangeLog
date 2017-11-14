@@ -1,5 +1,10 @@
 2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (compute_uninlined_call_time, compute_inlined_call_time):
+	always use frequencies.
+
+2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	* bb-reorder.c: Remove frequencies from comments.
 	(better_edge_p): Use profile counts.
 	(find_traces): Dump profile counts.
