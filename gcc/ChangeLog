@@ -1,5 +1,17 @@
 2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
+	* bb-reorder.c: Remove frequencies from comments.
+	(better_edge_p): Use profile counts.
+	(find_traces): Dump profile counts.
+	(rotate_loop): Use profile counts.
+	(find_traces_1_round): Likewise.
+	(connect_better_edge_p): Use counts instead of probabilities for
+	reverse walk.
+	(copy_bb_p): Drop early check for non-0 frequency.
+	(sanitize_hot_paths): Update comments.
+
+2017-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-split.c (struct split_point): Add count.
 	(consider_split): Do not compute incoming frequency; compute incoming
 	count and store it to split_point.
