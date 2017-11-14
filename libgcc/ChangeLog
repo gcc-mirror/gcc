@@ -1,3 +1,11 @@
+2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (*-*-solaris2*): Adapt comment for Solaris 12
+	renaming.
+	* config/sol2/crtpg.c (__start_crt_compiler): Likewise.
+	* configure.ac (libgcc_cv_solaris_crts): Likewise.
+	* configure: Regenerate.
+
 2017-11-07  Tom de Vries  <tom@codesourcery.com>
 
 	* config/rs6000/aix-unwind.h (REGISTER_CFA_OFFSET_FOR): Remove semicolon

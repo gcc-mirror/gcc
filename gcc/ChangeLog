@@ -1,3 +1,12 @@
+2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (*-*-solaris2*): Enable default_use_cxa_atexit since
+	Solaris 11.  Update comment.
+	* configure.ac (gcc_cv_ld_pid): Adapt comment for Solaris 12
+	renaming.
+	* config/sol2.h (STARTFILE_SPEC): Likewise.
+	* configure: Regenerate.
+
 2017-11-14  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000.c (swap_endian_selector_for_mode): Remove

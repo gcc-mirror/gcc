@@ -1,3 +1,10 @@
+2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_pie): Adapt
+	comment for Solaris 12 renaming.
+
+	* gcc.dg/torture/pr60092.c: Remove *-*-solaris2.11* dg-xfail-run-if.
+
 2017-11-14  Carl Love  <cel@us.ibm.com>
 
 	* builtins-revb-runnable.c (dg-do run): Add lp64 directive.  Fix
