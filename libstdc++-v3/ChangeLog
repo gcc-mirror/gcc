@@ -1,3 +1,8 @@
+2017-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_conv_get): Fix typo.
+	* testsuite/22_locale/conversions/buffer/3.cc: New test.
+
 2017-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_tr1.h (ThrowMoveConsClass): Use noexcept.
