@@ -91,9 +91,6 @@ along with GCC; see the file COPYING3.  If not see
    branches, and this ensures we alwasy get at least that depth from each
    branch.  */
 
-#define trace_output ((FILE *)0)
-//#define trace_output dump_file
-
 
 irange_operator *
 range_stmt::handler () const
@@ -224,32 +221,9 @@ range_stmt::logical_expr (irange& r, const irange& lhs, const irange& op1_true,
 {
   gcc_checking_assert (logical_expr_p (TREE_TYPE (op1)));
  
-  if (trace_output)
-    {
-      fprintf (dump_file, "\nIn Combine_range for ");
-      print_gimple_stmt (dump_file, g, 0 ,0);
-    }
-
   /* If the LHS can be TRUE OR FALSE, then we cant really tell anything.  */
   if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
-    {
-      if (trace_output)
-	fprintf (dump_file, " : LHS can be true or false, know nothing.\n");
-      return false;
-    }
-
-  if (trace_output)
-    {
-      fprintf (dump_file, "  combining following 4 ranges:\n");
-      fprintf (dump_file, "op1_true : ");
-      op1_true.dump (dump_file);
-      fprintf (dump_file, "op1_false : ");
-      op1_false.dump (dump_file);
-      fprintf (dump_file, "op2_true : ");
-      op2_true.dump (dump_file);
-      fprintf (dump_file, "op2_false : ");
-      op2_false.dump (dump_file);
-    }
+    return false;
 
   /* Now combine based on the result.  */
   switch (code)
@@ -303,11 +277,6 @@ range_stmt::logical_expr (irange& r, const irange& lhs, const irange& op1_true,
         gcc_unreachable ();
     }
 
-  if (trace_output)
-    {
-      fprintf (dump_file, "result range is ");
-      r.dump (dump_file);
-    }
   return true;
 }
 
@@ -377,7 +346,7 @@ range_stmt::fold (irange &res, const irange& r1, const irange& r2) const
   irange_operator *handler = irange_op_handler (code);
   gcc_assert (handler != NULL);
 
-  // WHen folding single operand operations, override the op2 parameter. */
+  // When folding single operand operations, override the op2 parameter. */
   if (state == RS_S || state == RS_I)
     return fold (res, r1);
   return handler->fold_range (res, r1, r2);
@@ -452,49 +421,15 @@ range_stmt::fold (irange& res, tree name, const irange& name_range) const
 }
 
 bool
-range_stmt::op1_irange (irange& r, const irange& lhs, const irange& op2,
-		        FILE *trace) const
+range_stmt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 {  
-  bool res;
-  if (trace)
-    {
-      fprintf (trace, "\nCalling op1_irange () on : ");
-      dump (trace);
-      fprintf (trace, "\n  lhs = ");
-      lhs.dump (trace);
-      fprintf (trace, "  op2 = ");
-      op2.dump (trace);
-    }
-  res = handler ()->op1_irange (r, lhs, op2);
-  if (trace)
-    {
-      fprintf (trace, "  result of op1_irange: ");
-      r.dump (trace);
-    }
-  return res;
+  return handler ()->op1_irange (r, lhs, op2);
 }
 
 bool
-range_stmt::op2_irange (irange& r, const irange& lhs, const irange& op1,
-		        FILE *trace) const
+range_stmt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 {  
-  bool res;
-  if (trace)
-    {
-      fprintf (trace, "\nCalling op2_irange () on : ");
-      dump (trace);
-      fprintf (trace, "\n  lhs = ");
-      lhs.dump (trace);
-      fprintf (trace, "  op1 = ");
-      op1.dump (trace);
-    }
-  res = handler ()->op2_irange (r, lhs, op1);
-  if (trace)
-    {
-      fprintf (trace, "  result of op2_irange: ");
-      r.dump (trace);
-    }
-  return res;
+  return handler ()->op2_irange (r, lhs, op1);
 }
 
 void
