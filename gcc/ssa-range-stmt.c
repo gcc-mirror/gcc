@@ -106,7 +106,7 @@ range_stmt::determine_state (tree t1, tree t2)
   ssa1 = irange_ssa (t1);
   ssa2 = irange_ssa (t2);
 
-  if (!t2 || TYPE_P (t2))
+  if (!t2)
     {
       /* Check for unary cases.  */
       if (ssa1)
@@ -174,12 +174,7 @@ range_stmt::from_stmt (gimple *s)
 	      if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
 		op2 = gimple_assign_rhs2 (g);
 	      else
-	        /* Unary operations require the type of op1 as op2.  */
-		if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS
-		    || get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
-		  op2 = TREE_TYPE (op1);
-		else
-		  op2 = NULL;
+		op2 = NULL;
 	      state = determine_state (op1, op2);
 	    }
 	  break;
@@ -421,15 +416,26 @@ range_stmt::fold (irange& res, tree name, const irange& name_range) const
 }
 
 bool
-range_stmt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
+range_stmt::op1_irange (irange& r, const irange& lhs_range) const
 {  
-  return handler ()->op1_irange (r, lhs, op2);
+  irange type_range;
+  type_range.set_range_for_type (TREE_TYPE (op1));
+  return handler ()->op1_irange (r, lhs_range, type_range);
 }
 
 bool
-range_stmt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
+range_stmt::op1_irange (irange& r, const irange& lhs_range,
+			const irange& op2_range) const
 {  
-  return handler ()->op2_irange (r, lhs, op1);
+  gcc_assert (op2 != NULL);
+  return handler ()->op1_irange (r, lhs_range, op2_range);
+}
+
+bool
+range_stmt::op2_irange (irange& r, const irange& lhs_range,
+			const irange& op1_range) const
+{  
+  return handler ()->op2_irange (r, lhs_range, op1_range);
 }
 
 void
@@ -466,11 +472,11 @@ range_stmt::dump (FILE *f) const
       gcc_unreachable ();
   }
 
-  if (op2 && (state == RS_I || state == RS_S))
+  if (state == RS_I || state == RS_S)
     {
       irange_op_handler (code)->dump (f);
       fprintf (f, " (");
-      print_generic_expr (f, op2, TDF_SLIM);
+      print_generic_expr (f, TREE_TYPE (op1), TDF_SLIM);
       fprintf (f, ") ");
     }
 

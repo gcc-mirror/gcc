@@ -79,8 +79,11 @@ public:
   bool fold (irange& res, tree name, const irange& name_range) const;
   bool fold (irange& res, const irange& r1) const;
   bool fold (irange& res, const irange& r1, const irange& r2) const;
-  bool op1_irange (irange& r, const irange& lhs, const irange& op2) const;
-  bool op2_irange (irange& r, const irange& lhs, const irange& op1) const;
+  bool op1_irange (irange& r, const irange& lhs_range) const;
+  bool op1_irange (irange& r, const irange& lhs_range,
+		   const irange& op2_range) const;
+  bool op2_irange (irange& r, const irange& lhs_range,
+		   const irange& op1_range) const;
 
 
   void dump (FILE *f) const;

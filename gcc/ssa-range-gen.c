@@ -163,6 +163,8 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
 
   if (op1 == name)
     { 
+      if (!op2)
+        return stmt.op1_irange (r, lhs);
       if (get_operand_range (op2_range, op2))
 	return stmt.op1_irange (r, lhs, op2_range);
       else
@@ -184,7 +186,7 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
   /* Reaching this point means NAME is not in this stmt, but one of the
      names in it ought to be derived from it.  */
   op1_in_chain = def_chain.in_chain_p (op1, name);
-  op2_in_chain = def_chain.in_chain_p (op2, name);
+  op2_in_chain = op2 && def_chain.in_chain_p (op2, name);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -214,10 +216,18 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
   else
     if (op1_in_chain)
       {
-	if (!get_operand_range (op2_range, op2))
-	  return false;
-	if (!stmt.op1_irange (op1_range, lhs, op2_range))
-	  return false;
+        if (!op2)
+	  {
+	    if (!stmt.op1_irange (op1_range, lhs))
+	      return false;
+	  }
+	else
+	  {
+	    if (!get_operand_range (op2_range, op2))
+	      return false;
+	    if (!stmt.op1_irange (op1_range, lhs, op2_range))
+	      return false;
+	  }
 	return get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name,
 				    op1_range);
       }
