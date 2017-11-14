@@ -1,6 +1,7 @@
 /* PR middle-end/81117 - Improve buffer overflow checking in strncpy
    { dg-do compile }
-   { dg-options "-O2 -Wstringop-truncation -Wno-stringop-overflow -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wstringop-truncation -Wno-stringop-overflow -ftrack-macro-expansion=0" }
+   { dg-require-effective-target alloca } */
 
 
 typedef __SIZE_TYPE__ size_t;
