@@ -4858,6 +4858,13 @@ struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
 
+/* A hash_map of two trees for use with GTY((cache)).  Garbage collection for
+   such a map will not mark keys, and will mark values if the key is already
+   marked.  */
+struct tree_cache_traits
+  : simple_cache_map_traits<default_hash_traits<tree>, tree> { };
+typedef hash_map<tree,tree,tree_cache_traits> tree_cache_map;
+
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from CALL_EXPR node EXP.  */
 static inline void

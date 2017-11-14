@@ -1,3 +1,18 @@
+2017-11-14  Jason Merrill  <jason@redhat.com>
+
+	Support GTY((cache)) on hash_map.
+	* hash-traits.h (ggc_remove): Add ggc_maybe_mx member function.
+	(ggc_cache_remove): Override it instead of ggc_mx.
+	* hash-table.h (gt_ggc_mx): Call it instead of ggc_mx.
+	(gt_cleare_cache): Call ggc_mx instead of gt_ggc_mx.
+	* hash-map-traits.h (simple_hashmap_traits): Add maybe_mx member.
+	(simple_cache_map_traits): Override maybe_mx.
+	* hash-map.h (hash_entry): Add ggc_maybe_mx and keep_cache_entry.
+	(hash_map): Friend gt_cleare_cache.
+	(gt_cleare_cache): New.
+	* tree.h (tree_cache_traits): New hash_map traits class.
+	(tree_cache_map): New typedef.
+
 2017-11-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfgcleanup.c (cleanup_control_expr_graph): Remove first_p

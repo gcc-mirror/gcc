@@ -7283,12 +7283,13 @@ get_tuple_decomp_init (tree decl, unsigned i)
 
 /* It's impossible to recover the decltype of a tuple decomposition variable
    based on the actual type of the variable, so store it in a hash table.  */
-static GTY(()) hash_map<tree,tree> *decomp_type_table;
+
+static GTY((cache)) tree_cache_map *decomp_type_table;
 static void
 store_decomp_type (tree v, tree t)
 {
   if (!decomp_type_table)
-    decomp_type_table = hash_map<tree,tree>::create_ggc (13);
+    decomp_type_table = tree_cache_map::create_ggc (13);
   decomp_type_table->put (v, t);
 }
 

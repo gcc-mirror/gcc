@@ -5124,7 +5124,6 @@ extern GTY(()) vec<tree, va_gc> *static_decls;
 /* An array of vtable-needing types that have no key function, or have
    an emitted key function.  */
 extern GTY(()) vec<tree, va_gc> *keyed_classes;
-
 
 /* Here's where we control how name mangling takes place.  */
 

@@ -535,7 +535,7 @@ perform_target_ctor (tree init)
 
 /* Return the non-static data initializer for FIELD_DECL MEMBER.  */
 
-static GTY(()) hash_map<tree, tree> *nsdmi_inst;
+static GTY((cache)) tree_cache_map *nsdmi_inst;
 
 tree
 get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
@@ -590,7 +590,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  if (init != error_mark_node)
 	    {
 	      if (!nsdmi_inst)
-		nsdmi_inst = hash_map<tree,tree>::create_ggc (37);
+		nsdmi_inst = tree_cache_map::create_ggc (37);
 	      nsdmi_inst->put (member, init);
 	    }
 
