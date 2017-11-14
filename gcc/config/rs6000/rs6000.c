@@ -14084,7 +14084,8 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  return CONST0_RTX (tmode);
 	}
     }
-  else if (icode == CODE_FOR_xststdcqp
+  else if (icode == CODE_FOR_xststdcqp_kf
+	   || icode == CODE_FOR_xststdcqp_tf
 	   || icode == CODE_FOR_xststdcdp
 	   || icode == CODE_FOR_xststdcsp
 	   || icode == CODE_FOR_xvtstdcdp
@@ -16701,10 +16702,37 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   bool success;
   HOST_WIDE_INT mask = rs6000_builtin_info[uns_fcode].mask;
   bool func_valid_p = ((rs6000_builtin_mask & mask) == mask);
+  enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
+
+  /* We have two different modes (KFmode, TFmode) that are the IEEE 128-bit
+     floating point type, depending on whether long double is the IBM extended
+     double (KFmode) or long double is IEEE 128-bit (TFmode).  It is simpler if
+     we only define one variant of the built-in function, and switch the code
+     when defining it, rather than defining two built-ins and using the
+     overload table in rs6000-c.c to switch between the two.  */
+  if (FLOAT128_IEEE_P (TFmode))
+    switch (icode)
+      {
+      default:
+	break;
+
+      case CODE_FOR_sqrtkf2_odd:	icode = CODE_FOR_sqrttf2_odd;	break;
+      case CODE_FOR_trunckfdf2_odd:	icode = CODE_FOR_trunctfdf2_odd; break;
+      case CODE_FOR_addkf3_odd:		icode = CODE_FOR_addtf3_odd;	break;
+      case CODE_FOR_subkf3_odd:		icode = CODE_FOR_subtf3_odd;	break;
+      case CODE_FOR_mulkf3_odd:		icode = CODE_FOR_multf3_odd;	break;
+      case CODE_FOR_divkf3_odd:		icode = CODE_FOR_divtf3_odd;	break;
+      case CODE_FOR_fmakf4_odd:		icode = CODE_FOR_fmatf4_odd;	break;
+      case CODE_FOR_xsxexpqp_kf:	icode = CODE_FOR_xsxexpqp_tf;	break;
+      case CODE_FOR_xsxsigqp_kf:	icode = CODE_FOR_xsxsigqp_tf;	break;
+      case CODE_FOR_xststdcnegqp_kf:	icode = CODE_FOR_xststdcnegqp_tf; break;
+      case CODE_FOR_xsiexpqp_kf:	icode = CODE_FOR_xsiexpqp_tf;	break;
+      case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
+      case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
+      }
 
   if (TARGET_DEBUG_BUILTIN)
     {
-      enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
       const char *name1 = rs6000_builtin_info[uns_fcode].name;
       const char *name2 = (icode != CODE_FOR_nothing)
 			   ? get_insn_name ((int) icode)
@@ -16780,48 +16808,13 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case RS6000_BUILTIN_CPU_SUPPORTS:
       return cpu_expand_builtin (fcode, exp, target);
 
-    case FLOAT128_BUILTIN_SQRTF128_ODD:
-      return rs6000_expand_unop_builtin (TARGET_IEEEQUAD
-					 ? CODE_FOR_sqrttf2_odd
-					 : CODE_FOR_sqrtkf2_odd, exp, target);
-
-    case FLOAT128_BUILTIN_TRUNCF128_ODD:
-      return rs6000_expand_unop_builtin (TARGET_IEEEQUAD
-					 ? CODE_FOR_trunctfdf2_odd
-					 : CODE_FOR_trunckfdf2_odd, exp, target);
-
-    case FLOAT128_BUILTIN_ADDF128_ODD:
-      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
-					  ? CODE_FOR_addtf3_odd
-					  : CODE_FOR_addkf3_odd, exp, target);
-
-    case FLOAT128_BUILTIN_SUBF128_ODD:
-      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
-					  ? CODE_FOR_subtf3_odd
-					  : CODE_FOR_subkf3_odd, exp, target);
-
-    case FLOAT128_BUILTIN_MULF128_ODD:
-      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
-					  ? CODE_FOR_multf3_odd
-					  : CODE_FOR_mulkf3_odd, exp, target);
-
-    case FLOAT128_BUILTIN_DIVF128_ODD:
-      return rs6000_expand_binop_builtin (TARGET_IEEEQUAD
-					  ? CODE_FOR_divtf3_odd
-					  : CODE_FOR_divkf3_odd, exp, target);
-
-    case FLOAT128_BUILTIN_FMAF128_ODD:
-      return rs6000_expand_ternop_builtin (TARGET_IEEEQUAD
-					   ? CODE_FOR_fmatf4_odd
-					   : CODE_FOR_fmakf4_odd, exp, target);
-
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
-	int icode = (BYTES_BIG_ENDIAN ? (int) CODE_FOR_altivec_lvsr_direct
+	int icode2 = (BYTES_BIG_ENDIAN ? (int) CODE_FOR_altivec_lvsr_direct
 		     : (int) CODE_FOR_altivec_lvsl_direct);
-	machine_mode tmode = insn_data[icode].operand[0].mode;
-	machine_mode mode = insn_data[icode].operand[1].mode;
+	machine_mode tmode = insn_data[icode2].operand[0].mode;
+	machine_mode mode = insn_data[icode2].operand[1].mode;
 	tree arg;
 	rtx op, addr, pat;
 
@@ -16843,10 +16836,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
 	if (target == 0
 	    || GET_MODE (target) != tmode
-	    || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	    || ! (*insn_data[icode2].operand[0].predicate) (target, tmode))
 	  target = gen_reg_rtx (tmode);
 
-	pat = GEN_FCN (icode) (target, op);
+	pat = GEN_FCN (icode2) (target, op);
 	if (!pat)
 	  return 0;
 	emit_insn (pat);
@@ -16904,25 +16897,25 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   d = bdesc_1arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_unop_builtin (d->icode, exp, target);
+      return rs6000_expand_unop_builtin (icode, exp, target);
 
   /* Handle simple binary operations.  */
   d = bdesc_2arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_binop_builtin (d->icode, exp, target);
+      return rs6000_expand_binop_builtin (icode, exp, target);
 
   /* Handle simple ternary operations.  */
   d = bdesc_3arg;
   for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_ternop_builtin (d->icode, exp, target);
+      return rs6000_expand_ternop_builtin (icode, exp, target);
 
   /* Handle simple no-argument operations. */
   d = bdesc_0arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_0arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_zeroop_builtin (d->icode, target);
+      return rs6000_expand_zeroop_builtin (icode, target);
 
   gcc_unreachable ();
 }
@@ -17192,32 +17185,6 @@ rs6000_init_builtins (void)
 				    NULL_TREE);
   def_builtin ("__builtin_cpu_is", ftype, RS6000_BUILTIN_CPU_IS);
   def_builtin ("__builtin_cpu_supports", ftype, RS6000_BUILTIN_CPU_SUPPORTS);
-
-  ftype = build_function_type_list (ieee128_float_type_node,
-				    ieee128_float_type_node, NULL_TREE);
-  def_builtin ("__builtin_sqrtf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_SQRTF128_ODD);
-  def_builtin ("__builtin_truncf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_TRUNCF128_ODD);
-
-  ftype = build_function_type_list (ieee128_float_type_node,
-				    ieee128_float_type_node,
-				    ieee128_float_type_node, NULL_TREE);
-  def_builtin ("__builtin_addf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_ADDF128_ODD);
-  def_builtin ("__builtin_subf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_SUBF128_ODD);
-  def_builtin ("__builtin_mulf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_MULF128_ODD);
-  def_builtin ("__builtin_divf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_DIVF128_ODD);
-
-  ftype = build_function_type_list (ieee128_float_type_node,
-				    ieee128_float_type_node,
-				    ieee128_float_type_node,
-				    ieee128_float_type_node, NULL_TREE);
-  def_builtin ("__builtin_fmaf128_round_to_odd", ftype,
-	       FLOAT128_BUILTIN_FMAF128_ODD);
 
   /* AIX libm provides clog as __clog.  */
   if (TARGET_XCOFF &&

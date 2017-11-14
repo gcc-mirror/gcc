@@ -909,6 +909,51 @@
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
+/* Built-in functions for IEEE 128-bit hardware floating point.  IEEE 128-bit
+   hardware requires p9-vector and 64-bit operation.  These functions use just
+   __builtin_ as the prefix.  */
+#define BU_FLOAT128_HW_1(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_1 (FLOAT128_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FLOAT128_HW,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_FLOAT128_HW_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (FLOAT128_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FLOAT128_HW,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_FLOAT128_HW_3(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_3 (FLOAT128_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_FLOAT128_HW,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* Built-in functions for IEEE 128-bit hardware floating point.  These
+   functions use __builtin_vsx_ as the prefix.  */
+#define BU_FLOAT128_HW_VSX_1(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_1 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_FLOAT128_HW,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_FLOAT128_HW_VSX_2(ENUM, NAME, ATTR, ICODE)			\
+  RS6000_BUILTIN_2 (P9V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_FLOAT128_HW,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #endif
 
 
@@ -2064,10 +2109,10 @@ BU_P9V_OVERLOAD_3 (RLMI,	"rlmi")
 BU_P9V_64BIT_VSX_1 (VSEEDP,	"scalar_extract_exp",	CONST,	xsxexpdp)
 BU_P9V_64BIT_VSX_1 (VSESDP,	"scalar_extract_sig",	CONST,	xsxsigdp)
 
-BU_P9V_64BIT_VSX_1 (VSEEQP,	"scalar_extract_expq",	CONST,	xsxexpqp)
-BU_P9V_64BIT_VSX_1 (VSESQP,	"scalar_extract_sigq",	CONST,	xsxsigqp)
+BU_FLOAT128_HW_VSX_1 (VSEEQP,	"scalar_extract_expq",	CONST,	xsxexpqp_kf)
+BU_FLOAT128_HW_VSX_1 (VSESQP,	"scalar_extract_sigq",	CONST,	xsxsigqp_kf)
 
-BU_P9V_VSX_1 (VSTDCNQP,	"scalar_test_neg_qp",	CONST,	xststdcnegqp)
+BU_FLOAT128_HW_VSX_1 (VSTDCNQP, "scalar_test_neg_qp",	CONST,	xststdcnegqp_kf)
 BU_P9V_VSX_1 (VSTDCNDP,	"scalar_test_neg_dp",	CONST,	xststdcnegdp)
 BU_P9V_VSX_1 (VSTDCNSP,	"scalar_test_neg_sp",	CONST,	xststdcnegsp)
 
@@ -2083,15 +2128,15 @@ BU_P9V_VSX_1 (XXBRH_V8HI,	"xxbrh_v8hi",	CONST,	p9_xxbrh_v8hi)
 BU_P9V_64BIT_VSX_2 (VSIEDP,	"scalar_insert_exp",	CONST,	xsiexpdp)
 BU_P9V_64BIT_VSX_2 (VSIEDPF,	"scalar_insert_exp_dp",	CONST,	xsiexpdpf)
 
-BU_P9V_64BIT_VSX_2 (VSIEQP,	"scalar_insert_exp_q",	CONST,	xsiexpqp)
-BU_P9V_64BIT_VSX_2 (VSIEQPF,	"scalar_insert_exp_qp",	CONST,	xsiexpqpf)
+BU_FLOAT128_HW_VSX_2 (VSIEQP,	"scalar_insert_exp_q",	CONST,	xsiexpqp_kf)
+BU_FLOAT128_HW_VSX_2 (VSIEQPF,	"scalar_insert_exp_qp",	CONST,	xsiexpqpf_kf)
 
 BU_P9V_VSX_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt",	CONST,	xscmpexpdp_gt)
 BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
 BU_P9V_VSX_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq",	CONST,	xscmpexpdp_eq)
 BU_P9V_VSX_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered",	CONST,	xscmpexpdp_unordered)
 
-BU_P9V_VSX_2 (VSTDCQP,	"scalar_test_data_class_qp",	CONST,	xststdcqp)
+BU_FLOAT128_HW_VSX_2 (VSTDCQP, "scalar_test_data_class_qp",	CONST,	xststdcqp_kf)
 BU_P9V_VSX_2 (VSTDCDP,	"scalar_test_data_class_dp",	CONST,	xststdcdp)
 BU_P9V_VSX_2 (VSTDCSP,	"scalar_test_data_class_sp",	CONST,	xststdcsp)
 
@@ -2172,6 +2217,16 @@ BU_P9V_AV_2 (VEXTUWRX, "vextuwrx",		CONST,	vextuwrx)
 BU_P9V_VSX_2 (VEXTRACT4B,   "vextract4b",	CONST,	vextract4b)
 BU_P9V_VSX_3 (VINSERT4B,    "vinsert4b",	CONST,	vinsert4b)
 BU_P9V_VSX_3 (VINSERT4B_DI, "vinsert4b_di",	CONST,	vinsert4b_di)
+
+/* Hardware IEEE 128-bit floating point round to odd instrucitons added in ISA
+   3.0 (power9).  */
+BU_FLOAT128_HW_1 (SQRTF128_ODD,  "sqrtf128_round_to_odd",  FP, sqrtkf2_odd)
+BU_FLOAT128_HW_1 (TRUNCF128_ODD, "truncf128_round_to_odd", FP, trunckfdf2_odd)
+BU_FLOAT128_HW_2 (ADDF128_ODD,   "addf128_round_to_odd",   FP, addkf3_odd)
+BU_FLOAT128_HW_2 (SUBF128_ODD,   "subf128_round_to_odd",   FP, subkf3_odd)
+BU_FLOAT128_HW_2 (MULF128_ODD,   "mulf128_round_to_odd",   FP, mulkf3_odd)
+BU_FLOAT128_HW_2 (DIVF128_ODD,   "divf128_round_to_odd",   FP, divkf3_odd)
+BU_FLOAT128_HW_3 (FMAF128_ODD,   "fmaf128_round_to_odd",   FP, fmakf4_odd)
 
 /* 3 argument vector functions returning void, treated as SPECIAL,
    added in ISA 3.0 (power9).  */
@@ -2496,34 +2551,6 @@ BU_SPECIAL_X (RS6000_BUILTIN_CPU_IS, "__builtin_cpu_is",
 
 BU_SPECIAL_X (RS6000_BUILTIN_CPU_SUPPORTS, "__builtin_cpu_supports",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_SQRTF128_ODD,
-	      "__builtin_sqrtf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_TRUNCF128_ODD,
-	      "__builtin_truncf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_ADDF128_ODD,
-	      "__builtin_addf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_SUBF128_ODD,
-	      "__builtin_subf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_MULF128_ODD,
-	      "__builtin_mulf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_DIVF128_ODD,
-	      "__builtin_divf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
-
-BU_SPECIAL_X (FLOAT128_BUILTIN_FMAF128_ODD,
-	      "__builtin_fmaf128_round_to_odd",
-	      RS6000_BTM_FLOAT128_HW, RS6000_BTC_MISC)
 
 /* Darwin CfString builtin.  */
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
