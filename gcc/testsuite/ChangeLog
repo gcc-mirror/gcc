@@ -1,3 +1,7 @@
+2017-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/rv-trivial-bug.C (test2): Return a value.
+
 2017-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82981
