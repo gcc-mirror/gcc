@@ -1,5 +1,12 @@
 2017-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: Leave
+	error_code unset.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Check for past-the-end before dereferencing.
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Likewise.
+
 	* include/bits/range_access.h (size, empty, data): Add conditional
 	noexcept to generic overloads.
 

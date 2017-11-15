@@ -61,7 +61,6 @@ test01()
   ec = bad_ec;
   permissions(p, fs::perms::none, ec);
   VERIFY( !ec );
-  ec = bad_ec;
   iter = fs::directory_iterator(p, ec);
   VERIFY( ec );
   VERIFY( iter == end(iter) );
