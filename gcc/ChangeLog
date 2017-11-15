@@ -1,3 +1,8 @@
+2017-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (x86_print_call_or_nop): Emit 5 byte nop
+	explicitly as a stream of bytes.
+
 2017-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_xst_be): New #define.
@@ -356,7 +361,7 @@
 	le_ and be_ prefixes to swap* variables.  Remove
 	if (VECTOR_ELT_ORDER_BIG) statement. Remove E_V16QImode case
 	statements.
-	
+
 2017-11-14  Jason Merrill  <jason@redhat.com>
 
 	Support GTY((cache)) on hash_map.
@@ -797,16 +802,16 @@
 
 2017-11-10  Julia Koval  <julia.koval@intel.com>
 
-	 * config/i386/gfniintrin.h (_mm_gf2p8affine_epi64_epi8,
-	 _mm256_gf2p8affine_epi64_epi8, _mm_mask_gf2p8affine_epi64_epi8,
-	 _mm_maskz_gf2p8affine_epi64_epi8, _mm256_mask_gf2p8affine_epi64_epi8,
-	 _mm256_maskz_gf2p8affine_epi64_epi8,
-	 _mm512_mask_gf2p8affine_epi64_epi8, _mm512_gf2p8affine_epi64_epi8
-	 _mm512_maskz_gf2p8affine_epi64_epi8): New intrinsics.
-	 * config/i386/i386-builtin.def (__builtin_ia32_vgf2p8affineqb_v64qi,
-	 __builtin_ia32_vgf2p8affineqb_v32qi,
-	 __builtin_ia32_vgf2p8affineqb_v16qi): New builtins.
-	 * config/i386/sse.md (vgf2p8affineqb_<mode><mask_name>): New pattern.
+	* config/i386/gfniintrin.h (_mm_gf2p8affine_epi64_epi8)
+	(_mm256_gf2p8affine_epi64_epi8, _mm_mask_gf2p8affine_epi64_epi8)
+	(_mm_maskz_gf2p8affine_epi64_epi8, _mm256_mask_gf2p8affine_epi64_epi8)
+	(_mm256_maskz_gf2p8affine_epi64_epi8)
+	(_mm512_mask_gf2p8affine_epi64_epi8, _mm512_gf2p8affine_epi64_epi8)
+	(_mm512_maskz_gf2p8affine_epi64_epi8): New intrinsics.
+	* config/i386/i386-builtin.def (__builtin_ia32_vgf2p8affineqb_v64qi)
+	(__builtin_ia32_vgf2p8affineqb_v32qi)
+	(__builtin_ia32_vgf2p8affineqb_v16qi): New builtins.
+	* config/i386/sse.md (vgf2p8affineqb_<mode><mask_name>): New pattern.
 
 2017-11-10  Tamar Christina  <tamar.christina@arm.com>
 
@@ -815,7 +820,8 @@
 	(arm_option_override): Refactor.
 	(arm_option_reconfigure_globals): New.
 	(arm_options_perform_arch_sanity_checks): New.
-	* config/arm/arm-protos.h (arm_option_reconfigure_globals): New prototype.
+	* config/arm/arm-protos.h (arm_option_reconfigure_globals):
+	New prototype.
 	(arm_options_perform_arch_sanity_checks): Likewise
 
 2017-11-10  Pat Haugen  <pthaugen@us.ibm.com>
@@ -971,7 +977,7 @@
 	Use vr_values to get to dump_all_value_ranges member function.
 	Remove call to vrp_free_lattice.  Call vrp_initialize, vrp_finalize,
 	and simplify_cond_using_ranges_2 via vrp_prop class instance.
-	Pass vr_values class instance down to identify_jump_threads.  
+	Pass vr_values class instance down to identify_jump_threads.
 	Remove call to vrp_free_lattice.
 	(debug_all_value_ranges): Remove.
 
@@ -1633,7 +1639,8 @@
 	* config/arm/arm.md (predicable_short_it): Change default to "no",
 	improve documentation, remove uses that are identical to the default.
 	(enabled_for_depr_it): Rename to enabled_for_short_it.
-	* gcc/config/arm/arm-fixed.md (predicable_short_it): Remove default uses.
+	* gcc/config/arm/arm-fixed.md (predicable_short_it):
+	Remove default uses.
 	* gcc/config/arm/ldmstm.md (predicable_short_it): Likewise.
 	* gcc/config/arm/sync.md (predicable_short_it): Likewise.
 	* gcc/config/arm/thumb2.md (predicable_short_it): Likewise.
@@ -2074,7 +2081,7 @@
 	(find_trace): Use to_frequency.
 	(tail_duplicate): Use to_frequency.
 	* trans-mem.c (expand_transaction): Do not update frequency.
-	* tree-call-cdce.c: Do not update frequency. 
+	* tree-call-cdce.c: Do not update frequency.
 	* tree-cfg.c (gimple_find_sub_bbs): Likewise.
 	(gimple_merge_blocks): Likewise.
 	(gimple_split_edge): Likewise.
