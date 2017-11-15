@@ -1,3 +1,14 @@
+2017-11-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support for
+	folding of vector compares.
+	(fold_build_vec_cmp): New helper function.
+	(fold_compare_helper): New helper function.
+	(builtin_function_type): Add compare builtins to the list of functions
+	having unsigned arguments.  Cosmetic updates to comment indentation.
+	* config/rs6000/vsx.md (vcmpneb, vcmpneh, vcmpnew): Update to specify
+	the not+eq combination.
+
 2017-11-15  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82726

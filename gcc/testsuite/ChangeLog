@@ -1,3 +1,16 @@
+2017-11-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-p9.c: Add -O1, update
+	expected codegen checks.
+	* gcc.target/powerpc/vec-cmp-sel.c: Mark vars as volatile.
+	* gcc.target/powerpc/vsu/vec-cmpne-0.c: Add -O1.
+	* gcc.target/powerpc/vsu/vec-cmpne-1.c: Add -O1.
+	* gcc.target/powerpc/vsu/vec-cmpne-2.c: Add -O1.
+	* gcc.target/powerpc/vsu/vec-cmpne-3.c: Add -O1.
+	* gcc.target/powerpc/vsu/vec-cmpne-4.c: Add -O1.
+	* gcc.target/powerpc/vsu/vec-cmpne-5.c: Add -O1.
+	* gcc.target/powerpc/vsu/vec-cmpne-6.c: Add -O1.
+
 2017-11-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/78240

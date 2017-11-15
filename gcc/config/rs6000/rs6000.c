@@ -16176,6 +16176,36 @@ rs6000_builtin_valid_without_lhs (enum rs6000_builtins fn_code)
     }
 }
 
+/* Helper function to handle the gimple folding of a vector compare
+   operation.  This sets up true/false vectors, and uses the
+   VEC_COND_EXPR operation.
+   CODE indicates which comparison is to be made. (EQ, GT, ...).
+   TYPE indicates the type of the result.  */
+static tree
+fold_build_vec_cmp (tree_code code, tree type,
+		    tree arg0, tree arg1)
+{
+  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp = fold_build2 (code, cmp_type, arg0, arg1);
+  return fold_build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
+
+/* Helper function to handle the in-between steps for the
+   vector compare built-ins.  */
+static void
+fold_compare_helper (gimple_stmt_iterator *gsi, tree_code code, gimple *stmt)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  tree cmp = fold_build_vec_cmp (code, TREE_TYPE (lhs), arg0, arg1);
+  gimple *g = gimple_build_assign (lhs, cmp);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_replace (gsi, g, true);
+}
+
 /* Fold a machine-dependent built-in in GIMPLE.  (For folding into
    a constant, use rs6000_fold_builtin.)  */
 
@@ -16670,6 +16700,53 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
        gsi_replace (gsi, g, true);
        return true;
       }
+
+    /* Vector compares; EQ, NE, GE, GT, LE.  */
+    case ALTIVEC_BUILTIN_VCMPEQUB:
+    case ALTIVEC_BUILTIN_VCMPEQUH:
+    case ALTIVEC_BUILTIN_VCMPEQUW:
+    case P8V_BUILTIN_VCMPEQUD:
+	fold_compare_helper (gsi, EQ_EXPR, stmt);
+	return true;
+
+    case P9V_BUILTIN_CMPNEB:
+    case P9V_BUILTIN_CMPNEH:
+    case P9V_BUILTIN_CMPNEW:
+      fold_compare_helper (gsi, NE_EXPR, stmt);
+      return true;
+
+    case VSX_BUILTIN_CMPGE_16QI:
+    case VSX_BUILTIN_CMPGE_U16QI:
+    case VSX_BUILTIN_CMPGE_8HI:
+    case VSX_BUILTIN_CMPGE_U8HI:
+    case VSX_BUILTIN_CMPGE_4SI:
+    case VSX_BUILTIN_CMPGE_U4SI:
+    case VSX_BUILTIN_CMPGE_2DI:
+    case VSX_BUILTIN_CMPGE_U2DI:
+      fold_compare_helper (gsi, GE_EXPR, stmt);
+      return true;
+
+    case ALTIVEC_BUILTIN_VCMPGTSB:
+    case ALTIVEC_BUILTIN_VCMPGTUB:
+    case ALTIVEC_BUILTIN_VCMPGTSH:
+    case ALTIVEC_BUILTIN_VCMPGTUH:
+    case ALTIVEC_BUILTIN_VCMPGTSW:
+    case ALTIVEC_BUILTIN_VCMPGTUW:
+    case P8V_BUILTIN_VCMPGTUD:
+    case P8V_BUILTIN_VCMPGTSD:
+      fold_compare_helper (gsi, GT_EXPR, stmt);
+      return true;
+
+    case VSX_BUILTIN_CMPLE_16QI:
+    case VSX_BUILTIN_CMPLE_U16QI:
+    case VSX_BUILTIN_CMPLE_8HI:
+    case VSX_BUILTIN_CMPLE_U8HI:
+    case VSX_BUILTIN_CMPLE_4SI:
+    case VSX_BUILTIN_CMPLE_U4SI:
+    case VSX_BUILTIN_CMPLE_2DI:
+    case VSX_BUILTIN_CMPLE_U2DI:
+      fold_compare_helper (gsi, LE_EXPR, stmt);
+      return true;
 
     default:
 	if (TARGET_DEBUG_BUILTIN)
@@ -18090,7 +18167,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
      are type correct.  */
   switch (builtin)
     {
-      /* unsigned 1 argument functions.  */
+    /* unsigned 1 argument functions.  */
     case CRYPTO_BUILTIN_VSBOX:
     case P8V_BUILTIN_VGBBD:
     case MISC_BUILTIN_CDTBCD:
@@ -18099,7 +18176,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[1] = 1;
       break;
 
-      /* unsigned 2 argument functions.  */
+    /* unsigned 2 argument functions.  */
     case ALTIVEC_BUILTIN_VMULEUB:
     case ALTIVEC_BUILTIN_VMULEUH:
     case ALTIVEC_BUILTIN_VMULEUW:
@@ -18134,7 +18211,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[2] = 1;
       break;
 
-      /* unsigned 3 argument functions.  */
+    /* unsigned 3 argument functions.  */
     case ALTIVEC_BUILTIN_VPERM_16QI_UNS:
     case ALTIVEC_BUILTIN_VPERM_8HI_UNS:
     case ALTIVEC_BUILTIN_VPERM_4SI_UNS:
@@ -18165,7 +18242,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[3] = 1;
       break;
 
-      /* signed permute functions with unsigned char mask.  */
+    /* signed permute functions with unsigned char mask.  */
     case ALTIVEC_BUILTIN_VPERM_16QI:
     case ALTIVEC_BUILTIN_VPERM_8HI:
     case ALTIVEC_BUILTIN_VPERM_4SI:
@@ -18181,14 +18258,14 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[3] = 1;
       break;
 
-      /* unsigned args, signed return.  */
+    /* unsigned args, signed return.  */
     case VSX_BUILTIN_XVCVUXDSP:
     case VSX_BUILTIN_XVCVUXDDP_UNS:
     case ALTIVEC_BUILTIN_UNSFLOAT_V4SI_V4SF:
       h.uns_p[1] = 1;
       break;
 
-      /* signed args, unsigned return.  */
+    /* signed args, unsigned return.  */
     case VSX_BUILTIN_XVCVDPUXDS_UNS:
     case ALTIVEC_BUILTIN_FIXUNS_V4SF_V4SI:
     case MISC_BUILTIN_UNPACK_TD:
@@ -18196,14 +18273,31 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[0] = 1;
       break;
 
-      /* unsigned arguments for 128-bit pack instructions.  */
+    /* unsigned arguments, bool return (compares).  */
+    case ALTIVEC_BUILTIN_VCMPEQUB:
+    case ALTIVEC_BUILTIN_VCMPEQUH:
+    case ALTIVEC_BUILTIN_VCMPEQUW:
+    case P8V_BUILTIN_VCMPEQUD:
+    case VSX_BUILTIN_CMPGE_U16QI:
+    case VSX_BUILTIN_CMPGE_U8HI:
+    case VSX_BUILTIN_CMPGE_U4SI:
+    case VSX_BUILTIN_CMPGE_U2DI:
+    case ALTIVEC_BUILTIN_VCMPGTUB:
+    case ALTIVEC_BUILTIN_VCMPGTUH:
+    case ALTIVEC_BUILTIN_VCMPGTUW:
+    case P8V_BUILTIN_VCMPGTUD:
+      h.uns_p[1] = 1;
+      h.uns_p[2] = 1;
+      break;
+
+    /* unsigned arguments for 128-bit pack instructions.  */
     case MISC_BUILTIN_PACK_TD:
     case MISC_BUILTIN_PACK_V1TI:
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
       break;
 
-	/* unsigned second arguments (vector shift right).  */
+    /* unsigned second arguments (vector shift right).  */
     case ALTIVEC_BUILTIN_VSRB:
     case ALTIVEC_BUILTIN_VSRH:
     case ALTIVEC_BUILTIN_VSRW:
