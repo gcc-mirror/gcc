@@ -1,5 +1,11 @@
 2017-11-15  Alexandre Oliva <aoliva@redhat.com>
 
+	* dumpfile.h (TDF_COMPARE_DEBUG): New.
+	* final.c (rest_of_clean_state): Set it for the
+	-fcompare-debug dump.
+	* tree-pretty-print.c (dump_generic_node): Omit OBJ_TYPE_REF
+	class when TDF_COMPARE_DEBUG is set.
+
 	* dwarf2out.c (gen_producer_string): Discard
 	OPT_fcompare_debug.
 
