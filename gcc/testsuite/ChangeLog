@@ -1,3 +1,8 @@
+2017-11-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gcc.target/i386/pr81706.c: Adjust asm for darwin.
+	* g++.dg/ext/pr81706.C: Likewise.
+
 2017-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81574
