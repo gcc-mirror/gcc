@@ -1,3 +1,10 @@
+2017-11-15  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	Backport from mainline
+	2017-09-25  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* g++.dg/pr82155.C: New testcase.
+
 2017-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
