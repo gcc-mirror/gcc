@@ -1,3 +1,8 @@
+2017-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (size, empty, data): Add conditional
+	noexcept to generic overloads.
+
 2017-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2733 and LWG 2759
