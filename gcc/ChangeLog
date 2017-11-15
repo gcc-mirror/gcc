@@ -1,6 +1,23 @@
 2017-11-15  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82726
+	PR tree-optimization/70754
+	* tree-predcom.c (order_drefs_by_pos): New function.
+	(combine_chains): Move code setting has_max_use_after to...
+	(try_combine_chains): ...here.  New parameter.  Sort combined chains
+	according to position information.
+	(tree_predictive_commoning_loop): Update call to above function.
+	(update_pos_for_combined_chains, pcom_stmt_dominates_stmt_p): New.
+
+gcc/testsuite
+2017-11-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82726
+	* gcc.dg/tree-ssa/pr82726.c: New test.
+
+2017-11-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82726
 	Revert
 	2017-01-23  Bin Cheng  <bin.cheng@arm.com>
 
