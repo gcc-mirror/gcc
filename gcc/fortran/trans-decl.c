@@ -4198,7 +4198,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  break;
 	    }
 	  /* TODO: move to the appropriate place in resolve.c.  */
-	  if (warn_return_type && el == NULL)
+	  if (warn_return_type > 0 && el == NULL)
 	    gfc_warning (OPT_Wreturn_type,
 			 "Return value of function %qs at %L not set",
 			 proc_sym->name, &proc_sym->declared_at);
@@ -5619,7 +5619,7 @@ generate_local_decl (gfc_symbol * sym)
   else if (sym->attr.flavor == FL_PROCEDURE)
     {
       /* TODO: move to the appropriate place in resolve.c.  */
-      if (warn_return_type
+      if (warn_return_type > 0
 	  && sym->attr.function
 	  && sym->result
 	  && sym != sym->result
@@ -6494,11 +6494,11 @@ gfc_generate_function_code (gfc_namespace * ns)
       if (result == NULL_TREE || artificial_result_decl)
 	{
 	  /* TODO: move to the appropriate place in resolve.c.  */
-	  if (warn_return_type && sym == sym->result)
+	  if (warn_return_type > 0 && sym == sym->result)
 	    gfc_warning (OPT_Wreturn_type,
 			 "Return value of function %qs at %L not set",
 			 sym->name, &sym->declared_at);
-	  if (warn_return_type)
+	  if (warn_return_type > 0)
 	    TREE_NO_WARNING(sym->backend_decl) = 1;
 	}
       if (result != NULL_TREE)

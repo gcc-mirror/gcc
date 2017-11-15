@@ -9071,7 +9071,7 @@ pass_warn_function_return::execute (function *fun)
 
   /* If we see "return;" in some basic block, then we do reach the end
      without returning a value.  */
-  else if (warn_return_type
+  else if (warn_return_type > 0
 	   && !TREE_NO_WARNING (fun->decl)
 	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))

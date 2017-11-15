@@ -1,3 +1,8 @@
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
+	* tree-cfg.c (pass_warn_function_return::execute):
+	Compare warn_return_type for greater than zero.
+
 2017-11-15  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	PR target/82941
