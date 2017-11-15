@@ -357,6 +357,7 @@
 #define vec_xl __builtin_vec_vsx_ld
 #define vec_xl_be __builtin_vec_xl_be
 #define vec_xst __builtin_vec_vsx_st
+#define vec_xst_be __builtin_vec_xst_be
 
 /* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
    instead of __builtin_vec_<xxx>  */

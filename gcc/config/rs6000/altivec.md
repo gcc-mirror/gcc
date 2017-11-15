@@ -2130,7 +2130,7 @@
 })
 
 ;; Slightly prefer vperm, since the target does not overlap the source
-(define_insn "*altivec_vperm_<mode>_internal"
+(define_insn "altivec_vperm_<mode>_direct"
   [(set (match_operand:VM 0 "register_operand" "=v,?wo")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
 		    (match_operand:VM 2 "register_operand" "v,0")
