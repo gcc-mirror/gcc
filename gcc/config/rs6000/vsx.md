@@ -4600,12 +4600,12 @@
   DONE;
 })
 
-;; Vector Compare Not Equal Byte
+;; Vector Compare Not Equal Byte (specified/not+eq:)
 (define_insn "vcmpneb"
   [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
-		       (match_operand:V16QI 2 "altivec_register_operand" "v")]
-	 UNSPEC_VCMPNEB))]
+	 (not:V16QI
+	   (eq:V16QI (match_operand:V16QI 1 "altivec_register_operand" "v")
+		     (match_operand:V16QI 2 "altivec_register_operand" "v"))))]
   "TARGET_P9_VECTOR"
   "vcmpneb %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -4621,12 +4621,12 @@
   "vcmpnezb %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Compare Not Equal Half Word
+;; Vector Compare Not Equal Half Word (specified/not+eq:)
 (define_insn "vcmpneh"
   [(set (match_operand:V8HI 0 "altivec_register_operand" "=v")
-	(unspec:V8HI [(match_operand:V8HI 1 "altivec_register_operand" "v")
-		      (match_operand:V8HI 2 "altivec_register_operand" "v")]
-	 UNSPEC_VCMPNEH))]
+	(not:V8HI
+	  (eq:V8HI (match_operand:V8HI 1 "altivec_register_operand" "v")
+		   (match_operand:V8HI 2 "altivec_register_operand" "v"))))]
   "TARGET_P9_VECTOR"
   "vcmpneh %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -4641,13 +4641,12 @@
   "vcmpnezh %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Compare Not Equal Word
+;; Vector Compare Not Equal Word (specified/not+eq:)
 (define_insn "vcmpnew"
   [(set (match_operand:V4SI 0 "altivec_register_operand" "=v")
-	(unspec:V4SI
-	 [(match_operand:V4SI 1 "altivec_register_operand" "v")
-	  (match_operand:V4SI 2 "altivec_register_operand" "v")]
-	 UNSPEC_VCMPNEH))]
+	(not:V4SI
+	  (eq:V4SI (match_operand:V4SI 1 "altivec_register_operand" "v")
+		   (match_operand:V4SI 2 "altivec_register_operand" "v"))))]
   "TARGET_P9_VECTOR"
   "vcmpnew %0,%1,%2"
   [(set_attr "type" "vecsimple")])
