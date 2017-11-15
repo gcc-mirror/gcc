@@ -1,3 +1,28 @@
+2017-11-15  Dominik Infuehr  <dominik.infuehr@theobroma-systems.com>
+
+	* config/arm/xgene1.md (xgene1): Split into automatons
+	xgene1_main, xgene1_decoder, xgene1_div, xgene1_simd.
+	(xgene1_f_load): Adjust reservations and/or types.
+	(xgene1_f_store): Likewise.
+	(xgene1_load_pair): Likewise.
+	(xgene1_store_pair): Likewise.
+	(xgene1_fp_load1): Likewise.
+	(xgene1_load1): Likewise.
+	(xgene1_store1): Likewise.
+	(xgene1_move): Likewise.
+	(xgene1_alu): Likewise.
+	(xgene1_simd): Likewise.
+	(xgene1_bfm): Likewise.
+	(xgene1_neon_load1): Likewise.
+	(xgene1_neon_store1): Likewise.
+	(xgene1_neon_logic): Likewise.
+	(xgene1_neon_st1): Likewise.
+	(xgene1_neon_ld1r): Likewise.
+	(xgene1_alu_cond): Added.
+	(xgene1_shift_reg): Likwise.
+	(xgene1_bfx): Likewise.
+	(xgene1_mul): Split into xgene1_mul32, xgene1_mul64.
+
 2017-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82981
