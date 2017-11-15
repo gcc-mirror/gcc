@@ -40474,7 +40474,8 @@ static void
 x86_print_call_or_nop (FILE *file, const char *target)
 {
   if (flag_nop_mcount)
-    fprintf (file, "1:\tnopl 0x00(%%eax,%%eax,1)\n"); /* 5 byte nop.  */
+    /* 5 byte nop: nopl 0(%[re]ax,%[re]ax,1) */
+    fprintf (file, "1:" ASM_BYTE "0x0f, 0x1f, 0x44, 0x00, 0x00\n");
   else
     fprintf (file, "1:\tcall\t%s\n", target);
 }
