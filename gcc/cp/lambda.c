@@ -245,7 +245,8 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
     {
       type = non_reference (unlowered_expr_type (expr));
 
-      if (!is_this && by_reference_p)
+      if (!is_this
+	  && (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE))
 	type = build_reference_type (type);
     }
 
