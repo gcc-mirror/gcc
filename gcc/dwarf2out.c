@@ -23408,6 +23408,7 @@ gen_producer_string (void)
       case OPT_fltrans_output_list_:
       case OPT_fresolution_:
       case OPT_fdebug_prefix_map_:
+      case OPT_fcompare_debug:
 	/* Ignore these.  */
 	continue;
       default:
