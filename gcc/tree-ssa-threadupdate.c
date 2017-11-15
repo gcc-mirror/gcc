@@ -2174,7 +2174,6 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 {
   bool retval = false;
   unsigned int i;
-  bitmap_iterator bi;
   struct loop *loop;
   auto_bitmap threaded_blocks;
 
@@ -2278,14 +2277,33 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 
   initialize_original_copy_tables ();
 
-  /* First perform the threading requests that do not affect
-     loop structure.  */
-  EXECUTE_IF_SET_IN_BITMAP (threaded_blocks, 0, i, bi)
-    {
-      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
+  /* The order in which we process jump threads can be important.
 
-      if (EDGE_COUNT (bb->preds) > 0)
-	retval |= thread_block (bb, true);
+     Consider if we have two jump threading paths A and B.  If the
+     target edge of A is the starting edge of B and we thread path A
+     first, then we create an additional incoming edge into B->dest that
+     we can not discover as a jump threading path on this iteration.
+
+     If we instead thread B first, then the edge into B->dest will have
+     already been redirected before we process path A and path A will
+     natually, with no further work, target the redirected path for B.
+
+     An post-order is sufficient here.  Compute the ordering first, then
+     process the blocks.  */
+  if (!bitmap_empty_p (threaded_blocks))
+    {
+      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+      unsigned int postorder_num = post_order_compute (postorder, false, false);
+      for (unsigned int i = 0; i < postorder_num; i++)
+	{
+	  unsigned int indx = postorder[i];
+	  if (bitmap_bit_p (threaded_blocks, indx))
+	    {
+	      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, indx);
+	      retval |= thread_block (bb, true);
+	    }
+	}
+      free (postorder);
     }
 
   /* Then perform the threading through loop headers.  We start with the
