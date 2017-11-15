@@ -1,3 +1,13 @@
+2017-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82985
+	Backport from mainline
+	2017-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81790
+	* gcc.dg/torture/pr81790.c: New testcase.
+	* g++.dg/torture/pr82985.C: Likewise.
+
 2017-11-15  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	Backport from mainline

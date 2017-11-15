@@ -1,3 +1,13 @@
+2017-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82985
+	Backport from mainline
+	2017-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81790
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Handle both
+	CONSTRUCTORs from simplifying and VN.
+
 2017-11-15  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	Backport from mainline
