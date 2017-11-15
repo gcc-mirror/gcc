@@ -1,3 +1,7 @@
+2017-11-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm.h (TARGET_DOTPROD): Add arm_arch8_2.
+
 2017-11-15  Martin Liska  <mliska@suse.cz>
 
 	* tree-cfg.c (pass_warn_function_return::execute):
