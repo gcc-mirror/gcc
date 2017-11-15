@@ -1,3 +1,23 @@
+2017-11-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82726
+	Revert
+	2017-01-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/70754
+	* tree-predcom.c (stmt_combining_refs): New parameter INSERT_BEFORE.
+	(reassociate_to_the_same_stmt): New parameter INSERT_BEFORE.  Insert
+	combined stmt before it if not NULL.
+	(combine_chains): Process refs reversely and compute dominance point
+	for root ref.
+
+	Revert
+	2017-02-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/79663
+	* tree-predcom.c (combine_chains): Process refs in reverse order
+	only for ZERO length chains, and add explaining comment.
+
 2017-11-15  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_3, ARMv8_3a, armv8.3-a): New

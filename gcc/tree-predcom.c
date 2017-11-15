@@ -2527,11 +2527,10 @@ remove_name_from_operation (gimple *stmt, tree op)
 }
 
 /* Reassociates the expression in that NAME1 and NAME2 are used so that they
-   are combined in a single statement, and returns this statement.  Note the
-   statement is inserted before INSERT_BEFORE if it's not NULL.  */
+   are combined in a single statement, and returns this statement.  */
 
 static gimple *
-reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
+reassociate_to_the_same_stmt (tree name1, tree name2)
 {
   gimple *stmt1, *stmt2, *root1, *root2, *s1, *s2;
   gassign *new_stmt, *tmp_stmt;
@@ -2588,12 +2587,6 @@ reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
   var = create_tmp_reg (type, "predreastmp");
   new_name = make_ssa_name (var);
   new_stmt = gimple_build_assign (new_name, code, name1, name2);
-  if (insert_before && stmt_dominates_stmt_p (insert_before, s1))
-    bsi = gsi_for_stmt (insert_before);
-  else
-    bsi = gsi_for_stmt (s1);
-
-  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
 
   var = create_tmp_reg (type, "predreastmp");
   tmp_name = make_ssa_name (var);
@@ -2610,6 +2603,7 @@ reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
   s1 = gsi_stmt (bsi);
   update_stmt (s1);
 
+  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
   gsi_insert_before (&bsi, tmp_stmt, GSI_SAME_STMT);
 
   return new_stmt;
@@ -2618,11 +2612,10 @@ reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
 /* Returns the statement that combines references R1 and R2.  In case R1
    and R2 are not used in the same statement, but they are used with an
    associative and commutative operation in the same expression, reassociate
-   the expression so that they are used in the same statement.  The combined
-   statement is inserted before INSERT_BEFORE if it's not NULL.  */
+   the expression so that they are used in the same statement.  */
 
 static gimple *
-stmt_combining_refs (dref r1, dref r2, gimple *insert_before)
+stmt_combining_refs (dref r1, dref r2)
 {
   gimple *stmt1, *stmt2;
   tree name1 = name_for_ref (r1);
@@ -2633,7 +2626,7 @@ stmt_combining_refs (dref r1, dref r2, gimple *insert_before)
   if (stmt1 == stmt2)
     return stmt1;
 
-  return reassociate_to_the_same_stmt (name1, name2, insert_before);
+  return reassociate_to_the_same_stmt (name1, name2);
 }
 
 /* Tries to combine chains CH1 and CH2 together.  If this succeeds, the
@@ -2646,7 +2639,7 @@ combine_chains (chain_p ch1, chain_p ch2)
   enum tree_code op = ERROR_MARK;
   bool swap = false;
   chain_p new_chain;
-  int i, j, num;
+  unsigned i;
   gimple *root_stmt;
   tree rslt_type = NULL_TREE;
 
@@ -2668,9 +2661,6 @@ combine_chains (chain_p ch1, chain_p ch2)
 	return NULL;
     }
 
-  ch1->combined = true;
-  ch2->combined = true;
-
   if (swap)
     std::swap (ch1, ch2);
 
@@ -2682,44 +2672,14 @@ combine_chains (chain_p ch1, chain_p ch2)
   new_chain->rslt_type = rslt_type;
   new_chain->length = ch1->length;
 
-  gimple *insert = NULL;
-  num = ch1->refs.length ();
-  i = (new_chain->length == 0) ? num - 1 : 0;
-  j = (new_chain->length == 0) ? -1 : 1;
-  /* For ZERO length chain, process refs in reverse order so that dominant
-     position is ready when it comes to the root ref.
-     For non-ZERO length chain, process refs in order.  See PR79663.  */
-  for (; num > 0; num--, i += j)
+  for (i = 0; (ch1->refs.iterate (i, &r1)
+	       && ch2->refs.iterate (i, &r2)); i++)
     {
-      r1 = ch1->refs[i];
-      r2 = ch2->refs[i];
       nw = XCNEW (struct dref_d);
+      nw->stmt = stmt_combining_refs (r1, r2);
       nw->distance = r1->distance;
 
-      /* For ZERO length chain, insert combined stmt of root ref at dominant
-	 position.  */
-      nw->stmt = stmt_combining_refs (r1, r2, i == 0 ? insert : NULL);
-      /* For ZERO length chain, record dominant position where combined stmt
-	 of root ref should be inserted.  In this case, though all root refs
-	 dominate following ones, it's possible that combined stmt doesn't.
-	 See PR70754.  */
-      if (new_chain->length == 0
-	  && (insert == NULL || stmt_dominates_stmt_p (nw->stmt, insert)))
-	insert = nw->stmt;
-
       new_chain->refs.safe_push (nw);
-    }
-  if (new_chain->length == 0)
-    {
-      /* Restore the order for ZERO length chain's refs.  */
-      num = new_chain->refs.length () >> 1;
-      for (i = 0, j = new_chain->refs.length () - 1; i < num; i++, j--)
-	std::swap (new_chain->refs[i], new_chain->refs[j]);
-
-      /* For ZERO length chain, has_max_use_after must be true since root
-	 combined stmt must dominates others.  */
-      new_chain->has_max_use_after = true;
-      return new_chain;
     }
 
   new_chain->has_max_use_after = false;
@@ -2734,6 +2694,8 @@ combine_chains (chain_p ch1, chain_p ch2)
 	}
     }
 
+  ch1->combined = true;
+  ch2->combined = true;
   return new_chain;
 }
 
