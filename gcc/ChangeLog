@@ -1,5 +1,18 @@
 2017-11-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82981
+	* internal-fn.c: Include gimple-ssa.h, tree-phinodes.h and
+	ssa-iterators.h.
+	(can_widen_mult_without_libcall): New function.
+	(expand_mul_overflow): If only checking unsigned mul overflow,
+	not result, and can do efficiently MULT_HIGHPART_EXPR, emit that.
+	Don't use WIDEN_MULT_EXPR if it would involve a libcall, unless
+	no other way works.  Add MULT_HIGHPART_EXPR + MULT_EXPR support.
+	(expand_DIVMOD): Formatting fix.
+	* expmed.h (expand_mult): Add NO_LIBCALL argument.
+	* expmed.c (expand_mult): Likewise.  Use OPTAB_WIDEN rather
+	than OPTAB_LIB_WIDEN if NO_LIBCALL is true, and allow it to fail.
+
 	PR tree-optimization/82977
 	* tree-ssa-strlen.c (strlen_optimize_stmt): Pass a reference to a copy
 	constructed temporary to strlen_to_stridx.put.
