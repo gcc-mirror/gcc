@@ -1,3 +1,25 @@
+2017-11-15  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR target/82941
+	PR target/82942
+	* config/i386/i386.c (pass_insert_vzeroupper): Modify gate condition
+	to return true on Xeon and not on Xeon Phi.
+	(ix86_check_avx256_register): Changed to ...
+	(ix86_check_avx_upper_register): ... this. Add extra check for
+	VALID_AVX512F_REG_OR_XI_MODE.
+	(ix86_avx_u128_mode_needed): Changed
+	ix86_check_avx256_register to ix86_check_avx_upper_register.
+	(ix86_check_avx256_stores): Changed to ...
+	(ix86_check_avx_upper_stores): ... this. Changed
+	ix86_check_avx256_register to ix86_check_avx_upper_register.
+	(ix86_avx_u128_mode_after): Changed
+	avx_reg256_found to avx_upper_reg_found. Changed
+	ix86_check_avx256_stores to ix86_check_avx_upper_stores.
+	(ix86_avx_u128_mode_entry): Changed
+	ix86_check_avx256_register to ix86_check_avx_upper_register.
+	(ix86_avx_u128_mode_exit): Ditto.
+	* config/i386/i386.h: (host_detect_local_cpu): New define.
+
 2017-11-15  Dominik Infuehr  <dominik.infuehr@theobroma-systems.com>
 
 	* config/arm/xgene1.md (xgene1): Split into automatons

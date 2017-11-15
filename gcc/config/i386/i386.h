@@ -1097,6 +1097,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
    || (MODE) == V4TImode)
 
+#define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
+  (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
+
 #define VALID_AVX512VL_128_REG_MODE(MODE)				\
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
    || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode	\
