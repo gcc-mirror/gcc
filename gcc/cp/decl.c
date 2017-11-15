@@ -15253,8 +15253,7 @@ begin_destructor_body (void)
 	  {
 	    tree binfo = TYPE_BINFO (current_class_type);
 	    tree ref
-	      = cp_build_indirect_ref (current_class_ptr, RO_NULL,
-				       tf_warning_or_error);
+	      = cp_build_fold_indirect_ref (current_class_ptr);
 
 	    tree vtbl_ptr = build_vfield_ref (ref, TREE_TYPE (binfo));
 	    tree vtbl = build_zero_cst (TREE_TYPE (vtbl_ptr));
