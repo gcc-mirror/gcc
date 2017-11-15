@@ -1,3 +1,9 @@
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/82927
+	* config/sh/sh-mem.cc: Use proper probability for
+	REG_BR_PROB_NOTE.
+
 2017-11-14  Jeff Law  <law@redhat.com>
 
 	* explow.c (anti_adjust_stack_and_probe_stack_clash): Avoid probing
