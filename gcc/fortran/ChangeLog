@@ -1,3 +1,12 @@
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
+	* options.c (gfc_post_options):
+	Do not set default value of warn_return_type.
+	* trans-decl.c (gfc_trans_deferred_vars):
+	Compare warn_return_type for greater than zero.
+	(generate_local_decl): Likewise
+	(gfc_generate_function_code): Likewise.
+
 2017-11-13  Fritz Reese <fritzoreese@gmail.com>
 
 	PR fortran/78240
