@@ -105,20 +105,13 @@ range_stmt::validate_operands ()
   ssa1 = valid_irange_ssa (op1);
   ssa2 = valid_irange_ssa (op2);
 
-  if (!op2)
-    {
-      if (ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1)))
-	return true;
-    }
-  else
-    {
-      if (ssa1 && ssa2 && ((code >= LT_EXPR && code <= NE_EXPR)
-			   || logical_expr_p (TREE_TYPE (op1))))
-	return true;
-      if ((ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1)))
-	  && (ssa2 || (TREE_CODE (op2) == INTEGER_CST && !TREE_OVERFLOW (op2))))
-	return true;
-    }
+  if (ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1))) 
+   {
+     if (!op2)
+       return true;
+     if (ssa2 || (TREE_CODE (op2) == INTEGER_CST && !TREE_OVERFLOW (op2)))
+       return true;
+   }
   return false;
 }
 
@@ -166,6 +159,23 @@ range_stmt::from_stmt (gimple *s)
 }
 
 
+// Transition of expression type from non-boolean to boolean are considered
+// anchor statements for range generation. Meaning we evaluate the range of the
+// operand for this block, and then make any adjustments to that range for
+// ssa-Names in the definition chain
+bool
+range_stmt::logical_transition_p () const
+{
+  // a boolean LHS and non-boolean RHS.   Relationals dont alwsy have a LHS.
+  if (code >= LT_EXPR && code <= NE_EXPR)
+    return true;
+  tree lhs = gimple_get_lhs (g);
+  if (lhs && TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE &&
+      TREE_CODE (TREE_TYPE (op1)) != BOOLEAN_TYPE)
+    return true;
+  return false;
+}
+
 bool
 range_stmt::logical_expr_p (tree type) const
 {
@@ -192,7 +202,7 @@ range_stmt::logical_expr_p (tree type) const
 bool
 range_stmt::logical_expr (irange& r, const irange& lhs, const irange& op1_true,
 			  const irange& op1_false, const irange& op2_true,
-			  const irange& op2_false)
+			  const irange& op2_false) const
 {
   gcc_checking_assert (logical_expr_p (TREE_TYPE (op1)));
  

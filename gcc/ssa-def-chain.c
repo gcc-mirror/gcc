@@ -117,7 +117,6 @@ ssa_define_chain::process_op (tree operand, unsigned version, basic_block bb)
 
       /* Make sure defintion chain exists for operand. */
       term = generate_def_chain (operand);
-    //    terminal[op_index] = term;    set by generate isnt it?
 
       /* If it has a chain, add them to this one. */
       ret = def_chain [op_index];
@@ -160,9 +159,9 @@ ssa_define_chain::generate_def_chain (tree name)
 	ret = process_op (ssa1, index, bb);
       if (ssa2)
 	tmp = process_op (ssa2, index, bb);
-      /* If there are 2 terminal results, there is no terminal. */
+      /* If there are 2 different terminal results, this is the terminal. */
       if (ret && tmp && ret != tmp)
-	ret = NULL_TREE;
+	ret = name;
       else
 	if (!ret)
 	  ret = tmp;

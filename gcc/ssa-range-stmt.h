@@ -59,10 +59,11 @@ public:
   tree ssa_operand1 () const;
   tree ssa_operand2 () const;
 
+  bool logical_transition_p () const;
   bool logical_expr_p (tree type) const;
   bool logical_expr (irange& r, const irange& lhs, const irange& op1_true,
   		     const irange& op1_false, const irange& op2_true,
-		     const irange& op2_false);
+		     const irange& op2_false) const;
   bool fold (irange& res) const;
   bool fold (irange& res, tree name, const irange& name_range) const;
   bool fold (irange& res, const irange& r1) const;
