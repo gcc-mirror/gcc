@@ -31,12 +31,6 @@
 	(tree_predictive_commoning_loop): Update call to above function.
 	(update_pos_for_combined_chains, pcom_stmt_dominates_stmt_p): New.
 
-gcc/testsuite
-2017-11-15  Bin Cheng  <bin.cheng@arm.com>
-
-	PR tree-optimization/82726
-	* gcc.dg/tree-ssa/pr82726.c: New test.
-
 2017-11-15  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82726
