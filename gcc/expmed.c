@@ -3284,7 +3284,7 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 
 rtx
 expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
-	     int unsignedp)
+	     int unsignedp, bool no_libcall)
 {
   enum mult_variant variant;
   struct algorithm algorithm;
@@ -3420,14 +3420,16 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
     {
       op0 = force_reg (GET_MODE (op0), op0);
       return expand_binop (mode, add_optab, op0, op0,
-			   target, unsignedp, OPTAB_LIB_WIDEN);
+			   target, unsignedp,
+			   no_libcall ? OPTAB_WIDEN : OPTAB_LIB_WIDEN);
     }
 
   /* This used to use umul_optab if unsigned, but for non-widening multiply
      there is no difference between signed and unsigned.  */
   op0 = expand_binop (mode, do_trapv ? smulv_optab : smul_optab,
-		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
-  gcc_assert (op0);
+		      op0, op1, target, unsignedp,
+		      no_libcall ? OPTAB_WIDEN : OPTAB_LIB_WIDEN);
+  gcc_assert (op0 || no_libcall);
   return op0;
 }
 
