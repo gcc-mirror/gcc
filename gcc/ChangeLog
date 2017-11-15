@@ -1,3 +1,47 @@
+2017-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_xst_be): New #define.
+	* config/rs6000/altivec.md (altivec_vperm_<mode>_direct): Rename
+	and externalize from *altivec_vperm_<mode>_internal.
+	* config/rs6000/rs6000-builtin.def (XL_BE_V16QI): Remove macro
+	instantiation.
+	(XL_BE_V8HI): Likewise.
+	(XL_BE_V4SI): Likewise.
+	(XL_BE_V4SI): Likewise.
+	(XL_BE_V2DI): Likewise.
+	(XL_BE_V4SF): Likewise.
+	(XL_BE_V2DF): Likewise.
+	(XST_BE): Add BU_VSX_OVERLOAD_X macro instantiation.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Correct
+	all array entries with these keys: VSX_BUILTIN_VEC_XL,
+	VSX_BUILTIN_VEC_XL_BE, VSX_BUILTIN_VEC_XST.  Add entries for key
+	VSX_BUILTIN_VEC_XST_BE.
+	* config/rs6000/rs6000.c (altivec_expand_xl_be_builtin): Remove.
+	(altivec_expand_builtin): Remove handling for VSX_BUILTIN_XL_BE_*
+	built-ins.
+	(altivec_init_builtins): Replace conditional calls to def_builtin
+	for __builtin_vsx_ld_elemrev_{v8hi,v16qi} and
+	__builtin_vsx_st_elemrev_{v8hi,v16qi} based on TARGET_P9_VECTOR
+	with unconditional calls.  Remove calls to def_builtin for
+	__builtin_vsx_le_be_<mode>.  Add a call to def_builtin for
+	__builtin_vec_xst_be.
+	* config/rs6000/vsx.md (vsx_ld_elemrev_v8hi): Convert define_insn
+	to define_expand, and add alternate RTL generation for P8.
+	(*vsx_ld_elemrev_v8hi_internal): New define_insn based on
+	vsx_ld_elemrev_v8hi.
+	(vsx_ld_elemrev_v16qi): Convert define_insn to define_expand, and
+	add alternate RTL generation for P8.
+	(*vsx_ld_elemrev_v16qi_internal): New define_insn based on
+	vsx_ld_elemrev_v16qi.
+	(vsx_st_elemrev_v8hi): Convert define_insn
+	to define_expand, and add alternate RTL generation for P8.
+	(*vsx_st_elemrev_v8hi_internal): New define_insn based on
+	vsx_st_elemrev_v8hi.
+	(vsx_st_elemrev_v16qi): Convert define_insn to define_expand, and
+	add alternate RTL generation for P8.
+	(*vsx_st_elemrev_v16qi_internal): New define_insn based on
+	vsx_st_elemrev_v16qi.
+
 2017-11-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82990
