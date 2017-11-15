@@ -1,3 +1,10 @@
+2017-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/81156
+	* c-parser.c (check_tgmath_function): New function.
+	(enum tgmath_parm_kind): New enum.
+	(c_parser_postfix_expression): Handle __builtin_tgmath.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (implicit_decl_warning): Update for renaming of

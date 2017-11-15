@@ -7829,6 +7829,61 @@ c_parser_generic_selection (c_parser *parser)
   return matched_assoc.expression;
 }
 
+/* Check the validity of a function pointer argument *EXPR (argument
+   position POS) to __builtin_tgmath.  Return the number of function
+   arguments if possibly valid; return 0 having reported an error if
+   not valid.  */
+
+static unsigned int
+check_tgmath_function (c_expr *expr, unsigned int pos)
+{
+  tree type = TREE_TYPE (expr->value);
+  if (!FUNCTION_POINTER_TYPE_P (type))
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> is not a function pointer",
+		pos);
+      return 0;
+    }
+  type = TREE_TYPE (type);
+  if (!prototype_p (type))
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> is unprototyped", pos);
+      return 0;
+    }
+  if (stdarg_p (type))
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> has variable arguments",
+		pos);
+      return 0;
+    }
+  unsigned int nargs = 0;
+  function_args_iterator iter;
+  tree t;
+  FOREACH_FUNCTION_ARGS (type, t, iter)
+    {
+      if (t == void_type_node)
+	break;
+      nargs++;
+    }
+  if (nargs == 0)
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> has no arguments", pos);
+      return 0;
+    }
+  return nargs;
+}
+
+/* Ways in which a parameter or return value of a type-generic macro
+   may vary between the different functions the macro may call.  */
+enum tgmath_parm_kind
+  {
+    tgmath_fixed, tgmath_real, tgmath_complex
+  };
+
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2,
    C11 6.5.1-6.5.2).  Compound literals aren't handled here; callers have to
    call c_parser_postfix_expression_after_paren_type on encountering them.
@@ -7869,6 +7924,7 @@ c_parser_generic_selection (c_parser *parser)
 			     assignment-expression ,
 			     assignment-expression )
      __builtin_types_compatible_p ( type-name , type-name )
+     __builtin_tgmath ( expr-list )
      __builtin_complex ( assignment-expression , assignment-expression )
      __builtin_shuffle ( assignment-expression , assignment-expression )
      __builtin_shuffle ( assignment-expression ,
@@ -8295,6 +8351,513 @@ c_parser_postfix_expression (c_parser *parser)
 	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	  }
 	  break;
+	case RID_BUILTIN_TGMATH:
+	  {
+	    vec<c_expr_t, va_gc> *cexpr_list;
+	    location_t close_paren_loc;
+
+	    c_parser_consume_token (parser);
+	    if (!c_parser_get_builtin_args (parser,
+					    "__builtin_tgmath",
+					    &cexpr_list, false,
+					    &close_paren_loc))
+	      {
+		expr.set_error ();
+		break;
+	      }
+
+	    if (vec_safe_length (cexpr_list) < 3)
+	      {
+		error_at (loc, "too few arguments to %<__builtin_tgmath%>");
+		expr.set_error ();
+		break;
+	      }
+
+	    unsigned int i;
+	    c_expr_t *p;
+	    FOR_EACH_VEC_ELT (*cexpr_list, i, p)
+	      *p = convert_lvalue_to_rvalue (loc, *p, true, true);
+	    unsigned int nargs = check_tgmath_function (&(*cexpr_list)[0], 1);
+	    if (nargs == 0)
+	      {
+		expr.set_error ();
+		break;
+	      }
+	    if (vec_safe_length (cexpr_list) < nargs)
+	      {
+		error_at (loc, "too few arguments to %<__builtin_tgmath%>");
+		expr.set_error ();
+		break;
+	      }
+	    unsigned int num_functions = vec_safe_length (cexpr_list) - nargs;
+	    if (num_functions < 2)
+	      {
+		error_at (loc, "too few arguments to %<__builtin_tgmath%>");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* The first NUM_FUNCTIONS expressions are the function
+	       pointers.  The remaining NARGS expressions are the
+	       arguments that are to be passed to one of those
+	       functions, chosen following <tgmath.h> rules.  */
+	    for (unsigned int j = 1; j < num_functions; j++)
+	      {
+		unsigned int this_nargs
+		  = check_tgmath_function (&(*cexpr_list)[j], j + 1);
+		if (this_nargs == 0)
+		  {
+		    expr.set_error ();
+		    goto out;
+		  }
+		if (this_nargs != nargs)
+		  {
+		    error_at ((*cexpr_list)[j].get_location (),
+			      "argument %u of %<__builtin_tgmath%> has "
+			      "wrong number of arguments", j + 1);
+		    expr.set_error ();
+		    goto out;
+		  }
+	      }
+
+	    /* The functions all have the same number of arguments.
+	       Determine whether arguments and return types vary in
+	       ways permitted for <tgmath.h> functions.  */
+	    /* The first entry in each of these vectors is for the
+	       return type, subsequent entries for parameter
+	       types.  */
+	    auto_vec<enum tgmath_parm_kind> parm_kind (nargs + 1);
+	    auto_vec<tree> parm_first (nargs + 1);
+	    auto_vec<bool> parm_complex (nargs + 1);
+	    auto_vec<bool> parm_varies (nargs + 1);
+	    tree first_type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[0].value));
+	    tree first_ret = TYPE_MAIN_VARIANT (TREE_TYPE (first_type));
+	    parm_first.quick_push (first_ret);
+	    parm_complex.quick_push (TREE_CODE (first_ret) == COMPLEX_TYPE);
+	    parm_varies.quick_push (false);
+	    function_args_iterator iter;
+	    tree t;
+	    unsigned int argpos;
+	    FOREACH_FUNCTION_ARGS (first_type, t, iter)
+	      {
+		if (t == void_type_node)
+		  break;
+		parm_first.quick_push (TYPE_MAIN_VARIANT (t));
+		parm_complex.quick_push (TREE_CODE (t) == COMPLEX_TYPE);
+		parm_varies.quick_push (false);
+	      }
+	    for (unsigned int j = 1; j < num_functions; j++)
+	      {
+		tree type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[j].value));
+		tree ret = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+		if (ret != parm_first[0])
+		  {
+		    parm_varies[0] = true;
+		    if (!SCALAR_FLOAT_TYPE_P (parm_first[0])
+			&& !COMPLEX_FLOAT_TYPE_P (parm_first[0]))
+		      {
+			error_at ((*cexpr_list)[0].get_location (),
+				  "invalid type-generic return type for "
+				  "argument %u of %<__builtin_tgmath%>",
+				  1);
+			expr.set_error ();
+			goto out;
+		      }
+		    if (!SCALAR_FLOAT_TYPE_P (ret)
+			&& !COMPLEX_FLOAT_TYPE_P (ret))
+		      {
+			error_at ((*cexpr_list)[j].get_location (),
+				  "invalid type-generic return type for "
+				  "argument %u of %<__builtin_tgmath%>",
+				  j + 1);
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+		if (TREE_CODE (ret) == COMPLEX_TYPE)
+		  parm_complex[0] = true;
+		argpos = 1;
+		FOREACH_FUNCTION_ARGS (type, t, iter)
+		  {
+		    if (t == void_type_node)
+		      break;
+		    t = TYPE_MAIN_VARIANT (t);
+		    if (t != parm_first[argpos])
+		      {
+			parm_varies[argpos] = true;
+			if (!SCALAR_FLOAT_TYPE_P (parm_first[argpos])
+			    && !COMPLEX_FLOAT_TYPE_P (parm_first[argpos]))
+			  {
+			    error_at ((*cexpr_list)[0].get_location (),
+				      "invalid type-generic type for "
+				      "argument %u of argument %u of "
+				      "%<__builtin_tgmath%>", argpos, 1);
+			    expr.set_error ();
+			    goto out;
+			  }
+			if (!SCALAR_FLOAT_TYPE_P (t)
+			    && !COMPLEX_FLOAT_TYPE_P (t))
+			  {
+			    error_at ((*cexpr_list)[j].get_location (),
+				      "invalid type-generic type for "
+				      "argument %u of argument %u of "
+				      "%<__builtin_tgmath%>", argpos, j + 1);
+			    expr.set_error ();
+			    goto out;
+			  }
+		      }
+		    if (TREE_CODE (t) == COMPLEX_TYPE)
+		      parm_complex[argpos] = true;
+		    argpos++;
+		  }
+	      }
+	    enum tgmath_parm_kind max_variation = tgmath_fixed;
+	    for (unsigned int j = 0; j <= nargs; j++)
+	      {
+		enum tgmath_parm_kind this_kind;
+		if (parm_varies[j])
+		  {
+		    if (parm_complex[j])
+		      max_variation = this_kind = tgmath_complex;
+		    else
+		      {
+			this_kind = tgmath_real;
+			if (max_variation != tgmath_complex)
+			  max_variation = tgmath_real;
+		      }
+		  }
+		else
+		  this_kind = tgmath_fixed;
+		parm_kind.quick_push (this_kind);
+	      }
+	    if (max_variation == tgmath_fixed)
+	      {
+		error_at (loc, "function arguments of %<__builtin_tgmath%> "
+			  "all have the same type");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* Identify a parameter (not the return type) that varies,
+	       including with complex types if any variation includes
+	       complex types; there must be at least one such
+	       parameter.  */
+	    unsigned int tgarg = 0;
+	    for (unsigned int j = 1; j <= nargs; j++)
+	      if (parm_kind[j] == max_variation)
+		{
+		  tgarg = j;
+		  break;
+		}
+	    if (tgarg == 0)
+	      {
+		error_at (loc, "function arguments of %<__builtin_tgmath%> "
+			  "lack type-generic parameter");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* Determine the type of the relevant parameter for each
+	       function.  */
+	    auto_vec<tree> tg_type (num_functions);
+	    for (unsigned int j = 0; j < num_functions; j++)
+	      {
+		tree type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[j].value));
+		argpos = 1;
+		FOREACH_FUNCTION_ARGS (type, t, iter)
+		  {
+		    if (argpos == tgarg)
+		      {
+			tg_type.quick_push (TYPE_MAIN_VARIANT (t));
+			break;
+		      }
+		    argpos++;
+		  }
+	      }
+
+	    /* Verify that the corresponding types are different for
+	       all the listed functions.  Also determine whether all
+	       the types are complex, whether all the types are
+	       standard or binary, and whether all the types are
+	       decimal.  */
+	    bool all_complex = true;
+	    bool all_binary = true;
+	    bool all_decimal = true;
+	    hash_set<tree> tg_types;
+	    FOR_EACH_VEC_ELT (tg_type, i, t)
+	      {
+		if (TREE_CODE (t) == COMPLEX_TYPE)
+		  all_decimal = false;
+		else
+		  {
+		    all_complex = false;
+		    if (DECIMAL_FLOAT_TYPE_P (t))
+		      all_binary = false;
+		    else
+		      all_decimal = false;
+		  }
+		if (tg_types.add (t))
+		  {
+		    error_at ((*cexpr_list)[i].get_location (),
+			      "duplicate type-generic parameter type for "
+			      "function argument %u of %<__builtin_tgmath%>",
+			      i + 1);
+		    expr.set_error ();
+		    goto out;
+		  }
+	      }
+
+	    /* Verify that other parameters and the return type whose
+	       types vary have their types varying in the correct
+	       way.  */
+	    for (unsigned int j = 0; j < num_functions; j++)
+	      {
+		tree exp_type = tg_type[j];
+		tree exp_real_type = exp_type;
+		if (TREE_CODE (exp_type) == COMPLEX_TYPE)
+		  exp_real_type = TREE_TYPE (exp_type);
+		tree type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[j].value));
+		tree ret = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+		if ((parm_kind[0] == tgmath_complex && ret != exp_type)
+		    || (parm_kind[0] == tgmath_real && ret != exp_real_type))
+		  {
+		    error_at ((*cexpr_list)[j].get_location (),
+			      "bad return type for function argument %u "
+			      "of %<__builtin_tgmath%>", j + 1);
+		    expr.set_error ();
+		    goto out;
+		  }
+		argpos = 1;
+		FOREACH_FUNCTION_ARGS (type, t, iter)
+		  {
+		    if (t == void_type_node)
+		      break;
+		    t = TYPE_MAIN_VARIANT (t);
+		    if ((parm_kind[argpos] == tgmath_complex
+			 && t != exp_type)
+			|| (parm_kind[argpos] == tgmath_real
+			    && t != exp_real_type))
+		      {
+			error_at ((*cexpr_list)[j].get_location (),
+				  "bad type for argument %u of "
+				  "function argument %u of "
+				  "%<__builtin_tgmath%>", argpos, j + 1);
+			expr.set_error ();
+			goto out;
+		      }
+		    argpos++;
+		  }
+	      }
+
+	    /* The functions listed are a valid set of functions for a
+	       <tgmath.h> macro to select between.  Identify the
+	       matching function, if any.  First, the argument types
+	       must be combined following <tgmath.h> rules.  Integer
+	       types are treated as _Decimal64 if any type-generic
+	       argument is decimal, or if the only alternatives for
+	       type-generic arguments are of decimal types, and are
+	       otherwise treated as double (or _Complex double for
+	       complex integer types).  After that adjustment, types
+	       are combined following the usual arithmetic
+	       conversions.  If the function only accepts complex
+	       arguments, a complex type is produced.  */
+	    bool arg_complex = all_complex;
+	    bool arg_binary = all_binary;
+	    bool arg_int_decimal = all_decimal;
+	    for (unsigned int j = 1; j <= nargs; j++)
+	      {
+		if (parm_kind[j] == tgmath_fixed)
+		  continue;
+		c_expr_t *ce = &(*cexpr_list)[num_functions + j - 1];
+		tree type = TREE_TYPE (ce->value);
+		if (!INTEGRAL_TYPE_P (type)
+		    && !SCALAR_FLOAT_TYPE_P (type)
+		    && TREE_CODE (type) != COMPLEX_TYPE)
+		  {
+		    error_at (ce->get_location (),
+			      "invalid type of argument %u of type-generic "
+			      "function", j);
+		    expr.set_error ();
+		    goto out;
+		  }
+		if (DECIMAL_FLOAT_TYPE_P (type))
+		  {
+		    arg_int_decimal = true;
+		    if (all_complex)
+		      {
+			error_at (ce->get_location (),
+				  "decimal floating-point argument %u to "
+				  "complex-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (all_binary)
+		      {
+			error_at (ce->get_location (),
+				  "decimal floating-point argument %u to "
+				  "binary-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_complex)
+		      {
+			error_at (ce->get_location (),
+				  "both complex and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_binary)
+		      {
+			error_at (ce->get_location (),
+				  "both binary and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+		else if (TREE_CODE (type) == COMPLEX_TYPE)
+		  {
+		    arg_complex = true;
+		    if (COMPLEX_FLOAT_TYPE_P (type))
+		      arg_binary = true;
+		    if (all_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "complex argument %u to "
+				  "decimal-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_int_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "both complex and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+		else if (SCALAR_FLOAT_TYPE_P (type))
+		  {
+		    arg_binary = true;
+		    if (all_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "binary argument %u to "
+				  "decimal-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_int_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "both binary and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+	      }
+	    tree arg_real = NULL_TREE;
+	    for (unsigned int j = 1; j <= nargs; j++)
+	      {
+		if (parm_kind[j] == tgmath_fixed)
+		  continue;
+		c_expr_t *ce = &(*cexpr_list)[num_functions + j - 1];
+		tree type = TYPE_MAIN_VARIANT (TREE_TYPE (ce->value));
+		if (TREE_CODE (type) == COMPLEX_TYPE)
+		  type = TREE_TYPE (type);
+		if (INTEGRAL_TYPE_P (type))
+		  type = (arg_int_decimal
+			  ? dfloat64_type_node
+			  : double_type_node);
+		if (arg_real == NULL_TREE)
+		  arg_real = type;
+		else
+		  arg_real = common_type (arg_real, type);
+		if (arg_real == error_mark_node)
+		  {
+		    expr.set_error ();
+		    goto out;
+		  }
+	      }
+	    tree arg_type = (arg_complex
+			     ? build_complex_type (arg_real)
+			     : arg_real);
+
+	    /* Look for a function to call with type-generic parameter
+	       type ARG_TYPE.  */
+	    c_expr_t *fn = NULL;
+	    for (unsigned int j = 0; j < num_functions; j++)
+	      {
+		if (tg_type[j] == arg_type)
+		  {
+		    fn = &(*cexpr_list)[j];
+		    break;
+		  }
+	      }
+	    if (fn == NULL
+		&& parm_kind[0] == tgmath_fixed
+		&& SCALAR_FLOAT_TYPE_P (parm_first[0]))
+	      {
+		/* Presume this is a macro that rounds its result to a
+		   narrower type, and look for the first function with
+		   at least the range and precision of the argument
+		   type.  */
+		for (unsigned int j = 0; j < num_functions; j++)
+		  {
+		    if (arg_complex
+			!= (TREE_CODE (tg_type[j]) == COMPLEX_TYPE))
+		      continue;
+		    tree real_tg_type = (arg_complex
+					 ? TREE_TYPE (tg_type[j])
+					 : tg_type[j]);
+		    if (DECIMAL_FLOAT_TYPE_P (arg_real)
+			!= DECIMAL_FLOAT_TYPE_P (real_tg_type))
+		      continue;
+		    scalar_float_mode arg_mode
+		      = SCALAR_FLOAT_TYPE_MODE (arg_real);
+		    scalar_float_mode tg_mode
+		      = SCALAR_FLOAT_TYPE_MODE (real_tg_type);
+		    const real_format *arg_fmt = REAL_MODE_FORMAT (arg_mode);
+		    const real_format *tg_fmt = REAL_MODE_FORMAT (tg_mode);
+		    if (arg_fmt->b == tg_fmt->b
+			&& arg_fmt->p <= tg_fmt->p
+			&& arg_fmt->emax <= tg_fmt->emax
+			&& (arg_fmt->emin - arg_fmt->p
+			    >= tg_fmt->emin - tg_fmt->p))
+		      {
+			fn = &(*cexpr_list)[j];
+			break;
+		      }
+		  }
+	      }
+	    if (fn == NULL)
+	      {
+		error_at (loc, "no matching function for type-generic call");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* Construct a call to FN.  */
+	    vec<tree, va_gc> *args;
+	    vec_alloc (args, nargs);
+	    vec<tree, va_gc> *origtypes;
+	    vec_alloc (origtypes, nargs);
+	    auto_vec<location_t> arg_loc (nargs);
+	    for (unsigned int j = 0; j < nargs; j++)
+	      {
+		c_expr_t *ce = &(*cexpr_list)[num_functions + j];
+		args->quick_push (ce->value);
+		arg_loc.quick_push (ce->get_location ());
+		origtypes->quick_push (ce->original_type);
+	      }
+	    expr.value = c_build_function_call_vec (loc, arg_loc, fn->value,
+						    args, origtypes);
+	    set_c_expr_source_range (&expr, loc, close_paren_loc);
+	    break;
+	  }
 	case RID_BUILTIN_CALL_WITH_STATIC_CHAIN:
 	  {
 	    vec<c_expr_t, va_gc> *cexpr_list;
@@ -8563,6 +9126,7 @@ c_parser_postfix_expression (c_parser *parser)
       expr.set_error ();
       break;
     }
+ out:
   return c_parser_postfix_expression_after_primary
     (parser, EXPR_LOC_OR_LOC (expr.value, loc), expr);
 }
