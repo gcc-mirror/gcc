@@ -1,3 +1,7 @@
+2017-11-14  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (var_expression): Remove Varexpr_context parameter.
+
 2017-10-11  Tony Reix  <tony.reix@atos.net>
 
 	* go-system.h (__STDC_FORMAT_MACROS): Define before including any

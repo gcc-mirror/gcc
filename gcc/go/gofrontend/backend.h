@@ -254,7 +254,7 @@ class Backend
 
   // Create a reference to a variable.
   virtual Bexpression*
-  var_expression(Bvariable* var, Varexpr_context in_lvalue_pos, Location) = 0;
+  var_expression(Bvariable* var, Location) = 0;
 
   // Create an expression that indirects through the pointer expression EXPR
   // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer

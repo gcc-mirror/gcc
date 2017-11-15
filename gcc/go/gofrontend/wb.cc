@@ -175,7 +175,6 @@ Write_barriers::variable(Named_object* no)
   // Replace the initializer.
   Location loc = init->location();
   Expression* ref = Expression::make_var_reference(no, loc);
-  ref->var_expression()->set_in_lvalue_pos();
 
   Statement_inserter inserter(this->gogo_, var);
   Statement* s = this->gogo_->assign_with_write_barrier(NULL, NULL, &inserter,
