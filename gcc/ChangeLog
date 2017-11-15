@@ -1,3 +1,9 @@
+2017-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82977
+	* tree-ssa-strlen.c (strlen_optimize_stmt): Pass a reference to a copy
+	constructed temporary to strlen_to_stridx.put.
+
 2017-11-15  Martin Liska  <mliska@suse.cz>
 
 	* configure.ac: Remove -fkeep-inline-functions from coverage_flags.
