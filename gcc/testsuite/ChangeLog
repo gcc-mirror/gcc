@@ -1,3 +1,8 @@
+2017-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/82988
+	* g++.dg/cpp0x/lambda/lambda-switch.C: Prune unimportant warning.
+
 2017-11-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82990
@@ -27,7 +32,7 @@
 
 	PR fortran/78240
 	gfortran.dg/pr78240.f90: Prune run-on errors.
-	
+
 2017-11-15  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82726
