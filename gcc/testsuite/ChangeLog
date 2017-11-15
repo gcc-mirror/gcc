@@ -1,3 +1,9 @@
+2017-11-15  Sudakshina Das  <sudi.das@arm.com>
+
+	* g++.dg/ext/pr57735.C: Add -Wno-return-type for test.
+	* gcc.target/arm/pr54300.C (main): Add return type and
+	return a value.
+
 2017-11-15  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/strncpy-fix-1.c: Add -Wno-stringop-truncation to dg-options.

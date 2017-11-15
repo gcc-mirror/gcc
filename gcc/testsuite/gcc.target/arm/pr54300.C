@@ -51,6 +51,7 @@ test(unsigned short *_Inp, int32_t *_Out,
   vst1q_s32( _Out, c );
 }
 
+int
 main()
 {
   unsigned short a[4] = {1, 2, 3, 4};
@@ -58,4 +59,5 @@ main()
   test(a, b, 1, 1, ~0);
   if (b[0] != 1 || b[1] != 2 || b[2] != 3 || b[3] != 4)
     abort();
+  return 0;
 }
