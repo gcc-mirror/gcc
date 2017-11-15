@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-w" }
 !
 ! PR fortran/78240
 !
@@ -8,5 +9,7 @@
 !
 
 program p
-  integer x(n)    /1/   ! { dg-error "Nonconstant array" }
+  integer x(n)    /1/   ! { dg-error "cannot appear in the expression" }
 end
+! { dg-prune-output "module or main program" }
+! { dg-prune-output "Nonconstant array" }
