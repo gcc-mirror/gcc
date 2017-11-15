@@ -114,8 +114,11 @@ define feature iwmmxt2
 # Architecture rel 8.1.
 define feature armv8_1
 
-# Architecutre rel 8.2.
+# Architecture rel 8.2.
 define feature armv8_2
+
+# Architecture rel 8.3.
+define feature armv8_3
 
 # M-Profile security extensions.
 define feature cmse
@@ -238,6 +241,7 @@ define fgroup ARMv7em     ARMv7m armv7em
 define fgroup ARMv8a      ARMv7ve armv8
 define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
 define fgroup ARMv8_2a    ARMv8_1a armv8_2
+define fgroup ARMv8_3a    ARMv8_2a armv8_3
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
@@ -578,6 +582,20 @@ begin arch armv8.2-a
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
 end arch armv8.2-a
+
+begin arch armv8.3-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ profile A
+ isa ARMv8_3a
+ option simd add FP_ARMv8 NEON
+ option fp16 add fp16 FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+ option dotprod add FP_ARMv8 DOTPROD
+end arch armv8.3-a
 
 begin arch armv8-m.base
  tune for cortex-m23
