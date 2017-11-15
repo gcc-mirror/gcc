@@ -1,5 +1,10 @@
 2017-11-15  Martin Liska  <mliska@suse.cz>
 
+	* configure.ac: Remove -fkeep-inline-functions from coverage_flags.
+	* configure: Regenerate.
+
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
 	PR target/82927
 	* config/sh/sh-mem.cc: Use proper probability for
 	REG_BR_PROB_NOTE.
