@@ -2968,7 +2968,7 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 
 	tree rhs1 = gimple_assign_rhs1 (stmt);
 	if (stridx_strlenloc *ps = strlen_to_stridx.get (rhs1))
-	  strlen_to_stridx.put (lhs, *ps);
+	  strlen_to_stridx.put (lhs, stridx_strlenloc (*ps));
       }
     else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
 	{
