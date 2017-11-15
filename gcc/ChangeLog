@@ -1,5 +1,9 @@
 2017-11-14  Jeff Law  <law@redhat.com>
 
+	* explow.c (anti_adjust_stack_and_probe_stack_clash): Avoid probing
+	the red zone for stack_clash_protection_final_dynamic_probe targets
+	when the total dynamic stack size is zero bytes.
+
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Thread
 	blocks is post order.
 
