@@ -1,3 +1,8 @@
+2017-11-06  Palmer Dabbelt  <palmer@sifive.com>
+
+	* MAINTAINERS (RISC-V): Add Jim Wilson as a maintainer.
+	Use my SiFive email address.
+
 2017-11-15  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* MAINTAINERS (write after approval): Add myself.
