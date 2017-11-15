@@ -1,3 +1,7 @@
+2017-11-15  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/strncpy-fix-1.c: Add -Wno-stringop-truncation to dg-options.
+
 2017-11-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gcc.target/i386/pr81706.c: Adjust asm for darwin.
