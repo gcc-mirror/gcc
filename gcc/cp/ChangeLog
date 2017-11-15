@@ -1,3 +1,9 @@
+2017-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81574
+	* lambda.c (lambda_capture_field_type): Function references are
+	always catured by reference.
+
 2017-11-15  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (begin_destructor_body): Use cp_build_fold_indirect_ref
