@@ -4629,7 +4629,7 @@ rest_of_clean_state (void)
 	{
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  if (flag_compare_debug_opt || flag_compare_debug)
-	    dump_flags |= TDF_NOUID;
+	    dump_flags |= TDF_NOUID | TDF_COMPARE_DEBUG;
 	  dump_function_header (final_output, current_function_decl,
 				dump_flags);
 	  final_insns_dump_p = true;
