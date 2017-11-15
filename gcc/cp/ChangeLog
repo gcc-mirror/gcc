@@ -1,3 +1,9 @@
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (begin_destructor_body): In case of VPTR sanitization
+	(with disabled recovery), zero vptr in order to catch virtual calls
+	after lifetime of an object.
+
 2017-11-14  Jason Merrill  <jason@redhat.com>
 
 	Use GTY((cache)) on some hash tables.
