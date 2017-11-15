@@ -1,3 +1,17 @@
+2017-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/81156
+	* doc/extend.texi (Other Builtins): Document __builtin_tgmath.
+	* ginclude/tgmath.h (__tg_cplx, __tg_ldbl, __tg_dbl, __tg_choose)
+	(__tg_choose_2, __tg_choose_3, __TGMATH_REAL_1_2)
+	(__TGMATH_REAL_2_3): Remove macros.
+	(__TGMATH_CPLX, __TGMATH_CPLX_2, __TGMATH_REAL, __TGMATH_REAL_2)
+	(__TGMATH_REAL_3, __TGMATH_CPLX_ONLY): Define using
+	__builtin_tgmath.
+	(frexp, ldexp, nexttoward, scalbn, scalbln): Define using
+	__TGMATH_REAL_2.
+	(remquo): Define using __TGMATH_REAL_3.
+
 2017-11-14  Jeff Law  <law@redhat.com>
 
 	* vr-values.c: New file with contents extracted from tree-vrp.c.

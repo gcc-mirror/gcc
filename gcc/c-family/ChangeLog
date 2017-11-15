@@ -1,3 +1,9 @@
+2017-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/81156
+	* c-common.c (c_common_reswords): Add __builtin_tgmath.
+	* c-common.h (enum rid): Add RID_BUILTIN_TGMATH.
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
