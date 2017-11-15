@@ -28,6 +28,11 @@
 	PR fortran/78240
 	gfortran.dg/pr78240.f90: Prune run-on errors.
 	
+2017-11-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82726
+	* gcc.dg/tree-ssa/pr82726.c: New test.
+
 2017-11-15  Sudakshina Das  <sudi.das@arm.com>
 
 	* g++.dg/ext/pr57735.C: Add -Wno-return-type for test.
