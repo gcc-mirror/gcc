@@ -1,3 +1,15 @@
+2017-11-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82990
+	* gcc.target/i386/pr82942-2.c: Add -mtune=knl.
+	* gcc.target/i386/pr82990-1.c: New test.
+	* gcc.target/i386/pr82990-2.c: Likewise.
+	* gcc.target/i386/pr82990-3.c: Likewise.
+	* gcc.target/i386/pr82990-4.c: Likewise.
+	* gcc.target/i386/pr82990-5.c: Likewise.
+	* gcc.target/i386/pr82990-6.c: Likewise.
+	* gcc.target/i386/pr82990-7.c: Likewise.
+
 2017-11-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-p9.c: Add -O1, update
