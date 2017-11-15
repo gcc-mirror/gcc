@@ -1,3 +1,8 @@
+2017-11-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fix gcd breakage.
+	* include/std/numeric (gcd): Use remove_cv_t, not remove_cv.
+
 2017-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/iterators/directory_iterator.cc: Leave
