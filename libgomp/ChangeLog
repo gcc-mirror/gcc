@@ -1,3 +1,12 @@
+2017-11-15  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: New test, copied
+	from asyncwait-1.f90.  Rewrite into C.  Rewrite from float to int.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-2.c: New test, copied
+	from asyncwait-2.f90.  Rewrite into C.  Rewrite from float to int.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-3.c: New test, copied
+	from asyncwait-3.f90.  Rewrite into C.  Rewrite from float to int.
+
 2017-11-14  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Allow to run for
