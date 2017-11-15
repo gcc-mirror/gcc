@@ -1,3 +1,61 @@
+2017-11-14  Jeff Law  <law@redhat.com>
+
+	* vr-values.c: New file with contents extracted from tree-vrp.c.
+	* Makefile.in (OBJS): Add vr-values.o
+	* tree-vrp.h (set_value_range_to_nonnull): Prototype.
+	(set_value_range, set_and_canonicalize_value_range): Likewise.
+	(vrp_bitmap_equal_p, range_is_nonnull): Likewise.
+	(value_range_constant_singleton, symbolic_range_p): Likewise.
+	(compare_values, compare_values_warnv, vrp_val_is_min): Likewise.
+	(vrp_val_is_max, copy_value_range, set_value_range_to_value): Likewise.
+	(extract_range_from_binary_expr_1, vrp_val_min, vrp_val_max): Likewise.
+	(set_value_range_to_null, range_int_cst_p, opreand_less_p): Likewise.
+	(find_case_label_range, find_case_label_index): Likewise.
+	(zero_nonzero_bits_from_vr, overflow_comparison_p): Likewise.
+	(range_int_cst_singleton_p, value_inside_range): Likewise.
+	(get_single_symbol): Likewise.
+	(switch_update): Move structure definition here.
+	(to_remove_edges, to_update_switch_stmts): Provide externs.
+	* tree-vrp.c: Move all methods for vr-values class to vr-values.c
+	(vrp_val_max, vrp_val_min, vrp_val_is_max): Make externally visible.
+	(vrp_val_is_min, set_value_range): Likewise.
+	(set_and_canonicalize_value_range, copy_value_range): Likewise.
+	(set_value_range_to_value, set_value_range_to_nonnull): Likewise.
+	(set_value_range_to_null, vrp_bitmap_equal_p): Likewise.
+	(range_is_nonnull, range_int_cst_p): Likewwise.
+	(range_int_cst_singleton_p, symbolic_range_p): Likewise.
+	(get_single_symbol, operand_less_p): Likewise
+	(compare_values_warnv, compare_values): Likewise.
+	(value_inside_range, value_range_constant_singleton): Likewise.
+	(zero_nonzero_bitgs_from_vr): Likewise.
+	(extract_range_from_binary_expr_1): Likewise.
+	(overflow_comparison_p): Likewise.
+	(to_remove_edges, to_update_switch_stmts): Likewise.
+	(find_case_label-index, find_case_label_range): Likewise.
+	(switch_update, set_value_range_to_nonnegative): Remove.
+	(set_value_range_to_truthvalue): Likewise.
+	(symbolic_range_based_on_p, gimple_assign_nonzero_p): Likewise.
+	(gimple_stmt_nonzero_p, compare_ranges): Likewise.
+	(compare_range_with_value, vrp_valueize, vrp_valueize_1): Likewise.
+	(find_case_label_ranges, test_for_singularity): Likewise.
+	(range_fits_type_p, simplify_conversion_using_ranges): LIkewise.
+	(x_vr_values): Move to its remaining use site.
+
+2017-11-10  Jeff Law  <law@redhat.com>
+
+	* vr-values.h (VR_INITIALIZER): Move #define here.
+	* gimple-ssa-evrp.c: New file with contents extracted from tree-vrp.c
+	* Makefile.in (OBJS): Add tree-evrp.o
+	* tree-vrp.h (assert_info): Move structure definition here.
+	(set_value_range_to_varying): Prototype.
+	(vrp_operand_equal_p, range_includes_zero_p): Likewise.
+	(infer_value_range, register_edge_assert_for): Likewise.
+	(stmt_interesting_for_vrp): Likewise.
+	* tree-vrp.c: Move all methods for evrp class into gimple-ssa-evrp.c.
+	(set_value_range_to_varying): No longer static.
+	(vrp_operand_equal_p, range_includes_zero_p): Likewise.
+	(infer_value_range, register_edge_assert_for): Likewise.
+
 2017-11-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (bswapdi2): On 32-bit ISA 3.0, don't
@@ -429,21 +487,6 @@
 	* config/darwin-c.c (framework_construct_pathname): Replace strncpy
 	with memcpy.
 	(find_subframework_file): Same.
-
-2017-11-10  Jeff Law  <law@redhat.com>
-
-	* vr-values.h (VR_INITIALIZER): Move #define here.
-	* gimple-ssa-evrp.c: New file with contents extracted from tree-vrp.c
-	* Makefile.in (OBJS): Add tree-evrp.o
-	* tree-vrp.h (assert_info): Move structure definition here.
-	(set_value_range_to_varying): Prototype.
-	(vrp_operand_equal_p, range_includes_zero_p): Likewise.
-	(infer_value_range, register_edge_assert_for): Likewise.
-	(stmt_interesting_for_vrp): Likewise.
-	* tree-vrp.c: Move all methods for evrp class into gimple-ssa-evrp.c.
-	(set_value_range_to_varying): No longer static.
-	(vrp_operand_equal_p, range_includes_zero_p): Likewise.
-	(infer_value_range, register_edge_assert_for): Likewise.
 
 2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
 

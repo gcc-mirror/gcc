@@ -1577,6 +1577,7 @@ OBJS = \
 	varasm.o \
 	varpool.o \
 	vmsdbgout.o \
+	vr-values.o \
 	vtable-verify.o \
 	web.o \
 	wide-int.o \
