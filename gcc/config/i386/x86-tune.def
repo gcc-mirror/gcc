@@ -543,3 +543,7 @@ DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0U)
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
 DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0U)
+
+/* X86_TUNE_EMIT_VZEROUPPER: This enables vzeroupper instruction insertion
+   before a transfer of control flow out of the function.  */
+DEF_TUNE (X86_TUNE_EMIT_VZEROUPPER, "emit_vzeroupper", ~m_KNL)

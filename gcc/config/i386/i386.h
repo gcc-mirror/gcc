@@ -517,6 +517,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
+#define TARGET_EMIT_VZEROUPPER \
+	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

@@ -1,3 +1,14 @@
+2017-11-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82990
+	* config/i386/i386.c (pass_insert_vzeroupper::gate): Remove
+	TARGET_AVX512ER check.
+	(ix86_option_override_internal): Set MASK_VZEROUPPER if
+	neither -mzeroupper nor -mno-zeroupper is used and
+	TARGET_EMIT_VZEROUPPER is set.
+	* config/i386/i386.h (TARGET_EMIT_VZEROUPPER): New.
+	* config/i386/x86-tune.def: Add X86_TUNE_EMIT_VZEROUPPER.
+
 2017-11-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support for
