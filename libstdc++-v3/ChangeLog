@@ -1,3 +1,8 @@
+2017-11-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/bits/vector.tcc (vector::_M_realloc_insert): Cache old
+	values before the allocation.
+
 2017-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (shared_future): Add noexcept to copy constructor
