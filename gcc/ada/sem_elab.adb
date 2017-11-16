@@ -4242,7 +4242,7 @@ package body Sem_Elab is
       --  Determine whether list List contains at least one suitable construct
       --  for inclusion into an early call region.
 
-      procedure Include (N : Node_Id; Curr : in out Node_Id);
+      procedure Include (N : Node_Id; Curr : out Node_Id);
       pragma Inline (Include);
       --  Update the Curr and Start pointers to include arbitrary construct N
       --  in the early call region. This routine raises ECR_Found.
@@ -4556,7 +4556,7 @@ package body Sem_Elab is
       -- Include --
       -------------
 
-      procedure Include (N : Node_Id; Curr : in out Node_Id) is
+      procedure Include (N : Node_Id; Curr : out Node_Id) is
       begin
          Start := N;
 

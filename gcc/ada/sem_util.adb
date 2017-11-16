@@ -12890,8 +12890,9 @@ package body Sem_Util is
                                               E_Package,
                                               E_Procedure,
                                               E_Protected_Type,
-                                              E_Task_Type));
-
+                                              E_Task_Type)
+                          or else
+                        Is_Record_Type (Context_Id));
          return Scope_Within_Or_Same (Context_Id, Ref_Id);
       end if;
    end Is_CCT_Instance;

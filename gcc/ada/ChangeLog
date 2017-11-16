@@ -1,3 +1,26 @@
+2017-11-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_elab.adb (Include): Fix mode of parameter Curr to out.
+
+2017-11-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_CCT_Instance): Allow calls where
+	Context_Id denotes a record type.
+
+2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb (Check_SPARK_Primitive_Operation): Enable the check in
+	instantiations.
+
+2017-11-16  Doug Rupp  <rupp@adacore.com>
+
+	Initial gnat port to aarch64-wrs-vxworks7
+	* libgnarl/s-vxwork__aarch64.ads,
+	libgnat/system-vxworks7-aarch64-rtp-smp.ads,
+	libgnat/system-vxworks7-aarch64.ads: New files
+	* sigtramp-vxworks-target.inc (aarch64): New section.
+	* tracebak.c (USE_ARM_UNWINDING): Disable for ARMARCH8A.
+
 2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb (Include): Including a node which is also a compilation

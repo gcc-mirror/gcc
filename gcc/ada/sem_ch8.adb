@@ -2533,16 +2533,11 @@ package body Sem_Ch8 is
          Typ  : Entity_Id;
 
       begin
-         --  Nothing to do when the subprogram appears within an instance
-
-         if In_Instance then
-            return;
-
          --  Nothing to do when the subprogram is not subject to SPARK_Mode On
          --  because this check applies to SPARK code only.
 
-         elsif not (Present (Prag)
-                     and then Get_SPARK_Mode_From_Annotation (Prag) = On)
+         if not (Present (Prag)
+                  and then Get_SPARK_Mode_From_Annotation (Prag) = On)
          then
             return;
 
