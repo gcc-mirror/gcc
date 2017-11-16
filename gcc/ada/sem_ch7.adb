@@ -1850,6 +1850,11 @@ package body Sem_Ch7 is
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
 
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Id);
+
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;

@@ -4284,20 +4284,42 @@ package Einfo is
 --       inherited, rather than a local one.
 
 --    SPARK_Pragma (Node40)
---       Present in concurrent type, constant, entry, operator, [generic]
---       package, package body, [generic] subprogram, subprogram body and
---       variable entities. Points to the N_Pragma node that applies to the
---       initial declaration or body. This is either set by a local SPARK_Mode
---       pragma or is inherited from the context (from an outer scope for the
---       spec case or from the spec for the body case). In the case where it
---       is inherited the flag SPARK_Pragma_Inherited is set. Empty if no
---       SPARK_Mode pragma is applicable.
+--       Present in the following entities:
+--
+--         abstract states
+--         constants
+--         entries
+--         operators
+--         [generic] packages
+--         package bodies
+--         [generic] subprograms
+--         subprogram bodies
+--         variables
+--         types
+--
+--       Points to the N_Pragma node that applies to the initial declaration or
+--       body. This is either set by a local SPARK_Mode pragma or is inherited
+--       from the context (from an outer scope for the spec case or from the
+--       spec for the body case). In the case where the attribute is inherited,
+--       flag SPARK_Pragma_Inherited is set. Empty if no SPARK_Mode pragma is
+--       applicable.
 
 --    SPARK_Pragma_Inherited (Flag265)
---       Present in concurrent type, constant, entry, operator, [generic]
---       package, package body, [generic] subprogram, subprogram body and
---       variable entities. Set if the SPARK_Pragma attribute points to a
---       pragma that is inherited, rather than a local one.
+--       Present in the following entities:
+--
+--         abstract states
+--         constants
+--         entries
+--         operators
+--         [generic] packages
+--         package bodies
+--         [generic] subprograms
+--         subprogram bodies
+--         variables
+--         types
+--
+--       Set if the SPARK_Pragma attribute points to an inherited pragma rather
+--       than a local one.
 
 --    Spec_Entity (Node19)
 --       Defined in package body entities. Points to corresponding package
@@ -5617,6 +5639,7 @@ package Einfo is
    --    Derived_Type_Link                   (Node31)
    --    No_Tagged_Streams_Pragma            (Node32)
    --    Linker_Section_Pragma               (Node33)
+   --    SPARK_Pragma                        (Node40)
 
    --    Depends_On_Private                  (Flag14)
    --    Disable_Controlled                  (Flag253)
@@ -5687,6 +5710,7 @@ package Einfo is
    --    Partial_View_Has_Unknown_Discr      (Flag280)
    --    Size_Depends_On_Discriminant        (Flag177)
    --    Size_Known_At_Compile_Time          (Flag92)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Strict_Alignment                    (Flag145)  (base type only)
    --    Suppress_Initialization             (Flag105)
    --    Treat_As_Volatile                   (Flag41)
@@ -5718,9 +5742,11 @@ package Einfo is
    --    Body_References                     (Elist16)
    --    Non_Limited_View                    (Node19)
    --    Encapsulating_State                 (Node32)
+   --    SPARK_Pragma                        (Node40)
    --    From_Limited_With                   (Flag159)
    --    Has_Partial_Visible_Refinement      (Flag296)
    --    Has_Visible_Refinement              (Flag263)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Has_Non_Limited_View                (synth)
    --    Has_Non_Null_Visible_Refinement     (synth)
    --    Has_Null_Visible_Refinement         (synth)
@@ -6488,11 +6514,9 @@ package Einfo is
    --    Anonymous_Object                    (Node30)
    --    Contract                            (Node34)
    --    Entry_Max_Queue_Lengths_Array       (Node35)
-   --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
-   --    SPARK_Pragma_Inherited              (Flag265)
    --    Uses_Lock_Free                      (Flag188)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
@@ -6506,7 +6530,6 @@ package Einfo is
    --  E_Record_Subtype
    --    Direct_Primitive_Operations         (Elist10)
    --    Access_Disp_Table                   (Elist16)  (base type only)
-   --    Access_Disp_Table_Elab_Flag         (Node30)   (base type only)
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Corresponding_Concurrent_Type       (Node18)
@@ -6518,6 +6541,7 @@ package Einfo is
    --    Interfaces                          (Elist25)
    --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    Underlying_Record_View              (Node28)   (base type only)
+   --    Access_Disp_Table_Elab_Flag         (Node30)   (base type only)
    --    Component_Alignment                 (special)  (base type only)
    --    C_Pass_By_Copy                      (Flag125)  (base type only)
    --    Has_Dispatch_Table                  (Flag220)  (base tagged type only)
@@ -6640,7 +6664,6 @@ package Einfo is
    --    Relative_Deadline_Variable          (Node28)   (base type only)
    --    Anonymous_Object                    (Node30)
    --    Contract                            (Node34)
-   --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Delay_Cleanups                      (Flag114)
    --    Has_Master_Entity                   (Flag21)
@@ -6648,7 +6671,6 @@ package Einfo is
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
-   --    SPARK_Pragma_Inherited              (Flag265)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)

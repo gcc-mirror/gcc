@@ -93,6 +93,10 @@ package Sem_Elab is
       --  This value is used to indicate that none of the levels above are in
       --  effect.
 
+   subtype Any_Library_Level is Enclosing_Level_Kind range
+     Generic_Package_Spec ..
+     Package_Body;
+
    subtype Generic_Library_Level is Enclosing_Level_Kind range
      Generic_Package_Spec ..
      Generic_Package_Body;
@@ -101,8 +105,8 @@ package Sem_Elab is
      Package_Spec ..
      Package_Body;
 
-   subtype Any_Library_Level is Enclosing_Level_Kind range
-     Generic_Package_Spec ..
+   subtype Library_Or_Instantiation_Level is Enclosing_Level_Kind range
+     Instantiation ..
      Package_Body;
 
    function Find_Enclosing_Level (N : Node_Id) return Enclosing_Level_Kind;

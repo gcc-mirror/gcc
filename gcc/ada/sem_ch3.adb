@@ -61,6 +61,7 @@ with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dim;   use Sem_Dim;
 with Sem_Disp;  use Sem_Disp;
 with Sem_Dist;  use Sem_Dist;
+with Sem_Elab;  use Sem_Elab;
 with Sem_Elim;  use Sem_Elim;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Mech;  use Sem_Mech;
@@ -3120,6 +3121,11 @@ package body Sem_Ch3 is
       if not Analyzed (T) then
          Set_Analyzed (T);
 
+         --  Set the SPARK mode from the current context
+
+         Set_SPARK_Pragma           (T, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (T);
+
          case Nkind (Def) is
             when N_Access_To_Subprogram_Definition =>
                Access_Subprogram_Declaration (T, Def);
@@ -3166,6 +3172,11 @@ package body Sem_Ch3 is
                if Is_Type (T) and then Has_Predicates (T) then
                   Set_Has_Predicates (Def_Id);
                end if;
+
+               --  Save the scenario for examination by the ABE Processing
+               --  phase.
+
+               Record_Elaboration_Scenario (N);
 
             when N_Enumeration_Type_Definition =>
                Enumeration_Type_Declaration (T, Def);
@@ -3362,10 +3373,15 @@ package body Sem_Ch3 is
 
       T := Find_Type_Name (N);
 
-      Set_Ekind (T, E_Incomplete_Type);
-      Init_Size_Align (T);
-      Set_Is_First_Subtype (T, True);
-      Set_Etype (T, T);
+      Set_Ekind            (T, E_Incomplete_Type);
+      Set_Etype            (T, T);
+      Set_Is_First_Subtype (T);
+      Init_Size_Align      (T);
+
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (T);
 
       --  Ada 2005 (AI-326): Minimum decoration to give support to tagged
       --  incomplete types.
@@ -5064,6 +5080,11 @@ package body Sem_Ch3 is
       Set_First_Rep_Item   (T, First_Rep_Item (Parent_Type));
       Set_Is_First_Subtype (T);
       Make_Class_Wide_Type (T);
+
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (T);
 
       if Unknown_Discriminants_Present (N) then
          Set_Discriminant_Constraint (T, No_Elist);

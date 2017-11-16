@@ -12459,10 +12459,18 @@ package body Exp_Util is
 
          else
             Check_Restriction (No_Elaboration_Code, N);
+
             Asn :=
               Make_Assignment_Statement (Loc,
                 Name       => New_Occurrence_Of (Ent, Loc),
                 Expression => Make_Integer_Literal (Loc, Uint_1));
+
+            --  Mark the assignment statement as elaboration code. This allows
+            --  the early call region mechanism (see Sem_Elab) to properly
+            --  ignore such assignments even though they are non-preelaborable
+            --  code.
+
+            Set_Is_Elaboration_Code (Asn);
 
             if Nkind (Parent (N)) = N_Subunit then
                Insert_After (Corresponding_Stub (Parent (N)), Asn);

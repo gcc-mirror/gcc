@@ -1732,6 +1732,11 @@ package Sinfo is
    --    run-time ABE checks. This flag detemines whether the ABE Processing
    --    phase generates conditional ABE checks and guaranteed ABE failures.
 
+   --  Is_Elaboration_Code (Flag9-Sem)
+   --    Present in assignment statements. Set for an assignment which updates
+   --    the elaboration flag of a package or subprogram when the corresponding
+   --    body is successfully elaborated.
+
    --  Is_Entry_Barrier_Function (Flag8-Sem)
    --    This flag is set on N_Subprogram_Declaration and N_Subprogram_Body
    --    nodes which emulate the barrier function of a protected entry body.
@@ -4900,6 +4905,7 @@ package Sinfo is
       --  Backwards_OK (Flag6-Sem)
       --  No_Ctrl_Actions (Flag7-Sem)
       --  Has_Target_Names (Flag8-Sem)
+      --  Is_Elaboration_Code (Flag9-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  Componentwise_Assignment (Flag14-Sem)
       --  Suppress_Assignment_Checks (Flag18-Sem)
@@ -9704,6 +9710,9 @@ package Sinfo is
    function Is_Elaboration_Checks_OK_Node
      (N : Node_Id) return Boolean;    -- Flag1
 
+   function Is_Elaboration_Code
+     (N : Node_Id) return Boolean;    -- Flag9
+
    function Is_Elsif
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -10796,6 +10805,9 @@ package Sinfo is
    procedure Set_Is_Elaboration_Checks_OK_Node
      (N : Node_Id; Val : Boolean := True);    -- Flag1
 
+   procedure Set_Is_Elaboration_Code
+     (N : Node_Id; Val : Boolean := True);    -- Flag9
+
    procedure Set_Is_Elsif
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
@@ -11400,6 +11412,33 @@ package Sinfo is
       V8 : Node_Kind;
       V9 : Node_Kind) return Boolean;
 
+   function Nkind_In
+     (T   : Node_Kind;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (T   : Node_Kind;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind) return Boolean;
+
    pragma Inline (Nkind_In);
    --  Inline all above functions
 
@@ -11792,7 +11831,7 @@ package Sinfo is
         5 => False),  --  unused
 
      N_Delta_Aggregate =>
-       (1 => False,   --  Expressions (List1)
+       (1 => False,   --  Expressions (List1-Sem)
         2 => True,    --  Component_Associations (List2)
         3 => True,    --  Expression (Node3)
         4 => False,   --  Unused
@@ -12003,7 +12042,7 @@ package Sinfo is
 
      N_Quantified_Expression =>
        (1 => True,    --  Condition (Node1)
-        2 => True,    --  Iterator_Specification
+        2 => True,    --  Iterator_Specification (Node2)
         3 => False,   --  unused
         4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  Etype (Node5-Sem)
@@ -13300,6 +13339,7 @@ package Sinfo is
    pragma Inline (Is_Dynamic_Coextension);
    pragma Inline (Is_Effective_Use_Clause);
    pragma Inline (Is_Elaboration_Checks_OK_Node);
+   pragma Inline (Is_Elaboration_Code);
    pragma Inline (Is_Elsif);
    pragma Inline (Is_Entry_Barrier_Function);
    pragma Inline (Is_Expanded_Build_In_Place_Call);
@@ -13659,6 +13699,7 @@ package Sinfo is
    pragma Inline (Set_Is_Dynamic_Coextension);
    pragma Inline (Set_Is_Effective_Use_Clause);
    pragma Inline (Set_Is_Elaboration_Checks_OK_Node);
+   pragma Inline (Set_Is_Elaboration_Code);
    pragma Inline (Set_Is_Elsif);
    pragma Inline (Set_Is_Entry_Barrier_Function);
    pragma Inline (Set_Is_Expanded_Build_In_Place_Call);

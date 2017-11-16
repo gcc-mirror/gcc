@@ -1,3 +1,106 @@
+2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.ads (Nkind_In): Add 10 and 11 parameter versions.
+	* checks.adb (Install_Primitive_Elaboration_Check): Mark the setting of
+	the elaboration flag as elaboration code.
+	* einfo.adb (Contract): Update the comments.
+	(Ignore_SPARK_Mode_Pragmas): Update the comments.
+	(SPARK_Aux_Pragma): Update the comments.
+	(SPARK_Aux_Pragma_Inherited): Update the comments.
+	(SPARK_Pragma): Update the comments. The attribute now applies
+	to all types and abstract states.
+	(SPARK_Pragma_Inherited): Update the comments. The attribute now
+	applies to all types and abstract states.
+	(Set_Contract): Update the comments.
+	(Set_Ignore_SPARK_Mode_Pragmas): Update the comments.
+	(Set_SPARK_Aux_Pragma): Update the comments.
+	(Set_SPARK_Aux_Pragma_Inherited): Update the comments.
+	(Set_SPARK_Pragma): Update the comments. The attribute now applies to
+	all types and abstract states.
+	(Set_SPARK_Pragma_Inherited): Update the comments. The attribute now
+	applies to all types and abstract states.
+	(Write_Field40_Name): Add output for SPARK_Pragma when it appears on a
+	type and abstract states.
+	* einfo.ads: Update the documentation of attributes SPARK_Pragma and
+	SPARK_Pragma_Inherited.  Both of them now apply to all types and
+	abstract states.
+	* exp_util.adb (Set_Elaboration_Flag): Mark the setting of the
+	elaboration flag as elaboration code.
+	* sem_ch3.adb: Add with and use clauses for Sem_Elab.
+	(Analyze_Full_Type_Declaration): Set the SPARK_Mode of the type. Record
+	a derived type for later processing by the ABE mechanism.
+	(Analyze_Incomplete_Type_Decl): Set the SPARK_Mode of the type.
+	(Analyze_Private_Extension_Declaration): Set the SPARK_Mode of the
+	type.
+	* sem_ch7.adb (Analyze_Private_Type_Declaration): Set the SPARK_Mode of
+	the type.
+	* sem_elab.adb: Define the term "early call region".  Update the
+	terminology for "scenario" and "target".  Update the architecture of
+	the ABE mechanism.  Update the steps which must be taken when adding a
+	new scenario.  Update the section on debugging ABE issues.  Add new
+	hash tables Early_Call_Regions and Recorded_SPARK_Scenarios.  Add new
+	table SPARK_Scenarios.  Hash table Elaboration_Context is now
+	Elaboration_Statuses.  The majority of Process_xxx routines have been
+	updated to better reflect their role.
+	(Add_Unit): Reimplemented.
+	(Check_Elaboration_Constituent): New routine.
+	(Check_Elaboration_Scenarios): Verify previously recorded scenarios for
+	conditional ABE issues. Verify previously recorded SPARK scenarios.
+	(Check_SPARK_Derived_Type): New routine.
+	(Check_SPARK_Instantiation): New routine.
+	(Check_SPARK_Scenario): New routine.
+	(Check_SPARK_Refined_State_Pragma): New routine.
+	(Early_Call_Region): New routine.
+	(Elaboration_Status): New routine.
+	(Ensure_Prior_Elaboration): Add new formal parameter Prag_Nam. The
+	implicit Elabotate[_All] pragma is now specified via Prag_Nam.
+	(Find_Early_Call_Region): New routine.
+	(Info_Scenario): Add output for refinement constituents.
+	(Is_Recorded_SPARK_Scenario): New routine.
+	(Is_Suitable_SPARK_Derived_Type): New routine.
+	(Is_Suitable_SPARK_Instantiation): New routine.
+	(Is_Suitable_SPARK_Refined_State_Pragma): New routine.
+	(Is_Visited_Body): New routine.
+	(Kill_Elaboration_Scenario): Reimplemented.
+	(Output_Active_Scenarios): Add output for pragma Refined_State.
+	(Output_SPARK_Refined_State_Pragma): New routine.
+	(Process_Conditional_ABE_Call): Remove the use of -gnatd.v. The effect
+	is now achieved by different means.
+	(Process_Conditional_ABE_Call_SPARK): Verify that a call which precedes
+	the subprogram body appears within the early call region of the body.
+	Either ensure the prior elaboration of external subprograms or verify
+	that the context meets the suitable elaboration requirement.
+	(Process_Conditional_ABE_Instantiation_SPARK): New routine.
+	(Record_Elaboration_Scenario): Reimplement the portion which enforces
+	the level restrictions of the static model. Add support for SPARK
+	scenarios.
+	(Record_SPARK_Elaboration_Scenario): New routine.
+	(Reset_Visited_Bodies): New routine.
+	(Set_Early_Call_Region): New routine.
+	(Set_Elaboration_Status): New routine.
+	(Set_Is_Recorded_SPARK_Scenario): New routine.
+	(Update_Elaboration_Scenario): Reimplemented.
+	* sem_elab.ads: Add new subtype Library_Or_Instantiation_Level.
+	* sem_prag.adb (Analyze_Refined_State_In_Decl_Part): Save the pragma
+	for examination by the ABE Processing phase.
+	(Create_Abstract_State): Save the SPARK_Mode from the context.
+	* sem_util.adb (Is_Non_Preelaborable_Construct): New routine.
+	* sem_util.ads (Is_Non_Preelaborable_Construct): New routine.
+	* sinfo.adb (Is_Elaboration_Code): New routine.
+	(Set_Is_Elaboration_Code): New routine.
+	(Nkind_In): Add 10 and 11 parameter versions.
+	* sinfo.ads: Add new attribute Is_Elaboration_Code along with
+	occurrences in nodes.
+	(Is_Elaboration_Code): New routine along with pragma Inline.
+	(Set_Is_Elaboration_Code): New routine along with pragma Inline.
+	(Nkind_In): Add 10 and 11 parameter versions.
+
+2017-11-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem.adb (Analyze): Remove requirement that the original node of N be
+	an operator in the case that analysis on the node yields the relevant
+	operator - so prefer it instead.
+
 2017-11-16  Bob Duff  <duff@adacore.com>
 
 	* sem_ch6.adb (Create_Extra_Formals): The type of the BIP_Object_Access
