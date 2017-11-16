@@ -827,6 +827,12 @@ package body Debug is
    --       referenced by the generated C code. This debug flag restores the
    --       output of all the types.
 
+   --  d.7  Indicates (to gnat2scil) that CodePeer is being invoked as a
+   --       prover by the SPARK tools and that therefore gnat2scil should
+   --       avoid SCIL generation strategies which can introduce soundness
+   --       issues (e.g., assuming that a low bound of an array parameter
+   --       of an unconstrained subtype belongs to the index subtype).
+
    --  d.9  Enable build-in-place for function calls returning some nonlimited
    --       types.
 

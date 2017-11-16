@@ -4354,6 +4354,10 @@ package body Exp_Ch6 is
                               N_Procedure_Call_Statement,
                               N_Selected_Component,
                               N_Slice)
+           and then
+             (Ekind (Current_Scope) /= E_Loop
+               or else Nkind (Parent (N)) /= N_Function_Call
+               or else not Is_Build_In_Place_Function_Call (Parent (N)))
          then
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;

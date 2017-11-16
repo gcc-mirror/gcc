@@ -1,3 +1,13 @@
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* debug.adb: Update another comment to indicate gnat2scil's use of the
+	-gnatd.7 switch.
+
+2017-11-16  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Avoid creating a transient scope in
+	the case of nested build-in-place calls.
+
 2017-11-16  Joel Brobecker  <brobecker@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Document the switches
