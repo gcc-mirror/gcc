@@ -1,3 +1,20 @@
+2017-11-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst, sem_ch6.adb,
+	sem_elab.adb: Minor editorial corrections.
+	* gnat_ugn.texi: Regenerate.
+
+2017-11-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst (GNAT UGN): Add
+	gnatsymbolize documentation.
+	* gnat_ugn.texi: Regenerate.
+
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Replace all uses of
+	"Scope (Parent_Type)" with "Scope (Parent_Base)".
+
 2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* opt.ads: Elaboration warnings are now on by default. Add a comment

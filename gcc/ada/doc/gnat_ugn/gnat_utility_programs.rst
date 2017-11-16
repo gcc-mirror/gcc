@@ -22,6 +22,7 @@ This chapter describes a number of utility programs:
   * :ref:`The_GNAT_Pretty-Printer_gnatpp`
   * :ref:`The_Body_Stub_Generator_gnatstub`
   * :ref:`The_Unit_Test_Generator_gnattest`
+  * :ref:`The_Backtrace_Symbolizer_gnatsymbolize`
 
   It also describes how several of these tools can be used in conjunction
   with project files: :ref:`Using_Project_Files_with_GNAT_Tools`
@@ -5011,6 +5012,116 @@ Alternatively, you may run the script using the following command line:
   * use of some constructs, such as elaboration-control pragmas, Type_Invariant
     aspects, and complex variable initializations that use Subprogram'Access,
     may result in elaboration circularities in the generated harness.
+
+
+.. only:: PRO or GPL
+
+  .. _The_Backtrace_Symbolizer_gnatsymbolize:
+
+  Translating Code Addresses into Source Locations with ``gnatsymbolize``
+  =======================================================================
+
+  .. index:: ! gnatsymbolize
+
+  ``gnatsymbolize`` is a program which translates addresses into
+  their corresponding filename, line number, and function names.
+
+  Running ``gnatsymbolize``
+  -------------------------
+
+  ::
+
+       $ gnatsymbolize filename [ addresses ]
+
+  For instance, consider the following Ada program:
+
+     .. code-block:: ada
+
+        package Pck is
+           Global_Val : Integer := 0;
+           procedure Call_Me_First;
+        end Pck;
+
+        with GNAT.IO; use GNAT.IO;
+        with GNAT.Traceback; use GNAT.Traceback;
+        with GNAT.Debug_Utilities;
+        package body Pck is
+           procedure Call_Me_Third is
+              TB : Tracebacks_Array (1 .. 5);
+              TB_len : Natural;
+           begin
+              Global_Val := Global_Val + 1;
+
+              Call_Chain (TB, TB_Len);
+              for K in 1 .. TB_Len loop
+                 Put_Line (GNAT.Debug_Utilities.Image_C (TB (K)));
+              end loop;
+           end Call_Me_Third;
+
+           procedure Call_Me_Second is
+           begin
+              Call_Me_Third;
+           end Call_Me_Second;
+
+           procedure Call_Me_First is
+           begin
+              Call_Me_Second;
+           end Call_Me_First;
+        end Pck;
+        with Pck; use Pck;
+
+        procedure Foo is
+        begin
+           Global_Val := 123;
+           Call_Me_First;
+        end Foo;
+
+  This program, when built and run, prints a list of addresses which
+  correspond to the traceback when inside function ``Call_Me_Third``.
+  For instance, on x86_64 GNU/Linux:
+
+    ::
+
+       $ gnatmake -g -q foo.adb
+       $ ./foo
+       0x0000000000402561
+       0x00000000004025EF
+       0x00000000004025FB
+       0x0000000000402611
+       0x00000000004024C7
+
+  ``gnatsymbolize`` can be used to translate those addresses into
+  code locations as follow:
+
+    ::
+
+       $ gnatsymbolize foo 0x0000000000402561 0x00000000004025EF \
+           0x00000000004025FB 0x0000000000402611 0x00000000004024C7
+       Pck.Call_Me_Third at pck.adb:12
+       Pck.Call_Me_Second at pck.adb:20
+       Pck.Call_Me_First at pck.adb:25
+       Foo at foo.adb:6
+       Main at b~foo.adb:184
+
+  Requirements for Correct Operation
+  ----------------------------------
+
+  The translation is performed by reading the DWARF debugging
+  information produced by the compiler for each unit. All units
+  for which the translation is to be done must therefore be compiled
+  such that DWARF debugging information is produced. In most cases,
+  this is done by simply compiling with ``-g``.
+
+  This program provides a functionality similar to ``addr2line``.
+  It has fewer options to tailor its output, but has been designed
+  to require fewer of the DWARF sections to be present in the
+  executable. In particular, the following sections can be
+  stripped from the executable without impact to ``gnatsymbolize``'s
+  functionality:
+
+    * ``.debug_str``
+    * ``.debug_ranges``
+
 
 .. only:: PRO or GPL
 
