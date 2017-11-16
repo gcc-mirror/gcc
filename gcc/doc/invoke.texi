@@ -7322,6 +7322,7 @@ compilation time.
 -fipa-reference @gol
 -fmerge-constants @gol
 -fmove-loop-invariants @gol
+-fomit-frame-pointer @gol
 -freorder-blocks @gol
 -fshrink-wrap @gol
 -fshrink-wrap-separate @gol
@@ -7345,9 +7346,6 @@ compilation time.
 -ftree-pta @gol
 -ftree-ter @gol
 -funit-at-a-time}
-
-@option{-O} also turns on @option{-fomit-frame-pointer} on machines
-where doing so does not interfere with debugging.
 
 @item -O2
 @opindex O2
@@ -7500,29 +7498,18 @@ The default is @option{-ffp-contract=fast}.
 
 @item -fomit-frame-pointer
 @opindex fomit-frame-pointer
-Don't keep the frame pointer in a register for functions that
-don't need one.  This avoids the instructions to save, set up and
-restore frame pointers; it also makes an extra register available
-in many functions.  @strong{It also makes debugging impossible on
-some machines.}
+Omit the frame pointer in functions that don't need one.  This avoids the
+instructions to save, set up and restore the frame pointer; on many targets
+it also makes an extra register available.
 
-On some machines, such as the VAX, this flag has no effect, because
-the standard calling sequence automatically handles the frame pointer
-and nothing is saved by pretending it doesn't exist.  The
-machine-description macro @code{FRAME_POINTER_REQUIRED} controls
-whether a target machine supports this flag.  @xref{Registers,,Register
-Usage, gccint, GNU Compiler Collection (GCC) Internals}.
+On some targets this flag has no effect because the standard calling sequence
+always uses a frame pointer, so it cannot be omitted.
 
-The default setting (when not optimizing for
-size) for 32-bit GNU/Linux x86 and 32-bit Darwin x86 targets is
-@option{-fomit-frame-pointer}.  You can configure GCC with the
-@option{--enable-frame-pointer} configure option to change the default.
+Note that @option{-fno-omit-frame-pointer} doesn't guarantee the frame pointer
+is used in all functions.  Several targets always omit the frame pointer in
+leaf functions.
 
-Note that @option{-fno-omit-frame-pointer} doesn't force a new stack
-frame for all functions if it isn't otherwise needed, and hence doesn't
-guarantee a new frame pointer for all functions.
-
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled by default at @option{-O} and higher.
 
 @item -foptimize-sibling-calls
 @opindex foptimize-sibling-calls
@@ -16817,9 +16804,7 @@ Certain other options, such as @option{-mid-shared-library} and
 @opindex momit-leaf-frame-pointer
 Don't keep the frame pointer in a register for leaf functions.  This
 avoids the instructions to save, set up and restore frame pointers and
-makes an extra register available in leaf functions.  The option
-@option{-fomit-frame-pointer} removes the frame pointer for all functions,
-which might make debugging harder.
+makes an extra register available in leaf functions.
 
 @item -mspecld-anomaly
 @opindex mspecld-anomaly

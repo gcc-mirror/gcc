@@ -25,14 +25,4 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "common/common-target-def.h"
 
-/* Set default optimization options.  */
-static const struct default_options visium_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE visium_option_optimization_table
-
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

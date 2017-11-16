@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Implement overriding of the optimization options.  */
 static const struct default_options c6x_option_optimization_table[] =
   {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_frename_registers, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fmodulo_sched, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_freciprocal_math, NULL, 1 },
