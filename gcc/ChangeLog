@@ -1,5 +1,12 @@
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cfg.c (scale_bbs_frequencies_int,
+	cale_bbs_frequencies_gcov_type): Remove.
+	* cfg.h (scale_bbs_frequencies_int,
+	cale_bbs_frequencies_gcov_type): Remove.
+
+2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-loop-manip.c
 	(scale_dominated_blocks_in_loop): Update to profile counts.
 	(tree_transform_and_unroll_loop): Likewise.

@@ -917,48 +917,6 @@ update_bb_profile_for_threading (basic_block bb,
 }
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
-   by NUM/DEN, in int arithmetic.  May lose some accuracy.  */
-void
-scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
-{
-  int i;
-  if (num < 0)
-    num = 0;
-
-  /* Scale NUM and DEN to avoid overflows.  Frequencies are in order of
-     10^4, if we make DEN <= 10^3, we can afford to upscale by 100
-     and still safely fit in int during calculations.  */
-  if (den > 1000)
-    {
-      if (num > 1000000)
-	return;
-
-      num = RDIV (1000 * num, den);
-      den = 1000;
-    }
-  if (num > 100 * den)
-    return;
-
-  for (i = 0; i < nbbs; i++)
-    {
-      bbs[i]->count = bbs[i]->count.apply_scale (num, den);
-    }
-}
-
-/* Multiply all frequencies of basic blocks in array BBS of length NBBS
-   by NUM/DEN, in gcov_type arithmetic.  More accurate than previous
-   function but considerably slower.  */
-void
-scale_bbs_frequencies_gcov_type (basic_block *bbs, int nbbs, gcov_type num,
-				 gcov_type den)
-{
-  int i;
-
-  for (i = 0; i < nbbs; i++)
-    bbs[i]->count = bbs[i]->count.apply_scale (num, den);
-}
-
-/* Multiply all frequencies of basic blocks in array BBS of length NBBS
    by NUM/DEN, in profile_count arithmetic.  More accurate than previous
    function but considerably slower.  */
 void
