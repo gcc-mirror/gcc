@@ -1,4 +1,12 @@
 2017-11-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/constraints.md: Provide more constraints.
+	* config/nds32/nds32.h (enum reg_class, REG_CLASS_NAMES,
+	REG_CLASS_CONTENTS): Define R5_REG, R8_REG, and FRAME_POINTER_REG to
+	support constraints usage.
+
+2017-11-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/constants.md (UNSPEC_VOLATILE_FUNC_RETURN): Remove.
 
