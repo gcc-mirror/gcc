@@ -1,3 +1,21 @@
+2017-11-16  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* rs6000/power9.md (power9fpdiv): New automaton and cpu_unit defined
+	for it.
+	(DU_C2_3_power9): Correct reservation combinations.
+	(FP_DIV_power9, VEC_DIV_power9): New.
+	(power9-alu): Split out rotate/shift...
+	(power9-rot): ...to here, correct dispatch resource.
+	(power9-cracked-alu, power9-mul, power9-mul-compare): Correct dispatch
+	resource.
+	(power9-fp): Correct latency.
+	(power9-sdiv): Add div/sqrt resource.
+	(power9-ddiv): Correct latency, add div/sqrt resource.
+	(power9-sqrt, power9-dsqrt): Add div/sqrt resource.
+	(power9-vecfdiv, power9-vecdiv): Correct latency, add div/sqrt
+	resource.
+	(power9-qpdiv, power9-qpmul): Adjust resource usage.
+
 2017-11-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_builtin): Do not do the
