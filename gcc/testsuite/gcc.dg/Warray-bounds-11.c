@@ -57,19 +57,19 @@ struct h3b {
 
 void foo(int (*a)[3])
 {
-	(*a)[4] = 1;	/* { dg-warning "subscript is above array bound" } */
+	(*a)[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 	a[0][0] = 1;	// ok
 	a[1][0] = 1;	// ok
-	a[1][4] = 1;	/* { dg-warning "subscript is above array bound" } */
+	a[1][4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	int c[3] = { 0 };
 
-	c[4] = 1;	/* { dg-warning "subscript is above array bound" } */
+	c[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
-	e[4] = 1;	/* { dg-warning "subscript is above array bound" } */
+	e[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	struct f f;
-	f.f[4] = 1;	/* { dg-warning "subscript is above array bound" } */
+	f.f[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	struct h* h = malloc(sizeof(struct h) + 3 * sizeof(int));
 	struct h0* h0 = malloc(sizeof(struct h0) + 3 * sizeof(int));
@@ -78,15 +78,15 @@ void foo(int (*a)[3])
 
 	h->j[4] = 1;	// flexible array member
 	h0->j[4] = 1;	// zero-sized array extension
-	h1->j[4] = 1;	/* { dg-warning "subscript is above array bound" } */
-	h3->j[4] = 1;	/* { dg-warning "subscript is above array bound" } */
+	h1->j[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
+	h3->j[4] = 1;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	struct h0b* h0b = malloc(sizeof(struct h) + 3 * sizeof(int));
 	struct h1b* h1b = malloc(sizeof(struct h1b) + 3 * sizeof(int));
 	struct h3b* h3b = malloc(sizeof(struct h3b));
 //	h0b->j[4] = 1;
-	h1b->j[4] = 1;;	/* { dg-warning "subscript is above array bound" } */
-	h3b->j[4] = 1;;	/* { dg-warning "subscript is above array bound" } */
+	h1b->j[4] = 1;;	/* { dg-warning "subscript 4 is above array bound" } */
+	h3b->j[4] = 1;;	/* { dg-warning "subscript 4 is above array bound" } */
 
 	// make sure nothing gets optimized away
 	bar(*a);

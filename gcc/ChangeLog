@@ -1,3 +1,11 @@
+2017-11-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82588
+	PR tree-optimization/82583
+	* tree-vrp.c (check_array_ref): Handle flexible array members,
+	string literals, and inner indices.
+	(search_for_addr_array): Add detail to diagnostics.
+
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82836
