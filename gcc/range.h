@@ -249,6 +249,7 @@ class GTY((variable_size)) irange_storage
   { irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
 							  (size (precision)));
     stow->trailing_bounds.set_precision (precision);
+    stow->set_nonzero_bits (wi::shwi (-1, precision));
     return stow;
   }
   /* Like irange_storage::ggc_alloc (), but initialize the storage to
@@ -259,6 +260,7 @@ class GTY((variable_size)) irange_storage
     irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
 							  (size (precision)));
     stow->set_irange (ir);
+    stow->set_nonzero_bits (wi::shwi (-1, precision));
     return stow;
   }
   /* Extract the current range onto OUTPUT with a type of TYP.
