@@ -6242,9 +6242,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    view of the language.  */
 	 || (b->kind == sk_template_parms
 	     && (b->explicit_spec_p || scope == ts_global))
-	 /* Pushing into a class is ok for lambdas or when we want current  */
 	 || (b->kind == sk_class
-	     && scope != ts_lambda
 	     && (scope != ts_current
 		 /* We may be defining a new type in the initializer
 		    of a static member variable. We allow this when
@@ -6267,7 +6265,6 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	  tree cs = current_scope ();
 
 	  if (scope == ts_current
-	      || scope == ts_lambda
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
 	    context = cs;
 	  else if (cs && TYPE_P (cs))
@@ -6304,8 +6301,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (b->kind == sk_class)
 	{
-	  if (!TYPE_BEING_DEFINED (current_class_type)
-	      && scope != ts_lambda)
+	  if (!TYPE_BEING_DEFINED (current_class_type))
 	    return error_mark_node;
 
 	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
