@@ -1,4 +1,8 @@
 2017-11-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md (UNSPEC_VOLATILE_FUNC_RETURN): Remove.
+
+2017-11-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/nds32.opt: Add mext-perf, mext-perf2, mext-string.
