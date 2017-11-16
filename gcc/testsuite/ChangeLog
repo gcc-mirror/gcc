@@ -1,3 +1,12 @@
+2017-11-16  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-gf2p8mulb-2.c: New runtime tests.
+	* gcc.target/i386/avx512vl-gf2p8mulb-2.c: Ditto.
+	* gcc.target/i386/gfni-1.c: Add tests for GF2P8MUL.
+	* gcc.target/i386/gfni-2.c: Ditto.
+	* gcc.target/i386/gfni-3.c: Ditto.
+	* gcc.target/i386/gfni-4.c: Ditto.
+
 2017-11-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/swaps-p8-26.c: Modify expected code

@@ -34,6 +34,14 @@
 #define __DISABLE_GFNI__
 #endif /* __GFNI__ */
 
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_gf2p8mul_epi8 (__m128i __A, __m128i __B)
+{
+  return (__m128i) __builtin_ia32_vgf2p8mulb_v16qi((__v16qi) __A,
+						   (__v16qi) __B);
+}
+
 #ifdef __OPTIMIZE__
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -70,6 +78,14 @@ _mm_gf2p8affine_epi64_epi8 (__m128i __A, __m128i __B, const int __C)
 #pragma GCC target("gfni,avx")
 #define __DISABLE_GFNIAVX__
 #endif /* __GFNIAVX__ */
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_gf2p8mul_epi8 (__m256i __A, __m256i __B)
+{
+  return (__m256i) __builtin_ia32_vgf2p8mulb_v32qi ((__v32qi) __A,
+						    (__v32qi) __B);
+}
 
 #ifdef __OPTIMIZE__
 extern __inline __m256i
@@ -108,6 +124,23 @@ _mm256_gf2p8affine_epi64_epi8 (__m256i __A, __m256i __B, const int __C)
 #pragma GCC target("gfni,avx512vl")
 #define __DISABLE_GFNIAVX512VL__
 #endif /* __GFNIAVX512VL__ */
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_gf2p8mul_epi8 (__m128i __A, __mmask16 __B, __m128i __C, __m128i __D)
+{
+  return (__m128i) __builtin_ia32_vgf2p8mulb_v16qi_mask ((__v16qi) __C,
+							 (__v16qi) __D,
+							 (__v16qi)__A, __B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_gf2p8mul_epi8 (__mmask16 __A, __m128i __B, __m128i __C)
+{
+  return (__m128i) __builtin_ia32_vgf2p8mulb_v16qi_mask ((__v16qi) __B,
+			(__v16qi) __C, (__v16qi) _mm_setzero_si128 (), __A);
+}
 
 #ifdef __OPTIMIZE__
 extern __inline __m128i
@@ -180,6 +213,24 @@ _mm_maskz_gf2p8affine_epi64_epi8 (__mmask16 __A, __m128i __B, __m128i __C,
 #define __DISABLE_GFNIAVX512VLBW__
 #endif /* __GFNIAVX512VLBW__ */
 
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_gf2p8mul_epi8 (__m256i __A, __mmask32 __B, __m256i __C,
+			   __m256i __D)
+{
+  return (__m256i) __builtin_ia32_vgf2p8mulb_v32qi_mask ((__v32qi) __C,
+							 (__v32qi) __D,
+							 (__v32qi)__A, __B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_gf2p8mul_epi8 (__mmask32 __A, __m256i __B, __m256i __C)
+{
+  return (__m256i) __builtin_ia32_vgf2p8mulb_v32qi_mask ((__v32qi) __B,
+			(__v32qi) __C, (__v32qi) _mm256_setzero_si256 (), __A);
+}
+
 #ifdef __OPTIMIZE__
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -251,6 +302,30 @@ _mm256_maskz_gf2p8affine_epi64_epi8 (__mmask32 __A, __m256i __B,
 #pragma GCC target("gfni,avx512f,avx512bw")
 #define __DISABLE_GFNIAVX512FBW__
 #endif /* __GFNIAVX512FBW__ */
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_gf2p8mul_epi8 (__m512i __A, __mmask64 __B, __m512i __C,
+			   __m512i __D)
+{
+  return (__m512i) __builtin_ia32_vgf2p8mulb_v64qi_mask ((__v64qi) __C,
+					(__v64qi) __D, (__v64qi)__A, __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_gf2p8mul_epi8 (__mmask64 __A, __m512i __B, __m512i __C)
+{
+  return (__m512i) __builtin_ia32_vgf2p8mulb_v64qi_mask ((__v64qi) __B,
+			(__v64qi) __C, (__v64qi) _mm512_setzero_si512 (), __A);
+}
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_gf2p8mul_epi8 (__m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_vgf2p8mulb_v64qi ((__v64qi) __A,
+						    (__v64qi) __B);
+}
 
 #ifdef __OPTIMIZE__
 extern __inline __m512i

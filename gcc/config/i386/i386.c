@@ -33453,6 +33453,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V1DI_FTYPE_V2SI_V2SI:
     case V32QI_FTYPE_V16HI_V16HI:
     case V16HI_FTYPE_V8SI_V8SI:
+    case V64QI_FTYPE_V64QI_V64QI:
     case V32QI_FTYPE_V32QI_V32QI:
     case V16HI_FTYPE_V32QI_V32QI:
     case V16HI_FTYPE_V16HI_V16HI:

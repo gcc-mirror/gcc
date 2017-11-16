@@ -1,3 +1,19 @@
+2017-11-16  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/gfniintrin.h (_mm_gf2p8mul_epi8, _mm256_gf2p8mul_epi8,
+	_mm_mask_gf2p8mul_epi8, _mm_maskz_gf2p8mul_epi8,
+	_mm256_mask_gf2p8mul_epi8, _mm256_maskz_gf2p8mul_epi8,
+	_mm512_mask_gf2p8mul_epi8, _mm512_maskz_gf2p8mul_epi8,
+	_mm512_gf2p8mul_epi8): New intrinsics.
+	* config/i386/i386-builtin-types.def
+	(V64QI_FTYPE_V64QI_V64QI): New type.
+	* config/i386/i386-builtin.def (__builtin_ia32_vgf2p8mulb_v64qi,
+	__builtin_ia32_vgf2p8mulb_v64qi_mask, __builtin_ia32_vgf2p8mulb_v32qi,
+	__builtin_ia32_vgf2p8mulb_v32qi_mask, __builtin_ia32_vgf2p8mulb_v16qi,
+	__builtin_ia32_vgf2p8mulb_v16qi_mask): New builtins.
+	* config/i386/sse.md (vgf2p8mulb_*): New pattern.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle new type.
+
 2017-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (x86_print_call_or_nop): Emit 5 byte nop

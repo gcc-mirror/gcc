@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mavx512bw" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -616,8 +616,6 @@
 #define __builtin_ia32_vgf2p8affineqb_v16qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v16qi_mask(A, B, 1, D, E) 
 #define __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, 1, D, E) 
 #define __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, 1, D, E) 
-
-
 
 #include <wmmintrin.h>
 #include <immintrin.h>
