@@ -309,7 +309,7 @@ __gnat_backtrace (void **array,
 #define USE_GCC_UNWINDER
 #define PC_ADJUST -2
 
-#if (_WRS_VXWORKS_MAJOR >= 7)
+#if ((_WRS_VXWORKS_MAJOR >= 7) && (_VX_CPU != ARMARCH8A))
 #define USING_ARM_UNWINDING 1
 #endif
 
