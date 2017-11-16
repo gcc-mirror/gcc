@@ -383,7 +383,6 @@ struct lower_emutls_data
   struct cgraph_node *builtin_node;
   tree builtin_decl;
   basic_block bb;
-  int bb_freq;
   location_t loc;
   gimple_seq seq;
 };
@@ -622,10 +621,6 @@ lower_emutls_function_body (struct cgraph_node *node)
 	 PHI argument for that edge.  */
       if (!gimple_seq_empty_p (phi_nodes (d.bb)))
 	{
-	  /* The calls will be inserted on the edges, and the frequencies
-	     will be computed during the commit process.  */
-	  d.bb_freq = 0;
-
 	  nedge = EDGE_COUNT (d.bb->preds);
 	  for (i = 0; i < nedge; ++i)
 	    {
@@ -649,8 +644,6 @@ lower_emutls_function_body (struct cgraph_node *node)
 		}
 	    }
 	}
-
-      d.bb_freq = compute_call_stmt_bb_frequency (current_function_decl, d.bb);
 
       /* We can re-use any SSA_NAME created during this basic block.  */
       clear_access_vars ();
