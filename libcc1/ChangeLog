@@ -1,3 +1,15 @@
+2017-11-16  Sergio Durigan Junior  <sergiodj@redhat.com>
+	    Pedro Alves  <palves@redhat.com>
+
+	* Makefile.am: Remove references to c-compiler-name.h and
+	cp-compiler-name.h
+	* Makefile.in: Regenerate.
+	* compiler-name.hh: New file.
+	* libcc1.cc: Don't include c-compiler-name.h.  Include
+	compiler-name.hh.
+	* libcp1.cc: Don't include cp-compiler-name.h.  Include
+	compiler-name.hh.
+
 2017-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_decl): Use
