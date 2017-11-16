@@ -51,7 +51,8 @@ extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
 extern void lhd_print_error_function (diagnostic_context *,
 				      const char *, struct diagnostic_info *);
-extern void lhd_set_decl_assembler_name (tree);
+extern void lhd_set_decl_assembler_name (tree decl);
+extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);
 extern tree lhd_type_for_size (unsigned precision, int unsignedp);
 extern void lhd_incomplete_type_error (location_t, const_tree, const_tree);
@@ -107,6 +108,7 @@ extern int lhd_type_dwarf_attribute (const_tree, int);
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL lhd_do_nothing_t
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
+#define LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME lhd_overwrite_decl_assembler_name
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_DECL		lhd_print_tree_nothing
@@ -310,6 +312,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_FINISH_INCOMPLETE_DECL, \
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
+  LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \
   LANG_HOOKS_PRINT_DECL, \

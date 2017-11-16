@@ -1,5 +1,9 @@
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/82836
+	PR c++/82737
+	* g++.dg/pr82836.C: New.
+
 	PR c++81060
 	* g++.dg/cpp0x/lambda/lambda-template13.C: Avoid undefined
 	template using local type error.

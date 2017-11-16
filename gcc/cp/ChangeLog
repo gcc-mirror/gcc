@@ -1,5 +1,13 @@
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/82836
+	PR c++/82737
+	* cp-objcp-common.h (LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME):
+	Override.
+	* cp-tree.h (overwrite_mangling): Declare.
+	* decl2.c (struct mangled_decl_hash): Entries are deletable.
+	(overwrite_mangling): New.
+
 	PR c++/81060
 	* decl.c (xref_tag_1): Push lambda into current scope.
 	* name-lookup.c (do_pushtag): Don't deal with ts_lambda here.
