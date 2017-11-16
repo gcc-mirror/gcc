@@ -29,7 +29,6 @@
 #include "flags.h"
 
 static const struct default_options tilegx_option_optimization_table[] = {
-  {OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1},
   /* Scheduling and bundling are super important for our architecture, so
      enable them at -O1. */
   {OPT_LEVELS_1_PLUS, OPT_fschedule_insns, NULL, 1},

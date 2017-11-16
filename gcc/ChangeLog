@@ -1,3 +1,44 @@
+2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* opts.c (default_options_table): Add OPT_fomit_frame_pointer entry.
+	* common/config/alpha/alpha-common.c (TARGET_OPTION_OPTIMIZATION_TABLE):
+	Remove OPT_fomit_frame_pointer entry.
+	* common/config/arc/arc-common.c: Likewise.
+	* common/config/arm/arm-common.c: Likewise.
+	* common/config/avr/avr-common.c: Likewise.
+	* common/config/c6x/c6x-common.c: Likewise.
+	* common/config/cr16/cr16-common.c: Likewise.
+	* common/config/cris/cris-common.c: Likewise.
+	* common/config/epiphany/epiphany-common.c: Likewise.
+	* common/config/fr30/fr30-common.c: Likewise.
+	* common/config/frv/frv-common.c: Likewise.
+	* common/config/ia64/ia64-common.c: Likewise.
+	* common/config/iq2000/iq2000-common.c: Likewise.
+	* common/config/lm32/lm32-common.c: Likewise.
+	* common/config/m32r/m32r-common.c: Likewise.
+	* common/config/mcore/mcore-common.c: Likewise.
+	* common/config/microblaze/microblaze-common.c: Likewise.
+	* common/config/mips/mips-common.c: Likewise.
+	* common/config/mmix/mmix-common.c: Likewise.
+	* common/config/mn10300/mn10300-common.c: Likewise.
+	* common/config/nios2/nios2-common.c: Likewise.
+	* common/config/pa/pa-common.c: Likewise.
+	* common/config/pdp11/pdp11-common.c: Likewise.
+	* common/config/powerpcspe/powerpcspe-common.c: Likewise.
+	* common/config/riscv/riscv-common.c: Likewise.
+	* common/config/rs6000/rs6000-common.c: Likewise.
+	* common/config/rx/rx-common.c: Likewise.
+	* common/config/s390/s390-common.c: Likewise.
+	* common/config/sh/sh-common.c: Likewise.
+	* common/config/sparc/sparc-common.c: Likewise.
+	* common/config/tilegx/tilegx-common.c: Likewise.
+	* common/config/tilepro/tilepro-common.c: Likewise.
+	* common/config/v850/v850-common.c: Likewise.
+	* common/config/visium/visium-common.c: Likewise.
+	* common/config/xstormy16/xstormy16-common.c: Likewise.
+	* common/config/xtensa/xtensa-common.c: Likewise.
+	* invoke.texi (-fomit-frame-pointer): Update documentation.
+
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-cfg.c (gimple_find_sub_bbs): Do not compute freq.
