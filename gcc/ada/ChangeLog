@@ -1,3 +1,7 @@
+2017-11-16  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/Makefile.in: Merge Aarch64 and ARM "ifeq" blocks.
+
 2017-11-16  Steve Baird  <baird@adacore.com>
 
 	* debug.adb: Update another comment to indicate gnat2scil's use of the
