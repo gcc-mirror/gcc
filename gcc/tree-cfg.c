@@ -1050,7 +1050,6 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
     {
       struct omp_region *cur_region = NULL;
       profile_count cnt = profile_count::zero ();
-      int freq = 0;
       bool all = true;
 
       int cur_omp_region_idx = 0;
@@ -1066,7 +1065,6 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
 	    cnt += e->count ();
 	  else
 	    all = false;
-	  freq += EDGE_FREQUENCY (e);
 	}
       tree_guess_outgoing_edge_probabilities (bb);
       if (all || profile_status_for_fn (cfun) == PROFILE_READ)
