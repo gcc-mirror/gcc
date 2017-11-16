@@ -553,9 +553,13 @@ package Opt is
    --  GNAT
    --  Set to True to output info messages for static elabmodel (-gnatel)
 
-   Elab_Warnings : Boolean := False;
+   Elab_Warnings : Boolean := True;
    --  GNAT
-   --  Set to True to generate elaboration warnings (-gnatwl)
+   --  Set to True to generate elaboration warnings (-gnatwl). The warnings are
+   --  enabled by default because they carry the same importance as errors. The
+   --  compiler cannot emit actual errors because elaboration diagnostics need
+   --  dataflow analysis, which is not available. This behavior parallels that
+   --  of the old ABE mechanism.
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT

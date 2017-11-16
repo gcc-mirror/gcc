@@ -17827,10 +17827,11 @@ package body Sem_Util is
    ---------------------------------
 
    procedure Mark_Elaboration_Attributes
-     (N_Id   : Node_Or_Entity_Id;
-      Checks : Boolean := False;
-      Level  : Boolean := False;
-      Modes  : Boolean := False)
+     (N_Id     : Node_Or_Entity_Id;
+      Checks   : Boolean := False;
+      Level    : Boolean := False;
+      Modes    : Boolean := False;
+      Warnings : Boolean := False)
    is
       function Elaboration_Checks_OK
         (Target_Id  : Entity_Id;
@@ -18012,6 +18013,13 @@ package body Sem_Util is
             if SPARK_Mode = On then
                Set_Is_SPARK_Mode_On_Node (N);
             end if;
+         end if;
+
+         --  Mark the status of elaboration warnings in effect. Do not reset
+         --  the status in case the node is reanalyzed with warnings off.
+
+         if Warnings and then not Is_Elaboration_Warnings_OK_Node (N) then
+            Set_Is_Elaboration_Warnings_OK_Node (N, Elab_Warnings);
          end if;
       end Mark_Elaboration_Attributes_Node;
 

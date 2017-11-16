@@ -1,3 +1,61 @@
+2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* opt.ads: Elaboration warnings are now on by default. Add a comment
+	explaining why this is needed.
+	* sem_ch9.adb (Analyze_Requeue): Preserve the status of elaboration
+	warnings.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Preserve the status of
+	elaboration warnings.
+	(Analyze_Subprogram_Instantiation): Preserve the status of elaboration
+	warnings.
+	* sem_elab.adb: Update the structure of Call_Attributes and
+	Instantiation_Attributes.
+	(Build_Call_Marker): Propagate the status of elaboration warnings from
+	the call to the marker.
+	(Extract_Call_Attributes): Extract the status of elaboration warnings.
+	(Extract_Instantiation_Attributes): Extract the status of elaboration
+	warnings.
+	(Process_Conditional_ABE_Activation_Impl): Elaboration diagnostics are
+	now dependent on the status of elaboration warnings.
+	(Process_Conditional_ABE_Call_Ada): Elaboration diagnostics are now
+	dependent on the status of elaboration warnings.
+	(Process_Conditional_ABE_Instantiation_Ada): Elaboration diagnostics
+	are now dependent on the status of elaboration warnings.
+	(Process_Guaranteed_ABE_Activation_Impl): Remove pragma Unreferenced
+	for formal Call_Attrs. Elaboration diagnostics are now dependent on the
+	status of elaboration warnings.
+	(Process_Guaranteed_ABE_Call): Elaboration diagnostics are now
+	dependent on the status of elaboration warnings.
+	(Process_Guaranteed_ABE_Instantiation): Elaboration diagnostics are now
+	dependent on the status of elaboration warnings.
+	* sem_prag.adb (Analyze_Pragma): Remove the unjustified warning
+	concerning pragma Elaborate.
+	* sem_res.adb (Resolve_Call): Preserve the status of elaboration
+	warnings.
+	(Resolve_Entry_Call): Propagate flag Is_Elaboration_Warnings_OK_Node
+	from the procedure call to the entry call.
+	* sem_util.adb (Mark_Elaboration_Attributes): Add formal parameter
+	Warnings.
+	(Mark_Elaboration_Attributes_Node): Preserve the status of elaboration
+	warnings
+	* sem_util.ads (Mark_Elaboration_Attributes): Add formal parameter
+	Warnings. Update the comment on usage.
+	* sinfo.adb (Is_Dispatching_Call): Update to use Flag6.
+	(Is_Elaboration_Warnings_OK_Node): New routine.
+	(Set_Is_Dispatching_Call): Update to use Flag6.
+	(Set_Is_Elaboration_Warnings_OK_Node): New routine.
+	* sinfo.ads: Attribute Is_Dispatching_Call now uses Flag6. Add new
+	attribute Is_Elaboration_Warnings_OK_Node along with occurrences
+	in nodes.
+	(Is_Elaboration_Warnings_OK_Node): New routine along with pragma
+	Inline.
+	(Set_Is_Elaboration_Warnings_OK_Node): New routine along with pragma
+	Inline.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update various
+	sections to indicate how to suppress elaboration warnings.  Document
+	switches -gnatwl and -gnatwL.
+	* gnat_ugn.texi: Regenerate.
+
 2017-11-16  Sylvain Dailler  <dailler@adacore.com>
 
 	* sem_util.adb (Get_Enum_Lit_From_Pos): Add a condition for Pos
