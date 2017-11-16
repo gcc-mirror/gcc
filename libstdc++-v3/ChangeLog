@@ -1,3 +1,7 @@
+2017-11-15  Jason Merrill  <jason@redhat.com>
+
+	* include/std/numeric (gcd): Fix typo.
+
 2017-11-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix gcd breakage.
