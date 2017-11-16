@@ -1,3 +1,10 @@
+2017-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-std=c17): Refer to 2018 expected publication
+	date of C17.
+	(-std=c18, -std=iso9899:2018, -std=gnu18): Document option
+	aliases.
+
 2017-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR bootstrap/82856
