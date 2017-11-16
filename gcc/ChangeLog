@@ -1,5 +1,19 @@
 2017-11-16  Julia Koval  <julia.koval@intel.com>
 
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VBMI2_SET,
+	OPTION_MASK_ISA_AVX512VBMI2_UNSET): New.
+	(ix86_handle_option): Handle -mavx512vbmi2.
+	* config/i386/cpuid.h: Add bit_AVX512VBMI2.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle new bit.
+	* config/i386/i386-c.c (__AVX512VBMI2__): New.
+	* config/i386/i386.c (ix86_target_string): Handle -mavx512vbmi2.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	* config/i386/i386.h (TARGET_AVX512VBMI2, TARGET_AVX512VBMI2_P): New.
+	* config/i386/i386.opt (mavx512vbmi2): New option.
+	* doc/invoke.texi: Add new option.
+
+[2017-11-16  Julia Koval  <julia.koval@intel.com>
+
 	* config/i386/gfniintrin.h (_mm_gf2p8mul_epi8, _mm256_gf2p8mul_epi8,
 	_mm_mask_gf2p8mul_epi8, _mm_maskz_gf2p8mul_epi8,
 	_mm256_mask_gf2p8mul_epi8, _mm256_maskz_gf2p8mul_epi8,

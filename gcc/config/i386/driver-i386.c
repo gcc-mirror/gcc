@@ -415,7 +415,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_avx512vbmi = 0, has_avx512ifma = 0, has_clwb = 0;
   unsigned int has_mwaitx = 0, has_clzero = 0, has_pku = 0, has_rdpid = 0;
   unsigned int has_avx5124fmaps = 0, has_avx5124vnniw = 0;
-  unsigned int has_gfni = 0;
+  unsigned int has_gfni = 0, has_avx512vbmi2 = 0;
   unsigned int has_ibt = 0, has_shstk = 0;
 
   bool arch;
@@ -505,6 +505,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_prefetchwt1 = ecx & bit_PREFETCHWT1;
       has_avx512vbmi = ecx & bit_AVX512VBMI;
       has_pku = ecx & bit_OSPKE;
+      has_avx512vbmi2 = ecx & bit_AVX512VBMI2;
       has_rdpid = ecx & bit_RDPID;
       has_gfni = ecx & bit_GFNI;
 
@@ -1048,6 +1049,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx512ifma = has_avx512ifma ? " -mavx512ifma" : " -mno-avx512ifma";
       const char *avx512vbmi = has_avx512vbmi ? " -mavx512vbmi" : " -mno-avx512vbmi";
       const char *avx5124vnniw = has_avx5124vnniw ? " -mavx5124vnniw" : " -mno-avx5124vnniw";
+      const char *avx512vbmi2 = has_avx512vbmi2 ? " -mavx512vbmi2" : " -mno-avx512vbmi2";
       const char *avx5124fmaps = has_avx5124fmaps ? " -mavx5124fmaps" : " -mno-avx5124fmaps";
       const char *clwb = has_clwb ? " -mclwb" : " -mno-clwb";
       const char *mwaitx  = has_mwaitx  ? " -mmwaitx"  : " -mno-mwaitx"; 
@@ -1066,7 +1068,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
 			xsavec, xsaves, avx512dq, avx512bw, avx512vl,
 			avx512ifma, avx512vbmi, avx5124fmaps, avx5124vnniw,
-			clwb, mwaitx, clzero, pku, rdpid, gfni, ibt, shstk, NULL);
+			clwb, mwaitx, clzero, pku, rdpid, gfni, ibt, shstk,
+			avx512vbmi2, NULL);
     }
 
 done:
