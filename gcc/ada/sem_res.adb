@@ -5156,32 +5156,14 @@ package body Sem_Res is
                --  of coextensions properly so let's at least warn the user
                --  about it.
 
-               if Is_Controlled_Active (Desig_T) then
-                  if Is_Controlled_Active
-                       (Defining_Identifier
-                         (Parent (Associated_Node_For_Itype (Typ))))
-                  then
-                     Error_Msg_N
-                       ("??coextension will not be finalized when its "
-                        & "associated owner is finalized", N);
-                  else
-                     Error_Msg_N
-                       ("??coextension will not be finalized when its "
-                        & "associated owner is deallocated", N);
-                  end if;
+               if Is_Controlled (Desig_T) then
+                  Error_Msg_N
+                    ("??coextension will not be finalized when its "
+                     & "associated owner is deallocated or finalized", N);
                else
-                  if Is_Controlled_Active
-                       (Defining_Identifier
-                          (Parent (Associated_Node_For_Itype (Typ))))
-                  then
-                     Error_Msg_N
-                       ("??coextension will not be deallocated when "
-                        & "its associated owner is finalized", N);
-                  else
-                     Error_Msg_N
-                       ("??coextension will not be deallocated when "
-                        & "its associated owner is deallocated", N);
-                  end if;
+                  Error_Msg_N
+                    ("??coextension will not be deallocated when its "
+                     & "associated owner is deallocated", N);
                end if;
             end if;
 
@@ -5200,8 +5182,10 @@ package body Sem_Res is
               and then Is_Controlled_Active (Desig_T)
             then
                Error_Msg_N
-                 ("??anonymous access-to-controlled object will be finalized "
-                  & "when its enclosing unit goes out of scope", N);
+                 ("??object designated by anonymous access object might not "
+                  & "be finalized until its enclosing library unit goes out "
+                  & "of scope", N);
+               Error_Msg_N ("\use named access type instead", N);
             end if;
          end if;
       end if;
