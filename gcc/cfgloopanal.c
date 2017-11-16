@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "graphds.h"
 #include "params.h"
+#include "sreal.h"
 
 struct target_cfgloop default_target_cfgloop;
 #if SWITCHABLE_TARGET
@@ -199,7 +200,8 @@ int
 average_num_loop_insns (const struct loop *loop)
 {
   basic_block *bbs, bb;
-  unsigned i, binsns, ninsns, ratio;
+  unsigned i, binsns;
+  sreal ninsns;
   rtx_insn *insn;
 
   ninsns = 0;
@@ -213,19 +215,18 @@ average_num_loop_insns (const struct loop *loop)
 	if (NONDEBUG_INSN_P (insn))
 	  binsns++;
 
-      ratio = loop->header->count.to_frequency (cfun) == 0
-	      ? BB_FREQ_MAX
-	      : (bb->count.to_frequency (cfun) * BB_FREQ_MAX)
-		 / loop->header->count.to_frequency (cfun);
-      ninsns += binsns * ratio;
+      ninsns += (sreal)binsns * bb->count.to_sreal_scale (loop->header->count);
+      /* Avoid overflows.   */
+      if (ninsns > 1000000)
+	return 100000;
     }
   free (bbs);
 
-  ninsns /= BB_FREQ_MAX;
-  if (!ninsns)
-    ninsns = 1; /* To avoid division by zero.  */
+  int64_t ret = ninsns.to_int ();
+  if (!ret)
+    ret = 1; /* To avoid division by zero.  */
 
-  return ninsns;
+  return ret;
 }
 
 /* Returns expected number of iterations of LOOP, according to
