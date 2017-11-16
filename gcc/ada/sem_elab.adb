@@ -775,7 +775,7 @@ package body Sem_Elab is
    --  Obtain the hash value of entity Key
 
    Early_Call_Regions_In_Use : Boolean := False;
-   --  This flag flag determines whether table Early_Call_Regions contains at
+   --  This flag determines whether table Early_Call_Regions contains at least
    --  least one key/value pair.
 
    Early_Call_Regions_No_Element : constant Node_Id := Empty;
@@ -953,7 +953,7 @@ package body Sem_Elab is
 
    procedure Check_SPARK_Scenario (N : Node_Id);
    pragma Inline (Check_SPARK_Scenario);
-   --  Top level dispatcher for verifying SPARK scenarios which are not always
+   --  Top-level dispatcher for verifying SPARK scenarios which are not always
    --  executable during elaboration but still need elaboration-related checks.
 
    procedure Check_SPARK_Refined_State_Pragma (N : Node_Id);
@@ -1463,7 +1463,7 @@ package body Sem_Elab is
       --  Perform ABE checks and diagnostics for task activation call Call
       --  which activates task Obj_Id. Call_Attrs are the attributes of the
       --  activation call. Task_Attrs are the attributes of the task type.
-      --  The flags should be set when the processing was initated as follows:
+      --  The flags should be set when the processing was initiated as follows:
       --
       --    In_Init_Cond   - initial condition procedure
       --    In_Partial_Fin - partial finalization procedure
@@ -2274,7 +2274,7 @@ package body Sem_Elab is
       end loop;
 
       --  Examine each SPARK scenario saved during the Recording phase which
-      --  isnot necessarily executable during elaboration, but still requires
+      --  is not necessarily executable during elaboration, but still requires
       --  elaboration-related checks.
 
       for Index in SPARK_Scenarios.First .. SPARK_Scenarios.Last loop
@@ -2602,8 +2602,8 @@ package body Sem_Elab is
          --  The suggestion applies only when the subprogram body resides in a
          --  compilation package body, and a pragma Elaborate_Body would allow
          --  for the node to appear in the early call region of the subprogram
-         --  body. This implies that all code from the subprogram body upto the
-         --  node is preelaborable.
+         --  body. This implies that all code from the subprogram body up to
+         --  the node is preelaborable.
 
          if Nkind (Unt) = N_Package_Body then
 
@@ -2618,7 +2618,7 @@ package body Sem_Elab is
                  Assume_Elab_Body => True,
                  Skip_Memoization => True);
 
-            --  If the node appears within the early call region assuming that
+            --  If the node appears within the early call region, assuming that
             --  the package spec carries pragma Elaborate_Body, then it is safe
             --  to suggest the pragma.
 

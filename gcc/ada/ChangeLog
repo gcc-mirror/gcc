@@ -1,3 +1,26 @@
+2017-11-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): If the subtype indication does not
+	syntactically denote a type, return Any_Type to prevent subsequent
+	compiler crashes or infinite loops.
+
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* lib-writ.adb: Fix bug which causes Program_Error to be raised in some
+	cases when writing out a .ali file when a Rename_Pragma pragma is in
+	effect.
+	* lib-writ.adb (Write_Unit_Information): Replace call to
+	Pragma_Name_Unmapped with call to Pragma_Name.
+
+2017-11-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_elab.adb: Minor typo fixes.
+
+2017-11-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Correct warning messages and make
+	them more explicit.
+
 2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* atree.ads (Nkind_In): Add 10 and 11 parameter versions.

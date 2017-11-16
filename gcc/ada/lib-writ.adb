@@ -694,7 +694,7 @@ package body Lib.Writ is
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
-                  case Pragma_Name_Unmapped (N) is
+                  case Pragma_Name (N) is
                      when Name_Annotate =>
                         C := 'A';
                      when Name_Comment =>

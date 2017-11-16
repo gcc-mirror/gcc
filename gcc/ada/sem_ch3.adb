@@ -21338,6 +21338,16 @@ package body Sem_Ch3 is
 
       if Nkind (S) /= N_Subtype_Indication then
          Find_Type (S);
+
+         --  No way to proceed if the subtype indication is malformed.
+         --  This will happen for example when the subtype indication in
+         --  an object declaration is missing altogether and the expression
+         --  is analyzed as if it were that indication.
+
+         if not Is_Entity_Name (S) then
+            return Any_Type;
+         end if;
+
          Check_Incomplete (S);
          P := Parent (S);
 
