@@ -1,3 +1,7 @@
+2017-11-16  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* gccbrig.texi: Added some documentation.
+
 2017-10-31  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	* brig-lang.c (brig_langhook_type_for_mode): Fix PR 82771.

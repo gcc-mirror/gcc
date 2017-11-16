@@ -395,6 +395,10 @@ struct lang_hooks
      assembler does not talk about it.  */
   void (*set_decl_assembler_name) (tree);
 
+  /* Overwrite the DECL_ASSEMBLER_NAME for a node.  The name is being
+     changed (including to or from NULL_TREE).  */
+  void (*overwrite_decl_assembler_name) (tree, tree);
+
   /* The front end can add its own statistics to -fmem-report with
      this hook.  It should output to stderr.  */
   void (*print_statistics) (void);

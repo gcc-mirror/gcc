@@ -123,9 +123,14 @@ struct mangled_decl_hash : ggc_remove <tree>
   static inline void mark_empty (value_type &p) {p = NULL_TREE;}
   static inline bool is_empty (value_type p) {return !p;}
 
-  /* Nothing is deletable.  Everything is insertable.  */
-  static bool is_deleted (value_type) { return false; }
-  static void mark_deleted (value_type) { gcc_unreachable (); }
+  static bool is_deleted (value_type e)
+  {
+    return e == reinterpret_cast <value_type> (1);
+  }
+  static void mark_deleted (value_type &e)
+  {
+    e = reinterpret_cast <value_type> (1);
+  }
 };
 
 /* A hash table of decls keyed by mangled name.  Used to figure out if
@@ -4433,6 +4438,33 @@ record_mangling (tree decl, bool need_warning)
 	      " avoids this error with a change in mangling");
       *slot = decl;
     }
+}
+
+/* The mangled name of DECL is being forcibly changed to NAME.  Remove
+   any existing knowledge of DECL's mangled name meaning DECL.  */
+
+void
+overwrite_mangling (tree decl, tree name)
+{
+  if (tree id = DECL_ASSEMBLER_NAME_RAW (decl))
+    if ((TREE_CODE (decl) == VAR_DECL
+	 || TREE_CODE (decl) == FUNCTION_DECL)
+	&& mangled_decls)
+      if (tree *slot
+	  = mangled_decls->find_slot_with_hash (id, IDENTIFIER_HASH_VALUE (id),
+						NO_INSERT))
+	if (*slot == decl)
+	  {
+	    mangled_decls->clear_slot (slot);
+
+	    /* If this is an alias, remove it from the symbol table.  */
+	    if (DECL_ARTIFICIAL (decl) && DECL_IGNORED_P (decl))
+	      if (symtab_node *n = symtab_node::get (decl))
+		if (n->cpp_implicit_alias)
+		  n->remove ();
+	  }
+
+  DECL_ASSEMBLER_NAME_RAW (decl) = name;
 }
 
 /* The entire file is now complete.  If requested, dump everything

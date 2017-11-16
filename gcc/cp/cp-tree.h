@@ -6262,6 +6262,7 @@ extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
+extern void overwrite_mangling			(tree, tree);
 extern void note_mangling_alias			(tree, tree);
 extern void generate_mangling_aliases		(void);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals, cp_ref_qualifier);

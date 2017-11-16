@@ -674,6 +674,17 @@ decl_assembler_name (tree decl)
   return DECL_ASSEMBLER_NAME_RAW (decl);
 }
 
+/* The DECL_ASSEMBLER_NAME_RAW of DECL is being explicitly set to NAME
+   (either of which may be NULL).  Inform the FE, if this changes the
+   name.  */
+
+void
+overwrite_decl_assembler_name (tree decl, tree name)
+{
+  if (DECL_ASSEMBLER_NAME_RAW (decl) != name)
+    lang_hooks.overwrite_decl_assembler_name (decl, name);
+}
+
 /* When the target supports COMDAT groups, this indicates which group the
    DECL is associated with.  This can be either an IDENTIFIER_NODE or a
    decl, in which case its DECL_ASSEMBLER_NAME identifies the group.  */

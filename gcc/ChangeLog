@@ -1,3 +1,21 @@
+2017-11-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82836
+	PR c++/82737
+	* tree.h (COPY_DECL_RTL): Rename parms for clarity.
+	(SET_DECL_ASSEMBLER_NAME): Forward to
+	overwrite_decl_assembler_name.
+	(COPY_DECL_ASSEMBLER_NAME): Rename parms for clarity.
+	(overwrite_decl_assembler_name): Declare.
+	* tree.c (overwrite_decl_assembler_name): New.
+	* langhooks-def.h (lhd_overwrite_decl_assembler_name): Declare.
+	(LANG_HOOKS_OVERWRITE_DECL_ASSEMBLER_NAME): Provide default.
+	(LANG_HOOKS_INITIALIZER): Add it.
+	* langhooks.h (struct lang_hooks): Add overwrite_decl_assembler_name.
+	* langhooks.c (lhd_set_decl_assembler_name): Use
+	SET_DECL_ASSEMBLER_NAME.
+	(lhd_overwrite_decl_assembler_name): Default implementation.
+
 2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 

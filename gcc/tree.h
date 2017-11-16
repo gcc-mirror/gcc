@@ -2534,11 +2534,11 @@ extern void decl_value_expr_insert (tree, tree);
 #define DECL_RTL_SET_P(NODE) \
   (HAS_RTL_P (NODE) && DECL_WRTL_CHECK (NODE)->decl_with_rtl.rtl != NULL)
 
-/* Copy the RTL from NODE1 to NODE2.  If the RTL was not set for
-   NODE1, it will not be set for NODE2; this is a lazy copy.  */
-#define COPY_DECL_RTL(NODE1, NODE2) \
-  (DECL_WRTL_CHECK (NODE2)->decl_with_rtl.rtl \
-   = DECL_WRTL_CHECK (NODE1)->decl_with_rtl.rtl)
+/* Copy the RTL from SRC_DECL to DST_DECL.  If the RTL was not set for
+   SRC_DECL, it will not be set for DST_DECL; this is a lazy copy.  */
+#define COPY_DECL_RTL(SRC_DECL, DST_DECL) \
+  (DECL_WRTL_CHECK (DST_DECL)->decl_with_rtl.rtl \
+   = DECL_WRTL_CHECK (SRC_DECL)->decl_with_rtl.rtl)
 
 /* The DECL_RTL for NODE, if it is set, or NULL, if it is not set.  */
 #define DECL_RTL_IF_SET(NODE) (DECL_RTL_SET_P (NODE) ? DECL_RTL (NODE) : NULL)
@@ -2729,19 +2729,21 @@ extern void decl_value_expr_insert (tree, tree);
 
 /* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
 #define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \
-  (DECL_ASSEMBLER_NAME_RAW (NODE) = (NAME))
+  overwrite_decl_assembler_name (NODE, NAME)
 
-/* Copy the DECL_ASSEMBLER_NAME from DECL1 to DECL2.  Note that if DECL1's
-   DECL_ASSEMBLER_NAME has not yet been set, using this macro will not cause
-   the DECL_ASSEMBLER_NAME of either DECL to be set.  In other words, the
-   semantics of using this macro, are different than saying:
+/* Copy the DECL_ASSEMBLER_NAME from SRC_DECL to DST_DECL.  Note that
+   if SRC_DECL's DECL_ASSEMBLER_NAME has not yet been set, using this
+   macro will not cause the DECL_ASSEMBLER_NAME to be set, but will
+   clear DECL_ASSEMBLER_NAME of DST_DECL, if it was already set.  In
+   other words, the semantics of using this macro, are different than
+   saying:
 
-     SET_DECL_ASSEMBLER_NAME(DECL2, DECL_ASSEMBLER_NAME (DECL1))
+     SET_DECL_ASSEMBLER_NAME(DST_DECL, DECL_ASSEMBLER_NAME (SRC_DECL))
 
-   which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
+   which will try to set the DECL_ASSEMBLER_NAME for SRC_DECL.  */
 
-#define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
-  SET_DECL_ASSEMBLER_NAME (DECL2, DECL_ASSEMBLER_NAME_RAW (DECL1))
+#define COPY_DECL_ASSEMBLER_NAME(SRC_DECL, DST_DECL)			\
+  SET_DECL_ASSEMBLER_NAME (DST_DECL, DECL_ASSEMBLER_NAME_RAW (SRC_DECL))
 
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
@@ -3878,6 +3880,7 @@ id_equal (const char *str, const_tree id)
    || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
 
 extern tree decl_assembler_name (tree);
+extern void overwrite_decl_assembler_name (tree decl, tree name);
 extern tree decl_comdat_group (const_tree);
 extern tree decl_comdat_group_id (const_tree);
 extern const char *decl_section_name (const_tree);
