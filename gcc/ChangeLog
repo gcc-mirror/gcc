@@ -1,5 +1,10 @@
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-emutls.c (lower_emutls_data): Remove unused bb_freq.
+	(lower_emutls_function_body): Do not compute it.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-split.c (split_bb_info): Turn time to sreal.
 	(split_point): Likewise.
 	(dump_split_point): Likewise.
