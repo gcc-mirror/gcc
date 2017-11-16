@@ -13546,8 +13546,12 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  t = make_class_type (code);
 	  TYPE_CONTEXT (t) = context;
 	  if (scope == ts_lambda)
-	    /* Mark it as a lambda type.  */
-	    CLASSTYPE_LAMBDA_EXPR (t) = error_mark_node;
+	    {
+	      /* Mark it as a lambda type.  */
+	      CLASSTYPE_LAMBDA_EXPR (t) = error_mark_node;
+	      /* And push it into current scope.  */
+	      scope = ts_current;
+	    }
 	  t = pushtag (name, t, scope);
 	}
     }

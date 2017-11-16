@@ -1,3 +1,10 @@
+2017-11-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++81060
+	* g++.dg/cpp0x/lambda/lambda-template13.C: Avoid undefined
+	template using local type error.
+	* g++.dg/cpp0x/pr81060.C: New.
+
 2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 

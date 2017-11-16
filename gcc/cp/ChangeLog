@@ -1,3 +1,9 @@
+2017-11-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81060
+	* decl.c (xref_tag_1): Push lambda into current scope.
+	* name-lookup.c (do_pushtag): Don't deal with ts_lambda here.
+
 2017-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81574
