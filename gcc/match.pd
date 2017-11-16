@@ -344,10 +344,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (negate @0)))
 
 (if (flag_reciprocal_math)
- /* Convert (A/B)/C to A/(B*C)  */
+ /* Convert (A/B)/C to A/(B*C). */
  (simplify
   (rdiv (rdiv:s @0 @1) @2)
-   (rdiv @0 (mult @1 @2)))
+  (rdiv @0 (mult @1 @2)))
+
+ /* Canonicalize x / (C1 * y) to (x * C2) / y.  */
+ (simplify
+  (rdiv @0 (mult:s @1 REAL_CST@2))
+  (with
+   { tree tem = const_binop (RDIV_EXPR, type, build_one_cst (type), @2); }
+   (if (tem)
+    (rdiv (mult @0 { tem; } ) @1))))
 
  /* Convert A/(B/C) to (A/B)*C  */
  (simplify
@@ -630,15 +638,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && single_use (@3))
    (with
     { tree tem = const_binop (MULT_EXPR, type, @0, @2); }
-    (if (tem)
-     (rdiv { tem; } @1)))))
-
-/* Convert C1/(X*C2) into (C1/C2)/X  */
-(simplify
- (rdiv REAL_CST@0 (mult @1 REAL_CST@2))
-  (if (flag_reciprocal_math)
-   (with
-    { tree tem = const_binop (RDIV_EXPR, type, @0, @2); }
     (if (tem)
      (rdiv { tem; } @1)))))
 
