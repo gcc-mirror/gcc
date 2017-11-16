@@ -59,6 +59,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
@@ -1924,6 +1925,10 @@ package body Sem_Ch8 is
       --    have one. Otherwise the subtype of Sub's return profile must
       --    exclude null.
 
+      procedure Check_SPARK_Primitive_Operation (Subp_Id : Entity_Id);
+      --  Ensure that a SPARK renaming denoted by its entity Subp_Id does not
+      --  declare a primitive operation of a tagged type (SPARK RM 6.1.1(3)).
+
       procedure Freeze_Actual_Profile;
       --  In Ada 2012, enforce the freezing rule concerning formal incomplete
       --  types: a callable entity freezes its profile, unless it has an
@@ -2519,6 +2524,52 @@ package body Sem_Ch8 is
          end if;
       end Check_Null_Exclusion;
 
+      -------------------------------------
+      -- Check_SPARK_Primitive_Operation --
+      -------------------------------------
+
+      procedure Check_SPARK_Primitive_Operation (Subp_Id : Entity_Id) is
+         Prag : constant Node_Id := SPARK_Pragma (Subp_Id);
+         Typ  : Entity_Id;
+
+      begin
+         --  Nothing to do when the subprogram appears within an instance
+
+         if In_Instance then
+            return;
+
+         --  Nothing to do when the subprogram is not subject to SPARK_Mode On
+         --  because this check applies to SPARK code only.
+
+         elsif not (Present (Prag)
+                     and then Get_SPARK_Mode_From_Annotation (Prag) = On)
+         then
+            return;
+
+         --  Nothing to do when the subprogram is not a primitive operation
+
+         elsif not Is_Primitive (Subp_Id) then
+            return;
+         end if;
+
+         Typ := Find_Dispatching_Type (Subp_Id);
+
+         --  Nothing to do when the subprogram is a primitive operation of an
+         --  untagged type.
+
+         if No (Typ) then
+            return;
+         end if;
+
+         --  At this point a renaming declaration introduces a new primitive
+         --  operation for a tagged type.
+
+         Error_Msg_Node_2 := Typ;
+         Error_Msg_NE
+           ("subprogram renaming & cannot declare primitive for type & "
+            & "(SPARK RM 6.1.1(3))", N, Subp_Id);
+      end Check_SPARK_Primitive_Operation;
+
       ---------------------------
       -- Freeze_Actual_Profile --
       ---------------------------
@@ -2899,7 +2950,7 @@ package body Sem_Ch8 is
 
       --  Set SPARK mode from current context
 
-      Set_SPARK_Pragma (New_S, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma           (New_S, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (New_S);
 
       Rename_Spec := Find_Corresponding_Spec (N);
@@ -3009,13 +3060,16 @@ package body Sem_Ch8 is
          Generate_Definition (New_S);
          New_Overloaded_Entity (New_S);
 
-         if Is_Entity_Name (Nam)
-           and then Is_Intrinsic_Subprogram (Entity (Nam))
+         if not (Is_Entity_Name (Nam)
+                  and then Is_Intrinsic_Subprogram (Entity (Nam)))
          then
-            null;
-         else
             Check_Delayed_Subprogram (New_S);
          end if;
+
+         --  Verify that a SPARK renaming does not declare a primitive
+         --  operation of a tagged type.
+
+         Check_SPARK_Primitive_Operation (New_S);
       end if;
 
       --  There is no need for elaboration checks on the new entity, which may
@@ -3205,10 +3259,9 @@ package body Sem_Ch8 is
 
          elsif Requires_Overriding (Old_S)
            or else
-              (Is_Abstract_Subprogram (Old_S)
-                 and then Present (Find_Dispatching_Type (Old_S))
-                 and then
-                   not Is_Abstract_Type (Find_Dispatching_Type (Old_S)))
+             (Is_Abstract_Subprogram (Old_S)
+               and then Present (Find_Dispatching_Type (Old_S))
+               and then not Is_Abstract_Type (Find_Dispatching_Type (Old_S)))
          then
             Error_Msg_N
               ("renamed entity cannot be subprogram that requires overriding "
