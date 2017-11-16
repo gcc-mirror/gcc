@@ -1,3 +1,7 @@
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-cfg.c (gimple_find_sub_bbs): Do not compute freq.
+
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfg.c (scale_bbs_frequencies_int,
