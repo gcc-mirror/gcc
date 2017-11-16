@@ -1,3 +1,9 @@
+2017-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR bootstrap/82856
+	* doc/install.texi: Document incompatibility of Perl >=5.6.26
+	with the required version of automake 1.11.6.
+
 2017-11-16  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* rs6000/power9.md (power9fpdiv): New automaton and cpu_unit defined
