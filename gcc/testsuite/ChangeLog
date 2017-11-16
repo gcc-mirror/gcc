@@ -1,3 +1,8 @@
+2017-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70383
+	* g++.dg/cpp0x/lambda/lambda-70383.C: New.
+
 2017-11-16  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512f-gf2p8mulb-2.c: New runtime tests.
