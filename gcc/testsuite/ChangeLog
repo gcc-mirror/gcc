@@ -1,5 +1,10 @@
 2017-11-16  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/63477
+	* gcc.dg/pr63477.c: New test.
+
+2017-11-16  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/82588
 	PR tree-optimization/82583
 	* c-c++-common/Warray-bounds.c: New test.
