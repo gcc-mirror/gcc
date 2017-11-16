@@ -448,8 +448,12 @@ enum nds32_builtins
         builtin_define ("__NDS32_REDUCED_REGS__");    \
       if (TARGET_CMOV)                                \
         builtin_define ("__NDS32_CMOV__");            \
-      if (TARGET_PERF_EXT)                            \
-        builtin_define ("__NDS32_PERF_EXT__");        \
+      if (TARGET_EXT_PERF)                            \
+        builtin_define ("__NDS32_EXT_PERF__");        \
+      if (TARGET_EXT_PERF2)                           \
+        builtin_define ("__NDS32_EXT_PERF2__");       \
+      if (TARGET_EXT_STRING)                          \
+        builtin_define ("__NDS32_EXT_STRING__");      \
       if (TARGET_16_BIT)                              \
         builtin_define ("__NDS32_16_BIT__");          \
       if (TARGET_GP_DIRECT)                           \
