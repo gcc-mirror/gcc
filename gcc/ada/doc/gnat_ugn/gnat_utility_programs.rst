@@ -5031,7 +5031,7 @@ Alternatively, you may run the script using the following command line:
 
   ::
 
-       $ gnatsymbolize filename [ addresses ]
+       $ gnatsymbolize [ switches ] filename [ addresses ]
 
   For instance, consider the following Ada program:
 
@@ -5102,6 +5102,36 @@ Alternatively, you may run the script using the following command line:
        Pck.Call_Me_First at pck.adb:25
        Foo at foo.adb:6
        Main at b~foo.adb:184
+
+  Switches for ``gnatsymbolize``
+  ------------------------------
+
+  ``gnatsymbolize`` recognizes the following switches:
+
+  .. index:: --help (gnatsymbolize)
+
+  :switch:`--help`
+    Display the program's usage, and then exit, disregarding all other
+    options.
+
+  :switch:`--cache`
+    Read the symbolic information from the executable and cache them
+    in memory in order to accelerate the translation of each address
+    into a symbolic location.
+
+    Depending on the size of the executable and the number of addresses
+    to translate, this may not always make ``gnatsymbolize`` faster
+    overall.
+
+  :switch:`--dump`
+    If :switch:`--cache` is used, dump the contents of the cache on
+    Standard Output. Has no effect otherwise.
+
+  :switch:`--count={N}`
+    If specified, compute the symbolic traceback ``N`` times in a row.
+    This option is mostly useful for measuring the performance of
+    ``gnatsymbolize``, particularly in the case where the cache is
+    being used.
 
   Requirements for Correct Operation
   ----------------------------------

@@ -1,3 +1,13 @@
+2017-11-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document the switches
+	available in gnatsymbolize.
+
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* debug.adb: Update comment to indicate gnat2scil's use of the -gnatd.7
+	switch.
+
 2017-11-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst, sem_ch6.adb,
