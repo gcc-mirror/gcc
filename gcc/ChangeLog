@@ -1,5 +1,10 @@
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (analyze_function_body): Accumulate time consistently
+	in sreal.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c (combine_predictions_for_bb): Preserve zero predicted	
 	eges.
 	(expensive_function_p): Remove useless assert.
