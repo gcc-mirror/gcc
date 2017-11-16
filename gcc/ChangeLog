@@ -1,3 +1,8 @@
+2017-11-16  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config/rs6000/mmintrin.h (_mm_add_pi32[_ARCH_PWR]): Correct
+	parameter list for vec_splats.
+
 2017-11-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (-std=c17): Refer to 2018 expected publication
