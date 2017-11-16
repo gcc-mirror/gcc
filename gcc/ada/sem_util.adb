@@ -9085,6 +9085,12 @@ package body Sem_Util is
          end if;
 
          Lit := First_Literal (Btyp);
+
+         --  Position in the enumeration type starts at 0.
+         if UI_To_Int (Pos) < 0 then
+            raise Constraint_Error;
+         end if;
+
          for J in 1 .. UI_To_Int (Pos) loop
             Next_Literal (Lit);
 
