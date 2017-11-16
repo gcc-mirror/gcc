@@ -1,4 +1,10 @@
 2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
+	    Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* match.pd: Canonicalize constant multiplies in division.
+
+2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* opts.c (default_options_table): Add OPT_fomit_frame_pointer entry.
 	* common/config/alpha/alpha-common.c (TARGET_OPTION_OPTIMIZATION_TABLE):

@@ -1,4 +1,10 @@
 2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
+	    Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* gcc.dg/cse_recip.c: New test.
+
+2017-11-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/lr_free_2.c: Fix test.
 	* gcc.target/aarch64/spill_1.c: Likewise.
