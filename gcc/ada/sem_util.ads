@@ -2087,16 +2087,19 @@ package Sem_Util is
    --  cleaned up during resolution.
 
    procedure Mark_Elaboration_Attributes
-     (N_Id   : Node_Or_Entity_Id;
-      Checks : Boolean := False;
-      Level  : Boolean := False;
-      Modes  : Boolean := False);
+     (N_Id     : Node_Or_Entity_Id;
+      Checks   : Boolean := False;
+      Level    : Boolean := False;
+      Modes    : Boolean := False;
+      Warnings : Boolean := False);
    --  Preserve relevant elaboration-related properties of the context in
-   --  arbitrary entity or node N_Id. When flag Checks is set, the routine
-   --  saves the status of Elaboration_Check. When flag Level is set, the
-   --  routine captures the declaration level of N_Id if applicable. When
-   --  flag Modes is set, the routine saves the Ghost and SPARK modes in
-   --  effect if applicable.
+   --  arbitrary entity or node N_Id. The flags control the properties as
+   --  follows:
+   --
+   --    Checks   - Save the status of Elaboration_Check
+   --    Level    - Save the declaration level of N_Id (if appicable)
+   --    Modes    - Save the Ghost and SPARK modes in effect (if applicable)
+   --    Warnings - Save the status of Elab_Warnings
 
    function Matching_Static_Array_Bounds
      (L_Typ : Node_Id;

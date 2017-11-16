@@ -5830,9 +5830,10 @@ package body Sem_Res is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       --  The context imposes a unique interpretation with type Typ on a
       --  procedure or function call. Find the entity of the subprogram that
@@ -7832,6 +7833,9 @@ package body Sem_Res is
 
             Set_Is_Elaboration_Checks_OK_Node
               (Entry_Call, Is_Elaboration_Checks_OK_Node (N));
+
+            Set_Is_Elaboration_Warnings_OK_Node
+              (Entry_Call, Is_Elaboration_Warnings_OK_Node (N));
 
             Set_Is_SPARK_Mode_On_Node
               (Entry_Call, Is_SPARK_Mode_On_Node (N));

@@ -3943,10 +3943,11 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Level  => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Level    => True,
+         Modes    => True,
+         Warnings => True);
 
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
@@ -5393,10 +5394,11 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Level  => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Level    => True,
+         Modes    => True,
+         Warnings => True);
 
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 

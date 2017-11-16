@@ -1886,7 +1886,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Call_Marker);
-      return Flag3 (N);
+      return Flag6 (N);
    end Is_Dispatching_Call;
 
    function Is_Dynamic_Coextension
@@ -1932,6 +1932,21 @@ package body Sinfo is
         or else NT (N).Nkind = N_Assignment_Statement);
       return Flag9 (N);
    end Is_Elaboration_Code;
+
+   function Is_Elaboration_Warnings_OK_Node
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Call_Marker
+        or else NT (N).Nkind = N_Entry_Call_Statement
+        or else NT (N).Nkind = N_Function_Call
+        or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Package_Instantiation
+        or else NT (N).Nkind = N_Procedure_Call_Statement
+        or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Requeue_Statement);
+      return Flag3 (N);
+   end Is_Elaboration_Warnings_OK_Node;
 
    function Is_Elsif
       (N : Node_Id) return Boolean is
@@ -5322,7 +5337,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Call_Marker);
-      Set_Flag3 (N, Val);
+      Set_Flag6 (N, Val);
    end Set_Is_Dispatching_Call;
 
    procedure Set_Is_Dynamic_Coextension
@@ -5368,6 +5383,21 @@ package body Sinfo is
         or else NT (N).Nkind = N_Assignment_Statement);
       Set_Flag9 (N, Val);
    end Set_Is_Elaboration_Code;
+
+   procedure Set_Is_Elaboration_Warnings_OK_Node
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Call_Marker
+        or else NT (N).Nkind = N_Entry_Call_Statement
+        or else NT (N).Nkind = N_Function_Call
+        or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Package_Instantiation
+        or else NT (N).Nkind = N_Procedure_Call_Statement
+        or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Requeue_Statement);
+      Set_Flag3 (N, Val);
+   end Set_Is_Elaboration_Warnings_OK_Node;
 
    procedure Set_Is_Elsif
       (N : Node_Id; Val : Boolean := True) is

@@ -2295,9 +2295,10 @@ package body Sem_Ch9 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       Tasking_Used := True;
       Check_SPARK_05_Restriction ("requeue statement is not allowed", N);

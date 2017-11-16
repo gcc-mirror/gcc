@@ -690,8 +690,8 @@ dispatching calls and a particular kind of ABE referred to as *guaranteed ABE*.
 Note that GNAT emits warnings rather than hard errors whenever it encounters an
 elaboration problem. This is because the elaboration model in effect may be too
 conservative, or a particular scenario may not be elaborated or executed due to
-data and control flow. The warnings can be suppressed with compiler switch
-:switch:`-gnatws`.
+data and control flow. The warnings can be suppressed selectively with ``pragma
+Warnigns (Off)`` or globally with compiler switch :switch:`-gnatwL`.
 
 .. _Dynamic_Elaboration_Model_in_GNAT:
 
@@ -764,8 +764,8 @@ run-time checks based on the nature of the target.
 
   The static model performs extensive diagnostics on scenarios which elaborate
   or execute internal targets. The warnings resulting from these diagnostics
-  are enabled by default, but can be suppressed using compiler switch
-  :switch:`-gnatws`.
+  are enabled by default, but can be suppressed selectively with ``pragma
+  Warnings (Off)`` or globally with compiler switch :switch:`-gnatwL`.
 
   ::
 
@@ -1647,6 +1647,47 @@ the elaboration order chosen by the binder.
 
   In the example above, the elaboration of declaration ``Ptr`` is assigned
   ``Func'Access`` before the body of ``Func`` has been elaborated.
+
+.. index:: -gnatwl  (gnat)
+
+:switch:`-gnatwl`
+  Turn on warnings for elaboration problems
+
+  When this switch is in effect, GNAT emits diagnostics in the form of warnings
+  concerning various elaboration problems. The warnings are enabled by default.
+  The switch is provided in case all warnings are suppressed, but elaboration
+  warnings are still desired.
+
+:switch:`-gnatwL`
+  Turn off warnings for elaboration problems
+
+  When this switch is in effect, GNAT no longer emits any diagnostics in the
+  form of warnings. Selective suppression of elaboration problems is possible
+  using ``pragma Warnings (Off)``.
+
+  ::
+
+     1. package body Selective_Suppression is
+     2.    function ABE return Integer;
+     3.
+     4.    Val_1 : constant Integer := ABE;
+                                       |
+        >>> warning: cannot call "ABE" before body seen
+        >>> warning: Program_Error will be raised at run time
+
+     5.
+     6.    pragma Warnings (Off);
+     7.    Val_2 : constant Integer := ABE;
+     8.    pragma Warnings (On);
+     9.
+    10.    function ABE return Integer is
+    11.    begin
+    12.       ...
+    13.    end ABE;
+    14. end Selective_Suppression;
+
+  Note that suppressing elaboration warnings does not eliminate run-time
+  checks. The example above will still fail at runtime with an ABE.
 
 .. _Summary_of_Procedures_for_Elaboration_Control:
 

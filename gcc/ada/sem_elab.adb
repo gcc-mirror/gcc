@@ -444,15 +444,6 @@ package body Sem_Elab is
    --
    --           The complimentary switch for -gnatel.
    --
-   --  -gnatwl  turn on warnings for elaboration problems
-   --
-   --           The ABE mechanism produces warnings on detected ABEs along with
-   --           traceback showing the graph of the ABE.
-   --
-   --  -gnatwL  turn off warnings for elaboration problems
-   --
-   --           The complimentary switch for -gnatwl.
-   --
    --  -gnatw.f turn on warnings for suspicious Subp'Access
    --
    --           The ABE mechanism treats '[Unrestricted_]Access of an entry,
@@ -462,6 +453,15 @@ package body Sem_Elab is
    --  -gnatw.F turn off warnings for suspicious Subp'Access
    --
    --           The complimentary switch for -gnatw.f.
+   --
+   --  -gnatwl  turn on warnings for elaboration problems
+   --
+   --           The ABE mechanism produces warnings on detected ABEs along with
+   --           traceback showing the graph of the ABE.
+   --
+   --  -gnatwL  turn off warnings for elaboration problems
+   --
+   --           The complimentary switch for -gnatwl.
 
    ---------------------------
    -- Adding a new scenario --
@@ -567,6 +567,9 @@ package body Sem_Elab is
       Elab_Checks_OK : Boolean;
       --  This flag is set when the call has elaboration checks enabled
 
+      Elab_Warnings_OK : Boolean;
+      --  This flag is set when the call has elaboration warnings elabled
+
       From_Source : Boolean;
       --  This flag is set when the call comes from source
 
@@ -620,6 +623,10 @@ package body Sem_Elab is
    type Instantiation_Attributes is record
       Elab_Checks_OK : Boolean;
       --  This flag is set when the instantiation has elaboration checks
+      --  enabled.
+
+      Elab_Warnings_OK : Boolean;
+      --  This flag is set when the instantiation has elaboration warnings
       --  enabled.
 
       Ghost_Mode_Ignore : Boolean;
@@ -1519,7 +1526,7 @@ package body Sem_Elab is
       In_Partial_Fin : Boolean;
       In_Task_Body   : Boolean);
    --  Perform common conditional ABE checks and diagnostics for call Call
-   --  which activates task Obj_Id ignoring the Ada or SPARK rules. CAll_Attrs
+   --  which activates task Obj_Id ignoring the Ada or SPARK rules. Call_Attrs
    --  are the attributes of the activation call. Task_Attrs are the attributes
    --  of the task type. The flags should be set when the processing was
    --  initiated as follows:
@@ -1657,11 +1664,11 @@ package body Sem_Elab is
       In_Partial_Fin : Boolean;
       In_Task_Body   : Boolean);
    --  Perform common guaranteed ABE checks and diagnostics for call Call which
-   --  activates task Obj_Id ignoring the Ada or SPARK rules. Task_Attrs are
-   --  the attributes of the task type. The following parameters are provided
-   --  for compatibility and are unused.
+   --  activates task Obj_Id ignoring the Ada or SPARK rules. Call_Attrs are
+   --  the attributes of the activation call. Task_Attrs are the attributes of
+   --  the task type. The following parameters are provided for compatibility
+   --  and are not used.
    --
-   --    Call_Attrs
    --    In_Init_Cond
    --    In_Partial_Fin
    --    In_Task_Body
@@ -2057,13 +2064,16 @@ package body Sem_Elab is
 
       --  Inherit the attributes of the original call
 
-      Set_Target                        (Marker, Target_Id);
-      Set_Is_Elaboration_Checks_OK_Node (Marker, Call_Attrs.Elab_Checks_OK);
-      Set_Is_Declaration_Level_Node     (Marker, Call_Attrs.In_Declarations);
-      Set_Is_Dispatching_Call           (Marker, Call_Attrs.Is_Dispatching);
-      Set_Is_Ignored_Ghost_Node         (Marker, Call_Attrs.Ghost_Mode_Ignore);
-      Set_Is_Source_Call                (Marker, Call_Attrs.From_Source);
-      Set_Is_SPARK_Mode_On_Node         (Marker, Call_Attrs.SPARK_Mode_On);
+      Set_Target                    (Marker, Target_Id);
+      Set_Is_Declaration_Level_Node (Marker, Call_Attrs.In_Declarations);
+      Set_Is_Dispatching_Call       (Marker, Call_Attrs.Is_Dispatching);
+      Set_Is_Elaboration_Checks_OK_Node
+                                    (Marker, Call_Attrs.Elab_Checks_OK);
+      Set_Is_Elaboration_Warnings_OK_Node
+                                    (Marker, Call_Attrs.Elab_Warnings_OK);
+      Set_Is_Ignored_Ghost_Node     (Marker, Call_Attrs.Ghost_Mode_Ignore);
+      Set_Is_Source_Call            (Marker, Call_Attrs.From_Source);
+      Set_Is_SPARK_Mode_On_Node     (Marker, Call_Attrs.SPARK_Mode_On);
 
       --  The marker is inserted prior to the original call. This placement has
       --  several desirable effects:
@@ -3567,6 +3577,7 @@ package body Sem_Elab is
       --  Set all attributes
 
       Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Node (Call);
+      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Node (Call);
       Attrs.From_Source       := From_Source;
       Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Node (Call);
       Attrs.In_Declarations   := In_Declarations;
@@ -3653,8 +3664,8 @@ package body Sem_Elab is
       Attrs    : out Instantiation_Attributes)
    is
    begin
-      Inst     := Original_Node (Exp_Inst);
-      Inst_Id  := Defining_Entity (Inst);
+      Inst    := Original_Node (Exp_Inst);
+      Inst_Id := Defining_Entity (Inst);
 
       --  Traverse a possible chain of renamings to obtain the original generic
       --  being instantiatied.
@@ -3664,6 +3675,7 @@ package body Sem_Elab is
       --  Set all attributes
 
       Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Node (Inst);
+      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Node (Inst);
       Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Node (Inst);
       Attrs.In_Declarations   := Is_Declaration_Level_Node (Inst);
       Attrs.SPARK_Mode_On     := Is_SPARK_Mode_On_Node (Inst);
@@ -8679,7 +8691,9 @@ package body Sem_Elab is
             --  this order diagnostics appear jumbled and result in unwanted
             --  noise.
 
-            elsif Static_Elaboration_Checks then
+            elsif Static_Elaboration_Checks
+              and then Call_Attrs.Elab_Warnings_OK
+            then
                Error_Msg_Sloc := Sloc (Call);
                Error_Msg_N
                  ("??task & will be activated # before elaboration of its "
@@ -9068,7 +9082,9 @@ package body Sem_Elab is
             --  this order diagnostics appear jumbled and result in unwanted
             --  noise.
 
-            elsif Static_Elaboration_Checks then
+            elsif Static_Elaboration_Checks
+              and then Call_Attrs.Elab_Warnings_OK
+            then
                Error_Msg_NE
                  ("??cannot call & before body seen", Call, Target_Id);
                Error_Msg_N ("\Program_Error may be raised at run time", Call);
@@ -9500,7 +9516,9 @@ package body Sem_Elab is
             --  this order diagnostics appear jumbled and result in unwanted
             --  noise.
 
-            elsif Static_Elaboration_Checks then
+            elsif Static_Elaboration_Checks
+              and then Inst_Attrs.Elab_Warnings_OK
+            then
                Error_Msg_NE
                  ("??cannot instantiate & before body seen", Inst, Gen_Id);
                Error_Msg_N ("\Program_Error may be raised at run time", Inst);
@@ -9668,10 +9686,6 @@ package body Sem_Elab is
         and then not Is_Initialized (Var_Decl)
         and then not Has_Pragma_Elaborate_Body (Spec_Id)
       then
-         --  Generate an implicit Elaborate_Body in the spec
-
-         Set_Elaborate_Body_Desirable (Spec_Id);
-
          Error_Msg_NE
            ("??variable & can be accessed by clients before this "
             & "initialization", Asmt, Var_Id);
@@ -9681,6 +9695,10 @@ package body Sem_Elab is
             & "initialization", Asmt, Spec_Id);
 
          Output_Active_Scenarios (Asmt);
+
+         --  Generate an implicit Elaborate_Body in the spec
+
+         Set_Elaborate_Body_Desirable (Spec_Id);
       end if;
    end Process_Conditional_ABE_Variable_Assignment_Ada;
 
@@ -9905,7 +9923,6 @@ package body Sem_Elab is
       In_Partial_Fin : Boolean;
       In_Task_Body   : Boolean)
    is
-      pragma Unreferenced (Call_Attrs);
       pragma Unreferenced (In_Init_Cond);
       pragma Unreferenced (In_Partial_Fin);
       pragma Unreferenced (In_Task_Body);
@@ -10017,11 +10034,13 @@ package body Sem_Elab is
                Target_Decl => Task_Attrs.Task_Decl,
                Target_Body => Task_Attrs.Body_Decl)
       then
-         Error_Msg_Sloc := Sloc (Call);
-         Error_Msg_N
-           ("??task & will be activated # before elaboration of its body",
-            Obj_Id);
-         Error_Msg_N ("\Program_Error will be raised at run time", Obj_Id);
+         if Call_Attrs.Elab_Warnings_OK then
+            Error_Msg_Sloc := Sloc (Call);
+            Error_Msg_N
+              ("??task & will be activated # before elaboration of its body",
+               Obj_Id);
+            Error_Msg_N ("\Program_Error will be raised at run time", Obj_Id);
+         end if;
 
          --  Mark the activation call as a guaranteed ABE
 
@@ -10130,8 +10149,10 @@ package body Sem_Elab is
                Target_Decl => Target_Attrs.Spec_Decl,
                Target_Body => Target_Attrs.Body_Decl)
       then
-         Error_Msg_NE ("??cannot call & before body seen", Call, Target_Id);
-         Error_Msg_N ("\Program_Error will be raised at run time", Call);
+         if Call_Attrs.Elab_Warnings_OK then
+            Error_Msg_NE ("??cannot call & before body seen", Call, Target_Id);
+            Error_Msg_N ("\Program_Error will be raised at run time", Call);
+         end if;
 
          --  Mark the call as a guarnateed ABE
 
@@ -10253,9 +10274,11 @@ package body Sem_Elab is
                Target_Decl => Gen_Attrs.Spec_Decl,
                Target_Body => Gen_Attrs.Body_Decl)
       then
-         Error_Msg_NE
-           ("??cannot instantiate & before body seen", Inst, Gen_Id);
-         Error_Msg_N ("\Program_Error will be raised at run time", Inst);
+         if Inst_Attrs.Elab_Warnings_OK then
+            Error_Msg_NE
+              ("??cannot instantiate & before body seen", Inst, Gen_Id);
+            Error_Msg_N ("\Program_Error will be raised at run time", Inst);
+         end if;
 
          --  Mark the instantiation as a guarantee ABE. This automatically
          --  suppresses the instantiation of the generic body.
