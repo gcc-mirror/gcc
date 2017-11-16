@@ -16690,7 +16690,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
      double (KFmode) or long double is IEEE 128-bit (TFmode).  It is simpler if
      we only define one variant of the built-in function, and switch the code
      when defining it, rather than defining two built-ins and using the
-     overload table in rs6000-c.c to switch between the two.  */
+     overload table in rs6000-c.c to switch between the two.  If we don't have
+     the proper assembler, don't do this switch because CODE_FOR_*kf* and
+     CODE_FOR_*tf* will be CODE_FOR_nothing.  */
+#ifdef HAVE_AS_POWER9
   if (FLOAT128_IEEE_P (TFmode))
     switch (icode)
       {
@@ -16711,6 +16714,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
       case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
       }
+#endif
 
   if (TARGET_DEBUG_BUILTIN)
     {
