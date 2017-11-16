@@ -1,5 +1,9 @@
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* final.c (compute_alignments): Use counts rather than frequencies.
+
+2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cfgloopanal.c: Include sreal.h
 	(average_num_loop_insns): Use counts and sreal for accounting.
 
