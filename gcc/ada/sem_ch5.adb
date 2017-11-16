@@ -552,6 +552,45 @@ package body Sem_Ch5 is
       --  in-place.
 
       if Should_Transform_BIP_Assignment (Typ => T1) then
+         --  In certain cases involving user-defined concatenation operators,
+         --  we need to resolve the right-hand side before transforming the
+         --  assignment.
+
+         case Nkind (Unqual_Conv (Rhs)) is
+            when N_Function_Call =>
+               declare
+                  Actual     : Node_Id :=
+                    First (Parameter_Associations (Unqual_Conv (Rhs)));
+                  Actual_Exp : Node_Id;
+
+               begin
+                  while Present (Actual) loop
+                     if Nkind (Actual) = N_Parameter_Association then
+                        Actual_Exp := Explicit_Actual_Parameter (Actual);
+                     else
+                        Actual_Exp := Actual;
+                     end if;
+
+                     if Nkind (Actual_Exp) = N_Op_Concat then
+                        Resolve (Rhs, T1);
+                        exit;
+                     end if;
+
+                     Next (Actual);
+                  end loop;
+               end;
+
+            when N_Op
+               | N_Expanded_Name
+               | N_Identifier
+               | N_Attribute_Reference
+            =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
          Transform_BIP_Assignment (Typ => T1);
       end if;
 

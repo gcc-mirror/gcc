@@ -1425,6 +1425,12 @@ package Sem_Util is
    --  partial view of the same entity. Note that Id may not have a partial
    --  view in which case the function returns Empty.
 
+   function Incomplete_View_From_Limited_With
+     (Typ : Entity_Id) return Entity_Id;
+   --  Typ is a type entity. This normally returns Typ. However, if there is
+   --  an incomplete view of this entity that comes from a limited-with'ed
+   --  package, then this returns that incomplete view.
+
    function Indexed_Component_Bit_Offset (N : Node_Id) return Uint;
    --  Given an N_Indexed_Component node, return the first bit position of the
    --  component if it is known at compile time. A value of No_Uint means that

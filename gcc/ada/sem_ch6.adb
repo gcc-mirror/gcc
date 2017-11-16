@@ -7840,7 +7840,7 @@ package body Sem_Ch6 is
 
          if No (First_Extra) then
             First_Extra := EF;
-            Set_Extra_Formals (Scope, First_Extra);
+            Set_Extra_Formals (Scope, EF);
          end if;
 
          if Present (Last_Extra) then
@@ -7890,7 +7890,7 @@ package body Sem_Ch6 is
 
       --  If Extra_Formals were already created, don't do it again. This
       --  situation may arise for subprogram types created as part of
-      --  dispatching calls (see Expand_Dispatching_Call)
+      --  dispatching calls (see Expand_Dispatching_Call).
 
       if Present (Last_Extra) and then Present (Extra_Formal (Last_Extra)) then
          return;
@@ -8028,9 +8028,7 @@ package body Sem_Ch6 is
             Full_Subt   : constant Entity_Id := Available_View (Result_Subt);
             Formal_Typ  : Entity_Id;
             Subp_Decl   : Node_Id;
-
-            Discard : Entity_Id;
-            pragma Warnings (Off, Discard);
+            Discard     : Entity_Id;
 
          begin
             --  In the case of functions with unconstrained result subtypes,
@@ -8094,7 +8092,14 @@ package body Sem_Ch6 is
             Formal_Typ :=
               Create_Itype (E_Anonymous_Access_Type, E, Scope_Id => Scope (E));
 
-            Set_Directly_Designated_Type (Formal_Typ, Result_Subt);
+            --  Incomplete_View_From_Limited_With is needed here because
+            --  gigi gets confused if the designated type is the full view
+            --  coming from a limited-with'ed package. In the normal case,
+            --  (no limited with) Incomplete_View_From_Limited_With
+            --  returns Result_Subt.
+
+            Set_Directly_Designated_Type
+              (Formal_Typ, Incomplete_View_From_Limited_With (Result_Subt));
             Set_Etype (Formal_Typ, Formal_Typ);
             Set_Depends_On_Private
               (Formal_Typ, Has_Private_Component (Formal_Typ));

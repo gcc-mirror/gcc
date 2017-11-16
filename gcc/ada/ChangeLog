@@ -1,3 +1,13 @@
+2017-11-16  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Create_Extra_Formals): The type of the BIP_Object_Access
+	formal must not have a designated type that is the full view coming
+	from a limited-with'ed package.
+	* sem_util.adb,sem_util.ads (Incomplete_View_From_Limited_With): New
+	function called from sem_ch6.
+	* sem_ch5.adb (Analyze_Assignment): Treat user-defined concatenation
+	specially for b-i-p cases.
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
