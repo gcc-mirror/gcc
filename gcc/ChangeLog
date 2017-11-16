@@ -1,5 +1,10 @@
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-vect-loop-manip.c (vect_do_peeling): Do not use
+	scale_bbs_frequencies_int.
+
+2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* final.c (compute_alignments): Use counts rather than frequencies.
 
 2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
