@@ -1,3 +1,10 @@
+2017-11-16  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brig.dg/test/gimple/vector.hsail: Update for HSA registers' tree
+	representation changes in brig1.
+	* brig.dg/test/gimple/packed.hsail: Likewise.
+	* brig.dg/test/gimple/internal-reg-var-casts.hsail: New.
+
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/ipcp-2.c: Lower threshold.

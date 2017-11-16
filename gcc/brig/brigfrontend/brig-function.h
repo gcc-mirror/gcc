@@ -45,15 +45,6 @@ typedef std::map<std::string, tree> label_index;
 typedef std::map<const BrigDirectiveVariable *, tree> variable_index;
 typedef std::vector<tree> tree_stl_vec;
 
-/* There are 128 c regs and 2048 s/d/q regs each in the HSAIL.  */
-#define BRIG_2_TREE_HSAIL_C_REG_COUNT (128)
-#define BRIG_2_TREE_HSAIL_S_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_D_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_Q_REG_COUNT (2048)
-#define BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT				       \
-  (BRIG_2_TREE_HSAIL_C_REG_COUNT + BRIG_2_TREE_HSAIL_S_REG_COUNT	       \
-   + BRIG_2_TREE_HSAIL_D_REG_COUNT + BRIG_2_TREE_HSAIL_Q_REG_COUNT)
-
 /* Holds data for the currently built GENERIC function.  */
 
 class brig_function
@@ -222,6 +213,9 @@ public:
   phsa_descriptor m_descriptor;
 
 private:
+
+  tree get_tree_type_for_hsa_reg (const BrigOperandRegister *reg) const;
+
   /* Bookkeeping for the different HSA registers and their tree declarations
      for the currently generated function.  */
   reg_decl_index_entry *m_regs[BRIG_2_TREE_HSAIL_TOTAL_REG_COUNT];

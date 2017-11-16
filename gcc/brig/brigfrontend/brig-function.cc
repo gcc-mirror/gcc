@@ -272,32 +272,59 @@ brig_function::add_local_variable (std::string name, tree type)
   return variable;
 }
 
+/* Return tree type for an HSA register.
+
+   The tree type can be anything (scalar, vector, int, float, etc.)
+   but its size is guaranteed to match the HSA register size.
+
+   HSA registers are untyped but we select a type based on their use
+   to reduce (sometimes unoptimizable) VIEW_CONVERT_EXPR nodes (seems
+   to occur when use or def reaches over current BB).  */
+
+tree
+brig_function::get_tree_type_for_hsa_reg (const BrigOperandRegister *reg) const
+{
+  size_t reg_size = gccbrig_reg_size (reg);
+
+  /* The default type.  */
+  tree type = build_nonstandard_integer_type (reg_size, true);
+
+  if (m_parent->m_fn_regs_use_index.count (m_name) == 0)
+    return type;
+
+  const regs_use_index &index = m_parent->m_fn_regs_use_index[m_name];
+  size_t reg_id = gccbrig_hsa_reg_id (*reg);
+  if (index.count (reg_id) == 0)
+    return type;
+
+  const reg_use_info &info = index.find (reg_id)->second;
+  std::vector<std::pair<tree, size_t> >::const_iterator it
+    = info.m_type_refs.begin ();
+  std::vector<std::pair<tree, size_t> >::const_iterator it_end
+    = info.m_type_refs.end ();
+  size_t max_refs_as_type_count = 0;
+  for (; it != it_end; it++)
+    {
+      size_t type_bit_size = int_size_in_bytes (it->first) * BITS_PER_UNIT;
+      if (type_bit_size != reg_size) continue;
+      if (it->second > max_refs_as_type_count)
+	{
+	  type = it->first;
+	  max_refs_as_type_count = it->second;
+	}
+    }
+
+  return type;
+}
+
 /* Returns a DECL_VAR for the given HSAIL operand register.
    If it has not been created yet for the function being generated,
-   creates it as an unsigned int variable.  */
+   creates it as a type determined by analysis phase.  */
 
 tree
 brig_function::get_m_var_declfor_reg (const BrigOperandRegister *reg)
 {
-  size_t offset = reg->regNum;
-  switch (reg->regKind)
-    {
-    case BRIG_REGISTER_KIND_QUAD:
-      offset
-	+= BRIG_2_TREE_HSAIL_D_REG_COUNT + BRIG_2_TREE_HSAIL_S_REG_COUNT +
-	BRIG_2_TREE_HSAIL_C_REG_COUNT;
-      break;
-    case BRIG_REGISTER_KIND_DOUBLE:
-      offset += BRIG_2_TREE_HSAIL_S_REG_COUNT + BRIG_2_TREE_HSAIL_C_REG_COUNT;
-      break;
-    case BRIG_REGISTER_KIND_SINGLE:
-      offset += BRIG_2_TREE_HSAIL_C_REG_COUNT;
-    case BRIG_REGISTER_KIND_CONTROL:
-      break;
-    default:
-      gcc_unreachable ();
-      break;
-    }
+  size_t offset = gccbrig_hsa_reg_id (*reg);
 
   reg_decl_index_entry *regEntry = m_regs[offset];
   if (regEntry == NULL)
@@ -305,7 +332,7 @@ brig_function::get_m_var_declfor_reg (const BrigOperandRegister *reg)
       size_t reg_size = gccbrig_reg_size (reg);
       tree type;
       if (reg_size > 1)
-	type = build_nonstandard_integer_type (reg_size, true);
+	type = get_tree_type_for_hsa_reg (reg);
       else
 	type = boolean_type_node;
 
