@@ -1,3 +1,9 @@
+2017-11-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Do not do the
+	switch statement mapping KF built-ins to TF built-ins if we don't
+	have the proper ISA 3.0 assembler support.
+
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-emutls.c (lower_emutls_data): Remove unused bb_freq.
