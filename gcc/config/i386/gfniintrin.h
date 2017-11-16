@@ -28,9 +28,9 @@
 #ifndef _GFNIINTRIN_H_INCLUDED
 #define _GFNIINTRIN_H_INCLUDED
 
-#ifndef __GFNI__
+#if !defined(__GFNI__) || !defined(__SSE__)
 #pragma GCC push_options
-#pragma GCC target("gfni")
+#pragma GCC target("gfni,sse")
 #define __DISABLE_GFNI__
 #endif /* __GFNI__ */
 
