@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
+#include "tree-dfa.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
@@ -65,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "vr-values.h"
+#include "builtins.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -4781,26 +4783,51 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   low_sub = up_sub = TREE_OPERAND (ref, 1);
   up_bound = array_ref_up_bound (ref);
 
-  /* Can not check flexible arrays.  */
   if (!up_bound
-      || TREE_CODE (up_bound) != INTEGER_CST)
-    return;
+      || TREE_CODE (up_bound) != INTEGER_CST
+      || (warn_array_bounds < 2
+	  && array_at_struct_end_p (ref)))
+    {
+      /* Accesses to trailing arrays via pointers may access storage
+	 beyond the types array bounds.  For such arrays, or for flexible
+	 array members, as well as for other arrays of an unknown size,
+	 replace the upper bound with a more permissive one that assumes
+	 the size of the largest object is PTRDIFF_MAX.  */
+      tree eltsize = array_ref_element_size (ref);
 
-  /* Accesses to trailing arrays via pointers may access storage
-     beyond the types array bounds.  */
-  if (warn_array_bounds < 2
-      && array_at_struct_end_p (ref))
-    return;
+      /* FIXME: Handle VLAs.  */
+      if (TREE_CODE (eltsize) != INTEGER_CST)
+	return;
+
+      tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
+
+      up_bound_p1 = int_const_binop (TRUNC_DIV_EXPR, maxbound, eltsize);
+
+      tree arg = TREE_OPERAND (ref, 0);
+
+      HOST_WIDE_INT off;
+      if (get_addr_base_and_unit_offset (arg, &off))
+	up_bound_p1 = wide_int_to_tree (sizetype,
+					wi::sub (wi::to_wide (up_bound_p1),
+						 off));
+
+      up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
+				  build_int_cst (ptrdiff_type_node, 1));
+    }
+  else
+    up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
+				   build_int_cst (TREE_TYPE (up_bound), 1));
 
   low_bound = array_ref_low_bound (ref);
-  up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
-				 build_int_cst (TREE_TYPE (up_bound), 1));
+
+  tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
   /* Empty array.  */
   if (tree_int_cst_equal (low_bound, up_bound_p1))
     {
       warning_at (location, OPT_Warray_bounds,
-		  "array subscript is above array bounds");
+		  "array subscript %E is above array bounds of %qT",
+		  low_bound, artype);
       TREE_NO_WARNING (ref) = 1;
     }
 
@@ -4824,7 +4851,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
           && tree_int_cst_le (low_sub, low_bound))
         {
           warning_at (location, OPT_Warray_bounds,
-		      "array subscript is outside array bounds");
+		      "array subscript [%E, %E] is outside array bounds of %qT",
+		      low_sub, up_sub, artype);
           TREE_NO_WARNING (ref) = 1;
         }
     }
@@ -4840,7 +4868,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  fprintf (dump_file, "\n");
 	}
       warning_at (location, OPT_Warray_bounds,
-		  "array subscript is above array bounds");
+		  "array subscript %E is above array bounds of %qT",
+		  up_sub, artype);
       TREE_NO_WARNING (ref) = 1;
     }
   else if (TREE_CODE (low_sub) == INTEGER_CST
@@ -4853,7 +4882,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	  fprintf (dump_file, "\n");
 	}
       warning_at (location, OPT_Warray_bounds,
-		  "array subscript is below array bounds");
+		  "array subscript %E is below array bounds of %qT",
+		  low_sub, artype);
       TREE_NO_WARNING (ref) = 1;
     }
 }
@@ -4908,7 +4938,8 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
 	      fprintf (dump_file, "\n");
 	    }
 	  warning_at (location, OPT_Warray_bounds,
-		      "array subscript is below array bounds");
+		      "array subscript %wi is below array bounds of %qT",
+		      idx.to_shwi (), TREE_TYPE (tem));
 	  TREE_NO_WARNING (t) = 1;
 	}
       else if (idx > (wi::to_offset (up_bound)
@@ -4921,7 +4952,8 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
 	      fprintf (dump_file, "\n");
 	    }
 	  warning_at (location, OPT_Warray_bounds,
-		      "array subscript is above array bounds");
+		      "array subscript %wu is above array bounds of %qT",
+		      idx.to_uhwi (), TREE_TYPE (tem));
 	  TREE_NO_WARNING (t) = 1;
 	}
     }
