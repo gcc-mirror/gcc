@@ -9783,6 +9783,15 @@ package body Sem_Ch13 is
                then
                   Check_At_Constant_Address (Prefix (Nod));
 
+               --  Normally, System'To_Address will have been transformed into
+               --  an Unchecked_Conversion, but in -gnatc mode, it will not,
+               --  and we don't want to give an error, because the whole point
+               --  of 'To_Address is that it is static.
+
+               elsif Attribute_Name (Nod) = Name_To_Address then
+                  pragma Assert (Operating_Mode = Check_Semantics);
+                  null;
+
                else
                   Check_Expr_Constants (Prefix (Nod));
                   Check_List_Constants (Expressions (Nod));

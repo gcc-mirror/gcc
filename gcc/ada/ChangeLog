@@ -1,3 +1,13 @@
+2017-11-16  Sylvain Dailler  <dailler@adacore.com>
+
+	* sem_util.adb (Get_Enum_Lit_From_Pos): Add a condition for Pos
+	lower than 0.
+
+2017-11-16  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Check_Expr_Constants): Avoid error message in case of
+	System'To_Address.
+
 2017-11-16  Yannick Moy  <moy@adacore.com>
 
 	* sem_elab.adb (Include): Fix mode of parameter Curr to out.
