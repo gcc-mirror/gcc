@@ -1,3 +1,8 @@
+2017-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (x86_print_call_or_nop): Emit 5 byte nop
+	explicitly as a stream of bytes.
+
 2017-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82985
@@ -47,7 +52,7 @@
 
 	Backport from mainline
 	2017-10-31  Matthew Fortune  <matthew.fortune@imgtec.com>
-                    Eric Botcazou  <ebotcazou@adacore.com>
+		    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/81803
 	* lra-constraints.c (curr_insn_transform): Also reload the whole
@@ -116,8 +121,8 @@
 2017-10-24  Qing Zhao <qing.zhao@oracle.com>
 	    Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
-        * builtins.c (expand_builtin_update_setjmp_buf): Add a
-        converstion to Pmode from the buf_addr.
+	* builtins.c (expand_builtin_update_setjmp_buf): Add a
+	converstion to Pmode from the buf_addr.
 
 2017-10-20  Richard Biener  <rguenther@suse.de>
 
@@ -265,7 +270,7 @@
 2017-09-27  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from trunk r249639.
- 	2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
+	2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/sourcebuild.texi (ARM-specific attributes): Document new
 	arm_neon_ok_no_float_abi effective target.
@@ -363,7 +368,7 @@
 
 	Backported from mainline
 	2017-09-14  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/81325
 	* cfgbuild.c (find_bb_boundaries): Ignore debug insns in decisions
 	if and where to split a bb, except for splitting before debug insn
@@ -669,7 +674,7 @@
 
 	PR sanitizer/80932
 	* fold-const.c (extract_muldiv_1) <case MINUS_EXPR>: Add
-	TYPE_OVERFLOW_WRAPS check. 
+	TYPE_OVERFLOW_WRAPS check.
 
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
@@ -681,7 +686,7 @@
 	at struct end conservatively when comparing common bases.
 
 	2017-05-04  Richard Biener  <rguenther@suse.de>
- 
+
 	* tree.c (array_at_struct_end_p): Handle arrays at struct
 	end with flexarrays more conservatively.  Refactor and treat
 	arrays of arrays or aggregates more strict.  Fix
