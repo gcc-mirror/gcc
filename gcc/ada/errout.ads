@@ -218,7 +218,7 @@ package Errout is
    --    Insertion character } (Right brace: insert type reference)
    --      The character } is replaced by a string describing the type
    --      referenced by the entity whose Id is stored in Error_Msg_Node_1.
-   --      the string gives the name or description of the type, and also
+   --      The string gives the name or description of the type, and also
    --      where appropriate the location of its declaration. Special cases
    --      like "some integer type" are handled appropriately. Only one } is
    --      allowed in a message, since there is not enough room for two (the

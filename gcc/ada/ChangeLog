@@ -1,3 +1,24 @@
+2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Include): Including a node which is also a compilation
+	unit terminates the search because there are no more lists to examine.
+
+2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Ensure that a renaming
+	declaration does not define a primitive operation of a tagged type for
+	SPARK.
+	(Check_SPARK_Primitive_Operation): New routine.
+
+2017-11-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-elchha.adb (Last_Chance_Handler): Display Argv (0) in
+	message when using -E binder switch.
+
+2017-11-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.ads: Fix minor typo in comment.
+
 2017-11-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Process_Subtype): If the subtype indication does not

@@ -4245,7 +4245,7 @@ package body Sem_Elab is
       procedure Include (N : Node_Id; Curr : in out Node_Id);
       pragma Inline (Include);
       --  Update the Curr and Start pointers to include arbitrary construct N
-      --  in the early call region.
+      --  in the early call region. This routine raises ECR_Found.
 
       function Is_OK_Preelaborable_Construct (N : Node_Id) return Boolean;
       pragma Inline (Is_OK_Preelaborable_Construct);
@@ -4559,7 +4559,24 @@ package body Sem_Elab is
       procedure Include (N : Node_Id; Curr : in out Node_Id) is
       begin
          Start := N;
-         Curr  := Prev (Start);
+
+         --  The input node is a compilation unit. This terminates the search
+         --  because there are no more lists to inspect and there are no more
+         --  enclosing constructs to climb up to. The transitions are:
+         --
+         --    private declarations -> terminate
+         --    visible declarations -> terminate
+         --    statements           -> terminate
+         --    declarations         -> terminate
+
+         if Nkind (Parent (Start)) = N_Compilation_Unit then
+            raise ECR_Found;
+
+         --  Otherwise the input node is still within some list
+
+         else
+            Curr := Prev (Start);
+         end if;
       end Include;
 
       -----------------------------------
