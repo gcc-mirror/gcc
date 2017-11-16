@@ -579,10 +579,7 @@ find_single_use_1 (rtx dest, rtx *loc)
 	  && !REG_P (SET_DEST (x))
 	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (x)))
-		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))))
+		&& !read_modify_subreg_p (SET_DEST (x))))
 	break;
 
       return find_single_use_1 (dest, &SET_SRC (x));
@@ -2774,6 +2771,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       else
 	fprintf (dump_file, "\nTrying %d -> %d:\n",
 		 INSN_UID (i2), INSN_UID (i3));
+
+      if (i0)
+	dump_insn_slim (dump_file, i0);
+      if (i1)
+	dump_insn_slim (dump_file, i1);
+      dump_insn_slim (dump_file, i2);
+      dump_insn_slim (dump_file, i3);
     }
 
   /* If multiple insns feed into one of I2 or I3, they can be in any
@@ -5886,7 +5890,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 
       if (GET_CODE (temp) == ASHIFTRT
 	  && CONST_INT_P (XEXP (temp, 1))
-	  && INTVAL (XEXP (temp, 1)) == GET_MODE_PRECISION (mode) - 1)
+	  && INTVAL (XEXP (temp, 1)) == GET_MODE_UNIT_PRECISION (mode) - 1)
 	return simplify_shift_const (NULL_RTX, LSHIFTRT, mode, XEXP (temp, 0),
 				     INTVAL (XEXP (temp, 1)));
 
@@ -7361,15 +7365,12 @@ expand_field_assignment (const_rtx x)
 	    }
 	}
 
-      /* A SUBREG between two modes that occupy the same numbers of words
-	 can be done by moving the SUBREG to the source.  */
+      /* If the destination is a subreg that overwrites the whole of the inner
+	 register, we can move the subreg to the source.  */
       else if (GET_CODE (SET_DEST (x)) == SUBREG
 	       /* We need SUBREGs to compute nonzero_bits properly.  */
 	       && nonzero_sign_valid
-	       && (((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-		     + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		   == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
+	       && !read_modify_subreg_p (SET_DEST (x)))
 	{
 	  x = gen_rtx_SET (SUBREG_REG (SET_DEST (x)),
 			   gen_lowpart
@@ -9526,13 +9527,9 @@ rtx_equal_for_field_assignment_p (rtx x, rtx y, bool widen_x)
 	return 0;
       if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
 	return 0;
-      /* For big endian, adjust the memory offset.  */
-      if (BYTES_BIG_ENDIAN)
-	x = adjust_address_nv (x, GET_MODE (y),
-			       -subreg_lowpart_offset (GET_MODE (x),
-						       GET_MODE (y)));
-      else
-	x = adjust_address_nv (x, GET_MODE (y), 0);
+      x = adjust_address_nv (x, GET_MODE (y),
+			     byte_lowpart_offset (GET_MODE (y),
+						  GET_MODE (x)));
     }
 
   if (x == y || rtx_equal_p (x, y))
@@ -11976,10 +11973,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	  if (paradoxical_subreg_p (inner_op0)
 	      && GET_CODE (inner_op1) == SUBREG
+	      && HWI_COMPUTABLE_MODE_P (GET_MODE (SUBREG_REG (inner_op0)))
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
-	      && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (inner_op0)))
-		  <= HOST_BITS_PER_WIDE_INT)
 	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
 					     GET_MODE (SUBREG_REG (inner_op0)))))
 	      && (0 == ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
@@ -13318,7 +13314,7 @@ record_promoted_value (rtx_insn *insn, rtx subreg)
   unsigned int regno = REGNO (SUBREG_REG (subreg));
   machine_mode mode = GET_MODE (subreg);
 
-  if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
+  if (!HWI_COMPUTABLE_MODE_P (mode))
     return;
 
   for (links = LOG_LINKS (insn); links;)
@@ -13998,10 +13994,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
       if (GET_CODE (dest) == ZERO_EXTRACT
 	  || GET_CODE (dest) == STRICT_LOW_PART
 	  || (GET_CODE (dest) == SUBREG
-	      && (((GET_MODE_SIZE (GET_MODE (dest))
-		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-		  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
-		       + UNITS_PER_WORD - 1) / UNITS_PER_WORD))))
+	      && !read_modify_subreg_p (dest)))
 	{
 	  move_deaths (dest, maybe_kill_insn, from_luid, to_insn, pnotes);
 	  return;
@@ -14368,6 +14361,17 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		  && CALL_P (from_insn)
 		  && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
 		place = from_insn;
+	      else if (i2 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
+		{
+		  /* If the new I2 sets the same register that is marked
+		     dead in the note, we do not in general know where to
+		     put the note.  One important case we _can_ handle is
+		     when the note comes from I3.  */
+		  if (from_insn == i3)
+		    place = i3;
+		  else
+		    break;
+		}
 	      else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 		place = i3;
 	      else if (i2 != 0 && next_nonnote_nondebug_insn (i2) == i3
@@ -14381,11 +14385,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		       || rtx_equal_p (XEXP (note, 0), elim_i0))
 		break;
 	      tem_insn = i3;
-	      /* If the new I2 sets the same register that is marked dead
-		 in the note, we do not know where to put the note.
-		 Give up.  */
-	      if (i2 != 0 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
-		break;
 	    }
 
 	  if (place == 0)

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 
-int  foo (void) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
-void (*foo1) (void) __attribute__((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored. Use -fcf-protection option to enable it" } */
+int  foo (void) __attribute__ ((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */
+void (*foo1) (void) __attribute__((nocf_check)); /* { dg-warning "'nocf_check' attribute ignored" } */
 void (*foo2) (void);
 
 int

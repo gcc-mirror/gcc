@@ -720,6 +720,16 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+/* Some of the headers included by <memory> can use "abort" within a
+   namespace, e.g. "_VSTD::abort();", which fails after we use the
+   preprocessor to redefine "abort" as "fancy_abort" below.
+   Given that unique-ptr.h can use "free", we need to do this after "free"
+   is declared but before "abort" is overridden.  */
+
+#ifdef INCLUDE_UNIQUE_PTR
+# include "unique-ptr.h"
+#endif
+
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *)
@@ -915,7 +925,8 @@ extern void fancy_abort (const char *, int, const char *)
 	MODES_TIEABLE_P FUNCTION_ARG_PADDING SLOW_UNALIGNED_ACCESS	\
 	HARD_REGNO_NREGS SECONDARY_MEMORY_NEEDED_MODE			\
 	SECONDARY_MEMORY_NEEDED CANNOT_CHANGE_MODE_CLASS		\
-	TRULY_NOOP_TRUNCATION FUNCTION_ARG_OFFSET CONSTANT_ALIGNMENT
+	TRULY_NOOP_TRUNCATION FUNCTION_ARG_OFFSET CONSTANT_ALIGNMENT	\
+	STARTING_FRAME_OFFSET
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */
@@ -1007,7 +1018,8 @@ extern void fancy_abort (const char *, int, const char *)
 	ROUND_TOWARDS_ZERO SF_SIZE DF_SIZE XF_SIZE TF_SIZE LIBGCC2_TF_CEXT \
 	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE			   \
 	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
-	JCR_SECTION_NAME TARGET_USE_JCR_SECTION
+	JCR_SECTION_NAME TARGET_USE_JCR_SECTION SDB_DEBUGGING_INFO	   \
+	SDB_DEBUG
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

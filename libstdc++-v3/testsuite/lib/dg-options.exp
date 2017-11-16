@@ -52,6 +52,15 @@ proc dg-require-normal-mode { args } {
     return
 }
 
+proc dg-require-normal-namespace { args } {
+    if { ![ check_v3_target_normal_namespace ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc dg-require-parallel-mode { args } {
     if { ![ check_v3_target_parallel_mode ] } {
 	upvar dg-do-what dg-do-what

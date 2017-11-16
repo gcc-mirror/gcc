@@ -434,7 +434,13 @@
   (and (eq_attr "type" "vecdiv")
        (eq_attr "size" "128")
        (eq_attr "cpu" "power9"))
-  "DU_super_power9,dfu_power9")
+  "DU_super_power9,dfu_power9*44")
+
+(define_insn_reservation "power9-qpmul" 24
+  (and (eq_attr "type" "qmul")
+       (eq_attr "size" "128")
+       (eq_attr "cpu" "power9"))
+  "DU_super_power9,dfu_power9*12")
 
 (define_insn_reservation "power9-mffgpr" 2
   (and (eq_attr "type" "mffgpr")

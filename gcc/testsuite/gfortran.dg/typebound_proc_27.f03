@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fdump-tree-original" }
-! 
+!
 ! PR fortran/47586
 ! Missing deep copy for data pointer returning functions when the type
 ! has allocatable components
@@ -77,15 +77,15 @@ end program prog
 ! statements.
 ! It is assumed that if the number of allocate is right, the number of
 ! deep copies is right too.
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 12 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 15 "original" } }
 
 !
 ! Realloc are only used for assignments to `that%i'.  Don't know why.
 ! { dg-final { scan-tree-dump-times "__builtin_realloc" 6 "original" } }
-! 
+!
 
 ! No leak: Only assignments to `this' use malloc.  Assignments to `that%i'
 ! take the realloc path after the first assignment, so don't count as a malloc.
-! { dg-final { scan-tree-dump-times "__builtin_free" 7 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 10 "original" } }
 !
 

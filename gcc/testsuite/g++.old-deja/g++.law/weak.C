@@ -11,10 +11,12 @@
 
 std::istream x (0);
 
+int
 main () {
   x.get();
   std::putc(0, 0);
   std::fgets(0, 0, 0); 
   x.get((char*) 0, 0);
+  return 0;
 }
 

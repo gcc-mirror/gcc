@@ -1,5 +1,6 @@
 // PR c++/67161
 // { dg-do compile { target c++14 } }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename _Tp> struct integral_constant {
   static constexpr _Tp value = 0;

@@ -553,9 +553,13 @@ package Opt is
    --  GNAT
    --  Set to True to output info messages for static elabmodel (-gnatel)
 
-   Elab_Warnings : Boolean := False;
+   Elab_Warnings : Boolean := True;
    --  GNAT
-   --  Set to True to generate elaboration warnings (-gnatwl)
+   --  Set to True to generate elaboration warnings (-gnatwl). The warnings are
+   --  enabled by default because they carry the same importance as errors. The
+   --  compiler cannot emit actual errors because elaboration diagnostics need
+   --  dataflow analysis, which is not available. This behavior parallels that
+   --  of the old ABE mechanism.
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
@@ -2148,17 +2152,7 @@ package Opt is
    -- Other Global Flags --
    ------------------------
 
-   Expander_Active : Boolean := False;
-   --  A flag that indicates if expansion is active (True) or deactivated
-   --  (False). When expansion is deactivated all calls to expander routines
-   --  have no effect. Note that the initial setting of False is merely to
-   --  prevent saving of an undefined value for an initial call to the
-   --  Expander_Mode_Save_And_Set procedure. For more information on the use of
-   --  this flag, see package Expander. Indeed this flag might more logically
-   --  be in the spec of Expander, but it is referenced by Errout, and it
-   --  really seems wrong for Errout to depend on Expander.
-
-   Static_Dispatch_Tables : Boolean := True;
+   Building_Static_Dispatch_Tables : Boolean := True;
    --  This flag indicates if the backend supports generation of statically
    --  allocated dispatch tables. If it is True, then the front end will
    --  generate static aggregates for dispatch tables that contain forward
@@ -2169,6 +2163,16 @@ package Opt is
    --  dispatch tables for all library level tagged types in all platforms.This
    --  behavior can be disabled using switch -gnatd.t which will set this flag
    --  to False and revert to the previous dynamic behavior.
+
+   Expander_Active : Boolean := False;
+   --  A flag that indicates if expansion is active (True) or deactivated
+   --  (False). When expansion is deactivated all calls to expander routines
+   --  have no effect. Note that the initial setting of False is merely to
+   --  prevent saving of an undefined value for an initial call to the
+   --  Expander_Mode_Save_And_Set procedure. For more information on the use of
+   --  this flag, see package Expander. Indeed this flag might more logically
+   --  be in the spec of Expander, but it is referenced by Errout, and it
+   --  really seems wrong for Errout to depend on Expander.
 
    -----------------------
    -- Tree I/O Routines --

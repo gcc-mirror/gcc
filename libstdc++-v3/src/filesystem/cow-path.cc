@@ -1,4 +1,4 @@
-// Class filesystem::path -*- C++ -*-
+// Class experimental::filesystem::path -*- C++ -*-
 
 // Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //

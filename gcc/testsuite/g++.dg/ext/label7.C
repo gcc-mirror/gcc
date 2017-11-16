@@ -1,7 +1,7 @@
 // PR c++/32121
 // { dg-do compile }
 
-int f (void)
+void f (void)
 {
   a:;
   __label__ a;	// { dg-error "not at the beginning" }

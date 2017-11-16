@@ -3999,7 +3999,8 @@ cpms_out::lang_decl_vals (tree t)
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
-      WU (lang->u.fn.operator_code);
+      if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
+	WU (lang->u.fn.ovl_op_code);
       if (lang->u.fn.thunk_p)
 	w.wi (lang->u.fn.u5.fixed_offset);
       else
@@ -4038,9 +4039,19 @@ cpms_in::lang_decl_vals (tree t)
     {
     case lds_fn:  /* lang_decl_fn.  */
       {
-	unsigned code = r.u ();
-	/* It seems to be hard to check this is in range.  */
-	lang->u.fn.operator_code = (tree_code)code;
+	if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
+	  {
+	    unsigned code = r.u ();
+
+	    /* Check consistency.  */
+	    if (code >= OVL_OP_MAX
+		|| (ovl_op_info[IDENTIFIER_ASSIGN_OP_P (DECL_NAME (t))][code]
+		    .ovl_op_code) == OVL_OP_ERROR_MARK)
+	      r.bad ();
+	    else
+	      lang->u.fn.ovl_op_code = code;
+	  }
+
 	if (lang->u.fn.thunk_p)
 	  lang->u.fn.u5.fixed_offset = r.wi ();
 	else

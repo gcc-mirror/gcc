@@ -4231,18 +4231,12 @@ chkp_copy_bounds_for_assign (gimple *assign, struct cgraph_edge *edge)
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
 	  struct cgraph_node *callee = cgraph_node::get_create (fndecl);
-	  struct cgraph_edge *new_edge;
 
 	  gcc_assert (chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDSTX)
 		      || chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDLDX)
 		      || chkp_gimple_call_builtin_p (stmt, BUILT_IN_CHKP_BNDRET));
 
-	  new_edge = edge->caller->create_edge (callee,
-						as_a <gcall *> (stmt),
-						edge->count,
-						edge->frequency);
-	  new_edge->frequency = compute_call_stmt_bb_frequency
-	    (edge->caller->decl, gimple_bb (stmt));
+	  edge->caller->create_edge (callee, as_a <gcall *> (stmt), edge->count);
 	}
       gsi_prev (&iter);
     }

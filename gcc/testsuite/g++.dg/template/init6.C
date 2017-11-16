@@ -24,8 +24,10 @@ template<class T>
 Iter<typename Graph<T>::Node*> *Graph<T>::Inner::get() {
   SubIter<typename Graph<T>::Node*> *iter;
   iter->insert(0);
+  return 0;
 }
 
 int main() {
   Iter<Graph<int>::Node*> *n2_iter = new SubIter<Graph<int>::Node*>();
+  return 0;
 }

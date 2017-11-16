@@ -180,6 +180,11 @@ namespace __gnu_test
 #endif
   };
 
+#if __cplusplus >= 201103L
+  template<typename T, typename U>
+    void operator,(const T&, const output_iterator_wrapper<U>&) = delete;
+#endif
+
   /**
    * @brief input_iterator wrapper for pointer
    *
@@ -270,6 +275,10 @@ namespace __gnu_test
 #endif
   };
 
+#if __cplusplus >= 201103L
+  template<typename T, typename U>
+    void operator,(const T&, const input_iterator_wrapper<U>&) = delete;
+#endif
 
   /**
    * @brief forward_iterator wrapper for pointer

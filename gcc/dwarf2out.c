@@ -263,7 +263,6 @@ static GTY(()) int dw2_string_counter;
 static GTY(()) bool have_multiple_function_sections = false;
 
 /* Whether the default text and cold text sections have been used at all.  */
-
 static GTY(()) bool text_section_used = false;
 static GTY(()) bool cold_text_section_used = false;
 
@@ -284,6 +283,9 @@ static void dwarf2out_note_section_used (void);
 /* Personality decl of current unit.  Used only when assembler does not support
    personality CFI.  */
 static GTY(()) rtx current_unit_personality;
+
+/* Whether an eh_frame section is required.  */
+static GTY(()) bool do_eh_frame = false;
 
 /* .debug_rnglists next index.  */
 static unsigned int rnglist_idx;
@@ -1060,9 +1062,13 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   dup_label = xstrdup (label);
   current_function_func_begin_label = dup_label;
 
-  /* We can elide the fde allocation if we're not emitting debug info.  */
+  /* We can elide FDE allocation if we're not emitting frame unwind info.  */
   if (!do_frame)
     return;
+
+  /* Unlike the debug version, the EH version of frame unwind info is a per-
+     function setting so we need to record whether we need it for the unit.  */
+  do_eh_frame |= dwarf2out_do_eh_frame ();
 
   /* Cater to the various TARGET_ASM_OUTPUT_MI_THUNK implementations that
      emit insns as rtx but bypass the bulk of rest_of_compilation, which
@@ -1180,8 +1186,7 @@ dwarf2out_frame_finish (void)
     output_call_frame_info (0);
 
   /* Output another copy for the unwinder.  */
-  if ((flag_unwind_tables || flag_exceptions)
-      && targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
+  if (do_eh_frame)
     output_call_frame_info (1);
 }
 
@@ -12481,7 +12486,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   dw_die_ref mod_scope;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
-			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
+			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC | 
+			    ENCODE_QUAL_ADDR_SPACE(~0U));
   const bool reverse_base_type
     = need_endianity_attribute_p (reverse) && is_base_type (type);
 
@@ -13740,9 +13746,17 @@ expansion_failed (tree expr, rtx rtl, char const *reason)
 static bool
 const_ok_for_output_1 (rtx rtl)
 {
-  if (GET_CODE (rtl) == UNSPEC)
+  if (targetm.const_not_ok_for_debug_p (rtl))
     {
-      /* If delegitimize_address couldn't do anything with the UNSPEC, assume
+      if (GET_CODE (rtl) != UNSPEC)
+	{
+	  expansion_failed (NULL_TREE, rtl,
+			    "Expression rejected for debug by the backend.\n");
+	  return false;
+	}
+
+      /* If delegitimize_address couldn't do anything with the UNSPEC, and
+	 the target hook doesn't explicitly allow it in debug info, assume
 	 we can't express it in the debug info.  */
       /* Don't complain about TLS UNSPECs, those are just too hard to
 	 delegitimize.  Note this could be a non-decl SYMBOL_REF such as
@@ -13769,22 +13783,19 @@ const_ok_for_output_1 (rtx rtl)
       return false;
     }
 
-  if (targetm.const_not_ok_for_debug_p (rtl))
-    {
-      expansion_failed (NULL_TREE, rtl,
-			"Expression rejected for debug by the backend.\n");
-      return false;
-    }
-
   /* FIXME: Refer to PR60655. It is possible for simplification
      of rtl expressions in var tracking to produce such expressions.
      We should really identify / validate expressions
      enclosed in CONST that can be handled by assemblers on various
      targets and only handle legitimate cases here.  */
-  if (GET_CODE (rtl) != SYMBOL_REF)
+  switch (GET_CODE (rtl))
     {
-      if (GET_CODE (rtl) == NOT)
-	return false;
+    case SYMBOL_REF:
+      break;
+    case NOT:
+    case NEG:
+      return false;
+    default:
       return true;
     }
 
@@ -14546,8 +14557,7 @@ rotate_loc_descriptor (rtx rtl, scalar_int_mode mode,
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
   int i;
 
-  if (GET_MODE (rtlop1) != VOIDmode
-      && GET_MODE_BITSIZE (GET_MODE (rtlop1)) < GET_MODE_BITSIZE (mode))
+  if (is_narrower_int_mode (GET_MODE (rtlop1), mode))
     rtlop1 = gen_rtx_ZERO_EXTEND (mode, rtlop1);
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 			    VAR_INIT_STATUS_INITIALIZED);
@@ -14958,8 +14968,32 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (!const_ok_for_output (rtl))
 	{
 	  if (GET_CODE (rtl) == CONST)
-	    mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), int_mode,
-						 mem_mode, initialized);
+	    switch (GET_CODE (XEXP (rtl, 0)))
+	      {
+	      case NOT:
+		op = DW_OP_not;
+		goto try_const_unop;
+	      case NEG:
+		op = DW_OP_neg;
+		goto try_const_unop;
+	      try_const_unop:
+		rtx arg;
+		arg = XEXP (XEXP (rtl, 0), 0);
+		if (!CONSTANT_P (arg))
+		  arg = gen_rtx_CONST (int_mode, arg);
+		op0 = mem_loc_descriptor (arg, int_mode, mem_mode,
+					  initialized);
+		if (op0)
+		  {
+		    mem_loc_result = op0;
+		    add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
+		  }
+		break;
+	      default:
+		mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), int_mode,
+						     mem_mode, initialized);
+		break;
+	      }
 	  break;
 	}
 
@@ -17482,7 +17516,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
 		    || POINTER_TYPE_P (TREE_TYPE (loc)))
 		&& DECL_CONTEXT (loc) == current_function_decl
-		&& (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (loc)))
+		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (loc)))
 		    <= DWARF2_ADDR_SIZE))
 	      {
 		dw_die_ref ref = lookup_decl_die (loc);
@@ -20708,7 +20742,7 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
     return;
 
   type_die = modified_type_die (type,
-				cv_quals | TYPE_QUALS_NO_ADDR_SPACE (type),
+				cv_quals | TYPE_QUALS (type),
 				reverse,
 				context_die);
 
@@ -20938,10 +20972,10 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
 
 #if 0
-  /* We default the array ordering.  SDB will probably do
-     the right things even if DW_AT_ordering is not present.  It's not even
-     an issue until we start to get into multidimensional arrays anyway.  If
-     SDB is ever caught doing the Wrong Thing for multi-dimensional arrays,
+  /* We default the array ordering.  Debuggers will probably do the right
+     things even if DW_AT_ordering is not present.  It's not even an issue
+     until we start to get into multidimensional arrays anyway.  If a debugger
+     is ever caught doing the Wrong Thing for multi-dimensional arrays,
      then we'll have to put the DW_AT_ordering attribute back in.  (But if
      and when we find out that we need to put these in, we will only do so
      for multidimensional arrays.  */
@@ -23374,6 +23408,7 @@ gen_producer_string (void)
       case OPT_fltrans_output_list_:
       case OPT_fresolution_:
       case OPT_fdebug_prefix_map_:
+      case OPT_fcompare_debug:
 	/* Ignore these.  */
 	continue;
       default:
@@ -23433,6 +23468,8 @@ highest_c_language (const char *lang1, const char *lang2)
   if (strcmp ("GNU C++98", lang1) == 0 || strcmp ("GNU C++98", lang2) == 0)
     return "GNU C++98";
 
+  if (strcmp ("GNU C17", lang1) == 0 || strcmp ("GNU C17", lang2) == 0)
+    return "GNU C17";
   if (strcmp ("GNU C11", lang1) == 0 || strcmp ("GNU C11", lang2) == 0)
     return "GNU C11";
   if (strcmp ("GNU C99", lang1) == 0 || strcmp ("GNU C99", lang2) == 0)
@@ -23509,7 +23546,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C99;
 
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
-	    if (strcmp (language_string, "GNU C11") == 0)
+	    if (strcmp (language_string, "GNU C11") == 0
+		|| strcmp (language_string, "GNU C17") == 0)
 	      language = DW_LANG_C11;
 	}
     }
@@ -27490,8 +27528,7 @@ dwarf2out_assembly_start (void)
 
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
       && dwarf2out_do_cfi_asm ()
-      && (!(flag_unwind_tables || flag_exceptions)
-	  || targetm_common.except_unwind_info (&global_options) != UI_DWARF2))
+      && !dwarf2out_do_eh_frame ())
     fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
 }
 

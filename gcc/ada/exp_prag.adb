@@ -1090,7 +1090,7 @@ package body Exp_Prag is
       Conseq_Checks : Node_Id   := Empty;
       Count         : Entity_Id;
       Count_Decl    : Node_Id;
-      Error_Decls   : List_Id;
+      Error_Decls   : List_Id := No_List; -- init to avoid warning
       Flag          : Entity_Id;
       Flag_Decl     : Node_Id;
       If_Stmt       : Node_Id;

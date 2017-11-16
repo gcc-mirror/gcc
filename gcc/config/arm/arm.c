@@ -3335,8 +3335,9 @@ arm_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_active_target.arch_pp_name);
-  arm_base_arch = arm_active_target.base_arch;
+  /* Initialize boolean versions of the architectural flags, for use
+     in the arm.md file and for enabling feature flags.  */
+  arm_option_reconfigure_globals ();
 
   arm_tune = arm_active_target.tune_core;
   tune_flags = arm_active_target.tune_flags;
@@ -3345,16 +3346,6 @@ arm_option_override (void)
   /* TBD: Dwarf info for apcs frame is not handled yet.  */
   if (TARGET_APCS_FRAME)
     flag_shrink_wrap = false;
-
-  /* BPABI targets use linker tricks to allow interworking on cores
-     without thumb support.  */
-  if (TARGET_INTERWORK
-      && !TARGET_BPABI
-      && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
-    {
-      warning (0, "target CPU does not support interworking" );
-      target_flags &= ~MASK_INTERWORK;
-    }
 
   if (TARGET_APCS_STACK && !TARGET_APCS_FRAME)
     {
@@ -3371,43 +3362,6 @@ arm_option_override (void)
   if (TARGET_APCS_REENT)
     warning (0, "APCS reentrant code not supported.  Ignored");
 
-  /* Initialize boolean versions of the architectural flags, for use
-     in the arm.md file.  */
-  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
-  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
-  arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5);
-  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5e);
-  arm_arch5te = arm_arch5e
-    && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6);
-  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6k);
-  arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
-  arm_arch6m = arm_arch6 && !arm_arch_notm;
-  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7);
-  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7em);
-  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8);
-  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_1);
-  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_2);
-  arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
-  arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
-  arm_arch_iwmmxt = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt);
-  arm_arch_iwmmxt2 = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt2);
-  arm_arch_thumb_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_tdiv);
-  arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
-  arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
-  arm_arch_cmse = bitmap_bit_p (arm_active_target.isa, isa_bit_cmse);
-  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
-  arm_arch_lpae = bitmap_bit_p (arm_active_target.isa, isa_bit_lpae);
-  if (arm_fp16_inst)
-    {
-      if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
-	error ("selected fp16 options are incompatible");
-      arm_fp16_format = ARM_FP16_FORMAT_IEEE;
-    }
-
-
   /* Set up some tuning parameters.  */
   arm_ld_sched = (tune_flags & TF_LDSCHED) != 0;
   arm_tune_strongarm = (tune_flags & TF_STRONG) != 0;
@@ -3416,85 +3370,10 @@ arm_option_override (void)
   arm_tune_cortex_a9 = (arm_tune == TARGET_CPU_cortexa9) != 0;
   arm_m_profile_small_mul = (tune_flags & TF_SMALLMUL) != 0;
 
-  /* And finally, set up some quirks.  */
-  arm_arch_no_volatile_ce
-    = bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_volatile_ce);
-  arm_arch6kz = arm_arch6k && bitmap_bit_p (arm_active_target.isa,
-					    isa_bit_quirk_armv6kz);
-
-  /* V5 code we generate is completely interworking capable, so we turn off
-     TARGET_INTERWORK here to avoid many tests later on.  */
-
-  /* XXX However, we must pass the right pre-processor defines to CPP
-     or GLD can get confused.  This is a hack.  */
-  if (TARGET_INTERWORK)
-    arm_cpp_interwork = 1;
-
-  if (arm_arch5)
-    target_flags &= ~MASK_INTERWORK;
-
-  if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
-    error ("iwmmxt requires an AAPCS compatible ABI for proper operation");
-
-  if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
-    error ("iwmmxt abi requires an iwmmxt capable cpu");
-
-  /* If soft-float is specified then don't use FPU.  */
-  if (TARGET_SOFT_FLOAT)
-    arm_fpu_attr = FPU_NONE;
-  else
-    arm_fpu_attr = FPU_VFP;
-
-  if (TARGET_AAPCS_BASED)
-    {
-      if (TARGET_CALLER_INTERWORKING)
-	error ("AAPCS does not support -mcaller-super-interworking");
-      else
-	if (TARGET_CALLEE_INTERWORKING)
-	  error ("AAPCS does not support -mcallee-super-interworking");
-    }
-
-  /* __fp16 support currently assumes the core has ldrh.  */
-  if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
-    sorry ("__fp16 and no ldrh");
-
-  if (TARGET_AAPCS_BASED)
-    {
-      if (arm_abi == ARM_ABI_IWMMXT)
-	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
-      else if (TARGET_HARD_FLOAT_ABI)
-	{
-	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
-	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2))
-	    error ("-mfloat-abi=hard: selected processor lacks an FPU");
-	}
-      else
-	arm_pcs_default = ARM_PCS_AAPCS;
-    }
-  else
-    {
-      if (arm_float_abi == ARM_FLOAT_ABI_HARD)
-	sorry ("-mfloat-abi=hard and VFP");
-
-      if (arm_abi == ARM_ABI_APCS)
-	arm_pcs_default = ARM_PCS_APCS;
-      else
-	arm_pcs_default = ARM_PCS_ATPCS;
-    }
-
   /* For arm2/3 there is no need to do any scheduling if we are doing
      software floating-point.  */
   if (TARGET_SOFT_FLOAT && (tune_flags & TF_NO_MODE32))
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
-
-  /* Use the cp15 method if it is available.  */
-  if (target_thread_pointer == TP_AUTO)
-    {
-      if (arm_arch6k && !TARGET_THUMB1)
-	target_thread_pointer = TP_CP15;
-      else
-	target_thread_pointer = TP_SOFT;
-    }
 
   /* Override the default structure alignment for AAPCS ABI.  */
   if (!global_options_set.x_arm_structure_size_boundary)
@@ -3669,14 +3548,6 @@ arm_option_override (void)
   if (target_slow_flash_data || target_pure_code)
     arm_disable_literal_pool = true;
 
-  if (use_cmse && !arm_arch_cmse)
-    error ("target CPU does not support ARMv8-M Security Extensions");
-
-  /* We don't clear D16-D31 VFP registers for cmse_nonsecure_call functions
-     and ARMv8-M Baseline and Mainline do not allow such configuration.  */
-  if (use_cmse && LAST_VFP_REGNUM > LAST_LO_VFP_REGNUM)
-    error ("ARMv8-M Security Extensions incompatible with selected FPU");
-
   /* Disable scheduling fusion by default if it's not armv7 processor
      or doesn't prefer ldrd/strd.  */
   if (flag_schedule_fusion == 2
@@ -3686,6 +3557,7 @@ arm_option_override (void)
   /* Need to remember initial options before they are overriden.  */
   init_optimize = build_optimization_node (&global_options);
 
+  arm_options_perform_arch_sanity_checks ();
   arm_option_override_internal (&global_options, &global_options_set);
   arm_option_check_internal (&global_options);
   arm_option_params_internal ();
@@ -3699,6 +3571,151 @@ arm_option_override (void)
 
   /* Init initial mode for testing.  */
   thumb_flipper = TARGET_THUMB;
+}
+
+
+/* Reconfigure global status flags from the active_target.isa.  */
+void
+arm_option_reconfigure_globals (void)
+{
+  sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_active_target.arch_pp_name);
+  arm_base_arch = arm_active_target.base_arch;
+
+  /* Initialize boolean versions of the architectural flags, for use
+     in the arm.md file.  */
+  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
+  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
+  arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5);
+  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5e);
+  arm_arch5te = arm_arch5e
+    && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6);
+  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6k);
+  arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
+  arm_arch6m = arm_arch6 && !arm_arch_notm;
+  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7);
+  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7em);
+  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8);
+  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_1);
+  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_2);
+  arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
+  arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
+  arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
+  arm_arch_iwmmxt = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt);
+  arm_arch_iwmmxt2 = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt2);
+  arm_arch_thumb_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_tdiv);
+  arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
+  arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
+  arm_arch_cmse = bitmap_bit_p (arm_active_target.isa, isa_bit_cmse);
+  arm_fp16_inst = bitmap_bit_p (arm_active_target.isa, isa_bit_fp16);
+  arm_arch_lpae = bitmap_bit_p (arm_active_target.isa, isa_bit_lpae);
+  if (arm_fp16_inst)
+    {
+      if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
+	error ("selected fp16 options are incompatible");
+      arm_fp16_format = ARM_FP16_FORMAT_IEEE;
+    }
+
+  /* And finally, set up some quirks.  */
+  arm_arch_no_volatile_ce
+    = bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_volatile_ce);
+  arm_arch6kz = arm_arch6k && bitmap_bit_p (arm_active_target.isa,
+					    isa_bit_quirk_armv6kz);
+
+  /* Use the cp15 method if it is available.  */
+  if (target_thread_pointer == TP_AUTO)
+    {
+      if (arm_arch6k && !TARGET_THUMB1)
+	target_thread_pointer = TP_CP15;
+      else
+	target_thread_pointer = TP_SOFT;
+    }
+}
+
+/* Perform some validation between the desired architecture and the rest of the
+   options.  */
+void
+arm_options_perform_arch_sanity_checks (void)
+{
+  /* V5 code we generate is completely interworking capable, so we turn off
+     TARGET_INTERWORK here to avoid many tests later on.  */
+
+  /* XXX However, we must pass the right pre-processor defines to CPP
+     or GLD can get confused.  This is a hack.  */
+  if (TARGET_INTERWORK)
+    arm_cpp_interwork = 1;
+
+  if (arm_arch5)
+    target_flags &= ~MASK_INTERWORK;
+
+  if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
+    error ("iwmmxt requires an AAPCS compatible ABI for proper operation");
+
+  if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
+    error ("iwmmxt abi requires an iwmmxt capable cpu");
+
+  /* BPABI targets use linker tricks to allow interworking on cores
+     without thumb support.  */
+  if (TARGET_INTERWORK
+      && !TARGET_BPABI
+      && !bitmap_bit_p (arm_active_target.isa, isa_bit_thumb))
+    {
+      warning (0, "target CPU does not support interworking" );
+      target_flags &= ~MASK_INTERWORK;
+    }
+
+  /* If soft-float is specified then don't use FPU.  */
+  if (TARGET_SOFT_FLOAT)
+    arm_fpu_attr = FPU_NONE;
+  else
+    arm_fpu_attr = FPU_VFP;
+
+  if (TARGET_AAPCS_BASED)
+    {
+      if (TARGET_CALLER_INTERWORKING)
+	error ("AAPCS does not support -mcaller-super-interworking");
+      else
+	if (TARGET_CALLEE_INTERWORKING)
+	  error ("AAPCS does not support -mcallee-super-interworking");
+    }
+
+  /* __fp16 support currently assumes the core has ldrh.  */
+  if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
+    sorry ("__fp16 and no ldrh");
+
+  if (use_cmse && !arm_arch_cmse)
+    error ("target CPU does not support ARMv8-M Security Extensions");
+
+  /* We don't clear D16-D31 VFP registers for cmse_nonsecure_call functions
+     and ARMv8-M Baseline and Mainline do not allow such configuration.  */
+  if (use_cmse && LAST_VFP_REGNUM > LAST_LO_VFP_REGNUM)
+    error ("ARMv8-M Security Extensions incompatible with selected FPU");
+
+
+  if (TARGET_AAPCS_BASED)
+    {
+      if (arm_abi == ARM_ABI_IWMMXT)
+	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
+      else if (TARGET_HARD_FLOAT_ABI)
+	{
+	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
+	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2))
+	    error ("-mfloat-abi=hard: selected processor lacks an FPU");
+	}
+      else
+	arm_pcs_default = ARM_PCS_AAPCS;
+    }
+  else
+    {
+      if (arm_float_abi == ARM_FLOAT_ABI_HARD)
+	sorry ("-mfloat-abi=hard and VFP");
+
+      if (arm_abi == ARM_ABI_APCS)
+	arm_pcs_default = ARM_PCS_APCS;
+      else
+	arm_pcs_default = ARM_PCS_ATPCS;
+    }
 }
 
 static void
@@ -9222,7 +9239,7 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
 	        return true;						\
 	      }								\
 	  }								\
-	while (0);
+	while (0)
 
 /* RTX costs.  Make an estimate of the cost of executing the operation
    X, which is contained with an operation with code OUTER_CODE.
@@ -9430,6 +9447,9 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 		   + rtx_cost (XEXP (x, 0), mode, code, 0, speed_p));
 	  if (speed_p)
 	    *cost += 2 * extra_cost->alu.shift;
+	  /* Slightly disparage left shift by 1 at so we prefer adddi3.  */
+	  if (code == ASHIFT && XEXP (x, 1) == CONST1_RTX (SImode))
+	    *cost += 1;
 	  return true;
 	}
       else if (mode == SImode)
@@ -9651,8 +9671,8 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  /* We check both sides of the MINUS for shifter operands since,
 	     unlike PLUS, it's not commutative.  */
 
-	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 0)
-	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 1)
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 0);
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 1);
 
 	  /* Slightly disparage, as we might need to widen the result.  */
 	  *cost += 1;
@@ -9763,7 +9783,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  rtx shift_op, shift_reg;
 	  shift_reg = NULL;
 
-	  HANDLE_NARROW_SHIFT_ARITH (PLUS, 0)
+	  HANDLE_NARROW_SHIFT_ARITH (PLUS, 0);
 
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
@@ -12156,7 +12176,7 @@ neon_vdup_constant (rtx vals)
      load.  */
 
   x = copy_to_mode_reg (inner_mode, x);
-  return gen_rtx_VEC_DUPLICATE (mode, x);
+  return gen_vec_duplicate (mode, x);
 }
 
 /* Generate code to load VALS, which is a PARALLEL containing only
@@ -12251,7 +12271,7 @@ neon_expand_vector_init (rtx target, rtx vals)
   if (all_same && GET_MODE_SIZE (inner_mode) <= 4)
     {
       x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
-      emit_insn (gen_rtx_SET (target, gen_rtx_VEC_DUPLICATE (mode, x)));
+      emit_insn (gen_rtx_SET (target, gen_vec_duplicate (mode, x)));
       return;
     }
 
@@ -19414,7 +19434,12 @@ arm_get_vfp_saved_size (void)
 
 /* Generate a function exit sequence.  If REALLY_RETURN is false, then do
    everything bar the final return instruction.  If simple_return is true,
-   then do not output epilogue, because it has already been emitted in RTL.  */
+   then do not output epilogue, because it has already been emitted in RTL.
+
+   Note: do not forget to update length attribute of corresponding insn pattern
+   when changing assembly output (eg. length attribute of
+   thumb2_cmse_entry_return when updating Armv8-M Mainline Security Extensions
+   register clearing sequences).  */
 const char *
 output_return_instruction (rtx operand, bool really_return, bool reverse,
                            bool simple_return)
@@ -23947,7 +23972,12 @@ thumb_pop (FILE *f, unsigned long mask)
 
 /* Generate code to return from a thumb function.
    If 'reg_containing_return_addr' is -1, then the return address is
-   actually on the stack, at the stack pointer.  */
+   actually on the stack, at the stack pointer.
+
+   Note: do not forget to update length attribute of corresponding insn pattern
+   when changing assembly output (eg. length attribute of epilogue_insns when
+   updating Armv8-M Baseline Security Extensions register clearing
+   sequences).  */
 static void
 thumb_exit (FILE *f, int reg_containing_return_addr)
 {
@@ -28753,9 +28783,9 @@ void
 arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
   machine_mode vmode = GET_MODE (target);
-  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  unsigned int nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
-  rtx rmask[MAX_VECT_LEN], mask;
+  rtx mask;
 
   /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
      numbering of elements for big-endian, we must reverse the order.  */
@@ -28764,9 +28794,7 @@ arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   /* The VTBL instruction does not use a modulo index, so we must take care
      of that ourselves.  */
   mask = GEN_INT (one_vector_p ? nelt - 1 : 2 * nelt - 1);
-  for (i = 0; i < nelt; ++i)
-    rmask[i] = mask;
-  mask = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rmask));
+  mask = gen_const_vec_duplicate (vmode, mask);
   sel = expand_simple_binop (vmode, AND, sel, mask, NULL, 0, OPTAB_LIB_WIDEN);
 
   arm_expand_vec_perm_1 (target, op0, op1, sel);
@@ -29820,10 +29848,9 @@ arm_block_set_unaligned_vect (rtx dstbase,
 			      unsigned HOST_WIDE_INT value,
 			      unsigned HOST_WIDE_INT align)
 {
-  unsigned int i, j, nelt_v16, nelt_v8, nelt_mode;
+  unsigned int i, nelt_v16, nelt_v8, nelt_mode;
   rtx dst, mem;
-  rtx val_elt, val_vec, reg;
-  rtx rval[MAX_VECT_LEN];
+  rtx val_vec, reg;
   rtx (*gen_func) (rtx, rtx);
   machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
@@ -29851,12 +29878,9 @@ arm_block_set_unaligned_vect (rtx dstbase,
   mem = adjust_automodify_address (dstbase, mode, dst, offset);
 
   v = sext_hwi (v, BITS_PER_WORD);
-  val_elt = GEN_INT (v);
-  for (j = 0; j < nelt_mode; j++)
-    rval[j] = val_elt;
 
   reg = gen_reg_rtx (mode);
-  val_vec = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt_mode, rval));
+  val_vec = gen_const_vec_duplicate (mode, GEN_INT (v));
   /* Emit instruction loading the constant value.  */
   emit_move_insn (reg, val_vec);
 
@@ -29920,10 +29944,9 @@ arm_block_set_aligned_vect (rtx dstbase,
 			    unsigned HOST_WIDE_INT value,
 			    unsigned HOST_WIDE_INT align)
 {
-  unsigned int i, j, nelt_v8, nelt_v16, nelt_mode;
+  unsigned int i, nelt_v8, nelt_v16, nelt_mode;
   rtx dst, addr, mem;
-  rtx val_elt, val_vec, reg;
-  rtx rval[MAX_VECT_LEN];
+  rtx val_vec, reg;
   machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
   unsigned int offset = 0;
@@ -29945,12 +29968,9 @@ arm_block_set_aligned_vect (rtx dstbase,
   dst = copy_addr_to_reg (XEXP (dstbase, 0));
 
   v = sext_hwi (v, BITS_PER_WORD);
-  val_elt = GEN_INT (v);
-  for (j = 0; j < nelt_mode; j++)
-    rval[j] = val_elt;
 
   reg = gen_reg_rtx (mode);
-  val_vec = gen_rtx_CONST_VECTOR (mode, gen_rtvec_v (nelt_mode, rval));
+  val_vec = gen_const_vec_duplicate (mode, GEN_INT (v));
   /* Emit instruction loading the constant value.  */
   emit_move_insn (reg, val_vec);
 
@@ -30391,6 +30411,8 @@ arm_const_not_ok_for_debug_p (rtx p)
   tree decl_op0 = NULL;
   tree decl_op1 = NULL;
 
+  if (GET_CODE (p) == UNSPEC)
+    return true;
   if (GET_CODE (p) == MINUS)
     {
       if (GET_CODE (XEXP (p, 1)) == SYMBOL_REF)

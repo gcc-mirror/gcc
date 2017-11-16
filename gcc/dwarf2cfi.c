@@ -3402,6 +3402,17 @@ debug_cfi_row (dw_cfi_row *row)
    This variable is tri-state, with 0 unset, >0 true, <0 false.  */
 static GTY(()) signed char saved_do_cfi_asm = 0;
 
+/* Decide whether to emit EH frame unwind information for the current
+   translation unit.  */
+
+bool
+dwarf2out_do_eh_frame (void)
+{
+  return
+    (flag_unwind_tables || flag_exceptions)
+    && targetm_common.except_unwind_info (&global_options) == UI_DWARF2;
+}
+
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
@@ -3420,8 +3431,7 @@ dwarf2out_do_frame (void)
   if (targetm.debug_unwind_info () == UI_DWARF2)
     return true;
 
-  if ((flag_unwind_tables || flag_exceptions)
-      && targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
+  if (dwarf2out_do_eh_frame ())
     return true;
 
   return false;
@@ -3456,9 +3466,7 @@ dwarf2out_do_cfi_asm (void)
 
   /* If we can't get the assembler to emit only .debug_frame, and we don't need
      dwarf2 unwind info for exceptions, then emit .debug_frame by hand.  */
-  if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE
-      && !flag_unwind_tables && !flag_exceptions
-      && targetm_common.except_unwind_info (&global_options) != UI_DWARF2)
+  if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE && !dwarf2out_do_eh_frame ())
     return false;
 
   /* Success!  */

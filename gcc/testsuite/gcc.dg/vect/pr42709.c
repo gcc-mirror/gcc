@@ -9,7 +9,7 @@
 int *res[N];
 
 int
-main1 (int *a, int *b, int *c, int *d, int dummy)
+main1 (int *a, int *b, int *c, int *d)
 {
   int i;
 
@@ -19,8 +19,7 @@ main1 (int *a, int *b, int *c, int *d, int dummy)
       res[i+1] = b + 16;
       res[i+2] = c + 16;
       res[i+3] = d + 16;
-      if (dummy == 32)
-        abort ();
+      asm volatile ("" ::: "memory");
     } 
 }
 

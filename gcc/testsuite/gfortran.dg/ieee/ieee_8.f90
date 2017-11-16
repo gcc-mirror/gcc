@@ -1,4 +1,4 @@
-! { dg-do run { xfail aarch64*-*-gnu arm*-*-gnueabi arm*-*-gnueabihf } }
+! { dg-do run { xfail aarch64*-*-gnu* arm*-*-gnueabi arm*-*-gnueabihf } }
 ! XFAIL because of PR libfortran/78449.
 
 module foo

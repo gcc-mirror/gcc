@@ -421,6 +421,21 @@ proc check_effective_target_avx512vpopcntdq { } {
     } "-mavx512vpopcntdq" ]
 }
 
+# Return 1 if gfni instructions can be compiled.
+proc check_effective_target_gfni { } {
+    return [check_no_compiler_messages gfni object {
+        typedef char __v16qi __attribute__ ((__vector_size__ (16)));
+
+        __v16qi
+        _mm_gf2p8affineinv_epi64_epi8 (__v16qi __A, __v16qi __B, const int __C)
+        {
+            return (__v16qi) __builtin_ia32_vgf2p8affineinvqb_v16qi ((__v16qi) __A,
+								     (__v16qi) __B,
+								      0);
+        }
+    } "-mgfni" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

@@ -87,8 +87,7 @@
       }
   }
   [(set_attr "arch" "32,v8mb,any")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])
 
 (define_insn "atomic_store<mode>"
   [(set (match_operand:QHSI 0 "memory_operand" "=Q,Q,Q")
@@ -115,8 +114,7 @@
       }
   }
   [(set_attr "arch" "32,v8mb,any")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])
 
 ;; An LDRD instruction usable by the atomic_loaddi expander on LPAE targets
 
@@ -127,8 +125,7 @@
 	    VUNSPEC_LDRD_ATOMIC))]
   "ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_LPAE"
   "ldrd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+  [(set_attr "predicable" "yes")])
 
 ;; There are three ways to expand this depending on the architecture
 ;; features available.  As for the barriers, a load needs a barrier
@@ -461,8 +458,7 @@
    ldrex<sync_sfx>%?\t%0, %C1
    ldrex<sync_sfx>\t%0, %C1"
   [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])
 
 (define_insn "arm_load_acquire_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -475,8 +471,7 @@
    ldaex<sync_sfx>%?\\t%0, %C1
    ldaex<sync_sfx>\\t%0, %C1"
   [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])
 
 (define_insn "arm_load_exclusivesi"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -488,8 +483,7 @@
    ldrex%?\t%0, %C1
    ldrex\t%0, %C1"
   [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])
 
 (define_insn "arm_load_acquire_exclusivesi"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -501,8 +495,7 @@
    ldaex%?\t%0, %C1
    ldaex\t%0, %C1"
   [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])
 
 (define_insn "arm_load_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -511,8 +504,7 @@
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREXD"
   "ldrexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+  [(set_attr "predicable" "yes")])
 
 (define_insn "arm_load_acquire_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -521,8 +513,7 @@
 	  VUNSPEC_LAX))]
   "TARGET_HAVE_LDACQEXD && ARM_DOUBLEWORD_ALIGN"
   "ldaexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+  [(set_attr "predicable" "yes")])
 
 (define_insn "arm_store_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -548,8 +539,7 @@
     else
       return "strex<sync_sfx>%?\t%0, %2, %C1";
   }
-  [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+  [(set_attr "predicable" "yes")])
 
 (define_insn "arm_store_release_exclusivedi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -564,8 +554,7 @@
     gcc_assert ((REGNO (operands[2]) & 1) == 0 || TARGET_THUMB2);
     return "stlexd%?\t%0, %2, %H2, %C1";
   }
-  [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+  [(set_attr "predicable" "yes")])
 
 (define_insn "arm_store_release_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
@@ -579,5 +568,4 @@
    stlex<sync_sfx>%?\t%0, %2, %C1
    stlex<sync_sfx>\t%0, %2, %C1"
   [(set_attr "arch" "32,v8mb")
-   (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable" "yes")])

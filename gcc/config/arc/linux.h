@@ -91,3 +91,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Pre/post modify with register displacement are default off.  */
 #undef TARGET_AUTO_MODIFY_REG_DEFAULT
 #define TARGET_AUTO_MODIFY_REG_DEFAULT 0
+
+#if DEFAULT_LIBC == LIBC_GLIBC
+/* Override linux.h LINK_EH_SPEC definition.
+   Signalize that because we have fde-glibc, we don't need all C shared libs
+   linked against -lgcc_s.  */
+#undef LINK_EH_SPEC
+#define LINK_EH_SPEC "--eh-frame-hdr"
+#endif

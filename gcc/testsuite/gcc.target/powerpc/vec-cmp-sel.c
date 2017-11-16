@@ -12,9 +12,10 @@
 
 #include <altivec.h>
 
+volatile vector signed long long x = { 25399, -12900 };
+volatile vector signed long long y = { 12178, -9987 };
+
 vector signed long long foo () {
-  vector signed long long x = { 25399, -12900 };
-  vector signed long long y = { 12178, -9987 };
   vector bool long long b = vec_cmpge (x, y);
   vector signed long long z = vec_sel (y, x, b);
   return z;

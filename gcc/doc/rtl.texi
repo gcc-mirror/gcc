@@ -1625,7 +1625,8 @@ accessed with @code{CONST_FIXED_VALUE_LOW}.
 @item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
 Represents a vector constant.  The square brackets stand for the vector
 containing the constant elements.  @var{x0}, @var{x1} and so on are
-the @code{const_int}, @code{const_double} or @code{const_fixed} elements.
+the @code{const_int}, @code{const_wide_int}, @code{const_double} or
+@code{const_fixed} elements.
 
 The number of units in a @code{const_vector} is obtained with the macro
 @code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
@@ -1667,14 +1668,18 @@ Usually that is the only mode for which a label is directly valid.
 
 @findex const
 @item (const:@var{m} @var{exp})
-Represents a constant that is the result of an assembly-time
-arithmetic computation.  The operand, @var{exp}, is an expression that
-contains only constants (@code{const_int}, @code{symbol_ref} and
-@code{label_ref} expressions) combined with @code{plus} and
-@code{minus}.  However, not all combinations are valid, since the
-assembler cannot do arbitrary arithmetic on relocatable symbols.
+Wraps an rtx computation @var{exp} whose inputs and result do not
+change during the execution of a thread.  There are two valid uses.
+The first is to represent a global or thread-local address calculation.
+In this case @var{exp} should contain @code{const_int},
+@code{symbol_ref}, @code{label_ref} or @code{unspec} expressions,
+combined with @code{plus} and @code{minus}.  Any such @code{unspec}s
+are target-specific and typically represent some form of relocation
+operator.  @var{m} should be a valid address mode.
 
-@var{m} should be @code{Pmode}.
+The second use of @code{const} is to wrap a vector operation.
+In this case @var{exp} must be a @code{vec_duplicate} or
+@code{vec_series} expression.
 
 @findex high
 @item (high:@var{m} @var{exp})
@@ -1786,11 +1791,11 @@ If @code{FRAME_GROWS_DOWNWARD} is defined to a nonzero value, this points
 to immediately above the first variable on the stack.  Otherwise, it points
 to the first variable on the stack.
 
-@cindex @code{STARTING_FRAME_OFFSET} and virtual registers
+@cindex @code{TARGET_STARTING_FRAME_OFFSET} and virtual registers
 @cindex @code{FRAME_POINTER_REGNUM} and virtual registers
 @code{VIRTUAL_STACK_VARS_REGNUM} is replaced with the sum of the
 register given by @code{FRAME_POINTER_REGNUM} and the value
-@code{STARTING_FRAME_OFFSET}.
+@code{TARGET_STARTING_FRAME_OFFSET}.
 
 @findex VIRTUAL_STACK_DYNAMIC_REGNUM
 @item VIRTUAL_STACK_DYNAMIC_REGNUM
@@ -1921,19 +1926,32 @@ false.
 When @var{m1} is at least as narrow as @var{m2} the @code{subreg}
 expression is called @dfn{normal}.
 
+@findex REGMODE_NATURAL_SIZE
 Normal @code{subreg}s restrict consideration to certain bits of
-@var{reg}.  There are two cases.  If @var{m1} is smaller than a word,
-the @code{subreg} refers to the least-significant part (or
-@dfn{lowpart}) of one word of @var{reg}.  If @var{m1} is word-sized or
-greater, the @code{subreg} refers to one or more complete words.
+@var{reg}.  For this purpose, @var{reg} is divided into
+individually-addressable blocks in which each block has:
 
-When used as an lvalue, @code{subreg} is a word-based accessor.
-Storing to a @code{subreg} modifies all the words of @var{reg} that
-overlap the @code{subreg}, but it leaves the other words of @var{reg}
+@smallexample
+REGMODE_NATURAL_SIZE (@var{m2})
+@end smallexample
+
+bytes.  Usually the value is @code{UNITS_PER_WORD}; that is,
+most targets usually treat each word of a register as being
+independently addressable.
+
+There are two types of normal @code{subreg}.  If @var{m1} is known
+to be no bigger than a block, the @code{subreg} refers to the
+least-significant part (or @dfn{lowpart}) of one block of @var{reg}.
+If @var{m1} is known to be larger than a block, the @code{subreg} refers
+to two or more complete blocks.
+
+When used as an lvalue, @code{subreg} is a block-based accessor.
+Storing to a @code{subreg} modifies all the blocks of @var{reg} that
+overlap the @code{subreg}, but it leaves the other blocks of @var{reg}
 alone.
 
-When storing to a normal @code{subreg} that is smaller than a word,
-the other bits of the referenced word are usually left in an undefined
+When storing to a normal @code{subreg} that is smaller than a block,
+the other bits of the referenced block are usually left in an undefined
 state.  This laxity makes it easier to generate efficient code for
 such instructions.  To represent an instruction that preserves all the
 bits outside of those in the @code{subreg}, use @code{strict_low_part}
@@ -1991,10 +2009,11 @@ number of undefined bits.  For example:
 (subreg:PSI (reg:SI 0) 0)
 @end smallexample
 
+@findex REGMODE_NATURAL_SIZE
 accesses the whole of @samp{(reg:SI 0)}, but the exact relationship
 between the @code{PSImode} value and the @code{SImode} value is not
-defined.  If we assume @samp{UNITS_PER_WORD <= 4}, then the following
-two @code{subreg}s:
+defined.  If we assume @samp{REGMODE_NATURAL_SIZE (DImode) <= 4},
+then the following two @code{subreg}s:
 
 @smallexample
 (subreg:PSI (reg:DI 0) 0)
@@ -2005,7 +2024,7 @@ represent independent 4-byte accesses to the two halves of
 @samp{(reg:DI 0)}.  Both @code{subreg}s have an unknown number
 of undefined bits.
 
-If @samp{UNITS_PER_WORD <= 2} then these two @code{subreg}s:
+If @samp{REGMODE_NATURAL_SIZE (PSImode) <= 2} then these two @code{subreg}s:
 
 @smallexample
 (subreg:HI (reg:PSI 0) 0)
@@ -2719,6 +2738,10 @@ the same submodes as the input vector mode or the scalar modes, and the
 number of output parts must be an integer multiple of the number of input
 parts.
 
+@findex vec_series
+@item (vec_series:@var{m} @var{base} @var{step})
+This operation creates a vector in which element @var{i} is equal to
+@samp{@var{base} + @var{i}*@var{step}}.  @var{m} must be a vector integer mode.
 @end table
 
 @node Conversions
@@ -2874,7 +2897,7 @@ The presence of @code{strict_low_part} says that the part of the
 register which is meaningful in mode @var{n}, but is not part of
 mode @var{m}, is not to be altered.  Normally, an assignment to such
 a subreg is allowed to have undefined effects on the rest of the
-register when @var{m} is less than a word.
+register when @var{m} is smaller than @samp{REGMODE_NATURAL_SIZE (@var{n})}.
 @end table
 
 @node Side Effects

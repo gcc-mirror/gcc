@@ -6,7 +6,7 @@ void f(T) transaction_safe;
 template<>
 void f(bool); // not transaction-safe
 
-int g() transaction_safe
+void g() transaction_safe
 {
   f(42);			// OK
   f(true);			// { dg-error "unsafe" }

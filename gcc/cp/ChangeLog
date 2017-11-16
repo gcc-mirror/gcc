@@ -1,3 +1,427 @@
+2017-11-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81060
+	* decl.c (xref_tag_1): Push lambda into current scope.
+	* name-lookup.c (do_pushtag): Don't deal with ts_lambda here.
+
+2017-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81574
+	* lambda.c (lambda_capture_field_type): Function references are
+	always catured by reference.
+
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (begin_destructor_body): Use cp_build_fold_indirect_ref
+	instead of cp_build_indirect_ref.
+
+2017-11-15  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (begin_destructor_body): In case of VPTR sanitization
+	(with disabled recovery), zero vptr in order to catch virtual calls
+	after lifetime of an object.
+
+2017-11-14  Jason Merrill  <jason@redhat.com>
+
+	Use GTY((cache)) on some hash tables.
+	* decl.c (decomp_type_table): Use tree_cache_map.
+	* init.c (nsdmi_inst): Likewise.
+	* pt.c (defarg_ints): Likewise.
+	* cp-objcp-common.c (cp_get_debug_type): Likewise.
+
+2017-11-13  Jason Merrill  <jason@redhat.com>
+
+	Capture adjustments for P0588R1.
+	* semantics.c (process_outer_var_ref): Capture variables when
+	they are named; complain about non-capture uses when odr-used.
+	* expr.c (mark_use): Rvalue use looks through capture proxy.
+	* constexpr.c (potential_constant_expression_1): Improve error about
+	use of captured variable.
+	* lambda.c (need_generic_capture, dependent_capture_r)
+	(do_dependent_capture, processing_nonlambda_template): Remove.
+	* call.c (build_this): Remove uses of the above.
+	* decl.c (cp_finish_decl): Likewise.
+	* semantics.c (maybe_cleanup_point_expr)
+	(maybe_cleanup_point_expr_void, finish_goto_stmt)
+	(maybe_convert_cond): Likewise.
+	* typeck.c (check_return_expr): Likewise.
+
+	Defer folding of *&.
+	* typeck.c (cp_build_fold_indirect_ref): New.
+	(cp_build_indirect_ref_1): Split out from cp_build_indirect_ref.
+	Add 'fold' parameter.
+	* cp-tree.h: Declare cp_build_fold_indirect_ref.
+	* call.c, class.c, cp-ubsan.c, decl.c, except.c, init.c, lambda.c,
+	parser.c, rtti.c, tree.c, typeck.c, typeck2.c: Use it.
+	* parser.c (do_range_for_auto_deduction): Use RO_UNARY_STAR.
+	(cp_convert_range_for): Likewise.
+	* typeck2.c (build_x_arrow): Use RO_ARROW.
+
+	* cp-ubsan.c (cp_ubsan_check_member_access_r): Fix handling of
+	INDIRECT_REF of ADDR_EXPR.
+
+	PR c++/82360 - ICE with static_cast in template.
+	* call.c (perform_direct_initialization_if_possible): Check
+	processing_template_decl.
+	* typeck.c (build_static_cast_1): Likewise.
+
+2017-11-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Remove the null check from placement new in all modes
+	* init.c (build_new_1): Don't do a null check for
+	a namespace-scope non-replaceable placement new
+	in any mode unless -fcheck-new is provided.
+
+2017-11-07 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* Make-lang.in (CP_PLUGIN_HEADERS): Add operators.def since included
+	in cp-tree.h.
+
+2017-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82835
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): For methods pass i - 1 to
+	convert_default_arg instead of i.
+
+2017-11-06  Jason Merrill  <jason@redhat.com>
+
+	P0704R1 - fixing const-qualified pointers to members
+	* typeck2.c (build_m_component_ref): Also accept in lower stds with
+	a pedwarn.
+
+2017-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65579
+	* decl2.c (finish_static_data_member_decl): If there's an initializer,
+	complete the type and re-apply the quals.
+
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82404
+	* constexpr.c (cxx_eval_builtin_function_call): Handle
+	__builtin_unreachable call.
+	(get_function_named_in_call): Declare function earlier.
+	(constexpr_fn_retval): Skip __builtin_unreachable.
+	* cp-gimplify.c (cp_ubsan_maybe_instrument_return): Rename to
+	...
+	(cp_maybe_instrument_return): ... this.
+	(cp_genericize): Call the function unconditionally.
+
+2017-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82710
+	* decl.c (grokdeclarator): Protect MAYBE_CLASS things from paren
+	warning too.
+
+2017-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81957
+	* pt.c (make_pack_expansion): Add tsubst_flags_t parameter.
+	(expand_integer_pack, convert_template_argument, coerce_template_parms,
+	gen_elem_of_pack_expansion_instantiation, tsubst_pack_expansion,
+	unify): Adjust calls.
+	* tree.c (cp_build_qualified_type_real): Likewise.
+	* cp-tree.h (make_pack_expansion): Adjust declaration.
+
+2017-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (IDENTIFIER_NEWDEL_OP_P): Restore, adjust.
+	(IDENTIFIER_NEW_OP_P): New.
+	* decl.c (grokdeclarator): Restore IDENTIFIER_NEWDEL_OP_P use.
+	* pt.c (push_template_decl_real): Likewise.
+	* typeck.c (check_return_expr): Use IDENTIFIER_NEW_OP_P.
+
+	PR c++/82710
+	* decl.c (grokdeclarator): Don't warn when parens protect a return
+	type from a qualified name.
+
+2017-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (enum cp_identifier_kind): Delete cik_newdel_op.
+	Renumber and reserve udlit value.
+	(IDENTIFIER_NEWDEL_OP_P): Delete.
+	(IDENTIFIER_OVL_OP_P): New.
+	(IDENTIFIER_ASSIGN_OP_P): Adjust.
+	(IDENTIFIER_CONV_OP_P): Adjust.
+	(IDENTIFIER_OVL_OP_INFO): Adjust.
+	(IDENTIFIER_OVL_OP_FLAGS): New.
+	* decl.c (grokdeclarator): Use IDENTIFIER_OVL_OP_FLAGS.
+	* lex.c (get_identifier_kind_name): Adjust.
+	(init_operators): Don't special case new/delete ops.
+	* mangle.c (write_unqualified_id): Use IDENTIFIER_OVL_OP_P.
+	* pt.c (push_template_decl_real): Use IDENTIFIER_OVL_OP_FLAGS.
+	* typeck.c (check_return_expr): Likewise.
+
+	* cp-tree.h (assign_op_identifier, call_op_identifier): Use
+	compressed code.
+	(struct lang_decl_fn): Use compressed operator code.
+	(DECL_OVERLOADED_OPERATOR_CODE): Replace with ...
+	(DECL_OVERLOADED_OPERATOR_CODE_RAW): ... this.
+	(DECL_OVERLOADED_OPERATOR_CODE_IS): Use it.
+	* decl.c (duplicate_decls): Use DECL_OVERLOADED_OPERATOR_CODE_RAW.
+	(build_library_fn): Likewise.
+	(grok_op_properties): Likewise.
+	* mangle.c (write_unqualified_name): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+	* typeck.c (check_return_expr): Use DECL_OVERLOADED_OPERATOR_IS.
+
+	* cp-tree.h (IDENTIFIER_CP_INDEX): Define.
+	(enum ovl_op_flags): Add OVL_OP_FLAG_AMBIARY.
+	(enum ovl_op_code): New.
+	(struct ovl_op_info): Add ovl_op_code field.
+	(ovl_op_info): Size by OVL_OP_MAX.
+	(ovl_op_mapping, ovl_op_alternate): Declare.
+	(OVL_OP_INFO): Adjust for mapping array.
+	(IDENTIFIER_OVL_OP_INFO): New.
+	* decl.c (ambi_op_p, unary_op_p): Delete.
+	(grok_op_properties): Use IDENTIFIER_OVL_OP_INFO and
+	ovl_op_alternate.
+	* lex.c (ovl_op_info): Adjust and static initialize.
+	(ovl_op_mappings, ovl_op_alternate): Define.
+	(init_operators): Iterate over ovl_op_info array and init mappings
+	& alternate arrays.
+	* mangle.c (write_unqualified_id): Use IDENTIFIER_OVL_OP_INFO.
+	* operators.def (DEF_OPERATOR): Remove KIND parm.
+	(DEF_SIMPLE_OPERATOR): Delete.
+	(OPERATOR_TRANSITION): Expand if defined.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* pt.c (listify): Use %< and %> for description of #include.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* class.c (explain_non_literal_class): Use UNKNOWN_LOCATION rather
+	than 0.
+	* name-lookup.c (suggest_alternatives_for): Update for renaming of
+	inform_at_rich_loc.
+	(maybe_suggest_missing_header): Likewise.
+	(suggest_alternative_in_explicit_scope): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise for
+	renaming of error_at_rich_loc.
+	(cp_parser_string_literal): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_cast_expression): Likewise for renaming of
+	warning_at_rich_loc.
+	(cp_parser_decl_specifier_seq): Likewise for renaming of
+	error_at_rich_loc and warning_at_rich_loc.
+	(cp_parser_elaborated_type_specifier): Likewise for renaming of
+	pedwarn_at_rich_loc.
+	(cp_parser_cv_qualifier_seq_opt): Likewise for renaming of
+	error_at_rich_loc.
+	(cp_parser_virt_specifier_seq_opt): Likewise.
+	(cp_parser_class_specifier_1): Likewise.
+	(cp_parser_class_head): Likewise.
+	(cp_parser_member_declaration): Likewise for renaming of
+	pedwarn_at_rich_loc, warning_at_rich_loc, and error_at_rich_loc.
+	(cp_parser_enclosed_template_argument_list): Likewise for renaming
+	of error_at_rich_loc.
+	(set_and_check_decl_spec_loc): Likewise.
+	* pt.c (listify): Likewise.
+	* rtti.c (typeid_ok_p): Likewise.
+	* semantics.c (process_outer_var_ref): Use UNKNOWN_LOCATION rather
+	than 0.
+	* typeck.c (access_failure_info::maybe_suggest_accessor): Update
+	for renaming of inform_at_rich_loc.
+	(finish_class_member_access_expr): Likewise for renaming of
+	error_at_rich_loc.
+
+2017-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct operator_name_info_t): Rename to ...
+	(struct ovl_op_info_t): ... here.  Add tree_code field.
+	(operator_name_info, assignment_operator_name_info): Delete.
+	(ovl_op_info): Declare.
+	(OVL_OP_INFO): Adjust.
+	* decl.c (grok_op_properties): Use ovl_op_flags.
+	* lex.c (operator_name_info, assignment_operator_name_info):
+	Delete.
+	(ovl_op_info): Define.
+	(set_operator_ident): Adjust.
+	(init_operators): Set tree_code.
+	* mangle.c (write_unqualified_id): Adjust operator array scan.
+
+	* lex.c (init_operators): Allow NULL operator name.  Don't add
+	special cases.
+	* operators.def: Use NULL for mangling only operators.  Move to
+	after regular operators but move assignment operators last.
+
+	* cp-tree.h (enum ovl_op_flags): New.
+	(struct operator_name_info_t): Rename arity to flags.
+	* lex.c (set_operator_ident): New.
+	(init_operators): Use it.  Adjust for flags.
+	* mangle.c (write_unqualified_id): Adjust for flags.
+	* operators.def: Replace arity with flags.
+
+	* cp-tree.h (ovl_op_identifier): New.
+	(assign_op_identifier, call_op_identifier): Adjust.
+	(cp_operator_id, cp_assignment_operator_ide): Delete.
+	(SET_OVERLOADED_OPERATOR_CODE): Delete.
+	(OVL_OP_INFO): New.
+	* call.c (op_error): Use OVL_OP_INFO.
+	(build_conditional_expr_1): Use ovl_op_identifier.
+	(build_new_op_1): Use OVL_OP_INFO & ovl_op_identifier.
+	(build_op_delete_call): Likewise.
+	* class.c (type_requires_array_cookie): Use ovl_op_identifier.
+	* decl.c (duplicate_decls): Directly copy operator code.
+	(builtin_function_1): Do not set operator code.
+	(build_library_fn): Directly set operator code.
+	(push_cp_library_fn): Use ovl_op_identifier.
+	(grok_op_properties): Directly set operator code.
+	* decl2.c (maybe_warn_sized_delete): Use ovl_op_identifier.
+	* error.c (dump_expr): Use OVL_OP_INFO.
+	(op_to_string): Add assop arg. Use OVL_OP_INFO.
+	(assop_to_string): Delete.
+	(args_to_string): Adjust.
+	* init.c (build_new_1): Use ovl_op_identifier.
+	* mangle.c (write_unqualified_name): Use OVL_OP_INFO.
+	(write_expression): Likewise.
+	* method.c (synthesized_method_walk): Use ovl_op_identifier.
+	(implicitly_declare_fn): Use assign_op_identifier. Directly set
+	operator code.
+	* name-lookup.c (get_class_binding): Use assign_op_identifier.
+	* parser.c (cp_parser_operator): Use ovl_op_identifier.
+	(cp_parser_omp_clause_reduction): Likewise.
+	* semantics.c (omp_reduction_id): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Use OVL_OP_INFO.
+
+	* cp-tree.h (assign_op_identifier, call_op_identifier): Define.
+	(LAMBDA_FUNCTION_P): Use DECL_OVERLOADED_OPERATOR_IS.
+	(DECL_OVERLOADED_OPERATOR_P): Just retuurn true/false.
+	(DECL_OVERLOADED_OPERATOR_CODE, DECL_OVERLOADED_OPERATOR_IS): Define.
+	* call.c (add_function_candidate): Use
+	DECL_OVERLOADED_OPERATOR_IS.
+	(build_op_call_1): Use call_op_identifier &
+	DECL_OVERLOADED_OPERATOR_IS.
+	(build_over_call): Likewise.
+	(has_trivial_copy_assign_p): Use assign_op_identifier.
+	(build_special_member_call): Likewise.
+	* class.c (dfs_declare_virt_assop_and_dtor): Likewise.
+	(vbase_has_user_provided_move_assign,
+	classtype_has_move_assign_or_move_ctor_p): Likewise.
+	* decl.c (duplicate_decls): Use DECL_OVERLOADED_OPERATOR_CODE.
+	(grok_special_member_properties): Use assign_op_identifier.
+	(start_preparsed_function): Use DECL_OVERLOADED_OPERATOR_IS.
+	* decl2.c (mark_used): Use DECL_CONV_FN_P.
+	* dump.c (dump_access): Delete prototype.
+	(dump_op): Delete.
+	(cp_dump_tree): Don't call it.
+	* lambda.c (lambda_function): Use call_op_identifier.
+	(maybe_add_lambda_conv_op): Not an overloaded operator.  Remove
+	unneeded braces.
+	* mangle.c (write_unqualified_name): Use DECL_OVERLOADED_OPERTOR_CODE.
+	* method.c (do_build_copy_assign): Use assign_op_identifier.
+	(synthesize_method): Use DECL_OVERLOADED_OPERATOR_IS.
+	(get_copy_assign): Use assign_op_identifier.
+	(synthesized_method_walk): Likewise.
+	(defaultable_fn_check): Use DECL_OVERLOADED_OPERATOR_IS.
+	* parser.c (cp_parser_lambda_declarator_opt): Use
+	call_op_identifier.
+	* semanitics.c (classtype_has_nothrow_assign_or_copy_p): Use
+	assign_op_identifier.
+	* tree.c (special_function_p):  Use DECL_OVERLOADED_OPERATOR_IS.
+	* typeck.c (check_return_expr): Use DECL_OVERLOADED_OPERATOR_CODE.
+	(check_return_expr): Use assign_op_identifier.
+
+2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82085
+	* pt.c (tsubst_copy_and_build, [INDIRECT_REF]): For a REFERENCE_REF_P,
+	unconditionally call convert_from_reference.
+
+2017-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_op_call_1): Test for FUNCTION_DECL in same manner
+	as a few lines earlier.
+	* cp-tree.h (PACK_EXPANSION_PATTERN): Fix white space.
+	* decl.c (grokfndecl): Fix indentation.
+	(compute_array_index_type): Use processing_template_decl_sentinel.
+	(grok_op_properties): Move warnings to end.  Reorder other checks
+	to group similar entities.  Tweak diagnostics.
+	* lex.c (unqualified_name_lookup_error): No need to check name is
+	not ERROR_MARK operator.
+	* parser.c (cp_parser_operator): Select operator code before
+	looking it up.
+	* typeck.c (check_return_expr): Fix indentation and line wrapping.
+
+2017-10-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (invalid_nontype_parm_type_p): Return a bool instead of an int.
+
+2017-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (sort_labels): Restore function.
+	(pop_labels): Sort labels
+	(identify_goto): Add translation markup.
+
+2017-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	Kill IDENTIFIER_LABEL_VALUE.
+	* cp-tree.h (lang_identifier): Delete label_value slot.
+	(IDENTIFIER_LABEL_VALUE, SET_IDENTIFIER_LABEL_VALUE): Delete.
+	(struct named_label_hasher): Rename to ...
+	(struct named_label_hash): ... here.  Reimplement.
+	(struct language_function): Adjust x_named_labels.
+	* name-lookup.h (struct cp_label_binding): Delete.
+	(struct cp_binding_level): Delete shadowed_labels slot.
+	* decl.c (struct named_label_entry): Add name and outer slots.
+	(pop_label): Rename to ...
+	(check_label_used): ... here.  Don't pop.
+	(note_label, sort_labels): Delete.
+	(pop_labels, pop_local_label): Reimplement.
+	(poplevel): Pop local labels as any other decl. Remove
+	shadowed_labels handling.
+	(named_label_hash::hash, named_label_hash::equal): New.
+	(make_label_decl): Absorb into ...
+	(lookup_label_1): ... here.  Add making_local_p arg, reimplement.
+	(lookup_label, declare_local_label): Adjust.
+	(check_goto, define_label): Adjust.
+	* lex.c (make_conv_op_name): Don't clear IDENTIFIER_LABEL_VALUE.
+	* ptree.c (cxx_print_identifier): Don't print identifier binding.
+
+	* decl.c (identifier_goto): Reduce duplication.
+	(check_previous_goto_1): Likewise.
+	(check_goto): Move var decls to initialization.
+	(check_omp_return, define_label_1, define_label): Likewise.
+
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* decl.c (duplicate_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* decl.c (duplicate_decls): Warn for built-in functions declared as
+	non-function, use OPT_Wbuiltin_declaration_mismatch.
+
+	* decl.c (duplicate_decls): Avoid redundant '+' in warning_at.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80991
+	* pt.c (value_dependent_expression_p, [TRAIT_EXPR]): Handle
+	a TREE_LIST as TRAIT_EXPR_TYPE2.
+
+2017-10-24  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82307
+	* cvt.c (type_promotes_to): Implement C++17, 7.6/4, about unscoped
+	enumeration type whose underlying type is fixed.
+
+2017-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80449
+	* semantics.c (finish_compound_literal): Check do_auto_deduction
+	return value for error_mark_node.
+
+2017-10-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77369 - wrong noexcept handling in C++14 and below
+	* tree.c (strip_typedefs): Canonicalize TYPE_RAISES_EXCEPTIONS.
+
 2017-10-20  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (layout_class_type): Cleanup as-base creation, determine

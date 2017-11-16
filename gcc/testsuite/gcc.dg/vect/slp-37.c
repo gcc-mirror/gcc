@@ -49,9 +49,7 @@ int main (void)
       arr1[i].a = i;
       arr1[i].b = i * 2;
       arr1[i].c = (void *)arr1;
-
-      if (arr1[i].a == 178)
-         abort(); 
+      asm volatile ("" ::: "memory");
     } 
 
 

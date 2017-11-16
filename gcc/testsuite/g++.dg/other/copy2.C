@@ -10,11 +10,15 @@ class A
 {
 public:
   int i;
-  A &operator =(const A &i)
-  {
-    status = 0;
-  }
+  A &operator =(const A &i);
 };
+
+A a;
+
+A& A::operator=(const A &i)  {
+    status = 0;
+    return a;
+  }
 
 class B
 {

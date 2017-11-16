@@ -183,6 +183,7 @@ package System.Rident is
       No_Elaboration_Code,                       -- GNAT
       No_Obsolescent_Features,                   -- Ada 2005 AI-368
       No_Wide_Characters,                        -- GNAT
+      Static_Dispatch_Tables,                    -- GNAT
       SPARK_05,                                  -- GNAT
 
       --  The following cases require a parameter value

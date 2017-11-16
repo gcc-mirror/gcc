@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 8.0.0 (experimental 20171004), October 04, 2017
+libgccjit 8.0.0 (experimental 20171031), October 31, 2017
 
 David Malcolm
 
@@ -15016,7 +15016,12 @@ jit/build/gcc/testsuite/jit/jit.log
 
 @noindent
 
-The test executables can be seen as:
+The test executables are normally deleted after each test is run.  For
+debugging, they can be preserved by setting 
+@geindex PRESERVE_EXECUTABLES
+@geindex environment variable; PRESERVE_EXECUTABLES
+@code{PRESERVE_EXECUTABLES}
+in the environment.  If so, they can then be seen as:
 
 @example
 jit/build/gcc/testsuite/jit/*.exe
@@ -15029,7 +15034,9 @@ which can be run independently.
 You can compile and run individual tests by passing "jit.exp=TESTNAME" to RUNTESTFLAGS e.g.:
 
 @example
-[gcc] $ make check-jit RUNTESTFLAGS="-v -v -v jit.exp=test-factorial.c"
+[gcc] $ PRESERVE_EXECUTABLES= \
+          make check-jit \
+            RUNTESTFLAGS="-v -v -v jit.exp=test-factorial.c"
 @end example
 
 @noindent
@@ -15056,7 +15063,10 @@ and once a test has been compiled, you can debug it directly:
 @subsection Running under valgrind
 
 
-The jit testsuite detects if RUN_UNDER_VALGRIND is present in the
+The jit testsuite detects if 
+@geindex RUN_UNDER_VALGRIND
+@geindex environment variable; RUN_UNDER_VALGRIND
+@code{RUN_UNDER_VALGRIND} is present in the
 environment (with any value).  If it is present, it runs the test client
 code under valgrind@footnote{http://valgrind.org},
 specifcally, the default

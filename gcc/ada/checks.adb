@@ -2765,7 +2765,6 @@ package body Checks is
       S_Typ   : Entity_Id;
       Arr     : Node_Id   := Empty;  -- initialize to prevent warning
       Arr_Typ : Entity_Id := Empty;  -- initialize to prevent warning
-      OK      : Boolean   := False;  -- initialize to prevent warning
 
       Is_Subscr_Ref : Boolean;
       --  Set true if Expr is a subscript
@@ -2995,10 +2994,11 @@ package body Checks is
               and then Compile_Time_Known_Value (Thi)
             then
                declare
+                  OK  : Boolean := False;  -- initialize to prevent warning
                   Hiv : constant Uint := Expr_Value (Thi);
                   Lov : constant Uint := Expr_Value (Tlo);
-                  Hi  : Uint;
-                  Lo  : Uint;
+                  Hi  : Uint := No_Uint;
+                  Lo  : Uint := No_Uint;
 
                begin
                   --  If range is null, we for sure have a constraint error (we
@@ -4370,8 +4370,8 @@ package body Checks is
       Hi_Left : Uint;
       --  Lo and Hi bounds of left operand
 
-      Lo_Right : Uint;
-      Hi_Right : Uint;
+      Lo_Right : Uint := No_Uint;
+      Hi_Right : Uint := No_Uint;
       --  Lo and Hi bounds of right (or only) operand
 
       Bound : Node_Id;
@@ -4909,8 +4909,8 @@ package body Checks is
       Hi_Left : Ureal;
       --  Lo and Hi bounds of left operand
 
-      Lo_Right : Ureal;
-      Hi_Right : Ureal;
+      Lo_Right : Ureal := No_Ureal;
+      Hi_Right : Ureal := No_Ureal;
       --  Lo and Hi bounds of right (or only) operand
 
       Bound : Node_Id;
@@ -7841,10 +7841,11 @@ package body Checks is
       Subp_Id   : constant Entity_Id  := Unique_Defining_Entity (Subp_Body);
       Subp_Decl : constant Node_Id    := Unit_Declaration_Node (Subp_Id);
 
-      Decls   : List_Id;
-      Flag_Id : Entity_Id;
-      Set_Ins : Node_Id;
-      Tag_Typ : Entity_Id;
+      Decls    : List_Id;
+      Flag_Id  : Entity_Id;
+      Set_Ins  : Node_Id;
+      Set_Stmt : Node_Id;
+      Tag_Typ  : Entity_Id;
 
    --  Start of processing for Install_Primitive_Elaboration_Check
 
@@ -7878,8 +7879,8 @@ package body Checks is
       elsif Nkind (Context) = N_Compilation_Unit then
          return;
 
-      --  Only nonabstract library-level source primitives are considered for
-      --  this check.
+      --  Do not consider anything other than nonabstract library-level source
+      --  primitives.
 
       elsif not
         (Comes_From_Source (Subp_Id)
@@ -7996,10 +7997,18 @@ package body Checks is
       --  Generate:
       --    E := True;
 
-      Insert_After_And_Analyze (Set_Ins,
+      Set_Stmt :=
         Make_Assignment_Statement (Loc,
           Name       => New_Occurrence_Of (Flag_Id, Loc),
-          Expression => New_Occurrence_Of (Standard_True, Loc)));
+          Expression => New_Occurrence_Of (Standard_True, Loc));
+
+      --  Mark the assignment statement as elaboration code. This allows the
+      --  early call region mechanism (see Sem_Elab) to properly ignore such
+      --  assignments even though they are non-preelaborable code.
+
+      Set_Is_Elaboration_Code (Set_Stmt);
+
+      Insert_After_And_Analyze (Set_Ins, Set_Stmt);
    end Install_Primitive_Elaboration_Check;
 
    --------------------------
@@ -9814,7 +9823,7 @@ package body Checks is
       Do_Access   : Boolean := False;
       Wnode       : Node_Id  := Warn_Node;
       Ret_Result  : Check_Result := (Empty, Empty);
-      Num_Checks  : Integer := 0;
+      Num_Checks  : Natural := 0;
 
       procedure Add_Check (N : Node_Id);
       --  Adds the action given to Ret_Result if N is non-Empty

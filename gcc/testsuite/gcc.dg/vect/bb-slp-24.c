@@ -9,7 +9,7 @@
 short src[N], dst[N];
 
 void foo (short * __restrict__ dst, short * __restrict__ src, int h,
-          int stride, int dummy)
+          int stride)
 {
   int i;
   h /= 8;
@@ -25,8 +25,7 @@ void foo (short * __restrict__ dst, short * __restrict__ src, int h,
       dst[7] += A*src[7];
       dst += stride;
       src += stride;
-      if (dummy == 32)
-        abort ();
+      asm volatile ("" ::: "memory");
     }
 }
 
@@ -43,7 +42,7 @@ int main (void)
       src[i] = i;
     }
 
-  foo (dst, src, N, 8, 0);
+  foo (dst, src, N, 8);
 
   for (i = 0; i < N; i++)
     {

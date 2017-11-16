@@ -6,4 +6,5 @@ int foo(int);
 int bar() {
   int baz(int(foo(0)));
   int foo = baz;
+  return 0;
 }

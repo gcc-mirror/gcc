@@ -3344,7 +3344,8 @@ package body Sem_Warn is
    -----------------------------
 
    procedure Warn_On_Known_Condition (C : Node_Id) is
-      Test_Result : Boolean;
+      Test_Result : Boolean := False;
+      --  Force initialization to facilitate static analysis
 
       function Is_Known_Branch return Boolean;
       --  If the type of the condition is Boolean, the constant value of the

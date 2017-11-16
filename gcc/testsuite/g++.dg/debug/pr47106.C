@@ -22,12 +22,14 @@ inline bool
 baz (S s1, S)
 {
   while (f (&s1));
+
+  return true;
 }
 
 inline bool
 bar (S s1, S s2, S)
 {
-  baz (s1, s2);
+  return baz (s1, s2);
 }
 
 S getS ();
@@ -35,5 +37,5 @@ S getS ();
 bool
 foo ()
 {
-  bar (getS (), getS (), getS ());
+  return bar (getS (), getS (), getS ());
 }

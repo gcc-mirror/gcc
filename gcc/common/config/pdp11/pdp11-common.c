@@ -26,14 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options pdp11_option_optimization_table[] =
-  {
-    { OPT_LEVELS_3_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -70,8 +62,6 @@ pdp11_option_init_struct (struct gcc_options *opts)
   (MASK_FPU | MASK_45 | TARGET_UNIX_ASM_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION pdp11_handle_option
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE pdp11_option_optimization_table
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT pdp11_option_init_struct
 

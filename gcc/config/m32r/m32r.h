@@ -492,15 +492,6 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
    pointer to a smaller address.  */
 #define STACK_GROWS_DOWNWARD 1
 
-/* Offset from frame pointer to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-/* The frame pointer points at the same place as the stack pointer, except if
-   alloca has been called.  */
-#define STARTING_FRAME_OFFSET \
-  M32R_STACK_ALIGN (crtl->outgoing_args_size)
-
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
 #define STACK_POINTER_OFFSET 0

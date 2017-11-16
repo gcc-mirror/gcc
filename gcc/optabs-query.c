@@ -401,44 +401,20 @@ can_vec_perm_p (machine_mode mode, bool variable, vec_perm_indices *sel)
   return true;
 }
 
-/* Like optab_handler, but for widening_operations that have a
-   TO_MODE and a FROM_MODE.  */
-
-enum insn_code
-widening_optab_handler (optab op, machine_mode to_mode,
-			machine_mode from_mode)
-{
-  unsigned scode = (op << 16) | to_mode;
-  if (to_mode != from_mode && from_mode != VOIDmode)
-    {
-      /* ??? Why does find_widening_optab_handler_and_mode attempt to
-	 widen things that can't be widened?  E.g. add_optab... */
-      if (op > LAST_CONV_OPTAB)
-	return CODE_FOR_nothing;
-      scode |= from_mode << 8;
-    }
-  return raw_optab_handler (scode);
-}
-
 /* Find a widening optab even if it doesn't widen as much as we want.
    E.g. if from_mode is HImode, and to_mode is DImode, and there is no
-   direct HI->SI insn, then return SI->DI, if that exists.
-   If PERMIT_NON_WIDENING is non-zero then this can be used with
-   non-widening optabs also.  */
+   direct HI->SI insn, then return SI->DI, if that exists.  */
 
 enum insn_code
 find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
 				      machine_mode from_mode,
-				      int permit_non_widening,
 				      machine_mode *found_mode)
 {
-  for (; (permit_non_widening || from_mode != to_mode)
-	 && GET_MODE_SIZE (from_mode) <= GET_MODE_SIZE (to_mode)
-	 && from_mode != VOIDmode;
-       from_mode = GET_MODE_WIDER_MODE (from_mode).else_void ())
+  gcc_checking_assert (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode));
+  gcc_checking_assert (from_mode < to_mode);
+  FOR_EACH_MODE (from_mode, from_mode, to_mode)
     {
-      enum insn_code handler = widening_optab_handler (op, to_mode,
-						       from_mode);
+      enum insn_code handler = convert_optab_handler (op, to_mode, from_mode);
 
       if (handler != CODE_FOR_nothing)
 	{

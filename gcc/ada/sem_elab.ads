@@ -34,6 +34,15 @@ package Sem_Elab is
    --  Create a call marker for call or requeue statement N and record it for
    --  later processing by the ABE mechanism.
 
+   procedure Build_Variable_Reference_Marker
+     (N     : Node_Id;
+      Read  : Boolean;
+      Write : Boolean);
+   --  Create a variable reference marker for arbitrary node N if it mentions a
+   --  variable, and record it for later processing by the ABE mechanism. Flag
+   --  Read should be set when the reference denotes a read. Flag Write should
+   --  be set when the reference denotes a write.
+
    procedure Check_Elaboration_Scenarios;
    --  Examine each scenario recorded during analysis/resolution and apply the
    --  Ada or SPARK elaboration rules taking into account the model in effect.
@@ -84,6 +93,10 @@ package Sem_Elab is
       --  This value is used to indicate that none of the levels above are in
       --  effect.
 
+   subtype Any_Library_Level is Enclosing_Level_Kind range
+     Generic_Package_Spec ..
+     Package_Body;
+
    subtype Generic_Library_Level is Enclosing_Level_Kind range
      Generic_Package_Spec ..
      Generic_Package_Body;
@@ -92,8 +105,8 @@ package Sem_Elab is
      Package_Spec ..
      Package_Body;
 
-   subtype Any_Library_Level is Enclosing_Level_Kind range
-     Generic_Package_Spec ..
+   subtype Library_Or_Instantiation_Level is Enclosing_Level_Kind range
+     Instantiation ..
      Package_Body;
 
    function Find_Enclosing_Level (N : Node_Id) return Enclosing_Level_Kind;

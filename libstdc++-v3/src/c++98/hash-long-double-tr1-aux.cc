@@ -22,6 +22,8 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#pragma GCC diagnostic ignored "-Wattribute-alias"
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace tr1

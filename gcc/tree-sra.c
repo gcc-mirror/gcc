@@ -97,6 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "symbol-summary.h"
+#include "ipa-param-manipulation.h"
 #include "ipa-prop.h"
 #include "params.h"
 #include "dbgcnt.h"

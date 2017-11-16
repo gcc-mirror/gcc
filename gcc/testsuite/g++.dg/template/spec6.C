@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-return-type" }
+
 template <bool, int> struct X {};
 
 template <bool C>    struct X<C,1> {

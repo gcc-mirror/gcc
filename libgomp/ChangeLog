@@ -1,3 +1,55 @@
+2017-11-15  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: New test, copied
+	from asyncwait-1.f90.  Rewrite into C.  Rewrite from float to int.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-2.c: New test, copied
+	from asyncwait-2.f90.  Rewrite into C.  Rewrite from float to int.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-3.c: New test, copied
+	from asyncwait-3.f90.  Rewrite into C.  Rewrite from float to int.
+
+2017-11-14  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Allow to run for
+	non-nvidia devices.
+
+2017-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82835
+	* testsuite/libgomp.c++/pr82835.C: New test.
+
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	* testsuite/libgomp.c++/loop-2.C: Return a value
+	for functions with non-void return type, or change type to void,
+	or add -Wno-return-type for test.
+	* testsuite/libgomp.c++/loop-4.C: Likewise.
+	* testsuite/libgomp.c++/parallel-1.C: Likewise.
+	* testsuite/libgomp.c++/shared-1.C: Likewise.
+	* testsuite/libgomp.c++/single-1.C: Likewise.
+	* testsuite/libgomp.c++/single-2.C: Likewise.
+
+2017-10-31  Tom de Vries  <tom@codesourcery.com>
+
+	* plugin/plugin-hsa.c (HSA_LOG): Remove semicolon after
+	"do {} while (false)".
+	(init_single_kernel, GOMP_OFFLOAD_async_run): Add missing semicolon
+	after HSA_DEBUG call.
+
+2017-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (struct gomp_coalesce_buf): New type.
+	(MAX_COALESCE_BUF_SIZE, MAX_COALESCE_BUF_GAP): Define.
+	(gomp_coalesce_buf_add, gomp_to_device_kind_p): New functions.
+	(gomp_copy_host2dev): Add CBUF argument, if copying into
+	the cached ranges, memcpy into buffer instead of copying
+	into device.
+	(gomp_map_vars_existing, gomp_map_pointer, gomp_map_fields_existing):
+	Add CBUF argument, pass it through to other calls.
+	(gomp_map_vars): Aggregate copies from host to device if small enough
+	and with small enough gaps in between into memcpy into a buffer and
+	fewer host to device copies from the buffer.
+	(gomp_update): Adjust gomp_copy_host2dev caller.
+
 2017-10-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/declare-1.f90: Restore "dg-do

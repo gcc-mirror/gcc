@@ -822,6 +822,34 @@ static const struct tune_params qdf24xx_tunings =
   &qdf24xx_prefetch_tune
 };
 
+/* Tuning structure for the Qualcomm Saphira core.  Default to falkor values
+   for now.  */
+static const struct tune_params saphira_tunings =
+{
+  &generic_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &generic_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  4, /* memmov_cost  */
+  4, /* issue_rate  */
+  (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
+   | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
+  16,	/* function_align.  */
+  8,	/* jump_align.  */
+  16,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
+  &generic_prefetch_tune
+};
+
 static const struct tune_params thunderx2t99_tunings =
 {
   &thunderx2t99_extra_costs,
@@ -1964,6 +1992,87 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   return num_insns;
 }
 
+/* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to hold a
+   temporary value if necessary.  FRAME_RELATED_P should be true if
+   the RTX_FRAME_RELATED flag should be set and CFA adjustments added
+   to the generated instructions.  If SCRATCHREG is known to hold
+   abs (delta), EMIT_MOVE_IMM can be set to false to avoid emitting the
+   immediate again.
+
+   Since this function may be used to adjust the stack pointer, we must
+   ensure that it cannot cause transient stack deallocation (for example
+   by first incrementing SP and then decrementing when adjusting by a
+   large immediate).  */
+
+static void
+aarch64_add_constant_internal (scalar_int_mode mode, int regnum,
+			       int scratchreg, HOST_WIDE_INT delta,
+			       bool frame_related_p, bool emit_move_imm)
+{
+  HOST_WIDE_INT mdelta = abs_hwi (delta);
+  rtx this_rtx = gen_rtx_REG (mode, regnum);
+  rtx_insn *insn;
+
+  if (!mdelta)
+    return;
+
+  /* Single instruction adjustment.  */
+  if (aarch64_uimm12_shift (mdelta))
+    {
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      return;
+    }
+
+  /* Emit 2 additions/subtractions if the adjustment is less than 24 bits.
+     Only do this if mdelta is not a 16-bit move as adjusting using a move
+     is better.  */
+  if (mdelta < 0x1000000 && !aarch64_move_imm (mdelta, mode))
+    {
+      HOST_WIDE_INT low_off = mdelta & 0xfff;
+
+      low_off = delta < 0 ? -low_off : low_off;
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      return;
+    }
+
+  /* Emit a move immediate if required and an addition/subtraction.  */
+  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
+  if (emit_move_imm)
+    aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (mdelta), true, mode);
+  insn = emit_insn (delta < 0 ? gen_sub2_insn (this_rtx, scratch_rtx)
+			      : gen_add2_insn (this_rtx, scratch_rtx));
+  if (frame_related_p)
+    {
+      RTX_FRAME_RELATED_P (insn) = frame_related_p;
+      rtx adj = plus_constant (mode, this_rtx, delta);
+      add_reg_note (insn , REG_CFA_ADJUST_CFA, gen_rtx_SET (this_rtx, adj));
+    }
+}
+
+static inline void
+aarch64_add_constant (scalar_int_mode mode, int regnum, int scratchreg,
+		      HOST_WIDE_INT delta)
+{
+  aarch64_add_constant_internal (mode, regnum, scratchreg, delta, false, true);
+}
+
+static inline void
+aarch64_add_sp (int scratchreg, HOST_WIDE_INT delta, bool emit_move_imm)
+{
+  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, delta,
+				 true, emit_move_imm);
+}
+
+static inline void
+aarch64_sub_sp (int scratchreg, HOST_WIDE_INT delta, bool frame_related_p)
+{
+  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, -delta,
+				 frame_related_p, true);
+}
 
 void
 aarch64_expand_mov_immediate (rtx dest, rtx imm)
@@ -2073,88 +2182,6 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
   aarch64_internal_mov_immediate (dest, imm, true,
 				  as_a <scalar_int_mode> (mode));
-}
-
-/* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to hold a
-   temporary value if necessary.  FRAME_RELATED_P should be true if
-   the RTX_FRAME_RELATED flag should be set and CFA adjustments added
-   to the generated instructions.  If SCRATCHREG is known to hold
-   abs (delta), EMIT_MOVE_IMM can be set to false to avoid emitting the
-   immediate again.
-
-   Since this function may be used to adjust the stack pointer, we must
-   ensure that it cannot cause transient stack deallocation (for example
-   by first incrementing SP and then decrementing when adjusting by a
-   large immediate).  */
-
-static void
-aarch64_add_constant_internal (scalar_int_mode mode, int regnum,
-			       int scratchreg, HOST_WIDE_INT delta,
-			       bool frame_related_p, bool emit_move_imm)
-{
-  HOST_WIDE_INT mdelta = abs_hwi (delta);
-  rtx this_rtx = gen_rtx_REG (mode, regnum);
-  rtx_insn *insn;
-
-  if (!mdelta)
-    return;
-
-  /* Single instruction adjustment.  */
-  if (aarch64_uimm12_shift (mdelta))
-    {
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      return;
-    }
-
-  /* Emit 2 additions/subtractions if the adjustment is less than 24 bits.
-     Only do this if mdelta is not a 16-bit move as adjusting using a move
-     is better.  */
-  if (mdelta < 0x1000000 && !aarch64_move_imm (mdelta, mode))
-    {
-      HOST_WIDE_INT low_off = mdelta & 0xfff;
-
-      low_off = delta < 0 ? -low_off : low_off;
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      return;
-    }
-
-  /* Emit a move immediate if required and an addition/subtraction.  */
-  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
-  if (emit_move_imm)
-    aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (mdelta), true, mode);
-  insn = emit_insn (delta < 0 ? gen_sub2_insn (this_rtx, scratch_rtx)
-			      : gen_add2_insn (this_rtx, scratch_rtx));
-  if (frame_related_p)
-    {
-      RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      rtx adj = plus_constant (mode, this_rtx, delta);
-      add_reg_note (insn , REG_CFA_ADJUST_CFA, gen_rtx_SET (this_rtx, adj));
-    }
-}
-
-static inline void
-aarch64_add_constant (scalar_int_mode mode, int regnum, int scratchreg,
-		      HOST_WIDE_INT delta)
-{
-  aarch64_add_constant_internal (mode, regnum, scratchreg, delta, false, true);
-}
-
-static inline void
-aarch64_add_sp (int scratchreg, HOST_WIDE_INT delta, bool emit_move_imm)
-{
-  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, delta,
-				 true, emit_move_imm);
-}
-
-static inline void
-aarch64_sub_sp (int scratchreg, HOST_WIDE_INT delta, bool frame_related_p)
-{
-  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, -delta,
-				 frame_related_p, true);
 }
 
 static bool
@@ -2864,24 +2891,6 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
-static bool
-aarch64_frame_pointer_required (void)
-{
-  /* In aarch64_override_options_after_change
-     flag_omit_leaf_frame_pointer turns off the frame pointer by
-     default.  Turn it back on now if we've not got a leaf
-     function.  */
-  if (flag_omit_leaf_frame_pointer
-      && (!crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM)))
-    return true;
-
-  /* Force a frame pointer for EH returns so the return address is at FP+8.  */
-  if (crtl->calls_eh_return)
-    return true;
-
-  return false;
-}
-
 /* Mark the registers that need to be saved by the callee and calculate
    the size of the callee-saved registers area and frame record (both FP
    and LR may be omitted).  */
@@ -2893,6 +2902,18 @@ aarch64_layout_frame (void)
 
   if (reload_completed && cfun->machine->frame.laid_out)
     return;
+
+  /* Force a frame chain for EH returns so the return address is at FP+8.  */
+  cfun->machine->frame.emit_frame_chain
+    = frame_pointer_needed || crtl->calls_eh_return;
+
+  /* Emit a frame chain if the frame pointer is enabled.
+     If -momit-leaf-frame-pointer is used, do not use a frame chain
+     in leaf functions which do not use LR.  */
+  if (flag_omit_frame_pointer == 2
+      && !(flag_omit_leaf_frame_pointer && crtl->is_leaf
+	   && !df_regs_ever_live_p (LR_REGNUM)))
+    cfun->machine->frame.emit_frame_chain = true;
 
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
@@ -2928,14 +2949,14 @@ aarch64_layout_frame (void)
 	last_fp_reg = regno;
       }
 
-  if (frame_pointer_needed)
+  if (cfun->machine->frame.emit_frame_chain)
     {
       /* FP and LR are placed in the linkage record.  */
       cfun->machine->frame.reg_offset[R29_REGNUM] = 0;
       cfun->machine->frame.wb_candidate1 = R29_REGNUM;
       cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
       cfun->machine->frame.wb_candidate2 = R30_REGNUM;
-      offset += 2 * UNITS_PER_WORD;
+      offset = 2 * UNITS_PER_WORD;
     }
 
   /* Now assign stack slots for them.  */
@@ -3033,20 +3054,6 @@ aarch64_layout_frame (void)
       cfun->machine->frame.callee_adjust = cfun->machine->frame.hard_fp_offset;
       cfun->machine->frame.final_adjust
 	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
-    }
-  else if (!frame_pointer_needed
-	   && varargs_and_saved_regs_size < max_push_offset)
-    {
-      /* Frame with large local area and outgoing arguments (this pushes the
-	 callee-saves first, followed by the locals and outgoing area):
-	 stp reg1, reg2, [sp, -varargs_and_saved_regs_size]!
-	 stp reg3, reg4, [sp, 16]
-	 sub sp, sp, frame_size - varargs_and_saved_regs_size  */
-      cfun->machine->frame.callee_adjust = varargs_and_saved_regs_size;
-      cfun->machine->frame.final_adjust
-	= cfun->machine->frame.frame_size - cfun->machine->frame.callee_adjust;
-      cfun->machine->frame.hard_fp_offset = cfun->machine->frame.callee_adjust;
-      cfun->machine->frame.locals_offset = cfun->machine->frame.hard_fp_offset;
     }
   else
     {
@@ -3664,6 +3671,7 @@ aarch64_expand_prologue (void)
   HOST_WIDE_INT callee_offset = cfun->machine->frame.callee_offset;
   unsigned reg1 = cfun->machine->frame.wb_candidate1;
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  bool emit_frame_chain = cfun->machine->frame.emit_frame_chain;
   rtx_insn *insn;
 
   /* Sign return address for functions.  */
@@ -3696,7 +3704,7 @@ aarch64_expand_prologue (void)
   if (callee_adjust != 0)
     aarch64_push_regs (reg1, reg2, callee_adjust);
 
-  if (frame_pointer_needed)
+  if (emit_frame_chain)
     {
       if (callee_adjust == 0)
 	aarch64_save_callee_saves (DImode, callee_offset, R29_REGNUM,
@@ -3704,14 +3712,14 @@ aarch64_expand_prologue (void)
       insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
 				       GEN_INT (callee_offset)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      RTX_FRAME_RELATED_P (insn) = frame_pointer_needed;
       emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
 
   aarch64_save_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
-			     callee_adjust != 0 || frame_pointer_needed);
+			     callee_adjust != 0 || emit_frame_chain);
   aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
-			     callee_adjust != 0 || frame_pointer_needed);
+			     callee_adjust != 0 || emit_frame_chain);
   aarch64_sub_sp (IP1_REGNUM, final_adjust, !frame_pointer_needed);
 }
 
@@ -4726,16 +4734,20 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x,
 /* Split an out-of-range address displacement into a base and offset.
    Use 4KB range for 1- and 2-byte accesses and a 16KB range otherwise
    to increase opportunities for sharing the base address of different sizes.
-   For unaligned accesses and TI/TF mode use the signed 9-bit range.  */
+   Unaligned accesses use the signed 9-bit range, TImode/TFmode use
+   the intersection of signed scaled 7-bit and signed 9-bit offset.  */
 static bool
 aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
 {
   HOST_WIDE_INT offset = INTVAL (*disp);
-  HOST_WIDE_INT base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
+  HOST_WIDE_INT base;
 
-  if (mode == TImode || mode == TFmode
-      || (offset & (GET_MODE_SIZE (mode) - 1)) != 0)
+  if (mode == TImode || mode == TFmode)
+    base = (offset + 0x100) & ~0x1f8;
+  else if ((offset & (GET_MODE_SIZE (mode) - 1)) != 0)
     base = (offset + 0x100) & ~0x1ff;
+  else
+    base = offset & ~(GET_MODE_SIZE (mode) < 4 ? 0xfff : 0x3ffc);
 
   *off = GEN_INT (base);
   *disp = GEN_INT (offset - base);
@@ -5901,36 +5913,14 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 }
 
 static bool
-aarch64_can_eliminate (const int from, const int to)
+aarch64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  /* If we need a frame pointer, we must eliminate FRAME_POINTER_REGNUM into
-     HARD_FRAME_POINTER_REGNUM and not into STACK_POINTER_REGNUM.  */
+  gcc_assert (from == ARG_POINTER_REGNUM || from == FRAME_POINTER_REGNUM);
 
+  /* If we need a frame pointer, ARG_POINTER_REGNUM and FRAME_POINTER_REGNUM
+     can only eliminate to HARD_FRAME_POINTER_REGNUM.  */
   if (frame_pointer_needed)
-    {
-      if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-	return true;
-      if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-	return false;
-      if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM
-	  && !cfun->calls_alloca)
-	return true;
-      if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
-	return true;
-
-      return false;
-    }
-  else
-    {
-      /* If we decided that we didn't need a leaf frame pointer but then used
-	 LR in the function, then we'll want a frame pointer after all, so
-	 prevent this elimination to ensure a frame pointer is used.  */
-      if (to == STACK_POINTER_REGNUM
-	  && flag_omit_leaf_frame_pointer
-	  && df_regs_ever_live_p (LR_REGNUM))
-	return false;
-    }
-
+    return to == HARD_FRAME_POINTER_REGNUM;
   return true;
 }
 
@@ -6939,18 +6929,16 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  /* The cost is one per vector-register copied.  */
 	  if (VECTOR_MODE_P (GET_MODE (op0)) && REG_P (op1))
 	    {
-	      int n_minus_1 = (GET_MODE_SIZE (GET_MODE (op0)) - 1)
-			      / GET_MODE_SIZE (V4SImode);
-	      *cost = COSTS_N_INSNS (n_minus_1 + 1);
+	      int nregs = aarch64_hard_regno_nregs (V0_REGNUM, GET_MODE (op0));
+	      *cost = COSTS_N_INSNS (nregs);
 	    }
 	  /* const0_rtx is in general free, but we will use an
 	     instruction to set a register to 0.  */
 	  else if (REG_P (op1) || op1 == const0_rtx)
 	    {
 	      /* The cost is 1 per register copied.  */
-	      int n_minus_1 = (GET_MODE_SIZE (GET_MODE (op0)) - 1)
-			      / UNITS_PER_WORD;
-	      *cost = COSTS_N_INSNS (n_minus_1 + 1);
+	      int nregs = aarch64_hard_regno_nregs (R0_REGNUM, GET_MODE (op0));
+	      *cost = COSTS_N_INSNS (nregs);
 	    }
           else
 	    /* Cost is just the cost of the RHS of the set.  */
@@ -8965,24 +8953,16 @@ aarch64_parse_override_string (const char* input_string,
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
-  /* The logic here is that if we are disabling all frame pointer generation
-     then we do not need to disable leaf frame pointer generation as a
-     separate operation.  But if we are *only* disabling leaf frame pointer
-     generation then we set flag_omit_frame_pointer to true, but in
-     aarch64_frame_pointer_required we return false only for leaf functions.
+  /* PR 70044: We have to be careful about being called multiple times for the
+     same function.  This means all changes should be repeatable.  */
 
-     PR 70044: We have to be careful about being called multiple times for the
-     same function.  Once we have decided to set flag_omit_frame_pointer just
-     so that we can omit leaf frame pointers, we must then not interpret a
-     second call as meaning that all frame pointer generation should be
-     omitted.  We do this by setting flag_omit_frame_pointer to a special,
-     non-zero value.  */
-  if (opts->x_flag_omit_frame_pointer == 2)
-    opts->x_flag_omit_frame_pointer = 0;
-
-  if (opts->x_flag_omit_frame_pointer)
-    opts->x_flag_omit_leaf_frame_pointer = false;
-  else if (opts->x_flag_omit_leaf_frame_pointer)
+  /* If the frame pointer is enabled, set it to a special value that behaves
+     similar to frame pointer omission.  If we don't do this all leaf functions
+     will get a frame pointer even if flag_omit_leaf_frame_pointer is set.
+     If flag_omit_frame_pointer has this special value, we must force the
+     frame pointer if not in a leaf function.  We also need to force it in a
+     leaf function if flag_omit_frame_pointer is not set or if LR is used.  */
+  if (opts->x_flag_omit_frame_pointer == 0)
     opts->x_flag_omit_frame_pointer = 2;
 
   /* If not optimizing for size, set the default
@@ -9091,6 +9071,11 @@ aarch64_override_options_internal (struct gcc_options *opts)
 			   aarch64_tune_params.prefetch->l2_cache_size,
 			   opts->x_param_values,
 			   global_options_set.x_param_values);
+
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
 
   /* Enable sw prefetching at specified optimization level for
      CPUS that have prefetch.  Lower optimization level threshold by 1
@@ -9561,9 +9546,8 @@ enum aarch64_attr_opt_type
    ATTR_TYPE specifies the type of behavior of the attribute as described
    in the definition of enum aarch64_attr_opt_type.
    ALLOW_NEG is true if the attribute supports a "no-" form.
-   HANDLER is the function that takes the attribute string and whether
-   it is a pragma or attribute and handles the option.  It is needed only
-   when the ATTR_TYPE is aarch64_attr_custom.
+   HANDLER is the function that takes the attribute string as an argument
+   It is needed only when the ATTR_TYPE is aarch64_attr_custom.
    OPT_NUM is the enum specifying the option that the attribute modifies.
    This is needed for attributes that mirror the behavior of a command-line
    option, that is it has ATTR_TYPE aarch64_attr_mask, aarch64_attr_bool or
@@ -9574,15 +9558,14 @@ struct aarch64_attribute_info
   const char *name;
   enum aarch64_attr_opt_type attr_type;
   bool allow_neg;
-  bool (*handler) (const char *, const char *);
+  bool (*handler) (const char *);
   enum opt_code opt_num;
 };
 
-/* Handle the ARCH_STR argument to the arch= target attribute.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+/* Handle the ARCH_STR argument to the arch= target attribute.  */
 
 static bool
-aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
+aarch64_handle_attr_arch (const char *str)
 {
   const struct processor *tmp_arch = NULL;
   enum aarch64_parse_opt_result parse_res
@@ -9599,15 +9582,14 @@ aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_MISSING_ARG:
-	error ("missing architecture name in 'arch' target %s", pragma_or_attr);
+	error ("missing name in %<target(\"arch=\")%> pragma or attribute");
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for 'arch' target %s", str, pragma_or_attr);
+	error ("invalid name (\"%s\") in %<target(\"arch=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_arch (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %qs for 'arch' target %s",
-	       str, pragma_or_attr);
+	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
 	break;
       default:
 	gcc_unreachable ();
@@ -9616,11 +9598,10 @@ aarch64_handle_attr_arch (const char *str, const char *pragma_or_attr)
   return false;
 }
 
-/* Handle the argument CPU_STR to the cpu= target attribute.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+/* Handle the argument CPU_STR to the cpu= target attribute.  */
 
 static bool
-aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
+aarch64_handle_attr_cpu (const char *str)
 {
   const struct processor *tmp_cpu = NULL;
   enum aarch64_parse_opt_result parse_res
@@ -9640,15 +9621,14 @@ aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_MISSING_ARG:
-	error ("missing cpu name in 'cpu' target %s", pragma_or_attr);
+	error ("missing name in %<target(\"cpu=\")%> pragma or attribute");
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for 'cpu' target %s", str, pragma_or_attr);
+	error ("invalid name (\"%s\") in %<target(\"cpu=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %qs for 'cpu' target %s",
-	       str, pragma_or_attr);
+	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
 	break;
       default:
 	gcc_unreachable ();
@@ -9657,11 +9637,10 @@ aarch64_handle_attr_cpu (const char *str, const char *pragma_or_attr)
   return false;
 }
 
-/* Handle the argument STR to the tune= target attribute.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+/* Handle the argument STR to the tune= target attribute.  */
 
 static bool
-aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
+aarch64_handle_attr_tune (const char *str)
 {
   const struct processor *tmp_tune = NULL;
   enum aarch64_parse_opt_result parse_res
@@ -9678,7 +9657,7 @@ aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_INVALID_ARG:
-	error ("unknown value %qs for 'tune' target %s", str, pragma_or_attr);
+	error ("invalid name (\"%s\") in %<target(\"tune=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
       default:
@@ -9691,11 +9670,10 @@ aarch64_handle_attr_tune (const char *str, const char *pragma_or_attr)
 /* Parse an architecture extensions target attribute string specified in STR.
    For example "+fp+nosimd".  Show any errors if needed.  Return TRUE
    if successful.  Update aarch64_isa_flags to reflect the ISA features
-   modified.
-   PRAGMA_OR_ATTR is used in potential error messages.  */
+   modified.  */
 
 static bool
-aarch64_handle_attr_isa_flags (char *str, const char *pragma_or_attr)
+aarch64_handle_attr_isa_flags (char *str)
 {
   enum aarch64_parse_opt_result parse_res;
   unsigned long isa_flags = aarch64_isa_flags;
@@ -9719,13 +9697,11 @@ aarch64_handle_attr_isa_flags (char *str, const char *pragma_or_attr)
   switch (parse_res)
     {
       case AARCH64_PARSE_MISSING_ARG:
-	error ("missing feature modifier in target %s %qs",
-	       pragma_or_attr, str);
+	error ("missing value in %<target()%> pragma or attribute");
 	break;
 
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier in target %s %qs",
-	       pragma_or_attr, str);
+	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
 	break;
 
       default:
@@ -9763,12 +9739,10 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
 };
 
 /* Parse ARG_STR which contains the definition of one target attribute.
-   Show appropriate errors if any or return true if the attribute is valid.
-   PRAGMA_OR_ATTR holds the string to use in error messages about whether
-   we're processing a target attribute or pragma.  */
+   Show appropriate errors if any or return true if the attribute is valid.  */
 
 static bool
-aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
+aarch64_process_one_target_attr (char *arg_str)
 {
   bool invert = false;
 
@@ -9776,7 +9750,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 
   if (len == 0)
     {
-      error ("malformed target %s", pragma_or_attr);
+      error ("malformed %<target()%> pragma or attribute");
       return false;
     }
 
@@ -9792,7 +9766,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
      through the machinery for the rest of the target attributes in this
      function.  */
   if (*str_to_check == '+')
-    return aarch64_handle_attr_isa_flags (str_to_check, pragma_or_attr);
+    return aarch64_handle_attr_isa_flags (str_to_check);
 
   if (len > 3 && strncmp (str_to_check, "no-", 3) == 0)
     {
@@ -9824,8 +9798,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 
       if (attr_need_arg_p ^ (arg != NULL))
 	{
-	  error ("target %s %qs does not accept an argument",
-		  pragma_or_attr, str_to_check);
+	  error ("pragma or attribute %<target(\"%s\")%> does not accept an argument", str_to_check);
 	  return false;
 	}
 
@@ -9833,8 +9806,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 	 then we can't match.  */
       if (invert && !p_attr->allow_neg)
 	{
-	  error ("target %s %qs does not allow a negated form",
-		  pragma_or_attr, str_to_check);
+	  error ("pragma or attribute %<target(\"%s\")%> does not allow a negated form", str_to_check);
 	  return false;
 	}
 
@@ -9844,7 +9816,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 	   For example, cpu=, arch=, tune=.  */
 	  case aarch64_attr_custom:
 	    gcc_assert (p_attr->handler);
-	    if (!p_attr->handler (arg, pragma_or_attr))
+	    if (!p_attr->handler (arg))
 	      return false;
 	    break;
 
@@ -9888,8 +9860,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 		}
 	      else
 		{
-		  error ("target %s %s=%s is not valid",
-			 pragma_or_attr, str_to_check, arg);
+		  error ("pragma or attribute %<target(\"%s=%s\")%> is not valid", str_to_check, arg);
 		}
 	      break;
 	    }
@@ -9923,12 +9894,10 @@ num_occurences_in_str (char c, char *str)
 }
 
 /* Parse the tree in ARGS that contains the target attribute information
-   and update the global target options space.  PRAGMA_OR_ATTR is a string
-   to be used in error messages, specifying whether this is processing
-   a target attribute or a target pragma.  */
+   and update the global target options space.  */
 
 bool
-aarch64_process_target_attr (tree args, const char* pragma_or_attr)
+aarch64_process_target_attr (tree args)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {
@@ -9937,7 +9906,7 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 	  tree head = TREE_VALUE (args);
 	  if (head)
 	    {
-	      if (!aarch64_process_target_attr (head, pragma_or_attr))
+	      if (!aarch64_process_target_attr (head))
 		return false;
 	    }
 	  args = TREE_CHAIN (args);
@@ -9958,7 +9927,7 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 
   if (len == 0)
     {
-      error ("malformed target %s value", pragma_or_attr);
+      error ("malformed %<target()%> pragma or attribute");
       return false;
     }
 
@@ -9973,9 +9942,9 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
   while (token)
     {
       num_attrs++;
-      if (!aarch64_process_one_target_attr (token, pragma_or_attr))
+      if (!aarch64_process_one_target_attr (token))
 	{
-	  error ("target %s %qs is invalid", pragma_or_attr, token);
+	  error ("pragma or attribute %<target(\"%s\")%> is not valid", token);
 	  return false;
 	}
 
@@ -9984,8 +9953,7 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 
   if (num_attrs != num_commas + 1)
     {
-      error ("malformed target %s list %qs",
-	      pragma_or_attr, TREE_STRING_POINTER (args));
+      error ("malformed %<target(\"%s\")%> pragma or attribute", TREE_STRING_POINTER (args));
       return false;
     }
 
@@ -10044,8 +10012,7 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
     cl_target_option_restore (&global_options,
 			TREE_TARGET_OPTION (target_option_current_node));
 
-
-  ret = aarch64_process_target_attr (args, "attribute");
+  ret = aarch64_process_target_attr (args);
 
   /* Set up any additional state.  */
   if (ret)
@@ -10374,51 +10341,49 @@ aarch64_legitimate_pic_operand_p (rtx x)
   return true;
 }
 
-/* Return true if X holds either a quarter-precision or
-     floating-point +0.0 constant.  */
-static bool
-aarch64_valid_floating_const (rtx x)
-{
-  if (!CONST_DOUBLE_P (x))
-    return false;
-
-  /* This call determines which constants can be used in mov<mode>
-     as integer moves instead of constant loads.  */
-  if (aarch64_float_const_rtx_p (x))
-    return true;
-
-  return aarch64_float_const_representable_p (x);
-}
+/* Implement TARGET_LEGITIMATE_CONSTANT_P hook.  Return true for constants
+   that should be rematerialized rather than spilled.  */
 
 static bool
 aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
+  /* Support CSE and rematerialization of common constants.  */
+  if (CONST_INT_P (x) || CONST_DOUBLE_P (x) || GET_CODE (x) == CONST_VECTOR)
+    return true;
+
   /* Do not allow vector struct mode constants.  We could support
      0 and -1 easily, but they need support in aarch64-simd.md.  */
-  if (TARGET_SIMD && aarch64_vect_struct_mode_p (mode))
+  if (aarch64_vect_struct_mode_p (mode))
     return false;
 
-  /* For these cases we never want to use a literal load.
-     As such we have to prevent the compiler from forcing these
-     to memory.  */
-  if ((GET_CODE (x) == CONST_VECTOR
-       && aarch64_simd_valid_immediate (x, mode, false, NULL))
-      || CONST_INT_P (x)
-      || aarch64_valid_floating_const (x)
-      || aarch64_can_const_movi_rtx_p (x, mode)
-      || aarch64_float_const_rtx_p (x))
-	return !targetm.cannot_force_const_mem (mode, x);
+  /* Do not allow wide int constants - this requires support in movti.  */
+  if (CONST_WIDE_INT_P (x))
+    return false;
 
-  if (GET_CODE (x) == HIGH
-      && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
-    return true;
+  /* Do not allow const (plus (anchor_symbol, const_int)).  */
+  if (GET_CODE (x) == CONST)
+    {
+      rtx offset;
+
+      split_const (x, &x, &offset);
+
+      if (SYMBOL_REF_P (x) && SYMBOL_REF_ANCHOR_P (x))
+	return false;
+    }
+
+  if (GET_CODE (x) == HIGH)
+    x = XEXP (x, 0);
 
   /* Treat symbols as constants.  Avoid TLS symbols as they are complex,
      so spilling them is better than rematerialization.  */
   if (SYMBOL_REF_P (x) && !SYMBOL_REF_TLS_MODEL (x))
     return true;
 
-  return aarch64_constant_address_p (x);
+  /* Label references are always constant.  */
+  if (GET_CODE (x) == LABEL_REF)
+    return true;
+
+  return false;
 }
 
 rtx
@@ -11728,16 +11693,8 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
 rtx
 aarch64_simd_gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)
 {
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  int i;
-
-  rtx cache = GEN_INT (val);
-
-  for (i=0; i < nunits; i++)
-    RTVEC_ELT (v, i) = cache;
-
-  return gen_rtx_CONST_VECTOR (mode, v);
+  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
+  return gen_const_vec_duplicate (mode, c);
 }
 
 /* Check OP is a legal scalar immediate for the MOVI instruction.  */
@@ -11770,12 +11727,12 @@ Architecture    3   2   1   0           3   2   1   0
 
 Low Mask:         { 2, 3 }                { 0, 1 }
 High Mask:        { 0, 1 }                { 2, 3 }
-*/
+
+   MODE Is the mode of the vector and NUNITS is the number of units in it.  */
 
 rtx
-aarch64_simd_vect_par_cnst_half (machine_mode mode, bool high)
+aarch64_simd_vect_par_cnst_half (machine_mode mode, int nunits, bool high)
 {
-  int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits / 2);
   int high_base = nunits / 2;
   int low_base = 0;
@@ -11804,13 +11761,14 @@ bool
 aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
 				       bool high)
 {
-  rtx ideal = aarch64_simd_vect_par_cnst_half (mode, high);
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  rtx ideal = aarch64_simd_vect_par_cnst_half (mode, GET_MODE_NUNITS (mode),
+					       high);
   HOST_WIDE_INT count_op = XVECLEN (op, 0);
   HOST_WIDE_INT count_ideal = XVECLEN (ideal, 0);
   int i = 0;
-
-  if (!VECTOR_MODE_P (mode))
-    return false;
 
   if (count_op != count_ideal)
     return false;
@@ -11844,6 +11802,15 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
     else
       error ("lane %wd out of range %wd - %wd", lane, low, high - 1);
   }
+}
+
+/* Peform endian correction on lane number N, which indexes a vector
+   of mode MODE, and return the result as an SImode rtx.  */
+
+rtx
+aarch64_endian_lane_rtx (machine_mode mode, unsigned int n)
+{
+  return gen_int_mode (ENDIAN_LANE_N (GET_MODE_NUNITS (mode), n), SImode);
 }
 
 /* Return TRUE if OP is a valid vector addressing mode.  */
@@ -11949,7 +11916,7 @@ aarch64_simd_dup_constant (rtx vals)
      single ARM register.  This will be cheaper than a vector
      load.  */
   x = copy_to_mode_reg (inner_mode, x);
-  return gen_rtx_VEC_DUPLICATE (mode, x);
+  return gen_vec_duplicate (mode, x);
 }
 
 
@@ -12048,7 +12015,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   if (all_same)
     {
       rtx x = copy_to_mode_reg (inner_mode, v0);
-      aarch64_emit_move (target, gen_rtx_VEC_DUPLICATE (mode, x));
+      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
       return;
     }
 
@@ -12089,7 +12056,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 
       /* Create a duplicate of the most common element.  */
       rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
-      aarch64_emit_move (target, gen_rtx_VEC_DUPLICATE (mode, x));
+      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
 
       /* Insert the rest.  */
       for (int i = 0; i < n_elts; i++)
@@ -13245,11 +13212,14 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
     }
 }
 
+/* Expand a vec_perm with the operands given by TARGET, OP0, OP1 and SEL.
+   NELT is the number of elements in the vector.  */
+
 void
-aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
+aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel,
+			 unsigned int nelt)
 {
   machine_mode vmode = GET_MODE (target);
-  unsigned int nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
   rtx mask;
 
@@ -13278,7 +13248,6 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
-  rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -13315,48 +13284,8 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
     }
   out = d->target;
 
-  if (odd)
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_trn2v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_trn2v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_trn2v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_trn2v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_trn2v4si; break;
-	case E_V2SImode: gen = gen_aarch64_trn2v2si; break;
-	case E_V2DImode: gen = gen_aarch64_trn2v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_trn2v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_trn2v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_trn2v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_trn2v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_trn2v2df; break;
-	default:
-	  return false;
-	}
-    }
-  else
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_trn1v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_trn1v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_trn1v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_trn1v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_trn1v4si; break;
-	case E_V2SImode: gen = gen_aarch64_trn1v2si; break;
-	case E_V2DImode: gen = gen_aarch64_trn1v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_trn1v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_trn1v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_trn1v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_trn1v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_trn1v2df; break;
-	default:
-	  return false;
-	}
-    }
-
-  emit_insn (gen (out, in0, in1));
+  emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
+				      odd ? UNSPEC_TRN2 : UNSPEC_TRN1));
   return true;
 }
 
@@ -13366,7 +13295,6 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
-  rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -13402,48 +13330,8 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
     }
   out = d->target;
 
-  if (odd)
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_uzp2v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_uzp2v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_uzp2v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_uzp2v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_uzp2v4si; break;
-	case E_V2SImode: gen = gen_aarch64_uzp2v2si; break;
-	case E_V2DImode: gen = gen_aarch64_uzp2v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_uzp2v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_uzp2v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_uzp2v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_uzp2v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_uzp2v2df; break;
-	default:
-	  return false;
-	}
-    }
-  else
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_uzp1v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_uzp1v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_uzp1v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_uzp1v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_uzp1v4si; break;
-	case E_V2SImode: gen = gen_aarch64_uzp1v2si; break;
-	case E_V2DImode: gen = gen_aarch64_uzp1v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_uzp1v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_uzp1v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_uzp1v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_uzp1v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_uzp1v2df; break;
-	default:
-	  return false;
-	}
-    }
-
-  emit_insn (gen (out, in0, in1));
+  emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
+				      odd ? UNSPEC_UZP2 : UNSPEC_UZP1));
   return true;
 }
 
@@ -13453,7 +13341,6 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
   unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
-  rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -13494,48 +13381,8 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
     }
   out = d->target;
 
-  if (high)
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_zip2v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_zip2v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_zip2v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_zip2v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_zip2v4si; break;
-	case E_V2SImode: gen = gen_aarch64_zip2v2si; break;
-	case E_V2DImode: gen = gen_aarch64_zip2v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_zip2v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_zip2v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_zip2v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_zip2v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_zip2v2df; break;
-	default:
-	  return false;
-	}
-    }
-  else
-    {
-      switch (vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_zip1v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_zip1v8qi; break;
-	case E_V8HImode: gen = gen_aarch64_zip1v8hi; break;
-	case E_V4HImode: gen = gen_aarch64_zip1v4hi; break;
-	case E_V4SImode: gen = gen_aarch64_zip1v4si; break;
-	case E_V2SImode: gen = gen_aarch64_zip1v2si; break;
-	case E_V2DImode: gen = gen_aarch64_zip1v2di; break;
-	case E_V4HFmode: gen = gen_aarch64_zip1v4hf; break;
-	case E_V8HFmode: gen = gen_aarch64_zip1v8hf; break;
-	case E_V4SFmode: gen = gen_aarch64_zip1v4sf; break;
-	case E_V2SFmode: gen = gen_aarch64_zip1v2sf; break;
-	case E_V2DFmode: gen = gen_aarch64_zip1v2df; break;
-	default:
-	  return false;
-	}
-    }
-
-  emit_insn (gen (out, in0, in1));
+  emit_set_insn (out, gen_rtx_UNSPEC (vmode, gen_rtvec (2, in0, in1),
+				      high ? UNSPEC_ZIP2 : UNSPEC_ZIP1));
   return true;
 }
 
@@ -13545,7 +13392,6 @@ static bool
 aarch64_evpc_ext (struct expand_vec_perm_d *d)
 {
   unsigned int i, nelt = d->perm.length ();
-  rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
   unsigned int location = d->perm[0]; /* Always < nelt.  */
@@ -13561,24 +13407,6 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 	}
       if (d->perm[i] != required)
         return false;
-    }
-
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_aarch64_extv16qi; break;
-    case E_V8QImode: gen = gen_aarch64_extv8qi; break;
-    case E_V4HImode: gen = gen_aarch64_extv4hi; break;
-    case E_V8HImode: gen = gen_aarch64_extv8hi; break;
-    case E_V2SImode: gen = gen_aarch64_extv2si; break;
-    case E_V4SImode: gen = gen_aarch64_extv4si; break;
-    case E_V4HFmode: gen = gen_aarch64_extv4hf; break;
-    case E_V8HFmode: gen = gen_aarch64_extv8hf; break;
-    case E_V2SFmode: gen = gen_aarch64_extv2sf; break;
-    case E_V4SFmode: gen = gen_aarch64_extv4sf; break;
-    case E_V2DImode: gen = gen_aarch64_extv2di; break;
-    case E_V2DFmode: gen = gen_aarch64_extv2df; break;
-    default:
-      return false;
     }
 
   /* Success! */
@@ -13599,7 +13427,10 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
     }
 
   offset = GEN_INT (location);
-  emit_insn (gen (d->target, d->op0, d->op1, offset));
+  emit_set_insn (d->target,
+		 gen_rtx_UNSPEC (d->vmode,
+				 gen_rtvec (3, d->op0, d->op1, offset),
+				 UNSPEC_EXT));
   return true;
 }
 
@@ -13608,55 +13439,21 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_rev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, nelt = d->perm.length ();
-  rtx (*gen) (rtx, rtx);
+  unsigned int i, j, diff, size, unspec, nelt = d->perm.length ();
 
   if (!d->one_vector_p)
     return false;
 
   diff = d->perm[0];
-  switch (diff)
-    {
-    case 7:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_rev64v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_rev64v8qi;  break;
-	default:
-	  return false;
-	}
-      break;
-    case 3:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_rev32v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_rev32v8qi;  break;
-	case E_V8HImode: gen = gen_aarch64_rev64v8hi;  break;
-	case E_V4HImode: gen = gen_aarch64_rev64v4hi;  break;
-	default:
-	  return false;
-	}
-      break;
-    case 1:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_aarch64_rev16v16qi; break;
-	case E_V8QImode: gen = gen_aarch64_rev16v8qi;  break;
-	case E_V8HImode: gen = gen_aarch64_rev32v8hi;  break;
-	case E_V4HImode: gen = gen_aarch64_rev32v4hi;  break;
-	case E_V4SImode: gen = gen_aarch64_rev64v4si;  break;
-	case E_V2SImode: gen = gen_aarch64_rev64v2si;  break;
-	case E_V4SFmode: gen = gen_aarch64_rev64v4sf;  break;
-	case E_V2SFmode: gen = gen_aarch64_rev64v2sf;  break;
-	case E_V8HFmode: gen = gen_aarch64_rev64v8hf;  break;
-	case E_V4HFmode: gen = gen_aarch64_rev64v4hf;  break;
-	default:
-	  return false;
-	}
-      break;
-    default:
-      return false;
-    }
+  size = (diff + 1) * GET_MODE_UNIT_SIZE (d->vmode);
+  if (size == 8)
+    unspec = UNSPEC_REV64;
+  else if (size == 4)
+    unspec = UNSPEC_REV32;
+  else if (size == 2)
+    unspec = UNSPEC_REV16;
+  else
+    return false;
 
   for (i = 0; i < nelt ; i += diff + 1)
     for (j = 0; j <= diff; j += 1)
@@ -13675,14 +13472,14 @@ aarch64_evpc_rev (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  emit_insn (gen (d->target, d->op0));
+  emit_set_insn (d->target, gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0),
+					    unspec));
   return true;
 }
 
 static bool
 aarch64_evpc_dup (struct expand_vec_perm_d *d)
 {
-  rtx (*gen) (rtx, rtx, rtx);
   rtx out = d->target;
   rtx in0;
   machine_mode vmode = d->vmode;
@@ -13704,25 +13501,9 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   in0 = d->op0;
   lane = GEN_INT (elt); /* The pattern corrects for big-endian.  */
 
-  switch (vmode)
-    {
-    case E_V16QImode: gen = gen_aarch64_dup_lanev16qi; break;
-    case E_V8QImode: gen = gen_aarch64_dup_lanev8qi; break;
-    case E_V8HImode: gen = gen_aarch64_dup_lanev8hi; break;
-    case E_V4HImode: gen = gen_aarch64_dup_lanev4hi; break;
-    case E_V4SImode: gen = gen_aarch64_dup_lanev4si; break;
-    case E_V2SImode: gen = gen_aarch64_dup_lanev2si; break;
-    case E_V2DImode: gen = gen_aarch64_dup_lanev2di; break;
-    case E_V8HFmode: gen = gen_aarch64_dup_lanev8hf; break;
-    case E_V4HFmode: gen = gen_aarch64_dup_lanev4hf; break;
-    case E_V4SFmode: gen = gen_aarch64_dup_lanev4sf; break;
-    case E_V2SFmode: gen = gen_aarch64_dup_lanev2sf; break;
-    case E_V2DFmode: gen = gen_aarch64_dup_lanev2df; break;
-    default:
-      return false;
-    }
-
-  emit_insn (gen (out, in0, lane));
+  rtx parallel = gen_rtx_PARALLEL (vmode, gen_rtvec (1, lane));
+  rtx select = gen_rtx_VEC_SELECT (GET_MODE_INNER (vmode), in0, parallel);
+  emit_set_insn (out, gen_rtx_VEC_DUPLICATE (vmode, select));
   return true;
 }
 
@@ -13775,7 +13556,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       std::swap (d->op0, d->op1);
     }
 
-  if (TARGET_SIMD)
+  if (TARGET_SIMD && nelt > 1)
     {
       if (aarch64_evpc_rev (d))
 	return true;
@@ -13794,13 +13575,15 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-/* Expand a vec_perm_const pattern.  */
+/* Expand a vec_perm_const pattern with the operands given by TARGET,
+   OP0, OP1 and SEL.  NELT is the number of elements in the vector.  */
 
 bool
-aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
+aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel,
+			       unsigned int nelt)
 {
   struct expand_vec_perm_d d;
-  int i, nelt, which;
+  unsigned int i, which;
 
   d.target = target;
   d.op0 = op0;
@@ -13810,12 +13593,11 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.testing_p = false;
 
-  nelt = GET_MODE_NUNITS (d.vmode);
   d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      unsigned int ei = INTVAL (e) & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
       d.perm.quick_push (ei);
     }
@@ -13892,16 +13674,18 @@ aarch64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
   return ret;
 }
 
+/* Generate a byte permute mask for a register of mode MODE,
+   which has NUNITS units.  */
+
 rtx
-aarch64_reverse_mask (machine_mode mode)
+aarch64_reverse_mask (machine_mode mode, unsigned int nunits)
 {
   /* We have to reverse each vector because we dont have
      a permuted load that can reverse-load according to ABI rules.  */
   rtx mask;
   rtvec v = rtvec_alloc (16);
-  int i, j;
-  int nunits = GET_MODE_NUNITS (mode);
-  int usize = GET_MODE_UNIT_SIZE (mode);
+  unsigned int i, j;
+  unsigned int usize = GET_MODE_UNIT_SIZE (mode);
 
   gcc_assert (BYTES_BIG_ENDIAN);
   gcc_assert (AARCH64_VALID_SIMD_QREG_MODE (mode));
@@ -15446,9 +15230,6 @@ aarch64_run_selftests (void)
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P aarch64_function_value_regno_p
-
-#undef TARGET_FRAME_POINTER_REQUIRED
-#define TARGET_FRAME_POINTER_REQUIRED aarch64_frame_pointer_required
 
 #undef TARGET_GIMPLE_FOLD_BUILTIN
 #define TARGET_GIMPLE_FOLD_BUILTIN aarch64_gimple_fold_builtin

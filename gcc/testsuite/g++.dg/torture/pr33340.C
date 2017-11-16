@@ -1,4 +1,6 @@
-void* operator new(__SIZE_TYPE__, void* __p) { }
+// { dg-additional-options "-Wno-return-type" }
+
+void* operator new(__SIZE_TYPE__, void* __p) {}
 
 struct auto_ptr {
         int* p;

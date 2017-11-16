@@ -6189,8 +6189,7 @@ package body Exp_Ch9 is
 
       Cond_Id    : Entity_Id;
       Entry_Body : Node_Id;
-      Func_Body  : Node_Id;
-      pragma Warnings (Off, Func_Body);
+      Func_Body  : Node_Id := Empty;
 
    --  Start of processing for Expand_Entry_Barrier
 
@@ -12356,7 +12355,7 @@ package body Exp_Ch9 is
       Call           : Node_Id;
       Call_Ent       : Entity_Id;
       Conc_Typ_Stmts : List_Id;
-      Concval        : Node_Id;
+      Concval        : Node_Id := Empty; -- init to avoid warning
       D_Alt          : constant Node_Id := Delay_Alternative (N);
       D_Conv         : Node_Id;
       D_Disc         : Node_Id;
@@ -12909,8 +12908,8 @@ package body Exp_Ch9 is
       end if;
 
       --  If the type of the dispatching object is an access type then return
-      --  an explicit dereference  of a copy of the object, and note that
-      --  this is the controlling actual of the call.
+      --  an explicit dereference  of a copy of the object, and note that this
+      --  is the controlling actual of the call.
 
       if Is_Access_Type (Etype (Object)) then
          Object :=
@@ -14590,9 +14589,9 @@ package body Exp_Ch9 is
 
             --    Jnn'unchecked_access
 
-            --  and add it to aggegate for access to formals. Note that
-            --  the actual may be by-copy but still be a controlling actual
-            --  if it is an access to class-wide interface.
+            --  and add it to aggegate for access to formals. Note that the
+            --  actual may be by-copy but still be a controlling actual if it
+            --  is an access to class-wide interface.
 
             if not Is_Controlling_Actual (Actual) then
                Append_To (Params,

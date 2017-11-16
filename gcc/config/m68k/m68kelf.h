@@ -97,7 +97,7 @@ do {								\
 
 /* Define how the m68k registers should be numbered for Dwarf output.
    The numbering provided here should be compatible with the native
-   SVR4 SDB debugger in the m68k/SVR4 reference port, where d0-d7
+   SVR4 debugger in the m68k/SVR4 reference port, where d0-d7
    are 0-7, a0-a8 are 8-15, and fp0-fp7 are 16-23.  */
 
 #undef DBX_REGISTER_NUMBER
@@ -133,7 +133,7 @@ do {								\
    table.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
-  fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
+  fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1))
 /* end of stuff from m68kv4.h */
 
 #undef ENDFILE_SPEC

@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Output xcoff-format symbol table data.  The main functionality is contained
    in dbxout.c.  This file implements the sdbout-like parts of the xcoff
    interface.  Many functions are very similar to their counterparts in
-   sdbout.c.  */
+   the former sdbout.c file.  */
 
 #include "config.h"
 #include "system.h"
@@ -452,7 +452,7 @@ xcoffout_begin_prologue (unsigned int line,
   ASM_OUTPUT_LFB (asm_out_file, line);
   dbxout_parms (DECL_ARGUMENTS (current_function_decl));
 
-  /* Emit the symbols for the outermost BLOCK's variables.  sdbout.c does this
+  /* Emit the symbols for the outermost BLOCK's variables.  sdbout.c did this
      in sdbout_begin_block, but there is no guarantee that there will be any
      inner block 1, so we must do it here.  This gives a result similar to
      dbxout, so it does make some sense.  */

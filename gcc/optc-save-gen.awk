@@ -678,7 +678,7 @@ for (i = 0; i < n_target_array; i++) {
 }
 for (i = 0; i < n_target_val; i++) {
 	name = var_target_val[i]
-	print "  hstate.add_wide_int (ptr->" name");";
+	print "  hstate.add_hwi (ptr->" name");";
 }
 print "  return hstate.end ();";
 print "}";
@@ -766,7 +766,7 @@ for (i = 0; i < n_opt_val; i++) {
 	if (!var_opt_hash[i])
 		continue;
 	name = var_opt_val[i]
-	print "  hstate.add_wide_int (ptr->" name");";
+	print "  hstate.add_hwi (ptr->" name");";
 }
 print "  return hstate.end ();";
 print "}";

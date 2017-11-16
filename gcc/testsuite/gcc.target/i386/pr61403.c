@@ -23,4 +23,4 @@ norm (struct XYZ *in, struct XYZ *out, int size)
     }
 }
 
-/* { dg-final { scan-assembler "blend" } } */
+/* { dg-final { scan-assembler "rsqrtps" } } */

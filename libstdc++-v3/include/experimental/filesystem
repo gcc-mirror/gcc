@@ -40,36 +40,6 @@
 
 #define __cpp_lib_experimental_filesystem 201406
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-namespace experimental
-{
-namespace filesystem
-{
-inline namespace v1
-{
-  /**
-   * @ingroup filesystem
-   */
-    inline std::string filesystem_error::_M_gen_what()
-    {
-      std::string __what = "filesystem error: ";
-      __what += system_error::what();
-      if (!_M_path1.empty())
-	  __what += " [" + _M_path1.string() + ']';
-      if (!_M_path2.empty())
-	  __what += " [" + _M_path2.string() + ']';
-      return __what;
-    }
-} // namespace v1
-} // namespace filesystem
-} // namespace experimental
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
 #endif // C++11
 
 #endif // _GLIBCXX_EXPERIMENTAL_FILESYSTEM

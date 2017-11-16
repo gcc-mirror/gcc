@@ -1,3 +1,63 @@
+2017-11-13  Tom Tromey  <tom@tromey.com>
+
+	* pch.c (cpp_read_state): Set n__VA_OPT__.
+	* macro.c (vaopt_state): New class.
+	(_cpp_arguments_ok): Check va_opt flag.
+	(replace_args, create_iso_definition): Use vaopt_state.
+	* lex.c (lex_identifier_intern): Possibly issue errors for
+	__VA_OPT__.
+	(lex_identifier): Likewise.
+	(maybe_va_opt_error): New function.
+	* internal.h (struct lexer_state) <va_args_ok>: Update comment.
+	(struct spec_nodes) <n__VA_OPT__>: New field.
+	* init.c (struct lang_flags) <va_opt>: New field.
+	(lang_defaults): Add entries for C++2A.  Update all entries for
+	va_opt.
+	(cpp_set_lang): Initialize va_opt.
+	* include/cpplib.h (struct cpp_options) <va_opt>: New field.
+	* identifiers.c (_cpp_init_hashtable): Initialize n__VA_OPT__.
+
+2017-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (linenum_type): Move this typedef and the
+	comment describing column numbering to near the top of the file.
+
+2017-11-06  Mukesh Kapoor  <mukesh.kapoor@oracle.com>
+
+	PR c++/80955
+	* lex.c (lex_string): When checking for a valid macro for the
+	warning related to -Wliteral-suffix (CPP_W_LITERAL_SUFFIX),
+	check that the macro name does not start with an underscore
+	before calling is_macro().
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* lex.c (BUF_APPEND): Remove semicolon after
+	"do {} while (0)".
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (_cpp_handle_directive): Update for renaming of
+	cpp_error_at_richloc to cpp_error_at.
+	* errors.c (cpp_diagnostic_at_richloc): Rename to...
+	(cpp_diagnostic_at): ...this, dropping the location_t-based
+	implementation.
+	(cpp_diagnostic): Update for removal of location_t-based
+	cpp_diagnostic_at.
+	(cpp_error_at): Likewise.
+	(cpp_error_at_richloc): Rename to...
+	(cpp_error_at): ...this, and update for renaming of
+	cpp_diagnostic_at_richloc.
+	* include/cpplib.h (cpp_error_at_richloc): Rename to...
+	(cpp_error_at): ...this.
+
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC17 and CLK_STDC17.
+	* init.c (lang_defaults): Add GNUC17 and STDC17 data.
+	(cpp_init_builtins): Handle C17 value of __STDC_VERSION__.
+
 2017-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/82506

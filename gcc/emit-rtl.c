@@ -816,6 +816,8 @@ validate_subreg (machine_mode omode, machine_mode imode,
   if (offset >= isize)
     return false;
 
+  unsigned int regsize = REGMODE_NATURAL_SIZE (imode);
+
   /* ??? This should not be here.  Temporarily continue to allow word_mode
      subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
      Generally, backends are doing something sketchy but it'll take time to
@@ -824,7 +826,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     ;
   /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
      is the culprit here, and not the backends.  */
-  else if (osize >= UNITS_PER_WORD && isize >= osize)
+  else if (osize >= regsize && isize >= osize)
     ;
   /* Allow component subregs of complex and vector.  Though given the below
      extraction rules, it's not always clear what that means.  */
@@ -876,17 +878,23 @@ validate_subreg (machine_mode omode, machine_mode imode,
     }
 
   /* For pseudo registers, we want most of the same checks.  Namely:
-     If the register no larger than a word, the subreg must be lowpart.
-     If the register is larger than a word, the subreg must be the lowpart
-     of a subword.  A subreg does *not* perform arbitrary bit extraction.
-     Given that we've already checked mode/offset alignment, we only have
-     to check subword subregs here.  */
-  if (osize < UNITS_PER_WORD
+
+     Assume that the pseudo register will be allocated to hard registers
+     that can hold REGSIZE bytes each.  If OSIZE is not a multiple of REGSIZE,
+     the remainder must correspond to the lowpart of the containing hard
+     register.  If BYTES_BIG_ENDIAN, the lowpart is at the highest offset,
+     otherwise it is at the lowest offset.
+
+     Given that we've already checked the mode and offset alignment,
+     we only have to check subblock subregs here.  */
+  if (osize < regsize
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
-      machine_mode wmode = isize > UNITS_PER_WORD ? word_mode : imode;
-      unsigned int low_off = subreg_lowpart_offset (omode, wmode);
-      if (offset % UNITS_PER_WORD != low_off)
+      unsigned int block_size = MIN (isize, regsize);
+      unsigned int offset_within_block = offset % block_size;
+      if (BYTES_BIG_ENDIAN
+	  ? offset_within_block != block_size - osize
+	  : offset_within_block != 0)
 	return false;
     }
   return true;
@@ -1439,14 +1447,21 @@ gen_lowpart_common (machine_mode mode, rtx x)
   if (innermode == mode)
     return x;
 
-  /* MODE must occupy no more words than the mode of X.  */
-  if ((msize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD
-      > ((xsize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-    return 0;
-
-  /* Don't allow generating paradoxical FLOAT_MODE subregs.  */
-  if (SCALAR_FLOAT_MODE_P (mode) && msize > xsize)
-    return 0;
+  if (SCALAR_FLOAT_MODE_P (mode))
+    {
+      /* Don't allow paradoxical FLOAT_MODE subregs.  */
+      if (msize > xsize)
+	return 0;
+    }
+  else
+    {
+      /* MODE must occupy no more of the underlying registers than X.  */
+      unsigned int regsize = REGMODE_NATURAL_SIZE (innermode);
+      unsigned int mregs = CEIL (msize, regsize);
+      unsigned int xregs = CEIL (xsize, regsize);
+      if (mregs > xregs)
+	return 0;
+    }
 
   scalar_int_mode int_mode, int_innermode, from_mode;
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
@@ -1470,7 +1485,7 @@ gen_lowpart_common (machine_mode mode, rtx x)
 	return gen_rtx_fmt_e (GET_CODE (x), int_mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
-	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
+	   || GET_CODE (x) == CONCAT || const_vec_p (x)
 	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x))
     return lowpart_subreg (mode, x, innermode);
 
@@ -5757,32 +5772,134 @@ init_emit (void)
 #endif
 }
 
-/* Generate a vector constant for mode MODE and constant value CONSTANT.  */
+/* Return true if X is a valid element for a duplicated vector constant
+   of the given mode.  */
+
+bool
+valid_for_const_vec_duplicate_p (machine_mode, rtx x)
+{
+  return (CONST_SCALAR_INT_P (x)
+	  || CONST_DOUBLE_AS_FLOAT_P (x)
+	  || CONST_FIXED_P (x));
+}
+
+/* Like gen_const_vec_duplicate, but ignore const_tiny_rtx.  */
+
+static rtx
+gen_const_vec_duplicate_1 (machine_mode mode, rtx el)
+{
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  for (int i = 0; i < nunits; ++i)
+    RTVEC_ELT (v, i) = el;
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
+}
+
+/* Generate a vector constant of mode MODE in which every element has
+   value ELT.  */
+
+rtx
+gen_const_vec_duplicate (machine_mode mode, rtx elt)
+{
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  if (elt == CONST0_RTX (inner_mode))
+    return CONST0_RTX (mode);
+  else if (elt == CONST1_RTX (inner_mode))
+    return CONST1_RTX (mode);
+  else if (elt == CONSTM1_RTX (inner_mode))
+    return CONSTM1_RTX (mode);
+
+  return gen_const_vec_duplicate_1 (mode, elt);
+}
+
+/* Return a vector rtx of mode MODE in which every element has value X.
+   The result will be a constant if X is constant.  */
+
+rtx
+gen_vec_duplicate (machine_mode mode, rtx x)
+{
+  if (valid_for_const_vec_duplicate_p (mode, x))
+    return gen_const_vec_duplicate (mode, x);
+  return gen_rtx_VEC_DUPLICATE (mode, x);
+}
+
+/* A subroutine of const_vec_series_p that handles the case in which
+   X is known to be an integer CONST_VECTOR.  */
+
+bool
+const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
+{
+  unsigned int nelts = CONST_VECTOR_NUNITS (x);
+  if (nelts < 2)
+    return false;
+
+  scalar_mode inner = GET_MODE_INNER (GET_MODE (x));
+  rtx base = CONST_VECTOR_ELT (x, 0);
+  rtx step = simplify_binary_operation (MINUS, inner,
+					CONST_VECTOR_ELT (x, 1), base);
+  if (rtx_equal_p (step, CONST0_RTX (inner)))
+    return false;
+
+  for (unsigned int i = 2; i < nelts; ++i)
+    {
+      rtx diff = simplify_binary_operation (MINUS, inner,
+					    CONST_VECTOR_ELT (x, i),
+					    CONST_VECTOR_ELT (x, i - 1));
+      if (!rtx_equal_p (step, diff))
+	return false;
+    }
+
+  *base_out = base;
+  *step_out = step;
+  return true;
+}
+
+/* Generate a vector constant of mode MODE in which element I has
+   the value BASE + I * STEP.  */
+
+rtx
+gen_const_vec_series (machine_mode mode, rtx base, rtx step)
+{
+  gcc_assert (CONSTANT_P (base) && CONSTANT_P (step));
+
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
+  RTVEC_ELT (v, 0) = base;
+  for (int i = 1; i < nunits; ++i)
+    RTVEC_ELT (v, i) = simplify_gen_binary (PLUS, inner_mode,
+					    RTVEC_ELT (v, i - 1), step);
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
+}
+
+/* Generate a vector of mode MODE in which element I has the value
+   BASE + I * STEP.  The result will be a constant if BASE and STEP
+   are both constants.  */
+
+rtx
+gen_vec_series (machine_mode mode, rtx base, rtx step)
+{
+  if (step == const0_rtx)
+    return gen_vec_duplicate (mode, base);
+  if (CONSTANT_P (base) && CONSTANT_P (step))
+    return gen_const_vec_series (mode, base, step);
+  return gen_rtx_VEC_SERIES (mode, base, step);
+}
+
+/* Generate a new vector constant for mode MODE and constant value
+   CONSTANT.  */
 
 static rtx
 gen_const_vector (machine_mode mode, int constant)
 {
-  rtx tem;
-  rtvec v;
-  int units, i;
-  machine_mode inner;
-
-  units = GET_MODE_NUNITS (mode);
-  inner = GET_MODE_INNER (mode);
+  machine_mode inner = GET_MODE_INNER (mode);
 
   gcc_assert (!DECIMAL_FLOAT_MODE_P (inner));
 
-  v = rtvec_alloc (units);
+  rtx el = const_tiny_rtx[constant][(int) inner];
+  gcc_assert (el);
 
-  /* We need to call this function after we set the scalar const_tiny_rtx
-     entries.  */
-  gcc_assert (const_tiny_rtx[constant][(int) inner]);
-
-  for (i = 0; i < units; ++i)
-    RTVEC_ELT (v, i) = const_tiny_rtx[constant][(int) inner];
-
-  tem = gen_rtx_raw_CONST_VECTOR (mode, v);
-  return tem;
+  return gen_const_vec_duplicate_1 (mode, el);
 }
 
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
@@ -5790,28 +5907,12 @@ gen_const_vector (machine_mode mode, int constant)
 rtx
 gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
 {
-  machine_mode inner = GET_MODE_INNER (mode);
-  int nunits = GET_MODE_NUNITS (mode);
-  rtx x;
-  int i;
-
-  /* Check to see if all of the elements have the same value.  */
-  x = RTVEC_ELT (v, nunits - 1);
-  for (i = nunits - 2; i >= 0; i--)
-    if (RTVEC_ELT (v, i) != x)
-      break;
+  gcc_assert (GET_MODE_NUNITS (mode) == GET_NUM_ELEM (v));
 
   /* If the values are all the same, check to see if we can use one of the
      standard constant vectors.  */
-  if (i == -1)
-    {
-      if (x == CONST0_RTX (inner))
-	return CONST0_RTX (mode);
-      else if (x == CONST1_RTX (inner))
-	return CONST1_RTX (mode);
-      else if (x == CONSTM1_RTX (inner))
-	return CONSTM1_RTX (mode);
-    }
+  if (rtvec_all_equal_p (v))
+    return gen_const_vec_duplicate (mode, RTVEC_ELT (v, 0));
 
   return gen_rtx_raw_CONST_VECTOR (mode, v);
 }
@@ -5877,6 +5978,8 @@ init_emit_regs (void)
 	}
       mode_mem_attrs[i] = attrs;
     }
+
+  split_branch_probability = profile_probability::uninitialized ();
 }
 
 /* Initialize global machine_mode variables.  */

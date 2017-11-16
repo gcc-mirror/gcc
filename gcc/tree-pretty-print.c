@@ -2760,7 +2760,15 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "OBJ_TYPE_REF(");
       dump_generic_node (pp, OBJ_TYPE_REF_EXPR (node), spc, flags, false);
       pp_semicolon (pp);
-      if (!(flags & TDF_SLIM) && virtual_method_call_p (node))
+      /* We omit the class type for -fcompare-debug because we may
+	 drop TYPE_BINFO early depending on debug info, and then
+	 virtual_method_call_p would return false, whereas when
+	 TYPE_BINFO is preserved it may still return true and then
+	 we'd print the class type.  Compare tree and rtl dumps for
+	 libstdc++-prettyprinters/shared_ptr.cc with and without -g,
+	 for example, at occurrences of OBJ_TYPE_REF.  */
+      if (!(flags & (TDF_SLIM | TDF_COMPARE_DEBUG))
+	  && virtual_method_call_p (node))
 	{
 	  pp_string (pp, "(");
 	  dump_generic_node (pp, obj_type_ref_class (node), spc, flags, false);

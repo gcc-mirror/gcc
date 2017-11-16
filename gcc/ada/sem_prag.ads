@@ -191,6 +191,8 @@ package Sem_Prag is
       Pragma_Remote_Types                  => False,
       Pragma_Shared_Passive                => False,
       Pragma_Task_Dispatching_Policy       => False,
+      Pragma_Unmodified                    => False,
+      Pragma_Unreferenced                  => False,
       Pragma_Warnings                      => False,
       others                               => True);
 

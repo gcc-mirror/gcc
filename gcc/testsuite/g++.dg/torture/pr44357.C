@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
+
 extern "C"
 {
   typedef long unsigned int size_t;

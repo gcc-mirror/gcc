@@ -53,6 +53,7 @@ parallel (int a, int b)
     abort ();
 }
 
+int
 main()
 {
   parallel (1, 2);

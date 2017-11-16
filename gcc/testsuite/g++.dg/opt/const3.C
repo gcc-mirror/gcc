@@ -30,8 +30,8 @@ struct A
 
 int i;
 
-int A::foo1(void *ios, const char *str) { }
-int A::foo2(int v, const Type t) { i=0; }
+int A::foo1(void *ios, const char *str) { return 0; }
+int A::foo2(int v, const Type t) { i=0; return 0; }
 
 int main()
 {

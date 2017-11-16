@@ -26,7 +26,7 @@ struct Bar {
 int g = g; // { dg-warning "assigned to itself" }
 Foo foo = foo; // { dg-warning "assigned to itself" }
 
-int func()
+void func()
 {
   Bar *bar1, bar2;
   Foo local_foo;

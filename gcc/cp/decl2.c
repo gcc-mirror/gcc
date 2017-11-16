@@ -787,6 +787,15 @@ finish_static_data_member_decl (tree decl,
       && TYPE_DOMAIN (TREE_TYPE (decl)) == NULL_TREE)
     SET_VAR_HAD_UNKNOWN_BOUND (decl);
 
+  if (init)
+    {
+      /* Similarly to start_decl_1, we want to complete the type in order
+	 to do the right thing in cp_apply_type_quals_to_decl, possibly
+	 clear TYPE_QUAL_CONST (c++/65579).  */
+      tree type = TREE_TYPE (decl) = complete_type (TREE_TYPE (decl));
+      cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
+    }
+
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
 }
 
@@ -4451,7 +4460,7 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (ovl_iterator iter (get_global_binding (cp_operator_id (code)));
+  for (ovl_iterator iter (get_global_binding (ovl_op_identifier (false, code)));
        iter; ++iter)
     {
       tree fn = *iter;
@@ -5099,11 +5108,11 @@ mark_used (tree decl, tsubst_flags_t complain)
       && DECL_DELETED_FN (decl))
     {
       if (DECL_ARTIFICIAL (decl)
-	  && DECL_OVERLOADED_OPERATOR_P (decl) == TYPE_EXPR
+	  && DECL_CONV_FN_P (decl)
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
 	/* We mark a lambda conversion op as deleted if we can't
 	   generate it properly; see maybe_add_lambda_conv_op.  */
-	sorry ("converting lambda which uses %<...%> to function pointer");
+	sorry ("converting lambda that uses %<...%> to function pointer");
       else if (complain & tf_error)
 	{
 	  error ("use of deleted function %qD", decl);

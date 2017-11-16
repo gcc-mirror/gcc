@@ -988,6 +988,13 @@ appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
 type ``Character``).
 
+Static_Dispatch_Tables
+----------------------
+.. index:: Static_Dispatch_Tables
+
+[GNAT] This restriction checks at compile time that all the artifacts
+associated with dispatch tables can be placed in read-only memory.
+
 SPARK_05
 --------
 .. index:: SPARK_05

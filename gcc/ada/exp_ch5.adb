@@ -4769,8 +4769,8 @@ package body Exp_Ch5 is
 
             --  If the domain is an itype, note the bounds of its range.
 
-            L_Hi  : Node_Id;
-            L_Lo  : Node_Id;
+            L_Hi  : Node_Id := Empty;
+            L_Lo  : Node_Id := Empty;
 
             function Lo_Val (N : Node_Id) return Node_Id;
             --  Given static expression or static range, returns an identifier

@@ -90,6 +90,10 @@
 
 #include <xtestintrin.h>
 
+#include <cetintrin.h>
+
+#include <gfniintrin.h>
+
 #ifndef __RDRND__
 #pragma GCC push_options
 #pragma GCC target("rdrnd")

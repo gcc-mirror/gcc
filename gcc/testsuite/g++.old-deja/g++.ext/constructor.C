@@ -9,6 +9,7 @@ struct Any {
 
 int i, j;
 
+int
 main () {
   struct Any *ap = (struct Any *)
     __builtin_alloca (sizeof(struct Any));

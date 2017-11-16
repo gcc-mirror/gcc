@@ -98,6 +98,8 @@ extern int hook_int_rtx_bool_0 (rtx, bool);
 extern int hook_int_rtx_mode_as_bool_0 (rtx, machine_mode, addr_space_t,
 					bool);
 
+extern HOST_WIDE_INT hook_hwi_void_0 (void);
+
 extern tree hook_tree_const_tree_null (const_tree);
 extern tree hook_tree_void_null (void);
 

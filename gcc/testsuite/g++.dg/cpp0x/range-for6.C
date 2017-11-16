@@ -14,6 +14,8 @@ template<typename T> T foo()
         sum += x;
     if (sum != T(10))
         abort();
+
+    return sum;
 }
 
 int main()

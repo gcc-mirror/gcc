@@ -19,8 +19,8 @@
 
 #include <memory>
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 #include <string>
-#include <array>
 #include <vector>
 #include <sstream>
 
@@ -56,36 +56,42 @@ struct ThrowAfterN
   DelCount dc;
 };
 
+template<typename T>
+  using FwdIteratorRange
+    = __gnu_test::test_container<T, __gnu_test::forward_iterator_wrapper>;
+
 void test01()
 {
   char test_data[] = "123456";
-  std::uninitialized_default_construct(std::begin(test_data),
-				       std::end(test_data));
+  FwdIteratorRange<char> r(test_data);
+  std::uninitialized_default_construct(std::begin(r), std::end(r));
   VERIFY(std::string(test_data) == "123456");
 }
 
 void test02()
 {
   char test_data[] = "123456";
-  std::uninitialized_value_construct(std::begin(test_data),
-				       std::end(test_data));
+  FwdIteratorRange<char> r(test_data);
+  std::uninitialized_value_construct(std::begin(r), std::end(r));
   VERIFY(std::string(test_data, 6) == std::string("\0\0\0\0\0\0", 6));
 }
 
 void test03()
 {
   char test_data[] = "123456";
-  auto end = std::uninitialized_default_construct_n(std::begin(test_data), 6);
+  FwdIteratorRange<char> r(test_data);
+  auto end = std::uninitialized_default_construct_n(std::begin(r), 6);
   VERIFY(std::string(test_data) == "123456");
-  VERIFY( end == test_data + 6 );
+  VERIFY( end == std::next(r.begin(), 6) );
 }
 
 void test04()
 {
   char test_data[] = "123456";
-  auto end = std::uninitialized_value_construct_n(std::begin(test_data), 5);
+  FwdIteratorRange<char> r(test_data);
+  auto end = std::uninitialized_value_construct_n(std::begin(r), 5);
   VERIFY(std::string(test_data, 6) == std::string("\0\0\0\0\0" "6", 6));
-  VERIFY( end == test_data + 5 );
+  VERIFY( end == std::next(r.begin(), 5) );
 }
 
 void test05()
@@ -122,33 +128,43 @@ void test07()
   free(x);
 }
 
+struct MoveOnly
+{
+  MoveOnly() : val(-1) { }
+  MoveOnly(MoveOnly&& m) : val(m.val) { m.val = -1; }
+  int val;
+};
+
 void test08()
 {
-  std::vector<std::unique_ptr<int>> source;
-  for (int i = 0; i < 10; ++i) source.push_back(std::make_unique<int>(i));
-  std::unique_ptr<int>* target =
-    (std::unique_ptr<int>*)malloc(sizeof(std::unique_ptr<int>)*10);
-  std::uninitialized_move(source.begin(), source.end(), target);
-  for (const auto& x : source) VERIFY(!x);
-  for (int i = 0; i < 10; ++i) VERIFY(bool(*(target+i)));
-  auto end = std::destroy_n(target, 10);
-  VERIFY( end == target + 10 );
+  MoveOnly source[10];
+  for (int i = 0; i < 10; ++i) source[i].val = i;
+  FwdIteratorRange<MoveOnly> src(source);
+  MoveOnly* target = (MoveOnly*)malloc(sizeof(MoveOnly)*10);
+  FwdIteratorRange<MoveOnly> tgt(target, target+10);
+  auto end = std::uninitialized_move(src.begin(), src.end(), tgt.begin());
+  VERIFY( end == std::next(tgt.begin(), 10) );
+  for (const auto& x : source) VERIFY( x.val == -1 );
+  for (int i = 0; i < 10; ++i) VERIFY( target[i].val == i );
+  auto end2 = std::destroy_n(tgt.begin(), 10);
+  VERIFY( end2 == std::next(tgt.begin(), 10) );
   free(target);
 }
 
 void test09()
 {
-  std::vector<std::unique_ptr<int>> source;
-  for (int i = 0; i < 10; ++i) source.push_back(std::make_unique<int>(i));
-  std::unique_ptr<int>* target =
-    (std::unique_ptr<int>*)malloc(sizeof(std::unique_ptr<int>)*10);
-  auto end = std::uninitialized_move_n(source.begin(), 10, target);
-  VERIFY( end.first == source.begin() + 10 );
-  VERIFY( end.second == target + 10 );
-  for (const auto& x : source) VERIFY(!x);
-  for (int i = 0; i < 10; ++i) VERIFY(bool(*(target+i)));
-  auto end2 = std::destroy_n(target, 10);
-  VERIFY( end2 == target + 10 );
+  MoveOnly source[10];
+  for (int i = 0; i < 10; ++i) source[i].val = i;
+  FwdIteratorRange<MoveOnly> src(source);
+  MoveOnly* target = (MoveOnly*)malloc(sizeof(MoveOnly)*10);
+  FwdIteratorRange<MoveOnly> tgt(target, target+10);
+  auto end = std::uninitialized_move_n(src.begin(), 10, tgt.begin());
+  VERIFY( end.first == std::next(src.begin(), 10) );
+  VERIFY( end.second == std::next(tgt.begin(), 10) );
+  for (const auto& x : source) VERIFY( x.val == -1 );
+  for (int i = 0; i < 10; ++i) VERIFY( target[i].val == i );
+  auto end2 = std::destroy_n(tgt.begin(), 10);
+  VERIFY( end2 == std::next(tgt.begin(), 10) );
   free(target);
 }
 
@@ -156,7 +172,8 @@ void test10()
 {
   char* x = (char*)malloc(sizeof(char)*10);
   for (int i = 0; i < 10; ++i) new (x+i) char;
-  std::destroy(x, x+10);
+  FwdIteratorRange<char> r(x, x+10);
+  std::destroy(r.begin(), r.end());
   free(x);
 }
 
@@ -164,8 +181,9 @@ void test11()
 {
   char* x = (char*)malloc(sizeof(char)*10);
   for (int i = 0; i < 10; ++i) new (x+i) char;
-  auto end = std::destroy_n(x, 10);
-  VERIFY( end == x + 10 );
+  FwdIteratorRange<char> r(x, x+10);
+  auto end = std::destroy_n(r.begin(), 10);
+  VERIFY( end == std::next(r.begin(), 10) );
   free(x);
 }
 

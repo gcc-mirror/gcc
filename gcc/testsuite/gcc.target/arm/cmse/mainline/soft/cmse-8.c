@@ -1,16 +1,10 @@
 /* { dg-do compile } */
+/* { dg-options "-mcmse -mfloat-abi=soft" }  */
 /* { dg-require-effective-target arm_arch_v8m_main_ok } */
 /* { dg-add-options arm_arch_v8m_main } */
 /* { dg-skip-if "Do not combine float-abi= hard | soft | softfp" {*-*-*} {"-mfloat-abi=hard" -mfloat-abi=softfp } {""} } */
-/* { dg-options "-mcmse -mfloat-abi=soft" }  */
 
-int __attribute__ ((cmse_nonsecure_call)) (*bar) (double);
-
-int
-foo (int a)
-{
-  return bar (2.0) + a + 1;
-}
+#include "../../cmse-8.x"
 
 /* Checks for saving and clearing prior to function call.  */
 /* { dg-final { scan-assembler "lsrs\tr4, r4, #1" } } */

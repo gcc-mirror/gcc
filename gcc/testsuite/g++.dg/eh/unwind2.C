@@ -46,7 +46,7 @@ namespace
     typedef _CharT char_type;
     char_type * _M_in_beg;
     char_type *eback () { return _M_in_beg; }
-    char_type *gptr () {}
+    char_type *gptr () { return 0; }
   };
 }
 namespace std

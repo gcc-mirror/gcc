@@ -97,8 +97,8 @@ static regset_head reg_has_output_reload;
    in the current insn.  */
 static HARD_REG_SET reg_is_output_reload;
 
-/* Widest width in which each pseudo reg is referred to (via subreg).  */
-static unsigned int *reg_max_ref_width;
+/* Widest mode in which each pseudo reg is referred to (via subreg).  */
+static machine_mode *reg_max_ref_mode;
 
 /* Vector to remember old contents of reg_renumber before spilling.  */
 static short *reg_old_renumber;
@@ -830,7 +830,7 @@ reload (rtx_insn *first, int global)
   if (ira_conflicts_p)
     /* Ask IRA to order pseudo-registers for better stack slot
        sharing.  */
-    ira_sort_regnos_for_alter_reg (temp_pseudo_reg_arr, n, reg_max_ref_width);
+    ira_sort_regnos_for_alter_reg (temp_pseudo_reg_arr, n, reg_max_ref_mode);
 
   for (i = 0; i < n; i++)
     alter_reg (temp_pseudo_reg_arr[i], -1, false);
@@ -963,7 +963,7 @@ reload (rtx_insn *first, int global)
 	     then repeat the elimination bookkeeping.  We don't
 	     realign when there is no stack, as that will cause a
 	     stack frame when none is needed should
-	     STARTING_FRAME_OFFSET not be already aligned to
+	     TARGET_STARTING_FRAME_OFFSET not be already aligned to
 	     STACK_BOUNDARY.  */
 	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
 	}
@@ -1252,7 +1252,7 @@ reload (rtx_insn *first, int global)
   /* Indicate that we no longer have known memory locations or constants.  */
   free_reg_equiv ();
 
-  free (reg_max_ref_width);
+  free (reg_max_ref_mode);
   free (reg_old_renumber);
   free (pseudo_previous_regs);
   free (pseudo_forbidden_regs);
@@ -2142,8 +2142,9 @@ alter_reg (int i, int from_reg, bool dont_share_p)
       machine_mode mode = GET_MODE (regno_reg_rtx[i]);
       unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
       unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
-      unsigned int total_size = MAX (inherent_size, reg_max_ref_width[i]);
-      unsigned int min_align = reg_max_ref_width[i] * BITS_PER_UNIT;
+      machine_mode wider_mode = wider_subreg_mode (mode, reg_max_ref_mode[i]);
+      unsigned int total_size = GET_MODE_SIZE (wider_mode);
+      unsigned int min_align = GET_MODE_BITSIZE (reg_max_ref_mode[i]);
       int adjust = 0;
 
       something_was_spilled = true;
@@ -2251,8 +2252,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 
       /* On a big endian machine, the "address" of the slot
 	 is the address of the low part that fits its inherent mode.  */
-      if (BYTES_BIG_ENDIAN && inherent_size < total_size)
-	adjust += (total_size - inherent_size);
+      adjust += subreg_size_lowpart_offset (inherent_size, total_size);
 
       /* If we have any adjustment to make, or if the stack slot is the
 	 wrong mode, make a new stack slot.  */
@@ -4084,9 +4084,9 @@ init_eliminable_invariants (rtx_insn *first, bool do_subregs)
 
   grow_reg_equivs ();
   if (do_subregs)
-    reg_max_ref_width = XCNEWVEC (unsigned int, max_regno);
+    reg_max_ref_mode = XCNEWVEC (machine_mode, max_regno);
   else
-    reg_max_ref_width = NULL;
+    reg_max_ref_mode = NULL;
 
   num_eliminable_invariants = 0;
 
@@ -4405,7 +4405,7 @@ finish_spills (int global)
   return something_changed;
 }
 
-/* Find all paradoxical subregs within X and update reg_max_ref_width.  */
+/* Find all paradoxical subregs within X and update reg_max_ref_mode.  */
 
 static void
 scan_paradoxical_subregs (rtx x)
@@ -4428,13 +4428,14 @@ scan_paradoxical_subregs (rtx x)
       return;
 
     case SUBREG:
-      if (REG_P (SUBREG_REG (x))
-	  && (GET_MODE_SIZE (GET_MODE (x))
-	      > reg_max_ref_width[REGNO (SUBREG_REG (x))]))
+      if (REG_P (SUBREG_REG (x)))
 	{
-	  reg_max_ref_width[REGNO (SUBREG_REG (x))]
-	    = GET_MODE_SIZE (GET_MODE (x));
-	  mark_home_live_1 (REGNO (SUBREG_REG (x)), GET_MODE (x));
+	  unsigned int regno = REGNO (SUBREG_REG (x));
+	  if (partial_subreg_p (reg_max_ref_mode[regno], GET_MODE (x)))
+	    {
+	      reg_max_ref_mode[regno] = GET_MODE (x);
+	      mark_home_live_1 (regno, GET_MODE (x));
+	    }
 	}
       return;
 

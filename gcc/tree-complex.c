@@ -60,6 +60,11 @@ typedef int complex_lattice_t;
 
 #define PAIR(a, b)  ((a) << 2 | (b))
 
+class complex_propagate : public ssa_propagation_engine
+{
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+};
 
 static vec<complex_lattice_t> complex_lattice_values;
 
@@ -300,9 +305,9 @@ init_dont_simulate_again (void)
 
 /* Evaluate statement STMT against the complex lattice defined above.  */
 
-static enum ssa_prop_result
-complex_visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
-		    tree *result_p)
+enum ssa_prop_result
+complex_propagate::visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
+			       tree *result_p)
 {
   complex_lattice_t new_l, old_l, op1_l, op2_l;
   unsigned int ver;
@@ -395,8 +400,8 @@ complex_visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
 
 /* Evaluate a PHI node against the complex lattice defined above.  */
 
-static enum ssa_prop_result
-complex_visit_phi (gphi *phi)
+enum ssa_prop_result
+complex_propagate::visit_phi (gphi *phi)
 {
   complex_lattice_t new_l, old_l;
   unsigned int ver;
@@ -1186,7 +1191,6 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
       bb_join = e->dest;
       bb_true = create_empty_bb (bb_cond);
       bb_false = create_empty_bb (bb_true);
-      bb_true->frequency = bb_false->frequency = bb_cond->frequency / 2;
       bb_true->count = bb_false->count
 	 = bb_cond->count.apply_probability (profile_probability::even ());
 
@@ -1673,7 +1677,8 @@ tree_lower_complex (void)
   complex_lattice_values.safe_grow_cleared (num_ssa_names);
 
   init_parameter_lattice_values ();
-  ssa_propagate (complex_visit_stmt, complex_visit_phi);
+  class complex_propagate complex_propagate;
+  complex_propagate.ssa_propagate ();
 
   complex_variable_components = new int_tree_htab_type (10);
 

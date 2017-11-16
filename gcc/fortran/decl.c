@@ -632,14 +632,13 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
   gfc_expr *expr = NULL;
   match m;
   locus where;
-  mpz_t repeat, size;
+  mpz_t repeat, cons_size, as_size;
   bool scalar;
   int cmp;
 
   gcc_assert (ts);
 
   mpz_init_set_ui (repeat, 0);
-  mpz_init (size);
   scalar = !as || !as->rank;
 
   /* We have already matched '/' - now look for a constant list, as with
@@ -733,16 +732,30 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       expr->rank = as->rank;
       expr->shape = gfc_get_shape (expr->rank);
 
-      /* Validate sizes. */
-      gcc_assert (gfc_array_size (expr, &size));
-      gcc_assert (spec_size (as, &repeat));
-      cmp = mpz_cmp (size, repeat);
-      if (cmp < 0)
-        gfc_error ("Not enough elements in array initializer at %C");
-      else if (cmp > 0)
-        gfc_error ("Too many elements in array initializer at %C");
+      /* Validate sizes.  We built expr ourselves, so cons_size will be
+	 constant (we fail above for non-constant expressions).
+	 We still need to verify that the array-spec has constant size.  */
+      cmp = 0;
+      gcc_assert (gfc_array_size (expr, &cons_size));
+      if (!spec_size (as, &as_size))
+	{
+	  gfc_error ("Expected constant array-spec in initializer list at %L",
+		     as->type == AS_EXPLICIT ? &as->upper[0]->where : &where);
+	  cmp = -1;
+	}
+      else
+	{
+	  /* Make sure the specs are of the same size.  */
+	  cmp = mpz_cmp (cons_size, as_size);
+	  if (cmp < 0)
+	    gfc_error ("Not enough elements in array initializer at %C");
+	  else if (cmp > 0)
+	    gfc_error ("Too many elements in array initializer at %C");
+	  mpz_clear (as_size);
+	}
+      mpz_clear (cons_size);
       if (cmp)
-        goto cleanup;
+	goto cleanup;
     }
 
   /* Make sure scalar types match. */
@@ -754,7 +767,6 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
     expr->ts.u.cl->length_from_typespec = 1;
 
   *result = expr;
-  mpz_clear (size);
   mpz_clear (repeat);
   return MATCH_YES;
 
@@ -766,7 +778,6 @@ cleanup:
     expr->value.constructor = NULL;
   gfc_free_expr (expr);
   gfc_constructor_free (array_head);
-  mpz_clear (size);
   mpz_clear (repeat);
   return MATCH_ERROR;
 }
@@ -1427,11 +1438,9 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
     {
       char u_name[GFC_MAX_SYMBOL_LEN + 1];
       gfc_symtree *st;
-      int nlen;
 
-      nlen = strlen(name);
-      gcc_assert (nlen <= GFC_MAX_SYMBOL_LEN);
-      strncpy (u_name, name, nlen + 1);
+      gcc_assert (strlen(name) <= GFC_MAX_SYMBOL_LEN);
+      strcpy (u_name, name);
       u_name[0] = upper;
 
       st = gfc_find_symtree (gfc_current_ns->sym_root, u_name);
@@ -3242,13 +3251,10 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       param = type_param_name_list->sym;
 
       c1 = gfc_find_component (pdt, param->name, false, true, NULL);
+      /* An error should already have been thrown in resolve.c
+	 (resolve_fl_derived0).  */
       if (!pdt->attr.use_assoc && !c1)
-	{
-	  gfc_error ("The type parameter name list at %L contains a parameter "
-		     "'%qs' , which is not declared as a component of the type",
-		     &pdt->declared_at, param->name);
-	  goto error_return;
-	}
+	goto error_return;
 
       kind_expr = NULL;
       if (!name_seen)
@@ -5984,7 +5990,7 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
       /* The name of a program unit can be in a different namespace,
 	 so check for it explicitly.  After the statement is accepted,
 	 the name is checked for especially in gfc_get_symbol().  */
-      if (gfc_new_block != NULL && sym != NULL
+      if (gfc_new_block != NULL && sym != NULL && !typeparam
 	  && strcmp (sym->name, gfc_new_block->name) == 0)
 	{
 	  gfc_error ("Name %qs at %C is the name of the procedure",
@@ -5999,7 +6005,11 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
       m = gfc_match_char (',');
       if (m != MATCH_YES)
 	{
-	  gfc_error ("Unexpected junk in formal argument list at %C");
+	  if (typeparam)
+	    gfc_error_now ("Expected parameter list in type declaration "
+			   "at %C");
+	  else
+	    gfc_error ("Unexpected junk in formal argument list at %C");
 	  goto cleanup;
 	}
     }
@@ -6016,8 +6026,12 @@ ok:
 	  for (q = p->next; q; q = q->next)
 	    if (p->sym == q->sym)
 	      {
-		gfc_error ("Duplicate symbol %qs in formal argument list "
-			   "at %C", p->sym->name);
+		if (typeparam)
+		  gfc_error_now ("Duplicate name %qs in parameter "
+				 "list at %C", p->sym->name);
+		else
+		  gfc_error ("Duplicate symbol %qs in formal argument "
+			     "list at %C", p->sym->name);
 
 		m = MATCH_ERROR;
 		goto cleanup;
@@ -9814,9 +9828,9 @@ gfc_match_derived_decl (void)
 
   if (parameterized_type)
     {
-      m = gfc_match_formal_arglist (sym, 0, 0, true);
-      if (m != MATCH_YES)
-	return m;
+      /* Ignore error or mismatches to avoid the component declarations
+	 causing problems later.  */
+      gfc_match_formal_arglist (sym, 0, 0, true);
       m = gfc_match_eos ();
       if (m != MATCH_YES)
 	return m;

@@ -1050,7 +1050,6 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
     {
       struct omp_region *cur_region = NULL;
       profile_count cnt = profile_count::zero ();
-      int freq = 0;
       bool all = true;
 
       int cur_omp_region_idx = 0;
@@ -1066,12 +1065,10 @@ gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
 	    cnt += e->count ();
 	  else
 	    all = false;
-	  freq += EDGE_FREQUENCY (e);
 	}
       tree_guess_outgoing_edge_probabilities (bb);
       if (all || profile_status_for_fn (cfun) == PROFILE_READ)
         bb->count = cnt;
-      bb->frequency = freq;
 
       bb = bb->next_bb;
     }
@@ -2081,7 +2078,6 @@ gimple_merge_blocks (basic_block a, basic_block b)
   if (a->loop_father == b->loop_father)
     {
       a->count = a->count.merge (b->count);
-      a->frequency = MAX (a->frequency, b->frequency);
     }
 
   /* Merge the sequences.  */
@@ -2840,7 +2836,6 @@ gimple_split_edge (edge edge_in)
   after_bb = split_edge_bb_loc (edge_in);
 
   new_bb = create_empty_bb (after_bb);
-  new_bb->frequency = EDGE_FREQUENCY (edge_in);
   new_bb->count = edge_in->count ();
 
   e = redirect_edge_and_branch (edge_in, new_bb);
@@ -6306,9 +6301,8 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   bool free_region_copy = false, copying_header = false;
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
-  vec<basic_block> doms;
+  vec<basic_block> doms = vNULL;
   edge redirected;
-  int total_freq = 0, entry_freq = 0;
   profile_count total_count = profile_count::uninitialized ();
   profile_count entry_count = profile_count::uninitialized ();
 
@@ -6376,33 +6370,16 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       if (entry_count > total_count)
 	entry_count = total_count;
     }
-  if (!(total_count > 0) || !(entry_count > 0))
-    {
-      total_freq = entry->dest->frequency;
-      entry_freq = EDGE_FREQUENCY (entry);
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (total_freq == 0)
-	total_freq = 1;
-      else if (entry_freq > total_freq)
-	entry_freq = total_freq;
-    }
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), update_dominance);
-  if (total_count > 0 && entry_count > 0)
+  if (total_count.initialized_p () && entry_count.initialized_p ())
     {
       scale_bbs_frequencies_profile_count (region, n_region,
 				           total_count - entry_count,
 				           total_count);
       scale_bbs_frequencies_profile_count (region_copy, n_region, entry_count,
 				           total_count);
-    }
-  else
-    {
-      scale_bbs_frequencies_int (region, n_region, total_freq - entry_freq,
-				 total_freq);
-      scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
     }
 
   if (copying_header)
@@ -6492,7 +6469,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   struct loop *orig_loop = entry->dest->loop_father;
   basic_block switch_bb, entry_bb, nentry_bb;
   vec<basic_block> doms;
-  int total_freq = 0, exit_freq = 0;
   profile_count total_count = profile_count::uninitialized (),
 		exit_count = profile_count::uninitialized ();
   edge exits[2], nexits[2], e;
@@ -6537,42 +6513,22 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
      inside.  */
   doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
 
-  if (exit->src->count > 0)
-    {
-      total_count = exit->src->count;
-      exit_count = exit->count ();
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (exit_count > total_count)
-	exit_count = total_count;
-    }
-  else
-    {
-      total_freq = exit->src->frequency;
-      exit_freq = EDGE_FREQUENCY (exit);
-      /* Fix up corner cases, to avoid division by zero or creation of negative
-	 frequencies.  */
-      if (total_freq == 0)
-	total_freq = 1;
-      if (exit_freq > total_freq)
-	exit_freq = total_freq;
-    }
+  total_count = exit->src->count;
+  exit_count = exit->count ();
+  /* Fix up corner cases, to avoid division by zero or creation of negative
+     frequencies.  */
+  if (exit_count > total_count)
+    exit_count = total_count;
 
   copy_bbs (region, n_region, region_copy, exits, 2, nexits, orig_loop,
 	    split_edge_bb_loc (exit), true);
-  if (total_count.initialized_p ())
+  if (total_count.initialized_p () && exit_count.initialized_p ())
     {
       scale_bbs_frequencies_profile_count (region, n_region,
 				           total_count - exit_count,
 				           total_count);
       scale_bbs_frequencies_profile_count (region_copy, n_region, exit_count,
 				           total_count);
-    }
-  else
-    {
-      scale_bbs_frequencies_int (region, n_region, total_freq - exit_freq,
-				 total_freq);
-      scale_bbs_frequencies_int (region_copy, n_region, exit_freq, total_freq);
     }
 
   /* Create the switch block, and put the exit condition to it.  */
@@ -7614,9 +7570,15 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
      FIXME, this is silly.  The CFG ought to become a parameter to
      these helpers.  */
   push_cfun (dest_cfun);
-  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), entry_bb, EDGE_FALLTHRU);
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = entry_bb->count;
+  make_single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), entry_bb, EDGE_FALLTHRU);
   if (exit_bb)
-    make_edge (exit_bb,  EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+    {
+      make_single_succ_edge (exit_bb,  EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+      EXIT_BLOCK_PTR_FOR_FN (cfun)->count = exit_bb->count;
+    }
+  else
+    EXIT_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ();
   pop_cfun ();
 
   /* Back in the original function, the SESE region has disappeared,
@@ -8691,7 +8653,7 @@ gimple_account_profile_record (basic_block bb, int after_pass,
       else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->frequency;
+				 &eni_time_weights) * bb->count.to_frequency (cfun);
     }
 }
 
@@ -8843,7 +8805,6 @@ insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond,
   edge e = make_edge (bb, new_bb, EDGE_TRUE_VALUE);
   e->probability = prob;
   new_bb->count = e->count ();
-  new_bb->frequency = prob.apply (bb->frequency);
   make_single_succ_edge (new_bb, fall->dest, EDGE_FALLTHRU);
 
   /* Fix edge for split bb.  */
@@ -9108,7 +9069,7 @@ pass_warn_function_return::execute (function *fun)
 
   /* If we see "return;" in some basic block, then we do reach the end
      without returning a value.  */
-  else if (warn_return_type
+  else if (warn_return_type > 0
 	   && !TREE_NO_WARNING (fun->decl)
 	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
@@ -9262,11 +9223,11 @@ execute_fixup_cfg (void)
   gimple_stmt_iterator gsi;
   int todo = 0;
   cgraph_node *node = cgraph_node::get (current_function_decl);
-  profile_count num = node->count;
+  profile_count num = node->count.ipa ();
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-  bool scale = num.initialized_p ()
-	       && (den > 0 || num == profile_count::zero ())
-	       && !(num == den);
+  bool scale = num.initialized_p () && den.ipa_p ()
+	       && (den.nonzero_p () || num == profile_count::zero ())
+	       && !(num == den.ipa ());
 
   if (scale)
     {
@@ -9278,7 +9239,15 @@ execute_fixup_cfg (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (scale)
-        bb->count = bb->count.apply_scale (num, den);
+	{
+	  if (num == profile_count::zero ())
+	    {
+	      if (!(bb->count == profile_count::zero ()))
+	        bb->count = bb->count.global0 ();
+	    }
+	  else
+            bb->count = bb->count.apply_scale (num, den);
+	}
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -9368,11 +9337,8 @@ execute_fixup_cfg (void)
 	      if (!cfun->after_inlining)
 		{
 		  gcall *call_stmt = dyn_cast <gcall *> (stmt);
-		  int freq
-		    = compute_call_stmt_bb_frequency (current_function_decl,
-						      bb);
 		  node->create_edge (cgraph_node::get_create (fndecl),
-				     call_stmt, bb->count, freq);
+				     call_stmt, bb->count);
 		}
 	    }
 	}

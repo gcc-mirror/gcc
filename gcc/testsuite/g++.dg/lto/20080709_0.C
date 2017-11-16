@@ -4,6 +4,7 @@ class Init     {
 };
 
 int f(Init *a) {
+    return 0;
 }
 
 int main(void){

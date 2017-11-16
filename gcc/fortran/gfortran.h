@@ -1989,7 +1989,7 @@ gfc_intrinsic_arg;
    argument lists of intrinsic functions. fX with X an integer refer
    to check functions of intrinsics with X arguments. f1m is used for
    the MAX and MIN intrinsics which can have an arbitrary number of
-   arguments, f3ml is used for the MINLOC and MAXLOC intrinsics as
+   arguments, f4ml is used for the MINLOC and MAXLOC intrinsics as
    these have special semantics.  */
 
 typedef union
@@ -1999,7 +1999,7 @@ typedef union
   bool (*f1m)(gfc_actual_arglist *);
   bool (*f2)(struct gfc_expr *, struct gfc_expr *);
   bool (*f3)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *);
-  bool (*f3ml)(gfc_actual_arglist *);
+  bool (*f4ml)(gfc_actual_arglist *);
   bool (*f3red)(gfc_actual_arglist *);
   bool (*f4)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,
 	    struct gfc_expr *);
@@ -3174,6 +3174,7 @@ bool gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
 bool gfc_check_assign_symbol (gfc_symbol *, gfc_component *, gfc_expr *);
 
 gfc_expr *gfc_build_default_init_expr (gfc_typespec *, locus *);
+gfc_expr *gfc_build_init_expr (gfc_typespec *, locus *, bool);
 void gfc_apply_init (gfc_typespec *, symbol_attribute *, gfc_expr *);
 bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);

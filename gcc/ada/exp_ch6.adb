@@ -4721,8 +4721,10 @@ package body Exp_Ch6 is
       Exp         : Node_Id;
       HSS         : Node_Id;
       Result      : Node_Id;
-      Return_Stmt : Node_Id;
       Stmts       : List_Id;
+
+      Return_Stmt : Node_Id := Empty;
+      --  Force initialization to facilitate static analysis
 
    --  Start of processing for Expand_N_Extended_Return_Statement
 

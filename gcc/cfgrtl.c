@@ -1533,6 +1533,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 
 	  basic_block bb = create_basic_block (BB_HEAD (e->dest), NULL,
 					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
+	  bb->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
 	  /* Change the existing edge's source to be the new block, and add
 	     a new edge from the entry block to the new block.  */
@@ -1628,7 +1629,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 
       jump_block = create_basic_block (new_head, NULL, e->src);
       jump_block->count = count;
-      jump_block->frequency = EDGE_FREQUENCY (e);
 
       /* Make sure new block ends up in correct hot/cold section.  */
 
@@ -1652,7 +1652,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	{
 	  new_edge->probability = new_edge->probability.apply_scale (1, 2);
 	  jump_block->count = jump_block->count.apply_scale (1, 2);
-	  jump_block->frequency /= 2;
 	  edge new_edge2 = make_edge (new_edge->src, target,
 				      e->flags & ~EDGE_FALLTHRU);
 	  new_edge2->probability = probability - new_edge->probability;
@@ -2245,9 +2244,23 @@ void
 update_br_prob_note (basic_block bb)
 {
   rtx note;
-  if (!JUMP_P (BB_END (bb)) || !BRANCH_EDGE (bb)->probability.initialized_p ())
-    return;
   note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX);
+  if (!JUMP_P (BB_END (bb)) || !BRANCH_EDGE (bb)->probability.initialized_p ())
+    {
+      if (note)
+	{
+	  rtx *note_link, this_rtx;
+
+	  note_link = &REG_NOTES (BB_END (bb));
+	  for (this_rtx = *note_link; this_rtx; this_rtx = XEXP (this_rtx, 1))
+	    if (this_rtx == note)
+	      {
+		*note_link = XEXP (this_rtx, 1);
+		break;
+	      }
+	}
+      return;
+    }
   if (!note
       || XINT (note, 0) == BRANCH_EDGE (bb)->probability.to_reg_br_prob_note ())
     return;
@@ -3623,7 +3636,6 @@ relink_block_chain (bool stay_in_cfglayout_mode)
 	    fprintf (dump_file, "compensation ");
 	  else
 	    fprintf (dump_file, "bb %i ", bb->index);
-	  fprintf (dump_file, " [%i]\n", bb->frequency);
 	}
     }
 
@@ -5034,7 +5046,7 @@ rtl_account_profile_record (basic_block bb, int after_pass,
 	    += insn_cost (insn, true) * bb->count.to_gcov_type ();
 	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	  record->time[after_pass]
-	    += insn_cost (insn, true) * bb->frequency;
+	    += insn_cost (insn, true) * bb->count.to_frequency (cfun);
       }
 }
 

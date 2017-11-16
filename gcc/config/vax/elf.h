@@ -66,10 +66,6 @@ along with GCC; see the file COPYING3.  If not see
 			      16))
 
 
-/* Reserve the top of the stack for exception handler stackadj value.  */
-#undef STARTING_FRAME_OFFSET
-#define STARTING_FRAME_OFFSET -4
-
 /* The VAX wants no space between the case instruction and the jump table.  */
 #undef  ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE)

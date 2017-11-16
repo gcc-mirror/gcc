@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "edit-context.h"
 #include "selftest.h"
+#include "selftest-diagnostic.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -50,12 +51,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototypes.  */
 static bool diagnostic_impl (rich_location *, int, const char *,
 			     va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(3,0);
-static bool diagnostic_n_impl (location_t, int, int, const char *,
+static bool diagnostic_n_impl (rich_location *, int, int, const char *,
 			       const char *, va_list *,
 			       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
-static bool diagnostic_n_impl_richloc (rich_location *, int, int, const char *,
-				       const char *, va_list *,
-				       diagnostic_t) ATTRIBUTE_GCC_DIAG(5,0);
 
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void real_abort (void) ATTRIBUTE_NORETURN;
@@ -303,8 +301,9 @@ maybe_line_and_column (int line, int col)
 
   if (line)
     {
-      size_t l = sprintf (result, col ? ":%d:%d" : ":%d", line, col);
-      gcc_checking_assert (l + 1 < sizeof (result));
+      size_t l = snprintf (result, sizeof (result),
+			   col ? ":%d:%d" : ":%d", line, col);
+      gcc_checking_assert (l < sizeof (result));
     }
   else
     result[0] = 0;
@@ -1085,10 +1084,9 @@ diagnostic_append_note (diagnostic_context *context,
   va_end (ap);
 }
 
-/* Implement emit_diagnostic, inform, inform_at_rich_loc, warning, warning_at,
-   warning_at_rich_loc, pedwarn, permerror, permerror_at_rich_loc, error,
-   error_at, error_at_rich_loc, sorry, fatal_error, internal_error, and
-   internal_error_no_backtrace, as documented and defined below.  */
+/* Implement emit_diagnostic, inform, warning, warning_at, pedwarn,
+   permerror, error, error_at, error_at, sorry, fatal_error, internal_error,
+   and internal_error_no_backtrace, as documented and defined below.  */
 static bool
 diagnostic_impl (rich_location *richloc, int opt,
 		 const char *gmsgid,
@@ -1110,12 +1108,13 @@ diagnostic_impl (rich_location *richloc, int opt,
   return diagnostic_report_diagnostic (global_dc, &diagnostic);
 }
 
-/* Same as diagonostic_n_impl taking rich_location instead of location_t.  */
+/* Implement inform_n, warning_n, and error_n, as documented and
+   defined below.  */
 static bool
-diagnostic_n_impl_richloc (rich_location *richloc, int opt, int n,
-			   const char *singular_gmsgid,
-			   const char *plural_gmsgid,
-			   va_list *ap, diagnostic_t kind)
+diagnostic_n_impl (rich_location *richloc, int opt, int n,
+		   const char *singular_gmsgid,
+		   const char *plural_gmsgid,
+		   va_list *ap, diagnostic_t kind)
 {
   diagnostic_info diagnostic;
   diagnostic_set_info_translated (&diagnostic,
@@ -1124,19 +1123,6 @@ diagnostic_n_impl_richloc (rich_location *richloc, int opt, int n,
   if (kind == DK_WARNING)
     diagnostic.option_index = opt;
   return diagnostic_report_diagnostic (global_dc, &diagnostic);
-} 
-
-/* Implement inform_n, warning_n, and error_n, as documented and
-   defined below.  */
-static bool
-diagnostic_n_impl (location_t location, int opt, int n,
-		   const char *singular_gmsgid,
-		   const char *plural_gmsgid,
-		   va_list *ap, diagnostic_t kind)
-{
-  rich_location richloc (line_table, location);
-  return diagnostic_n_impl_richloc (&richloc, opt, n,
-				    singular_gmsgid, plural_gmsgid, ap, kind);
 }
 
 /* Wrapper around diagnostic_impl taking a variable argument list.  */
@@ -1175,10 +1161,12 @@ inform (location_t location, const char *gmsgid, ...)
   va_end (ap);
 }
 
-/* Same as "inform", but at RICHLOC.  */
+/* Same as "inform" above, but at RICHLOC.  */
 void
-inform_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
+inform (rich_location *richloc, const char *gmsgid, ...)
 {
+  gcc_assert (richloc);
+
   va_list ap;
   va_start (ap, gmsgid);
   diagnostic_impl (richloc, -1, gmsgid, &ap, DK_NOTE);
@@ -1193,7 +1181,8 @@ inform_n (location_t location, int n, const char *singular_gmsgid,
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
-  diagnostic_n_impl (location, -1, n, singular_gmsgid, plural_gmsgid,
+  rich_location richloc (line_table, location);
+  diagnostic_n_impl (&richloc, -1, n, singular_gmsgid, plural_gmsgid,
 		     &ap, DK_NOTE);
   va_end (ap);
 }
@@ -1227,11 +1216,13 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
   return ret;
 }
 
-/* Same as warning at, but using RICHLOC.  */
+/* Same as "warning at" above, but using RICHLOC.  */
 
 bool
-warning_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
+warning_at (rich_location *richloc, int opt, const char *gmsgid, ...)
 {
+  gcc_assert (richloc);
+
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_WARNING);
@@ -1239,17 +1230,19 @@ warning_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
   return ret;
 }
 
-/* Same as warning_at_rich_loc but for plural variant.  */
+/* Same as warning_n plural variant below, but using RICHLOC.  */
 
 bool
-warning_at_rich_loc_n (rich_location *richloc, int opt, int n,
-		       const char *singular_gmsgid, const char *plural_gmsgid, ...)
+warning_n (rich_location *richloc, int opt, int n,
+	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
+  gcc_assert (richloc);
+
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool ret = diagnostic_n_impl_richloc (richloc, opt, n,
-					singular_gmsgid, plural_gmsgid,
-					&ap, DK_WARNING);
+  bool ret = diagnostic_n_impl (richloc, opt, n,
+				singular_gmsgid, plural_gmsgid,
+				&ap, DK_WARNING);
   va_end (ap);
   return ret;
 }
@@ -1264,7 +1257,8 @@ warning_n (location_t location, int opt, int n, const char *singular_gmsgid,
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool ret = diagnostic_n_impl (location, opt, n,
+  rich_location richloc (line_table, location);
+  bool ret = diagnostic_n_impl (&richloc, opt, n,
 				singular_gmsgid, plural_gmsgid,
 				&ap, DK_WARNING);
   va_end (ap);
@@ -1295,11 +1289,13 @@ pedwarn (location_t location, int opt, const char *gmsgid, ...)
   return ret;
 }
 
-/* Same as pedwarn, but using RICHLOC.  */
+/* Same as pedwarn above, but using RICHLOC.  */
 
 bool
-pedwarn_at_rich_loc (rich_location *richloc, int opt, const char *gmsgid, ...)
+pedwarn (rich_location *richloc, int opt, const char *gmsgid, ...)
 {
+  gcc_assert (richloc);
+
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, opt, gmsgid, &ap, DK_PEDWARN);
@@ -1325,11 +1321,13 @@ permerror (location_t location, const char *gmsgid, ...)
   return ret;
 }
 
-/* Same as "permerror", but at RICHLOC.  */
+/* Same as "permerror" above, but at RICHLOC.  */
 
 bool
-permerror_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
+permerror (rich_location *richloc, const char *gmsgid, ...)
 {
+  gcc_assert (richloc);
+
   va_list ap;
   va_start (ap, gmsgid);
   bool ret = diagnostic_impl (richloc, -1, gmsgid, &ap, DK_PERMERROR);
@@ -1357,7 +1355,8 @@ error_n (location_t location, int n, const char *singular_gmsgid,
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
-  diagnostic_n_impl (location, -1, n, singular_gmsgid, plural_gmsgid,
+  rich_location richloc (line_table, location);
+  diagnostic_n_impl (&richloc, -1, n, singular_gmsgid, plural_gmsgid,
 		     &ap, DK_ERROR);
   va_end (ap);
 }
@@ -1376,8 +1375,10 @@ error_at (location_t loc, const char *gmsgid, ...)
 /* Same as above, but use RICH_LOC.  */
 
 void
-error_at_rich_loc (rich_location *richloc, const char *gmsgid, ...)
+error_at (rich_location *richloc, const char *gmsgid, ...)
 {
+  gcc_assert (richloc);
+
   va_list ap;
   va_start (ap, gmsgid);
   diagnostic_impl (richloc, -1, gmsgid, &ap, DK_ERROR);
@@ -1639,6 +1640,52 @@ test_print_parseable_fixits_replace ()
 		pp_formatted_text (&pp));
 }
 
+/* Verify that
+     diagnostic_get_location_text (..., SHOW_COLUMN)
+   generates EXPECTED_LOC_TEXT, given FILENAME, LINE, COLUMN, with
+   colorization disabled.  */
+
+static void
+assert_location_text (const char *expected_loc_text,
+		      const char *filename, int line, int column,
+		      bool show_column)
+{
+  test_diagnostic_context dc;
+  dc.show_column = show_column;
+
+  expanded_location xloc;
+  xloc.file = filename;
+  xloc.line = line;
+  xloc.column = column;
+  xloc.data = NULL;
+  xloc.sysp = false;
+
+  char *actual_loc_text = diagnostic_get_location_text (&dc, xloc);
+  ASSERT_STREQ (expected_loc_text, actual_loc_text);
+  free (actual_loc_text);
+}
+
+/* Verify that diagnostic_get_location_text works as expected.  */
+
+static void
+test_diagnostic_get_location_text ()
+{
+  const char *old_progname = progname;
+  progname = "PROGNAME";
+  assert_location_text ("PROGNAME:", NULL, 0, 0, true);
+  assert_location_text ("<built-in>:", "<built-in>", 42, 10, true);
+  assert_location_text ("foo.c:42:10:", "foo.c", 42, 10, true);
+  assert_location_text ("foo.c:42:", "foo.c", 42, 0, true);
+  assert_location_text ("foo.c:", "foo.c", 0, 10, true);
+  assert_location_text ("foo.c:42:", "foo.c", 42, 10, false);
+  assert_location_text ("foo.c:", "foo.c", 0, 10, false);
+
+  maybe_line_and_column (INT_MAX, INT_MAX);
+  maybe_line_and_column (INT_MIN, INT_MIN);
+
+  progname = old_progname;
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -1649,6 +1696,7 @@ diagnostic_c_tests ()
   test_print_parseable_fixits_insert ();
   test_print_parseable_fixits_remove ();
   test_print_parseable_fixits_replace ();
+  test_diagnostic_get_location_text ();
 }
 
 } // namespace selftest

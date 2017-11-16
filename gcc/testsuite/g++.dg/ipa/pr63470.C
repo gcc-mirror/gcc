@@ -17,6 +17,7 @@ class FTjackSupport : A
   const char **
   m_fn2 (int)
   {
+    return 0;
   }
   int _inited;
   int *_jackClient;

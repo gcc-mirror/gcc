@@ -25,6 +25,7 @@ class f
   i ()
   {
     static d j;
+    return d();
   }
   int *k () throw (a::c);
 };
@@ -47,4 +48,5 @@ int *f::k () throw (a::c)
 	}
     }
   i ().e ();
+  return 0;
 }

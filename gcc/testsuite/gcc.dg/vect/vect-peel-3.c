@@ -4,12 +4,24 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
-#define RES 21640 
+#if VECTOR_BITS > 128
+#define NINTS (VECTOR_BITS / 32)
+#define EXTRA (NINTS * 2)
+#else
+#define NINTS 4
+#define EXTRA 10
+#endif
 
-int ib[N+10];
-int ia[N+10];
-int ic[N+10];
+#define N 128
+
+#define RES_A (N * N / 4)
+#define RES_B (N * (N + 1) / 2 + (NINTS + 3) * (N + 1))
+#define RES_C (N * (N + 1) / 2 + (N + 1))
+#define RES (RES_A + RES_B + RES_C)
+
+int ib[N + EXTRA];
+int ia[N + EXTRA];
+int ic[N + EXTRA];
 
 __attribute__ ((noinline))
 int main1 ()
@@ -20,8 +32,8 @@ int main1 ()
   for (i = 0; i <= N; i++)
     {
       suma += ia[i];
-      sumb += ib[i+5];
-      sumc += ic[i+1];
+      sumb += ib[i + NINTS + 1];
+      sumc += ic[i + 1];
     }
 
   /* check results:  */
@@ -37,7 +49,7 @@ int main (void)
 
   check_vect ();
 
-  for (i = 0; i < N+10; i++)
+  for (i = 0; i < N + EXTRA; i++)
     {
       asm volatile ("" : "+r" (i));
       ib[i] = i;
@@ -49,5 +61,5 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect"  { xfail { { vect_no_align && { ! vect_hw_misalign } } || {vect_sizes_32B_16B } } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || {vect_sizes_32B_16B } } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect"  { xfail { { ! vect_unaligned_possible } || vect_sizes_32B_16B } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { { ! vect_unaligned_possible } || vect_sizes_32B_16B } } } } */

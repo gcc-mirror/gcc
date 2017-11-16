@@ -1999,6 +1999,13 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
   if (size != CONST0_RTX (Pmode)
       && targetm.stack_clash_protection_final_dynamic_probe (residual))
     {
+      /* SIZE could be zero at runtime and in that case *sp could hold
+	 live data.  Furthermore, we don't want to probe into the red
+	 zone.
+
+	 Go ahead and just guard a probe at *sp on SIZE != 0 at runtime
+	 if SIZE is not a compile time constant.  */
+
       /* Ideally we would just probe at *sp.  However, if SIZE is not
 	 a compile-time constant, but is zero at runtime, then *sp
 	 might hold live data.  So probe at *sp if we know that
@@ -2011,9 +2018,12 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	}
       else
 	{
-	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
-					   -GET_MODE_SIZE (word_mode)));
+	  rtx label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (size, CONST0_RTX (GET_MODE (size)),
+				   EQ, NULL_RTX, Pmode, 1, label);
+	  emit_stack_probe (stack_pointer_rtx);
 	  emit_insn (gen_blockage ());
+	  emit_label (label);
 	}
     }
 }

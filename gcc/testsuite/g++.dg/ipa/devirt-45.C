@@ -2,7 +2,7 @@
 /* { dg-options "-O3 -fno-ipa-cp -fdump-ipa-inline-details -fno-early-inlining" } */
 struct A {
   virtual int foo () {return 1;}
-  int wrapfoo () {foo();}
+  void wrapfoo () {foo();}
   A() {wrapfoo();}
 };
 inline void* operator new(__SIZE_TYPE__ s, void* buf) throw() {
@@ -29,7 +29,7 @@ test (struct A *a)
   test2(a);
 }
 
-main()
+int main()
 {
   struct B a;
   dostuff (&a);

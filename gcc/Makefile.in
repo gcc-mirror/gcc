@@ -1165,6 +1165,7 @@ FLAGS_TO_PASS = \
 	"libexecsubdir=$(libexecsubdir)" \
 	"datarootdir=$(datarootdir)" \
 	"datadir=$(datadir)" \
+	"libsubdir=$(libsubdir)" \
 	"localedir=$(localedir)"
 #
 # Lists of files for various purposes.
@@ -1304,6 +1305,7 @@ OBJS = \
 	gimple-low.o \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \
+	gimple-ssa-evrp.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
@@ -1357,6 +1359,7 @@ OBJS = \
 	ipa-predicate.o \
 	ipa-profile.o \
 	ipa-prop.o \
+	ipa-param-manipulation.o \
 	ipa-pure-const.o \
 	ipa-icf.o \
 	ipa-icf-gimple.o \
@@ -1450,7 +1453,6 @@ OBJS = \
 	sched-deps.o \
 	sched-ebb.o \
 	sched-rgn.o \
-	sdbout.o \
 	sel-sched-ir.o \
 	sel-sched-dump.o \
 	sel-sched.o \
@@ -1579,6 +1581,7 @@ OBJS = \
 	varasm.o \
 	varpool.o \
 	vmsdbgout.o \
+	vr-values.o \
 	vtable-verify.o \
 	web.o \
 	wide-int.o \
@@ -1595,7 +1598,7 @@ OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
 	vec.o input.o version.o hash-table.o ggc-none.o memory-block.o \
-	selftest.o
+	selftest.o selftest-diagnostic.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -2529,7 +2532,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfgrtl.c \
-  $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
+  $(srcdir)/stor-layout.c \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
@@ -3471,7 +3474,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(C_COMMON_H) c-family/c-objc.h $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_SSA_H) langhooks.h incpath.h debug.h \
   $(EXCEPT_H) tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
-  $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
+  ipa-param-manipulation.h $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
   cppdefault.h flags.h $(MD5_H) params.def params.h params-enum.h \
   prefix.h tree-inline.h $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
   $(IPA_PROP_H) $(TARGET_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) \

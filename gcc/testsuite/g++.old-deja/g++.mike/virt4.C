@@ -22,7 +22,9 @@ public:
   void foo() { D1::foo(); D2::foo(); }
 };
 
+int
 main() {
   D1_2 h;
   h.foo();
+  return 0;
 }

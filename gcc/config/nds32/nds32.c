@@ -2188,8 +2188,14 @@ nds32_asm_file_start (void)
 			 ((TARGET_CMOV) ? "Yes"
 					: "No"));
   fprintf (asm_out_file, "\t! Use performance extension\t: %s\n",
-			 ((TARGET_PERF_EXT) ? "Yes"
+			 ((TARGET_EXT_PERF) ? "Yes"
 					    : "No"));
+  fprintf (asm_out_file, "\t! Use performance extension 2\t: %s\n",
+			 ((TARGET_EXT_PERF2) ? "Yes"
+					     : "No"));
+  fprintf (asm_out_file, "\t! Use string extension\t\t: %s\n",
+			 ((TARGET_EXT_STRING) ? "Yes"
+					      : "No"));
 
   fprintf (asm_out_file, "\t! ------------------------------------\n");
 
@@ -2676,8 +2682,12 @@ nds32_option_override (void)
     {
       /* Under V3M ISA, we need to strictly enable TARGET_REDUCED_REGS.  */
       target_flags |= MASK_REDUCED_REGS;
-      /* Under V3M ISA, we need to strictly disable TARGET_PERF_EXT.  */
-      target_flags &= ~MASK_PERF_EXT;
+      /* Under V3M ISA, we need to strictly disable TARGET_EXT_PERF.  */
+      target_flags &= ~MASK_EXT_PERF;
+      /* Under V3M ISA, we need to strictly disable TARGET_EXT_PERF2.  */
+      target_flags &= ~MASK_EXT_PERF2;
+      /* Under V3M ISA, we need to strictly disable TARGET_EXT_STRING.  */
+      target_flags &= ~MASK_EXT_STRING;
     }
 
   /* See if we are using reduced-set registers:
@@ -3763,7 +3773,7 @@ nds32_target_alignment (rtx_insn *label)
 
 /* -- File Names in DBX Format.  */
 
-/* -- Macros for SDB and DWARF Output.  */
+/* -- Macros for DWARF Output.  */
 
 /* -- Macros for VMS Debug Format.  */
 

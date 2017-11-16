@@ -294,7 +294,7 @@ try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
   /* Calculate how many bytes the start of local variables is off from
      stack alignment.  */
   frame_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-  frame_off = STARTING_FRAME_OFFSET % frame_alignment;
+  frame_off = targetm.starting_frame_offset () % frame_alignment;
   frame_phase = frame_off ? frame_alignment - frame_off : 0;
 
   /* Round the frame offset to the specified alignment.  */
@@ -499,7 +499,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
     addr = plus_constant (Pmode, frame_pointer_rtx,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction
-			   + STARTING_FRAME_OFFSET, Pmode));
+			   + targetm.starting_frame_offset (), Pmode));
   else
     addr = plus_constant (Pmode, virtual_stack_vars_rtx,
 			  trunc_int_for_mode
@@ -1930,7 +1930,7 @@ instantiate_virtual_regs (void)
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
-  var_offset = STARTING_FRAME_OFFSET;
+  var_offset = targetm.starting_frame_offset ();
   dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
   out_arg_offset = STACK_POINTER_OFFSET;
 #ifdef FRAME_POINTER_CFA_OFFSET
@@ -4709,11 +4709,11 @@ number_blocks (tree fn)
   int n_blocks;
   tree *block_vector;
 
-  /* For SDB and XCOFF debugging output, we start numbering the blocks
+  /* For XCOFF debugging output, we start numbering the blocks
      from 1 within each function, rather than keeping a running
      count.  */
-#if SDB_DEBUGGING_INFO || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == SDB_DEBUG || write_symbols == XCOFF_DEBUG)
+#if defined (XCOFF_DEBUGGING_INFO)
+  if (write_symbols == XCOFF_DEBUG)
     next_block_index = 1;
 #endif
 
@@ -5248,7 +5248,7 @@ expand_function_start (tree subr)
     }
 
   /* The following was moved from init_function_start.
-     The move is supposed to make sdb output more accurate.  */
+     The move was supposed to make sdb output more accurate.  */
   /* Indicate the beginning of the function body,
      as opposed to parm setup.  */
   emit_note (NOTE_INSN_FUNCTION_BEG);
@@ -5439,7 +5439,7 @@ expand_function_end (void)
   do_pending_stack_adjust ();
 
   /* Output a linenumber for the end of the function.
-     SDB depends on this.  */
+     SDB depended on this.  */
   set_curr_insn_location (input_location);
 
   /* Before the return label (if any), clobber the return

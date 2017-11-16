@@ -19,7 +19,7 @@ public:
 };
 }
 class B *b;
-main()
+int main()
 {
   int c;
   if (c)

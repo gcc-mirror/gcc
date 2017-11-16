@@ -231,11 +231,9 @@ rank (rtx_insn *insn1, rtx_insn *insn2)
   basic_block bb1 = BLOCK_FOR_INSN (insn1);
   basic_block bb2 = BLOCK_FOR_INSN (insn2);
 
-  if (bb1->count > bb2->count
-      || bb1->frequency > bb2->frequency)
+  if (bb1->count > bb2->count)
     return -1;
-  if (bb1->count < bb2->count
-      || bb1->frequency < bb2->frequency)
+  if (bb1->count < bb2->count)
     return 1;
   return 0;
 }

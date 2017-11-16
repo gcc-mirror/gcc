@@ -354,6 +354,7 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
       break;
 
     CASE_CFN_COPYSIGN:
+    CASE_CFN_COPYSIGN_FN:
       /* The sign of the first input is ignored.  */
       if (rhs != gimple_call_arg (call, 1))
 	info->flags.ignore_sign = true;
@@ -373,6 +374,7 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
       }
 
     CASE_CFN_FMA:
+    CASE_CFN_FMA_FN:
       /* In X * X + Y, where Y is distinct from X, the sign of X doesn't
 	 matter.  */
       if (gimple_call_arg (call, 0) == rhs
@@ -689,6 +691,7 @@ strip_sign_op_1 (tree rhs)
     switch (gimple_call_combined_fn (call))
       {
       CASE_CFN_COPYSIGN:
+      CASE_CFN_COPYSIGN_FN:
 	return gimple_call_arg (call, 0);
 
       default:

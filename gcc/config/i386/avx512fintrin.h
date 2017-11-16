@@ -14005,6 +14005,326 @@ _mm512_mask_cmp_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y, const int __P)
 
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpeq_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_EQ_OQ,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpeq_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_EQ_OQ,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmplt_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_LT_OS,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmplt_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_LT_OS,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmple_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_LE_OS,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmple_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_LE_OS,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpunord_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_UNORD_Q,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpunord_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_UNORD_Q,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpneq_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_NEQ_UQ,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpneq_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_NEQ_UQ,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpnlt_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_NLT_US,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpnlt_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_NLT_US,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpnle_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_NLE_US,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpnle_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_NLE_US,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpord_pd_mask (__m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_ORD_Q,
+						  (__mmask8) -1,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpord_pd_mask (__mmask8 __U, __m512d __X, __m512d __Y)
+{
+  return (__mmask8) __builtin_ia32_cmppd512_mask ((__v8df) __X,
+						  (__v8df) __Y, _CMP_ORD_Q,
+						  (__mmask8) __U,
+						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpeq_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_EQ_OQ,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpeq_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_EQ_OQ,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmplt_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_LT_OS,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmplt_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_LT_OS,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmple_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_LE_OS,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmple_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_LE_OS,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpunord_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_UNORD_Q,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpunord_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_UNORD_Q,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpneq_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_NEQ_UQ,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpneq_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_NEQ_UQ,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpnlt_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_NLT_US,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpnlt_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_NLT_US,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpnle_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_NLE_US,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpnle_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_NLE_US,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cmpord_ps_mask (__m512 __X, __m512 __Y)
+{
+  return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_ORD_Q,
+						   (__mmask16) -1,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cmpord_ps_mask (__mmask16 __U, __m512 __X, __m512 __Y)
+{
+   return (__mmask16) __builtin_ia32_cmpps512_mask ((__v16sf) __X,
+						   (__v16sf) __Y, _CMP_ORD_Q,
+						   (__mmask16) __U,
+						   _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmp_sd_mask (__m128d __X, __m128d __Y, const int __P)
 {
   return (__mmask8) __builtin_ia32_cmpsd_mask ((__v2df) __X,

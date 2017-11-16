@@ -402,10 +402,6 @@ extern enum reg_class microblaze_regno_to_class[];
 
 #define STACK_GROWS_DOWNWARD 1
 
-/* Changed the starting frame offset to including the new link stuff */
-#define STARTING_FRAME_OFFSET						\
-   (crtl->outgoing_args_size + FIRST_PARM_OFFSET(FNDECL))
-
 /* The return address for the current frame is in r31 if this is a leaf
    function.  Otherwise, it is on the stack.  It is at a variable offset
    from sp/fp/ap, so we define a fake hard register rap which is a

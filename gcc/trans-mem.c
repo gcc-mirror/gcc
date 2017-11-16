@@ -2932,7 +2932,6 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       edge ef = make_edge (test_bb, join_bb, EDGE_FALSE_VALUE);
       redirect_edge_pred (fallthru_edge, join_bb);
 
-      join_bb->frequency = test_bb->frequency = transaction_bb->frequency;
       join_bb->count = test_bb->count = transaction_bb->count;
 
       ei->probability = profile_probability::always ();
@@ -2940,7 +2939,6 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       ef->probability = profile_probability::unlikely ();
 
       code_bb->count = et->count ();
-      code_bb->frequency = EDGE_FREQUENCY (et);
 
       transaction_bb = join_bb;
     }
@@ -2964,7 +2962,6 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
       edge ei = make_edge (transaction_bb, test_bb, EDGE_FALLTHRU);
-      test_bb->frequency = transaction_bb->frequency;
       test_bb->count = transaction_bb->count;
       ei->probability = profile_probability::always ();
 
@@ -3006,7 +3003,6 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       edge e = make_edge (transaction_bb, test_bb, fallthru_edge->flags);
       e->probability = fallthru_edge->probability;
       test_bb->count = fallthru_edge->count ();
-      test_bb->frequency = EDGE_FREQUENCY (e);
 
       // Now update the edges to the inst/uninist implementations.
       // For now assume that the paths are equally likely.  When using HTM,
@@ -5069,9 +5065,7 @@ ipa_tm_insert_irr_call (struct cgraph_node *node, struct tm_region *region,
 
   node->create_edge (cgraph_node::get_create
 		       (builtin_decl_explicit (BUILT_IN_TM_IRREVOCABLE)),
-		     g, gimple_bb (g)->count,
-		     compute_call_stmt_bb_frequency (node->decl,
-						     gimple_bb (g)));
+		     g, gimple_bb (g)->count);
 }
 
 /* Construct a call to TM_GETTMCLONE and insert it before GSI.  */
@@ -5120,9 +5114,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
 
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
-  node->create_edge (cgraph_node::get_create (gettm_fn), g, gimple_bb (g)->count,
-		     compute_call_stmt_bb_frequency (node->decl,
-						     gimple_bb (g)));
+  node->create_edge (cgraph_node::get_create (gettm_fn), g, gimple_bb (g)->count);
 
   /* Cast return value from tm_gettmclone* into appropriate function
      pointer.  */

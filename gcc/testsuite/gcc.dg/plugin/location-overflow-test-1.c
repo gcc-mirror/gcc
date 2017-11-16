@@ -5,7 +5,7 @@
    numbers are available.  */
 
 /* Verify that we're in column-less mode.  */
-extern unknown_type test; /* { dg-error "0: unknown type name" } */
+extern unknown_type test; /* { dg-error "-:unknown type name" } */
 
 /* PR c++/68819: verify that -Wmisleading-indentation is suppressed.  */
 
@@ -13,7 +13,7 @@ int
 fn_1 (int flag)
 {
   int x = 4, y = 5;
-  if (flag) x = 3; y = 2; /* { dg-message "disabled from this point" } */
+  if (flag) x = 3; y = 2; /* { dg-message "-:disabled from this point" } */
   return x * y;
 }
 

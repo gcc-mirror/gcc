@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2016 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -627,10 +627,10 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
 
   ifeq ($(strip $(filter-out x86_64, $(target_cpu))),)
      X86CPU=x86_64
-     LIBGNAT_TARGET_PAIRS=s-atocou.adb<libgnat/s-atocou__builtin.adb
+     LIBGNAT_TARGET_PAIRS=$(X86_64_TARGET_PAIRS)
   else
      X86CPU=x86
-     LIBGNAT_TARGET_PAIRS=s-atocou.adb<libgnat/s-atocou__x86.adb
+     LIBGNAT_TARGET_PAIRS=$(X86_TARGET_PAIRS)
   endif
 
   LIBGNAT_TARGET_PAIRS+= \
@@ -653,10 +653,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
   g-socthi.ads<libgnat/g-socthi__vxworks.ads \
   g-socthi.adb<libgnat/g-socthi__vxworks.adb \
   g-stsifd.adb<libgnat/g-stsifd__sockets.adb \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(CERTMATH_TARGET_PAIRS) \
-  $(CERTMATH_TARGET_PAIRS_SQRT_FPU) \
-  $(CERTMATH_TARGET_PAIRS_X86TRA)
+  $(ATOMICS_TARGET_PAIRS)
 
   TOOLS_TARGET_PAIRS=indepsw.adb<indepsw-gnu.adb
 
@@ -745,8 +742,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
     endif
   endif
 
-  EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o \
-    $(CERTMATH_GNATRTL_OBJS) $(CERTMATH_GNATRTL_X86TRA_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o
   EXTRA_GNATRTL_TASKING_OBJS += i-vxinco.o s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -845,7 +841,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     endif
   endif
 
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o $(CERTMATH_GNATRTL_OBJS) \
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o \
     s-stchop.o
   EXTRA_GNATRTL_TASKING_OBJS=i-vxinco.o s-vxwork.o s-vxwext.o
 
@@ -886,6 +882,37 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   EXTRA_LIBGNAT_OBJS+=sigtramp-armdroid.o
   EXTRA_LIBGNAT_SRCS+=sigtramp.h
   EH_MECHANISM=-arm
+  THREADSLIB =
+  GNATLIB_SHARED = gnatlib-shared-dual
+  LIBRARY_VERSION := $(LIB_VERSION)
+endif
+
+# AARCH64 QNX
+ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<libgnarl/a-intnam__qnx.ads \
+  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
+  s-intman.adb<libgnarl/s-intman__qnx.adb \
+  s-osinte.adb<libgnarl/s-osinte__qnx.adb \
+  s-osinte.ads<libgnarl/s-osinte__qnx.ads \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-qnx.ads<libgnarl/s-qnx.ads \
+  s-taprop.adb<libgnarl/s-taprop__qnx.adb \
+  s-taspri.ads<libgnarl/s-taspri__posix.ads \
+  s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(ATOMICS_TARGET_PAIRS) \
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  system.ads<libgnat/system-qnx-aarch64.ads
+
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_TASKING_OBJS=s-qnx.o
+  EXTRA_LIBGNAT_OBJS+=sigtramp-qnx.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h
+  EH_MECHANISM=-gcc
+
+  SO_OPTS= -shared-libgcc -Wl,-soname,
+  MISCLIB= - lsocket
   THREADSLIB =
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -1633,7 +1660,7 @@ ifeq ($(strip $(filter-out m68k% linux%,$(target_cpu) $(target_os))),)
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
-  s-linux.ads<libgnat/s-linux.ads \
+  s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \

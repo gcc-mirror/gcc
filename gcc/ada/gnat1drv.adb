@@ -383,6 +383,15 @@ procedure Gnat1drv is
 
          Relaxed_RM_Semantics := True;
 
+         if not Generate_CodePeer_Messages then
+
+            --  Suppress compiler warnings by default when generating SCIL for
+            --  CodePeer, except when combined with -gnateC where we do want to
+            --  emit GNAT warnings.
+
+            Warning_Mode := Suppress;
+         end if;
+
          --  Disable all simple value propagation. This is an optimization
          --  which is valuable for code optimization, and also for generation
          --  of compiler warnings, but these are being turned off by default,
@@ -581,7 +590,7 @@ procedure Gnat1drv is
       --  problems with subtypes of type Ada.Tags.Dispatch_Table_Wrapper. ???
 
       if Debug_Flag_Dot_T then
-         Static_Dispatch_Tables := False;
+         Building_Static_Dispatch_Tables := False;
       end if;
 
       --  Flip endian mode if -gnatd8 set
@@ -1180,6 +1189,7 @@ begin
       if Compilation_Errors then
          Treepr.Tree_Dump;
          Post_Compilation_Validation_Checks;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Namet.Finalize;
 
@@ -1190,7 +1200,6 @@ begin
             Tree_Gen;
          end if;
 
-         Errout.Finalize (Last_Call => True);
          Exit_Program (E_Errors);
       end if;
 

@@ -111,7 +111,7 @@ using std::tgamma;
 using std::trunc;
 #endif // C++11 && _GLIBCXX_USE_C99_MATH_TR1
 
-#if __STDCPP_WANT_MATH_SPEC_FUNCS__ == 1
+#if _GLIBCXX_USE_STD_SPEC_FUNCS
 using std::assoc_laguerref;
 using std::assoc_laguerrel;
 using std::assoc_laguerre;
@@ -175,7 +175,7 @@ using std::sph_legendre;
 using std::sph_neumannf;
 using std::sph_neumannl;
 using std::sph_neumann;
-#endif // __STDCPP_WANT_MATH_SPEC_FUNCS__
+#endif // _GLIBCXX_USE_STD_SPEC_FUNCS
 
 #endif // _GLIBCXX_MATH_H
 #endif // __cplusplus

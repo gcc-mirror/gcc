@@ -114,8 +114,10 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libstdc__fs_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-dir.lo cow-ops.lo \
-@ENABLE_DUAL_ABI_TRUE@	cow-path.lo
-am__objects_2 = dir.lo ops.lo path.lo $(am__objects_1)
+@ENABLE_DUAL_ABI_TRUE@	cow-path.lo cow-std-dir.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-std-ops.lo cow-std-path.lo
+am__objects_2 = dir.lo ops.lo path.lo std-dir.lo std-ops.lo \
+	std-path.lo $(am__objects_1)
 am_libstdc__fs_la_OBJECTS = $(am__objects_2)
 libstdc__fs_la_OBJECTS = $(am_libstdc__fs_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -362,12 +364,18 @@ headers =
 @ENABLE_DUAL_ABI_TRUE@cxx11_abi_sources = \
 @ENABLE_DUAL_ABI_TRUE@	cow-dir.cc \
 @ENABLE_DUAL_ABI_TRUE@	cow-ops.cc \
-@ENABLE_DUAL_ABI_TRUE@	cow-path.cc
+@ENABLE_DUAL_ABI_TRUE@	cow-path.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-std-dir.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-std-ops.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-std-path.cc
 
 sources = \
 	dir.cc \
 	ops.cc \
 	path.cc \
+	std-dir.cc \
+	std-ops.cc \
+	std-path.cc \
 	${cxx11_abi_sources}
 
 
@@ -381,7 +389,7 @@ libstdc__fs_la_SOURCES = $(sources)
 # as the occasion call for it.
 AM_CXXFLAGS = \
 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
-	-std=gnu++14 \
+	-std=gnu++17 \
 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
 
 AM_MAKEFLAGS = \

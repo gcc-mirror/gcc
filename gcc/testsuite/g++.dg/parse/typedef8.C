@@ -5,7 +5,7 @@ typedef register int b; // { dg-error "conflicting" }
 typedef extern int c;   // { dg-error "conflicting" }
 static typedef int a;   // { dg-error "conflicting" }
 
-int foo()
+void foo()
 {
   typedef auto int bar; // { dg-error "conflicting|two or more data types" }
 }

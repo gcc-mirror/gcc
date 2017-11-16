@@ -1218,7 +1218,7 @@ extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
 @HAVE_STAT_TIMESPEC_FALSE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = 
 
-# Solaris 12 changed the type of fields in struct stat.
+# Solaris 11.4 changed the type of fields in struct stat.
 # Use a build tag, based on a configure check, to cope.
 @HAVE_STAT_TIMESPEC_TRUE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = --tag=solaristag
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
@@ -3446,7 +3446,7 @@ check-am:
 	@for f in $(TEST_PACKAGES); do \
 	   rm -f $$f-testsum $$f-testlog; \
 	 done
-	-@$(MAKE) -k $(TEST_PACKAGES)
+	-@$(MAKE) $(AM_MAKEFLAGS) -k $(TEST_PACKAGES)
 	@for f in $(TEST_PACKAGES); do \
 	  if test -f $$f-testsum; then \
 	    cat $$f-testsum >> libgo.sum; \
@@ -3460,7 +3460,7 @@ check-multi:
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=check-am multi-do # $(MAKE)
 
 bench:
-	-@$(MAKE) -k $(TEST_PACKAGES) GOBENCH=.
+	-@$(MAKE) $(AM_MAKEFLAGS) -k $(TEST_PACKAGES) GOBENCH=.
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f

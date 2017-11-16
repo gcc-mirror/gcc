@@ -496,8 +496,8 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       rich_location richloc (line_table, lhs_loc);
       richloc.add_fixit_insert_before (lhs_loc, "(");
       richloc.add_fixit_insert_after (lhs_loc, ")");
-      inform_at_rich_loc (&richloc, "add parentheses around left hand side "
-			  "expression to silence this warning");
+      inform (&richloc, "add parentheses around left hand side "
+	      "expression to silence this warning");
     }
 }
 
@@ -693,7 +693,8 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
       || vec_safe_length (params) <= 1)
     return;
 
-  switch (DECL_FUNCTION_CODE (callee))
+  enum built_in_function fncode = DECL_FUNCTION_CODE (callee);
+  switch (fncode)
     {
     case BUILT_IN_STRNCMP:
     case BUILT_IN_STRNCASECMP:
@@ -775,8 +776,27 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 
   type = TYPE_P (sizeof_arg[idx])
 	 ? sizeof_arg[idx] : TREE_TYPE (sizeof_arg[idx]);
+
   if (!POINTER_TYPE_P (type))
-    return;
+    {
+      /* The argument type may be an array.  Diagnose bounded string
+	 copy functions that specify the bound in terms of the source
+	 argument rather than the destination.  */
+      if (strop && !cmp && fncode != BUILT_IN_STRNDUP && src)
+	{
+	  tem = tree_strip_nop_conversions (src);
+	  if (TREE_CODE (tem) == ADDR_EXPR)
+	    tem = TREE_OPERAND (tem, 0);
+	  if (operand_equal_p (tem, sizeof_arg[idx], OEP_ADDRESS_OF))
+	    warning_at (sizeof_arg_loc[idx], OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the source; did you mean to use "
+			"the size of the destination?",
+			callee);
+	}
+
+      return;
+    }
 
   if (dest
       && (tem = tree_strip_nop_conversions (dest))
@@ -1215,12 +1235,12 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
       if (cst)
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
-		    "chages value from %qE to %qE",
+		    "changes value from %qE to %qE",
 		    exprtype, type, expr, result);
       else
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
-		    "chages the value of %qE",
+		    "changes the value of %qE",
 		    exprtype, type, expr);
     }
   else
@@ -2391,13 +2411,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 	richloc.add_range (EXPR_LOCATION (arg), false);
     }
 
-  warning_at_rich_loc_n (&richloc, OPT_Wrestrict, arg_positions.length (),
-			 "passing argument %i to restrict-qualified parameter"
-			 " aliases with argument %Z",
-			 "passing argument %i to restrict-qualified parameter"
-			 " aliases with arguments %Z",
-			 param_pos + 1, arg_positions.address (),
-			 arg_positions.length ());
+  warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
+	     "passing argument %i to restrict-qualified parameter"
+	     " aliases with argument %Z",
+	     "passing argument %i to restrict-qualified parameter"
+	     " aliases with arguments %Z",
+	     param_pos + 1, arg_positions.address (),
+	     arg_positions.length ());
 }
 
 /* Callback function to determine whether an expression TP or one of its

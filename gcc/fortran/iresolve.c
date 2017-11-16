@@ -1691,16 +1691,31 @@ gfc_resolve_max (gfc_expr *f, gfc_actual_arglist *args)
   gfc_resolve_minmax ("__max_%c%d", f, args);
 }
 
+/* The smallest kind for which a minloc and maxloc implementation exists.  */
+
+#define MINMAXLOC_MIN_KIND 4
 
 void
 gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-		    gfc_expr *mask)
+		    gfc_expr *mask, gfc_expr *kind)
 {
   const char *name;
   int i, j, idim;
+  int fkind;
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+
+  /* The library versions only exist for kinds 4, 8 and 16. For smaller kinds,
+     we do a type conversion further down.  */
+  if (kind)
+    fkind = mpz_get_si (kind->value.integer);
+  else
+    fkind = gfc_default_integer_kind;
+
+  if (fkind < MINMAXLOC_MIN_KIND)
+    f->ts.kind = MINMAXLOC_MIN_KIND;
+  else
+    f->ts.kind = fkind;
 
   if (dim == NULL)
     {
@@ -1740,6 +1755,21 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, dim != NULL, f->ts.kind,
 		      gfc_type_letter (array->ts.type), array->ts.kind);
+
+  if (kind)
+    fkind = mpz_get_si (kind->value.integer);
+  else
+    fkind = gfc_default_integer_kind;
+
+  if (fkind != f->ts.kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+
+      ts.type = BT_INTEGER;
+      ts.kind = fkind;
+      gfc_convert_type_warn (f, &ts, 2, 0);
+    }
 }
 
 
@@ -1861,13 +1891,25 @@ gfc_resolve_min (gfc_expr *f, gfc_actual_arglist *args)
 
 void
 gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-		    gfc_expr *mask)
+		    gfc_expr *mask, gfc_expr *kind)
 {
   const char *name;
   int i, j, idim;
+  int fkind;
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+
+  /* The library versions only exist for kinds 4, 8 and 16. For smaller kinds,
+     we do a type conversion further down.  */
+  if (kind)
+    fkind = mpz_get_si (kind->value.integer);
+  else
+    fkind = gfc_default_integer_kind;
+
+  if (fkind < MINMAXLOC_MIN_KIND)
+    f->ts.kind = MINMAXLOC_MIN_KIND;
+  else
+    f->ts.kind = fkind;
 
   if (dim == NULL)
     {
@@ -1907,6 +1949,16 @@ gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, dim != NULL, f->ts.kind,
 		      gfc_type_letter (array->ts.type), array->ts.kind);
+
+  if (fkind != f->ts.kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+
+      ts.type = BT_INTEGER;
+      ts.kind = fkind;
+      gfc_convert_type_warn (f, &ts, 2, 0);
+    }
 }
 
 

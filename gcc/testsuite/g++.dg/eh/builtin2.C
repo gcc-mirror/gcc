@@ -7,7 +7,7 @@ extern "C" int printf (const char *, ...) throw();
 
 extern void callme (void) throw();
 
-int
+void
 foo (int i)
 {
   try {
@@ -17,7 +17,7 @@ foo (int i)
   }
 }
 
-int
+void
 bar (int i)
 {
   try {

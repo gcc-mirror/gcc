@@ -158,8 +158,6 @@ extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
 extern int ix86_attr_length_address_default (rtx_insn *);
 extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
 
-extern machine_mode ix86_fp_compare_mode (enum rtx_code);
-
 extern rtx ix86_libcall_value (machine_mode);
 extern bool ix86_function_arg_regno_p (int);
 extern void ix86_asm_output_function_label (FILE *, const char *, tree);
@@ -277,8 +275,6 @@ extern bool i386_pe_type_dllexport_p (tree);
 
 extern int i386_pe_reloc_rw_mask (void);
 
-extern rtx maybe_get_pool_constant (rtx);
-
 extern char internal_label_prefix[16];
 extern int internal_label_prefix_len;
 
@@ -354,3 +350,4 @@ class rtl_opt_pass;
 
 extern rtl_opt_pass *make_pass_insert_vzeroupper (gcc::context *);
 extern rtl_opt_pass *make_pass_stv (gcc::context *);
+extern rtl_opt_pass *make_pass_insert_endbranch (gcc::context *);

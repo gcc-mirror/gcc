@@ -9,4 +9,4 @@ template <typename> struct C {
 };
 template <typename> struct D {};
 C<int> a;
-D<B<int>> fn1() { fn1, a; }
+D<B<int>> fn1() { fn1, a; return D<B<int>>(); }

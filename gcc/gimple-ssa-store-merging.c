@@ -19,7 +19,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* The purpose of this pass is to combine multiple memory stores of
-   constant values to consecutive memory locations into fewer wider stores.
+   constant values, values loaded from memory or bitwise operations
+   on those to consecutive memory locations into fewer wider stores.
    For example, if we have a sequence peforming four byte stores to
    consecutive memory locations:
    [p     ] := imm1;
@@ -29,21 +30,49 @@
    we can transform this into a single 4-byte store if the target supports it:
   [p] := imm1:imm2:imm3:imm4 //concatenated immediates according to endianness.
 
+   Or:
+   [p     ] := [q     ];
+   [p + 1B] := [q + 1B];
+   [p + 2B] := [q + 2B];
+   [p + 3B] := [q + 3B];
+   if there is no overlap can be transformed into a single 4-byte
+   load followed by single 4-byte store.
+
+   Or:
+   [p     ] := [q     ] ^ imm1;
+   [p + 1B] := [q + 1B] ^ imm2;
+   [p + 2B] := [q + 2B] ^ imm3;
+   [p + 3B] := [q + 3B] ^ imm4;
+   if there is no overlap can be transformed into a single 4-byte
+   load, xored with imm1:imm2:imm3:imm4 and stored using a single 4-byte store.
+
    The algorithm is applied to each basic block in three phases:
 
-   1) Scan through the basic block recording constant assignments to
+   1) Scan through the basic block recording assignments to
    destinations that can be expressed as a store to memory of a certain size
-   at a certain bit offset.  Record store chains to different bases in a
-   hash_map (m_stores) and make sure to terminate such chains when appropriate
-   (for example when when the stored values get used subsequently).
+   at a certain bit offset from expressions we can handle.  For bit-fields
+   we also note the surrounding bit region, bits that could be stored in
+   a read-modify-write operation when storing the bit-field.  Record store
+   chains to different bases in a hash_map (m_stores) and make sure to
+   terminate such chains when appropriate (for example when when the stored
+   values get used subsequently).
    These stores can be a result of structure element initializers, array stores
    etc.  A store_immediate_info object is recorded for every such store.
    Record as many such assignments to a single base as possible until a
    statement that interferes with the store sequence is encountered.
+   Each store has up to 2 operands, which can be an immediate constant
+   or a memory load, from which the value to be stored can be computed.
+   At most one of the operands can be a constant.  The operands are recorded
+   in store_operand_info struct.
 
    2) Analyze the chain of stores recorded in phase 1) (i.e. the vector of
    store_immediate_info objects) and coalesce contiguous stores into
-   merged_store_group objects.
+   merged_store_group objects.  For bit-fields stores, we don't need to
+   require the stores to be contiguous, just their surrounding bit regions
+   have to be contiguous.  If the expression being stored is different
+   between adjacent stores, such as one store storing a constant and
+   following storing a value loaded from memory, or if the loaded memory
+   objects are not adjacent, a new merged_store_group is created as well.
 
    For example, given the stores:
    [p     ] := 0;
@@ -126,13 +155,43 @@
 #include "tree-eh.h"
 #include "target.h"
 #include "gimplify-me.h"
+#include "rtl.h"
+#include "expr.h"	/* For get_bit_range.  */
 #include "selftest.h"
 
 /* The maximum size (in bits) of the stores this pass should generate.  */
 #define MAX_STORE_BITSIZE (BITS_PER_WORD)
 #define MAX_STORE_BYTES (MAX_STORE_BITSIZE / BITS_PER_UNIT)
 
+/* Limit to bound the number of aliasing checks for loads with the same
+   vuse as the corresponding store.  */
+#define MAX_STORE_ALIAS_CHECKS 64
+
 namespace {
+
+/* Struct recording one operand for the store, which is either a constant,
+   then VAL represents the constant and all the other fields are zero,
+   or a memory load, then VAL represents the reference, BASE_ADDR is non-NULL
+   and the other fields also reflect the memory load.  */
+
+struct store_operand_info
+{
+  tree val;
+  tree base_addr;
+  unsigned HOST_WIDE_INT bitsize;
+  unsigned HOST_WIDE_INT bitpos;
+  unsigned HOST_WIDE_INT bitregion_start;
+  unsigned HOST_WIDE_INT bitregion_end;
+  gimple *stmt;
+  bool bit_not_p;
+  store_operand_info ();
+};
+
+store_operand_info::store_operand_info ()
+  : val (NULL_TREE), base_addr (NULL_TREE), bitsize (0), bitpos (0),
+    bitregion_start (0), bitregion_end (0), stmt (NULL), bit_not_p (false)
+{
+}
 
 /* Struct recording the information about a single store of an immediate
    to memory.  These are created in the first phase and coalesced into
@@ -142,19 +201,52 @@ struct store_immediate_info
 {
   unsigned HOST_WIDE_INT bitsize;
   unsigned HOST_WIDE_INT bitpos;
+  unsigned HOST_WIDE_INT bitregion_start;
+  /* This is one past the last bit of the bit region.  */
+  unsigned HOST_WIDE_INT bitregion_end;
   gimple *stmt;
   unsigned int order;
+  /* INTEGER_CST for constant stores, MEM_REF for memory copy or
+     BIT_*_EXPR for logical bitwise operation.  */
+  enum tree_code rhs_code;
+  /* True if BIT_{AND,IOR,XOR}_EXPR result is inverted before storing.  */
+  bool bit_not_p;
+  /* True if ops have been swapped and thus ops[1] represents
+     rhs1 of BIT_{AND,IOR,XOR}_EXPR and ops[0] represents rhs2.  */
+  bool ops_swapped_p;
+  /* Operands.  For BIT_*_EXPR rhs_code both operands are used, otherwise
+     just the first one.  */
+  store_operand_info ops[2];
   store_immediate_info (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-			gimple *, unsigned int);
+			unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+			gimple *, unsigned int, enum tree_code, bool,
+			const store_operand_info &,
+			const store_operand_info &);
 };
 
 store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
 					    unsigned HOST_WIDE_INT bp,
+					    unsigned HOST_WIDE_INT brs,
+					    unsigned HOST_WIDE_INT bre,
 					    gimple *st,
-					    unsigned int ord)
-  : bitsize (bs), bitpos (bp), stmt (st), order (ord)
+					    unsigned int ord,
+					    enum tree_code rhscode,
+					    bool bitnotp,
+					    const store_operand_info &op0r,
+					    const store_operand_info &op1r)
+  : bitsize (bs), bitpos (bp), bitregion_start (brs), bitregion_end (bre),
+    stmt (st), order (ord), rhs_code (rhscode), bit_not_p (bitnotp),
+    ops_swapped_p (false)
+#if __cplusplus >= 201103L
+    , ops { op0r, op1r }
 {
 }
+#else
+{
+  ops[0] = op0r;
+  ops[1] = op1r;
+}
+#endif
 
 /* Struct representing a group of stores to contiguous memory locations.
    These are produced by the second phase (coalescing) and consumed in the
@@ -164,26 +256,34 @@ struct merged_store_group
 {
   unsigned HOST_WIDE_INT start;
   unsigned HOST_WIDE_INT width;
-  /* The size of the allocated memory for val.  */
+  unsigned HOST_WIDE_INT bitregion_start;
+  unsigned HOST_WIDE_INT bitregion_end;
+  /* The size of the allocated memory for val and mask.  */
   unsigned HOST_WIDE_INT buf_size;
+  unsigned HOST_WIDE_INT align_base;
+  unsigned HOST_WIDE_INT load_align_base[2];
 
   unsigned int align;
+  unsigned int load_align[2];
   unsigned int first_order;
   unsigned int last_order;
 
-  auto_vec<struct store_immediate_info *> stores;
+  auto_vec<store_immediate_info *> stores;
   /* We record the first and last original statements in the sequence because
      we'll need their vuse/vdef and replacement position.  It's easier to keep
      track of them separately as 'stores' is reordered by apply_stores.  */
   gimple *last_stmt;
   gimple *first_stmt;
   unsigned char *val;
+  unsigned char *mask;
 
   merged_store_group (store_immediate_info *);
   ~merged_store_group ();
   void merge_into (store_immediate_info *);
   void merge_overlapping (store_immediate_info *);
   bool apply_stores ();
+private:
+  void do_merge (store_immediate_info *);
 };
 
 /* Debug helper.  Dump LEN elements of byte array PTR to FD in hex.  */
@@ -287,8 +387,7 @@ clear_bit_region_be (unsigned char *ptr, unsigned int start,
 	   && len > BITS_PER_UNIT)
     {
       unsigned int nbytes = len / BITS_PER_UNIT;
-      for (unsigned int i = 0; i < nbytes; i++)
-	ptr[i] = 0U;
+      memset (ptr, 0, nbytes);
       if (len % BITS_PER_UNIT != 0)
 	clear_bit_region_be (ptr + nbytes, BITS_PER_UNIT - 1,
 			     len % BITS_PER_UNIT);
@@ -401,8 +500,11 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
     The awkwardness comes from the fact that bitpos is counted from the
     most significant bit of a byte.  */
 
+  /* We must be dealing with fixed-size data at this point, since the
+     total size is also fixed.  */
+  fixed_size_mode mode = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (expr)));
   /* Allocate an extra byte so that we have space to shift into.  */
-  unsigned int byte_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr))) + 1;
+  unsigned int byte_size = GET_MODE_SIZE (mode) + 1;
   unsigned char *tmpbuf = XALLOCAVEC (unsigned char, byte_size);
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
@@ -549,10 +651,30 @@ merged_store_group::merged_store_group (store_immediate_info *info)
 {
   start = info->bitpos;
   width = info->bitsize;
+  bitregion_start = info->bitregion_start;
+  bitregion_end = info->bitregion_end;
   /* VAL has memory allocated for it in apply_stores once the group
      width has been finalized.  */
   val = NULL;
-  align = get_object_alignment (gimple_assign_lhs (info->stmt));
+  mask = NULL;
+  unsigned HOST_WIDE_INT align_bitpos = 0;
+  get_object_alignment_1 (gimple_assign_lhs (info->stmt),
+			  &align, &align_bitpos);
+  align_base = start - align_bitpos;
+  for (int i = 0; i < 2; ++i)
+    {
+      store_operand_info &op = info->ops[i];
+      if (op.base_addr == NULL_TREE)
+	{
+	  load_align[i] = 0;
+	  load_align_base[i] = 0;
+	}
+      else
+	{
+	  get_object_alignment_1 (op.val, &load_align[i], &align_bitpos);
+	  load_align_base[i] = op.bitpos - align_bitpos;
+	}
+    }
   stores.create (1);
   stores.safe_push (info);
   last_stmt = info->stmt;
@@ -568,6 +690,51 @@ merged_store_group::~merged_store_group ()
     XDELETEVEC (val);
 }
 
+/* Helper method for merge_into and merge_overlapping to do
+   the common part.  */
+void
+merged_store_group::do_merge (store_immediate_info *info)
+{
+  bitregion_start = MIN (bitregion_start, info->bitregion_start);
+  bitregion_end = MAX (bitregion_end, info->bitregion_end);
+
+  unsigned int this_align;
+  unsigned HOST_WIDE_INT align_bitpos = 0;
+  get_object_alignment_1 (gimple_assign_lhs (info->stmt),
+			  &this_align, &align_bitpos);
+  if (this_align > align)
+    {
+      align = this_align;
+      align_base = info->bitpos - align_bitpos;
+    }
+  for (int i = 0; i < 2; ++i)
+    {
+      store_operand_info &op = info->ops[i];
+      if (!op.base_addr)
+	continue;
+
+      get_object_alignment_1 (op.val, &this_align, &align_bitpos);
+      if (this_align > load_align[i])
+	{
+	  load_align[i] = this_align;
+	  load_align_base[i] = op.bitpos - align_bitpos;
+	}
+    }
+
+  gimple *stmt = info->stmt;
+  stores.safe_push (info);
+  if (info->order > last_order)
+    {
+      last_order = info->order;
+      last_stmt = stmt;
+    }
+  else if (info->order < first_order)
+    {
+      first_order = info->order;
+      first_stmt = stmt;
+    }
+}
+
 /* Merge a store recorded by INFO into this merged store.
    The store is not overlapping with the existing recorded
    stores.  */
@@ -577,21 +744,11 @@ merged_store_group::merge_into (store_immediate_info *info)
 {
   unsigned HOST_WIDE_INT wid = info->bitsize;
   /* Make sure we're inserting in the position we think we're inserting.  */
-  gcc_assert (info->bitpos == start + width);
+  gcc_assert (info->bitpos >= start + width
+	      && info->bitregion_start <= bitregion_end);
 
   width += wid;
-  gimple *stmt = info->stmt;
-  stores.safe_push (info);
-  if (info->order > last_order)
-    {
-      last_order = info->order;
-      last_stmt = stmt;
-    }
-  else if (info->order < first_order)
-    {
-      first_order = info->order;
-      first_stmt = stmt;
-    }
+  do_merge (info);
 }
 
 /* Merge a store described by INFO into this merged store.
@@ -601,23 +758,11 @@ merged_store_group::merge_into (store_immediate_info *info)
 void
 merged_store_group::merge_overlapping (store_immediate_info *info)
 {
-  gimple *stmt = info->stmt;
-  stores.safe_push (info);
-
   /* If the store extends the size of the group, extend the width.  */
-  if ((info->bitpos + info->bitsize) > (start + width))
+  if (info->bitpos + info->bitsize > start + width)
     width += info->bitpos + info->bitsize - (start + width);
 
-  if (info->order > last_order)
-    {
-      last_order = info->order;
-      last_stmt = stmt;
-    }
-  else if (info->order < first_order)
-    {
-      first_order = info->order;
-      first_stmt = stmt;
-    }
+  do_merge (info);
 }
 
 /* Go through all the recorded stores in this group in program order and
@@ -627,37 +772,43 @@ merged_store_group::merge_overlapping (store_immediate_info *info)
 bool
 merged_store_group::apply_stores ()
 {
-  /* The total width of the stores must add up to a whole number of bytes
-     and start at a byte boundary.  We don't support emitting bitfield
-     references for now.  Also, make sure we have more than one store
-     in the group, otherwise we cannot merge anything.  */
-  if (width % BITS_PER_UNIT != 0
-      || start % BITS_PER_UNIT != 0
+  /* Make sure we have more than one store in the group, otherwise we cannot
+     merge anything.  */
+  if (bitregion_start % BITS_PER_UNIT != 0
+      || bitregion_end % BITS_PER_UNIT != 0
       || stores.length () == 1)
     return false;
 
   stores.qsort (sort_by_order);
-  struct store_immediate_info *info;
+  store_immediate_info *info;
   unsigned int i;
   /* Create a buffer of a size that is 2 times the number of bytes we're
      storing.  That way native_encode_expr can write power-of-2-sized
      chunks without overrunning.  */
-  buf_size = 2 * (ROUND_UP (width, BITS_PER_UNIT) / BITS_PER_UNIT);
-  val = XCNEWVEC (unsigned char, buf_size);
+  buf_size = 2 * ((bitregion_end - bitregion_start) / BITS_PER_UNIT);
+  val = XNEWVEC (unsigned char, 2 * buf_size);
+  mask = val + buf_size;
+  memset (val, 0, buf_size);
+  memset (mask, ~0U, buf_size);
 
   FOR_EACH_VEC_ELT (stores, i, info)
     {
-      unsigned int pos_in_buffer = info->bitpos - start;
-      bool ret = encode_tree_to_bitpos (gimple_assign_rhs1 (info->stmt),
-					val, info->bitsize,
-					pos_in_buffer, buf_size);
-      if (dump_file && (dump_flags & TDF_DETAILS))
+      unsigned int pos_in_buffer = info->bitpos - bitregion_start;
+      tree cst = NULL_TREE;
+      if (info->ops[0].val && info->ops[0].base_addr == NULL_TREE)
+	cst = info->ops[0].val;
+      else if (info->ops[1].val && info->ops[1].base_addr == NULL_TREE)
+	cst = info->ops[1].val;
+      bool ret = true;
+      if (cst)
+	ret = encode_tree_to_bitpos (cst, val, info->bitsize,
+				     pos_in_buffer, buf_size);
+      if (cst && dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  if (ret)
 	    {
 	      fprintf (dump_file, "After writing ");
-	      print_generic_expr (dump_file,
-				  gimple_assign_rhs1 (info->stmt), 0);
+	      print_generic_expr (dump_file, cst, 0);
 	      fprintf (dump_file, " of size " HOST_WIDE_INT_PRINT_DEC
 			" at position %d the merged region contains:\n",
 			info->bitsize, pos_in_buffer);
@@ -668,6 +819,13 @@ merged_store_group::apply_stores ()
         }
       if (!ret)
 	return false;
+      unsigned char *m = mask + (pos_in_buffer / BITS_PER_UNIT);
+      if (BYTES_BIG_ENDIAN)
+	clear_bit_region_be (m, (BITS_PER_UNIT - 1
+				 - (pos_in_buffer % BITS_PER_UNIT)),
+			     info->bitsize);
+      else
+	clear_bit_region (m, pos_in_buffer % BITS_PER_UNIT, info->bitsize);
     }
   return true;
 }
@@ -682,7 +840,7 @@ struct imm_store_chain_info
      See pass_store_merging::m_stores_head for more rationale.  */
   imm_store_chain_info *next, **pnxp;
   tree base_addr;
-  auto_vec<struct store_immediate_info *> m_store_info;
+  auto_vec<store_immediate_info *> m_store_info;
   auto_vec<merged_store_group *> m_merged_store_groups;
 
   imm_store_chain_info (imm_store_chain_info *&inspt, tree b_a)
@@ -730,11 +888,16 @@ public:
   {
   }
 
-  /* Pass not supported for PDP-endianness.  */
+  /* Pass not supported for PDP-endianness, nor for insane hosts
+     or target character sizes where native_{encode,interpret}_expr
+     doesn't work properly.  */
   virtual bool
   gate (function *)
   {
-    return flag_store_merging && (WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN);
+    return flag_store_merging
+	   && WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN
+	   && CHAR_BIT == 8
+	   && BITS_PER_UNIT == 8;
   }
 
   virtual unsigned int execute (function *);
@@ -753,9 +916,9 @@ private:
      decisions when going out of SSA).  */
   imm_store_chain_info *m_stores_head;
 
+  void process_store (gimple *);
   bool terminate_and_process_all_chains ();
-  bool terminate_all_aliasing_chains (imm_store_chain_info **,
-				      bool, gimple *);
+  bool terminate_all_aliasing_chains (imm_store_chain_info **, gimple *);
   bool terminate_and_release_chain (imm_store_chain_info *);
 }; // class pass_store_merging
 
@@ -774,18 +937,13 @@ pass_store_merging::terminate_and_process_all_chains ()
   return ret;
 }
 
-/* Terminate all chains that are affected by the assignment to DEST, appearing
-   in statement STMT and ultimately points to the object BASE.  Return true if
-   at least one aliasing chain was terminated.  BASE and DEST are allowed to
-   be NULL_TREE.  In that case the aliasing checks are performed on the whole
-   statement rather than a particular operand in it.  VAR_OFFSET_P signifies
-   whether STMT represents a store to BASE offset by a variable amount.
-   If that is the case we have to terminate any chain anchored at BASE.  */
+/* Terminate all chains that are affected by the statement STMT.
+   CHAIN_INFO is the chain we should ignore from the checks if
+   non-NULL.  */
 
 bool
 pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 						     **chain_info,
-						   bool var_offset_p,
 						   gimple *stmt)
 {
   bool ret = false;
@@ -794,67 +952,34 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
   if (!gimple_vuse (stmt))
     return false;
 
-  /* Check if the assignment destination (BASE) is part of a store chain.
-     This is to catch non-constant stores to destinations that may be part
-     of a chain.  */
-  if (chain_info)
-    {
-      /* We have a chain at BASE and we're writing to [BASE + <variable>].
-	 This can interfere with any of the stores so terminate
-	 the chain.  */
-      if (var_offset_p)
-	{
-	  terminate_and_release_chain (*chain_info);
-	  ret = true;
-	}
-      /* Otherwise go through every store in the chain to see if it
-	 aliases with any of them.  */
-      else
-	{
-	  struct store_immediate_info *info;
-	  unsigned int i;
-	  FOR_EACH_VEC_ELT ((*chain_info)->m_store_info, i, info)
-	    {
-	      if (ref_maybe_used_by_stmt_p (stmt,
-					    gimple_assign_lhs (info->stmt))
-		  || stmt_may_clobber_ref_p (stmt,
-					     gimple_assign_lhs (info->stmt)))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file,
-			       "stmt causes chain termination:\n");
-		      print_gimple_stmt (dump_file, stmt, 0);
-		    }
-		  terminate_and_release_chain (*chain_info);
-		  ret = true;
-		  break;
-		}
-	    }
-	}
-    }
-
-  /* Check for aliasing with all other store chains.  */
+  tree store_lhs = gimple_store_p (stmt) ? gimple_get_lhs (stmt) : NULL_TREE;
   for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
     {
       next = cur->next;
 
       /* We already checked all the stores in chain_info and terminated the
 	 chain if necessary.  Skip it here.  */
-      if (chain_info && (*chain_info) == cur)
+      if (chain_info && *chain_info == cur)
 	continue;
 
-      /* We can't use the base object here as that does not reliably exist.
-	 Build a ao_ref from the base object address (if we know the
-	 minimum and maximum offset and the maximum size we could improve
-	 things here).  */
-      ao_ref chain_ref;
-      ao_ref_init_from_ptr_and_size (&chain_ref, cur->base_addr, NULL_TREE);
-      if (ref_maybe_used_by_stmt_p (stmt, &chain_ref)
-	  || stmt_may_clobber_ref_p_1 (stmt, &chain_ref))
+      store_immediate_info *info;
+      unsigned int i;
+      FOR_EACH_VEC_ELT (cur->m_store_info, i, info)
 	{
-	  terminate_and_release_chain (cur);
-	  ret = true;
+	  tree lhs = gimple_assign_lhs (info->stmt);
+	  if (ref_maybe_used_by_stmt_p (stmt, lhs)
+	      || stmt_may_clobber_ref_p (stmt, lhs)
+	      || (store_lhs && refs_output_dependent_p (store_lhs, lhs)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "stmt causes chain termination:\n");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		}
+	      terminate_and_release_chain (cur);
+	      ret = true;
+	      break;
+	    }
 	}
     }
 
@@ -872,6 +997,125 @@ pass_store_merging::terminate_and_release_chain (imm_store_chain_info *chain_inf
   m_stores.remove (chain_info->base_addr);
   delete chain_info;
   return ret;
+}
+
+/* Return true if stmts in between FIRST (inclusive) and LAST (exclusive)
+   may clobber REF.  FIRST and LAST must be in the same basic block and
+   have non-NULL vdef.  */
+
+bool
+stmts_may_clobber_ref_p (gimple *first, gimple *last, tree ref)
+{
+  ao_ref r;
+  ao_ref_init (&r, ref);
+  unsigned int count = 0;
+  tree vop = gimple_vdef (last);
+  gimple *stmt;
+
+  gcc_checking_assert (gimple_bb (first) == gimple_bb (last));
+  do
+    {
+      stmt = SSA_NAME_DEF_STMT (vop);
+      if (stmt_may_clobber_ref_p_1 (stmt, &r))
+	return true;
+      /* Avoid quadratic compile time by bounding the number of checks
+	 we perform.  */
+      if (++count > MAX_STORE_ALIAS_CHECKS)
+	return true;
+      vop = gimple_vuse (stmt);
+    }
+  while (stmt != first);
+  return false;
+}
+
+/* Return true if INFO->ops[IDX] is mergeable with the
+   corresponding loads already in MERGED_STORE group.
+   BASE_ADDR is the base address of the whole store group.  */
+
+bool
+compatible_load_p (merged_store_group *merged_store,
+		   store_immediate_info *info,
+		   tree base_addr, int idx)
+{
+  store_immediate_info *infof = merged_store->stores[0];
+  if (!info->ops[idx].base_addr
+      || (info->ops[idx].bitpos - infof->ops[idx].bitpos
+	  != info->bitpos - infof->bitpos)
+      || !operand_equal_p (info->ops[idx].base_addr,
+			   infof->ops[idx].base_addr, 0))
+    return false;
+
+  store_immediate_info *infol = merged_store->stores.last ();
+  tree load_vuse = gimple_vuse (info->ops[idx].stmt);
+  /* In this case all vuses should be the same, e.g.
+     _1 = s.a; _2 = s.b; _3 = _1 | 1; t.a = _3; _4 = _2 | 2; t.b = _4;
+     or
+     _1 = s.a; _2 = s.b; t.a = _1; t.b = _2;
+     and we can emit the coalesced load next to any of those loads.  */
+  if (gimple_vuse (infof->ops[idx].stmt) == load_vuse
+      && gimple_vuse (infol->ops[idx].stmt) == load_vuse)
+    return true;
+
+  /* Otherwise, at least for now require that the load has the same
+     vuse as the store.  See following examples.  */
+  if (gimple_vuse (info->stmt) != load_vuse)
+    return false;
+
+  if (gimple_vuse (infof->stmt) != gimple_vuse (infof->ops[idx].stmt)
+      || (infof != infol
+	  && gimple_vuse (infol->stmt) != gimple_vuse (infol->ops[idx].stmt)))
+    return false;
+
+  /* If the load is from the same location as the store, already
+     the construction of the immediate chain info guarantees no intervening
+     stores, so no further checks are needed.  Example:
+     _1 = s.a; _2 = _1 & -7; s.a = _2; _3 = s.b; _4 = _3 & -7; s.b = _4;  */
+  if (info->ops[idx].bitpos == info->bitpos
+      && operand_equal_p (info->ops[idx].base_addr, base_addr, 0))
+    return true;
+
+  /* Otherwise, we need to punt if any of the loads can be clobbered by any
+     of the stores in the group, or any other stores in between those.
+     Previous calls to compatible_load_p ensured that for all the
+     merged_store->stores IDX loads, no stmts starting with
+     merged_store->first_stmt and ending right before merged_store->last_stmt
+     clobbers those loads.  */
+  gimple *first = merged_store->first_stmt;
+  gimple *last = merged_store->last_stmt;
+  unsigned int i;
+  store_immediate_info *infoc;
+  /* The stores are sorted by increasing store bitpos, so if info->stmt store
+     comes before the so far first load, we'll be changing
+     merged_store->first_stmt.  In that case we need to give up if
+     any of the earlier processed loads clobber with the stmts in the new
+     range.  */
+  if (info->order < merged_store->first_order)
+    {
+      FOR_EACH_VEC_ELT (merged_store->stores, i, infoc)
+	if (stmts_may_clobber_ref_p (info->stmt, first, infoc->ops[idx].val))
+	  return false;
+      first = info->stmt;
+    }
+  /* Similarly, we could change merged_store->last_stmt, so ensure
+     in that case no stmts in the new range clobber any of the earlier
+     processed loads.  */
+  else if (info->order > merged_store->last_order)
+    {
+      FOR_EACH_VEC_ELT (merged_store->stores, i, infoc)
+	if (stmts_may_clobber_ref_p (last, info->stmt, infoc->ops[idx].val))
+	  return false;
+      last = info->stmt;
+    }
+  /* And finally, we'd be adding a new load to the set, ensure it isn't
+     clobbered in the new range.  */
+  if (stmts_may_clobber_ref_p (first, last, info->ops[idx].val))
+    return false;
+
+  /* Otherwise, we are looking for:
+     _1 = s.a; _2 = _1 ^ 15; t.a = _2; _3 = s.b; _4 = _3 ^ 15; t.b = _4;
+     or
+     _1 = s.a; t.a = _1; _2 = s.b; t.b = _2;  */
+  return true;
 }
 
 /* Go through the candidate stores recorded in m_store_info and merge them
@@ -921,38 +1165,68 @@ imm_store_chain_info::coalesce_immediate_stores ()
       if (IN_RANGE (start, merged_store->start,
 		    merged_store->start + merged_store->width - 1))
 	{
-	  merged_store->merge_overlapping (info);
-	  continue;
+	  /* Only allow overlapping stores of constants.  */
+	  if (info->rhs_code == INTEGER_CST
+	      && merged_store->stores[0]->rhs_code == INTEGER_CST)
+	    {
+	      merged_store->merge_overlapping (info);
+	      continue;
+	    }
+	}
+      /* |---store 1---||---store 2---|
+	 This store is consecutive to the previous one.
+	 Merge it into the current store group.  There can be gaps in between
+	 the stores, but there can't be gaps in between bitregions.  */
+      else if (info->bitregion_start <= merged_store->bitregion_end
+	       && info->rhs_code == merged_store->stores[0]->rhs_code)
+	{
+	  store_immediate_info *infof = merged_store->stores[0];
+
+	  /* All the rhs_code ops that take 2 operands are commutative,
+	     swap the operands if it could make the operands compatible.  */
+	  if (infof->ops[0].base_addr
+	      && infof->ops[1].base_addr
+	      && info->ops[0].base_addr
+	      && info->ops[1].base_addr
+	      && (info->ops[1].bitpos - infof->ops[0].bitpos
+		  == info->bitpos - infof->bitpos)
+	      && operand_equal_p (info->ops[1].base_addr,
+				  infof->ops[0].base_addr, 0))
+	    {
+	      std::swap (info->ops[0], info->ops[1]);
+	      info->ops_swapped_p = true;
+	    }
+	  if ((infof->ops[0].base_addr
+	       ? compatible_load_p (merged_store, info, base_addr, 0)
+	       : !info->ops[0].base_addr)
+	      && (infof->ops[1].base_addr
+		  ? compatible_load_p (merged_store, info, base_addr, 1)
+		  : !info->ops[1].base_addr))
+	    {
+	      merged_store->merge_into (info);
+	      continue;
+	    }
 	}
 
       /* |---store 1---| <gap> |---store 2---|.
-	 Gap between stores.  Start a new group.  */
-      if (start != merged_store->start + merged_store->width)
-	{
-	  /* Try to apply all the stores recorded for the group to determine
-	     the bitpattern they write and discard it if that fails.
-	     This will also reject single-store groups.  */
-	  if (!merged_store->apply_stores ())
-	    delete merged_store;
-	  else
-	    m_merged_store_groups.safe_push (merged_store);
+	 Gap between stores or the rhs not compatible.  Start a new group.  */
 
-	  merged_store = new merged_store_group (info);
+      /* Try to apply all the stores recorded for the group to determine
+	 the bitpattern they write and discard it if that fails.
+	 This will also reject single-store groups.  */
+      if (!merged_store->apply_stores ())
+	delete merged_store;
+      else
+	m_merged_store_groups.safe_push (merged_store);
 
-	  continue;
-	}
-
-      /* |---store 1---||---store 2---|
-	 This store is consecutive to the previous one.
-	 Merge it into the current store group.  */
-       merged_store->merge_into (info);
+      merged_store = new merged_store_group (info);
     }
 
-    /* Record or discard the last store group.  */
-    if (!merged_store->apply_stores ())
-      delete merged_store;
-    else
-      m_merged_store_groups.safe_push (merged_store);
+  /* Record or discard the last store group.  */
+  if (!merged_store->apply_stores ())
+    delete merged_store;
+  else
+    m_merged_store_groups.safe_push (merged_store);
 
   gcc_assert (m_merged_store_groups.length () <= m_store_info.length ());
   bool success
@@ -961,41 +1235,63 @@ imm_store_chain_info::coalesce_immediate_stores ()
 
   if (success && dump_file)
     fprintf (dump_file, "Coalescing successful!\n"
-			 "Merged into %u stores\n",
-		m_merged_store_groups.length ());
+			"Merged into %u stores\n",
+	     m_merged_store_groups.length ());
 
   return success;
 }
 
-/* Return the type to use for the merged stores described by STMTS.
-   This is needed to get the alias sets right.  */
+/* Return the type to use for the merged stores or loads described by STMTS.
+   This is needed to get the alias sets right.  If IS_LOAD, look for rhs,
+   otherwise lhs.  Additionally set *CLIQUEP and *BASEP to MR_DEPENDENCE_*
+   of the MEM_REFs if any.  */
 
 static tree
-get_alias_type_for_stmts (auto_vec<gimple *> &stmts)
+get_alias_type_for_stmts (vec<gimple *> &stmts, bool is_load,
+			  unsigned short *cliquep, unsigned short *basep)
 {
   gimple *stmt;
   unsigned int i;
-  tree lhs = gimple_assign_lhs (stmts[0]);
-  tree type = reference_alias_ptr_type (lhs);
+  tree type = NULL_TREE;
+  tree ret = NULL_TREE;
+  *cliquep = 0;
+  *basep = 0;
 
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
-      if (i == 0)
-	continue;
+      tree ref = is_load ? gimple_assign_rhs1 (stmt)
+			 : gimple_assign_lhs (stmt);
+      tree type1 = reference_alias_ptr_type (ref);
+      tree base = get_base_address (ref);
 
-      lhs = gimple_assign_lhs (stmt);
-      tree type1 = reference_alias_ptr_type (lhs);
+      if (i == 0)
+	{
+	  if (TREE_CODE (base) == MEM_REF)
+	    {
+	      *cliquep = MR_DEPENDENCE_CLIQUE (base);
+	      *basep = MR_DEPENDENCE_BASE (base);
+	    }
+	  ret = type = type1;
+	  continue;
+	}
       if (!alias_ptr_types_compatible_p (type, type1))
-	return ptr_type_node;
+	ret = ptr_type_node;
+      if (TREE_CODE (base) != MEM_REF
+	  || *cliquep != MR_DEPENDENCE_CLIQUE (base)
+	  || *basep != MR_DEPENDENCE_BASE (base))
+	{
+	  *cliquep = 0;
+	  *basep = 0;
+	}
     }
-  return type;
+  return ret;
 }
 
 /* Return the location_t information we can find among the statements
    in STMTS.  */
 
 static location_t
-get_location_for_stmts (auto_vec<gimple *> &stmts)
+get_location_for_stmts (vec<gimple *> &stmts)
 {
   gimple *stmt;
   unsigned int i;
@@ -1015,7 +1311,9 @@ struct split_store
   unsigned HOST_WIDE_INT bytepos;
   unsigned HOST_WIDE_INT size;
   unsigned HOST_WIDE_INT align;
-  auto_vec<gimple *> orig_stmts;
+  auto_vec<store_immediate_info *> orig_stores;
+  /* True if there is a single orig stmt covering the whole split store.  */
+  bool orig;
   split_store (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 	       unsigned HOST_WIDE_INT);
 };
@@ -1025,100 +1323,454 @@ struct split_store
 split_store::split_store (unsigned HOST_WIDE_INT bp,
 			  unsigned HOST_WIDE_INT sz,
 			  unsigned HOST_WIDE_INT al)
-			  : bytepos (bp), size (sz), align (al)
+			  : bytepos (bp), size (sz), align (al), orig (false)
 {
-  orig_stmts.create (0);
+  orig_stores.create (0);
 }
 
-/* Record all statements corresponding to stores in GROUP that write to
-   the region starting at BITPOS and is of size BITSIZE.  Record such
-   statements in STMTS.  The stores in GROUP must be sorted by
-   bitposition.  */
+/* Record all stores in GROUP that write to the region starting at BITPOS and
+   is of size BITSIZE.  Record infos for such statements in STORES if
+   non-NULL.  The stores in GROUP must be sorted by bitposition.  Return INFO
+   if there is exactly one original store in the range.  */
 
-static void
-find_constituent_stmts (struct merged_store_group *group,
-			 auto_vec<gimple *> &stmts,
+static store_immediate_info *
+find_constituent_stores (struct merged_store_group *group,
+			 vec<store_immediate_info *> *stores,
+			 unsigned int *first,
 			 unsigned HOST_WIDE_INT bitpos,
 			 unsigned HOST_WIDE_INT bitsize)
 {
-  struct store_immediate_info *info;
+  store_immediate_info *info, *ret = NULL;
   unsigned int i;
+  bool second = false;
+  bool update_first = true;
   unsigned HOST_WIDE_INT end = bitpos + bitsize;
-  FOR_EACH_VEC_ELT (group->stores, i, info)
+  for (i = *first; group->stores.iterate (i, &info); ++i)
     {
       unsigned HOST_WIDE_INT stmt_start = info->bitpos;
       unsigned HOST_WIDE_INT stmt_end = stmt_start + info->bitsize;
-      if (stmt_end < bitpos)
-	continue;
-      /* The stores in GROUP are ordered by bitposition so if we're past
-	  the region for this group return early.  */
-      if (stmt_start > end)
-	return;
+      if (stmt_end <= bitpos)
+	{
+	  /* BITPOS passed to this function never decreases from within the
+	     same split_group call, so optimize and don't scan info records
+	     which are known to end before or at BITPOS next time.
+	     Only do it if all stores before this one also pass this.  */
+	  if (update_first)
+	    *first = i + 1;
+	  continue;
+	}
+      else
+	update_first = false;
 
-      if (IN_RANGE (stmt_start, bitpos, bitpos + bitsize)
-	  || IN_RANGE (stmt_end, bitpos, end)
-	  /* The statement writes a region that completely encloses the region
-	     that this group writes.  Unlikely to occur but let's
-	     handle it.  */
-	  || IN_RANGE (bitpos, stmt_start, stmt_end))
-	stmts.safe_push (info->stmt);
+      /* The stores in GROUP are ordered by bitposition so if we're past
+	 the region for this group return early.  */
+      if (stmt_start >= end)
+	return ret;
+
+      if (stores)
+	{
+	  stores->safe_push (info);
+	  if (ret)
+	    {
+	      ret = NULL;
+	      second = true;
+	    }
+	}
+      else if (ret)
+	return NULL;
+      if (!second)
+	ret = info;
+    }
+  return ret;
+}
+
+/* Return how many SSA_NAMEs used to compute value to store in the INFO
+   store have multiple uses.  If any SSA_NAME has multiple uses, also
+   count statements needed to compute it.  */
+
+static unsigned
+count_multiple_uses (store_immediate_info *info)
+{
+  gimple *stmt = info->stmt;
+  unsigned ret = 0;
+  switch (info->rhs_code)
+    {
+    case INTEGER_CST:
+      return 0;
+    case BIT_AND_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      if (info->bit_not_p)
+	{
+	  if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	    ret = 1; /* Fall through below to return
+			the BIT_NOT_EXPR stmt and then
+			BIT_{AND,IOR,XOR}_EXPR and anything it
+			uses.  */
+	  else
+	    /* stmt is after this the BIT_NOT_EXPR.  */
+	    stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	}
+      if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	{
+	  ret += 1 + info->ops[0].bit_not_p;
+	  if (info->ops[1].base_addr)
+	    ret += 1 + info->ops[1].bit_not_p;
+	  return ret + 1;
+	}
+      stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+      /* stmt is now the BIT_*_EXPR.  */
+      if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	ret += 1 + info->ops[info->ops_swapped_p].bit_not_p;
+      else if (info->ops[info->ops_swapped_p].bit_not_p)
+	{
+	  gimple *stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	  if (!has_single_use (gimple_assign_rhs1 (stmt2)))
+	    ++ret;
+	}
+      if (info->ops[1].base_addr == NULL_TREE)
+	{
+	  gcc_checking_assert (!info->ops_swapped_p);
+	  return ret;
+	}
+      if (!has_single_use (gimple_assign_rhs2 (stmt)))
+	ret += 1 + info->ops[1 - info->ops_swapped_p].bit_not_p;
+      else if (info->ops[1 - info->ops_swapped_p].bit_not_p)
+	{
+	  gimple *stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
+	  if (!has_single_use (gimple_assign_rhs1 (stmt2)))
+	    ++ret;
+	}
+      return ret;
+    case MEM_REF:
+      if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	return 1 + info->ops[0].bit_not_p;
+      else if (info->ops[0].bit_not_p)
+	{
+	  stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	  if (!has_single_use (gimple_assign_rhs1 (stmt)))
+	    return 1;
+	}
+      return 0;
+    default:
+      gcc_unreachable ();
     }
 }
 
 /* Split a merged store described by GROUP by populating the SPLIT_STORES
-   vector with split_store structs describing the byte offset (from the base),
-   the bit size and alignment of each store as well as the original statements
-   involved in each such split group.
+   vector (if non-NULL) with split_store structs describing the byte offset
+   (from the base), the bit size and alignment of each store as well as the
+   original statements involved in each such split group.
    This is to separate the splitting strategy from the statement
    building/emission/linking done in output_merged_store.
-   At the moment just start with the widest possible size and keep emitting
-   the widest we can until we have emitted all the bytes, halving the size
-   when appropriate.  */
+   Return number of new stores.
+   If ALLOW_UNALIGNED_STORE is false, then all stores must be aligned.
+   If ALLOW_UNALIGNED_LOAD is false, then all loads must be aligned.
+   If SPLIT_STORES is NULL, it is just a dry run to count number of
+   new stores.  */
 
-static bool
-split_group (merged_store_group *group,
-	     auto_vec<struct split_store *> &split_stores)
+static unsigned int
+split_group (merged_store_group *group, bool allow_unaligned_store,
+	     bool allow_unaligned_load,
+	     vec<struct split_store *> *split_stores,
+	     unsigned *total_orig,
+	     unsigned *total_new)
 {
-  unsigned HOST_WIDE_INT pos = group->start;
-  unsigned HOST_WIDE_INT size = group->width;
+  unsigned HOST_WIDE_INT pos = group->bitregion_start;
+  unsigned HOST_WIDE_INT size = group->bitregion_end - pos;
   unsigned HOST_WIDE_INT bytepos = pos / BITS_PER_UNIT;
-  unsigned HOST_WIDE_INT align = group->align;
+  unsigned HOST_WIDE_INT group_align = group->align;
+  unsigned HOST_WIDE_INT align_base = group->align_base;
+  unsigned HOST_WIDE_INT group_load_align = group_align;
+  bool any_orig = false;
 
-  /* We don't handle partial bitfields for now.  We shouldn't have
-     reached this far.  */
   gcc_assert ((size % BITS_PER_UNIT == 0) && (pos % BITS_PER_UNIT == 0));
 
-  bool allow_unaligned
-    = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
-
-  unsigned int try_size = MAX_STORE_BITSIZE;
-  while (try_size > size
-	 || (!allow_unaligned
-	     && try_size > align))
-    {
-      try_size /= 2;
-      if (try_size < BITS_PER_UNIT)
-	return false;
-    }
-
+  unsigned int ret = 0, first = 0;
   unsigned HOST_WIDE_INT try_pos = bytepos;
   group->stores.qsort (sort_by_bitpos);
 
+  if (total_orig)
+    {
+      unsigned int i;
+      store_immediate_info *info = group->stores[0];
+
+      total_new[0] = 0;
+      total_orig[0] = 1; /* The orig store.  */
+      info = group->stores[0];
+      if (info->ops[0].base_addr)
+	total_orig[0]++;
+      if (info->ops[1].base_addr)
+	total_orig[0]++;
+      switch (info->rhs_code)
+	{
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	  total_orig[0]++; /* The orig BIT_*_EXPR stmt.  */
+	  break;
+	default:
+	  break;
+	}
+      total_orig[0] *= group->stores.length ();
+
+      FOR_EACH_VEC_ELT (group->stores, i, info)
+	{
+	  total_new[0] += count_multiple_uses (info);
+	  total_orig[0] += (info->bit_not_p
+			    + info->ops[0].bit_not_p
+			    + info->ops[1].bit_not_p);
+	}
+    }
+
+  if (!allow_unaligned_load)
+    for (int i = 0; i < 2; ++i)
+      if (group->load_align[i])
+	group_load_align = MIN (group_load_align, group->load_align[i]);
+
   while (size > 0)
     {
-      struct split_store *store = new split_store (try_pos, try_size, align);
+      if ((allow_unaligned_store || group_align <= BITS_PER_UNIT)
+	  && group->mask[try_pos - bytepos] == (unsigned char) ~0U)
+	{
+	  /* Skip padding bytes.  */
+	  ++try_pos;
+	  size -= BITS_PER_UNIT;
+	  continue;
+	}
+
       unsigned HOST_WIDE_INT try_bitpos = try_pos * BITS_PER_UNIT;
-      find_constituent_stmts (group, store->orig_stmts, try_bitpos, try_size);
-      split_stores.safe_push (store);
+      unsigned int try_size = MAX_STORE_BITSIZE, nonmasked;
+      unsigned HOST_WIDE_INT align_bitpos
+	= (try_bitpos - align_base) & (group_align - 1);
+      unsigned HOST_WIDE_INT align = group_align;
+      if (align_bitpos)
+	align = least_bit_hwi (align_bitpos);
+      if (!allow_unaligned_store)
+	try_size = MIN (try_size, align);
+      if (!allow_unaligned_load)
+	{
+	  /* If we can't do or don't want to do unaligned stores
+	     as well as loads, we need to take the loads into account
+	     as well.  */
+	  unsigned HOST_WIDE_INT load_align = group_load_align;
+	  align_bitpos = (try_bitpos - align_base) & (load_align - 1);
+	  if (align_bitpos)
+	    load_align = least_bit_hwi (align_bitpos);
+	  for (int i = 0; i < 2; ++i)
+	    if (group->load_align[i])
+	      {
+		align_bitpos = try_bitpos - group->stores[0]->bitpos;
+		align_bitpos += group->stores[0]->ops[i].bitpos;
+		align_bitpos -= group->load_align_base[i];
+		align_bitpos &= (group_load_align - 1);
+		if (align_bitpos)
+		  {
+		    unsigned HOST_WIDE_INT a = least_bit_hwi (align_bitpos);
+		    load_align = MIN (load_align, a);
+		  }
+	      }
+	  try_size = MIN (try_size, load_align);
+	}
+      store_immediate_info *info
+	= find_constituent_stores (group, NULL, &first, try_bitpos, try_size);
+      if (info)
+	{
+	  /* If there is just one original statement for the range, see if
+	     we can just reuse the original store which could be even larger
+	     than try_size.  */
+	  unsigned HOST_WIDE_INT stmt_end
+	    = ROUND_UP (info->bitpos + info->bitsize, BITS_PER_UNIT);
+	  info = find_constituent_stores (group, NULL, &first, try_bitpos,
+					  stmt_end - try_bitpos);
+	  if (info && info->bitpos >= try_bitpos)
+	    {
+	      try_size = stmt_end - try_bitpos;
+	      goto found;
+	    }
+	}
+
+      /* Approximate store bitsize for the case when there are no padding
+	 bits.  */
+      while (try_size > size)
+	try_size /= 2;
+      /* Now look for whole padding bytes at the end of that bitsize.  */
+      for (nonmasked = try_size / BITS_PER_UNIT; nonmasked > 0; --nonmasked)
+	if (group->mask[try_pos - bytepos + nonmasked - 1]
+	    != (unsigned char) ~0U)
+	  break;
+      if (nonmasked == 0)
+	{
+	  /* If entire try_size range is padding, skip it.  */
+	  try_pos += try_size / BITS_PER_UNIT;
+	  size -= try_size;
+	  continue;
+	}
+      /* Otherwise try to decrease try_size if second half, last 3 quarters
+	 etc. are padding.  */
+      nonmasked *= BITS_PER_UNIT;
+      while (nonmasked <= try_size / 2)
+	try_size /= 2;
+      if (!allow_unaligned_store && group_align > BITS_PER_UNIT)
+	{
+	  /* Now look for whole padding bytes at the start of that bitsize.  */
+	  unsigned int try_bytesize = try_size / BITS_PER_UNIT, masked;
+	  for (masked = 0; masked < try_bytesize; ++masked)
+	    if (group->mask[try_pos - bytepos + masked] != (unsigned char) ~0U)
+	      break;
+	  masked *= BITS_PER_UNIT;
+	  gcc_assert (masked < try_size);
+	  if (masked >= try_size / 2)
+	    {
+	      while (masked >= try_size / 2)
+		{
+		  try_size /= 2;
+		  try_pos += try_size / BITS_PER_UNIT;
+		  size -= try_size;
+		  masked -= try_size;
+		}
+	      /* Need to recompute the alignment, so just retry at the new
+		 position.  */
+	      continue;
+	    }
+	}
+
+    found:
+      ++ret;
+
+      if (split_stores)
+	{
+	  struct split_store *store
+	    = new split_store (try_pos, try_size, align);
+	  info = find_constituent_stores (group, &store->orig_stores,
+					  &first, try_bitpos, try_size);
+	  if (info
+	      && info->bitpos >= try_bitpos
+	      && info->bitpos + info->bitsize <= try_bitpos + try_size)
+	    {
+	      store->orig = true;
+	      any_orig = true;
+	    }
+	  split_stores->safe_push (store);
+	}
 
       try_pos += try_size / BITS_PER_UNIT;
-
       size -= try_size;
-      align = try_size;
-      while (size < try_size)
-	try_size /= 2;
     }
-  return true;
+
+  if (total_orig)
+    {
+      unsigned int i;
+      struct split_store *store;
+      /* If we are reusing some original stores and any of the
+	 original SSA_NAMEs had multiple uses, we need to subtract
+	 those now before we add the new ones.  */
+      if (total_new[0] && any_orig)
+	{
+	  FOR_EACH_VEC_ELT (*split_stores, i, store)
+	    if (store->orig)
+	      total_new[0] -= count_multiple_uses (store->orig_stores[0]);
+	}
+      total_new[0] += ret; /* The new store.  */
+      store_immediate_info *info = group->stores[0];
+      if (info->ops[0].base_addr)
+	total_new[0] += ret;
+      if (info->ops[1].base_addr)
+	total_new[0] += ret;
+      switch (info->rhs_code)
+	{
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	  total_new[0] += ret; /* The new BIT_*_EXPR stmt.  */
+	  break;
+	default:
+	  break;
+	}
+      FOR_EACH_VEC_ELT (*split_stores, i, store)
+	{
+	  unsigned int j;
+	  bool bit_not_p[3] = { false, false, false };
+	  /* If all orig_stores have certain bit_not_p set, then
+	     we'd use a BIT_NOT_EXPR stmt and need to account for it.
+	     If some orig_stores have certain bit_not_p set, then
+	     we'd use a BIT_XOR_EXPR with a mask and need to account for
+	     it.  */
+	  FOR_EACH_VEC_ELT (store->orig_stores, j, info)
+	    {
+	      if (info->ops[0].bit_not_p)
+		bit_not_p[0] = true;
+	      if (info->ops[1].bit_not_p)
+		bit_not_p[1] = true;
+	      if (info->bit_not_p)
+		bit_not_p[2] = true;
+	    }
+	  total_new[0] += bit_not_p[0] + bit_not_p[1] + bit_not_p[2];
+	}
+
+    }
+
+  return ret;
+}
+
+/* Return the operation through which the operand IDX (if < 2) or
+   result (IDX == 2) should be inverted.  If NOP_EXPR, no inversion
+   is done, if BIT_NOT_EXPR, all bits are inverted, if BIT_XOR_EXPR,
+   the bits should be xored with mask.  */
+
+static enum tree_code
+invert_op (split_store *split_store, int idx, tree int_type, tree &mask)
+{
+  unsigned int i;
+  store_immediate_info *info;
+  unsigned int cnt = 0;
+  FOR_EACH_VEC_ELT (split_store->orig_stores, i, info)
+    {
+      bool bit_not_p = idx < 2 ? info->ops[idx].bit_not_p : info->bit_not_p;
+      if (bit_not_p)
+	++cnt;
+    }
+  mask = NULL_TREE;
+  if (cnt == 0)
+    return NOP_EXPR;
+  if (cnt == split_store->orig_stores.length ())
+    return BIT_NOT_EXPR;
+
+  unsigned HOST_WIDE_INT try_bitpos = split_store->bytepos * BITS_PER_UNIT;
+  unsigned buf_size = split_store->size / BITS_PER_UNIT;
+  unsigned char *buf
+    = XALLOCAVEC (unsigned char, buf_size);
+  memset (buf, ~0U, buf_size);
+  FOR_EACH_VEC_ELT (split_store->orig_stores, i, info)
+    {
+      bool bit_not_p = idx < 2 ? info->ops[idx].bit_not_p : info->bit_not_p;
+      if (!bit_not_p)
+	continue;
+      /* Clear regions with bit_not_p and invert afterwards, rather than
+	 clear regions with !bit_not_p, so that gaps in between stores aren't
+	 set in the mask.  */
+      unsigned HOST_WIDE_INT bitsize = info->bitsize;
+      unsigned int pos_in_buffer = 0;
+      if (info->bitpos < try_bitpos)
+	{
+	  gcc_assert (info->bitpos + bitsize > try_bitpos);
+	  bitsize -= (try_bitpos - info->bitpos);
+	}
+      else
+	pos_in_buffer = info->bitpos - try_bitpos;
+      if (pos_in_buffer + bitsize > split_store->size)
+	bitsize = split_store->size - pos_in_buffer;
+      unsigned char *p = buf + (pos_in_buffer / BITS_PER_UNIT);
+      if (BYTES_BIG_ENDIAN)
+	clear_bit_region_be (p, (BITS_PER_UNIT - 1
+				 - (pos_in_buffer % BITS_PER_UNIT)), bitsize);
+      else
+	clear_bit_region (p, pos_in_buffer % BITS_PER_UNIT, bitsize);
+    }
+  for (unsigned int i = 0; i < buf_size; ++i)
+    buf[i] = ~buf[i];
+  mask = native_interpret_expr (int_type, buf, buf_size);
+  return BIT_XOR_EXPR;
 }
 
 /* Given a merged store group GROUP output the widened version of it.
@@ -1132,81 +1784,332 @@ split_group (merged_store_group *group,
 bool
 imm_store_chain_info::output_merged_store (merged_store_group *group)
 {
-  unsigned HOST_WIDE_INT start_byte_pos = group->start / BITS_PER_UNIT;
+  unsigned HOST_WIDE_INT start_byte_pos
+    = group->bitregion_start / BITS_PER_UNIT;
 
   unsigned int orig_num_stmts = group->stores.length ();
   if (orig_num_stmts < 2)
     return false;
 
-  auto_vec<struct split_store *> split_stores;
+  auto_vec<struct split_store *, 32> split_stores;
   split_stores.create (0);
-  if (!split_group (group, split_stores))
-    return false;
+  bool allow_unaligned_store
+    = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
+  bool allow_unaligned_load = allow_unaligned_store;
+  if (allow_unaligned_store)
+    {
+      /* If unaligned stores are allowed, see how many stores we'd emit
+	 for unaligned and how many stores we'd emit for aligned stores.
+	 Only use unaligned stores if it allows fewer stores than aligned.  */
+      unsigned aligned_cnt
+	= split_group (group, false, allow_unaligned_load, NULL, NULL, NULL);
+      unsigned unaligned_cnt
+	= split_group (group, true, allow_unaligned_load, NULL, NULL, NULL);
+      if (aligned_cnt <= unaligned_cnt)
+	allow_unaligned_store = false;
+    }
+  unsigned total_orig, total_new;
+  split_group (group, allow_unaligned_store, allow_unaligned_load,
+	       &split_stores, &total_orig, &total_new);
+
+  if (split_stores.length () >= orig_num_stmts)
+    {
+      /* We didn't manage to reduce the number of statements.  Bail out.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Exceeded original number of stmts (%u)."
+			    "  Not profitable to emit new sequence.\n",
+		 orig_num_stmts);
+      return false;
+    }
+  if (total_orig <= total_new)
+    {
+      /* If number of estimated new statements is above estimated original
+	 statements, bail out too.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Estimated number of original stmts (%u)"
+			    " not larger than estimated number of new"
+			    " stmts (%u).\n",
+		 total_orig, total_new);
+    }
 
   gimple_stmt_iterator last_gsi = gsi_for_stmt (group->last_stmt);
   gimple_seq seq = NULL;
-  unsigned int num_stmts = 0;
   tree last_vdef, new_vuse;
   last_vdef = gimple_vdef (group->last_stmt);
   new_vuse = gimple_vuse (group->last_stmt);
 
   gimple *stmt = NULL;
-  /* The new SSA names created.  Keep track of them so that we can free them
-     if we decide to not use the new sequence.  */
-  auto_vec<tree> new_ssa_names;
   split_store *split_store;
   unsigned int i;
-  bool fail = false;
-
+  auto_vec<gimple *, 32> orig_stmts;
   tree addr = force_gimple_operand_1 (unshare_expr (base_addr), &seq,
 				      is_gimple_mem_ref_addr, NULL_TREE);
+
+  tree load_addr[2] = { NULL_TREE, NULL_TREE };
+  gimple_seq load_seq[2] = { NULL, NULL };
+  gimple_stmt_iterator load_gsi[2] = { gsi_none (), gsi_none () };
+  for (int j = 0; j < 2; ++j)
+    {
+      store_operand_info &op = group->stores[0]->ops[j];
+      if (op.base_addr == NULL_TREE)
+	continue;
+
+      store_immediate_info *infol = group->stores.last ();
+      if (gimple_vuse (op.stmt) == gimple_vuse (infol->ops[j].stmt))
+	{
+	  load_gsi[j] = gsi_for_stmt (op.stmt);
+	  load_addr[j]
+	    = force_gimple_operand_1 (unshare_expr (op.base_addr),
+				      &load_seq[j], is_gimple_mem_ref_addr,
+				      NULL_TREE);
+	}
+      else if (operand_equal_p (base_addr, op.base_addr, 0))
+	load_addr[j] = addr;
+      else
+	{
+	  gimple_seq this_seq;
+	  load_addr[j]
+	    = force_gimple_operand_1 (unshare_expr (op.base_addr),
+				      &this_seq, is_gimple_mem_ref_addr,
+				      NULL_TREE);
+	  gimple_seq_add_seq_without_update (&seq, this_seq);
+	}
+    }
+
   FOR_EACH_VEC_ELT (split_stores, i, split_store)
     {
       unsigned HOST_WIDE_INT try_size = split_store->size;
       unsigned HOST_WIDE_INT try_pos = split_store->bytepos;
       unsigned HOST_WIDE_INT align = split_store->align;
-      tree offset_type = get_alias_type_for_stmts (split_store->orig_stmts);
-      location_t loc = get_location_for_stmts (split_store->orig_stmts);
+      tree dest, src;
+      location_t loc;
+      if (split_store->orig)
+	{
+	  /* If there is just a single constituent store which covers
+	     the whole area, just reuse the lhs and rhs.  */
+	  gimple *orig_stmt = split_store->orig_stores[0]->stmt;
+	  dest = gimple_assign_lhs (orig_stmt);
+	  src = gimple_assign_rhs1 (orig_stmt);
+	  loc = gimple_location (orig_stmt);
+	}
+      else
+	{
+	  store_immediate_info *info;
+	  unsigned short clique, base;
+	  unsigned int k;
+	  FOR_EACH_VEC_ELT (split_store->orig_stores, k, info)
+	    orig_stmts.safe_push (info->stmt);
+	  tree offset_type
+	    = get_alias_type_for_stmts (orig_stmts, false, &clique, &base);
+	  loc = get_location_for_stmts (orig_stmts);
+	  orig_stmts.truncate (0);
 
-      tree int_type = build_nonstandard_integer_type (try_size, UNSIGNED);
-      int_type = build_aligned_type (int_type, align);
-      tree dest = fold_build2 (MEM_REF, int_type, addr,
-			       build_int_cst (offset_type, try_pos));
+	  tree int_type = build_nonstandard_integer_type (try_size, UNSIGNED);
+	  int_type = build_aligned_type (int_type, align);
+	  dest = fold_build2 (MEM_REF, int_type, addr,
+			      build_int_cst (offset_type, try_pos));
+	  if (TREE_CODE (dest) == MEM_REF)
+	    {
+	      MR_DEPENDENCE_CLIQUE (dest) = clique;
+	      MR_DEPENDENCE_BASE (dest) = base;
+	    }
 
-      tree src = native_interpret_expr (int_type,
-					group->val + try_pos - start_byte_pos,
-					group->buf_size);
+	  tree mask
+	    = native_interpret_expr (int_type,
+				     group->mask + try_pos - start_byte_pos,
+				     group->buf_size);
+
+	  tree ops[2];
+	  for (int j = 0;
+	       j < 1 + (split_store->orig_stores[0]->ops[1].val != NULL_TREE);
+	       ++j)
+	    {
+	      store_operand_info &op = split_store->orig_stores[0]->ops[j];
+	      if (op.base_addr)
+		{
+		  FOR_EACH_VEC_ELT (split_store->orig_stores, k, info)
+		    orig_stmts.safe_push (info->ops[j].stmt);
+
+		  offset_type = get_alias_type_for_stmts (orig_stmts, true,
+							  &clique, &base);
+		  location_t load_loc = get_location_for_stmts (orig_stmts);
+		  orig_stmts.truncate (0);
+
+		  unsigned HOST_WIDE_INT load_align = group->load_align[j];
+		  unsigned HOST_WIDE_INT align_bitpos
+		    = (try_pos * BITS_PER_UNIT
+		       - split_store->orig_stores[0]->bitpos
+		       + op.bitpos) & (load_align - 1);
+		  if (align_bitpos)
+		    load_align = least_bit_hwi (align_bitpos);
+
+		  tree load_int_type
+		    = build_nonstandard_integer_type (try_size, UNSIGNED);
+		  load_int_type
+		    = build_aligned_type (load_int_type, load_align);
+
+		  unsigned HOST_WIDE_INT load_pos
+		    = (try_pos * BITS_PER_UNIT
+		       - split_store->orig_stores[0]->bitpos
+		       + op.bitpos) / BITS_PER_UNIT;
+		  ops[j] = fold_build2 (MEM_REF, load_int_type, load_addr[j],
+					build_int_cst (offset_type, load_pos));
+		  if (TREE_CODE (ops[j]) == MEM_REF)
+		    {
+		      MR_DEPENDENCE_CLIQUE (ops[j]) = clique;
+		      MR_DEPENDENCE_BASE (ops[j]) = base;
+		    }
+		  if (!integer_zerop (mask))
+		    /* The load might load some bits (that will be masked off
+		       later on) uninitialized, avoid -W*uninitialized
+		       warnings in that case.  */
+		    TREE_NO_WARNING (ops[j]) = 1;
+
+		  stmt = gimple_build_assign (make_ssa_name (int_type),
+					      ops[j]);
+		  gimple_set_location (stmt, load_loc);
+		  if (gsi_bb (load_gsi[j]))
+		    {
+		      gimple_set_vuse (stmt, gimple_vuse (op.stmt));
+		      gimple_seq_add_stmt_without_update (&load_seq[j], stmt);
+		    }
+		  else
+		    {
+		      gimple_set_vuse (stmt, new_vuse);
+		      gimple_seq_add_stmt_without_update (&seq, stmt);
+		    }
+		  ops[j] = gimple_assign_lhs (stmt);
+		  tree xor_mask;
+		  enum tree_code inv_op
+		    = invert_op (split_store, j, int_type, xor_mask);
+		  if (inv_op != NOP_EXPR)
+		    {
+		      stmt = gimple_build_assign (make_ssa_name (int_type),
+						  inv_op, ops[j], xor_mask);
+		      gimple_set_location (stmt, load_loc);
+		      ops[j] = gimple_assign_lhs (stmt);
+
+		      if (gsi_bb (load_gsi[j]))
+			gimple_seq_add_stmt_without_update (&load_seq[j],
+							    stmt);
+		      else
+			gimple_seq_add_stmt_without_update (&seq, stmt);
+		    }
+		}
+	      else
+		ops[j] = native_interpret_expr (int_type,
+						group->val + try_pos
+						- start_byte_pos,
+						group->buf_size);
+	    }
+
+	  switch (split_store->orig_stores[0]->rhs_code)
+	    {
+	    case BIT_AND_EXPR:
+	    case BIT_IOR_EXPR:
+	    case BIT_XOR_EXPR:
+	      FOR_EACH_VEC_ELT (split_store->orig_stores, k, info)
+		{
+		  tree rhs1 = gimple_assign_rhs1 (info->stmt);
+		  orig_stmts.safe_push (SSA_NAME_DEF_STMT (rhs1));
+		}
+	      location_t bit_loc;
+	      bit_loc = get_location_for_stmts (orig_stmts);
+	      orig_stmts.truncate (0);
+
+	      stmt
+		= gimple_build_assign (make_ssa_name (int_type),
+				       split_store->orig_stores[0]->rhs_code,
+				       ops[0], ops[1]);
+	      gimple_set_location (stmt, bit_loc);
+	      /* If there is just one load and there is a separate
+		 load_seq[0], emit the bitwise op right after it.  */
+	      if (load_addr[1] == NULL_TREE && gsi_bb (load_gsi[0]))
+		gimple_seq_add_stmt_without_update (&load_seq[0], stmt);
+	      /* Otherwise, if at least one load is in seq, we need to
+		 emit the bitwise op right before the store.  If there
+		 are two loads and are emitted somewhere else, it would
+		 be better to emit the bitwise op as early as possible;
+		 we don't track where that would be possible right now
+		 though.  */
+	      else
+		gimple_seq_add_stmt_without_update (&seq, stmt);
+	      src = gimple_assign_lhs (stmt);
+	      tree xor_mask;
+	      enum tree_code inv_op;
+	      inv_op = invert_op (split_store, 2, int_type, xor_mask);
+	      if (inv_op != NOP_EXPR)
+		{
+		  stmt = gimple_build_assign (make_ssa_name (int_type),
+					      inv_op, src, xor_mask);
+		  gimple_set_location (stmt, bit_loc);
+		  if (load_addr[1] == NULL_TREE && gsi_bb (load_gsi[0]))
+		    gimple_seq_add_stmt_without_update (&load_seq[0], stmt);
+		  else
+		    gimple_seq_add_stmt_without_update (&seq, stmt);
+		  src = gimple_assign_lhs (stmt);
+		}
+	      break;
+	    default:
+	      src = ops[0];
+	      break;
+	    }
+
+	  if (!integer_zerop (mask))
+	    {
+	      tree tem = make_ssa_name (int_type);
+	      tree load_src = unshare_expr (dest);
+	      /* The load might load some or all bits uninitialized,
+		 avoid -W*uninitialized warnings in that case.
+		 As optimization, it would be nice if all the bits are
+		 provably uninitialized (no stores at all yet or previous
+		 store a CLOBBER) we'd optimize away the load and replace
+		 it e.g. with 0.  */
+	      TREE_NO_WARNING (load_src) = 1;
+	      stmt = gimple_build_assign (tem, load_src);
+	      gimple_set_location (stmt, loc);
+	      gimple_set_vuse (stmt, new_vuse);
+	      gimple_seq_add_stmt_without_update (&seq, stmt);
+
+	      /* FIXME: If there is a single chunk of zero bits in mask,
+		 perhaps use BIT_INSERT_EXPR instead?  */
+	      stmt = gimple_build_assign (make_ssa_name (int_type),
+					  BIT_AND_EXPR, tem, mask);
+	      gimple_set_location (stmt, loc);
+	      gimple_seq_add_stmt_without_update (&seq, stmt);
+	      tem = gimple_assign_lhs (stmt);
+
+	      if (TREE_CODE (src) == INTEGER_CST)
+		src = wide_int_to_tree (int_type,
+					wi::bit_and_not (wi::to_wide (src),
+							 wi::to_wide (mask)));
+	      else
+		{
+		  tree nmask
+		    = wide_int_to_tree (int_type,
+					wi::bit_not (wi::to_wide (mask)));
+		  stmt = gimple_build_assign (make_ssa_name (int_type),
+					      BIT_AND_EXPR, src, nmask);
+		  gimple_set_location (stmt, loc);
+		  gimple_seq_add_stmt_without_update (&seq, stmt);
+		  src = gimple_assign_lhs (stmt);
+		}
+	      stmt = gimple_build_assign (make_ssa_name (int_type),
+					  BIT_IOR_EXPR, tem, src);
+	      gimple_set_location (stmt, loc);
+	      gimple_seq_add_stmt_without_update (&seq, stmt);
+	      src = gimple_assign_lhs (stmt);
+	    }
+	}
 
       stmt = gimple_build_assign (dest, src);
       gimple_set_location (stmt, loc);
       gimple_set_vuse (stmt, new_vuse);
       gimple_seq_add_stmt_without_update (&seq, stmt);
 
-      /* We didn't manage to reduce the number of statements.  Bail out.  */
-      if (++num_stmts == orig_num_stmts)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Exceeded original number of stmts (%u)."
-				  "  Not profitable to emit new sequence.\n",
-		       orig_num_stmts);
-	    }
-	  unsigned int ssa_count;
-	  tree ssa_name;
-	  /* Don't forget to cleanup the temporary SSA names.  */
-	  FOR_EACH_VEC_ELT (new_ssa_names, ssa_count, ssa_name)
-	    release_ssa_name (ssa_name);
-
-	  fail = true;
-	  break;
-	}
-
       tree new_vdef;
       if (i < split_stores.length () - 1)
-	{
-	  new_vdef = make_ssa_name (gimple_vop (cfun), stmt);
-	  new_ssa_names.safe_push (new_vdef);
-	}
+	new_vdef = make_ssa_name (gimple_vop (cfun), stmt);
       else
 	new_vdef = last_vdef;
 
@@ -1218,19 +2121,19 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
   FOR_EACH_VEC_ELT (split_stores, i, split_store)
     delete split_store;
 
-  if (fail)
-    return false;
-
   gcc_assert (seq);
   if (dump_file)
     {
       fprintf (dump_file,
 	       "New sequence of %u stmts to replace old one of %u stmts\n",
-	       num_stmts, orig_num_stmts);
+	       split_stores.length (), orig_num_stmts);
       if (dump_flags & TDF_DETAILS)
 	print_gimple_seq (dump_file, seq, 0, TDF_VOPS | TDF_MEMSYMS);
     }
   gsi_insert_seq_after (&last_gsi, seq, GSI_SAME_STMT);
+  for (int j = 0; j < 2; ++j)
+    if (load_seq[j])
+      gsi_insert_seq_after (&load_gsi[j], load_seq[j], GSI_SAME_STMT);
 
   return true;
 }
@@ -1329,10 +2232,321 @@ rhs_valid_for_store_merging_p (tree rhs)
 			     GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs)))) != 0;
 }
 
+/* If MEM is a memory reference usable for store merging (either as
+   store destination or for loads), return the non-NULL base_addr
+   and set *PBITSIZE, *PBITPOS, *PBITREGION_START and *PBITREGION_END.
+   Otherwise return NULL, *PBITPOS should be still valid even for that
+   case.  */
+
+static tree
+mem_valid_for_store_merging (tree mem, unsigned HOST_WIDE_INT *pbitsize,
+			     unsigned HOST_WIDE_INT *pbitpos,
+			     unsigned HOST_WIDE_INT *pbitregion_start,
+			     unsigned HOST_WIDE_INT *pbitregion_end)
+{
+  HOST_WIDE_INT bitsize;
+  HOST_WIDE_INT bitpos;
+  unsigned HOST_WIDE_INT bitregion_start = 0;
+  unsigned HOST_WIDE_INT bitregion_end = 0;
+  machine_mode mode;
+  int unsignedp = 0, reversep = 0, volatilep = 0;
+  tree offset;
+  tree base_addr = get_inner_reference (mem, &bitsize, &bitpos, &offset, &mode,
+					&unsignedp, &reversep, &volatilep);
+  *pbitsize = bitsize;
+  if (bitsize == 0)
+    return NULL_TREE;
+
+  if (TREE_CODE (mem) == COMPONENT_REF
+      && DECL_BIT_FIELD_TYPE (TREE_OPERAND (mem, 1)))
+    {
+      get_bit_range (&bitregion_start, &bitregion_end, mem, &bitpos, &offset);
+      if (bitregion_end)
+	++bitregion_end;
+    }
+
+  if (reversep)
+    return NULL_TREE;
+
+  /* We do not want to rewrite TARGET_MEM_REFs.  */
+  if (TREE_CODE (base_addr) == TARGET_MEM_REF)
+    return NULL_TREE;
+  /* In some cases get_inner_reference may return a
+     MEM_REF [ptr + byteoffset].  For the purposes of this pass
+     canonicalize the base_addr to MEM_REF [ptr] and take
+     byteoffset into account in the bitpos.  This occurs in
+     PR 23684 and this way we can catch more chains.  */
+  else if (TREE_CODE (base_addr) == MEM_REF)
+    {
+      offset_int bit_off, byte_off = mem_ref_offset (base_addr);
+      bit_off = byte_off << LOG2_BITS_PER_UNIT;
+      bit_off += bitpos;
+      if (!wi::neg_p (bit_off) && wi::fits_shwi_p (bit_off))
+	{
+	  bitpos = bit_off.to_shwi ();
+	  if (bitregion_end)
+	    {
+	      bit_off = byte_off << LOG2_BITS_PER_UNIT;
+	      bit_off += bitregion_start;
+	      if (wi::fits_uhwi_p (bit_off))
+		{
+		  bitregion_start = bit_off.to_uhwi ();
+		  bit_off = byte_off << LOG2_BITS_PER_UNIT;
+		  bit_off += bitregion_end;
+		  if (wi::fits_uhwi_p (bit_off))
+		    bitregion_end = bit_off.to_uhwi ();
+		  else
+		    bitregion_end = 0;
+		}
+	      else
+		bitregion_end = 0;
+	    }
+	}
+      else
+	return NULL_TREE;
+      base_addr = TREE_OPERAND (base_addr, 0);
+    }
+  /* get_inner_reference returns the base object, get at its
+     address now.  */
+  else
+    {
+      if (bitpos < 0)
+	return NULL_TREE;
+      base_addr = build_fold_addr_expr (base_addr);
+    }
+
+  if (!bitregion_end)
+    {
+      bitregion_start = ROUND_DOWN (bitpos, BITS_PER_UNIT);
+      bitregion_end = ROUND_UP (bitpos + bitsize, BITS_PER_UNIT);
+    }
+
+  if (offset != NULL_TREE)
+    {
+      /* If the access is variable offset then a base decl has to be
+	 address-taken to be able to emit pointer-based stores to it.
+	 ???  We might be able to get away with re-using the original
+	 base up to the first variable part and then wrapping that inside
+	 a BIT_FIELD_REF.  */
+      tree base = get_base_address (base_addr);
+      if (! base
+	  || (DECL_P (base) && ! TREE_ADDRESSABLE (base)))
+	return NULL_TREE;
+
+      base_addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (base_addr),
+			  base_addr, offset);
+    }
+
+  *pbitsize = bitsize;
+  *pbitpos = bitpos;
+  *pbitregion_start = bitregion_start;
+  *pbitregion_end = bitregion_end;
+  return base_addr;
+}
+
+/* Return true if STMT is a load that can be used for store merging.
+   In that case fill in *OP.  BITSIZE, BITPOS, BITREGION_START and
+   BITREGION_END are properties of the corresponding store.  */
+
+static bool
+handled_load (gimple *stmt, store_operand_info *op,
+	      unsigned HOST_WIDE_INT bitsize, unsigned HOST_WIDE_INT bitpos,
+	      unsigned HOST_WIDE_INT bitregion_start,
+	      unsigned HOST_WIDE_INT bitregion_end)
+{
+  if (!is_gimple_assign (stmt))
+    return false;
+  if (gimple_assign_rhs_code (stmt) == BIT_NOT_EXPR)
+    {
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (rhs1) == SSA_NAME
+	  && handled_load (SSA_NAME_DEF_STMT (rhs1), op, bitsize, bitpos,
+			   bitregion_start, bitregion_end))
+	{
+	  /* Don't allow _1 = load; _2 = ~1; _3 = ~_2; which should have
+	     been optimized earlier, but if allowed here, would confuse the
+	     multiple uses counting.  */
+	  if (op->bit_not_p)
+	    return false;
+	  op->bit_not_p = !op->bit_not_p;
+	  return true;
+	}
+      return false;
+    }
+  if (gimple_vuse (stmt)
+      && gimple_assign_load_p (stmt)
+      && !stmt_can_throw_internal (stmt)
+      && !gimple_has_volatile_ops (stmt))
+    {
+      tree mem = gimple_assign_rhs1 (stmt);
+      op->base_addr
+	= mem_valid_for_store_merging (mem, &op->bitsize, &op->bitpos,
+				       &op->bitregion_start,
+				       &op->bitregion_end);
+      if (op->base_addr != NULL_TREE
+	  && op->bitsize == bitsize
+	  && ((op->bitpos - bitpos) % BITS_PER_UNIT) == 0
+	  && op->bitpos - op->bitregion_start >= bitpos - bitregion_start
+	  && op->bitregion_end - op->bitpos >= bitregion_end - bitpos)
+	{
+	  op->stmt = stmt;
+	  op->val = mem;
+	  op->bit_not_p = false;
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* Record the store STMT for store merging optimization if it can be
+   optimized.  */
+
+void
+pass_store_merging::process_store (gimple *stmt)
+{
+  tree lhs = gimple_assign_lhs (stmt);
+  tree rhs = gimple_assign_rhs1 (stmt);
+  unsigned HOST_WIDE_INT bitsize, bitpos;
+  unsigned HOST_WIDE_INT bitregion_start;
+  unsigned HOST_WIDE_INT bitregion_end;
+  tree base_addr
+    = mem_valid_for_store_merging (lhs, &bitsize, &bitpos,
+				   &bitregion_start, &bitregion_end);
+  if (bitsize == 0)
+    return;
+
+  bool invalid = (base_addr == NULL_TREE
+		  || ((bitsize > MAX_BITSIZE_MODE_ANY_INT)
+		       && (TREE_CODE (rhs) != INTEGER_CST)));
+  enum tree_code rhs_code = ERROR_MARK;
+  bool bit_not_p = false;
+  store_operand_info ops[2];
+  if (invalid)
+    ;
+  else if (rhs_valid_for_store_merging_p (rhs))
+    {
+      rhs_code = INTEGER_CST;
+      ops[0].val = rhs;
+    }
+  else if (TREE_CODE (rhs) != SSA_NAME)
+    invalid = true;
+  else
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (rhs), *def_stmt1, *def_stmt2;
+      if (!is_gimple_assign (def_stmt))
+	invalid = true;
+      else if (handled_load (def_stmt, &ops[0], bitsize, bitpos,
+			     bitregion_start, bitregion_end))
+	rhs_code = MEM_REF;
+      else if (gimple_assign_rhs_code (def_stmt) == BIT_NOT_EXPR) 
+	{
+	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && is_gimple_assign (SSA_NAME_DEF_STMT (rhs1)))
+	    {
+	      bit_not_p = true;
+	      def_stmt = SSA_NAME_DEF_STMT (rhs1);
+	    }
+	}
+      if (rhs_code == ERROR_MARK && !invalid)
+	switch ((rhs_code = gimple_assign_rhs_code (def_stmt)))
+	  {
+	  case BIT_AND_EXPR:
+	  case BIT_IOR_EXPR:
+	  case BIT_XOR_EXPR:
+	    tree rhs1, rhs2;
+	    rhs1 = gimple_assign_rhs1 (def_stmt);
+	    rhs2 = gimple_assign_rhs2 (def_stmt);
+	    invalid = true;
+	    if (TREE_CODE (rhs1) != SSA_NAME)
+	      break;
+	    def_stmt1 = SSA_NAME_DEF_STMT (rhs1);
+	    if (!is_gimple_assign (def_stmt1)
+		|| !handled_load (def_stmt1, &ops[0], bitsize, bitpos,
+				  bitregion_start, bitregion_end))
+	      break;
+	    if (rhs_valid_for_store_merging_p (rhs2))
+	      ops[1].val = rhs2;
+	    else if (TREE_CODE (rhs2) != SSA_NAME)
+	      break;
+	    else
+	      {
+		def_stmt2 = SSA_NAME_DEF_STMT (rhs2);
+		if (!is_gimple_assign (def_stmt2))
+		  break;
+		else if (!handled_load (def_stmt2, &ops[1], bitsize, bitpos,
+					bitregion_start, bitregion_end))
+		  break;
+	      }
+	    invalid = false;
+	    break;
+	  default:
+	    invalid = true;
+	    break;
+	  }
+    }
+
+  if (invalid)
+    {
+      terminate_all_aliasing_chains (NULL, stmt);
+      return;
+    }
+
+  struct imm_store_chain_info **chain_info = NULL;
+  if (base_addr)
+    chain_info = m_stores.get (base_addr);
+
+  store_immediate_info *info;
+  if (chain_info)
+    {
+      unsigned int ord = (*chain_info)->m_store_info.length ();
+      info = new store_immediate_info (bitsize, bitpos, bitregion_start,
+				       bitregion_end, stmt, ord, rhs_code,
+				       bit_not_p, ops[0], ops[1]);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Recording immediate store from stmt:\n");
+	  print_gimple_stmt (dump_file, stmt, 0);
+	}
+      (*chain_info)->m_store_info.safe_push (info);
+      terminate_all_aliasing_chains (chain_info, stmt);
+      /* If we reach the limit of stores to merge in a chain terminate and
+	 process the chain now.  */
+      if ((*chain_info)->m_store_info.length ()
+	  == (unsigned int) PARAM_VALUE (PARAM_MAX_STORES_TO_MERGE))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Reached maximum number of statements to merge:\n");
+	  terminate_and_release_chain (*chain_info);
+	}
+      return;
+    }
+
+  /* Store aliases any existing chain?  */
+  terminate_all_aliasing_chains (NULL, stmt);
+  /* Start a new chain.  */
+  struct imm_store_chain_info *new_chain
+    = new imm_store_chain_info (m_stores_head, base_addr);
+  info = new store_immediate_info (bitsize, bitpos, bitregion_start,
+				   bitregion_end, stmt, 0, rhs_code,
+				   bit_not_p, ops[0], ops[1]);
+  new_chain->m_store_info.safe_push (info);
+  m_stores.put (base_addr, new_chain);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Starting new chain with statement:\n");
+      print_gimple_stmt (dump_file, stmt, 0);
+      fprintf (dump_file, "The base object is:\n");
+      print_generic_expr (dump_file, base_addr);
+      fprintf (dump_file, "\n");
+    }
+}
+
 /* Entry point for the pass.  Go over each basic block recording chains of
-  immediate stores.  Upon encountering a terminating statement (as defined
-  by stmt_terminates_chain_p) process the recorded stores and emit the widened
-  variants.  */
+   immediate stores.  Upon encountering a terminating statement (as defined
+   by stmt_terminates_chain_p) process the recorded stores and emit the widened
+   variants.  */
 
 unsigned int
 pass_store_merging::execute (function *fun)
@@ -1382,133 +2596,9 @@ pass_store_merging::execute (function *fun)
 	  if (gimple_assign_single_p (stmt) && gimple_vdef (stmt)
 	      && !stmt_can_throw_internal (stmt)
 	      && lhs_valid_for_store_merging_p (gimple_assign_lhs (stmt)))
-	    {
-	      tree lhs = gimple_assign_lhs (stmt);
-	      tree rhs = gimple_assign_rhs1 (stmt);
-
-	      HOST_WIDE_INT bitsize, bitpos;
-	      machine_mode mode;
-	      int unsignedp = 0, reversep = 0, volatilep = 0;
-	      tree offset, base_addr;
-	      base_addr
-		= get_inner_reference (lhs, &bitsize, &bitpos, &offset, &mode,
-				       &unsignedp, &reversep, &volatilep);
-	      /* As a future enhancement we could handle stores with the same
-		 base and offset.  */
-	      bool invalid = reversep
-			     || ((bitsize > MAX_BITSIZE_MODE_ANY_INT)
-				  && (TREE_CODE (rhs) != INTEGER_CST))
-			     || !rhs_valid_for_store_merging_p (rhs);
-
-	      /* We do not want to rewrite TARGET_MEM_REFs.  */
-	      if (TREE_CODE (base_addr) == TARGET_MEM_REF)
-		invalid = true;
-	      /* In some cases get_inner_reference may return a
-		 MEM_REF [ptr + byteoffset].  For the purposes of this pass
-		 canonicalize the base_addr to MEM_REF [ptr] and take
-		 byteoffset into account in the bitpos.  This occurs in
-		 PR 23684 and this way we can catch more chains.  */
-	      else if (TREE_CODE (base_addr) == MEM_REF)
-		{
-		  offset_int bit_off, byte_off = mem_ref_offset (base_addr);
-		  bit_off = byte_off << LOG2_BITS_PER_UNIT;
-		  bit_off += bitpos;
-		  if (!wi::neg_p (bit_off) && wi::fits_shwi_p (bit_off))
-		    bitpos = bit_off.to_shwi ();
-		  else
-		    invalid = true;
-		  base_addr = TREE_OPERAND (base_addr, 0);
-		}
-	      /* get_inner_reference returns the base object, get at its
-	         address now.  */
-	      else
-		{
-		  if (bitpos < 0)
-		    invalid = true;
-		  base_addr = build_fold_addr_expr (base_addr);
-		}
-
-	      if (! invalid
-		  && offset != NULL_TREE)
-		{
-		  /* If the access is variable offset then a base
-		     decl has to be address-taken to be able to
-		     emit pointer-based stores to it.
-		     ???  We might be able to get away with
-		     re-using the original base up to the first
-		     variable part and then wrapping that inside
-		     a BIT_FIELD_REF.  */
-		  tree base = get_base_address (base_addr);
-		  if (! base
-		      || (DECL_P (base)
-			  && ! TREE_ADDRESSABLE (base)))
-		    invalid = true;
-		  else
-		    base_addr = build2 (POINTER_PLUS_EXPR,
-					TREE_TYPE (base_addr),
-					base_addr, offset);
-		}
-
-	      struct imm_store_chain_info **chain_info
-		= m_stores.get (base_addr);
-
-	      if (!invalid)
-		{
-		  store_immediate_info *info;
-		  if (chain_info)
-		    {
-		      info = new store_immediate_info (
-			bitsize, bitpos, stmt,
-			(*chain_info)->m_store_info.length ());
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			{
-			  fprintf (dump_file,
-				   "Recording immediate store from stmt:\n");
-			  print_gimple_stmt (dump_file, stmt, 0);
-			}
-		      (*chain_info)->m_store_info.safe_push (info);
-		      /* If we reach the limit of stores to merge in a chain
-			 terminate and process the chain now.  */
-		      if ((*chain_info)->m_store_info.length ()
-			   == (unsigned int)
-			      PARAM_VALUE (PARAM_MAX_STORES_TO_MERGE))
-			{
-			  if (dump_file && (dump_flags & TDF_DETAILS))
-			    fprintf (dump_file,
-				 "Reached maximum number of statements"
-				 " to merge:\n");
-			  terminate_and_release_chain (*chain_info);
-			}
-		      continue;
-		    }
-
-		  /* Store aliases any existing chain?  */
-		  terminate_all_aliasing_chains (chain_info, false, stmt);
-		  /* Start a new chain.  */
-		  struct imm_store_chain_info *new_chain
-		    = new imm_store_chain_info (m_stores_head, base_addr);
-		  info = new store_immediate_info (bitsize, bitpos,
-						   stmt, 0);
-		  new_chain->m_store_info.safe_push (info);
-		  m_stores.put (base_addr, new_chain);
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file,
-			       "Starting new chain with statement:\n");
-		      print_gimple_stmt (dump_file, stmt, 0);
-		      fprintf (dump_file, "The base object is:\n");
-		      print_generic_expr (dump_file, base_addr);
-		      fprintf (dump_file, "\n");
-		    }
-		}
-	      else
-		terminate_all_aliasing_chains (chain_info,
-					       offset != NULL_TREE, stmt);
-
-	      continue;
-	    }
-
-	  terminate_all_aliasing_chains (NULL, false, stmt);
+	    process_store (stmt);
+	  else
+	    terminate_all_aliasing_chains (NULL, stmt);
 	}
       terminate_and_process_all_chains ();
     }

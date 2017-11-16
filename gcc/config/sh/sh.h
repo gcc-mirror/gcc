@@ -1109,10 +1109,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
     are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET  0
-
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
 /* Don't define PUSH_ROUNDING, since the hardware doesn't do this.

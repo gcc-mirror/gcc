@@ -1,3 +1,10 @@
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Running the test suite): Document
+	PRESERVE_EXECUTABLES.
+	(Running under valgrind): Add markup to RUN_UNDER_VALGRIND.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/expressions.rst (Vector expressions): New

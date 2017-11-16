@@ -155,8 +155,8 @@ format_warning_va (const substring_loc &fmt_loc,
 	if (corrected_substring)
 	  substring_richloc.add_fixit_replace (fmt_substring_range,
 					       corrected_substring);
-	inform_at_rich_loc (&substring_richloc,
-			    "format string is defined here");
+	inform (&substring_richloc,
+		"format string is defined here");
       }
 
   return warned;

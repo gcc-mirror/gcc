@@ -349,8 +349,6 @@ enum reg_class
 /* Stack layout and calling conventions.  */
 #define STACK_GROWS_DOWNWARD 1
 
-#define STARTING_FRAME_OFFSET   0
-
 #define STACK_POINTER_REGNUM    15
 
 #define FRAME_POINTER_REGNUM    13
@@ -481,7 +479,7 @@ struct cumulative_args
 
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME) \
-  asm_fprintf (STREAM, "%U%s", (*targetm.strip_name_encoding) (NAME));
+  asm_fprintf (STREAM, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
 #define ASM_OUTPUT_SYMBOL_REF(STREAM, SYMBOL)   \
   do                                            \

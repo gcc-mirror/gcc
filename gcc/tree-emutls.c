@@ -417,7 +417,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
 
       gimple_seq_add_stmt (&d->seq, x);
 
-      d->cfun_node->create_edge (d->builtin_node, x, d->bb->count, d->bb_freq);
+      d->cfun_node->create_edge (d->builtin_node, x, d->bb->count);
 
       /* We may be adding a new reference to a new variable to the function.
          This means we have to play with the ipa-reference web.  */

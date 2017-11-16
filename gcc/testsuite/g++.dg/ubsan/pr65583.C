@@ -1,6 +1,7 @@
 // PR sanitizer/65583
 // { dg-do compile }
 // { dg-options "-std=c++11 -fsanitize=undefined" }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std
 {

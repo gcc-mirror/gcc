@@ -308,11 +308,6 @@ extern void output_quoted_string (FILE *, const char *);
    This variable is defined  in final.c.  */
 extern rtx_sequence *final_sequence;
 
-/* The line number of the beginning of the current function.  Various
-   md code needs this so that it can output relative linenumbers.  */
-
-extern int sdb_begin_function_line;
-
 /* File in which assembler code is being written.  */
 
 #ifdef BUFSIZ

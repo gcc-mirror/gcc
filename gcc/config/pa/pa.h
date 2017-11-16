@@ -494,17 +494,6 @@ extern rtx hppa_pic_save_rtx (void);
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 0
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.
-
-   On the 32-bit ports, we reserve one slot for the previous frame
-   pointer and one fill slot.  The fill slot is for compatibility
-   with HP compiled programs.  On the 64-bit ports, we reserve one
-   slot for the previous frame pointer.  */
-#define STARTING_FRAME_OFFSET 8
-
 /* Define STACK_ALIGNMENT_NEEDED to zero to disable final alignment
    of the stack.  The default is to align it to STACK_BOUNDARY.  */
 #define STACK_ALIGNMENT_NEEDED 0

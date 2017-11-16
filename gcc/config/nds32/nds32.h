@@ -448,8 +448,12 @@ enum nds32_builtins
         builtin_define ("__NDS32_REDUCED_REGS__");    \
       if (TARGET_CMOV)                                \
         builtin_define ("__NDS32_CMOV__");            \
-      if (TARGET_PERF_EXT)                            \
-        builtin_define ("__NDS32_PERF_EXT__");        \
+      if (TARGET_EXT_PERF)                            \
+        builtin_define ("__NDS32_EXT_PERF__");        \
+      if (TARGET_EXT_PERF2)                           \
+        builtin_define ("__NDS32_EXT_PERF2__");       \
+      if (TARGET_EXT_STRING)                          \
+        builtin_define ("__NDS32_EXT_STRING__");      \
       if (TARGET_16_BIT)                              \
         builtin_define ("__NDS32_16_BIT__");          \
       if (TARGET_GP_DIRECT)                           \
@@ -609,8 +613,11 @@ enum nds32_builtins
 enum reg_class
 {
   NO_REGS,
+  R5_REG,
+  R8_REG,
   R15_TA_REG,
   STACK_REG,
+  FRAME_POINTER_REG,
   LOW_REGS,
   MIDDLE_REGS,
   HIGH_REGS,
@@ -625,8 +632,11 @@ enum reg_class
 #define REG_CLASS_NAMES \
 {                       \
   "NO_REGS",            \
+  "R5_REG",             \
+  "R8_REG",             \
   "R15_TA_REG",         \
   "STACK_REG",          \
+  "FRAME_POINTER_REG",  \
   "LOW_REGS",           \
   "MIDDLE_REGS",        \
   "HIGH_REGS",          \
@@ -637,9 +647,12 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS \
 {                                                            \
-  {0x00000000, 0x00000000}, /* NO_REGS     :              */ \
-  {0x00008000, 0x00000000}, /* R15_TA_REG  : 15           */ \
-  {0x80000000, 0x00000000}, /* STACK_REG   : 31           */ \
+  {0x00000000, 0x00000000}, /* NO_REGS                    */ \
+  {0x00000020, 0x00000000}, /* R5_REG            : 5      */ \
+  {0x00000100, 0x00000000}, /* R8_REG            : 8      */ \
+  {0x00008000, 0x00000000}, /* R15_TA_REG        : 15     */ \
+  {0x80000000, 0x00000000}, /* STACK_REG         : 31     */ \
+  {0x10000000, 0x00000000}, /* FRAME_POINTER_REG : 28     */ \
   {0x000000ff, 0x00000000}, /* LOW_REGS    : 0-7          */ \
   {0x000f0fff, 0x00000000}, /* MIDDLE_REGS : 0-11, 16-19  */ \
   {0xfff07000, 0x00000000}, /* HIGH_REGS   : 12-14, 20-31 */ \
@@ -680,8 +693,6 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
-
-#define STARTING_FRAME_OFFSET 0
 
 #define STACK_POINTER_OFFSET 0
 

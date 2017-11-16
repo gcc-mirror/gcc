@@ -77,5 +77,8 @@ extern void bitmap_intersection_of_preds (sbitmap, sbitmap *, basic_block);
 extern void bitmap_union_of_succs (sbitmap, sbitmap *, basic_block);
 extern void bitmap_union_of_preds (sbitmap, sbitmap *, basic_block);
 extern basic_block * single_pred_before_succ_order (void);
+extern edge single_incoming_edge_ignoring_loop_edges (basic_block, bool);
+extern edge single_pred_edge_ignoring_loop_edges (basic_block, bool);
+
 
 #endif /* GCC_CFGANAL_H */

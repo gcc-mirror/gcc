@@ -111,6 +111,9 @@
 
 #define STRUCTURE_SIZE_BOUNDARY		8
 
+/* Heap alignment (same as BIGGEST_ALIGNMENT and STACK_BOUNDARY).  */
+#define MALLOC_ABI_ALIGNMENT  128
+
 /* Defined by the ABI */
 #define WCHAR_TYPE "unsigned int"
 #define WCHAR_TYPE_SIZE			32
@@ -343,9 +346,9 @@ extern unsigned aarch64_architecture_version;
   (epilogue_completed && (REGNO) == LR_REGNUM)
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
-   the stack pointer does not matter.  The value is tested only in
-   functions that have frame pointers.  */
-#define EXIT_IGNORE_STACK	1
+   the stack pointer does not matter.  This is only true if the function
+   uses alloca.  */
+#define EXIT_IGNORE_STACK	(cfun->calls_alloca)
 
 #define STATIC_CHAIN_REGNUM		R18_REGNUM
 #define HARD_FRAME_POINTER_REGNUM	R29_REGNUM
@@ -541,8 +544,6 @@ extern enum aarch64_processor aarch64_tune;
 
 #define FRAME_GROWS_DOWNWARD	1
 
-#define STARTING_FRAME_OFFSET	0
-
 #define ACCUMULATE_OUTGOING_ARGS	1
 
 #define FIRST_PARM_OFFSET(FNDECL) 0
@@ -596,6 +597,9 @@ struct GTY (()) aarch64_frame
 
   /* The size of the stack adjustment after saving callee-saves.  */
   HOST_WIDE_INT final_adjust;
+
+  /* Store FP,LR and setup a frame pointer.  */
+  bool emit_frame_chain;
 
   unsigned wb_candidate1;
   unsigned wb_candidate2;
@@ -909,8 +913,8 @@ extern enum aarch64_code_model aarch64_cmodel;
    || (MODE) == V4SFmode || (MODE) == V8HFmode || (MODE) == V2DImode \
    || (MODE) == V2DFmode)
 
-#define ENDIAN_LANE_N(mode, n)  \
-  (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)
+#define ENDIAN_LANE_N(NUNITS, N) \
+  (BYTES_BIG_ENDIAN ? NUNITS - 1 - N : N)
 
 /* Support for a configure-time default CPU, etc.  We currently support
    --with-arch and --with-cpu.  Both are ignored if either is specified

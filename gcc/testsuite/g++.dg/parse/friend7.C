@@ -1,5 +1,6 @@
 // PR c++/34488
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 struct A
 {

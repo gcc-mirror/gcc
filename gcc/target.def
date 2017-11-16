@@ -876,9 +876,8 @@ to generate it on the spot.",
 
 DEFHOOK
 (output_source_filename,
- "Output COFF information or DWARF debugging information which indicates\
- that filename @var{name} is the current source file to the stdio\
- stream @var{file}.\n\
+ "Output DWARF debugging information which indicates that filename\
+ @var{name} is the current source file to the stdio stream @var{file}.\n\
  \n\
  This target hook need not be defined if the standard form of output\
  for the file format in use is appropriate.",
@@ -2822,7 +2821,7 @@ DEFHOOK
  "This hook should return true if @var{x} should not be emitted into\n\
 debug sections.",
  bool, (rtx x),
- hook_bool_rtx_false)
+ default_const_not_ok_for_debug_p)
 
 /* Given an address RTX, say whether it is valid.  */
 DEFHOOK
@@ -3336,6 +3335,15 @@ HOOK_VECTOR_END (addr_space)
 #define HOOK_PREFIX "TARGET_"
 
 DEFHOOK
+(static_rtx_alignment,
+ "This hook returns the preferred alignment in bits for a\n\
+statically-allocated rtx, such as a constant pool entry.  @var{mode}\n\
+is the mode of the rtx.  The default implementation returns\n\
+@samp{GET_MODE_ALIGNMENT (@var{mode})}.",
+ HOST_WIDE_INT, (machine_mode mode),
+ default_static_rtx_alignment)
+
+DEFHOOK
 (constant_alignment,
  "This hook returns the alignment in bits of a constant that is being\n\
 placed in memory.  @var{constant} is the constant and @var{basic_align}\n\
@@ -3449,6 +3457,19 @@ ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,\n\
 if @var{extended} is false, 16 or greater than 128 and a multiple of 32.",
  opt_scalar_float_mode, (int n, bool extended),
  default_floatn_mode)
+
+DEFHOOK
+(floatn_builtin_p,
+  "Define this to return true if the @code{_Float@var{n}} and\n\
+@code{_Float@var{n}x} built-in functions should implicitly enable the\n\
+built-in function without the @code{__builtin_} prefix in addition to the\n\
+normal built-in function with the @code{__builtin_} prefix.  The default is\n\
+to only enable built-in functions without the @code{__builtin_} prefix for\n\
+the GNU C langauge.  In strict ANSI/ISO mode, the built-in function without\n\
+the @code{__builtin_} prefix is not enabled.  The argument @code{FUNC} is the\n\
+@code{enum built_in_function} id of the function to be enabled.",
+ bool, (int func),
+ default_floatn_builtin_p)
 
 /* Compute cost of moving data from a register of class FROM to one of
    TO, using MODE.  */
@@ -5021,7 +5042,7 @@ DEFHOOK
  "This target hook returns the mode to be used when accessing raw return\
  registers in @code{__builtin_return}.  Define this macro if the value\
  in @var{reg_raw_mode} is not correct.",
- machine_mode, (int regno),
+ fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 
 /* Return a mode wide enough to copy any argument value that might be
@@ -5031,7 +5052,7 @@ DEFHOOK
  "This target hook returns the mode to be used when accessing raw argument\
  registers in @code{__builtin_apply_args}.  Define this macro if the value\
  in @var{reg_raw_mode} is not correct.",
- machine_mode, (int regno),
+ fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 
 HOOK_VECTOR_END (calls)
@@ -5687,6 +5708,16 @@ The default is four for machines with a @code{casesi} instruction and\n\
 five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
+
+DEFHOOK
+(starting_frame_offset,
+ "This hook returns the offset from the frame pointer to the first local\n\
+variable slot to be allocated.  If @code{FRAME_GROWS_DOWNWARD}, it is the\n\
+offset to @emph{end} of the first slot allocated, otherwise it is the\n\
+offset to @emph{beginning} of the first slot allocated.  The default\n\
+implementation returns 0.",
+ HOST_WIDE_INT, (void),
+ hook_hwi_void_0)
 
 /* Optional callback to advise the target to compute the frame layout.  */
 DEFHOOK

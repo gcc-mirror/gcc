@@ -982,7 +982,7 @@ package System.Tasking is
       --  updated it itself using information from a suspended Caller, or
       --  after Caller has updated it and awakened Self.
 
-      Master_of_Task : Master_Level;
+      Master_Of_Task : Master_Level;
       --  The task executing the master of this task, and the ID of this task's
       --  master (unique only among masters currently active within Parent).
       --

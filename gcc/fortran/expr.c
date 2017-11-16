@@ -4013,13 +4013,22 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
   return true;
 }
 
-
-/* Build an initializer for a local integer, real, complex, logical, or
-   character variable, based on the command line flags finit-local-zero,
-   finit-integer=, finit-real=, finit-logical=, and finit-character=.  */
+/* Invoke gfc_build_init_expr to create an initializer expression, but do not
+ * require that an expression be built.  */
 
 gfc_expr *
 gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
+{
+  return gfc_build_init_expr (ts, where, false);
+}
+
+/* Build an initializer for a local integer, real, complex, logical, or
+   character variable, based on the command line flags finit-local-zero,
+   finit-integer=, finit-real=, finit-logical=, and finit-character=.
+   With force, an initializer is ALWAYS generated.  */
+
+gfc_expr *
+gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
 {
   int char_len;
   gfc_expr *init_expr;
@@ -4028,13 +4037,24 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
   /* Try to build an initializer expression.  */
   init_expr = gfc_get_constant_expr (ts->type, ts->kind, where);
 
+  /* If we want to force generation, make sure we default to zero.  */
+  gfc_init_local_real init_real = flag_init_real;
+  int init_logical = gfc_option.flag_init_logical;
+  if (force)
+    {
+      if (init_real == GFC_INIT_REAL_OFF)
+	init_real = GFC_INIT_REAL_ZERO;
+      if (init_logical == GFC_INIT_LOGICAL_OFF)
+	init_logical = GFC_INIT_LOGICAL_FALSE;
+    }
+
   /* We will only initialize integers, reals, complex, logicals, and
      characters, and only if the corresponding command-line flags
      were set.  Otherwise, we free init_expr and return null.  */
   switch (ts->type)
     {
     case BT_INTEGER:
-      if (gfc_option.flag_init_integer != GFC_INIT_INTEGER_OFF)
+      if (force || gfc_option.flag_init_integer != GFC_INIT_INTEGER_OFF)
         mpz_set_si (init_expr->value.integer,
                          gfc_option.flag_init_integer_value);
       else
@@ -4045,7 +4065,7 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
       break;
 
     case BT_REAL:
-      switch (flag_init_real)
+      switch (init_real)
         {
         case GFC_INIT_REAL_SNAN:
           init_expr->is_snan = 1;
@@ -4074,7 +4094,7 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
       break;
 
     case BT_COMPLEX:
-      switch (flag_init_real)
+      switch (init_real)
         {
         case GFC_INIT_REAL_SNAN:
           init_expr->is_snan = 1;
@@ -4106,9 +4126,9 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
       break;
 
     case BT_LOGICAL:
-      if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_FALSE)
+      if (init_logical == GFC_INIT_LOGICAL_FALSE)
         init_expr->value.logical = 0;
-      else if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_TRUE)
+      else if (init_logical == GFC_INIT_LOGICAL_TRUE)
         init_expr->value.logical = 1;
       else
         {
@@ -4120,7 +4140,7 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
     case BT_CHARACTER:
       /* For characters, the length must be constant in order to
          create a default initializer.  */
-      if (gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
+      if ((force || gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON)
           && ts->u.cl->length
           && ts->u.cl->length->expr_type == EXPR_CONSTANT)
         {
@@ -4136,7 +4156,8 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
           gfc_free_expr (init_expr);
           init_expr = NULL;
         }
-      if (!init_expr && gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
+      if (!init_expr
+	  && (force || gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON)
           && ts->u.cl->length && flag_max_stack_var_size != 0)
         {
           gfc_actual_arglist *arg;
@@ -4391,7 +4412,8 @@ component_initializer (gfc_typespec *ts, gfc_component *c, bool generate)
   /* Treat simple components like locals.  */
   else
     {
-      init = gfc_build_default_init_expr (&c->ts, &c->loc);
+      /* We MUST give an initializer, so force generation.  */
+      init = gfc_build_init_expr (&c->ts, &c->loc, true);
       gfc_apply_init (&c->ts, &c->attr, init);
     }
 

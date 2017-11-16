@@ -242,7 +242,6 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
-#define STARTING_FRAME_OFFSET 0
 
 #define DYNAMIC_CHAIN_ADDRESS(FRAME) \
   plus_constant (Pmode, (FRAME), UNITS_PER_WORD)

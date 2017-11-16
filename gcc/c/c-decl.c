@@ -1837,7 +1837,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  locate_old_decl (olddecl);
 	}
       else if (TREE_PUBLIC (newdecl))
-	warning (0, "built-in function %q+D declared as non-function",
+	warning (OPT_Wbuiltin_declaration_mismatch,
+		 "built-in function %q+D declared as non-function",
 		 newdecl);
       else
 	warning (OPT_Wshadow, "declaration of %q+D shadows "
@@ -2569,6 +2570,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 			set_builtin_decl_declared_p (fncode, true);
 		      break;
 		    }
+
+		  copy_attributes_to_builtin (newdecl);
 		}
 	    }
 	  else
@@ -3116,10 +3119,10 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	{
 	  gcc_rich_location richloc (loc);
 	  richloc.add_fixit_replace (hint);
-	  warned = pedwarn_at_rich_loc
-	    (&richloc, OPT_Wimplicit_function_declaration,
-	     "implicit declaration of function %qE; did you mean %qs?",
-	     id, hint);
+	  warned = pedwarn (&richloc, OPT_Wimplicit_function_declaration,
+			    "implicit declaration of function %qE;"
+			    " did you mean %qs?",
+			    id, hint);
 	}
       else
 	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
@@ -3129,7 +3132,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
     {
       gcc_rich_location richloc (loc);
       richloc.add_fixit_replace (hint);
-      warned = warning_at_rich_loc
+      warned = warning_at
 	(&richloc, OPT_Wimplicit_function_declaration,
 	 G_("implicit declaration of function %qE; did you mean %qs?"),
 	 id, hint);
@@ -3160,6 +3163,7 @@ header_for_builtin_fn (enum built_in_function fcode)
     CASE_FLT_FN (BUILT_IN_CBRT):
     CASE_FLT_FN (BUILT_IN_CEIL):
     CASE_FLT_FN (BUILT_IN_COPYSIGN):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
     CASE_FLT_FN (BUILT_IN_COS):
     CASE_FLT_FN (BUILT_IN_COSH):
     CASE_FLT_FN (BUILT_IN_ERF):
@@ -3168,11 +3172,15 @@ header_for_builtin_fn (enum built_in_function fcode)
     CASE_FLT_FN (BUILT_IN_EXP2):
     CASE_FLT_FN (BUILT_IN_EXPM1):
     CASE_FLT_FN (BUILT_IN_FABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
     CASE_FLT_FN (BUILT_IN_FDIM):
     CASE_FLT_FN (BUILT_IN_FLOOR):
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
     CASE_FLT_FN (BUILT_IN_FMAX):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMAX):
     CASE_FLT_FN (BUILT_IN_FMIN):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMIN):
     CASE_FLT_FN (BUILT_IN_FMOD):
     CASE_FLT_FN (BUILT_IN_FREXP):
     CASE_FLT_FN (BUILT_IN_HYPOT):
@@ -3204,6 +3212,7 @@ header_for_builtin_fn (enum built_in_function fcode)
     CASE_FLT_FN (BUILT_IN_SINH):
     CASE_FLT_FN (BUILT_IN_SINCOS):
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
     CASE_FLT_FN (BUILT_IN_TAN):
     CASE_FLT_FN (BUILT_IN_TANH):
     CASE_FLT_FN (BUILT_IN_TGAMMA):
@@ -3392,10 +3401,9 @@ implicitly_declare (location_t loc, tree functionid)
 		    {
 		      rich_location richloc (line_table, loc);
 		      maybe_add_include_fixit (&richloc, header);
-		      inform_at_rich_loc
-			(&richloc,
-			 "include %qs or provide a declaration of %qD",
-			 header, decl);
+		      inform (&richloc,
+			      "include %qs or provide a declaration of %qD",
+			      header, decl);
 		    }
 		  newtype = TREE_TYPE (decl);
 		}
@@ -3463,10 +3471,10 @@ undeclared_variable (location_t loc, tree id)
 	{
 	  gcc_rich_location richloc (loc);
 	  richloc.add_fixit_replace (guessed_id);
-	  error_at_rich_loc (&richloc,
-			     "%qE undeclared here (not in a function);"
-			     " did you mean %qs?",
-			     id, guessed_id);
+	  error_at (&richloc,
+		    "%qE undeclared here (not in a function);"
+		    " did you mean %qs?",
+		    id, guessed_id);
 	}
       else
 	error_at (loc, "%qE undeclared here (not in a function)", id);
@@ -3481,11 +3489,10 @@ undeclared_variable (location_t loc, tree id)
 	    {
 	      gcc_rich_location richloc (loc);
 	      richloc.add_fixit_replace (guessed_id);
-	      error_at_rich_loc
-		(&richloc,
-		 "%qE undeclared (first use in this function);"
-		 " did you mean %qs?",
-		 id, guessed_id);
+	      error_at (&richloc,
+			"%qE undeclared (first use in this function);"
+			" did you mean %qs?",
+			id, guessed_id);
 	    }
 	  else
 	    error_at (loc, "%qE undeclared (first use in this function)", id);

@@ -5969,7 +5969,7 @@ The @code{deprecated} attribute can also be used for functions and
 types (@pxref{Common Function Attributes},
 @pxref{Common Type Attributes}).
 
-@item nonstring (@var{nonstring})
+@item nonstring
 @cindex @code{nonstring} variable attribute
 The @code{nonstring} variable attribute specifies that an object or member
 declaration with type array of @code{char} or pointer to @code{char} is
@@ -7775,8 +7775,8 @@ GCC implements three different semantics of declaring a function
 inline.  One is available with @option{-std=gnu89} or
 @option{-fgnu89-inline} or when @code{gnu_inline} attribute is present
 on all inline declarations, another when
-@option{-std=c99}, @option{-std=c11},
-@option{-std=gnu99} or @option{-std=gnu11}
+@option{-std=c99},
+@option{-std=gnu99} or an option for a later C version is used
 (without @option{-fgnu89-inline}), and the third
 is used when compiling C++.
 
@@ -11684,6 +11684,63 @@ future revisions.
 
 @end deftypefn
 
+@deftypefn {Built-in Function} @var{type} __builtin_tgmath (@var{functions}, @var{arguments})
+
+The built-in function @code{__builtin_tgmath}, available only for C
+and Objective-C, calls a function determined according to the rules of
+@code{<tgmath.h>} macros.  It is intended to be used in
+implementations of that header, so that expansions of macros from that
+header only expand each of their arguments once, to avoid problems
+when calls to such macros are nested inside the arguments of other
+calls to such macros; in addition, it results in better diagnostics
+for invalid calls to @code{<tgmath.h>} macros than implementations
+using other GNU C language features.  For example, the @code{pow}
+type-generic macro might be defined as:
+
+@smallexample
+#define pow(a, b) __builtin_tgmath (powf, pow, powl, \
+                                    cpowf, cpow, cpowl, a, b)
+@end smallexample
+
+The arguments to @code{__builtin_tgmath} are at least two pointers to
+functions, followed by the arguments to the type-generic macro (which
+will be passed as arguments to the selected function).  All the
+pointers to functions must be pointers to prototyped functions, none
+of which may have variable arguments, and all of which must have the
+same number of parameters; the number of parameters of the first
+function determines how many arguments to @code{__builtin_tgmath} are
+interpreted as function pointers, and how many as the arguments to the
+called function.
+
+The types of the specified functions must all be different, but
+related to each other in the same way as a set of functions that may
+be selected between by a macro in @code{<tgmath.h>}.  This means that
+the functions are parameterized by a floating-point type @var{t},
+different for each such function.  The function return types may all
+be the same type, or they may be @var{t} for each function, or they
+may be the real type corresponding to @var{t} for each function (if
+some of the types @var{t} are complex).  Likewise, for each parameter
+position, the type of the parameter in that position may always be the
+same type, or may be @var{t} for each function (this case must apply
+for at least one parameter position), or may be the real type
+corresponding to @var{t} for each function.
+
+The standard rules for @code{<tgmath.h>} macros are used to find a
+common type @var{u} from the types of the arguments for parameters
+whose types vary between the functions; complex integer types (a GNU
+extension) are treated like @code{_Complex double} for this purpose.
+If the function return types vary, or are all the same integer type,
+the function called is the one for which @var{t} is @var{u}, and it is
+an error if there is no such function.  If the function return types
+are all the same floating-point type, the type-generic macro is taken
+to be one of those from TS 18661 that rounds the result to a narrower
+type; if there is a function for which @var{t} is @var{u}, it is
+called, and otherwise the first function, if any, for which @var{t}
+has at least the range and precision of @var{u} is called, and it is
+an error if there is no such function.
+
+@end deftypefn
+
 @deftypefn {Built-in Function} @var{type} __builtin_complex (@var{real}, @var{imag})
 
 The built-in function @code{__builtin_complex} is provided for use in
@@ -15547,35 +15604,18 @@ Additional built-in functions are available for the 64-bit PowerPC
 family of processors, for efficient use of 128-bit floating point
 (@code{__float128}) values.
 
-The following floating-point built-in functions are available with
-@code{-mfloat128} and Altivec support.  All of them implement the
-function that is part of the name.
+Previous versions of GCC supported some 'q' builtins for IEEE 128-bit
+floating point.  These functions are now mapped into the equivalent
+'f128' builtin functions.
 
 @smallexample
-__float128 __builtin_fabsq (__float128)
-__float128 __builtin_copysignq (__float128, __float128)
+__builtin_fabsq is mapped into __builtin_fabsf128
+__builtin_copysignq is mapped into __builtin_copysignf128
+__builtin_infq is mapped into __builtin_inff128
+__builtin_huge_valq is mapped into __builtin_huge_valf128
+__builtin_nanq is mapped into __builtin_nanf128
+__builtin_nansq is mapped into __builtin_nansf128
 @end smallexample
-
-The following built-in functions are available with @code{-mfloat128}
-and Altivec support.
-
-@table @code
-@item __float128 __builtin_infq (void)
-Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
-@findex __builtin_infq
-
-@item __float128 __builtin_huge_valq (void)
-Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
-@findex __builtin_huge_valq
-
-@item __float128 __builtin_nanq (void)
-Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
-@findex __builtin_nanq
-
-@item __float128 __builtin_nansq (void)
-Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
-@findex __builtin_nansq
-@end table
 
 The following built-in functions are available on Linux 64-bit systems
 that use the ISA 3.0 instruction set.
@@ -15891,6 +15931,51 @@ signed int vec_cntlz_lsbb (vector unsigned char);
 
 signed int vec_cnttz_lsbb (vector signed char);
 signed int vec_cnttz_lsbb (vector unsigned char);
+
+unsigned int vec_first_match_index (vector signed char, vector signed char);
+unsigned int vec_first_match_index (vector unsigned char,
+                                    vector unsigned char);
+unsigned int vec_first_match_index (vector signed int, vector signed int);
+unsigned int vec_first_match_index (vector unsigned int, vector unsigned int);
+unsigned int vec_first_match_index (vector signed short, vector signed short);
+unsigned int vec_first_match_index (vector unsigned short,
+                                    vector unsigned short);
+unsigned int vec_first_match_or_eos_index (vector signed char,
+                                           vector signed char);
+unsigned int vec_first_match_or_eos_index (vector unsigned char,
+                                           vector unsigned char);
+unsigned int vec_first_match_or_eos_index (vector signed int,
+                                           vector signed int);
+unsigned int vec_first_match_or_eos_index (vector unsigned int,
+                                           vector unsigned int);
+unsigned int vec_first_match_or_eos_index (vector signed short,
+                                           vector signed short);
+unsigned int vec_first_match_or_eos_index (vector unsigned short,
+                                           vector unsigned short);
+unsigned int vec_first_mismatch_index (vector signed char,
+                                       vector signed char);
+unsigned int vec_first_mismatch_index (vector unsigned char,
+                                       vector unsigned char);
+unsigned int vec_first_mismatch_index (vector signed int,
+                                       vector signed int);
+unsigned int vec_first_mismatch_index (vector unsigned int,
+                                       vector unsigned int);
+unsigned int vec_first_mismatch_index (vector signed short,
+                                       vector signed short);
+unsigned int vec_first_mismatch_index (vector unsigned short,
+                                       vector unsigned short);
+unsigned int vec_first_mismatch_or_eos_index (vector signed char,
+                                              vector signed char);
+unsigned int vec_first_mismatch_or_eos_index (vector unsigned char,
+                                              vector unsigned char);
+unsigned int vec_first_mismatch_or_eos_index (vector signed int,
+                                              vector signed int);
+unsigned int vec_first_mismatch_or_eos_index (vector unsigned int,
+                                              vector unsigned int);
+unsigned int vec_first_mismatch_or_eos_index (vector signed short,
+                                              vector signed short);
+unsigned int vec_first_mismatch_or_eos_index (vector unsigned short,
+                                              vector unsigned short);
 
 vector unsigned short vec_pack_to_short_fp32 (vector float, vector float);
 
@@ -21517,6 +21602,25 @@ They generate reads and writes to PKRU.
 @smallexample
 void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
+@end smallexample
+
+The following built-in functions are available when @option{-mcet} is used.
+They are used to support Intel Control-flow Enforcment Technology (CET).
+Each built-in function generates the  machine instruction that is part of the
+function's name.
+@smallexample
+unsigned int __builtin_ia32_rdsspd (unsigned int)
+unsigned long long __builtin_ia32_rdsspq (unsigned long long)
+void __builtin_ia32_incsspd (unsigned int)
+void __builtin_ia32_incsspq (unsigned long long)
+void __builtin_ia32_saveprevssp(void);
+void __builtin_ia32_rstorssp(void *);
+void __builtin_ia32_wrssd(unsigned int, void *);
+void __builtin_ia32_wrssq(unsigned long long, void *);
+void __builtin_ia32_wrussd(unsigned int, void *);
+void __builtin_ia32_wrussq(unsigned long long, void *);
+void __builtin_ia32_setssbsy(void);
+void __builtin_ia32_clrssbsy(void *);
 @end smallexample
 
 @node x86 transactional memory intrinsics

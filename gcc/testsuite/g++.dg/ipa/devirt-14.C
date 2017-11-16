@@ -20,7 +20,8 @@ public:
 };
 }
 class B a, *b=&a;
-main()
+
+int main()
 {
   if (0)
     {

@@ -6,7 +6,7 @@ struct Value
   double value;
   Value(double value_) : value (value_) {}
   operator double() const { return value; }
-  Value& operator=(double other) { value = other; }
+  Value& operator=(double other) { value = other; return *this; }
 };
 
 struct Ref

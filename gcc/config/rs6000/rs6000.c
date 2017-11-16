@@ -86,6 +86,20 @@
 #define TARGET_NO_PROTOTYPE 0
 #endif
 
+  /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
+     systems will also set long double to be IEEE 128-bit.  AIX and Darwin
+     explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
+     those systems will not pick up this default.  This needs to be after all
+     of the include files, so that POWERPC_LINUX and POWERPC_FREEBSD are
+     properly defined.  */
+#ifndef TARGET_IEEEQUAD_DEFAULT
+#if !defined (POWERPC_LINUX) && !defined (POWERPC_FREEBSD)
+#define TARGET_IEEEQUAD_DEFAULT 1
+#else
+#define TARGET_IEEEQUAD_DEFAULT 0
+#endif
+#endif
+
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
@@ -157,6 +171,7 @@ typedef struct GTY(()) machine_function
   bool gpr_is_wrapped_separately[32];
   bool fpr_is_wrapped_separately[32];
   bool lr_is_wrapped_separately;
+  bool toc_is_wrapped_separately;
 } machine_function;
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
@@ -1343,7 +1358,6 @@ static void rs6000_common_init_builtins (void);
 static void paired_init_builtins (void);
 static rtx paired_expand_predicate_builtin (enum insn_code, tree, rtx);
 static void htm_init_builtins (void);
-static int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
 static rs6000_stack_t *rs6000_stack_info (void);
 static void is_altivec_return_reg (rtx, void *);
 int easy_vector_constant (rtx, machine_mode);
@@ -1958,6 +1972,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT rs6000_constant_alignment
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET rs6000_starting_frame_offset
 
 
 /* Processor table.  */
@@ -2875,6 +2892,13 @@ rs6000_debug_reg_global (void)
   fprintf (stderr, DEBUG_FMT_D, "tls_size", rs6000_tls_size);
   fprintf (stderr, DEBUG_FMT_D, "long_double_size",
 	   rs6000_long_double_type_size);
+  if (rs6000_long_double_type_size == 128)
+    {
+      fprintf (stderr, DEBUG_FMT_S, "long double type",
+	       TARGET_IEEEQUAD ? "IEEE" : "IBM");
+      fprintf (stderr, DEBUG_FMT_S, "default long double type",
+	       TARGET_IEEEQUAD_DEFAULT ? "IEEE" : "IBM");
+    }
   fprintf (stderr, DEBUG_FMT_D, "sched_restricted_insns_priority",
 	   (int)rs6000_sched_restricted_insns_priority);
   fprintf (stderr, DEBUG_FMT_D, "Number of standard builtins",
@@ -4403,6 +4427,13 @@ rs6000_option_override_internal (bool global_init_p)
       && ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) == 0))
     rs6000_isa_flags |= OPTION_MASK_QUAD_MEMORY_ATOMIC;
 
+  /* If we can shrink-wrap the TOC register save separately, then use
+     -msave-toc-indirect unless explicitly disabled.  */
+  if ((rs6000_isa_flags_explicit & OPTION_MASK_SAVE_TOC_INDIRECT) == 0
+      && flag_shrink_wrap_separate
+      && optimize_function_for_speed_p (cfun))
+    rs6000_isa_flags |= OPTION_MASK_SAVE_TOC_INDIRECT;
+
   /* Enable power8 fusion if we are tuning for power8, even if we aren't
      generating power8 instructions.  */
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_P8_FUSION))
@@ -4557,13 +4588,26 @@ rs6000_option_override_internal (bool global_init_p)
 	rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
     }
 
-  /* Set -mabi=ieeelongdouble on some old targets.  Note, AIX and Darwin
-     explicitly redefine TARGET_IEEEQUAD to 0, so those systems will not
-     pick up this default.  */
-#if !defined (POWERPC_LINUX) && !defined (POWERPC_FREEBSD)
+  /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
+     systems will also set long double to be IEEE 128-bit.  AIX and Darwin
+     explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
+     those systems will not pick up this default.  Warn if the user changes the
+     default unless -Wno-psabi.  */
   if (!global_options_set.x_rs6000_ieeequad)
-    rs6000_ieeequad = 1;
-#endif
+    rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
+
+  else if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
+    {
+      static bool warned_change_long_double;
+      if (!warned_change_long_double)
+	{
+	  warned_change_long_double = true;
+	  if (TARGET_IEEEQUAD)
+	    warning (OPT_Wpsabi, "Using IEEE extended precision long double");
+	  else
+	    warning (OPT_Wpsabi, "Using IBM extended precision long double");
+	}
+    }
 
   /* Enable the default support for IEEE 128-bit floating point on Linux VSX
      sytems.  In GCC 7, we would enable the the IEEE 128-bit floating point
@@ -4762,10 +4806,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* For the E500 family of cores, reset the single/double FP flags to let us
      check that they remain constant across attributes or pragmas.  Also,
      clear a possible request for string instructions, not supported and which
-     we might have silently queried above for -Os. 
-
-     For other families, clear ISEL in case it was set implicitly.
-  */
+     we might have silently queried above for -Os.  */
 
   switch (rs6000_cpu)
     {
@@ -4775,19 +4816,12 @@ rs6000_option_override_internal (bool global_init_p)
     case PROCESSOR_PPCE500MC64:
     case PROCESSOR_PPCE5500:
     case PROCESSOR_PPCE6500:
-
       rs6000_single_float = 0;
       rs6000_double_float = 0;
-
       rs6000_isa_flags &= ~OPTION_MASK_STRING;
-
       break;
 
     default:
-
-      if (cpu_index >= 0 && !(rs6000_isa_flags_explicit & OPTION_MASK_ISEL))
-	rs6000_isa_flags &= ~OPTION_MASK_ISEL;
-
       break;
     }
 
@@ -8985,6 +9019,8 @@ rs6000_delegitimize_address (rtx orig_x)
 static bool
 rs6000_const_not_ok_for_debug_p (rtx x)
 {
+  if (GET_CODE (x) == UNSPEC)
+    return true;
   if (GET_CODE (x) == SYMBOL_REF
       && CONSTANT_POOL_ADDRESS_P (x))
     {
@@ -14048,7 +14084,8 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  return CONST0_RTX (tmode);
 	}
     }
-  else if (icode == CODE_FOR_xststdcqp
+  else if (icode == CODE_FOR_xststdcqp_kf
+	   || icode == CODE_FOR_xststdcqp_tf
 	   || icode == CODE_FOR_xststdcdp
 	   || icode == CODE_FOR_xststdcsp
 	   || icode == CODE_FOR_xvtstdcdp
@@ -14265,6 +14302,44 @@ swap_selector_for_mode (machine_mode mode)
   return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm)));
 }
 
+rtx
+swap_endian_selector_for_mode (machine_mode mode)
+{
+  unsigned int swap1[16] = {15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0};
+  unsigned int swap2[16] = {7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
+  unsigned int swap4[16] = {3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
+  unsigned int swap8[16] = {1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
+
+  unsigned int *swaparray, i;
+  rtx perm[16];
+
+  switch (mode)
+    {
+    case E_V1TImode:
+      swaparray = swap1;
+      break;
+    case E_V2DFmode:
+    case E_V2DImode:
+      swaparray = swap2;
+      break;
+    case E_V4SFmode:
+    case E_V4SImode:
+      swaparray = swap4;
+      break;
+    case E_V8HImode:
+      swaparray = swap8;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  for (i = 0; i < 16; ++i)
+    perm[i] = GEN_INT (swaparray[i]);
+
+  return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode,
+						     gen_rtvec_v (16, perm)));
+}
+
 /* Generate code for an "lvxl", or "lve*x" built-in for a little endian target
    with -maltivec=be specified.  Issue the load followed by an element-
    reversing permute.  */
@@ -14399,58 +14474,6 @@ altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
       emit_insn (pat);
     }
 
-  return target;
-}
-
-static rtx
-altivec_expand_xl_be_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
-{
-  rtx pat, addr;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  machine_mode tmode = insn_data[icode].operand[0].mode;
-  machine_mode mode0 = Pmode;
-  machine_mode mode1 = Pmode;
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-
-  if (icode == CODE_FOR_nothing)
-    /* Builtin not supported on this processor.  */
-    return 0;
-
-  /* If we got invalid arguments bail out before generating bad rtl.  */
-  if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return const0_rtx;
-
-  if (target == 0
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	  target = gen_reg_rtx (tmode);
-
-  op1 = copy_to_mode_reg (mode1, op1);
-
-  if (op0 == const0_rtx)
-    addr = gen_rtx_MEM (blk ? BLKmode : tmode, op1);
-  else
-    {
-      op0 = copy_to_mode_reg (mode0, op0);
-      addr = gen_rtx_MEM (blk ? BLKmode : tmode,
-                          gen_rtx_PLUS (Pmode, op1, op0));
-    }
-
-  pat = GEN_FCN (icode) (target, addr);
-  if (!pat)
-    return 0;
-
-  emit_insn (pat);
-  /*  Reverse element order of elements if in LE mode */
-  if (!VECTOR_ELT_ORDER_BIG)
-    {
-      rtx sel = swap_selector_for_mode (tmode);
-      rtx vperm = gen_rtx_UNSPEC (tmode, gen_rtvec (3, target, target, sel),
-				  UNSPEC_VPERM);
-      emit_insn (gen_rtx_SET (target, vperm));
-    }
   return target;
 }
 
@@ -15850,50 +15873,6 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       /* Fall through.  */
     }
 
-  /* XL_BE  We initialized them to always load in big endian order.  */
-  switch (fcode)
-    {
-    case VSX_BUILTIN_XL_BE_V2DI:
-      {
-        enum insn_code code = CODE_FOR_vsx_load_v2di;
-        return altivec_expand_xl_be_builtin (code, exp, target, false);
-      }
-      break;
-    case VSX_BUILTIN_XL_BE_V4SI:
-      {
-        enum insn_code code = CODE_FOR_vsx_load_v4si;
-        return altivec_expand_xl_be_builtin (code, exp, target, false);
-      }
-      break;
-    case VSX_BUILTIN_XL_BE_V8HI:
-      {
-        enum insn_code code = CODE_FOR_vsx_load_v8hi;
-        return altivec_expand_xl_be_builtin (code, exp, target, false);
-      }
-      break;
-    case VSX_BUILTIN_XL_BE_V16QI:
-      {
-        enum insn_code code = CODE_FOR_vsx_load_v16qi;
-        return altivec_expand_xl_be_builtin (code, exp, target, false);
-       }
-      break;
-    case VSX_BUILTIN_XL_BE_V2DF:
-      {
-        enum insn_code code = CODE_FOR_vsx_load_v2df;
-        return altivec_expand_xl_be_builtin (code, exp, target, false);
-      }
-      break;
-    case VSX_BUILTIN_XL_BE_V4SF:
-      {
-        enum insn_code code = CODE_FOR_vsx_load_v4sf;
-        return altivec_expand_xl_be_builtin (code, exp, target, false);
-      }
-      break;
-    default:
-      break;
-      /* Fall through.  */
-    }
-
   *expandedp = false;
   return NULL_RTX;
 }
@@ -16070,39 +16049,11 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
    from ia64.c.  */
 
 static tree
-rs6000_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
-		     tree *args, bool ignore ATTRIBUTE_UNUSED)
+rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
+		     int n_args ATTRIBUTE_UNUSED,
+		     tree *args ATTRIBUTE_UNUSED,
+		     bool ignore ATTRIBUTE_UNUSED)
 {
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    {
-      enum rs6000_builtins fn_code
-	= (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
-      switch (fn_code)
-	{
-	case RS6000_BUILTIN_NANQ:
-	case RS6000_BUILTIN_NANSQ:
-	  {
-	    tree type = TREE_TYPE (TREE_TYPE (fndecl));
-	    const char *str = c_getstr (*args);
-	    int quiet = fn_code == RS6000_BUILTIN_NANQ;
-	    REAL_VALUE_TYPE real;
-
-	    if (str && real_nan (&real, str, quiet, TYPE_MODE (type)))
-	      return build_real (type, real);
-	    return NULL_TREE;
-	  }
-	case RS6000_BUILTIN_INFQ:
-	case RS6000_BUILTIN_HUGE_VALQ:
-	  {
-	    tree type = TREE_TYPE (TREE_TYPE (fndecl));
-	    REAL_VALUE_TYPE inf;
-	    real_inf (&inf);
-	    return build_real (type, inf);
-	  }
-	default:
-	  break;
-	}
-    }
 #ifdef SUBTARGET_FOLD_BUILTIN
   return SUBTARGET_FOLD_BUILTIN (fndecl, n_args, args, ignore);
 #else
@@ -16127,6 +16078,36 @@ rs6000_builtin_valid_without_lhs (enum rs6000_builtins fn_code)
     default:
       return false;
     }
+}
+
+/* Helper function to handle the gimple folding of a vector compare
+   operation.  This sets up true/false vectors, and uses the
+   VEC_COND_EXPR operation.
+   CODE indicates which comparison is to be made. (EQ, GT, ...).
+   TYPE indicates the type of the result.  */
+static tree
+fold_build_vec_cmp (tree_code code, tree type,
+		    tree arg0, tree arg1)
+{
+  tree cmp_type = build_same_sized_truth_vector_type (type);
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp = fold_build2 (code, cmp_type, arg0, arg1);
+  return fold_build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
+
+/* Helper function to handle the in-between steps for the
+   vector compare built-ins.  */
+static void
+fold_compare_helper (gimple_stmt_iterator *gsi, tree_code code, gimple *stmt)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  tree cmp = fold_build_vec_cmp (code, TREE_TYPE (lhs), arg0, arg1);
+  gimple *g = gimple_build_assign (lhs, cmp);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_replace (gsi, g, true);
 }
 
 /* Fold a machine-dependent built-in in GIMPLE.  (For folding into
@@ -16608,6 +16589,69 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	 gsi_replace (gsi, g, true);
 	 return true;
       }
+
+    /* Vector Fused multiply-add (fma).  */
+    case ALTIVEC_BUILTIN_VMADDFP:
+    case VSX_BUILTIN_XVMADDDP:
+    case ALTIVEC_BUILTIN_VMLADDUHM:
+      {
+       arg0 = gimple_call_arg (stmt, 0);
+       arg1 = gimple_call_arg (stmt, 1);
+       tree arg2 = gimple_call_arg (stmt, 2);
+       lhs = gimple_call_lhs (stmt);
+       gimple *g = gimple_build_assign (lhs, FMA_EXPR , arg0, arg1, arg2);
+       gimple_set_location (g, gimple_location (stmt));
+       gsi_replace (gsi, g, true);
+       return true;
+      }
+
+    /* Vector compares; EQ, NE, GE, GT, LE.  */
+    case ALTIVEC_BUILTIN_VCMPEQUB:
+    case ALTIVEC_BUILTIN_VCMPEQUH:
+    case ALTIVEC_BUILTIN_VCMPEQUW:
+    case P8V_BUILTIN_VCMPEQUD:
+	fold_compare_helper (gsi, EQ_EXPR, stmt);
+	return true;
+
+    case P9V_BUILTIN_CMPNEB:
+    case P9V_BUILTIN_CMPNEH:
+    case P9V_BUILTIN_CMPNEW:
+      fold_compare_helper (gsi, NE_EXPR, stmt);
+      return true;
+
+    case VSX_BUILTIN_CMPGE_16QI:
+    case VSX_BUILTIN_CMPGE_U16QI:
+    case VSX_BUILTIN_CMPGE_8HI:
+    case VSX_BUILTIN_CMPGE_U8HI:
+    case VSX_BUILTIN_CMPGE_4SI:
+    case VSX_BUILTIN_CMPGE_U4SI:
+    case VSX_BUILTIN_CMPGE_2DI:
+    case VSX_BUILTIN_CMPGE_U2DI:
+      fold_compare_helper (gsi, GE_EXPR, stmt);
+      return true;
+
+    case ALTIVEC_BUILTIN_VCMPGTSB:
+    case ALTIVEC_BUILTIN_VCMPGTUB:
+    case ALTIVEC_BUILTIN_VCMPGTSH:
+    case ALTIVEC_BUILTIN_VCMPGTUH:
+    case ALTIVEC_BUILTIN_VCMPGTSW:
+    case ALTIVEC_BUILTIN_VCMPGTUW:
+    case P8V_BUILTIN_VCMPGTUD:
+    case P8V_BUILTIN_VCMPGTSD:
+      fold_compare_helper (gsi, GT_EXPR, stmt);
+      return true;
+
+    case VSX_BUILTIN_CMPLE_16QI:
+    case VSX_BUILTIN_CMPLE_U16QI:
+    case VSX_BUILTIN_CMPLE_8HI:
+    case VSX_BUILTIN_CMPLE_U8HI:
+    case VSX_BUILTIN_CMPLE_4SI:
+    case VSX_BUILTIN_CMPLE_U4SI:
+    case VSX_BUILTIN_CMPLE_2DI:
+    case VSX_BUILTIN_CMPLE_U2DI:
+      fold_compare_helper (gsi, LE_EXPR, stmt);
+      return true;
+
     default:
 	if (TARGET_DEBUG_BUILTIN)
 	   fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
@@ -16639,10 +16683,37 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   bool success;
   HOST_WIDE_INT mask = rs6000_builtin_info[uns_fcode].mask;
   bool func_valid_p = ((rs6000_builtin_mask & mask) == mask);
+  enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
+
+  /* We have two different modes (KFmode, TFmode) that are the IEEE 128-bit
+     floating point type, depending on whether long double is the IBM extended
+     double (KFmode) or long double is IEEE 128-bit (TFmode).  It is simpler if
+     we only define one variant of the built-in function, and switch the code
+     when defining it, rather than defining two built-ins and using the
+     overload table in rs6000-c.c to switch between the two.  */
+  if (FLOAT128_IEEE_P (TFmode))
+    switch (icode)
+      {
+      default:
+	break;
+
+      case CODE_FOR_sqrtkf2_odd:	icode = CODE_FOR_sqrttf2_odd;	break;
+      case CODE_FOR_trunckfdf2_odd:	icode = CODE_FOR_trunctfdf2_odd; break;
+      case CODE_FOR_addkf3_odd:		icode = CODE_FOR_addtf3_odd;	break;
+      case CODE_FOR_subkf3_odd:		icode = CODE_FOR_subtf3_odd;	break;
+      case CODE_FOR_mulkf3_odd:		icode = CODE_FOR_multf3_odd;	break;
+      case CODE_FOR_divkf3_odd:		icode = CODE_FOR_divtf3_odd;	break;
+      case CODE_FOR_fmakf4_odd:		icode = CODE_FOR_fmatf4_odd;	break;
+      case CODE_FOR_xsxexpqp_kf:	icode = CODE_FOR_xsxexpqp_tf;	break;
+      case CODE_FOR_xsxsigqp_kf:	icode = CODE_FOR_xsxsigqp_tf;	break;
+      case CODE_FOR_xststdcnegqp_kf:	icode = CODE_FOR_xststdcnegqp_tf; break;
+      case CODE_FOR_xsiexpqp_kf:	icode = CODE_FOR_xsiexpqp_tf;	break;
+      case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
+      case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
+      }
 
   if (TARGET_DEBUG_BUILTIN)
     {
-      enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
       const char *name1 = rs6000_builtin_info[uns_fcode].name;
       const char *name2 = (icode != CODE_FOR_nothing)
 			   ? get_insn_name ((int) icode)
@@ -16721,10 +16792,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
-	int icode = (BYTES_BIG_ENDIAN ? (int) CODE_FOR_altivec_lvsr_direct
+	int icode2 = (BYTES_BIG_ENDIAN ? (int) CODE_FOR_altivec_lvsr_direct
 		     : (int) CODE_FOR_altivec_lvsl_direct);
-	machine_mode tmode = insn_data[icode].operand[0].mode;
-	machine_mode mode = insn_data[icode].operand[1].mode;
+	machine_mode tmode = insn_data[icode2].operand[0].mode;
+	machine_mode mode = insn_data[icode2].operand[1].mode;
 	tree arg;
 	rtx op, addr, pat;
 
@@ -16746,10 +16817,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
 	if (target == 0
 	    || GET_MODE (target) != tmode
-	    || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	    || ! (*insn_data[icode2].operand[0].predicate) (target, tmode))
 	  target = gen_reg_rtx (tmode);
 
-	pat = GEN_FCN (icode) (target, op);
+	pat = GEN_FCN (icode2) (target, op);
 	if (!pat)
 	  return 0;
 	emit_insn (pat);
@@ -16807,25 +16878,25 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   d = bdesc_1arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_unop_builtin (d->icode, exp, target);
+      return rs6000_expand_unop_builtin (icode, exp, target);
 
   /* Handle simple binary operations.  */
   d = bdesc_2arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_binop_builtin (d->icode, exp, target);
+      return rs6000_expand_binop_builtin (icode, exp, target);
 
   /* Handle simple ternary operations.  */
   d = bdesc_3arg;
   for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_ternop_builtin (d->icode, exp, target);
+      return rs6000_expand_ternop_builtin (icode, exp, target);
 
   /* Handle simple no-argument operations. */
   d = bdesc_0arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_0arg); i++, d++)
     if (d->code == fcode)
-      return rs6000_expand_zeroop_builtin (d->icode, target);
+      return rs6000_expand_zeroop_builtin (icode, target);
 
   gcc_unreachable ();
 }
@@ -17046,15 +17117,6 @@ rs6000_init_builtins (void)
 
   if (TARGET_EXTRA_BUILTINS || TARGET_PAIRED_FLOAT)
     rs6000_common_init_builtins ();
-
-  ftype = build_function_type_list (ieee128_float_type_node,
-				    const_str_type_node, NULL_TREE);
-  def_builtin ("__builtin_nanq", ftype, RS6000_BUILTIN_NANQ);
-  def_builtin ("__builtin_nansq", ftype, RS6000_BUILTIN_NANSQ);
-
-  ftype = build_function_type_list (ieee128_float_type_node, NULL_TREE);
-  def_builtin ("__builtin_infq", ftype, RS6000_BUILTIN_INFQ);
-  def_builtin ("__builtin_huge_valq", ftype, RS6000_BUILTIN_HUGE_VALQ);
 
   ftype = builtin_function_type (DFmode, DFmode, DFmode, VOIDmode,
 				 RS6000_BUILTIN_RECIP, "__builtin_recipdiv");
@@ -17471,6 +17533,10 @@ altivec_init_builtins (void)
 	       VSX_BUILTIN_LD_ELEMREV_V4SF);
   def_builtin ("__builtin_vsx_ld_elemrev_v4si", v4si_ftype_long_pcvoid,
 	       VSX_BUILTIN_LD_ELEMREV_V4SI);
+  def_builtin ("__builtin_vsx_ld_elemrev_v8hi", v8hi_ftype_long_pcvoid,
+	       VSX_BUILTIN_LD_ELEMREV_V8HI);
+  def_builtin ("__builtin_vsx_ld_elemrev_v16qi", v16qi_ftype_long_pcvoid,
+	       VSX_BUILTIN_LD_ELEMREV_V16QI);
   def_builtin ("__builtin_vsx_st_elemrev_v2df", void_ftype_v2df_long_pvoid,
 	       VSX_BUILTIN_ST_ELEMREV_V2DF);
   def_builtin ("__builtin_vsx_st_elemrev_v2di", void_ftype_v2di_long_pvoid,
@@ -17479,42 +17545,10 @@ altivec_init_builtins (void)
 	       VSX_BUILTIN_ST_ELEMREV_V4SF);
   def_builtin ("__builtin_vsx_st_elemrev_v4si", void_ftype_v4si_long_pvoid,
 	       VSX_BUILTIN_ST_ELEMREV_V4SI);
-
-  def_builtin ("__builtin_vsx_le_be_v8hi", v8hi_ftype_long_pcvoid,
-		   VSX_BUILTIN_XL_BE_V8HI);
-  def_builtin ("__builtin_vsx_le_be_v4si", v4si_ftype_long_pcvoid,
-		   VSX_BUILTIN_XL_BE_V4SI);
-  def_builtin ("__builtin_vsx_le_be_v2di", v2di_ftype_long_pcvoid,
-		   VSX_BUILTIN_XL_BE_V2DI);
-  def_builtin ("__builtin_vsx_le_be_v4sf", v4sf_ftype_long_pcvoid,
-		   VSX_BUILTIN_XL_BE_V4SF);
-  def_builtin ("__builtin_vsx_le_be_v2df", v2df_ftype_long_pcvoid,
-		   VSX_BUILTIN_XL_BE_V2DF);
-  def_builtin ("__builtin_vsx_le_be_v16qi", v16qi_ftype_long_pcvoid,
-		   VSX_BUILTIN_XL_BE_V16QI);
-
-  if (TARGET_P9_VECTOR)
-    {
-      def_builtin ("__builtin_vsx_ld_elemrev_v8hi", v8hi_ftype_long_pcvoid,
-		   VSX_BUILTIN_LD_ELEMREV_V8HI);
-      def_builtin ("__builtin_vsx_ld_elemrev_v16qi", v16qi_ftype_long_pcvoid,
-		   VSX_BUILTIN_LD_ELEMREV_V16QI);
-      def_builtin ("__builtin_vsx_st_elemrev_v8hi",
-		   void_ftype_v8hi_long_pvoid, VSX_BUILTIN_ST_ELEMREV_V8HI);
-      def_builtin ("__builtin_vsx_st_elemrev_v16qi",
-		   void_ftype_v16qi_long_pvoid, VSX_BUILTIN_ST_ELEMREV_V16QI);
-    }
-  else
-    {
-      rs6000_builtin_decls[(int) VSX_BUILTIN_LD_ELEMREV_V8HI]
-	= rs6000_builtin_decls[(int) VSX_BUILTIN_LXVW4X_V8HI];
-      rs6000_builtin_decls[(int) VSX_BUILTIN_LD_ELEMREV_V16QI]
-	= rs6000_builtin_decls[(int) VSX_BUILTIN_LXVW4X_V16QI];
-      rs6000_builtin_decls[(int) VSX_BUILTIN_ST_ELEMREV_V8HI]
-	= rs6000_builtin_decls[(int) VSX_BUILTIN_STXVW4X_V8HI];
-      rs6000_builtin_decls[(int) VSX_BUILTIN_ST_ELEMREV_V16QI]
-	= rs6000_builtin_decls[(int) VSX_BUILTIN_STXVW4X_V16QI];
-    }
+  def_builtin ("__builtin_vsx_st_elemrev_v8hi", void_ftype_v8hi_long_pvoid,
+	       VSX_BUILTIN_ST_ELEMREV_V8HI);
+  def_builtin ("__builtin_vsx_st_elemrev_v16qi", void_ftype_v16qi_long_pvoid,
+	       VSX_BUILTIN_ST_ELEMREV_V16QI);
 
   def_builtin ("__builtin_vec_vsx_ld", opaque_ftype_long_pcvoid,
 	       VSX_BUILTIN_VEC_LD);
@@ -17526,6 +17560,8 @@ altivec_init_builtins (void)
 	       VSX_BUILTIN_VEC_XL_BE);
   def_builtin ("__builtin_vec_xst", void_ftype_opaque_long_pvoid,
 	       VSX_BUILTIN_VEC_XST);
+  def_builtin ("__builtin_vec_xst_be", void_ftype_opaque_long_pvoid,
+	       VSX_BUILTIN_VEC_XST_BE);
 
   def_builtin ("__builtin_vec_step", int_ftype_opaque, ALTIVEC_BUILTIN_VEC_STEP);
   def_builtin ("__builtin_vec_splats", opaque_ftype_opaque, ALTIVEC_BUILTIN_VEC_SPLATS);
@@ -18009,7 +18045,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
      are type correct.  */
   switch (builtin)
     {
-      /* unsigned 1 argument functions.  */
+    /* unsigned 1 argument functions.  */
     case CRYPTO_BUILTIN_VSBOX:
     case P8V_BUILTIN_VGBBD:
     case MISC_BUILTIN_CDTBCD:
@@ -18018,7 +18054,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[1] = 1;
       break;
 
-      /* unsigned 2 argument functions.  */
+    /* unsigned 2 argument functions.  */
     case ALTIVEC_BUILTIN_VMULEUB:
     case ALTIVEC_BUILTIN_VMULEUH:
     case ALTIVEC_BUILTIN_VMULEUW:
@@ -18053,7 +18089,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[2] = 1;
       break;
 
-      /* unsigned 3 argument functions.  */
+    /* unsigned 3 argument functions.  */
     case ALTIVEC_BUILTIN_VPERM_16QI_UNS:
     case ALTIVEC_BUILTIN_VPERM_8HI_UNS:
     case ALTIVEC_BUILTIN_VPERM_4SI_UNS:
@@ -18084,7 +18120,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[3] = 1;
       break;
 
-      /* signed permute functions with unsigned char mask.  */
+    /* signed permute functions with unsigned char mask.  */
     case ALTIVEC_BUILTIN_VPERM_16QI:
     case ALTIVEC_BUILTIN_VPERM_8HI:
     case ALTIVEC_BUILTIN_VPERM_4SI:
@@ -18100,14 +18136,14 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[3] = 1;
       break;
 
-      /* unsigned args, signed return.  */
+    /* unsigned args, signed return.  */
     case VSX_BUILTIN_XVCVUXDSP:
     case VSX_BUILTIN_XVCVUXDDP_UNS:
     case ALTIVEC_BUILTIN_UNSFLOAT_V4SI_V4SF:
       h.uns_p[1] = 1;
       break;
 
-      /* signed args, unsigned return.  */
+    /* signed args, unsigned return.  */
     case VSX_BUILTIN_XVCVDPUXDS_UNS:
     case ALTIVEC_BUILTIN_FIXUNS_V4SF_V4SI:
     case MISC_BUILTIN_UNPACK_TD:
@@ -18115,14 +18151,31 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       h.uns_p[0] = 1;
       break;
 
-      /* unsigned arguments for 128-bit pack instructions.  */
+    /* unsigned arguments, bool return (compares).  */
+    case ALTIVEC_BUILTIN_VCMPEQUB:
+    case ALTIVEC_BUILTIN_VCMPEQUH:
+    case ALTIVEC_BUILTIN_VCMPEQUW:
+    case P8V_BUILTIN_VCMPEQUD:
+    case VSX_BUILTIN_CMPGE_U16QI:
+    case VSX_BUILTIN_CMPGE_U8HI:
+    case VSX_BUILTIN_CMPGE_U4SI:
+    case VSX_BUILTIN_CMPGE_U2DI:
+    case ALTIVEC_BUILTIN_VCMPGTUB:
+    case ALTIVEC_BUILTIN_VCMPGTUH:
+    case ALTIVEC_BUILTIN_VCMPGTUW:
+    case P8V_BUILTIN_VCMPGTUD:
+      h.uns_p[1] = 1;
+      h.uns_p[2] = 1;
+      break;
+
+    /* unsigned arguments for 128-bit pack instructions.  */
     case MISC_BUILTIN_PACK_TD:
     case MISC_BUILTIN_PACK_V1TI:
       h.uns_p[1] = 1;
       h.uns_p[2] = 1;
       break;
 
-	/* unsigned second arguments (vector shift right).  */
+    /* unsigned second arguments (vector shift right).  */
     case ALTIVEC_BUILTIN_VSRB:
     case ALTIVEC_BUILTIN_VSRH:
     case ALTIVEC_BUILTIN_VSRW:
@@ -22423,14 +22476,6 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
 }
 
 
-/* Emit the RTL for an sISEL pattern.  */
-
-void
-rs6000_emit_sISEL (machine_mode mode ATTRIBUTE_UNUSED, rtx operands[])
-{
-  rs6000_emit_int_cmove (operands[0], operands[1], const1_rtx, const0_rtx);
-}
-
 /* Emit RTL that sets a register to zero if OP1 and OP2 are equal.  SCRATCH
    can be used as that dest register.  Return the dest register.  */
 
@@ -23206,7 +23251,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 
 /* Same as above, but for ints (isel).  */
 
-static int
+int
 rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   rtx condition_rtx, cr;
@@ -26590,6 +26635,7 @@ rs6000_get_separate_components (void)
 	      && !(info->savres_strategy & REST_MULTIPLE));
 
   /* Component 0 is the save/restore of LR (done via GPR0).
+     Component 2 is the save of the TOC (GPR2).
      Components 13..31 are the save/restore of GPR13..GPR31.
      Components 46..63 are the save/restore of FPR14..FPR31.  */
 
@@ -26664,6 +26710,10 @@ rs6000_get_separate_components (void)
 	bitmap_set_bit (components, 0);
     }
 
+  /* Optimize saving the TOC.  This is component 2.  */
+  if (cfun->machine->save_toc_in_prologue)
+    bitmap_set_bit (components, 2);
+
   return components;
 }
 
@@ -26701,6 +26751,12 @@ rs6000_components_for_bb (basic_block bb)
       || bitmap_bit_p (gen, LR_REGNO)
       || bitmap_bit_p (kill, LR_REGNO))
     bitmap_set_bit (components, 0);
+
+  /* The TOC save.  */
+  if (bitmap_bit_p (in, TOC_REGNUM)
+      || bitmap_bit_p (gen, TOC_REGNUM)
+      || bitmap_bit_p (kill, TOC_REGNUM))
+    bitmap_set_bit (components, 2);
 
   return components;
 }
@@ -26754,6 +26810,14 @@ rs6000_emit_prologue_components (sbitmap components)
       rtx lr = gen_rtx_REG (reg_mode, LR_REGNO);
       rtx mem = copy_rtx (SET_DEST (single_set (insn)));
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, lr));
+    }
+
+  /* Prologue for TOC.  */
+  if (bitmap_bit_p (components, 2))
+    {
+      rtx reg = gen_rtx_REG (reg_mode, TOC_REGNUM);
+      rtx sp_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+      emit_insn (gen_frame_store (reg, sp_reg, RS6000_TOC_SAVE_SLOT));
     }
 
   /* Prologue for the GPRs.  */
@@ -26880,6 +26944,9 @@ rs6000_set_handled_components (sbitmap components)
 
   if (bitmap_bit_p (components, 0))
     cfun->machine->lr_is_wrapped_separately = true;
+
+  if (bitmap_bit_p (components, 2))
+    cfun->machine->toc_is_wrapped_separately = true;
 }
 
 /* VRSAVE is a bit vector representing which AltiVec registers
@@ -27837,7 +27904,8 @@ rs6000_emit_prologue (void)
      unwinder to interpret it.  R2 changes, apart from the
      calls_eh_return case earlier in this function, are handled by
      linux-unwind.h frob_update_context.  */
-  if (rs6000_save_toc_in_prologue_p ())
+  if (rs6000_save_toc_in_prologue_p ()
+      && !cfun->machine->toc_is_wrapped_separately)
     {
       rtx reg = gen_rtx_REG (reg_mode, TOC_REGNUM);
       emit_insn (gen_frame_store (reg, sp_reg_rtx, RS6000_TOC_SAVE_SLOT));
@@ -34992,6 +35060,8 @@ rs6000_insn_cost (rtx_insn *insn, bool speed)
 
     case TYPE_SYNC:
     case TYPE_LOAD_L:
+    case TYPE_MFCR:
+    case TYPE_MFCRF:
       cost = COSTS_N_INSNS (n + 2);
       break;
 
@@ -39496,6 +39566,16 @@ rs6000_constant_alignment (const_tree exp, HOST_WIDE_INT align)
       && (STRICT_ALIGNMENT || !optimize_size))
     return MAX (align, BITS_PER_WORD);
   return align;
+}
+
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
+
+static HOST_WIDE_INT
+rs6000_starting_frame_offset (void)
+{
+  if (FRAME_GROWS_DOWNWARD)
+    return 0;
+  return RS6000_STARTING_FRAME_OFFSET;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

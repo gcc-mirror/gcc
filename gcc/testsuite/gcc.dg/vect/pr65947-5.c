@@ -4,7 +4,11 @@
 
 extern void abort (void) __attribute__ ((noreturn));
 
+#if VECTOR_BITS > 256
+#define N (VECTOR_BITS / 8)
+#else
 #define N 32
+#endif
 
 /* Condition reduction where loop size is not known at compile time.  Will fail
    to vectorize.  Version inlined into main loop will vectorize.  */
@@ -30,6 +34,11 @@ main (void)
   21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
   31, 32
   };
+  for (int i = 32; i < N; ++i)
+    {
+      a[i] = 70 + (i & 3);
+      asm volatile ("" ::: "memory");
+    }
 
   check_vect ();
 

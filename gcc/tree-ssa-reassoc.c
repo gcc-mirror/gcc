@@ -5625,6 +5625,7 @@ attempt_builtin_copysign (vec<operand_entry *> *ops)
 	      switch (gimple_call_combined_fn (old_call))
 		{
 		CASE_CFN_COPYSIGN:
+		CASE_CFN_COPYSIGN_FN:
 		  arg0 = gimple_call_arg (old_call, 0);
 		  arg1 = gimple_call_arg (old_call, 1);
 		  /* The first argument of copysign must be a constant,

@@ -5067,8 +5067,10 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	  v1 = v2 = v3 = var;
 
 	/* Determine position in reduction buffer, which may be used
-	   by target.  */
-	machine_mode mode = TYPE_MODE (TREE_TYPE (var));
+	   by target.  The parser has ensured that this is not a
+	   variable-sized type.  */
+	fixed_size_mode mode
+	  = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (var)));
 	unsigned align = GET_MODE_ALIGNMENT (mode) /  BITS_PER_UNIT;
 	offset = (offset + align - 1) & ~(align - 1);
 	tree off = build_int_cst (sizetype, offset);

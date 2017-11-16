@@ -1175,8 +1175,8 @@ proc check_effective_target_pie { } {
 	return 1;
     }
     if { [istarget *-*-solaris2.1\[1-9\]*] } {
-	# Full PIE support was added in Solaris 11.x and Solaris 12, but gcc
-	# errors out if missing, so check for that.
+	# Full PIE support was added in Solaris 11.3, but gcc errors out
+	# if missing, so check for that.
 	return [check_no_compiler_messages pie executable {
 	    int main (void) { return 0; }
 	} "-pie -fpie"]
@@ -3290,7 +3290,8 @@ proc check_effective_target_vect_peeling_profitable { } {
     } else {
 	set et_vect_peeling_profitable_saved($et_index) 1
         if { ([istarget s390*-*-*]
-	      && [check_effective_target_s390_vx]) } {
+	      && [check_effective_target_s390_vx])
+	     || [check_effective_target_vect_element_align_preferred] } {
 	    set et_vect_peeling_profitable_saved($et_index) 0
         }
     }
@@ -3412,6 +3413,19 @@ proc check_effective_target_arm_vect_no_misalign { } {
     }]
 }
 
+
+# Return 1 if this is an ARM target supporting -mfloat-abi=soft.  Some
+# multilibs may be incompatible with this option.
+
+proc check_effective_target_arm_soft_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_soft_ok executable {
+	    int main() { return 0;}
+	} "-mfloat-abi=soft"]
+    } else {
+	return 0
+    }
+}
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp
 # -mfloat-abi=softfp.  Some multilibs may be incompatible with these
@@ -4396,6 +4410,48 @@ proc check_effective_target_arm_v8_2a_fp16_neon_ok { } {
 		check_effective_target_arm_v8_2a_fp16_neon_ok_nocache]
 }
 
+# Return 1 if the target supports ARMv8.2 Adv.SIMD Dot Product
+# instructions, 0 otherwise.  The test is valid for ARM and for AArch64.
+# Record the command line options needed.
+
+proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
+    global et_arm_v8_2a_dotprod_neon_flags
+    set et_arm_v8_2a_dotprod_neon_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+        return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8"} {
+        if { [check_no_compiler_messages_nocache \
+                  arm_v8_2a_dotprod_neon_ok object {
+            #if !defined (__ARM_FEATURE_DOTPROD)
+            #error "__ARM_FEATURE_DOTPROD not defined"
+            #endif
+        } "$flags -march=armv8.2-a+dotprod"] } {
+            set et_arm_v8_2a_dotprod_neon_flags "$flags -march=armv8.2-a+dotprod"
+            return 1
+        }
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_2a_dotprod_neon_ok { } {
+    return [check_cached_effective_target arm_v8_2a_dotprod_neon_ok \
+                check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache]
+}
+
+proc add_options_for_arm_v8_2a_dotprod_neon { flags } {
+    if { ! [check_effective_target_arm_v8_2a_dotprod_neon_ok] } {
+        return "$flags"
+    }
+    global et_arm_v8_2a_dotprod_neon_flags
+    return "$flags $et_arm_v8_2a_dotprod_neon_flags"
+}
+
 # Return 1 if the target supports executing ARMv8 NEON instructions, 0
 # otherwise.
 
@@ -4531,6 +4587,42 @@ proc check_effective_target_arm_v8_2a_fp16_neon_hw { } {
 	  return (result[0] == 1.0) ? 0 : 1;
 	}
     } [add_options_for_arm_v8_2a_fp16_neon ""]]
+}
+
+# Return 1 if the target supports executing AdvSIMD instructions from ARMv8.2
+# with the Dot Product extension, 0 otherwise.  The test is valid for ARM and for
+# AArch64.
+
+proc check_effective_target_arm_v8_2a_dotprod_neon_hw { } {
+    if { ![check_effective_target_arm_v8_2a_dotprod_neon_ok] } {
+        return 0;
+    }
+    return [check_runtime arm_v8_2a_dotprod_neon_hw_available {
+        #include "arm_neon.h"
+        int
+        main (void)
+        {
+
+	  uint32x2_t results = {0,0};
+	  uint8x8_t a = {1,1,1,1,2,2,2,2};
+	  uint8x8_t b = {2,2,2,2,3,3,3,3};
+
+          #ifdef __ARM_ARCH_ISA_A64
+          asm ("udot %0.2s, %1.8b, %2.8b"
+               : "=w"(results)
+               : "w"(a), "w"(b)
+               : /* No clobbers.  */);
+
+	  #else
+          asm ("vudot.u8 %P0, %P1, %P2"
+               : "=w"(results)
+               : "w"(a), "w"(b)
+               : /* No clobbers.  */);
+          #endif
+
+          return (results[0] == 8 && results[1] == 24) ? 1 : 0;
+        }
+    } [add_options_for_arm_v8_2a_dotprod_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.
@@ -5469,6 +5561,78 @@ proc check_effective_target_vect_perm { } {
     return $et_vect_perm_saved($et_index)
 }
 
+# Return 1 if, for some VF:
+#
+# - the target's default vector size is VF * ELEMENT_BITS bits
+#
+# - it is possible to implement the equivalent of:
+#
+#      int<ELEMENT_BITS>_t s1[COUNT][COUNT * VF], s2[COUNT * VF];
+#      for (int i = 0; i < COUNT; ++i)
+#        for (int j = 0; j < COUNT * VF; ++j)
+#          s1[i][j] = s2[j - j % COUNT + i]
+#
+#   using only a single 2-vector permute for each vector in s1.
+#
+# E.g. for COUNT == 3 and vector length 4, the two arrays would be:
+#
+#    s2    | a0 a1 a2 a3 | b0 b1 b2 b3 | c0 c1 c2 c3
+#    ------+-------------+-------------+------------
+#    s1[0] | a0 a0 a0 a3 | a3 a3 b2 b2 | b2 c1 c1 c1
+#    s1[1] | a1 a1 a1 b0 | b0 b0 b3 b3 | b3 c2 c2 c2
+#    s1[2] | a2 a2 a2 b1 | b1 b1 c0 c0 | c0 c3 c3 c3
+#
+# Each s1 permute requires only two of a, b and c.
+#
+# The distance between the start of vector n in s1[0] and the start
+# of vector n in s2 is:
+#
+#    A = (n * VF) % COUNT
+#
+# The corresponding value for the end of vector n is:
+#
+#    B = (n * VF + VF - 1) % COUNT
+#
+# Subtracting i from each value gives the corresponding difference
+# for s1[i].  The condition being tested by this function is false
+# iff A - i > 0 and B - i < 0 for some i and n, such that the first
+# element for s1[i] comes from vector n - 1 of s2 and the last element
+# comes from vector n + 1 of s2.  The condition is therefore true iff
+# A <= B for all n.  This is turn means the condition is true iff:
+#
+#    (n * VF) % COUNT + (VF - 1) % COUNT < COUNT
+#
+# for all n.  COUNT - (n * VF) % COUNT is bounded by gcd (VF, COUNT),
+# and will be that value for at least one n in [0, COUNT), so we want:
+#
+#    (VF - 1) % COUNT < gcd (VF, COUNT)
+
+proc vect_perm_supported { count element_bits } {
+    set vector_bits [lindex [available_vector_sizes] 0]
+    if { $vector_bits <= 0 } {
+	return 0
+    }
+    set vf [expr { $vector_bits / $element_bits }]
+
+    # Compute gcd (VF, COUNT).
+    set gcd $vf
+    set temp1 $count
+    while { $temp1 > 0 } {
+	set temp2 [expr { $gcd % $temp1 }]
+	set gcd $temp1
+	set temp1 $temp2
+    }
+    return [expr { ($vf - 1) % $count < $gcd }]
+}
+
+# Return 1 if the target supports SLP permutation of 3 vectors when each
+# element has 32 bits.
+
+proc check_effective_target_vect_perm3_int { } {
+    return [expr { [check_effective_target_vect_perm]
+		   && [vect_perm_supported 3 32] }]
+}
+
 # Return 1 if the target plus current options supports vector permutation
 # on byte-sized elements, 0 otherwise.
 #
@@ -5500,6 +5664,14 @@ proc check_effective_target_vect_perm_byte { } {
     return $et_vect_perm_byte_saved($et_index)
 }
 
+# Return 1 if the target supports SLP permutation of 3 vectors when each
+# element has 8 bits.
+
+proc check_effective_target_vect_perm3_byte { } {
+    return [expr { [check_effective_target_vect_perm_byte]
+		   && [vect_perm_supported 3 8] }]
+}
+
 # Return 1 if the target plus current options supports vector permutation
 # on short-sized elements, 0 otherwise.
 #
@@ -5529,6 +5701,14 @@ proc check_effective_target_vect_perm_short { } {
     verbose "check_effective_target_vect_perm_short:\
 	     returning $et_vect_perm_short_saved($et_index)" 2
     return $et_vect_perm_short_saved($et_index)
+}
+
+# Return 1 if the target supports SLP permutation of 3 vectors when each
+# element has 16 bits.
+
+proc check_effective_target_vect_perm3_short { } {
+    return [expr { [check_effective_target_vect_perm_short]
+		   && [vect_perm_supported 3 16] }]
 }
 
 # Return 1 if the target plus current options supports folding of
@@ -5850,6 +6030,8 @@ proc check_effective_target_vect_sdot_qi { } {
     } else {
 	set et_vect_sdot_qi_saved($et_index) 0
 	if { [istarget ia64-*-*]
+	     || [istarget aarch64*-*-*]
+	     || [istarget arm*-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa]) } {
             set et_vect_udot_qi_saved 1
@@ -5874,6 +6056,8 @@ proc check_effective_target_vect_udot_qi { } {
     } else {
 	set et_vect_udot_qi_saved($et_index) 0
         if { [istarget powerpc*-*-*]
+	     || [istarget aarch64*-*-*]
+	     || [istarget arm*-*-*]
 	     || [istarget ia64-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa]) } {
@@ -6172,6 +6356,19 @@ proc check_effective_target_vect_natural_alignment { } {
     return $et_vect_natural_alignment
 }
 
+# Return 1 if the target doesn't prefer any alignment beyond element
+# alignment during vectorization.
+
+proc check_effective_target_vect_element_align_preferred { } {
+    return [check_effective_target_vect_variable_length]
+}
+
+# Return 1 if we can align stack data to the preferred vector alignment.
+
+proc check_effective_target_vect_align_stack_vars { } {
+    return 1
+}
+
 # Return 1 if vector alignment (for types of size 32 bit or less) is reachable, 0 otherwise.
 
 proc check_effective_target_vector_alignment_reachable { } {
@@ -6221,6 +6418,15 @@ proc check_effective_target_vect_element_align { } {
     return $et_vect_element_align($et_index)
 }
 
+# Return 1 if we expect to see unaligned accesses in at least some
+# vector dumps.
+
+proc check_effective_target_vect_unaligned_possible { } {
+    return [expr { ![check_effective_target_vect_element_align_preferred]
+		   && (![check_effective_target_vect_no_align]
+		       || [check_effective_target_vect_hw_misalign]) }]
+}
+
 # Return 1 if the target supports vector LOAD_LANES operations, 0 otherwise.
 
 proc check_effective_target_vect_load_lanes { } {
@@ -6238,6 +6444,12 @@ proc check_effective_target_vect_load_lanes { } {
 
     verbose "check_effective_target_vect_load_lanes: returning $et_vect_load_lanes" 2
     return $et_vect_load_lanes
+}
+
+# Return 1 if the target supports vector masked stores.
+
+proc check_effective_target_vect_masked_store { } {
+    return 0
 }
 
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
@@ -6499,46 +6711,44 @@ foreach N {2 3 4 8} {
     }]
 }
 
+# Return the list of vector sizes (in bits) that each target supports.
+# A vector length of "0" indicates variable-length vectors.
+
+proc available_vector_sizes { } {
+    set result {}
+    if { [istarget aarch64*-*-*] } {
+	lappend result 128 64
+    } elseif { [istarget arm*-*-*]
+		&& [check_effective_target_arm_neon_ok] } {
+	lappend result 128 64
+    } elseif { (([istarget i?86-*-*] || [istarget x86_64-*-*])
+		 && ([check_avx_available] && ![check_prefer_avx128])) } {
+	lappend result 256 128
+    } elseif { [istarget sparc*-*-*] } {
+	lappend result 64
+    } else {
+	# The traditional default asumption.
+	lappend result 128
+    }
+    return $result
+}
+
 # Return 1 if the target supports multiple vector sizes
 
 proc check_effective_target_vect_multiple_sizes { } {
-    global et_vect_multiple_sizes_saved
-    global et_index
+    return [expr { [llength [available_vector_sizes]] > 1 }]
+}
 
-    set et_vect_multiple_sizes_saved($et_index) 0
-    if { [istarget aarch64*-*-*]
-	 || [is-effective-target arm_neon]
-	 || (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	     && ([check_avx_available] && ![check_prefer_avx128])) } {
-	set et_vect_multiple_sizes_saved($et_index) 1
-    }
+# Return true if variable-length vectors are supported.
 
-    verbose "check_effective_target_vect_multiple_sizes:\
-	     returning $et_vect_multiple_sizes_saved($et_index)" 2
-    return $et_vect_multiple_sizes_saved($et_index)
+proc check_effective_target_vect_variable_length { } {
+    return [expr { [lindex [available_vector_sizes] 0] == 0 }]
 }
 
 # Return 1 if the target supports vectors of 64 bits.
 
 proc check_effective_target_vect64 { } {
-    global et_vect64_saved
-    global et_index
-
-    if [info exists et_vect64_saved($et_index)] {
-        verbose "check_effective_target_vect64: using cached result" 2
-    } else {
-	set et_vect64_saved($et_index) 0
-        if { ([is-effective-target arm_neon]
-	      && [check_effective_target_arm_little_endian])
-	     || [istarget aarch64*-*-*]
-             || [istarget sparc*-*-*] } {
-	   set et_vect64_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect64:\
-	     returning $et_vect64_saved($et_index)" 2
-    return $et_vect64_saved($et_index)
+    return [expr { [lsearch -exact [available_vector_sizes] 64] >= 0 }]
 }
 
 # Return 1 if the target supports vector copysignf calls.
@@ -7665,11 +7875,7 @@ proc check_avx_available { } {
 # Return true if 32- and 16-bytes vectors are available.
 
 proc check_effective_target_vect_sizes_32B_16B { } {
-  if { [check_avx_available] && ![check_prefer_avx128] } {
-     return 1;
-  } else {
-    return 0;
-  }
+    return [expr { [available_vector_sizes] == [list 256 128] }]
 }
 
 # Return true if 16- and 8-bytes vectors are available.
@@ -8290,7 +8496,7 @@ proc check_effective_target_aarch64_tiny { } {
 # Create functions to check that the AArch64 assembler supports the
 # various architecture extensions via the .arch_extension pseudo-op.
 
-foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse"} {
+foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod"} {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
@@ -8922,4 +9128,17 @@ proc check_effective_target_callee_realigns_stack { } {
 	return 1
   }
   return 0
+}
+
+# Return 1 if CET instructions can be compiled.
+proc check_effective_target_cet { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+	return 0
+    }
+    return [check_no_compiler_messages cet object {
+	void foo (void)
+	{
+	  asm ("setssbsy");
+	}
+    } "-O2" ]
 }

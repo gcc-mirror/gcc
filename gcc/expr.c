@@ -2628,9 +2628,10 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
   rtx src = NULL, dst = NULL;
   unsigned HOST_WIDE_INT bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
   unsigned HOST_WIDE_INT bitpos, xbitpos, padding_correction = 0;
-  machine_mode mode = GET_MODE (srcreg);
-  machine_mode tmode = GET_MODE (target);
-  machine_mode copy_mode;
+  /* No current ABI uses variable-sized modes to pass a BLKmnode type.  */
+  fixed_size_mode mode = as_a <fixed_size_mode> (GET_MODE (srcreg));
+  fixed_size_mode tmode = as_a <fixed_size_mode> (GET_MODE (target));
+  fixed_size_mode copy_mode;
 
   /* BLKmode registers created in the back-end shouldn't have survived.  */
   gcc_assert (mode != BLKmode);
@@ -2728,19 +2729,21 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
     }
 }
 
-/* Copy BLKmode value SRC into a register of mode MODE.  Return the
+/* Copy BLKmode value SRC into a register of mode MODE_IN.  Return the
    register if it contains any data, otherwise return null.
 
    This is used on targets that return BLKmode values in registers.  */
 
 rtx
-copy_blkmode_to_reg (machine_mode mode, tree src)
+copy_blkmode_to_reg (machine_mode mode_in, tree src)
 {
   int i, n_regs;
   unsigned HOST_WIDE_INT bitpos, xbitpos, padding_correction = 0, bytes;
   unsigned int bitsize;
   rtx *dst_words, dst, x, src_word = NULL_RTX, dst_word = NULL_RTX;
-  machine_mode dst_mode;
+  /* No current ABI uses variable-sized modes to pass a BLKmnode type.  */
+  fixed_size_mode mode = as_a <fixed_size_mode> (mode_in);
+  fixed_size_mode dst_mode;
 
   gcc_assert (TYPE_MODE (TREE_TYPE (src)) == BLKmode);
 
@@ -6183,7 +6186,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	   a constant.  But if more than one register is involved,
 	   this probably loses.  */
 	else if (REG_P (target) && TREE_STATIC (exp)
-		 && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
+		 && (GET_MODE_SIZE (GET_MODE (target))
+		     <= REGMODE_NATURAL_SIZE (GET_MODE (target))))
 	  {
 	    emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 	    cleared = 1;
@@ -8453,7 +8457,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  if (modifier == EXPAND_STACK_PARM)
 	    target = 0;
 	  if (TREE_CODE (treeop0) == INTEGER_CST
-	      && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT
+	      && HWI_COMPUTABLE_MODE_P (mode)
 	      && TREE_CONSTANT (treeop1))
 	    {
 	      rtx constant_part;
@@ -8476,7 +8480,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    }
 
 	  else if (TREE_CODE (treeop1) == INTEGER_CST
-		   && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT
+		   && HWI_COMPUTABLE_MODE_P (mode)
 		   && TREE_CONSTANT (treeop0))
 	    {
 	      rtx constant_part;
@@ -8607,7 +8611,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	{
 	  machine_mode innermode = TYPE_MODE (TREE_TYPE (treeop0));
 	  this_optab = usmul_widen_optab;
-	  if (find_widening_optab_handler (this_optab, mode, innermode, 0)
+	  if (find_widening_optab_handler (this_optab, mode, innermode)
 		!= CODE_FOR_nothing)
 	    {
 	      if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
@@ -8642,7 +8646,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
 	  if (TREE_CODE (treeop0) != INTEGER_CST)
 	    {
-	      if (find_widening_optab_handler (this_optab, mode, innermode, 0)
+	      if (find_widening_optab_handler (this_optab, mode, innermode)
 		    != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
@@ -8664,7 +8668,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					       unsignedp, this_optab);
 		  return REDUCE_BIT_FIELD (temp);
 		}
-	      if (find_widening_optab_handler (other_optab, mode, innermode, 0)
+	      if (find_widening_optab_handler (other_optab, mode, innermode)
 		    != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
@@ -9429,7 +9433,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       /* Careful here: if the target doesn't support integral vector modes,
 	 a constant selection vector could wind up smooshed into a normal
 	 integral constant.  */
-      if (CONSTANT_P (op2) && GET_CODE (op2) != CONST_VECTOR)
+      if (CONSTANT_P (op2) && !VECTOR_MODE_P (GET_MODE (op2)))
 	{
 	  tree sel_type = TREE_TYPE (treeop2);
 	  machine_mode vmode
@@ -9912,43 +9916,24 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  && GET_MODE (decl_rtl) != dmode)
 	{
 	  machine_mode pmode;
-	  bool always_initialized_rtx;
 
 	  /* Get the signedness to be used for this variable.  Ensure we get
 	     the same mode we got when the variable was declared.  */
 	  if (code != SSA_NAME)
-	    {
-	      pmode = promote_decl_mode (exp, &unsignedp);
-	      always_initialized_rtx = true;
-	    }
+	    pmode = promote_decl_mode (exp, &unsignedp);
 	  else if ((g = SSA_NAME_DEF_STMT (ssa_name))
 		   && gimple_code (g) == GIMPLE_CALL
 		   && !gimple_call_internal_p (g))
-	    {
-	      pmode = promote_function_mode (type, mode, &unsignedp,
-					    gimple_call_fntype (g), 2);
-	      always_initialized_rtx
-		= always_initialized_rtx_for_ssa_name_p (ssa_name);
-	    }
+	    pmode = promote_function_mode (type, mode, &unsignedp,
+					   gimple_call_fntype (g),
+					   2);
 	  else
-	    {
-	      pmode = promote_ssa_mode (ssa_name, &unsignedp);
-	      always_initialized_rtx
-		= always_initialized_rtx_for_ssa_name_p (ssa_name);
-	    }
-
+	    pmode = promote_ssa_mode (ssa_name, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
-
-	  /* We cannot assume anything about an existing extension if the
-	     register may contain uninitialized bits.  */
-	  if (always_initialized_rtx)
-	    {
-	      SUBREG_PROMOTED_VAR_P (temp) = 1;
-	      SUBREG_PROMOTED_SET (temp, unsignedp);
-	    }
-
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_SET (temp, unsignedp);
 	  return temp;
 	}
 

@@ -361,6 +361,7 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
     gimple_call_set_arg (call, i, CALL_EXPR_ARG (t, i));
 
   gimple_set_block (call, TREE_BLOCK (t));
+  gimple_set_location (call, EXPR_LOCATION (t));
 
   /* Carry all the CALL_EXPR flags to the new GIMPLE_CALL.  */
   gimple_call_set_chain (call, CALL_EXPR_STATIC_CHAIN (t));
@@ -1840,11 +1841,35 @@ gimple_copy (gimple *stmt)
 	  gimple_omp_sections_set_clauses (copy, t);
 	  t = unshare_expr (gimple_omp_sections_control (stmt));
 	  gimple_omp_sections_set_control (copy, t);
-	  /* FALLTHRU  */
+	  goto copy_omp_body;
 
 	case GIMPLE_OMP_SINGLE:
+	  {
+	    gomp_single *omp_single_copy = as_a <gomp_single *> (copy);
+	    t = unshare_expr (gimple_omp_single_clauses (stmt));
+	    gimple_omp_single_set_clauses (omp_single_copy, t);
+	  }
+	  goto copy_omp_body;
+
 	case GIMPLE_OMP_TARGET:
+	  {
+	    gomp_target *omp_target_stmt = as_a <gomp_target *> (stmt);
+	    gomp_target *omp_target_copy = as_a <gomp_target *> (copy);
+	    t = unshare_expr (gimple_omp_target_clauses (omp_target_stmt));
+	    gimple_omp_target_set_clauses (omp_target_copy, t);
+	    t = unshare_expr (gimple_omp_target_data_arg (omp_target_stmt));
+	    gimple_omp_target_set_data_arg (omp_target_copy, t);
+	  }
+	  goto copy_omp_body;
+
 	case GIMPLE_OMP_TEAMS:
+	  {
+	    gomp_teams *omp_teams_copy = as_a <gomp_teams *> (copy);
+	    t = unshare_expr (gimple_omp_teams_clauses (stmt));
+	    gimple_omp_teams_set_clauses (omp_teams_copy, t);
+	  }
+	  /* FALLTHRU  */
+
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
 	case GIMPLE_OMP_TASKGROUP:

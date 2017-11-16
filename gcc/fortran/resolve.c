@@ -2694,6 +2694,8 @@ generic:
       if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL,
 						 NULL, false))
 	return false;
+      if (!gfc_use_derived (expr->ts.u.derived))
+	return false;
       return resolve_structure_cons (expr, 0);
     }
 
@@ -5832,7 +5834,9 @@ update_compcall_arglist (gfc_expr* e)
       return true;
     }
 
-  gcc_assert (tbp->pass_arg_num > 0);
+  if (tbp->pass_arg_num <= 0)
+    return false;
+
   e->value.compcall.actual = update_arglist_pass (e->value.compcall.actual, po,
 						  tbp->pass_arg_num,
 						  tbp->pass_arg);
@@ -9179,7 +9183,7 @@ resolve_transfer (gfc_code *code)
   if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
       && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      if (ts->type == BT_DERIVED)
+      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
 	derived = ts->u.derived;
       else
 	derived = ts->u.derived->components->ts.u.derived;
@@ -10322,7 +10326,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   /* Assign the 'data' of a class object to a derived type.  */
   if (lhs->ts.type == BT_DERIVED
-      && rhs->ts.type == BT_CLASS)
+      && rhs->ts.type == BT_CLASS
+      && rhs->expr_type != EXPR_ARRAY)
     gfc_add_data_component (rhs);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
@@ -13494,6 +13499,9 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   if (c->attr.artificial)
     return true;
 
+  if (sym->attr.vtype && sym->attr.use_assoc)
+    return true;
+
   /* F2008, C442.  */
   if ((!sym->attr.is_class || c != sym->components)
       && c->attr.codimension
@@ -13937,6 +13945,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 {
   gfc_symbol* super_type;
   gfc_component *c;
+  gfc_formal_arglist *f;
   bool success;
 
   if (sym->attr.unlimited_polymorphic)
@@ -13988,6 +13997,22 @@ resolve_fl_derived0 (gfc_symbol *sym)
       && !sym->attr.is_class
       && !ensure_not_abstract (sym, super_type))
     return false;
+
+  /* Check that there is a component for every PDT parameter.  */
+  if (sym->attr.pdt_template)
+    {
+      for (f = sym->formal; f; f = f->next)
+	{
+	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
+	  if (c == NULL)
+	    {
+	      gfc_error ("Parameterized type %qs does not have a component "
+			 "corresponding to parameter %qs at %L", sym->name,
+			 f->sym->name, &sym->declared_at);
+	      break;
+	    }
+	}
+    }
 
   /* Add derived type to the derived type list.  */
   add_dt_to_dt_list (sym);
@@ -14055,6 +14080,20 @@ resolve_fl_derived (gfc_symbol *sym)
   /* Resolve the type-bound procedures.  */
   if (!resolve_typebound_procedures (sym))
     return false;
+
+  /* Generate module vtables subject to their accessibility and their not
+     being vtables or pdt templates. If this is not done class declarations
+     in external procedures wind up with their own version and so SELECT TYPE
+     fails because the vptrs do not have the same address.  */
+  if (gfc_option.allow_std & GFC_STD_F2003
+      && sym->ns->proc_name
+      && sym->ns->proc_name->attr.flavor == FL_MODULE
+      && sym->attr.access != ACCESS_PRIVATE
+      && !(sym->attr.use_assoc || sym->attr.vtype || sym->attr.pdt_template))
+    {
+      gfc_symbol *vtab = gfc_find_derived_vtab (sym);
+      gfc_set_sym_referenced (vtab);
+    }
 
   return true;
 }
@@ -15247,7 +15286,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
       if (!gfc_array_size (e, &size))
 	{
 	  gfc_error ("Nonconstant array section at %L in DATA statement",
-		     &e->where);
+		     where);
 	  mpz_clear (offset);
 	  return false;
 	}
@@ -15917,9 +15956,22 @@ resolve_equivalence (gfc_equiv *eq)
 	  && sym->ns->proc_name->attr.pure
 	  && sym->attr.in_common)
 	{
-	  gfc_error ("Common block member %qs at %L cannot be an EQUIVALENCE "
-		     "object in the pure procedure %qs",
-		     sym->name, &e->where, sym->ns->proc_name->name);
+	  /* Need to check for symbols that may have entered the pure
+	     procedure via a USE statement.  */
+	  bool saw_sym = false;
+	  if (sym->ns->use_stmts)
+	    {
+	      gfc_use_rename *r;
+	      for (r = sym->ns->use_stmts->rename; r; r = r->next)
+		if (strcmp(r->use_name, sym->name) == 0) saw_sym = true;
+	    }
+	  else
+	    saw_sym = true;
+
+	  if (saw_sym)
+	    gfc_error ("COMMON block member %qs at %L cannot be an "
+		       "EQUIVALENCE object in the pure procedure %qs",
+		       sym->name, &e->where, sym->ns->proc_name->name);
 	  break;
 	}
 

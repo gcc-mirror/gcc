@@ -344,15 +344,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (negate @0)))
 
 (if (flag_reciprocal_math)
- /* Convert (A/B)/C to A/(B*C)  */
+ /* Convert (A/B)/C to A/(B*C). */
  (simplify
   (rdiv (rdiv:s @0 @1) @2)
-   (rdiv @0 (mult @1 @2)))
+  (rdiv @0 (mult @1 @2)))
+
+ /* Canonicalize x / (C1 * y) to (x * C2) / y.  */
+ (simplify
+  (rdiv @0 (mult:s @1 REAL_CST@2))
+  (with
+   { tree tem = const_binop (RDIV_EXPR, type, build_one_cst (type), @2); }
+   (if (tem)
+    (rdiv (mult @0 { tem; } ) @1))))
 
  /* Convert A/(B/C) to (A/B)*C  */
  (simplify
   (rdiv @0 (rdiv:s @1 @2))
    (mult (rdiv @0 @1) @2)))
+
+/* Simplify x / (- y) to -x / y.  */
+(simplify
+ (rdiv @0 (negate @1))
+ (rdiv (negate @0) @1))
 
 /* Optimize (X & (-A)) / A where A is a power of 2, to X >> log2(A) */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
@@ -605,6 +618,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
 
+/* Fold (1 << (C - x)) where C = precision(type) - 1
+   into ((1 << C) >> x). */
+(simplify
+ (lshift integer_onep@0 (minus@1 INTEGER_CST@2 @3))
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::eq_p (wi::to_wide (@2), TYPE_PRECISION (type) - 1)
+       && single_use (@1))
+   (if (TYPE_UNSIGNED (type))
+     (rshift (lshift @0 @2) @3)
+   (with
+    { tree utype = unsigned_type_for (type); }
+    (convert (rshift (lshift (convert:utype @0) @2) @3))))))
+
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
 (simplify
  (mult (rdiv@3 REAL_CST@0 @1) REAL_CST@2)
@@ -612,15 +638,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && single_use (@3))
    (with
     { tree tem = const_binop (MULT_EXPR, type, @0, @2); }
-    (if (tem)
-     (rdiv { tem; } @1)))))
-
-/* Convert C1/(X*C2) into (C1/C2)/X  */
-(simplify
- (rdiv REAL_CST@0 (mult @1 REAL_CST@2))
-  (if (flag_reciprocal_math)
-   (with
-    { tree tem = const_binop (RDIV_EXPR, type, @0, @2); }
     (if (tem)
      (rdiv { tem; } @1)))))
 
@@ -684,6 +701,42 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (bit_ior:c (bit_xor:c @0 @1) @0)
   (bit_ior @0 @1))
+
+/* (a & ~b) | (a ^ b)  -->  a ^ b  */
+(simplify
+ (bit_ior:c (bit_and:c @0 (bit_not @1)) (bit_xor:c@2 @0 @1))
+ @2)
+
+/* (a & ~b) ^ ~a  -->  ~(a & b)  */
+(simplify
+ (bit_xor:c (bit_and:cs @0 (bit_not @1)) (bit_not @0))
+ (bit_not (bit_and @0 @1)))
+
+/* (a | b) & ~(a ^ b)  -->  a & b  */
+(simplify
+ (bit_and:c (bit_ior @0 @1) (bit_not (bit_xor:c @0 @1)))
+ (bit_and @0 @1))
+
+/* a | ~(a ^ b)  -->  a | ~b  */
+(simplify
+ (bit_ior:c @0 (bit_not:s (bit_xor:c @0 @1)))
+ (bit_ior @0 (bit_not @1)))
+
+/* (a | b) | (a &^ b)  -->  a | b  */
+(for op (bit_and bit_xor)
+ (simplify
+  (bit_ior:c (bit_ior@2 @0 @1) (op:c @0 @1))
+  @2))
+
+/* (a & b) | ~(a ^ b)  -->  ~(a ^ b)  */
+(simplify
+ (bit_ior:c (bit_and:c @0 @1) (bit_not@2 (bit_xor @0 @1)))
+ @2)
+
+/* ~(~a & b)  -->  a | ~b  */
+(simplify
+ (bit_not (bit_and:cs (bit_not @0) @1))
+ (bit_ior @0 (bit_not @1)))
 
 /* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
@@ -958,6 +1011,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match negate_expr_p
  VECTOR_CST
  (if (FLOAT_TYPE_P (TREE_TYPE (type)) || TYPE_OVERFLOW_WRAPS (type))))
+(match negate_expr_p
+ (minus @0 @1)
+ (if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
+      || (FLOAT_TYPE_P (type)
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	  && !HONOR_SIGNED_ZEROS (type)))))
 
 /* (-A) * (-B) -> A * B  */
 (simplify
@@ -972,6 +1031,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
       && !HONOR_SIGNED_ZEROS (element_mode (type)))
   (minus (negate @1) @0)))
+
+/* -(A - B) -> B - A.  */
+(simplify
+ (negate (minus @0 @1))
+ (if ((ANY_INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_SANITIZED (type))
+      || (FLOAT_TYPE_P (type)
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	  && !HONOR_SIGNED_ZEROS (type)))
+  (minus @1 @0)))
 
 /* A - B -> A + (-B) if B is easily negatable.  */
 (simplify
@@ -1082,6 +1150,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       || !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (convert (minus @0 { build_each_one_cst (TREE_TYPE (@0)); }))))
 
+/* Convert - (~A) to A + 1.  */
+(simplify
+ (negate (nop_convert (bit_not @0)))
+ (plus (view_convert @0) { build_each_one_cst (type); }))
+
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify
  (bit_not (convert? (minus @0 integer_each_onep)))
@@ -1103,6 +1176,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_not (convert? (bit_xor:c (bit_not @0) @1)))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (convert (bit_xor @0 @1))))
+
+/* Otherwise prefer ~(X ^ Y) to ~X ^ Y as more canonical.  */
+(simplify
+ (bit_xor:c (nop_convert:s (bit_not:s @0)) @1)
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (bit_not (bit_xor (view_convert @0) @1))))
 
 /* (x & ~m) | (y & m) -> ((x ^ y) & m) ^ x */
 (simplify
@@ -1503,12 +1582,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        t1 = TYPE_OVERFLOW_WRAPS (type) ? type : TREE_TYPE (@1);
     }
     (convert (plus (convert:t1 @0) (convert:t1 @1))))))
- /* -(-A) -> A */
+ /* -(T)(-A) -> (T)A
+    Sign-extension is ok except for INT_MIN, which thankfully cannot
+    happen without overflow.  */
  (simplify
-  (negate (convert? (negate @1)))
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
-       && !TYPE_OVERFLOW_SANITIZED (type))
+  (negate (convert (negate @1)))
+  (if (INTEGRAL_TYPE_P (type)
+       && (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@1))
+	   || (!TYPE_UNSIGNED (TREE_TYPE (@1))
+	       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@1))))
+       && !TYPE_OVERFLOW_SANITIZED (type)
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
    (convert @1)))
+ (simplify
+  (negate (convert negate_expr_p@1))
+  (if (SCALAR_FLOAT_TYPE_P (type)
+       && ((DECIMAL_FLOAT_TYPE_P (type)
+	    == DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@1))
+	    && TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (@1)))
+	   || !HONOR_SIGN_DEPENDENT_ROUNDING (type)))
+   (convert (negate @1))))
+ (simplify
+  (negate (nop_convert (negate @1)))
+  (if (!TYPE_OVERFLOW_SANITIZED (type)
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
+   (view_convert @1)))
 
  /* We can't reassociate floating-point unless -fassociative-math
     or fixed-point plus or minus because of saturation to +-Inf.  */
@@ -1704,7 +1802,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
-(for minmax (min max FMIN FMAX)
+(for minmax (min max FMIN FMIN_FN FMAX FMAX_FN)
  (simplify
   (minmax @0 @0)
   @0))
@@ -1782,7 +1880,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
    (minmax @1 (convert @2)))))
 
-(for minmax (FMIN FMAX)
+(for minmax (FMIN FMIN_FN FMAX FMAX_FN)
  /* If either argument is NaN, return the other one.  Avoid the
     transformation if we get (and honor) a signalling NaN.  */
  (simplify
@@ -1800,11 +1898,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (FMIN @0 @1)
   (min @0 @1))
  (simplify
+  (FMIN_FN @0 @1)
+  (min @0 @1))
+ (simplify
   (FMAX @0 @1)
+  (max @0 @1))
+ (simplify
+  (FMAX_FN @0 @1)
   (max @0 @1)))
 /* min (-A, -B) -> -max (A, B)  */
-(for minmax (min max FMIN FMAX)
-     maxmin (max min FMAX FMIN)
+(for minmax (min max FMIN FMIN_FN FMAX FMAX_FN)
+     maxmin (max min FMAX FMAX_FN FMIN FMAX_FN)
  (simplify
   (minmax (negate:s@2 @0) (negate:s@3 @1))
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))

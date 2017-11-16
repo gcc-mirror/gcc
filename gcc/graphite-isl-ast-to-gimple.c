@@ -1175,22 +1175,28 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
       ssa_op_iter iter;
       use_operand_p use_p;
       if (!is_gimple_debug (copy))
-	FOR_EACH_SSA_USE_OPERAND (use_p, copy, iter, SSA_OP_USE)
-	  {
-	    tree old_name = USE_FROM_PTR (use_p);
+	{
+	  bool changed = false;
+	  FOR_EACH_SSA_USE_OPERAND (use_p, copy, iter, SSA_OP_USE)
+	    {
+	      tree old_name = USE_FROM_PTR (use_p);
 
-	    if (TREE_CODE (old_name) != SSA_NAME
-		|| SSA_NAME_IS_DEFAULT_DEF (old_name)
-		|| ! scev_analyzable_p (old_name, region->region))
-	      continue;
+	      if (TREE_CODE (old_name) != SSA_NAME
+		  || SSA_NAME_IS_DEFAULT_DEF (old_name)
+		  || ! scev_analyzable_p (old_name, region->region))
+		continue;
 
-	    gimple_seq stmts = NULL;
-	    tree new_name = get_rename_from_scev (old_name, &stmts,
-						  bb->loop_father, iv_map);
-	    if (! codegen_error_p ())
-	      gsi_insert_earliest (stmts);
-	    replace_exp (use_p, new_name);
-	  }
+	      gimple_seq stmts = NULL;
+	      tree new_name = get_rename_from_scev (old_name, &stmts,
+						    bb->loop_father, iv_map);
+	      if (! codegen_error_p ())
+		gsi_insert_earliest (stmts);
+	      replace_exp (use_p, new_name);
+	      changed = true;
+	    }
+	  if (changed)
+	    fold_stmt_inplace (&gsi_tgt);
+	}
 
       update_stmt (copy);
     }

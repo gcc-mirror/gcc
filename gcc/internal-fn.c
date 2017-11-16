@@ -46,6 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "builtins.h"
 #include "optabs-tree.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -1172,6 +1175,35 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
     }
 }
 
+/* Return true if UNS WIDEN_MULT_EXPR with result mode WMODE and operand
+   mode MODE can be expanded without using a libcall.  */
+
+static bool
+can_widen_mult_without_libcall (scalar_int_mode wmode, scalar_int_mode mode,
+				rtx op0, rtx op1, bool uns)
+{
+  if (find_widening_optab_handler (umul_widen_optab, wmode, mode)
+      != CODE_FOR_nothing)
+    return true;
+    
+  if (find_widening_optab_handler (smul_widen_optab, wmode, mode)
+      != CODE_FOR_nothing)
+    return true;
+
+  rtx_insn *last = get_last_insn ();
+  if (CONSTANT_P (op0))
+    op0 = convert_modes (wmode, mode, op0, uns);
+  else
+    op0 = gen_raw_REG (wmode, LAST_VIRTUAL_REGISTER + 1);
+  if (CONSTANT_P (op1))
+    op1 = convert_modes (wmode, mode, op1, uns);
+  else
+    op1 = gen_raw_REG (wmode, LAST_VIRTUAL_REGISTER + 2);
+  rtx ret = expand_mult (wmode, op0, op1, NULL_RTX, uns, true);
+  delete_insns_since (last);
+  return ret != NULL_RTX;
+} 
+
 /* Add mul overflow checking to the statement STMT.  */
 
 static void
@@ -1465,9 +1497,29 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       ops.op1 = make_tree (type, op1);
       ops.op2 = NULL_TREE;
       ops.location = loc;
+
+      /* Optimize unsigned overflow check where we don't use the
+	 multiplication result, just whether overflow happened.
+	 If we can do MULT_HIGHPART_EXPR, that followed by
+	 comparison of the result against zero is cheapest.
+	 We'll still compute res, but it should be DCEd later.  */
+      use_operand_p use;
+      gimple *use_stmt;
+      if (!is_ubsan
+	  && lhs
+	  && uns
+	  && !(uns0_p && uns1_p && !unsr_p)
+	  && can_mult_highpart_p (mode, uns) == 1
+	  && single_imm_use (lhs, &use, &use_stmt)
+	  && is_gimple_assign (use_stmt)
+	  && gimple_assign_rhs_code (use_stmt) == IMAGPART_EXPR)
+	goto highpart;
+
       if (GET_MODE_2XWIDER_MODE (mode).exists (&wmode)
-	  && targetm.scalar_mode_supported_p (wmode))
+	  && targetm.scalar_mode_supported_p (wmode)
+	  && can_widen_mult_without_libcall (wmode, mode, op0, op1, uns))
 	{
+	twoxwider:
 	  ops.code = WIDEN_MULT_EXPR;
 	  ops.type
 	    = build_nonstandard_integer_type (GET_MODE_PRECISION (wmode), uns);
@@ -1494,6 +1546,35 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 				       NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	    }
+	}
+      else if (can_mult_highpart_p (mode, uns) == 1)
+	{
+	highpart:
+	  ops.code = MULT_HIGHPART_EXPR;
+	  ops.type = type;
+
+	  rtx hipart = expand_expr_real_2 (&ops, NULL_RTX, mode,
+					   EXPAND_NORMAL);
+	  ops.code = MULT_EXPR;
+	  res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  if (uns)
+	    /* For the unsigned multiplication, there was overflow if
+	       HIPART is non-zero.  */
+	    do_compare_rtx_and_jump (hipart, const0_rtx, EQ, true, mode,
+				     NULL_RTX, NULL, done_label,
+				     profile_probability::very_likely ());
+	  else
+	    {
+	      rtx signbit = expand_shift (RSHIFT_EXPR, mode, res, prec - 1,
+					  NULL_RTX, 0);
+	      /* RES is low half of the double width result, HIPART
+		 the high half.  There was overflow if
+		 HIPART is different from RES < 0 ? -1 : 0.  */
+	      do_compare_rtx_and_jump (signbit, hipart, EQ, true, mode,
+				       NULL_RTX, NULL, done_label,
+				       profile_probability::very_likely ());
+	    }
+	  
 	}
       else if (int_mode_for_size (prec / 2, 1).exists (&hmode)
 	       && 2 * GET_MODE_PRECISION (hmode) == prec)
@@ -1800,6 +1881,11 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  tem = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
 	  emit_move_insn (res, tem);
 	}
+      else if (GET_MODE_2XWIDER_MODE (mode).exists (&wmode)
+	       && targetm.scalar_mode_supported_p (wmode))
+	/* Even emitting a libcall is better than not detecting overflow
+	   at all.  */
+	goto twoxwider;
       else
 	{
 	  gcc_assert (!is_ubsan);
@@ -2588,7 +2674,7 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
   expand_expr (build2 (COMPLEX_EXPR, TREE_TYPE (lhs),
 		       make_tree (TREE_TYPE (arg0), quotient),
 		       make_tree (TREE_TYPE (arg1), remainder)),
-	      target, VOIDmode, EXPAND_NORMAL);
+	       target, VOIDmode, EXPAND_NORMAL);
 }
 
 /* Expand a call to FN using the operands in STMT.  FN has a single
@@ -2606,7 +2692,15 @@ expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
   tree lhs = gimple_call_lhs (stmt);
   tree lhs_type = TREE_TYPE (lhs);
   rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], lhs_rtx, insn_data[icode].operand[0].mode);
+
+  /* Do not assign directly to a promoted subreg, since there is no
+     guarantee that the instruction will leave the upper bits of the
+     register in the state required by SUBREG_PROMOTED_SIGN.  */
+  rtx dest = lhs_rtx;
+  if (GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+    dest = NULL_RTX;
+
+  create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
 
   for (unsigned int i = 0; i < nargs; ++i)
     {

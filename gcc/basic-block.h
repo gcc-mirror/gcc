@@ -148,9 +148,6 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
 
-  /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
-  int frequency;
-
   /* The discriminator for this block.  The discriminator distinguishes
      among several basic blocks that share a common locus, allowing for
      more accurate sample-based profiling.  */
@@ -301,7 +298,7 @@ enum cfg_bb_flags
 					 ? EDGE_SUCC ((bb), 1) : EDGE_SUCC ((bb), 0))
 
 /* Return expected execution frequency of the edge E.  */
-#define EDGE_FREQUENCY(e)		e->probability.apply (e->src->frequency)
+#define EDGE_FREQUENCY(e)		e->count ().to_frequency (cfun)
 
 /* Compute a scale factor (or probability) suitable for scaling of
    gcov_type values via apply_probability() and apply_scale().  */

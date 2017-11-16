@@ -3466,9 +3466,9 @@ package body Sem_Ch12 is
    ------------------------------------------
 
    procedure Analyze_Generic_Package_Declaration (N : Node_Id) is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Decls       : constant List_Id :=
-                      Visible_Declarations (Specification (N));
+      Decls : constant List_Id    := Visible_Declarations (Specification (N));
+      Loc   : constant Source_Ptr := Sloc (N);
+
       Decl        : Node_Id;
       Id          : Entity_Id;
       New_N       : Node_Id;
@@ -3492,9 +3492,20 @@ package body Sem_Ch12 is
           Name               =>
             Make_Identifier (Loc, Chars (Defining_Entity (N))));
 
+      --  The declaration is inserted before other declarations, but before
+      --  pragmas that may be library-unit pragmas and must appear before other
+      --  declarations. The pragma Compile_Time_Error is not in this class, and
+      --  may contain an expression that includes such a qualified name, so the
+      --  renaming declaration must appear before it.
+
+      --  Are there other pragmas that require this special handling ???
+
       if Present (Decls) then
          Decl := First (Decls);
-         while Present (Decl) and then Nkind (Decl) = N_Pragma loop
+         while Present (Decl)
+           and then Nkind (Decl) = N_Pragma
+           and then Get_Pragma_Id (Decl) /= Pragma_Compile_Time_Error
+         loop
             Next (Decl);
          end loop;
 
@@ -3932,10 +3943,11 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Level  => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Level    => True,
+         Modes    => True,
+         Warnings => True);
 
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
@@ -4761,7 +4773,7 @@ package body Sem_Ch12 is
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
 
       Curr_Scope  : Entity_Id := Empty;
-      List        : Elist_Id;
+      List        : Elist_Id := No_Elist; -- init to avoid warning
       N_Instances : Nat := 0;
       Num_Inner   : Nat := 0;
       Num_Scopes  : Nat := 0;
@@ -5130,13 +5142,14 @@ package body Sem_Ch12 is
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
+      Errs   : constant Nat        := Serious_Errors_Detected;
 
       Anon_Id : constant Entity_Id :=
                   Make_Defining_Identifier (Sloc (Defining_Entity (N)),
                     Chars => New_External_Name
                                (Chars (Defining_Entity (N)), 'R'));
 
-      Act_Decl_Id : Entity_Id;
+      Act_Decl_Id : Entity_Id := Empty; -- init to avoid warning
       Act_Decl    : Node_Id;
       Act_Spec    : Node_Id;
       Act_Tree    : Node_Id;
@@ -5381,10 +5394,11 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Level  => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Level    => True,
+         Modes    => True,
+         Warnings => True);
 
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
@@ -5723,7 +5737,9 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) then
+      --  Analyze aspects in declaration if no errors appear in the instance.
+
+      if Has_Aspects (N) and then Serious_Errors_Detected = Errs then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
@@ -5895,8 +5911,7 @@ package body Sem_Ch12 is
                     Present (Next_Formal (First_Formal (Formal_Subp)));
 
       Decl    : Node_Id;
-      Expr    : Node_Id;
-      pragma Warnings (Off, Expr);
+      Expr    : Node_Id := Empty;
       F1, F2  : Entity_Id;
       Func    : Entity_Id;
       Op_Name : Name_Id;

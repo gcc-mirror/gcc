@@ -5,8 +5,8 @@
 
 #define f(x) x
 
-#if 2 f(/* { dg-error "unterminated" "unterminated macro in directive" } */
+#if 2 f(/* { dg-error "-:unterminated" "unterminated macro in directive" } */
 )
 #endif
 
-f( /* { dg-error "unterminated" "unterminated macro" } */
+f( /* { dg-error "-:unterminated" "unterminated macro" } */

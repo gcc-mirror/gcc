@@ -425,7 +425,7 @@ build_base_path (enum tree_code code,
 	 interesting to the optimizers anyway.  */
       && !has_empty)
     {
-      expr = cp_build_indirect_ref (expr, RO_NULL, complain);
+      expr = cp_build_fold_indirect_ref (expr);
       expr = build_simple_base_path (expr, binfo);
       if (rvalue)
 	expr = move (expr);
@@ -452,7 +452,7 @@ build_base_path (enum tree_code code,
 	  t = TREE_TYPE (TYPE_VFIELD (current_class_type));
 	  t = build_pointer_type (t);
 	  v_offset = fold_convert (t, current_vtt_parm);
-	  v_offset = cp_build_indirect_ref (v_offset, RO_NULL, complain);
+	  v_offset = cp_build_fold_indirect_ref (v_offset);
 	}
       else
 	{
@@ -465,8 +465,7 @@ build_base_path (enum tree_code code,
 	      if (t == NULL_TREE)
 		t = expr;
 	    }
-	  v_offset = build_vfield_ref (cp_build_indirect_ref (t, RO_NULL,
-							      complain),
+	  v_offset = build_vfield_ref (cp_build_fold_indirect_ref (t),
 	  TREE_TYPE (TREE_TYPE (expr)));
 	}
 
@@ -477,7 +476,7 @@ build_base_path (enum tree_code code,
       v_offset = build1 (NOP_EXPR,
 			 build_pointer_type (ptrdiff_type_node),
 			 v_offset);
-      v_offset = cp_build_indirect_ref (v_offset, RO_NULL, complain);
+      v_offset = cp_build_fold_indirect_ref (v_offset);
       TREE_CONSTANT (v_offset) = 1;
 
       offset = convert_to_integer (ptrdiff_type_node,
@@ -516,7 +515,7 @@ build_base_path (enum tree_code code,
  indout:
   if (!want_pointer)
     {
-      expr = cp_build_indirect_ref (expr, RO_NULL, complain);
+      expr = cp_build_fold_indirect_ref (expr);
       if (rvalue)
 	expr = move (expr);
     }
@@ -552,7 +551,7 @@ build_simple_base_path (tree expr, tree binfo)
 	 in the back end.  */
       temp = unary_complex_lvalue (ADDR_EXPR, expr);
       if (temp)
-	expr = cp_build_indirect_ref (temp, RO_NULL, tf_warning_or_error);
+	expr = cp_build_fold_indirect_ref (temp);
 
       return expr;
     }
@@ -745,8 +744,7 @@ build_vfn_ref (tree instance_ptr, tree idx)
 {
   tree aref;
 
-  aref = build_vtbl_ref_1 (cp_build_indirect_ref (instance_ptr, RO_NULL,
-                                                  tf_warning_or_error), 
+  aref = build_vtbl_ref_1 (cp_build_fold_indirect_ref (instance_ptr),
                            idx);
 
   /* When using function descriptors, the address of the
@@ -3011,7 +3009,7 @@ static tree
 dfs_declare_virt_assop_and_dtor (tree binfo, void *data)
 {
   tree bv, fn, t = (tree)data;
-  tree opname = cp_assignment_operator_id (NOP_EXPR);
+  tree opname = assign_op_identifier;
 
   gcc_assert (t && CLASS_TYPE_P (t));
   gcc_assert (binfo && TREE_CODE (binfo) == TREE_BINFO);
@@ -5040,7 +5038,7 @@ vbase_has_user_provided_move_assign (tree type)
   /* Does the type itself have a user-provided move assignment operator?  */
   if (!CLASSTYPE_LAZY_MOVE_ASSIGN (type))
     for (ovl_iterator iter (get_class_binding_direct
-			    (type, cp_assignment_operator_id (NOP_EXPR)));
+			    (type, assign_op_identifier));
 	 iter; ++iter)
       if (!DECL_ARTIFICIAL (*iter) && move_fn_p (*iter))
 	return true;
@@ -5188,7 +5186,7 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
 
   if (!CLASSTYPE_LAZY_MOVE_ASSIGN (t))
     for (ovl_iterator iter (get_class_binding_direct
-			    (t, cp_assignment_operator_id (NOP_EXPR)));
+			    (t, assign_op_identifier));
 	 iter; ++iter)
       if ((!user_p || !DECL_ARTIFICIAL (*iter)) && move_fn_p (*iter))
 	return true;
@@ -5306,7 +5304,7 @@ type_requires_array_cookie (tree type)
      the array to the deallocation function, so we will need to store
      a cookie.  */
   fns = lookup_fnfields (TYPE_BINFO (type),
-			 cp_operator_id (VEC_DELETE_EXPR),
+			 ovl_op_identifier (false, VEC_DELETE_EXPR),
 			 /*protect=*/0);
   /* If there are no `operator []' members, or the lookup is
      ambiguous, then we don't need a cookie.  */
@@ -5396,18 +5394,20 @@ explain_non_literal_class (tree t)
     /* Already explained.  */
     return;
 
-  inform (0, "%q+T is not literal because:", t);
+  inform (UNKNOWN_LOCATION, "%q+T is not literal because:", t);
   if (cxx_dialect < cxx17 && LAMBDA_TYPE_P (t))
-    inform (0, "  %qT is a closure type, which is only literal in "
+    inform (UNKNOWN_LOCATION,
+	    "  %qT is a closure type, which is only literal in "
 	    "C++17 and later", t);
   else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
-    inform (0, "  %q+T has a non-trivial destructor", t);
+    inform (UNKNOWN_LOCATION, "  %q+T has a non-trivial destructor", t);
   else if (CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && !LAMBDA_TYPE_P (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     {
-      inform (0, "  %q+T is not an aggregate, does not have a trivial "
+      inform (UNKNOWN_LOCATION,
+	      "  %q+T is not an aggregate, does not have a trivial "
 	      "default constructor, and has no constexpr constructor that "
 	      "is not a copy or move constructor", t);
       if (type_has_non_user_provided_default_constructor (t))
@@ -5439,7 +5439,8 @@ explain_non_literal_class (tree t)
 	  tree basetype = TREE_TYPE (base_binfo);
 	  if (!CLASSTYPE_LITERAL_P (basetype))
 	    {
-	      inform (0, "  base class %qT of %q+T is non-literal",
+	      inform (UNKNOWN_LOCATION,
+		      "  base class %qT of %q+T is non-literal",
 		      basetype, t);
 	      explain_non_literal_class (basetype);
 	      return;

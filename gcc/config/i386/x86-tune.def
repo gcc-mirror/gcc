@@ -48,7 +48,8 @@ DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
    over partial stores.  For example preffer MOVZBL or MOVQ to load 8bit
    value over movb.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
-          m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL
+          m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
+	  | m_BONNELL | m_SILVERMONT | m_INTEL
 	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: This knob promotes all store
@@ -84,8 +85,9 @@ DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
 /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
    partial dependencies.  */
 DEF_TUNE (X86_TUNE_MOVX, "movx",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	  | m_KNL | m_KNM | m_INTEL | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC)
+          m_PPRO | m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
+	  | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
+	  | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC)
 
 /* X86_TUNE_MEMORY_MISMATCH_STALL: Avoid partial stores that are followed by
    full sized loads.  */
@@ -218,10 +220,15 @@ DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
    as "add mem, reg".  */
 DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMONT | m_PPRO))
 
-/* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.   */
+/* X86_TUNE_USE_INCDEC: Enable use of inc/dec instructions.
+
+   Core2 and nehalem has stall of 7 cycles for partial flag register stalls.
+   Sandy bridge and Ivy bridge generate extra uop.  On Haswell this extra uop
+   is output only when the values needs to be really merged, which is not
+   done by GCC generated code.  */
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
-          ~(m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL
-	   |  m_KNL | m_KNM | m_GENERIC))
+          ~(m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
+	    | m_BONNELL | m_SILVERMONT | m_INTEL |  m_KNL | m_KNM | m_GENERIC))
 
 /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
    for DFmode copies */
@@ -364,7 +371,7 @@ DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
    to SSE registers.  If disabled, the moves will be done by storing
    the value to memory and reloading.  */
 DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_TO_VEC, "inter_unit_moves_to_vec",
-          ~(m_AMD_MULTIPLE | m_GENERIC))
+          ~(m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC))
 
 /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC: Enable moves in from SSE
    to integer registers.  If disabled, the moves will be done by storing
@@ -536,3 +543,7 @@ DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0U)
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
 DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0U)
+
+/* X86_TUNE_EMIT_VZEROUPPER: This enables vzeroupper instruction insertion
+   before a transfer of control flow out of the function.  */
+DEF_TUNE (X86_TUNE_EMIT_VZEROUPPER, "emit_vzeroupper", ~m_KNL)

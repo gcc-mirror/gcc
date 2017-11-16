@@ -1801,6 +1801,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
     ? profile_probability::very_unlikely ()
     : profile_probability::very_likely ();
   e->probability = fallthrough_probability.invert ();
+  then_bb->count = e->count ();
   if (create_then_fallthru_edge)
     make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
@@ -2804,14 +2805,17 @@ initialize_sanitizer_builtins (void)
 #define ATTR_PURE_NOTHROW_LEAF_LIST ECF_PURE | ATTR_NOTHROW_LEAF_LIST
 #undef DEF_BUILTIN_STUB
 #define DEF_BUILTIN_STUB(ENUM, NAME)
-#undef DEF_SANITIZER_BUILTIN
-#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+#undef DEF_SANITIZER_BUILTIN_1
+#define DEF_SANITIZER_BUILTIN_1(ENUM, NAME, TYPE, ATTRS)		\
   do {									\
     decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
 				 BUILT_IN_NORMAL, NAME, NULL_TREE);	\
     set_call_expr_flags (decl, ATTRS);					\
     set_builtin_decl (ENUM, decl, true);				\
-  } while (0);
+  } while (0)
+#undef DEF_SANITIZER_BUILTIN
+#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
+  DEF_SANITIZER_BUILTIN_1 (ENUM, NAME, TYPE, ATTRS);
 
 #include "sanitizer.def"
 
@@ -2820,10 +2824,11 @@ initialize_sanitizer_builtins (void)
      DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
   if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
       && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
-    DEF_SANITIZER_BUILTIN (BUILT_IN_OBJECT_SIZE, "object_size",
-			   BT_FN_SIZE_CONST_PTR_INT,
-			   ATTR_PURE_NOTHROW_LEAF_LIST)
+    DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
+			     BT_FN_SIZE_CONST_PTR_INT,
+			     ATTR_PURE_NOTHROW_LEAF_LIST);
 
+#undef DEF_SANITIZER_BUILTIN_1
 #undef DEF_SANITIZER_BUILTIN
 #undef DEF_BUILTIN_STUB
 }
@@ -2942,6 +2947,9 @@ asan_finish_file (void)
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (var) = ctor;
+      SET_DECL_ALIGN (var, MAX (DECL_ALIGN (var),
+				ASAN_SHADOW_GRANULARITY * BITS_PER_UNIT));
+
       varpool_node::finalize_decl (var);
 
       tree fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);

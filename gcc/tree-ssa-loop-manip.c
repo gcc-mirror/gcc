@@ -1091,11 +1091,11 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
 
 static void
 scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
-				int num, int den)
+				profile_count num, profile_count den)
 {
   basic_block son;
 
-  if (den == 0)
+  if (!den.nonzero_p () && !(num == profile_count::zero ()))
     return;
 
   for (son = first_dom_son (CDI_DOMINATORS, bb);
@@ -1104,7 +1104,7 @@ scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
     {
       if (!flow_bb_inside_loop_p (loop, son))
 	continue;
-      scale_bbs_frequencies_int (&son, 1, num, den);
+      scale_bbs_frequencies_profile_count (&son, 1, num, den);
       scale_dominated_blocks_in_loop (loop, son, num, den);
     }
 }
@@ -1121,6 +1121,9 @@ niter_for_unrolled_loop (struct loop *loop, unsigned factor)
      "+ 1" converts latch iterations to loop iterations and the "- 1"
      converts back.  */
   gcov_type new_est_niter = est_niter / factor;
+
+  if (est_niter == -1)
+    return -1;
 
   /* Without profile feedback, loops for which we do not know a better estimate
      are assumed to roll 10 times.  When we unroll such loop, it appears to
@@ -1278,9 +1281,10 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
     scale_dominated_blocks_in_loop (loop, exit->src,
 				    /* We are scaling up here so probability
 				       does not fit.  */
-				    REG_BR_PROB_BASE,
-				    REG_BR_PROB_BASE
-				    - exit->probability.to_reg_br_prob_base ());
+				    loop->header->count,
+				    loop->header->count
+				    - loop->header->count.apply_probability
+					 (exit->probability));
 
   bsi = gsi_last_bb (exit_bb);
   exit_if = gimple_build_cond (EQ_EXPR, integer_zero_node,
@@ -1370,19 +1374,11 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   freq_h = loop->header->count;
   freq_e = (loop_preheader_edge (loop))->count ();
-  /* Use frequency only if counts are zero.  */
-  if (!(freq_h > 0) && !(freq_e > 0))
-    {
-      freq_h = profile_count::from_gcov_type (loop->header->frequency);
-      freq_e = profile_count::from_gcov_type
-		 (EDGE_FREQUENCY (loop_preheader_edge (loop)));
-    }
-  if (freq_h > 0)
+  if (freq_h.nonzero_p ())
     {
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
-      if (freq_e == profile_count::zero ())
-        freq_e = profile_count::from_gcov_type (1);
+      freq_e = freq_e.force_nonzero ();
       scale_loop_frequencies (loop, freq_e.probability_in (freq_h));
     }
 
@@ -1392,7 +1388,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 				.apply_scale (1, new_est_niter + 1);
 
   rest->count += new_exit->count ();
-  rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
   prob = new_nonexit->probability;

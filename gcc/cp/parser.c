@@ -3294,9 +3294,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	{
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_replace (suggestion);
-	  error_at_rich_loc (&richloc,
-			     "%qE does not name a type; did you mean %qs?",
-			     id, suggestion);
+	  error_at (&richloc,
+		    "%qE does not name a type; did you mean %qs?",
+		    id, suggestion);
 	}
       else
 	error_at (location, "%qE does not name a type", id);
@@ -4113,9 +4113,9 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 		{
 		  rich_location rich_loc (line_table, tok->location);
 		  rich_loc.add_range (last_tok_loc, false);
-		  error_at_rich_loc (&rich_loc,
-				     "unsupported non-standard concatenation "
-				     "of string literals");
+		  error_at (&rich_loc,
+			    "unsupported non-standard concatenation "
+			    "of string literals");
 		}
 	    }
 
@@ -6169,9 +6169,9 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_replace ("::");
-	      error_at_rich_loc (&richloc,
-				 "found %<:%> in nested-name-specifier, "
-				 "expected %<::%>");
+	      error_at (&richloc,
+			"found %<:%> in nested-name-specifier, "
+			"expected %<::%>");
 	      token->type = CPP_SCOPE;
 	    }
 
@@ -9103,8 +9103,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  gcc_rich_location rich_loc (input_location);
 		  maybe_add_cast_fixit (&rich_loc, open_paren_loc, close_paren_loc,
 					expr, type);
-		  warning_at_rich_loc (&rich_loc, OPT_Wold_style_cast,
-				       "use of old-style cast to %q#T", type);
+		  warning_at (&rich_loc, OPT_Wold_style_cast,
+			      "use of old-style cast to %q#T", type);
 		}
 
 	      /* Only type conversions to integral or enumeration types
@@ -10620,8 +10620,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     p = obstack_alloc (&declarator_obstack, 0);
 
-    declarator = make_id_declarator (NULL_TREE, cp_operator_id (CALL_EXPR),
-				     sfk_none);
+    declarator = make_id_declarator (NULL_TREE, call_op_identifier, sfk_none);
 
     quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
 	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
@@ -11938,7 +11937,8 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 	{
 	  iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
 				  iter_type);
-	  iter_decl = build_x_indirect_ref (input_location, iter_decl, RO_NULL,
+	  iter_decl = build_x_indirect_ref (input_location, iter_decl,
+					    RO_UNARY_STAR,
 					    tf_warning_or_error);
 	  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
 						iter_decl, auto_node);
@@ -12055,7 +12055,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 
   /* The declaration is initialized with *__begin inside the loop body.  */
   cp_finish_decl (range_decl,
-		  build_x_indirect_ref (input_location, begin, RO_NULL,
+		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
 					tf_warning_or_error),
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING);
@@ -13788,7 +13788,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
-	      error_at_rich_loc (&richloc, "%<friend%> used outside of class");
+	      error_at (&richloc, "%<friend%> used outside of class");
 	      cp_lexer_purge_token (parser->lexer);
 	    }
 	  else
@@ -13854,9 +13854,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		 we're complaining about C++0x compatibility.  */
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
-	      warning_at_rich_loc (&richloc, OPT_Wc__11_compat,
-				   "%<auto%> changes meaning in C++11; "
-				   "please remove it");
+	      warning_at (&richloc, OPT_Wc__11_compat,
+			  "%<auto%> changes meaning in C++11; "
+			  "please remove it");
 
               /* Set the storage class anyway.  */
               cp_parser_set_storage_class (parser, decl_specs, RID_AUTO,
@@ -14953,12 +14953,13 @@ cp_parser_operator (cp_parser* parser)
   location_t start_loc = token->location;
 
   /* Figure out which operator we have.  */
+  enum tree_code op = ERROR_MARK;
+  bool assop = false;
+  bool consumed = false;
   switch (token->type)
     {
     case CPP_KEYWORD:
       {
-	enum tree_code op;
-
 	/* The keyword should be either `new' or `delete'.  */
 	if (token->keyword == RID_NEW)
 	  op = NEW_EXPR;
@@ -14982,160 +14983,166 @@ cp_parser_operator (cp_parser* parser)
 	    if (cp_token *close_token
 		= cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
 	      end_loc = close_token->location;
-	    id = cp_operator_id (op == NEW_EXPR
-			      ? VEC_NEW_EXPR : VEC_DELETE_EXPR);
+	    op = op == NEW_EXPR ? VEC_NEW_EXPR : VEC_DELETE_EXPR;
 	  }
-	/* Otherwise, we have the non-array variant.  */
-	else
-	  id = cp_operator_id (op);
-
-	location_t loc = make_location (start_loc, start_loc, end_loc);
-
-	return cp_expr (id, loc);
+	start_loc = make_location (start_loc, start_loc, end_loc);
+	consumed = true;
+	break;
       }
 
     case CPP_PLUS:
-      id = cp_operator_id (PLUS_EXPR);
+      op = PLUS_EXPR;
       break;
 
     case CPP_MINUS:
-      id = cp_operator_id (MINUS_EXPR);
+      op = MINUS_EXPR;
       break;
 
     case CPP_MULT:
-      id = cp_operator_id (MULT_EXPR);
+      op = MULT_EXPR;
       break;
 
     case CPP_DIV:
-      id = cp_operator_id (TRUNC_DIV_EXPR);
+      op = TRUNC_DIV_EXPR;
       break;
 
     case CPP_MOD:
-      id = cp_operator_id (TRUNC_MOD_EXPR);
+      op = TRUNC_MOD_EXPR;
       break;
 
     case CPP_XOR:
-      id = cp_operator_id (BIT_XOR_EXPR);
+      op = BIT_XOR_EXPR;
       break;
 
     case CPP_AND:
-      id = cp_operator_id (BIT_AND_EXPR);
+      op = BIT_AND_EXPR;
       break;
 
     case CPP_OR:
-      id = cp_operator_id (BIT_IOR_EXPR);
+      op = BIT_IOR_EXPR;
       break;
 
     case CPP_COMPL:
-      id = cp_operator_id (BIT_NOT_EXPR);
+      op = BIT_NOT_EXPR;
       break;
 
     case CPP_NOT:
-      id = cp_operator_id (TRUTH_NOT_EXPR);
+      op = TRUTH_NOT_EXPR;
       break;
 
     case CPP_EQ:
-      id = cp_assignment_operator_id (NOP_EXPR);
+      assop = true;
+      op = NOP_EXPR;
       break;
 
     case CPP_LESS:
-      id = cp_operator_id (LT_EXPR);
+      op = LT_EXPR;
       break;
 
     case CPP_GREATER:
-      id = cp_operator_id (GT_EXPR);
+      op = GT_EXPR;
       break;
 
     case CPP_PLUS_EQ:
-      id = cp_assignment_operator_id (PLUS_EXPR);
+      assop = true;
+      op = PLUS_EXPR;
       break;
 
     case CPP_MINUS_EQ:
-      id = cp_assignment_operator_id (MINUS_EXPR);
+      assop = true;
+      op = MINUS_EXPR;
       break;
 
     case CPP_MULT_EQ:
-      id = cp_assignment_operator_id (MULT_EXPR);
+      assop = true;
+      op = MULT_EXPR;
       break;
 
     case CPP_DIV_EQ:
-      id = cp_assignment_operator_id (TRUNC_DIV_EXPR);
+      assop = true;
+      op = TRUNC_DIV_EXPR;
       break;
 
     case CPP_MOD_EQ:
-      id = cp_assignment_operator_id (TRUNC_MOD_EXPR);
+      assop = true;
+      op = TRUNC_MOD_EXPR;
       break;
 
     case CPP_XOR_EQ:
-      id = cp_assignment_operator_id (BIT_XOR_EXPR);
+      assop = true;
+      op = BIT_XOR_EXPR;
       break;
 
     case CPP_AND_EQ:
-      id = cp_assignment_operator_id (BIT_AND_EXPR);
+      assop = true;
+      op = BIT_AND_EXPR;
       break;
 
     case CPP_OR_EQ:
-      id = cp_assignment_operator_id (BIT_IOR_EXPR);
+      assop = true;
+      op = BIT_IOR_EXPR;
       break;
 
     case CPP_LSHIFT:
-      id = cp_operator_id (LSHIFT_EXPR);
+      op = LSHIFT_EXPR;
       break;
 
     case CPP_RSHIFT:
-      id = cp_operator_id (RSHIFT_EXPR);
+      op = RSHIFT_EXPR;
       break;
 
     case CPP_LSHIFT_EQ:
-      id = cp_assignment_operator_id (LSHIFT_EXPR);
+      assop = true;
+      op = LSHIFT_EXPR;
       break;
 
     case CPP_RSHIFT_EQ:
-      id = cp_assignment_operator_id (RSHIFT_EXPR);
+      assop = true;
+      op = RSHIFT_EXPR;
       break;
 
     case CPP_EQ_EQ:
-      id = cp_operator_id (EQ_EXPR);
+      op = EQ_EXPR;
       break;
 
     case CPP_NOT_EQ:
-      id = cp_operator_id (NE_EXPR);
+      op = NE_EXPR;
       break;
 
     case CPP_LESS_EQ:
-      id = cp_operator_id (LE_EXPR);
+      op = LE_EXPR;
       break;
 
     case CPP_GREATER_EQ:
-      id = cp_operator_id (GE_EXPR);
+      op = GE_EXPR;
       break;
 
     case CPP_AND_AND:
-      id = cp_operator_id (TRUTH_ANDIF_EXPR);
+      op = TRUTH_ANDIF_EXPR;
       break;
 
     case CPP_OR_OR:
-      id = cp_operator_id (TRUTH_ORIF_EXPR);
+      op = TRUTH_ORIF_EXPR;
       break;
 
     case CPP_PLUS_PLUS:
-      id = cp_operator_id (POSTINCREMENT_EXPR);
+      op = POSTINCREMENT_EXPR;
       break;
 
     case CPP_MINUS_MINUS:
-      id = cp_operator_id (PREDECREMENT_EXPR);
+      op = PREDECREMENT_EXPR;
       break;
 
     case CPP_COMMA:
-      id = cp_operator_id (COMPOUND_EXPR);
+      op = COMPOUND_EXPR;
       break;
 
     case CPP_DEREF_STAR:
-      id = cp_operator_id (MEMBER_REF);
+      op = MEMBER_REF;
       break;
 
     case CPP_DEREF:
-      id = cp_operator_id (COMPONENT_REF);
+      op = COMPONENT_REF;
       break;
 
     case CPP_OPEN_PAREN:
@@ -15145,7 +15152,9 @@ cp_parser_operator (cp_parser* parser)
         parens.consume_open (parser);
         /* Look for the matching `)'.  */
         parens.require_close (parser);
-        return cp_operator_id (CALL_EXPR);
+	op = CALL_EXPR;
+	consumed = true;
+	break;
       }
 
     case CPP_OPEN_SQUARE:
@@ -15153,7 +15162,9 @@ cp_parser_operator (cp_parser* parser)
       cp_lexer_consume_token (parser->lexer);
       /* Look for the matching `]'.  */
       cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
-      return cp_operator_id (ARRAY_REF);
+      op = ARRAY_REF;
+      consumed = true;
+      break;
 
     case CPP_UTF8STRING:
     case CPP_UTF8STRING_USERDEF:
@@ -15232,8 +15243,12 @@ cp_parser_operator (cp_parser* parser)
 
   /* If we have selected an identifier, we need to consume the
      operator token.  */
-  if (id)
-    cp_lexer_consume_token (parser->lexer);
+  if (op != ERROR_MARK)
+    {
+      id = ovl_op_identifier (assop, op);
+      if (!consumed)
+	cp_lexer_consume_token (parser->lexer);
+    }
   /* Otherwise, no valid operator name was present.  */
   else
     {
@@ -17885,9 +17900,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_range (input_location, false);
 	  richloc.add_fixit_remove ();
-	  pedwarn_at_rich_loc (&richloc, 0, "elaborated-type-specifier for "
-			       "a scoped enum must not use the %qD keyword",
-			       token->u.value);
+	  pedwarn (&richloc, 0, "elaborated-type-specifier for "
+		   "a scoped enum must not use the %qD keyword",
+		   token->u.value);
 	  /* Consume the `struct' or `class' and parse it anyway.  */
 	  cp_lexer_consume_token (parser->lexer);
 	}
@@ -20883,7 +20898,7 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 	{
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_fixit_remove ();
-	  error_at_rich_loc (&richloc, "duplicate cv-qualifier");
+	  error_at (&richloc, "duplicate cv-qualifier");
 	  cp_lexer_purge_token (parser->lexer);
 	}
       else
@@ -21032,7 +21047,7 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
 	{
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_fixit_remove ();
-	  error_at_rich_loc (&richloc, "duplicate virt-specifier");
+	  error_at (&richloc, "duplicate virt-specifier");
 	  cp_lexer_purge_token (parser->lexer);
 	}
       else
@@ -21067,7 +21082,7 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
   /* Clear this first to avoid shortcut in cp_build_indirect_ref.  */
   current_class_ptr = NULL_TREE;
   current_class_ref
-    = cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
+    = cp_build_fold_indirect_ref (this_parm);
   current_class_ptr = this_parm;
 }
 
@@ -22830,14 +22845,14 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  richloc.add_fixit_insert_before (next_loc, ";");
 
 	if (CLASSTYPE_DECLARED_CLASS (type))
-	  error_at_rich_loc (&richloc,
-			     "expected %<;%> after class definition");
+	  error_at (&richloc,
+		    "expected %<;%> after class definition");
 	else if (TREE_CODE (type) == RECORD_TYPE)
-	  error_at_rich_loc (&richloc,
-			     "expected %<;%> after struct definition");
+	  error_at (&richloc,
+		    "expected %<;%> after struct definition");
 	else if (TREE_CODE (type) == UNION_TYPE)
-	  error_at_rich_loc (&richloc,
-			     "expected %<;%> after union definition");
+	  error_at (&richloc,
+		    "expected %<;%> after union definition");
 	else
 	  gcc_unreachable ();
 
@@ -23284,9 +23299,9 @@ cp_parser_class_head (cp_parser* parser,
       rich_location richloc (line_table, reported_loc);
       richloc.add_fixit_insert_before (class_head_start_location,
                                        "template <> ");
-      error_at_rich_loc
-        (&richloc,
-         "an explicit specialization must be preceded by %<template <>%>");
+      error_at (&richloc,
+		"an explicit specialization must be preceded by"
+		" %<template <>%>");
       invalid_explicit_specialization_p = true;
       /* Take the same action that would have been taken by
 	 cp_parser_explicit_specialization.  */
@@ -23754,7 +23769,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	    {
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_remove ();
-	      pedwarn_at_rich_loc (&richloc, OPT_Wpedantic, "extra %<;%>");
+	      pedwarn (&richloc, OPT_Wpedantic, "extra %<;%>");
 	    }
 	}
       else
@@ -24097,9 +24112,9 @@ cp_parser_member_declaration (cp_parser* parser)
 			= cp_lexer_consume_token (parser->lexer)->location;
 		      gcc_rich_location richloc (semicolon_loc);
 		      richloc.add_fixit_remove ();
-		      warning_at_rich_loc (&richloc, OPT_Wextra_semi,
-					   "extra %<;%> after in-class "
-					   "function definition");
+		      warning_at (&richloc, OPT_Wextra_semi,
+				  "extra %<;%> after in-class "
+				  "function definition");
 		    }
 		  goto out;
 		}
@@ -24142,8 +24157,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		  cp_token *token = cp_lexer_previous_token (parser->lexer);
 		  gcc_rich_location richloc (token->location);
 		  richloc.add_fixit_remove ();
-		  error_at_rich_loc (&richloc, "stray %<,%> at end of "
-				     "member declaration");
+		  error_at (&richloc, "stray %<,%> at end of "
+			    "member declaration");
 		}
 	    }
 	  /* If the next token isn't a `;', then we have a parse error.  */
@@ -24156,8 +24171,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      cp_token *token = cp_lexer_previous_token (parser->lexer);
 	      gcc_rich_location richloc (token->location);
 	      richloc.add_fixit_insert_after (";");
-	      error_at_rich_loc (&richloc, "expected %<;%> at end of "
-				 "member declaration");
+	      error_at (&richloc, "expected %<;%> at end of "
+			"member declaration");
 
 	      /* Assume that the user meant to provide a semicolon.  If
 		 we were to cp_parser_skip_to_end_of_statement, we might
@@ -27763,8 +27778,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
 	  gcc_rich_location richloc (token->location);
 	  richloc.add_fixit_replace ("> >");
-	  error_at_rich_loc (&richloc, "%<>>%> should be %<> >%> "
-			     "within a nested template argument list");
+	  error_at (&richloc, "%<>>%> should be %<> >%> "
+		    "within a nested template argument list");
 
 	  token->type = CPP_GREATER;
 	}
@@ -28393,7 +28408,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    {
 	      gcc_rich_location richloc (location);
 	      richloc.add_fixit_remove ();
-	      error_at_rich_loc (&richloc, "duplicate %qD", token->u.value);
+	      error_at (&richloc, "duplicate %qD", token->u.value);
 	    }
 	}
       else
@@ -28417,7 +28432,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	  };
 	  gcc_rich_location richloc (location);
 	  richloc.add_fixit_remove ();
-	  error_at_rich_loc (&richloc, "duplicate %qs", decl_spec_names[ds]);
+	  error_at (&richloc, "duplicate %qs", decl_spec_names[ds]);
 	}
     }
 }
@@ -32807,21 +32822,21 @@ cp_parser_omp_clause_reduction (cp_parser *parser, tree list)
 	    code = MIN_EXPR;
 	  else if (strcmp (p, "max") == 0)
 	    code = MAX_EXPR;
-	  else if (id == cp_operator_id (PLUS_EXPR))
+	  else if (id == ovl_op_identifier (false, PLUS_EXPR))
 	    code = PLUS_EXPR;
-	  else if (id == cp_operator_id (MULT_EXPR))
+	  else if (id == ovl_op_identifier (false, MULT_EXPR))
 	    code = MULT_EXPR;
-	  else if (id == cp_operator_id (MINUS_EXPR))
+	  else if (id == ovl_op_identifier (false, MINUS_EXPR))
 	    code = MINUS_EXPR;
-	  else if (id == cp_operator_id (BIT_AND_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_AND_EXPR))
 	    code = BIT_AND_EXPR;
-	  else if (id == cp_operator_id (BIT_IOR_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_IOR_EXPR))
 	    code = BIT_IOR_EXPR;
-	  else if (id == cp_operator_id (BIT_XOR_EXPR))
+	  else if (id == ovl_op_identifier (false, BIT_XOR_EXPR))
 	    code = BIT_XOR_EXPR;
-	  else if (id == cp_operator_id (TRUTH_ANDIF_EXPR))
+	  else if (id == ovl_op_identifier (false, TRUTH_ANDIF_EXPR))
 	    code = TRUTH_ANDIF_EXPR;
-	  else if (id == cp_operator_id (TRUTH_ORIF_EXPR))
+	  else if (id == ovl_op_identifier (false, TRUTH_ORIF_EXPR))
 	    code = TRUTH_ORIF_EXPR;
 	  id = omp_reduction_id (code, id, NULL_TREE);
 	  tree scope = parser->scope;

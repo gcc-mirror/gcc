@@ -535,7 +535,7 @@ perform_target_ctor (tree init)
 
 /* Return the non-static data initializer for FIELD_DECL MEMBER.  */
 
-static GTY(()) hash_map<tree, tree> *nsdmi_inst;
+static GTY((cache)) tree_cache_map *nsdmi_inst;
 
 tree
 get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
@@ -590,7 +590,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  if (init != error_mark_node)
 	    {
 	      if (!nsdmi_inst)
-		nsdmi_inst = hash_map<tree,tree>::create_ggc (37);
+		nsdmi_inst = tree_cache_map::create_ggc (37);
 	      nsdmi_inst->put (member, init);
 	    }
 
@@ -1260,8 +1260,7 @@ emit_mem_initializers (tree mem_inits)
 	  base_addr = build_base_path (PLUS_EXPR, current_class_ptr,
 				       subobject, 1, tf_warning_or_error);
 	  expand_aggr_init_1 (subobject, NULL_TREE,
-			      cp_build_indirect_ref (base_addr, RO_NULL,
-                                                     tf_warning_or_error),
+			      cp_build_fold_indirect_ref (base_addr),
 			      arguments,
 			      flags,
                               tf_warning_or_error);
@@ -1351,7 +1350,7 @@ expand_virtual_init (tree binfo, tree decl)
       /* Compute the value to use, when there's a VTT.  */
       vtt_parm = current_vtt_parm;
       vtbl2 = fold_build_pointer_plus (vtt_parm, vtt_index);
-      vtbl2 = cp_build_indirect_ref (vtbl2, RO_NULL, tf_warning_or_error);
+      vtbl2 = cp_build_fold_indirect_ref (vtbl2);
       vtbl2 = convert (TREE_TYPE (vtbl), vtbl2);
 
       /* The actual initializer is the VTT value only in the subobject
@@ -1361,8 +1360,7 @@ expand_virtual_init (tree binfo, tree decl)
     }
 
   /* Compute the location of the vtpr.  */
-  vtbl_ptr = build_vfield_ref (cp_build_indirect_ref (decl, RO_NULL, 
-                                                      tf_warning_or_error),
+  vtbl_ptr = build_vfield_ref (cp_build_fold_indirect_ref (decl),
 			       TREE_TYPE (binfo));
   gcc_assert (vtbl_ptr != error_mark_node);
 
@@ -2758,7 +2756,7 @@ malloc_alignment ()
 static bool
 std_placement_new_fn_p (tree alloc_fn)
 {
-  if ((cxx_dialect > cxx14) && DECL_NAMESPACE_SCOPE_P (alloc_fn))
+  if (DECL_NAMESPACE_SCOPE_P (alloc_fn))
     {
       tree first_arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
       if ((TREE_VALUE (first_arg) == ptr_type_node)
@@ -3055,7 +3053,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   tree fnname;
   tree fns;
 
-  fnname = cp_operator_id (array_p ? VEC_NEW_EXPR : NEW_EXPR);
+  fnname = ovl_op_identifier (false, array_p ? VEC_NEW_EXPR : NEW_EXPR);
 
   member_new_p = !globally_qualified_p
 		 && CLASS_TYPE_P (elt_type)
@@ -3268,7 +3266,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 						alloc_node, cookie_ptr);
       size_ptr_type = build_pointer_type (sizetype);
       cookie_ptr = fold_convert (size_ptr_type, cookie_ptr);
-      cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
+      cookie = cp_build_fold_indirect_ref (cookie_ptr);
 
       cookie_expr = build2 (MODIFY_EXPR, sizetype, cookie, nelts);
 
@@ -3280,7 +3278,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 						NEGATE_EXPR, sizetype,
 						size_in_bytes (sizetype)));
 
-	  cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
+	  cookie = cp_build_fold_indirect_ref (cookie_ptr);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
 			   size_in_bytes (elt_type));
 	  cookie_expr = build2 (COMPOUND_EXPR, TREE_TYPE (cookie_expr),
@@ -3326,7 +3324,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	     the initializer anyway since we're going to throw it away and
 	     rebuild it at instantiation time, so just build up a single
 	     constructor call to get any appropriate diagnostics.  */
-	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
+	  init_expr = cp_build_fold_indirect_ref (data_addr);
 	  if (type_build_ctor_call (elt_type))
 	    init_expr = build_special_member_call (init_expr,
 						   complete_ctor_identifier,
@@ -3384,7 +3382,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
       else
 	{
-	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
+	  init_expr = cp_build_fold_indirect_ref (data_addr);
 
 	  if (type_build_ctor_call (type) && !explicit_value_init_p)
 	    {
@@ -4507,7 +4505,7 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       atype = build_pointer_type (atype);
       stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
-      stmt_expr = cp_build_indirect_ref (stmt_expr, RO_NULL, complain);
+      stmt_expr = cp_build_fold_indirect_ref (stmt_expr);
       TREE_NO_WARNING (stmt_expr) = 1;
     }
 
@@ -4661,8 +4659,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       /* Make sure the destructor is callable.  */
       if (type_build_dtor_call (type))
 	{
-	  expr = build_dtor_call (cp_build_indirect_ref (addr, RO_NULL,
-							 complain),
+	  expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
 				  sfk_complete_destructor, flags, complain);
 	  if (expr == error_mark_node)
 	    return error_mark_node;
@@ -4738,7 +4735,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 				complain);
 	}
 
-      expr = build_dtor_call (cp_build_indirect_ref (addr, RO_NULL, complain),
+      expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
 			      auto_delete, flags, complain);
       if (expr == error_mark_node)
 	return error_mark_node;
@@ -4918,7 +4915,7 @@ build_vec_delete (tree base, tree maxindex,
 				 sizetype, TYPE_SIZE_UNIT (sizetype));
       cookie_addr = fold_build_pointer_plus (fold_convert (size_ptr_type, base),
 					     cookie_addr);
-      maxindex = cp_build_indirect_ref (cookie_addr, RO_NULL, complain);
+      maxindex = cp_build_fold_indirect_ref (cookie_addr);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {

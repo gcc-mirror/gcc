@@ -51,6 +51,7 @@ int vf2_subgraph_iso(GraphSmall, GraphLarge, SubGraphIsoMapCallback p3,
                      IndexMapSmall, IndexMapLarge, VertexOrderSmall,
                      EdgeEquivalencePredicate, VertexEquivalencePredicate) {
   vf2_subgraph_morphism<subgraph_iso>(0, 0, p3, 0, 0, 0, 0, 0);
+  return 0;
 }
 }
 using namespace boost;

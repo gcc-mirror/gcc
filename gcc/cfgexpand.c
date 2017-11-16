@@ -1391,10 +1391,18 @@ expand_one_ssa_partition (tree var)
     }
 
   machine_mode reg_mode = promote_ssa_mode (var, NULL);
-
   rtx x = gen_reg_rtx (reg_mode);
 
   set_rtl (var, x);
+
+  /* For a promoted variable, X will not be used directly but wrapped in a
+     SUBREG with SUBREG_PROMOTED_VAR_P set, which means that the RTL land
+     will assume that its upper bits can be inferred from its lower bits.
+     Therefore, if X isn't initialized on every path from the entry, then
+     we must do it manually in order to fulfill the above assumption.  */
+  if (reg_mode != TYPE_MODE (TREE_TYPE (var))
+      && bitmap_bit_p (SA.partitions_for_undefined_values, part))
+    emit_move_insn (x, CONST0_RTX (reg_mode));
 }
 
 /* Record the association between the RTL generated for partition PART
@@ -2025,7 +2033,7 @@ expand_used_vars (void)
   /* Compute the phase of the stack frame for this function.  */
   {
     int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-    int off = STARTING_FRAME_OFFSET % align;
+    int off = targetm.starting_frame_offset () % align;
     frame_phase = off ? align - off : 0;
   }
 
@@ -2508,7 +2516,6 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   redirect_edge_succ (false_edge, new_bb);
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count ();
-  new_bb->frequency = EDGE_FREQUENCY (false_edge);
   loop_p loop = find_common_loop (bb->loop_father, dest->loop_father);
   add_bb_to_loop (new_bb, loop);
   if (loop->latch == bb
@@ -3839,11 +3846,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
       if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
 	{
 	  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	    {
-	      e->dest->frequency -= EDGE_FREQUENCY (e);
-	      if (e->dest->frequency < 0)
-		e->dest->frequency = 0;
-	    }
+	    e->dest->count -= e->count ();
 	  probability += e->probability;
 	  remove_edge (e);
 	}
@@ -4361,9 +4364,12 @@ expand_debug_expr (tree exp)
 	    else
 	      op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
 	  }
-	else if (CONSTANT_P (op0)
-		 || GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (inner_mode))
+	else if (GET_MODE_UNIT_PRECISION (mode)
+		 == GET_MODE_UNIT_PRECISION (inner_mode))
 	  op0 = lowpart_subreg (mode, op0, inner_mode);
+	else if (GET_MODE_UNIT_PRECISION (mode)
+		 < GET_MODE_UNIT_PRECISION (inner_mode))
+	  op0 = simplify_gen_unary (TRUNCATE, mode, op0, inner_mode);
 	else if (UNARY_CLASS_P (exp)
 		 ? TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
 		 : unsignedp)
@@ -5222,9 +5228,12 @@ expand_debug_source_expr (tree exp)
       else
 	op0 = simplify_gen_unary (FIX, mode, op0, inner_mode);
     }
-  else if (CONSTANT_P (op0)
-	   || GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (inner_mode))
+  else if (GET_MODE_UNIT_PRECISION (mode)
+	   == GET_MODE_UNIT_PRECISION (inner_mode))
     op0 = lowpart_subreg (mode, op0, inner_mode);
+  else if (GET_MODE_UNIT_PRECISION (mode)
+	   < GET_MODE_UNIT_PRECISION (inner_mode))
+    op0 = simplify_gen_unary (TRUNCATE, mode, op0, inner_mode);
   else if (TYPE_UNSIGNED (TREE_TYPE (exp)))
     op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
   else
@@ -5846,7 +5855,6 @@ construct_init_block (void)
   init_block = create_basic_block (NEXT_INSN (get_insns ()),
 				   get_last_insn (),
 				   ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  init_block->frequency = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
   init_block->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
   if (e)
@@ -5910,7 +5918,7 @@ construct_exit_block (void)
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
   /* But make sure exit_block starts with RETURN_LABEL, otherwise the
-     bb frequency counting will be confused.  Any instructions before that
+     bb count counting will be confused.  Any instructions before that
      label are emitted for the case where PREV_BB falls through into the
      exit block, so append those instructions to prev_bb in that case.  */
   if (NEXT_INSN (head) != return_label)
@@ -5923,7 +5931,6 @@ construct_exit_block (void)
 	}
     }
   exit_block = create_basic_block (NEXT_INSN (head), end, prev_bb);
-  exit_block->frequency = EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency;
   exit_block->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
   add_bb_to_loop (exit_block, EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
@@ -5943,10 +5950,7 @@ construct_exit_block (void)
     if (e2 != e)
       {
 	exit_block->count -= e2->count ();
-	exit_block->frequency -= EDGE_FREQUENCY (e2);
       }
-  if (exit_block->frequency < 0)
-    exit_block->frequency = 0;
   update_bb_for_insn (exit_block);
 }
 

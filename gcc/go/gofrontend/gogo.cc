@@ -1394,7 +1394,7 @@ Gogo::write_globals()
                 {
                   Location loc = var->location();
                   Bexpression* var_expr =
-                      this->backend()->var_expression(bvar, VE_lvalue, loc);
+                      this->backend()->var_expression(bvar, loc);
                   var_init_stmt =
                       this->backend()->assignment_statement(init_bfn, var_expr,
                                                             var_binit, loc);
@@ -5798,8 +5798,7 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
     {
       Named_object* no = (*this->results_)[i];
       Bvariable* bvar = no->get_backend_variable(gogo, named_function);
-      Bexpression* val = gogo->backend()->var_expression(bvar, VE_rvalue,
-                                                         location);
+      Bexpression* val = gogo->backend()->var_expression(bvar, location);
       if (no->result_var_value()->is_in_heap())
 	{
 	  Btype* bt = no->result_var_value()->type()->get_backend(gogo);
@@ -6632,7 +6631,7 @@ Variable::get_init_block(Gogo* gogo, Named_object* function,
               Expression::make_cast(this->type(), this->init_, loc);
           Bexpression* val = val_expr->get_backend(&context);
           Bexpression* var_ref =
-              gogo->backend()->var_expression(var_decl, VE_lvalue, loc);
+              gogo->backend()->var_expression(var_decl, loc);
           decl_init = gogo->backend()->assignment_statement(bfunction, var_ref,
                                                             val, loc);
 	}

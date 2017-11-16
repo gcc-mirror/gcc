@@ -900,7 +900,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label)
 	 to the underlying register (fp in this case) that makes
 	 the original assignment true.
 	 So the following insn will actually be decrementing fp by
-	 STARTING_FRAME_OFFSET.  */
+	 TARGET_STARTING_FRAME_OFFSET.  */
       emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
       /* Restoring the frame pointer also modifies the hard frame pointer.
@@ -1816,14 +1816,26 @@ expand_builtin_classify_type (tree exp)
   return GEN_INT (no_type_class);
 }
 
-/* This helper macro, meant to be used in mathfn_built_in below,
-   determines which among a set of three builtin math functions is
-   appropriate for a given type mode.  The `F' and `L' cases are
-   automatically generated from the `double' case.  */
+/* This helper macro, meant to be used in mathfn_built_in below, determines
+   which among a set of builtin math functions is appropriate for a given type
+   mode.  The `F' (float) and `L' (long double) are automatically generated
+   from the 'double' case.  If a function supports the _Float<N> and _Float<N>X
+   types, there are additional types that are considered with 'F32', 'F64',
+   'F128', etc. suffixes.  */
 #define CASE_MATHFN(MATHFN) \
   CASE_CFN_##MATHFN: \
   fcode = BUILT_IN_##MATHFN; fcodef = BUILT_IN_##MATHFN##F ; \
   fcodel = BUILT_IN_##MATHFN##L ; break;
+/* Similar to the above, but also add support for the _Float<N> and _Float<N>X
+   types.  */
+#define CASE_MATHFN_FLOATN(MATHFN) \
+  CASE_CFN_##MATHFN: \
+  fcode = BUILT_IN_##MATHFN; fcodef = BUILT_IN_##MATHFN##F ; \
+  fcodel = BUILT_IN_##MATHFN##L ; fcodef16 = BUILT_IN_##MATHFN##F16 ; \
+  fcodef32 = BUILT_IN_##MATHFN##F32; fcodef64 = BUILT_IN_##MATHFN##F64 ; \
+  fcodef128 = BUILT_IN_##MATHFN##F128 ; fcodef32x = BUILT_IN_##MATHFN##F32X ; \
+  fcodef64x = BUILT_IN_##MATHFN##F64X ; fcodef128x = BUILT_IN_##MATHFN##F128X ;\
+  break;
 /* Similar to above, but appends _R after any F/L suffix.  */
 #define CASE_MATHFN_REENT(MATHFN) \
   case CFN_BUILT_IN_##MATHFN##_R: \
@@ -1840,7 +1852,15 @@ expand_builtin_classify_type (tree exp)
 static built_in_function
 mathfn_built_in_2 (tree type, combined_fn fn)
 {
+  tree mtype;
   built_in_function fcode, fcodef, fcodel;
+  built_in_function fcodef16 = END_BUILTINS;
+  built_in_function fcodef32 = END_BUILTINS;
+  built_in_function fcodef64 = END_BUILTINS;
+  built_in_function fcodef128 = END_BUILTINS;
+  built_in_function fcodef32x = END_BUILTINS;
+  built_in_function fcodef64x = END_BUILTINS;
+  built_in_function fcodef128x = END_BUILTINS;
 
   switch (fn)
     {
@@ -1854,7 +1874,7 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (CBRT)
     CASE_MATHFN (CEIL)
     CASE_MATHFN (CEXPI)
-    CASE_MATHFN (COPYSIGN)
+    CASE_MATHFN_FLOATN (COPYSIGN)
     CASE_MATHFN (COS)
     CASE_MATHFN (COSH)
     CASE_MATHFN (DREM)
@@ -1867,9 +1887,9 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (FABS)
     CASE_MATHFN (FDIM)
     CASE_MATHFN (FLOOR)
-    CASE_MATHFN (FMA)
-    CASE_MATHFN (FMAX)
-    CASE_MATHFN (FMIN)
+    CASE_MATHFN_FLOATN (FMA)
+    CASE_MATHFN_FLOATN (FMAX)
+    CASE_MATHFN_FLOATN (FMIN)
     CASE_MATHFN (FMOD)
     CASE_MATHFN (FREXP)
     CASE_MATHFN (GAMMA)
@@ -1923,7 +1943,7 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (SIN)
     CASE_MATHFN (SINCOS)
     CASE_MATHFN (SINH)
-    CASE_MATHFN (SQRT)
+    CASE_MATHFN_FLOATN (SQRT)
     CASE_MATHFN (TAN)
     CASE_MATHFN (TANH)
     CASE_MATHFN (TGAMMA)
@@ -1936,12 +1956,27 @@ mathfn_built_in_2 (tree type, combined_fn fn)
       return END_BUILTINS;
     }
 
-  if (TYPE_MAIN_VARIANT (type) == double_type_node)
+  mtype = TYPE_MAIN_VARIANT (type);
+  if (mtype == double_type_node)
     return fcode;
-  else if (TYPE_MAIN_VARIANT (type) == float_type_node)
+  else if (mtype == float_type_node)
     return fcodef;
-  else if (TYPE_MAIN_VARIANT (type) == long_double_type_node)
+  else if (mtype == long_double_type_node)
     return fcodel;
+  else if (mtype == float16_type_node)
+    return fcodef16;
+  else if (mtype == float32_type_node)
+    return fcodef32;
+  else if (mtype == float64_type_node)
+    return fcodef64;
+  else if (mtype == float128_type_node)
+    return fcodef128;
+  else if (mtype == float32x_type_node)
+    return fcodef32x;
+  else if (mtype == float64x_type_node)
+    return fcodef64x;
+  else if (mtype == float128x_type_node)
+    return fcodef128x;
   else
     return END_BUILTINS;
 }
@@ -1995,6 +2030,9 @@ associated_internal_fn (tree fndecl)
     {
 #define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
     CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME;
+#define DEF_INTERNAL_FLT_FLOATN_FN(NAME, FLAGS, OPTAB, TYPE) \
+    CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME; \
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_##NAME): return IFN_##NAME;
 #define DEF_INTERNAL_INT_FN(NAME, FLAGS, OPTAB, TYPE) \
     CASE_INT_FN (BUILT_IN_##NAME): return IFN_##NAME;
 #include "internal-fn.def"
@@ -2068,6 +2106,7 @@ expand_builtin_mathfn_ternary (tree exp, rtx target, rtx subtarget)
   switch (DECL_FUNCTION_CODE (fndecl))
     {
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
       builtin_optab = fma_optab; break;
     default:
       gcc_unreachable ();
@@ -3221,17 +3260,59 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
 }
 
 /* Helper to compute the size of the object referenced by the DEST
-   expression which must of of pointer type, using Object Size type
+   expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).  Return
    the size of the object if successful or NULL when the size cannot
    be determined.  */
 
-static inline tree
+tree
 compute_objsize (tree dest, int ostype)
 {
   unsigned HOST_WIDE_INT size;
-  if (compute_builtin_object_size (dest, ostype & 3, &size))
+
+  /* Only the two least significant bits are meaningful.  */
+  ostype &= 3;
+
+  if (compute_builtin_object_size (dest, ostype, &size))
     return build_int_cst (sizetype, size);
+
+  /* Unless computing the largest size (for memcpy and other raw memory
+     functions), try to determine the size of the object from its type.  */
+  if (!ostype)
+    return NULL_TREE;
+
+  if (TREE_CODE (dest) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (dest);
+      if (!is_gimple_assign (stmt))
+	return NULL_TREE;
+
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (code != ADDR_EXPR && code != POINTER_PLUS_EXPR)
+	return NULL_TREE;
+
+      dest = gimple_assign_rhs1 (stmt);
+    }
+
+  if (TREE_CODE (dest) != ADDR_EXPR)
+    return NULL_TREE;
+
+  tree type = TREE_TYPE (dest);
+  if (TREE_CODE (type) == POINTER_TYPE)
+    type = TREE_TYPE (type);
+
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && !array_at_struct_end_p (dest))
+    {
+      /* Return the constant size unless it's zero (that's a zero-length
+	 array likely at the end of a struct).  */
+      tree size = TYPE_SIZE_UNIT (type);
+      if (size && TREE_CODE (size) == INTEGER_CST
+	  && !integer_zerop (size))
+	return size;
+    }
 
   return NULL_TREE;
 }
@@ -3884,6 +3965,22 @@ expand_builtin_strncat (tree exp, rtx)
   return NULL_RTX;
 }
 
+/* Helper to check the sizes of sequences and the destination of calls
+   to __builtin_strncpy (DST, SRC, CNT) and __builtin___strncpy_chk.
+   Returns true on success (no overflow warning), false otherwise.  */
+
+static bool
+check_strncpy_sizes (tree exp, tree dst, tree src, tree cnt)
+{
+  tree dstsize = compute_objsize (dst, warn_stringop_overflow - 1);
+
+  if (!check_sizes (OPT_Wstringop_overflow_,
+		    exp, cnt, /*maxlen=*/NULL_TREE, src, dstsize))
+    return false;
+
+  return true;
+}
+
 /* Expand expression EXP, which is a call to the strncpy builtin.  Return
    NULL_RTX if we failed the caller should emit a normal call.  */
 
@@ -3902,16 +3999,7 @@ expand_builtin_strncpy (tree exp, rtx target)
       /* The length of the source sequence.  */
       tree slen = c_strlen (src, 1);
 
-      if (warn_stringop_overflow)
-	{
-	  tree destsize = compute_objsize (dest,
-					   warn_stringop_overflow - 1);
-
-	  /* The number of bytes to write is LEN but check_sizes will also
-	     check SLEN if LEN's value isn't known.  */
-	  check_sizes (OPT_Wstringop_overflow_,
-		       exp, len, /*maxlen=*/NULL_TREE, src, destsize);
-	}
+      check_strncpy_sizes (exp, dest, src, len);
 
       /* We must be passed a constant len and src parameter.  */
       if (!tree_fits_uhwi_p (len) || !slen || !tree_fits_uhwi_p (slen))
@@ -6567,6 +6655,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
       target = expand_builtin_mathfn_ternary (exp, target, subtarget);
       if (target)
 	return target;
@@ -8996,6 +9085,7 @@ fold_builtin_3 (location_t loc, tree fndecl,
       return fold_builtin_sincos (loc, arg0, arg1, arg2);
 
     CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMA):
       return fold_builtin_fma (loc, arg0, arg1, arg2, type);
 
     CASE_FLT_FN (BUILT_IN_REMQUO):

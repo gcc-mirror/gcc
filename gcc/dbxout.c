@@ -3393,12 +3393,16 @@ dbxout_parms (tree parms)
 {
   ++debug_nesting;
   emit_pending_bincls_if_required ();
+  fixed_size_mode rtl_mode, type_mode;
 
   for (; parms; parms = DECL_CHAIN (parms))
     if (DECL_NAME (parms)
 	&& TREE_TYPE (parms) != error_mark_node
 	&& DECL_RTL_SET_P (parms)
-	&& DECL_INCOMING_RTL (parms))
+	&& DECL_INCOMING_RTL (parms)
+	/* We can't represent variable-sized types in this format.  */
+	&& is_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (parms)), &type_mode)
+	&& is_a <fixed_size_mode> (GET_MODE (DECL_RTL (parms)), &rtl_mode))
       {
 	tree eff_type;
 	char letter;
@@ -3555,10 +3559,9 @@ dbxout_parms (tree parms)
 	    /* Make a big endian correction if the mode of the type of the
 	       parameter is not the same as the mode of the rtl.  */
 	    if (BYTES_BIG_ENDIAN
-		&& TYPE_MODE (TREE_TYPE (parms)) != GET_MODE (DECL_RTL (parms))
-		&& GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))) < UNITS_PER_WORD)
-	      number += (GET_MODE_SIZE (GET_MODE (DECL_RTL (parms)))
-			 - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))));
+		&& type_mode != rtl_mode
+		&& GET_MODE_SIZE (type_mode) < UNITS_PER_WORD)
+	      number += GET_MODE_SIZE (rtl_mode) - GET_MODE_SIZE (type_mode);
 	  }
 	else
 	  /* ??? We don't know how to represent this argument.  */

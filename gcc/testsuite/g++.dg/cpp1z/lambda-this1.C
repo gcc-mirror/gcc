@@ -50,7 +50,7 @@ struct B {
   double foo () {
     return [this]{ return [*this] { return b; }; }()();	// { dg-error "'*this' capture only available with" "" { target c++14_down } }
   }
-  double bar () {
+  void bar () {
     auto c = []{ return [*this] { return b; }; };	// { dg-error "'this' was not captured for this lambda function" }
   }							// { dg-error "invalid use of non-static data member 'B::b'" "" { target *-*-* } .-1 }
 };							// { dg-error "'*this' capture only available with" "" { target c++14_down } .-2 }

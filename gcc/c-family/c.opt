@@ -744,6 +744,10 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Ini
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
 
+Wstringop-truncation
+C ObjC C++ ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ ObjC++, Wall)
+Warn about truncation in string manipulation functions like strncat and strncpy.
+
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes.
@@ -960,7 +964,7 @@ C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code.
 
 Wreturn-type
-C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall) Init(-1)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++).
 
 Wscalar-storage-order
@@ -1976,6 +1980,10 @@ std=c1x
 C ObjC Alias(std=c11)
 Deprecated in favor of -std=c11.
 
+std=c17
+C ObjC
+Conform to the ISO 2017 C standard.
+
 std=c89
 C ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard.
@@ -2038,6 +2046,10 @@ std=gnu1x
 C ObjC Alias(std=gnu11)
 Deprecated in favor of -std=gnu11.
 
+std=gnu17
+C ObjC
+Conform to the ISO 2017 C standard with GNU extensions.
+
 std=gnu89
 C ObjC Alias(std=gnu90)
 Conform to the ISO 1990 C standard with GNU extensions.
@@ -2073,6 +2085,10 @@ Deprecated in favor of -std=iso9899:1999.
 std=iso9899:2011
 C ObjC Alias(std=c11)
 Conform to the ISO 2011 C standard.
+
+std=iso9899:2017
+C ObjC Alias(std=c17)
+Conform to the ISO 2017 C standard.
 
 traditional
 Driver

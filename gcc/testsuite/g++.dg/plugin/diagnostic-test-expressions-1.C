@@ -66,7 +66,7 @@ struct test_struct
   int field;
 };
 
-int test_structure_references (struct test_struct *ptr)
+void test_structure_references (struct test_struct *ptr)
 {
   struct test_struct local;
   local.field = 42;
@@ -84,7 +84,7 @@ int test_structure_references (struct test_struct *ptr)
    { dg-end-multiline-output "" } */
 }
 
-int test_postfix_incdec (int i)
+void test_postfix_incdec (int i)
 {
   __emit_expression_range (0, i++ ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
@@ -101,7 +101,7 @@ int test_postfix_incdec (int i)
 
 /* Unary operators.  ****************************************************/
 
-int test_sizeof (int i)
+void test_sizeof (int i)
 {
   __emit_expression_range (0, sizeof(int) + i); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
@@ -128,7 +128,7 @@ int test_sizeof (int i)
    { dg-end-multiline-output "" } */
 }
 
-int test_alignof (int i)
+void test_alignof (int i)
 {
   __emit_expression_range (0, alignof(int) + i); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }
@@ -167,7 +167,7 @@ int test_alignof (int i)
    { dg-end-multiline-output "" } */
 }
 
-int test_prefix_incdec (int i)
+void test_prefix_incdec (int i)
 {
   __emit_expression_range (0, ++i ); /* { dg-warning "range" } */
 /* { dg-begin-multiline-output "" }

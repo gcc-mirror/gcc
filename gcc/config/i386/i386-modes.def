@@ -72,8 +72,8 @@ CC_MODE (CCO);
 CC_MODE (CCP);
 CC_MODE (CCS);
 CC_MODE (CCZ);
+
 CC_MODE (CCFP);
-CC_MODE (CCFPU);
 
 /* Vector modes.  Note that VEC_CONCAT patterns require vector
    sizes twice as big as implemented in hardware.  */
