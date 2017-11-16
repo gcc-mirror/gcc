@@ -1,5 +1,19 @@
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	Constexprs!
+	gcc/cp/
+	* cp-tree.h (check_constexpr_fundef, find_constexpr_fundef): Declare.
+	* constexpr.c (find_constexpr_fundef): New.
+	(register_constexpr_fundef): Split checking off to ...
+	(check_constexpr_fundef): ... here.  Call
+	register_constexpr_fundef.
+	* decl.c (): Adjust.
+	* module.c (cpms_{in,out}::define_function): Serialize constexpr
+	body.
+	(cpms_{in,out}::core_vals): Serialize function-scope var initializers.
+	gcc/testsuite/
+	* g++.dg/modules/cexpr-[12]_[ab].C: New.
+
 	Merge trunk r254823.
 
 	Merge trunk r254819.

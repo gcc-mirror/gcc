@@ -2077,6 +2077,8 @@ cpms_out::define_function (tree decl, tree)
   tree_node (DECL_RESULT (decl));
   tree_node (DECL_INITIAL (decl));
   tree_node (DECL_SAVED_TREE (decl));
+  if (DECL_DECLARED_CONSTEXPR_P (decl))
+    tree_node (find_constexpr_fundef (decl));
 }
 
 tree
@@ -2085,6 +2087,8 @@ cpms_in::define_function (tree decl, tree maybe_template)
   tree result = tree_node ();
   tree initial = tree_node ();
   tree saved = tree_node ();
+  tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
+			 ? tree_node () : NULL_TREE);
 
   if (r.error ())
     return NULL_TREE;
@@ -2106,6 +2110,8 @@ cpms_in::define_function (tree decl, tree maybe_template)
   DECL_RESULT (decl) = result;
   DECL_INITIAL (decl) = initial;
   DECL_SAVED_TREE (decl) = saved;
+  if (constexpr_body)
+    register_constexpr_fundef (decl, constexpr_body);
 
   current_function_decl = decl;
   allocate_struct_function (decl, false);
@@ -2433,14 +2439,20 @@ cpms_out::tag_definition (tree t, tree maybe_template)
   switch (TREE_CODE (t))
     {
     default:
+      // FIXME:Other things
       gcc_unreachable ();
     case FUNCTION_DECL:
       define_function (t, maybe_template);
       break;
     case TYPE_DECL:
-      t = TREE_TYPE (t);
-      goto again;
-      
+      if (DECL_IMPLICIT_TYPEDEF_P (t))
+	{
+	  t = TREE_TYPE (t);
+	  goto again;
+	}
+      // FIXME:Actual typedefs
+      gcc_unreachable ();
+
     case RECORD_TYPE:
     case UNION_TYPE:
       define_class (t, maybe_template);
@@ -2476,9 +2488,15 @@ cpms_in::tag_definition ()
       break;
 
     case TYPE_DECL:
-      t = TREE_TYPE (t);
-      goto again;
-      
+      if (DECL_IMPLICIT_TYPEDEF_P (t))
+	{
+	  t = TREE_TYPE (t);
+	  goto again;
+	}
+      // FIXME:Actual typedefs
+      t = NULL_TREE;
+      break;
+
     case RECORD_TYPE:
     case UNION_TYPE:
       t = define_class (t, maybe_template);
@@ -3350,6 +3368,10 @@ cpms_out::core_vals (tree t)
 	{
 	default:
 	  break;
+	case VAR_DECL:
+	  if (TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	    break;
+	  /* FALLTHROUGH */
 	case PARM_DECL:
 	  WT (t->decl_common.initial);
 	  break;
@@ -3719,6 +3741,10 @@ cpms_in::core_vals (tree t)
 	{
 	default:
 	  break;
+	case VAR_DECL:
+	  if (TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	    break;
+	  /* FALLTHROUGH */
 	case PARM_DECL:
 	  RT (t->decl_common.initial);
 	  break;
@@ -5050,6 +5076,7 @@ search_module_path (char *&name, size_t name_len, tree mname)
 
   const char *str_name = (identifier_p (mname) ? IDENTIFIER_POINTER (mname)
 			  : TREE_STRING_POINTER (mname));
+  // FIXME: reference main source file here?  See below too.
   inform (UNKNOWN_LOCATION, "invoking module wrapper to install %qs",
 	  str_name);
 

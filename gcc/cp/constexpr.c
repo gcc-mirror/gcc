@@ -164,6 +164,14 @@ retrieve_constexpr_fundef (tree fun)
   return constexpr_fundef_table->find (&fundef);
 }
 
+tree
+find_constexpr_fundef (tree fun)
+{
+  constexpr_fundef *def = retrieve_constexpr_fundef (fun);
+
+  return def ? def->body : NULL_TREE;
+}
+
 /* Check whether the parameter and return types of FUN are valid for a
    constexpr function, and complain if COMPLAIN.  */
 
@@ -642,7 +650,7 @@ get_function_named_in_call (tree t)
   return fun;
 }
 
-/* Subroutine of register_constexpr_fundef.  BODY is the body of a function
+/* Subroutine of check_constexpr_fundef.  BODY is the body of a function
    declared to be constexpr, or a sub-statement thereof.  Returns the
    return value if suitable, error_mark_node for a statement not allowed in
    a constexpr function, or NULL_TREE if no return value was found.  */
@@ -710,7 +718,7 @@ constexpr_fn_retval (tree body)
     }
 }
 
-/* Subroutine of register_constexpr_fundef.  BODY is the DECL_SAVED_TREE of
+/* Subroutine of check_constexpr_fundef.  BODY is the DECL_SAVED_TREE of
    FUN; do the necessary transformations to turn it into a single expression
    that we can store in the hash table.  */
 
@@ -827,17 +835,14 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 }
 
 /* We are processing the definition of the constexpr function FUN.
-   Check that its BODY fulfills the propriate requirements and
+   Check that its BODY fulfills the apropriate requirements and
    enter it in the constexpr function definition table.
    For constructor BODY is actually the TREE_LIST of the
    member-initializer list.  */
 
 tree
-register_constexpr_fundef (tree fun, tree body)
+check_constexpr_fundef (tree fun, tree body)
 {
-  constexpr_fundef entry;
-  constexpr_fundef **slot;
-
   if (!is_valid_constexpr_fn (fun, !DECL_GENERATED_P (fun)))
     return NULL;
 
@@ -861,14 +866,25 @@ register_constexpr_fundef (tree fun, tree body)
 				     massaged, !DECL_GENERATED_P (fun)))
     return NULL;
 
+  return register_constexpr_fundef (fun, body);
+}
+
+/* BODY is a validated and massaged definition of a constexpr
+   function.  Register it in the hash table.  */
+
+tree
+register_constexpr_fundef (tree fun, tree body)
+{
   /* Create the constexpr function table if necessary.  */
   if (constexpr_fundef_table == NULL)
     constexpr_fundef_table
       = hash_table<constexpr_fundef_hasher>::create_ggc (101);
 
+  constexpr_fundef entry;
+
   entry.decl = fun;
   entry.body = body;
-  slot = constexpr_fundef_table->find_slot (&entry, INSERT);
+  constexpr_fundef **slot = constexpr_fundef_table->find_slot (&entry, INSERT);
 
   gcc_assert (*slot == NULL);
   *slot = ggc_alloc<constexpr_fundef> ();

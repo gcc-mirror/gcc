@@ -15425,7 +15425,7 @@ maybe_save_function_definition (tree fun)
       && DECL_DECLARED_CONSTEXPR_P (fun)
       && !cp_function_chain->invalid_constexpr
       && !DECL_CLONED_FUNCTION_P (fun))
-    register_constexpr_fundef (fun, DECL_SAVED_TREE (fun));
+    check_constexpr_fundef (fun, DECL_SAVED_TREE (fun));
 }
 
 /* Finish up a function declaration and compile that function
