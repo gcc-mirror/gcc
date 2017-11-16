@@ -1,3 +1,16 @@
+2017-11-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32.opt: Add mext-perf, mext-perf2, mext-string.
+	* config/nds32/nds32.opt: Refine the layout.
+	* config/nds32/nds32.c (TARGET_EXT_PERF, TARGET_EXT_PERF2,
+	TARGET_EXT_STRING): Support new options.
+	* config/nds32/nds32.h: Likewise.
+	* config/nds32/nds32.md: Likewise.
+	* config/nds32/nds32-predicates.c: Likewise.
+	* config/nds32/constraints.md: Likewise.
+	* common/config/nds32/nds32-common.c: Likewise.
+
 2017-11-16  Julia Koval  <julia.koval@intel.com>
 
 	PR target/82983

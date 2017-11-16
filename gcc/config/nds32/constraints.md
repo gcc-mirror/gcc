@@ -213,12 +213,12 @@
 (define_constraint "Ixls"
   "The immediate value 0x01"
   (and (match_code "const_int")
-       (match_test "TARGET_PERF_EXT && (ival == 0x1)")))
+       (match_test "TARGET_EXT_PERF && (ival == 0x1)")))
 
 (define_constraint "Ix11"
   "The immediate value 0x7ff"
   (and (match_code "const_int")
-       (match_test "TARGET_PERF_EXT && (ival == 0x7ff)")))
+       (match_test "TARGET_EXT_PERF && (ival == 0x7ff)")))
 
 (define_constraint "Ibms"
   "The immediate value with power of 2"
