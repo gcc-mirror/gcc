@@ -12213,6 +12213,40 @@ package body Sem_Util is
       return Empty;
    end Incomplete_Or_Partial_View;
 
+   ---------------------------------------
+   -- Incomplete_View_From_Limited_With --
+   ---------------------------------------
+
+   function Incomplete_View_From_Limited_With
+     (Typ : Entity_Id) return Entity_Id is
+   begin
+      --  It might make sense to make this an attribute in Einfo, and set it
+      --  in Sem_Ch10 in Build_Shadow_Entity. However, we're running short on
+      --  slots for new attributes, and it seems a bit simpler to just search
+      --  the Limited_View (if it exists) for an incomplete type whose
+      --  Non_Limited_View is Typ.
+
+      if Ekind (Scope (Typ)) = E_Package
+        and then Present (Limited_View (Scope (Typ)))
+      then
+         declare
+            Ent : Entity_Id := First_Entity (Limited_View (Scope (Typ)));
+         begin
+            while Present (Ent) loop
+               if Ekind (Ent) in Incomplete_Kind
+                 and then Non_Limited_View (Ent) = Typ
+               then
+                  return Ent;
+               end if;
+
+               Ent := Next_Entity (Ent);
+            end loop;
+         end;
+      end if;
+
+      return Typ;
+   end Incomplete_View_From_Limited_With;
+
    ----------------------------------
    -- Indexed_Component_Bit_Offset --
    ----------------------------------
