@@ -7841,10 +7841,11 @@ package body Checks is
       Subp_Id   : constant Entity_Id  := Unique_Defining_Entity (Subp_Body);
       Subp_Decl : constant Node_Id    := Unit_Declaration_Node (Subp_Id);
 
-      Decls   : List_Id;
-      Flag_Id : Entity_Id;
-      Set_Ins : Node_Id;
-      Tag_Typ : Entity_Id;
+      Decls    : List_Id;
+      Flag_Id  : Entity_Id;
+      Set_Ins  : Node_Id;
+      Set_Stmt : Node_Id;
+      Tag_Typ  : Entity_Id;
 
    --  Start of processing for Install_Primitive_Elaboration_Check
 
@@ -7878,8 +7879,8 @@ package body Checks is
       elsif Nkind (Context) = N_Compilation_Unit then
          return;
 
-      --  Only nonabstract library-level source primitives are considered for
-      --  this check.
+      --  Do not consider anything other than nonabstract library-level source
+      --  primitives.
 
       elsif not
         (Comes_From_Source (Subp_Id)
@@ -7996,10 +7997,18 @@ package body Checks is
       --  Generate:
       --    E := True;
 
-      Insert_After_And_Analyze (Set_Ins,
+      Set_Stmt :=
         Make_Assignment_Statement (Loc,
           Name       => New_Occurrence_Of (Flag_Id, Loc),
-          Expression => New_Occurrence_Of (Standard_True, Loc)));
+          Expression => New_Occurrence_Of (Standard_True, Loc));
+
+      --  Mark the assignment statement as elaboration code. This allows the
+      --  early call region mechanism (see Sem_Elab) to properly ignore such
+      --  assignments even though they are non-preelaborable code.
+
+      Set_Is_Elaboration_Code (Set_Stmt);
+
+      Insert_After_And_Analyze (Set_Ins, Set_Stmt);
    end Install_Primitive_Elaboration_Check;
 
    --------------------------

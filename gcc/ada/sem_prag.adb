@@ -64,6 +64,7 @@ with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Disp;  use Sem_Disp;
 with Sem_Dist;  use Sem_Dist;
+with Sem_Elab;  use Sem_Elab;
 with Sem_Elim;  use Sem_Elim;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Intr;  use Sem_Intr;
@@ -11562,6 +11563,11 @@ package body Sem_Prag is
                   Set_Ekind               (State_Id, E_Abstract_State);
                   Set_Etype               (State_Id, Standard_Void_Type);
                   Set_Encapsulating_State (State_Id, Empty);
+
+                  --  Set the SPARK mode from the current context
+
+                  Set_SPARK_Pragma           (State_Id, SPARK_Mode_Pragma);
+                  Set_SPARK_Pragma_Inherited (State_Id);
 
                   --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
@@ -27755,6 +27761,10 @@ package body Sem_Prag is
       if Is_Analyzed_Pragma (N) then
          return;
       end if;
+
+      --  Save the scenario for examination by the ABE Processing phase
+
+      Record_Elaboration_Scenario (N);
 
       --  Replicate the abstract states declared by the package because the
       --  matching algorithm will consume states.

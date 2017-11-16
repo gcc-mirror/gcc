@@ -1730,6 +1730,11 @@ package Sem_Util is
    --  without the need for a temporary, the typical example of an object not
    --  in this category being a function call.
 
+   function Is_Non_Preelaborable_Construct (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary construct N violates preelaborability as
+   --  defined in ARM 10.2.1 5-9/3. This routine takes into account both the
+   --  syntactic and semantic properties of the construct.
+
    function Is_Nontrivial_DIC_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes the procedure that verifies the
    --  assertion expression of pragma Default_Initial_Condition and if it does,
@@ -1807,7 +1812,9 @@ package Sem_Util is
 
    function Is_Preelaborable_Construct (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N violates the restrictions of
-   --  preelaborable constructs as defined in ARM 10.2.1(5-9).
+   --  preelaborable constructs as defined in ARM 10.2.1(5-9). Routine
+   --  Is_Non_Preelaborable_Construct takes into account the syntactic
+   --  and semantic properties of N for a more accurate diagnostic.
 
    function Is_Protected_Self_Reference (N : Node_Id) return Boolean;
    --  Return True if node N denotes a protected type name which represents
