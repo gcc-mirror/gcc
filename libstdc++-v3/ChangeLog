@@ -1,3 +1,8 @@
+2017-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (shared_future): Add noexcept to copy constructor
+	and copy-assignment operator (LWG 2799).
+
 2017-11-15  Jason Merrill  <jason@redhat.com>
 
 	* include/std/numeric (gcd): Fix typo.

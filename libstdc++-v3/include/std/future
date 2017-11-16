@@ -896,7 +896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr shared_future() noexcept : _Base_type() { }
 
       /// Copy constructor
-      shared_future(const shared_future& __sf) : _Base_type(__sf) { }
+      shared_future(const shared_future& __sf) noexcept : _Base_type(__sf) { }
 
       /// Construct from a future rvalue
       shared_future(future<_Res>&& __uf) noexcept
@@ -908,7 +908,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Base_type(std::move(__sf))
       { }
 
-      shared_future& operator=(const shared_future& __sf)
+      shared_future& operator=(const shared_future& __sf) noexcept
       {
         shared_future(__sf)._M_swap(*this);
         return *this;
