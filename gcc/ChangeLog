@@ -1,5 +1,13 @@
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-split.c (split_bb_info): Turn time to sreal.
+	(split_point): Likewise.
+	(dump_split_point): Likewise.
+	(fine_split_points): Likewise.
+	(execute_split_functions): Only zero split_bbs; turn time to sreals.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (analyze_function_body): Accumulate time consistently
 	in sreal.
 
