@@ -1,3 +1,10 @@
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (combine_predictions_for_bb): Preserve zero predicted	
+	eges.
+	(expensive_function_p): Remove useless assert.
+	(determine_unlikely_bbs): Propagate also forward; determine cold blocks
+
 2017-11-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82588
