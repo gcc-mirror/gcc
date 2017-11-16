@@ -35191,6 +35191,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	    & ix86_isa_flags))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_GFNI)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_GFNI))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_MMX)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_MMX))
       || (ix86_builtins_isa[fcode].isa2
