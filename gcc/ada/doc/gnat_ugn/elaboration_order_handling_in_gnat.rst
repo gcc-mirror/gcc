@@ -1687,7 +1687,7 @@ the elaboration order chosen by the binder.
     14. end Selective_Suppression;
 
   Note that suppressing elaboration warnings does not eliminate run-time
-  checks. The example above will still fail at runtime with an ABE.
+  checks. The example above will still fail at run time with an ABE.
 
 .. _Summary_of_Procedures_for_Elaboration_Control:
 

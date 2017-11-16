@@ -442,7 +442,7 @@ package body Sem_Elab is
    --
    --  -gnateL  turn off info messages on generated Elaborate[_All] pragmas
    --
-   --           The complimentary switch for -gnatel.
+   --           The complementary switch for -gnatel.
    --
    --  -gnatw.f turn on warnings for suspicious Subp'Access
    --
@@ -452,16 +452,16 @@ package body Sem_Elab is
    --
    --  -gnatw.F turn off warnings for suspicious Subp'Access
    --
-   --           The complimentary switch for -gnatw.f.
+   --           The complementary switch for -gnatw.f.
    --
    --  -gnatwl  turn on warnings for elaboration problems
    --
    --           The ABE mechanism produces warnings on detected ABEs along with
-   --           traceback showing the graph of the ABE.
+   --           a traceback showing the graph of the ABE.
    --
    --  -gnatwL  turn off warnings for elaboration problems
    --
-   --           The complimentary switch for -gnatwl.
+   --           The complementary switch for -gnatwl.
 
    ---------------------------
    -- Adding a new scenario --
