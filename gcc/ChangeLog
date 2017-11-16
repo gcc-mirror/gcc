@@ -1,3 +1,8 @@
+2017-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Cleanup profile
+	manipulation.
+
 2017-11-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 

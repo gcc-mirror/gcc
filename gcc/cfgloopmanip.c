@@ -1096,14 +1096,16 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   basic_block new_bb, bb, first_active_latch = NULL;
   edge ae, latch_edge;
   edge spec_edges[2], new_spec_edges[2];
-#define SE_LATCH 0
-#define SE_ORIG 1
+  const int SE_LATCH = 0;
+  const int SE_ORIG = 1;
   unsigned i, j, n;
   int is_latch = (latch == e->src);
-  int scale_act = 0, *scale_step = NULL, scale_main = 0;
-  int scale_after_exit = 0;
-  int p, freq_in, freq_le, freq_out_orig;
-  int prob_pass_thru, prob_pass_wont_exit, prob_pass_main;
+  profile_probability *scale_step = NULL;
+  profile_probability scale_main = profile_probability::always ();
+  profile_probability scale_act = profile_probability::always ();
+  profile_count after_exit_num = profile_count::zero (),
+	        after_exit_den = profile_count::zero ();
+  bool scale_after_exit = false;
   int add_irreducible_flag;
   basic_block place_after;
   bitmap bbs_to_scale = NULL;
@@ -1142,33 +1144,26 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 
   if (flags & DLTHE_FLAG_UPDATE_FREQ)
     {
-      /* Calculate coefficients by that we have to scale frequencies
+      /* Calculate coefficients by that we have to scale counts
 	 of duplicated loop bodies.  */
-      freq_in = header->count.to_frequency (cfun);
-      freq_le = EDGE_FREQUENCY (latch_edge);
-      if (freq_in == 0)
-	freq_in = 1;
-      if (freq_in < freq_le)
-	freq_in = freq_le;
-      freq_out_orig = orig ? EDGE_FREQUENCY (orig) : freq_in - freq_le;
-      if (freq_out_orig > freq_in - freq_le)
-	freq_out_orig = freq_in - freq_le;
-      prob_pass_thru = RDIV (REG_BR_PROB_BASE * freq_le, freq_in);
-      prob_pass_wont_exit =
-	      RDIV (REG_BR_PROB_BASE * (freq_le + freq_out_orig), freq_in);
+      profile_count count_in = header->count;
+      profile_count count_le = latch_edge->count ();
+      profile_count count_out_orig = orig ? orig->count () : count_in - count_le;
+      profile_probability prob_pass_thru = count_le.probability_in (count_in);
+      profile_probability prob_pass_wont_exit =
+	      (count_le + count_out_orig).probability_in (count_in);
 
       if (orig && orig->probability.initialized_p ()
 	  && !(orig->probability == profile_probability::always ()))
 	{
 	  /* The blocks that are dominated by a removed exit edge ORIG have
 	     frequencies scaled by this.  */
-	  if (orig->probability.initialized_p ())
-	    scale_after_exit
-                = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE,
-                                      REG_BR_PROB_BASE
-				      - orig->probability.to_reg_br_prob_base ());
-	  else
-	    scale_after_exit = REG_BR_PROB_BASE;
+	  if (orig->count ().initialized_p ())
+	    {
+	      after_exit_num = orig->src->count;
+	      after_exit_den = after_exit_num - orig->count ();
+	      scale_after_exit = true;
+	    }
 	  bbs_to_scale = BITMAP_ALLOC (NULL);
 	  for (i = 0; i < n; i++)
 	    {
@@ -1178,7 +1173,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	    }
 	}
 
-      scale_step = XNEWVEC (int, ndupl);
+      scale_step = XNEWVEC (profile_probability, ndupl);
 
       for (i = 1; i <= ndupl; i++)
 	scale_step[i - 1] = bitmap_bit_p (wont_exit, i)
@@ -1189,52 +1184,48 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	 copy becomes 1.  */
       if (flags & DLTHE_FLAG_COMPLETTE_PEEL)
 	{
-	  int wanted_freq = EDGE_FREQUENCY (e);
-
-	  if (wanted_freq > freq_in)
-	    wanted_freq = freq_in;
+	  profile_count wanted_count = e->count ();
 
 	  gcc_assert (!is_latch);
-	  /* First copy has frequency of incoming edge.  Each subsequent
-	     frequency should be reduced by prob_pass_wont_exit.  Caller
+	  /* First copy has count of incoming edge.  Each subsequent
+	     count should be reduced by prob_pass_wont_exit.  Caller
 	     should've managed the flags so all except for original loop
 	     has won't exist set.  */
-	  scale_act = GCOV_COMPUTE_SCALE (wanted_freq, freq_in);
+	  scale_act = wanted_count.probability_in (count_in);
 	  /* Now simulate the duplication adjustments and compute header
 	     frequency of the last copy.  */
 	  for (i = 0; i < ndupl; i++)
-	    wanted_freq = combine_probabilities (wanted_freq, scale_step[i]);
-	  scale_main = GCOV_COMPUTE_SCALE (wanted_freq, freq_in);
+	    wanted_count = wanted_count.apply_probability (scale_step [i]);
+	  scale_main = wanted_count.probability_in (count_in);
 	}
+      /* Here we insert loop bodies inside the loop itself (for loop unrolling).
+	 First iteration will be original loop followed by duplicated bodies.
+	 It is necessary to scale down the original so we get right overall
+	 number of iterations.  */
       else if (is_latch)
 	{
-	  prob_pass_main = bitmap_bit_p (wont_exit, 0)
-				? prob_pass_wont_exit
-				: prob_pass_thru;
-	  p = prob_pass_main;
-	  scale_main = REG_BR_PROB_BASE;
+	  profile_probability prob_pass_main = bitmap_bit_p (wont_exit, 0)
+							? prob_pass_wont_exit
+							: prob_pass_thru;
+	  profile_probability p = prob_pass_main;
+	  profile_count scale_main_den = count_in;
 	  for (i = 0; i < ndupl; i++)
 	    {
-	      scale_main += p;
-	      p = combine_probabilities (p, scale_step[i]);
+	      scale_main_den += count_in.apply_probability (p);
+	      p = p * scale_step[i];
 	    }
-	  scale_main = GCOV_COMPUTE_SCALE (REG_BR_PROB_BASE, scale_main);
-	  scale_act = combine_probabilities (scale_main, prob_pass_main);
+	  /* If original loop is executed COUNT_IN times, the unrolled
+	     loop will account SCALE_MAIN_DEN times.  */
+	  scale_main = count_in.probability_in (scale_main_den);
+	  scale_act = scale_main * prob_pass_main;
 	}
       else
 	{
-	  int preheader_freq = EDGE_FREQUENCY (e);
-	  scale_main = REG_BR_PROB_BASE;
+	  profile_count preheader_count = e->count ();
 	  for (i = 0; i < ndupl; i++)
-	    scale_main = combine_probabilities (scale_main, scale_step[i]);
-	  if (preheader_freq > freq_in)
-	    preheader_freq = freq_in;
-	  scale_act = GCOV_COMPUTE_SCALE (preheader_freq, freq_in);
+	    scale_main = scale_main * scale_step[i];
+	  scale_act = preheader_count.probability_in (count_in);
 	}
-      for (i = 0; i < ndupl; i++)
-	gcc_assert (scale_step[i] >= 0 && scale_step[i] <= REG_BR_PROB_BASE);
-      gcc_assert (scale_main >= 0 && scale_main <= REG_BR_PROB_BASE
-		  && scale_act >= 0  && scale_act <= REG_BR_PROB_BASE);
     }
 
   /* Loop the new bbs will belong to.  */
@@ -1327,13 +1318,11 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	  force_edge_cold (new_spec_edges[SE_ORIG], true);
 
 	  /* Scale the frequencies of the blocks dominated by the exit.  */
-	  if (bbs_to_scale)
+	  if (bbs_to_scale && scale_after_exit)
 	    {
 	      EXECUTE_IF_SET_IN_BITMAP (bbs_to_scale, 0, i, bi)
-		{
-		  scale_bbs_frequencies_int (new_bbs + i, 1, scale_after_exit,
-					     REG_BR_PROB_BASE);
-		}
+		scale_bbs_frequencies_profile_count (new_bbs + i, 1, after_exit_num,
+						     after_exit_den);
 	    }
 	}
 
@@ -1348,8 +1337,8 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       /* Set counts and frequencies.  */
       if (flags & DLTHE_FLAG_UPDATE_FREQ)
 	{
-	  scale_bbs_frequencies_int (new_bbs, n, scale_act, REG_BR_PROB_BASE);
-	  scale_act = combine_probabilities (scale_act, scale_step[j]);
+	  scale_bbs_frequencies (new_bbs, n, scale_act);
+	  scale_act = scale_act * scale_step[j];
 	}
     }
   free (new_bbs);
@@ -1363,13 +1352,11 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       force_edge_cold (orig, true);
 
       /* Scale the frequencies of the blocks dominated by the exit.  */
-      if (bbs_to_scale)
+      if (bbs_to_scale && scale_after_exit)
 	{
 	  EXECUTE_IF_SET_IN_BITMAP (bbs_to_scale, 0, i, bi)
-	    {
-	      scale_bbs_frequencies_int (bbs + i, 1, scale_after_exit,
-					 REG_BR_PROB_BASE);
-	    }
+	    scale_bbs_frequencies_profile_count (bbs + i, 1, after_exit_num,
+						 after_exit_den);
 	}
     }
 
@@ -1378,7 +1365,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
     set_immediate_dominator (CDI_DOMINATORS, e->dest, e->src);
   if (flags & DLTHE_FLAG_UPDATE_FREQ)
     {
-      scale_bbs_frequencies_int (bbs, n, scale_main, REG_BR_PROB_BASE);
+      scale_bbs_frequencies (bbs, n, scale_main);
       free (scale_step);
     }
 
