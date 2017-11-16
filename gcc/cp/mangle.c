@@ -2836,7 +2836,7 @@ write_expression (tree expr)
   while (CONVERT_EXPR_CODE_P (code)
 	 /* Parentheses aren't mangled.  */
 	 || code == PAREN_EXPR
-	 || TREE_CODE (expr) == NON_LVALUE_EXPR)
+	 || code == NON_LVALUE_EXPR)
     {
       expr = TREE_OPERAND (expr, 0);
       code = TREE_CODE (expr);
@@ -3407,6 +3407,9 @@ write_template_arg (tree node)
 	}
     }
 
+  /* Strip a conversion added by convert_nontype_argument.  */
+  if (TREE_CODE (node) == IMPLICIT_CONV_EXPR)
+    node = TREE_OPERAND (node, 0);
   if (REFERENCE_REF_P (node))
     node = TREE_OPERAND (node, 0);
   if (TREE_CODE (node) == NOP_EXPR
