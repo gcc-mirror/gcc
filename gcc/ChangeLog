@@ -1,3 +1,10 @@
+2017-11-17  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-modes.def: Add vector mode V4QI V2HI V8QI V4HI
+	V2SI.
+	* config/nds32/iterators.md: Add vector mode iterators and attributes.
+
 2017-11-16  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	* config/rs6000/mmintrin.h (_mm_add_pi32[_ARCH_PWR]): Correct
