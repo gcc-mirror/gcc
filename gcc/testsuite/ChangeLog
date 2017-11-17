@@ -1,3 +1,7 @@
+2017-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/pr82836.C: Fix for c++17.
+
 2017-11-17  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641
