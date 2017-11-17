@@ -1,5 +1,10 @@
 2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* gcc.target/arm/cmse/cmse-14.c: Change logic to match branch
+	instruction to bar.
+
+2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* gcc.target/arm/cmse/cmse.exp: Add option to select Armv8-M Baseline
 	or Armv8-M Mainline when running the respective tests.
 	* gcc.target/arm/cmse/baseline/cmse-11.c: Remove architecture check and
