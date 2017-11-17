@@ -1,5 +1,13 @@
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* i386.c (ix86_multiplication_cost, ix86_division_cost,
+	ix86_shift_rotate_cost): Break out from ...
+	(ix86_rtx_costs): ... here.
+	(ix86_add_stmt_cost): Use rtx cost machinery to compute cost of
+	vector operations.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* predict.c (determine_unlikely_bbs): Set cgraph node count to 0
 	when entry block was promoted unlikely.
 	(estimate_bb_frequencies): Increase frequency scale.
