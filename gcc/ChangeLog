@@ -1,5 +1,10 @@
 2017-11-17  Steve Ellcey  <sellcey@cavium.com>
 
+	* config/aarch64/aarch64-simd.md (fnma<mode>4): Move neg operator
+	to canonical location.
+
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
 	PR target/81356
 	* config/aarch64/aarch64.c (aarch64_use_by_pieces_infrastructure_p):
 	Remove.
