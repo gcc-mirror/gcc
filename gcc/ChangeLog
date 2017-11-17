@@ -1,3 +1,9 @@
+2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/82621
+	* combine.c (try_combine): Do not split PARALLELs of two SETs if the
+	dest of one of those SETs is unused.
+
 2017-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/83017
