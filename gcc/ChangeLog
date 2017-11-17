@@ -1,5 +1,12 @@
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (determine_unlikely_bbs): Set cgraph node count to 0
+	when entry block was promoted unlikely.
+	(estimate_bb_frequencies): Increase frequency scale.
+	* profile-count.h (profile_count): Export precision info.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-tailcall.c (eliminate_tail_call): Be more careful about not
 	disturbin profile of entry block.
 
