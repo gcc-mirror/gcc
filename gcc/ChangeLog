@@ -1,3 +1,8 @@
+2017-11-17  Vineet Gupta  <vgupta@synopsys.com>
+
+	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER update per glibc
+	upstreaming review comments.
+
 2017-11-17  Tamar Christina  <tamar.christina@arm.com>
 
 	* expr.c (copy_blkmode_to_reg): Fix bitsize for targets
