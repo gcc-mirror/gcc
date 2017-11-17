@@ -1,3 +1,7 @@
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Do IPA sanity checking on IPA counts.
+
 2017-11-17  Steve Ellcey  <sellcey@cavium.com>
 
 	* config/aarch64/aarch64-simd.md (fnma<mode>4): Move neg operator
