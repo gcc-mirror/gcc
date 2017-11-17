@@ -1038,7 +1038,7 @@ arc*-*-elf*)
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
 	;;
-arc*-*-linux-uclibc*)
+arc*-*-linux*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
 	tmake_file="${tmake_file} arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
