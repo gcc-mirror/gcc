@@ -1,3 +1,9 @@
+2017-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* expr.c (copy_blkmode_to_reg): Fix bitsize for targets
+	with fast unaligned access.
+	* doc/sourcebuild.texi (word_mode_no_slow_unalign): New.
+
 2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (cmse_nonsecure_entry_clear_before_return): Allocate
