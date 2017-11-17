@@ -1,5 +1,10 @@
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (estimate_node_size_and_time): Be more tolerant for
+	roundoff errors.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-cp.c (update_profiling_info): Handle conversion to local
 	profile.
 	* tree-cfg.c (execute_fixup_cfg): Do fixup same way as inliner does.
