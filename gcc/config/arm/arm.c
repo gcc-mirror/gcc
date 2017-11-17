@@ -25205,7 +25205,8 @@ cmse_nonsecure_entry_clear_before_return (void)
   if (padding_bits_to_clear != 0)
     {
       rtx reg_rtx;
-      auto_sbitmap to_clear_arg_regs_bitmap (R0_REGNUM + NUM_ARG_REGS);
+      int to_clear_bitmap_size = SBITMAP_SIZE ((sbitmap) to_clear_bitmap);
+      auto_sbitmap to_clear_arg_regs_bitmap (to_clear_bitmap_size);
 
       /* Padding bits to clear is not 0 so we know we are dealing with
 	 returning a composite type, which only uses r0.  Let's make sure that

@@ -1,3 +1,8 @@
+2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (cmse_nonsecure_entry_clear_before_return): Allocate
+	to_clear_arg_regs_bitmap to the same size as to_clear_bitmap.
+
 2017-11-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (phi_translate_1): Remove redundant constant
