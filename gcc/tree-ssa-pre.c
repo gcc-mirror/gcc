@@ -1566,7 +1566,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	if (changed || newvuse != vuse)
 	  {
 	    unsigned int new_val_id;
-	    pre_expr constant;
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
@@ -1611,15 +1610,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    expr->id = 0;
 
 	    if (newref)
-	      {
-		PRE_EXPR_REFERENCE (expr) = newref;
-		constant = fully_constant_expression (expr);
-		if (constant != expr)
-		  return constant;
-
-		new_val_id = newref->value_id;
-		get_or_alloc_expression_id (expr);
-	      }
+	      new_val_id = newref->value_id;
 	    else
 	      {
 		if (changed || !same_valid)
@@ -1637,12 +1628,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						     newoperands,
 						     result, new_val_id);
 		newoperands = vNULL;
-		PRE_EXPR_REFERENCE (expr) = newref;
-		constant = fully_constant_expression (expr);
-		if (constant != expr)
-		  return constant;
-		get_or_alloc_expression_id (expr);
 	      }
+	    PRE_EXPR_REFERENCE (expr) = newref;
+	    get_or_alloc_expression_id (expr);
 	    add_to_value (new_val_id, expr);
 	  }
 	newoperands.release ();
