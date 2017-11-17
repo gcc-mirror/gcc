@@ -3518,7 +3518,7 @@ ix86_option_override_internal (bool main_args_p,
       {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
       {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
-      {"skylake-avx512", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE_AVX512},
+      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_SKYLAKE_AVX512},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -4691,6 +4691,11 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_AVX128_OPTIMAL
       && !(opts_set->x_target_flags & MASK_PREFER_AVX128))
     opts->x_target_flags |= MASK_PREFER_AVX128;
+  /* Use 256-bit AVX instructions instead of 512-bit AVX instructions
+     in the auto-vectorizer.  */
+  if (ix86_tune_features[X86_TUNE_AVX256_OPTIMAL]
+      && !(opts_set->x_ix86_target_flags & OPTION_MASK_PREFER_AVX256))
+    opts->x_ix86_target_flags |= OPTION_MASK_PREFER_AVX256;
 
   if (opts->x_ix86_recip_name)
     {
@@ -31115,6 +31120,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_HASWELL:
+	    case PROCESSOR_SKYLAKE_AVX512:
 	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
 	        arg_str = "skylake-avx512";
 	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
