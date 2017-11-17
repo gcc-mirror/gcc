@@ -208,6 +208,16 @@ document pcfun
 Print current function.
 end
 
+define break-on-diagnostic
+break diagnostic_show_locus
+end
+
+document break-on-diagnostic
+Put a breakpoint on diagnostic_show_locus, called whenever a diagnostic
+is emitted (as opposed to those warnings that are suppressed by
+command-line options).
+end
+
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1
