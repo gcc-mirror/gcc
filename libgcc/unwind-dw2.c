@@ -1644,14 +1644,18 @@ uw_frob_return_addr (struct _Unwind_Context *current
 
 /* Install TARGET into CURRENT so that we can return to it.  This is a
    macro because __builtin_eh_return must be invoked in the context of
-   our caller.  */
+   our caller.  FRAMES is a number of frames to be unwind.
+   _Unwind_Frames_Extra is a macro to do additional work during unwinding
+   if needed, for example shadow stack pointer adjustment for Intel CET
+   technology.  */
 
-#define uw_install_context(CURRENT, TARGET)				\
+#define uw_install_context(CURRENT, TARGET, FRAMES)			\
   do									\
     {									\
       long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
       void *handler = uw_frob_return_addr ((CURRENT), (TARGET));	\
       _Unwind_DebugHook ((TARGET)->cfa, handler);			\
+      _Unwind_Frames_Extra (FRAMES);					\
       __builtin_eh_return (offset, handler);				\
     }									\
   while (0)

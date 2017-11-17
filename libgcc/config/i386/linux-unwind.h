@@ -22,6 +22,11 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* Unwind shadow stack for -fcf-protection -mshstk.  */
+#if defined __SHSTK__ && defined __CET__
+# include "config/i386/shadow-stack-unwind.h"
+#endif
+
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.
    Don't use this at all if inhibit_libc is used.  */

@@ -1,3 +1,13 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config/i386/i386.c (ix86_expand_epilogue): Change simple
+	return to indirect jump for EH return if control-flow
+	protection is enabled. Change explicit 'false' argument in
+	pro_epilogue_adjust_stack with a value of
+	flag_cf_protection.
+	* config/i386/i386.md (simple_return_indirect_internal):
+	Remove SImode restriction to support 64-bit.
+
 2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (added_notes_insn): New.
