@@ -449,21 +449,18 @@ irange::canonicalize ()
   if (nitems < 2)
     return;
 
-  /* Fix any out of order ranges: [10,20][-5,5] into [-5,5][10,20].
-
-     This is not a true sort by design because I *think* we won't
-     create any truly wacky ranges during casting.  As a temporary
-     measure, check assert(valid_p()) afterwards and if we catch
-     anything, rewrite this into a bubble sort.  */
-  for (unsigned i = 0; i < (unsigned) (nitems - 2); i += 2)
-    if (wi::gt_p (bounds[i], bounds[i + 2], TYPE_SIGN (type)))
-      {
-	wide_int x = bounds[i], y = bounds[i + 1];
-	bounds[i] = bounds[i + 2];
-	bounds[i + 1] = bounds[i + 3];
-	bounds[i + 2] = x;
-	bounds[i + 3] = y;
-      }
+  /* Fix any out of order ranges: [10,20][-5,5] into [-5,5][10,20].  */
+  for (unsigned i = 0; i < (unsigned) nitems; i += 2)
+    for (unsigned j = i + 2; j < (unsigned) nitems; j += 2)
+      if (wi::gt_p (bounds[i], bounds[j], TYPE_SIGN (type)))
+	{
+	  wide_int t1 = bounds[i];
+	  wide_int t2 = bounds[i + 1];
+	  bounds[i] = bounds[j];
+	  bounds[i + 1] = bounds[j + 1];
+	  bounds[j] = t1;
+	  bounds[j + 1] = t2;
+	}
 
   /* Merge any edges that touch.
      [9,10][11,20] => [9,20].  */
