@@ -1,6 +1,6 @@
 // PR c++/82836
-// { dg-do compile { target c++17 } }
-// { dg-additional-options "-Wno-pedantic" }
+// { dg-options "-std=c++17" }
+// { dg-additional-options "-Wno-pedantic -Wno-return-type" }
 // We were resetting DECL_ASSEMBLER_NAME when processing pragma weak,
 // breaking C++'s mangling alias hash table.  That hash table needs to
 // be tickled in just the right way to hit the problem.
