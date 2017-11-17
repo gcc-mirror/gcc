@@ -1,5 +1,23 @@
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
+	* config/i386/linux-unwind.h: Include
+	config/i386/shadow-stack-unwind.h.
+	* config/i386/shadow-stack-unwind.h: New file.
+	* unwind-dw2.c: (uw_install_context): Add a frame parameter and
+	pass it to _Unwind_Frames_Extra.
+	* unwind-generic.h (_Unwind_Frames_Extra): New.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Add frames_p
+	parameter. Add local variable frames to count number of frames.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	(_Unwind_RaiseException): Add local variable frames to count
+	number of frames, pass it to _Unwind_RaiseException_Phase2 and
+	uw_install_context.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
 	* Makefile.in (configure_deps): Add $(srcdir)/../config/cet.m4.
 	(CET_FLAGS): New.
 	* config/i386/morestack.S: Include <cet.h>.

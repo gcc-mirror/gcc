@@ -13960,7 +13960,9 @@ ix86_expand_epilogue (int style)
 		 offset relative to SA, and after this insn we have no
 		 other reasonable register to use for the CFA.  We don't
 		 bother resetting the CFA to the SP for the duration of
-		 the return insn.  */
+		 the return insn, unless the control flow instrumentation
+		 is done.  In this case the SP is used later and we have
+		 to reset CFA to SP.  */
 	      add_reg_note (insn, REG_CFA_DEF_CFA,
 			    plus_constant (Pmode, sa, UNITS_PER_WORD));
 	      ix86_add_queued_cfa_restore_notes (insn);
@@ -13972,7 +13974,8 @@ ix86_expand_epilogue (int style)
 	      m->fs.fp_valid = false;
 
 	      pro_epilogue_adjust_stack (stack_pointer_rtx, sa,
-					 const0_rtx, style, false);
+					 const0_rtx, style,
+					 flag_cf_protection);
 	    }
 	  else
 	    {
@@ -14156,7 +14159,32 @@ ix86_expand_epilogue (int style)
 	emit_jump_insn (gen_simple_return_pop_internal (popc));
     }
   else if (!m->call_ms2sysv || !restore_stub_is_tail)
-    emit_jump_insn (gen_simple_return_internal ());
+    {
+      /* In case of return from EH a simple return cannot be used
+	 as a return address will be compared with a shadow stack
+	 return address.  Use indirect jump instead.  */
+      if (style == 2 && flag_cf_protection)
+	{
+	  /* Register used in indirect jump must be in word_mode.  But
+	     Pmode may not be the same as word_mode for x32.  */
+	  rtx ecx = gen_rtx_REG (word_mode, CX_REG);
+	  rtx_insn *insn;
+
+	  insn = emit_insn (gen_pop (ecx));
+	  m->fs.cfa_offset -= UNITS_PER_WORD;
+	  m->fs.sp_offset -= UNITS_PER_WORD;
+
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
+	  add_reg_note (insn, REG_CFA_REGISTER, gen_rtx_SET (ecx, pc_rtx));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  emit_jump_insn (gen_simple_return_indirect_internal (ecx));
+	}
+      else
+	emit_jump_insn (gen_simple_return_internal ());
+    }
 
   /* Restore the state back to the state from the prologue,
      so that it's correct for the next epilogue.  */
