@@ -1,3 +1,10 @@
+2017-11-17  Jeff Law  <law@redhat.com>
+
+	* vr-values.h (get_output_for_vrp): Prototype.
+	* vr-values.c (get_output_for_vrp): New function extracted from
+	vrp_visit_assignment_or_call and extract_range_from_stmt.
+	(vrp_visit_assignment_or_call): Use get_output_for_vrp.  Simplify.
+
 2017-11-17  Luis Machado  <luis.machado@linaro.org>
 
 	* config/aarch64/aarch64.c
