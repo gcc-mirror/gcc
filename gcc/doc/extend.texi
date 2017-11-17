@@ -3858,6 +3858,40 @@ Specifies the fpu for which to tune the performance of this function.
 The behavior and permissible arguments are the same as for the @option{-mfpu=}
 command-line option.
 
+@item arch=
+@cindex @code{arch=} function attribute, ARM
+Specifies the architecture version and architectural extensions to use
+for this function.  The behavior and permissible arguments are the same as
+for the @option{-march=} command-line option.
+
+The above target attributes can be specified as follows:
+
+@smallexample
+__attribute__((target("arch=armv8-a+crc")))
+int
+f (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+Additionally, the architectural extension string may be specified on its
+own.  This can be used to turn on and off particular architectural extensions
+without having to specify a particular architecture version or core.  Example:
+
+@smallexample
+__attribute__((target("+crc+nocrypto")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+In this example @code{target("+crc+nocrypto")} enables the @code{crc}
+extension and disables the @code{crypto} extension for the function @code{foo}
+without modifying an existing @option{-march=} or @option{-mcpu} option.
+
 @end table
 
 @end table

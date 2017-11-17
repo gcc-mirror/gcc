@@ -1,3 +1,16 @@
+2017-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm.c (arm_valid_target_attribute_rec):
+	Parse "arch=" and "+<ext>".
+	(arm_valid_target_attribute_tree): Re-init global options.
+	(arm_option_override): Make non-static.
+	(arm_options_perform_arch_sanity_checks): Make errors fatal.
+	* gcc/config/arm/arm-c.c (__ARM_FEATURE_CMSE): Support undef.
+	(__ARM_FEATURE_CRC32): Support undef.
+	* config/arm/arm_acle.h (__ARM_FEATURE_CRC32): Replace with pragma.
+	* doc/extend.texi (ARM Function Attributes): Add pragma and target.
+
 2017-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbinit.in (break-on-diagnostic): New command.
