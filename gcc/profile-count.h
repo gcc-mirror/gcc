@@ -605,11 +605,13 @@ class sreal;
 
 class GTY(()) profile_count
 {
+public:
   /* Use 62bit to hold basic block counters.  Should be at least
      64bit.  Although a counter cannot be negative, we use a signed
      type to hold various extra stages.  */
 
   static const int n_bits = 61;
+private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 

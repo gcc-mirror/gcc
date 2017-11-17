@@ -3542,6 +3542,8 @@ determine_unlikely_bbs ()
 			bb->index, e->dest->index);
 	     e->probability = profile_probability::never ();
 	   }
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ())
+    cgraph_node::get (current_function_decl)->count = profile_count::zero ();
 }
 
 /* Estimate and propagate basic block frequencies using the given branch
@@ -3565,7 +3567,11 @@ estimate_bb_frequencies (bool force)
         {
 	  real_values_initialized = 1;
 	  real_br_prob_base = REG_BR_PROB_BASE;
-	  real_bb_freq_max = BB_FREQ_MAX;
+	  /* Scaling frequencies up to maximal profile count may result in
+	     frequent overflows especially when inlining loops.
+	     Small scalling results in unnecesary precision loss.  Stay in
+	     the half of the (exponential) range.  */
+	  real_bb_freq_max = (uint64_t)1 << (profile_count::n_bits / 2);
 	  real_one_half = sreal (1, -1);
 	  real_inv_br_prob_base = sreal (1) / real_br_prob_base;
 	  real_almost_one = sreal (1) - real_inv_br_prob_base;
@@ -3610,6 +3616,8 @@ estimate_bb_frequencies (bool force)
 	  freq_max = BLOCK_INFO (bb)->frequency;
 
       freq_max = real_bb_freq_max / freq_max;
+      if (freq_max < 16)
+	freq_max = 16;
       cfun->cfg->count_max = profile_count::uninitialized ();
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{

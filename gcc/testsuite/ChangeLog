@@ -1,3 +1,10 @@
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/dump-2.c: Fixup template for profile precision
+	changes.
+	* gcc.dg/tree-ssa/pr77445-2.c: Fixup template for profile precision
+	changes.
+
 2017-11-17  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/pr82836.C: Fix for c++17.
