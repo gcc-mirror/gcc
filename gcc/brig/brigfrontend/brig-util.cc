@@ -505,9 +505,10 @@ gccbrig_hsa_reg_id (const BrigOperandRegister &reg)
 }
 
 std::string
-gccbrig_hsa_reg_name_from_id (size_t reg_hash)
+gccbrig_hsa_reg_name_from_id (size_t reg_id)
 {
   char reg_name[32];
+  long unsigned int reg_hash = (long unsigned int) reg_id;
   if (reg_hash < BRIG_2_TREE_HSAIL_C_REG_COUNT)
     {
       sprintf (reg_name, "$c%lu", reg_hash);
@@ -556,7 +557,7 @@ gccbrig_print_reg_use_info (FILE *dump, const regs_use_index &info)
       reg_use_it end_it2 = info.m_type_refs.end ();
       for (reg_use_it it2 = begin_it2; it2 != end_it2; it2++)
 	{
-	  fprintf (dump, "(%lu) ", it2->second);
+	  fprintf (dump, "(%lu) ", (long unsigned int) it2->second);
 	  print_node_brief (dump, "", it2->first, 0);
 	  fprintf (dump, "\n");
 	}
