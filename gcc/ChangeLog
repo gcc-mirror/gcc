@@ -1,5 +1,13 @@
 2017-11-17  Jeff Law  <law@redhat.com>
 
+	* gimple-ssa-evrp.c (class evrp_range_analyzer): New class extracted
+	from evrp_dom_walker class.  Various methods moved into new class.
+	(evrp_range_analyzer::evrp_range_analyzer): Constructor for new class.
+	(evrp_range_analyzer::enter): New method.
+	(evrp_range_analyzer::leave): New method.
+	(evrp_dom_walker): Remove delegators no longer needed by this class.
+	Replace vr_values data member with evrp_range_analyzer
+
 	* gimple-ssa-evrp.c (evrp_dom_walker::record_ranges_from_phis): New
 	method extracted from evrp_dom_walker::before_dom_children.
 	(evrp_dom_walker::record_ranges_from_stmt): Likewise.
