@@ -1,3 +1,14 @@
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83017
+	* tree-parloops.c (MIN_PER_THREAD): Use --param parloops-min-per-thread.
+	(gen_parallel_loop): Properly count iterations.
+	(parallelize_loops): Handle loop->can_be_parallel independent
+	of flag_loop_parallelize_all.  Make static profitability test match
+	the runtime one.
+	* params.def (PARAM_PARLOOPS_MIN_PER_THREAD): New.
+	* invoke.texi (parloops-min-per-thread): Document.
+
 2017-11-17  Vineet Gupta  <vgupta@synopsys.com>
 
 	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER update per glibc
