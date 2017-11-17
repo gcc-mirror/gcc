@@ -1,3 +1,8 @@
+2017-11-17  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-util.cc: Fix sprintf format string type mismatch
+	on 32b machines.
+
 2017-11-16  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	Change internal representation of HSA registers. Instead
