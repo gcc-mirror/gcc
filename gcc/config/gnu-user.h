@@ -51,9 +51,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_STARTFILE_SPEC \
   "%{shared:; \
-     pg|p|profile:gcrt1.o%s; \
+     pg|p|profile:%{static-pie:grcrt1.o%s;:gcrt1.o%s}; \
      static:crt1.o%s; \
-     static-pie|" PIE_SPEC ":Scrt1.o%s; \
+     static-pie:rcrt1.o%s; \
+     " PIE_SPEC ":Scrt1.o%s; \
      :crt1.o%s} \
    crti.o%s \
    %{static:crtbeginT.o%s; \

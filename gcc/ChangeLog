@@ -1,3 +1,8 @@
+2017-11-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Use
+	rcrt1.o%s/grcrt1.o%s for -static-pie.
+
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.c (ix86_multiplication_cost, ix86_division_cost,
