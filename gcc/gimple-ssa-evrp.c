@@ -73,11 +73,15 @@ public:
     }
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
+  void cleanup (void);
+
+ private:
+  DISABLE_COPY_AND_ASSIGN (evrp_dom_walker);
   void push_value_range (tree var, value_range *vr);
   value_range *pop_value_range (tree var);
   value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
 
-  /* Cond_stack holds the old VR.  */
+  /* STACK holds the old VR.  */
   auto_vec<std::pair <tree, value_range*> > stack;
   bitmap need_eh_cleanup;
   auto_vec<gimple *> stmts_to_fixup;
@@ -509,44 +513,22 @@ evrp_dom_walker::pop_value_range (tree var)
   return vr;
 }
 
+/* Perform any cleanups after the main phase of EVRP has completed.  */
 
-/* Main entry point for the early vrp pass which is a simplified non-iterative
-   version of vrp where basic blocks are visited in dominance order.  Value
-   ranges discovered in early vrp will also be used by ipa-vrp.  */
-
-static unsigned int
-execute_early_vrp ()
+void
+evrp_dom_walker::cleanup (void)
 {
-  edge e;
-  edge_iterator ei;
-  basic_block bb;
-
-  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-  scev_initialize ();
-  calculate_dominance_info (CDI_DOMINATORS);
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      bb->flags &= ~BB_VISITED;
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	e->flags |= EDGE_EXECUTABLE;
-    }
-
-  /* Walk stmts in dominance order and propagate VRP.  */
-  evrp_dom_walker walker;
-  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
   if (dump_file)
     {
       fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
-      walker.vr_values.dump_all_value_ranges (dump_file);
+      vr_values.dump_all_value_ranges (dump_file);
       fprintf (dump_file, "\n");
     }
 
   /* Remove stmts in reverse order to make debug stmt creation possible.  */
-  while (! walker.stmts_to_remove.is_empty ())
+  while (! stmts_to_remove.is_empty ())
     {
-      gimple *stmt = walker.stmts_to_remove.pop ();
+      gimple *stmt = stmts_to_remove.pop ();
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
@@ -564,18 +546,50 @@ execute_early_vrp ()
 	}
     }
 
-  if (!bitmap_empty_p (walker.need_eh_cleanup))
-    gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
+  if (!bitmap_empty_p (need_eh_cleanup))
+    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the dominator walk.  Do this
      in reverse order so we don't inadvertedly remove a stmt we want to
      fixup by visiting a dominating now noreturn call first.  */
-  while (!walker.stmts_to_fixup.is_empty ())
+  while (!stmts_to_fixup.is_empty ())
     {
-      gimple *stmt = walker.stmts_to_fixup.pop ();
+      gimple *stmt = stmts_to_fixup.pop ();
       fixup_noreturn_call (stmt);
     }
+}
+
+/* Main entry point for the early vrp pass which is a simplified non-iterative
+   version of vrp where basic blocks are visited in dominance order.  Value
+   ranges discovered in early vrp will also be used by ipa-vrp.  */
+
+static unsigned int
+execute_early_vrp ()
+{
+  edge e;
+  edge_iterator ei;
+  basic_block bb;
+
+  /* Ideally this setup code would move into the ctor for the dominator
+     walk.  However, this setup can change the number of blocks which
+     invalidates the internal arrays that are set up by the dominator
+     walker.  */
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+  scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      bb->flags &= ~BB_VISITED;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	e->flags |= EDGE_EXECUTABLE;
+    }
+
+  /* Walk stmts in dominance order and propagate VRP.  */
+  evrp_dom_walker walker;
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  walker.cleanup ();
 
   scev_finalize ();
   loop_optimizer_finalize ();

@@ -1,5 +1,11 @@
 2017-11-17  Jeff Law  <law@redhat.com>
 
+	* gimple-ssa-evrp.c (evrp_dom_walker): Add cleanup method.
+	Add private copy constructor and move assignment operators.
+	Privatize methods and class data where trivially possible.
+	(evrp_dom_walker::cleanup): New function, extracted from
+	execute_early_vrp.  Simplify access to class data.
+
 	* vr-values.h (get_output_for_vrp): Prototype.
 	* vr-values.c (get_output_for_vrp): New function extracted from
 	vrp_visit_assignment_or_call and extract_range_from_stmt.
