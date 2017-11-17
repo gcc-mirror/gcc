@@ -2638,6 +2638,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	case annot_expr_vector_kind:
 	  pp_string (pp, ", vector");
 	  break;
+	case annot_expr_parallel_kind:
+	  pp_string (pp, ", parallel");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}

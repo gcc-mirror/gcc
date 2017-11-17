@@ -287,6 +287,10 @@ replace_loop_annotate_in_block (basic_block bb, struct loop *loop)
 	  loop->force_vectorize = true;
 	  cfun->has_force_vectorize_loops = true;
 	  break;
+	case annot_expr_parallel_kind:
+	  loop->can_be_parallel = true;
+	  loop->safelen = INT_MAX;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
