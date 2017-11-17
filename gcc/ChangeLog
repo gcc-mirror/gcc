@@ -1,4 +1,14 @@
 2017-11-17  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.h (FIRST_PSEUDO_REGISTER): Modify.
+	(FIXED_REGISTERS): Reserve more register numbers.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGISTER_NAMES): Likewise.
+
+2017-11-17  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/nds32-modes.def: Add vector mode V4QI V2HI V8QI V4HI
