@@ -1,3 +1,12 @@
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/83017
+	* tree-core.h (enum annot_expr_kind): Add annot_expr_parallel_kind.
+	* tree-pretty-print.c (dump_generic_node): Handle
+	annot_expr_parallel_kind.
+	* tree-cfg.c (replace_loop_annotate_in_block): Likewise.
+	* gimplify.c (gimple_boolify): Likewise.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* config.gcc (extra_headers): Add cet.h for x86 targets.

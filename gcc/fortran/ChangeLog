@@ -1,3 +1,10 @@
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/83017
+	* trans-stmt.c (gfc_trans_forall_loop): Annotate DO CONCURRENT
+	loops with annot_expr_parallel_kind instead of just
+	annot_expr_ivdep_kind.
+
 2017-11-15  Martin Liska  <mliska@suse.cz>
 
 	* options.c (gfc_post_options):
