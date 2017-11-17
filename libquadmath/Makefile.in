@@ -70,7 +70,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -275,6 +276,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+XCFLAGS = @XCFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -341,6 +343,7 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@ACLOCAL_AMFLAGS = -I .. -I ../config
 @BUILD_LIBQUADMATH_TRUE@AM_CPPFLAGS = -I $(top_srcdir)/../include
+@BUILD_LIBQUADMATH_TRUE@AM_CFLAGS = $(XCFLAGS)
 @BUILD_LIBQUADMATH_TRUE@gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_FALSE@version_arg = 
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_GNU_TRUE@@LIBQUAD_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/quadmath.map
