@@ -1,3 +1,8 @@
+2017-11-17  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Edit vmov scan-assembler
+	directives.
+
 2017-11-17  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/struct-simple.c: New.

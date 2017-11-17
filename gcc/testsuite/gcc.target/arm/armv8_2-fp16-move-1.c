@@ -101,8 +101,7 @@ test_select_8 (__fp16 a, __fp16 b, __fp16 c)
 /* { dg-final { scan-assembler-times {vselgt\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 1 } }  */
 /* { dg-final { scan-assembler-times {vselge\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 1 } }  */
 
-/* { dg-final { scan-assembler-times {vmov\.f16\ts[0-9]+, r[0-9]+} 4 } }  */
-/* { dg-final { scan-assembler-times {vmov\.f16\tr[0-9]+, s[0-9]+} 4 } }  */
+/* { dg-final { scan-assembler-times {vmov\.f16\ts[0-9]+, r[0-9]+} 2 } }  */
 
 int
 test_compare_1 (__fp16 a, __fp16 b)
