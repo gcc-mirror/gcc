@@ -9227,14 +9227,13 @@ execute_fixup_cfg (void)
   gimple_stmt_iterator gsi;
   int todo = 0;
   cgraph_node *node = cgraph_node::get (current_function_decl);
-  profile_count num = node->count.ipa ();
+  profile_count num = node->count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-  bool scale = num.initialized_p () && den.ipa_p ()
-	       && (den.nonzero_p () || num == profile_count::zero ())
-	       && !(num == den.ipa ());
+  bool scale = num.initialized_p () && !(num == den);
 
   if (scale)
     {
+      profile_count::adjust_for_ipa_scaling (&num, &den);
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
       EXIT_BLOCK_PTR_FOR_FN (cfun)->count
         = EXIT_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (num, den);
@@ -9243,15 +9242,7 @@ execute_fixup_cfg (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (scale)
-	{
-	  if (num == profile_count::zero ())
-	    {
-	      if (!(bb->count == profile_count::zero ()))
-	        bb->count = bb->count.global0 ();
-	    }
-	  else
-            bb->count = bb->count.apply_scale (num, den);
-	}
+        bb->count = bb->count.apply_scale (num, den);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
