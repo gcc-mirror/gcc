@@ -25,6 +25,7 @@
 
 #include "asmcfi.h"
 #include "config.h"
+#include "cet.h"
 
 #define CONCAT1(a, b) CONCAT2(a, b)
 #define CONCAT2(a, b) a ## b
@@ -73,6 +74,7 @@
 
 SYM(_ITM_beginTransaction):
 	cfi_startproc
+	_CET_ENDBR
 #ifdef __x86_64__
 #ifdef HAVE_AS_RTM
 	/* Custom HTM fast path.  We start the HW transaction here and let
@@ -138,6 +140,10 @@ SYM(_ITM_beginTransaction):
 	movq	%r14, -32(%rax)
 	movq	%r15, -24(%rax)
 	xorq	%rdx, %rdx
+	/* Save zero or shadow stack pointer in the new field.  */
+#if defined(__SHSTK__) && defined(__CET__)
+	rdsspq	%rdx
+#endif
 	movq	%rdx, -16(%rax)
 	leaq	-72(%rax), %rsi
 	call	SYM(GTM_begin_transaction)
@@ -170,6 +176,10 @@ SYM(_ITM_beginTransaction):
 	movl	%edi, 16(%esp)
 	movl	%ebp, 20(%esp)
 	xorl	%edx, %edx
+	/* Save zero or shadow stack pointer in the new field.  */
+#if defined(__SHSTK__) && defined(__CET__)
+	rdsspd	%edx
+#endif
 	movl	%edx, 24(%esp)
 	leal	4(%esp), %edx
 #if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
@@ -197,6 +207,7 @@ SYM(_ITM_beginTransaction):
 
 SYM(GTM_longjmp):
 	cfi_startproc
+	_CET_ENDBR
 #ifdef __x86_64__
 	movq	(%rsi), %rcx
 	movq	8(%rsi), %rbx
@@ -210,6 +221,33 @@ SYM(GTM_longjmp):
 	cfi_offset(%rip, 64)
 	cfi_register(%rsp, %rcx)
 	movq	%rcx, %rsp
+#if defined(__SHSTK__) && defined(__CET__)
+	/* Check if Shadow Stack is enabled.  */
+	xorq	%rcx, %rcx
+	rdsspq	%rcx
+	testq	%rcx, %rcx
+	je	.L1
+	/* Calculate number of frames to skip.  */
+	subq	56(%rsi), %rcx
+	negq	%rcx
+	shrq	$3, %rcx
+	incq	%rcx
+	/* If # of frames is greater 255 then loop
+	   and adjust.  */
+	cmpq	$255, %rcx
+	jle	.L3
+	movl	$255, %edi
+	.p2align 4,,10
+	.p2align 3
+.L4:
+	incsspq	%rdi
+	subq	$255, %rcx
+	cmpq	$255, %rcx
+	jg	.L4
+.L3:
+	incsspq	%rcx
+.L1:
+#endif
 	jmp	*64(%rsi)
 #else
 	movl	(%edx), %ecx
@@ -221,6 +259,35 @@ SYM(GTM_longjmp):
 	cfi_offset(%eip, 24)
 	cfi_register(%esp, %ecx)
 	movl	%ecx, %esp
+#if defined(__SHSTK__) && defined(__CET__)
+	/* Check if Shadow Stack is enabled.  */
+	xorl	%ecx, %ecx
+	rdsspd	%ecx
+	testl	%ecx, %ecx
+	je	.L1
+	/* Calculate # of frames to skip.  */
+	subl	20(%edx), %ecx
+	negl	%ecx
+	shrl	$2, %ecx
+	incl	%ecx
+	/* If # of frames is greater 255 then loop
+	   and adjust.  */
+	cmpl	$255, %ecx
+	jle	.L3
+	pushl	%eax
+	movl	$255, %eax
+	.p2align 4,,10
+	.p2align 3
+.L4:
+	incsspd	%eax
+	subl	$255, %ecx
+	cmpl	$255, %ecx
+	jg	.L4
+	popl	%eax
+.L3:
+	incsspd	%ecx
+.L1:
+#endif
 	jmp	*24(%edx)
 #endif
 	cfi_endproc
