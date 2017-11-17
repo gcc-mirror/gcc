@@ -39,12 +39,14 @@ typedef struct gtm_jmpbuf
   unsigned long long r13;
   unsigned long long r14;
   unsigned long long r15;
+  unsigned long long ssp;
   unsigned long long rip;
 #else
   unsigned long ebx;
   unsigned long esi;
   unsigned long edi;
   unsigned long ebp;
+  unsigned long ssp;
   unsigned long eip;
 #endif
 } gtm_jmpbuf;

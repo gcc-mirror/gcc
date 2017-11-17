@@ -126,20 +126,22 @@ SYM(_ITM_beginTransaction):
 	/* Store edi for future HTM fast path retries.  We use a stack slot
 	   lower than the jmpbuf so that the jmpbuf's rip field will overlap
 	   with the proper return address on the stack.  */
-	movl	%edi, 8(%rsp)
+	movl	%edi, (%rsp)
 	/* Save the jmpbuf for any non-HTM-fastpath execution method.
 	   Because rsp-based addressing is 1 byte larger and we've got rax
 	   handy, use it.  */
-	movq	%rax, -64(%rax)
-	movq	%rbx, -56(%rax)
-	movq	%rbp, -48(%rax)
-	movq	%r12, -40(%rax)
-	movq	%r13, -32(%rax)
-	movq	%r14, -24(%rax)
-	movq	%r15, -16(%rax)
-	leaq	-64(%rax), %rsi
+	movq	%rax, -72(%rax)
+	movq	%rbx, -64(%rax)
+	movq	%rbp, -56(%rax)
+	movq	%r12, -48(%rax)
+	movq	%r13, -40(%rax)
+	movq	%r14, -32(%rax)
+	movq	%r15, -24(%rax)
+	xorq	%rdx, %rdx
+	movq	%rdx, -16(%rax)
+	leaq	-72(%rax), %rsi
 	call	SYM(GTM_begin_transaction)
-	movl	8(%rsp), %edi
+	movl	(%rsp), %edi
 	addq	$72, %rsp
 	cfi_adjust_cfa_offset(-72)
 #ifdef HAVE_AS_RTM
@@ -162,12 +164,14 @@ SYM(_ITM_beginTransaction):
 	movl	4(%esp), %eax
 	subl	$28, %esp
 	cfi_def_cfa_offset(32)
-	movl	%ecx, 8(%esp)
-	movl	%ebx, 12(%esp)
-	movl	%esi, 16(%esp)
-	movl	%edi, 20(%esp)
-	movl	%ebp, 24(%esp)
-	leal	8(%esp), %edx
+	movl	%ecx, 4(%esp)
+	movl	%ebx, 8(%esp)
+	movl	%esi, 12(%esp)
+	movl	%edi, 16(%esp)
+	movl	%ebp, 20(%esp)
+	xorl	%edx, %edx
+	movl	%edx, 24(%esp)
+	leal	4(%esp), %edx
 #if defined HAVE_ATTRIBUTE_VISIBILITY || !defined __PIC__
 	call	SYM(GTM_begin_transaction)
 #elif defined __ELF__
@@ -175,7 +179,7 @@ SYM(_ITM_beginTransaction):
 1:	popl	%ebx
 	addl	$_GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
 	call	SYM(GTM_begin_transaction)@PLT
-	movl	12(%esp), %ebx
+	movl	8(%esp), %ebx
 #else
 # error "Unsupported PIC sequence"
 #endif
@@ -203,10 +207,10 @@ SYM(GTM_longjmp):
 	movq	48(%rsi), %r15
 	movl	%edi, %eax
 	cfi_def_cfa(%rsi, 0)
-	cfi_offset(%rip, 56)
+	cfi_offset(%rip, 64)
 	cfi_register(%rsp, %rcx)
 	movq	%rcx, %rsp
-	jmp	*56(%rsi)
+	jmp	*64(%rsi)
 #else
 	movl	(%edx), %ecx
 	movl	4(%edx), %ebx
@@ -214,10 +218,10 @@ SYM(GTM_longjmp):
 	movl	12(%edx), %edi
 	movl	16(%edx), %ebp
 	cfi_def_cfa(%edx, 0)
-	cfi_offset(%eip, 20)
+	cfi_offset(%eip, 24)
 	cfi_register(%esp, %ecx)
 	movl	%ecx, %esp
-	jmp	*20(%edx)
+	jmp	*24(%edx)
 #endif
 	cfi_endproc
 
