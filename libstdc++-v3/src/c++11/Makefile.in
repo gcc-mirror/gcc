@@ -77,7 +77,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/linkage.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -183,6 +183,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 ERROR_CONSTANTS_SRCDIR = @ERROR_CONSTANTS_SRCDIR@
 EXEEXT = @EXEEXT@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 FGREP = @FGREP@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
