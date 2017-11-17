@@ -2065,6 +2065,19 @@ explicitly specify the directory where they are installed.  The
 shorthand for
 @option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
 @option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
+
+@item --enable-cet
+@itemx --disable-cet
+Enable building target run-time libraries with control-flow
+instrumentation, see @option{-fcf-protection} option.  When
+@code{--enable-cet} is specified target libraries are configured
+to add @option{-fcf-protection} and, if needed, other target
+specific options to a set of building options.
+
+The option is enabled by default on Linux/x86 if target binutils
+supports @code{Intel CET} instructions.  In this case the target
+libraries are configured to get additional @option{-fcf-protection}
+and @option{-mcet} options.
 @end table
 
 @subheading Cross-Compiler-Specific Options

@@ -1,3 +1,21 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in (configure_deps): Add $(srcdir)/../config/cet.m4.
+	(CET_FLAGS): New.
+	* config/i386/morestack.S: Include <cet.h>.
+	(__morestack_large_model): Add _CET_ENDBR at function entrance.
+	* config/i386/resms64.h: Include <cet.h>.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/savms64.h: Likewise.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): Add $(CET_FLAGS).
+	(CRTSTUFF_T_CFLAGS): Likewise.
+	* configure.ac: Include ../config/cet.m4.
+	Set and substitute CET_FLAGS.
+	* configure: Regenerated.
+
 2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (*-*-solaris2*): Adapt comment for Solaris 12
