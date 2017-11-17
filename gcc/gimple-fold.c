@@ -2258,6 +2258,21 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
       return true;
     }
 
+  /* If length is larger than the length of one constant string, 
+     replace strncmp with corresponding strcmp */ 
+  if (fcode == BUILT_IN_STRNCMP 
+      && length > 0
+      && ((p2 && (size_t) length > strlen (p2)) 
+          || (p1 && (size_t) length > strlen (p1))))
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCMP);
+      if (!fn)
+        return false;
+      gimple *repl = gimple_build_call (fn, 2, str1, str2);
+      replace_call_with_call_and_fold (gsi, repl);
+      return true;
+    }
+
   return false;
 }
 

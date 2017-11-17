@@ -1,3 +1,8 @@
+2017-11-15  Qing Zhao  <qing.zhao@oracle.com <mailto:qing.zhao@oracle.com>>
+
+	PR middle-end/78809
+	* gcc.dg/strcmpopt_1.c: New test.
+
 2017-11-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c18-version-1.c, gcc.dg/c18-version-2.c: New tests.
