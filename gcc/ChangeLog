@@ -1,3 +1,10 @@
+2017-11-17  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64.c
+	(qdf24xx_prefetch_tune) <default_opt_level>: Set to -1.
+	(qdf24xx_tunings) <autoprefetcher_model>: Set to
+	tune_params::AUTOPREFETCHER_WEAK.
+
 2017-11-17  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641

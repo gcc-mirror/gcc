@@ -508,7 +508,7 @@ static const cpu_prefetch_tune qdf24xx_prefetch_tune =
   32,			/* l1_cache_size  */
   64,			/* l1_cache_line_size  */
   1024,			/* l2_cache_size  */
-  3			/* default_opt_level  */
+  -1			/* default_opt_level  */
 };
 
 static const cpu_prefetch_tune thunderxt88_prefetch_tune =
@@ -817,7 +817,7 @@ static const struct tune_params qdf24xx_tunings =
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
-  tune_params::AUTOPREFETCHER_STRONG,	/* autoprefetcher_model.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
   &qdf24xx_prefetch_tune
 };
