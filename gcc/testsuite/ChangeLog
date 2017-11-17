@@ -1,5 +1,9 @@
 2017-11-17  Steve Ellcey  <sellcey@cavium.com>
 
+	* gcc.target/aarch64/fmls.c: New test.
+
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
 	* gcc.target/aarch64/pr81356.c: New test.
 
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
