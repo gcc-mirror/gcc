@@ -62,7 +62,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -256,7 +257,7 @@ ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 @LIBMPX_SUPPORTED_TRUE@AM_CFLAGS = $(XCFLAGS)
 @LIBMPX_SUPPORTED_TRUE@toolexeclib_LTLIBRARIES = libmpx.la
 @LIBMPX_SUPPORTED_TRUE@libmpx_la_SOURCES = mpxrt.c mpxrt-utils.c
-@LIBMPX_SUPPORTED_TRUE@libmpx_la_CFLAGS = -fPIC
+@LIBMPX_SUPPORTED_TRUE@libmpx_la_CFLAGS = -fPIC $(XCFLAGS)
 @LIBMPX_SUPPORTED_TRUE@libmpx_la_DEPENDENCIES = libmpx.map
 @LIBMPX_SUPPORTED_TRUE@libmpx_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libmpx.map $(link_libmpx) \
 @LIBMPX_SUPPORTED_TRUE@                    -version-info `grep -v '^\#' $(srcdir)/libtool-version`
