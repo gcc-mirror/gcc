@@ -1,3 +1,9 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config.gcc (extra_headers): Add cet.h for x86 targets.
+	* config/i386/cet.h: New file.
+	* doc/install.texi: Add --enable-cet/--disable-cet.
+
 2017-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83017

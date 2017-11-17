@@ -91,6 +91,8 @@
 # __morestack to call __morestack_non_split instead.  We just bump the
 # requested stack space by 16K.
 
+#include <cet.h>
+
 	.global __morestack_non_split
 	.hidden	__morestack_non_split
 
@@ -701,6 +703,7 @@ DW.ref.__gcc_personality_v0:
 __morestack_large_model:
 
 	.cfi_startproc
+	_CET_ENDBR
 
 	movq	%r10, %r11
 	andl	$0xffffffff, %r10d
