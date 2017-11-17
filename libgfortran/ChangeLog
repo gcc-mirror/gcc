@@ -1,3 +1,11 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* acinclude.m4: Add enable.m4, cet.m4.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update AM_FCFLAGS,
+	AM_CFLAGS, CFLAGS.
+
 2017-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Rimvydas (RJ)
 
