@@ -24,7 +24,8 @@
 #include <filesystem>
 #include <testsuite_hooks.h>
 
-const std::filesystem::path filename = "filebuf_members-1.tst";
+char cstr[] = "filebuf_members-1.tst";
+const std::filesystem::path filename = cstr;
 
 void
 test01()
@@ -32,6 +33,13 @@ test01()
   std::filebuf fb;
   fb.open(filename, std::ios::in);
   VERIFY( fb.is_open() );
+}
+
+void
+test02() // compile-only
+{
+  std::filebuf fb;
+  fb.open(cstr, std::ios::in);	// PR libstdc++/83025
 }
 
 int
