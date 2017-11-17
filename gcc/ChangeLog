@@ -1,5 +1,10 @@
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-tailcall.c (eliminate_tail_call): Be more careful about not
+	disturbin profile of entry block.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (estimate_node_size_and_time): Be more tolerant for
 	roundoff errors.
 
