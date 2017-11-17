@@ -4378,15 +4378,14 @@ cpms_out::tree_node (tree t)
 
       w.u (conv_op ? rt_conv_identifier : rt_identifier);
       if (conv_op)
-	{
-	  t = TREE_TYPE (t);
-	  tree_node (t);
-	}
+	tree_node (TREE_TYPE (t));
       else
 	w.str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
+
       unsigned tag = insert (t);
       dump () && dump ("Written:%u %sidentifier:%N",
-		       tag, conv_op ? "conv_op_" : "", t);
+		       tag, conv_op ? "conv_op_" : "",
+		       conv_op ? TREE_TYPE (t) : t);
       unnest ();
       return;
     }

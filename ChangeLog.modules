@@ -1,3 +1,10 @@
+2017-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (cpms_out::tree_node): Fix conv-op identifiers.
+	gcc/testsuite/
+	* g++.dg/modules/convop-1_[ab].C: New.
+
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	Constexprs!
