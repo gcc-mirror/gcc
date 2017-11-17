@@ -1,5 +1,13 @@
 2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (added_notes_insn): New.
+	(try_combine): Handle added_notes_insn like added_links_insn.
+	Rewrite return value code.
+	(distribute_notes): Set added_notes_insn to the earliest insn we added
+	a note to.
+
+2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/82621
 	* combine.c (try_combine): Do not split PARALLELs of two SETs if the
 	dest of one of those SETs is unused.
