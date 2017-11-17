@@ -1,3 +1,10 @@
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/81356
+	* config/aarch64/aarch64.c (aarch64_use_by_pieces_infrastructure_p):
+	Remove.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Remove define.
+
 2017-11-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Use
