@@ -1240,6 +1240,12 @@ DEFPARAMENUM5 (PARAM_PARLOOPS_SCHEDULE,
 	       static,
 	       static, dynamic, guided, auto, runtime)
 
+DEFPARAM (PARAM_PARLOOPS_MIN_PER_THREAD,
+	  "parloops-min-per-thread",
+	  "Minimum number of iterations per thread of an innermost "
+	  "parallelized loop.",
+	  100, 2, 0)
+
 DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "max-ssa-name-query-depth",
 	  "Maximum recursion depth allowed when querying a property of an"

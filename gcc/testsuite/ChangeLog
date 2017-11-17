@@ -1,3 +1,8 @@
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83017
+	* gcc.dg/autopar/pr49960.c: Adjust.
+
 2017-11-17  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-move-1.c: Edit vmov scan-assembler
