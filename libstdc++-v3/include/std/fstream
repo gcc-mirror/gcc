@@ -48,6 +48,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus >= 201703L
+  // Enable if _Path is a filesystem::path or experimental::filesystem::path
+  template<typename _Path, typename _Result = _Path, typename _Path2
+	   = decltype(std::declval<_Path&>().make_preferred().filename())>
+    using _If_fs_path = enable_if_t<is_same_v<_Path, _Path2>, _Result>;
+#endif // C++17
+
+
   // [27.8.1.1] template class basic_filebuf
   /**
    *  @brief  The actual work of input and output (for files).
@@ -216,12 +224,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-#if __cplusplus >= 201703L
-      template<typename _Path, typename _Result = _Path, typename _Path2
-	       = decltype(std::declval<_Path&>().make_preferred().native())>
-	using _If_path = enable_if_t<is_same_v<_Path, _Path2>, _Result>;
-#endif // C++17
-
     public:
       // Constructors/destructor:
       /**
@@ -321,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  @c this on success, NULL on failure
        */
       template<typename _Path>
-	_If_path<_Path, __filebuf_type*>
+	_If_fs_path<_Path, __filebuf_type*>
 	open(const _Path& __s, ios_base::openmode __mode)
 	{ return open(__s.c_str(), __mode); }
 #endif // C++17
@@ -540,8 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @c ios_base::in is automatically included in @a __mode.
        */
-      template<typename _Path, typename = _Require<
-	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
 	basic_ifstream(const _Path& __s,
 		       ios_base::openmode __mode = ios_base::in)
 	: basic_ifstream(__s.c_str(), __mode)
@@ -661,9 +662,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  fails, @c failbit is set in the stream's error state.
        */
       template<typename _Path>
-	auto
+	_If_fs_path<_Path, void>
 	open(const _Path& __s, ios_base::openmode __mode = ios_base::in)
-	-> decltype((void)_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
@@ -768,8 +768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  @c ios_base::out is automatically included in @a __mode.
        */
-      template<typename _Path, typename = _Require<
-	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
 	basic_ofstream(const _Path& __s,
 		       ios_base::openmode __mode = ios_base::out)
 	: basic_ofstream(__s.c_str(), __mode)
@@ -889,9 +888,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  function fails, @c failbit is set in the stream's error state.
        */
       template<typename _Path>
-	auto
+	_If_fs_path<_Path, void>
 	open(const _Path& __s, ios_base::openmode __mode = ios_base::out)
-	-> decltype((void)_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11
@@ -992,8 +990,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  filesystem::path specifying the filename.
        *  @param  __mode  Open file in specified mode (see std::ios_base).
        */
-      template<typename _Path, typename = _Require<
-	  is_constructible<__filebuf_type, const _Path&, ios_base::openmode>>>
+      template<typename _Path, typename _Require = _If_fs_path<_Path>>
 	basic_fstream(const _Path& __s,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
 	: basic_fstream(__s.c_str(), __mode)
@@ -1115,10 +1112,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  function fails, @c failbit is set in the stream's error state.
        */
       template<typename _Path>
-	auto
+	_If_fs_path<_Path, void>
 	open(const _Path& __s,
 	     ios_base::openmode __mode = ios_base::in | ios_base::out)
-	-> decltype((void)_M_filebuf.open(__s, __mode))
 	{ open(__s.c_str(), __mode); }
 #endif // C++17
 #endif // C++11

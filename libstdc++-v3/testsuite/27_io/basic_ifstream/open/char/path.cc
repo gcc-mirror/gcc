@@ -24,7 +24,8 @@
 #include <filesystem>
 #include <testsuite_hooks.h>
 
-const std::filesystem::path filename = "ifstream_members-1.tst";
+char cstr[] = "filebuf_members-1.tst";
+const std::filesystem::path filename = cstr;
 
 void
 test01()
@@ -40,6 +41,14 @@ test02()
   std::ifstream f;
   f.open(filename, std::ios::in);
   VERIFY( f.is_open() );
+}
+
+void
+test03() // compile-only
+{
+  std::ifstream f;
+  f.open(cstr);		      // PR libstdc++/83025
+  f.open(cstr, std::ios::in); // PR libstdc++/83025
 }
 
 int

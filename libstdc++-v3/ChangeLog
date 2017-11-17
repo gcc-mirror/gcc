@@ -1,3 +1,25 @@
+2017-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83025
+	* include/std/fstream (basic_filebuf::_If_path): Move to
+	namespace-scope and rename to _If_fs_path.
+	(basic_filebuf::open): Use new name.
+	(basic_ifstream(_Path, ios::openmode))
+	(basic_ifstream::open(_Path, ios::openmode))
+	(basic_ofstream(_Path, ios::openmode))
+	(basic_ofstream::open(_Path, ios::openmode))
+	(basic_fstream(_Path, ios::openmode))
+	(basic_fstream::open(_Path, ios::openmode)): Use _If_fs_path.
+	* testsuite/27_io/basic_filebuf/open/char/path.cc: Test with filename
+	as non-const char*.
+	* testsuite/27_io/basic_fstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_fstream/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/path.cc: Likewise.
+
+
 2017-11-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	* include/bits/vector.tcc (vector::_M_realloc_insert): Cache old
