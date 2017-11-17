@@ -1,3 +1,8 @@
+2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/altivec-macros.c: Include "-:" in the messages
+	matched for.
+
 2017-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83017
