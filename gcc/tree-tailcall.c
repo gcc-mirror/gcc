@@ -889,10 +889,18 @@ eliminate_tail_call (struct tailcall *t)
 
   /* Number of executions of function has reduced by the tailcall.  */
   e = single_succ_edge (gsi_bb (t->call_gsi));
-  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), e->count ());
-  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), e->count ());
+
+  profile_count count = e->count ();
+
+  /* When profile is inconsistent and the recursion edge is more frequent
+     than number of executions of functions, scale it down, so we do not end
+     up with 0 executions of entry block.  */
+  if (count >= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
+    count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (7, 8);
+  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), count);
+  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), count);
   if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    decrease_profile (e->dest, e->count ());
+    decrease_profile (e->dest, count);
 
   /* Replace the call by a jump to the start of function.  */
   e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),
