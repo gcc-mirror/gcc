@@ -130,6 +130,12 @@ else
     EXTRA_FLAGS="$EXTRA_FLAGS -frandom-seed=\$@"
   fi
 fi
+
+if test -n "${with_target_subdir}"; then
+  # Add CET specific flags is Intel CET is enabled.
+  GCC_CET_FLAGS(CET_FLAGS)
+  EXTRA_FLAGS="$EXTRA_FLAGS $CET_FLAGS"
+fi
 AC_SUBST(EXTRA_FLAGS)
 
 ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
