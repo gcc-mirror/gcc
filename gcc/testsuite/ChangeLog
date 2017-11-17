@@ -1,4 +1,14 @@
-2017-11-15  Qing Zhao  <qing.zhao@oracle.com <mailto:qing.zhao@oracle.com>>
+2017-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/82997
+	* gcc.dg/cpp/macsyntx.c (var1, rest): Don't expect
+	"requires at least one" warning.
+	* gcc.dg/cpp/sysmac1.c (foo): Likewise.
+	* gcc.dg/cpp/macsyntx2.c: New test.
+	* gcc.dg/cpp/sysmac3.c: New test.
+	* gcc.dg/cpp/sysmac3.h: New file.
+
+2017-11-15  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/78809
 	* gcc.dg/strcmpopt_1.c: New test.

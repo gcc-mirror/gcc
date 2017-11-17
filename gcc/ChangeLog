@@ -1,4 +1,4 @@
-2017-11-15  Qing Zhao <qing.zhao@oracle.com>
+2017-11-15  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/78809
 	* gimple-fold.c (gimple_fold_builtin_string_compare): Add handling
