@@ -1,5 +1,10 @@
 2017-11-17  Jeff Law  <law@redhat.com>
 
+	* gimple-ssa-evrp.c (evrp_dom_walker::record_ranges_from_phis): New
+	method extracted from evrp_dom_walker::before_dom_children.
+	(evrp_dom_walker::record_ranges_from_stmt): Likewise.
+	(evrp_dom_walker::record_ranges_from_incoming_edge): Likewise.
+
 	* gimple-ssa-evrp.c (evrp_dom_walker): Add cleanup method.
 	Add private copy constructor and move assignment operators.
 	Privatize methods and class data where trivially possible.
