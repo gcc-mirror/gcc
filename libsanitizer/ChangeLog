@@ -1,3 +1,29 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.am: Update AM_CXXFLAGS.
+	* asan/Makefile.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update EXTRA_CFLAGS,
+	EXTRA_CXXFLAGS, EXTRA_ASFLAGS.
+	* interception/Makefile.am: Update AM_CXXFLAGS.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.am: Update AM_CFLAGS, AM_CXXFLAGS.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.am: Update AM_CXXFLAGS.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am: Update AM_CXXFLAGS,
+	AM_CCASFLAGS.
+	* sanitizer_common/sanitizer_linux_x86_64.S: Include cet.h.
+	Add _CET_ENDBR macro.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.am: Update AM_CXXFLAGS.
+	* tsan/Makefile.in: Regenerate.
+	* tsan/tsan_rtl_amd64.S Include cet.h. Add _CET_ENDBR macro.
+	* ubsan/Makefile.am: Update AM_CXXFLAGS.
+	* ubsan/Makefile.in: Regenerate.
+
 2017-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/82670
