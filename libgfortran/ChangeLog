@@ -1,3 +1,12 @@
+2017-11-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/44292
+	* io/transfer.c (skip_record): Use gfc_offset to handle large
+	records.
+	(next_record_r): Likewise.
+	(sset): Likewise.
+	(next_record_w): Use gfc_offset/ptrdiff_t appropriately.
+
 2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/83036
