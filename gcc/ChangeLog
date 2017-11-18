@@ -1,3 +1,9 @@
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/82961
+	* vmsdbgout.c (vmsdbgout_early_finish): New function.
+	(vmsdbg_debug_hooks): Set early_finish field to vmsdbgout_early_finish.
+
 2017-11-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphclones.c (cgraph_edge::clone): Rename gcov_count to prof_count.
