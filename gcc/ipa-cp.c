@@ -3695,18 +3695,9 @@ update_profiling_info (struct cgraph_node *orig_node,
 	}
     }
 
-  if (!new_sum.nonzero_p ())
-    {
-      new_sum = new_sum.global0 ();
-      new_node->count = new_sum;
-      remainder = orig_node->count;
-    }
-  else
-    {
-      remainder = orig_node_count - new_sum;
-      if (!remainder.nonzero_p ())
-	remainder = orig_node_count.global0 ();
-    }
+  remainder = orig_node_count.combine_with_ipa_count (orig_node_count.ipa ()
+						      - new_sum.ipa ());
+  new_sum = orig_node_count.combine_with_ipa_count (new_sum);
   orig_node->count = remainder;
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)

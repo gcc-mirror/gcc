@@ -3607,9 +3607,6 @@ estimate_bb_frequencies (bool force)
          to outermost to examine frequencies for back edges.  */
       estimate_loops ();
 
-      bool global0 = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ()
-		     && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ();
-
       freq_max = 0;
       FOR_EACH_BB_FN (bb, cfun)
 	if (freq_max < BLOCK_INFO (bb)->frequency)
@@ -3618,6 +3615,7 @@ estimate_bb_frequencies (bool force)
       freq_max = real_bb_freq_max / freq_max;
       if (freq_max < 16)
 	freq_max = 16;
+      profile_count ipa_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ();
       cfun->cfg->count_max = profile_count::uninitialized ();
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
@@ -3626,10 +3624,8 @@ estimate_bb_frequencies (bool force)
 
 	  /* If we have profile feedback in which this function was never
 	     executed, then preserve this info.  */
-	  if (global0)
-	    bb->count = count.global0 ();
-	  else if (!(bb->count == profile_count::zero ()))
-	    bb->count = count.guessed_local ();
+	  if (!(bb->count == profile_count::zero ()))
+	    bb->count = count.guessed_local ().combine_with_ipa_count (ipa_count);
           cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
 	}
 
