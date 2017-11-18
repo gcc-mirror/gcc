@@ -1,5 +1,10 @@
 2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/83036
+	* io/io.h: Make nextrec a GFC_IO_INT*.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/44292
 	* io/io.h: Make recl_in a GC_IO_INT and recl_out a type
 	GFC_IO_INT*.
