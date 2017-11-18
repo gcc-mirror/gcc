@@ -1,5 +1,10 @@
 2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/83036
+	* ioparm.def (IOPARM): Make nextrec a pintio.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/44292
 	* ioparm.def (IOPARM): Make recl_in intio, and recl_out pintio.
 
