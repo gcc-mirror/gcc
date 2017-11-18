@@ -5207,8 +5207,31 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   gfc_symbol *sym;
 
   if (expr->expr_type == EXPR_FUNCTION)
-    return expr->value.function.esym
-	   ? expr->value.function.esym->result->attr.contiguous : false;
+    {
+      if (expr->value.function.esym)
+	return expr->value.function.esym->result->attr.contiguous;
+      else
+	{
+	  /* We have to jump through some hoops if this is a vtab entry.  */
+	  gfc_symbol *s;
+	  gfc_ref *r, *rc;
+
+	  s = expr->symtree->n.sym;
+	  if (s->ts.type != BT_CLASS)
+	    return false;
+	  
+	  rc = NULL;
+	  for (r = expr->ref; r; r = r->next)
+	    if (r->type == REF_COMPONENT)
+	      rc = r;
+
+	  if (rc == NULL || rc->u.c.component == NULL
+	      || rc->u.c.component->ts.interface == NULL)
+	    return false;
+
+	  return rc->u.c.component->ts.interface->attr.contiguous;
+	}
+    }
   else if (expr->expr_type != EXPR_VARIABLE)
     return false;
 

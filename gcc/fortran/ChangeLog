@@ -1,3 +1,10 @@
+2017-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83012
+	* expr.c (gfc_is_simply_contiguous): If a function call through a
+	class variable is done through a reference, check the function's
+	interface.
+
 2017-11-17  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/83017
