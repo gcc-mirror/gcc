@@ -1,3 +1,8 @@
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/44292
+	* gfortran.dg/large_recl.f90: New test.
+
 2017-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83012
