@@ -1752,6 +1752,12 @@ execute_split_functions (void)
 	fprintf (dump_file, "Not splitting: main function.\n");
       return 0;
     }
+  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is unlikely executed.\n");
+      return 0;
+    }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
   if (ipa_fn_summaries

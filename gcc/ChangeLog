@@ -1,3 +1,30 @@
+2017-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphclones.c (cgraph_edge::clone): Rename gcov_count to prof_count.
+	(cgraph_edge::clone): Cleanup updating of profile.
+	* ipa-cp.c (update_profiling_info): Likewise.
+	* ipa-inline-transform.c (inline_transform): Likewise.
+	* ipa-inline.c (inline_small_functions): Add missing space to dump.
+	* ipa-split.c (execute_split_functions): Do not split when function
+	is cold.
+	* predict.c (estimate_bb_frequencies): Cleanup updating of profile.
+	* profile-count.c (profile_count::dump): Add global0.
+	(profile_count::to_cgraph_frequency): Do not ICE when entry is
+	undefined.
+	(profile_count::to_sreal_scale): Likewise.
+	(profile_count::adjust_for_ipa_scaling): Fix typo in comment.
+	(profile_count::combine_with_ipa_count): New function.
+	* profile-count.h (profile_guessed_global0adjusted): New.
+	(profile_count::adjusted_zero): New.
+	(profile_count::global0adjusted): New.
+	(profile_count::combine_with_ipa_count): New.
+	* tree-inline.c (copy_edges_for_bb): Add NUM/DEN arugment;
+	correct profile of return block of split functions.
+	(copy_cfg_body): Remove unused profile_count.
+	(copy_body): Likewise.
+	(expand_call_inline): Update.
+	(tree_function_versioning): Update.
+
 2017-11-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* hash-set.h (hash_set::empty): New.

@@ -91,7 +91,7 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 {
   cgraph_edge *new_edge;
   profile_count::adjust_for_ipa_scaling (&num, &den);
-  profile_count gcov_count = count.apply_scale (num, den);
+  profile_count prof_count = count.apply_scale (num, den);
 
   if (indirect_unknown_callee)
     {
@@ -104,19 +104,19 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 	{
 	  cgraph_node *callee = cgraph_node::get (decl);
 	  gcc_checking_assert (callee);
-	  new_edge = n->create_edge (callee, call_stmt, gcov_count);
+	  new_edge = n->create_edge (callee, call_stmt, prof_count);
 	}
       else
 	{
 	  new_edge = n->create_indirect_edge (call_stmt,
 					      indirect_info->ecf_flags,
-					      gcov_count, false);
+					      prof_count, false);
 	  *new_edge->indirect_info = *indirect_info;
 	}
     }
   else
     {
-      new_edge = n->create_edge (callee, call_stmt, gcov_count);
+      new_edge = n->create_edge (callee, call_stmt, prof_count);
       if (indirect_info)
 	{
 	  new_edge->indirect_info
@@ -135,12 +135,9 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
   new_edge->in_polymorphic_cdtor = in_polymorphic_cdtor;
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
-  if (update_original
-      && count.ipa () == count && new_edge->count.ipa () == new_edge->count)
-    count -= new_edge->count;
-  else if (caller->count.global0 () == caller->count
-	   && !(count == profile_count::zero ()))
-    count = count.global0 ();
+  if (update_original)
+    count = count.combine_with_ipa_count (count.ipa () 
+					  - new_edge->count.ipa ());
   symtab->call_edge_duplication_hooks (this, new_edge);
   return new_edge;
 }
@@ -431,22 +428,12 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   if (new_inlined_to)
     dump_callgraph_transformation (this, new_inlined_to, "inlining to");
 
-  if (prof_count == profile_count::zero ()
-      && !(count == profile_count::zero ()))
-    prof_count = count.global0 ();
-
+  prof_count = count.combine_with_ipa_count (prof_count);
   new_node->count = prof_count;
 
   /* Update IPA profile.  Local profiles need no updating in original.  */
-  if (update_original && !(count == profile_count::zero ())
-      && count.ipa () == count && prof_count.ipa () == prof_count)
-    {
-      if (count.nonzero_p ()
-	  && !(count - prof_count).nonzero_p ())
-	count = count.global0 ();
-      else
-        count -= prof_count;
-    }
+  if (update_original)
+    count = count.combine_with_ipa_count (count.ipa () - prof_count.ipa ());
   new_node->decl = new_decl;
   new_node->register_symbol ();
   new_node->origin = origin;
