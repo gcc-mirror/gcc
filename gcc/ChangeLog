@@ -1,3 +1,31 @@
+2017-11-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* hash-set.h (hash_set::empty): New.
+	* tree-ssa-threadbackward.h: Delete.
+	* tree-ssa-threadbackward.c (class thread_jumps): New.
+	Move max_threaded_paths into class.
+	(fsm_find_thread_path): Remove arguments that are now in class.
+	(profitable_jump_thread_path): Rename to...
+	(thread_jumps::profitable_jump_thread_path): ...this.
+	(convert_and_register_jump_thread_path): Rename to...
+	(thread_jumps::convert_and_register_current_path): ...this.
+	(check_subpath_and_update_thread_path): Rename to...
+	(thread_jumps::check_subpath_and_update_thread_path): ...this.
+	(register_jump_thread_path_if_profitable): Rename to...
+	(thread_jumps::register_jump_thread_path_if_profitable): ...this.
+	(handle_phi): Rename to...
+	(thread_jumps::handle_phi): ...this.
+	(handle_assignment): Rename to...
+	(thread_jumps::handle_assignment): ...this.
+	(fsm_find_control_statement_thread_paths): Rename to...
+	(thread_jumps::fsm_find_control_statement_thread_paths): ...this.
+	(find_jump_threads_backwards): Rename to...
+	(thread_jumps::find_jump_threads_backwards): ...this.
+	Initialize path local data.
+	(pass_thread_jumps::execute): Call find_jump_threads_backwards
+	from within thread_jumps class.
+	(pass_early_thread_jumps::execute): Same.
+
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::dump): Do IPA sanity checking on IPA counts.
