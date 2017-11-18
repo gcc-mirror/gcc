@@ -1,3 +1,14 @@
+2017-11-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	Expose Airy functions as an extenaion.
+	* include/bits/specfun.h: Expose airy_ai and airy_bi.
+	* include/tr1/modified_bessel_func.tcc: Treat NaN and inf arg, return.
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: New.
+	* testsuite/ext/special_functions/airy_ai/check_value.cc: New.
+	* testsuite/ext/special_functions/airy_ai/compile.cc: New.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: New.
+	* testsuite/ext/special_functions/airy_bi/check_value.cc: New.
+	* testsuite/ext/special_functions/airy_bi/compile.cc: New.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* acinclude.m4: Add cet.m4.
