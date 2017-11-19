@@ -268,7 +268,7 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     {
       if (known)
 	*known = false;
-      return CGRAPH_FREQ_BASE;
+      return 1;
     }
   if (known)
     *known = true;
