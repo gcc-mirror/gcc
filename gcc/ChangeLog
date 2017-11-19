@@ -1,5 +1,10 @@
 2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/60243
+	* tree-inline.c (estimate_num_insns): Set to 1 at least.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR target/82713
 	* i386.c (ix86_builtin_vectorization_cost): Be ready for insane
 	types.

@@ -4100,7 +4100,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	   with very long asm statements.  */
 	if (count > 1000)
 	  count = 1000;
-	return count;
+	return MAX (1, count);
       }
 
     case GIMPLE_RESX:
