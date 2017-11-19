@@ -1,5 +1,10 @@
 2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/81360
+	* ipa-inline.c (can_inline_edge_p): Also check that caller is optimized
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/83001
 	* profile-count.c (profile_count::to_sreal_scale): Fix return value
 	for uninitialied counts.
