@@ -1,5 +1,12 @@
 2017-11-19  Tom de Vries  <tom@codesourcery.com>
 
+	* config/mcore/mcore-elf.h (MCORE_EXPORT_NAME): Remove semicolon after
+	"do {} while (0)".
+	* config/mcore/mcore.h (ASM_OUTPUT_ALIGNED_COMMON): After missing
+	semicolon after MCORE_EXPORT_NAME call.
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/82961
 	* vmsdbgout.c (vmsdbgout_early_finish): New function.
 	(vmsdbg_debug_hooks): Set early_finish field to vmsdbgout_early_finish.
