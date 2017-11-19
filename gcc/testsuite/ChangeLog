@@ -1,3 +1,11 @@
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* gcc.dg/pr69960.c: New test.
+	* gcc.dg/pr66618.c: New test.
+	* gcc.dg/pr66618-2.c: New test.
+
 2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/44292

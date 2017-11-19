@@ -1,3 +1,10 @@
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* cp-gimplify.c (c_fully_fold): Add LVAL argument, call
+	cp_fold_maybe_rvalue instead of cp_fold_rvalue and pass it !LVAL.
+
 2017-11-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/79092 - non-type args of different types are different
