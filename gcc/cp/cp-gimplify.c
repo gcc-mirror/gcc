@@ -2048,11 +2048,9 @@ cp_fully_fold (tree x)
    C_MAYBE_CONST_EXPR.  */
 
 tree
-c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
+c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/, bool lval)
 {
-  /* c_fully_fold is only used on rvalues, and we need to fold CONST_DECL to
-     INTEGER_CST.  */
-  return cp_fold_rvalue (x);
+  return cp_fold_maybe_rvalue (x, !lval);
 }
 
 static GTY((deletable)) hash_map<tree, tree> *fold_cache;

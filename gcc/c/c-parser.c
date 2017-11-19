@@ -15312,7 +15312,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
     case NOP_EXPR: /* atomic write */
       v = c_parser_cast_expression (parser, NULL).value;
       non_lvalue_p = !lvalue_p (v);
-      v = c_fully_fold (v, false, NULL);
+      v = c_fully_fold (v, false, NULL, true);
       if (v == error_mark_node)
 	goto saw_error;
       if (non_lvalue_p)
@@ -15331,7 +15331,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	{
 	  lhs = c_parser_cast_expression (parser, NULL).value;
 	  non_lvalue_p = !lvalue_p (lhs);
-	  lhs = c_fully_fold (lhs, false, NULL);
+	  lhs = c_fully_fold (lhs, false, NULL, true);
 	  if (lhs == error_mark_node)
 	    goto saw_error;
 	  if (non_lvalue_p)
@@ -15357,7 +15357,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	{
 	  v = c_parser_cast_expression (parser, NULL).value;
 	  non_lvalue_p = !lvalue_p (v);
-	  v = c_fully_fold (v, false, NULL);
+	  v = c_fully_fold (v, false, NULL, true);
 	  if (v == error_mark_node)
 	    goto saw_error;
 	  if (non_lvalue_p)
@@ -15378,7 +15378,7 @@ restart:
   lhs = expr.value;
   expr = default_function_array_conversion (eloc, expr);
   unfolded_lhs = expr.value;
-  lhs = c_fully_fold (lhs, false, NULL);
+  lhs = c_fully_fold (lhs, false, NULL, true);
   orig_lhs = lhs;
   switch (TREE_CODE (lhs))
     {
@@ -15518,15 +15518,19 @@ restart:
 	      if (c_tree_equal (TREE_OPERAND (rhs1, 0), unfolded_lhs))
 		{
 		  opcode = TREE_CODE (rhs1);
-		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL);
-		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL);
+		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL,
+				      true);
+		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL,
+				       true);
 		  goto stmt_done;
 		}
 	      if (c_tree_equal (TREE_OPERAND (rhs1, 1), unfolded_lhs))
 		{
 		  opcode = TREE_CODE (rhs1);
-		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL);
-		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL);
+		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL,
+				      true);
+		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL,
+				       true);
 		  swapped = !commutative_tree_code (opcode);
 		  goto stmt_done;
 		}
@@ -15545,7 +15549,7 @@ restart:
 		  lhs = NULL_TREE;
 		  expr = default_function_array_read_conversion (eloc, expr);
 		  unfolded_lhs1 = expr.value;
-		  lhs1 = c_fully_fold (unfolded_lhs1, false, NULL);
+		  lhs1 = c_fully_fold (unfolded_lhs1, false, NULL, true);
 		  rhs1 = NULL_TREE;
 		  c_parser_consume_token (parser);
 		  goto restart;
@@ -15554,7 +15558,7 @@ restart:
 		{
 		  opcode = NOP_EXPR;
 		  expr = default_function_array_read_conversion (eloc, expr);
-		  rhs = c_fully_fold (expr.value, false, NULL);
+		  rhs = c_fully_fold (expr.value, false, NULL, true);
 		  rhs1 = NULL_TREE;
 		  goto stmt_done;
 		}
@@ -15575,7 +15579,7 @@ restart:
       expr = c_parser_expression (parser);
       expr = default_function_array_read_conversion (eloc, expr);
       rhs = expr.value;
-      rhs = c_fully_fold (rhs, false, NULL);
+      rhs = c_fully_fold (rhs, false, NULL, true);
       break;
     }
 stmt_done:
@@ -15585,7 +15589,7 @@ stmt_done:
 	goto saw_error;
       v = c_parser_cast_expression (parser, NULL).value;
       non_lvalue_p = !lvalue_p (v);
-      v = c_fully_fold (v, false, NULL);
+      v = c_fully_fold (v, false, NULL, true);
       if (v == error_mark_node)
 	goto saw_error;
       if (non_lvalue_p)
@@ -15597,7 +15601,7 @@ stmt_done:
       lhs1 = expr.value;
       expr = default_function_array_read_conversion (eloc, expr);
       unfolded_lhs1 = expr.value;
-      lhs1 = c_fully_fold (lhs1, false, NULL);
+      lhs1 = c_fully_fold (lhs1, false, NULL, true);
       if (lhs1 == error_mark_node)
 	goto saw_error;
       if (!lvalue_p (unfolded_lhs1))
