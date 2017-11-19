@@ -1,5 +1,11 @@
 2017-11-19  Tom de Vries  <tom@codesourcery.com>
 
+	* config/ft32/ft32.h (REGISTER_TARGET_PRAGMAS): Remove semicolon after
+	"do {} while (0)".
+	* config/spu/spu.h (REGISTER_TARGET_PRAGMAS): Same.
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
 	* config/mcore/mcore-elf.h (MCORE_EXPORT_NAME): Remove semicolon after
 	"do {} while (0)".
 	* config/mcore/mcore.h (ASM_OUTPUT_ALIGNED_COMMON): After missing
