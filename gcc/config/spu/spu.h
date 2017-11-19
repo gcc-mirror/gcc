@@ -213,7 +213,7 @@ enum reg_class {
 #define REGISTER_TARGET_PRAGMAS() do {					\
 c_register_addr_space ("__ea", ADDR_SPACE_EA);				\
 targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
-}while (0);
+}while (0)
 
 
 /* Frame Layout */
