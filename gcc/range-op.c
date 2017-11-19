@@ -834,9 +834,9 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
   /* Try constant cases first to see if we do anything special with them. */
   if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
     res = op_ir (mode, r, lh.upper_bound (), rh);
-  else
-    if (wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
-      res = op_ri (mode, r, lh, rh.upper_bound ());
+
+  if (!res && wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
+    res = op_ri (mode, r, lh, rh.upper_bound ());
 
   if (!res)
     {
@@ -1062,10 +1062,33 @@ operator_divide::op1_irange (irange& r ATTRIBUTE_UNUSED,
 			     const irange& lhs ATTRIBUTE_UNUSED,
 			     const irange& op2 ATTRIBUTE_UNUSED) const
 {
+  wide_int offset;
   // 	a_6 = foo ()
   // 	a_7 = a_6 / 4
   // if a_7 is [4,4], a_6 is actually [16,19] so ranges are trickier to
-  // calulate.  punt for now.
+  // calulate.  
+  if (op2.singleton_p (offset) && op_rr (OPM_MUL, r, lhs, op2))
+    {
+      wide_int ub, lb;
+      bool lb_ov = false, ub_ov = false;
+      const_tree type = op2.get_type ();
+      signop sign = TYPE_SIGN (type);
+
+      // no complex ranges, or divide by 0
+      if (!r.simple_range_p () || wi::eq_p (offset, 0))
+        return false;
+      offset = wi::abs (offset);
+      offset = wi::sub (offset, 1, sign, &ub_ov);
+      lb = r.lower_bound ();
+      ub = r.upper_bound ();
+      if (wi::le_p (lb, 0, sign))
+	lb = wi::sub (lb, offset, sign, &lb_ov);
+      if (wi::ge_p (ub, 0, sign))
+	ub = wi::add (ub, offset, sign, &ub_ov);
+      add_to_range (r, lb, lb_ov, ub, ub_ov);
+      if (!r.overflow_p ())
+	return true;
+    }
   return false;
 }
 
@@ -1084,6 +1107,8 @@ public:
   virtual void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const;
 
 } op_exact_divide;
 
@@ -1101,7 +1126,23 @@ operator_exact_divide::fold_range (irange& r, const irange& lh,
   return op_rr (OPM_EXACTDIV, r, lh, rh);
 }
 
-
+// Adjust irange to be in terms of op1. 
+bool
+operator_exact_divide::op1_irange (irange& r,
+				   const irange& lhs,
+				   const irange& op2) const
+{
+  wide_int offset;
+  // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
+  // remainders, so op1 = [2,4] * [3,3] = [6,12].
+  // We wont bother trying to enumerate all the in between stuff :-P
+  // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
+  // the time however.  
+  if (op2.singleton_p (offset) && op_rr (OPM_MUL, r, lhs, op2) &&
+      !r.overflow_p () && wi::ne_p (offset, 0))   
+    return true;
+  return false;
+}
 
 
 
