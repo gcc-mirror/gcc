@@ -1,3 +1,8 @@
+2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78990
+	* gfortran.dg/class_67.f90: New test.
+
 2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/82713
@@ -270,7 +275,7 @@
 	* g++.dg/torture/pr82985.C: Likewise.
 
 2017-11-15  Sebastian Peryt  <sebastian.peryt@intel.com>
-	
+
 	PR target/82941
 	PR target/82942
 	* gcc.target/i386/pr82941-1.c: New test.
