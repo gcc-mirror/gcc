@@ -1,4 +1,85 @@
 2017-11-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/pr66689 - comp_ellint_3 and ellint_3 return garbage values
+	* include/tr1/ell_integral.tcc: Correct the nu sign convention
+	in ellint_3 and comp_ellint_3.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/check_value.cc: Regen with correct values.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/06_comp_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/13_ellint_3/check_value.cc: Ditto.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	03_beta/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	12_ellint_1/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	13_ellint_2/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	15_expint/check_value_neg.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	16_hermite/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	17_hyperg/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	18_laguerre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	19_legendre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_value_neg.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_value.cc: Regen.
+	* testsuite/ext/special_functions/conf_hyperg/check_value.cc: Regen.
+	* testsuite/ext/special_functions/hyperg/check_value.cc: Regen.
+	* testsuite/special_functions/01_assoc_laguerre/check_value.cc: Regen.
+	* testsuite/special_functions/02_assoc_legendre/check_value.cc: Regen.
+	* testsuite/special_functions/03_beta/check_value.cc: Regen.
+	* testsuite/special_functions/04_comp_ellint_1/check_value.cc: Regen.
+	* testsuite/special_functions/05_comp_ellint_2/check_value.cc: Regen.
+	* testsuite/special_functions/07_cyl_bessel_i/check_value.cc: Regen.
+	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Regen.
+	* testsuite/special_functions/09_cyl_bessel_k/check_value.cc: Regen.
+ 	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Regen.
+	* testsuite/special_functions/11_ellint_1/check_value.cc: Regen.
+	* testsuite/special_functions/12_ellint_2/check_value.cc: Regen.
+	* testsuite/special_functions/14_expint/check_value.cc: Regen.
+	* testsuite/special_functions/15_hermite/check_value.cc: Regen.
+	* testsuite/special_functions/16_laguerre/check_value.cc: Regen.
+	* testsuite/special_functions/17_legendre/check_value.cc: Regen.
+	* testsuite/special_functions/18_riemann_zeta/check_value.cc: Regen.
+	* testsuite/special_functions/19_sph_bessel/check_value.cc: Regen.
+	* testsuite/special_functions/20_sph_legendre/check_value.cc: Regen.
+	* testsuite/special_functions/21_sph_neumann/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/pr66689.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/pr66689.cc: New.
+	* testsuite/special_functions/06_comp_ellint_3/pr66689.cc: New.
+	* testsuite/special_functions/13_ellint_3/pr66689.cc: New.
+
+2017-11-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
 	Expose Airy functions as an extenaion.
 	* include/bits/specfun.h: Expose airy_ai and airy_bi.
 	* include/tr1/modified_bessel_func.tcc: Treat NaN and inf arg, return.
