@@ -47,13 +47,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range-gen.h"
 
 
-ssa_define_chain::ssa_define_chain (bool within_bb)
+ssa_define_chain::ssa_define_chain ()
 {
   def_chain.create (0);
   def_chain.safe_grow_cleared (num_ssa_names);
   terminal.create (0);
   terminal.safe_grow_cleared (num_ssa_names);
-  bb_exclusive = within_bb;
+  anchors.create (0);
+  anchors.safe_grow_cleared (last_basic_block_for_fn (cfun));
+}
+
+ssa_define_chain::~ssa_define_chain ()
+{
+  anchors.release ();
+  terminal.release ();
+  def_chain.release ();
 }
 
 bitmap
@@ -112,7 +120,7 @@ ssa_define_chain::process_op (tree operand, unsigned version, basic_block bb)
   if (!SSA_NAME_IS_DEFAULT_DEF (operand))
     {
       /* Make sure we dont look outside the require BB if approriate.  */
-      if (bb_exclusive && (gimple_bb (SSA_NAME_DEF_STMT (operand)) != bb))
+      if (gimple_bb (SSA_NAME_DEF_STMT (operand)) != bb)
 	return operand;
 
       /* Make sure defintion chain exists for operand. */
@@ -129,6 +137,54 @@ ssa_define_chain::process_op (tree operand, unsigned version, basic_block bb)
   return term;
 }
 
+void
+ssa_define_chain::add_anchor (basic_block bb, tree name)
+{
+  unsigned bbindex = bb->index;
+  if (anchors[bbindex] == NULL)
+    {
+      range_stmt stmt (last_stmt (bb));
+      anchors[bbindex] = BITMAP_ALLOC (NULL);
+      if (stmt.valid () && stmt.logical_transition_p ())
+        {
+	  if (stmt.ssa_operand1 ())
+	    add_anchor (bb, stmt.ssa_operand1 ());
+	  if (stmt.ssa_operand2 ())
+	    add_anchor (bb, stmt.ssa_operand2 ());
+	}
+    }
+  if (name != NULL_TREE)
+    bitmap_set_bit (anchors[bbindex], SSA_NAME_VERSION (name));
+}
+
+bool
+ssa_define_chain::is_anchor_p (tree name, basic_block bb)
+{
+  unsigned index = bb->index;
+  if (!anchors[index])
+    return false;
+  
+  return bitmap_bit_p (anchors[index], SSA_NAME_VERSION (name));
+}
+tree 
+ssa_define_chain::anchor_of (tree name, basic_block bb)
+{
+  unsigned index = bb->index;
+  bitmap_iterator bi;
+  unsigned x;
+
+  if (!anchors[index])
+    return NULL_TREE;
+  
+  EXECUTE_IF_SET_IN_BITMAP (anchors[index], 0, x, bi)
+    {
+      tree t = ssa_name (x);
+      if (in_chain_p (t, name))
+        return t;
+    }
+
+  return NULL_TREE;
+}
 
 tree
 ssa_define_chain::generate_def_chain (tree name)
@@ -165,6 +221,13 @@ ssa_define_chain::generate_def_chain (tree name)
       else
 	if (!ret)
 	  ret = tmp;
+      if (rn.logical_transition_p ())
+        {
+	  if (ssa1)
+	    add_anchor (bb, ssa1);
+	  if (ssa2)
+	    add_anchor (bb, ssa2);
+	}
     }
   terminal[index] = ret;
   return ret;
@@ -175,6 +238,7 @@ ssa_define_chain::dump (FILE *f)
 {
   unsigned x, y;
   bitmap_iterator bi;
+  basic_block bb;
   for (x = 1; x< num_ssa_names; x++)
     {
       if (def_chain[x] && !bitmap_empty_p (def_chain[x]))
@@ -187,6 +251,20 @@ ssa_define_chain::dump (FILE *f)
 	    fprintf (f, "none");
 	  fprintf (f, ")  :");
 	  EXECUTE_IF_SET_IN_BITMAP (def_chain[x], 0, y, bi)
+	    {
+	      print_generic_expr (f, ssa_name (y), TDF_SLIM);
+	      fprintf (f, "  ");
+	    }
+	  fprintf (f, "\n");
+	}
+    }
+  fprintf (f, "----  anchors  ----\n");
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (anchors[bb->index])
+        {
+	  fprintf (f, "BB%d : ",bb->index);
+	  EXECUTE_IF_SET_IN_BITMAP (anchors[bb->index], 0, y, bi)
 	    {
 	      print_generic_expr (f, ssa_name (y), TDF_SLIM);
 	      fprintf (f, "  ");

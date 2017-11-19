@@ -309,6 +309,7 @@ gori::build (basic_block bb)
       range_stmt rn (stmt);
       if (rn.valid())
 	{
+	  def_chain.add_anchor (bb);
 	  tree ssa1 = rn.ssa_operand1 ();
 	  tree ssa2 = rn.ssa_operand2 ();
 	  if (ssa1)

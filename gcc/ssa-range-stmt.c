@@ -166,9 +166,9 @@ range_stmt::from_stmt (gimple *s)
 bool
 range_stmt::logical_transition_p () const
 {
-  // a boolean LHS and non-boolean RHS.   Relationals dont alwsy have a LHS.
+  // a boolean LHS and non-boolean RHS.   Relationals dont always have a LHS.
   if (code >= LT_EXPR && code <= NE_EXPR)
-    return true;
+    return (TREE_CODE (TREE_TYPE (op1)) != BOOLEAN_TYPE);
   tree lhs = gimple_get_lhs (g);
   if (lhs && TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE &&
       TREE_CODE (TREE_TYPE (op1)) != BOOLEAN_TYPE)

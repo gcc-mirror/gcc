@@ -61,18 +61,24 @@ along with GCC; see the file COPYING3.  If not see
    
 class ssa_define_chain
 {
-  bool bb_exclusive;
   vec<bitmap> def_chain;
+  vec<bitmap> anchors;
   vec<tree> terminal;
   tree process_op (tree operand, unsigned version, basic_block bb);
   tree generate_def_chain (tree name);
 public:
-  ssa_define_chain (bool within_bb = true);
+  ssa_define_chain ();
+  ~ssa_define_chain ();
   bitmap operator[](tree name);
   bitmap operator[](unsigned index);
   tree terminal_name (tree name);
   tree terminal_name (unsigned index);
   bool in_chain_p (tree def, tree name);
+
+  bool is_anchor_p (tree name, basic_block bb);
+  tree anchor_of (tree name, basic_block bb);
+  void add_anchor (basic_block bb, tree name = NULL_TREE);
+
   void dump (FILE *f);
 };
 

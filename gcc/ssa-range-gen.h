@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 class gori
 {
   vec<bitmap> gori_map; 	/* Generates Outgoing Range Info.  */
-  ssa_define_chain def_chain;
   bool remove_from_gori_map (basic_block bb, tree name);
 
   bool get_derived_range_stmt (range_stmt& stmt, tree name, basic_block bb);
@@ -42,6 +41,8 @@ class gori
   bool process_logical (range_stmt& stmt, irange& r, tree name,
 			const irange& lhs);
   bool get_range (range_stmt& stmt, irange& r, tree name, const irange& lhs);
+protected:
+  ssa_define_chain def_chain;
   bool get_range_from_stmt (gimple *stmt, irange& r, tree name,
 			    const irange& lhs);
 public:
