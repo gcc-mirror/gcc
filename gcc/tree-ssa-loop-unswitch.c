@@ -852,7 +852,7 @@ hoist_guard (struct loop *loop, edge guard)
   /* Determine the probability that we skip the loop.  Assume that loop has
      same average number of iterations regardless outcome of guard.  */
   new_edge->probability = guard->probability;
-  profile_count skip_count = guard->src->count > 0
+  profile_count skip_count = guard->src->count.nonzero_p ()
 		   ? guard->count ().apply_scale (pre_header->count,
 					       guard->src->count)
 		   : guard->count ().apply_probability (new_edge->probability);
@@ -875,7 +875,6 @@ hoist_guard (struct loop *loop, edge guard)
      to loop header...  */
   e->probability = new_edge->probability.invert ();
   e->dest->count = e->count ();
-  e->dest->frequency = EDGE_FREQUENCY (e);
 
   /* ... now update profile to represent that original guard will be optimized
      away ...  */

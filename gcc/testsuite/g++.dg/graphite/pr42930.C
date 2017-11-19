@@ -1,4 +1,4 @@
-/* { dg-options "-O1 -floop-block" } */
+/* { dg-options "-O1 -floop-block -Wno-return-type" } */
 
 typedef unsigned char byte;
 typedef unsigned int uint;

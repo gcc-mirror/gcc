@@ -330,7 +330,7 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
 	      }
 
 	    /* Write symbol in the space.  */
-	    strncpy (optoken, trans_table[k][1], oplen);
+	    memcpy (optoken, trans_table[k][1], oplen);
 	  }
 	else
 	  k++;

@@ -761,7 +761,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 /* (empty) */
 
 
-/* Node: SDB and DWARF */
+/* Node: DWARF */
 #define DWARF2_DEBUGGING_INFO 1
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 

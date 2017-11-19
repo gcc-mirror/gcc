@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-g" }
+// { dg-options "-g -O0" }
 
 // Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //

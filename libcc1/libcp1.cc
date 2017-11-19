@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libiberty.h"
 #include "xregex.h"
 #include "findcomp.hh"
-#include "cp-compiler-name.h"
+#include "compiler-name.hh"
 #include "intl.h"
 
 struct libcp1;

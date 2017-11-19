@@ -16,6 +16,7 @@ baz (T x, T y, U z)
       *z = *x;
       ++z;
     }
+  return U();
 };
 
 template <typename T, typename U>
@@ -23,6 +24,7 @@ U
 bar (T x, T y, U z)
 {
   baz (A <T>::b (x), A <T>::b (y), A <U>::b (z));
+  return U();
 }
 
 struct C

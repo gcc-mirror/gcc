@@ -852,7 +852,7 @@ autofdo_source_profile::read ()
 {
   if (gcov_read_unsigned () != GCOV_TAG_AFDO_FUNCTION)
     {
-      inform (0, "Not expected TAG.");
+      inform (UNKNOWN_LOCATION, "Not expected TAG.");
       return false;
     }
 
@@ -1061,7 +1061,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   /* FIXME: Count should be initialized.  */
   struct cgraph_edge *new_edge
       = indirect_edge->make_speculative (direct_call,
-					 profile_count::uninitialized (), 0);
+					 profile_count::uninitialized ());
   new_edge->redirect_call_stmt_to_callee ();
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);
@@ -1571,7 +1571,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   if (max_count > profile_count::zero ())
     {
       afdo_calculate_branch_prob (&annotated_bb, &annotated_edge);
-      counts_to_freqs ();
+      update_max_bb_count ();
       profile_status_for_fn (cfun) = PROFILE_READ;
     }
   if (flag_value_profile_transformations)

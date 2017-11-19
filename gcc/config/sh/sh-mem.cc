@@ -183,8 +183,12 @@ expand_block_move (rtx *operands)
   return false;
 }
 
-static const int prob_unlikely = REG_BR_PROB_BASE / 10;
-static const int prob_likely = REG_BR_PROB_BASE / 4;
+static const int prob_unlikely
+  = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE / 10)
+    .to_reg_br_prob_note ();
+static const int prob_likely
+  = profile_probability::from_reg_br_prob_base (REG_BR_PROB_BASE / 4)
+    .to_reg_br_prob_note ();
 
 /* Emit code to perform a strcmp.
 

@@ -59,6 +59,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
@@ -1924,6 +1925,10 @@ package body Sem_Ch8 is
       --    have one. Otherwise the subtype of Sub's return profile must
       --    exclude null.
 
+      procedure Check_SPARK_Primitive_Operation (Subp_Id : Entity_Id);
+      --  Ensure that a SPARK renaming denoted by its entity Subp_Id does not
+      --  declare a primitive operation of a tagged type (SPARK RM 6.1.1(3)).
+
       procedure Freeze_Actual_Profile;
       --  In Ada 2012, enforce the freezing rule concerning formal incomplete
       --  types: a callable entity freezes its profile, unless it has an
@@ -2519,6 +2524,47 @@ package body Sem_Ch8 is
          end if;
       end Check_Null_Exclusion;
 
+      -------------------------------------
+      -- Check_SPARK_Primitive_Operation --
+      -------------------------------------
+
+      procedure Check_SPARK_Primitive_Operation (Subp_Id : Entity_Id) is
+         Prag : constant Node_Id := SPARK_Pragma (Subp_Id);
+         Typ  : Entity_Id;
+
+      begin
+         --  Nothing to do when the subprogram is not subject to SPARK_Mode On
+         --  because this check applies to SPARK code only.
+
+         if not (Present (Prag)
+                  and then Get_SPARK_Mode_From_Annotation (Prag) = On)
+         then
+            return;
+
+         --  Nothing to do when the subprogram is not a primitive operation
+
+         elsif not Is_Primitive (Subp_Id) then
+            return;
+         end if;
+
+         Typ := Find_Dispatching_Type (Subp_Id);
+
+         --  Nothing to do when the subprogram is a primitive operation of an
+         --  untagged type.
+
+         if No (Typ) then
+            return;
+         end if;
+
+         --  At this point a renaming declaration introduces a new primitive
+         --  operation for a tagged type.
+
+         Error_Msg_Node_2 := Typ;
+         Error_Msg_NE
+           ("subprogram renaming & cannot declare primitive for type & "
+            & "(SPARK RM 6.1.1(3))", N, Subp_Id);
+      end Check_SPARK_Primitive_Operation;
+
       ---------------------------
       -- Freeze_Actual_Profile --
       ---------------------------
@@ -2899,7 +2945,7 @@ package body Sem_Ch8 is
 
       --  Set SPARK mode from current context
 
-      Set_SPARK_Pragma (New_S, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma           (New_S, SPARK_Mode_Pragma);
       Set_SPARK_Pragma_Inherited (New_S);
 
       Rename_Spec := Find_Corresponding_Spec (N);
@@ -3009,13 +3055,16 @@ package body Sem_Ch8 is
          Generate_Definition (New_S);
          New_Overloaded_Entity (New_S);
 
-         if Is_Entity_Name (Nam)
-           and then Is_Intrinsic_Subprogram (Entity (Nam))
+         if not (Is_Entity_Name (Nam)
+                  and then Is_Intrinsic_Subprogram (Entity (Nam)))
          then
-            null;
-         else
             Check_Delayed_Subprogram (New_S);
          end if;
+
+         --  Verify that a SPARK renaming does not declare a primitive
+         --  operation of a tagged type.
+
+         Check_SPARK_Primitive_Operation (New_S);
       end if;
 
       --  There is no need for elaboration checks on the new entity, which may
@@ -3205,10 +3254,9 @@ package body Sem_Ch8 is
 
          elsif Requires_Overriding (Old_S)
            or else
-              (Is_Abstract_Subprogram (Old_S)
-                 and then Present (Find_Dispatching_Type (Old_S))
-                 and then
-                   not Is_Abstract_Type (Find_Dispatching_Type (Old_S)))
+             (Is_Abstract_Subprogram (Old_S)
+               and then Present (Find_Dispatching_Type (Old_S))
+               and then not Is_Abstract_Type (Find_Dispatching_Type (Old_S)))
          then
             Error_Msg_N
               ("renamed entity cannot be subprogram that requires overriding "
@@ -5358,6 +5406,8 @@ package body Sem_Ch8 is
 
       --  Local variables
 
+      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+
       Nested_Inst : Entity_Id := Empty;
       --  The entity of a nested instance which appears within Inst (if any)
 
@@ -5895,9 +5945,20 @@ package body Sem_Ch8 is
    <<Done>>
       Check_Restriction_No_Use_Of_Entity (N);
 
-      --  Save the scenario for later examination by the ABE Processing phase
+      --  Annotate the tree by creating a variable reference marker in case the
+      --  original variable reference is folded or optimized away. The variable
+      --  reference marker is automatically saved for later examination by the
+      --  ABE Processing phase. Variable references which act as actuals in a
+      --  call require special processing and are left to Resolve_Actuals. The
+      --  reference is a write when it appears on the left hand side of an
+      --  assignment.
 
-      Record_Elaboration_Scenario (N);
+      if not Within_Subprogram_Call (N) then
+         Build_Variable_Reference_Marker
+           (N     => N,
+            Read  => not Is_Assignment_LHS,
+            Write => Is_Assignment_LHS);
+      end if;
    end Find_Direct_Name;
 
    ------------------------
@@ -5969,8 +6030,10 @@ package body Sem_Ch8 is
 
       --  Local variables
 
-      Selector  : constant Node_Id := Selector_Name (N);
-      Candidate : Entity_Id        := Empty;
+      Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+      Selector          : constant Node_Id := Selector_Name (N);
+
+      Candidate : Entity_Id := Empty;
       P_Name    : Entity_Id;
       Id        : Entity_Id;
 
@@ -6529,9 +6592,20 @@ package body Sem_Ch8 is
 
       Check_Restriction_No_Use_Of_Entity (N);
 
-      --  Save the scenario for later examination by the ABE Processing phase
+      --  Annotate the tree by creating a variable reference marker in case the
+      --  original variable reference is folded or optimized away. The variable
+      --  reference marker is automatically saved for later examination by the
+      --  ABE Processing phase. Variable references which act as actuals in a
+      --  call require special processing and are left to Resolve_Actuals. The
+      --  reference is a write when it appears on the left hand side of an
+      --  assignment.
 
-      Record_Elaboration_Scenario (N);
+      if not Within_Subprogram_Call (N) then
+         Build_Variable_Reference_Marker
+           (N     => N,
+            Read  => not Is_Assignment_LHS,
+            Write => Is_Assignment_LHS);
+      end if;
    end Find_Expanded_Name;
 
    --------------------
@@ -8294,6 +8368,7 @@ package body Sem_Ch8 is
 
       procedure Mark_Use_Type (E : Entity_Id) is
          Curr : Node_Id;
+         Base : Entity_Id;
 
       begin
          --  Ignore void types and unresolved string literals and primitives
@@ -8305,12 +8380,22 @@ package body Sem_Ch8 is
             return;
          end if;
 
+         --  Primitives with class-wide operands might additionally render
+         --  their base type's use_clauses effective - so do a recursive check
+         --  here.
+
+         Base := Base_Type (Etype (E));
+
+         if Ekind (Base) = E_Class_Wide_Type then
+            Mark_Use_Type (Base);
+         end if;
+
          --  The package containing the type or operator function being used
          --  may be in use as well, so mark any use_package_clauses for it as
          --  effective. There are also additional sanity checks performed here
          --  for ignoring previous errors.
 
-         Mark_Use_Package (Scope (Base_Type (Etype (E))));
+         Mark_Use_Package (Scope (Base));
 
          if Nkind (E) in N_Op
            and then Present (Entity (E))
@@ -8319,7 +8404,7 @@ package body Sem_Ch8 is
             Mark_Use_Package (Scope (Entity (E)));
          end if;
 
-         Curr := Current_Use_Clause (Base_Type (Etype (E)));
+         Curr := Current_Use_Clause (Base);
          while Present (Curr)
             and then not Is_Effective_Use_Clause (Curr)
          loop
@@ -8371,7 +8456,9 @@ package body Sem_Ch8 is
                  or else Ekind_In (Id, E_Generic_Function,
                                        E_Generic_Procedure))
            and then (Is_Potentially_Use_Visible (Id)
-                      or else Is_Intrinsic_Subprogram (Id))
+                      or else Is_Intrinsic_Subprogram (Id)
+                      or else (Ekind_In (Id, E_Function, E_Procedure)
+                                and then Is_Generic_Actual_Subprogram (Id)))
          then
             Mark_Parameters (Id);
          end if;
@@ -9057,6 +9144,7 @@ package body Sem_Ch8 is
               and then Comes_From_Source (Curr)
               and then not Is_Effective_Use_Clause (Curr)
               and then not In_Instance
+              and then not In_Inlined_Body
             then
                --  We are dealing with a potentially unused use_package_clause
 
@@ -9400,7 +9488,10 @@ package body Sem_Ch8 is
 
          --  Warn about detected redundant clauses
 
-         elsif In_Open_Scopes (P) and not Force then
+         elsif not Force
+           and then In_Open_Scopes (P)
+           and then not Is_Hidden_Open_Scope (P)
+         then
             if Warn_On_Redundant_Constructs and then P = Current_Scope then
                Error_Msg_NE -- CODEFIX
                  ("& is already use-visible within itself?r?",
@@ -9865,6 +9956,7 @@ package body Sem_Ch8 is
 
         and then not Spec_Reloaded_For_Body
         and then not In_Instance
+        and then not In_Inlined_Body
       then
          --  The type already has a use clause
 

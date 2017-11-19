@@ -124,6 +124,24 @@ public:
   }
 };
 
+class brig_reg_use_analyzer : public brig_code_entry_handler
+{
+public:
+  brig_reg_use_analyzer (brig_to_generic &parent)
+    : brig_code_entry_handler (parent)
+  {
+  }
+
+  size_t
+  operator () (const BrigBase *base)
+  {
+    const BrigInstBase *brig_inst = (const BrigInstBase *) base;
+    analyze_operands (*brig_inst);
+    return base->byteCount;
+  }
+
+};
+
 /* Helper struct for pairing a BrigKind and a BrigCodeEntryHandler that
    should handle its data.  */
 
@@ -210,6 +228,7 @@ brig_to_generic::analyze (const char *brig_blob)
   brig_directive_variable_handler var_handler (*this);
   brig_directive_fbarrier_handler fbar_handler (*this);
   brig_directive_function_handler func_handler (*this);
+  brig_reg_use_analyzer reg_use_analyzer (*this);
 
   /* Need this for grabbing the module names for mangling the
      group variable names.  */
@@ -219,7 +238,21 @@ brig_to_generic::analyze (const char *brig_blob)
   const BrigSectionHeader *csection_header = (const BrigSectionHeader *) m_code;
 
   code_entry_handler_info handlers[]
-    = {{BRIG_KIND_DIRECTIVE_VARIABLE, &var_handler},
+    = {{BRIG_KIND_INST_BASIC, &reg_use_analyzer},
+       {BRIG_KIND_INST_MOD, &reg_use_analyzer},
+       {BRIG_KIND_INST_CMP, &reg_use_analyzer},
+       {BRIG_KIND_INST_MEM, &reg_use_analyzer},
+       {BRIG_KIND_INST_CVT, &reg_use_analyzer},
+       {BRIG_KIND_INST_SEG_CVT, &reg_use_analyzer},
+       {BRIG_KIND_INST_SEG, &reg_use_analyzer},
+       {BRIG_KIND_INST_ADDR, &reg_use_analyzer},
+       {BRIG_KIND_INST_SOURCE_TYPE, &reg_use_analyzer},
+       {BRIG_KIND_INST_ATOMIC, &reg_use_analyzer},
+       {BRIG_KIND_INST_SIGNAL, &reg_use_analyzer},
+       {BRIG_KIND_INST_BR, &reg_use_analyzer},
+       {BRIG_KIND_INST_LANE, &reg_use_analyzer},
+       {BRIG_KIND_INST_QUEUE, &reg_use_analyzer},
+       {BRIG_KIND_DIRECTIVE_VARIABLE, &var_handler},
        {BRIG_KIND_DIRECTIVE_FBARRIER, &fbar_handler},
        {BRIG_KIND_DIRECTIVE_KERNEL, &func_handler},
        {BRIG_KIND_DIRECTIVE_MODULE, &module_handler},
@@ -555,10 +588,14 @@ build_stmt (enum tree_code code, ...)
    than the created reg var type in order to select correct instruction type
    later on.  This function creates the necessary reinterpret type cast from
    a source variable to the destination type.  In case no cast is needed to
-   the same type, SOURCE is returned directly.  */
+   the same type, SOURCE is returned directly.
+
+   In case of mismatched type sizes, casting:
+   - to narrower type the upper bits are clipped and
+   - to wider type the source value is zero extended.  */
 
 tree
-build_reinterpret_cast (tree destination_type, tree source)
+build_resize_convert_view (tree destination_type, tree source)
 {
 
   gcc_assert (source && destination_type && TREE_TYPE (source) != NULL_TREE
@@ -578,23 +615,30 @@ build_reinterpret_cast (tree destination_type, tree source)
   size_t dst_size = int_size_in_bytes (destination_type);
   if (src_size == dst_size)
     return build1 (VIEW_CONVERT_EXPR, destination_type, source);
-  else if (src_size < dst_size)
+  else /* src_size != dst_size  */
     {
       /* The src_size can be smaller at least with f16 scalars which are
 	 stored to 32b register variables.  First convert to an equivalent
 	 size unsigned type, then extend to an unsigned type of the
 	 target width, after which VIEW_CONVERT_EXPR can be used to
 	 force to the target type.  */
-      tree unsigned_temp = build1 (VIEW_CONVERT_EXPR,
-				   get_unsigned_int_type (source_type),
-				   source);
-      return build1 (VIEW_CONVERT_EXPR, destination_type,
-		     convert (get_unsigned_int_type (destination_type),
-			      unsigned_temp));
+      tree resized = convert (get_scalar_unsigned_int_type (destination_type),
+			      build_reinterpret_to_uint (source));
+      gcc_assert ((size_t)int_size_in_bytes (TREE_TYPE (resized)) == dst_size);
+      return build_resize_convert_view (destination_type, resized);
     }
-  else
-    gcc_unreachable ();
-  return NULL_TREE;
+}
+
+/* Reinterprets SOURCE as a scalar unsigned int with the size
+   corresponding to the orignal.  */
+
+tree build_reinterpret_to_uint (tree source)
+{
+  tree src_type = TREE_TYPE (source);
+  if (INTEGRAL_TYPE_P (src_type) && TYPE_UNSIGNED (src_type))
+    return source;
+  tree dest_type = get_scalar_unsigned_int_type (src_type);
+  return build1 (VIEW_CONVERT_EXPR, dest_type, source);
 }
 
 /* Returns the finished brig_function for the given generic FUNC_DECL,
@@ -775,7 +819,7 @@ call_builtin (tree pdecl, int nargs, tree rettype, ...)
     {
       types[i] = va_arg (ap, tree);
       tree arg = va_arg (ap, tree);
-      args[i] = build_reinterpret_cast (types[i], arg);
+      args[i] = build_resize_convert_view (types[i], arg);
       if (types[i] == error_mark_node || args[i] == error_mark_node)
 	{
 	  delete[] types;
@@ -879,6 +923,16 @@ get_unsigned_int_type (tree original_type)
 					   true);
 }
 
+/* Returns a type with unsigned int corresponding to the size
+   ORIGINAL_TYPE.  */
+
+tree
+get_scalar_unsigned_int_type (tree original_type)
+{
+  return build_nonstandard_integer_type (int_size_in_bytes (original_type)
+					 * BITS_PER_UNIT, true);
+}
+
 void
 dump_function (FILE *dump_file, brig_function *f)
 {
@@ -891,5 +945,24 @@ dump_function (FILE *dump_file, brig_function *f)
       print_generic_decl (dump_file, f->m_func_decl, 0);
       print_generic_expr (dump_file, f->m_current_bind_expr, 0);
       fprintf (dump_file, "\n");
+    }
+}
+
+/* Records use of the BRIG_REG as a TYPE in the current function.  */
+
+void
+brig_to_generic::add_reg_used_as_type (const BrigOperandRegister &brig_reg,
+				       tree type)
+{
+  gcc_assert (m_cf);
+  reg_use_info &info
+    = m_fn_regs_use_index[m_cf->m_name][gccbrig_hsa_reg_id (brig_reg)];
+
+  if (info.m_type_refs_lookup.count (type))
+    info.m_type_refs[info.m_type_refs_lookup[type]].second++;
+  else
+    {
+      info.m_type_refs.push_back (std::make_pair (type, 1));
+      info.m_type_refs_lookup[type] = info.m_type_refs.size () - 1;
     }
 }

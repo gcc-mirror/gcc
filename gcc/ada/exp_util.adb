@@ -165,11 +165,6 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
-   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id;
-   --  Subsidiary to all Build_DIC_Procedure_xxx routines. Find the type which
-   --  defines the Default_Initial_Condition pragma of type Typ. This is either
-   --  Typ itself or a parent type when the pragma is inherited.
-
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
@@ -4996,7 +4991,7 @@ package body Exp_Util is
 
    --        is transformed into
 
-   --     Val : Constrained_Subtype_of_T := Maybe_Modified_Expr;
+   --     Val : Constrained_Subtype_Of_T := Maybe_Modified_Expr;
    --
    --  Here are the main cases :
    --
@@ -5389,66 +5384,6 @@ package body Exp_Util is
       return TSS (Utyp, TSS_Finalize_Address);
    end Finalize_Address;
 
-   -------------------
-   -- Find_DIC_Type --
-   -------------------
-
-   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id is
-      Curr_Typ : Entity_Id;
-      --  The current type being examined in the parent hierarchy traversal
-
-      DIC_Typ : Entity_Id;
-      --  The type which carries the DIC pragma. This variable denotes the
-      --  partial view when private types are involved.
-
-      Par_Typ : Entity_Id;
-      --  The parent type of the current type. This variable denotes the full
-      --  view when private types are involved.
-
-   begin
-      --  The input type defines its own DIC pragma, therefore it is the owner
-
-      if Has_Own_DIC (Typ) then
-         DIC_Typ := Typ;
-
-      --  Otherwise the DIC pragma is inherited from a parent type
-
-      else
-         pragma Assert (Has_Inherited_DIC (Typ));
-
-         --  Climb the parent chain
-
-         Curr_Typ := Typ;
-         loop
-            --  Inspect the parent type. Do not consider subtypes as they
-            --  inherit the DIC attributes from their base types.
-
-            DIC_Typ := Base_Type (Etype (Curr_Typ));
-
-            --  Look at the full view of a private type because the type may
-            --  have a hidden parent introduced in the full view.
-
-            Par_Typ := DIC_Typ;
-
-            if Is_Private_Type (Par_Typ)
-              and then Present (Full_View (Par_Typ))
-            then
-               Par_Typ := Full_View (Par_Typ);
-            end if;
-
-            --  Stop the climb once the nearest parent type which defines a DIC
-            --  pragma of its own is encountered or when the root of the parent
-            --  chain is reached.
-
-            exit when Has_Own_DIC (DIC_Typ) or else Curr_Typ = Par_Typ;
-
-            Curr_Typ := Par_Typ;
-         end loop;
-      end if;
-
-      return DIC_Typ;
-   end Find_DIC_Type;
-
    ------------------------
    -- Find_Interface_ADT --
    ------------------------
@@ -5512,7 +5447,7 @@ package body Exp_Util is
      (T     : Entity_Id;
       Iface : Entity_Id) return Entity_Id
    is
-      AI_Tag : Entity_Id;
+      AI_Tag : Entity_Id := Empty;
       Found  : Boolean   := False;
       Typ    : Entity_Id := T;
 
@@ -7255,9 +7190,11 @@ package body Exp_Util is
                   null;
                end if;
 
-            --  Special case: a call marker
+            --  Special case: a marker
 
-            when N_Call_Marker =>
+            when N_Call_Marker
+               | N_Variable_Reference_Marker
+            =>
                if Is_List_Member (P) then
                   Insert_List_Before_And_Analyze (P, Ins_Actions);
                   return;
@@ -11074,11 +11011,11 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
-      --  If this is an elementary or a small not by-reference record type, and
+      --  If this is an elementary or a small not-by-reference record type, and
       --  we need to capture the value, just make a constant; this is cheap and
       --  objects of both kinds of types can be bit aligned, so it might not be
       --  possible to generate a reference to them. Likewise if this is not a
-      --  name reference, except for a type conversion because we would enter
+      --  name reference, except for a type conversion, because we would enter
       --  an infinite recursion with Checks.Apply_Predicate_Check if the target
       --  type has predicates (and type conversions need a specific treatment
       --  anyway, see below). Also do it if we have a volatile reference and
@@ -12522,10 +12459,18 @@ package body Exp_Util is
 
          else
             Check_Restriction (No_Elaboration_Code, N);
+
             Asn :=
               Make_Assignment_Statement (Loc,
                 Name       => New_Occurrence_Of (Ent, Loc),
                 Expression => Make_Integer_Literal (Loc, Uint_1));
+
+            --  Mark the assignment statement as elaboration code. This allows
+            --  the early call region mechanism (see Sem_Elab) to properly
+            --  ignore such assignments even though they are non-preelaborable
+            --  code.
+
+            Set_Is_Elaboration_Code (Asn);
 
             if Nkind (Parent (N)) = N_Subunit then
                Insert_After (Corresponding_Stub (Parent (N)), Asn);

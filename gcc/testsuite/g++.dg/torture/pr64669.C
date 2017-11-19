@@ -60,4 +60,6 @@ Lex::advance_one_char (const char *p, bool is_single_quote,
 	&& (*value == '\'' || *value == '\n') && !issued_error)
       error_at (this->location (), "invalid character literal");
   }
+
+  return 0;
 }

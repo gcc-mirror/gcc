@@ -61,21 +61,11 @@ enum ssa_prop_result {
 };
 
 
-/* Call-back functions used by the value propagation engine.  */
-typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple *, edge *,
-							tree *);
-typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gphi *);
-typedef bool (*ssa_prop_fold_stmt_fn) (gimple_stmt_iterator *gsi);
-typedef tree (*ssa_prop_get_value_fn) (tree);
-
-
 extern bool valid_gimple_rhs_p (tree);
 extern void move_ssa_defining_stmt_for_defs (gimple *, gimple *);
 extern bool update_gimple_call (gimple_stmt_iterator *, tree, int, ...);
 extern bool update_call_from_tree (gimple_stmt_iterator *, tree);
-extern void ssa_propagate (ssa_prop_visit_stmt_fn, ssa_prop_visit_phi_fn);
 extern bool stmt_makes_single_store (gimple *);
-extern bool substitute_and_fold (ssa_prop_get_value_fn, ssa_prop_fold_stmt_fn);
 extern bool may_propagate_copy (tree, tree);
 extern bool may_propagate_copy_into_stmt (gimple *, tree);
 extern bool may_propagate_copy_into_asm (tree);
@@ -83,6 +73,42 @@ extern void propagate_value (use_operand_p, tree);
 extern void replace_exp (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
 extern void propagate_tree_value_into_stmt (gimple_stmt_iterator *, tree);
-extern bool replace_uses_in (gimple *stmt, ssa_prop_get_value_fn get_value);
+
+/* Public interface into the SSA propagation engine.  Clients should inherit
+   from this class and provide their own visitors.  */
+
+class ssa_propagation_engine
+{
+ public:
+
+  virtual ~ssa_propagation_engine (void) { }
+
+  /* Virtual functions the clients must provide to visit statements
+     and phi nodes respectively.  */
+  virtual enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) = 0;
+  virtual enum ssa_prop_result visit_phi (gphi *) = 0;
+
+  /* Main interface into the propagation engine.  */
+  void ssa_propagate (void);
+
+ private:
+  /* Internal implementation details.  */
+  void simulate_stmt (gimple *stmt);
+  void process_ssa_edge_worklist (void);
+  void simulate_block (basic_block);
+
+};
+
+class substitute_and_fold_engine
+{
+ public:
+  virtual ~substitute_and_fold_engine (void) { }
+  virtual bool fold_stmt (gimple_stmt_iterator *) { return false; }
+  virtual tree get_value (tree) { return NULL_TREE; }
+
+  bool substitute_and_fold (void);
+  bool replace_uses_in (gimple *);
+  bool replace_phi_args_in (gphi *);
+};
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

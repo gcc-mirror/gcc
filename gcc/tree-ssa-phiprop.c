@@ -354,7 +354,7 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 
       /* Found a proper dereference with an aggregate copy.  Just
          insert aggregate copies on the edges instead.  */
-      if (!is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
+      if (!is_gimple_reg_type (TREE_TYPE (gimple_assign_lhs (use_stmt))))
 	{
 	  if (!gimple_vdef (use_stmt))
 	    goto next;

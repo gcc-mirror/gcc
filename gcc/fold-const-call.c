@@ -596,6 +596,7 @@ fold_const_call_ss (real_value *result, combined_fn fn,
   switch (fn)
     {
     CASE_CFN_SQRT:
+    CASE_CFN_SQRT_FN:
       return (real_compare (GE_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_sqrt, arg, format));
 
@@ -1179,14 +1180,17 @@ fold_const_call_sss (real_value *result, combined_fn fn,
       return do_mpfr_arg2 (result, mpfr_hypot, arg0, arg1, format);
 
     CASE_CFN_COPYSIGN:
+    CASE_CFN_COPYSIGN_FN:
       *result = *arg0;
       real_copysign (result, arg1);
       return true;
 
     CASE_CFN_FMIN:
+    CASE_CFN_FMIN_FN:
       return do_mpfr_arg2 (result, mpfr_min, arg0, arg1, format);
 
     CASE_CFN_FMAX:
+    CASE_CFN_FMAX_FN:
       return do_mpfr_arg2 (result, mpfr_max, arg0, arg1, format);
 
     CASE_CFN_POW:
@@ -1473,6 +1477,7 @@ fold_const_call_ssss (real_value *result, combined_fn fn,
   switch (fn)
     {
     CASE_CFN_FMA:
+    CASE_CFN_FMA_FN:
       return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, arg2, format);
 
     default:

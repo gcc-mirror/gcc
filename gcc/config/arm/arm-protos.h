@@ -224,6 +224,8 @@ extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 extern void arm_configure_build_target (struct arm_build_target *,
 					struct cl_target_option *,
 					struct gcc_options *, bool);
+extern void arm_option_reconfigure_globals (void);
+extern void arm_options_perform_arch_sanity_checks (void);
 extern void arm_pr_long_calls (struct cpp_reader *);
 extern void arm_pr_no_long_calls (struct cpp_reader *);
 extern void arm_pr_long_calls_off (struct cpp_reader *);

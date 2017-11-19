@@ -73,6 +73,13 @@
 			     (TF	"FLOAT128_VECTOR_P (TFmode)")
 			     TI])
 
+(define_mode_attr VSX_XXBR  [(V8HI  "h")
+			     (V4SI  "w")
+			     (V4SF  "w")
+			     (V2DF  "d")
+			     (V2DI  "d")
+			     (V1TI  "q")])
+
 ;; Map into the appropriate load/store name based on the type
 (define_mode_attr VSm  [(V16QI "vw4")
 			(V8HI  "vw4")
@@ -273,6 +280,9 @@
 (define_mode_iterator VSINT_84  [V4SI V2DI DI SI])
 (define_mode_iterator VSINT_842 [V8HI V4SI V2DI])
 
+;; Vector reverse byte modes
+(define_mode_iterator VEC_REVB [V8HI V4SI V2DI V4SF V2DF V1TI])
+
 ;; Iterator for ISA 3.0 vector extract/insert of small integer vectors.
 ;; VSX_EXTRACT_I2 doesn't include V4SImode because SI extracts can be
 ;; done on ISA 2.07 and not just ISA 3.0.
@@ -408,6 +418,10 @@
    UNSPEC_VCMPNEZW
    UNSPEC_XXEXTRACTUW
    UNSPEC_XXINSERTW
+   UNSPEC_VSX_FIRST_MATCH_INDEX
+   UNSPEC_VSX_FIRST_MATCH_EOS_INDEX
+   UNSPEC_VSX_FIRST_MISMATCH_INDEX
+   UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX
   ])
 
 ;; VSX moves
@@ -1108,7 +1122,7 @@
   "lxvw4x %x0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "vsx_ld_elemrev_v8hi"
+(define_expand "vsx_ld_elemrev_v8hi"
   [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
         (vec_select:V8HI
 	  (match_operand:V8HI 1 "memory_operand" "Z")
@@ -1116,22 +1130,94 @@
 	             (const_int 5) (const_int 4)
 		     (const_int 3) (const_int 2)
 	             (const_int 1) (const_int 0)])))]
+  "VECTOR_MEM_VSX_P (V8HImode) && !BYTES_BIG_ENDIAN"
+{
+  if (!TARGET_P9_VECTOR)
+    {
+      rtx tmp = gen_reg_rtx (V4SImode);
+      rtx subreg, subreg2, perm[16], pcv;
+      /* 2 is leftmost element in register */
+      unsigned int reorder[16] = {13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2};
+      int i;
+
+      subreg = simplify_gen_subreg (V4SImode, operands[1], V8HImode, 0);
+      emit_insn (gen_vsx_ld_elemrev_v4si (tmp, subreg));
+      subreg2 = simplify_gen_subreg (V8HImode, tmp, V4SImode, 0);
+
+      for (i = 0; i < 16; ++i)
+      	perm[i] = GEN_INT (reorder[i]);
+
+      pcv = force_reg (V16QImode,
+                       gen_rtx_CONST_VECTOR (V16QImode,
+                                             gen_rtvec_v (16, perm)));
+      emit_insn (gen_altivec_vperm_v8hi_direct (operands[0], subreg2,
+                                                subreg2, pcv));
+      DONE;
+    }
+})
+
+(define_insn "*vsx_ld_elemrev_v8hi_internal"
+  [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
+        (vec_select:V8HI
+          (match_operand:V8HI 1 "memory_operand" "Z")
+          (parallel [(const_int 7) (const_int 6)
+                     (const_int 5) (const_int 4)
+                     (const_int 3) (const_int 2)
+                     (const_int 1) (const_int 0)])))]
   "VECTOR_MEM_VSX_P (V8HImode) && !BYTES_BIG_ENDIAN && TARGET_P9_VECTOR"
   "lxvh8x %x0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "vsx_ld_elemrev_v16qi"
+(define_expand "vsx_ld_elemrev_v16qi"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
         (vec_select:V16QI
-	  (match_operand:V16QI 1 "memory_operand" "Z")
-	  (parallel [(const_int 15) (const_int 14)
-	             (const_int 13) (const_int 12)
-		     (const_int 11) (const_int 10)
-		     (const_int  9) (const_int  8)
-		     (const_int  7) (const_int  6)
-	             (const_int  5) (const_int  4)
-		     (const_int  3) (const_int  2)
-	             (const_int  1) (const_int  0)])))]
+          (match_operand:V16QI 1 "memory_operand" "Z")
+          (parallel [(const_int 15) (const_int 14)
+                     (const_int 13) (const_int 12)
+                     (const_int 11) (const_int 10)
+                     (const_int  9) (const_int  8)
+                     (const_int  7) (const_int  6)
+                     (const_int  5) (const_int  4)
+                     (const_int  3) (const_int  2)
+                     (const_int  1) (const_int  0)])))]
+  "VECTOR_MEM_VSX_P (V16QImode) && !BYTES_BIG_ENDIAN"
+{
+  if (!TARGET_P9_VECTOR)
+    {
+      rtx tmp = gen_reg_rtx (V4SImode);
+      rtx subreg, subreg2, perm[16], pcv;
+      /* 3 is leftmost element in register */
+      unsigned int reorder[16] = {12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3};
+      int i;
+
+      subreg = simplify_gen_subreg (V4SImode, operands[1], V16QImode, 0);
+      emit_insn (gen_vsx_ld_elemrev_v4si (tmp, subreg));
+      subreg2 = simplify_gen_subreg (V16QImode, tmp, V4SImode, 0);
+
+      for (i = 0; i < 16; ++i)
+        perm[i] = GEN_INT (reorder[i]);
+
+      pcv = force_reg (V16QImode,
+                       gen_rtx_CONST_VECTOR (V16QImode,
+                                             gen_rtvec_v (16, perm)));
+      emit_insn (gen_altivec_vperm_v16qi_direct (operands[0], subreg2,
+                                                 subreg2, pcv));
+      DONE;
+    }
+})
+
+(define_insn "*vsx_ld_elemrev_v16qi_internal"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+        (vec_select:V16QI
+          (match_operand:V16QI 1 "memory_operand" "Z")
+          (parallel [(const_int 15) (const_int 14)
+                     (const_int 13) (const_int 12)
+                     (const_int 11) (const_int 10)
+                     (const_int  9) (const_int  8)
+                     (const_int  7) (const_int  6)
+                     (const_int  5) (const_int  4)
+                     (const_int  3) (const_int  2)
+                     (const_int  1) (const_int  0)])))]
   "VECTOR_MEM_VSX_P (V16QImode) && !BYTES_BIG_ENDIAN && TARGET_P9_VECTOR"
   "lxvb16x %x0,%y1"
   [(set_attr "type" "vecload")])
@@ -1139,8 +1225,8 @@
 (define_insn "vsx_st_elemrev_v2df"
   [(set (match_operand:V2DF 0 "memory_operand" "=Z")
         (vec_select:V2DF
-	  (match_operand:V2DF 1 "vsx_register_operand" "wa")
-	  (parallel [(const_int 1) (const_int 0)])))]
+          (match_operand:V2DF 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 1) (const_int 0)])))]
   "VECTOR_MEM_VSX_P (V2DFmode) && !BYTES_BIG_ENDIAN"
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
@@ -1148,8 +1234,8 @@
 (define_insn "vsx_st_elemrev_v2di"
   [(set (match_operand:V2DI 0 "memory_operand" "=Z")
         (vec_select:V2DI
-	  (match_operand:V2DI 1 "vsx_register_operand" "wa")
-	  (parallel [(const_int 1) (const_int 0)])))]
+          (match_operand:V2DI 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 1) (const_int 0)])))]
   "VECTOR_MEM_VSX_P (V2DImode) && !BYTES_BIG_ENDIAN"
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
@@ -1157,9 +1243,9 @@
 (define_insn "vsx_st_elemrev_v4sf"
   [(set (match_operand:V4SF 0 "memory_operand" "=Z")
         (vec_select:V4SF
-	  (match_operand:V4SF 1 "vsx_register_operand" "wa")
-	  (parallel [(const_int 3) (const_int 2)
-	             (const_int 1) (const_int 0)])))]
+          (match_operand:V4SF 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 3) (const_int 2)
+                     (const_int 1) (const_int 0)])))]
   "VECTOR_MEM_VSX_P (V4SFmode) && !BYTES_BIG_ENDIAN"
   "stxvw4x %x1,%y0"
   [(set_attr "type" "vecstore")])
@@ -1174,30 +1260,98 @@
   "stxvw4x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "vsx_st_elemrev_v8hi"
+(define_expand "vsx_st_elemrev_v8hi"
   [(set (match_operand:V8HI 0 "memory_operand" "=Z")
         (vec_select:V8HI
-	  (match_operand:V8HI 1 "vsx_register_operand" "wa")
-	  (parallel [(const_int 7) (const_int 6)
-	             (const_int 5) (const_int 4)
-		     (const_int 3) (const_int 2)
-	             (const_int 1) (const_int 0)])))]
+          (match_operand:V8HI 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 7) (const_int 6)
+                     (const_int 5) (const_int 4)
+                     (const_int 3) (const_int 2)
+                     (const_int 1) (const_int 0)])))]
+  "VECTOR_MEM_VSX_P (V8HImode) && !BYTES_BIG_ENDIAN"
+{
+  if (!TARGET_P9_VECTOR)
+    {
+      rtx subreg, perm[16], pcv;
+      rtx tmp = gen_reg_rtx (V8HImode);
+      /* 2 is leftmost element in register */
+      unsigned int reorder[16] = {13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2};
+      int i;
+
+      for (i = 0; i < 16; ++i)
+      	perm[i] = GEN_INT (reorder[i]);
+
+      pcv = force_reg (V16QImode,
+                       gen_rtx_CONST_VECTOR (V16QImode,
+                                             gen_rtvec_v (16, perm)));
+      emit_insn (gen_altivec_vperm_v8hi_direct (tmp, operands[1],
+                                                operands[1], pcv));
+      subreg = simplify_gen_subreg (V4SImode, tmp, V8HImode, 0);
+      emit_insn (gen_vsx_st_elemrev_v4si (subreg, operands[0]));
+      DONE;
+    }
+})
+
+(define_insn "*vsx_st_elemrev_v8hi_internal"
+  [(set (match_operand:V8HI 0 "memory_operand" "=Z")
+        (vec_select:V8HI
+          (match_operand:V8HI 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 7) (const_int 6)
+                     (const_int 5) (const_int 4)
+                     (const_int 3) (const_int 2)
+                     (const_int 1) (const_int 0)])))]
   "VECTOR_MEM_VSX_P (V8HImode) && !BYTES_BIG_ENDIAN && TARGET_P9_VECTOR"
   "stxvh8x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "vsx_st_elemrev_v16qi"
+(define_expand "vsx_st_elemrev_v16qi"
   [(set (match_operand:V16QI 0 "memory_operand" "=Z")
         (vec_select:V16QI
-	  (match_operand:V16QI 1 "vsx_register_operand" "wa")
-	  (parallel [(const_int 15) (const_int 14)
-	             (const_int 13) (const_int 12)
-		     (const_int 11) (const_int 10)
-		     (const_int  9) (const_int  8)
-	             (const_int  7) (const_int  6)
-	             (const_int  5) (const_int  4)
-		     (const_int  3) (const_int  2)
-	             (const_int  1) (const_int  0)])))]
+          (match_operand:V16QI 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 15) (const_int 14)
+                     (const_int 13) (const_int 12)
+                     (const_int 11) (const_int 10)
+                     (const_int  9) (const_int  8)
+                     (const_int  7) (const_int  6)
+                     (const_int  5) (const_int  4)
+                     (const_int  3) (const_int  2)
+                     (const_int  1) (const_int  0)])))]
+  "VECTOR_MEM_VSX_P (V16QImode) && !BYTES_BIG_ENDIAN"
+{
+  if (!TARGET_P9_VECTOR)
+    {
+      rtx subreg, perm[16], pcv;
+      rtx tmp = gen_reg_rtx (V16QImode);
+      /* 3 is leftmost element in register */
+      unsigned int reorder[16] = {12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3};
+      int i;
+
+      for (i = 0; i < 16; ++i)
+      	perm[i] = GEN_INT (reorder[i]);
+
+      pcv = force_reg (V16QImode,
+                       gen_rtx_CONST_VECTOR (V16QImode,
+                                             gen_rtvec_v (16, perm)));
+      emit_insn (gen_altivec_vperm_v16qi_direct (tmp, operands[1],
+                                                 operands[1], pcv));
+      subreg = simplify_gen_subreg (V4SImode, tmp, V16QImode, 0);
+      emit_insn (gen_vsx_st_elemrev_v4si (subreg, operands[0]));
+      DONE;
+    }
+})
+
+(define_insn "*vsx_st_elemrev_v16qi_internal"
+  [(set (match_operand:V16QI 0 "memory_operand" "=Z")
+        (vec_select:V16QI
+          (match_operand:V16QI 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 15) (const_int 14)
+                     (const_int 13) (const_int 12)
+                     (const_int 11) (const_int 10)
+                     (const_int  9) (const_int  8)
+                     (const_int  7) (const_int  6)
+                     (const_int  5) (const_int  4)
+                     (const_int  3) (const_int  2)
+                     (const_int  1) (const_int  0)])))]
   "VECTOR_MEM_VSX_P (V16QImode) && !BYTES_BIG_ENDIAN && TARGET_P9_VECTOR"
   "stxvb16x %x1,%y0"
   [(set_attr "type" "vecstore")])
@@ -4054,9 +4208,9 @@
 ;; ISA 3.0 Binary Floating-Point Support
 
 ;; VSX Scalar Extract Exponent Quad-Precision
-(define_insn "xsxexpqp"
+(define_insn "xsxexpqp_<mode>"
   [(set (match_operand:DI 0 "altivec_register_operand" "=v")
-	(unspec:DI [(match_operand:KF 1 "altivec_register_operand" "v")]
+	(unspec:DI [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXEXPDP))]
   "TARGET_P9_VECTOR"
   "xsxexpqp %0,%1"
@@ -4072,9 +4226,9 @@
   [(set_attr "type" "integer")])
 
 ;; VSX Scalar Extract Significand Quad-Precision
-(define_insn "xsxsigqp"
+(define_insn "xsxsigqp_<mode>"
   [(set (match_operand:TI 0 "altivec_register_operand" "=v")
-	(unspec:TI [(match_operand:KF 1 "altivec_register_operand" "v")]
+	(unspec:TI [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXSIG))]
   "TARGET_P9_VECTOR"
   "xsxsigqp %0,%1"
@@ -4090,20 +4244,21 @@
   [(set_attr "type" "integer")])
 
 ;; VSX Scalar Insert Exponent Quad-Precision Floating Point Argument
-(define_insn "xsiexpqpf"
-  [(set (match_operand:KF 0 "altivec_register_operand" "=v")
-	(unspec:KF [(match_operand:KF 1 "altivec_register_operand" "v")
-		    (match_operand:DI 2 "altivec_register_operand" "v")]
+(define_insn "xsiexpqpf_<mode>"
+  [(set (match_operand:IEEE128 0 "altivec_register_operand" "=v")
+	(unspec:IEEE128
+	 [(match_operand:IEEE128 1 "altivec_register_operand" "v")
+	  (match_operand:DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
   "TARGET_P9_VECTOR"
   "xsiexpqp %0,%1,%2"
   [(set_attr "type" "vecmove")])
 
 ;; VSX Scalar Insert Exponent Quad-Precision
-(define_insn "xsiexpqp"
-  [(set (match_operand:KF 0 "altivec_register_operand" "=v")
-	(unspec:KF [(match_operand:TI 1 "altivec_register_operand" "v")
-		    (match_operand:DI 2 "altivec_register_operand" "v")]
+(define_insn "xsiexpqp_<mode>"
+  [(set (match_operand:IEEE128 0 "altivec_register_operand" "=v")
+	(unspec:IEEE128 [(match_operand:TI 1 "altivec_register_operand" "v")
+			 (match_operand:DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
   "TARGET_P9_VECTOR"
   "xsiexpqp %0,%1,%2"
@@ -4162,11 +4317,11 @@
 ;;   (Has side effect of setting the lt bit if operand 1 is negative,
 ;;    setting the eq bit if any of the conditions tested by operand 2
 ;;    are satisfied, and clearing the gt and undordered bits to zero.)
-(define_expand "xststdcqp"
+(define_expand "xststdcqp_<mode>"
   [(set (match_dup 3)
 	(compare:CCFP
-	 (unspec:KF
-	  [(match_operand:KF 1 "altivec_register_operand" "v")
+	 (unspec:IEEE128
+	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
 	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (const_int 0)))
@@ -4200,11 +4355,11 @@
 })
 
 ;; The VSX Scalar Test Negative Quad-Precision
-(define_expand "xststdcnegqp"
+(define_expand "xststdcnegqp_<mode>"
   [(set (match_dup 2)
 	(compare:CCFP
-	 (unspec:KF
-	  [(match_operand:KF 1 "altivec_register_operand" "v")
+	 (unspec:IEEE128
+	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
 	   (const_int 0)]
 	  UNSPEC_VSX_STSTDC)
 	 (const_int 0)))
@@ -4234,11 +4389,12 @@
   operands[3] = CONST0_RTX (SImode);
 })
 
-(define_insn "*xststdcqp"
+(define_insn "*xststdcqp_<mode>"
   [(set (match_operand:CCFP 0 "" "=y")
 	(compare:CCFP
-	 (unspec:KF [(match_operand:KF 1 "altivec_register_operand" "v")
-		     (match_operand:SI 2 "u7bit_cint_operand" "n")]
+	 (unspec:IEEE128
+	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
+	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (const_int 0)))]
   "TARGET_P9_VECTOR"
@@ -4334,6 +4490,149 @@
   "TARGET_P9_VECTOR"
   "vcmpnez<VSX_EXTRACT_WIDTH>. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
+
+;; Return first position of match between vectors
+(define_expand "first_match_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec:SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+	       (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MATCH_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+
+  rtx cmp_result = gen_reg_rtx (<MODE>mode);
+  rtx not_result = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
+					     operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (not_result, cmp_result));
+
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], not_result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, not_result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
+;; Return first position of match between vectors or end of string (EOS)
+(define_expand "first_match_or_eos_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+   (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MATCH_EOS_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+  rtx cmpz1_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz2_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz_result = gen_reg_rtx (<MODE>mode);
+  rtx and_result = gen_reg_rtx (<MODE>mode);
+  rtx result = gen_reg_rtx (<MODE>mode);
+  rtx vzero = gen_reg_rtx (<MODE>mode);
+
+  /* Vector with zeros in elements that correspond to zeros in operands.  */
+  emit_move_insn (vzero, CONST0_RTX (<MODE>mode));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz1_result, operands[1], vzero));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz2_result, operands[2], vzero));
+  emit_insn (gen_and<mode>3 (and_result, cmpz1_result, cmpz2_result));
+
+  /* Vector with ones in elments that do not match.  */
+  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmpz_result, operands[1],
+                                             operands[2]));
+
+  /* Create vector with ones in elements where there was a zero in one of
+     the source elements or the elements that match.  */
+  emit_insn (gen_nand<mode>3 (result, and_result, cmpz_result));
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
+;; Return first position of mismatch between vectors
+(define_expand "first_mismatch_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+   (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MISMATCH_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+  rtx cmp_result = gen_reg_rtx (<MODE>mode);
+
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmp_result, operands[1],
+					    operands[2]));
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], cmp_result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, cmp_result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
+
+;; Return first position of mismatch between vectors or end of string (EOS)
+(define_expand "first_mismatch_or_eos_index_<mode>"
+  [(match_operand:SI 0 "register_operand")
+   (unspec: SI [(match_operand:VSX_EXTRACT_I 1 "register_operand")
+   (match_operand:VSX_EXTRACT_I 2 "register_operand")]
+  UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX)]
+  "TARGET_P9_VECTOR"
+{
+  int sh;
+  rtx cmpz1_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz2_result = gen_reg_rtx (<MODE>mode);
+  rtx cmpz_result = gen_reg_rtx (<MODE>mode);
+  rtx not_cmpz_result = gen_reg_rtx (<MODE>mode);
+  rtx and_result = gen_reg_rtx (<MODE>mode);
+  rtx result = gen_reg_rtx (<MODE>mode);
+  rtx vzero = gen_reg_rtx (<MODE>mode);
+
+  /* Vector with zeros in elements that correspond to zeros in operands.  */
+  emit_move_insn (vzero, CONST0_RTX (<MODE>mode));
+
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz1_result, operands[1], vzero));
+  emit_insn (gen_vcmpne<VSX_EXTRACT_WIDTH> (cmpz2_result, operands[2], vzero));
+  emit_insn (gen_and<mode>3 (and_result, cmpz1_result, cmpz2_result));
+
+  /* Vector with ones in elments that match.  */
+  emit_insn (gen_vcmpnez<VSX_EXTRACT_WIDTH> (cmpz_result, operands[1],
+                                             operands[2]));
+  emit_insn (gen_one_cmpl<mode>2 (not_cmpz_result, cmpz_result));
+
+  /* Create vector with ones in elements where there was a zero in one of
+     the source elements or the elements did not match.  */
+  emit_insn (gen_nand<mode>3 (result, and_result, not_cmpz_result));
+  sh = GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) / 2;
+
+  if (<MODE>mode == V16QImode)
+    emit_insn (gen_vctzlsbb_<mode> (operands[0], result));
+  else
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+      emit_insn (gen_vctzlsbb_<mode> (tmp, result));
+      emit_insn (gen_ashrsi3 (operands[0], tmp, GEN_INT (sh)));
+    }
+  DONE;
+})
 
 ;; Load VSX Vector with Length
 (define_expand "lxvl"
@@ -4441,12 +4740,12 @@
   DONE;
 })
 
-;; Vector Compare Not Equal Byte
+;; Vector Compare Not Equal Byte (specified/not+eq:)
 (define_insn "vcmpneb"
   [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "altivec_register_operand" "v")
-		       (match_operand:V16QI 2 "altivec_register_operand" "v")]
-	 UNSPEC_VCMPNEB))]
+	 (not:V16QI
+	   (eq:V16QI (match_operand:V16QI 1 "altivec_register_operand" "v")
+		     (match_operand:V16QI 2 "altivec_register_operand" "v"))))]
   "TARGET_P9_VECTOR"
   "vcmpneb %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -4462,12 +4761,12 @@
   "vcmpnezb %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Compare Not Equal Half Word
+;; Vector Compare Not Equal Half Word (specified/not+eq:)
 (define_insn "vcmpneh"
   [(set (match_operand:V8HI 0 "altivec_register_operand" "=v")
-	(unspec:V8HI [(match_operand:V8HI 1 "altivec_register_operand" "v")
-		      (match_operand:V8HI 2 "altivec_register_operand" "v")]
-	 UNSPEC_VCMPNEH))]
+	(not:V8HI
+	  (eq:V8HI (match_operand:V8HI 1 "altivec_register_operand" "v")
+		   (match_operand:V8HI 2 "altivec_register_operand" "v"))))]
   "TARGET_P9_VECTOR"
   "vcmpneh %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -4482,13 +4781,12 @@
   "vcmpnezh %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-;; Vector Compare Not Equal Word
+;; Vector Compare Not Equal Word (specified/not+eq:)
 (define_insn "vcmpnew"
   [(set (match_operand:V4SI 0 "altivec_register_operand" "=v")
-	(unspec:V4SI
-	 [(match_operand:V4SI 1 "altivec_register_operand" "v")
-	  (match_operand:V4SI 2 "altivec_register_operand" "v")]
-	 UNSPEC_VCMPNEH))]
+	(not:V4SI
+	  (eq:V4SI (match_operand:V4SI 1 "altivec_register_operand" "v")
+		   (match_operand:V4SI 2 "altivec_register_operand" "v"))))]
   "TARGET_P9_VECTOR"
   "vcmpnew %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -4514,10 +4812,10 @@
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Count Trailing Zero Least-Significant Bits Byte
-(define_insn "vctzlsbb"
+(define_insn "vctzlsbb_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
-	 [(match_operand:V16QI 1 "altivec_register_operand" "v")]
+	 [(match_operand:VSX_EXTRACT_I 1 "altivec_register_operand" "v")]
 	 UNSPEC_VCTZLSBB))]
   "TARGET_P9_VECTOR"
   "vctzlsbb %0,%1"
@@ -4775,6 +5073,37 @@
   "TARGET_P9_VECTOR"
   "xxbrw %x0,%x1"
   [(set_attr "type" "vecperm")])
+
+;; Swap all bytes in each element of vector
+(define_expand "revb_<mode>"
+  [(set (match_operand:VEC_REVB 0 "vsx_register_operand")
+	(bswap:VEC_REVB (match_operand:VEC_REVB 1 "vsx_register_operand")))]
+  ""
+{
+  if (TARGET_P9_VECTOR)
+    emit_insn (gen_p9_xxbr<VSX_XXBR>_<mode> (operands[0], operands[1]));
+  else
+    {
+      /* Want to have the elements in reverse order relative
+	 to the endian mode in use, i.e. in LE mode, put elements
+	 in BE order.  */
+      rtx sel = swap_endian_selector_for_mode(<MODE>mode);
+      emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
+					   operands[1], sel));
+    }
+
+  DONE;
+})
+
+;; Reversing bytes in vector char is just a NOP.
+(define_expand "revb_v16qi"
+  [(set (match_operand:V16QI 0 "vsx_register_operand")
+	(bswap:V16QI (match_operand:V16QI 1 "vsx_register_operand")))]
+  ""
+{
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
 
 ;; Swap all bytes in each 16-bit element
 (define_insn "p9_xxbrh_v8hi"

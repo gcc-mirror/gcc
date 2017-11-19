@@ -24,6 +24,7 @@
 
 #ifndef _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_USE_CXX11_ABI 1
+# define NEED_DO_COPY_FILE
 #endif
 
 #include <filesystem>
@@ -251,6 +252,7 @@ namespace std::filesystem
 }
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#ifdef NEED_DO_COPY_FILE
 bool
 fs::do_copy_file(const char* from, const char* to,
 		 copy_options_existing_file options,
@@ -423,11 +425,12 @@ fs::do_copy_file(const char* from, const char* to,
   return true;
 #endif // _GLIBCXX_USE_SENDFILE
 }
+#endif // NEED_DO_COPY_FILE
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
 void
 fs::copy(const path& from, const path& to, copy_options options,
-	 error_code& ec) noexcept
+	 error_code& ec)
 {
   const bool skip_symlinks = is_set(options, copy_options::skip_symlinks);
   const bool create_symlinks = is_set(options, copy_options::create_symlinks);
@@ -541,7 +544,7 @@ fs::copy_file(const path& from, const path& to, copy_options option)
 
 bool
 fs::copy_file(const path& from, const path& to, copy_options options,
-	      error_code& ec) noexcept
+	      error_code& ec)
 {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
   return do_copy_file(from.c_str(), to.c_str(), copy_file_options(options),
@@ -593,7 +596,7 @@ fs::create_directories(const path& p)
 }
 
 bool
-fs::create_directories(const path& p, error_code& ec) noexcept
+fs::create_directories(const path& p, error_code& ec)
 {
   if (p.empty())
     {
@@ -1005,7 +1008,7 @@ fs::is_empty(const path& p)
 }
 
 bool
-fs::is_empty(const path& p, error_code& ec) noexcept
+fs::is_empty(const path& p, error_code& ec)
 {
   auto s = status(p, ec);
   if (ec)
@@ -1166,26 +1169,45 @@ fs::read_symlink(const path& p)
 
 fs::path fs::read_symlink(const path& p, error_code& ec)
 {
+  path result;
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
   stat_type st;
   if (::lstat(p.c_str(), &st))
     {
       ec.assign(errno, std::generic_category());
-      return {};
+      return result;
     }
-  std::string buf(st.st_size, '\0');
-  ssize_t len = ::readlink(p.c_str(), &buf.front(), buf.size());
-  if (len == -1)
+  std::string buf(st.st_size ? st.st_size + 1 : 128, '\0');
+  do
     {
-      ec.assign(errno, std::generic_category());
-      return {};
+      ssize_t len = ::readlink(p.c_str(), buf.data(), buf.size());
+      if (len == -1)
+	{
+	  ec.assign(errno, std::generic_category());
+	  return result;
+	}
+      else if (len == (ssize_t)buf.size())
+	{
+	  if (buf.size() > 4096)
+	    {
+	      ec.assign(ENAMETOOLONG, std::generic_category());
+	      return result;
+	    }
+	  buf.resize(buf.size() * 2);
+	}
+      else
+	{
+	  buf.resize(len);
+	  result.assign(buf);
+	  ec.clear();
+	  break;
+	}
     }
-  ec.clear();
-  return path{buf.data(), buf.data()+len};
+  while (true);
 #else
   ec = std::make_error_code(std::errc::not_supported);
-  return {};
 #endif
+  return result;
 }
 
 fs::path
@@ -1246,7 +1268,7 @@ fs::remove_all(const path& p)
 }
 
 std::uintmax_t
-fs::remove_all(const path& p, error_code& ec) noexcept
+fs::remove_all(const path& p, error_code& ec)
 {
   auto fs = symlink_status(p, ec);
   uintmax_t count = 0;

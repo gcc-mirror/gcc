@@ -31,33 +31,15 @@ along with this program; see the file COPYING3.  If not see
 
 ATTRIBUTE_FPTR_PRINTF(5,0)
 static bool
-cpp_diagnostic_at_richloc (cpp_reader * pfile, int level, int reason,
-			   rich_location *richloc,
-			   const char *msgid, va_list *ap)
-{
-  bool ret;
-
-  if (!pfile->cb.error)
-    abort ();
-  ret = pfile->cb.error (pfile, level, reason, richloc, _(msgid), ap);
-
-  return ret;
-}
-
-/* Print a diagnostic at the given location.  */
-
-ATTRIBUTE_FPTR_PRINTF(5,0)
-static bool
 cpp_diagnostic_at (cpp_reader * pfile, int level, int reason,
-		   source_location src_loc,
+		   rich_location *richloc,
 		   const char *msgid, va_list *ap)
 {
   bool ret;
 
   if (!pfile->cb.error)
     abort ();
-  rich_location richloc (pfile->line_table, src_loc);
-  ret = pfile->cb.error (pfile, level, reason, &richloc, _(msgid), ap);
+  ret = pfile->cb.error (pfile, level, reason, richloc, _(msgid), ap);
 
   return ret;
 }
@@ -88,7 +70,8 @@ cpp_diagnostic (cpp_reader * pfile, int level, int reason,
     {
       src_loc = pfile->cur_token[-1].src_loc;
     }
-  return cpp_diagnostic_at (pfile, level, reason, src_loc, msgid, ap);
+  rich_location richloc (pfile->line_table, src_loc);
+  return cpp_diagnostic_at (pfile, level, reason, &richloc, msgid, ap);
 }
 
 /* Print a warning or error, depending on the value of LEVEL.  */
@@ -265,7 +248,8 @@ cpp_error_at (cpp_reader * pfile, int level, source_location src_loc,
 
   va_start (ap, msgid);
 
-  ret = cpp_diagnostic_at (pfile, level, CPP_W_NONE, src_loc,
+  rich_location richloc (pfile->line_table, src_loc);
+  ret = cpp_diagnostic_at (pfile, level, CPP_W_NONE, &richloc,
 			   msgid, &ap);
 
   va_end (ap);
@@ -276,16 +260,16 @@ cpp_error_at (cpp_reader * pfile, int level, source_location src_loc,
    a column override.  */
 
 bool
-cpp_error_at_richloc (cpp_reader * pfile, int level, rich_location *richloc,
-		      const char *msgid, ...)
+cpp_error_at (cpp_reader * pfile, int level, rich_location *richloc,
+	      const char *msgid, ...)
 {
   va_list ap;
   bool ret;
 
   va_start (ap, msgid);
 
-  ret = cpp_diagnostic_at_richloc (pfile, level, CPP_W_NONE, richloc,
-				   msgid, &ap);
+  ret = cpp_diagnostic_at (pfile, level, CPP_W_NONE, richloc,
+			   msgid, &ap);
 
   va_end (ap);
   return ret;

@@ -428,7 +428,7 @@ negate_expr_p (tree t)
     case PLUS_EXPR:
       if (HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
 	  || HONOR_SIGNED_ZEROS (element_mode (type))
-	  || (INTEGRAL_TYPE_P (type)
+	  || (ANY_INTEGRAL_TYPE_P (type)
 	      && ! TYPE_OVERFLOW_WRAPS (type)))
 	return false;
       /* -(A + B) -> (-B) - A.  */
@@ -441,7 +441,7 @@ negate_expr_p (tree t)
       /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
       return !HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
 	     && !HONOR_SIGNED_ZEROS (element_mode (type))
-	     && (! INTEGRAL_TYPE_P (type)
+	     && (! ANY_INTEGRAL_TYPE_P (type)
 		 || TYPE_OVERFLOW_WRAPS (type));
 
     case MULT_EXPR:
@@ -3366,7 +3366,8 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 #undef OP_SAME_WITH_NULL
 }
 
-/* Similar to operand_equal_p, but strip nops first.  */
+/* Similar to operand_equal_p, but see if ARG0 might be a variant of ARG1
+   with a different signedness or a narrower precision.  */
 
 static bool
 operand_equal_for_comparison_p (tree arg0, tree arg1)
@@ -3381,9 +3382,20 @@ operand_equal_for_comparison_p (tree arg0, tree arg1)
   /* Discard any conversions that don't change the modes of ARG0 and ARG1
      and see if the inner values are the same.  This removes any
      signedness comparison, which doesn't matter here.  */
-  STRIP_NOPS (arg0);
-  STRIP_NOPS (arg1);
-  if (operand_equal_p (arg0, arg1, 0))
+  tree op0 = arg0;
+  tree op1 = arg1;
+  STRIP_NOPS (op0);
+  STRIP_NOPS (op1);
+  if (operand_equal_p (op0, op1, 0))
+    return true;
+
+  /* Discard a single widening conversion from ARG1 and see if the inner
+     value is the same as ARG0.  */
+  if (CONVERT_EXPR_P (arg1)
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (arg1, 0)))
+      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 0)))
+         < TYPE_PRECISION (TREE_TYPE (arg1))
+      && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
     return true;
 
   return false;
@@ -11169,8 +11181,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
          Also try swapping the arguments and inverting the conditional.  */
       if (COMPARISON_CLASS_P (arg0)
-	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0), arg1)
-	  && !HONOR_SIGNED_ZEROS (element_mode (arg1)))
+	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0), op1)
+	  && !HONOR_SIGNED_ZEROS (element_mode (op1)))
 	{
 	  tem = fold_cond_expr_with_comparison (loc, type, arg0, op1, op2);
 	  if (tem)
@@ -12761,6 +12773,7 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return true;
 
     CASE_CFN_SQRT:
+    CASE_CFN_SQRT_FN:
       /* sqrt(-0.0) is -0.0.  */
       if (!HONOR_SIGNED_ZEROS (element_mode (type)))
 	return true;
@@ -12805,14 +12818,17 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return RECURSE (arg0);
 
     CASE_CFN_FMAX:
+    CASE_CFN_FMAX_FN:
       /* True if the 1st OR 2nd arguments are nonnegative.  */
       return RECURSE (arg0) || RECURSE (arg1);
 
     CASE_CFN_FMIN:
+    CASE_CFN_FMIN_FN:
       /* True if the 1st AND 2nd arguments are nonnegative.  */
       return RECURSE (arg0) && RECURSE (arg1);
 
     CASE_CFN_COPYSIGN:
+    CASE_CFN_COPYSIGN_FN:
       /* True if the 2nd argument is nonnegative.  */
       return RECURSE (arg1);
 
@@ -13311,7 +13327,9 @@ integer_valued_real_call_p (combined_fn fn, tree arg0, tree arg1, int depth)
       return true;
 
     CASE_CFN_FMIN:
+    CASE_CFN_FMIN_FN:
     CASE_CFN_FMAX:
+    CASE_CFN_FMAX_FN:
       return RECURSE (arg0) && RECURSE (arg1);
 
     default:

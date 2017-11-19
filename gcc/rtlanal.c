@@ -1124,10 +1124,7 @@ reg_referenced_p (const_rtx x, const_rtx body)
 	  && !REG_P (SET_DEST (body))
 	  && ! (GET_CODE (SET_DEST (body)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (body)))
-		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (body))))
-		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (body)))
-			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
+		&& !read_modify_subreg_p (SET_DEST (body)))
 	  && reg_overlap_mentioned_p (x, SET_DEST (body)))
 	return 1;
       return 0;
@@ -2017,20 +2014,16 @@ dead_or_set_p (const rtx_insn *insn, const_rtx x)
   return 1;
 }
 
-/* Return TRUE iff DEST is a register or subreg of a register and
-   doesn't change the number of words of the inner register, and any
-   part of the register is TEST_REGNO.  */
+/* Return TRUE iff DEST is a register or subreg of a register, is a
+   complete rather than read-modify-write destination, and contains
+   register TEST_REGNO.  */
 
 static bool
 covers_regno_no_parallel_p (const_rtx dest, unsigned int test_regno)
 {
   unsigned int regno, endregno;
 
-  if (GET_CODE (dest) == SUBREG
-      && (((GET_MODE_SIZE (GET_MODE (dest))
-	    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
-	       + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
+  if (GET_CODE (dest) == SUBREG && !read_modify_subreg_p (dest))
     dest = SUBREG_REG (dest);
 
   if (!REG_P (dest))

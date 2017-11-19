@@ -981,11 +981,10 @@ these files.
 
 This is run after final because it must output the stack slot offsets
 for pseudo registers that did not get hard registers.  Source files
-are @file{dbxout.c} for DBX symbol table format, @file{sdbout.c} for
-SDB symbol table format, @file{dwarfout.c} for DWARF symbol table
-format, files @file{dwarf2out.c} and @file{dwarf2asm.c} for DWARF2
-symbol table format, and @file{vmsdbgout.c} for VMS debug symbol table
-format.
+are @file{dbxout.c} for DBX symbol table format, @file{dwarfout.c} for
+DWARF symbol table format, files @file{dwarf2out.c} and @file{dwarf2asm.c}
+for DWARF2 symbol table format, and @file{vmsdbgout.c} for VMS debug
+symbol table format.
 
 @end itemize
 

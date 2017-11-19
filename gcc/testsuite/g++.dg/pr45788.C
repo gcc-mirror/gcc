@@ -1,5 +1,5 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
-// { dg-options "-O3 -fwhole-program -msse2" }
+// { dg-options "-O3 -fwhole-program -msse2 -Wno-return-type" }
 
 typedef long unsigned int __darwin_size_t;
 typedef __darwin_size_t size_t;

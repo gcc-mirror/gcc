@@ -1855,11 +1855,13 @@ package body Exp_Ch11 is
          --  and the warning is enabled, generate the appropriate warnings.
 
          --  ??? Do not do it for the Call_Marker nodes inserted by the ABE
-         --  mechanism because this generates too many false positives.
+         --  mechanism because this generates too many false positives, or
+         --  for generic instantiations for the same reason.
 
          elsif Warn_On_Non_Local_Exception
            and then Restriction_Active (No_Exception_Propagation)
            and then Nkind (N) /= N_Call_Marker
+           and then Nkind (N) not in N_Generic_Instantiation
          then
             Warn_No_Exception_Propagation_Active (N);
 

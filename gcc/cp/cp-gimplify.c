@@ -1556,10 +1556,11 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
 
 /* If a function that should end with a return in non-void
    function doesn't obviously end with return, add ubsan
-   instrumentation code to verify it at runtime.  */
+   instrumentation code to verify it at runtime.  If -fsanitize=return
+   is not enabled, instrument __builtin_unreachable.  */
 
 static void
-cp_ubsan_maybe_instrument_return (tree fndecl)
+cp_maybe_instrument_return (tree fndecl)
 {
   if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
       || DECL_CONSTRUCTOR_P (fndecl)
@@ -1600,7 +1601,16 @@ cp_ubsan_maybe_instrument_return (tree fndecl)
   tree *p = &DECL_SAVED_TREE (fndecl);
   if (TREE_CODE (*p) == BIND_EXPR)
     p = &BIND_EXPR_BODY (*p);
-  t = ubsan_instrument_return (DECL_SOURCE_LOCATION (fndecl));
+
+  location_t loc = DECL_SOURCE_LOCATION (fndecl);
+  if (sanitize_flags_p (SANITIZE_RETURN, fndecl))
+    t = ubsan_instrument_return (loc);
+  else
+    {
+      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
+      t = build_call_expr_loc (BUILTINS_LOCATION, fndecl, 0);
+    }
+
   append_to_statement_list (t, p);
 }
 
@@ -1674,9 +1684,7 @@ cp_genericize (tree fndecl)
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl), true);
 
-  if (sanitize_flags_p (SANITIZE_RETURN)
-      && current_function_decl != NULL_TREE)
-    cp_ubsan_maybe_instrument_return (fndecl);
+  cp_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */
   c_genericize (fndecl);
@@ -1709,6 +1717,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
   if (arg2)
     defparm = TREE_CHAIN (defparm);
 
+  bool is_method = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE;
   if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
     {
       tree inner_type = TREE_TYPE (arg1);
@@ -1757,8 +1766,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
-					   TREE_PURPOSE (parm), fn, i,
-					   tf_warning_or_error);
+					   TREE_PURPOSE (parm), fn,
+					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
       t = fold_convert (void_type_node, t);
       t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
@@ -1790,8 +1799,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
-					   TREE_PURPOSE (parm),
-					   fn, i, tf_warning_or_error);
+					   TREE_PURPOSE (parm), fn,
+					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
       t = fold_convert (void_type_node, t);
       return fold_build_cleanup_point_expr (TREE_TYPE (t), t);

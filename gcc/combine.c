@@ -302,6 +302,10 @@ static HARD_REG_SET newpat_used_regs;
 
 static rtx_insn *added_links_insn;
 
+/* And similarly, for notes.  */
+
+static rtx_insn *added_notes_insn;
+
 /* Basic block in which we are performing combines.  */
 static basic_block this_basic_block;
 static bool optimize_this_for_speed_p;
@@ -579,10 +583,7 @@ find_single_use_1 (rtx dest, rtx *loc)
 	  && !REG_P (SET_DEST (x))
 	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (x)))
-		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))))
+		&& !read_modify_subreg_p (SET_DEST (x))))
 	break;
 
       return find_single_use_1 (dest, &SET_SRC (x));
@@ -2774,6 +2775,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       else
 	fprintf (dump_file, "\nTrying %d -> %d:\n",
 		 INSN_UID (i2), INSN_UID (i3));
+
+      if (i0)
+	dump_insn_slim (dump_file, i0);
+      if (i1)
+	dump_insn_slim (dump_file, i1);
+      dump_insn_slim (dump_file, i2);
+      dump_insn_slim (dump_file, i3);
     }
 
   /* If multiple insns feed into one of I2 or I3, they can be in any
@@ -2786,6 +2794,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     std::swap (i1, i2);
 
   added_links_insn = 0;
+  added_notes_insn = 0;
 
   /* First check for one important special case that the code below will
      not handle.  Namely, the case where I1 is zero, I2 is a PARALLEL
@@ -3006,7 +3015,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       && is_parallel_of_n_reg_sets (PATTERN (i2), 2)
       && can_split_parallel_of_n_reg_sets (i2, 2)
       && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 0)), i2, i3)
-      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3))
+      && !reg_used_between_p (SET_DEST (XVECEXP (PATTERN (i2), 0, 1)), i2, i3)
+      && !find_reg_note (i2, REG_UNUSED, 0))
     {
       /* If there is no I1, there is no I0 either.  */
       i0 = i1;
@@ -4747,12 +4757,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   combine_successes++;
   undo_commit ();
 
-  if (added_links_insn
-      && (newi2pat == 0 || DF_INSN_LUID (added_links_insn) < DF_INSN_LUID (i2))
-      && DF_INSN_LUID (added_links_insn) < DF_INSN_LUID (i3))
-    return added_links_insn;
-  else
-    return newi2pat ? i2 : i3;
+  rtx_insn *ret = newi2pat ? i2 : i3;
+  if (added_links_insn && DF_INSN_LUID (added_links_insn) < DF_INSN_LUID (ret))
+    ret = added_links_insn;
+  if (added_notes_insn && DF_INSN_LUID (added_notes_insn) < DF_INSN_LUID (ret))
+    ret = added_notes_insn;
+
+  return ret;
 }
 
 /* Get a marker for undoing to the current state.  */
@@ -7361,15 +7372,12 @@ expand_field_assignment (const_rtx x)
 	    }
 	}
 
-      /* A SUBREG between two modes that occupy the same numbers of words
-	 can be done by moving the SUBREG to the source.  */
+      /* If the destination is a subreg that overwrites the whole of the inner
+	 register, we can move the subreg to the source.  */
       else if (GET_CODE (SET_DEST (x)) == SUBREG
 	       /* We need SUBREGs to compute nonzero_bits properly.  */
 	       && nonzero_sign_valid
-	       && (((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-		     + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		   == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
-			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
+	       && !read_modify_subreg_p (SET_DEST (x)))
 	{
 	  x = gen_rtx_SET (SUBREG_REG (SET_DEST (x)),
 			   gen_lowpart
@@ -13993,10 +14001,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
       if (GET_CODE (dest) == ZERO_EXTRACT
 	  || GET_CODE (dest) == STRICT_LOW_PART
 	  || (GET_CODE (dest) == SUBREG
-	      && (((GET_MODE_SIZE (GET_MODE (dest))
-		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-		  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
-		       + UNITS_PER_WORD - 1) / UNITS_PER_WORD))))
+	      && !read_modify_subreg_p (dest)))
 	{
 	  move_deaths (dest, maybe_kill_insn, from_luid, to_insn, pnotes);
 	  return;
@@ -14363,6 +14368,17 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		  && CALL_P (from_insn)
 		  && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
 		place = from_insn;
+	      else if (i2 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
+		{
+		  /* If the new I2 sets the same register that is marked
+		     dead in the note, we do not in general know where to
+		     put the note.  One important case we _can_ handle is
+		     when the note comes from I3.  */
+		  if (from_insn == i3)
+		    place = i3;
+		  else
+		    break;
+		}
 	      else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 		place = i3;
 	      else if (i2 != 0 && next_nonnote_nondebug_insn (i2) == i3
@@ -14376,11 +14392,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		       || rtx_equal_p (XEXP (note, 0), elim_i0))
 		break;
 	      tem_insn = i3;
-	      /* If the new I2 sets the same register that is marked dead
-		 in the note, we do not know where to put the note.
-		 Give up.  */
-	      if (i2 != 0 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
-		break;
 	    }
 
 	  if (place == 0)
@@ -14623,10 +14634,22 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	{
 	  XEXP (note, 1) = REG_NOTES (place);
 	  REG_NOTES (place) = note;
+
+	  /* Set added_notes_insn to the earliest insn we added a note to.  */
+	  if (added_notes_insn == 0
+	      || DF_INSN_LUID (added_notes_insn) > DF_INSN_LUID (place))
+	    added_notes_insn = place;
 	}
 
       if (place2)
-	add_shallow_copy_of_reg_note (place2, note);
+	{
+	  add_shallow_copy_of_reg_note (place2, note);
+
+	  /* Set added_notes_insn to the earliest insn we added a note to.  */
+	  if (added_notes_insn == 0
+	      || DF_INSN_LUID (added_notes_insn) > DF_INSN_LUID (place2))
+	    added_notes_insn = place2;
+	}
     }
 }
 

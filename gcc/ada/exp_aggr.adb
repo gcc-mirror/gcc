@@ -428,7 +428,7 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Size_OK
 
    begin
-      --  The normal aggregate limit is 50000, but we increase this limit to
+      --  The normal aggregate limit is 500000, but we increase this limit to
       --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code) or
       --  Restrictions (No_Implicit_Loops) is specified, since in either case
       --  we are at risk of declaring the program illegal because of this
@@ -448,7 +448,7 @@ package body Exp_Aggr is
       --  Finally, we use a small limit in CodePeer mode where we favor loops
       --  instead of thousands of single assignments (from large aggregates).
 
-      Max_Aggr_Size := 50000;
+      Max_Aggr_Size := 500000;
 
       if CodePeer_Mode then
          Max_Aggr_Size := 100;
@@ -7533,7 +7533,7 @@ package body Exp_Aggr is
       Typ : constant Entity_Id := Base_Type (Etype (N));
 
    begin
-      return Static_Dispatch_Tables
+      return Building_Static_Dispatch_Tables
         and then Tagged_Type_Expansion
         and then RTU_Loaded (Ada_Tags)
 

@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.9 path decomposition [path.decompose]
+// 30.10.7.4.9 path decomposition [fs.path.decompose]
 
 #include <filesystem>
 #include <testsuite_hooks.h>

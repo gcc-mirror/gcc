@@ -559,8 +559,6 @@ try_forward_edges (int mode, basic_block b)
 	{
 	  /* Save the values now, as the edge may get removed.  */
 	  profile_count edge_count = e->count ();
-	  profile_probability edge_probability = e->probability;
-	  int edge_frequency;
 	  int n = 0;
 
 	  e->goto_locus = goto_locus;
@@ -585,8 +583,6 @@ try_forward_edges (int mode, basic_block b)
 	  /* We successfully forwarded the edge.  Now update profile
 	     data: for each edge we traversed in the chain, remove
 	     the original edge's execution count.  */
-	  edge_frequency = edge_probability.apply (b->frequency);
-
 	  do
 	    {
 	      edge t;
@@ -596,16 +592,12 @@ try_forward_edges (int mode, basic_block b)
 		  gcc_assert (n < nthreaded_edges);
 		  t = threaded_edges [n++];
 		  gcc_assert (t->src == first);
-		  update_bb_profile_for_threading (first, edge_frequency,
-						   edge_count, t);
+		  update_bb_profile_for_threading (first, edge_count, t);
 		  update_br_prob_note (first);
 		}
 	      else
 		{
 		  first->count -= edge_count;
-		  first->frequency -= edge_frequency;
-		  if (first->frequency < 0)
-		    first->frequency = 0;
 		  /* It is possible that as the result of
 		     threading we've removed edge as it is
 		     threaded to the fallthru edge.  Avoid
@@ -2109,7 +2101,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   else
     redirect_edges_to = osrc2;
 
-  /* Recompute the frequencies and counts of outgoing edges.  */
+  /* Recompute the counts of destinations of outgoing edges.  */
   FOR_EACH_EDGE (s, ei, redirect_edges_to->succs)
     {
       edge s2;
@@ -2132,24 +2124,19 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 	 that there is no more than one in the chain, so we can't run
 	 into infinite loop.  */
       if (FORWARDER_BLOCK_P (s->dest))
-	{
-	  s->dest->frequency += EDGE_FREQUENCY (s);
-	}
+	s->dest->count += s->count ();
 
       if (FORWARDER_BLOCK_P (s2->dest))
-	{
-	  s2->dest->frequency -= EDGE_FREQUENCY (s);
-	  if (s2->dest->frequency < 0)
-	    s2->dest->frequency = 0;
-	}
+	s2->dest->count -= s->count ();
 
-      if (!redirect_edges_to->frequency && !src1->frequency)
+      /* FIXME: Is this correct? Should be rewritten to count API.  */
+      if (redirect_edges_to->count.nonzero_p () && src1->count.nonzero_p ())
 	s->probability = s->probability.combine_with_freq
-			   (redirect_edges_to->frequency,
-			    s2->probability, src1->frequency);
+			   (redirect_edges_to->count.to_frequency (cfun),
+			    s2->probability, src1->count.to_frequency (cfun));
     }
 
-  /* Adjust count and frequency for the block.  An earlier jump
+  /* Adjust count for the block.  An earlier jump
      threading pass may have left the profile in an inconsistent
      state (see update_bb_profile_for_threading) so we must be
      prepared for overflows.  */
@@ -2157,9 +2144,6 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   do
     {
       tmp->count += src1->count;
-      tmp->frequency += src1->frequency;
-      if (tmp->frequency > BB_FREQ_MAX)
-        tmp->frequency = BB_FREQ_MAX;
       if (tmp == redirect_edges_to)
         break;
       tmp = find_fallthru_edge (tmp->succs)->dest;

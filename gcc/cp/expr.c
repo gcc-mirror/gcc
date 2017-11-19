@@ -111,6 +111,14 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
     {
     case VAR_DECL:
     case PARM_DECL:
+      if (rvalue_p && is_normal_capture_proxy (expr))
+	{
+	  /* Look through capture by copy.  */
+	  tree cap = DECL_CAPTURED_VARIABLE (expr);
+	  if (TREE_CODE (TREE_TYPE (cap)) == TREE_CODE (TREE_TYPE (expr))
+	      && decl_constant_var_p (cap))
+	    return RECUR (cap);
+	}
       if (outer_automatic_var_p (expr)
 	  && decl_constant_var_p (expr))
 	{
@@ -146,6 +154,14 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	{
 	  /* Try to look through the reference.  */
 	  tree ref = TREE_OPERAND (expr, 0);
+	  if (rvalue_p && is_normal_capture_proxy (ref))
+	    {
+	      /* Look through capture by reference.  */
+	      tree cap = DECL_CAPTURED_VARIABLE (ref);
+	      if (TREE_CODE (TREE_TYPE (cap)) != REFERENCE_TYPE
+		  && decl_constant_var_p (cap))
+		return RECUR (cap);
+	    }
 	  tree r = mark_rvalue_use (ref, loc, reject_builtin);
 	  if (r != ref)
 	    expr = convert_from_reference (r);

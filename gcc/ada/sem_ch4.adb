@@ -339,9 +339,8 @@ package body Sem_Ch4 is
       --------------------------
 
       procedure List_Operand_Interps (Opnd : Node_Id) is
-         Nam   : Node_Id;
-         pragma Warnings (Off, Nam);
-         Err   : Node_Id := N;
+         Nam : Node_Id := Empty;
+         Err : Node_Id := N;
 
       begin
          if Is_Overloaded (Opnd) then
@@ -413,13 +412,46 @@ package body Sem_Ch4 is
    -- Analyze_Aggregate --
    -----------------------
 
-   --  Most of the analysis of Aggregates requires that the type be known,
-   --  and is therefore put off until resolution.
+   --  Most of the analysis of Aggregates requires that the type be known, and
+   --  is therefore put off until resolution of the context. Delta aggregates
+   --  have a base component that determines the enclosing aggregate type so
+   --  its type can be ascertained earlier. This also allows delta aggregates
+   --  to appear in the context of a record type with a private extension, as
+   --  per the latest update of AI12-0127.
 
    procedure Analyze_Aggregate (N : Node_Id) is
    begin
       if No (Etype (N)) then
-         Set_Etype (N, Any_Composite);
+         if Nkind (N) = N_Delta_Aggregate then
+            declare
+               Base : constant Node_Id := Expression (N);
+
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               Analyze (Base);
+
+               --  If the base is overloaded, propagate interpretations to the
+               --  enclosing aggregate.
+
+               if Is_Overloaded (Base) then
+                  Get_First_Interp (Base, I, It);
+                  Set_Etype (N, Any_Type);
+
+                  while Present (It.Nam) loop
+                     Add_One_Interp (N, It.Typ, It.Typ);
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+               else
+                  Set_Etype (N, Etype (Base));
+               end if;
+            end;
+
+         else
+            Set_Etype (N, Any_Composite);
+         end if;
       end if;
    end Analyze_Aggregate;
 
@@ -1043,12 +1075,11 @@ package body Sem_Ch4 is
 
             else
                declare
-                  Outermost : Node_Id;
+                  Outermost : Node_Id := Empty; -- init to avoid warning
                   P         : Node_Id := N;
 
                begin
                   while Present (P) loop
-
                      --  For object declarations we can climb to the node from
                      --  its object definition branch or from its initializing
                      --  expression. We prefer to mark the child node as the
@@ -1063,7 +1094,7 @@ package body Sem_Ch4 is
                         Outermost := P;
                      end if;
 
-                     --  Avoid climbing more than needed!
+                     --  Avoid climbing more than needed
 
                      exit when Stop_Subtree_Climbing (Nkind (P))
                        or else (Nkind (P) = N_Range
@@ -1488,6 +1519,30 @@ package body Sem_Ch4 is
               and then Present (Non_Limited_View (Etype (N)))
             then
                Set_Etype (N, Non_Limited_View (Etype (N)));
+
+            --  If there is no completion for the type, this may be because
+            --  there is only a limited view of it and there is nothing in
+            --  the context of the current unit that has required a regular
+            --  compilation of the unit containing the type. We recognize
+            --  this unusual case by the fact that that unit is not analyzed.
+            --  Note that the call being analyzed is in a different unit from
+            --  the function declaration, and nothing indicates that the type
+            --  is a limited view.
+
+            elsif Ekind (Scope (Etype (N))) = E_Package
+              and then Present (Limited_View (Scope (Etype (N))))
+              and then not Analyzed (Unit_Declaration_Node (Scope (Etype (N))))
+            then
+               Error_Msg_NE
+                 ("cannot call function that returns limited view of}",
+                  N, Etype (N));
+
+               Error_Msg_NE
+                 ("\there must be a regular with_clause for package & in the "
+                  & "current unit, or in some unit in its context",
+                  N, Scope (Etype (N)));
+
+               Set_Etype (N, Any_Type);
             end if;
          end if;
       end if;
@@ -1667,11 +1722,11 @@ package body Sem_Ch4 is
       else
          Analyze_Choices (Alternatives (N), Exp_Type);
          Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
-      end if;
 
-      if Exp_Type = Universal_Integer and then not Others_Present then
-         Error_Msg_N
-           ("case on universal integer requires OTHERS choice", Expr);
+         if Exp_Type = Universal_Integer and then not Others_Present then
+            Error_Msg_N
+              ("case on universal integer requires OTHERS choice", Expr);
+         end if;
       end if;
    end Analyze_Case_Expression;
 
@@ -4988,10 +5043,13 @@ package body Sem_Ch4 is
                   end if;
                end if;
 
-               Next_Entity (Comp);
+               --  Do not examine private operations if not within scope of
+               --  the synchronized type.
+
                exit when not In_Scope
                  and then
                    Comp = First_Private_Entity (Base_Type (Prefix_Type));
+               Next_Entity (Comp);
          end loop;
 
          --  If the scope is a current instance, the prefix cannot be an
@@ -8649,7 +8707,8 @@ package body Sem_Ch4 is
          else
             --  The type of the subprogram may be a limited view obtained
             --  transitively from another unit. If full view is available,
-            --  use it to analyze call.
+            --  use it to analyze call. If there is no nonlimited view, then
+            --  this is diagnosed when analyzing the rewritten call.
 
             declare
                T : constant Entity_Id := Etype (Subprog);
@@ -9094,9 +9153,8 @@ package body Sem_Ch4 is
 
          declare
             Dup_Call_Node : constant Node_Id := New_Copy (New_Call_Node);
-            CW_Result     : Boolean;
-            Prim_Result   : Boolean;
-            pragma Unreferenced (CW_Result);
+            Ignore        : Boolean;
+            Prim_Result   : Boolean := False;
 
          begin
             if not CW_Test_Only then
@@ -9111,7 +9169,7 @@ package body Sem_Ch4 is
             --  was found in order to report ambiguous calls.
 
             if not Prim_Result then
-               CW_Result :=
+               Ignore :=
                  Try_Class_Wide_Operation
                    (Call_Node       => New_Call_Node,
                     Node_To_Replace => Node_To_Replace);
@@ -9121,7 +9179,7 @@ package body Sem_Ch4 is
             --  decoration if there is no ambiguity).
 
             else
-               CW_Result :=
+               Ignore :=
                  Try_Class_Wide_Operation
                    (Call_Node       => Dup_Call_Node,
                     Node_To_Replace => Node_To_Replace);

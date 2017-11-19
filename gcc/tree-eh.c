@@ -3224,6 +3224,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	      gimple_stmt_iterator gsi2;
 
 	      new_bb = create_empty_bb (bb);
+	      new_bb->count = bb->count;
 	      add_bb_to_loop (new_bb, bb->loop_father);
 	      lab = gimple_block_label (new_bb);
 	      gsi2 = gsi_start_bb (new_bb);
@@ -3779,7 +3780,10 @@ pass_lower_eh_dispatch::execute (function *fun)
     }
 
   if (redirected)
-    delete_unreachable_blocks ();
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      delete_unreachable_blocks ();
+    }
   return flags;
 }
 

@@ -18,9 +18,9 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
-#include "unique-ptr.h"
 #include "selftest.h"
 
 #if CHECKING_P

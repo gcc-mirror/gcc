@@ -24,6 +24,7 @@
 #include <testsuite_fs.h>
 
 namespace fs = std::filesystem;
+using __gnu_test::compare_paths;
 
 void
 test01()
@@ -36,42 +37,42 @@ test01()
 
   create_directory(p);
   auto p2 = canonical( p, ec );
-  VERIFY( p2 == fs::current_path()/p );
+  compare_paths( p2, fs::current_path()/p );
   VERIFY( !ec );
 
   ec = bad_ec;
   p2 = canonical( fs::current_path() / "." / (p.native() + "////././."), ec );
-  VERIFY( p2 == fs::current_path()/p );
+  compare_paths( p2, fs::current_path()/p );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = fs::current_path();
   p2 = canonical( p, ec );
-  VERIFY( p2 == p );
+  compare_paths( p2, p );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  compare_paths( p, "/" );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/.";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  compare_paths( p, "/" );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/..";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  compare_paths( p, "/" );
   VERIFY( !ec );
 
   ec = bad_ec;
   p = "/../.././.";
   p = canonical( p, ec );
-  VERIFY( p == "/" );
+  compare_paths( p, "/" );
   VERIFY( !ec );
 }
 
@@ -115,17 +116,17 @@ test03()
   auto barc = canonical(bar);
 
   auto p1 = fs::canonical(dir/"foo//.///..//./");
-  VERIFY( p1 == dirc );
+  compare_paths( p1, dirc );
   auto p2 = fs::canonical(dir/"foo//./baz///..//./");
-  VERIFY( p2 == dirc );
+  compare_paths( p2, dirc );
   auto p3 = fs::canonical(dir/"foo//./baz////./");
-  VERIFY( p3 == barc );
+  compare_paths( p3, barc );
   auto p4 = fs::canonical(dir/"foo//./baz///..//./bar");
-  VERIFY( p4 == barc );
+  compare_paths( p4, barc );
   auto p5 = fs::canonical(dir/"foo//./baz///..//./bar/");
-  VERIFY( p5 == p4 );
+  compare_paths( p5, p4 );
   auto p6 = fs::canonical(dir/"foo//./baz///..//./bar/.");
-  VERIFY( p6 == p4 );
+  compare_paths( p6, p4 );
 
   remove_all(dir);
 }

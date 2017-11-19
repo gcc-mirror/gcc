@@ -2301,7 +2301,7 @@ package body Sem_Eval is
          Left_Str   : constant Node_Id := Get_String_Val (Left);
          Left_Len   : Nat;
          Right_Str  : constant Node_Id := Get_String_Val (Right);
-         Folded_Val : String_Id;
+         Folded_Val : String_Id        := No_String;
 
       begin
          --  Establish new string literal, and store left operand. We make

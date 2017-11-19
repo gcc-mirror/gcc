@@ -14,7 +14,6 @@ struct extraction
 
 static int a[N] = {1,2,3,4,5,6,7,8,9};
 static int b[N] = {2,3,4,5,6,7,8,9,9};
-volatile int foo;
 
 __attribute__ ((noinline))
 int main1 (int x, int y) {
@@ -24,9 +23,8 @@ int main1 (int x, int y) {
 
   for (i = 0; i < N; i++)
     {
-       p->a[i] = a[i];
-       if (foo == 135)
-	 abort (); /* to avoid vectorization  */
+      p->a[i] = a[i];
+      asm volatile ("" ::: "memory");
     }
 
   /* Not vectorizable: distance 1.  */
@@ -48,11 +46,10 @@ int main (void)
 { 
   check_vect ();
 
-  foo = 0;
   return main1 (0, N);
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 1 "vect" { target { ! vect_multiple_sizes } } } } */
-/* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 2 "vect" { target vect_multiple_sizes } } } */
+/* { dg-final { scan-tree-dump "possible dependence between data-refs" "vect" { target vect_multiple_sizes } } } */
 

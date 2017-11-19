@@ -383,6 +383,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined C_is_char \
       && _GLIBCXX_USE_CXX11_ABI == 0
 
+#pragma GCC diagnostic ignored "-Wattribute-alias"
+
 #define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
   extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
 

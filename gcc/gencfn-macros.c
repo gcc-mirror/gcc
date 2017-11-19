@@ -98,11 +98,12 @@ is_group (string_set *builtins, const char *name, const char *const *suffixes)
 
 static void
 print_case_cfn (const char *name, bool internal_p,
-		const char *const *suffixes)
+		const char *const *suffixes, bool floatn_p)
 {
-  printf ("#define CASE_CFN_%s", name);
+  const char *floatn = (floatn_p) ? "_FN" : "";
+  printf ("#define CASE_CFN_%s%s", name, floatn);
   if (internal_p)
-    printf (" \\\n  case CFN_%s", name);
+    printf (" \\\n  case CFN_%s%s", name, floatn);
   for (unsigned int i = 0; suffixes[i]; ++i)
     printf ("%s \\\n  case CFN_BUILT_IN_%s%s",
 	    internal_p || i > 0 ? ":" : "", name, suffixes[i]);
@@ -115,9 +116,10 @@ print_case_cfn (const char *name, bool internal_p,
 
 static void
 print_define_operator_list (const char *name, bool internal_p,
-			    const char *const *suffixes)
+			    const char *const *suffixes, bool floatn_p)
 {
-  printf ("(define_operator_list %s\n", name);
+  const char *floatn = (floatn_p) ? "_FN" : "";
+  printf ("(define_operator_list %s%s\n", name, floatn);
   for (unsigned int i = 0; suffixes[i]; ++i)
     printf ("    BUILT_IN_%s%s\n", name, suffixes[i]);
   if (internal_p)
@@ -148,6 +150,8 @@ const char *const internal_fn_int_names[] = {
 };
 
 static const char *const flt_suffixes[] = { "F", "", "L", NULL };
+static const char *const fltfn_suffixes[] = { "F16", "F32", "F64", "F128",
+					      "F32X", "F64X", "F128X", NULL };
 static const char *const int_suffixes[] = { "", "L", "LL", "IMAX", NULL };
 
 static const char *const *const suffix_lists[] = {
@@ -200,15 +204,33 @@ main (int argc, char **argv)
 	{
 	  const char *root = name + 9;
 	  for (unsigned int j = 0; suffix_lists[j]; ++j)
-	    if (is_group (&builtins, root, suffix_lists[j]))
-	      {
-		bool internal_p = internal_fns.contains (root);
-		if (type == 'c')
-		  print_case_cfn (root, internal_p, suffix_lists[j]);
-		else
-		  print_define_operator_list (root, internal_p,
-					      suffix_lists[j]);
-	      }
+	    {
+	      const char *const *const suffix = suffix_lists[j];
+
+	      if (is_group (&builtins, root, suffix))
+		{
+		  bool internal_p = internal_fns.contains (root);
+
+		  if (type == 'c')
+		    print_case_cfn (root, internal_p, suffix, false);
+		  else
+		    print_define_operator_list (root, internal_p,
+						suffix, false);
+
+		      /* Support the _Float<N> and _Float<N>X math functions if
+			 they exist.  We put these out as a separate CFN macro,
+			 so code can add support or not as needed.  */
+		  if (suffix == flt_suffixes
+		      && is_group (&builtins, root, fltfn_suffixes))
+		    {
+		      if (type == 'c')
+			print_case_cfn (root, false, fltfn_suffixes, true);
+		      else
+			print_define_operator_list (root, false, fltfn_suffixes,
+						    true);
+		    }
+		}
+	    }
 	}
     }
 

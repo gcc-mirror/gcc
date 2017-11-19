@@ -89,6 +89,155 @@ struct macro_arg_saved_data {
   union _cpp_hashnode_value value;
 };
 
+static const char *vaopt_paste_error =
+  N_("'##' cannot appear at either end of __VA_OPT__");
+
+/* A class for tracking __VA_OPT__ state while iterating over a
+   sequence of tokens.  This is used during both macro definition and
+   expansion.  */
+class vaopt_state {
+
+ public:
+
+  /* Initialize the state tracker.  ANY_ARGS is true if variable
+     arguments were provided to the macro invocation.  */
+  vaopt_state (cpp_reader *pfile, bool is_variadic, bool any_args)
+    : m_pfile (pfile),
+    m_allowed (any_args),
+    m_variadic (is_variadic),
+    m_state (0),
+    m_last_was_paste (false),
+    m_paste_location (0),
+    m_location (0)
+  {
+  }
+
+  enum update_type
+  {
+    ERROR,
+    DROP,
+    INCLUDE
+  };
+
+  /* Given a token, update the state of this tracker and return a
+     boolean indicating whether the token should be be included in the
+     expansion.  */
+  update_type update (const cpp_token *token)
+  {
+    /* If the macro isn't variadic, just don't bother.  */
+    if (!m_variadic)
+      return INCLUDE;
+
+    if (token->type == CPP_NAME
+	&& token->val.node.node == m_pfile->spec_nodes.n__VA_OPT__)
+      {
+	if (m_state > 0)
+	  {
+	    cpp_error_at (m_pfile, CPP_DL_ERROR, token->src_loc,
+			  "__VA_OPT__ may not appear in a __VA_OPT__");
+	    return ERROR;
+	  }
+	++m_state;
+	m_location = token->src_loc;
+	return DROP;
+      }
+    else if (m_state == 1)
+      {
+	if (token->type != CPP_OPEN_PAREN)
+	  {
+	    cpp_error_at (m_pfile, CPP_DL_ERROR, m_location,
+			  "__VA_OPT__ must be followed by an "
+			  "open parenthesis");
+	    return ERROR;
+	  }
+	++m_state;
+	return DROP;
+      }
+    else if (m_state >= 2)
+      {
+	if (m_state == 2 && token->type == CPP_PASTE)
+	  {
+	    cpp_error_at (m_pfile, CPP_DL_ERROR, token->src_loc,
+			  vaopt_paste_error);
+	    return ERROR;
+	  }
+	/* Advance states before further considering this token, in
+	   case we see a close paren immediately after the open
+	   paren.  */
+	if (m_state == 2)
+	  ++m_state;
+
+	bool was_paste = m_last_was_paste;
+	m_last_was_paste = false;
+	if (token->type == CPP_PASTE)
+	  {
+	    m_last_was_paste = true;
+	    m_paste_location = token->src_loc;
+	  }
+	else if (token->type == CPP_OPEN_PAREN)
+	  ++m_state;
+	else if (token->type == CPP_CLOSE_PAREN)
+	  {
+	    --m_state;
+	    if (m_state == 2)
+	      {
+		/* Saw the final paren.  */
+		m_state = 0;
+
+		if (was_paste)
+		  {
+		    cpp_error_at (m_pfile, CPP_DL_ERROR, token->src_loc,
+				  vaopt_paste_error);
+		    return ERROR;
+		  }
+
+		return DROP;
+	      }
+	  }
+	return m_allowed ? INCLUDE : DROP;
+      }
+
+    /* Nothing to do with __VA_OPT__.  */
+    return INCLUDE;
+  }
+
+  /* Ensure that any __VA_OPT__ was completed.  If ok, return true.
+     Otherwise, issue an error and return false.  */
+  bool completed ()
+  {
+    if (m_variadic && m_state != 0)
+      cpp_error_at (m_pfile, CPP_DL_ERROR, m_location,
+		    "unterminated __VA_OPT__");
+    return m_state == 0;
+  }
+
+ private:
+
+  /* The cpp_reader.  */
+  cpp_reader *m_pfile;
+
+  /* True if there were varargs.  */
+  bool m_allowed;
+  /* True if the macro is variadic.  */
+  bool m_variadic;
+
+  /* The state variable:
+     0 means not parsing
+     1 means __VA_OPT__ seen, looking for "("
+     2 means "(" seen (so the next token can't be "##")
+     >= 3 means looking for ")", the number encodes the paren depth.  */
+  int m_state;
+
+  /* If true, the previous token was ##.  This is used to detect when
+     a paste occurs at the end of the sequence.  */
+  bool m_last_was_paste;
+  /* The location of the paste token.  */
+  source_location m_paste_location;
+
+  /* Location of the __VA_OPT__ token.  */
+  source_location m_location;
+};
+
 /* Macro expansion.  */
 
 static int enter_macro_context (cpp_reader *, cpp_hashnode *,
@@ -776,7 +925,8 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 
   if (argc < macro->paramc)
     {
-      /* As an extension, variadic arguments are allowed to not appear in
+      /* In C++2a (here the va_opt flag is used), and also as a GNU
+	 extension, variadic arguments are allowed to not appear in
 	 the invocation at all.
 	 e.g. #define debug(format, args...) something
 	 debug("string");
@@ -786,7 +936,8 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 
       if (argc + 1 == macro->paramc && macro->variadic)
 	{
-	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
+	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr
+	      && ! CPP_OPTION (pfile, va_opt))
 	    {
 	      if (CPP_OPTION (pfile, cplusplus))
 		cpp_error (pfile, CPP_DL_PEDWARN,
@@ -1678,12 +1829,18 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 				 num_macro_tokens);
     }
   i = 0;
+  vaopt_state vaopt_tracker (pfile, macro->variadic,
+			     args[macro->paramc - 1].count > 0);
   for (src = macro->exp.tokens; src < limit; src++)
     {
       unsigned int arg_tokens_count;
       macro_arg_token_iter from;
       const cpp_token **paste_flag = NULL;
       const cpp_token **tmp_token_ptr;
+
+      /* __VA_OPT__ handling.  */
+      if (vaopt_tracker.update (src) != vaopt_state::INCLUDE)
+	continue;
 
       if (src->type != CPP_MACRO_ARG)
 	{
@@ -3076,6 +3233,9 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
       *token = *ctoken;
     }
 
+  /* The argument doesn't matter here.  */
+  vaopt_state vaopt_tracker (pfile, macro->variadic, true);
+
   for (;;)
     {
       /* Check the stringifying # constraint 6.10.3.2.1 of
@@ -3144,9 +3304,15 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	    }
 	}
 
+      if (vaopt_tracker.update (token) == vaopt_state::ERROR)
+	return false;
+
       following_paste_op = (token->type == CPP_PASTE);
       token = lex_expansion_token (pfile, macro);
     }
+
+  if (!vaopt_tracker.completed ())
+    return false;
 
   macro->exp.tokens = (cpp_token *) BUFF_FRONT (pfile->a_buff);
   macro->traditional = 0;

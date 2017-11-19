@@ -1,4 +1,4 @@
-/* { dg-options "-fdiagnostics-show-caret" } */
+/* { dg-options "-fdiagnostics-show-caret -Wno-return-type" } */
 
 extern int foo (void);
 extern int bar (void);

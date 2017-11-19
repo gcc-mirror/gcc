@@ -149,7 +149,7 @@ class Summary:
 
     def count_formatted(self):
         v = self.count
-        for unit in ['','K','M','G','T','P','E','Z']:
+        for unit in ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']:
             if v < 1000:
                 return "%3.2f%s" % (v, unit)
             v /= 1000.0

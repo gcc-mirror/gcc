@@ -166,7 +166,7 @@ package body Style is
                   Error_Msg_Node_1 := Def;
                   Error_Msg_Sloc := Sloc (Def);
                   Error_Msg -- CODEFIX
-                    ("(style) bad casing of & declared#", Sref);
+                    ("(style) bad casing of & declared#", Sref, Ref);
                   return;
 
                --  Else end of identifiers, and they match

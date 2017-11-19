@@ -165,6 +165,7 @@ static bool cris_function_value_regno_p (const unsigned int);
 static void cris_file_end (void);
 static unsigned int cris_hard_regno_nregs (unsigned int, machine_mode);
 static bool cris_hard_regno_mode_ok (unsigned int, machine_mode);
+static HOST_WIDE_INT cris_static_rtx_alignment (machine_mode);
 static HOST_WIDE_INT cris_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
@@ -288,6 +289,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK cris_hard_regno_mode_ok
 
+#undef TARGET_STATIC_RTX_ALIGNMENT
+#define TARGET_STATIC_RTX_ALIGNMENT cris_static_rtx_alignment
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT cris_constant_alignment
 
@@ -4329,6 +4332,26 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	      || (regno != CRIS_MOF_REGNUM && regno != CRIS_ACR_REGNUM)));
 }
 
+/* Return the preferred minimum alignment for a static object.  */
+
+static HOST_WIDE_INT
+cris_preferred_mininum_alignment (void)
+{
+  if (!TARGET_CONST_ALIGN)
+    return 8;
+  if (TARGET_ALIGN_BY_32)
+    return 32;
+  return 16;
+}
+
+/* Implement TARGET_STATIC_RTX_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+cris_static_rtx_alignment (machine_mode mode)
+{
+  return MAX (cris_preferred_mininum_alignment (), GET_MODE_ALIGNMENT (mode));
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Note that this hook has the
    effect of making gcc believe that ALL references to constant stuff
    (in code segment, like strings) have this alignment.  That is a rather
@@ -4339,11 +4362,7 @@ cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 static HOST_WIDE_INT
 cris_constant_alignment (const_tree, HOST_WIDE_INT basic_align)
 {
-  if (!TARGET_CONST_ALIGN)
-    return basic_align;
-  if (TARGET_ALIGN_BY_32)
-    return MAX (basic_align, 32);
-  return MAX (basic_align, 16);
+  return MAX (cris_preferred_mininum_alignment (), basic_align);
 }
 
 #if 0

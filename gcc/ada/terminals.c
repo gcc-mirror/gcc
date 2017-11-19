@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2016, AdaCore                     *
+ *                     Copyright (C) 2008-2017, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1111,7 +1111,7 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 /* On some system termio is either absent or including it will disable termios
    (HP-UX) */
 #if !defined (__hpux__) && !defined (BSD) && !defined (__APPLE__) \
-  && !defined (__rtems__)
+  && !defined (__rtems__) && !defined (__QNXNTO__)
 #   include <termio.h>
 #endif
 

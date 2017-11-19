@@ -1554,3 +1554,42 @@ single_pred_before_succ_order (void)
 #undef MARK_VISITED
 #undef VISITED_P
 }
+
+/* Ignoring loop backedges, if BB has precisely one incoming edge then
+   return that edge.  Otherwise return NULL.
+
+   When IGNORE_NOT_EXECUTABLE is true, also ignore edges that are not marked
+   as executable.  */
+
+edge
+single_pred_edge_ignoring_loop_edges (basic_block bb,
+				      bool ignore_not_executable)
+{
+  edge retval = NULL;
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      /* A loop back edge can be identified by the destination of
+	 the edge dominating the source of the edge.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+
+      /* We can safely ignore edges that are not executable.  */
+      if (ignore_not_executable
+	  && (e->flags & EDGE_EXECUTABLE) == 0)
+	continue;
+
+      /* If we have already seen a non-loop edge, then we must have
+	 multiple incoming non-loop edges and thus we return NULL.  */
+      if (retval)
+	return NULL;
+
+      /* This is the first non-loop incoming edge we have found.  Record
+	 it.  */
+      retval = e;
+    }
+
+  return retval;
+}

@@ -158,7 +158,7 @@ fs::directory_iterator::operator++()
 }
 
 fs::directory_iterator&
-fs::directory_iterator::increment(error_code& ec) noexcept
+fs::directory_iterator::increment(error_code& ec)
 {
   if (!_M_dir)
     {
@@ -243,7 +243,7 @@ fs::recursive_directory_iterator::operator++()
 }
 
 fs::recursive_directory_iterator&
-fs::recursive_directory_iterator::increment(error_code& ec) noexcept
+fs::recursive_directory_iterator::increment(error_code& ec)
 {
   if (!_M_dirs)
     {

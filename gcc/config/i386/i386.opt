@@ -717,6 +717,10 @@ mavx512vpopcntdq
 Target Report Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VPOPCNTDQ built-in functions and code generation.
 
+mavx512vbmi2
+Target Report Mask(ISA_AVX512VBMI2) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation.
+
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation.
@@ -754,7 +758,7 @@ Target Report Mask(ISA_RDPID) Var(ix86_isa_flags2) Save
 Support RDPID built-in functions and code generation.
 
 mgfni
-Target Report Mask(ISA_GFNI) Var(ix86_isa_flags2) Save
+Target Report Mask(ISA_GFNI) Var(ix86_isa_flags) Save
 Support GFNI built-in functions and code generation.
 
 mbmi
@@ -903,7 +907,7 @@ Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation.
 
 mmpx
-Target Report Mask(ISA_MPX) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_MPX) Var(ix86_isa_flags2) Save
 Support MPX code generation.
 
 mmwaitx
@@ -977,3 +981,7 @@ mcet-switch
 Target Report Undocumented Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements, which use jump table and
 indirect jump.
+
+mforce-indirect-call
+Target Report Var(flag_force_indirect_call) Init(0)
+Make all function calls indirect.

@@ -137,13 +137,11 @@ valid_ao_ref_for_dse (ao_ref *ref)
 	  && (ref->size != -1));
 }
 
-/* Normalize COPY (an ao_ref) relative to REF.  Essentially when we are
-   done COPY will only refer bytes found within REF.
+/* Try to normalize COPY (an ao_ref) relative to REF.  Essentially when we are
+   done COPY will only refer bytes found within REF.  Return true if COPY
+   is known to intersect at least one byte of REF.  */
 
-   We have already verified that COPY intersects at least one
-   byte with REF.  */
-
-static void
+static bool
 normalize_ref (ao_ref *copy, ao_ref *ref)
 {
   /* If COPY starts before REF, then reset the beginning of
@@ -151,13 +149,22 @@ normalize_ref (ao_ref *copy, ao_ref *ref)
      number of bytes removed from COPY.  */
   if (copy->offset < ref->offset)
     {
-      copy->size -= (ref->offset - copy->offset);
+      HOST_WIDE_INT diff = ref->offset - copy->offset;
+      if (copy->size <= diff)
+	return false;
+      copy->size -= diff;
       copy->offset = ref->offset;
     }
 
+  HOST_WIDE_INT diff = copy->offset - ref->offset;
+  if (ref->size <= diff)
+    return false;
+
   /* If COPY extends beyond REF, chop off its size appropriately.  */
-  if (copy->offset + copy->size > ref->offset + ref->size)
-    copy->size -= (copy->offset + copy->size - (ref->offset + ref->size));
+  HOST_WIDE_INT limit = ref->size - diff;
+  if (copy->size > limit)
+    copy->size = limit;
+  return true;
 }
 
 /* Clear any bytes written by STMT from the bitmap LIVE_BYTES.  The base
@@ -179,14 +186,10 @@ clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
   if (valid_ao_ref_for_dse (&write)
       && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
       && write.size == write.max_size
-      && ((write.offset < ref->offset
-	   && write.offset + write.size > ref->offset)
-	  || (write.offset >= ref->offset
-	      && write.offset < ref->offset + ref->size)))
+      && normalize_ref (&write, ref))
     {
-      normalize_ref (&write, ref);
-      bitmap_clear_range (live_bytes,
-			  (write.offset - ref->offset) / BITS_PER_UNIT,
+      HOST_WIDE_INT start = write.offset - ref->offset;
+      bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
 			  write.size / BITS_PER_UNIT);
     }
 }
@@ -480,21 +483,20 @@ live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
 {
   /* We have already verified that USE_REF and REF hit the same object.
      Now verify that there's actually an overlap between USE_REF and REF.  */
-  if (ranges_overlap_p (use_ref.offset, use_ref.size, ref->offset, ref->size))
+  if (normalize_ref (&use_ref, ref))
     {
-      normalize_ref (&use_ref, ref);
+      HOST_WIDE_INT start = use_ref.offset - ref->offset;
+      HOST_WIDE_INT size = use_ref.size;
 
       /* If USE_REF covers all of REF, then it will hit one or more
 	 live bytes.   This avoids useless iteration over the bitmap
 	 below.  */
-      if (use_ref.offset <= ref->offset
-	  && use_ref.offset + use_ref.size >= ref->offset + ref->size)
+      if (start == 0 && size == ref->size)
 	return true;
 
       /* Now check if any of the remaining bits in use_ref are set in LIVE.  */
-      unsigned int start = (use_ref.offset - ref->offset) / BITS_PER_UNIT;
-      unsigned int end = start + (use_ref.size / BITS_PER_UNIT) - 1;
-      return bitmap_bit_in_range_p (live, start, end);
+      return bitmap_bit_in_range_p (live, start / BITS_PER_UNIT,
+				    (start + size - 1) / BITS_PER_UNIT);
     }
   return true;
 }

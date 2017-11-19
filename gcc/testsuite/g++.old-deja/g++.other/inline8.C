@@ -62,8 +62,10 @@ bool operator<(const NAMES_ITEM& n1, const NAMES_ITEM& n2)
     lookup_t lookup;
 
 	NAMES_ITEM item ("one");
+
+int
 main()
   {
         lookup.insert(pair<NAMES_ITEM,size_t>(item,0));
+	return 0;
   }
-

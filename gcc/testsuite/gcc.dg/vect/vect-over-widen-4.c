@@ -4,7 +4,11 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 8 / 16)
+#else
 #define N 64
+#endif
 
 /* Modified rgb to rgb conversion from FFmpeg.  */
 __attribute__ ((noinline)) int

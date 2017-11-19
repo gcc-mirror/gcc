@@ -30,6 +30,7 @@ void f()
 void *thread_main(void *)
 {
   f(); f(); f();
+  return 0;
 }
 
 int main()

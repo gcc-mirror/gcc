@@ -123,9 +123,14 @@ struct mangled_decl_hash : ggc_remove <tree>
   static inline void mark_empty (value_type &p) {p = NULL_TREE;}
   static inline bool is_empty (value_type p) {return !p;}
 
-  /* Nothing is deletable.  Everything is insertable.  */
-  static bool is_deleted (value_type) { return false; }
-  static void mark_deleted (value_type) { gcc_unreachable (); }
+  static bool is_deleted (value_type e)
+  {
+    return e == reinterpret_cast <value_type> (1);
+  }
+  static void mark_deleted (value_type &e)
+  {
+    e = reinterpret_cast <value_type> (1);
+  }
 };
 
 /* A hash table of decls keyed by mangled name.  Used to figure out if
@@ -786,6 +791,15 @@ finish_static_data_member_decl (tree decl,
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && TYPE_DOMAIN (TREE_TYPE (decl)) == NULL_TREE)
     SET_VAR_HAD_UNKNOWN_BOUND (decl);
+
+  if (init)
+    {
+      /* Similarly to start_decl_1, we want to complete the type in order
+	 to do the right thing in cp_apply_type_quals_to_decl, possibly
+	 clear TYPE_QUAL_CONST (c++/65579).  */
+      tree type = TREE_TYPE (decl) = complete_type (TREE_TYPE (decl));
+      cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
+    }
 
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
 }
@@ -4430,6 +4444,33 @@ record_mangling (tree decl, bool need_warning)
     }
 }
 
+/* The mangled name of DECL is being forcibly changed to NAME.  Remove
+   any existing knowledge of DECL's mangled name meaning DECL.  */
+
+void
+overwrite_mangling (tree decl, tree name)
+{
+  if (tree id = DECL_ASSEMBLER_NAME_RAW (decl))
+    if ((TREE_CODE (decl) == VAR_DECL
+	 || TREE_CODE (decl) == FUNCTION_DECL)
+	&& mangled_decls)
+      if (tree *slot
+	  = mangled_decls->find_slot_with_hash (id, IDENTIFIER_HASH_VALUE (id),
+						NO_INSERT))
+	if (*slot == decl)
+	  {
+	    mangled_decls->clear_slot (slot);
+
+	    /* If this is an alias, remove it from the symbol table.  */
+	    if (DECL_ARTIFICIAL (decl) && DECL_IGNORED_P (decl))
+	      if (symtab_node *n = symtab_node::get (decl))
+		if (n->cpp_implicit_alias)
+		  n->remove ();
+	  }
+
+  DECL_ASSEMBLER_NAME_RAW (decl) = name;
+}
+
 /* The entire file is now complete.  If requested, dump everything
    to a file.  */
 
@@ -4455,7 +4496,7 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (ovl_iterator iter (get_global_binding (cp_operator_id (code)));
+  for (ovl_iterator iter (get_global_binding (ovl_op_identifier (false, code)));
        iter; ++iter)
     {
       tree fn = *iter;
@@ -5101,11 +5142,11 @@ mark_used (tree decl, tsubst_flags_t complain)
       && DECL_DELETED_FN (decl))
     {
       if (DECL_ARTIFICIAL (decl)
-	  && DECL_OVERLOADED_OPERATOR_P (decl) == TYPE_EXPR
+	  && DECL_CONV_FN_P (decl)
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
 	/* We mark a lambda conversion op as deleted if we can't
 	   generate it properly; see maybe_add_lambda_conv_op.  */
-	sorry ("converting lambda which uses %<...%> to function pointer");
+	sorry ("converting lambda that uses %<...%> to function pointer");
       else if (complain & tf_error)
 	{
 	  error ("use of deleted function %qD", decl);

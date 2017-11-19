@@ -168,8 +168,8 @@ enum cpp_ttype
 #undef TK
 
 /* C language kind, used when calling cpp_create_reader.  */
-enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11,
-	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11,
+enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17,
+	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11, CLK_STDC17,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
 	     CLK_GNUCXX2A, CLK_CXX2A, CLK_ASM};
@@ -477,6 +477,9 @@ struct cpp_options
 
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
+
+  /* Nonzero for C++2a __VA_OPT__ feature.  */
+  unsigned char va_opt;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -1096,9 +1099,9 @@ extern bool cpp_error_at (cpp_reader * pfile, int level,
 			  source_location src_loc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
-extern bool cpp_error_at_richloc (cpp_reader * pfile, int level,
-				  rich_location *richloc, const char *msgid,
-				  ...)
+extern bool cpp_error_at (cpp_reader * pfile, int level,
+			  rich_location *richloc, const char *msgid,
+			  ...)
   ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */

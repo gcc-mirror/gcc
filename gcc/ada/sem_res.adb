@@ -1030,7 +1030,7 @@ package body Sem_Res is
          if Nkind (N) in N_Has_Etype and then Etype (N) = Any_Type then
             return;
          elsif Nkind (N) in N_Has_Chars
-           and then Chars (N) in Error_Name_Or_No_Name
+           and then not Is_Valid_Name (Chars (N))
          then
             return;
          end if;
@@ -1212,7 +1212,7 @@ package body Sem_Res is
       Func      : constant Entity_Id := Entity (Name (N));
       Is_Binary : constant Boolean   := Present (Act2);
       Op_Node   : Node_Id;
-      Opnd_Type : Entity_Id;
+      Opnd_Type : Entity_Id := Empty;
       Orig_Type : Entity_Id := Empty;
       Pack      : Entity_Id;
 
@@ -1523,6 +1523,7 @@ package body Sem_Res is
             --  Operator may be defined in an extension of System
 
             elsif Present (System_Aux_Id)
+              and then Present (Opnd_Type)
               and then Scope (Opnd_Type) = System_Aux_Id
             then
                null;
@@ -2439,22 +2440,27 @@ package body Sem_Res is
                   Set_Entity (N, Seen);
                   Generate_Reference (Seen, N);
 
-               elsif Nkind (N) = N_Case_Expression then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_Character_Literal then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_If_Expression then
+               elsif Nkind_In (N, N_Case_Expression,
+                                  N_Character_Literal,
+                                  N_Delta_Aggregate,
+                                  N_If_Expression)
+               then
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
                --  implicit dereference. If type matches context, no implicit
-               --  dereference is involved.
+               --  dereference is involved. If the expression is an entity,
+               --  generate a reference to it, as this is not done for an
+               --  overloaded construct during analysis.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);
                   Set_Is_Overloaded (N, False);
+
+                  if Is_Entity_Name (N) then
+                     Generate_Reference (Entity (N), N);
+                  end if;
+
                   exit Interp_Loop;
 
                elsif Is_Overloaded (N)
@@ -3138,12 +3144,12 @@ package body Sem_Res is
       Loc    : constant Source_Ptr := Sloc (N);
       A      : Node_Id;
       A_Id   : Entity_Id;
-      A_Typ  : Entity_Id;
+      A_Typ  : Entity_Id := Empty; -- init to avoid warning
       F      : Entity_Id;
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
-      Real_F : Entity_Id;
+      Real_F : Entity_Id := Empty; -- init to avoid warning
 
       Real_Subp : Entity_Id;
       --  If the subprogram being called is an inherited operation for
@@ -3744,6 +3750,21 @@ package body Sem_Res is
            and then Is_Entity_Name (A)
            and then Comes_From_Source (A)
          then
+            --  Annotate the tree by creating a variable reference marker when
+            --  the actual denotes a variable reference, in case the reference
+            --  is folded or optimized away. The variable reference marker is
+            --  automatically saved for later examination by the ABE Processing
+            --  phase. The status of the reference is set as follows:
+
+            --    status   mode
+            --    read     IN, IN OUT
+            --    write    IN OUT, OUT
+
+            Build_Variable_Reference_Marker
+              (N     => A,
+               Read  => Ekind (F) /= E_Out_Parameter,
+               Write => Ekind (F) /= E_In_Parameter);
+
             Orig_A := Entity (A);
 
             if Present (Orig_A) then
@@ -5130,6 +5151,20 @@ package body Sem_Res is
 
             if not Is_Static_Coextension (N) then
                Set_Is_Dynamic_Coextension (N);
+
+               --  ??? We currently do not handle finalization and deallocation
+               --  of coextensions properly so let's at least warn the user
+               --  about it.
+
+               if Is_Controlled (Desig_T) then
+                  Error_Msg_N
+                    ("??coextension will not be finalized when its "
+                     & "associated owner is deallocated or finalized", N);
+               else
+                  Error_Msg_N
+                    ("??coextension will not be deallocated when its "
+                     & "associated owner is deallocated", N);
+               end if;
             end if;
 
          --  Cleanup for potential static coextensions
@@ -5137,6 +5172,21 @@ package body Sem_Res is
          else
             Set_Is_Dynamic_Coextension (N, False);
             Set_Is_Static_Coextension  (N, False);
+
+            --  ??? It seems we also do not properly finalize anonymous
+            --  access-to-controlled objects within their declared scope and
+            --  instead finalize them with their associated unit. Warn the
+            --  user about it here.
+
+            if Ekind (Typ) = E_Anonymous_Access_Type
+              and then Is_Controlled_Active (Desig_T)
+            then
+               Error_Msg_N
+                 ("??object designated by anonymous access object might not "
+                  & "be finalized until its enclosing library unit goes out "
+                  & "of scope", N);
+               Error_Msg_N ("\use named access type instead", N);
+            end if;
          end if;
       end if;
 
@@ -5780,9 +5830,10 @@ package body Sem_Res is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       --  The context imposes a unique interpretation with type Typ on a
       --  procedure or function call. Find the entity of the subprogram that
@@ -7210,9 +7261,13 @@ package body Sem_Res is
       elsif Ekind (E) = E_Generic_Function then
          Error_Msg_N ("illegal use of generic function", N);
 
-      --  In Ada 83 an OUT parameter cannot be read
+      --  In Ada 83 an OUT parameter cannot be read, but attributes of
+      --  array types (i.e. bounds and length) are legal.
 
       elsif Ekind (E) = E_Out_Parameter
+        and then (Nkind (Parent (N)) /= N_Attribute_Reference
+                   or else Is_Scalar_Type (Etype (E)))
+
         and then (Nkind (Parent (N)) in N_Op
                    or else Nkind (Parent (N)) = N_Explicit_Dereference
                    or else Is_Assignment_Or_Object_Expression
@@ -7778,6 +7833,9 @@ package body Sem_Res is
 
             Set_Is_Elaboration_Checks_OK_Node
               (Entry_Call, Is_Elaboration_Checks_OK_Node (N));
+
+            Set_Is_Elaboration_Warnings_OK_Node
+              (Entry_Call, Is_Elaboration_Warnings_OK_Node (N));
 
             Set_Is_SPARK_Mode_On_Node
               (Entry_Call, Is_SPARK_Mode_On_Node (N));

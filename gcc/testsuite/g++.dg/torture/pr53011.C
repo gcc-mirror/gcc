@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 extern "C" class WvFastString;
 typedef WvFastString& WvStringParm;

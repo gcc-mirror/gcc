@@ -19,13 +19,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.3 path appends [path.append]
+// 30.10.7.4.3 path appends [fs.path.append]
 
 #include <filesystem>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 
 using std::filesystem::path;
+using __gnu_test::compare_paths;
 
 void
 test01()
@@ -34,16 +35,16 @@ test01()
 
   path pp = p;
   pp /= p;
-  VERIFY( pp.native() == p.native() );
+  compare_paths( pp, p );
 
   path q("baz");
 
   path qq = q;
   qq /= q;
-  VERIFY( qq.native() == "baz/baz" );
+  compare_paths( qq, "baz/baz" );
 
   q /= p;
-  VERIFY( q.native() == p.native() );
+  compare_paths( q, p );
 
   path r = "";
   r /= path();
@@ -54,11 +55,11 @@ test01()
 
   path s = "dir/";
   s /= path("/file");
-  VERIFY( s.native() == "/file" );
+  compare_paths( s, "/file" );
 
   s = "dir/";
   s /= path("file");
-  VERIFY( s.native() == "dir/file" );
+  compare_paths( s, "dir/file" );
 }
 
 void
@@ -67,16 +68,16 @@ test02()
   // C++17 [fs.path.append] p4
 
   path p = path("//host") / "foo";
-  VERIFY( p == "//host/foo" );
+  compare_paths( p, "//host/foo" );
 
   path pp = path("//host/") / "foo";
-  VERIFY( pp == "//host/foo" );
+  compare_paths( pp, "//host/foo" );
 
   path q = path("foo") / "";
-  VERIFY( q == "foo/" );
+  compare_paths( q, "foo/" );
 
   path qq = path("foo") / "/bar";
-  VERIFY( qq == "/bar" );
+  compare_paths( qq, "/bar" );
 }
 
 int

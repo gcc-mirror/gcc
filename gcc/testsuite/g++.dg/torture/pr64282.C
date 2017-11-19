@@ -53,7 +53,7 @@ public:
 class H
 {
   void m_fn7 (const F &, bool &);
-  bool m_fn8 (const D<F> &, const F &, F &);
+  void m_fn8 (const D<F> &, const F &, F &);
 };
 typedef A<int> CandPair;
 class I
@@ -91,7 +91,7 @@ H::m_fn7 (const F &, bool &)
   F h;
   m_fn8 (g, f.first, h);
 }
-bool
+void
 H::m_fn8 (const D<F> &p1, const F &, F &)
 {
   F i;

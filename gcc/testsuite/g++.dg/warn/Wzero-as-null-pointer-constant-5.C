@@ -1,5 +1,5 @@
 // PR c++/52718
-// { dg-options "-Wzero-as-null-pointer-constant" }
+// { dg-options "-Wzero-as-null-pointer-constant -Wno-return-type" }
 
 struct foo
 {

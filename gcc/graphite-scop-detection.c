@@ -81,7 +81,7 @@ public:
 #define DEBUG_PRINT(args) do \
     {								\
       if (dump_file && (dump_flags & TDF_DETAILS)) { args; }	\
-    } while (0);
+    } while (0)
 
 /* Pretty print to FILE all the SCoPs in DOT format and mark them with
    different colors.  If there are not enough colors, paint the

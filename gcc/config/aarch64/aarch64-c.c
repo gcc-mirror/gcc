@@ -166,7 +166,7 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
      information that it specifies.  */
   if (args)
     {
-      if (!aarch64_process_target_attr (args, "pragma"))
+      if (!aarch64_process_target_attr (args))
 	return false;
 
       aarch64_override_options_internal (&global_options);

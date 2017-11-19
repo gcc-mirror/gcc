@@ -1138,8 +1138,7 @@
 		  (match_operand:V2SF 2 "fr_register_operand" "")))]
   ""
 {
-  rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
-  operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
+  operands[3] = force_reg (V2SFmode, CONST1_RTX (V2SFmode));
 })
 
 (define_expand "subv2sf3"
@@ -1150,8 +1149,7 @@
 	  (neg:V2SF (match_operand:V2SF 2 "fr_register_operand" ""))))]
   ""
 {
-  rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
-  operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
+  operands[3] = force_reg (V2SFmode, CONST1_RTX (V2SFmode));
 })
 
 (define_insn "mulv2sf3"

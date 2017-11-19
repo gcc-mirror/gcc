@@ -314,6 +314,7 @@ can_test_argument_range (gcall *call)
     CASE_FLT_FN (BUILT_IN_POW10):
     /* Sqrt.  */
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       return check_builtin_call (call);
     /* Special one: two argument pow.  */
     case BUILT_IN_POW:
@@ -342,6 +343,7 @@ edom_only_function (gcall *call)
     CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
     CASE_FLT_FN (BUILT_IN_SIN):
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
     CASE_FLT_FN (BUILT_IN_FMOD):
     CASE_FLT_FN (BUILT_IN_REMAINDER):
       return true;
@@ -703,6 +705,7 @@ get_no_error_domain (enum built_in_function fnc)
                          308, true, false);
     /* sqrt: [0, +inf)  */
     CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       return get_domain (0, true, true,
                          0, false, false);
     default:
@@ -903,7 +906,6 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
      Here we take the second approach because it's slightly simpler
      and because it's easy to see that it doesn't lose profile counts.  */
   bi_call_bb->count = profile_count::zero ();
-  bi_call_bb->frequency = 0;
   while (!edges.is_empty ())
     {
       edge_pair e = edges.pop ();
@@ -916,16 +918,10 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       nocall_edge->probability = profile_probability::always ()
 				 - call_edge->probability;
 
-      unsigned int call_frequency
-	 = call_edge->probability.apply (src_bb->frequency);
-
       bi_call_bb->count += call_edge->count ();
-      bi_call_bb->frequency += call_frequency;
 
       if (nocall_edge->dest != join_tgt_bb)
-	{
-	  nocall_edge->dest->frequency = src_bb->frequency - call_frequency;
-	}
+	nocall_edge->dest->count = src_bb->count - bi_call_bb->count;
     }
 
   if (dom_info_available_p (CDI_DOMINATORS))

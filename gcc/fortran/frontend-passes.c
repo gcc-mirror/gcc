@@ -55,6 +55,7 @@ static gfc_expr* check_conjg_transpose_variable (gfc_expr *, bool *,
 						 bool *);
 static bool has_dimen_vector_ref (gfc_expr *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
+static int index_interchange (gfc_code **, int*, void *);
 
 #ifdef CHECKING_P
 static void check_locus (gfc_namespace *);
@@ -155,9 +156,11 @@ gfc_run_passes (gfc_namespace *ns)
   check_locus (ns);
 #endif
 
+  if (flag_frontend_optimize || flag_frontend_loop_interchange)
+    optimize_namespace (ns);
+
   if (flag_frontend_optimize)
     {
-      optimize_namespace (ns);
       optimize_reduction (ns);
       if (flag_dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
@@ -1350,7 +1353,9 @@ simplify_io_impl_do (gfc_code **code, int *walk_subtrees,
   return 0;
 }
 
-/* Optimize a namespace, including all contained namespaces.  */
+/* Optimize a namespace, including all contained namespaces.
+  flag_frontend_optimize and flag_fronend_loop_interchange are
+  handled separately.  */
 
 static void
 optimize_namespace (gfc_namespace *ns)
@@ -1363,27 +1368,34 @@ optimize_namespace (gfc_namespace *ns)
   in_assoc_list = false;
   in_omp_workshare = false;
 
-  gfc_code_walker (&ns->code, simplify_io_impl_do, dummy_expr_callback, NULL);
-  gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
-  gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
-  gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
-  gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
-  if (flag_inline_matmul_limit != 0)
+  if (flag_frontend_optimize)
     {
-      bool found;
-      do
+      gfc_code_walker (&ns->code, simplify_io_impl_do, dummy_expr_callback, NULL);
+      gfc_code_walker (&ns->code, convert_do_while, dummy_expr_callback, NULL);
+      gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
+      gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
+      gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
+      if (flag_inline_matmul_limit != 0)
 	{
-	  found = false;
-	  gfc_code_walker (&ns->code, matmul_to_var_code, matmul_to_var_expr,
-			   (void *) &found);
-	}
-      while (found);
+	  bool found;
+	  do
+	    {
+	      found = false;
+	      gfc_code_walker (&ns->code, matmul_to_var_code, matmul_to_var_expr,
+			       (void *) &found);
+	    }
+	  while (found);
 
-      gfc_code_walker (&ns->code, matmul_temp_args, dummy_expr_callback,
-		       NULL);
-      gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
-		       NULL);
+	  gfc_code_walker (&ns->code, matmul_temp_args, dummy_expr_callback,
+			   NULL);
+	  gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
+			   NULL);
+	}
     }
+
+  if (flag_frontend_loop_interchange)
+    gfc_code_walker (&ns->code, index_interchange, dummy_expr_callback,
+		     NULL);
 
   /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
@@ -4222,6 +4234,170 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 
   gfc_free_expr (zero);
   *walk_subtrees = 0;
+  return 0;
+}
+
+
+/* Code for index interchange for loops which are grouped together in DO
+   CONCURRENT or FORALL statements.  This is currently only applied if the
+   iterations are grouped together in a single statement.
+
+   For this transformation, it is assumed that memory access in strides is
+   expensive, and that loops which access later indices (which access memory
+   in bigger strides) should be moved to the first loops.
+
+   For this, a loop over all the statements is executed, counting the times
+   that the loop iteration values are accessed in each index.  The loop
+   indices are then sorted to minimize access to later indices from inner
+   loops.  */
+
+/* Type for holding index information.  */
+
+typedef struct {
+  gfc_symbol *sym;
+  gfc_forall_iterator *fa;
+  int num;
+  int n[GFC_MAX_DIMENSIONS];
+} ind_type;
+
+/* Callback function to determine if an expression is the 
+   corresponding variable.  */
+
+static int
+has_var (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+{
+  gfc_expr *expr = *e;
+  gfc_symbol *sym;
+
+  if (expr->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  sym = (gfc_symbol *) data;
+  return sym == expr->symtree->n.sym;
+}
+
+/* Callback function to calculate the cost of a certain index.  */
+
+static int
+index_cost (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+	    void *data)
+{
+  ind_type *ind;
+  gfc_expr *expr;
+  gfc_array_ref *ar;
+  gfc_ref *ref;
+  int i,j;
+
+  expr = *e;
+  if (expr->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  ar = NULL;
+  for (ref = expr->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY)
+	{
+	  ar = &ref->u.ar;
+	  break;
+	}
+    }
+  if (ar == NULL || ar->type != AR_ELEMENT)
+    return 0;
+
+  ind = (ind_type *) data;
+  for (i = 0; i < ar->dimen; i++)
+    {
+      for (j=0; ind[j].sym != NULL; j++)
+	{
+	  if (gfc_expr_walker (&ar->start[i], has_var, (void *) (ind[j].sym)))
+	      ind[j].n[i]++;
+	}
+    }
+  return 0;
+}
+
+/* Callback function for qsort, to sort the loop indices. */
+
+static int
+loop_comp (const void *e1, const void *e2)
+{
+  const ind_type *i1 = (const ind_type *) e1;
+  const ind_type *i2 = (const ind_type *) e2;
+  int i;
+
+  for (i=GFC_MAX_DIMENSIONS-1; i >= 0; i--)
+    {
+      if (i1->n[i] != i2->n[i])
+	return i1->n[i] - i2->n[i];
+    }
+  /* All other things being equal, let's not change the ordering.  */
+  return i2->num - i1->num;
+}
+
+/* Main function to do the index interchange.  */
+
+static int
+index_interchange (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co;
+  co = *c;
+  int n_iter;
+  gfc_forall_iterator *fa;
+  ind_type *ind;
+  int i, j;
+  
+  if (co->op != EXEC_FORALL && co->op != EXEC_DO_CONCURRENT)
+    return 0;
+
+  n_iter = 0;
+  for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+    n_iter ++;
+
+  /* Nothing to reorder. */
+  if (n_iter < 2)
+    return 0;
+
+  ind = XALLOCAVEC (ind_type, n_iter + 1);
+
+  i = 0;
+  for (fa = co->ext.forall_iterator; fa; fa = fa->next)
+    {
+      ind[i].sym = fa->var->symtree->n.sym;
+      ind[i].fa = fa;
+      for (j=0; j<GFC_MAX_DIMENSIONS; j++)
+	ind[i].n[j] = 0;
+      ind[i].num = i;
+      i++;
+    }
+  ind[n_iter].sym = NULL;
+  ind[n_iter].fa = NULL;
+
+  gfc_code_walker (c, gfc_dummy_code_callback, index_cost, (void *) ind);
+  qsort ((void *) ind, n_iter, sizeof (ind_type), loop_comp);
+
+  /* Do the actual index interchange.  */
+  co->ext.forall_iterator = fa = ind[0].fa;
+  for (i=1; i<n_iter; i++)
+    {
+      fa->next = ind[i].fa;
+      fa = fa->next;
+    }
+  fa->next = NULL;
+
+  if (flag_warn_frontend_loop_interchange)
+    {
+      for (i=1; i<n_iter; i++)
+	{
+	  if (ind[i-1].num > ind[i].num)
+	    {
+	      gfc_warning (OPT_Wfrontend_loop_interchange,
+			   "Interchanging loops at %L", &co->loc);
+	      break;
+	    }
+	}
+    }
+
   return 0;
 }
 

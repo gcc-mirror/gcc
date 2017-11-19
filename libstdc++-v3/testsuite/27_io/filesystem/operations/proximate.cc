@@ -21,18 +21,20 @@
 
 #include <filesystem>
 #include <testsuite_hooks.h>
+#include <testsuite_fs.h>
 
 using std::filesystem::proximate;
+using __gnu_test::compare_paths;
 
 void
 test01()
 {
-  VERIFY( proximate("/a/d", "/a/b/c") == "../../d" );
-  VERIFY( proximate("/a/b/c", "/a/d") == "../b/c" );
-  VERIFY( proximate("a/b/c", "a") == "b/c" );
-  VERIFY( proximate("a/b/c", "a/b/c/x/y") == "../.." );
-  VERIFY( proximate("a/b/c", "a/b/c") == "." );
-  VERIFY( proximate("a/b", "c/d") == "../../a/b" );
+  compare_paths( proximate("/a/d", "/a/b/c"), "../../d" );
+  compare_paths( proximate("/a/b/c", "/a/d"), "../b/c" );
+  compare_paths( proximate("a/b/c", "a"), "b/c" );
+  compare_paths( proximate("a/b/c", "a/b/c/x/y"), "../.." );
+  compare_paths( proximate("a/b/c", "a/b/c"), "." );
+  compare_paths( proximate("a/b", "c/d"), "../../a/b" );
 }
 
 void
@@ -40,22 +42,22 @@ test02()
 {
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   std::error_code ec = bad_ec;
-  VERIFY( proximate("/a/d", "/a/b/c", ec) == "../../d" );
+  compare_paths( proximate("/a/d", "/a/b/c", ec), "../../d" );
   VERIFY( !ec );
   ec = bad_ec;
-  VERIFY( proximate("/a/b/c", "/a/d", ec) == "../b/c" );
+  compare_paths( proximate("/a/b/c", "/a/d", ec), "../b/c" );
   VERIFY( !ec );
   ec = bad_ec;
-  VERIFY( proximate("a/b/c", "a", ec) == "b/c" );
+  compare_paths( proximate("a/b/c", "a", ec), "b/c" );
   VERIFY( !ec );
   ec = bad_ec;
-  VERIFY( proximate("a/b/c", "a/b/c/x/y", ec) == "../.." );
+  compare_paths( proximate("a/b/c", "a/b/c/x/y", ec), "../.." );
   VERIFY( !ec );
   ec = bad_ec;
-  VERIFY( proximate("a/b/c", "a/b/c", ec) == "." );
+  compare_paths( proximate("a/b/c", "a/b/c", ec), "." );
   VERIFY( !ec );
   ec = bad_ec;
-  VERIFY( proximate("a/b", "c/d", ec) == "../../a/b" );
+  compare_paths( proximate("a/b", "c/d", ec), "../../a/b" );
   VERIFY( !ec );
 }
 

@@ -26,20 +26,17 @@
 #include <testsuite_hooks.h>
 
 using std::filesystem::path;
+using __gnu_test::compare_paths;
 
 void
 test01()
 {
   // C++17 [fs.path.modifiers] p8
-  VERIFY( path("foo/bar").remove_filename() == "foo/" );
-  VERIFY( path("foo/").remove_filename()    == "foo/" );
-  VERIFY( path("/foo").remove_filename()    == "/" );
-  VERIFY( path("/").remove_filename()       == "/" );
+  compare_paths( path("foo/bar").remove_filename(), "foo/" );
+  compare_paths( path("foo/").remove_filename()   , "foo/" );
+  compare_paths( path("/foo").remove_filename()   , "/" );
+  compare_paths( path("/").remove_filename()      , "/" );
 }
-
-#undef VERIFY
-#define VERIFY(X) do { if (!(X)) { __builtin_puts("FAIL: " #X); } } while(false)
-#define DUMP(X, Y) do { if (!(X == Y)) { __builtin_printf("%s %s\n", X.c_str(), Y.c_str()); } } while(false)
 
 void
 test02()
@@ -49,8 +46,7 @@ test02()
     path p2(p);
     p2.remove_filename();
     p2 /= p.filename();
-    VERIFY( p2 == p );
-    DUMP( p2 , p );
+    compare_paths( p2, p );
   }
 }
 

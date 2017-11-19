@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "dumpfile.h"
 #include "gimplify.h"
+#include "attribs.h"
 #include "debug.h"
 
 /* Data type for the expressions representing sizes of data types.
@@ -1106,7 +1107,7 @@ handle_warn_if_not_align (tree field, unsigned int record_align)
 
   if (!warn_if_not_align
       && warn_packed_not_aligned
-      && TYPE_USER_ALIGN (type))
+      && lookup_attribute ("aligned", TYPE_ATTRIBUTES (type)))
     {
       warn_if_not_align = TYPE_ALIGN (type);
       opt_w = OPT_Wpacked_not_aligned;

@@ -24,6 +24,7 @@ void B(void) {}
 int Btest()
 {
   B<256 >> 4>();
+  return 0;
 }
 
 template <int N = 123>>4>

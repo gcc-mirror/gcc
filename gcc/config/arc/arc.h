@@ -822,7 +822,7 @@ extern int arc_initial_elimination_offset(int from, int to);
     fprintf (FILE, "\tbl\t__mcount@plt\n");			\
   else								\
     fprintf (FILE, "\tbl\t__mcount\n");				\
-  } while (0);
+  } while (0)
 
 #define NO_PROFILE_COUNTERS  1
 
@@ -1405,7 +1405,7 @@ do { \
   (exact_log2 (GET_MODE_SIZE (GET_MODE (PATTERN (VEC_INSN)))))
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE));
+  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE))
 
 #define INSN_LENGTH_ALIGNMENT(INSN)		  \
   ((JUMP_TABLE_DATA_P (INSN)			  \

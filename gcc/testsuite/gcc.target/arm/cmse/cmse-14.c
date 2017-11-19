@@ -10,4 +10,4 @@ int foo (void)
 }
 
 /* { dg-final { scan-assembler "bl\t__gnu_cmse_nonsecure_call" } } */
-/* { dg-final { scan-assembler-not "b\[^ y\n\]*\\s+bar" } } */
+/* { dg-final { scan-assembler-not "^(.*\\s)?bl?\[^\\s]*\\s+bar" } } */

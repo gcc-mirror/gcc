@@ -684,7 +684,7 @@ extern long mcore_current_compilation_timestamp;
   do								\
     {								\
       if (mcore_dllexport_name_p (NAME))			\
-	MCORE_EXPORT_NAME (FILE, NAME)				\
+	MCORE_EXPORT_NAME (FILE, NAME);				\
       if (! mcore_dllimport_name_p (NAME))			\
         {							\
           fputs ("\t.comm\t", FILE);				\

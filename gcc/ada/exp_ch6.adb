@@ -4354,6 +4354,10 @@ package body Exp_Ch6 is
                               N_Procedure_Call_Statement,
                               N_Selected_Component,
                               N_Slice)
+           and then
+             (Ekind (Current_Scope) /= E_Loop
+               or else Nkind (Parent (N)) /= N_Function_Call
+               or else not Is_Build_In_Place_Function_Call (Parent (N)))
          then
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
@@ -4721,8 +4725,10 @@ package body Exp_Ch6 is
       Exp         : Node_Id;
       HSS         : Node_Id;
       Result      : Node_Id;
-      Return_Stmt : Node_Id;
       Stmts       : List_Id;
+
+      Return_Stmt : Node_Id := Empty;
+      --  Force initialization to facilitate static analysis
 
    --  Start of processing for Expand_N_Extended_Return_Statement
 

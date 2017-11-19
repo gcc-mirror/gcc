@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
+#include "tm_p.h"
 #include "gimple.h"
 #include "gimple-predict.h"
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
@@ -2230,8 +2232,10 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		      break;
 		    }
 		}
+	      else if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+		;
 	      else
-		/* Something other than a label.  That's not expected.  */
+		/* Something other is not expected.  */
 		break;
 	      gsi_next (&gsi2);
 	    }
@@ -3745,6 +3749,7 @@ gimple_boolify (tree expr)
 	case annot_expr_ivdep_kind:
 	case annot_expr_no_vector_kind:
 	case annot_expr_vector_kind:
+	case annot_expr_parallel_kind:
 	  TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));
 	  if (TREE_CODE (type) != BOOLEAN_TYPE)
 	    TREE_TYPE (expr) = boolean_type_node;

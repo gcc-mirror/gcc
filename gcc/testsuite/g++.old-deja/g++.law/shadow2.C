@@ -22,7 +22,9 @@ public:
   int f (int count) { return (count); }
 };
 
+int
 main ()
 {
   Y<char> y;
+  return 0;
 }

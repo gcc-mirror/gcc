@@ -170,9 +170,10 @@ env_manager::restore ()
 
 
 /* By default there is no special suffix for target executables.  */
-/* FIXME: when autoconf is fixed, remove the host check - dj */
-#if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
+#ifdef TARGET_EXECUTABLE_SUFFIX
 #define HAVE_TARGET_EXECUTABLE_SUFFIX
+#else
+#define TARGET_EXECUTABLE_SUFFIX ""
 #endif
 
 /* By default there is no special suffix for host executables.  */
@@ -1117,7 +1118,7 @@ static const char *cpp_unique_options =
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{!MT:%{!MQ:%{MD|MMD:%{o*:-MQ %*}}}}}}}\
- %{remap} %{g3|ggdb3|gstabs3|gcoff3|gxcoff3|gvms3:-dD}\
+ %{remap} %{g3|ggdb3|gstabs3|gxcoff3|gvms3:-dD}\
  %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
  %{H} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E|M|MM:%W{o*}}";
@@ -5314,7 +5315,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      inform (0, "%s", _(buf));
+	      inform (UNKNOWN_LOCATION, "%s", _(buf));
 	      if (*p)
 		p++;
 	    }
@@ -8191,7 +8192,8 @@ driver::do_spec_on_infiles () const
 	      else if (compare_debug && debug_check_temp_file[0])
 		{
 		  if (verbose_flag)
-		    inform (0, "recompiling with -fcompare-debug");
+		    inform (UNKNOWN_LOCATION,
+			    "recompiling with -fcompare-debug");
 
 		  compare_debug = -compare_debug;
 		  n_switches = n_switches_debug_check[1];
@@ -8216,7 +8218,7 @@ driver::do_spec_on_infiles () const
 					       debug_check_temp_file[1]));
 
 		  if (verbose_flag)
-		    inform (0, "comparing final insns dumps");
+		    inform (UNKNOWN_LOCATION, "comparing final insns dumps");
 
 		  if (compare_files (debug_check_temp_file))
 		    this_file_error = 1;

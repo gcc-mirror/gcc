@@ -50,10 +50,11 @@ namespace filesystem
   class file_status
   {
   public:
-    // constructors
+    // constructors and destructor
+    file_status() noexcept : file_status(file_type::none) {}
+
     explicit
-    file_status(file_type __ft = file_type::none,
-	        perms __prms = perms::unknown) noexcept
+    file_status(file_type __ft, perms __prms = perms::unknown) noexcept
     : _M_type(__ft), _M_perms(__prms) { }
 
     file_status(const file_status&) noexcept = default;
@@ -354,12 +355,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     directory_iterator(const path& __p, directory_options __options)
     : directory_iterator(__p, __options, nullptr) { }
 
-    directory_iterator(const path& __p, error_code& __ec) noexcept
+    directory_iterator(const path& __p, error_code& __ec)
     : directory_iterator(__p, directory_options::none, __ec) { }
 
-    directory_iterator(const path& __p,
-		       directory_options __options,
-		       error_code& __ec) noexcept
+    directory_iterator(const path& __p, directory_options __options,
+		       error_code& __ec)
     : directory_iterator(__p, __options, &__ec) { }
 
     directory_iterator(const directory_iterator& __rhs) = default;
@@ -377,7 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     const directory_entry& operator*() const;
     const directory_entry* operator->() const { return &**this; }
     directory_iterator&    operator++();
-    directory_iterator&    increment(error_code& __ec) noexcept;
+    directory_iterator&    increment(error_code& __ec);
 
     __directory_iterator_proxy operator++(int)
     {
@@ -435,12 +435,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     recursive_directory_iterator(const path& __p, directory_options __options)
     : recursive_directory_iterator(__p, __options, nullptr) { }
 
-    recursive_directory_iterator(const path& __p,
-                                 directory_options __options,
-                                 error_code& __ec) noexcept
+    recursive_directory_iterator(const path& __p, directory_options __options,
+                                 error_code& __ec)
     : recursive_directory_iterator(__p, __options, &__ec) { }
 
-    recursive_directory_iterator(const path& __p, error_code& __ec) noexcept
+    recursive_directory_iterator(const path& __p, error_code& __ec)
     : recursive_directory_iterator(__p, directory_options::none, &__ec) { }
 
     recursive_directory_iterator(
@@ -465,7 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     operator=(recursive_directory_iterator&& __rhs) noexcept;
 
     recursive_directory_iterator& operator++();
-    recursive_directory_iterator& increment(error_code& __ec) noexcept;
+    recursive_directory_iterator& increment(error_code& __ec);
 
     __directory_iterator_proxy operator++(int)
     {

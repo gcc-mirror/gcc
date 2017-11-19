@@ -27,4 +27,9 @@ void test01()
 
   float&& pfirst __attribute__((unused)) = std::get<0>(std::move(p));
   int&&  psecond __attribute__((unused)) = std::get<1>(std::move(p));
+
+  const std::pair<float, int> cp;
+
+  const float&& cpfirst __attribute__((unused)) = std::get<0>(std::move(cp));
+  const int&&  cpsecond __attribute__((unused)) = std::get<1>(std::move(cp));
 }

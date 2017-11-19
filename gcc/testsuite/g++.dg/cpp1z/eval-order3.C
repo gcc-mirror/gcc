@@ -26,7 +26,7 @@ struct A
   int _i;
   A(int i): _i(f(i)) { }
   A& memfn(int i, int j) { f(j); return *this; }
-  int operator<<(int i) { }
+  int operator<<(int i) { return 0; }
   A& operator=(const A&) { return *this; }
   A& operator+=(int i) { return *this; }
 };
@@ -38,7 +38,7 @@ struct B
   B(int i): _i(f(i)) { }
 };
 
-int operator>>(A&, int i) { }
+int operator>>(A&, int i) { return 0; }
 
 A a(0);
 A* afn(int i)

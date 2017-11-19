@@ -1,3 +1,9 @@
+2017-10-25  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-go-tool): Output colon after ${fl}.
+	(check-runtime, check-cgo-test, check-carchive-test): Likewise.
+	* Makefile.in: Rebuild.
+
 2017-09-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (GOTESTFLAGS): New variable.

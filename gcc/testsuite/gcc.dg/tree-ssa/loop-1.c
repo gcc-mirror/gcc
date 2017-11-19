@@ -46,7 +46,7 @@ int xxx(void)
 /* CRIS keeps the address in a register.  */
 /* m68k sometimes puts the address in a register, depending on CPU and PIC.  */
 
-/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* sh*-*-* cris-*-* crisv32-*-* fido-*-* m68k-*-* i?86-*-mingw* i?86-*-cygwin* x86_64-*-mingw* visium-*-* } } } */
+/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* sh*-*-* cris-*-* crisv32-*-* fido-*-* m68k-*-* i?86-*-mingw* i?86-*-cygwin* x86_64-*-mingw* visium-*-* nvptx*-*-* } } } */
 /* { dg-final { scan-assembler-times "foo,%r" 5 { target hppa*-*-* } } } */
 /* { dg-final { scan-assembler-times "= foo"  5 { target ia64*-*-* } } } */
 /* { dg-final { scan-assembler-times "call\[ \t\]*_foo" 5 { target i?86-*-mingw* i?86-*-cygwin* } } } */
@@ -55,3 +55,4 @@ int xxx(void)
 /* { dg-final { scan-assembler-times "Jsr \\\$r" 5 { target cris-*-* } } } */
 /* { dg-final { scan-assembler-times "\[jb\]sr" 5 { target fido-*-* m68k-*-* } } } */
 /* { dg-final { scan-assembler-times "bra *tr,r\[1-9\]*,r21" 5 { target visium-*-* } } } */
+/* { dg-final { scan-assembler-times "(?n)\[ \t\]call\[ \t\].*\[ \t\]foo," 5 { target nvptx*-*-* } } } */

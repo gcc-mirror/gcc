@@ -2082,7 +2082,7 @@ add_function_candidate (struct z_candidate **candidates,
       if (DECL_CONSTRUCTOR_P (fn))
 	i = 1;
       else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
-	       && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR)
+	       && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR))
 	i = 2;
       else
 	i = 0;
@@ -3365,7 +3365,7 @@ build_this (tree obj)
 {
   /* In a template, we are only concerned about the type of the
      expression, so we can take a shortcut.  */
-  if (processing_nonlambda_template ())
+  if (processing_template_decl)
     return build_address (obj);
 
   return cp_build_addr_expr (obj, tf_warning_or_error);
@@ -4474,7 +4474,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   if (TYPE_BINFO (type))
     {
-      fns = lookup_fnfields (TYPE_BINFO (type), cp_operator_id (CALL_EXPR), 1);
+      fns = lookup_fnfields (TYPE_BINFO (type), call_op_identifier, 1);
       if (fns == error_mark_node)
 	return error_mark_node;
     }
@@ -4557,19 +4557,20 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
             }
 	  result = error_mark_node;
 	}
-      /* Since cand->fn will be a type, not a function, for a conversion
-	 function, we must be careful not to unconditionally look at
-	 DECL_NAME here.  */
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL
-	       && DECL_OVERLOADED_OPERATOR_P (cand->fn) == CALL_EXPR)
+	       && DECL_OVERLOADED_OPERATOR_P (cand->fn)
+	       && DECL_OVERLOADED_OPERATOR_IS (cand->fn, CALL_EXPR))
 	result = build_over_call (cand, LOOKUP_NORMAL, complain);
       else
 	{
-	  if (DECL_P (cand->fn))
+	  if (TREE_CODE (cand->fn) == FUNCTION_DECL)
 	    obj = convert_like_with_context (cand->convs[0], obj, cand->fn,
 					     -1, complain);
 	  else
-	    obj = convert_like (cand->convs[0], obj, complain);
+	    {
+	      gcc_checking_assert (TYPE_P (cand->fn));
+	      obj = convert_like (cand->convs[0], obj, complain);
+	    }
 	  obj = convert_from_reference (obj);
 	  result = cp_build_function_call_vec (obj, args, complain);
 	}
@@ -4619,12 +4620,8 @@ static void
 op_error (location_t loc, enum tree_code code, enum tree_code code2,
 	  tree arg1, tree arg2, tree arg3, bool match)
 {
-  const char *opname;
-
-  if (code == MODIFY_EXPR)
-    opname = assignment_operator_name_info[code2].name;
-  else
-    opname = operator_name_info[code].name;
+  bool assop = code == MODIFY_EXPR;
+  const char *opname = OVL_OP_INFO (assop, assop ? code2 : code)->name;
 
   switch (code)
     {
@@ -5183,7 +5180,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       add_builtin_candidates (&candidates,
 			      COND_EXPR,
 			      NOP_EXPR,
-			      cp_operator_id (COND_EXPR),
+			      ovl_op_identifier (false, COND_EXPR),
 			      args,
 			      LOOKUP_NORMAL, complain);
 
@@ -5573,7 +5570,6 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 {
   struct z_candidate *candidates = 0, *cand;
   vec<tree, va_gc> *arglist;
-  tree fnname;
   tree args[3];
   tree result = NULL_TREE;
   bool result_valid_p = false;
@@ -5590,14 +5586,13 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
       || error_operand_p (arg3))
     return error_mark_node;
 
-  if (code == MODIFY_EXPR)
+  bool ismodop = code == MODIFY_EXPR;
+  if (ismodop)
     {
       code2 = TREE_CODE (arg3);
       arg3 = NULL_TREE;
-      fnname = cp_assignment_operator_id (code2);
     }
-  else
-    fnname = cp_operator_id (code);
+  tree fnname = ovl_op_identifier (ismodop, ismodop ? code2 : code);
 
   arg1 = prep_operand (arg1);
 
@@ -5792,7 +5787,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		? G_("no %<%D(int)%> declared for postfix %qs,"
 		     " trying prefix operator instead")
 		: G_("no %<%D(int)%> declared for postfix %qs");
-	      permerror (loc, msg, fnname, operator_name_info[code].name);
+	      permerror (loc, msg, fnname, OVL_OP_INFO (false, code)->name);
 	    }
 
 	  if (!flag_permissive)
@@ -6204,7 +6199,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   type = strip_array_types (TREE_TYPE (TREE_TYPE (addr)));
 
-  fnname = cp_operator_id (code);
+  fnname = ovl_op_identifier (false, code);
 
   if (CLASS_TYPE_P (type)
       && COMPLETE_TYPE_P (complete_type (type))
@@ -6433,7 +6428,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   if (complain & tf_error)
     error ("no suitable %<operator %s%> for %qT",
-	   operator_name_info[(int)code].name, type);
+	   OVL_OP_INFO (false, code)->name, type);
   return error_mark_node;
 }
 
@@ -8068,7 +8063,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (targ)
 	arg = targ;
       else
-	arg = cp_build_indirect_ref (arg, RO_NULL, complain);
+	arg = cp_build_fold_indirect_ref (arg);
 
       /* In C++17 we shouldn't be copying a TARGET_EXPR except into a base
 	 subobject.  */
@@ -8105,20 +8100,19 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       else if ((trivial || TREE_CODE (arg) == TARGET_EXPR)
 	       && !unsafe_copy_elision_p (fa, arg))
 	{
-	  tree to = cp_stabilize_reference (cp_build_indirect_ref (fa,
-								   RO_NULL,
-								   complain));
+	  tree to = cp_stabilize_reference (cp_build_fold_indirect_ref (fa));
 
 	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  return val;
 	}
     }
-  else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
+  else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
+	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR)
 	   && trivial_fn_p (fn)
 	   && !DECL_DELETED_FN (fn))
     {
       tree to = cp_stabilize_reference
-	(cp_build_indirect_ref (argarray[0], RO_NULL, complain));
+	(cp_build_fold_indirect_ref (argarray[0]));
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
@@ -8131,7 +8125,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
 	{
-	  arg = cp_build_indirect_ref (arg, RO_NULL, complain);
+	  arg = cp_build_fold_indirect_ref (arg);
 	  val = build2 (MODIFY_EXPR, TREE_TYPE (to), to, arg);
 	  /* Handle NSDMI that refer to the object being initialized.  */
 	  replace_placeholders (arg, to);
@@ -8170,7 +8164,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return force_target_expr (DECL_CONTEXT (fn), void_node,
 				      no_cleanup_complain);
 	  else
-	    return cp_build_indirect_ref (argarray[0], RO_NULL, complain);
+	    return cp_build_fold_indirect_ref (argarray[0]);
 	}
     }
 
@@ -8281,7 +8275,7 @@ first_non_public_field (tree type)
 static bool
 has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
 {
-  tree fns = get_class_binding (type, cp_assignment_operator_id (NOP_EXPR));
+  tree fns = get_class_binding (type, assign_op_identifier);
   bool all_trivial = true;
 
   /* Iterate over overloads of the assignment operator, checking
@@ -8781,8 +8775,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
   vec<tree, va_gc> *allocated = NULL;
   tree ret;
 
-  gcc_assert (IDENTIFIER_CDTOR_P (name)
-	      || name == cp_assignment_operator_id (NOP_EXPR));
+  gcc_assert (IDENTIFIER_CDTOR_P (name) || name == assign_op_identifier);
   if (TYPE_P (binfo))
     {
       /* Resolve the name.  */
@@ -8808,7 +8801,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
       if (!same_type_ignoring_top_level_qualifiers_p
 	  (TREE_TYPE (instance), BINFO_TYPE (binfo)))
 	{
-	  if (name != cp_assignment_operator_id (NOP_EXPR))
+	  if (IDENTIFIER_CDTOR_P (name))
 	    /* For constructors and destructors, either the base is
 	       non-virtual, or it is virtual but we are doing the
 	       conversion from a constructor or destructor for the
@@ -8816,10 +8809,13 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	       statically.  */
 	    instance = convert_to_base_statically (instance, binfo);
 	  else
-	    /* However, for assignment operators, we must convert
-	       dynamically if the base is virtual.  */
-	    instance = build_base_path (PLUS_EXPR, instance,
-					binfo, /*nonnull=*/1, complain);
+	    {
+	      /* However, for assignment operators, we must convert
+		 dynamically if the base is virtual.  */
+	      gcc_checking_assert (name == assign_op_identifier);
+	      instance = build_base_path (PLUS_EXPR, instance,
+					  binfo, /*nonnull=*/1, complain);
+	    }
 	}
     }
 
@@ -10649,6 +10645,16 @@ perform_direct_initialization_if_possible (tree type,
 			      LOOKUP_NORMAL, complain);
   if (!conv || conv->bad_p)
     expr = NULL_TREE;
+  else if (processing_template_decl && conv->kind != ck_identity)
+    {
+      /* In a template, we are only concerned about determining the
+	 type of non-dependent expressions, so we do not have to
+	 perform the actual conversion.  But for initializers, we
+	 need to be able to perform it at instantiation
+	 (or instantiate_non_dependent_expr) time.  */
+      expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
+      IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
+    }
   else
     expr = convert_like_real (conv, expr, NULL_TREE, 0,
 			      /*issue_conversion_warnings=*/false,

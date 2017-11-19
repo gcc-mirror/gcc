@@ -272,6 +272,9 @@ extern int darwin_emit_branch_islands;
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
 
+#undef  TARGET_IEEEQUAD_DEFAULT
+#define TARGET_IEEEQUAD_DEFAULT 0
+
 /* Since Darwin doesn't do TOCs, stub this out.  */
 
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)  ((void)X, (void)MODE, 0)

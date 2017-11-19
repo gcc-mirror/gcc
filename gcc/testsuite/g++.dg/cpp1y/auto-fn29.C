@@ -24,6 +24,7 @@ namespace Baboon {
    template <typename T>
    bool f4(T const& v){
        f2(v);
+       return true;
    }
 }
 

@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std {
 template<class,class>struct pair{};

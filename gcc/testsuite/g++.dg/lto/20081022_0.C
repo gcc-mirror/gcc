@@ -6,6 +6,8 @@ f (foo * a)
   return a->bar ();
 }
 
+int
 main()
 {
+  return 0;
 }

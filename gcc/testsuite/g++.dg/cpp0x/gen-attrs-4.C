@@ -22,7 +22,7 @@ void two [[gnu::unused]] (void) {}
 int
 five(void)
 [[noreturn]] // { dg-warning "ignored" }
-{}
+{ return 0; }
 
 [[noreturn]]
 void

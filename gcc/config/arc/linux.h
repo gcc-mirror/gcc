@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define GLIBC_DYNAMIC_LINKER   "/lib/ld-linux.so.2"
+#define GLIBC_DYNAMIC_LINKER   "/lib/ld-linux-arc.so.2"
 #define UCLIBC_DYNAMIC_LINKER  "/lib/ld-uClibc.so.0"
 
 /* Note that the default is to link against dynamic libraries, if they are
@@ -91,3 +91,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Pre/post modify with register displacement are default off.  */
 #undef TARGET_AUTO_MODIFY_REG_DEFAULT
 #define TARGET_AUTO_MODIFY_REG_DEFAULT 0
+
+#if DEFAULT_LIBC == LIBC_GLIBC
+/* Override linux.h LINK_EH_SPEC definition.
+   Signalize that because we have fde-glibc, we don't need all C shared libs
+   linked against -lgcc_s.  */
+#undef LINK_EH_SPEC
+#define LINK_EH_SPEC "--eh-frame-hdr"
+#endif

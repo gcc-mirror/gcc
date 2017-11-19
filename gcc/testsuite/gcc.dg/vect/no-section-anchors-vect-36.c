@@ -4,7 +4,11 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 2 / 8)
+#else
 #define N 32
+#endif
  
 struct {
   char ca[N];

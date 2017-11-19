@@ -14,6 +14,7 @@ class X
         [&a]{
             typename remove_reference < decltype (a) >::type t;
         };
+	return true;
     }
 };
 template class X< int >;

@@ -19,6 +19,7 @@ struct R
 int Foo ()
 {
   R s (1);
+  return 0;
 }
 
 template <typename T> struct Q
@@ -29,4 +30,5 @@ template <typename T> struct Q
 int Foo (Q<int> *s)
 {
   s->Foo (1);
+  return 1;
 }

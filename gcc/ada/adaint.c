@@ -1012,7 +1012,7 @@ __gnat_open_new_temp (char *path, int fmode)
 
 #if (defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) \
   || defined (__linux__) || defined (__GLIBC__) || defined (__ANDROID__) \
-  || defined (__DragonFly__)) && !defined (__vxworks)
+  || defined (__DragonFly__) || defined (__QNX__)) && !defined (__vxworks)
   return mkstemp (path);
 #elif defined (__Lynx__)
   mktemp (path);
@@ -1185,7 +1185,7 @@ __gnat_tmp_name (char *tmp_filename)
 
 #elif defined (__linux__) || defined (__FreeBSD__) || defined (__NetBSD__) \
   || defined (__OpenBSD__) || defined (__GLIBC__) || defined (__ANDROID__) \
-  || defined (__DragonFly__)
+  || defined (__DragonFly__) || defined (__QNX__)
 #define MAX_SAFE_PATH 1000
   char *tmpdir = getenv ("TMPDIR");
 

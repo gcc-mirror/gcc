@@ -261,7 +261,7 @@ init_enviroment_variables (void)
 	fprintf (stderr, __VA_ARGS__); \
       } \
   } \
-  while (false);
+  while (false)
 
 /* Print a debugging message to stderr.  */
 
@@ -1241,7 +1241,7 @@ init_single_kernel (struct kernel_info *kernel, unsigned *max_omp_data_size)
       if (dependency->dependencies_count > 0)
 	{
 	  HSA_DEBUG ("HSA does not allow kernel dispatching code with "
-		     "a depth bigger than one\n")
+		     "a depth bigger than one\n");
 	  goto failure;
 	}
 
@@ -1664,7 +1664,7 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 {
   pthread_t pt;
   struct async_run_info *info;
-  HSA_DEBUG ("GOMP_OFFLOAD_async_run invoked\n")
+  HSA_DEBUG ("GOMP_OFFLOAD_async_run invoked\n");
   info = GOMP_PLUGIN_malloc (sizeof (struct async_run_info));
 
   info->device = device;

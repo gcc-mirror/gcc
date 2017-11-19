@@ -1,5 +1,7 @@
 // PR middle-end/78507
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
+
 struct A {
   template <typename _Iterator1, typename _Iterator2>
   int operator()(_Iterator1, _Iterator2);

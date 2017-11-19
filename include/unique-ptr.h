@@ -74,7 +74,9 @@
 #ifndef GNU_UNIQUE_PTR_H
 #define GNU_UNIQUE_PTR_H 1
 
-#include <memory>
+#if __cplusplus >= 201103
+# include <memory>
+#endif
 
 namespace gnu
 {

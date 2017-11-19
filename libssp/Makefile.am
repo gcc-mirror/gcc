@@ -34,6 +34,7 @@ version_dep =
 endif
 
 AM_CFLAGS = -Wall
+AM_CFLAGS += $(XCFLAGS)
 
 toolexeclib_LTLIBRARIES = libssp.la libssp_nonshared.la
 
@@ -53,7 +54,7 @@ libssp_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 
 libssp_nonshared_la_SOURCES = \
 	ssp-local.c
-libssp_nonshared_la_CFLAGS = -prefer-pic
+libssp_nonshared_la_CFLAGS = -prefer-pic $(XCFLAGS)
 libssp_nonshared_la_LIBADD = 
 libssp_nonshared_la_DEPENDENCIES = $(libssp_nonshared_la_LIBADD)
 libssp_nonshared_la_LDFLAGS = -static

@@ -21,28 +21,30 @@
 
 #include <filesystem>
 #include <testsuite_hooks.h>
+#include <testsuite_fs.h>
 
 using std::filesystem::path;
+using __gnu_test::compare_paths;
 
 void
 test01()
 {
   // C++17 [fs.path.gen] p5
-  VERIFY( path("/a/d").lexically_relative("/a/b/c") == "../../d" );
-  VERIFY( path("/a/b/c").lexically_relative("/a/d") == "../b/c" );
-  VERIFY( path("a/b/c").lexically_relative("a") == "b/c" );
-  VERIFY( path("a/b/c").lexically_relative("a/b/c/x/y") == "../.." );
-  VERIFY( path("a/b/c").lexically_relative("a/b/c") == "." );
-  VERIFY( path("a/b").lexically_relative("c/d") == "../../a/b" );
+  compare_paths( path("/a/d").lexically_relative("/a/b/c"), "../../d" );
+  compare_paths( path("/a/b/c").lexically_relative("/a/d"), "../b/c" );
+  compare_paths( path("a/b/c").lexically_relative("a"), "b/c" );
+  compare_paths( path("a/b/c").lexically_relative("a/b/c/x/y"), "../.." );
+  compare_paths( path("a/b/c").lexically_relative("a/b/c"), "." );
+  compare_paths( path("a/b").lexically_relative("c/d"), "../../a/b" );
 }
 
 void
 test02()
 {
   path p = "a/b/c";
-  VERIFY( p.lexically_relative(p) == "." );
-  VERIFY( p.lexically_relative("a/../a/b/../b/c/../c/.") == "../../b/c" );
-  VERIFY( p.lexically_relative("../../../") == "" );
+  compare_paths( p.lexically_relative(p), "." );
+  compare_paths( p.lexically_relative("a/../a/b/../b/c/../c/."), "../../b/c" );
+  compare_paths( p.lexically_relative("../../../"), "" );
 }
 
 int

@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
+
 extern "C" {
   typedef __SIZE_TYPE__ size_t;
   typedef struct   {

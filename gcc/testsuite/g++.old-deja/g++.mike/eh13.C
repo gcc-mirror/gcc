@@ -3,4 +3,4 @@
 
 #include <string>
 
-main() { }
+int main() { return 0; }

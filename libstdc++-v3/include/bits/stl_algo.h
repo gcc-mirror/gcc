@@ -180,7 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _InputIterator
     __find_if_not_n(_InputIterator __first, _Distance& __len, _Predicate __pred)
     {
-      for (; __len; --__len, ++__first)
+      for (; __len; --__len,  (void) ++__first)
 	if (!__pred(__first))
 	  break;
       return __first;
@@ -4462,7 +4462,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    __typeof__(__gen())>)
 
       for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, ++__first)
+	   __niter > 0; --__niter, (void) ++__first)
 	*__first = __gen();
       return __first;
     }

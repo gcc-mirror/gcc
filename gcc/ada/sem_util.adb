@@ -141,7 +141,9 @@ package body Sem_Util is
 
    function Subprogram_Name (N : Node_Id) return String;
    --  Return the fully qualified name of the enclosing subprogram for the
-   --  given node N.
+   --  given node N, with file:line:col information appended, e.g.
+   --  "subp:file:line:col", corresponding to the source location of the
+   --  body of the subprogram.
 
    ------------------------------
    --  Abstract_Interface_List --
@@ -594,6 +596,8 @@ package body Sem_Util is
       -----------
 
       procedure Inner (E : Entity_Id) is
+         Scop : Node_Id;
+
       begin
          --  If entity has an internal name, skip by it, and print its scope.
          --  Note that we strip a final R from the name before the test; this
@@ -615,21 +619,23 @@ package body Sem_Util is
             end if;
          end;
 
+         Scop := Scope (E);
+
          --  Just print entity name if its scope is at the outer level
 
-         if Scope (E) = Standard_Standard then
+         if Scop = Standard_Standard then
             null;
 
          --  If scope comes from source, write scope and entity
 
-         elsif Comes_From_Source (Scope (E)) then
-            Append_Entity_Name (Temp, Scope (E));
+         elsif Comes_From_Source (Scop) then
+            Append_Entity_Name (Temp, Scop);
             Append (Temp, '.');
 
          --  If in wrapper package skip past it
 
-         elsif Is_Wrapper_Package (Scope (E)) then
-            Append_Entity_Name (Temp, Scope (Scope (E)));
+         elsif Present (Scop) and then Is_Wrapper_Package (Scop) then
+            Append_Entity_Name (Temp, Scope (Scop));
             Append (Temp, '.');
 
          --  Otherwise nothing to output (happens in unnamed block statements)
@@ -4025,7 +4031,7 @@ package body Sem_Util is
          if SPARK_Mode_Is_Off (Pack) then
             null;
 
-         --  State refinement can only occur in a completing packge body. Do
+         --  State refinement can only occur in a completing package body. Do
          --  not verify proper state refinement when the body is subject to
          --  pragma SPARK_Mode Off because this disables the requirement for
          --  state refinement.
@@ -7835,6 +7841,66 @@ package body Sem_Util is
       raise Program_Error;
    end Find_Corresponding_Discriminant;
 
+   -------------------
+   -- Find_DIC_Type --
+   -------------------
+
+   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id is
+      Curr_Typ : Entity_Id;
+      --  The current type being examined in the parent hierarchy traversal
+
+      DIC_Typ : Entity_Id;
+      --  The type which carries the DIC pragma. This variable denotes the
+      --  partial view when private types are involved.
+
+      Par_Typ : Entity_Id;
+      --  The parent type of the current type. This variable denotes the full
+      --  view when private types are involved.
+
+   begin
+      --  The input type defines its own DIC pragma, therefore it is the owner
+
+      if Has_Own_DIC (Typ) then
+         DIC_Typ := Typ;
+
+         --  Otherwise the DIC pragma is inherited from a parent type
+
+      else
+         pragma Assert (Has_Inherited_DIC (Typ));
+
+         --  Climb the parent chain
+
+         Curr_Typ := Typ;
+         loop
+            --  Inspect the parent type. Do not consider subtypes as they
+            --  inherit the DIC attributes from their base types.
+
+            DIC_Typ := Base_Type (Etype (Curr_Typ));
+
+            --  Look at the full view of a private type because the type may
+            --  have a hidden parent introduced in the full view.
+
+            Par_Typ := DIC_Typ;
+
+            if Is_Private_Type (Par_Typ)
+              and then Present (Full_View (Par_Typ))
+            then
+               Par_Typ := Full_View (Par_Typ);
+            end if;
+
+            --  Stop the climb once the nearest parent type which defines a DIC
+            --  pragma of its own is encountered or when the root of the parent
+            --  chain is reached.
+
+            exit when Has_Own_DIC (DIC_Typ) or else Curr_Typ = Par_Typ;
+
+            Curr_Typ := Par_Typ;
+         end loop;
+      end if;
+
+      return DIC_Typ;
+   end Find_DIC_Type;
+
    ----------------------------------
    -- Find_Enclosing_Iterator_Loop --
    ----------------------------------
@@ -9019,6 +9085,12 @@ package body Sem_Util is
          end if;
 
          Lit := First_Literal (Btyp);
+
+         --  Position in the enumeration type starts at 0.
+         if UI_To_Int (Pos) < 0 then
+            raise Constraint_Error;
+         end if;
+
          for J in 1 .. UI_To_Int (Pos) loop
             Next_Literal (Lit);
 
@@ -12147,6 +12219,40 @@ package body Sem_Util is
       return Empty;
    end Incomplete_Or_Partial_View;
 
+   ---------------------------------------
+   -- Incomplete_View_From_Limited_With --
+   ---------------------------------------
+
+   function Incomplete_View_From_Limited_With
+     (Typ : Entity_Id) return Entity_Id is
+   begin
+      --  It might make sense to make this an attribute in Einfo, and set it
+      --  in Sem_Ch10 in Build_Shadow_Entity. However, we're running short on
+      --  slots for new attributes, and it seems a bit simpler to just search
+      --  the Limited_View (if it exists) for an incomplete type whose
+      --  Non_Limited_View is Typ.
+
+      if Ekind (Scope (Typ)) = E_Package
+        and then Present (Limited_View (Scope (Typ)))
+      then
+         declare
+            Ent : Entity_Id := First_Entity (Limited_View (Scope (Typ)));
+         begin
+            while Present (Ent) loop
+               if Ekind (Ent) in Incomplete_Kind
+                 and then Non_Limited_View (Ent) = Typ
+               then
+                  return Ent;
+               end if;
+
+               Ent := Next_Entity (Ent);
+            end loop;
+         end;
+      end if;
+
+      return Typ;
+   end Incomplete_View_From_Limited_With;
+
    ----------------------------------
    -- Indexed_Component_Bit_Offset --
    ----------------------------------
@@ -12790,8 +12896,9 @@ package body Sem_Util is
                                               E_Package,
                                               E_Procedure,
                                               E_Protected_Type,
-                                              E_Task_Type));
-
+                                              E_Task_Type)
+                          or else
+                        Is_Record_Type (Context_Id));
          return Scope_Within_Or_Same (Context_Id, Ref_Id);
       end if;
    end Is_CCT_Instance;
@@ -13193,14 +13300,14 @@ package body Sem_Util is
       if Ekind (Proc_Nam) = E_Procedure
         and then Present (Parameter_Specifications (Parent (Proc_Nam)))
       then
-         Param := Parameter_Type (First (
-                    Parameter_Specifications (Parent (Proc_Nam))));
+         Param :=
+           Parameter_Type
+             (First (Parameter_Specifications (Parent (Proc_Nam))));
 
-         --  The formal may be an anonymous access type.
+         --  The formal may be an anonymous access type
 
          if Nkind (Param) = N_Access_Definition then
             Param_Typ := Entity (Subtype_Mark (Param));
-
          else
             Param_Typ := Etype (Param);
          end if;
@@ -14534,6 +14641,442 @@ package body Sem_Util is
       end case;
    end Is_Name_Reference;
 
+   ------------------------------------
+   -- Is_Non_Preelaborable_Construct --
+   ------------------------------------
+
+   function Is_Non_Preelaborable_Construct (N : Node_Id) return Boolean is
+
+      --  NOTE: the routines within Is_Non_Preelaborable_Construct are
+      --  intentionally unnested to avoid deep indentation of code.
+
+      Non_Preelaborable : exception;
+      --  This exception is raised when the construct violates preelaborability
+      --  to terminate the recursion.
+
+      procedure Visit (Nod : Node_Id);
+      --  Semantically inspect construct Nod to determine whether it violates
+      --  preelaborability. This routine raises Non_Preelaborable.
+
+      procedure Visit_List (List : List_Id);
+      pragma Inline (Visit_List);
+      --  Invoke Visit on each element of list List. This routine raises
+      --  Non_Preelaborable.
+
+      procedure Visit_Pragma (Prag : Node_Id);
+      pragma Inline (Visit_Pragma);
+      --  Semantically inspect pragma Prag to determine whether it violates
+      --  preelaborability. This routine raises Non_Preelaborable.
+
+      procedure Visit_Subexpression (Expr : Node_Id);
+      pragma Inline (Visit_Subexpression);
+      --  Semantically inspect expression Expr to determine whether it violates
+      --  preelaborability. This routine raises Non_Preelaborable.
+
+      -----------
+      -- Visit --
+      -----------
+
+      procedure Visit (Nod : Node_Id) is
+      begin
+         case Nkind (Nod) is
+
+            --  Declarations
+
+            when N_Component_Declaration =>
+
+               --  Defining_Identifier is left out because it is not relevant
+               --  for preelaborability.
+
+               Visit (Component_Definition (Nod));
+               Visit (Expression (Nod));
+
+            when N_Derived_Type_Definition =>
+
+               --  Interface_List is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit (Record_Extension_Part (Nod));
+               Visit (Subtype_Indication (Nod));
+
+            when N_Entry_Declaration =>
+
+               --  A protected type with at leat one entry is not preelaborable
+               --  while task types are never preelaborable. This renders entry
+               --  declarations non-preelaborable.
+
+               raise Non_Preelaborable;
+
+            when N_Full_Type_Declaration =>
+
+               --  Defining_Identifier and Discriminant_Specifications are left
+               --  out because they are not relevant for preelaborability.
+
+               Visit (Type_Definition (Nod));
+
+            when N_Function_Instantiation
+               | N_Package_Instantiation
+               | N_Procedure_Instantiation
+            =>
+               --  Defining_Unit_Name and Name are left out because they are
+               --  not relevant for preelaborability.
+
+               Visit_List (Generic_Associations (Nod));
+
+            when N_Object_Declaration =>
+
+               --  Defining_Identifier is left out because it is not relevant
+               --  for preelaborability.
+
+               Visit (Object_Definition (Nod));
+
+               if Has_Init_Expression (Nod) then
+                  Visit (Expression (Nod));
+
+               elsif not Has_Preelaborable_Initialization
+                           (Etype (Defining_Entity (Nod)))
+               then
+                  raise Non_Preelaborable;
+               end if;
+
+            when N_Private_Extension_Declaration
+               | N_Subtype_Declaration
+            =>
+               --  Defining_Identifier, Discriminant_Specifications, and
+               --  Interface_List are left out because they are not relevant
+               --  for preelaborability.
+
+               Visit (Subtype_Indication (Nod));
+
+            when N_Protected_Type_Declaration
+               | N_Single_Protected_Declaration
+            =>
+               --  Defining_Identifier, Discriminant_Specifications, and
+               --  Interface_List are left out because they are not relevant
+               --  for preelaborability.
+
+               Visit (Protected_Definition (Nod));
+
+            --  A [single] task type is never preelaborable
+
+            when N_Single_Task_Declaration
+               | N_Task_Type_Declaration
+            =>
+               raise Non_Preelaborable;
+
+            --  Pragmas
+
+            when N_Pragma =>
+               Visit_Pragma (Nod);
+
+            --  Statements
+
+            when N_Statement_Other_Than_Procedure_Call =>
+               if Nkind (Nod) /= N_Null_Statement then
+                  raise Non_Preelaborable;
+               end if;
+
+            --  Subexpressions
+
+            when N_Subexpr =>
+               Visit_Subexpression (Nod);
+
+            --  Special
+
+            when N_Access_To_Object_Definition =>
+               Visit (Subtype_Indication (Nod));
+
+            when N_Case_Expression_Alternative =>
+               Visit (Expression (Nod));
+               Visit_List (Discrete_Choices (Nod));
+
+            when N_Component_Definition =>
+               Visit (Access_Definition (Nod));
+               Visit (Subtype_Indication (Nod));
+
+            when N_Component_List =>
+               Visit_List (Component_Items (Nod));
+               Visit (Variant_Part (Nod));
+
+            when N_Constrained_Array_Definition =>
+               Visit_List (Discrete_Subtype_Definitions (Nod));
+               Visit (Component_Definition (Nod));
+
+            when N_Delta_Constraint
+               | N_Digits_Constraint
+            =>
+               --  Delta_Expression and Digits_Expression are left out because
+               --  they are not relevant for preelaborability.
+
+               Visit (Range_Constraint (Nod));
+
+            when N_Discriminant_Specification =>
+
+               --  Defining_Identifier and Expression are left out because they
+               --  are not relevant for preelaborability.
+
+               Visit (Discriminant_Type (Nod));
+
+            when N_Generic_Association =>
+
+               --  Selector_Name is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit (Explicit_Generic_Actual_Parameter (Nod));
+
+            when N_Index_Or_Discriminant_Constraint =>
+               Visit_List (Constraints (Nod));
+
+            when N_Iterator_Specification =>
+
+               --  Defining_Identifier is left out because it is not relevant
+               --  for preelaborability.
+
+               Visit (Name (Nod));
+               Visit (Subtype_Indication (Nod));
+
+            when N_Loop_Parameter_Specification =>
+
+               --  Defining_Identifier is left out because it is not relevant
+               --  for preelaborability.
+
+               Visit (Discrete_Subtype_Definition (Nod));
+
+            when N_Protected_Definition =>
+
+               --  End_Label is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit_List (Private_Declarations (Nod));
+               Visit_List (Visible_Declarations (Nod));
+
+            when N_Range_Constraint =>
+               Visit (Range_Expression (Nod));
+
+            when N_Record_Definition
+               | N_Variant
+            =>
+               --  End_Label, Discrete_Choices, and Interface_List are left out
+               --  because they are not relevant for preelaborability.
+
+               Visit (Component_List (Nod));
+
+            when N_Subtype_Indication =>
+
+               --  Subtype_Mark is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit (Constraint (Nod));
+
+            when N_Unconstrained_Array_Definition =>
+
+               --  Subtype_Marks is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit (Component_Definition (Nod));
+
+            when N_Variant_Part =>
+
+               --  Name is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit_List (Variants (Nod));
+
+            --  Default
+
+            when others =>
+               null;
+         end case;
+      end Visit;
+
+      ----------------
+      -- Visit_List --
+      ----------------
+
+      procedure Visit_List (List : List_Id) is
+         Nod : Node_Id;
+
+      begin
+         if Present (List) then
+            Nod := First (List);
+            while Present (Nod) loop
+               Visit (Nod);
+               Next (Nod);
+            end loop;
+         end if;
+      end Visit_List;
+
+      ------------------
+      -- Visit_Pragma --
+      ------------------
+
+      procedure Visit_Pragma (Prag : Node_Id) is
+      begin
+         case Get_Pragma_Id (Prag) is
+            when Pragma_Assert
+               | Pragma_Assert_And_Cut
+               | Pragma_Assume
+               | Pragma_Async_Readers
+               | Pragma_Async_Writers
+               | Pragma_Attribute_Definition
+               | Pragma_Check
+               | Pragma_Constant_After_Elaboration
+               | Pragma_CPU
+               | Pragma_Deadline_Floor
+               | Pragma_Dispatching_Domain
+               | Pragma_Effective_Reads
+               | Pragma_Effective_Writes
+               | Pragma_Extensions_Visible
+               | Pragma_Ghost
+               | Pragma_Secondary_Stack_Size
+               | Pragma_Task_Name
+               | Pragma_Volatile_Function
+            =>
+               Visit_List (Pragma_Argument_Associations (Prag));
+
+            --  Default
+
+            when others =>
+               null;
+         end case;
+      end Visit_Pragma;
+
+      -------------------------
+      -- Visit_Subexpression --
+      -------------------------
+
+      procedure Visit_Subexpression (Expr : Node_Id) is
+         procedure Visit_Aggregate (Aggr : Node_Id);
+         pragma Inline (Visit_Aggregate);
+         --  Semantically inspect aggregate Aggr to determine whether it
+         --  violates preelaborability.
+
+         ---------------------
+         -- Visit_Aggregate --
+         ---------------------
+
+         procedure Visit_Aggregate (Aggr : Node_Id) is
+         begin
+            if not Is_Preelaborable_Aggregate (Aggr) then
+               raise Non_Preelaborable;
+            end if;
+         end Visit_Aggregate;
+
+      --  Start of processing for Visit_Subexpression
+
+      begin
+         case Nkind (Expr) is
+            when N_Allocator
+               | N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Expression
+               | N_Unchecked_Type_Conversion
+            =>
+               --  Subpool_Handle_Name and Subtype_Mark are left out because
+               --  they are not relevant for preelaborability.
+
+               Visit (Expression (Expr));
+
+            when N_Aggregate
+               | N_Extension_Aggregate
+            =>
+               Visit_Aggregate (Expr);
+
+            when N_Attribute_Reference
+               | N_Explicit_Dereference
+               | N_Reference
+            =>
+               --  Attribute_Name and Expressions are left out because they are
+               --  not relevant for preelaborability.
+
+               Visit (Prefix (Expr));
+
+            when N_Case_Expression =>
+
+               --  End_Span is left out because it is not relevant for
+               --  preelaborability.
+
+               Visit_List (Alternatives (Expr));
+               Visit (Expression (Expr));
+
+            when N_Delta_Aggregate =>
+               Visit_Aggregate (Expr);
+               Visit (Expression (Expr));
+
+            when N_Expression_With_Actions =>
+               Visit_List (Actions (Expr));
+               Visit (Expression (Expr));
+
+            when N_If_Expression =>
+               Visit_List (Expressions (Expr));
+
+            when N_Quantified_Expression =>
+               Visit (Condition (Expr));
+               Visit (Iterator_Specification (Expr));
+               Visit (Loop_Parameter_Specification (Expr));
+
+            when N_Range =>
+               Visit (High_Bound (Expr));
+               Visit (Low_Bound (Expr));
+
+            when N_Slice =>
+               Visit (Discrete_Range (Expr));
+               Visit (Prefix (Expr));
+
+            --  Default
+
+            when others =>
+
+               --  The evaluation of an object name is not preelaborable,
+               --  unless the name is a static expression (checked further
+               --  below), or statically denotes a discriminant.
+
+               if Is_Entity_Name (Expr) then
+                  Object_Name : declare
+                     Id : constant Entity_Id := Entity (Expr);
+
+                  begin
+                     if Is_Object (Id) then
+                        if Ekind (Id) = E_Discriminant then
+                           null;
+
+                        elsif Ekind_In (Id, E_Constant, E_In_Parameter)
+                          and then Present (Discriminal_Link (Id))
+                        then
+                           null;
+
+                        else
+                           raise Non_Preelaborable;
+                        end if;
+                     end if;
+                  end Object_Name;
+
+               --  A non-static expression is not preelaborable
+
+               elsif not Is_OK_Static_Expression (Expr) then
+                  raise Non_Preelaborable;
+               end if;
+         end case;
+      end Visit_Subexpression;
+
+   --  Start of processing for Is_Non_Preelaborable_Construct
+
+   begin
+      Visit (N);
+
+      --  At this point it is known that the construct is preelaborable
+
+      return False;
+
+   exception
+
+      --  The elaboration of the construct performs an action which violates
+      --  preelaborability.
+
+      when Non_Preelaborable =>
+         return True;
+   end Is_Non_Preelaborable_Construct;
+
    ---------------------------------
    -- Is_Nontrivial_DIC_Procedure --
    ---------------------------------
@@ -14860,10 +15403,6 @@ package body Sem_Util is
       function Within_Check (Nod : Node_Id) return Boolean;
       --  Determine whether an arbitrary node appears in a check node
 
-      function Within_Subprogram_Call (Nod : Node_Id) return Boolean;
-      --  Determine whether an arbitrary node appears in an entry, function, or
-      --  procedure call.
-
       function Within_Volatile_Function (Id : Entity_Id) return Boolean;
       --  Determine whether an arbitrary entity appears in a volatile function
 
@@ -14925,36 +15464,6 @@ package body Sem_Util is
 
          return False;
       end Within_Check;
-
-      ----------------------------
-      -- Within_Subprogram_Call --
-      ----------------------------
-
-      function Within_Subprogram_Call (Nod : Node_Id) return Boolean is
-         Par : Node_Id;
-
-      begin
-         --  Climb the parent chain looking for a function or procedure call
-
-         Par := Nod;
-         while Present (Par) loop
-            if Nkind_In (Par, N_Entry_Call_Statement,
-                              N_Function_Call,
-                              N_Procedure_Call_Statement)
-            then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end Within_Subprogram_Call;
 
       ------------------------------
       -- Within_Volatile_Function --
@@ -15416,7 +15925,7 @@ package body Sem_Util is
       Anc_Part : Node_Id;
       Assoc    : Node_Id;
       Choice   : Node_Id;
-      Comp_Typ : Entity_Id;
+      Comp_Typ : Entity_Id := Empty; -- init to avoid warning
       Expr     : Node_Id;
 
    begin
@@ -15492,6 +16001,7 @@ package body Sem_Util is
          --  The type of the choice must have preelaborable initialization if
          --  the association carries a <>.
 
+         pragma Assert (Present (Comp_Typ));
          if Box_Present (Assoc) then
             if not Has_Preelaborable_Initialization (Comp_Typ) then
                return False;
@@ -17317,10 +17827,11 @@ package body Sem_Util is
    ---------------------------------
 
    procedure Mark_Elaboration_Attributes
-     (N_Id   : Node_Or_Entity_Id;
-      Checks : Boolean := False;
-      Level  : Boolean := False;
-      Modes  : Boolean := False)
+     (N_Id     : Node_Or_Entity_Id;
+      Checks   : Boolean := False;
+      Level    : Boolean := False;
+      Modes    : Boolean := False;
+      Warnings : Boolean := False)
    is
       function Elaboration_Checks_OK
         (Target_Id  : Entity_Id;
@@ -17503,6 +18014,13 @@ package body Sem_Util is
                Set_Is_SPARK_Mode_On_Node (N);
             end if;
          end if;
+
+         --  Mark the status of elaboration warnings in effect. Do not reset
+         --  the status in case the node is reanalyzed with warnings off.
+
+         if Warnings and then not Is_Elaboration_Warnings_OK_Node (N) then
+            Set_Is_Elaboration_Warnings_OK_Node (N, Elab_Warnings);
+         end if;
       end Mark_Elaboration_Attributes_Node;
 
    --  Start of processing for Mark_Elaboration_Attributes
@@ -17526,8 +18044,8 @@ package body Sem_Util is
       L_Ndims : constant Nat := Number_Dimensions (L_Typ);
       R_Ndims : constant Nat := Number_Dimensions (R_Typ);
 
-      L_Index : Node_Id;
-      R_Index : Node_Id;
+      L_Index : Node_Id := Empty; -- init to ...
+      R_Index : Node_Id := Empty; -- ...avoid warnings
       L_Low   : Node_Id;
       L_High  : Node_Id;
       L_Len   : Uint;
@@ -19504,9 +20022,9 @@ package body Sem_Util is
       N : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
    begin
-      Set_Ekind          (N, Kind);
-      Set_Is_Internal    (N, True);
-      Append_Entity      (N, Scope_Id);
+      Set_Ekind       (N, Kind);
+      Set_Is_Internal (N, True);
+      Append_Entity   (N, Scope_Id);
 
       if Kind in Type_Kind then
          Init_Size_Align (N);
@@ -23295,6 +23813,7 @@ package body Sem_Util is
    function Subprogram_Name (N : Node_Id) return String is
       Buf : Bounded_String;
       Ent : Node_Id := N;
+      Nod : Node_Id;
 
    begin
       while Present (Ent) loop
@@ -23303,17 +23822,32 @@ package body Sem_Util is
                Ent := Defining_Unit_Name (Specification (Ent));
                exit;
 
-            when N_Package_Body
+            when N_Subprogram_Declaration =>
+               Nod := Corresponding_Body (Ent);
+
+               if Present (Nod) then
+                  Ent := Nod;
+               else
+                  Ent := Defining_Unit_Name (Specification (Ent));
+               end if;
+
+               exit;
+
+            when N_Subprogram_Instantiation
+               | N_Package_Body
                | N_Package_Specification
-               | N_Subprogram_Specification
             =>
                Ent := Defining_Unit_Name (Ent);
                exit;
 
+            when N_Protected_Type_Declaration =>
+               Ent := Corresponding_Body (Ent);
+               exit;
+
             when N_Protected_Body
-               | N_Protected_Type_Declaration
                | N_Task_Body
             =>
+               Ent := Defining_Identifier (Ent);
                exit;
 
             when others =>
@@ -23324,17 +23858,54 @@ package body Sem_Util is
       end loop;
 
       if No (Ent) then
-         return "unknown subprogram";
+         return "unknown subprogram:unknown file:0:0";
       end if;
 
       --  If the subprogram is a child unit, use its simple name to start the
       --  construction of the fully qualified name.
 
       if Nkind (Ent) = N_Defining_Program_Unit_Name then
-         Append_Entity_Name (Buf, Defining_Identifier (Ent));
-      else
-         Append_Entity_Name (Buf, Ent);
+         Ent := Defining_Identifier (Ent);
       end if;
+
+      Append_Entity_Name (Buf, Ent);
+
+      --  Append homonym number if needed
+
+      if Nkind (N) in N_Entity and then Has_Homonym (N) then
+         declare
+            H  : Entity_Id := Homonym (N);
+            Nr : Nat := 1;
+
+         begin
+            while Present (H) loop
+               if Scope (H) = Scope (N) then
+                  Nr := Nr + 1;
+               end if;
+
+               H := Homonym (H);
+            end loop;
+
+            if Nr > 1 then
+               Append (Buf, '#');
+               Append (Buf, Nr);
+            end if;
+         end;
+      end if;
+
+      --  Append source location of Ent to Buf so that the string will
+      --  look like "subp:file:line:col".
+
+      declare
+         Loc : constant Source_Ptr := Sloc (Ent);
+      begin
+         Append (Buf, ':');
+         Append (Buf, Reference_Name (Get_Source_File_Index (Loc)));
+         Append (Buf, ':');
+         Append (Buf, Nat (Get_Logical_Line_Number (Loc)));
+         Append (Buf, ':');
+         Append (Buf, Nat (Get_Column_Number (Loc)));
+      end;
 
       return +Buf;
    end Subprogram_Name;
@@ -24183,6 +24754,36 @@ package body Sem_Util is
    begin
       return Scope_Within_Or_Same (Scope (E), S);
    end Within_Scope;
+
+   ----------------------------
+   -- Within_Subprogram_Call --
+   ----------------------------
+
+   function Within_Subprogram_Call (N : Node_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      --  Climb the parent chain looking for a function or procedure call
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind_In (Par, N_Entry_Call_Statement,
+                           N_Function_Call,
+                           N_Procedure_Call_Statement)
+         then
+            return True;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end Within_Subprogram_Call;
 
    ----------------
    -- Wrong_Type --

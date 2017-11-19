@@ -9,7 +9,7 @@ struct A {
   static int operator()(int a);	   // { dg-error "must be a nonstatic member" }
   static int operator+(A,A);	   // { dg-error "either a non-static member" } 
   int operator+(int a, int b = 1); // { dg-error "either zero or one" }
-  int operator++(char);		   // { dg-error "must take 'int'" } 
+  int operator++(char);		   // { dg-error "must have 'int'" }
   void operator delete (void *);   
   void operator delete (void *, unsigned long);	
 };

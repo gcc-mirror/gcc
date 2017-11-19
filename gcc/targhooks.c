@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "params.h"
 #include "real.h"
-
+#include "langhooks.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -174,6 +174,14 @@ default_legitimize_address_displacement (rtx *disp ATTRIBUTE_UNUSED,
 					 rtx *offset ATTRIBUTE_UNUSED,
 					 machine_mode mode ATTRIBUTE_UNUSED)
 {
+  return false;
+}
+
+bool
+default_const_not_ok_for_debug_p (rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    return true;
   return false;
 }
 
@@ -553,6 +561,28 @@ default_floatn_mode (int n, bool extended)
 	return cand;
     }
   return opt_scalar_float_mode ();
+}
+
+/* Define this to return true if the _Floatn and _Floatnx built-in functions
+   should implicitly enable the built-in function without the __builtin_ prefix
+   in addition to the normal built-in function with the __builtin_ prefix.  The
+   default is to only enable built-in functions without the __builtin_ prefix
+   for the GNU C langauge.  The argument FUNC is the enum builtin_in_function
+   id of the function to be enabled.  */
+
+bool
+default_floatn_builtin_p (int func ATTRIBUTE_UNUSED)
+{
+  static bool first_time_p = true;
+  static bool c_or_objective_c;
+
+  if (first_time_p)
+    {
+      first_time_p = false;
+      c_or_objective_c = lang_GNU_C () || lang_GNU_OBJC ();
+    }
+
+  return c_or_objective_c;
 }
 
 /* Make some target macros useable by target-independent code.  */
@@ -1163,6 +1193,14 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 					 tree id)
 {
    return id;
+}
+
+/* The default implementation of TARGET_STATIC_RTX_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_static_rtx_alignment (machine_mode mode)
+{
+  return GET_MODE_ALIGNMENT (mode);
 }
 
 /* The default implementation of TARGET_CONSTANT_ALIGNMENT.  */
@@ -1834,10 +1872,12 @@ default_dwarf_frame_reg_mode (int regno)
 /* To be used by targets where reg_raw_mode doesn't return the right
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
-machine_mode
+fixed_size_mode
 default_get_reg_raw_mode (int regno)
 {
-  return reg_raw_mode[regno];
+  /* Targets must override this hook if the underlying register is
+     variable-sized.  */
+  return as_a <fixed_size_mode> (reg_raw_mode[regno]);
 }
 
 /* Return true if a leaf function should stay leaf even with profiling

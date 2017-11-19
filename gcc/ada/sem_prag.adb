@@ -64,6 +64,7 @@ with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Disp;  use Sem_Disp;
 with Sem_Dist;  use Sem_Dist;
+with Sem_Elab;  use Sem_Elab;
 with Sem_Elim;  use Sem_Elim;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Intr;  use Sem_Intr;
@@ -217,7 +218,7 @@ package body Sem_Prag is
       Freeze_Id   : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Part_Of, Post, and
    --  Pre. Emit a freezing-related error message where Freeze_Id is the entity
-   --  of a body which caused contract "freezing" and Contract_Id denotes the
+   --  of a body which caused contract freezing and Contract_Id denotes the
    --  entity of the affected contstruct.
 
    procedure Duplication_Error (Prag : Node_Id; Prev : Node_Id);
@@ -432,7 +433,7 @@ package body Sem_Prag is
 
                --  Emit a clarification message when the case guard contains
                --  at least one undefined reference, possibly due to contract
-               --  "freezing".
+               --  freezing.
 
                if Errors /= Serious_Errors_Detected
                  and then Present (Freeze_Id)
@@ -447,7 +448,7 @@ package body Sem_Prag is
 
             --  Emit a clarification message when the consequence contains
             --  at least one undefined reference, possibly due to contract
-            --  "freezing".
+            --  freezing.
 
             if Errors /= Serious_Errors_Detected
               and then Present (Freeze_Id)
@@ -3287,8 +3288,8 @@ package body Sem_Prag is
 
                if not Is_Child_Or_Sibling (Pack_Id, Scope (Encap_Id)) then
                   SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state or public "
-                     & "descendant of & (SPARK RM 7.2.6(3))",
+                    ("indicator Part_Of must denote abstract state of & "
+                     & "or of its public descendant (SPARK RM 7.2.6(3))",
                      Indic, Parent_Unit);
                   return;
 
@@ -3301,8 +3302,8 @@ package body Sem_Prag is
 
                else
                   SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state or public "
-                     & "descendant of & (SPARK RM 7.2.6(3))",
+                    ("indicator Part_Of must denote abstract state of & "
+                     & "or of its public descendant (SPARK RM 7.2.6(3))",
                      Indic, Parent_Unit);
                   return;
                end if;
@@ -3327,7 +3328,7 @@ package body Sem_Prag is
          elsif Placement = Private_State_Space then
             if Scope (Encap_Id) /= Pack_Id then
                SPARK_Msg_NE
-                 ("indicator Part_Of must designate an abstract state of "
+                 ("indicator Part_Of must denote an abstract state of "
                   & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                SPARK_Msg_NE
@@ -3510,7 +3511,7 @@ package body Sem_Prag is
       end if;
 
       --  Emit a clarification message when the encapsulator is undefined,
-      --  possibly due to contract "freezing".
+      --  possibly due to contract freezing.
 
       if Errors /= Serious_Errors_Detected
         and then Present (Freeze_Id)
@@ -5817,8 +5818,8 @@ package body Sem_Prag is
 
             procedure Check_Grouping (L : List_Id) is
                HSS  : Node_Id;
-               Prag : Node_Id;
                Stmt : Node_Id;
+               Prag : Node_Id := Empty; -- init to avoid warning
 
             begin
                --  Inspect the list of declarations or statements looking for
@@ -5872,16 +5873,15 @@ package body Sem_Prag is
 
                      else
                         while Present (Stmt) loop
-
                            --  The current pragma is either the first pragma
-                           --  of the group or is a member of the group. Stop
-                           --  the search as the placement is legal.
+                           --  of the group or is a member of the group.
+                           --  Stop the search as the placement is legal.
 
                            if Stmt = N then
                               raise Stop_Search;
 
-                           --  Skip group members, but keep track of the last
-                           --  pragma in the group.
+                           --  Skip group members, but keep track of the
+                           --  last pragma in the group.
 
                            elsif Is_Loop_Pragma (Stmt) then
                               Prag := Stmt;
@@ -11390,6 +11390,7 @@ package body Sem_Prag is
                         SPARK_Msg_N
                           ("expression of external state property must be "
                            & "static", Expr);
+                        return;
                      end if;
 
                   --  The lack of expression defaults the property to True
@@ -11562,6 +11563,11 @@ package body Sem_Prag is
                   Set_Ekind               (State_Id, E_Abstract_State);
                   Set_Etype               (State_Id, Standard_Void_Type);
                   Set_Encapsulating_State (State_Id, Empty);
+
+                  --  Set the SPARK mode from the current context
+
+                  Set_SPARK_Pragma           (State_Id, SPARK_Mode_Pragma);
+                  Set_SPARK_Pragma_Inherited (State_Id);
 
                   --  An abstract state declared within a Ghost region becomes
                   --  Ghost (SPARK RM 6.9(2)).
@@ -15015,24 +15021,6 @@ package body Sem_Prag is
 
                Next (Arg);
             end loop Outer;
-
-            --  Give a warning if operating in static mode with one of the
-            --  gnatwl/-gnatwE (elaboration warnings enabled) switches set.
-
-            if Elab_Warnings
-              and not Dynamic_Elaboration_Checks
-
-              --  pragma Elaborate not allowed in SPARK mode anyway. We
-              --  already complained about it, no point in generating any
-              --  further complaint.
-
-              and SPARK_Mode /= On
-            then
-               Error_Msg_N
-                 ("?l?use of pragma Elaborate may not be safe", N);
-               Error_Msg_N
-                 ("?l?use pragma Elaborate_All instead if possible", N);
-            end if;
          end Elaborate;
 
          -------------------
@@ -16474,6 +16462,20 @@ package body Sem_Prag is
                   return;
                end if;
 
+               --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
+               --  By_Protected_Procedure to the primitive procedure of a task
+               --  interface.
+
+               if Chars (Arg2) = Name_By_Protected_Procedure
+                 and then Is_Interface (Typ)
+                 and then Is_Task_Interface (Typ)
+               then
+                  Error_Pragma_Arg
+                    ("implementation kind By_Protected_Procedure cannot be "
+                     & "applied to a task interface primitive", Arg2);
+                  return;
+               end if;
+
             --  Procedures declared inside a protected type must be accepted
 
             elsif Ekind (Proc_Id) = E_Procedure
@@ -16486,20 +16488,6 @@ package body Sem_Prag is
             else
                Error_Pragma_Arg
                  ("pragma % must be applied to a primitive procedure", Arg1);
-               return;
-            end if;
-
-            --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
-            --  By_Protected_Procedure to the primitive procedure of a task
-            --  interface.
-
-            if Chars (Arg2) = Name_By_Protected_Procedure
-              and then Is_Interface (Typ)
-              and then Is_Task_Interface (Typ)
-            then
-               Error_Pragma_Arg
-                 ("implementation kind By_Protected_Procedure cannot be "
-                  & "applied to a task interface primitive", Arg2);
                return;
             end if;
 
@@ -24253,11 +24241,16 @@ package body Sem_Prag is
                               else
                                  OK := Set_Warning_Switch (Chr);
                               end if;
-                           end if;
 
-                           if not OK then
+                              if not OK then
+                                 Error_Pragma_Arg
+                                   ("invalid warning switch character " & Chr,
+                                    Arg1);
+                              end if;
+
+                           else
                               Error_Pragma_Arg
-                                ("invalid warning switch character " & Chr,
+                                ("invalid wide character in warning switch ",
                                  Arg1);
                            end if;
 
@@ -24608,7 +24601,7 @@ package body Sem_Prag is
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
 
       --  Emit a clarification message when the expression contains at least
-      --  one undefined reference, possibly due to contract "freezing".
+      --  one undefined reference, possibly due to contract freezing.
 
       if Errors /= Serious_Errors_Detected
         and then Present (Freeze_Id)
@@ -27358,7 +27351,7 @@ package body Sem_Prag is
                   Constit_Id := Entity_Of (Constit);
 
                   --  When a constituent is declared after a subprogram body
-                  --  that caused "freezing" of the related contract where
+                  --  that caused freezing of the related contract where
                   --  pragma Refined_State resides, the constituent appears
                   --  undefined and carries Any_Id as its entity.
 
@@ -27750,6 +27743,10 @@ package body Sem_Prag is
       if Is_Analyzed_Pragma (N) then
          return;
       end if;
+
+      --  Save the scenario for examination by the ABE Processing phase
+
+      Record_Elaboration_Scenario (N);
 
       --  Replicate the abstract states declared by the package because the
       --  matching algorithm will consume states.
@@ -28398,8 +28395,8 @@ package body Sem_Prag is
             end if;
          end if;
 
-      --  When the item appears in the private state space of a packge, it must
-      --  be a part of some state declared by the said package.
+      --  When the item appears in the private state space of a package, it
+      --  must be a part of some state declared by the said package.
 
       else pragma Assert (Placement = Private_State_Space);
 
@@ -28747,7 +28744,7 @@ package body Sem_Prag is
       Depends   : Node_Id;
       Formal    : Entity_Id;
       Global    : Node_Id;
-      Spec_Id   : Entity_Id;
+      Spec_Id   : Entity_Id := Empty;
       Subp_Decl : Node_Id;
       Typ       : Entity_Id;
 
@@ -29290,7 +29287,7 @@ package body Sem_Prag is
       elsif Present (Corresponding_Aspect (Prag)) then
          return Parent (Corresponding_Aspect (Prag));
 
-      --  No candidate packge [body] found
+      --  No candidate package [body] found
 
       else
          return Empty;
@@ -29364,10 +29361,11 @@ package body Sem_Prag is
       elsif N = Name_Off then
          return Off;
 
-      --  Any other argument is illegal
+      --  Any other argument is illegal. Assume that no SPARK mode applies to
+      --  avoid potential cascaded errors.
 
       else
-         raise Program_Error;
+         return None;
       end if;
    end Get_SPARK_Mode_Type;
 

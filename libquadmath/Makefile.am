@@ -7,6 +7,7 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 if BUILD_LIBQUADMATH
 ACLOCAL_AMFLAGS = -I .. -I ../config
 AM_CPPFLAGS = -I $(top_srcdir)/../include
+AM_CFLAGS = $(XCFLAGS)
 
 ## May be used by toolexeclibdir.
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)

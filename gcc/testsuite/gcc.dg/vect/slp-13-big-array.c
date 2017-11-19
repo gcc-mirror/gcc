@@ -4,7 +4,6 @@
 #include "tree-vect.h"
 
 #define N 64
-volatile int y = 0;
 
 int
 main1 ()
@@ -18,8 +17,7 @@ main1 ()
   for (i = 0; i < N*8; i++)
     {
       in[i] = in2[i] = i;
-      if (y) /* Avoid vectorization.  */
-	abort ();
+      asm volatile ("" ::: "memory");
     }
 
   /* Induction is SLPable.  */

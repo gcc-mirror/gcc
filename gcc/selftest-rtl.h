@@ -47,6 +47,15 @@ assert_rtl_dump_eq (const location &loc, const char *expected_dump, rtx x,
   assert_rtl_dump_eq (SELFTEST_LOCATION, (EXPECTED_DUMP), (RTX), \
 		      (REUSE_MANAGER))
 
+#define ASSERT_RTX_EQ(EXPECTED, ACTUAL) 				\
+  SELFTEST_BEGIN_STMT							\
+  const char *desc = "ASSERT_RTX_EQ (" #EXPECTED ", " #ACTUAL ")";	\
+  ::selftest::assert_rtx_eq_at (SELFTEST_LOCATION, desc, (EXPECTED),	\
+				(ACTUAL));				\
+  SELFTEST_END_STMT
+
+extern void assert_rtx_eq_at (const location &, const char *, rtx, rtx);
+
 /* Evaluate rtx EXPECTED and ACTUAL and compare them with ==
    (i.e. pointer equality), calling ::selftest::pass if they are
    equal, aborting if they are non-equal.  */

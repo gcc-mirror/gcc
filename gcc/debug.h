@@ -228,7 +228,6 @@ extern void debug_nothing_tree_charstar_uhwi (tree, const char *,
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;
 extern const struct gcc_debug_hooks dbx_debug_hooks;
-extern const struct gcc_debug_hooks sdb_debug_hooks;
 extern const struct gcc_debug_hooks xcoff_debug_hooks;
 extern const struct gcc_debug_hooks dwarf2_debug_hooks;
 extern const struct gcc_debug_hooks dwarf2_lineno_debug_hooks;
@@ -242,8 +241,7 @@ extern void dwarf2out_vms_end_prologue (unsigned int, const char *);
 extern void dwarf2out_vms_begin_epilogue (unsigned int, const char *);
 extern void dwarf2out_end_epilogue (unsigned int, const char *);
 extern void dwarf2out_frame_finish (void);
-/* Decide whether we want to emit frame unwind information for the current
-   translation unit.  */
+extern bool dwarf2out_do_eh_frame (void);
 extern bool dwarf2out_do_frame (void);
 extern bool dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);

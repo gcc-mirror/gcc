@@ -80,6 +80,10 @@ public:
 
   size_t elements () const { return m_table.elements (); }
 
+  /* Clear the hash table.  */
+
+  void empty () { m_table.empty (); }
+
   class iterator
   {
   public:

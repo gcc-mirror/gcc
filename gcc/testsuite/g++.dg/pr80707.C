@@ -26,4 +26,6 @@ int A::m_fn1(int &p1) const {
       p1 = 0;
     b--;
   }
+
+  return 0;
 }

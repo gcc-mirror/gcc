@@ -156,6 +156,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
     typedef std::basic_string<value_type>	string_type;
 
+    enum format { native_format, generic_format, auto_format };
+
     // constructors and destructor
 
     path() noexcept { }
@@ -169,27 +171,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __p.clear();
     }
 
-    path(string_type&& __source)
+    path(string_type&& __source, format = auto_format)
     : _M_pathname(std::move(__source))
     { _M_split_cmpts(); }
 
     template<typename _Source,
 	     typename _Require = _Path<_Source>>
-      path(_Source const& __source)
+      path(_Source const& __source, format = auto_format)
       : _M_pathname(_S_convert(_S_range_begin(__source),
 			       _S_range_end(__source)))
       { _M_split_cmpts(); }
 
     template<typename _InputIterator,
 	     typename _Require = _Path<_InputIterator, _InputIterator>>
-      path(_InputIterator __first, _InputIterator __last)
+      path(_InputIterator __first, _InputIterator __last, format = auto_format)
       : _M_pathname(_S_convert(__first, __last))
       { _M_split_cmpts(); }
 
     template<typename _Source,
 	     typename _Require = _Path<_Source>,
 	     typename _Require2 = __value_type_is_char<_Source>>
-      path(_Source const& __source, const locale& __loc)
+      path(_Source const& __source, const locale& __loc, format = auto_format)
       : _M_pathname(_S_convert_loc(_S_range_begin(__source),
 				   _S_range_end(__source), __loc))
       { _M_split_cmpts(); }
@@ -197,7 +199,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     template<typename _InputIterator,
 	     typename _Require = _Path<_InputIterator, _InputIterator>,
 	     typename _Require2 = __value_type_is_char<_InputIterator>>
-      path(_InputIterator __first, _InputIterator __last, const locale& __loc)
+      path(_InputIterator __first, _InputIterator __last, const locale& __loc,
+	   format = auto_format)
       : _M_pathname(_S_convert_loc(__first, __last, __loc))
       { _M_split_cmpts(); }
 

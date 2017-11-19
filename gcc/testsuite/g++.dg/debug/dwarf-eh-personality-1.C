@@ -11,7 +11,7 @@ int foo (void)
   return 0;
 }
 
-int foobar (void)
+void foobar (void)
 {
 }
 

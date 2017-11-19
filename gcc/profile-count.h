@@ -21,21 +21,39 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PROFILE_COUNT_H
 #define GCC_PROFILE_COUNT_H
 
+struct function;
+
 /* Quality of the profile count.  Because gengtype does not support enums
    inside of classes, this is in global namespace.  */
 enum profile_quality {
+  /* Profile is based on static branch prediction heuristics and may
+     or may not match reality.  It is local to function and can not be compared
+     inter-procedurally.  Never used by probabilities (they are always local).
+   */
+  profile_guessed_local = 0,
+  /* Profile was read by feedback and was 0, we used local heuristics to guess
+     better.  This is the case of functions not run in profile fedback.
+     Never used by probabilities.  */
+  profile_guessed_global0 = 1,
+
+  /* Same as profile_guessed_global0 but global count is adjusted 0.  */
+  profile_guessed_global0adjusted = 2,
+
   /* Profile is based on static branch prediction heuristics.  It may or may
-     not reflect the reality.  */
-  profile_guessed = 0,
+     not reflect the reality but it can be compared interprocedurally
+     (for example, we inlined function w/o profile feedback into function
+      with feedback and propagated from that).
+     Never used by probablities.  */
+  profile_guessed = 3,
   /* Profile was determined by autofdo.  */
-  profile_afdo = 1,
+  profile_afdo = 4,
   /* Profile was originally based on feedback but it was adjusted
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
-  profile_adjusted = 2,
+  profile_adjusted = 5,
   /* Profile was read from profile feedback or determined by accurate static
      method.  */
-  profile_precise = 3
+  profile_precise = 7
 };
 
 /* The base value for branch probability notes and edge probabilities.  */
@@ -114,15 +132,15 @@ safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
 
 class GTY((user)) profile_probability
 {
-  static const int n_bits = 30;
+  static const int n_bits = 29;
   /* We can technically use ((uint32_t) 1 << (n_bits - 1)) - 2 but that
      will lead to harder multiplication sequences.  */
   static const uint32_t max_probability = (uint32_t) 1 << (n_bits - 2);
   static const uint32_t uninitialized_probability
 		 = ((uint32_t) 1 << (n_bits - 1)) - 1;
 
-  uint32_t m_val : 30;
-  enum profile_quality m_quality : 2;
+  uint32_t m_val : 29;
+  enum profile_quality m_quality : 3;
 
   friend class profile_count;
 public:
@@ -226,14 +244,14 @@ public:
   static profile_probability from_reg_br_prob_note (int v)
     {
       profile_probability ret;
-      ret.m_val = ((unsigned int)v) / 4;
-      ret.m_quality = (enum profile_quality)(v & 3);
+      ret.m_val = ((unsigned int)v) / 8;
+      ret.m_quality = (enum profile_quality)(v & 7);
       return ret;
     }
   int to_reg_br_prob_note () const
     {
       gcc_checking_assert (initialized_p ());
-      int ret = m_val * 4 + m_quality;
+      int ret = m_val * 8 + m_quality;
       gcc_checking_assert (profile_probability::from_reg_br_prob_note (ret)
 			   == *this);
       return ret;
@@ -489,8 +507,9 @@ public:
     {
       if (m_val == uninitialized_probability)
 	return m_quality == profile_guessed;
-      else
-	return m_val <= max_probability;
+      else if (m_quality < profile_guessed)
+	return false;
+      return m_val <= max_probability;
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
@@ -530,9 +549,32 @@ public:
   void stream_out (struct lto_output_stream *);
 };
 
-/* Main data type to hold profile counters in GCC.  In most cases profile
-   counts originate from profile feedback. They are 64bit integers
-   representing number of executions during the train run.
+/* Main data type to hold profile counters in GCC. Profile counts originate
+   either from profile feedback, static profile estimation or both.  We do not
+   perform whole program profile propagation and thus profile estimation
+   counters are often local to function, while counters from profile feedback
+   (or special cases of profile estimation) can be used inter-procedurally.
+
+   There are 3 basic types
+     1) local counters which are result of intra-procedural static profile
+        estimation.
+     2) ipa counters which are result of profile feedback or special case
+        of static profile estimation (such as in function main).
+     3) counters which counts as 0 inter-procedurally (beause given function
+        was never run in train feedback) but they hold local static profile
+        estimate.
+
+   Counters of type 1 and 3 can not be mixed with counters of different type
+   within operation (because whole function should use one type of counter)
+   with exception that global zero mix in most operations where outcome is
+   well defined.
+
+   To take local counter and use it inter-procedurally use ipa member function
+   which strips information irelevant at the inter-procedural level.
+
+   Counters are 61bit integers representing number of executions during the
+   train run or normalized frequency within the function.
+
    As the profile is maintained during the compilation, many adjustments are
    made.  Not all transformations can be made precisely, most importantly
    when code is being duplicated.  It also may happen that part of CFG has
@@ -561,24 +603,48 @@ public:
 
  */
 
+class sreal;
+
 class GTY(()) profile_count
 {
+public:
   /* Use 62bit to hold basic block counters.  Should be at least
      64bit.  Although a counter cannot be negative, we use a signed
      type to hold various extra stages.  */
 
-  static const int n_bits = 62;
+  static const int n_bits = 61;
+private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 
   uint64_t m_val : n_bits;
-  enum profile_quality m_quality : 2;
+  enum profile_quality m_quality : 3;
+
+  /* Return true if both values can meaningfully appear in single function
+     body.  We have either all counters in function local or global, otherwise
+     operations between them are not really defined well.  */
+  bool compatible_p (const profile_count other) const
+    {
+      if (!initialized_p () || !other.initialized_p ())
+	return true;
+      if (*this == profile_count::zero ()
+	  || other == profile_count::zero ())
+	return true;
+      return ipa_p () == other.ipa_p ();
+    }
 public:
 
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
       return from_gcov_type (0);
+    }
+  static profile_count adjusted_zero ()
+    {
+      profile_count c;
+      c.m_val = 0;
+      c.m_quality = profile_adjusted;
+      return c;
     }
   static profile_count guessed_zero ()
     {
@@ -597,7 +663,7 @@ public:
     {
       profile_count c;
       c.m_val = uninitialized_count;
-      c.m_quality = profile_guessed;
+      c.m_quality = profile_guessed_local;
       return c;
     }
 
@@ -629,6 +695,11 @@ public:
   bool reliable_p () const
     {
       return m_quality >= profile_adjusted;
+    }
+  /* Return true if vlaue can be operated inter-procedurally.  */
+  bool ipa_p () const
+    {
+      return !initialized_p () || m_quality >= profile_guessed_global0;
     }
 
   /* When merging basic blocks, the two different profile counts are unified.
@@ -671,6 +742,7 @@ public:
 	return profile_count::uninitialized ();
 
       profile_count ret;
+      gcc_checking_assert (compatible_p (other));
       ret.m_val = m_val + other.m_val;
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
@@ -688,6 +760,7 @@ public:
 	return *this = profile_count::uninitialized ();
       else
 	{
+          gcc_checking_assert (compatible_p (other));
 	  m_val += other.m_val;
 	  m_quality = MIN (m_quality, other.m_quality);
 	}
@@ -699,6 +772,7 @@ public:
 	return *this;
       if (!initialized_p () || !other.initialized_p ())
 	return profile_count::uninitialized ();
+      gcc_checking_assert (compatible_p (other));
       profile_count ret;
       ret.m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
       ret.m_quality = MIN (m_quality, other.m_quality);
@@ -712,6 +786,7 @@ public:
 	return *this = profile_count::uninitialized ();
       else
 	{
+          gcc_checking_assert (compatible_p (other));
 	  m_val = m_val >= other.m_val ? m_val - other.m_val: 0;
 	  m_quality = MIN (m_quality, other.m_quality);
 	}
@@ -721,47 +796,114 @@ public:
   /* Return false if profile_count is bogus.  */
   bool verify () const
     {
-      return m_val != uninitialized_count || m_quality == profile_guessed;
+      return m_val != uninitialized_count || m_quality == profile_guessed_local;
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
      the inequality can not be decided.  */
   bool operator< (const profile_count &other) const
     {
-      return initialized_p () && other.initialized_p () && m_val < other.m_val;
+      if (!initialized_p () || !other.initialized_p ())
+	return false;
+      if (*this == profile_count::zero ())
+	return !(other == profile_count::zero ());
+      if (other == profile_count::zero ())
+	return false;
+      gcc_checking_assert (compatible_p (other));
+      return m_val < other.m_val;
     }
   bool operator> (const profile_count &other) const
     {
+      if (!initialized_p () || !other.initialized_p ())
+	return false;
+      if (*this  == profile_count::zero ())
+	return false;
+      if (other == profile_count::zero ())
+	return !(*this == profile_count::zero ());
+      gcc_checking_assert (compatible_p (other));
       return initialized_p () && other.initialized_p () && m_val > other.m_val;
     }
   bool operator< (const gcov_type other) const
     {
+      gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val < (uint64_t) other;
     }
   bool operator> (const gcov_type other) const
     {
+      gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val > (uint64_t) other;
     }
 
   bool operator<= (const profile_count &other) const
     {
-      return initialized_p () && other.initialized_p () && m_val <= other.m_val;
+      if (!initialized_p () || !other.initialized_p ())
+	return false;
+      if (*this == profile_count::zero ())
+	return true;
+      if (other == profile_count::zero ())
+	return (*this == profile_count::zero ());
+      gcc_checking_assert (compatible_p (other));
+      return m_val <= other.m_val;
     }
   bool operator>= (const profile_count &other) const
     {
-      return initialized_p () && other.initialized_p () && m_val >= other.m_val;
+      if (!initialized_p () || !other.initialized_p ())
+	return false;
+      if (other == profile_count::zero ())
+	return true;
+      if (*this == profile_count::zero ())
+	return !(other == profile_count::zero ());
+      gcc_checking_assert (compatible_p (other));
+      return m_val >= other.m_val;
     }
   bool operator<= (const gcov_type other) const
     {
+      gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val <= (uint64_t) other;
     }
   bool operator>= (const gcov_type other) const
     {
+      gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val >= (uint64_t) other;
+    }
+  /* Return true when value is not zero and can be used for scaling. 
+     This is different from *this > 0 because that requires counter to
+     be IPA.  */
+  bool nonzero_p () const
+    {
+      return initialized_p () && m_val != 0;
+    }
+
+  /* Make counter forcingly nonzero.  */
+  profile_count force_nonzero () const
+    {
+      if (!initialized_p ())
+	return *this;
+      profile_count ret = *this;
+      if (ret.m_val == 0)
+	ret.m_val = 1;
+      return ret;
+    }
+
+  profile_count max (profile_count other) const
+    {
+      if (!initialized_p ())
+	return other;
+      if (!other.initialized_p ())
+	return *this;
+      if (*this == profile_count::zero ())
+	return other;
+      if (other == profile_count::zero ())
+	return *this;
+      gcc_checking_assert (compatible_p (other));
+      if (m_val < other.m_val || (m_val == other.m_val
+				  && m_quality < other.m_quality))
+	return other;
+      return *this;
     }
 
   /* PROB is a probability in scale 0...REG_BR_PROB_BASE.  Scale counter
@@ -814,21 +956,55 @@ public:
     }
   profile_count apply_scale (profile_count num, profile_count den) const
     {
-      if (m_val == 0)
+      if (*this == profile_count::zero ())
 	return *this;
-      if (num.m_val == 0)
+      if (num == profile_count::zero ())
 	return num;
       if (!initialized_p () || !num.initialized_p () || !den.initialized_p ())
 	return profile_count::uninitialized ();
-      gcc_checking_assert (den > 0);
       if (num == den)
 	return *this;
+      gcc_checking_assert (den.m_val);
 
       profile_count ret;
       uint64_t val;
       safe_scale_64bit (m_val, num.m_val, den.m_val, &val);
       ret.m_val = MIN (val, max_count);
-      ret.m_quality = MIN (m_quality, profile_adjusted);
+      ret.m_quality = MIN (MIN (MIN (m_quality, profile_adjusted),
+			        num.m_quality), den.m_quality);
+      if (num.ipa_p () && !ret.ipa_p ())
+	ret.m_quality = MIN (num.m_quality, profile_guessed);
+      return ret;
+    }
+
+  /* Return THIS with quality dropped to GUESSED_LOCAL.  */
+  profile_count guessed_local () const
+    {
+      profile_count ret = *this;
+      if (!initialized_p ())
+	return *this;
+      ret.m_quality = profile_guessed_local;
+      return ret;
+    }
+
+  /* We know that profile is globally 0 but keep local profile if present.  */
+  profile_count global0 () const
+    {
+      profile_count ret = *this;
+      if (!initialized_p ())
+	return *this;
+      ret.m_quality = profile_guessed_global0;
+      return ret;
+    }
+
+  /* We know that profile is globally adjusted 0 but keep local profile
+     if present.  */
+  profile_count global0adjusted () const
+    {
+      profile_count ret = *this;
+      if (!initialized_p ())
+	return *this;
+      ret.m_quality = profile_guessed_global0adjusted;
       return ret;
     }
 
@@ -836,8 +1012,21 @@ public:
   profile_count guessed () const
     {
       profile_count ret = *this;
-      ret.m_quality = profile_guessed;
+      ret.m_quality = MIN (ret.m_quality, profile_guessed);
       return ret;
+    }
+
+  /* Return variant of profile counte which is always safe to compare
+     acorss functions.  */
+  profile_count ipa () const
+    {
+      if (m_quality > profile_guessed_global0adjusted)
+	return *this;
+      if (m_quality == profile_guessed_global0)
+	return profile_count::zero ();
+      if (m_quality == profile_guessed_global0adjusted)
+	return profile_count::adjusted_zero ();
+      return profile_count::uninitialized ();
     }
 
   /* Return THIS with quality dropped to AFDO.  */
@@ -852,20 +1041,26 @@ public:
      OVERALL.  */
   profile_probability probability_in (const profile_count overall) const
     {
-      if (!m_val)
+      if (*this == profile_count::zero ())
 	return profile_probability::never ();
       if (!initialized_p () || !overall.initialized_p ()
 	  || !overall.m_val)
 	return profile_probability::uninitialized ();
       profile_probability ret;
-      if (overall < m_val)
+      gcc_checking_assert (compatible_p (overall));
+
+      if (overall.m_val < m_val)
 	ret.m_val = profile_probability::max_probability;
       else
 	ret.m_val = RDIV (m_val * profile_probability::max_probability,
 			  overall.m_val);
-      ret.m_quality = MIN (m_quality, overall.m_quality);
+      ret.m_quality = MAX (MIN (m_quality, overall.m_quality), profile_guessed);
       return ret;
     }
+
+  int to_frequency (struct function *fun) const;
+  int to_cgraph_frequency (profile_count entry_bb_count) const;
+  sreal to_sreal_scale (profile_count in, bool *known = NULL) const;
 
   /* Output THIS to F.  */
   void dump (FILE *f) const;
@@ -875,6 +1070,18 @@ public:
 
   /* Return true if THIS is known to differ significantly from OTHER.  */
   bool differs_from_p (profile_count other) const;
+
+  /* We want to scale profile across function boundary from NUM to DEN.
+     Take care of the side case when NUM and DEN are zeros of incompatible
+     kinds.  */
+  static void adjust_for_ipa_scaling (profile_count *num, profile_count *den);
+
+  /* THIS is a count of bb which is known to be executed IPA times.
+     Combine this information into bb counter.  This means returning IPA
+     if it is nonzero, not changing anything if IPA is uninitialized
+     and if IPA is zero, turning THIS into corresponding local profile with
+     global0.  */
+  profile_count combine_with_ipa_count (profile_count ipa);
 
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);

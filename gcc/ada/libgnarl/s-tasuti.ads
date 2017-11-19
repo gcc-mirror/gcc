@@ -54,9 +54,9 @@ package System.Tasking.Utilities is
    --
    --  This is a dangerous operation, and should never be used on nested tasks
    --  or tasks that depend on any objects that might be finalized earlier than
-   --  the termination of the environment task. It is for internal use by the
-   --  GNARL, to prevent such internal server tasks from preventing a partition
-   --  from terminating.
+   --  the termination of the environment task. It is primarily for internal
+   --  use by the GNARL, to prevent such internal server tasks from preventing
+   --  a partition from terminating.
    --
    --  Also note that the run time assumes that the parent of an independent
    --  task is the environment task. If this is not the case, Make_Independent

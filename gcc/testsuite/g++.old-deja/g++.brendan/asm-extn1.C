@@ -1,4 +1,4 @@
-// { dg-do assemble { target sparc-sun-* } }
+// { dg-do assemble { target sparc*-*-* } }
 // { dg-options "-S" }
 // GROUPS passed asm-extension
 // This used to crash because c_expand_asm_keyword didn't know what to
@@ -7,7 +7,7 @@
 
 extern void traptable(void);
 
-main()
+int main()
 {
   asm("wr    %0,%%tbr" : : "r" (traptable));
 }

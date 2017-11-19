@@ -6,7 +6,7 @@
  *                                                                          *
  *                     Asm Implementation Include File                      *
  *                                                                          *
- *         Copyright (C) 2011-2015, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2011-2017, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -93,13 +93,26 @@
 
 #define FUNCTION "@function"
 
-#elif defined (__ARMEL__)
+#elif defined (ARMEL)
 
 #define REGNO_G_REG_OFFSET(N) (N)
 
-#define REGNO_PC_OFFSET  15  /* PC_REGNUM  */
-
 #define FUNCTION "%function"
+
+#ifdef __aarch64__
+#define REGNO_PC_OFFSET  31  /* PC_REGNUM  */
+#else
+#define REGNO_PC_OFFSET  15  /* PC_REGNUM  */
+#endif
+
+/* Mapping of CFI Column, Gcc Regno, Signal context offset for _LP64
+
+   Name	   CFI	   GCC	   SCTX
+   G0-G30  0-30    0-30
+   PC      31      31
+   V0-V31  64-95   32-63
+
+*/
 
 #elif defined (i386)
 
@@ -190,11 +203,14 @@ Not_implemented;
 
 #define CFA_REG 15
 
-#elif defined (__ARMEL__)
+#elif defined (ARMEL)
 
+#ifdef __aarch64__
+#define CFA_REG 19
+#else
 /* Use r8 for ARM.  Any of r4-r8 should work.  */
-
 #define CFA_REG 8
+#endif
 
 #elif defined (i386)
 
@@ -332,11 +348,47 @@ TCR("mtlr %r0")		\
 TCR("blr")
 #endif
 
-#elif defined (__ARMEL__)
+#elif defined (ARMEL)
 
 #define COMMON_CFI(REG) \
   ".cfi_offset " S(REGNO_##REG) "," S(REG_SET_##REG)
 
+#ifdef __aarch64__
+#define CFI_COMMON_REGS \
+CR("# CFI for common registers\n") \
+TCR(COMMON_CFI(G_REG_OFFSET(0)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(1)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(2)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(3)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(4)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(5)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(6)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(7)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(8)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(9)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(10)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(11)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(12)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(13)))  \
+TCR(COMMON_CFI(G_REG_OFFSET(14))) \
+TCR(COMMON_CFI(G_REG_OFFSET(15))) \
+TCR(COMMON_CFI(G_REG_OFFSET(16))) \
+TCR(COMMON_CFI(G_REG_OFFSET(17))) \
+TCR(COMMON_CFI(G_REG_OFFSET(18))) \
+TCR(COMMON_CFI(G_REG_OFFSET(19))) \
+TCR(COMMON_CFI(G_REG_OFFSET(20))) \
+TCR(COMMON_CFI(G_REG_OFFSET(21))) \
+TCR(COMMON_CFI(G_REG_OFFSET(22))) \
+TCR(COMMON_CFI(G_REG_OFFSET(23))) \
+TCR(COMMON_CFI(G_REG_OFFSET(24))) \
+TCR(COMMON_CFI(G_REG_OFFSET(25))) \
+TCR(COMMON_CFI(G_REG_OFFSET(26))) \
+TCR(COMMON_CFI(G_REG_OFFSET(27))) \
+TCR(COMMON_CFI(G_REG_OFFSET(28))) \
+TCR(COMMON_CFI(G_REG_OFFSET(29))) \
+TCR(COMMON_CFI(PC_OFFSET)) \
+TCR(".cfi_return_column " S(REGNO_PC_OFFSET))
+#else
 #define CFI_COMMON_REGS \
 CR("# CFI for common registers\n") \
 TCR(COMMON_CFI(G_REG_OFFSET(0)))  \
@@ -356,10 +408,26 @@ TCR(COMMON_CFI(G_REG_OFFSET(13)))  \
 TCR(COMMON_CFI(G_REG_OFFSET(14))) \
 TCR(COMMON_CFI(PC_OFFSET)) \
 TCR(".cfi_return_column " S(REGNO_PC_OFFSET))
+#endif
 
 /* Trampoline body block
    ---------------------  */
-
+#ifdef __aarch64__
+#define SIGTRAMP_BODY \
+CR("") \
+TCR("# Push FP and LR on stack") \
+TCR("stp x29, x30, [sp, #-16]!") \
+TCR("# Push register used to hold the CFA on stack") \
+TCR("str x" S(CFA_REG) ", [sp, #-8]!")  \
+TCR("# Set the CFA: x2 value") \
+TCR("mov x" S(CFA_REG) ", x2") \
+TCR("# Call the handler") \
+TCR("blr x3") \
+TCR("# Release our frame and return (should never get here!).") \
+TCR("ldr x" S(CFA_REG) " , [sp], 8") \
+TCR("ldp x29, x30, [sp], 16") \
+TCR("ret")
+#else
 #define SIGTRAMP_BODY \
 CR("") \
 TCR("# Allocate frame and save the non-volatile") \
@@ -375,6 +443,7 @@ TCR("sub	fp, ip, #4") \
 TCR("blx	r3") \
 TCR("# Restore our callee-saved items, release our frame and return") \
 TCR("ldmfd	sp, {r"S(CFA_REG)", fp, sp, pc}")
+#endif
 
 #elif defined (i386)
 

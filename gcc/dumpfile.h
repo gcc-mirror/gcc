@@ -93,6 +93,7 @@ enum dump_kind
 #define MSG_NOTE		 (1 << 24)  /* general optimization info */
 #define MSG_ALL		(MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
 			 | MSG_NOTE)
+#define TDF_COMPARE_DEBUG (1 << 25)	/* Dumping for -fcompare-debug.  */
 
 
 /* Value of TDF_NONE is used just for bits filtered by TDF_KIND_MASK.  */

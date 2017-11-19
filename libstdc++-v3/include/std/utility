@@ -184,6 +184,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static constexpr const _Tp1&
         __const_get(const std::pair<_Tp1, _Tp2>& __pair) noexcept
         { return __pair.first; }
+
+      template<typename _Tp1, typename _Tp2>
+        static constexpr const _Tp1&&
+        __const_move_get(const std::pair<_Tp1, _Tp2>&& __pair) noexcept
+        { return std::forward<const _Tp1>(__pair.first); }
     };
 
   template<>
@@ -203,6 +208,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static constexpr const _Tp2&
         __const_get(const std::pair<_Tp1, _Tp2>& __pair) noexcept
         { return __pair.second; }
+
+      template<typename _Tp1, typename _Tp2>
+        static constexpr const _Tp2&&
+        __const_move_get(const std::pair<_Tp1, _Tp2>&& __pair) noexcept
+        { return std::forward<const _Tp2>(__pair.second); }
     };
 
   template<std::size_t _Int, class _Tp1, class _Tp2>
@@ -219,6 +229,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const typename tuple_element<_Int, std::pair<_Tp1, _Tp2>>::type&
     get(const std::pair<_Tp1, _Tp2>& __in) noexcept
     { return __pair_get<_Int>::__const_get(__in); }
+
+  template<std::size_t _Int, class _Tp1, class _Tp2>
+    constexpr const typename tuple_element<_Int, std::pair<_Tp1, _Tp2>>::type&&
+    get(const std::pair<_Tp1, _Tp2>&& __in) noexcept
+    { return __pair_get<_Int>::__const_move_get(std::move(__in)); }
 
 #if __cplusplus > 201103L
 
@@ -240,6 +255,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::move(__p.first); }
 
   template <typename _Tp, typename _Up>
+    constexpr const _Tp&&
+    get(const pair<_Tp, _Up>&& __p) noexcept
+    { return std::move(__p.first); }
+
+  template <typename _Tp, typename _Up>
     constexpr _Tp&
     get(pair<_Up, _Tp>& __p) noexcept
     { return __p.second; }
@@ -252,6 +272,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp, typename _Up>
     constexpr _Tp&&
     get(pair<_Up, _Tp>&& __p) noexcept
+    { return std::move(__p.second); }
+
+  template <typename _Tp, typename _Up>
+    constexpr const _Tp&&
+    get(const pair<_Up, _Tp>&& __p) noexcept
     { return std::move(__p.second); }
 
 #define __cpp_lib_exchange_function 201304

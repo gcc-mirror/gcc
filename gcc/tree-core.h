@@ -853,6 +853,7 @@ enum annot_expr_kind {
   annot_expr_ivdep_kind,
   annot_expr_no_vector_kind,
   annot_expr_vector_kind,
+  annot_expr_parallel_kind,
   annot_expr_kind_last
 };
 
@@ -1538,7 +1539,6 @@ struct GTY(()) tree_type_common {
   tree reference_to;
   union tree_type_symtab {
     int GTY ((tag ("TYPE_SYMTAB_IS_ADDRESS"))) address;
-    const char * GTY ((tag ("TYPE_SYMTAB_IS_POINTER"))) pointer;
     struct die_struct * GTY ((tag ("TYPE_SYMTAB_IS_DIE"))) die;
   } GTY ((desc ("debug_hooks->tree_type_symtab_field"))) symtab;
   tree canonical;

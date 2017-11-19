@@ -26,6 +26,7 @@ extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, machine_mode);
 extern bool default_legitimize_address_displacement (rtx *, rtx *,
 						     machine_mode);
+extern bool default_const_not_ok_for_debug_p (rtx);
 
 extern int default_unspec_may_trap_p (const_rtx, unsigned);
 extern machine_mode default_promote_function_mode (const_tree, machine_mode,
@@ -74,6 +75,7 @@ extern tree default_mangle_assembler_name (const char *);
 extern bool default_scalar_mode_supported_p (scalar_mode);
 extern bool default_libgcc_floating_mode_supported_p (scalar_float_mode);
 extern opt_scalar_float_mode default_floatn_mode (int, bool);
+extern bool default_floatn_builtin_p (int);
 extern bool targhook_words_big_endian (void);
 extern bool targhook_float_words_big_endian (void);
 extern bool default_float_exceptions_rounding_supported_p (void);
@@ -93,6 +95,7 @@ extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, in
 
 extern tree default_builtin_reciprocal (tree);
 
+extern HOST_WIDE_INT default_static_rtx_alignment (machine_mode);
 extern HOST_WIDE_INT default_constant_alignment (const_tree, HOST_WIDE_INT);
 extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,
 						      HOST_WIDE_INT);
@@ -233,7 +236,7 @@ extern int default_jump_align_max_skip (rtx_insn *);
 extern section * default_function_section(tree decl, enum node_frequency freq,
 					  bool startup, bool exit);
 extern machine_mode default_dwarf_frame_reg_mode (int);
-extern machine_mode default_get_reg_raw_mode (int);
+extern fixed_size_mode default_get_reg_raw_mode (int);
 extern bool default_keep_leaf_when_profiled ();
 
 extern void *default_get_pch_validity (size_t *);

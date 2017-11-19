@@ -25,10 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #define DBX_DEBUGGING_INFO 1
 
-/* Generate SDB debugging information by default.  */
+/* Generate DBX debugging information by default.  */
 
 #ifndef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
 
 /* Be function-relative for block and source line stab directives.  */

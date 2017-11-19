@@ -5,17 +5,17 @@
 
 #include "dfp-dbg.h"
 
-int foo32 (_Decimal32 z)
+void foo32 (_Decimal32 z)
 {
   z = z + 1.0df;
 }
 
-int foo64 (_Decimal64 z)
+void foo64 (_Decimal64 z)
 {
   z = z + 1.0dd;
 }
 
-int foo128 (_Decimal128 z)
+void foo128 (_Decimal128 z)
 {
   z = z + 1.0dl;
 }

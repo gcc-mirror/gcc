@@ -131,7 +131,7 @@ extern bool avr_casei_sequence_check_operands (rtx *xop);
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
 {
-  return ((1u << GET_MODE_SIZE (mode)) - 1) << regno;
+  return ((1u << GET_MODE_SIZE (as_a <fixed_size_mode> (mode))) - 1) << regno;
 }
 
 extern void avr_fix_inputs (rtx*, unsigned, unsigned);

@@ -796,7 +796,17 @@ package body System.Task_Primitives.Operations is
          raise Invalid_CPU_Number;
       end if;
 
-      Self_ID.Common.LL.Thread    := GetCurrentThread;
+      --  Initialize the thread here only if not set. This is done for a
+      --  foreign task but is not needed when a real thread-id is already
+      --  set in Create_Task. Note that we do want to keep the real thread-id
+      --  as it is the only way to free the associated resource. Another way
+      --  to say this is that a pseudo thread-id from a foreign thread won't
+      --  allow for freeing resources.
+
+      if Self_ID.Common.LL.Thread = Null_Thread_Id then
+         Self_ID.Common.LL.Thread := GetCurrentThread;
+      end if;
+
       Self_ID.Common.LL.Thread_Id := GetCurrentThreadId;
 
       Get_Stack_Bounds
@@ -976,7 +986,7 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      if T.Common.LL.Thread /= 0 then
+      if T.Common.LL.Thread /= Null_Thread_Id then
 
          --  This task has been activated. Close the thread handle. This
          --  is needed to release system resources.

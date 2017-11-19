@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-require-normal-mode "" }
+// { dg-require-normal-namespace "" }
 
 // Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //

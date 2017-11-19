@@ -24,7 +24,7 @@
   [(plus "add_operand") (minus "reg_or_8bit_operand")
    (ior "or_operand") (xor "or_operand") (and "and_operand")])
 (define_code_attr fetchop_constr
-  [(plus "rKL") (minus "rI") (ior "rIN") (xor "rIN") (and "riNM")])
+  [(plus "rKL") (minus "rI") (ior "rIN") (xor "rIN") (and "rINM")])
 
 
 (define_expand "memory_barrier"

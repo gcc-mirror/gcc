@@ -448,8 +448,12 @@ enum nds32_builtins
         builtin_define ("__NDS32_REDUCED_REGS__");    \
       if (TARGET_CMOV)                                \
         builtin_define ("__NDS32_CMOV__");            \
-      if (TARGET_PERF_EXT)                            \
-        builtin_define ("__NDS32_PERF_EXT__");        \
+      if (TARGET_EXT_PERF)                            \
+        builtin_define ("__NDS32_EXT_PERF__");        \
+      if (TARGET_EXT_PERF2)                           \
+        builtin_define ("__NDS32_EXT_PERF2__");       \
+      if (TARGET_EXT_STRING)                          \
+        builtin_define ("__NDS32_EXT_STRING__");      \
       if (TARGET_16_BIT)                              \
         builtin_define ("__NDS32_16_BIT__");          \
       if (TARGET_GP_DIRECT)                           \
@@ -526,7 +530,7 @@ enum nds32_builtins
    from 0 to just below FIRST_PSEUDO_REGISTER.
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
-#define FIRST_PSEUDO_REGISTER 34
+#define FIRST_PSEUDO_REGISTER 101
 
 /* An initializer that says which registers are used for fixed
    purposes all throughout the compiled code and are therefore
@@ -542,19 +546,33 @@ enum nds32_builtins
 
    reserved for assembler : $r15
    reserved for other use : $r24, $r25, $r26, $r27 */
-#define FIXED_REGISTERS                 \
-{ /* r0  r1  r2  r3  r4  r5  r6  r7  */ \
-      0,  0,  0,  0,  0,  0,  0,  0,    \
-  /* r8  r9  r10 r11 r12 r13 r14 r15 */ \
-      0,  0,  0,  0,  0,  0,  0,  1,    \
-  /* r16 r17 r18 r19 r20 r21 r22 r23 */ \
-      0,  0,  0,  0,  0,  0,  0,  0,    \
-  /* r24 r25 r26 r27 r28 r29 r30 r31 */ \
-      1,  1,  1,  1,  0,  1,  0,  1,    \
-  /* ARG_POINTER:32 */                  \
-      1,                                \
-  /* FRAME_POINTER:33 */                \
-      1                                 \
+#define FIXED_REGISTERS \
+{ /* r0   r1   r2   r3   r4   r5   r6   r7   */ \
+      0,   0,   0,   0,   0,   0,   0,   0,     \
+  /* r8   r9   r10  r11  r12  r13  r14  r15  */ \
+      0,   0,   0,   0,   0,   0,   0,   1,     \
+  /* r16  r17  r18  r19  r20  r21  r22  r23  */ \
+      0,   0,   0,   0,   0,   0,   0,   0,     \
+  /* r24  r25  r26  r27  r28  r29  r30  r31  */ \
+      1,   1,   1,   1,   0,   1,   0,   1,     \
+  /* AP   FP    Reserved.................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1                     \
 }
 
 /* Identifies the registers that are not available for
@@ -563,33 +581,53 @@ enum nds32_builtins
 
    0 : callee-save registers
    1 : caller-save registers */
-#define CALL_USED_REGISTERS             \
-{ /* r0  r1  r2  r3  r4  r5  r6  r7  */ \
-      1,  1,  1,  1,  1,  1,  0,  0,    \
-  /* r8  r9  r10 r11 r12 r13 r14 r15 */ \
-      0,  0,  0,  0,  0,  0,  0,  1,    \
-  /* r16 r17 r18 r19 r20 r21 r22 r23 */ \
-      1,  1,  1,  1,  1,  1,  1,  1,    \
-  /* r24 r25 r26 r27 r28 r29 r30 r31 */ \
-      1,  1,  1,  1,  0,  1,  0,  1,    \
-  /* ARG_POINTER:32 */                  \
-      1,                                \
-  /* FRAME_POINTER:33 */                \
-      1                                 \
+#define CALL_USED_REGISTERS \
+{ /* r0   r1   r2   r3   r4   r5   r6   r7   */ \
+      1,   1,   1,   1,   1,   1,   0,   0,     \
+  /* r8   r9   r10  r11  r12  r13  r14  r15  */ \
+      0,   0,   0,   0,   0,   0,   0,   1,     \
+  /* r16  r17  r18  r19  r20  r21  r22  r23  */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* r24  r25  r26  r27  r28  r29  r30  r31  */ \
+      1,   1,   1,   1,   0,   1,   0,   1,     \
+  /* AP   FP    Reserved.................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1,   1,   1,   1,     \
+  /* Reserved............................... */ \
+      1,   1,   1,   1,   1                     \
 }
 
 /* In nds32 target, we have three levels of registers:
      LOW_COST_REGS    : $r0 ~ $r7
      MIDDLE_COST_REGS : $r8 ~ $r11, $r16 ~ $r19
      HIGH_COST_REGS   : $r12 ~ $r14, $r20 ~ $r31 */
-#define REG_ALLOC_ORDER           \
-{                                 \
-   0,  1,  2,  3,  4,  5,  6,  7, \
-   8,  9, 10, 11, 16, 17, 18, 19, \
-  12, 13, 14, 15, 20, 21, 22, 23, \
-  24, 25, 26, 27, 28, 29, 30, 31, \
-  32,                             \
-  33                              \
+#define REG_ALLOC_ORDER \
+{   0,   1,   2,   3,   4,   5,   6,   7, \
+   16,  17,  18,  19,   9,  10,  11,  12, \
+   13,  14,  8,   15,  20,  21,  22,  23, \
+   24,  25,  26,  27,  28,  29,  30,  31, \
+   32,  33,  34,  35,  36,  37,  38,  39, \
+   40,  41,  42,  43,  44,  45,  46,  47, \
+   48,  49,  50,  51,  52,  53,  54,  55, \
+   56,  57,  58,  59,  60,  61,  62,  63, \
+   64,  65,  66,  67,  68,  69,  70,  71, \
+   72,  73,  74,  75,  76,  77,  78,  79, \
+   80,  81,  82,  83,  84,  85,  86,  87, \
+   88,  89,  90,  91,  92,  93,  94,  95, \
+   96,  97,  98,  99, 100,                \
 }
 
 /* Tell IRA to use the order we define rather than messing it up with its
@@ -609,8 +647,11 @@ enum nds32_builtins
 enum reg_class
 {
   NO_REGS,
+  R5_REG,
+  R8_REG,
   R15_TA_REG,
   STACK_REG,
+  FRAME_POINTER_REG,
   LOW_REGS,
   MIDDLE_REGS,
   HIGH_REGS,
@@ -625,8 +666,11 @@ enum reg_class
 #define REG_CLASS_NAMES \
 {                       \
   "NO_REGS",            \
+  "R5_REG",             \
+  "R8_REG",             \
   "R15_TA_REG",         \
   "STACK_REG",          \
+  "FRAME_POINTER_REG",  \
   "LOW_REGS",           \
   "MIDDLE_REGS",        \
   "HIGH_REGS",          \
@@ -636,16 +680,30 @@ enum reg_class
 }
 
 #define REG_CLASS_CONTENTS \
-{                                                            \
-  {0x00000000, 0x00000000}, /* NO_REGS     :              */ \
-  {0x00008000, 0x00000000}, /* R15_TA_REG  : 15           */ \
-  {0x80000000, 0x00000000}, /* STACK_REG   : 31           */ \
-  {0x000000ff, 0x00000000}, /* LOW_REGS    : 0-7          */ \
-  {0x000f0fff, 0x00000000}, /* MIDDLE_REGS : 0-11, 16-19  */ \
-  {0xfff07000, 0x00000000}, /* HIGH_REGS   : 12-14, 20-31 */ \
-  {0xffffffff, 0x00000000}, /* GENERAL_REGS: 0-31         */ \
-  {0x00000000, 0x00000003}, /* FRAME_REGS  : 32, 33       */ \
-  {0xffffffff, 0x00000003}  /* ALL_REGS    : 0-31, 32, 33 */ \
+{ /* NO_REGS                                    */  \
+  {0x00000000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* R5_REG              : 5                    */  \
+  {0x00000020, 0x00000000, 0x00000000, 0x00000000}, \
+  /* R8_REG              : 8                    */  \
+  {0x00000100, 0x00000000, 0x00000000, 0x00000000}, \
+  /* R15_TA_REG          : 15                   */  \
+  {0x00008000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* STACK_REG           : 31                   */  \
+  {0x80000000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* FRAME_POINTER_REG   : 28                   */  \
+  {0x10000000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* LOW_REGS            : 0-7                  */  \
+  {0x000000ff, 0x00000000, 0x00000000, 0x00000000}, \
+  /* MIDDLE_REGS         : 0-11, 16-19          */  \
+  {0x000f0fff, 0x00000000, 0x00000000, 0x00000000}, \
+  /* HIGH_REGS           : 12-14, 20-31         */  \
+  {0xfff07000, 0x00000000, 0x00000000, 0x00000000}, \
+  /* GENERAL_REGS        : 0-31                 */  \
+  {0xffffffff, 0x00000000, 0x00000000, 0x00000000}, \
+  /* FRAME_REGS          : 32, 33               */  \
+  {0x00000000, 0x00000003, 0x00000000, 0x00000000}, \
+  /* ALL_REGS            : 0-100                */  \
+  {0xffffffff, 0xffffffff, 0xffffffff, 0x0000001f}  \
 }
 
 #define REGNO_REG_CLASS(regno) nds32_regno_reg_class (regno)
@@ -856,14 +914,20 @@ enum reg_class
 
 #define LOCAL_LABEL_PREFIX "."
 
-#define REGISTER_NAMES                                            \
-{                                                                 \
-  "$r0",  "$r1",  "$r2",  "$r3",  "$r4",  "$r5",  "$r6",  "$r7",  \
+#define REGISTER_NAMES \
+{ "$r0",  "$r1",  "$r2",  "$r3",  "$r4",  "$r5",  "$r6",  "$r7",  \
   "$r8",  "$r9",  "$r10", "$r11", "$r12", "$r13", "$r14", "$ta",  \
   "$r16", "$r17", "$r18", "$r19", "$r20", "$r21", "$r22", "$r23", \
   "$r24", "$r25", "$r26", "$r27", "$fp",  "$gp",  "$lp",  "$sp",  \
-  "$AP",                                                          \
-  "$SFP"                                                          \
+  "$AP",  "$SFP", "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   "NA",   \
+  "NA",   "NA",   "NA",   "NA",   "NA"                            \
 }
 
 /* Output normal jump table entry.  */

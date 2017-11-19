@@ -14,4 +14,6 @@ extern "C" int printf (const char *, ...);
 void* junk() {
   return __builtin_alloca(10);
 }
-main() { printf ("PASS\n");}
+
+int
+main() { printf ("PASS\n"); return 0; }

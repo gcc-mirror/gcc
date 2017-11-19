@@ -148,15 +148,6 @@ struct GTY(()) cp_class_binding {
   tree identifier;
 };
 
-
-struct GTY(()) cp_label_binding {
-  /* The bound LABEL_DECL.  */
-  tree label;
-  /* The previous IDENTIFIER_LABEL_VALUE.  */
-  tree prev_value;
-};
-
-
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
    Contours include:
@@ -201,10 +192,6 @@ struct GTY(()) cp_binding_level {
       the TREE_VALUE is the IDENTIFIER_TYPE_VALUE before we entered
       the class.  */
   tree type_shadowed;
-
-  /* Similar to class_shadowed, but for IDENTIFIER_LABEL_VALUE, and
-      used for all binding levels.  */
-  vec<cp_label_binding, va_gc> *shadowed_labels;
 
   /* For each level (except not the global one),
       a chain of BLOCK nodes for all the levels

@@ -692,6 +692,12 @@ Gogo::analyze_escape()
   if (!optimize_allocation_flag.is_enabled() || saw_errors())
     return;
 
+  // Currently runtime is hard-coded to non-escape in various places.
+  // Don't run escape analysis for runtime.
+  // TODO: remove this once it works for runtime.
+  if (this->compiling_runtime() && this->package_name() == "runtime")
+    return;
+
   // Discover strongly connected groups of functions to analyze for escape
   // information in this package.
   this->discover_analysis_sets();

@@ -998,7 +998,7 @@ enum cris_symbol_type
 /* (no definitions) */
 
 
-/* Node: SDB and DWARF */
+/* Node: DWARF */
 /* (no definitions) */
 
 /* Node: Misc */

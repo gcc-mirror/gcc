@@ -21,13 +21,18 @@
 HeaderInclude
 config/nds32/nds32-opts.h
 
-mbig-endian
-Target Report RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+; ---------------------------------------------------------------
+; The following options are designed for aliasing and compatibility options.
+
+EB
+Target RejectNegative Alias(mbig-endian)
 Generate code in big-endian mode.
 
-mlittle-endian
-Target Report RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+EL
+Target RejectNegative Alias(mlittle-endian)
 Generate code in little-endian mode.
+
+; ---------------------------------------------------------------
 
 mreduced-regs
 Target Report RejectNegative Negative(mfull-regs) Mask(REDUCED_REGS)
@@ -37,13 +42,32 @@ mfull-regs
 Target Report RejectNegative Negative(mreduced-regs) InverseMask(REDUCED_REGS)
 Use full-set registers for register allocation.
 
+; ---------------------------------------------------------------
+
+mbig-endian
+Target Undocumented RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+Generate code in big-endian mode.
+
+mlittle-endian
+Target Undocumented RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+Generate code in little-endian mode.
+
+
 mcmov
 Target Report Mask(CMOV)
 Generate conditional move instructions.
 
-mperf-ext
-Target Report Mask(PERF_EXT)
+mext-perf
+Target Report Mask(EXT_PERF)
 Generate performance extension instructions.
+
+mext-perf2
+Target Report Mask(EXT_PERF2)
+Generate performance extension version 2 instructions.
+
+mext-string
+Target Report Mask(EXT_STRING)
+Generate string extension instructions.
 
 mv3push
 Target Report Mask(V3PUSH)

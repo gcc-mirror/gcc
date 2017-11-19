@@ -20,4 +20,5 @@ bool Analyzer::ReadDictionary( READER &reader )
     = ( number_of_composite_sequences + SequenceMapIndex( 1 ) )
     * ( number_of_composite_sequences + 1 );
   map_from_2_hints_to_composite_sequence.reset(new SequenceIndex[ntt]());
+  return true;
 }

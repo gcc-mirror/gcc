@@ -2176,7 +2176,7 @@ package body Exp_Ch3 is
             --  Generate
             --    function Fxx (O : in Rec_Typ) return Storage_Offset is
             --    begin
-            --       return O.Iface_Comp'Position;
+            --       return -O.Iface_Comp'Position;
             --    end Fxx;
 
             Body_Node := New_Node (N_Subprogram_Body, Loc);
@@ -2199,15 +2199,16 @@ package body Exp_Ch3 is
                 Statements     => New_List (
                   Make_Simple_Return_Statement (Loc,
                     Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         =>
-                          Make_Selected_Component (Loc,
-                            Prefix        =>
-                              Unchecked_Convert_To (Acc_Type,
-                                Make_Identifier (Loc, Name_uO)),
-                            Selector_Name =>
-                              New_Occurrence_Of (Iface_Comp, Loc)),
-                        Attribute_Name => Name_Position)))));
+                      Make_Op_Minus (Loc,
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            Make_Selected_Component (Loc,
+                              Prefix        =>
+                                Unchecked_Convert_To (Acc_Type,
+                                  Make_Identifier (Loc, Name_uO)),
+                              Selector_Name =>
+                                New_Occurrence_Of (Iface_Comp, Loc)),
+                          Attribute_Name => Name_Position))))));
 
             Set_Ekind       (Func_Id, E_Function);
             Set_Mechanism   (Func_Id, Default_Mechanism);
@@ -2544,6 +2545,7 @@ package body Exp_Ch3 is
                then
                   declare
                      Elab_Sec_DT_Stmts_List : constant List_Id := New_List;
+                     Elab_List              : List_Id          := New_List;
 
                   begin
                      Init_Secondary_Tags
@@ -2554,24 +2556,30 @@ package body Exp_Ch3 is
                         Fixed_Comps    => True,
                         Variable_Comps => False);
 
-                     Append_To (Elab_Sec_DT_Stmts_List,
-                       Make_Assignment_Statement (Loc,
-                         Name       =>
-                           New_Occurrence_Of
-                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
-                         Expression =>
-                           New_Occurrence_Of (Standard_False, Loc)));
-
-                     Prepend_List_To (Body_Stmts, New_List (
+                     Elab_List := New_List (
                        Make_If_Statement (Loc,
                          Condition       => New_Occurrence_Of (Set_Tag, Loc),
-                         Then_Statements => Init_Tags_List),
+                         Then_Statements => Init_Tags_List));
 
-                       Make_If_Statement (Loc,
-                         Condition       =>
-                           New_Occurrence_Of
-                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
-                         Then_Statements => Elab_Sec_DT_Stmts_List)));
+                     if Elab_Flag_Needed (Rec_Type) then
+                        Append_To (Elab_Sec_DT_Stmts_List,
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                              New_Occurrence_Of
+                                (Access_Disp_Table_Elab_Flag (Rec_Type),
+                                 Loc),
+                            Expression =>
+                              New_Occurrence_Of (Standard_False, Loc)));
+
+                        Append_To (Elab_List,
+                          Make_If_Statement (Loc,
+                            Condition       =>
+                              New_Occurrence_Of
+                                (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
+                            Then_Statements => Elab_Sec_DT_Stmts_List));
+                     end if;
+
+                     Prepend_List_To (Body_Stmts, Elab_List);
                   end;
                else
                   Prepend_To (Body_Stmts,
@@ -6279,7 +6287,7 @@ package body Exp_Ch3 is
       --  Force construction of dispatch tables of library level tagged types
 
       if Tagged_Type_Expansion
-        and then Static_Dispatch_Tables
+        and then Building_Static_Dispatch_Tables
         and then Is_Library_Level_Entity (Def_Id)
         and then Is_Library_Level_Tagged_Type (Base_Typ)
         and then Ekind_In (Base_Typ, E_Record_Type,
@@ -6727,8 +6735,11 @@ package body Exp_Ch3 is
                   declare
                      New_Id    : constant Entity_Id := Defining_Identifier (N);
                      Next_Temp : constant Entity_Id := Next_Entity (New_Id);
-                     S_Flag    : constant Boolean   :=
+                     Save_CFS  : constant Boolean   :=
                                    Comes_From_Source (Def_Id);
+                     Save_SP   : constant Node_Id   := SPARK_Pragma (Def_Id);
+                     Save_SPI  : constant Boolean   :=
+                                   SPARK_Pragma_Inherited (Def_Id);
 
                   begin
                      Set_Next_Entity (New_Id, Next_Entity (Def_Id));
@@ -6740,8 +6751,20 @@ package body Exp_Ch3 is
                      Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
+
+                     --  ??? This is extremely dangerous!!! Exchanging entities
+                     --  is very low level, and as a result it resets flags and
+                     --  fields which belong to the original Def_Id. Several of
+                     --  these attributes are saved and restored, but there may
+                     --  be many more that need to be preserverd.
+
                      Exchange_Entities (Defining_Identifier (N), Def_Id);
-                     Set_Comes_From_Source (Def_Id, S_Flag);
+
+                     --  Restore clobbered attributes
+
+                     Set_Comes_From_Source      (Def_Id, Save_CFS);
+                     Set_SPARK_Pragma           (Def_Id, Save_SP);
+                     Set_SPARK_Pragma_Inherited (Def_Id, Save_SPI);
                   end;
                end;
             end if;
@@ -8501,13 +8524,14 @@ package body Exp_Ch3 is
 
                   Unchecked_Convert_To
                     (RTE (RE_Storage_Offset),
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         Make_Selected_Component (Loc,
-                           Prefix        => New_Copy_Tree (Target),
-                           Selector_Name =>
-                             New_Occurrence_Of (Tag_Comp, Loc)),
-                       Attribute_Name => Name_Position)),
+                     Make_Op_Minus (Loc,
+                       Make_Attribute_Reference (Loc,
+                         Prefix         =>
+                           Make_Selected_Component (Loc,
+                             Prefix        => New_Copy_Tree (Target),
+                             Selector_Name =>
+                               New_Occurrence_Of (Tag_Comp, Loc)),
+                         Attribute_Name => Name_Position))),
 
                   Unchecked_Convert_To (RTE (RE_Offset_To_Top_Function_Ptr),
                     Make_Attribute_Reference (Loc,
@@ -8530,12 +8554,13 @@ package body Exp_Ch3 is
                       New_Occurrence_Of (Offset_To_Top_Comp, Loc)),
 
                 Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix       =>
-                      Make_Selected_Component (Loc,
-                        Prefix        => New_Copy_Tree (Target),
-                        Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
-                  Attribute_Name => Name_Position)));
+                  Make_Op_Minus (Loc,
+                    Make_Attribute_Reference (Loc,
+                      Prefix       =>
+                        Make_Selected_Component (Loc,
+                          Prefix        => New_Copy_Tree (Target),
+                          Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
+                    Attribute_Name => Name_Position))));
 
          --  Normal case: No discriminants in the parent type
 
@@ -8552,13 +8577,14 @@ package body Exp_Ch3 is
                    Iface_Tag    => New_Occurrence_Of (Iface_Tag, Loc),
                    Offset_Value =>
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           Make_Selected_Component (Loc,
-                             Prefix        => New_Copy_Tree (Target),
-                             Selector_Name =>
-                               New_Occurrence_Of (Tag_Comp, Loc)),
-                         Attribute_Name => Name_Position))));
+                       Make_Op_Minus (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         =>
+                             Make_Selected_Component (Loc,
+                               Prefix        => New_Copy_Tree (Target),
+                               Selector_Name =>
+                                 New_Occurrence_Of (Tag_Comp, Loc)),
+                           Attribute_Name => Name_Position)))));
             end if;
 
             --  Generate:
@@ -8569,7 +8595,9 @@ package body Exp_Ch3 is
             --       Offset_Value => n,
             --       Offset_Func  => null);
 
-            if RTE_Available (RE_Register_Interface_Offset) then
+            if not Building_Static_Secondary_DT (Typ)
+              and then RTE_Available (RE_Register_Interface_Offset)
+            then
                Append_To (Stmts_List,
                  Make_Procedure_Call_Statement (Loc,
                    Name                   =>
@@ -8587,13 +8615,14 @@ package body Exp_Ch3 is
                      New_Occurrence_Of (Standard_True, Loc),
 
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           Make_Selected_Component (Loc,
-                             Prefix         => New_Copy_Tree (Target),
-                             Selector_Name  =>
-                               New_Occurrence_Of (Tag_Comp, Loc)),
-                         Attribute_Name => Name_Position)),
+                       Make_Op_Minus (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         =>
+                             Make_Selected_Component (Loc,
+                               Prefix         => New_Copy_Tree (Target),
+                               Selector_Name  =>
+                                 New_Occurrence_Of (Tag_Comp, Loc)),
+                           Attribute_Name => Name_Position))),
 
                      Make_Null (Loc))));
             end if;
@@ -8697,15 +8726,11 @@ package body Exp_Ch3 is
             --  Initialize secondary tags
 
             else
-               Append_To (Init_Tags_List,
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix => New_Copy_Tree (Target),
-                       Selector_Name =>
-                         New_Occurrence_Of (Node (Iface_Comp_Elmt), Loc)),
-                   Expression =>
-                     New_Occurrence_Of (Node (Iface_Tag_Elmt), Loc)));
+               Initialize_Tag
+                 (Typ       => Full_Typ,
+                  Iface     => Node (Iface_Elmt),
+                  Tag_Comp  => Tag_Comp,
+                  Iface_Tag => Node (Iface_Tag_Elmt));
             end if;
 
          --  Otherwise generate code to initialize the tag
@@ -8714,10 +8739,11 @@ package body Exp_Ch3 is
             if (In_Variable_Pos and then Variable_Comps)
               or else (not In_Variable_Pos and then Fixed_Comps)
             then
-               Initialize_Tag (Full_Typ,
-                 Iface     => Node (Iface_Elmt),
-                 Tag_Comp  => Tag_Comp,
-                 Iface_Tag => Node (Iface_Tag_Elmt));
+               Initialize_Tag
+                 (Typ       => Full_Typ,
+                  Iface     => Node (Iface_Elmt),
+                  Tag_Comp  => Tag_Comp,
+                  Iface_Tag => Node (Iface_Tag_Elmt));
             end if;
          end if;
 

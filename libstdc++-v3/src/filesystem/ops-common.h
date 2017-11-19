@@ -113,8 +113,10 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       return file_type::fifo;
     else if (S_ISLNK(st.st_mode))
       return file_type::symlink;
+#ifdef S_ISSOCK // not present until POSIX:2001
     else if (S_ISSOCK(st.st_mode))
       return file_type::socket;
+#endif
 #endif
     return file_type::unknown;
   }

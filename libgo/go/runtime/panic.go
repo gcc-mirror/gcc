@@ -22,6 +22,7 @@ import (
 //go:linkname makefuncreturning runtime.makefuncreturning
 //go:linkname gorecover runtime.gorecover
 //go:linkname deferredrecover runtime.deferredrecover
+//go:linkname panicmem runtime.panicmem
 // Temporary for C code to call:
 //go:linkname throw runtime.throw
 

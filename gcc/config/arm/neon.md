@@ -1221,12 +1221,8 @@
 	gcc_assert (!reg_overlap_mentioned_p (operands[0], operands[1])
 		    || REGNO (operands[0]) == REGNO (operands[1]));
 
-	if (operands[2] == CONST1_RTX (SImode))
-	  /* This clobbers CC.  */
-	  emit_insn (gen_arm_ashldi3_1bit (operands[0], operands[1]));
-	else
-	  arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
-					 operands[2], operands[3], operands[4]);
+	arm_emit_coreregs_64bit_shift (ASHIFT, operands[0], operands[1],
+				       operands[2], operands[3], operands[4]);
       }
     DONE;
   }"
@@ -1325,13 +1321,9 @@
 	gcc_assert (!reg_overlap_mentioned_p (operands[0], operands[1])
 		    || REGNO (operands[0]) == REGNO (operands[1]));
 
-	if (operands[2] == CONST1_RTX (SImode))
-	  /* This clobbers CC.  */
-	  emit_insn (gen_arm_<shift>di3_1bit (operands[0], operands[1]));
-	else
-	  /* This clobbers CC (ASHIFTRT by register only).  */
-	  arm_emit_coreregs_64bit_shift (<CODE>, operands[0], operands[1],
-				 	 operands[2], operands[3], operands[4]);
+	/* This clobbers CC (ASHIFTRT by register only).  */
+	arm_emit_coreregs_64bit_shift (<CODE>, operands[0], operands[1],
+				       operands[2], operands[3], operands[4]);
       }
 
     DONE;
@@ -3122,15 +3114,10 @@
   "{
      rtx v_bitmask_cast;
      rtx v_bitmask = gen_reg_rtx (<VCVTF:V_cmp_result>mode);
-     int i, n_elt = GET_MODE_NUNITS (<MODE>mode);
-     rtvec v = rtvec_alloc (n_elt);
-
-     /* Create bitmask for vector select.  */
-     for (i = 0; i < n_elt; ++i)
-       RTVEC_ELT (v, i) = GEN_INT (0x80000000);
+     rtx c = GEN_INT (0x80000000);
 
      emit_move_insn (v_bitmask,
-		     gen_rtx_CONST_VECTOR (<VCVTF:V_cmp_result>mode, v));
+		     gen_const_vec_duplicate (<VCVTF:V_cmp_result>mode, c));
      emit_move_insn (operands[0], operands[2]);
      v_bitmask_cast = simplify_gen_subreg (<MODE>mode, v_bitmask,
 					   <VCVTF:V_cmp_result>mode, 0);

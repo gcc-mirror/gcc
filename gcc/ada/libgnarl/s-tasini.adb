@@ -325,8 +325,8 @@ package body System.Tasking.Initialization is
       --  of the environment task.
 
       Self_Id := Environment_Task;
-      Self_Id.Master_of_Task := Environment_Task_Level;
-      Self_Id.Master_Within := Self_Id.Master_of_Task + 1;
+      Self_Id.Master_Of_Task := Environment_Task_Level;
+      Self_Id.Master_Within := Self_Id.Master_Of_Task + 1;
 
       for L in Self_Id.Entry_Calls'Range loop
          Self_Id.Entry_Calls (L).Self := Self_Id;

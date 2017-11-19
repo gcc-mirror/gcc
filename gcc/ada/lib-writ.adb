@@ -694,7 +694,7 @@ package body Lib.Writ is
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
-                  case Pragma_Name_Unmapped (N) is
+                  case Pragma_Name (N) is
                      when Name_Annotate =>
                         C := 'A';
                      when Name_Comment =>
@@ -1565,14 +1565,6 @@ package body Lib.Writ is
       if Generate_SCO then
          SCO_Record_Filtered;
          SCO_Output;
-      end if;
-
-      --  Output SPARK cross-reference information if needed
-
-      if Opt.Xref_Active and then GNATprove_Mode then
-         SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
-                                             Num_Sdep   => Num_Sdep);
-         SPARK_Specific.Output_SPARK_Xrefs;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

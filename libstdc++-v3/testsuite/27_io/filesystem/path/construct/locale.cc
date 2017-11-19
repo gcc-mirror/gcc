@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 8.4.1 path constructors [path.construct]
+// 30.10.7.4.1 path constructors [fs.path.construct]
 
 #include <filesystem>
 #include <testsuite_hooks.h>
@@ -30,7 +30,7 @@ void
 test01()
 {
   path p("/foo/bar", std::locale::classic());
-  VERIFY( p.string() == "/foo/bar" );
+  VERIFY( p.native() == "/foo/bar" );
 }
 
 int

@@ -154,7 +154,6 @@ isolate_path (basic_block bb, basic_block duplicate,
   if (!duplicate)
     {
       duplicate = duplicate_block (bb, NULL, NULL);
-      bb->frequency = 0;
       bb->count = profile_count::zero ();
       if (!ret_zero)
 	for (ei = ei_start (duplicate->succs); (e2 = ei_safe_edge (ei)); )
@@ -168,7 +167,7 @@ isolate_path (basic_block bb, basic_block duplicate,
       flush_pending_stmts (e2);
 
       /* Update profile only when redirection is really processed.  */
-      bb->frequency += EDGE_FREQUENCY (e);
+      bb->count += e->count ();
     }
 
   /* There may be more than one statement in DUPLICATE which exhibits

@@ -628,6 +628,20 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     return error_mark_node;
 }
 
+/* We have an expression tree T that represents a call, either CALL_EXPR
+   or AGGR_INIT_EXPR.  If the call is lexically to a named function,
+   retrun the _DECL for that function.  */
+
+static tree
+get_function_named_in_call (tree t)
+{
+  tree fun = cp_get_callee (t);
+  if (fun && TREE_CODE (fun) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (fun, 0)) == FUNCTION_DECL)
+    fun = TREE_OPERAND (fun, 0);
+  return fun;
+}
+
 /* Subroutine of register_constexpr_fundef.  BODY is the body of a function
    declared to be constexpr, or a sub-statement thereof.  Returns the
    return value if suitable, error_mark_node for a statement not allowed in
@@ -681,6 +695,15 @@ constexpr_fn_retval (tree body)
 
     case USING_STMT:
       return NULL_TREE;
+
+    case CALL_EXPR:
+	{
+	  tree fun = get_function_named_in_call (body);
+	  if (fun != NULL_TREE
+	      && DECL_FUNCTION_CODE (fun) == BUILT_IN_UNREACHABLE)
+	    return NULL_TREE;
+	}
+      /* Fallthru.  */
 
     default:
       return error_mark_node;
@@ -1098,20 +1121,6 @@ save_fundef_copy (tree fun, tree copy)
 }
 
 /* We have an expression tree T that represents a call, either CALL_EXPR
-   or AGGR_INIT_EXPR.  If the call is lexically to a named function,
-   retrun the _DECL for that function.  */
-
-static tree
-get_function_named_in_call (tree t)
-{
-  tree fun = cp_get_callee (t);
-  if (fun && TREE_CODE (fun) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (fun, 0)) == FUNCTION_DECL)
-    fun = TREE_OPERAND (fun, 0);
-  return fun;
-}
-
-/* We have an expression tree T that represents a call, either CALL_EXPR
    or AGGR_INIT_EXPR.  Return the Nth argument.  */
 
 static inline tree
@@ -1180,9 +1189,18 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     {
       if (!*non_constant_p && !ctx->quiet)
 	{
-	  new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
-					   CALL_EXPR_FN (t), nargs, args);
-	  error ("%q+E is not a constant expression", new_call);
+	  /* Do not allow__builtin_unreachable in constexpr function.
+	     The __builtin_unreachable call with BUILTINS_LOCATION
+	     comes from cp_maybe_instrument_return.  */
+	  if (DECL_FUNCTION_CODE (fun) == BUILT_IN_UNREACHABLE
+	      && EXPR_LOCATION (t) == BUILTINS_LOCATION)
+	    error ("constexpr call flows off the end of the function");
+	  else
+	    {
+	      new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
+					       CALL_EXPR_FN (t), nargs, args);
+	      error ("%q+E is not a constant expression", new_call);
+	    }
 	}
       *non_constant_p = true;
       return t;
@@ -1268,9 +1286,6 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	  && is_dummy_object (x))
 	{
 	  x = ctx->object;
-	  /* We don't use cp_build_addr_expr here because we don't want to
-	     capture the object argument until we've chosen a non-static member
-	     function.  */
 	  x = build_address (x);
 	}
       bool lval = false;
@@ -5272,7 +5287,25 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
-	return RECUR (DECL_VALUE_EXPR (t), rval);
+	{
+	  if (now && is_normal_capture_proxy (t))
+	    {
+	      /* -- in a lambda-expression, a reference to this or to a
+		 variable with automatic storage duration defined outside that
+		 lambda-expression, where the reference would be an
+		 odr-use.  */
+	      if (flags & tf_error)
+		{
+		  tree cap = DECL_CAPTURED_VARIABLE (t);
+		  error ("lambda capture of %qE is not a constant expression",
+			 cap);
+		  if (!want_rval && decl_constant_var_p (cap))
+		    inform (input_location, "because it is used as a glvalue");
+		}
+	      return false;
+	    }
+	  return RECUR (DECL_VALUE_EXPR (t), rval);
+	}
       if (want_rval
 	  && !var_in_maybe_constexpr_fn (t)
 	  && !type_dependent_expression_p (t)
