@@ -1,5 +1,11 @@
 2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/83001
+	* profile-count.c (profile_count::to_sreal_scale): Fix return value
+	for uninitialied counts.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/60243
 	* tree-inline.c (estimate_num_insns): Set to 1 at least.
 
