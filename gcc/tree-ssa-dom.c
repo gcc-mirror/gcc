@@ -1011,6 +1011,7 @@ record_equivalences_from_phis (basic_block bb)
       tree rhs = NULL;
       size_t i;
 
+      bool ignored_phi_arg = false;
       for (i = 0; i < gimple_phi_num_args (phi); i++)
 	{
 	  tree t = gimple_phi_arg_def (phi, i);
@@ -1021,10 +1022,14 @@ record_equivalences_from_phis (basic_block bb)
 	  if (lhs == t)
 	    continue;
 
-	  /* If the associated edge is not marked as executable, then it
-	     can be ignored.  */
+	  /* We want to track if we ignored any PHI arguments because
+	     their associated edges were not executable.  This impacts
+	     whether or not we can use any equivalence we might discover.  */
 	  if ((gimple_phi_arg_edge (phi, i)->flags & EDGE_EXECUTABLE) == 0)
-	    continue;
+	    {
+	      ignored_phi_arg = true;
+	      continue;
+	    }
 
 	  t = dom_valueize (t);
 
@@ -1049,9 +1054,15 @@ record_equivalences_from_phis (basic_block bb)
 	 a useful equivalence.  We do not need to record unwind data for
 	 this, since this is a true assignment and not an equivalence
 	 inferred from a comparison.  All uses of this ssa name are dominated
-	 by this assignment, so unwinding just costs time and space.  */
+	 by this assignment, so unwinding just costs time and space.
+
+	 Note that if we ignored a PHI argument and the resulting equivalence
+	 is SSA_NAME = SSA_NAME.  Then we can not use the equivalence as the
+	 uses of the LHS SSA_NAME are not necessarily dominated by the
+	 assignment of the RHS SSA_NAME.  */
       if (i == gimple_phi_num_args (phi)
-	  && may_propagate_copy (lhs, rhs))
+	  && may_propagate_copy (lhs, rhs)
+	  && (!ignored_phi_arg || TREE_CODE (rhs) != SSA_NAME))
 	set_ssa_name_value (lhs, rhs);
     }
 }

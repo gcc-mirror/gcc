@@ -1,3 +1,31 @@
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/82281
+	* gcc.target/i386/pr82281.c: New testcase.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81360
+	* gcc.c-torture/compile/pr81360.c: New testcase.
+
+2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78990
+	* gfortran.dg/class_67.f90: New test.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/82713
+	* gcc.target/i386/pr82713.c: New testcase.
+
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* gcc.dg/pr69960.c: New test.
+	* gcc.dg/pr66618.c: New test.
+	* gcc.dg/pr66618-2.c: New test.
+
 2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/44292
@@ -257,7 +285,7 @@
 	* g++.dg/torture/pr82985.C: Likewise.
 
 2017-11-15  Sebastian Peryt  <sebastian.peryt@intel.com>
-	
+
 	PR target/82941
 	PR target/82942
 	* gcc.target/i386/pr82941-1.c: New test.

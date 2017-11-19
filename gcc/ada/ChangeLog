@@ -1,3 +1,16 @@
+2017-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/83016
+	* gnatlink.adb (Process_Args): Accept multiple switches for --LINK.
+	(Usage): Adjust.
+	* gcc-interface/Makefile.in (GCC_LINK): Remove $(ADA_INCLUDES).
+	(common-tools): Pass $(CC) as --GCC= and $(GCC_LINK) as --LINK= in
+	the invocations of $(GNATLINK).
+	(../../gnatdll$(exeext)): Likewise.
+	(../../vxaddr2line$(exeext)): Likewise.
+	(gnatmake-re): Likewise.
+	(gnatlink-re): Likewise.
+
 2017-11-16  Doug Rupp  <rupp@adacore.com>
 
 	* gcc-interface/Makefile.in: Merge Aarch64 and ARM "ifeq" blocks.
@@ -32,7 +45,7 @@
 
 	* doc/gnat_ugn/gnat_utility_programs.rst (GNAT UGN): Add
 	gnatsymbolize documentation.
-	* gnat_ugn.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
 
 2017-11-16  Steve Baird  <baird@adacore.com>
 
