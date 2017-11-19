@@ -1,5 +1,10 @@
 2017-11-19  Tom de Vries  <tom@codesourcery.com>
 
+	* config/arc/arc.h (FUNCTION_PROFILER): Remove semicolon after
+	"do while (0)".
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
 	* config/phoenix.h (TARGET_OS_CPP_BUILTINS): Remove semicolon after
 	"do {} while (0)".
 

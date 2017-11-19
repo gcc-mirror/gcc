@@ -822,7 +822,7 @@ extern int arc_initial_elimination_offset(int from, int to);
     fprintf (FILE, "\tbl\t__mcount@plt\n");			\
   else								\
     fprintf (FILE, "\tbl\t__mcount\n");				\
-  } while (0);
+  } while (0)
 
 #define NO_PROFILE_COUNTERS  1
 
