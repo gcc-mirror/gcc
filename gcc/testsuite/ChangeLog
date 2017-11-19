@@ -1,3 +1,8 @@
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81360
+	* gcc.c-torture/compile/pr81360.c: New testcase.
+
 2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78990
