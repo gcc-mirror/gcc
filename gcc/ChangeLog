@@ -1,3 +1,21 @@
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-math-opts.c (nop_stats, bswap_stats, struct symbolic_number,
+	BITS_PER_MARKER, MARKER_MASK, MARKER_BYTE_UNKNOWN, HEAD_MARKER, CMPNOP,
+	CMPXCHG, do_shift_rotate, verify_symbolic_number_p,
+	init_symbolic_number, find_bswap_or_nop_load, perform_symbolic_merge,
+	find_bswap_or_nop_1, find_bswap_or_nop, pass_data_optimize_bswap,
+	class pass_optimize_bswap, bswap_replace,
+	pass_optimize_bswap::execute): Moved to ...
+	* gimple-ssa-store-merging.c: ... this file.
+	Include optabs-tree.h.
+	(nop_stats, bswap_stats, do_shift_rotate, verify_symbolic_number_p,
+	init_symbolic_number, find_bswap_or_nop_load, perform_symbolic_merge,
+	find_bswap_or_nop_1, find_bswap_or_nop, bswap_replace): Put into
+	anonymous namespace, remove static keywords.
+	(pass_optimize_bswap::gate): Test BITS_PER_UNIT == 8 here...
+	(pass_optimize_bswap::execute): ... rather than here.  Formatting fix.
+
 2017-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/83062
