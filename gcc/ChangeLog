@@ -1,3 +1,7 @@
+2017-11-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-predcom.c (add_ref_to_chain): Remove check on distance.
+
 2017-11-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	* vr-values.c (extract_range_from_binary_expr): Use a full range
