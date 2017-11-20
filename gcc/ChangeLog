@@ -1,3 +1,9 @@
+2017-11-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/82020
+	* simplify-rtx.c (simplify_ternary_operation): Fix comparison mode of
+	IF_THEN_ELSE condition.
+
 2017-11-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_equivalences_from_phis): Fix handling
