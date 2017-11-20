@@ -553,6 +553,16 @@ debug (edge_def *ptr)
   else
     fprintf (stderr, "<nil>\n");
 }
+
+static void
+debug_slim (edge e)
+{
+  fprintf (stderr, "<edge 0x%p (%d -> %d)>", (void *) e,
+	   e->src->index, e->dest->index);
+}
+
+DEFINE_DEBUG_VEC (edge)
+DEFINE_DEBUG_HASH_SET (edge)
 
 /* Simple routines to easily allocate AUX fields of basic blocks.  */
 

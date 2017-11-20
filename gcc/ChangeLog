@@ -1,3 +1,30 @@
+2017-11-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vec.h (debug_helper): New function.
+	(DEFINE_DEBUG_VEC): New macro.
+	* hash-set.h (debug_helper): New function.
+	(DEFINE_DEBUG_HASH_SET): New macro.
+	* cfg.c (debug_slim (edge)): New function.
+	Call DEFINE_DEBUG_VEC for edges.
+	Call DEFINE_DEBUG_HASH_SET for edges.
+	* cfghooks.c (debug_slim (basic_block)): New function.
+	Call DEFINE_DEBUG_VEC for basic blocks.
+	Call DEFINE_DEBUG_HASH_SET for basic blocks.
+	* print-tree.c (debug_slim): New function to handle trees.
+	Call DEFINE_DEBUG_VEC for trees.
+	Call DEFINE_DEBUG_HASH_SET for trees.
+	(debug (vec<tree, va_gc>) &): Remove.
+	(debug (<vec<tree, va_gc>) *): Remove.
+	* print-rtl.c (debug_slim): New function to handle const_rtx.
+	Call DEFINE_DEBUG_VEC for rtx_def.
+	Call DEFINE_DEBUG_VEC for rtx_insn.
+	Call DEFINE_DEBUG_HASH_SET for rtx_def.
+	Call DEFINE_DEBUG_HASH_SET for rtx_insn.
+	* sel-sched-dump.c (debug (vec<rtx_insn *> &): Remove.
+	(debug (vec<rtx_insn *> *ptr): Remove.
+	(debug_insn_vector): Remove.
+	* stor-layout.c (debug_rli): Call debug() instead of debug_vec_tree.
+
 2017-11-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/82020
