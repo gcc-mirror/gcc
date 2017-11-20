@@ -3280,7 +3280,7 @@ parse_mtune_ctrl_str (bool dump)
             }
         }
       if (i == X86_TUNE_LAST)
-        error ("Unknown parameter to option -mtune-ctrl: %s",
+        error ("unknown parameter to option -mtune-ctrl: %s",
                clear ? curr_feature_string - 1 : curr_feature_string);
       curr_feature_string = next_feature_string;
     }
