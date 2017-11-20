@@ -325,7 +325,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       inlinable = false;
     }
   if (!early && (!opt_for_fn (callee->decl, optimize)
-		 || opt_for_fn (caller->decl, optimize)))
+		 || !opt_for_fn (caller->decl, optimize)))
     {
       e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
       inlinable = false;
