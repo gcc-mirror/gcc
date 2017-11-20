@@ -1,3 +1,9 @@
+2017-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (bswaphi2): New expander.
+	(*bswaphi2_movbe): New insn pattern.
+	(bswaphi -> rorhi pepehole2): New peephole pattern.
+
 2017-11-20  Jeff Law  <law@redhat.com>
 
 	* Makefile.in (OBJS): Add gimple-ssa-evrp-analyze.o.
@@ -161,8 +167,7 @@
 2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/82713
-	* i386.c (ix86_builtin_vectorization_cost): Be ready for insane
-	types.
+	* i386.c (ix86_builtin_vectorization_cost): Be ready for insane types.
 
 2017-11-19  Tom de Vries  <tom@codesourcery.com>
 
@@ -301,8 +306,7 @@
 
 2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-cp.c (update_profiling_info): Handle conversion to local
-	profile.
+	* ipa-cp.c (update_profiling_info): Handle conversion to local profile.
 	* tree-cfg.c (execute_fixup_cfg): Do fixup same way as inliner does.
 
 2017-11-17  Jeff Law  <law@redhat.com>
@@ -466,8 +470,7 @@
 
 	* doc/invoke.texi (-std=c17): Refer to 2018 expected publication
 	date of C17.
-	(-std=c18, -std=iso9899:2018, -std=gnu18): Document option
-	aliases.
+	(-std=c18, -std=iso9899:2018, -std=gnu18): Document option aliases.
 
 2017-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
@@ -519,8 +522,8 @@
 
 2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
-	* predict.c (combine_predictions_for_bb): Preserve zero predicted	
-	eges.
+	* predict.c (combine_predictions_for_bb): Preserve zero predicted
+	edges.
 	(expensive_function_p): Remove useless assert.
 	(determine_unlikely_bbs): Propagate also forward; determine cold blocks
 
@@ -2206,9 +2209,8 @@
 
 2017-11-06  James Bowman  <james.bowman@ftdichip.com>
 
-	* gcc/dwarf2out.c (modified_type_die): Retain ADDR_SPACE
-	qualifiers.
-        (add_type_attribute) likewise.
+	* gcc/dwarf2out.c (modified_type_die): Retain ADDR_SPACE qualifiers.
+	(add_type_attribute) likewise.
 
 2017-11-06  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -3448,7 +3450,7 @@
 	* doc/tm.texi (TARGET_FLOATN_BUILTIN_P): Likewise.
 
 2017-10-31  Matthew Fortune  <matthew.fortune@imgtec.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/81803
 	* lra-constraints.c (curr_insn_transform): Also reload the whole
@@ -3553,7 +3555,7 @@
 
 2017-10-31  Olivier Hainque  <hainque@adacore.com>
 
-        * gcc/Makefile.in (FLAGS_TO_PASS): Pass libsubdir as well.
+	* gcc/Makefile.in (FLAGS_TO_PASS): Pass libsubdir as well.
 
 2017-10-31  Julia Koval  <julia.koval@intel.com>
 
