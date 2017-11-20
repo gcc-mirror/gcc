@@ -1,3 +1,38 @@
+2017-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/streambuf_iterator.h (istreambuf_iterator<>): Declare
+	std::advance for istreambuf_iterator of char types to be friend.
+	(std::advance(istreambuf_iterator&, _Distance)): New overload.
+	* include/std/streambuf (basic_streambuf<>): Declare std::advance for
+	istreambuf_iterator of char types to be friend.
+	* testsuite/22_locale/money_get/get/char/9.cc: Have
+	istreambuf_iterator created on the fly when calling money_get<>::get.
+	* testsuite/22_locale/money_get/get/wchar_t/9.cc: Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/debug/1_neg.cc: New.
+	* testsuite/24_iterators/istreambuf_iterator/debug/2_neg.cc: New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/char/1.cc: New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/char/1_neg.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/char/2.cc: New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/char/2_neg.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/char/3_neg.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/wchar_t/1.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/wchar_t/1_neg.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/wchar_t/2.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/wchar_t/2_neg.cc:
+	New.
+	* testsuite/25_algorithms/advance/istreambuf_iterators/wchar_t/3_neg.cc:
+	New.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/2.cc: Leverage
+	on std::advance overload.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+
 2017-11-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/special_functions/18_riemann_zeta/check_value.cc: Fix
