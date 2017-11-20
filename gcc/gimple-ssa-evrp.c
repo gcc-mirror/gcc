@@ -160,6 +160,7 @@ evrp_range_analyzer::enter (basic_block bb)
   stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
   record_ranges_from_incoming_edge (bb);
   record_ranges_from_phis (bb);
+  bb->flags |= BB_VISITED;
 }
 
 /* Find new range for NAME such that (OP CODE LIMIT) is true.  */
@@ -530,8 +531,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
     }
  
-  bb->flags |= BB_VISITED;
-
   return taken_edge;
 }
 
