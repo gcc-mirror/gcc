@@ -1,5 +1,23 @@
 2017-11-20  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c: Add general comment on Store-Store chains.
+	(split_data_refs_to_components): Postpone clearing eliminate_store_p
+	flag in component.
+	(get_chain_last_ref_at): Rename into...
+	(get_chain_last_write_at): ...this.
+	(get_chain_last_write_before_load): New function.
+	(add_ref_to_chain): Promote type of chain from CT_STORE_LOAD to
+	CT_STORE_STORE when write reference is added.
+	(determine_roots_comp): Support load ref in CT_STORE_STORE chains.
+	(is_inv_store_elimination_chain): Update get_chain_last_write_at call.
+	(initialize_root_vars_store_elim_1): Ditto.
+	(initialize_root_vars_store_elim_2): Ditto.  Replace rhs once default
+	definition is created.
+	(execute_pred_commoning_chain): Support load ref in CT_STORE_STORE
+	chain by replacing it with dominant stored value.
+
+2017-11-20  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c (add_ref_to_chain): Remove check on distance.
 
 2017-11-20  Marc Glisse  <marc.glisse@inria.fr>

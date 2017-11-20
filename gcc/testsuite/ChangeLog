@@ -1,3 +1,7 @@
+2017-11-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/predcom-dse-12.c: New test.
+
 2017-11-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR testsuite/82951
