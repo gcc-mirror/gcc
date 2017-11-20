@@ -1,6 +1,4 @@
-// 2006-03-20  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2006-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,37 +15,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <iterator>
-#include <fstream>
-#include <algorithm>
-#include <testsuite_hooks.h>
+// { dg-do run { xfail *-*-* } }
+// { dg-require-debug-mode "" }
 
-// In the occasion of libstdc++/25482
+#include <iterator>
+#include <algorithm>
+
 void test01()
 {
   using namespace std;
 
   typedef istreambuf_iterator<wchar_t> in_iterator_type;
+  in_iterator_type end1;
 
-  wifstream fbuf("istream_unformatted-1.txt");
+  advance(end1, 0); // Ok.
 
-  in_iterator_type beg(fbuf);
-  in_iterator_type end;
-
-  unsigned found = 0;
-  for (;;)
-    {
-      beg = find(beg, end, L'1');
-      if (beg == end)
-	break;
-      
-      ++found;
-      VERIFY( *beg == L'1' );
-
-      advance(beg, 9);
-      VERIFY( *beg == L'0' );
-    }
-  VERIFY( found == 1500 );
+  advance(end1, 1); // Invalid.
 }
 
 int main()
