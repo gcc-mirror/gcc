@@ -1,3 +1,12 @@
+2017-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82878
+	PR c++/78495
+	* call.c (build_call_a): Don't set CALL_FROM_THUNK_P for inherited
+	ctor.
+	* cp-gimplify.c	(cp_genericize_r): Restore THUNK dereference
+	inhibibition check removed in previous c++/78495 change.
+
 2017-11-20   Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82781
