@@ -1,3 +1,12 @@
+2017-11-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79072
+	* trans-expr.c (trans_class_vptr_len_assignment): Set from_len
+	if the temporary is unlimited polymorphic.
+	* trans-stmt.c (trans_associate_var): Use the fake result decl
+	to obtain the 'len' field from an explicit function result when
+	in that function scope.
+
 2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78990

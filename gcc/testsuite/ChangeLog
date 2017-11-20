@@ -1,3 +1,8 @@
+2017-11-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79072
+	* gfortran.dg/class_result_5.f90: New test.
+
 2017-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	P0329R4: Designated Initialization
