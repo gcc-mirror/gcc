@@ -3371,11 +3371,14 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 #define TI_TEMPLATE(NODE) TREE_TYPE (TEMPLATE_INFO_CHECK (NODE))
 #define TI_ARGS(NODE) TREE_CHAIN (TEMPLATE_INFO_CHECK (NODE))
-#define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
+#define TI_PENDING_TEMPLATE_FLAG(NODE) \
+  TREE_LANG_FLAG_1 (TEMPLATE_INFO_CHECK (NODE))
 /* For a given TREE_VEC containing a template argument list,
    this property contains the number of arguments that are not
    defaulted.  */
-#define NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) TREE_CHAIN (TREE_VEC_CHECK (NODE))
+#define NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) \
+  TREE_CHAIN (TREE_VEC_CHECK (NODE))
+
 /* Below are the setter and getter of the NON_DEFAULT_TEMPLATE_ARGS_COUNT
    property.  */
 #define SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE, INT_VALUE) \

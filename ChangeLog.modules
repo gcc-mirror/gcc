@@ -1,3 +1,17 @@
+2017-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	Template member functions.
+	gcc/cp/
+	* cp-tree.h (TI_PENDING_TEMPLATE_FLAG): Add TI_CHECK.
+	* module.c (cpms_out::maybe_tag_definition): Check DECL_INITIAL,
+	write clones.
+	(cpms_in::tag_definition): Don't zap clones.
+	(cpms_in::finish): Clear TI_PENDING_TEMPLATE_FLAG.
+	(cpms_{in,out}::core_vals): Check tcc_unary, tcc_binary.
+	* optimize.c (maybe_clone_body): Don't alias when modules.
+	gcc/testsuite/
+	* g++.dg/modules/tplmem-1_[ab].C: New.
+
 2017-11-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

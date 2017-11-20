@@ -2405,7 +2405,7 @@ cpms_out::maybe_tag_definition (tree t)
       break;
 
     case FUNCTION_DECL:
-      if (!DECL_SAVED_TREE (t))
+      if (!DECL_INITIAL (t))
 	return;
       if (DECL_TEMPLATE_INFO (t))
 	{
@@ -2413,8 +2413,6 @@ cpms_out::maybe_tag_definition (tree t)
 	    return;
 	}
       else if (!DECL_DECLARED_INLINE_P (t))
-	return;
-      if (DECL_CLONED_FUNCTION_P (t))
 	return;
       break;
     }
@@ -2483,8 +2481,6 @@ cpms_in::tag_definition ()
 
     case FUNCTION_DECL:
       t = define_function (t, maybe_template);
-      if (t && maybe_clone_body (t) && !DECL_DECLARED_CONSTEXPR_P (t))
-	DECL_SAVED_TREE (t) = NULL_TREE;
       break;
 
     case TYPE_DECL:
@@ -2744,9 +2740,14 @@ cpms_in::finish (tree t, int node_module)
 	}
     }
 
+  if (TREE_CODE (t) == TEMPLATE_INFO)
+    /* We're not a pending template in this TU.  */
+    TI_PENDING_TEMPLATE_FLAG (t) = 0;
+
   if (TREE_CODE (t) == INTEGER_CST)
     {
-      // FIXME:Remap small ints?
+      // FIXME:Remap small ints
+      // FIXME:other consts too
     }
 
   return t;
@@ -3503,9 +3504,11 @@ cpms_out::core_vals (tree t)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
       WT (TREE_OPERAND (t, ix));
   else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   /* For some reason, some tcc_expression nodes do not claim
-	      to contain TS_EXP.  */
-	   || TREE_CODE_CLASS (code) == tcc_expression)
+	   /* FIXME:For some reason, some tcc_expression nodes do not claim
+	      to contain TS_EXP.  I think this is a bug. */
+	   || TREE_CODE_CLASS (code) == tcc_expression
+	   || TREE_CODE_CLASS (code) == tcc_binary
+	   || TREE_CODE_CLASS (code) == tcc_unary)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       WT (TREE_OPERAND (t, ix));
 
@@ -3863,7 +3866,10 @@ cpms_in::core_vals (tree t)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
       RT (TREE_OPERAND (t, ix));
   else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   || TREE_CODE_CLASS (code) == tcc_expression)
+	   /* See comment in cpms_out::core_vals.  */
+	   || TREE_CODE_CLASS (code) == tcc_expression
+	   || TREE_CODE_CLASS (code) == tcc_binary
+	   || TREE_CODE_CLASS (code) == tcc_unary)
     for (unsigned ix = TREE_OPERAND_LENGTH (t); ix--;)
       RT (TREE_OPERAND (t, ix));
 
