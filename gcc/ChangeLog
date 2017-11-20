@@ -1,5 +1,11 @@
 2017-11-20  Jeff Law  <law@redhat.com>
 
+	* Makefile.in (OBJS): Add gimple-ssa-evrp-analyze.o.
+	* gimple-ssa-evrp-analyze.c: New file pulled from gimple-ssa-evrp.c.
+	* gimple-ssa-evrp-analyze.h: New file pulled from gimple-ssa-evrp.c.
+	* gimple-ssa-evrp.c: Remove bits moved into new files.  Include
+	gimple-ssa-evrp-analyze.h.
+
 	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Do not
 	set BB_VISITED here.
 	(evrp_range_analyzer::enter): Set BB_VISITED here instead.
