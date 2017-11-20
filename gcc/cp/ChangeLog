@@ -1,3 +1,8 @@
+2017-11-20  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (constrain_class_visibility): Don't warn about artificial
+	fields.
+
 2017-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	P0329R4: Designated Initialization
