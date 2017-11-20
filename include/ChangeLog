@@ -1,3 +1,9 @@
+2017-11-20  Kito Cheng  <kito.cheng@gmail.com>
+
+	* longlong.h [__riscv] (__umulsidi3): Define.
+	[__riscv] (umul_ppmm): Likewise.
+	[__riscv] (__muluw3): Likewise.
+
 2017-11-10  Stephen Crane <sjc@immunant.com>
 
 	* plugin-api.h: Add plugin API for processing plugin-added
