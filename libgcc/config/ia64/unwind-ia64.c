@@ -2165,7 +2165,8 @@ uw_init_context_1 (struct _Unwind_Context *context, void *bsp)
 
 static void __attribute__((noreturn))
 uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
-		    struct _Unwind_Context *target)
+		    struct _Unwind_Context *target,
+		    unsigned long frames __attribute__((unused)))
 {
   unw_word ireg_buf[4], ireg_nat = 0, ireg_pr = 0;
   unw_word saved_lc;

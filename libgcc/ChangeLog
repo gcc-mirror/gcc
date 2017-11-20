@@ -1,3 +1,12 @@
+2017-11-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR bootstrap/83015
+	* config/cr16/unwind-cr16.c (uw_install_context): Add FRAMES
+	parameter.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise
+	* config/ia64/unwind-ia64.c: Add frames parameter.
+	* unwind-sjlj.c: Likewise.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* config/i386/linux-unwind.h: Include

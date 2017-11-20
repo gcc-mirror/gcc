@@ -1567,7 +1567,7 @@ _Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
    our caller.  */
 #if defined( __CR16C__ )
 
-#define uw_install_context(CURRENT, TARGET)				\
+#define uw_install_context(CURRENT, TARGET, FRAMES)			\
   do									\
     {									\
       long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
@@ -1578,7 +1578,7 @@ _Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
     }									\
   while (0)
 #else
-#define uw_install_context(CURRENT, TARGET)                             \
+#define uw_install_context(CURRENT, TARGET, FRAMES)                     \
   do                                                                    \
     {                                                                   \
       long offset = uw_install_context_1 ((CURRENT), (TARGET));         \
