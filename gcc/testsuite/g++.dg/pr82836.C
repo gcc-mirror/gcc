@@ -1,12 +1,15 @@
 // PR c++/82836
 // { dg-options "-std=c++17" }
+// { dg-require-effective-target int128 }
+// { dg-require-effective-target __float128 }
 // { dg-additional-options "-Wno-pedantic -Wno-return-type" }
+// { dg-add-options __float128 }
 // We were resetting DECL_ASSEMBLER_NAME when processing pragma weak,
 // breaking C++'s mangling alias hash table.  That hash table needs to
 // be tickled in just the right way to hit the problem.
 
 namespace std {
-typedef long unsigned size_t;
+typedef __SIZE_TYPE__ size_t;
 inline namespace __cxx11 {}
   double abs() {return 0;}
   __int128 abs(__int128 ) {return 0;}

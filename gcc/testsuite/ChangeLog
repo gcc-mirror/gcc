@@ -1,3 +1,9 @@
+2017-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/pr82836.C: Require int128, __float128 support.
+	Add __float128 options.
+	(size_t): Define using __SIZE_TYPE__.
+
 2017-11-20   Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82781
