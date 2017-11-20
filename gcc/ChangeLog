@@ -1,5 +1,38 @@
 2017-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/78821
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_load): Give up
+	if base is TARGET_MEM_REF.  If base is not MEM_REF, set base_addr
+	to the address of the base rather than the base itself.
+	(find_bswap_or_nop_1): Just use pointer comparison for vuse check.
+	(find_bswap_or_nop_finalize): New function.
+	(find_bswap_or_nop): Use it.
+	(bswap_replace): Return a tree rather than bool, change first
+	argument from gimple * to gimple_stmt_iterator, allow inserting
+	into an empty sequence, allow ins_stmt to be NULL - then emit
+	all stmts into gsi.  Fix up MEM_REF address gimplification.
+	(pass_optimize_bswap::execute): Adjust bswap_replace caller.
+	(struct store_immediate_info): Add N and INS_STMT non-static
+	data members.
+	(store_immediate_info::store_immediate_info): Initialize them
+	from newly added ctor args.
+	(merged_store_group::apply_stores): Formatting fixes.  Sort by
+	bitpos at the end.
+	(stmts_may_clobber_ref_p): For stores call also
+	refs_anti_dependent_p.
+	(gather_bswap_load_refs): New function.
+	(imm_store_chain_info::try_coalesce_bswap): New method.
+	(imm_store_chain_info::coalesce_immediate_stores): Use it.
+	(split_group): Handle LROTATE_EXPR and NOP_EXPR rhs_code specially.
+	(imm_store_chain_info::output_merged_store): Fail if number of
+	new estimated stmts is bigger or equal than old.  Handle LROTATE_EXPR
+	and NOP_EXPR rhs_code.
+	(pass_store_merging::process_store): Compute n and ins_stmt, if
+	ins_stmt is non-NULL and the store rhs is otherwise invalid, use
+	LROTATE_EXPR rhs_code.  Pass n and ins_stmt to store_immediate_info
+	ctor.
+	(pass_store_merging::execute): Calculate dominators.
+
 	* tree-ssa-math-opts.c (nop_stats, bswap_stats, struct symbolic_number,
 	BITS_PER_MARKER, MARKER_MASK, MARKER_BYTE_UNKNOWN, HEAD_MARKER, CMPNOP,
 	CMPXCHG, do_shift_rotate, verify_symbolic_number_p,

@@ -1,3 +1,8 @@
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gcc.dg/store_merging_16.c: New test.
+
 2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/82281
