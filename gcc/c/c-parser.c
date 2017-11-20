@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    location rather than implicitly using input_location.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -65,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-rtl-function.h"
 #include "run-rtl-passes.h"
 #include "intl.h"
+#include "c-family/name-hint.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1808,13 +1810,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else
 	{
-	  const char *hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME);
+	  name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME,
+					      here);
 	  if (hint)
 	    {
-	      richloc.add_fixit_replace (hint);
+	      richloc.add_fixit_replace (hint.suggestion ());
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			name, hint);
+			name, hint.suggestion ());
 	    }
 	  else
 	    error_at (here, "unknown type name %qE", name);
@@ -4066,15 +4069,16 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
-	  const char *hint = lookup_name_fuzzy (token->value,
-						FUZZY_LOOKUP_TYPENAME);
+	  name_hint hint = lookup_name_fuzzy (token->value,
+					      FUZZY_LOOKUP_TYPENAME,
+					      token->location);
 	  if (hint)
 	    {
 	      gcc_rich_location richloc (token->location);
-	      richloc.add_fixit_replace (hint);
+	      richloc.add_fixit_replace (hint.suggestion ());
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			token->value, hint);
+			token->value, hint.suggestion ());
 	    }
 	  else
 	    error_at (token->location, "unknown type name %qE", token->value);

@@ -1,3 +1,18 @@
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(suggest_alternatives_for): Convert "fuzzy_name" from const char *
+	to name_hint, and rename to "hint".  Pass location to
+	lookup_name_fuzzy.
+	(lookup_name_fuzzy): Convert return type from const char *
+	to name_hint.  Add location_t param.
+	* parser.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(cp_parser_diagnose_invalid_type_name): Convert
+	"suggestion" from const char * to name_hint, and rename to "hint".
+	Pass location to lookup_name_fuzzy.
+
 2017-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82878

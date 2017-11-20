@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -32,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "spellcheck-tree.h"
 #include "parser.h"
+#include "c-family/name-hint.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -5371,13 +5373,14 @@ suggest_alternatives_for (location_t location, tree name,
     }
   else if (!suggest_misspellings)
     ;
-  else if (const char *fuzzy = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME))
+  else if (name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME,
+					       location))
     {
       /* Show a spelling correction.  */
       gcc_rich_location richloc (location);
 
-      richloc.add_fixit_replace (fuzzy);
-      inform (&richloc, "suggested alternative: %qs", fuzzy);
+      richloc.add_fixit_replace (hint.suggestion ());
+      inform (&richloc, "suggested alternative: %qs", hint.suggestion ());
     }
 }
 
@@ -5628,8 +5631,8 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
    macro names, returning the best match as a const char *, or NULL if
    no reasonable match is found.  */
 
-const char *
-lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
+name_hint
+lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
@@ -5683,7 +5686,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
       bm.consider (IDENTIFIER_POINTER (resword_identifier));
     }
 
-  return bm.get_best_meaningful_candidate ();
+  return name_hint (bm.get_best_meaningful_candidate (), NULL);
 }
 
 /* Subroutine of outer_binding.
