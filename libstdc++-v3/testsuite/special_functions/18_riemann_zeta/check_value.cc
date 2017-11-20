@@ -21,7 +21,7 @@
 //  riemann_zeta
 
 // This can take long on simulators, timing out the test.
-// { dg-options "-DMAX_ITERATIONS=5" { target simulator } }
+// { dg-additional-options "-DMAX_ITERATIONS=5" { target simulator } }
 
 #ifndef MAX_ITERATIONS
 #define MAX_ITERATIONS (sizeof(data001) / sizeof(testcase_riemann_zeta<double>))
@@ -111,15 +111,6 @@ data001[55] =
   { -4.4375384158955686, 0.80000000000000071, 0.0 },
 };
 const double toler001 = 2.5000000000000020e-13;
-//  riemann_zeta
-
-// This can take long on simulators, timing out the test.
-// { dg-options "-DMAX_ITERATIONS=5" { target simulator } }
-
-#ifndef MAX_ITERATIONS
-#define MAX_ITERATIONS (sizeof(data001) / sizeof(testcase_riemann_zeta<double>))
-#endif
-
 
 // Test data.
 // max(|f - f_Boost|): 8.8817841970012523e-16 at index 1

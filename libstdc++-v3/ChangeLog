@@ -1,3 +1,10 @@
+2017-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/special_functions/18_riemann_zeta/check_value.cc: Fix
+	duplicate dg-options directive.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_value_neg.cc: Likewise.
+
 2017-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2353
