@@ -1,3 +1,22 @@
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0329R4: Designated Initialization
+	* parser.c (cp_parser_initializer_clause): List in comment grammar
+	designated-initializer-list.
+	(cp_parser_initializer_list): Allow .identifier = without pedwarn for
+	C++2A, parse .identifier { ... }.  Improve location_t argument to
+	pedwarn.  Add pedwarn for [cst] = designators.  Diagnose ... in
+	designated initializer list.  Diagnose mixing designated and
+	non-designated initializer clauses for C++2A.  Diagnose duplicated
+	identifiers in designators.
+	* name-lookup.h (search_anon_aggr): New declaration.
+	* name-lookup.c (fields_linear_search): Use search_anon_aggr.
+	(search_anon_aggr): New function.
+	* typeck2.c (process_init_constructor_record): Allow designator
+	to skip over some non-static data members.  Handle anonymous
+	aggregates.  Add diagnostics for designator order not matching
+	member declaration order.
+
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* name-lookup.c: Define INCLUDE_UNIQUE_PTR before including system.h.
