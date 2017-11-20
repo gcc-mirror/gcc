@@ -771,6 +771,25 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
   else
     set_value_range_to_varying (&vr1);
 
+  /* If one argument is varying, we can sometimes still deduce a
+     range for the output: any + [3, +INF] is in [MIN+3, +INF].  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (op0))
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0)))
+    {
+      if (vr0.type == VR_VARYING && vr1.type != VR_VARYING)
+	{
+	  vr0.type = VR_RANGE;
+	  vr0.min = vrp_val_min (expr_type);
+	  vr0.max = vrp_val_max (expr_type);
+	}
+      else if (vr1.type == VR_VARYING && vr0.type != VR_VARYING)
+	{
+	  vr1.type = VR_RANGE;
+	  vr1.min = vrp_val_min (expr_type);
+	  vr1.max = vrp_val_max (expr_type);
+	}
+    }
+
   extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &vr1);
 
   /* Try harder for PLUS and MINUS if the range of one operand is symbolic

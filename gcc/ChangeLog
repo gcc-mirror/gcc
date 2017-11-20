@@ -1,3 +1,8 @@
+2017-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* vr-values.c (extract_range_from_binary_expr): Use a full range
+	for VR_VARYING.
+
 2017-11-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.md (R4_REGNUM): Define constant.

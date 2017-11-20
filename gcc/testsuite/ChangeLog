@@ -1,3 +1,15 @@
+2017-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR testsuite/82951
+	* gcc.c-torture/execute/20040409-1.c: Move invalid tests...
+	* gcc.c-torture/execute/20040409-1w.c: ... here with -fwrapv.
+	* gcc.c-torture/execute/20040409-2.c: Move invalid tests...
+	* gcc.c-torture/execute/20040409-2w.c: ... here with -fwrapv.
+	* gcc.c-torture/execute/20040409-3.c: Move invalid tests...
+	* gcc.c-torture/execute/20040409-3w.c: ... here with -fwrapv.
+	* gcc.dg/tree-ssa/cmpmul-1.c: Tweak condition.
+	* gcc.dg/tree-ssa/vrp118.c: New file.
+
 2017-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/pr82836.C: Require int128, __float128 support.
