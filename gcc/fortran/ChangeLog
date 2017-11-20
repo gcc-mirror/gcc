@@ -1,3 +1,57 @@
+2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78990
+	* expr.c (gfc_is_class_array_function): Renamed from
+	'gfc_is_alloc_class_array_function' and modified to return true
+	for pointers as well as allocatable results.
+	* gfortran.h : Change of name for prototype of above function.
+	* trans-array.c (gfc_add_loop_ss_code): Force finalization of
+	class array results.
+	(build_class_array_ref): Change assertion into a condition.
+	(build_class_array_ref): Set the se class_vptr for class array
+	function results.
+	(gfc_walk_function_expr): Reference gfc_is_class_array_function
+	as above.
+	* trans-decl.c (get_proc_result): Move it up before
+	gfc_trans_deferred_vars.
+	(gfc_trans_deferred_vars): Nullify explicit return class arrays
+	on entry.
+	* trans-expr.c (gfc_conv_class_to_class): Allow conversion of
+	class array functions that have an se class_vptr and use it
+	for the result vptr.
+	(gfc_conv_subref_array_arg): Rename reference to the above
+	function.
+	(gfc_conv_procedure_call): Ditto. Add the se pre block to the
+	loop pre block before the function is evaluated. Do not
+	finalize class pointer results.
+	(arrayfunc_assign_needs_temporary, gfc_trans_assignment_1) More
+	renamed references.
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Ditto.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83036
+	* ioparm.def (IOPARM): Make nextrec a pintio.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/44292
+	* ioparm.def (IOPARM): Make recl_in intio, and recl_out pintio.
+
+2017-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83012
+	* expr.c (gfc_is_simply_contiguous): If a function call through a
+	class variable is done through a reference, check the function's
+	interface.
+
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/83017
+	* trans-stmt.c (gfc_trans_forall_loop): Annotate DO CONCURRENT
+	loops with annot_expr_parallel_kind instead of just
+	annot_expr_ivdep_kind.
+
 2017-11-15  Martin Liska  <mliska@suse.cz>
 
 	* options.c (gfc_post_options):

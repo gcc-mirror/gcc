@@ -3539,6 +3539,10 @@ cp_tree_equal (tree t1, tree t2)
   if (code1 != code2)
     return false;
 
+  if (CONSTANT_CLASS_P (t1)
+      && !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return false;
+
   switch (code1)
     {
     case VOID_CST:

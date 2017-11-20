@@ -1,16 +1,19 @@
 // PR c++/82836
-// { dg-do compile { target c++17 } }
-// { dg-additional-options "-Wno-pedantic" }
+// { dg-options "-std=c++17" }
+// { dg-require-effective-target int128 }
+// { dg-require-effective-target __float128 }
+// { dg-additional-options "-Wno-pedantic -Wno-return-type" }
+// { dg-add-options __float128 }
 // We were resetting DECL_ASSEMBLER_NAME when processing pragma weak,
 // breaking C++'s mangling alias hash table.  That hash table needs to
 // be tickled in just the right way to hit the problem.
 
 namespace std {
-typedef long unsigned size_t;
+typedef __SIZE_TYPE__ size_t;
 inline namespace __cxx11 {}
-double abs() {}
-__int128 abs(__int128 ) {}
-__float128 abs(__float128 ) {}
+  double abs() {return 0;}
+  __int128 abs(__int128 ) {return 0;}
+  __float128 abs(__float128 ) {return 0;}
 
   
 #pragma weak pthread_create
@@ -82,37 +85,37 @@ namespace std {
     typedef char char_type;
     typedef int int_type;
     void assign() {}
-    bool eq() {}
-    bool lt() {}
-    int compare() {}
-    size_t length() {}
-    char_type find() {}
-    char_type move() {}
-    char_type copy() {}
-    char_type assign(char_type ) {}
-    char_type to_char_type() {}
-    int_type to_int_type() {}
-    bool eq_int_type() {}
-    int_type eof() {}
-    int_type not_eof() {}
+    bool eq() {return 0;}
+    bool lt() {return 0;}
+    int compare() {return 0;}
+    size_t length() {return 0;}
+    char_type find() {return 0;}
+    char_type move() {return 0;}
+    char_type copy() {return 0;}
+    char_type assign(char_type ) {return 0;}
+    char_type to_char_type() {return 0;}
+    int_type to_int_type() {return 0;}
+    bool eq_int_type() {return 0;}
+    int_type eof() {return 0;}
+    int_type not_eof() {return 0;}
   };
   template <> struct char_traits< wchar_t > {
     typedef wchar_t char_type;
     typedef int int_type;
     void assign() {}
-    bool eq() {}
-    bool lt() {}
-    int compare() {}
-    size_t length() {}
-    char_type find() {}
-    char_type move() {}
-    char_type copy() {}
-    char_type assign(char_type ) {}
-    char_type to_char_type() {}
-    int_type to_int_type() {}
-    bool eq_int_type() {}
-    int_type eof() {}
-    int_type not_eof() {}
+    bool eq() {return 0;}
+    bool lt() {return 0;}
+    int compare() {return 0;}
+    size_t length() {return 0;}
+    char_type find() {return 0;}
+    char_type move() {return 0;}
+    char_type copy() {return 0;}
+    char_type assign(char_type ) {return 0;}
+    char_type to_char_type() {return 0;}
+    int_type to_int_type() {return 0;}
+    bool eq_int_type() {return 0;}
+    int_type eof() {return 0;}
+    int_type not_eof() {return 0;}
   };
 }
 typedef int uint_least16_t;
@@ -122,41 +125,41 @@ template <> struct char_traits< char16_t > {
   typedef char16_t char_type;
   typedef uint_least16_t int_type;
   void assign() {}
-  bool eq() {}
-  bool lt() {}
-  int compare() {}
-  size_t length() {}
-  char_type find() {}
-  char_type move() {}
-  char_type copy() {}
-  char_type assign(char_type ) {}
-  char_type to_char_type() {}
-  int_type to_int_type() {}
-  bool eq_int_type() {}
-  int_type eof() {}
-  int_type not_eof() {}
+  bool eq() {return false;}
+  bool lt() {return false;}
+  int compare() {return 0;}
+  size_t length() {return 0;}
+  char_type find() {return 0;}
+  char_type move() {return 0;}
+  char_type copy() {return 0;}
+  char_type assign(char_type ) {return 0;}
+  char_type to_char_type() {return 0;}
+  int_type to_int_type() {return 0;}
+  bool eq_int_type() {return false;}
+  int_type eof() {return 0;}
+  int_type not_eof() {return 0;}
 };
 template <> struct char_traits< char32_t > {
   typedef char32_t char_type;
   typedef uint_least32_t int_type;
   void assign() {}
-  bool eq() {}
-  bool lt() {}
-  int compare() {}
-  size_t length() {}
-  char_type find() {}
-  char_type move() {}
-  char_type copy() {}
-  char_type assign(char_type ) {}
-  char_type to_char_type() {}
-  int_type to_int_type() {}
-  bool eq_int_type() {}
-  int_type eof() {}
-  int_type not_eof() {}
+  bool eq() {return false;}
+  bool lt() {return false;}
+  int compare() {return 0;}
+  size_t length() {return 0;}
+  char_type find() {return 0;}
+  char_type move() {return 0;}
+  char_type copy() {return 0;}
+  char_type assign(char_type ) {return 0;}
+  char_type to_char_type() {return 0;}
+  int_type to_int_type() {return 0;}
+  bool eq_int_type() {return false;}
+  int_type eof() {return 0;}
+  int_type not_eof() {return 0;}
 };
 }
-void *operator new(std::size_t) {}
-void *operator new[](std::size_t) {}
+void *operator new(std::size_t) {return (void *)1;}
+void *operator new[](std::size_t) {return (void *)1;}
 void operator delete(void *){}
 void operator delete[](void *) {}
 namespace  {
@@ -173,7 +176,7 @@ public:
 ;
 template < typename _Tp >
 struct less {
-  bool operator()( _Tp ,  _Tp ) {}
+  bool operator()( _Tp ,  _Tp ) {return false;}
 };
 }
 typedef int _Atomic_word;
@@ -225,6 +228,7 @@ namespace std {
         
        (__gnu_cxx::__numeric_traits< int >::__min)
         ;
+      return 0;
     }
   };
   }
@@ -252,10 +256,10 @@ namespace std {
     void operator0() {}
   };
   template <> struct __hash_base< size_t, char16_t > {
-    size_t operator0() {}
+    size_t operator0() {return 0;}
   };
   template <> struct __hash_base< size_t, char32_t > {
-    size_t operator0() {}
+    size_t operator0() {return 0;}
   };
   template <> struct hash< short > {
     void operator0() {}
@@ -292,11 +296,11 @@ namespace std {
      ;
     _Bit_type _M_mask;
     _Bit_reference  () {}
-    operator bool() {}
+    operator bool() {return false;}
     _Bit_reference (bool ) {}
-    _Bit_reference operator=(_Bit_reference ) {}
-    bool operator==(_Bit_reference ) {}
-    bool operator<(_Bit_reference ) {}
+    _Bit_reference operator=(_Bit_reference ) {return *this;}
+    bool operator==(_Bit_reference ) {return false;}
+    bool operator<(_Bit_reference ) {return false;}
     void flip() {}
   };
   void swap() {}
@@ -311,21 +315,21 @@ namespace std {
     void _M_bump_up() {}
     void _M_bump_down() {}
     void _M_incr() {}
-    bool operator==(_Bit_iterator_base ) {}
-    bool operator<(_Bit_iterator_base ) {}
-    bool operator!=(_Bit_iterator_base ) {}
-    bool operator>(_Bit_iterator_base ) {}
-    bool operator<=(_Bit_iterator_base ) {}
-    bool operator>=(_Bit_iterator_base ) {}
+    bool operator==(_Bit_iterator_base ) {return false;}
+    bool operator<(_Bit_iterator_base ) {return false;}
+    bool operator!=(_Bit_iterator_base ) {return false;}
+    bool operator>(_Bit_iterator_base ) {return false;}
+    bool operator<=(_Bit_iterator_base ) {return false;}
+    bool operator>=(_Bit_iterator_base ) {return false;}
   };
   struct _Bit_iterator : _Bit_iterator_base {
     _Bit_iterator() : _Bit_iterator_base(0, 0) {}
     _Bit_iterator(_Bit_type *__x, int __y)
         : _Bit_iterator_base(__x, __y) {}
-    iterator _M_const_cast() {}
-    iterator operator+() {}
-    iterator operator-() {}
-    reference operator[](difference_type ) {}
+    iterator _M_const_cast() {return iterator ();}
+    iterator operator+() {return iterator ();}
+    iterator operator-() {return iterator ();}
+    reference operator[](difference_type ) {return 0;}
   };
   void operator+(_Bit_iterator ) {}
   struct _Bit_const_iterator : _Bit_iterator_base {
@@ -349,9 +353,10 @@ namespace std {
   class error_category {
     bool operator<(error_category __other) {
       less< error_category * >()(this, &__other);
+      return false;
     }
-    bool operator==(error_category ) {}
-    bool operator!=(error_category ) {}
+    bool operator==(error_category ) {return false;}
+    bool operator!=(error_category ) {return false;}
   };
   }
   struct error_code {
@@ -359,42 +364,42 @@ namespace std {
     error_code(error_category ) : _M_cat() {}
     void assign() {}
     void clear() {}
-    int value() {}
-    error_category category() {}
-    string message() {}
+    int value() {return 0;}
+    error_category category() {return error_category ();}
+    string message() {return string();}
     error_category _M_cat;
   };
-  inline error_code make_error_code() noexcept {}
+  inline error_code make_error_code() noexcept {return error_code ();}
   inline bool operator<(const error_code ,
-                        const error_code ) noexcept {}
+                        const error_code ) noexcept {return false;}
   struct error_condition {
     error_condition() {}
     error_condition(const error_category ) {}
     void assign() noexcept {}
     void clear() noexcept {}
-    int value() {}
-    const error_category &category() {}
+    int value() {return 0;}
+    const error_category category() {return error_category ();}
     string message_M_cat;
   };
-  inline error_condition make_error_condition() noexcept {}
+  inline error_condition make_error_condition() noexcept {return error_condition ();}
   inline bool operator<(const error_condition ,
-                        const error_condition ) noexcept {}
+                        const error_condition ) noexcept {return false;}
   inline bool operator==(const error_code ,
-                         const error_code ) noexcept {}
+                         const error_code ) noexcept {return false;}
   inline bool operator==(const error_code ,
-                         const error_condition ) noexcept {}
+                         const error_condition ) noexcept {return false;}
   inline bool operator==(const error_condition ,
-                         const error_code ) noexcept {}
+                         const error_code ) noexcept {return false;}
   inline bool operator==(const error_condition ,
-                         const error_condition ) noexcept {}
+                         const error_condition ) noexcept {return false;}
   inline bool operator!=(const error_code ,
-                         const error_code ) noexcept {}
+                         const error_code ) noexcept {return false;}
   inline bool operator!=(const error_code ,
-                         const error_condition ) noexcept {}
+                         const error_condition ) noexcept {return false;}
   inline bool operator!=(const error_condition ,
-                         const error_code ) noexcept {}
+                         const error_code ) noexcept {return false;}
   inline bool operator!=(const error_condition ,
-                         const error_condition ) noexcept {}
+                         const error_condition ) noexcept {return false;}
   class system_error : public runtime_error {
   error_code _M_code;
 
@@ -410,47 +415,47 @@ namespace std {
         : runtime_error(error_code().message()) {}
     system_error(const string &__what)
         : runtime_error(error_code().message()) {}
-    const error_code &code() {}
+    const error_code code() {return error_code ();}
     void operator0() {}
   };
   enum _Ios_Fmtflags {};
-  _Ios_Fmtflags operator&(_Ios_Fmtflags __a__b) {}
-  _Ios_Fmtflags operator|(_Ios_Fmtflags __a,
-                                           _Ios_Fmtflags __b) {}
-  _Ios_Fmtflags operator^(_Ios_Fmtflags __a,
-                                           _Ios_Fmtflags __b) {}
-  _Ios_Fmtflags operator~(_Ios_Fmtflags __a) {}
-  _Ios_Fmtflags &operator|=(_Ios_Fmtflags ,
-                                         _Ios_Fmtflags __b) {}
-  _Ios_Fmtflags &operator&=(_Ios_Fmtflags ,
-                                         _Ios_Fmtflags __b) {}
-  _Ios_Fmtflags &operator^=(_Ios_Fmtflags ,
-                                         _Ios_Fmtflags __b) {}
+  _Ios_Fmtflags operator&(_Ios_Fmtflags &__a) {return __a;}
+  _Ios_Fmtflags operator|(_Ios_Fmtflags &__a,
+                                           _Ios_Fmtflags __b) {return __a;}
+  _Ios_Fmtflags operator^(_Ios_Fmtflags &__a,
+                                           _Ios_Fmtflags __b) {return __a;}
+  _Ios_Fmtflags operator~(_Ios_Fmtflags &__a) {return __a;}
+  _Ios_Fmtflags &operator|=(_Ios_Fmtflags &__a,
+                                         _Ios_Fmtflags __b) {return __a;}
+  _Ios_Fmtflags &operator&=(_Ios_Fmtflags &__a,
+                                         _Ios_Fmtflags __b) {return __a;}
+  _Ios_Fmtflags &operator^=(_Ios_Fmtflags &__a,
+                                         _Ios_Fmtflags __b) {return __a;}
   enum _Ios_Openmode {
     _S_ios_openmode_max };
-  _Ios_Openmode operator&(_Ios_Openmode __a__b) {}
-  _Ios_Openmode operator|(_Ios_Openmode __a,
-                                           _Ios_Openmode __b) {}
-  _Ios_Openmode operator^(_Ios_Openmode __a,
-                                           _Ios_Openmode __b) {}
-  _Ios_Openmode operator~(_Ios_Openmode __a) {}
-  _Ios_Openmode &operator|=(_Ios_Openmode ,
-                                         _Ios_Openmode __b) {}
-  _Ios_Openmode &operator&=(_Ios_Openmode ,
-                                         _Ios_Openmode __b) {}
-  _Ios_Openmode &operator^=(_Ios_Openmode ,
-                                         _Ios_Openmode __b) {}
+  _Ios_Openmode operator&(_Ios_Openmode &__a__b) {return __a__b;}
+  _Ios_Openmode operator|(_Ios_Openmode &__a,
+                                           _Ios_Openmode __b) {return __a;}
+  _Ios_Openmode operator^(_Ios_Openmode &__a,
+                                           _Ios_Openmode __b) {return __a;}
+  _Ios_Openmode operator~(_Ios_Openmode &__a) {return __a;}
+  _Ios_Openmode &operator|=(_Ios_Openmode &__a,
+                                         _Ios_Openmode __b) {return __a;}
+  _Ios_Openmode &operator&=(_Ios_Openmode &__a,
+                                         _Ios_Openmode __b) {return __a;}
+  _Ios_Openmode &operator^=(_Ios_Openmode &__a,
+                                         _Ios_Openmode __b) {return __a;}
   enum _Ios_Iostate {
     _S_ios_iostate_max };
-  _Ios_Iostate operator&(_Ios_Iostate __a__b) {}
-  _Ios_Iostate operator|(_Ios_Iostate __a, _Ios_Iostate __b) {}
-  _Ios_Iostate operator^(_Ios_Iostate __a, _Ios_Iostate __b) {}
-  _Ios_Iostate operator~(_Ios_Iostate __a) {}
-  _Ios_Iostate &operator|=(_Ios_Iostate , _Ios_Iostate __b) {}
-  _Ios_Iostate &operator&=(_Ios_Iostate , _Ios_Iostate __b) {}
-  _Ios_Iostate &operator^=(_Ios_Iostate , _Ios_Iostate __b) {}
+  _Ios_Iostate operator&(_Ios_Iostate &__a__b) {return __a__b;}
+  _Ios_Iostate operator|(_Ios_Iostate &__a, _Ios_Iostate __b) {return __a;}
+  _Ios_Iostate operator^(_Ios_Iostate &__a, _Ios_Iostate __b) {return __a;}
+  _Ios_Iostate operator~(_Ios_Iostate &__a) {return __a;}
+  _Ios_Iostate &operator|=(_Ios_Iostate &__a, _Ios_Iostate __b) {return __a;}
+  _Ios_Iostate &operator&=(_Ios_Iostate &__a, _Ios_Iostate __b) {return __a;}
+  _Ios_Iostate &operator^=(_Ios_Iostate &__a, _Ios_Iostate __b) {return __a;}
   enum class io_errc;
-  inline error_code make_error_code(io_errc __e) noexcept {}
+  inline error_code make_error_code(io_errc __e) noexcept {return error_code();}
   inline error_condition make_error_condition_wrap_class_string;
 static luaL_Reg swig_ClientProfile_methods;
 static luaL_Reg swig_ClientProfile_meta;

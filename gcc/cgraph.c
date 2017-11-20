@@ -2160,7 +2160,7 @@ cgraph_node::dump (FILE *f)
       fprintf (f, "%s ", edge->caller->dump_name ());
       edge->dump_edge_flags (f);
       if (edge->count.initialized_p ())
-	sum += edge->count;
+	sum += edge->count.ipa ();
     }
 
   fprintf (f, "\n  Calls: ");
@@ -2184,7 +2184,7 @@ cgraph_node::dump (FILE *f)
       if (global.inlined_to
 	  || (symtab->state < EXPANSION
 	      && ultimate_alias_target () == this && only_called_directly_p ()))
-	ok = !count.differs_from_p (sum);
+	ok = !count.ipa ().differs_from_p (sum);
       else if (count.ipa () > profile_count::from_gcov_type (100)
 	       && count.ipa () < sum.apply_scale (99, 100))
 	ok = false, min = true;
@@ -2196,7 +2196,7 @@ cgraph_node::dump (FILE *f)
 	    fprintf (f, ", should be at most ");
 	  else
 	    fprintf (f, ", should be ");
-	  count.dump (f);
+	  count.ipa ().dump (f);
 	  fprintf (f, "\n");
 	}
     }

@@ -3518,7 +3518,7 @@ ix86_option_override_internal (bool main_args_p,
       {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
       {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
-      {"skylake-avx512", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE_AVX512},
+      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_SKYLAKE_AVX512},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -4691,6 +4691,11 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_AVX128_OPTIMAL
       && !(opts_set->x_target_flags & MASK_PREFER_AVX128))
     opts->x_target_flags |= MASK_PREFER_AVX128;
+  /* Use 256-bit AVX instructions instead of 512-bit AVX instructions
+     in the auto-vectorizer.  */
+  if (ix86_tune_features[X86_TUNE_AVX256_OPTIMAL]
+      && !(opts_set->x_ix86_target_flags & OPTION_MASK_PREFER_AVX256))
+    opts->x_ix86_target_flags |= OPTION_MASK_PREFER_AVX256;
 
   if (opts->x_ix86_recip_name)
     {
@@ -13955,7 +13960,9 @@ ix86_expand_epilogue (int style)
 		 offset relative to SA, and after this insn we have no
 		 other reasonable register to use for the CFA.  We don't
 		 bother resetting the CFA to the SP for the duration of
-		 the return insn.  */
+		 the return insn, unless the control flow instrumentation
+		 is done.  In this case the SP is used later and we have
+		 to reset CFA to SP.  */
 	      add_reg_note (insn, REG_CFA_DEF_CFA,
 			    plus_constant (Pmode, sa, UNITS_PER_WORD));
 	      ix86_add_queued_cfa_restore_notes (insn);
@@ -13967,7 +13974,8 @@ ix86_expand_epilogue (int style)
 	      m->fs.fp_valid = false;
 
 	      pro_epilogue_adjust_stack (stack_pointer_rtx, sa,
-					 const0_rtx, style, false);
+					 const0_rtx, style,
+					 flag_cf_protection);
 	    }
 	  else
 	    {
@@ -14151,7 +14159,32 @@ ix86_expand_epilogue (int style)
 	emit_jump_insn (gen_simple_return_pop_internal (popc));
     }
   else if (!m->call_ms2sysv || !restore_stub_is_tail)
-    emit_jump_insn (gen_simple_return_internal ());
+    {
+      /* In case of return from EH a simple return cannot be used
+	 as a return address will be compared with a shadow stack
+	 return address.  Use indirect jump instead.  */
+      if (style == 2 && flag_cf_protection)
+	{
+	  /* Register used in indirect jump must be in word_mode.  But
+	     Pmode may not be the same as word_mode for x32.  */
+	  rtx ecx = gen_rtx_REG (word_mode, CX_REG);
+	  rtx_insn *insn;
+
+	  insn = emit_insn (gen_pop (ecx));
+	  m->fs.cfa_offset -= UNITS_PER_WORD;
+	  m->fs.sp_offset -= UNITS_PER_WORD;
+
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
+	  add_reg_note (insn, REG_CFA_REGISTER, gen_rtx_SET (ecx, pc_rtx));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  emit_jump_insn (gen_simple_return_indirect_internal (ecx));
+	}
+      else
+	emit_jump_insn (gen_simple_return_internal ());
+    }
 
   /* Restore the state back to the state from the prologue,
      so that it's correct for the next epilogue.  */
@@ -31115,6 +31148,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_HASWELL:
+	    case PROCESSOR_SKYLAKE_AVX512:
 	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
 	        arg_str = "skylake-avx512";
 	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
@@ -39251,6 +39285,168 @@ ix86_vec_cost (machine_mode mode, int cost, bool parallel)
   return cost;
 }
 
+/* Return cost of multiplication in MODE.  */
+
+static int
+ix86_multiplication_cost (const struct processor_costs *cost,
+			  enum machine_mode mode)
+{
+  machine_mode inner_mode = mode;
+  if (VECTOR_MODE_P (mode))
+    inner_mode = GET_MODE_INNER (mode);
+
+  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+    return inner_mode == DFmode ? cost->mulsd : cost->mulss;
+  else if (X87_FLOAT_MODE_P (mode))
+    return cost->fmul;
+  else if (FLOAT_MODE_P (mode))
+    return  ix86_vec_cost (mode,
+			   inner_mode == DFmode
+			   ? cost->mulsd : cost->mulss, true);
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      /* V*QImode is emulated with 7-13 insns.  */
+      if (mode == V16QImode || mode == V32QImode)
+	{
+	  int extra = 11;
+	  if (TARGET_XOP && mode == V16QImode)
+	    extra = 5;
+	  else if (TARGET_SSSE3)
+	    extra = 6;
+	  return ix86_vec_cost (mode,
+				cost->mulss * 2 + cost->sse_op * extra,
+				true);
+	}
+      /* V*DImode is emulated with 5-8 insns.  */
+      else if (mode == V2DImode || mode == V4DImode)
+	{
+	  if (TARGET_XOP && mode == V2DImode)
+	    return ix86_vec_cost (mode,
+				  cost->mulss * 2 + cost->sse_op * 3,
+				  true);
+	  else
+	    return ix86_vec_cost (mode,
+				  cost->mulss * 3 + cost->sse_op * 5,
+				  true);
+	}
+      /* Without sse4.1, we don't have PMULLD; it's emulated with 7
+	 insns, including two PMULUDQ.  */
+      else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
+	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5,
+				true);
+      else
+	return ix86_vec_cost (mode, cost->mulss, true);
+    }
+  else
+    return (cost->mult_init[MODE_INDEX (mode)] + cost->mult_bit * 7);
+}
+
+/* Return cost of multiplication in MODE.  */
+
+static int
+ix86_division_cost (const struct processor_costs *cost,
+			  enum machine_mode mode)
+{
+  machine_mode inner_mode = mode;
+  if (VECTOR_MODE_P (mode))
+    inner_mode = GET_MODE_INNER (mode);
+
+  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+    return inner_mode == DFmode ? cost->divsd : cost->divss;
+  else if (X87_FLOAT_MODE_P (mode))
+    return cost->fdiv;
+  else if (FLOAT_MODE_P (mode))
+    return ix86_vec_cost (mode,
+			    inner_mode == DFmode ? cost->divsd : cost->divss,
+			    true);
+  else
+    return cost->divide[MODE_INDEX (mode)];
+}
+
+/* Return cost of shift in MODE.
+   If CONSTANT_OP1 is true, the op1 value is known and set in OP1_VAL.
+   AND_IN_OP1 specify in op1 is result of and and SHIFT_AND_TRUNCATE
+   if op1 is a result of subreg.
+
+   SKIP_OP0/1 is set to true if cost of OP0/1 should be ignored.  */
+
+static int
+ix86_shift_rotate_cost (const struct processor_costs *cost,
+			enum machine_mode mode, bool constant_op1,
+			HOST_WIDE_INT op1_val,
+			bool speed,
+			bool and_in_op1,
+			bool shift_and_truncate,
+			bool *skip_op0, bool *skip_op1)
+{
+  if (skip_op0)
+    *skip_op0 = *skip_op1 = false;
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      /* V*QImode is emulated with 1-11 insns.  */
+      if (mode == V16QImode || mode == V32QImode)
+	{
+	  int count = 11;
+	  if (TARGET_XOP && mode == V16QImode)
+	    {
+	      /* For XOP we use vpshab, which requires a broadcast of the
+		 value to the variable shift insn.  For constants this
+		 means a V16Q const in mem; even when we can perform the
+		 shift with one insn set the cost to prefer paddb.  */
+	      if (constant_op1)
+		{
+		  if (skip_op1)
+		    *skip_op1 = true;
+		  return ix86_vec_cost (mode,
+			    cost->sse_op
+			    + (speed
+			       ? 2
+			       : COSTS_N_BYTES
+				 (GET_MODE_UNIT_SIZE (mode))), true);
+		}
+	      count = 3;
+	    }
+	  else if (TARGET_SSSE3)
+	    count = 7;
+	  return ix86_vec_cost (mode, cost->sse_op * count, true);
+	}
+      else
+	return ix86_vec_cost (mode, cost->sse_op, true);
+    }
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    {
+      if (constant_op1)
+	{
+	  if (op1_val > 32)
+	    return cost->shift_const + COSTS_N_INSNS (2);
+	  else
+	    return cost->shift_const * 2;
+	}
+      else
+	{
+	  if (and_in_op1)
+	    return cost->shift_var * 2;
+	  else
+	    return cost->shift_var * 6 + COSTS_N_INSNS (2);
+	}
+    }
+  else
+    {
+      if (constant_op1)
+	return cost->shift_const;
+      else if (shift_and_truncate)
+	{
+	  if (skip_op0)
+	    *skip_op0 = *skip_op1 = true;
+	  /* Return the cost after shift-and truncation.  */
+	  return cost->shift_var;
+	}
+      else
+	return cost->shift_var;
+    }
+  return cost->shift_const;
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -39264,9 +39460,6 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
   enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   const struct processor_costs *cost = speed ? ix86_cost : &ix86_size_cost;
   int src_cost;
-  machine_mode inner_mode = mode;
-  if (VECTOR_MODE_P (mode))
-    inner_mode = GET_MODE_INNER (mode);
 
   switch (code)
     {
@@ -39394,68 +39587,22 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case ASHIFTRT:
     case LSHIFTRT:
     case ROTATERT:
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      bool skip_op0, skip_op1;
+      *total = ix86_shift_rotate_cost (cost, mode, CONSTANT_P (XEXP (x, 1)),
+				       CONST_INT_P (XEXP (x, 1))
+					 ? INTVAL (XEXP (x, 1)) : -1,
+				       speed,
+				       GET_CODE (XEXP (x, 1)) == AND,
+				       SUBREG_P (XEXP (x, 1))
+				       && GET_CODE (XEXP (XEXP (x, 1), 0)) == AND,
+				       &skip_op0, &skip_op1);
+      if (skip_op0 || skip_op1)
 	{
-	  /* ??? Should be SSE vector operation cost.  */
-	  /* At least for published AMD latencies, this really is the same
-	     as the latency for a simple fpu operation like fabs.  */
-	  /* V*QImode is emulated with 1-11 insns.  */
-	  if (mode == V16QImode || mode == V32QImode)
-	    {
-	      int count = 11;
-	      if (TARGET_XOP && mode == V16QImode)
-		{
-		  /* For XOP we use vpshab, which requires a broadcast of the
-		     value to the variable shift insn.  For constants this
-		     means a V16Q const in mem; even when we can perform the
-		     shift with one insn set the cost to prefer paddb.  */
-		  if (CONSTANT_P (XEXP (x, 1)))
-		    {
-		      *total = ix86_vec_cost (mode,
-				cost->sse_op
-				+ rtx_cost (XEXP (x, 0), mode, code, 0, speed)
-				+ (speed ? 2 : COSTS_N_BYTES (16)), true);
-		      return true;
-		    }
-		  count = 3;
-		}
-	      else if (TARGET_SSSE3)
-		count = 7;
-	      *total = ix86_vec_cost (mode, cost->sse_op * count, true);
-	    }
-	  else
-	    *total = ix86_vec_cost (mode, cost->sse_op, true);
-	}
-      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	{
-	  if (CONST_INT_P (XEXP (x, 1)))
-	    {
-	      if (INTVAL (XEXP (x, 1)) > 32)
-		*total = cost->shift_const + COSTS_N_INSNS (2);
-	      else
-		*total = cost->shift_const * 2;
-	    }
-	  else
-	    {
-	      if (GET_CODE (XEXP (x, 1)) == AND)
-		*total = cost->shift_var * 2;
-	      else
-		*total = cost->shift_var * 6 + COSTS_N_INSNS (2);
-	    }
-	}
-      else
-	{
-	  if (CONST_INT_P (XEXP (x, 1)))
-	    *total = cost->shift_const;
-	  else if (SUBREG_P (XEXP (x, 1))
-		   && GET_CODE (XEXP (XEXP (x, 1), 0)) == AND)
-	    {
-	      /* Return the cost after shift-and truncation.  */
-	      *total = cost->shift_var;
-	      return true;
-	    }
-	  else
-	    *total = cost->shift_var;
+	  if (!skip_op0)
+	    *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  if (!skip_op1)
+	    *total += rtx_cost (XEXP (x, 1), mode, code, 0, speed);
+	  return true;
 	}
       return false;
 
@@ -39485,59 +39632,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       }
 
     case MULT:
-      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	{
-	  *total = inner_mode == DFmode ? cost->mulsd : cost->mulss;
-	  return false;
-	}
-      else if (X87_FLOAT_MODE_P (mode))
-	{
-	  *total = cost->fmul;
-	  return false;
-	}
-      else if (FLOAT_MODE_P (mode))
-	{
-	  *total = ix86_vec_cost (mode,
-				  inner_mode == DFmode
-				  ? cost->mulsd : cost->mulss, true);
-	  return false;
-	}
-      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	{
-	  /* V*QImode is emulated with 7-13 insns.  */
-	  if (mode == V16QImode || mode == V32QImode)
-	    {
-	      int extra = 11;
-	      if (TARGET_XOP && mode == V16QImode)
-		extra = 5;
-	      else if (TARGET_SSSE3)
-		extra = 6;
-	      *total = ix86_vec_cost (mode,
-				      cost->mulss * 2 + cost->sse_op * extra,
-				      true);
-	    }
-	  /* V*DImode is emulated with 5-8 insns.  */
-	  else if (mode == V2DImode || mode == V4DImode)
-	    {
-	      if (TARGET_XOP && mode == V2DImode)
-		*total = ix86_vec_cost (mode,
-					cost->mulss * 2 + cost->sse_op * 3,
-					true);
-	      else
-		*total = ix86_vec_cost (mode,
-					cost->mulss * 3 + cost->sse_op * 5,
-					true);
-	    }
-	  /* Without sse4.1, we don't have PMULLD; it's emulated with 7
-	     insns, including two PMULUDQ.  */
-	  else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
-	    *total = ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5,
-				    true);
-	  else
-	    *total = ix86_vec_cost (mode, cost->mulss, true);
-	  return false;
-	}
-      else
+      if (!FLOAT_MODE_P (mode) && !VECTOR_MODE_P (mode))
 	{
 	  rtx op0 = XEXP (x, 0);
 	  rtx op1 = XEXP (x, 1);
@@ -39582,21 +39677,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
           return true;
 	}
+      *total = ix86_multiplication_cost (cost, mode);
+      return false;
 
     case DIV:
     case UDIV:
     case MOD:
     case UMOD:
-      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-	*total = inner_mode == DFmode ? cost->divsd : cost->divss;
-      else if (X87_FLOAT_MODE_P (mode))
-	*total = cost->fdiv;
-      else if (FLOAT_MODE_P (mode))
-	*total = ix86_vec_cost (mode,
-			        inner_mode == DFmode ? cost->divsd : cost->divss,
-				true);
-      else
-	*total = cost->divide[MODE_INDEX (mode)];
+      *total = ix86_division_cost (cost, mode);
       return false;
 
     case PLUS:
@@ -44540,13 +44628,18 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vector_load:
 	index = sse_store_index (mode);
-	gcc_assert (index >= 0);
+	/* See PR82713 - we may end up being called on non-vector type.  */
+	if (index < 0)
+	  index = 2;
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2,
 			      true);
 
       case vector_store:
 	index = sse_store_index (mode);
+	/* See PR82713 - we may end up being called on non-vector type.  */
+	if (index < 0)
+	  index = 2;
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2,
 			      true);
@@ -44559,6 +44652,9 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	 Do that incrementally.  */
       case unaligned_load:
 	index = sse_store_index (mode);
+	/* See PR82713 - we may end up being called on non-vector type.  */
+	if (index < 0)
+	  index = 2;
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->sse_unaligned_load[index]) / 2,
@@ -44566,6 +44662,9 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case unaligned_store:
 	index = sse_store_index (mode);
+	/* See PR82713 - we may end up being called on non-vector type.  */
+	if (index < 0)
+	  index = 2;
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->sse_unaligned_store[index]) / 2,
@@ -48793,7 +48892,117 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
   unsigned retval = 0;
 
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
-  int stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+  int stmt_cost = - 1;
+
+  if ((kind == vector_stmt || kind == scalar_stmt)
+      && stmt_info
+      && stmt_info->stmt && gimple_code (stmt_info->stmt) == GIMPLE_ASSIGN)
+    {
+      tree_code subcode = gimple_assign_rhs_code (stmt_info->stmt);
+      bool fp = false;
+      machine_mode mode = TImode;
+
+      if (vectype != NULL)
+	{
+	  fp = FLOAT_TYPE_P (vectype);
+	  mode = TYPE_MODE (vectype);
+	}
+      /*machine_mode inner_mode = mode;
+      if (VECTOR_MODE_P (mode))
+	inner_mode = GET_MODE_INNER (mode);*/
+
+      switch (subcode)
+	{
+	case PLUS_EXPR:
+	case POINTER_PLUS_EXPR:
+	case MINUS_EXPR:
+	  if (kind == scalar_stmt)
+	    {
+	      if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+		stmt_cost = ix86_cost->addss;
+	      else if (X87_FLOAT_MODE_P (mode))
+		stmt_cost = ix86_cost->fadd;
+	      else
+	        stmt_cost = ix86_cost->add;
+	    }
+	  else
+	    stmt_cost = ix86_vec_cost (mode,
+				       fp ? ix86_cost->addss
+				       : ix86_cost->sse_op,
+				       true);
+	  break;
+
+	case MULT_EXPR:
+	case WIDEN_MULT_EXPR:
+	case MULT_HIGHPART_EXPR:
+	  stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
+	  break;
+	case FMA_EXPR:
+          stmt_cost = ix86_vec_cost (mode,
+				     mode == SFmode ? ix86_cost->fmass
+				     : ix86_cost->fmasd,
+				     true);
+	  break;
+	case NEGATE_EXPR:
+	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	    stmt_cost = ix86_cost->sse_op;
+	  else if (X87_FLOAT_MODE_P (mode))
+	    stmt_cost = ix86_cost->fchs;
+	  else if (VECTOR_MODE_P (mode))
+	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op, true);
+	  else
+	    stmt_cost = ix86_cost->add;
+	  break;
+	case TRUNC_DIV_EXPR:
+	case CEIL_DIV_EXPR:
+	case FLOOR_DIV_EXPR:
+	case ROUND_DIV_EXPR:
+	case TRUNC_MOD_EXPR:
+	case CEIL_MOD_EXPR:
+	case FLOOR_MOD_EXPR:
+	case RDIV_EXPR:
+	case ROUND_MOD_EXPR:
+	case EXACT_DIV_EXPR:
+	  stmt_cost = ix86_division_cost (ix86_cost, mode);
+	  break;
+
+	case RSHIFT_EXPR:
+	case LSHIFT_EXPR:
+	case LROTATE_EXPR:
+	case RROTATE_EXPR:
+	  {
+	    tree op2 = gimple_assign_rhs2 (stmt_info->stmt);
+	    stmt_cost = ix86_shift_rotate_cost
+			   (ix86_cost, mode,
+		            TREE_CODE (op2) == INTEGER_CST,
+			    cst_and_fits_in_hwi (op2) ? int_cst_value (op2) : -1,
+		            true, false, false, NULL, NULL);
+	  }
+	  break;
+	case NOP_EXPR:
+	  stmt_cost = 0;
+	  break;
+
+	case BIT_IOR_EXPR:
+	case ABS_EXPR:
+	case MIN_EXPR:
+	case MAX_EXPR:
+	case BIT_XOR_EXPR:
+	case BIT_AND_EXPR:
+	case BIT_NOT_EXPR:
+	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
+	    stmt_cost = ix86_cost->sse_op;
+	  else if (VECTOR_MODE_P (mode))
+	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op, true);
+	  else
+	    stmt_cost = ix86_cost->add;
+	  break;
+	default:
+	  break;
+	}
+    }
+  if (stmt_cost == -1)
+    stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 
   /* Penalize DFmode vector operations for Bonnell.  */
   if (TARGET_BONNELL && kind == vector_stmt

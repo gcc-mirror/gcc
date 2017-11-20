@@ -36,22 +36,24 @@ enum profile_quality {
      Never used by probabilities.  */
   profile_guessed_global0 = 1,
 
+  /* Same as profile_guessed_global0 but global count is adjusted 0.  */
+  profile_guessed_global0adjusted = 2,
 
   /* Profile is based on static branch prediction heuristics.  It may or may
      not reflect the reality but it can be compared interprocedurally
      (for example, we inlined function w/o profile feedback into function
       with feedback and propagated from that).
      Never used by probablities.  */
-  profile_guessed = 2,
+  profile_guessed = 3,
   /* Profile was determined by autofdo.  */
-  profile_afdo = 3,
+  profile_afdo = 4,
   /* Profile was originally based on feedback but it was adjusted
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
-  profile_adjusted = 4,
+  profile_adjusted = 5,
   /* Profile was read from profile feedback or determined by accurate static
      method.  */
-  profile_precise = 5
+  profile_precise = 7
 };
 
 /* The base value for branch probability notes and edge probabilities.  */
@@ -605,11 +607,13 @@ class sreal;
 
 class GTY(()) profile_count
 {
+public:
   /* Use 62bit to hold basic block counters.  Should be at least
      64bit.  Although a counter cannot be negative, we use a signed
      type to hold various extra stages.  */
 
   static const int n_bits = 61;
+private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 
@@ -634,6 +638,13 @@ public:
   static profile_count zero ()
     {
       return from_gcov_type (0);
+    }
+  static profile_count adjusted_zero ()
+    {
+      profile_count c;
+      c.m_val = 0;
+      c.m_quality = profile_adjusted;
+      return c;
     }
   static profile_count guessed_zero ()
     {
@@ -976,13 +987,24 @@ public:
       return ret;
     }
 
-  /* We know that profile is globally0 but keep local profile if present.  */
+  /* We know that profile is globally 0 but keep local profile if present.  */
   profile_count global0 () const
     {
       profile_count ret = *this;
       if (!initialized_p ())
 	return *this;
       ret.m_quality = profile_guessed_global0;
+      return ret;
+    }
+
+  /* We know that profile is globally adjusted 0 but keep local profile
+     if present.  */
+  profile_count global0adjusted () const
+    {
+      profile_count ret = *this;
+      if (!initialized_p ())
+	return *this;
+      ret.m_quality = profile_guessed_global0adjusted;
       return ret;
     }
 
@@ -998,10 +1020,12 @@ public:
      acorss functions.  */
   profile_count ipa () const
     {
-      if (m_quality > profile_guessed_global0)
+      if (m_quality > profile_guessed_global0adjusted)
 	return *this;
       if (m_quality == profile_guessed_global0)
 	return profile_count::zero ();
+      if (m_quality == profile_guessed_global0adjusted)
+	return profile_count::adjusted_zero ();
       return profile_count::uninitialized ();
     }
 
@@ -1051,6 +1075,13 @@ public:
      Take care of the side case when NUM and DEN are zeros of incompatible
      kinds.  */
   static void adjust_for_ipa_scaling (profile_count *num, profile_count *den);
+
+  /* THIS is a count of bb which is known to be executed IPA times.
+     Combine this information into bb counter.  This means returning IPA
+     if it is nonzero, not changing anything if IPA is uninitialized
+     and if IPA is zero, turning THIS into corresponding local profile with
+     global0.  */
+  profile_count combine_with_ipa_count (profile_count ipa);
 
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);

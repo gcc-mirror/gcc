@@ -4398,7 +4398,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	}
 
       /* Ensure the argument is fully folded inside any SAVE_EXPR.  */
-      arg = c_fully_fold (arg, false, NULL);
+      arg = c_fully_fold (arg, false, NULL, true);
 
       bool atomic_op;
       atomic_op = really_atomic_lvalue (arg);
@@ -5822,7 +5822,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 
   if (modifycode != NOP_EXPR)
     {
-      lhs = c_fully_fold (lhs, false, NULL);
+      lhs = c_fully_fold (lhs, false, NULL, true);
       lhs = stabilize_reference (lhs);
 
       /* Construct the RHS for any non-atomic compound assignemnt. */
@@ -7289,7 +7289,6 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       inside_init = TREE_OPERAND (inside_init, 0);
     }
   inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
-  inside_init = decl_constant_value_for_optimization (inside_init);
 
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
@@ -9899,7 +9898,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
     {
       tree output = TREE_VALUE (tail);
 
-      output = c_fully_fold (output, false, NULL);
+      output = c_fully_fold (output, false, NULL, true);
 
       /* ??? Really, this should not be here.  Users should be using a
 	 proper lvalue, dammit.  But there's a long history of using casts
@@ -9957,7 +9956,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	     mark it addressable.  */
 	  if (!allows_reg && allows_mem)
 	    {
-	      input = c_fully_fold (input, false, NULL);
+	      input = c_fully_fold (input, false, NULL, true);
 
 	      /* Strip the nops as we allow this case.  FIXME, this really
 		 should be rejected or made deprecated.  */
@@ -12723,7 +12722,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	}
       if (tem)
 	first = build2 (COMPOUND_EXPR, TREE_TYPE (first), tem, first);
-      first = c_fully_fold (first, false, NULL);
+      first = c_fully_fold (first, false, NULL, true);
       OMP_CLAUSE_DECL (c) = first;
     }
   else

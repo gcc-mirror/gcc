@@ -55,6 +55,69 @@ evrp_folder::get_value (tree op)
   return vr_values->op_with_constant_singleton_value_range (op);
 }
 
+class evrp_range_analyzer
+{
+ public:
+  evrp_range_analyzer (void);
+  ~evrp_range_analyzer (void) { stack.release (); }
+
+  void enter (basic_block);
+  void leave (basic_block);
+  void record_ranges_from_stmt (gimple *);
+
+  class vr_values vr_values;
+
+ private:
+  DISABLE_COPY_AND_ASSIGN (evrp_range_analyzer);
+  void push_value_range (tree var, value_range *vr);
+  value_range *pop_value_range (tree var);
+  value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
+  void record_ranges_from_incoming_edge (basic_block);
+  void record_ranges_from_phis (basic_block);
+
+  /* STACK holds the old VR.  */
+  auto_vec<std::pair <tree, value_range*> > stack;
+
+  /* Temporary delegators.  */
+  value_range *get_value_range (const_tree op)
+    { return vr_values.get_value_range (op); }
+  bool update_value_range (const_tree op, value_range *vr)
+    { return vr_values.update_value_range (op, vr); }
+  void extract_range_from_phi_node (gphi *phi, value_range *vr)
+    { vr_values.extract_range_from_phi_node (phi, vr); }
+  void adjust_range_with_scev (value_range *vr, struct loop *loop,
+                               gimple *stmt, tree var)
+    { vr_values.adjust_range_with_scev (vr, loop, stmt, var); }
+  void extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
+                                tree *output_p, value_range *vr)
+    { vr_values.extract_range_from_stmt (stmt, taken_edge_p, output_p, vr); }
+  void set_defs_to_varying (gimple *stmt)
+    { return vr_values.set_defs_to_varying (stmt); }
+  void set_vr_value (tree name, value_range *vr)
+    { vr_values.set_vr_value (name, vr); }
+  void extract_range_for_var_from_comparison_expr (tree var,
+						   enum tree_code cond_code,
+						   tree op, tree limit,
+						   value_range *vr_p)
+    { vr_values.extract_range_for_var_from_comparison_expr (var, cond_code,
+							    op, limit, vr_p); }
+};
+
+evrp_range_analyzer::evrp_range_analyzer () : stack (10)
+{
+  edge e;
+  edge_iterator ei;
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      bb->flags &= ~BB_VISITED;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	e->flags |= EDGE_EXECUTABLE;
+    }
+}
+
+
 /* evrp_dom_walker visits the basic blocks in the dominance order and set
    the Value Ranges (VR) for SSA_NAMEs in the scope.  Use this VR to
    discover more VRs.  */
@@ -62,8 +125,7 @@ evrp_folder::get_value (tree op)
 class evrp_dom_walker : public dom_walker
 {
 public:
-  evrp_dom_walker ()
-    : dom_walker (CDI_DOMINATORS), stack (10)
+  evrp_dom_walker () : dom_walker (CDI_DOMINATORS)
     {
       need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
@@ -73,54 +135,37 @@ public:
     }
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
-  void push_value_range (tree var, value_range *vr);
-  value_range *pop_value_range (tree var);
-  value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
+  void cleanup (void);
 
-  /* Cond_stack holds the old VR.  */
-  auto_vec<std::pair <tree, value_range*> > stack;
+ private:
+  DISABLE_COPY_AND_ASSIGN (evrp_dom_walker);
   bitmap need_eh_cleanup;
   auto_vec<gimple *> stmts_to_fixup;
   auto_vec<gimple *> stmts_to_remove;
 
-  class vr_values vr_values;
+  class evrp_range_analyzer evrp_range_analyzer;
 
   /* Temporary delegators.  */
   value_range *get_value_range (const_tree op)
-    { return vr_values.get_value_range (op); }
-  bool update_value_range (const_tree op, value_range *vr)
-    { return vr_values.update_value_range (op, vr); }
-  void extract_range_from_phi_node (gphi *phi, value_range *vr)
-    { vr_values.extract_range_from_phi_node (phi, vr); }
-  void extract_range_for_var_from_comparison_expr (tree var,
-						   enum tree_code cond_code,
-						   tree op, tree limit,
-						   value_range *vr_p)
-    { vr_values.extract_range_for_var_from_comparison_expr (var, cond_code,
-							    op, limit, vr_p); }
-  void adjust_range_with_scev (value_range *vr, struct loop *loop,
-			       gimple *stmt, tree var)
-    { vr_values.adjust_range_with_scev (vr, loop, stmt, var); }
+    { return evrp_range_analyzer.vr_values.get_value_range (op); }
   tree op_with_constant_singleton_value_range (tree op)
-    { return vr_values.op_with_constant_singleton_value_range (op); }
-  void extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
-				tree *output_p, value_range *vr)
-    { vr_values.extract_range_from_stmt (stmt, taken_edge_p, output_p, vr); }
-  void set_defs_to_varying (gimple *stmt)
-    { return vr_values.set_defs_to_varying (stmt); }
-  void set_vr_value (tree name, value_range *vr)
-    { vr_values.set_vr_value (name, vr); }
-  void simplify_cond_using_ranges_2 (gcond *stmt)
-    { vr_values.simplify_cond_using_ranges_2 (stmt); }
+    { return evrp_range_analyzer.vr_values.op_with_constant_singleton_value_range (op); }
   void vrp_visit_cond_stmt (gcond *cond, edge *e)
-    { vr_values.vrp_visit_cond_stmt (cond, e); }
+    { evrp_range_analyzer.vr_values.vrp_visit_cond_stmt (cond, e); }
 };
 
-/*  Find new range for NAME such that (OP CODE LIMIT) is true.  */
+void
+evrp_range_analyzer::enter (basic_block bb)
+{
+  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
+  record_ranges_from_incoming_edge (bb);
+  record_ranges_from_phis (bb);
+}
 
+/* Find new range for NAME such that (OP CODE LIMIT) is true.  */
 value_range *
-evrp_dom_walker::try_find_new_range (tree name,
-				     tree op, tree_code code, tree limit)
+evrp_range_analyzer::try_find_new_range (tree name,
+				    tree op, tree_code code, tree limit)
 {
   value_range vr = VR_INITIALIZER;
   value_range *old_vr = get_value_range (name);
@@ -143,17 +188,12 @@ evrp_dom_walker::try_find_new_range (tree name,
   return NULL;
 }
 
-/* See if there is any new scope is entered with new VR and set that VR to
-   ssa_name before visiting the statements in the scope.  */
+/* If BB is reached by a single incoming edge (ignoring loop edges),
+   then derive ranges implied by traversing that edge.  */
 
-edge
-evrp_dom_walker::before_dom_children (basic_block bb)
+void
+evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 {
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Visiting BB%d\n", bb->index);
-
-  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
-
   edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
   if (pred_e)
     {
@@ -200,7 +240,11 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	    push_value_range (vrs[i].first, vrs[i].second);
 	}
     }
+}
 
+void
+evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
+{
   /* Visit PHI stmts and discover any new VRs possible.  */
   bool has_unvisited_preds = false;
   edge_iterator ei;
@@ -220,15 +264,10 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       tree lhs = PHI_RESULT (phi);
       if (virtual_operand_p (lhs))
 	continue;
+
       value_range vr_result = VR_INITIALIZER;
       bool interesting = stmt_interesting_for_vrp (phi);
-      if (interesting && dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Visiting PHI node ");
-	  print_gimple_stmt (dump_file, phi, 0);
-	}
-      if (!has_unvisited_preds
-	  && interesting)
+      if (!has_unvisited_preds && interesting)
 	extract_range_from_phi_node (phi, &vr_result);
       else
 	{
@@ -241,17 +280,9 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  if (interesting
 	      && (l = loop_containing_stmt (phi))
 	      && l->header == gimple_bb (phi))
-	    adjust_range_with_scev (&vr_result, l, phi, lhs);
+	  adjust_range_with_scev (&vr_result, l, phi, lhs);
 	}
       update_value_range (lhs, &vr_result);
-
-      /* Mark PHIs whose lhs we fully propagate for removal.  */
-      tree val = op_with_constant_singleton_value_range (lhs);
-      if (val && may_propagate_copy (lhs, val))
-	{
-	  stmts_to_remove.safe_push (phi);
-	  continue;
-	}
 
       /* Set the SSA with the value range.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
@@ -273,6 +304,120 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 						 vr_result.max) == 1)))
 	set_ptr_nonnull (lhs);
     }
+}
+
+/* Record any ranges created by statement STMT.  */
+
+void
+evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
+{
+  tree output = NULL_TREE;
+
+  if (dyn_cast <gcond *> (stmt))
+    ;
+  else if (stmt_interesting_for_vrp (stmt))
+    {
+      edge taken_edge;
+      value_range vr = VR_INITIALIZER;
+      extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
+      if (output && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
+	{
+	  update_value_range (output, &vr);
+
+	  /* Set the SSA with the value range.  */
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
+	    {
+	      if ((vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
+		  && (TREE_CODE (vr.min) == INTEGER_CST)
+		  && (TREE_CODE (vr.max) == INTEGER_CST))
+		set_range_info (output, vr.type,
+				wi::to_wide (vr.min),
+				wi::to_wide (vr.max));
+	    }
+	  else if (POINTER_TYPE_P (TREE_TYPE (output))
+		   && ((vr.type == VR_RANGE
+			&& range_includes_zero_p (vr.min, vr.max) == 0)
+		       || (vr.type == VR_ANTI_RANGE
+			   && range_includes_zero_p (vr.min, vr.max) == 1)))
+	    set_ptr_nonnull (output);
+	}
+      else
+	set_defs_to_varying (stmt);
+    }
+  else
+    set_defs_to_varying (stmt);
+
+  /* See if we can derive a range for any of STMT's operands.  */
+  tree op;
+  ssa_op_iter i;
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+    {
+      tree value;
+      enum tree_code comp_code;
+
+      /* If OP is used in such a way that we can infer a value
+	 range for it, and we don't find a previous assertion for
+	 it, create a new assertion location node for OP.  */
+      if (infer_value_range (stmt, op, &comp_code, &value))
+	{
+	  /* If we are able to infer a nonzero value range for OP,
+	     then walk backwards through the use-def chain to see if OP
+	     was set via a typecast.
+	     If so, then we can also infer a nonzero value range
+	     for the operand of the NOP_EXPR.  */
+	  if (comp_code == NE_EXPR && integer_zerop (value))
+	    {
+	      tree t = op;
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (t);
+	      while (is_gimple_assign (def_stmt)
+		     && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
+		     && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
+		     && POINTER_TYPE_P
+			  (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
+		{
+		  t = gimple_assign_rhs1 (def_stmt);
+		  def_stmt = SSA_NAME_DEF_STMT (t);
+
+		  /* Add VR when (T COMP_CODE value) condition is true.  */
+		  value_range *op_range
+		    = try_find_new_range (t, t, comp_code, value);
+		  if (op_range)
+		    push_value_range (t, op_range);
+		}
+	    }
+	  /* Add VR when (OP COMP_CODE value) condition is true.  */
+	  value_range *op_range = try_find_new_range (op, op,
+						      comp_code, value);
+	  if (op_range)
+	    push_value_range (op, op_range);
+	}
+    }
+}
+
+edge
+evrp_dom_walker::before_dom_children (basic_block bb)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Visiting BB%d\n", bb->index);
+
+  evrp_range_analyzer.enter (bb);
+
+  for (gphi_iterator gpi = gsi_start_phis (bb);
+       !gsi_end_p (gpi); gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      tree lhs = PHI_RESULT (phi);
+      if (virtual_operand_p (lhs))
+	continue;
+
+      /* Mark PHIs whose lhs we fully propagate for removal.  */
+      tree val = op_with_constant_singleton_value_range (lhs);
+      if (val && may_propagate_copy (lhs, val))
+	{
+	  stmts_to_remove.safe_push (phi);
+	  continue;
+	}
+    }
 
   edge taken_edge = NULL;
 
@@ -292,6 +437,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
+      evrp_range_analyzer.record_ranges_from_stmt (stmt);
+
       if (gcond *cond = dyn_cast <gcond *> (stmt))
 	{
 	  vrp_visit_cond_stmt (cond, &taken_edge);
@@ -308,18 +455,16 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
       else if (stmt_interesting_for_vrp (stmt))
 	{
-	  edge taken_edge;
 	  value_range vr = VR_INITIALIZER;
-	  extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
-	  if (output
-	      && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
+	  output = get_output_for_vrp (stmt);
+	  if (output)
 	    {
-	      update_value_range (output, &vr);
+	      tree val;
 	      vr = *get_value_range (output);
 
 	      /* Mark stmts whose output we fully propagate for removal.  */
-	      tree val;
-	      if ((val = op_with_constant_singleton_value_range (output))
+	      if ((vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
+		  && (val = op_with_constant_singleton_value_range (output))
 		  && may_propagate_copy (output, val)
 		  && !stmt_could_throw_p (stmt)
 		  && !gimple_has_side_effects (stmt))
@@ -327,85 +472,12 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 		  stmts_to_remove.safe_push (stmt);
 		  continue;
 		}
-
-	      /* Set the SSA with the value range.  */
-	      if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
-		{
-		  if ((vr.type == VR_RANGE
-		       || vr.type == VR_ANTI_RANGE)
-		      && (TREE_CODE (vr.min) == INTEGER_CST)
-		      && (TREE_CODE (vr.max) == INTEGER_CST))
-		    set_range_info (output, vr.type,
-				    wi::to_wide (vr.min),
-				    wi::to_wide (vr.max));
-		}
-	      else if (POINTER_TYPE_P (TREE_TYPE (output))
-		       && ((vr.type == VR_RANGE
-			    && range_includes_zero_p (vr.min,
-						      vr.max) == 0)
-			   || (vr.type == VR_ANTI_RANGE
-			       && range_includes_zero_p (vr.min,
-							 vr.max) == 1)))
-		set_ptr_nonnull (output);
-	    }
-	  else
-	    set_defs_to_varying (stmt);
-	}
-      else
-	set_defs_to_varying (stmt);
-
-      /* See if we can derive a range for any of STMT's operands.  */
-      tree op;
-      ssa_op_iter i;
-      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
-	{
-	  tree value;
-	  enum tree_code comp_code;
-
-	  /* If OP is used in such a way that we can infer a value
-	     range for it, and we don't find a previous assertion for
-	     it, create a new assertion location node for OP.  */
-	  if (infer_value_range (stmt, op, &comp_code, &value))
-	    {
-	      /* If we are able to infer a nonzero value range for OP,
-		 then walk backwards through the use-def chain to see if OP
-		 was set via a typecast.
-		 If so, then we can also infer a nonzero value range
-		 for the operand of the NOP_EXPR.  */
-	      if (comp_code == NE_EXPR && integer_zerop (value))
-		{
-		  tree t = op;
-		  gimple *def_stmt = SSA_NAME_DEF_STMT (t);
-		  while (is_gimple_assign (def_stmt)
-			 && CONVERT_EXPR_CODE_P
-			      (gimple_assign_rhs_code (def_stmt))
-			 && TREE_CODE
-			      (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
-			 && POINTER_TYPE_P
-			      (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
-		    {
-		      t = gimple_assign_rhs1 (def_stmt);
-		      def_stmt = SSA_NAME_DEF_STMT (t);
-
-		      /* Add VR when (T COMP_CODE value) condition is
-			 true.  */
-		      value_range *op_range
-			= try_find_new_range (t, t, comp_code, value);
-		      if (op_range)
-			push_value_range (t, op_range);
-		    }
-		}
-	      /* Add VR when (OP COMP_CODE value) condition is true.  */
-	      value_range *op_range = try_find_new_range (op, op,
-							  comp_code, value);
-	      if (op_range)
-		push_value_range (op, op_range);
 	    }
 	}
 
       /* Try folding stmts with the VR discovered.  */
       class evrp_folder evrp_folder;
-      evrp_folder.vr_values = &vr_values;
+      evrp_folder.vr_values = &evrp_range_analyzer.vr_values;
       bool did_replace = evrp_folder.replace_uses_in (stmt);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
@@ -439,6 +511,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
     }
 
   /* Visit BB successor PHI nodes and replace PHI args.  */
+  edge e;
+  edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       for (gphi_iterator gpi = gsi_start_phis (e->dest);
@@ -461,10 +535,16 @@ evrp_dom_walker::before_dom_children (basic_block bb)
   return taken_edge;
 }
 
+void
+evrp_dom_walker::after_dom_children (basic_block bb)
+{
+  evrp_range_analyzer.leave (bb);
+}
+
 /* Restore/pop VRs valid only for BB when we leave BB.  */
 
 void
-evrp_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
+evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
 {
   gcc_checking_assert (!stack.is_empty ());
   while (stack.last ().first != NULL_TREE)
@@ -475,7 +555,7 @@ evrp_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
 /* Push the Value Range of VAR to the stack and update it with new VR.  */
 
 void
-evrp_dom_walker::push_value_range (tree var, value_range *vr)
+evrp_range_analyzer::push_value_range (tree var, value_range *vr)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -492,7 +572,7 @@ evrp_dom_walker::push_value_range (tree var, value_range *vr)
 /* Pop the Value Range from the vrp_stack and update VAR with it.  */
 
 value_range *
-evrp_dom_walker::pop_value_range (tree var)
+evrp_range_analyzer::pop_value_range (tree var)
 {
   value_range *vr = stack.last ().second;
   gcc_checking_assert (var == stack.last ().first);
@@ -509,44 +589,22 @@ evrp_dom_walker::pop_value_range (tree var)
   return vr;
 }
 
+/* Perform any cleanups after the main phase of EVRP has completed.  */
 
-/* Main entry point for the early vrp pass which is a simplified non-iterative
-   version of vrp where basic blocks are visited in dominance order.  Value
-   ranges discovered in early vrp will also be used by ipa-vrp.  */
-
-static unsigned int
-execute_early_vrp ()
+void
+evrp_dom_walker::cleanup (void)
 {
-  edge e;
-  edge_iterator ei;
-  basic_block bb;
-
-  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-  scev_initialize ();
-  calculate_dominance_info (CDI_DOMINATORS);
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      bb->flags &= ~BB_VISITED;
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	e->flags |= EDGE_EXECUTABLE;
-    }
-
-  /* Walk stmts in dominance order and propagate VRP.  */
-  evrp_dom_walker walker;
-  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
   if (dump_file)
     {
       fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
-      walker.vr_values.dump_all_value_ranges (dump_file);
+      evrp_range_analyzer.vr_values.dump_all_value_ranges (dump_file);
       fprintf (dump_file, "\n");
     }
 
   /* Remove stmts in reverse order to make debug stmt creation possible.  */
-  while (! walker.stmts_to_remove.is_empty ())
+  while (! stmts_to_remove.is_empty ())
     {
-      gimple *stmt = walker.stmts_to_remove.pop ();
+      gimple *stmt = stmts_to_remove.pop ();
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
@@ -564,18 +622,40 @@ execute_early_vrp ()
 	}
     }
 
-  if (!bitmap_empty_p (walker.need_eh_cleanup))
-    gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
+  if (!bitmap_empty_p (need_eh_cleanup))
+    gimple_purge_all_dead_eh_edges (need_eh_cleanup);
 
   /* Fixup stmts that became noreturn calls.  This may require splitting
      blocks and thus isn't possible during the dominator walk.  Do this
      in reverse order so we don't inadvertedly remove a stmt we want to
      fixup by visiting a dominating now noreturn call first.  */
-  while (!walker.stmts_to_fixup.is_empty ())
+  while (!stmts_to_fixup.is_empty ())
     {
-      gimple *stmt = walker.stmts_to_fixup.pop ();
+      gimple *stmt = stmts_to_fixup.pop ();
       fixup_noreturn_call (stmt);
     }
+}
+
+/* Main entry point for the early vrp pass which is a simplified non-iterative
+   version of vrp where basic blocks are visited in dominance order.  Value
+   ranges discovered in early vrp will also be used by ipa-vrp.  */
+
+static unsigned int
+execute_early_vrp ()
+{
+  /* Ideally this setup code would move into the ctor for the dominator
+     walk.  However, this setup can change the number of blocks which
+     invalidates the internal arrays that are set up by the dominator
+     walker.  */
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+  scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Walk stmts in dominance order and propagate VRP.  */
+  evrp_dom_walker walker;
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  walker.cleanup ();
 
   scev_finalize ();
   loop_optimizer_finalize ();

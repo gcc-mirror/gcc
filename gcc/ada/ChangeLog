@@ -1,3 +1,57 @@
+2017-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/83016
+	* gnatlink.adb (Process_Args): Accept multiple switches for --LINK.
+	(Usage): Adjust.
+	* gcc-interface/Makefile.in (GCC_LINK): Remove $(ADA_INCLUDES).
+	(common-tools): Pass $(CC) as --GCC= and $(GCC_LINK) as --LINK= in
+	the invocations of $(GNATLINK).
+	(../../gnatdll$(exeext)): Likewise.
+	(../../vxaddr2line$(exeext)): Likewise.
+	(gnatmake-re): Likewise.
+	(gnatlink-re): Likewise.
+
+2017-11-16  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/Makefile.in: Merge Aarch64 and ARM "ifeq" blocks.
+
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* debug.adb: Update another comment to indicate gnat2scil's use of the
+	-gnatd.7 switch.
+
+2017-11-16  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Avoid creating a transient scope in
+	the case of nested build-in-place calls.
+
+2017-11-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document the switches
+	available in gnatsymbolize.
+
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* debug.adb: Update comment to indicate gnat2scil's use of the -gnatd.7
+	switch.
+
+2017-11-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst, sem_ch6.adb,
+	sem_elab.adb: Minor editorial corrections.
+	* gnat_ugn.texi: Regenerate.
+
+2017-11-16  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst (GNAT UGN): Add
+	gnatsymbolize documentation.
+	* gnat_ugn.texi: Regenerate.
+
+2017-11-16  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Replace all uses of
+	"Scope (Parent_Type)" with "Scope (Parent_Base)".
+
 2017-11-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* opt.ads: Elaboration warnings are now on by default. Add a comment

@@ -1,3 +1,23 @@
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* c-parser.c (c_parser_omp_atomic): Pass true as LVAL to c_fully_fold
+	where needed.
+	* c-typeck.c (build_unary_op, build_modify_expr, build_asm_expr,
+	handle_omp_array_sections): Likewise.
+	(digest_init): Don't call decl_constant_value_for_optimization.
+	* c-tree.h (decl_constant_value_for_optimization): Removed.
+	* c-fold.c (c_fold_array_ref): New function.
+	(c_fully_fold_internal): Add LVAL argument, propagate it through
+	recursive calls.  For VAR_P call decl_constant_value and
+	unshare if not LVAL and either optimizing or IN_INIT.  Remove
+	decl_constant_value_for_optimization calls.  If IN_INIT and not LVAL,
+	fold ARRAY_REF with STRING_CST and INTEGER_CST operands.
+	(c_fully_fold): Add LVAL argument, pass it through to
+	c_fully_fold_internal.
+	(decl_constant_value_for_optimization): Removed.
+
 2017-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/81156

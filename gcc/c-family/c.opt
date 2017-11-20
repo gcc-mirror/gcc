@@ -1982,7 +1982,11 @@ Deprecated in favor of -std=c11.
 
 std=c17
 C ObjC
-Conform to the ISO 2017 C standard.
+Conform to the ISO 2017 C standard (expected to be published in 2018).
+
+std=c18
+C ObjC Alias(std=c17)
+Conform to the ISO 2017 C standard (expected to be published in 2018).
 
 std=c89
 C ObjC Alias(std=c90)
@@ -2048,7 +2052,11 @@ Deprecated in favor of -std=gnu11.
 
 std=gnu17
 C ObjC
-Conform to the ISO 2017 C standard with GNU extensions.
+Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+
+std=gnu18
+C ObjC Alias(std=gnu17)
+Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -2088,7 +2096,11 @@ Conform to the ISO 2011 C standard.
 
 std=iso9899:2017
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard.
+Conform to the ISO 2017 C standard (expected to be published in 2018).
+
+std=iso9899:2018
+C ObjC Alias(std=c17)
+Conform to the ISO 2017 C standard (expected to be published in 2018).
 
 traditional
 Driver

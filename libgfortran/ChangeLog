@@ -1,10 +1,38 @@
+2017-11-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/44292
+	* io/transfer.c (skip_record): Use gfc_offset to handle large
+	records.
+	(next_record_r): Likewise.
+	(sset): Likewise.
+	(next_record_w): Use gfc_offset/ptrdiff_t appropriately.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83036
+	* io/io.h: Make nextrec a GFC_IO_INT*.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/44292
+	* io/io.h: Make recl_in a GC_IO_INT and recl_out a type
+	GFC_IO_INT*.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* acinclude.m4: Add enable.m4, cet.m4.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update AM_FCFLAGS,
+	AM_CFLAGS, CFLAGS.
+
 2017-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Rimvydas (RJ)
 
 	PR libgfortran/81938
 	io/format.c (free_format_data): Don't try to free vlist
 	descriptors past the end of the fnode array.
-	
+
 2017-10-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/82233

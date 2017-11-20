@@ -300,6 +300,14 @@ debug (basic_block_def *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
+static void
+debug_slim (basic_block ptr)
+{
+  fprintf (stderr, "<basic_block %p (%d)>", (void *) ptr, ptr->index);
+}
+
+DEFINE_DEBUG_VEC (basic_block_def *)
+DEFINE_DEBUG_HASH_SET (basic_block_def *)
 
 /* Dumps basic block BB to pretty-printer PP, for use as a label of
    a DOT graph record-node.  The implementation of this hook is

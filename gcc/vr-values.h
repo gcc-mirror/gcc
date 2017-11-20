@@ -118,4 +118,5 @@ class vr_values
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 
+extern tree get_output_for_vrp (gimple *);
 #endif /* GCC_VR_VALUES_H */

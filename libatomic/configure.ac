@@ -238,6 +238,10 @@ if test "x$GCC" = "xyes"; then
   XCFLAGS="$XCFLAGS -Wall -Werror"
 fi
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+
 XCFLAGS="$XCFLAGS $XPCFLAGS"
 
 AC_SUBST(config_path)

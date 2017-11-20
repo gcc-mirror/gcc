@@ -300,7 +300,8 @@ uw_init_context (struct _Unwind_Context *context)
 
 static void __attribute__((noreturn))
 uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
-                    struct _Unwind_Context *target)
+                    struct _Unwind_Context *target,
+		    unsigned long frames __attribute__((unused)))
 {
   _Unwind_SjLj_SetContext (target->fc);
   longjmp (target->fc->jbuf, 1);

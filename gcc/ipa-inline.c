@@ -324,7 +324,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
       inlinable = false;
     }
-  if (!early && !opt_for_fn (callee->decl, optimize))
+  if (!early && (!opt_for_fn (callee->decl, optimize)
+		 || !opt_for_fn (caller->decl, optimize)))
     {
       e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
       inlinable = false;
@@ -1873,7 +1874,8 @@ inline_small_functions (void)
       /* Be sure that caches are maintained consistent.
 	 This check is affected by scaling roundoff errors when compiling for
 	 IPA this we skip it in that case.  */
-      if (!edge->callee->count.ipa_p ())
+      if (!edge->callee->count.ipa_p ()
+	  && (!max_count.initialized_p () || !max_count.nonzero_p ()))
 	{
 	  sreal cached_badness = edge_badness (edge, false);
      
@@ -1951,7 +1953,7 @@ inline_small_functions (void)
 	    {
 	      fprintf (dump_file, " Called ");
 	      edge->count.ipa ().dump (dump_file);
-	      fprintf (dump_file, "times\n");
+	      fprintf (dump_file, " times\n");
             }
 	  if (dump_flags & TDF_DETAILS)
 	    edge_badness (edge, true);

@@ -1,3 +1,32 @@
+2017-11-17  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-util.cc: Fix sprintf format string type mismatch
+	on 32b machines.
+
+2017-11-16  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	Change internal representation of HSA registers. Instead
+	representing HSA's untyped registers as unsigned int the gccbrig
+	analyzes brig code and builds the register variables as a type
+	used in tree expressions at most. This gives better chance to
+	optimize CONVERT_VIEW_EXPRs away.
+	* brigfrontend/brig-code-entry-handler.cc: Add analysis method for
+	register type usage. Handle any-typed register variables.
+	* brigfrontend/brig-code-entry-handler.h: New declarations for the
+	above.
+	* brigfrontend/brig-copy-move-inst-handler.cc: Handle any-typed
+	register variables.
+	* brigfrontend/brig-cvt-inst-handler.cc: Likewise.
+	* brigfrontend/brig-function.cc: Build register variables as a
+	type based on results of analysis phase.
+	* brigfrontend/brig-function.h: Move HSA register count defines to
+	brig-utils.h.
+	* brigfrontend/brig-to-generic.cc: New analysis handler. Analyze
+	HSA register usage.
+	* brigfrontend/brig-to-generic.h: New declarations.
+	* brigfrontend/brig-util.cc: New utility functions.
+	* brigfrontend/brig-util.h: New declarations for the above.
+
 2017-11-16  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* gccbrig.texi: Added some documentation.

@@ -308,7 +308,7 @@ unit_sign_s;
 typedef struct
 {
   st_parameter_common common;
-  GFC_INTEGER_4 recl_in;
+  GFC_IO_INT recl_in;
   CHARACTER2 (file);
   CHARACTER1 (status);
   CHARACTER2 (access);
@@ -388,8 +388,7 @@ typedef struct
 {
   st_parameter_common common;
   GFC_INTEGER_4 *exist, *opened, *number, *named;
-  GFC_INTEGER_4 *nextrec, *recl_out;
-  GFC_IO_INT *strm_pos_out;
+  GFC_IO_INT *nextrec, *recl_out, *strm_pos_out;
   CHARACTER1 (file);
   CHARACTER2 (access);
   CHARACTER1 (form);

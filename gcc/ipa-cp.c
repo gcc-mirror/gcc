@@ -3695,16 +3695,13 @@ update_profiling_info (struct cgraph_node *orig_node,
 	}
     }
 
-  new_node->count = new_sum;
-  remainder = orig_node_count - new_sum;
+  remainder = orig_node_count.combine_with_ipa_count (orig_node_count.ipa ()
+						      - new_sum.ipa ());
+  new_sum = orig_node_count.combine_with_ipa_count (new_sum);
   orig_node->count = remainder;
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)
-    /* FIXME: why we care about non-zero frequency here?  */
-    if (cs->frequency ())
-      cs->count = cs->count.apply_scale (new_sum, orig_node_count);
-    else
-      cs->count = profile_count::zero ();
+    cs->count = cs->count.apply_scale (new_sum, orig_node_count);
 
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (remainder, orig_node_count);

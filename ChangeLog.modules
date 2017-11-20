@@ -1,5 +1,7 @@
 2017-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	Merg trunk r254959.
+
 	Template member functions.
 	gcc/cp/
 	* cp-tree.h (TI_PENDING_TEMPLATE_FLAG): Add TI_CHECK.

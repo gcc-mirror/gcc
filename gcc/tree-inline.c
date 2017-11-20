@@ -2173,7 +2173,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
    debug stmts are left after a statement that must end the basic block.  */
 
 static bool
-copy_edges_for_bb (basic_block bb,
+copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 		   basic_block ret_bb, basic_block abnormal_goto_dest)
 {
   basic_block new_bb = (basic_block) bb->aux;
@@ -2203,6 +2203,14 @@ copy_edges_for_bb (basic_block bb,
 
   if (bb->index == ENTRY_BLOCK || bb->index == EXIT_BLOCK)
     return false;
+
+  /* When doing function splitting, we must decreate count of the return block
+     which was previously reachable by block we did not copy.  */
+  if (single_succ_p (bb) && single_succ_edge (bb)->dest->index == EXIT_BLOCK)
+    FOR_EACH_EDGE (old_edge, ei, bb->preds)
+      if (old_edge->src->index != ENTRY_BLOCK
+	  && !old_edge->src->aux)
+	new_bb->count -= old_edge->count ().apply_scale (num, den);
 
   for (si = gsi_start_bb (new_bb); !gsi_end_p (si);)
     {
@@ -2465,23 +2473,16 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
 
   profile_status_for_fn (cfun) = profile_status_for_fn (src_cfun);
 
-  if (ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.initialized_p ()
-      && count.ipa ().initialized_p ())
-    {
-      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
-	ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
-				    ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count);
-      EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
-	EXIT_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
-				    ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count);
-    }
-  else
-    {
-      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-	   = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
-      EXIT_BLOCK_PTR_FOR_FN (cfun)->count
-	   = EXIT_BLOCK_PTR_FOR_FN (src_cfun)->count;
-    }
+  profile_count num = count;
+  profile_count den = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
+  profile_count::adjust_for_ipa_scaling (&num, &den);
+
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
+    ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
+				ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count);
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
+    EXIT_BLOCK_PTR_FOR_FN (src_cfun)->count.apply_scale (count,
+				ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count);
   if (src_cfun->eh)
     init_eh_for_function ();
 
@@ -2642,7 +2643,7 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
    another function.  Walks FN via CFG, returns new fndecl.  */
 
 static tree
-copy_cfg_body (copy_body_data * id, profile_count,
+copy_cfg_body (copy_body_data * id,
 	       basic_block entry_block_map, basic_block exit_block_map,
 	       basic_block new_entry)
 {
@@ -2723,12 +2724,13 @@ copy_cfg_body (copy_body_data * id, profile_count,
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     if (!id->blocks_to_copy
 	|| (bb->index > 0 && bitmap_bit_p (id->blocks_to_copy, bb->index)))
-      need_debug_cleanup |= copy_edges_for_bb (bb, exit_block_map,
+      need_debug_cleanup |= copy_edges_for_bb (bb, num, den, exit_block_map,
 					       abnormal_goto_dest);
 
   if (new_entry)
     {
-      edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
+      edge e = make_edge (entry_block_map, (basic_block)new_entry->aux,
+			  EDGE_FALLTHRU);
       e->probability = profile_probability::always ();
     }
 
@@ -2927,7 +2929,7 @@ copy_tree_body (copy_body_data *id)
    another function.  */
 
 static tree
-copy_body (copy_body_data *id, profile_count count,
+copy_body (copy_body_data *id,
 	   basic_block entry_block_map, basic_block exit_block_map,
 	   basic_block new_entry)
 {
@@ -2936,7 +2938,7 @@ copy_body (copy_body_data *id, profile_count count,
 
   /* If this body has a CFG, walk CFG and copy.  */
   gcc_assert (ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (fndecl)));
-  body = copy_cfg_body (id, count, entry_block_map, exit_block_map,
+  body = copy_cfg_body (id, entry_block_map, exit_block_map,
 			new_entry);
   copy_debug_stmts (id);
 
@@ -4098,7 +4100,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	   with very long asm statements.  */
 	if (count > 1000)
 	  count = 1000;
-	return count;
+	return MAX (1, count);
       }
 
     case GIMPLE_RESX:
@@ -4684,8 +4686,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
      function in any way before this point, as this CALL_EXPR may be
      a self-referential call; if we're calling ourselves, we need to
      duplicate our body before altering anything.  */
-  copy_body (id, cg_edge->callee->count,
-	     bb, return_block, NULL);
+  copy_body (id, bb, return_block, NULL);
 
   reset_debug_bindings (id, stmt_gsi);
 
@@ -5857,7 +5858,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   DECL_RESULT (new_decl) = DECL_RESULT (old_decl);
   DECL_ARGUMENTS (new_decl) = DECL_ARGUMENTS (old_decl);
   initialize_cfun (new_decl, old_decl,
-		   old_entry_block->count);
+		   new_entry ? new_entry->count : old_entry_block->count);
   if (DECL_STRUCT_FUNCTION (new_decl)->gimple_df)
     DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta
       = id.src_cfun->gimple_df->ipa_pta;
@@ -6004,8 +6005,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
     }
 
   /* Copy the Function's body.  */
-  copy_body (&id, old_entry_block->count,
-	     ENTRY_BLOCK_PTR_FOR_FN (cfun), EXIT_BLOCK_PTR_FOR_FN (cfun),
+  copy_body (&id, ENTRY_BLOCK_PTR_FOR_FN (cfun), EXIT_BLOCK_PTR_FOR_FN (cfun),
 	     new_entry);
 
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */

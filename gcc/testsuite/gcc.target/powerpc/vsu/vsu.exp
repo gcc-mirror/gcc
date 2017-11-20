@@ -34,7 +34,7 @@ load_lib torture-options.exp
 # Initialize.
 dg-init
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c*]] "" $DEFAULT_CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" $DEFAULT_CFLAGS
 
 # All done.
 dg-finish

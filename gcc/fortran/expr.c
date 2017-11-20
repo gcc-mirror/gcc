@@ -4844,14 +4844,15 @@ gfc_is_alloc_class_scalar_function (gfc_expr *expr)
 /* Determine if an expression is a function with an allocatable class array
    result.  */
 bool
-gfc_is_alloc_class_array_function (gfc_expr *expr)
+gfc_is_class_array_function (gfc_expr *expr)
 {
   if (expr->expr_type == EXPR_FUNCTION
       && expr->value.function.esym
       && expr->value.function.esym->result
       && expr->value.function.esym->result->ts.type == BT_CLASS
       && CLASS_DATA (expr->value.function.esym->result)->attr.dimension
-      && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+      && (CLASS_DATA (expr->value.function.esym->result)->attr.allocatable
+	  || CLASS_DATA (expr->value.function.esym->result)->attr.pointer))
     return true;
 
   return false;
@@ -5207,8 +5208,31 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   gfc_symbol *sym;
 
   if (expr->expr_type == EXPR_FUNCTION)
-    return expr->value.function.esym
-	   ? expr->value.function.esym->result->attr.contiguous : false;
+    {
+      if (expr->value.function.esym)
+	return expr->value.function.esym->result->attr.contiguous;
+      else
+	{
+	  /* We have to jump through some hoops if this is a vtab entry.  */
+	  gfc_symbol *s;
+	  gfc_ref *r, *rc;
+
+	  s = expr->symtree->n.sym;
+	  if (s->ts.type != BT_CLASS)
+	    return false;
+	  
+	  rc = NULL;
+	  for (r = expr->ref; r; r = r->next)
+	    if (r->type == REF_COMPONENT)
+	      rc = r;
+
+	  if (rc == NULL || rc->u.c.component == NULL
+	      || rc->u.c.component->ts.interface == NULL)
+	    return false;
+
+	  return rc->u.c.component->ts.interface->attr.contiguous;
+	}
+    }
   else if (expr->expr_type != EXPR_VARIABLE)
     return false;
 

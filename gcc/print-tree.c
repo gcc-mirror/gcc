@@ -1095,32 +1095,6 @@ debug_raw (vec<tree, va_gc> &ref)
 }
 
 DEBUG_FUNCTION void
-debug (vec<tree, va_gc> &ref)
-{
-  tree elt;
-  unsigned ix;
-
-  /* Print the slot this node is in, and its code, and address.  */
-  fprintf (stderr, "<VEC");
-  dump_addr (stderr, " ", ref.address ());
-
-  FOR_EACH_VEC_ELT (ref, ix, elt)
-    {
-      fprintf (stderr, "elt:%d ", ix);
-      debug (elt);
-    }
-}
-
-DEBUG_FUNCTION void
-debug (vec<tree, va_gc> *ptr)
-{
-  if (ptr)
-    debug (*ptr);
-  else
-    fprintf (stderr, "<nil>\n");
-}
-
-DEBUG_FUNCTION void
 debug_raw (vec<tree, va_gc> *ptr)
 {
   if (ptr)
@@ -1129,8 +1103,11 @@ debug_raw (vec<tree, va_gc> *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
-DEBUG_FUNCTION void
-debug_vec_tree (vec<tree, va_gc> *vec)
+static void
+debug_slim (tree t)
 {
-  debug_raw (vec);
+  print_node_brief (stderr, "", t, 0);
 }
+
+DEFINE_DEBUG_VEC (tree)
+DEFINE_DEBUG_HASH_SET (tree)

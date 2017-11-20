@@ -106,6 +106,9 @@ public:
   void add_group_variable (const std::string &name, size_t size,
 			   size_t alignment, bool function_scope);
 
+  void add_reg_used_as_type (const BrigOperandRegister &brig_reg,
+			     tree operand_type);
+
   static tree s_fp16_type;
   static tree s_fp32_type;
   static tree s_fp64_type;
@@ -128,6 +131,9 @@ public:
 
   /* Accumulates the total group segment usage.  */
   size_t m_total_group_segment_usage;
+
+  /* Statistics about register uses per function.  */
+  std::map<std::string, regs_use_index> m_fn_regs_use_index;
 
 private:
 
@@ -212,11 +218,14 @@ protected:
 
 tree call_builtin (tree pdecl, int nargs, tree rettype, ...);
 
-tree build_reinterpret_cast (tree destination_type, tree source);
+tree build_resize_convert_view (tree destination_type, tree source);
+tree build_reinterpret_to_uint (tree source);
 
 tree build_stmt (enum tree_code code, ...);
 
 tree get_unsigned_int_type (tree type);
+
+tree get_scalar_unsigned_int_type (tree type);
 
 void dump_function (FILE *dump_file, brig_function *f);
 

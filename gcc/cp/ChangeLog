@@ -1,3 +1,43 @@
+2017-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82878
+	PR c++/78495
+	* call.c (build_call_a): Don't set CALL_FROM_THUNK_P for inherited
+	ctor.
+	* cp-gimplify.c	(cp_genericize_r): Restore THUNK dereference
+	inhibibition check removed in previous c++/78495 change.
+
+2017-11-20   Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82781
+	* constexpr.c (cxx_eval_vector_conditional_expression): New function.
+	(cxx_eval_constant_expression) <case VEC_COND_EXPR>: Use it instead
+	of cxx_eval_conditional_expression.
+
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* cp-gimplify.c (c_fully_fold): Add LVAL argument, call
+	cp_fold_maybe_rvalue instead of cp_fold_rvalue and pass it !LVAL.
+
+2017-11-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79092 - non-type args of different types are different
+	* tree.c (cp_tree_equal): Check the type of constants.
+	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Handle UNIFY_ALLOW_INTEGER
+	when comparing to previously deduced argument.
+	(maybe_convert_nontype_argument): New.
+	(convert_nontype_argument): Call it.
+	(tsubst_copy_and_build): Handle partial instantiation of
+	IMPLICIT_CONV_EXPR.
+	(unify): Ignore type when deducing from array bound.
+	(dependent_type_p_r): Handle DEFERRED_NOEXCEPT.
+	(value_dependent_expression_p): Any type-dependent expression is
+	value-dependent.  Handle IMPLICIT_CONV_EXPR.
+	* cp-tree.h (IMPLICIT_CONV_EXPR_NONTYPE_ARG): New.
+	* mangle.c (write_template_arg): Strip IMPLICIT_CONV_EXPR.
+
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82836

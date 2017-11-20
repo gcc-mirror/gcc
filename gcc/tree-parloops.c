@@ -184,7 +184,7 @@ parloop
 
 /* Minimal number of iterations of a loop that should be executed in each
    thread.  */
-#define MIN_PER_THREAD 100
+#define MIN_PER_THREAD PARAM_VALUE (PARAM_PARLOOPS_MIN_PER_THREAD)
 
 /* Element of the hashtable, representing a
    reduction in the current loop.  */
@@ -2336,7 +2336,7 @@ gen_parallel_loop (struct loop *loop,
       gcc_checking_assert (n_threads != 0);
       many_iterations_cond =
 	fold_build2 (GE_EXPR, boolean_type_node,
-		     nit, build_int_cst (type, m_p_thread * n_threads));
+		     nit, build_int_cst (type, m_p_thread * n_threads - 1));
 
       many_iterations_cond
 	= fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
@@ -3299,15 +3299,6 @@ parallelize_loops (bool oacc_kernels_p)
 	  fprintf (dump_file, "loop %d is innermost\n",loop->num);
       }
 
-      /* If we use autopar in graphite pass, we use its marked dependency
-      checking results.  */
-      if (flag_loop_parallelize_all && !loop->can_be_parallel)
-      {
-        if (dump_file && (dump_flags & TDF_DETAILS))
-	   fprintf (dump_file, "loop is not parallel according to graphite\n");
-	continue;
-      }
-
       if (!single_dom_exit (loop))
       {
 
@@ -3325,15 +3316,17 @@ parallelize_loops (bool oacc_kernels_p)
 	  || loop_has_vector_phi_nodes (loop))
 	continue;
 
-      estimated = estimated_stmt_executions_int (loop);
+      estimated = estimated_loop_iterations_int (loop);
       if (estimated == -1)
-	estimated = likely_max_stmt_executions_int (loop);
+	estimated = get_likely_max_loop_iterations_int (loop);
       /* FIXME: Bypass this check as graphite doesn't update the
 	 count and frequency correctly now.  */
       if (!flag_loop_parallelize_all
 	  && !oacc_kernels_p
 	  && ((estimated != -1
-	       && estimated <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
+	       && (estimated
+		   < ((HOST_WIDE_INT) n_threads
+		      * (loop->inner ? 2 : MIN_PER_THREAD) - 1)))
 	      /* Do not bother with loops in cold areas.  */
 	      || optimize_loop_nest_for_size_p (loop)))
 	continue;
@@ -3347,7 +3340,7 @@ parallelize_loops (bool oacc_kernels_p)
       if (loop_has_phi_with_address_arg (loop))
 	continue;
 
-      if (!flag_loop_parallelize_all
+      if (!loop->can_be_parallel
 	  && !loop_parallel_p (loop, &parloop_obstack))
 	continue;
 

@@ -763,17 +763,29 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
   endif
 endif
 
-# ARM VxWorks
-ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
+# ARM and Aarch64 VxWorks
+ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
 
-  ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
-     SVX=system-vxworks7
-     EH_MECHANISM=-arm
-     SIGTRAMP_OBJ=sigtramp-armvxworks.o
+  ifeq ($(strip $(filter-out aarch64, $(target_cpu))),)
+    ARCH_STR=aarch64
+    SVX=system-vxworks7
+    EH_MECHANISM=-gcc
+    SIGTRAMP_OBJ=sigtramp-vxworks.o
   else
-     SVX=system-vxworks
-     EH_MECHANISM=-gcc
-     SIGTRAMP_OBJ=sigtramp-vxworks.o
+    ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
+      ARCH_STR=arm
+      ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
+        SVX=system-vxworks7
+        EH_MECHANISM=-arm
+        SIGTRAMP_OBJ=sigtramp-armvxworks.o
+      else
+        SVX=system-vxworks
+        EH_MECHANISM=-gcc
+        SIGTRAMP_OBJ=sigtramp-vxworks.o
+      endif
+    else
+      ARCH_STR=coff
+    endif
   endif
 
   LIBGNAT_TARGET_PAIRS = \
@@ -793,7 +805,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
   s-taprop.adb<libgnarl/s-taprop__vxworks.adb \
   s-tasinf.ads<libgnarl/s-tasinf__vxworks.ads \
   s-taspri.ads<libgnarl/s-taspri__vxworks.ads \
-  s-vxwork.ads<libgnarl/s-vxwork__arm.ads \
+  s-vxwork.ads<libgnarl/s-vxwork__$(ARCH_STR).ads \
   g-socthi.ads<libgnat/g-socthi__vxworks.ads \
   g-socthi.adb<libgnat/g-socthi__vxworks.adb \
   g-stsifd.adb<libgnat/g-stsifd__sockets.adb
@@ -806,7 +818,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     s-vxwext.ads<libgnarl/s-vxwext__rtp.ads \
     s-vxwext.adb<libgnarl/s-vxwext__rtp-smp.adb \
     s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
-    system.ads<libgnat/$(SVX)-arm-rtp-smp.ads
+    system.ads<libgnat/$(SVX)-$(ARCH_STR)-rtp-smp.ads
 
     EXTRA_LIBGNAT_OBJS+=affinity.o
 
@@ -819,7 +831,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
       s-tpopsp.adb<libgnarl/s-tpopsp__vxworks-tls.adb \
       s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
       s-vxwext.adb<libgnarl/s-vxwext__kernel-smp.adb \
-      system.ads<libgnat/$(SVX)-arm.ads
+      system.ads<libgnat/$(SVX)-$(ARCH_STR).ads
 
       EXTRA_LIBGNAT_OBJS+=affinity.o
 
@@ -828,7 +840,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     else
       LIBGNAT_TARGET_PAIRS += \
       s-tpopsp.adb<libgnarl/s-tpopsp__vxworks.adb \
-      system.ads<libgnat/$(SVX)-arm.ads
+      system.ads<libgnat/$(SVX)-$(ARCH_STR).ads
 
       ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
@@ -847,15 +859,20 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
-  ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
+  ifeq ($(strip $(filter-out arm vxworks7%, $(target_cpu) $(target_os))),)
     GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
   else
+    ifeq ($(strip $(filter-out aarch64, $(target_cpu))),)
+      GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
+    endif
     EXTRA_ADALIB_OBJS+=$(VX_CRTBE_EXTRA_ADALIB_OBJS)
     EXTRA_LIBGNAT_SRCS+=vx_crtbegin.inc
     GCC_SPEC_FILES+=vxworks-gnat-crtbe-link.spec
 
-    GCC_SPEC_FILES+=vxworks-arm-link.spec
-    GCC_SPEC_FILES+=vxworks-smp-arm-link.spec
+    ifneq ($(strip $(filter-out vxworks7%, $(target_os))),)
+      GCC_SPEC_FILES+=vxworks-arm-link.spec
+      GCC_SPEC_FILES+=vxworks-smp-arm-link.spec
+    endif
   endif
 endif
 
@@ -2094,7 +2111,7 @@ TOOLS_FLAGS_TO_PASS=		\
 	"GNATLINK=$(GNATLINK)"	\
 	"GNATBIND=$(GNATBIND)"
 
-GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(ADA_INCLUDES) $(LDFLAGS)
+GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(LDFLAGS)
 
 # Build directory for the tools. Let's copy the target-dependent
 # sources using the same mechanism as for gnatlib. The other sources are
@@ -2166,40 +2183,42 @@ common-tools: ../stamp-tools
 	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatxref gnatfind gnatname \
 	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
 	$(GNATLINK) -v gnatcmd -o ../../gnat$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatchop -o ../../gnatchop$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatkr -o ../../gnatkr$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatls -o ../../gnatls$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatxref -o ../../gnatxref$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatfind -o ../../gnatfind$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatname -o ../../gnatname$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../gnatdll$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
-	$(GNATLINK) -v gnatdll -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatdll -o $@ \
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../vxaddr2line$(exeext): ../stamp-tools
 	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line
-	$(GNATLINK) -v vxaddr2line -o $@ --GCC="$(GCC_LINK)" ../targext.o $(CLIB)
+	$(GNATLINK) -v vxaddr2line -o $@ \
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" ../targext.o $(CLIB)
 
 gnatmake-re: ../stamp-tools
 	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake
 	$(GNATLINK) -v gnatmake -o ../../gnatmake$(exeext) \
-		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 # Note the use of the "mv" command in order to allow gnatlink to be linked with
 # with the former version of gnatlink itself which cannot override itself.
@@ -2209,7 +2228,7 @@ gnatlink-re: ../stamp-tools gnatmake-re
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
-		    --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(MV)  ../../gnatlinknew$(exeext)  ../../gnatlink$(exeext)
 
 # Needs to be built with CC=gcc

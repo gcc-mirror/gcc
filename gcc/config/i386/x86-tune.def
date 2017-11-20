@@ -427,6 +427,10 @@ DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_store_optimal"
 DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2
 	  | m_ZNVER1)
 
+/* X86_TUNE_AVX256_OPTIMAL: Use 256-bit AVX instructions instead of 512-bit AVX
+   instructions in the auto-vectorizer.  */
+DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_SKYLAKE_AVX512)
+
 /*****************************************************************************/
 /* Historical relics: tuning flags that helps a specific old CPU designs     */
 /*****************************************************************************/

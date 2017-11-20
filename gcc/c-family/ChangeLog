@@ -1,3 +1,15 @@
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* c-common.h (c_fully_fold): Add LVAL argument defaulted to false.
+
+2017-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (-std=c17, std=gnu17, -std=iso9899:2017): Refer to 2018
+	expected publication date of C17.
+	(-std=c18, -std=gnu18, -std=iso9899:2018): New option aliases.
+
 2017-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/81156

@@ -1,11 +1,153 @@
+2017-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2353
+	* include/bits/stl_iterator_base_funcs.h (next):
+	Use InputIterator instead of ForwardIterator.
+	* testsuite/24_iterators/operations/lwg2353.cc: New.
+	* testsuite/24_iterators/operations/next_neg.cc: Remove.
+
+2017-11-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/pr66689 - comp_ellint_3 and ellint_3 return garbage values
+	* include/tr1/ell_integral.tcc: Correct the nu sign convention
+	in ellint_3 and comp_ellint_3.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/check_value.cc: Regen with correct values.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/06_comp_ellint_3/check_value.cc: Ditto.
+	* testsuite/special_functions/13_ellint_3/check_value.cc: Ditto.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	02_assoc_legendre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	03_beta/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	04_comp_ellint_1/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	07_conf_hyperg/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	08_cyl_bessel_i/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	11_cyl_neumann/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	12_ellint_1/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	13_ellint_2/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	15_expint/check_value_neg.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	16_hermite/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	17_hyperg/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	18_laguerre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	19_legendre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	20_riemann_zeta/check_value_neg.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	21_sph_bessel/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	22_sph_legendre/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	23_sph_neumann/check_value.cc: Regen.
+	* testsuite/ext/special_functions/conf_hyperg/check_value.cc: Regen.
+	* testsuite/ext/special_functions/hyperg/check_value.cc: Regen.
+	* testsuite/special_functions/01_assoc_laguerre/check_value.cc: Regen.
+	* testsuite/special_functions/02_assoc_legendre/check_value.cc: Regen.
+	* testsuite/special_functions/03_beta/check_value.cc: Regen.
+	* testsuite/special_functions/04_comp_ellint_1/check_value.cc: Regen.
+	* testsuite/special_functions/05_comp_ellint_2/check_value.cc: Regen.
+	* testsuite/special_functions/07_cyl_bessel_i/check_value.cc: Regen.
+	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Regen.
+	* testsuite/special_functions/09_cyl_bessel_k/check_value.cc: Regen.
+ 	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Regen.
+	* testsuite/special_functions/11_ellint_1/check_value.cc: Regen.
+	* testsuite/special_functions/12_ellint_2/check_value.cc: Regen.
+	* testsuite/special_functions/14_expint/check_value.cc: Regen.
+	* testsuite/special_functions/15_hermite/check_value.cc: Regen.
+	* testsuite/special_functions/16_laguerre/check_value.cc: Regen.
+	* testsuite/special_functions/17_legendre/check_value.cc: Regen.
+	* testsuite/special_functions/18_riemann_zeta/check_value.cc: Regen.
+	* testsuite/special_functions/19_sph_bessel/check_value.cc: Regen.
+	* testsuite/special_functions/20_sph_legendre/check_value.cc: Regen.
+	* testsuite/special_functions/21_sph_neumann/check_value.cc: Regen.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	06_comp_ellint_3/pr66689.cc: New.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	14_ellint_3/pr66689.cc: New.
+	* testsuite/special_functions/06_comp_ellint_3/pr66689.cc: New.
+	* testsuite/special_functions/13_ellint_3/pr66689.cc: New.
+
+2017-11-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	Expose Airy functions as an extenaion.
+	* include/bits/specfun.h: Expose airy_ai and airy_bi.
+	* include/tr1/modified_bessel_func.tcc: Treat NaN and inf arg, return.
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: New.
+	* testsuite/ext/special_functions/airy_ai/check_value.cc: New.
+	* testsuite/ext/special_functions/airy_ai/compile.cc: New.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: New.
+	* testsuite/ext/special_functions/airy_bi/check_value.cc: New.
+	* testsuite/ext/special_functions/airy_bi/compile.cc: New.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* acinclude.m4: Add cet.m4.
+	* configure.ac: Set CET_FLAGS. Update EXTRA_CFLAGS,
+	EXTRA_CXX_FLAGS.
+	* libsupc++/Makefile.am: Use Add EXTRA_CFLAGS.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* doc/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* python/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* src/c++11/Makefile.in: Likewise.
+	* src/c++98/Makefile.in: Likewise.
+	* src/filesystem/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2017-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83025
+	* include/std/fstream (basic_filebuf::_If_path): Move to
+	namespace-scope and rename to _If_fs_path.
+	(basic_filebuf::open): Use new name.
+	(basic_ifstream(_Path, ios::openmode))
+	(basic_ifstream::open(_Path, ios::openmode))
+	(basic_ofstream(_Path, ios::openmode))
+	(basic_ofstream::open(_Path, ios::openmode))
+	(basic_fstream(_Path, ios::openmode))
+	(basic_fstream::open(_Path, ios::openmode)): Use _If_fs_path.
+	* testsuite/27_io/basic_filebuf/open/char/path.cc: Test with filename
+	as non-const char*.
+	* testsuite/27_io/basic_fstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_fstream/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/char/path.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/path.cc: Likewise.
+
+
+2017-11-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* include/bits/vector.tcc (vector::_M_realloc_insert): Cache old
+	values before the allocation.
+
 2017-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (shared_future): Add noexcept to copy constructor
 	and copy-assignment operator (LWG 2799).
-
-2017-11-15  Jason Merrill  <jason@redhat.com>
-
-	* include/std/numeric (gcd): Fix typo.
 
 2017-11-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 

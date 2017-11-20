@@ -657,11 +657,10 @@ inline_transform (struct cgraph_node *node)
     {
       profile_count num = node->count;
       profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-      bool scale = num.initialized_p () && den.ipa_p ()
-		   && (den.nonzero_p () || num == profile_count::zero ())
-		   && !(num == den.ipa ());
+      bool scale = num.initialized_p () && !(num == den);
       if (scale)
 	{
+	  profile_count::adjust_for_ipa_scaling (&num, &den);
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Applying count scale ");
@@ -672,11 +671,12 @@ inline_transform (struct cgraph_node *node)
 	    }
 
 	  basic_block bb;
+	  cfun->cfg->count_max = profile_count::uninitialized ();
 	  FOR_ALL_BB_FN (bb, cfun)
-	    if (num == profile_count::zero ())
-	      bb->count = bb->count.global0 ();
-	    else
+	    {
 	      bb->count = bb->count.apply_scale (num, den);
+	      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+	    }
 	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
 	}
       todo = optimize_inline_calls (current_function_decl);

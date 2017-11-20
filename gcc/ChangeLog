@@ -1,3 +1,525 @@
+2017-11-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-predcom.c: Add general comment on Store-Store chains.
+	(split_data_refs_to_components): Postpone clearing eliminate_store_p
+	flag in component.
+	(get_chain_last_ref_at): Rename into...
+	(get_chain_last_write_at): ...this.
+	(get_chain_last_write_before_load): New function.
+	(add_ref_to_chain): Promote type of chain from CT_STORE_LOAD to
+	CT_STORE_STORE when write reference is added.
+	(determine_roots_comp): Support load ref in CT_STORE_STORE chains.
+	(is_inv_store_elimination_chain): Update get_chain_last_write_at call.
+	(initialize_root_vars_store_elim_1): Ditto.
+	(initialize_root_vars_store_elim_2): Ditto.  Replace rhs once default
+	definition is created.
+	(execute_pred_commoning_chain): Support load ref in CT_STORE_STORE
+	chain by replacing it with dominant stored value.
+
+2017-11-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-predcom.c (add_ref_to_chain): Remove check on distance.
+
+2017-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* vr-values.c (extract_range_from_binary_expr): Use a full range
+	for VR_VARYING.
+
+2017-11-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.md (R4_REGNUM): Define constant.
+	(nonsecure_call_internal): Remove r4 clobber.
+	(nonsecure_call_value_internal): Likewise.
+	* config/arm/thumb1.md (nonsecure_call_reg_thumb1_v5): Remove second
+	clobber and resequence match_operands.
+	(nonsecure_call_value_reg_thumb1_v5): Likewise.
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2): Likewise.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_load): Give up
+	if base is TARGET_MEM_REF.  If base is not MEM_REF, set base_addr
+	to the address of the base rather than the base itself.
+	(find_bswap_or_nop_1): Just use pointer comparison for vuse check.
+	(find_bswap_or_nop_finalize): New function.
+	(find_bswap_or_nop): Use it.
+	(bswap_replace): Return a tree rather than bool, change first
+	argument from gimple * to gimple_stmt_iterator, allow inserting
+	into an empty sequence, allow ins_stmt to be NULL - then emit
+	all stmts into gsi.  Fix up MEM_REF address gimplification.
+	(pass_optimize_bswap::execute): Adjust bswap_replace caller.
+	(struct store_immediate_info): Add N and INS_STMT non-static
+	data members.
+	(store_immediate_info::store_immediate_info): Initialize them
+	from newly added ctor args.
+	(merged_store_group::apply_stores): Formatting fixes.  Sort by
+	bitpos at the end.
+	(stmts_may_clobber_ref_p): For stores call also
+	refs_anti_dependent_p.
+	(gather_bswap_load_refs): New function.
+	(imm_store_chain_info::try_coalesce_bswap): New method.
+	(imm_store_chain_info::coalesce_immediate_stores): Use it.
+	(split_group): Handle LROTATE_EXPR and NOP_EXPR rhs_code specially.
+	(imm_store_chain_info::output_merged_store): Fail if number of
+	new estimated stmts is bigger or equal than old.  Handle LROTATE_EXPR
+	and NOP_EXPR rhs_code.
+	(pass_store_merging::process_store): Compute n and ins_stmt, if
+	ins_stmt is non-NULL and the store rhs is otherwise invalid, use
+	LROTATE_EXPR rhs_code.  Pass n and ins_stmt to store_immediate_info
+	ctor.
+	(pass_store_merging::execute): Calculate dominators.
+
+	* tree-ssa-math-opts.c (nop_stats, bswap_stats, struct symbolic_number,
+	BITS_PER_MARKER, MARKER_MASK, MARKER_BYTE_UNKNOWN, HEAD_MARKER, CMPNOP,
+	CMPXCHG, do_shift_rotate, verify_symbolic_number_p,
+	init_symbolic_number, find_bswap_or_nop_load, perform_symbolic_merge,
+	find_bswap_or_nop_1, find_bswap_or_nop, pass_data_optimize_bswap,
+	class pass_optimize_bswap, bswap_replace,
+	pass_optimize_bswap::execute): Moved to ...
+	* gimple-ssa-store-merging.c: ... this file.
+	Include optabs-tree.h.
+	(nop_stats, bswap_stats, do_shift_rotate, verify_symbolic_number_p,
+	init_symbolic_number, find_bswap_or_nop_load, perform_symbolic_merge,
+	find_bswap_or_nop_1, find_bswap_or_nop, bswap_replace): Put into
+	anonymous namespace, remove static keywords.
+	(pass_optimize_bswap::gate): Test BITS_PER_UNIT == 8 here...
+	(pass_optimize_bswap::execute): ... rather than here.  Formatting fix.
+
+2017-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/83062
+	* ipa-inline.c (can_inline_edge_p): Fix typo in previous patch.
+
+2017-11-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vec.h (debug_helper): New function.
+	(DEFINE_DEBUG_VEC): New macro.
+	* hash-set.h (debug_helper): New function.
+	(DEFINE_DEBUG_HASH_SET): New macro.
+	* cfg.c (debug_slim (edge)): New function.
+	Call DEFINE_DEBUG_VEC for edges.
+	Call DEFINE_DEBUG_HASH_SET for edges.
+	* cfghooks.c (debug_slim (basic_block)): New function.
+	Call DEFINE_DEBUG_VEC for basic blocks.
+	Call DEFINE_DEBUG_HASH_SET for basic blocks.
+	* print-tree.c (debug_slim): New function to handle trees.
+	Call DEFINE_DEBUG_VEC for trees.
+	Call DEFINE_DEBUG_HASH_SET for trees.
+	(debug (vec<tree, va_gc>) &): Remove.
+	(debug (<vec<tree, va_gc>) *): Remove.
+	* print-rtl.c (debug_slim): New function to handle const_rtx.
+	Call DEFINE_DEBUG_VEC for rtx_def.
+	Call DEFINE_DEBUG_VEC for rtx_insn.
+	Call DEFINE_DEBUG_HASH_SET for rtx_def.
+	Call DEFINE_DEBUG_HASH_SET for rtx_insn.
+	* sel-sched-dump.c (debug (vec<rtx_insn *> &): Remove.
+	(debug (vec<rtx_insn *> *ptr): Remove.
+	(debug_insn_vector): Remove.
+	* stor-layout.c (debug_rli): Call debug() instead of debug_vec_tree.
+
+2017-11-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/82020
+	* simplify-rtx.c (simplify_ternary_operation): Fix comparison mode of
+	IF_THEN_ELSE condition.
+
+2017-11-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_equivalences_from_phis): Fix handling
+	of degenerates resulting from ignoring an edge.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81360
+	* ipa-inline.c (can_inline_edge_p): Also check that caller is optimized
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/83001
+	* profile-count.c (profile_count::to_sreal_scale): Fix return value
+	for uninitialied counts.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60243
+	* tree-inline.c (estimate_num_insns): Set to 1 at least.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/82713
+	* i386.c (ix86_builtin_vectorization_cost): Be ready for insane
+	types.
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/arc/arc.h (FUNCTION_PROFILER): Remove semicolon after
+	"do while (0)".
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/phoenix.h (TARGET_OS_CPP_BUILTINS): Remove semicolon after
+	"do {} while (0)".
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/visium/visium.h (ASM_OUTPUT_CASE_END): Remove semicolon after
+	macro body.
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/ft32/ft32.h (REGISTER_TARGET_PRAGMAS): Remove semicolon after
+	"do {} while (0)".
+	* config/spu/spu.h (REGISTER_TARGET_PRAGMAS): Same.
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	* config/mcore/mcore-elf.h (MCORE_EXPORT_NAME): Remove semicolon after
+	"do {} while (0)".
+	* config/mcore/mcore.h (ASM_OUTPUT_ALIGNED_COMMON): After missing
+	semicolon after MCORE_EXPORT_NAME call.
+
+2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/82961
+	* vmsdbgout.c (vmsdbgout_early_finish): New function.
+	(vmsdbg_debug_hooks): Set early_finish field to vmsdbgout_early_finish.
+
+2017-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphclones.c (cgraph_edge::clone): Rename gcov_count to prof_count.
+	(cgraph_edge::clone): Cleanup updating of profile.
+	* ipa-cp.c (update_profiling_info): Likewise.
+	* ipa-inline-transform.c (inline_transform): Likewise.
+	* ipa-inline.c (inline_small_functions): Add missing space to dump.
+	* ipa-split.c (execute_split_functions): Do not split when function
+	is cold.
+	* predict.c (estimate_bb_frequencies): Cleanup updating of profile.
+	* profile-count.c (profile_count::dump): Add global0.
+	(profile_count::to_cgraph_frequency): Do not ICE when entry is
+	undefined.
+	(profile_count::to_sreal_scale): Likewise.
+	(profile_count::adjust_for_ipa_scaling): Fix typo in comment.
+	(profile_count::combine_with_ipa_count): New function.
+	* profile-count.h (profile_guessed_global0adjusted): New.
+	(profile_count::adjusted_zero): New.
+	(profile_count::global0adjusted): New.
+	(profile_count::combine_with_ipa_count): New.
+	* tree-inline.c (copy_edges_for_bb): Add NUM/DEN arugment;
+	correct profile of return block of split functions.
+	(copy_cfg_body): Remove unused profile_count.
+	(copy_body): Likewise.
+	(expand_call_inline): Update.
+	(tree_function_versioning): Update.
+
+2017-11-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* hash-set.h (hash_set::empty): New.
+	* tree-ssa-threadbackward.h: Delete.
+	* tree-ssa-threadbackward.c (class thread_jumps): New.
+	Move max_threaded_paths into class.
+	(fsm_find_thread_path): Remove arguments that are now in class.
+	(profitable_jump_thread_path): Rename to...
+	(thread_jumps::profitable_jump_thread_path): ...this.
+	(convert_and_register_jump_thread_path): Rename to...
+	(thread_jumps::convert_and_register_current_path): ...this.
+	(check_subpath_and_update_thread_path): Rename to...
+	(thread_jumps::check_subpath_and_update_thread_path): ...this.
+	(register_jump_thread_path_if_profitable): Rename to...
+	(thread_jumps::register_jump_thread_path_if_profitable): ...this.
+	(handle_phi): Rename to...
+	(thread_jumps::handle_phi): ...this.
+	(handle_assignment): Rename to...
+	(thread_jumps::handle_assignment): ...this.
+	(fsm_find_control_statement_thread_paths): Rename to...
+	(thread_jumps::fsm_find_control_statement_thread_paths): ...this.
+	(find_jump_threads_backwards): Rename to...
+	(thread_jumps::find_jump_threads_backwards): ...this.
+	Initialize path local data.
+	(pass_thread_jumps::execute): Call find_jump_threads_backwards
+	from within thread_jumps class.
+	(pass_early_thread_jumps::execute): Same.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::dump): Do IPA sanity checking on IPA counts.
+
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/aarch64-simd.md (fnma<mode>4): Move neg operator
+	to canonical location.
+
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/81356
+	* config/aarch64/aarch64.c (aarch64_use_by_pieces_infrastructure_p):
+	Remove.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Remove define.
+
+2017-11-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Use
+	rcrt1.o%s/grcrt1.o%s for -static-pie.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.c (ix86_multiplication_cost, ix86_division_cost,
+	ix86_shift_rotate_cost): Break out from ...
+	(ix86_rtx_costs): ... here.
+	(ix86_add_stmt_cost): Use rtx cost machinery to compute cost of
+	vector operations.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (determine_unlikely_bbs): Set cgraph node count to 0
+	when entry block was promoted unlikely.
+	(estimate_bb_frequencies): Increase frequency scale.
+	* profile-count.h (profile_count): Export precision info.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-tailcall.c (eliminate_tail_call): Be more careful about not
+	disturbin profile of entry block.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (estimate_node_size_and_time): Be more tolerant for
+	roundoff errors.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (update_profiling_info): Handle conversion to local
+	profile.
+	* tree-cfg.c (execute_fixup_cfg): Do fixup same way as inliner does.
+
+2017-11-17  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-evrp.c (class evrp_range_analyzer): New class extracted
+	from evrp_dom_walker class.  Various methods moved into new class.
+	(evrp_range_analyzer::evrp_range_analyzer): Constructor for new class.
+	(evrp_range_analyzer::enter): New method.
+	(evrp_range_analyzer::leave): New method.
+	(evrp_dom_walker): Remove delegators no longer needed by this class.
+	Replace vr_values data member with evrp_range_analyzer
+
+	* gimple-ssa-evrp.c (evrp_dom_walker::record_ranges_from_phis): New
+	method extracted from evrp_dom_walker::before_dom_children.
+	(evrp_dom_walker::record_ranges_from_stmt): Likewise.
+	(evrp_dom_walker::record_ranges_from_incoming_edge): Likewise.
+
+	* gimple-ssa-evrp.c (evrp_dom_walker): Add cleanup method.
+	Add private copy constructor and move assignment operators.
+	Privatize methods and class data where trivially possible.
+	(evrp_dom_walker::cleanup): New function, extracted from
+	execute_early_vrp.  Simplify access to class data.
+
+	* vr-values.h (get_output_for_vrp): Prototype.
+	* vr-values.c (get_output_for_vrp): New function extracted from
+	vrp_visit_assignment_or_call and extract_range_from_stmt.
+	(vrp_visit_assignment_or_call): Use get_output_for_vrp.  Simplify.
+
+2017-11-17  Luis Machado  <luis.machado@linaro.org>
+
+	* config/aarch64/aarch64.c
+	(qdf24xx_prefetch_tune) <default_opt_level>: Set to -1.
+	(qdf24xx_tunings) <autoprefetcher_model>: Set to
+	tune_params::AUTOPREFETCHER_WEAK.
+
+2017-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm.c (arm_valid_target_attribute_rec):
+	Parse "arch=" and "+<ext>".
+	(arm_valid_target_attribute_tree): Re-init global options.
+	(arm_option_override): Make non-static.
+	(arm_options_perform_arch_sanity_checks): Make errors fatal.
+	* gcc/config/arm/arm-c.c (__ARM_FEATURE_CMSE): Support undef.
+	(__ARM_FEATURE_CRC32): Support undef.
+	* config/arm/arm_acle.h (__ARM_FEATURE_CRC32): Replace with pragma.
+	* doc/extend.texi (ARM Function Attributes): Add pragma and target.
+
+2017-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbinit.in (break-on-diagnostic): New command.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config/i386/i386.c (ix86_expand_epilogue): Change simple
+	return to indirect jump for EH return if control-flow
+	protection is enabled. Change explicit 'false' argument in
+	pro_epilogue_adjust_stack with a value of
+	flag_cf_protection.
+	* config/i386/i386.md (simple_return_indirect_internal):
+	Remove SImode restriction to support 64-bit.
+
+2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (added_notes_insn): New.
+	(try_combine): Handle added_notes_insn like added_links_insn.
+	Rewrite return value code.
+	(distribute_notes): Set added_notes_insn to the earliest insn we added
+	a note to.
+
+2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/82621
+	* combine.c (try_combine): Do not split PARALLELs of two SETs if the
+	dest of one of those SETs is unused.
+
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/83017
+	* tree-core.h (enum annot_expr_kind): Add annot_expr_parallel_kind.
+	* tree-pretty-print.c (dump_generic_node): Handle
+	annot_expr_parallel_kind.
+	* tree-cfg.c (replace_loop_annotate_in_block): Likewise.
+	* gimplify.c (gimple_boolify): Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config.gcc (extra_headers): Add cet.h for x86 targets.
+	* config/i386/cet.h: New file.
+	* doc/install.texi: Add --enable-cet/--disable-cet.
+
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83017
+	* tree-parloops.c (MIN_PER_THREAD): Use --param parloops-min-per-thread.
+	(gen_parallel_loop): Properly count iterations.
+	(parallelize_loops): Handle loop->can_be_parallel independent
+	of flag_loop_parallelize_all.  Make static profitability test match
+	the runtime one.
+	* params.def (PARAM_PARLOOPS_MIN_PER_THREAD): New.
+	* invoke.texi (parloops-min-per-thread): Document.
+
+2017-11-17  Vineet Gupta  <vgupta@synopsys.com>
+
+	* config/arc/linux.h: GLIBC_DYNAMIC_LINKER update per glibc
+	upstreaming review comments.
+
+2017-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* expr.c (copy_blkmode_to_reg): Fix bitsize for targets
+	with fast unaligned access.
+	* doc/sourcebuild.texi (word_mode_no_slow_unalign): New.
+
+2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (cmse_nonsecure_entry_clear_before_return): Allocate
+	to_clear_arg_regs_bitmap to the same size as to_clear_bitmap.
+
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (phi_translate_1): Remove redundant constant
+	folding of references.
+
+2017-11-17  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	* gimple-fold.c (gimple_fold_builtin_string_compare): Add handling
+	of replacing call to strncmp with corresponding call to strcmp when
+	meeting conditions.
+
+2017-11-17  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_OPTIMAL): Add tuning
+	option prefer-avx256 for skylake-avx512 configuration.
+	* config/i386/i386.c (ix86_option_override_internal): Ditto.
+	(get_builtin_code_for_version): Ditto.
+
+2017-11-17  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.h (FIRST_PSEUDO_REGISTER): Modify.
+	(FIXED_REGISTERS): Reserve more register numbers.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGISTER_NAMES): Likewise.
+
+2017-11-17  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/nds32-modes.def: Add vector mode V4QI V2HI V8QI V4HI
+	V2SI.
+	* config/nds32/iterators.md: Add vector mode iterators and attributes.
+
+2017-11-16  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config/rs6000/mmintrin.h (_mm_add_pi32[_ARCH_PWR]): Correct
+	parameter list for vec_splats.
+
+2017-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-std=c17): Refer to 2018 expected publication
+	date of C17.
+	(-std=c18, -std=iso9899:2018, -std=gnu18): Document option
+	aliases.
+
+2017-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR bootstrap/82856
+	* doc/install.texi: Document incompatibility of Perl >=5.6.26
+	with the required version of automake 1.11.6.
+
+2017-11-16  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* rs6000/power9.md (power9fpdiv): New automaton and cpu_unit defined
+	for it.
+	(DU_C2_3_power9): Correct reservation combinations.
+	(FP_DIV_power9, VEC_DIV_power9): New.
+	(power9-alu): Split out rotate/shift...
+	(power9-rot): ...to here, correct dispatch resource.
+	(power9-cracked-alu, power9-mul, power9-mul-compare): Correct dispatch
+	resource.
+	(power9-fp): Correct latency.
+	(power9-sdiv): Add div/sqrt resource.
+	(power9-ddiv): Correct latency, add div/sqrt resource.
+	(power9-sqrt, power9-dsqrt): Add div/sqrt resource.
+	(power9-vecfdiv, power9-vecdiv): Correct latency, add div/sqrt
+	resource.
+	(power9-qpdiv, power9-qpmul): Adjust resource usage.
+
+2017-11-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Do not do the
+	switch statement mapping KF built-ins to TF built-ins if we don't
+	have the proper ISA 3.0 assembler support.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-emutls.c (lower_emutls_data): Remove unused bb_freq.
+	(lower_emutls_function_body): Do not compute it.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-split.c (split_bb_info): Turn time to sreal.
+	(split_point): Likewise.
+	(dump_split_point): Likewise.
+	(fine_split_points): Likewise.
+	(execute_split_functions): Only zero split_bbs; turn time to sreals.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (analyze_function_body): Accumulate time consistently
+	in sreal.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (combine_predictions_for_bb): Preserve zero predicted	
+	eges.
+	(expensive_function_p): Remove useless assert.
+	(determine_unlikely_bbs): Propagate also forward; determine cold blocks
+
+2017-11-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82588
+	PR tree-optimization/82583
+	* tree-vrp.c (check_array_ref): Handle flexible array members,
+	string literals, and inner indices.
+	(search_for_addr_array): Add detail to diagnostics.
+
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82836

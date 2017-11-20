@@ -151,7 +151,12 @@ case "${host}" in
 esac
 AC_SUBST(extra_ldflags_libobjc)
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+XCFLAGS="$XCFLAGS $CET_FLAGS"
+
 AC_SUBST(CFLAGS)
+AC_SUBST(XCFLAGS)
 
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)

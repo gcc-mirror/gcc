@@ -1,3 +1,48 @@
+2017-11-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR bootstrap/83015
+	* config/cr16/unwind-cr16.c (uw_install_context): Add FRAMES
+	parameter.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise
+	* config/ia64/unwind-ia64.c: Add frames parameter.
+	* unwind-sjlj.c: Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config/i386/linux-unwind.h: Include
+	config/i386/shadow-stack-unwind.h.
+	* config/i386/shadow-stack-unwind.h: New file.
+	* unwind-dw2.c: (uw_install_context): Add a frame parameter and
+	pass it to _Unwind_Frames_Extra.
+	* unwind-generic.h (_Unwind_Frames_Extra): New.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Add frames_p
+	parameter. Add local variable frames to count number of frames.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	(_Unwind_RaiseException): Add local variable frames to count
+	number of frames, pass it to _Unwind_RaiseException_Phase2 and
+	uw_install_context.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in (configure_deps): Add $(srcdir)/../config/cet.m4.
+	(CET_FLAGS): New.
+	* config/i386/morestack.S: Include <cet.h>.
+	(__morestack_large_model): Add _CET_ENDBR at function entrance.
+	* config/i386/resms64.h: Include <cet.h>.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/savms64.h: Likewise.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): Add $(CET_FLAGS).
+	(CRTSTUFF_T_CFLAGS): Likewise.
+	* configure.ac: Include ../config/cet.m4.
+	Set and substitute CET_FLAGS.
+	* configure: Regenerated.
+
 2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (*-*-solaris2*): Adapt comment for Solaris 12

@@ -1986,7 +1986,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
      <0,2>.  */
   basic_block bb;
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
-  int freq;
+  sreal freq;
   struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
   predicate bb_predicate;
   struct ipa_func_body_info fbi;
@@ -2052,7 +2052,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
   for (n = 0; n < nblocks; n++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, order[n]);
-      freq = compute_call_stmt_bb_frequency (node->decl, bb);
+      freq = bb->count.to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
       if (clobber_only_eh_bb_p (bb))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2127,7 +2127,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	      fprintf (dump_file, "  ");
 	      print_gimple_stmt (dump_file, stmt, 0);
 	      fprintf (dump_file, "\t\tfreq:%3.2f size:%3i time:%3i\n",
-		       ((double) freq) / CGRAPH_FREQ_BASE, this_size,
+		       freq.to_double (), this_size,
 		       this_time);
 	    }
 
@@ -2201,7 +2201,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	    will_be_nonconstant = true;
 	  if (this_time || this_size)
 	    {
-	      this_time *= freq;
+	      sreal final_time = (sreal)this_time * freq;
 
 	      prob = eliminated_by_inlining_prob (stmt);
 	      if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
@@ -2218,7 +2218,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 
 	      if (*(is_gimple_call (stmt) ? &bb_predicate : &p) != false)
 		{
-		  time += this_time;
+		  time += final_time;
 		  size += this_size;
 		}
 
@@ -2231,14 +2231,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    {
 		      predicate ip = bb_predicate & predicate::not_inlined ();
 		      info->account_size_time (this_size * prob,
-					       (sreal)(this_time * prob)
-					       / (CGRAPH_FREQ_BASE * 2), ip,
+					       (this_time * prob) / 2, ip,
 					       p);
 		    }
 		  if (prob != 2)
 		    info->account_size_time (this_size * (2 - prob),
-					     (sreal)(this_time * (2 - prob))
-					      / (CGRAPH_FREQ_BASE * 2),
+					     (this_time * (2 - prob) / 2),
 					     bb_predicate,
 					     p);
 		}
@@ -2256,7 +2254,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	}
     }
   set_hint_predicate (&ipa_fn_summaries->get (node)->array_index, array_index);
-  time = time / CGRAPH_FREQ_BASE;
   free (order);
 
   if (nonconstant_names.exists () && !early)
@@ -2747,7 +2744,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
   gcc_checking_assert (time >= 0);
   /* nonspecialized_time should be always bigger than specialized time.
      Roundoff issues however may get into the way.  */
-  gcc_checking_assert ((nonspecialized_time - time) >= -1);
+  gcc_checking_assert ((nonspecialized_time - time * 0.99) >= -1);
 
   /* Roundoff issues may make specialized time bigger than nonspecialized
      time.  We do not really want that to happen because some heurstics

@@ -3297,6 +3297,7 @@ arm_configure_build_target (struct arm_build_target *target,
   target->tune_flags = tune_data->tune_flags;
   target->tune = tune_data->tune;
   target->tune_core = tune_data->scheduler;
+  arm_option_reconfigure_globals ();
 }
 
 /* Fix up any incompatible options that the user has specified.  */
@@ -25205,7 +25206,8 @@ cmse_nonsecure_entry_clear_before_return (void)
   if (padding_bits_to_clear != 0)
     {
       rtx reg_rtx;
-      auto_sbitmap to_clear_arg_regs_bitmap (R0_REGNUM + NUM_ARG_REGS);
+      int to_clear_bitmap_size = SBITMAP_SIZE ((sbitmap) to_clear_bitmap);
+      auto_sbitmap to_clear_arg_regs_bitmap (to_clear_bitmap_size);
 
       /* Padding bits to clear is not 0 so we know we are dealing with
 	 returning a composite type, which only uses r0.  Let's make sure that
@@ -30652,7 +30654,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 	  if (! opt_enum_arg_to_value (OPT_mfpu_, q+4,
 				       &fpu_index, CL_TARGET))
 	    {
-	      error ("invalid fpu for attribute(target(\"%s\"))", q);
+	      error ("invalid fpu for target attribute or pragma %qs", q);
 	      return false;
 	    }
 	  if (fpu_index == TARGET_FPU_auto)
@@ -30665,9 +30667,29 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 	    }
 	  opts->x_arm_fpu_index = (enum fpu_type) fpu_index;
 	}
+      else if (!strncmp (q, "arch=", 5))
+	{
+	  char* arch = q+5;
+	  const arch_option *arm_selected_arch
+	     = arm_parse_arch_option_name (all_architectures, "arch", arch);
+
+	  if (!arm_selected_arch)
+	    {
+	      error ("invalid architecture for target attribute or pragma %qs",
+		     q);
+	      return false;
+	    }
+
+	  opts->x_arm_arch_string = xstrndup (arch, strlen (arch));
+	}
+      else if (q[0] == '+')
+	{
+	  opts->x_arm_arch_string
+	    = xasprintf ("%s%s", opts->x_arm_arch_string, q);
+	}
       else
 	{
-	  error ("attribute(target(\"%s\")) is unknown", q);
+	  error ("unknown target attribute or pragma %qs", q);
 	  return false;
 	}
     }
@@ -30689,7 +30711,10 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   cl_target_option_save (&cl_opts, opts);
   arm_configure_build_target (&arm_active_target, &cl_opts, opts_set, false);
   arm_option_check_internal (opts);
-  /* Do any overrides, such as global options arch=xxx.  */
+  /* Do any overrides, such as global options arch=xxx.
+     We do this since arm_active_target was overridden.  */
+  arm_option_reconfigure_globals ();
+  arm_options_perform_arch_sanity_checks ();
   arm_option_override_internal (opts, opts_set);
 
   return build_target_option_node (opts);

@@ -463,8 +463,8 @@ _mm_add_pi32 (__m64 __m1, __m64 __m2)
 #if _ARCH_PWR9
   __vector signed int a, b, c;
 
-  a = (__vector signed int)vec_splats (__m1, __m1);
-  b = (__vector signed int)vec_splats (__m2, __m2);
+  a = (__vector signed int)vec_splats (__m1);
+  b = (__vector signed int)vec_splats (__m2);
   c = vec_add (a, b);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 0));
 #else

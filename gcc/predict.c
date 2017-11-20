@@ -1118,18 +1118,26 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
   int nedges = 0;
   edge e, first = NULL, second = NULL;
   edge_iterator ei;
+  int nzero = 0;
+  int nunknown = 0;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!unlikely_executed_edge_p (e))
-      {
-	nedges ++;
-	if (first && !second)
-	  second = e;
-	if (!first)
-	  first = e;
-      }
-    else if (!e->probability.initialized_p ())
-      e->probability = profile_probability::never ();
+    {
+      if (!unlikely_executed_edge_p (e))
+        {
+	  nedges ++;
+	  if (first && !second)
+	    second = e;
+	  if (!first)
+	    first = e;
+        }
+      else if (!e->probability.initialized_p ())
+        e->probability = profile_probability::never ();
+     if (!e->probability.initialized_p ())
+        nunknown++;
+     else if (e->probability == profile_probability::never ())
+	nzero++;
+    }
 
   /* When there is no successor or only one choice, prediction is easy.
 
@@ -1283,8 +1291,27 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
     }
   clear_bb_predictions (bb);
 
-  if ((!bb->count.nonzero_p () || !first->probability.initialized_p ())
-      && !dry_run)
+
+  /* If we have only one successor which is unknown, we can compute missing
+     probablity.  */
+  if (nunknown == 1)
+    {
+      profile_probability prob = profile_probability::always ();
+      edge missing = NULL;
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->probability.initialized_p ())
+	  prob -= e->probability;
+	else if (missing == NULL)
+	  missing = e;
+	else
+	  gcc_unreachable ();
+       missing->probability = prob;
+    }
+  /* If nothing is unknown, we have nothing to update.  */
+  else if (!nunknown && nzero != (int)EDGE_COUNT (bb->succs))
+    ;
+  else if (!dry_run)
     {
       first->probability
 	 = profile_probability::from_reg_br_prob_base (combined_probability);
@@ -3334,16 +3361,11 @@ expensive_function_p (int threshold)
 {
   basic_block bb;
 
-  /* We can not compute accurately for large thresholds due to scaled
-     frequencies.  */
-  gcc_assert (threshold <= BB_FREQ_MAX);
-
   /* If profile was scaled in a way entry block has count 0, then the function
      is deifnitly taking a lot of time.  */
   if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.nonzero_p ())
     return true;
 
-  /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
   profile_count limit = ENTRY_BLOCK_PTR_FOR_FN
 			   (cfun)->count.apply_scale (threshold, 1);
   profile_count sum = profile_count::zero ();
@@ -3453,6 +3475,7 @@ determine_unlikely_bbs ()
 
       gcc_checking_assert (!bb->aux);
     }
+  propagate_unlikely_bbs_forward ();
 
   auto_vec<int, 64> nsuccs;
   nsuccs.safe_grow_cleared (last_basic_block_for_fn (cfun));
@@ -3498,7 +3521,6 @@ determine_unlikely_bbs ()
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (!(e->probability == profile_probability::never ()))
 	  {
-	    e->probability = profile_probability::never ();
 	    if (!(e->src->count == profile_count::zero ()))
 	      {
 	        nsuccs[e->src->index]--;
@@ -3507,6 +3529,21 @@ determine_unlikely_bbs ()
 	      }
 	  }
     }
+  /* Finally all edges from non-0 regions to 0 are unlikely.  */
+  FOR_ALL_BB_FN (bb, cfun)
+    if (!(bb->count == profile_count::zero ()))
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (!(e->probability == profile_probability::never ())
+	    && e->dest->count == profile_count::zero ())
+	   {
+	     if (dump_file && (dump_flags & TDF_DETAILS))
+	       fprintf (dump_file, "Edge %i->%i is unlikely because "
+		 	"it enters unlikely block\n",
+			bb->index, e->dest->index);
+	     e->probability = profile_probability::never ();
+	   }
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count == profile_count::zero ())
+    cgraph_node::get (current_function_decl)->count = profile_count::zero ();
 }
 
 /* Estimate and propagate basic block frequencies using the given branch
@@ -3530,7 +3567,11 @@ estimate_bb_frequencies (bool force)
         {
 	  real_values_initialized = 1;
 	  real_br_prob_base = REG_BR_PROB_BASE;
-	  real_bb_freq_max = BB_FREQ_MAX;
+	  /* Scaling frequencies up to maximal profile count may result in
+	     frequent overflows especially when inlining loops.
+	     Small scalling results in unnecesary precision loss.  Stay in
+	     the half of the (exponential) range.  */
+	  real_bb_freq_max = (uint64_t)1 << (profile_count::n_bits / 2);
 	  real_one_half = sreal (1, -1);
 	  real_inv_br_prob_base = sreal (1) / real_br_prob_base;
 	  real_almost_one = sreal (1) - real_inv_br_prob_base;
@@ -3566,15 +3607,15 @@ estimate_bb_frequencies (bool force)
          to outermost to examine frequencies for back edges.  */
       estimate_loops ();
 
-      bool global0 = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ()
-		     && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa_p ();
-
       freq_max = 0;
       FOR_EACH_BB_FN (bb, cfun)
 	if (freq_max < BLOCK_INFO (bb)->frequency)
 	  freq_max = BLOCK_INFO (bb)->frequency;
 
       freq_max = real_bb_freq_max / freq_max;
+      if (freq_max < 16)
+	freq_max = 16;
+      profile_count ipa_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ();
       cfun->cfg->count_max = profile_count::uninitialized ();
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
 	{
@@ -3583,10 +3624,8 @@ estimate_bb_frequencies (bool force)
 
 	  /* If we have profile feedback in which this function was never
 	     executed, then preserve this info.  */
-	  if (global0)
-	    bb->count = count.global0 ();
-	  else if (!(bb->count == profile_count::zero ()))
-	    bb->count = count.guessed_local ();
+	  if (!(bb->count == profile_count::zero ()))
+	    bb->count = count.guessed_local ().combine_with_ipa_count (ipa_count);
           cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
 	}
 

@@ -18918,6 +18918,7 @@ $ perl gnathtml.pl [ switches ] files
 
 
 
+
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node GNAT and Program Execution,Platform-Specific Information,GNAT Utility Programs,Top
@@ -29003,7 +29004,7 @@ using @code{pragma Warnings (Off)}.
 @end example
 
 Note that suppressing elaboration warnings does not eliminate run-time
-checks. The example above will still fail at runtime with an ABE.
+checks. The example above will still fail at run time with an ABE.
 @end table
 
 @node Summary of Procedures for Elaboration Control,Inspecting the Chosen Elaboration Order,Elaboration-related Compiler Switches,Elaboration Order Handling in GNAT

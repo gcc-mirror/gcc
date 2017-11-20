@@ -111,7 +111,7 @@ along with GCC; see the file COPYING3.  If not see
 struct split_bb_info
 {
   unsigned int size;
-  unsigned int time;
+  sreal time;
 };
 
 static vec<split_bb_info> bb_info_vec;
@@ -121,7 +121,8 @@ static vec<split_bb_info> bb_info_vec;
 struct split_point
 {
   /* Size of the partitions.  */
-  unsigned int header_time, header_size, split_time, split_size;
+  sreal header_time, split_time;
+  unsigned int header_size, split_size;
 
   /* SSA names that need to be passed into spit function.  */
   bitmap ssa_names_to_pass;
@@ -195,10 +196,11 @@ dump_split_point (FILE * file, struct split_point *current)
 {
   fprintf (file,
 	   "Split point at BB %i\n"
-	   "  header time: %i header size: %i\n"
-	   "  split time: %i split size: %i\n  bbs: ",
-	   current->entry_bb->index, current->header_time,
-	   current->header_size, current->split_time, current->split_size);
+	   "  header time: %f header size: %i\n"
+	   "  split time: %f split size: %i\n  bbs: ",
+	   current->entry_bb->index, current->header_time.to_double (),
+	   current->header_size, current->split_time.to_double (),
+	   current->split_size);
   dump_bitmap (file, current->split_bbs);
   fprintf (file, "  SSA names to pass: ");
   dump_bitmap (file, current->ssa_names_to_pass);
@@ -1034,7 +1036,8 @@ struct stack_entry
   int earliest;
 
   /* Overall time and size of all BBs reached from this BB in DFS walk.  */
-  int overall_time, overall_size;
+  sreal overall_time;
+  int overall_size;
 
   /* When false we can not split on this BB.  */
   bool can_split;
@@ -1059,7 +1062,7 @@ struct stack_entry
    the component used by consider_split.  */
 
 static void
-find_split_points (basic_block return_bb, int overall_time, int overall_size)
+find_split_points (basic_block return_bb, sreal overall_time, int overall_size)
 {
   stack_entry first;
   vec<stack_entry> stack = vNULL;
@@ -1731,7 +1734,8 @@ execute_split_functions (void)
 {
   gimple_stmt_iterator bsi;
   basic_block bb;
-  int overall_time = 0, overall_size = 0;
+  sreal overall_time = 0;
+  int overall_size = 0;
   int todo = 0;
   struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
@@ -1746,6 +1750,12 @@ execute_split_functions (void)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: main function.\n");
+      return 0;
+    }
+  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not splitting: function is unlikely executed.\n");
       return 0;
     }
   /* This can be relaxed; function might become inlinable after splitting
@@ -1822,33 +1832,36 @@ execute_split_functions (void)
 
   /* Compute local info about basic blocks and determine function size/time.  */
   bb_info_vec.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
-  memset (&best_split_point, 0, sizeof (best_split_point));
+  best_split_point.split_bbs = NULL;
   basic_block return_bb = find_return_bb ();
   int tsan_exit_found = -1;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      int time = 0;
+      sreal time = 0;
       int size = 0;
-      int freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
+      sreal freq = bb->count.to_sreal_scale
+			 (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Basic block %i\n", bb->index);
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  int this_time, this_size;
+	  sreal this_time;
+	  int this_size;
 	  gimple *stmt = gsi_stmt (bsi);
 
 	  this_size = estimate_num_insns (stmt, &eni_size_weights);
-	  this_time = estimate_num_insns (stmt, &eni_time_weights) * freq;
+	  this_time = (sreal)estimate_num_insns (stmt, &eni_time_weights)
+			 * freq;
 	  size += this_size;
 	  time += this_time;
 	  check_forbidden_calls (stmt);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "  freq:%6i size:%3i time:%3i ",
-		       freq, this_size, this_time);
+	      fprintf (dump_file, "  freq:%4.2f size:%3i time:%4.2f ",
+		       freq.to_double (), this_size, this_time.to_double ());
 	      print_gimple_stmt (dump_file, stmt, 0);
 	    }
 

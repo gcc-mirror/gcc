@@ -1832,8 +1832,11 @@ Annexes F and G) and the optional Annexes K (Bounds-checking
 interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
 @item c17
+@itemx c18
 @itemx iso9899:2017
-ISO C17, the 2017 revision of the ISO C standard.  This standard is
+@itemx iso9899:2018
+ISO C17, the 2017 revision of the ISO C standard (expected to be
+published in 2018).  This standard is
 same as C11 except for corrections of defects (all of which are also
 applied with @option{-std=c11}) and a new value of
 @code{__STDC_VERSION__}, and so is supported to the same extent as C11.
@@ -1852,6 +1855,7 @@ GNU dialect of ISO C11.
 The name @samp{gnu1x} is deprecated.
 
 @item gnu17
+@itemx gnu18
 GNU dialect of ISO C17.  This is the default for C code.
 
 @item c++98
@@ -10849,6 +10853,12 @@ is 0.
 @item parloops-schedule
 Schedule type of omp schedule for loops parallelized by parloops (static,
 dynamic, guided, auto, runtime).  The default is static.
+
+@item parloops-min-per-thread
+The minimum number of iterations per thread of an innermost parallelized
+loop for which the parallelized variant is prefered over the single threaded
+one.  The default is 100.  Note that for a parallelized loop nest the
+minimum number of iterations of the outermost loop per thread is two.
 
 @item max-ssa-name-query-depth
 Maximum depth of recursion when querying properties of SSA names in things

@@ -8519,11 +8519,11 @@ package body Sem_Ch3 is
       --  type, mark it accordingly.
 
       if Is_Private_Type (Parent_Type) then
-         if Scope (Parent_Type) = Scope (Derived_Type) then
+         if Scope (Parent_Base) = Scope (Derived_Type) then
             null;
 
-         elsif In_Open_Scopes (Scope (Parent_Type))
-           and then In_Private_Part (Scope (Parent_Type))
+         elsif In_Open_Scopes (Scope (Parent_Base))
+           and then In_Private_Part (Scope (Parent_Base))
          then
             null;
 
@@ -9126,7 +9126,7 @@ package body Sem_Ch3 is
          elsif Has_Unknown_Discriminants (Parent_Type)
            and then
             (not Has_Discriminants (Parent_Type)
-              or else not In_Open_Scopes (Scope (Parent_Type)))
+              or else not In_Open_Scopes (Scope (Parent_Base)))
          then
             Set_Has_Unknown_Discriminants (Derived_Type);
          end if;

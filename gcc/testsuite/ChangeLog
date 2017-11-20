@@ -1,3 +1,218 @@
+2017-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82878
+	* g++.dg/cpp0x/pr82878.C: New.
+	* g++.dg/cpp1z/inh-ctor38.C: Check moves too.
+
+2017-11-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/predcom-dse-12.c: New test.
+
+2017-11-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR testsuite/82951
+	* gcc.c-torture/execute/20040409-1.c: Move invalid tests...
+	* gcc.c-torture/execute/20040409-1w.c: ... here with -fwrapv.
+	* gcc.c-torture/execute/20040409-2.c: Move invalid tests...
+	* gcc.c-torture/execute/20040409-2w.c: ... here with -fwrapv.
+	* gcc.c-torture/execute/20040409-3.c: Move invalid tests...
+	* gcc.c-torture/execute/20040409-3w.c: ... here with -fwrapv.
+	* gcc.dg/tree-ssa/cmpmul-1.c: Tweak condition.
+	* gcc.dg/tree-ssa/vrp118.c: New file.
+
+2017-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/pr82836.C: Require int128, __float128 support.
+	Add __float128 options.
+	(size_t): Define using __SIZE_TYPE__.
+
+2017-11-20   Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82781
+	* g++.dg/ext/constexpr-pr82781.C: New test.
+
+2017-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr69180.c: Use -: for no column in expected
+	warnings.
+
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/78821
+	* gcc.dg/store_merging_16.c: New test.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/82281
+	* gcc.target/i386/pr82281.c: New testcase.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81360
+	* gcc.c-torture/compile/pr81360.c: New testcase.
+
+2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78990
+	* gfortran.dg/class_67.f90: New test.
+
+2017-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/82713
+	* gcc.target/i386/pr82713.c: New testcase.
+
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* gcc.dg/pr69960.c: New test.
+	* gcc.dg/pr66618.c: New test.
+	* gcc.dg/pr66618-2.c: New test.
+
+2017-11-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/44292
+	* gfortran.dg/large_recl.f90: New test.
+
+2017-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83012
+	* gfortran.dg/contiguous_5.f90: New test.
+
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* gcc.target/aarch64/fmls.c: New test.
+
+2017-11-17  Steve Ellcey  <sellcey@cavium.com>
+
+	* gcc.target/aarch64/pr81356.c: New test.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/xop-imul64-vector.c: Disable vectorizer costmodel.
+
+2017-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/dump-2.c: Fixup template for profile precision
+	changes.
+	* gcc.dg/tree-ssa/pr77445-2.c: Fixup template for profile precision
+	changes.
+
+2017-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/pr82836.C: Fix for c++17.
+
+2017-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_arch_attribute.c: New.
+
+2017-11-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/altivec-macros.c: Include "-:" in the messages
+	matched for.
+
+2017-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83017
+	* gcc.dg/autopar/pr49960.c: Adjust.
+
+2017-11-17  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Edit vmov scan-assembler
+	directives.
+
+2017-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/struct-simple.c: New.
+	* lib/target-supports.exp
+	(check_effective_target_word_mode_no_slow_unalign): New.
+
+2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse-14.c: Change logic to match branch
+	instruction to bar.
+
+2017-11-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/cmse.exp: Add option to select Armv8-M Baseline
+	or Armv8-M Mainline when running the respective tests.
+	* gcc.target/arm/cmse/baseline/cmse-11.c: Remove architecture check and
+	selection.
+	* gcc.target/arm/cmse/baseline/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/baseline/cmse-2.c: Likewise.
+	* gcc.target/arm/cmse/baseline/cmse-6.c: Likewise.
+	* gcc.target/arm/cmse/baseline/softfp.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/soft/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/softfp/cmse-8.c: Likewise.
+
+2017-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/82997
+	* gcc.dg/cpp/macsyntx.c (var1, rest): Don't expect
+	"requires at least one" warning.
+	* gcc.dg/cpp/sysmac1.c (foo): Likewise.
+	* gcc.dg/cpp/macsyntx2.c: New test.
+	* gcc.dg/cpp/sysmac3.c: New test.
+	* gcc.dg/cpp/sysmac3.h: New file.
+
+2017-11-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/78809
+	* gcc.dg/strcmpopt_1.c: New test.
+
+2017-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c18-version-1.c, gcc.dg/c18-version-2.c: New tests.
+
+2017-11-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/bfp/bfp.exp: Look for *.c files, not *.c*
+	files to prevent ~ files from getting recognized.
+	* gcc.target/powerpc/dfp/dfp.exp: Likewise.
+	* gcc.target/powerpc/vsu/vsu.exp: Likewise.
+
+2017-11-16  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brig.dg/test/gimple/vector.hsail: Update for HSA registers' tree
+	representation changes in brig1.
+	* brig.dg/test/gimple/packed.hsail: Likewise.
+	* brig.dg/test/gimple/internal-reg-var-casts.hsail: New.
+
+2017-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipcp-2.c: Lower threshold.
+
+2017-11-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/63477
+	* gcc.dg/pr63477.c: New test.
+
+2017-11-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82588
+	PR tree-optimization/82583
+	* c-c++-common/Warray-bounds.c: New test.
+	* gcc.dg/Warray-bounds-11.c: Adjust.
+	* gcc.dg/Warray-bounds-22.c: New test.
+
 2017-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82836
@@ -113,7 +328,7 @@
 	* g++.dg/torture/pr82985.C: Likewise.
 
 2017-11-15  Sebastian Peryt  <sebastian.peryt@intel.com>
-	
+
 	PR target/82941
 	PR target/82942
 	* gcc.target/i386/pr82941-1.c: New test.

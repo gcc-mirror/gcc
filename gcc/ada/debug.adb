@@ -161,7 +161,7 @@ package body Debug is
    --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6  Do not avoid declaring unreferenced types in C code
-   --  d.7
+   --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
    --  d.8
    --  d.9  Disable build-in-place for nonlimited types
 
@@ -826,6 +826,12 @@ package body Debug is
    --  d.6  By default the C back-end avoids declaring types that are not
    --       referenced by the generated C code. This debug flag restores the
    --       output of all the types.
+
+   --  d.7  Indicates (to gnat2scil) that CodePeer is being invoked as a
+   --       prover by the SPARK tools and that therefore gnat2scil should
+   --       avoid SCIL generation strategies which can introduce soundness
+   --       issues (e.g., assuming that a low bound of an array parameter
+   --       of an unconstrained subtype belongs to the index subtype).
 
    --  d.9  Enable build-in-place for function calls returning some nonlimited
    --       types.

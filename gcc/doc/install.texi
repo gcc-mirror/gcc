@@ -324,7 +324,7 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
-@item Perl version 5.6.1 (or later)
+@item Perl version between 5.6.1 and 5.6.24
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
@@ -337,6 +337,8 @@ Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
+
+Used by @command{automake}.
 
 @end table
 
@@ -419,6 +421,9 @@ For directories that use automake, GCC requires the latest release in
 the 1.11 series, which is currently 1.11.6.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.11
 to the latest released version.
+
+Note that @command{automake} 1.11.6 is incompatible with
+@command{perl} version 5.6.26.
 
 @item gettext version 0.14.5 (or later)
 
@@ -2060,6 +2065,19 @@ explicitly specify the directory where they are installed.  The
 shorthand for
 @option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
 @option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
+
+@item --enable-cet
+@itemx --disable-cet
+Enable building target run-time libraries with control-flow
+instrumentation, see @option{-fcf-protection} option.  When
+@code{--enable-cet} is specified target libraries are configured
+to add @option{-fcf-protection} and, if needed, other target
+specific options to a set of building options.
+
+The option is enabled by default on Linux/x86 if target binutils
+supports @code{Intel CET} instructions.  In this case the target
+libraries are configured to get additional @option{-fcf-protection}
+and @option{-mcet} options.
 @end table
 
 @subheading Cross-Compiler-Specific Options
