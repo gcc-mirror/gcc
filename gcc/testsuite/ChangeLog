@@ -1,3 +1,8 @@
+2017-11-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr69180.c: Use -: for no column in expected
+	warnings.
+
 2017-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78821
