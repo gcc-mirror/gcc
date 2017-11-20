@@ -1,3 +1,11 @@
+2017-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2353
+	* include/bits/stl_iterator_base_funcs.h (next):
+	Use InputIterator instead of ForwardIterator.
+	* testsuite/24_iterators/operations/lwg2353.cc: New.
+	* testsuite/24_iterators/operations/next_neg.cc: Remove.
+
 2017-11-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/pr66689 - comp_ellint_3 and ellint_3 return garbage values
