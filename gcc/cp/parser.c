@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -43,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-cilkplus.h"
 #include "gcc-rich-location.h"
 #include "tree-iterator.h"
+#include "c-family/name-hint.h"
 
 
 /* The lexer.  */
@@ -3287,16 +3289,16 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   else if (!parser->scope)
     {
       /* Issue an error message.  */
-      const char *suggestion = NULL;
+      name_hint hint;
       if (TREE_CODE (id) == IDENTIFIER_NODE)
-        suggestion = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME);
-      if (suggestion)
+	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME, location);
+      if (hint)
 	{
 	  gcc_rich_location richloc (location);
-	  richloc.add_fixit_replace (suggestion);
+	  richloc.add_fixit_replace (hint.suggestion ());
 	  error_at (&richloc,
 		    "%qE does not name a type; did you mean %qs?",
-		    id, suggestion);
+		    id, hint.suggestion ());
 	}
       else
 	error_at (location, "%qE does not name a type", id);

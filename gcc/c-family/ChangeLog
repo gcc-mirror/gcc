@@ -1,3 +1,10 @@
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h (enum lookup_name_fuzzy_kind): Move to name-hint.h.
+	(lookup_name_fuzzy): Likewise.  Convert return type from
+	const char * to name_hint.  Add location_t param.
+	* name-hint.h: New header.
+
 2017-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/66618

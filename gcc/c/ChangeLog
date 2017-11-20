@@ -1,3 +1,20 @@
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(implicit_decl_warning): Convert "hint" from
+	const char * to name_hint.  Pass location to
+	lookup_name_fuzzy.  Suppress any deferred diagnostic if the
+	warning was not printed.
+	(undeclared_variable): Likewise for "guessed_id".
+	(lookup_name_fuzzy): Convert return type from const char *
+	to name_hint.  Add location_t param.
+	* c-parser.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(c_parser_declaration_or_fndef): Convert "hint" from
+	const char * to name_hint.  Pass location to lookup_name_fuzzy.
+	(c_parser_parameter_declaration): Likewise.
+
 2017-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/66618
