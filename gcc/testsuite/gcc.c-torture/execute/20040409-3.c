@@ -12,19 +12,9 @@ unsigned int test1u(unsigned int x)
   return ~(x ^ (unsigned int)INT_MIN);
 }
 
-int test2(int x)
-{
-  return ~(x + INT_MIN);
-}
-
 unsigned int test2u(unsigned int x)
 {
   return ~(x + (unsigned int)INT_MIN);
-}
-
-int test3(int x)
-{
-  return ~(x - INT_MIN);
 }
 
 unsigned int test3u(unsigned int x)
@@ -44,22 +34,10 @@ unsigned int test4u(unsigned int x)
   return ~(x ^ y);
 }
 
-int test5(int x)
-{
-  int y = INT_MIN;
-  return ~(x + y);
-}
-
 unsigned int test5u(unsigned int x)
 {
   unsigned int y = (unsigned int)INT_MIN;
   return ~(x + y);
-}
-
-int test6(int x)
-{
-  int y = INT_MIN;
-  return ~(x - y);
 }
 
 unsigned int test6u(unsigned int x)
@@ -74,15 +52,7 @@ void test(int a, int b)
 {
   if (test1(a) != b)
     abort();
-  if (test2(a) != b)
-    abort();
-  if (test3(a) != b)
-    abort();
   if (test4(a) != b)
-    abort();
-  if (test5(a) != b)
-    abort();
-  if (test6(a) != b)
     abort();
 }
 
