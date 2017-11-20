@@ -1,3 +1,8 @@
+2017-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/83062
+	* ipa-inline.c (can_inline_edge_p): Fix typo in previous patch.
+
 2017-11-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	* vec.h (debug_helper): New function.
