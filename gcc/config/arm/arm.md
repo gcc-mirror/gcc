@@ -30,6 +30,7 @@
 (define_constants
   [(R0_REGNUM         0)	; First CORE register
    (R1_REGNUM	      1)	; Second CORE register
+   (R4_REGNUM	      4)	; Fifth CORE register
    (IP_REGNUM	     12)	; Scratch register
    (SP_REGNUM	     13)	; Stack pointer
    (LR_REGNUM        14)	; Return address register
@@ -8072,14 +8073,13 @@
 			       UNSPEC_NONSECURE_MEM)
 		    (match_operand 1 "general_operand" ""))
 	      (use (match_operand 2 "" ""))
-	      (clobber (reg:SI LR_REGNUM))
-	      (clobber (reg:SI 4))])]
+	      (clobber (reg:SI LR_REGNUM))])]
   "use_cmse"
   "
   {
     rtx tmp;
     tmp = copy_to_suggested_reg (XEXP (operands[0], 0),
-				 gen_rtx_REG (SImode, 4),
+				 gen_rtx_REG (SImode, R4_REGNUM),
 				 SImode);
 
     operands[0] = replace_equiv_address (operands[0], tmp);
@@ -8164,14 +8164,13 @@
 				    UNSPEC_NONSECURE_MEM)
 			 (match_operand 2 "general_operand" "")))
 	      (use (match_operand 3 "" ""))
-	      (clobber (reg:SI LR_REGNUM))
-	      (clobber (reg:SI 4))])]
+	      (clobber (reg:SI LR_REGNUM))])]
   "use_cmse"
   "
   {
     rtx tmp;
     tmp = copy_to_suggested_reg (XEXP (operands[1], 0),
-				 gen_rtx_REG (SImode, 4),
+				 gen_rtx_REG (SImode, R4_REGNUM),
 				 SImode);
 
     operands[1] = replace_equiv_address (operands[1], tmp);

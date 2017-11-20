@@ -1,3 +1,14 @@
+2017-11-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.md (R4_REGNUM): Define constant.
+	(nonsecure_call_internal): Remove r4 clobber.
+	(nonsecure_call_value_internal): Likewise.
+	* config/arm/thumb1.md (nonsecure_call_reg_thumb1_v5): Remove second
+	clobber and resequence match_operands.
+	(nonsecure_call_value_reg_thumb1_v5): Likewise.
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2): Likewise.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+
 2017-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/78821
