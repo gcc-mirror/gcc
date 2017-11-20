@@ -1063,11 +1063,6 @@ add_ref_to_chain (chain_p chain, dref ref)
 
   gcc_assert (wi::les_p (root->offset, ref->offset));
   widest_int dist = ref->offset - root->offset;
-  if (wi::leu_p (MAX_DISTANCE, dist))
-    {
-      free (ref);
-      return;
-    }
   gcc_assert (wi::fits_uhwi_p (dist));
 
   chain->refs.safe_push (ref);
