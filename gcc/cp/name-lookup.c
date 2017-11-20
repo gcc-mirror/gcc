@@ -1163,21 +1163,8 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	  && TREE_CODE (decl) == FIELD_DECL
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 	{
-	  tree anon = TREE_TYPE (decl);
-	  gcc_assert (COMPLETE_TYPE_P (anon));
-	  tree temp;
-	  
-	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
-	    temp = member_vec_linear_search (member_vec, name);
-	  else
-	    temp = fields_linear_search (anon, name, want_type);
-
-	  if (temp)
-	    {
-	      /* Anon members can only contain fields.  */
-	      gcc_assert (!STAT_HACK_P (temp) && !DECL_DECLARES_TYPE_P (temp));
-	      return temp;
-	    }
+	  if (tree temp = search_anon_aggr (TREE_TYPE (decl), name))
+	    return temp;
 	}
 
       if (DECL_NAME (decl) != name)
@@ -1198,6 +1185,28 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	return decl;
     }
 
+  return NULL_TREE;
+}
+
+/* Look for NAME field inside of anonymous aggregate ANON.  */
+
+tree
+search_anon_aggr (tree anon, tree name)
+{
+  gcc_assert (COMPLETE_TYPE_P (anon));
+  tree ret;
+	  
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
+    ret = member_vec_linear_search (member_vec, name);
+  else
+    ret = fields_linear_search (anon, name, false);
+
+  if (ret)
+    {
+      /* Anon members can only contain fields.  */
+      gcc_assert (!STAT_HACK_P (ret) && !DECL_DECLARES_TYPE_P (ret));
+      return ret;
+    }
   return NULL_TREE;
 }
 

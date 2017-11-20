@@ -1371,6 +1371,7 @@ process_init_constructor_record (tree type, tree init,
  restart:
   int flags = 0;
   unsigned HOST_WIDE_INT idx = 0;
+  int designator_skip = -1;
   /* Generally, we will always have an index for each initializer (which is
      a FIELD_DECL, put by reshape_init), but compound literals don't go trough
      reshape_init. So we need to handle both cases.  */
@@ -1394,6 +1395,7 @@ process_init_constructor_record (tree type, tree init,
       if (type == error_mark_node)
 	return PICFLAG_ERRONEOUS;
 
+      next = NULL_TREE;
       if (idx < CONSTRUCTOR_NELTS (init))
 	{
 	  constructor_elt *ce = &(*CONSTRUCTOR_ELTS (init))[idx];
@@ -1404,18 +1406,42 @@ process_init_constructor_record (tree type, tree init,
 		 deferred.  */
 	      gcc_assert (TREE_CODE (ce->index) == FIELD_DECL
 			  || identifier_p (ce->index));
-	      if (ce->index != field
-		  && ce->index != DECL_NAME (field))
+	      if (ce->index == field || ce->index == DECL_NAME (field))
+		next = ce->value;
+	      else if (ANON_AGGR_TYPE_P (type)
+		       && search_anon_aggr (type,
+					    TREE_CODE (ce->index) == FIELD_DECL
+					    ? DECL_NAME (ce->index)
+					    : ce->index))
+		/* If the element is an anonymous union object and the
+		   initializer list is a designated-initializer-list, the
+		   anonymous union object is initialized by the
+		   designated-initializer-list { D }, where D is the
+		   designated-initializer-clause naming a member of the
+		   anonymous union object.  */
+		next = build_constructor_single (type, ce->index, ce->value);
+	      else
 		{
-		  ce->value = error_mark_node;
-		  sorry ("non-trivial designated initializers not supported");
+		  ce = NULL;
+		  if (designator_skip == -1)
+		    designator_skip = 1;
 		}
 	    }
+	  else
+	    {
+	      designator_skip = 0;
+	      next = ce->value;
+	    }
 
-	  gcc_assert (ce->value);
-	  next = massage_init_elt (type, ce->value, complain);
-	  ++idx;
+	  if (ce)
+	    {
+	      gcc_assert (ce->value);
+	      next = massage_init_elt (type, next, complain);
+	      ++idx;
+	    }
 	}
+      if (next)
+	/* Already handled above.  */;
       else if (DECL_INITIAL (field))
 	{
 	  if (skipped > 0)
@@ -1494,7 +1520,49 @@ process_init_constructor_record (tree type, tree init,
   if (idx < CONSTRUCTOR_NELTS (init))
     {
       if (complain & tf_error)
-	error ("too many initializers for %qT", type);
+	{
+	  constructor_elt *ce = &(*CONSTRUCTOR_ELTS (init))[idx];
+	  /* For better diagnostics, try to find out if it is really
+	     the case of too many initializers or if designators are
+	     in incorrect order.  */
+	  if (designator_skip == 1 && ce->index)
+	    {
+	      gcc_assert (TREE_CODE (ce->index) == FIELD_DECL
+			  || identifier_p (ce->index));
+	      for (field = TYPE_FIELDS (type);
+		   field; field = DECL_CHAIN (field))
+		{
+		  if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
+		    continue;
+		  if (TREE_CODE (field) != FIELD_DECL
+		      || (DECL_ARTIFICIAL (field)
+			  && !(cxx_dialect >= cxx17
+			       && DECL_FIELD_IS_BASE (field))))
+		    continue;
+
+		  if (ce->index == field || ce->index == DECL_NAME (field))
+		    break;
+		  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+		    {
+		      tree t
+			= search_anon_aggr (TREE_TYPE (field),
+					    TREE_CODE (ce->index) == FIELD_DECL
+					    ? DECL_NAME (ce->index)
+					    : ce->index);
+		      if (t)
+			{
+			  field = t;
+			  break;
+			}
+		    }
+		}
+	    }
+	  if (field)
+	    error ("designator order for field %qD does not match declaration "
+		   "order in %qT", field, type);
+	  else
+	    error ("too many initializers for %qT", type);
+	}
       else
 	return PICFLAG_ERRONEOUS;
     }

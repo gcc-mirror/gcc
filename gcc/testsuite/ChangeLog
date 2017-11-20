@@ -1,3 +1,24 @@
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0329R4: Designated Initialization
+	* g++.dg/ext/desig2.C: Adjust comment, no sorry about designator
+	refering to second member.
+	(b): New variable and associated expected diagnostic.
+	* g++.dg/ext/desig4.C: For C++2A expect diagnostics.
+	* g++.dg/ext/desig5.C: Add dg-do dg-compile and empty dg-options.
+	* g++.dg/ext/desig8.C: Likewise.
+	* g++.dg/ext/desig9.C: New test.
+	* g++.dg/ext/pr27019.C: Don't expect any diagnostics.
+	* g++.dg/init/error2.C: Adjust expected diagnostics.
+	* g++.dg/cpp0x/desig1.C: Add dg-options with -pedantic, expect
+	warning on C99 designators.
+	* g++.dg/cpp2a/desig1.C: New test.
+	* g++.dg/cpp2a/desig2.C: New test.
+	* g++.dg/cpp2a/desig3.C: New test.
+	* g++.dg/cpp2a/desig4.C: New test.
+	* g++.dg/cpp2a/desig5.C: New test.
+	* g++.dg/cpp2a/desig6.C: New test.
+
 2017-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82878
