@@ -1,3 +1,10 @@
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83086
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::try_coalesce_bswap): Test this_n.base_addr
+	rather than n.base_addr.
+
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/82044
