@@ -328,6 +328,13 @@ handlers, respectively. Given @samp{-a} option, unexecuted blocks are
 marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
 is reachable via non-exceptional or exceptional paths.
 
+Note that GCC can completely remove the bodies of functions that are
+not needed -- for instance if they are inlined everywhere.  Such functions
+are marked with @samp{-}, which can be confusing.
+Use the @option{-fkeep-inline-functions} and @option{-fkeep-static-functions}
+options to retain these functions and
+allow gcov to properly show their @var{execution_count}.
+
 Some lines of information at the start have @var{line_number} of zero.
 These preamble lines are of the form
 
