@@ -3646,3 +3646,11 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
   *buffer = '\0';
   return pfile->macro_buffer;
 }
+
+/* Get the line at which the macro was defined.  */
+
+source_location
+cpp_macro_definition_location (cpp_hashnode *node)
+{
+  return node->value.macro->line;
+}

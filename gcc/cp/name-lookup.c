@@ -5636,12 +5636,49 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
     }
 }
 
+/* Subclass of deferred_diagnostic.  Notify the user that the
+   given macro was used before it was defined.
+   This can be done in the C++ frontend since tokenization happens
+   upfront.  */
+
+class macro_use_before_def : public deferred_diagnostic
+{
+ public:
+  /* Ctor.  LOC is the location of the usage.  MACRO is the
+     macro that was used.  */
+  macro_use_before_def (location_t loc, cpp_hashnode *macro)
+  : deferred_diagnostic (loc), m_macro (macro)
+  {
+    gcc_assert (macro);
+  }
+
+  ~macro_use_before_def ()
+  {
+    if (is_suppressed_p ())
+      return;
+
+    source_location def_loc = cpp_macro_definition_location (m_macro);
+    if (def_loc != UNKNOWN_LOCATION)
+      {
+	inform (get_location (), "the macro %qs had not yet been defined",
+		(const char *)m_macro->ident.str);
+	inform (def_loc, "it was later defined here");
+      }
+  }
+
+ private:
+  cpp_hashnode *m_macro;
+};
+
+
 /* Search for near-matches for NAME within the current bindings, and within
    macro names, returning the best match as a const char *, or NULL if
-   no reasonable match is found.  */
+   no reasonable match is found.
+
+   Use LOC for any deferred diagnostics.  */
 
 name_hint
-lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t)
+lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
@@ -5671,6 +5708,15 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t)
   /* If a macro is the closest so far to NAME, consider it.  */
   if (best_macro)
     bm.consider ((const char *)best_macro->ident.str);
+  else if (bmm.get_best_distance () == 0)
+    {
+      /* If we have an exact match for a macro name, then the
+	 macro has been used before it was defined.  */
+      cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
+      if (macro)
+	return name_hint (NULL,
+			  new macro_use_before_def (loc, macro));
+    }
 
   /* Try the "starts_decl_specifier_p" keywords to detect
      "singed" vs "signed" typos.  */
