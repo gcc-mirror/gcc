@@ -1,3 +1,41 @@
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83045
+	* c-c++-common/pr61405.c (fn0, fn1): Add return stmts.
+	* c-c++-common/Wlogical-op-2.c (fn): Likewise.
+	* g++.dg/debug/pr53466.C: Add -Wno-return-type to dg-options.
+	* g++.dg/opt/combine.C: Likewise.
+	* g++.dg/ubsan/return-3.C: Likewise.
+	* g++.dg/pr59445.C: Likewise.
+	* g++.dg/pr49847.C: Likewise.
+	* g++.dg/ipa/pr61800.C: Likewise.
+	* g++.dg/ipa/pr63470.C: Likewise.
+	* g++.dg/ipa/pr68672-1.C: Likewise.
+	* g++.dg/pr58438.C: Likewise.
+	* g++.dg/torture/pr59265.C: Likewise.
+	* g++.dg/tree-ssa/ssa-dse-2.C: Likewise.
+	* g++.old-deja/g++.eh/catch13.C: Likewise.
+	* g++.old-deja/g++.eh/crash1.C: Likewise.
+	* g++.dg/tm/pr60004.C: Expect -Wreturn-type warning.
+	* g++.dg/torture/pr55740.C: Likewise.
+	* g++.dg/torture/pr43257.C: Likewise.
+	* g++.dg/torture/pr64280.C: Likewise.
+	* g++.dg/torture/pr54684.C: Likewise.
+	* g++.dg/torture/pr56694.C: Likewise.
+	* g++.dg/torture/pr68470.C: Likewise.
+	* g++.dg/torture/pr60648.C: Likewise.
+	* g++.dg/torture/pr71281.C: Likewise.
+	* g++.dg/torture/pr52772.C: Add -Wno-return-type dg-additional-options.
+	* g++.dg/torture/pr64669.C: Likewise.
+	* g++.dg/torture/pr58369.C: Likewise.
+	* g++.dg/torture/pr33627.C: Likewise.
+	* g++.dg/torture/predcom-1.C: Add
+	#pragma GCC diagnostic ignored "-Wreturn-type".
+	* g++.dg/lto/20090221_0.C: Likewise.
+	* g++.dg/lto/20091026-1_1.C: Likewise.
+	* g++.dg/lto/pr54625-1_1.C: Likewise.
+	* g++.dg/warn/pr83045.C: New test.
+
 2017-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/movbe-1.c: Update scan string for movbe

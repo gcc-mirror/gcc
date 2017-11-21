@@ -9049,7 +9049,8 @@ pass_warn_function_return::execute (function *fun)
 	  if ((gimple_code (last) == GIMPLE_RETURN
 	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
 	      && location == UNKNOWN_LOCATION
-	      && (location = gimple_location (last)) != UNKNOWN_LOCATION
+	      && ((location = LOCATION_LOCUS (gimple_location (last)))
+		  != UNKNOWN_LOCATION)
 	      && !optimize)
 	    break;
 	  /* When optimizing, replace return stmts in noreturn functions
@@ -9075,7 +9076,6 @@ pass_warn_function_return::execute (function *fun)
      without returning a value.  */
   else if (warn_return_type > 0
 	   && !TREE_NO_WARNING (fun->decl)
-	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
     {
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
@@ -9087,13 +9087,43 @@ pass_warn_function_return::execute (function *fun)
 	      && !gimple_no_warning_p (last))
 	    {
 	      location = gimple_location (last);
-	      if (location == UNKNOWN_LOCATION)
+	      if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
 		location = fun->function_end_locus;
-	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
+	      warning_at (location, OPT_Wreturn_type,
+			  "control reaches end of non-void function");
 	      TREE_NO_WARNING (fun->decl) = 1;
 	      break;
 	    }
 	}
+      /* The C++ FE turns fallthrough from the end of non-void function
+	 into __builtin_unreachable () call with BUILTINS_LOCATION.
+	 Recognize those too.  */
+      basic_block bb;
+      if (!TREE_NO_WARNING (fun->decl))
+	FOR_EACH_BB_FN (bb, fun)
+	  if (EDGE_COUNT (bb->succs) == 0)
+	    {
+	      gimple *last = last_stmt (bb);
+	      if (last
+		  && (LOCATION_LOCUS (gimple_location (last))
+		      == BUILTINS_LOCATION)
+		  && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		{
+		  gimple_stmt_iterator gsi = gsi_for_stmt (last);
+		  gsi_prev_nondebug (&gsi);
+		  gimple *prev = gsi_stmt (gsi);
+		  if (prev == NULL)
+		    location = UNKNOWN_LOCATION;
+		  else
+		    location = gimple_location (prev);
+		  if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
+		    location = fun->function_end_locus;
+		  warning_at (location, OPT_Wreturn_type,
+			      "control reaches end of non-void function");
+		  TREE_NO_WARNING (fun->decl) = 1;
+		  break;
+		}
+	    }
     }
   return 0;
 }

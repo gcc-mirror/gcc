@@ -1,7 +1,14 @@
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83045
+	* tree-cfg.c (pass_warn_function_return::execute): Formatting fix.
+	Also warn if seen __builtin_unreachable () call with BUILTINS_LOCATION.
+	Use LOCATION_LOCUS when comparing against UNKNOWN_LOCATION.
+
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
-	* tree-inline.c (expand_call_inline):
-	  Remove not needed xstrdup_for_dump.
+	* tree-inline.c (expand_call_inline): Remove not needed
+	xstrdup_for_dump.
 
 2017-11-21  James Cowgill  <James.Cowgill@imgtec.com>
 	    Jakub Jelinek  <jakub@redhat.com>

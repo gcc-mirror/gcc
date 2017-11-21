@@ -47,7 +47,7 @@ public:
     reference m_fn3(unsigned){
 	if (m_fn2())
 	  fn1();
-    }
+    }	// { dg-warning "control reaches end of non-void function" }
 };
 
 H<H<H<unsigned>>> c;
