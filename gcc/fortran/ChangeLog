@@ -1,3 +1,10 @@
+2017-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk fix for PR82586
+	PR fortran/78686
+	* resolve.c (resolve_generic_f): Check usage of derived type by
+	calling gfc_use_derived.
+
 2017-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk

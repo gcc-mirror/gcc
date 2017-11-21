@@ -1,3 +1,9 @@
+2017-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk fix for PR82586
+	PR fortran/78686
+	* gfortran.dg/pr78686.f90: New test.
+
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
