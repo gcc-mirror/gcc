@@ -49066,7 +49066,7 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
       || ((val & IX86_HLE_ACQUIRE) && (val & IX86_HLE_RELEASE)))
     {
       warning (OPT_Winvalid_memory_model,
-	       "Unknown architecture specific memory model");
+	       "unknown architecture specific memory model");
       return MEMMODEL_SEQ_CST;
     }
   strong = (is_mm_acq_rel (model) || is_mm_seq_cst (model));

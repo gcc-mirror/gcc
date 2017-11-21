@@ -1,3 +1,9 @@
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83059
+	* c-common.c (get_atomic_generic_size): Use TREE_INT_CST_LOW
+	instead of tree_to_uhwi, formatting fix.
+
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/81404

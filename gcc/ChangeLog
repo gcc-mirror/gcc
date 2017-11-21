@@ -1,5 +1,9 @@
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83059
+	* config/i386/i386.c (ix86_memmodel_check): Start
+	-Winvalid-memory-model diagnostics with lowercase letter.
+
 	PR debug/82718
 	* dwarf2out.c (dw_loc_list): If crtl->has_bb_partition, temporarily
 	set in_cold_section_p to the partition containing loc_list->first.

@@ -1,5 +1,8 @@
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83059
+	* c-c++-common/pr83059.c: New test.
+
 	PR debug/82718
 	* gcc.dg/debug/dwarf2/pr82718-1.c: New test.
 	* gcc.dg/debug/dwarf2/pr82718-2.c: New test.
