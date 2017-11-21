@@ -1,3 +1,7 @@
+2017-11-21  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/ppc-asm.h (f50, vs50): Fix values.
+
 2017-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (-Wmaybe-uninitialized): Rephrase for clarity.
