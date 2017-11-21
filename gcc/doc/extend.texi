@@ -6008,22 +6008,33 @@ types (@pxref{Common Function Attributes},
 The @code{nonstring} variable attribute specifies that an object or member
 declaration with type array of @code{char} or pointer to @code{char} is
 intended to store character arrays that do not necessarily contain
-a terminating @code{NUL} character.  This is useful to avoid warnings
-when such an array or pointer is used as an argument to a bounded string
-manipulation function such as @code{strncpy}.  For example, without the
-attribute, GCC will issue a warning for the call below because it may
-truncate the copy without appending the terminating NUL character.  Using
-the attribute makes it possible to suppress the warning.
+a terminating @code{NUL} character.  This is useful in detecting uses
+of such arrays or pointers with functions that expect NUL-terminated
+strings, and to avoid warnings when such an array or pointer is used
+as an argument to a bounded string manipulation function such as
+@code{strncpy}.  For example, without the attribute, GCC will issue
+a warning for the @code{strncpy} call below because it may truncate
+the copy without appending the terminating @code{NUL} character.  Using
+the attribute makes it possible to suppress the warning.  However, when
+the array is declared with the attribute the call to @code{strlen} is
+diagnosed because when the array doesn't contain a @code{NUL}-terminated
+string the call is undefined.  To copy, compare, of search non-string
+character arrays use the @code{memcpy}, @code{memcmp}, @code{memchr},
+and other functions that operate on arrays of bytes.  In addition,
+calling @code{strnlen} and @code{strndup} with such arrays is safe
+provided a suitable bound is specified, and not diagnosed.
 
 @smallexample
 struct Data
 @{
   char name [32] __attribute__ ((nonstring));
 @};
-void f (struct Data *pd, const char *s)
+
+int f (struct Data *pd, const char *s)
 @{
   strncpy (pd->name, s, sizeof pd->name);
   @dots{}
+  return strlen (pd->name);   // unsafe, gets a warning
 @}
 @end smallexample
 

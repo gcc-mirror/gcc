@@ -1,3 +1,21 @@
+2017-11-21  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82945
+	* builtins.c (expand_builtin_strlen): Call maybe_warn_nonstring_arg.
+	* calls.h (maybe_warn_nonstring_arg): Declare new function.
+	* calls.c (get_attr_nonstring_decl, maybe_warn_nonstring_arg): New
+	functions.
+	(initialize_argument_information): Call maybe_warn_nonstring_arg.
+	* calls.h (get_attr_nonstring_decl): Declare new function.
+	* doc/extend.texi (attribute nonstring): Update.
+	* gimple-fold.c (gimple_fold_builtin_strncpy): Call
+	get_attr_nonstring_decl and handle it.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Same.  Improve
+	detection of nul-termination.
+	(strlen_to_stridx): Change to a pointer.
+	(handle_builtin_strlen, handle_builtin_stxncpy): Adjust.
+	(pass_strlen::execute): Same.
+
 2017-11-21  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* config/i386/i386-opts.h (enum prefer_vector_width): Added new enum

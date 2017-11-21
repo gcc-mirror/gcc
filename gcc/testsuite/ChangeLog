@@ -1,3 +1,11 @@
+2017-11-21  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82945
+	* c-c++-common/Wstringop-truncation-2.c: New test.
+	* c-c++-common/Wstringop-truncation.c: Adjust.
+	* c-c++-common/attr-nonstring-2.c: Adjust.
+	* c-c++-common/attr-nonstring-3.c: New test.
+
 2017-11-21  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* g++.dg/ext/pr57362.C (__attribute__): Test

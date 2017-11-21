@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "diagnostic-core.h"
 #include "intl.h"
+#include "calls.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -1558,25 +1559,31 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 {
   gimple *stmt = gsi_stmt (*gsi);
   location_t loc = gimple_location (stmt);
+  bool nonstring = get_attr_nonstring_decl (dest) != NULL_TREE;
 
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
     {
-      tree fndecl = gimple_call_fndecl (stmt);
-      gcall *call = as_a <gcall *> (stmt);
+      /* Avoid warning if the destination refers to a an array/pointer
+	 decorate with attribute nonstring.  */
+      if (!nonstring)
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  gcall *call = as_a <gcall *> (stmt);
 
-      /* Warn about the lack of nul termination: the result is not
-	 a (nul-terminated) string.  */
-      tree slen = get_maxval_strlen (src, 0);
-      if (slen && !integer_zerop (slen))
-	warning_at (loc, OPT_Wstringop_truncation,
-		    "%G%qD destination unchanged after copying no bytes "
-		    "from a string of length %E",
-		    call, fndecl, slen);
-      else
-	warning_at (loc, OPT_Wstringop_truncation,
-		    "%G%qD destination unchanged after copying no bytes",
-		    call, fndecl);
+	  /* Warn about the lack of nul termination: the result is not
+	     a (nul-terminated) string.  */
+	  tree slen = get_maxval_strlen (src, 0);
+	  if (slen && !integer_zerop (slen))
+	    warning_at (loc, OPT_Wstringop_truncation,
+			"%G%qD destination unchanged after copying no bytes "
+			"from a string of length %E",
+			call, fndecl, slen);
+	  else
+	    warning_at (loc, OPT_Wstringop_truncation,
+			"%G%qD destination unchanged after copying no bytes",
+			call, fndecl);
+	}
 
       replace_call_with_value (gsi, dest);
       return true;
@@ -1601,53 +1608,36 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   if (tree_int_cst_lt (ssize, len))
     return false;
 
-  if (tree_int_cst_lt (len, slen))
+  if (!nonstring)
     {
-      tree fndecl = gimple_call_fndecl (stmt);
-      gcall *call = as_a <gcall *> (stmt);
-
-      warning_at (loc, OPT_Wstringop_truncation,
-		  (tree_int_cst_equal (size_one_node, len)
-		   ? G_("%G%qD output truncated copying %E byte "
-			"from a string of length %E")
-		   : G_("%G%qD output truncated copying %E bytes "
-		      "from a string of length %E")),
-		  call, fndecl, len, slen);
-    }
-  else if (tree_int_cst_equal (len, slen))
-    {
-      tree decl = dest;
-      if (TREE_CODE (decl) == SSA_NAME)
+      if (tree_int_cst_lt (len, slen))
 	{
-	  gimple *def_stmt = SSA_NAME_DEF_STMT (decl);
-	  if (is_gimple_assign (def_stmt))
-	    {
-	      tree_code code = gimple_assign_rhs_code (def_stmt);
-	      if (code == ADDR_EXPR || code == VAR_DECL)
-		decl = gimple_assign_rhs1 (def_stmt);
-	    }
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  gcall *call = as_a <gcall *> (stmt);
+
+	  warning_at (loc, OPT_Wstringop_truncation,
+		      (tree_int_cst_equal (size_one_node, len)
+		       ? G_("%G%qD output truncated copying %E byte "
+			    "from a string of length %E")
+		       : G_("%G%qD output truncated copying %E bytes "
+			    "from a string of length %E")),
+		      call, fndecl, len, slen);
 	}
+      else if (tree_int_cst_equal (len, slen))
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  gcall *call = as_a <gcall *> (stmt);
 
-      if (TREE_CODE (decl) == ADDR_EXPR)
-	decl = TREE_OPERAND (decl, 0);
-
-      if (TREE_CODE (decl) == COMPONENT_REF)
-	decl = TREE_OPERAND (decl, 1);
-
-      tree fndecl = gimple_call_fndecl (stmt);
-      gcall *call = as_a <gcall *> (stmt);
-
-      if (!DECL_P (decl)
-	  || !lookup_attribute ("nonstring", DECL_ATTRIBUTES (decl)))
-	warning_at (loc, OPT_Wstringop_truncation,
-		    (tree_int_cst_equal (size_one_node, len)
-		     ? G_("%G%qD output truncated before terminating nul "
-			  "copying %E byte from a string of the same "
-			  "length")
-		     : G_("%G%qD output truncated before terminating nul "
-			  "copying %E bytes from a string of the same "
-			  "length")),
-		    call, fndecl, len);
+	  warning_at (loc, OPT_Wstringop_truncation,
+		      (tree_int_cst_equal (size_one_node, len)
+		       ? G_("%G%qD output truncated before terminating nul "
+			    "copying %E byte from a string of the same "
+			    "length")
+		       : G_("%G%qD output truncated before terminating nul "
+			    "copying %E bytes from a string of the same "
+			    "length")),
+		      call, fndecl, len);
+	}
     }
 
   /* OK transform into builtin memcpy.  */
