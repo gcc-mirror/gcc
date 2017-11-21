@@ -2390,7 +2390,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
 			    ? try_size - info->bitsize - bitpos
 			    : bitpos))
 	return false;
-      if (n.base_addr && vuse_store)
+      if (this_n.base_addr && vuse_store)
 	{
 	  unsigned int j;
 	  for (j = first; j <= last; ++j)
