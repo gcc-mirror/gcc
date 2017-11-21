@@ -306,6 +306,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case MINUS_EXPR:
     case MULT_EXPR:
     case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:

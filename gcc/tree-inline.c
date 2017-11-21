@@ -3819,6 +3819,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
     case MULT_HIGHPART_EXPR:

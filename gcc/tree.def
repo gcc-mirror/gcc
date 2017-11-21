@@ -676,6 +676,14 @@ DEFTREECODE (MULT_EXPR, "mult_expr", tcc_binary, 2)
    second operand is an integer of type sizetype.  */
 DEFTREECODE (POINTER_PLUS_EXPR, "pointer_plus_expr", tcc_binary, 2)
 
+/* Pointer subtraction.  The two arguments are pointers, and the result
+   is a signed integer of the same precision.  Pointers are interpreted
+   as unsigned, the difference is computed as if in infinite signed
+   precision.  Behavior is undefined if the difference does not fit in
+   the result type.  The result does not depend on the pointer type,
+   it is not divided by the size of the pointed-to type.  */
+DEFTREECODE (POINTER_DIFF_EXPR, "pointer_diff_expr", tcc_binary, 2)
+
 /* Highpart multiplication.  For an integral type with precision B,
    returns bits [2B-1, B] of the full 2*B product.  */
 DEFTREECODE (MULT_HIGHPART_EXPR, "mult_highpart_expr", tcc_binary, 2)

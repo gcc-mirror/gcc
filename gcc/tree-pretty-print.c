@@ -2308,6 +2308,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case MULT_HIGHPART_EXPR:
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
@@ -3553,6 +3554,7 @@ op_code_prio (enum tree_code code)
     case WIDEN_SUM_EXPR:
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       return 12;
 
@@ -3739,6 +3741,7 @@ op_symbol_code (enum tree_code code)
 
     case NEGATE_EXPR:
     case MINUS_EXPR:
+    case POINTER_DIFF_EXPR:
       return "-";
 
     case BIT_NOT_EXPR:

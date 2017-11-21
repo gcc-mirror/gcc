@@ -1,3 +1,25 @@
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* doc/generic.texi: Document POINTER_DIFF_EXPR, update
+	POINTER_PLUS_EXPR.
+	* cfgexpand.c (expand_debug_expr): Handle POINTER_DIFF_EXPR.
+	* expr.c (expand_expr_real_2): Likewise.
+	* fold-const.c (const_binop, fold_addr_of_array_ref_difference,
+	fold_binary_loc): Likewise.
+	* match.pd (X-X, P+(Q-P), &D-P, (P+N)-P, P-(P+N), (P+M)-(P+N),
+	P-Q==0, -(A-B), X-Z<Y-Z, (X-Z)-(Y-Z), Z-X<Z-Y, (Z-X)-(Z-Y),
+	(A-B)+(C-A)): New transformations for POINTER_DIFF_EXPR, based on
+	MINUS_EXPR transformations.
+	* optabs-tree.c (optab_for_tree_code): Handle POINTER_DIFF_EXPR.
+	* tree-cfg.c (verify_expr, verify_gimple_assign_binary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node, op_code_prio,
+	op_symbol_code): Likewise.
+	* tree-vect-stmts.c (vectorizable_operation): Likewise.
+	* vr-values.c (extract_range_from_binary_expr): Likewise.
+	* varasm.c (initializer_constant_valid_p_1): Likewise.
+	* tree.def: New tree code POINTER_DIFF_EXPR.
+
 2017-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*bswap<mode>2_movbe): Add

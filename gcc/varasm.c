@@ -4615,6 +4615,7 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	}
       return ret;
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       if (TREE_CODE (endtype) == REAL_TYPE)
 	return NULL_TREE;

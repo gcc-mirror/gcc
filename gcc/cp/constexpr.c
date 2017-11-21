@@ -4336,6 +4336,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -5590,6 +5591,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
         return true;
       }
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       want_rval = true;
       goto binary;

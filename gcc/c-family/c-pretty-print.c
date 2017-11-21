@@ -1876,6 +1876,7 @@ pp_c_additive_expression (c_pretty_printer *pp, tree e)
     {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       pp_c_additive_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
@@ -2292,6 +2293,7 @@ c_pretty_printer::expression (tree e)
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       pp_c_additive_expression (this, e);
       break;

@@ -1,3 +1,11 @@
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* constexpr.c (cxx_eval_constant_expression,
+	potential_constant_expression_1): Handle POINTER_DIFF_EXPR.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* error.c (dump_expr): Likewise.
+	* typeck.c (pointer_diff): Use POINTER_DIFF_EXPR.
+
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	P0428R2 - familiar template syntax for generic lambdas
