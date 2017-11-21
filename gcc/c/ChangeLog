@@ -1,5 +1,12 @@
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-decl.c (get_c_name_hint): New function.
+	(class suggest_missing_header): New class.
+	(lookup_name_fuzzy): Call get_c_name_hint and use it to
+	suggest missing headers to the user.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-decl.c: Define INCLUDE_UNIQUE_PTR before including system.h.
 	Include "c-family/name-hint.h"
 	(implicit_decl_warning): Convert "hint" from
