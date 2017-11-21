@@ -838,7 +838,7 @@ cpm_reader::wi ()
 	  return v;
 	}
       byte = buffer[pos++];
-      v |= (byte & 127) << bit;
+      v |= (unsigned HOST_WIDE_INT)(byte & 127) << bit;
       bit += 7;
     }
   while (byte & 128);
@@ -2262,11 +2262,7 @@ cpms_out::define_class (tree type, tree maybe_template)
 
   /* Now define all the members.  */
   for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
-    // FIXME:non-methods and whatnot
-    if (DECL_DECLARES_FUNCTION_P (member))
-      maybe_tag_definition (member);
-    else if (TREE_CODE (member) == RECORD_TYPE)
-      maybe_tag_definition (member);
+    maybe_tag_definition (member);
 
   /* End of definitions.  */
   tree_node (NULL_TREE);
@@ -2391,21 +2387,15 @@ cpms_out::maybe_tag_definition (tree t)
       goto again;
 
     case TYPE_DECL:
-      switch (TREE_CODE (TREE_TYPE (t)))
-	{
-	default:
-	  return;
-
-	case RECORD_TYPE:
-	case UNION_TYPE:
-	  if (!maybe_template && !COMPLETE_TYPE_P (TREE_TYPE (t)))
-	    return;
-	  break;
-	}
+      if (!DECL_IMPLICIT_TYPEDEF_P (t))
+	return;
+      else if (!TYPE_FIELDS (TREE_TYPE (t)))
+	return;
       break;
 
     case FUNCTION_DECL:
       if (!DECL_INITIAL (t))
+	/* Not defined.  */
 	return;
       if (DECL_TEMPLATE_INFO (t))
 	{
@@ -2448,6 +2438,7 @@ cpms_out::tag_definition (tree t, tree maybe_template)
 	  t = TREE_TYPE (t);
 	  goto again;
 	}
+      
       // FIXME:Actual typedefs
       gcc_unreachable ();
 
@@ -3463,7 +3454,9 @@ cpms_out::core_vals (tree t)
 	 things.  */
       if (!RECORD_OR_UNION_CODE_P (code))
 	{
-	  WT (t->type_non_common.values);
+	  /* Don't write the cached values vector.  */
+	  if (!TYPE_CACHED_VALUES_P (t))
+	    WT (t->type_non_common.values);
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO */
 	  if (POINTER_TYPE_P (t))
 	    {
@@ -3835,7 +3828,12 @@ cpms_in::core_vals (tree t)
 	 things.  */
       if (!RECORD_OR_UNION_CODE_P (code))
 	{
-	  RT (t->type_non_common.values);
+	  if (!TYPE_CACHED_VALUES_P (t))
+	    RT (t->type_non_common.values);
+	  else
+	    /* Clear the type cached values.  */
+	    TYPE_CACHED_VALUES_P (t) = 0;
+
 	  /* POINTER and REFERENCE types hold NEXT_{PTR,REF}_TO.  We
 	     store a marker there to indicate whether we're on the
 	     referred to type's pointer/reference to list.  */
@@ -4799,7 +4797,8 @@ cpms_in::finish_type (tree type)
 	}
 
       /* CANONICAL_TYPE is either already correctly remapped.  Or
-         correctly already us.  FIXME:Are we sure about this?  */
+         correctly already us.  */
+      // FIXME:Are we sure about this?
     found_variant:;
     }
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM

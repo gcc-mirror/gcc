@@ -1,6 +1,18 @@
+2017-11-21  Nathan Sidwell  <nathan@acm.org>
+
+	Nested classes.
+	gcc/cp/
+	* module.c (cpm_reader::wi): Promote before shifting.
+	(cpms_out::define_class): Maybe define all members.
+	(cpms_out::maybe_tag_definition): Only implicit typedefs are
+	defined.
+	(cpms_{in.out}::core_vals): Don't stream value cache.
+	gcc/testsuite/
+	* g++.dg/modules/nested-1_[abc].C: New
+
 2017-11-20  Nathan Sidwell  <nathan@acm.org>
 
-	Merg trunk r254959.
+	Merge trunk r254959.
 
 	Template member functions.
 	gcc/cp/
