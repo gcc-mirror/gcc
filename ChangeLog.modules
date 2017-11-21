@@ -1,5 +1,9 @@
 2017-11-21  Nathan Sidwell  <nathan@acm.org>
 
+	Member types
+	gcc/testsuite/
+	* g++.dg/modules/nested-2_[ab].C: New
+
 	Nested classes.
 	gcc/cp/
 	* module.c (cpm_reader::wi): Promote before shifting.
