@@ -1,3 +1,11 @@
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-10-11  Martin Liska  <mliska@suse.cz>
+
+	* print-rtl.c (print_insn): Move declaration of idbuf
+	to same scope as name.
+
 2017-11-21  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backport from mainline
