@@ -1,5 +1,11 @@
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/82933
+	* run-rtl-passes.c: Include debug.h.
+	(run_rtl_passes): Call debug_hooks->assembly_start.
+	* dwarf2out.c (dwarf2out_assembly_start): Return early if invoked
+	multiple times.
+
 	PR target/82981
 	* internal-fn.c (expand_mul_overflow): Use OPTAB_WIDEN instead of
 	OPTAB_DIRECT in calls to expand_simple_binop.
