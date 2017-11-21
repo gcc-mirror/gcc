@@ -1,5 +1,11 @@
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/82718
+	* dwarf2out.c (dw_loc_list): If crtl->has_bb_partition, temporarily
+	set in_cold_section_p to the partition containing loc_list->first.
+	When seeing loc_list->last_before_switch node, update secname and
+	perform range_across_switch second partition handling only after that.
+
 	PR debug/82933
 	* run-rtl-passes.c: Include debug.h.
 	(run_rtl_passes): Call debug_hooks->assembly_start.

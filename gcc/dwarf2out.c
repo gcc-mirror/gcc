@@ -16366,92 +16366,111 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
      This means we have to special case the last node, and generate
      a range of [last location start, end of function label].  */
 
-  secname = secname_for_decl (decl);
+  if (cfun && crtl->has_bb_partition)
+    {
+      bool save_in_cold_section_p = in_cold_section_p;
+      in_cold_section_p = first_function_block_is_cold;
+      if (loc_list->last_before_switch == NULL)
+	in_cold_section_p = !in_cold_section_p;
+      secname = secname_for_decl (decl);
+      in_cold_section_p = save_in_cold_section_p;
+    }
+  else
+    secname = secname_for_decl (decl);
 
   for (node = loc_list->first; node; node = node->next)
-    if (GET_CODE (node->loc) == EXPR_LIST
-	|| NOTE_VAR_LOCATION_LOC (node->loc) != NULL_RTX)
-      {
-	if (GET_CODE (node->loc) == EXPR_LIST)
-	  {
-	    /* This requires DW_OP_{,bit_}piece, which is not usable
-	       inside DWARF expressions.  */
-	    if (want_address != 2)
-	      continue;
+    {
+      bool range_across_switch = false;
+      if (GET_CODE (node->loc) == EXPR_LIST
+	  || NOTE_VAR_LOCATION_LOC (node->loc) != NULL_RTX)
+	{
+	  if (GET_CODE (node->loc) == EXPR_LIST)
+	    {
+	      descr = NULL;
+	      /* This requires DW_OP_{,bit_}piece, which is not usable
+		 inside DWARF expressions.  */
+	      if (want_address == 2)
+		descr = dw_sra_loc_expr (decl, node->loc);
+	    }
+	  else
+	    {
+	      initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+	      varloc = NOTE_VAR_LOCATION (node->loc);
+	      descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
+	    }
+	  if (descr)
+	    {
+	      /* If section switch happens in between node->label
+		 and node->next->label (or end of function) and
+		 we can't emit it as a single entry list,
+		 emit two ranges, first one ending at the end
+		 of first partition and second one starting at the
+		 beginning of second partition.  */
+	      if (node == loc_list->last_before_switch
+		  && (node != loc_list->first || loc_list->first->next)
+		  && current_function_decl)
+		{
+		  endname = cfun->fde->dw_fde_end;
+		  range_across_switch = true;
+		}
+	      /* The variable has a location between NODE->LABEL and
+		 NODE->NEXT->LABEL.  */
+	      else if (node->next)
+		endname = node->next->label;
+	      /* If the variable has a location at the last label
+		 it keeps its location until the end of function.  */
+	      else if (!current_function_decl)
+		endname = text_end_label;
+	      else
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+					       current_function_funcdef_no);
+		  endname = ggc_strdup (label_id);
+		}
+
+	      *listp = new_loc_list (descr, node->label, endname, secname);
+	      if (TREE_CODE (decl) == PARM_DECL
+		  && node == loc_list->first
+		  && NOTE_P (node->loc)
+		  && strcmp (node->label, endname) == 0)
+		(*listp)->force = true;
+	      listp = &(*listp)->dw_loc_next;
+	    }
+	}
+
+      if (cfun
+	  && crtl->has_bb_partition
+	  && node == loc_list->last_before_switch)
+	{
+	  bool save_in_cold_section_p = in_cold_section_p;
+	  in_cold_section_p = !first_function_block_is_cold;
+	  secname = secname_for_decl (decl);
+	  in_cold_section_p = save_in_cold_section_p;
+	}
+
+      if (range_across_switch)
+	{
+	  if (GET_CODE (node->loc) == EXPR_LIST)
 	    descr = dw_sra_loc_expr (decl, node->loc);
-	    if (descr == NULL)
-	      continue;
-	  }
-	else
-	  {
-	    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
-	    varloc = NOTE_VAR_LOCATION (node->loc);
-	    descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
-	  }
-	if (descr)
-	  {
-	    bool range_across_switch = false;
-	    /* If section switch happens in between node->label
-	       and node->next->label (or end of function) and
-	       we can't emit it as a single entry list,
-	       emit two ranges, first one ending at the end
-	       of first partition and second one starting at the
-	       beginning of second partition.  */
-	    if (node == loc_list->last_before_switch
-		&& (node != loc_list->first || loc_list->first->next)
-		&& current_function_decl)
-	      {
-		endname = cfun->fde->dw_fde_end;
-		range_across_switch = true;
-	      }
-	    /* The variable has a location between NODE->LABEL and
-	       NODE->NEXT->LABEL.  */
-	    else if (node->next)
-	      endname = node->next->label;
-	    /* If the variable has a location at the last label
-	       it keeps its location until the end of function.  */
-	    else if (!current_function_decl)
-	      endname = text_end_label;
-	    else
-	      {
-		ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-					     current_function_funcdef_no);
-		endname = ggc_strdup (label_id);
-	      }
-
-	    *listp = new_loc_list (descr, node->label, endname, secname);
-	    if (TREE_CODE (decl) == PARM_DECL
-		&& node == loc_list->first
-		&& NOTE_P (node->loc)
-		&& strcmp (node->label, endname) == 0)
-	      (*listp)->force = true;
-	    listp = &(*listp)->dw_loc_next;
-
-	    if (range_across_switch)
-	      {
-		if (GET_CODE (node->loc) == EXPR_LIST)
-		  descr = dw_sra_loc_expr (decl, node->loc);
-		else
-		  {
-		    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
-		    varloc = NOTE_VAR_LOCATION (node->loc);
-		    descr = dw_loc_list_1 (decl, varloc, want_address,
-					   initialized);
-		  }
-		gcc_assert (descr);
-		/* The variable has a location between NODE->LABEL and
-		   NODE->NEXT->LABEL.  */
-		if (node->next)
-		  endname = node->next->label;
-		else
-		  endname = cfun->fde->dw_fde_second_end;
-		*listp = new_loc_list (descr,
-				       cfun->fde->dw_fde_second_begin,
-				       endname, secname);
-		listp = &(*listp)->dw_loc_next;
-	      }
-	  }
-      }
+	  else
+	    {
+	      initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+	      varloc = NOTE_VAR_LOCATION (node->loc);
+	      descr = dw_loc_list_1 (decl, varloc, want_address,
+				     initialized);
+	    }
+	  gcc_assert (descr);
+	  /* The variable has a location between NODE->LABEL and
+	     NODE->NEXT->LABEL.  */
+	  if (node->next)
+	    endname = node->next->label;
+	  else
+	    endname = cfun->fde->dw_fde_second_end;
+	  *listp = new_loc_list (descr, cfun->fde->dw_fde_second_begin,
+				 endname, secname);
+	  listp = &(*listp)->dw_loc_next;
+	}
+    }
 
   /* Try to avoid the overhead of a location list emitting a location
      expression instead, but only if we didn't have more than one
