@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-* { dg-options "-O3 -mavx512bw" } */
+/* { dg-options "-O3 -mavx512bw" } */
 
 _Bool a[2048];
 int b[2048];
@@ -16,4 +16,3 @@ foo ()
       a[i + 1] = b[i + 3] <= 10;
     }
 }
-
