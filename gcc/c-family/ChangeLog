@@ -1,5 +1,15 @@
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/81404
+	* known-headers.cc: New file, based on material from c/c-decl.c.
+	(suggest_missing_header): Copied as-is.
+	(get_stdlib_header_for_name): New, based on get_c_name_hint but
+	heavily edited to add C++ support.  Add some knowledge about
+	<limits.h>, <stdint.h>, and <wchar.h>.
+	* known-headers.h: Likewise.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-common.h (enum lookup_name_fuzzy_kind): Move to name-hint.h.
 	(lookup_name_fuzzy): Likewise.  Convert return type from
 	const char * to name_hint.  Add location_t param.

@@ -1,5 +1,12 @@
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/81404
+	* name-lookup.c: Include "c-family/known-headers.h"
+	(lookup_name_fuzzy): Call get_cp_stdlib_header_for_name and
+	potentially return a new suggest_missing_header hint.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/72786
 	* name-lookup.c (class macro_use_before_def): New class.
 	(lookup_name_fuzzy): Detect macro that were used before being

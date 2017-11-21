@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "asan.h"
 #include "c-family/name-hint.h"
+#include "c-family/known-headers.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -3992,83 +3993,6 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
   return NULL_TREE;
 }
 
-/* Subroutine of lookup_name_fuzzy for handling unrecognized names
-   for some of the most common names within the C standard library.
-   Given non-NULL NAME, return the header name defining it within the C
-   standard library (with '<' and '>'), or NULL.  */
-
-static const char *
-get_c_name_hint (const char *name)
-{
-  struct std_name_hint
-  {
-    const char *name;
-    const char *header;
-  };
-  static const std_name_hint hints[] = {
-    /* <errno.h>.  */
-    {"errno", "<errno.h>"},
-
-    /* <stdarg.h>.  */
-    {"va_list", "<stdarg.h>"},
-
-    /* <stddef.h>.  */
-    {"NULL", "<stddef.h>"},
-    {"ptrdiff_t", "<stddef.h>"},
-    {"wchar_t", "<stddef.h>"},
-    {"size_t", "<stddef.h>"},
-
-    /* <stdio.h>.  */
-    {"BUFSIZ", "<stdio.h>"},
-    {"EOF", "<stdio.h>"},
-    {"FILE", "<stdio.h>"},
-    {"FILENAME_MAX", "<stdio.h>"},
-    {"fpos_t", "<stdio.h>"},
-    {"stderr", "<stdio.h>"},
-    {"stdin", "<stdio.h>"},
-    {"stdout", "<stdio.h>"}
-  };
-  const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
-  for (size_t i = 0; i < num_hints; i++)
-    {
-      if (0 == strcmp (name, hints[i].name))
-	return hints[i].header;
-    }
-  return NULL;
-}
-
-/* Subclass of deferred_diagnostic for suggesting to the user
-   that they have missed a #include.  */
-
-class suggest_missing_header : public deferred_diagnostic
-{
- public:
-  suggest_missing_header (location_t loc, const char *name,
-			  const char *header_hint)
-  : deferred_diagnostic (loc), m_name_str (name), m_header_hint (header_hint)
-  {
-    gcc_assert (name);
-    gcc_assert (header_hint);
-  }
-
-  ~suggest_missing_header ()
-  {
-    if (is_suppressed_p ())
-      return;
-
-    gcc_rich_location richloc (get_location ());
-    maybe_add_include_fixit (&richloc, m_header_hint);
-    inform (&richloc,
-	    "%qs is defined in header %qs;"
-	    " did you forget to %<#include %s%>?",
-	    m_name_str, m_header_hint, m_header_hint);
-  }
-
- private:
-  const char *m_name_str;
-  const char *m_header_hint;
-};
-
 /* Look for the closest match for NAME within the currently valid
    scopes.
 
@@ -4094,7 +4018,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 
   /* First, try some well-known names in the C standard library, in case
      the user forgot a #include.  */
-  const char *header_hint = get_c_name_hint (IDENTIFIER_POINTER (name));
+  const char *header_hint
+    = get_c_stdlib_header_for_name (IDENTIFIER_POINTER (name));
+
   if (header_hint)
     return name_hint (NULL,
 		      new suggest_missing_header (loc,

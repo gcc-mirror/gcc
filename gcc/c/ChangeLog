@@ -1,5 +1,15 @@
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/81404
+	* c-decl.c: Include "c-family/known-headers.h".
+	(get_c_name_hint): Rename to get_stdlib_header_for_name and move
+	to known-headers.cc.
+	(class suggest_missing_header): Move to known-header.h.
+	(lookup_name_fuzzy): Call get_c_stdlib_header_for_name rather
+	than get_c_name_hint.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-decl.c (get_c_name_hint): New function.
 	(class suggest_missing_header): New class.
 	(lookup_name_fuzzy): Call get_c_name_hint and use it to

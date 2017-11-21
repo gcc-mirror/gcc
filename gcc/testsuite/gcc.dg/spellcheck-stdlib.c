@@ -53,3 +53,12 @@ void test_stdarg_h (void)
   va_list ap; /* { dg-error "unknown type name 'va_list'" } */
   /* { dg-message "'va_list' is defined in header '<stdarg.h>'; did you forget to '#include <stdarg.h>'?" "" { target *-*-* } .-1 } */
 }
+
+/* Missing <limits.h>.  */
+int test_INT_MAX (void)
+{
+  return INT_MAX; /* { dg-line INT_MAX_line } */
+  /* { dg-error "'INT_MAX' undeclared" "" { target *-*-* } INT_MAX_line } */
+  /* { dg-bogus "__INT_MAX__" "" { target *-*-* } INT_MAX_line } */
+  /* { dg-message "'INT_MAX' is defined in header '<limits.h>'; did you forget to '#include <limits.h>'?" "" { target *-*-* } INT_MAX_line } */
+}

@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck-tree.h"
 #include "parser.h"
 #include "c-family/name-hint.h"
+#include "c-family/known-headers.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -5681,6 +5682,16 @@ name_hint
 lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  /* First, try some well-known names in the C++ standard library, in case
+     the user forgot a #include.  */
+  const char *header_hint
+    = get_cp_stdlib_header_for_name (IDENTIFIER_POINTER (name));
+  if (header_hint)
+    return name_hint (NULL,
+		      new suggest_missing_header (loc,
+						  IDENTIFIER_POINTER (name),
+						  header_hint));
 
   best_match <tree, const char *> bm (name);
 
