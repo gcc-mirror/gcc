@@ -1,3 +1,9 @@
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	P0428R2 - familiar template syntax for generic lambdas
+	* parser.c (cp_parser_lambda_declarator_opt): Don't pedwarn
+	for cxx2a and above, reword pedwarn for C++14/C++17.
+
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/81404
