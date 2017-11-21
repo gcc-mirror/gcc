@@ -1,3 +1,11 @@
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-10-18  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82545
+	* gcc.dg/asan/pr82545.c: New test.
+
 2017-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline
