@@ -1,4 +1,9 @@
 2017-11-21  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* cfgrtl.c (force_nonfallthru_and_redirect): Don't split a call
+	and its corresponding call arg location note.
+
+2017-11-21  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc-protos.h (arc_compute_frame_size): Delete
