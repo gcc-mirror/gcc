@@ -94,8 +94,8 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	{
 	  if (DECL_DECLARED_CONSTEXPR_P (decl))
 	    {
-	      error ("the type %qT of constexpr variable %qD is not literal",
-		     type, decl);
+	      error ("the type %qT of %<constexpr%> variable %qD "
+		     "is not literal", type, decl);
 	      explain_non_literal_class (type);
 	    }
 	  else
@@ -177,7 +177,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
     {
       ret = false;
       if (complain)
-	error ("inherited constructor %qD is not constexpr",
+	error ("inherited constructor %qD is not %<constexpr%>",
 	       DECL_INHERITED_CTOR (fun));
     }
   else
@@ -189,7 +189,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    ret = false;
 	    if (complain)
 	      {
-		error ("invalid type for parameter %d of constexpr "
+		error ("invalid type for parameter %d of %<constexpr%> "
 		       "function %q+#D", DECL_PARM_INDEX (parm), fun);
 		explain_non_literal_class (TREE_TYPE (parm));
 	      }
@@ -201,7 +201,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
       ret = false;
       if (complain)
 	inform (DECL_SOURCE_LOCATION (fun),
-		"lambdas are implicitly constexpr only in C++17 and later");
+		"lambdas are implicitly %<constexpr%> only in C++17 and later");
     }
   else if (!DECL_CONSTRUCTOR_P (fun))
     {
@@ -211,7 +211,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	  ret = false;
 	  if (complain)
 	    {
-	      error ("invalid return type %qT of constexpr function %q+D",
+	      error ("invalid return type %qT of %<constexpr%> function %q+D",
 		     rettype, fun);
 	      explain_non_literal_class (rettype);
 	    }
@@ -225,7 +225,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	  ret = false;
 	  if (complain
 	      && pedwarn (DECL_SOURCE_LOCATION (fun), OPT_Wpedantic,
-			  "enclosing class of constexpr non-static member "
+			  "enclosing class of %<constexpr%> non-static member "
 			  "function %q+#D is not a literal type", fun))
 	    explain_non_literal_class (DECL_CONTEXT (fun));
 	}
@@ -494,7 +494,7 @@ check_constexpr_ctor_body (tree last, tree list, bool complain)
   if (!ok)
     {
       if (complain)
-	error ("constexpr constructor does not have empty body");
+	error ("%<constexpr%> constructor does not have empty body");
       DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
     }
   return ok;
@@ -845,7 +845,8 @@ register_constexpr_fundef (tree fun, tree body)
   if (massaged == NULL_TREE || massaged == error_mark_node)
     {
       if (!DECL_CONSTRUCTOR_P (fun))
-	error ("body of constexpr function %qD not a return-statement", fun);
+	error ("body of %<constexpr%> function %qD not a return-statement",
+	       fun);
       return NULL;
     }
 
@@ -905,7 +906,7 @@ explain_invalid_constexpr_fn (tree fun)
 	 input_location set to our caller's location.  */
       input_location = DECL_SOURCE_LOCATION (fun);
       inform (input_location,
-	      "%qD is not usable as a constexpr function because:", fun);
+	      "%qD is not usable as a %<constexpr%> function because:", fun);
     }
   /* First check the declaration.  */
   if (is_valid_constexpr_fn (fun, true))
@@ -1194,7 +1195,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	     comes from cp_maybe_instrument_return.  */
 	  if (DECL_FUNCTION_CODE (fun) == BUILT_IN_UNREACHABLE
 	      && EXPR_LOCATION (t) == BUILTINS_LOCATION)
-	    error ("constexpr call flows off the end of the function");
+	    error ("%<constexpr%> call flows off the end of the function");
 	  else
 	    {
 	      new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
@@ -1465,7 +1466,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
       if (!ctx->quiet && !*non_constant_p)
-	error_at (loc, "expression %qE does not designate a constexpr "
+	error_at (loc, "expression %qE does not designate a %<constexpr%> "
 		  "function", fun);
       *non_constant_p = true;
       return t;
@@ -1484,7 +1485,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       if (!ctx->quiet)
 	{
 	  if (!lambda_static_thunk_p (fun))
-	    error_at (loc, "call to non-constexpr function %qD", fun);
+	    error_at (loc, "call to non-%<constexpr%> function %qD", fun);
 	  explain_invalid_constexpr_fn (fun);
 	}
       *non_constant_p = true;
@@ -1618,7 +1619,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (!depth_ok)
     {
       if (!ctx->quiet)
-	error ("constexpr evaluation depth exceeds maximum of %d (use "
+	error ("%<constexpr%> evaluation depth exceeds maximum of %d (use "
 	       "-fconstexpr-depth= to increase the maximum)",
 	       max_constexpr_depth);
       *non_constant_p = true;
@@ -1701,7 +1702,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      if (result == NULL_TREE && !*non_constant_p)
 		{
 		  if (!ctx->quiet)
-		    error ("constexpr call flows off the end "
+		    error ("%<constexpr%> call flows off the end "
 			   "of the function");
 		  *non_constant_p = true;
 		}
@@ -3886,7 +3887,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	{
 	  if (!ctx->quiet)
 	    error_at (EXPR_LOC_OR_LOC (t, input_location),
-		      "constexpr loop iteration count exceeds limit of %d "
+		      "%<constexpr%> loop iteration count exceeds limit of %d "
 		      "(use -fconstexpr-loop-limit= to increase the limit)",
 		      constexpr_loop_limit);
 	  *non_constant_p = true;
@@ -5256,7 +5257,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		  {
 		    if (flags & tf_error)
 		      {
-			error_at (loc, "call to non-constexpr function %qD",
+			error_at (loc, "call to non-%<constexpr%> function %qD",
 				  fun);
 			explain_invalid_constexpr_fn (fun);
 		      }

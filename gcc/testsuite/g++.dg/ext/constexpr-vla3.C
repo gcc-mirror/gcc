@@ -11,4 +11,4 @@ foo (int n)
   return z;
 }
 
-constexpr int n = foo (3); // { dg-error "array subscript" }
+constexpr int n = foo (3); // { dg-error "array subscript|in .constexpr. expansion of " }

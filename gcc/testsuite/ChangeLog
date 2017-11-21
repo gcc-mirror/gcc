@@ -1,3 +1,38 @@
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp0x/constexpr-48089.C: Add quotes for constexpr
+	keyword; add dg-message for 'in .constexpr. expansion of '.
+	* g++.dg/cpp0x/constexpr-50060.C: Likewise.
+	* g++.dg/cpp0x/constexpr-60049.C: Likewise.
+	* g++.dg/cpp0x/constexpr-70323.C: Likewise.
+	* g++.dg/cpp0x/constexpr-70323a.C: Likewise.
+	* g++.dg/cpp0x/constexpr-cast.C: Likewise.
+	* g++.dg/cpp0x/constexpr-diag3.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-generated1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice16.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice5.C: Likewise.
+	* g++.dg/cpp0x/constexpr-incomplete2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp0x/constexpr-recursion.C: Likewise.
+	* g++.dg/cpp0x/constexpr-shift1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-70265-1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-70265-2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-79655.C: Likewise.
+	* g++.dg/cpp1y/constexpr-new.C: Likewise.
+	* g++.dg/cpp1y/constexpr-return2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-shift1.C: Likewise.
+	* g++.dg/cpp1y/constexpr-throw.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda6.C: Likewise.
+	* g++.dg/ext/constexpr-vla1.C: Likewise.
+	* g++.dg/ext/constexpr-vla2.C: Likewise.
+	* g++.dg/ext/constexpr-vla3.C: Likewise.
+	* g++.dg/cpp0x/static_assert10.C: Likewise.
+	* g++.dg/cpp1y/pr63996.C: Likewise.
+	* g++.dg/cpp1y/pr68180.C: Likewise.
+	* g++.dg/cpp1y/pr77830.C: Likewise.
+	* g++.dg/ubsan/pr63956.C: Likewise.
+
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83045

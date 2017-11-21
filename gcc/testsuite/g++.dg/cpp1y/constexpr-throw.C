@@ -31,4 +31,4 @@ constexpr int fun(int n) {
 }
 
 static_assert(fun(0), "");
-static_assert(fun(1), ""); // { dg-error "non-constant" }
+static_assert(fun(1), ""); // { dg-error "non-constant|in .constexpr. expansion of" }

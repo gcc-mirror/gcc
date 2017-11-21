@@ -11,6 +11,6 @@ constexpr float32x4_t fill(float x) {
 }
 
 float32x4_t foo(float32x4_t x) {
-  constexpr float32x4_t v = fill(1.f); // { dg-error "not a constant" }
+  constexpr float32x4_t v = fill(1.f); // { dg-error "not a constant||in .constexpr. expansion of " }
   return x+v;
 }
