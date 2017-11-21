@@ -4667,7 +4667,7 @@ esac
 
 case ${host} in
 *-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  # Check for system-provided CRTs on Solaris 11.4.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking system-provided CRTs on Solaris" >&5
 $as_echo_n "checking system-provided CRTs on Solaris... " >&6; }
 if test "${libgcc_cv_solaris_crts+set}" = set; then :

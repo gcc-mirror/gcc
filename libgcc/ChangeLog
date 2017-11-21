@@ -1,3 +1,14 @@
+2017-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (*-*-solaris2*): Adapt comment for Solaris 12
+	renaming.
+	* config/sol2/crtpg.c (__start_crt_compiler): Likewise.
+	* configure.ac (libgcc_cv_solaris_crts): Likewise.
+	* configure: Regenerate.
+
 2017-11-05  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline

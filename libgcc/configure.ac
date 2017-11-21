@@ -294,7 +294,7 @@ esac
 
 case ${host} in
 *-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  # Check for system-provided CRTs on Solaris 11.4.
   AC_CACHE_CHECK([system-provided CRTs on Solaris],
     		 [libgcc_cv_solaris_crts],
     [libgcc_cv_solaris_crts=no
