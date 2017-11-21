@@ -1,6 +1,16 @@
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR driver/81829
+	* file-find.c (remove_prefix): Remove.
+	* file-find.h (remove_prefix): Likewise.
+	* gcc-ar.c: Remove smartness of lookup.
+
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-10-18  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82545
