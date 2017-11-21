@@ -1981,6 +1981,12 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
+  if (offset > HOST_WIDE_INT_MAX - width)
+    {
+      clear_rhs_from_active_local_stores ();
+      return;
+    }
+
   read_info = read_info_type_pool.allocate ();
   read_info->group_id = group_id;
   read_info->mem = mem;

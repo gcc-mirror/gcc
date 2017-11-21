@@ -1,3 +1,9 @@
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/82044
+	PR tree-optimization/82042
+	* dse.c (check_mem_read_rtx): Check for overflow.
+
 2017-11-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-threadbackward.c (find_jump_threads_backwards): Fix
