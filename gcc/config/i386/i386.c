@@ -2847,15 +2847,13 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mstv",				MASK_STV },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD },
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE },
-    { "-mprefer-avx128",		MASK_PREFER_AVX128 },
     { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES }
   };
 
   /* Additional flag options.  */
   static struct ix86_target_opts flag2_opts[] =
   {
-    { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY },
-    { "-mprefer-avx256",		OPTION_MASK_PREFER_AVX256 },
+    { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY }
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (isa2_opts)
@@ -4686,16 +4684,18 @@ ix86_option_override_internal (bool main_args_p,
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+
   /* Enable 128-bit AVX instruction generation
      for the auto-vectorizer.  */
   if (TARGET_AVX128_OPTIMAL
-      && !(opts_set->x_target_flags & MASK_PREFER_AVX128))
-    opts->x_target_flags |= MASK_PREFER_AVX128;
-  /* Use 256-bit AVX instructions instead of 512-bit AVX instructions
+      && (opts_set->x_prefer_vector_width_type == PVW_NONE))
+    opts->x_prefer_vector_width_type = PVW_AVX128;
+
+  /* Use 256-bit AVX instruction generation
      in the auto-vectorizer.  */
   if (ix86_tune_features[X86_TUNE_AVX256_OPTIMAL]
-      && !(opts_set->x_ix86_target_flags & OPTION_MASK_PREFER_AVX256))
-    opts->x_ix86_target_flags |= OPTION_MASK_PREFER_AVX256;
+      && (opts_set->x_prefer_vector_width_type == PVW_NONE))
+    opts->x_prefer_vector_width_type = PVW_AVX256;
 
   if (opts->x_ix86_recip_name)
     {

@@ -1,3 +1,12 @@
+2017-11-21  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* g++.dg/ext/pr57362.C (__attribute__): Test
+	prefer-vector-width=[128|256] target attribute.
+	* gcc.target/i386/avx512f-constant-float-return.c (dg-optioins):
+	Use -mprefer-vector-width=256 instead of -mprefer-avx256.
+	* gcc.target/i386/avx512f-prefer.c: Ditto.
+	* gcc.target/i386/pr82460-2.c: Ditto.
+
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/cpp0x/constexpr-48089.C: Add quotes for constexpr
