@@ -1,3 +1,8 @@
+2017-11-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (find_jump_threads_backwards): Fix
+	typo in comment.
+
 2017-11-21  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* cfgrtl.c (force_nonfallthru_and_redirect): Don't split a call
