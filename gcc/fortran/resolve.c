@@ -2591,6 +2591,8 @@ generic:
       if (!gfc_convert_to_structure_constructor (expr, intr->sym, NULL,
 						 NULL, false))
 	return false;
+      if (!gfc_use_derived (expr->ts.u.derived))
+	return false;
       return resolve_structure_cons (expr, 0);
     }
 
