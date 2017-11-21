@@ -1,3 +1,9 @@
+2017-11-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add rtems*.
+	(GLIBCXX_ENABLE_FILESYSTEM_TS): Likewise.
+	* configure: Regenerate.
+
 2017-11-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/streambuf_iterator.h (istreambuf_iterator<>): Declare
