@@ -1,3 +1,8 @@
+2017-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83020
+	* g++.dg/cpp1z/pr83020.C: New.
+
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82880
