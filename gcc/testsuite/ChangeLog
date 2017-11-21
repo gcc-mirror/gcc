@@ -1,3 +1,8 @@
+2017-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83056
+	* gcc.dg/spellcheck-pr83056.c: New test case.
+
 2017-11-21  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82945

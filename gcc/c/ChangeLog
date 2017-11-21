@@ -1,3 +1,9 @@
+2017-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83056
+	* c-decl.c (lookup_name_fuzzy): Don't suggest names that came from
+	earlier failed lookups.
+
 2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* c-fold.c (c_fully_fold_internal): Handle POINTER_DIFF_EXPR.
