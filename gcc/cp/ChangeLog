@@ -1,3 +1,10 @@
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72786
+	* name-lookup.c (class macro_use_before_def): New class.
+	(lookup_name_fuzzy): Detect macro that were used before being
+	defined, and report them as such.
+
 2017-11-20  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (constrain_class_visibility): Don't warn about artificial
