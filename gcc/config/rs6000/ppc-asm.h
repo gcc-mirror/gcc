@@ -120,7 +120,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define f47	47
 #define f48	48
 #define f49	49
-#define f50	30
+#define f50	50
 #define f51	51
 #define f52	52
 #define f53	53
@@ -222,7 +222,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define vs47	47
 #define vs48	48
 #define vs49	49
-#define vs50	30
+#define vs50	50
 #define vs51	51
 #define vs52	52
 #define vs53	53
