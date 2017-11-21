@@ -2227,6 +2227,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_binary_op (pp, "+", t, flags);
       break;
 
+    case POINTER_DIFF_EXPR:
+      dump_binary_op (pp, "-", t, flags);
+      break;
+
     case INIT_EXPR:
     case MODIFY_EXPR:
       dump_binary_op (pp, OVL_OP_INFO (true, NOP_EXPR)->name, t, flags);

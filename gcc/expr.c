@@ -8555,6 +8555,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       return REDUCE_BIT_FIELD (simplify_gen_binary (PLUS, mode, op0, op1));
 
     case MINUS_EXPR:
+    case POINTER_DIFF_EXPR:
     do_minus:
       /* For initializers, we are allowed to return a MINUS of two
 	 symbolic constants.  Here we handle all cases when both operands

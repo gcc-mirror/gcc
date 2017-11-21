@@ -4623,6 +4623,7 @@ expand_debug_expr (tree exp)
       return simplify_gen_binary (PLUS, mode, op0, op1);
 
     case MINUS_EXPR:
+    case POINTER_DIFF_EXPR:
       return simplify_gen_binary (MINUS, mode, op0, op1);
 
     case MULT_EXPR:

@@ -1,3 +1,8 @@
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-fold.c (c_fully_fold_internal): Handle POINTER_DIFF_EXPR.
+	* c-typeck.c (pointer_diff): Use POINTER_DIFF_EXPR.
+
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/81404

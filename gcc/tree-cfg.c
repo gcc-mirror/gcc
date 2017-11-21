@@ -3142,6 +3142,25 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       CHECK_OP (1, "invalid operand to binary operator");
       break;
 
+    case POINTER_DIFF_EXPR:
+      if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
+	  || !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 1))))
+	{
+	  error ("invalid operand to pointer diff, operand is not a pointer");
+	  return t;
+	}
+      if (TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE
+	  || TYPE_UNSIGNED (TREE_TYPE (t))
+	  || (TYPE_PRECISION (TREE_TYPE (t))
+	      != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))))
+	{
+	  error ("invalid type for pointer diff");
+	  return t;
+	}
+      CHECK_OP (0, "invalid operand to pointer diff");
+      CHECK_OP (1, "invalid operand to pointer diff");
+      break;
+
     case POINTER_PLUS_EXPR:
       /* Check to make sure the first operand is a pointer or reference type. */
       if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
@@ -3968,6 +3987,25 @@ verify_gimple_assign_binary (gassign *stmt)
 	    || !ptrofftype_p (rhs2_type))
 	  {
 	    error ("type mismatch in pointer plus expression");
+	    debug_generic_stmt (lhs_type);
+	    debug_generic_stmt (rhs1_type);
+	    debug_generic_stmt (rhs2_type);
+	    return true;
+	  }
+
+	return false;
+      }
+
+    case POINTER_DIFF_EXPR:
+      {
+	if (!POINTER_TYPE_P (rhs1_type)
+	    || !POINTER_TYPE_P (rhs2_type)
+	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    || TREE_CODE (lhs_type) != INTEGER_TYPE
+	    || TYPE_UNSIGNED (lhs_type)
+	    || TYPE_PRECISION (lhs_type) != TYPE_PRECISION (rhs1_type))
+	  {
+	    error ("type mismatch in pointer diff expression");
 	    debug_generic_stmt (lhs_type);
 	    debug_generic_stmt (rhs1_type);
 	    debug_generic_stmt (rhs2_type);

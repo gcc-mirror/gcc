@@ -5396,7 +5396,7 @@ static tree
 pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
 	      tsubst_flags_t complain)
 {
-  tree result;
+  tree result, inttype;
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (ptrtype);
 
@@ -5428,14 +5428,31 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
 	return error_mark_node;
     }
 
-  /* First do the subtraction as integers;
-     then drop through to build the divide operator.  */
+  /* Determine integer type result of the subtraction.  This will usually
+     be the same as the result type (ptrdiff_t), but may need to be a wider
+     type if pointers for the address space are wider than ptrdiff_t.  */
+  if (TYPE_PRECISION (restype) < TYPE_PRECISION (TREE_TYPE (op0)))
+    inttype = c_common_type_for_size (TYPE_PRECISION (TREE_TYPE (op0)), 0);
+  else
+    inttype = restype;
 
-  op0 = cp_build_binary_op (loc,
-			    MINUS_EXPR,
-			    cp_convert (restype, op0, complain),
-			    cp_convert (restype, op1, complain),
-			    complain);
+  /* First do the subtraction, then build the divide operator
+     and only convert at the very end.
+     Do not do default conversions in case restype is a short type.  */
+
+  /* POINTER_DIFF_EXPR requires a signed integer type of the same size as
+     pointers.  If some platform cannot provide that, or has a larger
+     ptrdiff_type to support differences larger than half the address
+     space, cast the pointers to some larger integer type and do the
+     computations in that type.  */
+  if (TYPE_PRECISION (inttype) > TYPE_PRECISION (TREE_TYPE (op0)))
+    op0 = cp_build_binary_op (loc,
+			      MINUS_EXPR,
+			      cp_convert (inttype, op0, complain),
+			      cp_convert (inttype, op1, complain),
+			      complain);
+  else
+    op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
 
   /* This generates an error if op1 is a pointer to an incomplete type.  */
   if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (op1))))
@@ -5461,9 +5478,9 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
 
   /* Do the division.  */
 
-  result = build2_loc (loc, EXACT_DIV_EXPR, restype, op0,
-		       cp_convert (restype, op1, complain));
-  return result;
+  result = build2_loc (loc, EXACT_DIV_EXPR, inttype, op0,
+		       cp_convert (inttype, op1, complain));
+  return cp_convert (restype, result, complain);
 }
 
 /* Construct and perhaps optimize a tree representation

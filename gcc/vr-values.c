@@ -850,7 +850,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
      can derive a non-null range.  This happens often for
      pointer subtraction.  */
   if (vr->type == VR_VARYING
-      && code == MINUS_EXPR
+      && (code == MINUS_EXPR || code == POINTER_DIFF_EXPR)
       && TREE_CODE (op0) == SSA_NAME
       && ((vr0.type == VR_ANTI_RANGE
 	   && vr0.min == op1
@@ -858,7 +858,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 	  || (vr1.type == VR_ANTI_RANGE
 	      && vr1.min == op0
 	      && vr1.min == vr1.max)))
-      set_value_range_to_nonnull (vr, TREE_TYPE (op0));
+      set_value_range_to_nonnull (vr, expr_type);
 }
 
 /* Extract range information from a unary expression CODE OP0 based on
