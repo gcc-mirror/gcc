@@ -1,3 +1,12 @@
+2017-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/movbe-1.c: Update scan string for movbe
+	with integer suffix.
+	* gcc.target/i386/movbe-2.c: Ditto.
+	* gcc.target/i386/movbe-3.c: Ditto.
+	* gcc.target/i386/movbe-4.c: Ditto.
+	* gcc.target/i386/movbe-5.c: Ditto.
+
 2017-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/83020
