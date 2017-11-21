@@ -1760,7 +1760,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      tem = convert_modes (mode, hmode, lopart, 1);
 	      tem = expand_shift (LSHIFT_EXPR, mode, tem, hprec, NULL_RTX, 1);
 	      tem = expand_simple_binop (mode, MINUS, loxhi, tem, NULL_RTX,
-					 1, OPTAB_DIRECT);
+					 1, OPTAB_WIDEN);
 	      emit_move_insn (loxhi, tem);
 
 	      emit_label (after_hipart_neg);
@@ -1774,7 +1774,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 					 profile_probability::even ());
 
 	      tem = expand_simple_binop (mode, MINUS, loxhi, larger, NULL_RTX,
-					 1, OPTAB_DIRECT);
+					 1, OPTAB_WIDEN);
 	      emit_move_insn (loxhi, tem);
 
 	      emit_label (after_lopart_neg);
@@ -1783,7 +1783,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  /* loxhi += (uns) lo0xlo1 >> (bitsize / 2);  */
 	  tem = expand_shift (RSHIFT_EXPR, mode, lo0xlo1, hprec, NULL_RTX, 1);
 	  tem = expand_simple_binop (mode, PLUS, loxhi, tem, NULL_RTX,
-				     1, OPTAB_DIRECT);
+				     1, OPTAB_WIDEN);
 	  emit_move_insn (loxhi, tem);
 
 	  /* if (loxhi >> (bitsize / 2)
@@ -1810,7 +1810,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 			       convert_modes (hmode, mode, lo0xlo1, 1), 1);
 
 	  tem = expand_simple_binop (mode, IOR, loxhishifted, tem, res,
-				     1, OPTAB_DIRECT);
+				     1, OPTAB_WIDEN);
 	  if (tem != res)
 	    emit_move_insn (res, tem);
 	  emit_jump (done_label);
@@ -1835,7 +1835,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      if (!op0_medium_p)
 		{
 		  tem = expand_simple_binop (hmode, PLUS, hipart0, const1_rtx,
-					     NULL_RTX, 1, OPTAB_DIRECT);
+					     NULL_RTX, 1, OPTAB_WIDEN);
 		  do_compare_rtx_and_jump (tem, const1_rtx, GTU, true, hmode,
 					   NULL_RTX, NULL, do_error,
 					   profile_probability::very_unlikely ());
@@ -1844,7 +1844,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      if (!op1_medium_p)
 		{
 		  tem = expand_simple_binop (hmode, PLUS, hipart1, const1_rtx,
-					     NULL_RTX, 1, OPTAB_DIRECT);
+					     NULL_RTX, 1, OPTAB_WIDEN);
 		  do_compare_rtx_and_jump (tem, const1_rtx, GTU, true, hmode,
 					   NULL_RTX, NULL, do_error,
 					   profile_probability::very_unlikely ());
