@@ -1,3 +1,8 @@
+2017-11-20  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/81356
+	* gfortran.dg/pr45636.f90 (aarch64*-*-*): Remove from xfail list.
+
 2017-11-20  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
