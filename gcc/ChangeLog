@@ -1,3 +1,27 @@
+2017-11-21  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc-protos.h (arc_compute_frame_size): Delete
+	declaration.
+	(arc_return_slot_offset): Likewise.
+	(arc_eh_return_address_location): New declaration.
+	* config/arc/arc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Define.
+	(MUST_SAVE_REGISTER): Add exception handler case.
+	(MUST_SAVE_RETURN_ADDR): Likewise.
+	(arc_frame_pointer_required): Likewise.
+	(arc_frame_pointer_needed): New function.
+	(arc_compute_frame_size): Changed.
+	(arc_expand_prologue): Likewise.
+	(arc_expand_epilogue): Likewise.
+	(arc_initial_elimination_offset): Likewise.
+	(arc_return_slot_offset): Delete.
+	(arc_eh_return_address_location): New function.
+	(arc_builtin_setjmp_frame_value): Likewise.
+	* config/arc/arc.h (EH_RETURN_DATA_REGNO): Use 2 registers.
+	(EH_RETURN_STACKADJ_RTX): Define.
+	(EH_RETURN_HANDLER_RTX): Likewise.
+	* config/arc/arc.md (eh_return): Delete.
+
 2017-11-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* print-tree.h (debug_vec_tree): Remove prototype.
