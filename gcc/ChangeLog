@@ -3,6 +3,14 @@
 	Backport from mainline
 	2017-11-08  Martin Liska  <mliska@suse.cz>
 
+	* gimplify.c (expand_FALLTHROUGH_r): Simplify usage
+	of gimple_call_internal_p.
+
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-11-08  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/82792
 	* gimplify.c (expand_FALLTHROUGH_r): Skip IFN_ASAN_MARK.
 
