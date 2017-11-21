@@ -1,5 +1,5 @@
 // { dg-do assemble { target fpic } }
-// { dg-options "-O2 -fweb -fPIC -fvisibility=hidden" }
+// { dg-options "-O2 -fweb -fPIC -fvisibility=hidden -Wno-return-type" }
 // { dg-require-visibility "" }
 
 class QBasicAtomicInt
