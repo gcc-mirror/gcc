@@ -1,6 +1,11 @@
 2017-11-21  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82945
+	* calls.h (warn_nonstring_bound): Remove unused function.
+
+2017-11-21  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82945
 	* builtins.c (expand_builtin_strlen): Call maybe_warn_nonstring_arg.
 	* calls.h (maybe_warn_nonstring_arg): Declare new function.
 	* calls.c (get_attr_nonstring_decl, maybe_warn_nonstring_arg): New
