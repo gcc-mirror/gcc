@@ -1132,7 +1132,7 @@
    ; we adapt the length accordingly.
    (set (attr "length")
      (if_then_else (match_test "TARGET_HARD_FLOAT")
-      (const_int 12)
+      (const_int 34)
       (const_int 8)))
    ; We do not support predicate execution of returns from cmse_nonsecure_entry
    ; functions because we need to clear the APSR.  Since predicable has to be
