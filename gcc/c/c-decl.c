@@ -4035,6 +4035,8 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
       {
 	if (!binding->id || binding->invisible)
 	  continue;
+	if (binding->decl == error_mark_node)
+	  continue;
 	/* Don't use bindings from implicitly declared functions,
 	   as they were likely misspellings themselves.  */
 	if (TREE_CODE (binding->decl) == FUNCTION_DECL)
