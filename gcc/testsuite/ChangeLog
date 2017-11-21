@@ -1,5 +1,8 @@
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83047
+	* gcc.dg/pr83047.c: New test.
+
 	P0428R2 - familiar template syntax for generic lambdas
 	* g++.dg/cpp1y/lambda-generic-x.C: Adjust warnings and limit
 	to c++17_down target.

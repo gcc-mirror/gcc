@@ -1,5 +1,11 @@
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83047
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): If the loads with the
+	same vuse are in different basic blocks, for load_gsi pick a load
+	location that is dominated by the other loads.
+
 	PR c++/83059
 	* config/i386/i386.c (ix86_memmodel_check): Start
 	-Winvalid-memory-model diagnostics with lowercase letter.
