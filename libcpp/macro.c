@@ -3490,7 +3490,7 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 	  if (NODE_LEN (node) == len
 	      && !memcmp (p, NODE_NAME (node), len))
 	    {
-	      cpp_error (pfile, CPP_DL_WARNING,
+	      cpp_warning (pfile, CPP_W_TRADITIONAL,
 	   "macro argument \"%s\" would be stringified in traditional C",
 			 NODE_NAME (node));
 	      break;

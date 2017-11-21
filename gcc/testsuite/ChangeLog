@@ -1,3 +1,9 @@
+2017-11-20  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	PR preprocessor/81794
+	* gcc.dg/pragma-diag-7.c: Update to include check for
+	stringification.
+
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/81404
