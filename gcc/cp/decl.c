@@ -3315,7 +3315,7 @@ check_goto (tree decl)
       else if (ent->in_transaction_scope)
 	inform (input_location, "  enters synchronized or atomic statement");
       else if (ent->in_constexpr_if)
-	inform (input_location, "  enters constexpr if statement");
+	inform (input_location, "  enters %<constexpr%> if statement");
     }
 
   if (ent->in_omp_scope)
@@ -8606,7 +8606,7 @@ grokfndecl (tree ctype,
       if (inlinep & 1)
 	error ("cannot declare %<::main%> to be inline");
       if (inlinep & 2)
-	error ("cannot declare %<::main%> to be constexpr");
+	error ("cannot declare %<::main%> to be %<constexpr%>");
       if (!publicp)
 	error ("cannot declare %<::main%> to be static");
       inlinep = 0;
@@ -12050,7 +12050,7 @@ grokdeclarator (const cp_declarator *declarator,
 			   unqualified_id);
 		else if (constexpr_p && !initialized)
 		  {
-		    error ("constexpr static data member %qD must have an "
+		    error ("%<constexpr%> static data member %qD must have an "
 			   "initializer", decl);
 		    constexpr_p = false;
 		  }
@@ -12278,8 +12278,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  }
 	else if (constexpr_p && DECL_EXTERNAL (decl))
 	  {
-	    error ("declaration of constexpr variable %qD is not a definition",
-		   decl);
+	    error ("declaration of %<constexpr%> variable %qD "
+		   "is not a definition", decl);
 	    constexpr_p = false;
 	  }
 

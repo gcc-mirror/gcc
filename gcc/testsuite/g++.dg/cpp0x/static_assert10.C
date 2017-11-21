@@ -4,6 +4,6 @@
 template<typename T> bool foo(T)
 {
   int i;
-  static_assert(foo(i), "Error"); // { dg-error "non-constant condition|not usable|non-constexpr" }
+  static_assert(foo(i), "Error"); // { dg-error "non-constant condition|not usable|non-.constexpr." }
   return true;
 }

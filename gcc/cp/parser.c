@@ -11295,7 +11295,7 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
   if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
       && !function_body && cxx_dialect < cxx14)
     pedwarn (input_location, OPT_Wpedantic,
-	     "compound-statement in constexpr function");
+	     "compound-statement in %<constexpr%> function");
   /* Begin the compound-statement.  */
   compound_stmt = begin_compound_stmt (bcs_flags);
   /* If the next keyword is `__label__' we have a label declaration.  */

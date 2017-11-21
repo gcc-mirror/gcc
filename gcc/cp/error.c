@@ -3588,11 +3588,11 @@ maybe_print_constexpr_context (diagnostic_context *context)
       const char *s = expr_as_string (t, 0);
       if (context->show_column)
 	pp_verbatim (context->printer,
-		     _("%r%s:%d:%d:%R   in constexpr expansion of %qs"),
+		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, xloc.column, s);
       else
 	pp_verbatim (context->printer,
-		     _("%r%s:%d:%R   in constexpr expansion of %qs"),
+		     _("%r%s:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, s);
       pp_newline (context->printer);
     }

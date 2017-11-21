@@ -1,3 +1,26 @@
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	* class.c (finalize_literal_type_property): Add quotes for
+	constexpr keyword.
+	(explain_non_literal_class): Likewise.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Likewise.
+	(is_valid_constexpr_fn): Likewise.
+	(check_constexpr_ctor_body): Likewise.
+	(register_constexpr_fundef): Likewise.
+	(explain_invalid_constexpr_fn): Likewise.
+	(cxx_eval_builtin_function_call): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	(cxx_eval_loop_expr): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* decl.c (check_previous_goto_1): Likewise.
+	(check_goto): Likewise.
+	(grokfndecl): Likewise.
+	(grokdeclarator): Likewise.
+	* error.c (maybe_print_constexpr_context): Likewise.
+	* method.c (process_subob_fn): Likewise.
+	(defaulted_late_check): Likewise.
+	* parser.c (cp_parser_compound_statement): Likewise.
+
 2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* constexpr.c (cxx_eval_constant_expression,
