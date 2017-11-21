@@ -949,7 +949,8 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
   if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
       !path_range_of_def (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
     get_operand_range (range_op2, rn.operand2 ());
- 
+
+  normalize_bool_type (range_op1, range_op2);
   return rn.fold (r, range_op1, range_op2);
 }
 
@@ -958,17 +959,45 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
    otherwise return FALSE.
 
    DIR is FORWARD if BBS[0] is the definition and the last block is
-   the use.  DIR is REVERSE if the blocks are in reverse order.  */
+   the use.  DIR is REVERSE if the blocks are in reverse order.
+
+   If there is an edge leading into this path that we'd like to take
+   into account, such edge is START_EDGE.  Otherwise, START_EDGE is
+   set to NULL.  */
 
 bool
 path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
-			 enum path_range_direction dir)
+			 enum path_range_direction dir, edge start_edge)
 {
+  if (bbs.is_empty ())
+    return false;
+
+  /* If the first block defines NAME and it has meaningful range
+     information, use it, otherwise fall back to range for type.
+
+     Note: The first block may not always define NAME because we may
+     have pruned the paths such that the first block (bb1) is just the
+     first block that contains range info (bb99).  For example:
+
+     bb1:
+       x = 55;
+       ...
+       ...
+     bb99:
+       if (x > blah).
+  */
+  basic_block first_bb = dir == FORWARD ? bbs[0] : bbs[bbs.length () - 1];
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (gimple_bb (def_stmt) == first_bb && start_edge)
+    {
+      if (!path_range_of_def (r, def_stmt, start_edge))
+	r.set_range_for_type (TREE_TYPE (name));
+    }
+  else
+    r.set_range_for_type (TREE_TYPE (name));
+
   if (dir == REVERSE)
     return path_range_reverse (r, name, bbs);
-
-  /* ?? Should we start with a known range for NAME?  */
-  r.set_range_for_type (TREE_TYPE (name));
 
   for (unsigned i = 1; i < bbs.length (); ++i)
     {
@@ -985,15 +1014,15 @@ path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
 }
 
 /* The same as above, but handle the case where BBS are a path of
-   basic blocks in reverse order.  */
+   basic blocks in reverse order.
+
+   BBS[0] is the USE of NAME.
+   BBS[LEN-1] is the DEF of NAME.  */
 
 bool
 path_ranger::path_range_reverse (irange &r, tree name,
 				 const vec<basic_block> &bbs)
 {
-  /* ?? Should we start with a known range for NAME?  */
-  r.set_range_for_type (TREE_TYPE (name));
-
   for (int i = bbs.length () - 1; i > 0; --i)
     {
       edge e = find_edge (bbs[i], bbs[i - 1]);
