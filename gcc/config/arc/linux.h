@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define GLIBC_DYNAMIC_LINKER   "/lib/ld-linux.so.2"
+#define GLIBC_DYNAMIC_LINKER   "/lib/ld-linux-arc.so.2"
 #define UCLIBC_DYNAMIC_LINKER  "/lib/ld-uClibc.so.0"
 
 /* Note that the default is to link against dynamic libraries, if they are
