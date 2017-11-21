@@ -448,6 +448,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Alloc_traits;
 
+#if __cplusplus >= 201103L
+      static_assert(__is_invocable<const _Compare&, const _Key&, const _Key&>{},
+	  "comparison object must be invocable with two arguments of key type");
+#endif
+
     protected:
       typedef _Rb_tree_node_base* 		_Base_ptr;
       typedef const _Rb_tree_node_base* 	_Const_Base_ptr;
