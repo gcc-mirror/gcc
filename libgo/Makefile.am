@@ -1001,7 +1001,7 @@ CHECK = \
 	export MAKE; \
 	NM="$(NM)"; \
 	export NM; \
-	libgccdir=`${GOC} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
+	libgccdir=`${GOC} ${GOCFLAGS} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
 	LD_LIBRARY_PATH="`${PWD_COMMAND}`/.libs:$${libgccdir}:${LD_LIBRARY_PATH}"; \
 	LD_LIBRARY_PATH=`echo $${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LD_LIBRARY_PATH; \
