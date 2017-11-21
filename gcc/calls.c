@@ -1535,58 +1535,6 @@ get_attr_nonstring_decl (tree expr, tree *ref)
   return NULL_TREE;
 }
 
-/* Check the size argument to the strncmp built-in to see if it's within
-   the bounds of the arguments and if not, issue a warning.  */
-
-static void
-warn_nonstring_bound (tree fndecl, tree call)
-{
-  bool with_bounds = CALL_WITH_BOUNDS_P (call);
-
-  tree cnt = CALL_EXPR_ARG (call, with_bounds ? 4 : 2);
-
-  tree cntrange[2];
-  if (!get_size_range (cnt, cntrange))
-    return;
-
-  location_t callloc = EXPR_LOCATION (call);
-
-  for (unsigned i = 0; i != 2; ++i)
-    {
-      tree str = CALL_EXPR_ARG (call, i + 2 * with_bounds);
-
-      tree sref;
-      tree decl = get_attr_nonstring_decl (str, &sref);
-      if (!decl)
-	continue;
-
-      tree type = TREE_TYPE (decl);
-      if (TREE_CODE (type) != ARRAY_TYPE)
-	continue;
-
-      tree dom = TYPE_DOMAIN (type);
-      if (!dom)
-	continue;
-
-      tree bound = TYPE_MAX_VALUE (dom);
-      if (!bound)
-	continue;
-
-      bool warned = false;
-      if (tree_int_cst_le (bound, cntrange[0]))
-	warned = warning_at (callloc, OPT_Wstringop_truncation,
-			     "%qD argument %i declared attribute %<nonstring%> "
-			     "is smaller than the specified bound %E",
-			     fndecl, i, cntrange[0]);
-      if (warned)
-	{
-	  location_t loc = DECL_SOURCE_LOCATION (decl);
-	  if (loc != UNKNOWN_LOCATION)
-	    inform (loc, "argument %qD declared here", decl);
-	}
-    }
-}
-
 /* Warn about passing a non-string array/pointer to a function that
    expects a nul-terminated string argument.  */
 
