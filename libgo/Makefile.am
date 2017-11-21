@@ -1118,7 +1118,7 @@ syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
 
-# Solaris 12 changed the type of fields in struct stat.
+# Solaris 11.4 changed the type of fields in struct stat.
 # Use a build tag, based on a configure check, to cope.
 if LIBGO_IS_SOLARIS
 if HAVE_STAT_TIMESPEC
