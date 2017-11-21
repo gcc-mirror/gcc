@@ -1,5 +1,11 @@
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/81404
+	* g++.dg/spellcheck-stdlib.C: New.
+	* gcc.dg/spellcheck-stdlib.c (test_INT_MAX): New.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/spellcheck-stdlib.c: New test case.
 
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>

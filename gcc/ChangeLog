@@ -1,5 +1,10 @@
 2017-11-20  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/81404
+	* Makefile.in (C_COMMON_OBJS): Add c-family/known-headers.o.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/72786
 	* spellcheck.h (best_match::blithely_get_best_candidate): New
 	accessor.
