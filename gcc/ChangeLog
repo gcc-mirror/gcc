@@ -1,3 +1,10 @@
+2017-11-21  James Cowgill  <James.Cowgill@imgtec.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82880
+	* config/mips/frame-header-opt.c (mips_register_frame_header_opt):
+	Remove static keyword from f variable.
+
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83086
