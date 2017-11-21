@@ -406,9 +406,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  specialized algorithms %unique to linked lists, such as
    *  splicing, sorting, and in-place reversal.
    */
-  template<typename _Tp, typename _Alloc = allocator<_Tp> >
+  template<typename _Tp, typename _Alloc = allocator<_Tp>>
     class forward_list : private _Fwd_list_base<_Tp, _Alloc>
     {
+      static_assert(is_same<typename remove_cv<_Tp>::type, _Tp>::value,
+	  "std::forward_list must have a non-const, non-volatile value_type");
+#ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Tp>::value,
+	  "std::forward_list must have the same value_type as its allocator");
+#endif
+
     private:
       typedef _Fwd_list_base<_Tp, _Alloc>                  _Base;
       typedef _Fwd_list_node<_Tp>                          _Node;

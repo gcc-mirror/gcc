@@ -117,6 +117,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)
 #endif
 
+#if __cplusplus >= 201103L && defined(__STRICT_ANSI__)
+      static_assert(is_same<typename _Alloc::value_type, value_type>::value,
+	  "std::multimap must have the same value_type as its allocator");
+#endif
+
     public:
       class value_compare
       : public std::binary_function<value_type, value_type, bool>

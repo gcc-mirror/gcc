@@ -1,3 +1,58 @@
+2017-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/48101
+	* include/bits/allocator.h (allocator<const _Tp>)
+	(allocator<volatile _Tp>, allocator<const volatile _Tp>): Add partial
+	specializations.
+	* include/bits/forward_list.h (forward_list): Add static assertions.
+	* include/bits/hashtable.h (__cache_default): Use
+	__is_nothrow_invocable instead of __is_noexcept_hash.
+	(_Hashtable): Add static assertions.
+	* include/bits/hashtable_policy.h (__is_noexcept_hash): Remove.
+	* include/bits/stl_deque.h (deque): Add static assertions.
+	* include/bits/stl_function.h (_Identity<const _Tp>): Add partial
+	specialization.
+	* include/bits/stl_list.h (list): Add static assertions.
+	* include/bits/stl_map.h (map): Likewise.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree): Likewise.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* include/bits/unordered_map.h (unordered_map, unordered_multimap):
+	Use typename instead of class in template-parameter-list and remove
+	spaces.
+	* include/bits/unordered_set.h (unordered_set, unordered_multiset):
+	Likewise.
+	* testsuite/23_containers/deque/48101-2_neg.cc: New test.
+	* testsuite/23_containers/deque/48101_neg.cc: New test.
+	* testsuite/23_containers/forward_list/48101-2_neg.cc: New test.
+	* testsuite/23_containers/forward_list/48101_neg.cc: New test.
+	* testsuite/23_containers/list/48101-2_neg.cc: New test.
+	* testsuite/23_containers/list/48101_neg.cc: New test.
+	* testsuite/23_containers/map/48101-2_neg.cc: New test.
+	* testsuite/23_containers/map/48101_neg.cc: New test.
+	* testsuite/23_containers/map/operations/31440.cc: Fix comparison
+	object to have const-qualified call operator.
+	* testsuite/23_containers/multimap/48101-2_neg.cc: New test.
+	* testsuite/23_containers/multimap/48101_neg.cc: New test.
+	* testsuite/23_containers/multiset/48101-2_neg.cc: New test.
+	* testsuite/23_containers/multiset/48101_neg.cc: New test.
+	* testsuite/23_containers/set/48101-2_neg.cc: New test.
+	* testsuite/23_containers/set/48101_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/48101-2_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/48101_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/48101-2_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/48101_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/48101-2_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/48101_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/48101-2_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/48101_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/23_containers/vector/48101-2_neg.cc: New test.
+	* testsuite/23_containers/vector/48101_neg.cc: New test.
+
 2017-11-21  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	* doc/xml/manual/using.xml (manual.intro.using.macros): Move

@@ -347,6 +347,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
 #endif
 
+#if __cplusplus >= 201103L
+      static_assert(is_same<typename remove_cv<_Tp>::type, _Tp>::value,
+	  "std::vector must have a non-const, non-volatile value_type");
+# ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Tp>::value,
+	  "std::vector must have the same value_type as its allocator");
+# endif
+#endif
+
       typedef _Vector_base<_Tp, _Alloc>			_Base;
       typedef typename _Base::_Tp_alloc_type		_Tp_alloc_type;
       typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type>	_Alloc_traits;
