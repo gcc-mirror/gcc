@@ -1,3 +1,10 @@
+2017-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*bswap<mode>2_movbe): Add
+	integer suffix to movbe mnemonic.
+	(*bswaphi2_movbe): Ditto.
+	(bswaphi_lowpart): Merge with *bswaphi_lowpart_1.
+
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83045
