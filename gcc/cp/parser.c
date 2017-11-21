@@ -10512,9 +10512,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	pedwarn (parser->lexer->next_token->location, 0,
 		 "lambda templates are only available with "
 		 "-std=c++14 or -std=gnu++14");
-      else
+      else if (cxx_dialect < cxx2a)
 	pedwarn (parser->lexer->next_token->location, OPT_Wpedantic,
-		 "ISO C++ does not support lambda templates");
+		 "lambda templates are only available with "
+		 "-std=c++2a or -std=gnu++2a");
 
       cp_lexer_consume_token (parser->lexer);
 
