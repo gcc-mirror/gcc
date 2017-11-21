@@ -4674,8 +4674,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inlining %s to %s with frequency %4.2f\n",
-	       xstrdup_for_dump (id->src_node->dump_name ()),
-	       xstrdup_for_dump (id->dst_node->dump_name ()),
+	       id->src_node->dump_name (),
+	       id->dst_node->dump_name (),
 	       cg_edge->sreal_frequency ().to_double ());
       id->src_node->dump (dump_file);
       id->dst_node->dump (dump_file);
