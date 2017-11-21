@@ -4087,16 +4087,19 @@ st_read_done (st_parameter_dt *dtp)
   if (dtp->u.p.current_unit != NULL
       && dtp->u.p.current_unit->child_dtio == 0)
     {
-      if (is_internal_unit (dtp) &&
-	  (dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
-        {
-	  free (dtp->u.p.current_unit->filename);
-	  dtp->u.p.current_unit->filename = NULL;
-	  free (dtp->u.p.current_unit->s);
-	  dtp->u.p.current_unit->s = NULL;
-	  if (dtp->u.p.current_unit->ls)
-	    free (dtp->u.p.current_unit->ls);
-	  dtp->u.p.current_unit->ls = NULL;
+      if (is_internal_unit (dtp))
+	{
+	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
+	    {
+	      free (dtp->u.p.current_unit->filename);
+	      dtp->u.p.current_unit->filename = NULL;
+	      free (dtp->u.p.current_unit->s);
+	      dtp->u.p.current_unit->s = NULL;
+	      if (dtp->u.p.current_unit->ls)
+		free (dtp->u.p.current_unit->ls);
+	      dtp->u.p.current_unit->ls = NULL;
+	    }
+	  newunit_free (dtp->common.unit);
 	}
       if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
 	{
@@ -4155,16 +4158,19 @@ st_write_done (st_parameter_dt *dtp)
 
       /* If this is a parent WRITE statement we do not need to retain the
 	 internal unit structure for child use.  */
-      if (is_internal_unit (dtp) &&
-	  (dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
+      if (is_internal_unit (dtp))
 	{
-	  free (dtp->u.p.current_unit->filename);
-	  dtp->u.p.current_unit->filename = NULL;
-	  free (dtp->u.p.current_unit->s);
-	  dtp->u.p.current_unit->s = NULL;
-	  if (dtp->u.p.current_unit->ls)
-	    free (dtp->u.p.current_unit->ls);
-	  dtp->u.p.current_unit->ls = NULL;
+	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
+	    {
+	      free (dtp->u.p.current_unit->filename);
+	      dtp->u.p.current_unit->filename = NULL;
+	      free (dtp->u.p.current_unit->s);
+	      dtp->u.p.current_unit->s = NULL;
+	      if (dtp->u.p.current_unit->ls)
+		free (dtp->u.p.current_unit->ls);
+	      dtp->u.p.current_unit->ls = NULL;
+	    }
+	  newunit_free (dtp->common.unit);
 	}
       if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
 	{
