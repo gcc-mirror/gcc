@@ -1,3 +1,8 @@
+2017-11-21  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* doc/xml/manual/using.xml (manual.intro.using.macros): Move
+	variablelist element at the end of its list.
+
 2017-11-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add rtems*.
