@@ -99,4 +99,11 @@ enum stack_protector_guard {
   SSP_GLOBAL    /* global canary */
 };
 
+enum prefer_vector_width {
+    PVW_NONE,
+    PVW_AVX128,
+    PVW_AVX256,
+    PVW_AVX512
+};
+
 #endif

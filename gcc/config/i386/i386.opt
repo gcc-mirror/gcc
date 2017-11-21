@@ -182,6 +182,10 @@ int x_ix86_tune_no_default
 TargetSave
 enum ix86_veclibabi x_ix86_veclibabi_type
 
+;; -mprefer-vector-width=
+TargetSave
+enum prefer_vector_width x_prefer_vector_width_type
+
 ;; x86 options
 m128bit-long-double
 Target RejectNegative Report Mask(128BIT_LONG_DOUBLE) Save
@@ -588,12 +592,28 @@ Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4
 or znver1 and Haifa scheduling is selected.
 
 mprefer-avx128
-Target Report Mask(PREFER_AVX128) Save
+Target Alias(mprefer-vector-width=, 128, 256)
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
 
-mprefer-avx256
-Target Report Mask(PREFER_AVX256) Var(ix86_target_flags) Save
-Use 256-bit AVX instructions instead of 512-bit AVX instructions in the auto-vectorizer.
+mprefer-vector-width=
+Target Report RejectNegative Joined Var(prefer_vector_width_type) Enum(prefer_vector_width) Init(PVW_NONE)
+Use given register vector width instructions instead of maximum register width in the auto-vectorizer.
+
+Enum
+Name(prefer_vector_width) Type(enum prefer_vector_width)
+Known preferred register vector length (to use with the -mprefer-vector-width= option)
+
+EnumValue
+Enum(prefer_vector_width) String(none) Value(PVW_NONE)
+
+EnumValue
+Enum(prefer_vector_width) String(128) Value(PVW_AVX128)
+
+EnumValue
+Enum(prefer_vector_width) String(256) Value(PVW_AVX256)
+
+EnumValue
+Enum(prefer_vector_width) String(512) Value(PVW_AVX512)
 
 ;; ISA support
 

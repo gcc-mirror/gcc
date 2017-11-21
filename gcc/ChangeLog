@@ -1,3 +1,18 @@
+2017-11-21  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* config/i386/i386-opts.h (enum prefer_vector_width): Added new enum
+	for the new option -mprefer-vector-width=[none|128|256|512].
+	* config/i386/i386.c (ix86_target_string): remove old style options
+	-mprefer-avx256 and make -mprefer-avx128 as alias.
+	(ix86_option_override_internal):  Apply defaults for the
+	-mprefer-vector-width=[128|256] option.
+	* config/i386/i386.h (TARGET_PREFER_AVX128, TARGET_PREFER_AVX256):
+	Implement macros to work with -mprefer-vector-width=.
+	* config/i386/i386.opt: Implemented option
+	-mprefer-vector-width=[none|128|256|512].
+	* doc/invoke.texi: Documentation for
+	-mprefer-vector-width=[none|128|256|512].
+
 2017-11-21  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/ppc-asm.h (f50, vs50): Fix values.
