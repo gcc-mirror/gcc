@@ -89,7 +89,7 @@ void test_pointer (const char *s, unsigned n)
   strncpy (pns_1, "a", 1);
   strncpy (pns_2, "ab", 2);
   strncpy (pns_3, "abc", 3);
-  strncpy (pns_3, s7, 3);         /* { dg-warning "output truncated copying 3 bytes from a string of length 7" } */
+  strncpy (pns_3, s7, 3);
 
   strncpy (pns_1, s, 1);
   strncpy (pns_2, s, 1);
@@ -105,6 +105,7 @@ void test_member_array (struct MemArrays *p, const char *s, unsigned n)
 {
   const char s7[] = "1234567";
 
+  strncpy (p->ma3, "", 0);
   strncpy (p->ma3, "a", 1);
   strncpy (p->ma4, "ab", 2);
   strncpy (p->ma5, "abc", 3);
