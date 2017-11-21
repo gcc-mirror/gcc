@@ -1,3 +1,8 @@
+2017-11-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* print-tree.h (debug_vec_tree): Remove prototype.
+	* gdbinit.in (pvt): Remove macro.
+
 2017-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83047
