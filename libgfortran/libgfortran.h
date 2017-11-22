@@ -266,12 +266,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
    simply equal to the kind parameter itself.  */
 #define GFC_SIZE_OF_CHAR_KIND(kind) (kind)
 
-/* This will be 0 on little-endian machines and one on big-endian machines.  */
-extern int big_endian;
-internal_proto(big_endian);
-
 #define GFOR_POINTER_TO_L1(p, kind) \
-  (big_endian * (kind - 1) + (GFC_LOGICAL_1 *)(p))
+  ((__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? 1: 0) * (kind - 1) + (GFC_LOGICAL_1 *)(p))
 
 #define GFC_INTEGER_1_HUGE \
   (GFC_INTEGER_1)((((GFC_UINTEGER_1)1) << 7) - 1)

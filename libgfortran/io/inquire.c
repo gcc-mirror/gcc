@@ -612,13 +612,12 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
       else
 	switch (u->flags.convert)
 	  {
-	    /*  big_endian is 0 for little-endian, 1 for big-endian.  */
 	  case GFC_CONVERT_NATIVE:
-	    p = big_endian ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
 	    break;
 
 	  case GFC_CONVERT_SWAP:
-	    p = big_endian ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
 	    break;
 
 	  default:

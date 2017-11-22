@@ -2723,8 +2723,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       if (conv == GFC_CONVERT_NONE)
 	conv = compile_options.convert;
 
-      /* We use big_endian, which is 0 on little-endian machines
-	 and 1 on big-endian machines.  */
       switch (conv)
 	{
 	case GFC_CONVERT_NATIVE:
@@ -2732,11 +2730,11 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  break;
 
 	case GFC_CONVERT_BIG:
-	  conv = big_endian ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
+	  conv = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
 	  break;
 
 	case GFC_CONVERT_LITTLE:
-	  conv = big_endian ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
+	  conv = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
 	  break;
 
 	default:
