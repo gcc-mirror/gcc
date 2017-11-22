@@ -10,4 +10,4 @@ __m128d foo1(__m128d z, __m128d  a, int N) {
   }
   return a;
 }
-/* { dg-message "note: expected '\[^'\n\]*' but argument is of type '\[^'\n\]*'" "note: expected" { target *-*-* } 0 } */
+/* { dg-message "note: expected '.*'.* but argument is of type '.*'" "note: expected" { target *-*-* } 0 } */

@@ -1,3 +1,15 @@
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* error.c (type_to_string): Add leading comment.  Add params
+	"postprocessed", "quote", and "show_color", using them to fix
+	quoting of the "aka" for types involving typedefs.
+	(arg_to_string): Update for new params to type_to_string.
+	(cxx_format_postprocessor::handle): Likewise.
+	(cp_printer): Convert penultimate param from bool to bool *.
+	Update call to type_to_string and calls to
+	defer_phase_2_of_type_diff.
+
 2017-11-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/60336
