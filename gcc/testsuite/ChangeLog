@@ -1,3 +1,10 @@
+2017-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-compile.c: New.
+	* gcc.target/arm/simd/vect-dot-qi.h: New.
+	* gcc.target/arm/simd/vect-dot-s8.c: New.
+	* gcc.target/arm/simd/vect-dot-u8.c: New
+
 2017-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_effective_target_bswap16):
