@@ -400,15 +400,6 @@ expression_for_id (unsigned int id)
   return expressions[id];
 }
 
-/* Free the expression id field in all of our expressions,
-   and then destroy the expressions array.  */
-
-static void
-clear_expression_ids (void)
-{
-  expressions.release ();
-}
-
 static object_allocator<pre_expr_d> pre_expr_pool ("pre_expr nodes");
 
 /* Given an SSA_NAME NAME, get or create a pre_expr to represent it.  */
@@ -1329,7 +1320,6 @@ get_representative_for (const pre_expr e)
 
   return name;
 }
-
 
 
 static pre_expr
@@ -3004,7 +2994,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       gcc_assert (!(pred->flags & EDGE_ABNORMAL));
       if (!gimple_seq_empty_p (stmts))
 	{
-	  gsi_insert_seq_on_edge (pred, stmts);
+	  basic_block new_bb = gsi_insert_seq_on_edge_immediate (pred, stmts);
+	  gcc_assert (! new_bb);
 	  insertions = true;
 	}
       if (!builtexpr)
@@ -4127,6 +4118,7 @@ static void
 fini_pre ()
 {
   value_expressions.release ();
+  expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
@@ -4181,22 +4173,21 @@ pass_pre::execute (function *fun)
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
   split_critical_edges ();
+  scev_initialize ();
 
   run_scc_vn (VN_WALK);
 
   init_pre ();
-  scev_initialize ();
-
-  /* Collect and value number expressions computed in each basic block.  */
-  compute_avail ();
 
   /* Insert can get quite slow on an incredibly large number of basic
      blocks due to some quadratic behavior.  Until this behavior is
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
-     computing ANTIC, either, even though it's plenty fast.  */
+     computing ANTIC, either, even though it's plenty fast nor do
+     we require AVAIL.  */
   if (n_basic_blocks_for_fn (fun) < 4000)
     {
+      compute_avail ();
       compute_antic ();
       insert ();
     }
@@ -4211,19 +4202,19 @@ pass_pre::execute (function *fun)
      not keeping virtual operands up-to-date.  */
   gcc_assert (!need_ssa_update_p (fun));
 
-  /* Remove all the redundant expressions.  */
-  todo |= vn_eliminate (inserted_exprs);
-
   statistics_counter_event (fun, "Insertions", pre_stats.insertions);
   statistics_counter_event (fun, "PA inserted", pre_stats.pa_insert);
   statistics_counter_event (fun, "HOIST inserted", pre_stats.hoist_insert);
   statistics_counter_event (fun, "New PHIs", pre_stats.phis);
 
-  clear_expression_ids ();
+  /* Remove all the redundant expressions.  */
+  todo |= vn_eliminate (inserted_exprs);
+
+  remove_dead_inserted_code ();
+
+  fini_pre ();
 
   scev_finalize ();
-  remove_dead_inserted_code ();
-  fini_pre ();
   loop_optimizer_finalize ();
 
   /* Restore SSA info before tail-merging as that resets it as well.  */
