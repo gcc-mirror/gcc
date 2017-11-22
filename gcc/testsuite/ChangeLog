@@ -1,3 +1,7 @@
+2017-11-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pr56184.C: Add -Wno-return-type to dg-options.
+
 2017-11-22  Marek Polacek  <polacek@redhat.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Jason Merrill  <jason@redhat.com>
