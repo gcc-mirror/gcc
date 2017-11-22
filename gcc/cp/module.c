@@ -3357,6 +3357,8 @@ cpms_out::core_vals (tree t)
       WT (t->decl_common.size_unit);
       WT (t->decl_common.attributes);
       switch (code)
+	// FIXME: Perhaps this should be done with the later
+	// polymorphic check?
 	{
 	default:
 	  break;
@@ -3365,6 +3367,7 @@ cpms_out::core_vals (tree t)
 	    break;
 	  /* FALLTHROUGH */
 	case PARM_DECL:
+	case CONST_DECL:
 	  WT (t->decl_common.initial);
 	  break;
 	}
@@ -3410,7 +3413,7 @@ cpms_out::core_vals (tree t)
     {} // FIXME?
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONST_DECL))
-    gcc_unreachable (); // FIXME
+    { /* No extra fields.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
@@ -3734,6 +3737,8 @@ cpms_in::core_vals (tree t)
       RT (t->decl_common.size_unit);
       RT (t->decl_common.attributes);
       switch (code)
+	// FIXME: Perhaps this should be done with the later
+	// polymorphic check?
 	{
 	default:
 	  break;
@@ -3742,6 +3747,7 @@ cpms_in::core_vals (tree t)
 	    break;
 	  /* FALLTHROUGH */
 	case PARM_DECL:
+	case CONST_DECL:
 	  RT (t->decl_common.initial);
 	  break;
 	}
@@ -3787,7 +3793,7 @@ cpms_in::core_vals (tree t)
     {} // FIXME?
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONST_DECL))
-    gcc_unreachable (); // FIXME
+    { /* No extra fields.  */ }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {

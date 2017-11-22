@@ -1,3 +1,11 @@
+2017-11-22  Nathan Sidwell  <nathan@acm.org>
+
+	Non-type template parms, & nested template classes.
+	gcc/cp/
+	* module.c (cpms_{in,out}::core_vals): Deal with CONST_DECLs.
+	gcc/testsuite/
+	* g++.dg/modules/tplmem-3_[ab].C: New.
+
 2017-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	Member types
