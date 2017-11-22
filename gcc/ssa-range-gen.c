@@ -48,6 +48,118 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 
 
+class ssa_global_cache
+{
+private:
+  vec<irange_storage *> tab;
+public:
+  ssa_global_cache ();
+  ~ssa_global_cache ();
+  bool get_global_range (irange& r, tree name)  const;
+  void set_global_range (tree name, const irange&r);
+  void clear ();
+  void copy_to_range_info ();
+  void dump (FILE *f = stderr);
+};
+
+
+ssa_global_cache::ssa_global_cache ()
+{
+  tab.create (0);
+  tab.safe_grow_cleared (num_ssa_names);
+}
+
+ssa_global_cache::~ssa_global_cache ()
+{
+  tab.release ();
+}
+
+bool
+ssa_global_cache::get_global_range (irange &r, tree name) const
+{
+  irange_storage *stow = tab[SSA_NAME_VERSION (name)];
+  if (stow)
+    {
+      r.set_range (stow, TREE_TYPE (name));
+      return true;
+    }
+  r.set_range (name);
+  return false;
+}
+
+void
+ssa_global_cache::set_global_range (tree name, const irange& r)
+{
+  irange_storage *m = tab[SSA_NAME_VERSION (name)];
+
+  if (m)
+    m->set_irange (r);
+  else
+    {
+      m = irange_storage::ggc_alloc_init (r);
+      tab[SSA_NAME_VERSION (name)] = m;
+    }
+}
+
+void
+ssa_global_cache::clear ()
+{
+  memset (tab.address(), 0, tab.length () * sizeof (irange_storage *));
+}
+
+void
+ssa_global_cache::copy_to_range_info ()
+{
+  unsigned x;
+  irange r;
+  for ( x = 1; x < num_ssa_names; x++)
+    if (get_global_range (r, ssa_name (x)))
+      {
+        if (!r.range_for_type_p ())
+	  {
+	    irange_storage *stow = irange_storage::ggc_alloc_init (r);
+	    SSA_NAME_RANGE_INFO (ssa_name (x)) = stow;
+	  }
+      }
+}
+
+void
+ssa_global_cache::dump (FILE *f)
+{
+  unsigned x;
+  irange r;
+  for ( x = 1; x < num_ssa_names; x++)
+    if (valid_irange_ssa (ssa_name (x)) && get_global_range (r, ssa_name (x)))
+      {
+        print_generic_expr (f, ssa_name (x), 0);
+	fprintf (f, "  : ");
+        r.dump (f);
+      }
+}
+
+
+
+ssa_global_cache *globals = NULL;
+
+bool
+get_global_ssa_range (irange& r, tree name)
+{
+  if (globals)
+    return globals->get_global_range (r, name);
+
+  r.set_range (name);
+  return false;
+}
+
+void
+set_global_ssa_range (tree name, const irange&r)
+{
+  gcc_assert (globals);
+  globals->set_global_range (name, r);
+}
+
+
+
 // Internally, the range operators all use boolen_type_node when comparisons
 // and such are made to create ranges for logical operations.
 // some languages, such as fortran, may use boolean types with different
@@ -270,11 +382,15 @@ gori::gori ()
 {
   gori_map.create (0);
   gori_map.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  gcc_assert (globals == NULL);
+  globals = new ssa_global_cache ();
 }
 
 gori::~gori ()
 {
   gori_map.release ();
+  delete globals;
+  globals = NULL;
 }
 
 /* Is the last stmt in a block interesting to look at for range info.  */
@@ -370,6 +486,9 @@ gori::dump (FILE *f)
     }
   fprintf (f, "\n");
 
+  fprintf (f, "\nDUMPING Globals table\n");
+  globals->dump (f);
+  
 }
 
 bool 
@@ -572,7 +691,7 @@ gori::range_of_def (irange& r, gimple *g, tree name,
 }
 // -------------------------------------------------------------------------
 
-ssa_range_cache::ssa_range_cache (tree t)
+ssa_block_ranges::ssa_block_ranges (tree t)
 {
   irange tr;
   gcc_assert (TYPE_P (t));
@@ -587,13 +706,13 @@ ssa_range_cache::ssa_range_cache (tree t)
   tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = type_range;
 }
 
-ssa_range_cache::~ssa_range_cache ()
+ssa_block_ranges::~ssa_block_ranges ()
 {
   tab.release ();
 }
 
 void
-ssa_range_cache::set_range (const basic_block bb, const irange& r)
+ssa_block_ranges::set_bb_range (const basic_block bb, const irange& r)
 {
   irange_storage *m = tab[bb->index];
 
@@ -606,14 +725,14 @@ ssa_range_cache::set_range (const basic_block bb, const irange& r)
 }
 
 void
-ssa_range_cache::set_range_for_type (const basic_block bb)
+ssa_block_ranges::set_bb_range_for_type (const basic_block bb)
 {
   tab[bb->index] = type_range;
 }
 
 
 bool
-ssa_range_cache::get_range (irange& r, const basic_block bb)
+ssa_block_ranges::get_bb_range (irange& r, const basic_block bb)
 {
   irange_storage *m = tab[bb->index];
   if (m)
@@ -627,19 +746,19 @@ ssa_range_cache::get_range (irange& r, const basic_block bb)
 
 // Returns true if a range is present
 bool
-ssa_range_cache::range_p (const basic_block bb)
+ssa_block_ranges::bb_range_p (const basic_block bb)
 {
   return tab[bb->index] != NULL;
 }
 
 void
-ssa_range_cache::dump (FILE *f)
+ssa_block_ranges::dump (FILE *f)
 {
   basic_block bb;
   irange r;
 
   FOR_EACH_BB_FN (bb, cfun)
-    if (get_range (r, bb))
+    if (get_bb_range (r, bb))
       {
 	fprintf (f, "BB%d  -> ", bb->index);
 	r.dump (f);
@@ -648,13 +767,13 @@ ssa_range_cache::dump (FILE *f)
 
 // -------------------------------------------------------------------------
 
-range_cache::range_cache ()
+block_range_cache::block_range_cache ()
 {
   ssa_ranges.create (0);
   ssa_ranges.safe_grow_cleared (num_ssa_names);
 }
 
-range_cache::~range_cache ()
+block_range_cache::~block_range_cache ()
 {
   unsigned x;
   for (x = 0; x < ssa_ranges.length (); ++x)
@@ -665,18 +784,18 @@ range_cache::~range_cache ()
   ssa_ranges.release ();
 }
 
-ssa_range_cache&
-range_cache::operator[] (tree name)
+ssa_block_ranges&
+block_range_cache::operator[] (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (!ssa_ranges[v])
-    ssa_ranges[v] = new ssa_range_cache (TREE_TYPE (name));
+    ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name));
 
   return *(ssa_ranges[v]);
 }
 
 void
-range_cache::dump (FILE *f)
+block_range_cache::dump (FILE *f)
 {
   unsigned x;
   for (x = 0; x < num_ssa_names; ++x)
@@ -703,7 +822,7 @@ path_ranger::range_for_bb (irange &r, tree name, basic_block bb,
 {
   bool res;
   determine_block (name, bb, def_bb);
-  res = block_cache[name].get_range (r, bb);
+  res = block_cache[name].get_bb_range (r, bb);
   gcc_assert (res);
 }
 
@@ -725,7 +844,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
     def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   /* Start with any known range.  */
-  r.set_range (name);
+  get_global_ssa_range (r, name);
 
   /* If its defined in this basic block, then there is no range on entry,
      otherwise, go figure out what is known in predecessor blocks.  */
@@ -750,7 +869,7 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
   if (stmt && gimple_bb (stmt) == e->src)
     {
       if (!path_range_of_def (r, stmt))
-        r.set_range (name);
+        get_global_ssa_range (r, name);
     }
   else
     /* Get the range for the def and possible basic block.  */
@@ -782,11 +901,11 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     return;
 
   /* If the block cache is set, then we've already visited this block.  */
-  if (block_cache[name].range_p (bb))
+  if (block_cache[name].bb_range_p (bb))
     return;
 
   /* Avoid infinite recursion by marking this block as calculated.  */
-  block_cache[name].set_range_for_type (bb);
+  block_cache[name].set_bb_range_for_type (bb);
 
   /* Visit each predecessor to reseolve them.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -802,10 +921,10 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
       basic_block src = e->src;
       // Should be using range_on_def
       if (src == def_bb)
-        pred_range.set_range (name);
+        get_global_ssa_range (pred_range, name);
       else
         {
-	  bool res = block_cache[name].get_range (pred_range, src);
+	  bool res = block_cache[name].get_bb_range (pred_range, src);
 	  gcc_assert (res);
 	}
 
@@ -822,9 +941,9 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     }
 
   if (block_result.range_for_type_p ())
-    block_cache[name].set_range_for_type (bb);
+    block_cache[name].set_bb_range_for_type (bb);
   else
-    block_cache[name].set_range (bb, block_result);
+    block_cache[name].set_bb_range (bb, block_result);
 }
 
 bool
@@ -879,19 +998,78 @@ ssa_name_same_bb_p (tree name, basic_block bb)
   return true;
 }
 
+bool
+path_ranger::path_fold_stmt (irange &r, range_stmt &rn, basic_block bb, edge e)
+{
+  irange range_op1, range_op2;
+
+  if (!rn.ssa_operand1 () || !ssa_name_same_bb_p (rn.ssa_operand1 (), bb) ||
+      !path_range_of_def (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()), e))
+    get_operand_range (range_op1, rn.operand1 ());
+
+  // If this is a unary operation, call fold now.  
+  if (!rn.operand2 ())
+    return rn.fold (r, range_op1);
+
+  if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
+      !path_range_of_def (range_op2,
+			  SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
+    get_operand_range (range_op2, rn.operand2 ());
+
+  normalize_bool_type (range_op1, range_op2);
+  return rn.fold (r, range_op1, range_op2);
+}
+
+// Attempt to evaluate NAME within the basic block it is defined as far
+// as possible. With an edge provided, we must do the calculation on demand
+// since the global cache involves collating ALL the incoming edges.  This
+// can potentially change all the values in the block.
+bool
+path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
+{
+  if (!e)
+    return path_range_of_def (r, g);
+
+  basic_block bb = gimple_bb (g);
+  tree arg;
+
+  /* If an edge is provided, it must be an incoming edge to this BB.  */
+  gcc_assert (e->dest == bb);
+
+  // Note that since we are remaining within BB, we do not attempt to further
+  // evaluate any of the arguments of a PHI at this point.
+  // a recursive call could be made to evaluate any SSA_NAMEs on their
+  // repsective edgesin PATH form, but we leave that as something to look into
+  // later.  For the moment, just pick up any edge information since its cheap.
+  if (is_a <gphi *> (g))
+    {
+      gphi *phi = as_a <gphi *> (g);
+      gcc_assert (e->dest == bb);
+      arg = gimple_phi_arg_def (phi, e->dest_idx);
+      // Pick up anything simple we might know about the incoming edge. 
+      if (!range_on_edge (r, arg, e))
+	return get_operand_range (r, arg);
+      return true;
+    }
+
+  range_stmt rn(g);
+  if (!rn.valid())
+    return false;
+
+  return path_fold_stmt (r, rn, bb, e);
+
+}
+
 // Attempt to evaluate NAME within the basic block it is defined as far
 // as possible. IF a PHI is encountered at the beginning of the block, either
 // fully evalaute it, or if E is provided, use just the value from that edge.
 bool
-path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
+path_ranger::path_range_of_def (irange &r, gimple *g)
 {
   tree name = gimple_get_lhs (g);
   basic_block bb = gimple_bb (g);
   tree arg;
   irange range_op1, range_op2;
-
-  /* If an edge is provided, it must be an incoming edge to this BB.  */
-  gcc_assert (!e || e->dest == bb);
 
   // Note that since we are remaining within BB, we do not attempt to further
   // evaluate any of the arguments of a PHI at this point.
@@ -904,16 +1082,10 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
       tree phi_def = gimple_phi_result (phi);
       irange tmp;
       unsigned x;
+      edge e;
 
-      if (e)
-        {
-	  gcc_assert (e->dest == bb);
-          arg = gimple_phi_arg_def (phi, e->dest_idx);
-	  // Pick up anything simple we might know about the incoming edge. 
-	  if (!range_on_edge (r, arg, e))
-	    return get_operand_range (r, arg);
-	  return true;
-	}
+      if (get_global_ssa_range (r, phi_def))
+        return true;
 
       r.clear (TREE_TYPE (phi_def));
       for (x = 0; x < gimple_phi_num_args (phi); x++)
@@ -927,31 +1099,26 @@ path_ranger::path_range_of_def (irange &r, gimple *g, edge e)
 	  if (r.range_for_type_p ())
 	    return true;
 	}
+
+      set_global_ssa_range (phi_def, r);
       return true;
     }
-
-  name = gimple_get_lhs (g);
-  if (!name)
-    return false;
 
   range_stmt rn(g);
   if (!rn.valid())
     return false;
 
-  if (!rn.ssa_operand1 () || !ssa_name_same_bb_p (rn.ssa_operand1 (), bb) ||
-      !path_range_of_def (range_op1, SSA_NAME_DEF_STMT (rn.ssa_operand1 ()), e))
-    get_operand_range (range_op1, rn.operand1 ());
+  name = gimple_get_lhs (g);
+  gcc_checking_assert (name);
 
-  // If this is a unary operation, call fold now.  
-  if (!rn.operand2 ())
-    return rn.fold (r, range_op1);
-  
-  if (!rn.ssa_operand2 () || !ssa_name_same_bb_p (rn.ssa_operand2 (), bb) ||
-      !path_range_of_def (range_op2, SSA_NAME_DEF_STMT (rn.ssa_operand2 ()), e))
-    get_operand_range (range_op2, rn.operand2 ());
+  if (get_global_ssa_range (r, name))
+    return true;
 
-  normalize_bool_type (range_op1, range_op2);
-  return rn.fold (r, range_op1, range_op2);
+  bool res = path_fold_stmt (r, rn, bb);
+
+  if (res)
+    set_global_ssa_range (name, r);
+  return res;
 }
 
 /* Calculate the known range for NAME on a path of basic blocks in
@@ -991,10 +1158,10 @@ path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs,
   if (gimple_bb (def_stmt) == first_bb && start_edge)
     {
       if (!path_range_of_def (r, def_stmt, start_edge))
-	r.set_range_for_type (TREE_TYPE (name));
+	get_global_ssa_range (r, name);
     }
   else
-    r.set_range_for_type (TREE_TYPE (name));
+    get_global_ssa_range (r, name);
 
   if (dir == REVERSE)
     return path_range_reverse (r, name, bbs);

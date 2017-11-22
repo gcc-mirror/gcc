@@ -66,35 +66,33 @@ public:
   ssa_define_chain def_chain;
 };
 
-
-
-class ssa_range_cache
+class ssa_block_ranges
 {
 private:
   vec<irange_storage *> tab;
   irange_storage *type_range;
   const_tree type;
 public:
-  ssa_range_cache (tree t);
-  ~ssa_range_cache ();
+  ssa_block_ranges (tree t);
+  ~ssa_block_ranges ();
 
-  void set_range (const basic_block bb, const irange &r);
-  void set_range_for_type (const basic_block bb);
-  bool get_range (irange& r, const basic_block bb);
-  bool range_p (const basic_block bb);
+  void set_bb_range (const basic_block bb, const irange &r);
+  void set_bb_range_for_type (const basic_block bb);
+  bool get_bb_range (irange& r, const basic_block bb);
+  bool bb_range_p (const basic_block bb);
 
   void dump(FILE *f);
 };
 
 
-class range_cache
+class block_range_cache
 {
 private:
-  vec<ssa_range_cache *> ssa_ranges;
+  vec<ssa_block_ranges *> ssa_ranges;
 public:
-  range_cache ();
-  ~range_cache ();
-  ssa_range_cache& operator[] (tree name);
+  block_range_cache ();
+  ~block_range_cache ();
+  ssa_block_ranges& operator[] (tree name);
 
   void dump (FILE *f);
 };
@@ -104,11 +102,13 @@ public:
 class path_ranger : public gori
 {
 private:
-  range_cache block_cache;
+  block_range_cache block_cache;
 
   void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
   void determine_block (tree name, basic_block bb, basic_block def_bb);
   bool path_range_reverse (irange &r, tree name, const vec<basic_block> &);
+  bool path_fold_stmt (irange &r, range_stmt &rn, basic_block bb,
+		       edge e = NULL);
 public:
   enum path_range_direction { FORWARD, REVERSE };
   path_ranger ();
@@ -120,7 +120,8 @@ public:
   bool path_range (irange &r, tree name, const vec<basic_block> &bbs,
 		   enum path_range_direction, edge start_edge = NULL);
   // Evaluate expression within a BB as much as possible.
-  bool path_range_of_def (irange& r, gimple *g, edge e = NULL);
+  bool path_range_of_def (irange& r, gimple *g);
+  bool path_range_of_def (irange& r, gimple *g, edge e);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
