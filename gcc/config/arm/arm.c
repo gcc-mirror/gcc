@@ -16992,6 +16992,128 @@ compute_not_to_clear_mask (tree arg_type, rtx arg_rtx, int regno,
   return not_to_clear_mask;
 }
 
+/* Clear registers secret before doing a cmse_nonsecure_call or returning from
+   a cmse_nonsecure_entry function.  TO_CLEAR_BITMAP indicates which registers
+   are to be fully cleared, using the value in register CLEARING_REG if more
+   efficient.  The PADDING_BITS_LEN entries array PADDING_BITS_TO_CLEAR gives
+   the bits that needs to be cleared in caller-saved core registers, with
+   SCRATCH_REG used as a scratch register for that clearing.
+
+   NOTE: one of three following assertions must hold:
+   - SCRATCH_REG is a low register
+   - CLEARING_REG is in the set of registers fully cleared (ie. its bit is set
+     in TO_CLEAR_BITMAP)
+   - CLEARING_REG is a low register.  */
+
+static void
+cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
+		      int padding_bits_len, rtx scratch_reg, rtx clearing_reg)
+{
+  bool saved_clearing = false;
+  rtx saved_clearing_reg = NULL_RTX;
+  int i, regno, clearing_regno, minregno = R0_REGNUM, maxregno = minregno - 1;
+
+  gcc_assert (arm_arch_cmse);
+
+  if (!bitmap_empty_p (to_clear_bitmap))
+    {
+      minregno = bitmap_first_set_bit (to_clear_bitmap);
+      maxregno = bitmap_last_set_bit (to_clear_bitmap);
+    }
+  clearing_regno = REGNO (clearing_reg);
+
+  /* Clear padding bits.  */
+  gcc_assert (padding_bits_len <= NUM_ARG_REGS);
+  for (i = 0, regno = R0_REGNUM; i < padding_bits_len; i++, regno++)
+    {
+      uint64_t mask;
+      rtx rtx16, dest, cleared_reg = gen_rtx_REG (SImode, regno);
+
+      if (padding_bits_to_clear[i] == 0)
+	continue;
+
+      /* If this is a Thumb-1 target and SCRATCH_REG is not a low register, use
+	 CLEARING_REG as scratch.  */
+      if (TARGET_THUMB1
+	  && REGNO (scratch_reg) > LAST_LO_REGNUM)
+	{
+	  /* clearing_reg is not to be cleared, copy its value into scratch_reg
+	     such that we can use clearing_reg to clear the unused bits in the
+	     arguments.  */
+	  if ((clearing_regno > maxregno
+	       || !bitmap_bit_p (to_clear_bitmap, clearing_regno))
+	      && !saved_clearing)
+	    {
+	      gcc_assert (clearing_regno <= LAST_LO_REGNUM);
+	      emit_move_insn (scratch_reg, clearing_reg);
+	      saved_clearing = true;
+	      saved_clearing_reg = scratch_reg;
+	    }
+	  scratch_reg = clearing_reg;
+	}
+
+      /* Fill the lower half of the negated padding_bits_to_clear[i].  */
+      mask = (~padding_bits_to_clear[i]) & 0xFFFF;
+      emit_move_insn (scratch_reg, gen_int_mode (mask, SImode));
+
+      /* Fill the top half of the negated padding_bits_to_clear[i].  */
+      mask = (~padding_bits_to_clear[i]) >> 16;
+      rtx16 = gen_int_mode (16, SImode);
+      dest = gen_rtx_ZERO_EXTRACT (SImode, scratch_reg, rtx16, rtx16);
+      if (mask)
+	emit_insn (gen_rtx_SET (dest, gen_int_mode (mask, SImode)));
+
+      emit_insn (gen_andsi3 (cleared_reg, cleared_reg, scratch_reg));
+    }
+  if (saved_clearing)
+    emit_move_insn (clearing_reg, saved_clearing_reg);
+
+
+  /* Clear full registers.  */
+
+  /* If not marked for clearing, clearing_reg already does not contain
+     any secret.  */
+  if (clearing_regno <= maxregno
+      && bitmap_bit_p (to_clear_bitmap, clearing_regno))
+    {
+      emit_move_insn (clearing_reg, const0_rtx);
+      emit_use (clearing_reg);
+      bitmap_clear_bit (to_clear_bitmap, clearing_regno);
+    }
+
+  for (regno = minregno; regno <= maxregno; regno++)
+    {
+      if (!bitmap_bit_p (to_clear_bitmap, regno))
+	continue;
+
+      if (IS_VFP_REGNUM (regno))
+	{
+	  /* If regno is an even vfp register and its successor is also to
+	     be cleared, use vmov.  */
+	  if (TARGET_VFP_DOUBLE
+	      && VFP_REGNO_OK_FOR_DOUBLE (regno)
+	      && bitmap_bit_p (to_clear_bitmap, regno + 1))
+	    {
+	      emit_move_insn (gen_rtx_REG (DFmode, regno),
+			      CONST1_RTX (DFmode));
+	      emit_use (gen_rtx_REG (DFmode, regno));
+	      regno++;
+	    }
+	  else
+	    {
+	      emit_move_insn (gen_rtx_REG (SFmode, regno),
+			      CONST1_RTX (SFmode));
+	      emit_use (gen_rtx_REG (SFmode, regno));
+	    }
+	}
+      else
+	{
+	  emit_move_insn (gen_rtx_REG (SImode, regno), clearing_reg);
+	  emit_use (gen_rtx_REG (SImode, regno));
+	}
+    }
+}
+
 /* Clears caller saved registers not used to pass arguments before a
    cmse_nonsecure_call.  Saving, clearing and restoring of callee saved
    registers is done in __gnu_cmse_nonsecure_call libcall.
@@ -17012,12 +17134,12 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	    TARGET_HARD_FLOAT_ABI ? D7_VFP_REGNUM : NUM_ARG_REGS - 1;
 	  auto_sbitmap to_clear_bitmap (maxregno + 1);
 	  rtx_insn *seq;
-	  rtx pat, call, unspec, reg, cleared_reg, tmp;
+	  rtx pat, call, unspec, clearing_reg, ip_reg, shift;
 	  rtx address;
 	  CUMULATIVE_ARGS args_so_far_v;
 	  cumulative_args_t args_so_far;
 	  tree arg_type, fntype;
-	  bool using_r4, first_param = true;
+	  bool first_param = true;
 	  function_args_iterator args_iter;
 	  uint32_t padding_bits_to_clear[4] = {0U, 0U, 0U, 0U};
 
@@ -17116,79 +17238,20 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	      first_param = false;
 	    }
 
-	  /* Clear padding bits where needed.  */
-	  cleared_reg = XEXP (address, 0);
-	  reg = gen_rtx_REG (SImode, IP_REGNUM);
-	  using_r4 = false;
-	  for (regno = R0_REGNUM; regno < NUM_ARG_REGS; regno++)
-	    {
-	      if (padding_bits_to_clear[regno] == 0)
-		continue;
-
-	      /* If this is a Thumb-1 target copy the address of the function
-		 we are calling from 'r4' into 'ip' such that we can use r4 to
-		 clear the unused bits in the arguments.  */
-	      if (TARGET_THUMB1 && !using_r4)
-		{
-		  using_r4 =  true;
-		  reg = cleared_reg;
-		  emit_move_insn (gen_rtx_REG (SImode, IP_REGNUM),
-					  reg);
-		}
-
-	      tmp = GEN_INT ((((~padding_bits_to_clear[regno]) << 16u) >> 16u));
-	      emit_move_insn (reg, tmp);
-	      /* Also fill the top half of the negated
-		 padding_bits_to_clear.  */
-	      if (((~padding_bits_to_clear[regno]) >> 16) > 0)
-		{
-		  tmp = GEN_INT ((~padding_bits_to_clear[regno]) >> 16);
-		  emit_insn (gen_rtx_SET (gen_rtx_ZERO_EXTRACT (SImode, reg,
-								GEN_INT (16),
-								GEN_INT (16)),
-					  tmp));
-		}
-
-	      emit_insn (gen_andsi3 (gen_rtx_REG (SImode, regno),
-				     gen_rtx_REG (SImode, regno),
-				     reg));
-
-	    }
-	  if (using_r4)
-	    emit_move_insn (cleared_reg,
-			    gen_rtx_REG (SImode, IP_REGNUM));
-
 	  /* We use right shift and left shift to clear the LSB of the address
 	     we jump to instead of using bic, to avoid having to use an extra
 	     register on Thumb-1.  */
-	  tmp = gen_rtx_LSHIFTRT (SImode, cleared_reg, const1_rtx);
-	  emit_insn (gen_rtx_SET (cleared_reg, tmp));
-	  tmp = gen_rtx_ASHIFT (SImode, cleared_reg, const1_rtx);
-	  emit_insn (gen_rtx_SET (cleared_reg, tmp));
+	  clearing_reg = XEXP (address, 0);
+	  shift = gen_rtx_LSHIFTRT (SImode, clearing_reg, const1_rtx);
+	  emit_insn (gen_rtx_SET (clearing_reg, shift));
+	  shift = gen_rtx_ASHIFT (SImode, clearing_reg, const1_rtx);
+	  emit_insn (gen_rtx_SET (clearing_reg, shift));
 
-	  /* Clearing all registers that leak before doing a non-secure
+	  /* Clear caller-saved registers that leak before doing a non-secure
 	     call.  */
-	  for (regno = R0_REGNUM; regno <= maxregno; regno++)
-	    {
-	      if (!bitmap_bit_p (to_clear_bitmap, regno))
-		continue;
-
-	      /* If regno is an even vfp register and its successor is also to
-		 be cleared, use vmov.  */
-	      if (IS_VFP_REGNUM (regno))
-		{
-		  if (TARGET_VFP_DOUBLE
-		      && VFP_REGNO_OK_FOR_DOUBLE (regno)
-		      && bitmap_bit_p (to_clear_bitmap, (regno + 1)))
-		    emit_move_insn (gen_rtx_REG (DFmode, regno++),
-				    CONST0_RTX (DFmode));
-		  else
-		    emit_move_insn (gen_rtx_REG (SFmode, regno),
-				    CONST0_RTX (SFmode));
-		}
-	      else
-		emit_move_insn (gen_rtx_REG (SImode, regno), cleared_reg);
-	    }
+	  ip_reg = gen_rtx_REG (SImode, IP_REGNUM);
+	  cmse_clear_registers (to_clear_bitmap, padding_bits_to_clear,
+				NUM_ARG_REGS, ip_reg, clearing_reg);
 
 	  seq = get_insns ();
 	  end_sequence ();
@@ -25152,8 +25215,8 @@ cmse_nonsecure_entry_clear_before_return (void)
   int regno, maxregno = TARGET_HARD_FLOAT ? LAST_VFP_REGNUM : IP_REGNUM;
   uint32_t padding_bits_to_clear = 0;
   auto_sbitmap to_clear_bitmap (maxregno + 1);
+  rtx r1_reg, result_rtl, clearing_reg = NULL_RTX;
   tree result_type;
-  rtx result_rtl;
 
   bitmap_clear (to_clear_bitmap);
   bitmap_set_range (to_clear_bitmap, R0_REGNUM, NUM_ARG_REGS);
@@ -25217,84 +25280,22 @@ cmse_nonsecure_entry_clear_before_return (void)
 
   if (padding_bits_to_clear != 0)
     {
-      rtx reg_rtx;
       int to_clear_bitmap_size = SBITMAP_SIZE ((sbitmap) to_clear_bitmap);
       auto_sbitmap to_clear_arg_regs_bitmap (to_clear_bitmap_size);
 
-      /* Padding bits to clear is not 0 so we know we are dealing with
+      /* Padding_bits_to_clear is not 0 so we know we are dealing with
 	 returning a composite type, which only uses r0.  Let's make sure that
-	 r1-r3 is cleared too, we will use r1 as a scratch register.  */
+	 r1-r3 is cleared too.  */
       bitmap_clear (to_clear_arg_regs_bitmap);
-      bitmap_set_range (to_clear_arg_regs_bitmap, R0_REGNUM + 1,
-			NUM_ARG_REGS - 1);
+      bitmap_set_range (to_clear_arg_regs_bitmap, R1_REGNUM, NUM_ARG_REGS - 1);
       gcc_assert (bitmap_subset_p (to_clear_arg_regs_bitmap, to_clear_bitmap));
-
-      reg_rtx = gen_rtx_REG (SImode, R1_REGNUM);
-
-      /* Fill the lower half of the negated padding_bits_to_clear.  */
-      emit_move_insn (reg_rtx,
-		      GEN_INT ((((~padding_bits_to_clear) << 16u) >> 16u)));
-
-      /* Also fill the top half of the negated padding_bits_to_clear.  */
-      if (((~padding_bits_to_clear) >> 16) > 0)
-	emit_insn (gen_rtx_SET (gen_rtx_ZERO_EXTRACT (SImode, reg_rtx,
-						      GEN_INT (16),
-						      GEN_INT (16)),
-				GEN_INT ((~padding_bits_to_clear) >> 16)));
-
-      emit_insn (gen_andsi3 (gen_rtx_REG (SImode, R0_REGNUM),
-			   gen_rtx_REG (SImode, R0_REGNUM),
-			   reg_rtx));
     }
 
-  for (regno = R0_REGNUM; regno <= maxregno; regno++)
-    {
-      if (!bitmap_bit_p (to_clear_bitmap, regno))
-	continue;
-
-      if (IS_VFP_REGNUM (regno))
-	{
-	  /* If regno is an even vfp register and its successor is also to
-	     be cleared, use vmov.  */
-	  if (TARGET_VFP_DOUBLE
-	      && VFP_REGNO_OK_FOR_DOUBLE (regno)
-	      && bitmap_bit_p (to_clear_bitmap, regno + 1))
-	    {
-	      emit_move_insn (gen_rtx_REG (DFmode, regno),
-			      CONST1_RTX (DFmode));
-	      emit_use (gen_rtx_REG (DFmode, regno));
-	      regno++;
-	    }
-	  else
-	    {
-	      emit_move_insn (gen_rtx_REG (SFmode, regno),
-			      CONST1_RTX (SFmode));
-	      emit_use (gen_rtx_REG (SFmode, regno));
-	    }
-	}
-      else
-	{
-	  if (TARGET_THUMB1)
-	    {
-	      if (regno == R0_REGNUM)
-		emit_move_insn (gen_rtx_REG (SImode, regno),
-				const0_rtx);
-	      else
-		/* R0 has either been cleared before, see code above, or it
-		   holds a return value, either way it is not secret
-		   information.  */
-		emit_move_insn (gen_rtx_REG (SImode, regno),
-				gen_rtx_REG (SImode, R0_REGNUM));
-	      emit_use (gen_rtx_REG (SImode, regno));
-	    }
-	  else
-	    {
-	      emit_move_insn (gen_rtx_REG (SImode, regno),
-			      gen_rtx_REG (SImode, LR_REGNUM));
-	      emit_use (gen_rtx_REG (SImode, regno));
-	    }
-	}
-    }
+  /* Clear full registers that leak before returning.  */
+  clearing_reg = gen_rtx_REG (SImode, TARGET_THUMB1 ? R0_REGNUM : LR_REGNUM);
+  r1_reg = gen_rtx_REG (SImode, R0_REGNUM + 1);
+  cmse_clear_registers (to_clear_bitmap, &padding_bits_to_clear, 1, r1_reg,
+			clearing_reg);
 }
 
 /* Generate pattern *pop_multiple_with_stack_update_and_return if single
