@@ -1,5 +1,10 @@
 2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* intrinsics/eoshift0.c (eoshift0): Make shift an index_type.
+        * intrinsics/eoshift2.c (eoshift2): Make shift an index_type.
+
+2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/83097
 	* io/inquire.c (inquire_via_unit): Use __BYTE_ORDER__ predefined
 	macro.
