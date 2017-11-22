@@ -1,3 +1,9 @@
+2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/83070
+	* intrinsics/eoshift0.c (eoshift0): Fix -Wsign-compare warning by
+	making a_ex and r_ex index_type instead of size_t.
+
 2017-11-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78549

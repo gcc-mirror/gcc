@@ -107,7 +107,7 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   if (which > 0)
     {
       /* Test if both ret and array are contiguous.  */
-      size_t r_ex, a_ex;
+      index_type r_ex, a_ex;
       r_ex = 1;
       a_ex = 1;
       do_blocked = true;
