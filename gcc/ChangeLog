@@ -1,5 +1,18 @@
 2017-11-22  Richard Biener  <rguenther@suse.de>
 
+	* gimple-iterator.c (gimple_find_edge_insert_loc): Ignore
+	fake edges to exit when looking for a place to insert.
+	* tree-ssa-pre.c (clear_expression_ids): Inline into callers
+	and remove.
+	(insert_into_preds_of_block): Commit edge insertion immediately,
+	assert that doesn't require new BBs.
+	(fini_pre): Release expressions.
+	(pass_pre::execute): Shuffle things around a bit, if the fn
+	is too large do not compute AVAIL either as this is really the
+	quadratic bit.
+
+2017-11-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/83089
 	* tree-if-conv.c (pass_if_conversion::execute): If anything
 	changed reset SCEV and free the number of iteration estimates.
