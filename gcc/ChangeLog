@@ -1,3 +1,61 @@
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* calls.c (initialize_argument_information): Call
+	warn_parameter_passing_abi target hook.
+	(store_one_arg): Use 0 for empty record size.  Don't push 0 size
+	argument onto stack.
+	(must_pass_in_stack_var_size_or_pad): Return false for empty types.
+	* common.opt: Update -fabi-version description.
+	* config/i386/i386.c (init_cumulative_args): Set cum->warn_empty.
+	(ix86_gimplify_va_arg): Call arg_int_size_in_bytes instead of
+	int_size_in_bytes.
+	(ix86_is_empty_record): New function.
+	(ix86_warn_parameter_passing_abi): New function.
+	(TARGET_EMPTY_RECORD_P): Redefine.
+	(TARGET_WARN_PARAMETER_PASSING_ABI): Redefine.
+	* config/i386/i386.h (CUMULATIVE_ARGS): Add warn_empty.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in (TARGET_EMPTY_RECORD_P,
+	TARGET_WARN_PARAMETER_PASSING_ABI): Add.
+	* dwarf2out.c (get_ultimate_context): Move to tree.c.
+	* explow.c (hard_function_value): Call arg_int_size_in_bytes
+	instead of int_size_in_bytes.
+	* expr.c (copy_blkmode_to_reg): Likewise.
+	* function.c (aggregate_value_p): Return 0 for empty types.
+	(assign_parm_find_entry_rtl): Call warn_parameter_passing_abi target hook.
+	(locate_and_pad_parm): Call arg size_in_bytes instead
+	size_in_bytes.
+	* lto-streamer-out.c (hash_tree): Hash TYPE_EMPTY_P and DECL_PADDING_P.
+	* stor-layout.c (finalize_type_size): Set TYPE_EMPTY_P.
+	* target.def (empty_record_p, warn_parameter_passing_abi): New target
+	hooks.
+	* targhooks.c (hook_void_CUMULATIVE_ARGS_tree): New hook.
+	(std_gimplify_va_arg_expr): Skip empty records.  Call
+	arg_size_in_bytes instead size_in_bytes.
+	* targhooks.h (hook_void_CUMULATIVE_ARGS_tree): Declare.
+	* tree-core.h (tree_type_common): Add empty_flag.
+	(tree_decl_common): Update comments.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Stream
+	DECL_PADDING_P.
+	(unpack_ts_type_common_value_fields): Stream TYPE_EMPTY_P.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Stream
+	DECL_PADDING_P.
+	(pack_ts_type_common_value_fields): Stream TYPE_EMPTY_P.
+	* tree.c (default_is_empty_type): New function.
+	(default_is_empty_record): New function.
+	(arg_int_size_in_bytes): New function.
+	(arg_size_in_bytes): New function.
+	(get_ultimate_context): New function.
+	* tree.h: Define TYPE_EMPTY_P, DECL_PADDING_P and
+	TRANSLATION_UNIT_WARN_EMPTY_P.
+	(default_is_empty_record, arg_int_size_in_bytes,
+	arg_size_in_bytes, get_ultimate_context): Declare.
+
 2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (cmse_clear_registers): New function.

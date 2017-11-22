@@ -1,3 +1,10 @@
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* c-decl.c (grokdeclarator): Set DECL_PADDING_P on unnamed bit-fields.
+
 2017-11-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/83056

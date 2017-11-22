@@ -4559,6 +4559,16 @@ This target hook returns the mode to be used when accessing raw return registers
 This target hook returns the mode to be used when accessing raw argument registers in @code{__builtin_apply_args}.  Define this macro if the value in @var{reg_raw_mode} is not correct.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_EMPTY_RECORD_P (const_tree @var{type})
+This target hook returns true if the type is an empty record.  The default
+is to return @code{false}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_WARN_PARAMETER_PASSING_ABI (cumulative_args_t @var{ca}, tree @var{type})
+This target hook warns about the change in empty class parameter passing
+ABI.
+@end deftypefn
+
 @node Caller Saves
 @subsection Caller-Saves Register Allocation
 

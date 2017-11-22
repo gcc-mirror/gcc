@@ -6196,6 +6196,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  DECL_CONTEXT (padding_field) = t;
 	  DECL_ARTIFICIAL (padding_field) = 1;
 	  DECL_IGNORED_P (padding_field) = 1;
+	  DECL_PADDING_P (padding_field) = 1;
 	  layout_nonempty_base_or_field (rli, padding_field,
 					 NULL_TREE,
 					 empty_base_offsets);

@@ -1640,6 +1640,8 @@ typedef struct ix86_args {
   int warn_avx;			/* True when we want to warn about AVX ABI.  */
   int warn_sse;			/* True when we want to warn about SSE ABI.  */
   int warn_mmx;			/* True when we want to warn about MMX ABI.  */
+  int warn_empty;		/* True when we want to warn about empty classes
+				   passing ABI change.  */
   int sse_regno;		/* next available sse register number */
   int mmx_words;		/* # mmx words passed so far */
   int mmx_nregs;		/* # mmx registers available for passing */

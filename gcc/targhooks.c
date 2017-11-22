@@ -756,6 +756,12 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 }
 
 void
+hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
+				tree ATTRIBUTE_UNUSED)
+{
+}
+
+void
 default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			      machine_mode mode ATTRIBUTE_UNUSED,
 			      const_tree type ATTRIBUTE_UNUSED,
@@ -2108,6 +2114,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
   if (boundary > align
+      && !TYPE_EMPTY_P (type)
       && !integer_zerop (TYPE_SIZE (type)))
     {
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
@@ -2134,7 +2141,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     }
 
   /* Compute the rounded size of the type.  */
-  type_size = size_in_bytes (type);
+  type_size = arg_size_in_bytes (type);
   rounded_size = round_up (type_size, align);
 
   /* Reduce rounded_size so it's sharable with the postqueue.  */

@@ -4012,6 +4012,10 @@ cxx_init_decl_processing (void)
   TREE_PUBLIC (global_namespace) = 1;
   DECL_CONTEXT (global_namespace)
     = build_translation_unit_decl (get_identifier (main_input_filename));
+  /* Remember whether we want the empty class passing ABI change warning
+     in this TU.  */
+  TRANSLATION_UNIT_WARN_EMPTY_P (DECL_CONTEXT (global_namespace))
+    = warn_abi && abi_version_crosses (12);
   debug_hooks->register_main_translation_unit
     (DECL_CONTEXT (global_namespace));
   begin_scope (sk_namespace, global_namespace);
@@ -12090,7 +12094,10 @@ grokdeclarator (const cp_declarator *declarator,
 				   FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
 		if (bitfield && !unqualified_id)
-		  TREE_NO_WARNING (decl) = 1;
+		  {
+		    TREE_NO_WARNING (decl) = 1;
+		    DECL_PADDING_P (decl) = 1;
+		  }
 
 		if (storage_class == sc_mutable)
 		  {

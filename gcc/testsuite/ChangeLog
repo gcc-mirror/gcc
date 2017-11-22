@@ -1,3 +1,64 @@
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* g++.dg/abi/empty12.C: New test.
+	* g++.dg/abi/empty12.h: New test.
+	* g++.dg/abi/empty12a.c: New test.
+	* g++.dg/abi/empty13.C: New test.
+	* g++.dg/abi/empty13.h: New test.
+	* g++.dg/abi/empty13a.c: New test.
+	* g++.dg/abi/empty14.C: New test.
+	* g++.dg/abi/empty14.h: New test.
+	* g++.dg/abi/empty14a.c: New test.
+	* g++.dg/abi/empty15.C: New test.
+	* g++.dg/abi/empty15.h: New test.
+	* g++.dg/abi/empty15a.c: New test.
+	* g++.dg/abi/empty16.C: New test.
+	* g++.dg/abi/empty16.h: New test.
+	* g++.dg/abi/empty16a.c: New test.
+	* g++.dg/abi/empty17.C: New test.
+	* g++.dg/abi/empty17.h: New test.
+	* g++.dg/abi/empty17a.c: New test.
+	* g++.dg/abi/empty18.C: New test.
+	* g++.dg/abi/empty18.h: New test.
+	* g++.dg/abi/empty18a.c: New test.
+	* g++.dg/abi/empty19.C: New test.
+	* g++.dg/abi/empty19.h: New test.
+	* g++.dg/abi/empty19a.c: New test.
+	* g++.dg/abi/empty20.C: New test.
+	* g++.dg/abi/empty21.C: New test.
+	* g++.dg/abi/empty22.C: New test.
+	* g++.dg/abi/empty22.h: New test.
+	* g++.dg/abi/empty22a.c: New test.
+	* g++.dg/abi/empty23.C: New test.
+	* g++.dg/abi/empty24.C: New test.
+	* g++.dg/abi/empty25.C: New test.
+	* g++.dg/abi/empty25.h: New test.
+	* g++.dg/abi/empty25a.c: New test.
+	* g++.dg/abi/empty26.C: New test.
+	* g++.dg/abi/empty26.h: New test.
+	* g++.dg/abi/empty26a.c: New test.
+	* g++.dg/abi/empty27.C: New test.
+	* g++.dg/abi/empty28.C: New test.
+	* g++.dg/abi/pr60336-1.C: New test.
+	* g++.dg/abi/pr60336-10.C: New test.
+	* g++.dg/abi/pr60336-11.C: New test.
+	* g++.dg/abi/pr60336-12.C: New test.
+	* g++.dg/abi/pr60336-2.C: New test.
+	* g++.dg/abi/pr60336-3.C: New test.
+	* g++.dg/abi/pr60336-4.C: New test.
+	* g++.dg/abi/pr60336-5.C: New test.
+	* g++.dg/abi/pr60336-6.C: New test.
+	* g++.dg/abi/pr60336-7.C: New test.
+	* g++.dg/abi/pr60336-8.C: New test.
+	* g++.dg/abi/pr60336-9.C: New test.
+	* g++.dg/abi/pr68355.C: New test.
+	* g++.dg/lto/pr60336_0.C: New test.
+
 2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Adapt expectations
