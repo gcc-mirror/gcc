@@ -1,3 +1,9 @@
+2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR testsuite/83004
+	* gcc.dg/vect/pr81136.c: Restore previous alignment of 32
+	in the default case.
+
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83044
