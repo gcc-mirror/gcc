@@ -7196,6 +7196,26 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   cum->force_bnd_pass = 0;
   cum->decl = fndecl;
 
+  cum->warn_empty = !warn_abi || cum->stdarg;
+  if (!cum->warn_empty && fntype)
+    {
+      function_args_iterator iter;
+      tree argtype;
+      bool seen_empty_type = false;
+      FOREACH_FUNCTION_ARGS (fntype, argtype, iter)
+	{
+	  if (VOID_TYPE_P (argtype))
+	    break;
+	  if (TYPE_EMPTY_P (argtype))
+	    seen_empty_type = true;
+	  else if (seen_empty_type)
+	    {
+	      cum->warn_empty = true;
+	      break;
+	    }
+	}
+    }
+
   if (!TARGET_64BIT)
     {
       /* If there are variable arguments, then we won't pass anything
@@ -9883,7 +9903,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
   if (indirect_p)
     type = build_pointer_type (type);
-  size = int_size_in_bytes (type);
+  size = arg_int_size_in_bytes (type);
   rsize = CEIL (size, UNITS_PER_WORD);
 
   nat_mode = type_natural_mode (type, NULL, false);
@@ -28845,6 +28865,46 @@ ix86_constant_alignment (const_tree exp, HOST_WIDE_INT align)
     return BITS_PER_WORD;
 
   return align;
+}
+
+/* Implement TARGET_EMPTY_RECORD_P.  */
+
+static bool
+ix86_is_empty_record (const_tree type)
+{
+  if (!TARGET_64BIT)
+    return false;
+  return default_is_empty_record (type);
+}
+
+/* Implement TARGET_WARN_PARAMETER_PASSING_ABI.  */
+
+static void
+ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
+{
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
+  if (!cum->warn_empty)
+    return;
+
+  if (!TYPE_EMPTY_P (type))
+    return;
+
+  const_tree ctx = get_ultimate_context (cum->decl);
+  if (ctx != NULL_TREE
+      && !TRANSLATION_UNIT_WARN_EMPTY_P (ctx))
+    return;
+
+  /* If the actual size of the type is zero, then there is no change
+     in how objects of this size are passed.  */
+  if (int_size_in_bytes (type) == 0)
+    return;
+
+  warning (OPT_Wabi, "empty class %qT parameter passing ABI "
+	   "changes in -fabi-version=12 (GCC 8)", type);
+
+  /* Only warn once.  */
+  cum->warn_empty = false;
 }
 
 /* Compute the alignment for a variable for Intel MCU psABI.  TYPE is
@@ -50573,6 +50633,12 @@ ix86_run_selftests (void)
 #define TARGET_STATIC_RTX_ALIGNMENT ix86_static_rtx_alignment
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT ix86_constant_alignment
+
+#undef TARGET_EMPTY_RECORD_P
+#define TARGET_EMPTY_RECORD_P ix86_is_empty_record
+
+#undef TARGET_WARN_PARAMETER_PASSING_ABI
+#define TARGET_WARN_PARAMETER_PASSING_ABI ix86_warn_parameter_passing_abi
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

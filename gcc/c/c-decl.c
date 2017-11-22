@@ -6822,7 +6822,10 @@ grokdeclarator (const struct c_declarator *declarator,
 			   FIELD_DECL, declarator->u.id, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 	if (bitfield && !declarator->u.id)
-	  TREE_NO_WARNING (decl) = 1;
+	  {
+	    TREE_NO_WARNING (decl) = 1;
+	    DECL_PADDING_P (decl) = 1;
+	  }
 
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;

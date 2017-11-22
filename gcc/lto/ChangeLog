@@ -1,3 +1,10 @@
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* lto.c (compare_tree_sccs_1): Compare TYPE_EMPTY_P and DECL_PADDING_P.
+
 2017-11-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (lto_balanced_map): Use frequency accessor.

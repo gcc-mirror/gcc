@@ -5102,21 +5102,6 @@ get_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind)
   return a ? AT_file (a) : NULL;
 }
 
-/* Returns the ultimate TRANSLATION_UNIT_DECL context of DECL or NULL.  */
-
-static const_tree
-get_ultimate_context (const_tree decl)
-{
-  while (decl && TREE_CODE (decl) != TRANSLATION_UNIT_DECL)
-    {
-      if (TREE_CODE (decl) == BLOCK)
-	decl = BLOCK_SUPERCONTEXT (decl);
-      else
-	decl = get_containing_scope (decl);
-    }
-  return decl;
-}
-
 /* Return TRUE if the language is C++.  */
 
 static inline bool

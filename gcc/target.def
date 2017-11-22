@@ -5055,6 +5055,22 @@ DEFHOOK
  fixed_size_mode, (int regno),
  default_get_reg_raw_mode)
 
+/* Return true if a type is an empty record.  */
+DEFHOOK
+(empty_record_p,
+ "This target hook returns true if the type is an empty record.  The default\n\
+is to return @code{false}.",
+ bool, (const_tree type),
+ hook_bool_const_tree_false)
+
+/* Warn about the change in empty class parameter passing ABI.  */
+DEFHOOK
+(warn_parameter_passing_abi,
+ "This target hook warns about the change in empty class parameter passing\n\
+ABI.",
+ void, (cumulative_args_t ca, tree type),
+ hook_void_CUMULATIVE_ARGS_tree)
+
 HOOK_VECTOR_END (calls)
 
 DEFHOOK

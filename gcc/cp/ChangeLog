@@ -1,3 +1,12 @@
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* class.c (layout_class_type): Set DECL_PADDING_P on padding.
+	* decl.c (cxx_init_decl_processing): Set TRANSLATION_UNIT_WARN_EMPTY_P.
+	(grokdeclarator): Set DECL_PADDING_P on unnamed bit-fields.
+
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
 	* class.c (finalize_literal_type_property): Add quotes for
