@@ -1,3 +1,19 @@
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* pretty-print.c (pp_format): Move quoting implementation to
+	pp_begin_quote and pp_end_quote.  Update pp_format_decoder call
+	to pass address of "quote" local.
+	(pp_begin_quote): New function.
+	(pp_end_quote): New function.
+	* pretty-print.h (printer_fn): Convert penultimate param from bool
+	to bool *.
+	(pp_begin_quote): New decl.
+	(pp_end_quote): New decl.
+	* tree-diagnostic.c (default_tree_printer): Convert penultimate
+	param from bool to bool *.
+	* tree-diagnostic.h (default_tree_printer): Likewise.
+
 2017-11-22  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::evrp_range_analyzer)

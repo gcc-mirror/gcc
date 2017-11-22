@@ -12,4 +12,4 @@ void A::f() {
 typedef A B;
 
 // We do want an aka for a real typedef.
-B b = 0;			// { dg-error "B .aka A." }
+B b = 0;			// { dg-error "'B' {aka 'A'}" }

@@ -1,3 +1,23 @@
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* g++.dg/diagnostic/aka1.C: Update expected error messages to
+	reflect fixes to quoting.
+	* g++.dg/diagnostic/aka2.C: New test case.
+	* g++.dg/parse/error55.C: Update expected error messages to
+	reflect fixes to quoting.
+	* gcc.dg/diag-aka-1.c: Likewise.
+	* gcc.dg/diag-aka-2.c: New test case.
+	* gcc.dg/pr13804-1.c: Update expected error messages to reflect
+	fixes to quoting.
+	* gcc.dg/pr56980.c: Likewise.
+	* gcc.dg/pr65050.c: Likewise.
+	* gcc.dg/redecl-14.c: Likewise.
+	* gcc.dg/utf16-4.c Likewise.
+	* gcc.target/i386/sse-vect-types.c (__m128d): Likewise.
+	* obj-c++.dg/invalid-type-1.mm: Likewise.
+	* objc.dg/proto-lossage-4.m: Likewise.
+
 2017-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_effective_target_bswap16): Remove

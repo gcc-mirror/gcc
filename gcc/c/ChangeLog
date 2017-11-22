@@ -1,3 +1,10 @@
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* c-objc-common.c (c_tree_printer): Convert penultimate param from
+	bool to bool *.  Within '%T' handling, if showing an "aka", use
+	"quoted" param to add appropriate quoting.
+
 2017-11-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/60336

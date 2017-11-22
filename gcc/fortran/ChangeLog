@@ -1,3 +1,9 @@
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* error.c (gfc_notify_std): Convert "quoted" param from bool to
+	bool *.
+
 2017-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36313
