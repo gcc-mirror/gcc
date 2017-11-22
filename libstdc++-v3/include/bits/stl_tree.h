@@ -449,9 +449,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __gnu_cxx::__alloc_traits<_Node_allocator> _Alloc_traits;
 
 #if __cplusplus >= 201103L
-      static_assert(__is_invocable<const _Compare&, const _Key&, const _Key&>{},
+      static_assert(__is_invocable<_Compare&, const _Key&, const _Key&>{},
 	  "comparison object must be invocable with two arguments of key type");
-#endif
+# if __cplusplus >= 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2542. Missing const requirements for associative containers
+      static_assert(is_invocable_v<const _Compare&, const _Key&, const _Key&>,
+	  "comparison object must be invocable as const");
+# endif // C++17
+#endif // C++11
 
     protected:
       typedef _Rb_tree_node_base* 		_Base_ptr;
