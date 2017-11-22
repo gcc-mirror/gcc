@@ -15605,6 +15605,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case VEC_SELECT:
     case VEC_CONCAT:
     case VEC_DUPLICATE:
+    case VEC_SERIES:
     case UNSPEC:
     case HIGH:
     case FMA:
