@@ -1,3 +1,8 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <case VEC_SERIES>:
+	Handle the case where both arguments are using gen_const_vec_series.
+
 2017-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62170
