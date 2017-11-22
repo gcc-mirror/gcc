@@ -1,3 +1,9 @@
+2017-11-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79072
+	* trans-stmt.c (trans_associate_var): Weaken the over strong
+	condition for using the fake result decl.
+
 2017-11-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79072
