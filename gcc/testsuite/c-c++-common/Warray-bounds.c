@@ -200,7 +200,7 @@ void fb (struct B *p)
 
   T (p->a1x[9].a1[0]);
 
-  enum { MAX = DIFF_MAX / sizeof *p->a1x - sizeof *p };
+  enum { MAX = (DIFF_MAX - sizeof *p) / sizeof *p->a1x };
 
   T (p->a1x[DIFF_MIN].a1);                /* { dg-warning "array subscript -\[0-9\]+ is below array bounds" } */
   T (p->a1x[-1].a1);                      /* { dg-warning "array subscript -1 is below array bounds" } */
