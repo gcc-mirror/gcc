@@ -75,3 +75,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef VXWORKS_OVERRIDE_OPTIONS
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
+
+/* Default dwarf control values, for non-gdb debuggers that come with
+   VxWorks.  */
+
+#undef VXWORKS_DWARF_VERSION_DEFAULT
+#define VXWORKS_DWARF_VERSION_DEFAULT 2
+
+#undef DWARF_GNAT_ENCODINGS_DEFAULT
+#define DWARF_GNAT_ENCODINGS_DEFAULT DWARF_GNAT_ENCODINGS_ALL
