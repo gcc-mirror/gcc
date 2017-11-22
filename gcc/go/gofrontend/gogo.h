@@ -117,7 +117,7 @@ class Import_init
 // For sorting purposes.
 
 struct Import_init_lt {
-  bool operator()(const Import_init* i1, const Import_init* i2)
+  bool operator()(const Import_init* i1, const Import_init* i2) const
   {
     return i1->init_name() < i2->init_name();
   }
