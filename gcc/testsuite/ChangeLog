@@ -1,3 +1,22 @@
+2017-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_bswap16): Remove
+	(check_effective_target_bswap32): Ditto.
+	(check_effective_target_bswap64): Ditto.
+	* gcc.dg/optimize-bswaphi-1.c: Use bswap effective
+	target instead of bswap16.
+	* gcc.dg/optimize-bswapsi-1.c: Use bswap effective
+	target instead of bswap32.
+	* gcc.dg/optimize-bswapsi-2.c: Ditto.
+	* gcc.dg/optimize-bswapsi-3.c: Ditto.
+	* gcc.dg/optimize-bswapsi-4.c: Ditto.
+	* gcc.dg/optimize-bswapsi-5.c: Ditto.
+	* gcc.dg/pr77673.c: Ditto.
+	* gcc.dg/optimize-bswapdi-1.c: Use bswap effective
+	target instead of bswap64.
+	* gcc.dg/optimize-bswapdi-2.c: Ditto.
+	* gcc.dg/optimize-bswapdi-3.c: Ditto.
+
 2017-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36313
@@ -936,7 +955,7 @@
 	* c-c++-common/Wstringop-truncation.c: Same.
 	* c-c++-common/Wsizeof-pointer-memaccess2.c: Adjust.
 	* c-c++-common/attr-nonstring-2.c: New test.
-	* gcc/testsuite/gcc.dg/builtin-stpncpy.c: Adjust.
+	* gcc.dg/builtin-stpncpy.c: Adjust.
 	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
 	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Same.
 	* gcc.dg/torture/pr63554.c: Same.
@@ -3249,7 +3268,7 @@
 2017-10-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82596
-	* gcc/testsuite/gcc.dg/pr82596.c: New test.
+	* gcc.dg/pr82596.c: New test.
 
 2017-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -4470,7 +4489,7 @@
 
 2017-09-29  Jeff Law  <law@redhat.com>
 
-	* testsuite/gcc.dg/tree-ssa/ssa-dse-26.c: New test.
+	* gcc.dg/tree-ssa/ssa-dse-26.c: New test.
 
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
@@ -6016,7 +6035,7 @@
 
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* testsuite/gnat.dg/array29.ad[sb]: New test.
+	* gnat.dg/array29.ad[sb]: New test.
 
 2017-09-05  Martin Liska  <mliska@suse.cz>
 
@@ -6916,8 +6935,7 @@
 
 	* jit.dg/all-non-failing-tests.h: Add note about
 	test-vector-types.cc.
-	* jit.dg/test-error-gcc_jit_type_get_vector-bad-type.c: New test
-	case.
+	* jit.dg/test-error-gcc_jit_type_get_vector-bad-type.c: New test case.
 	* jit.dg/test-error-gcc_jit_type_get_vector-non-power-of-two.c:
 	New test case.
 	* jit.dg/test-vector-types.cc: New test case.
@@ -6929,14 +6947,14 @@
 
 2017-08-09  Michael Collison  <michael.collison@arm.com>
 
-	* testsuite/g++.dg/ext/packed8.C: Remove -mstructure-size-
-	boundary option and fix comment.
-	* testsuite/g++.dg/init/array16.C: Remove -mstructure-size-
-	boundary option and fix comment.
-	* testsuite/g++.dg/other/crash-4.C: Remove -mstructure-size-
-	boundary option and fix comment.
-	* testsuite/gcc.dg/builtin-stringop-chk-1.c: Remove
-	-mstructure-size boundary option.
+	* g++.dg/ext/packed8.C: Remove -mstructure-size-boundary
+	option and fix comment.
+	* g++.dg/init/array16.C: Remove -mstructure-size-boundary
+	option and fix comment.
+	* g++.dg/other/crash-4.C: Remove -mstructure-size-boundary
+	option and fix comment.
+	* gcc.dg/builtin-stringop-chk-1.c: Remove
+	-mstructure-size-boundary option.
 
 2017-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
