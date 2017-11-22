@@ -1,5 +1,10 @@
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/82875
+	* optabs.c (expand_doubleword_mult, expand_binop): Before calling
+	expand_binop with *mul_widen_optab, make sure at least one of the
+	operands doesn't have VOIDmode.
+
 	PR debug/83034
 	* dwarf2out.c (mem_loc_descriptor): Handle VEC_SERIES.
 
