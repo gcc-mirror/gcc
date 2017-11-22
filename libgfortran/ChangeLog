@@ -1,3 +1,56 @@
+2017-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* Makefile.am: Add i_maxloc0s_c, i_maxloc1s_c, i_maxloc2s_c,
+	i_minloc0s_c, i_minloc1s_c and i_minloc2s_c.
+	* Makefile.in: Regenerated.
+        * generated/maxloc0_16_s1.c: New file.
+        * generated/maxloc0_16_s4.c: New file.
+        * generated/maxloc0_4_s1.c: New file.
+        * generated/maxloc0_4_s4.c: New file.
+        * generated/maxloc0_8_s1.c: New file.
+        * generated/maxloc0_8_s4.c: New file.
+        * generated/maxloc1_16_s1.c: New file.
+        * generated/maxloc1_16_s4.c: New file.
+        * generated/maxloc1_4_s1.c: New file.
+        * generated/maxloc1_4_s4.c: New file.
+        * generated/maxloc1_8_s1.c: New file.
+        * generated/maxloc1_8_s4.c: New file.
+        * generated/maxloc2_16_s1.c: New file.
+        * generated/maxloc2_16_s4.c: New file.
+        * generated/maxloc2_4_s1.c: New file.
+        * generated/maxloc2_4_s4.c: New file.
+        * generated/maxloc2_8_s1.c: New file.
+        * generated/maxloc2_8_s4.c: New file.
+        * generated/minloc0_16_s1.c: New file.
+        * generated/minloc0_16_s4.c: New file.
+        * generated/minloc0_4_s1.c: New file.
+        * generated/minloc0_4_s4.c: New file.
+        * generated/minloc0_8_s1.c: New file.
+        * generated/minloc0_8_s4.c: New file.
+        * generated/minloc1_16_s1.c: New file.
+        * generated/minloc1_16_s4.c: New file.
+        * generated/minloc1_4_s1.c: New file.
+        * generated/minloc1_4_s4.c: New file.
+        * generated/minloc1_8_s1.c: New file.
+        * generated/minloc1_8_s4.c: New file.
+        * generated/minloc2_16_s1.c: New file.
+        * generated/minloc2_16_s4.c: New file.
+        * generated/minloc2_4_s1.c: New file.
+        * generated/minloc2_4_s4.c: New file.
+        * generated/minloc2_8_s1.c: New file.
+        * generated/minloc2_8_s4.c: New file.
+        * m4/iforeach-s.m4: New file.
+        * m4/ifunction-s.m4: New file.
+        * m4/maxloc0s.m4: New file.
+        * m4/maxloc1s.m4: New file.
+        * m4/maxloc2s.m4: New file.
+        * m4/minloc0s.m4: New file.
+        * m4/minloc1s.m4: New file.
+        * m4/minloc2s.m4: New file.
+	* gfortran.map: Add new functions.
+	* libgfortran.h: Add gfc_array_s1 and gfc_array_s4.
+
 2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/83070

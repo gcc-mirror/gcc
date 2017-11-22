@@ -117,6 +117,37 @@ int_or_real_check (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is integer or real; allow character for
+   F2003 or later.  */
+
+static bool
+int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL)
+    {
+      if (e->ts.type == BT_CHARACTER)
+	return gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Character for "
+			       "%qs argument of %qs intrinsic at %L",
+			       gfc_current_intrinsic_arg[n]->name,
+			       gfc_current_intrinsic, &e->where);
+      else
+	{
+	  if (gfc_option.allow_std & GFC_STD_F2003)
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or CHARACTER",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	  else
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL", gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	}
+      return false;
+    }
+
+  return true;
+}
+
 
 /* Check that an expression is real or complex.  */
 
@@ -3189,7 +3220,7 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
   gfc_expr *a, *m, *d, *k;
 
   a = ap->expr;
-  if (!int_or_real_check (a, 0) || !array_check (a, 0))
+  if (!int_or_real_or_char_check_f2003 (a, 0) || !array_check (a, 0))
     return false;
 
   d = ap->next->expr;
