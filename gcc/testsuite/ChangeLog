@@ -1,3 +1,7 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/graphite/pr41562.C: Add -Wno-return-type.
+
 2017-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62170
