@@ -1,3 +1,9 @@
+2017-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR go/83102
+	* include/bits/stl_tree.h (_Rb_tree): Relax invocable checks for
+	comparison object pre-C++17.
+
 2017-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/48101
