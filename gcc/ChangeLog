@@ -1,3 +1,11 @@
+2017-11-22  Olivier Hainque  <hainque@adacore.com>
+
+       * config/vxworks.c (vxworks_override_options): Pick default
+	dwarf version from macro value, VXWORKS_DWARF_VERSION_DEFAULT.
+       * config/vxworks.h: Define VXWORKS_DWARF_VERSION_DEFAULT and
+       DWARF_GNAT_ENCODINGS_DEFAULT.
+       * config/vxworksae.h: Likewise.
+
 2017-11-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/83104
