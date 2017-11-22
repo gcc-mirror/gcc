@@ -53,6 +53,7 @@ evrp_range_analyzer::evrp_range_analyzer () : stack (10)
       FOR_EACH_EDGE (e, ei, bb->preds)
         e->flags |= EDGE_EXECUTABLE;
     }
+  vr_values = new class vr_values;
 }
 
 void
@@ -73,8 +74,8 @@ evrp_range_analyzer::try_find_new_range (tree name,
   value_range *old_vr = get_value_range (name);
 
   /* Discover VR when condition is true.  */
-  extract_range_for_var_from_comparison_expr (name, code, op,
-					      limit, &vr);
+  vr_values->extract_range_for_var_from_comparison_expr (name, code, op,
+							 limit, &vr);
   /* If we found any usable VR, set the VR to ssa_name and create a
      PUSH old value in the stack with the old VR.  */
   if (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
@@ -83,7 +84,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 	  && vrp_operand_equal_p (old_vr->min, vr.min)
 	  && vrp_operand_equal_p (old_vr->max, vr.max))
 	return NULL;
-      value_range *new_vr = vr_values.vrp_value_range_pool.allocate ();
+      value_range *new_vr = vr_values->vrp_value_range_pool.allocate ();
       *new_vr = vr;
       return new_vr;
     }
@@ -167,7 +168,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       value_range vr_result = VR_INITIALIZER;
       bool interesting = stmt_interesting_for_vrp (phi);
       if (!has_unvisited_preds && interesting)
-	extract_range_from_phi_node (phi, &vr_result);
+	vr_values->extract_range_from_phi_node (phi, &vr_result);
       else
 	{
 	  set_value_range_to_varying (&vr_result);
@@ -179,9 +180,9 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	  if (interesting
 	      && (l = loop_containing_stmt (phi))
 	      && l->header == gimple_bb (phi))
-	  adjust_range_with_scev (&vr_result, l, phi, lhs);
+	  vr_values->adjust_range_with_scev (&vr_result, l, phi, lhs);
 	}
-      update_value_range (lhs, &vr_result);
+      vr_values->update_value_range (lhs, &vr_result);
 
       /* Set the SSA with the value range.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
@@ -216,11 +217,11 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
     {
       edge taken_edge;
       value_range vr = VR_INITIALIZER;
-      extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
+      vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
       if (output
 	  && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
 	{
-	  update_value_range (output, &vr);
+	  vr_values->update_value_range (output, &vr);
 
 	  /* Set the SSA with the value range.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
@@ -240,10 +241,10 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
 	    set_ptr_nonnull (output);
 	}
       else
-	set_defs_to_varying (stmt);
+	vr_values->set_defs_to_varying (stmt);
     }
   else
-    set_defs_to_varying (stmt);
+    vr_values->set_defs_to_varying (stmt);
 
   /* See if we can derive a range for any of STMT's operands.  */
   tree op;
@@ -319,7 +320,7 @@ evrp_range_analyzer::push_value_range (tree var, value_range *vr)
       fprintf (dump_file, "\n");
     }
   stack.safe_push (std::make_pair (var, get_value_range (var)));
-  set_vr_value (var, vr);
+  vr_values->set_vr_value (var, vr);
 }
 
 /* Pop the Value Range from the vrp_stack and update VAR with it.  */
@@ -337,7 +338,7 @@ evrp_range_analyzer::pop_value_range (tree var)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  set_vr_value (var, vr);
+  vr_values->set_vr_value (var, vr);
   stack.pop ();
   return vr;
 }

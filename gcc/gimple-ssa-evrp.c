@@ -46,8 +46,11 @@ class evrp_folder : public substitute_and_fold_engine
 {
  public:
   tree get_value (tree) FINAL OVERRIDE;
-
+  evrp_folder (class vr_values *vr_values_) : vr_values (vr_values_) { }
   class vr_values *vr_values;
+
+ private:
+  DISABLE_COPY_AND_ASSIGN (evrp_folder);
 };
 
 tree
@@ -63,7 +66,9 @@ evrp_folder::get_value (tree op)
 class evrp_dom_walker : public dom_walker
 {
 public:
-  evrp_dom_walker () : dom_walker (CDI_DOMINATORS)
+  evrp_dom_walker ()
+    : dom_walker (CDI_DOMINATORS),
+      evrp_folder (evrp_range_analyzer.get_vr_values (false))
     {
       need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
@@ -82,14 +87,7 @@ public:
   auto_vec<gimple *> stmts_to_remove;
 
   class evrp_range_analyzer evrp_range_analyzer;
-
-  /* Temporary delegators.  */
-  value_range *get_value_range (const_tree op)
-    { return evrp_range_analyzer.vr_values.get_value_range (op); }
-  tree op_with_constant_singleton_value_range (tree op)
-    { return evrp_range_analyzer.vr_values.op_with_constant_singleton_value_range (op); }
-  void vrp_visit_cond_stmt (gcond *cond, edge *e)
-    { evrp_range_analyzer.vr_values.vrp_visit_cond_stmt (cond, e); }
+  class evrp_folder evrp_folder;
 };
 
 edge
@@ -108,8 +106,9 @@ evrp_dom_walker::before_dom_children (basic_block bb)
       if (virtual_operand_p (lhs))
 	continue;
 
+      value_range *vr = evrp_range_analyzer.get_value_range (lhs);
       /* Mark PHIs whose lhs we fully propagate for removal.  */
-      tree val = op_with_constant_singleton_value_range (lhs);
+      tree val = value_range_constant_singleton (vr);
       if (val && may_propagate_copy (lhs, val))
 	{
 	  stmts_to_remove.safe_push (phi);
@@ -139,7 +138,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 
       if (gcond *cond = dyn_cast <gcond *> (stmt))
 	{
-	  vrp_visit_cond_stmt (cond, &taken_edge);
+	  evrp_range_analyzer.vrp_visit_cond_stmt (cond, &taken_edge);
 	  if (taken_edge)
 	    {
 	      if (taken_edge->flags & EDGE_TRUE_VALUE)
@@ -153,16 +152,15 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
       else if (stmt_interesting_for_vrp (stmt))
 	{
-	  value_range vr = VR_INITIALIZER;
 	  output = get_output_for_vrp (stmt);
 	  if (output)
 	    {
 	      tree val;
-	      vr = *get_value_range (output);
+	      value_range *vr = evrp_range_analyzer.get_value_range (output);
 
 	      /* Mark stmts whose output we fully propagate for removal.  */
-	      if ((vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
-		  && (val = op_with_constant_singleton_value_range (output))
+	      if ((vr->type == VR_RANGE || vr->type == VR_ANTI_RANGE)
+		  && (val = value_range_constant_singleton (vr))
 		  && may_propagate_copy (output, val)
 		  && !stmt_could_throw_p (stmt)
 		  && !gimple_has_side_effects (stmt))
@@ -174,8 +172,6 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
 
       /* Try folding stmts with the VR discovered.  */
-      class evrp_folder evrp_folder;
-      evrp_folder.vr_values = &evrp_range_analyzer.vr_values;
       bool did_replace = evrp_folder.replace_uses_in (stmt);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
@@ -222,7 +218,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  if (TREE_CODE (arg) != SSA_NAME
 	      || virtual_operand_p (arg))
 	    continue;
-	  tree val = op_with_constant_singleton_value_range (arg);
+	  value_range *vr = evrp_range_analyzer.get_value_range (arg);
+	  tree val = value_range_constant_singleton (vr);
 	  if (val && may_propagate_copy (arg, val))
 	    propagate_value (use_p, val);
 	}
@@ -245,7 +242,7 @@ evrp_dom_walker::cleanup (void)
   if (dump_file)
     {
       fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
-      evrp_range_analyzer.vr_values.dump_all_value_ranges (dump_file);
+      evrp_range_analyzer.dump_all_value_ranges (dump_file);
       fprintf (dump_file, "\n");
     }
 

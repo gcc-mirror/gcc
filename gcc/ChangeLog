@@ -1,3 +1,34 @@
+2017-11-22  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::evrp_range_analyzer)
+	Initialize vr_values.
+	(evrp_range_analyzer::try_find_new_range): Call methods attached to
+	vr_values via vr_values class instance rather than delegators.
+	(evrp_range_analyzer::record_ranges_from_phis): Likewise.
+	(evrp_range_analyzer::record_ranges_from_stmt): Likewise.
+	(evrp_range_analyzer::push_value_range): Likewise.
+	(evrp_range_analyzer::pop_value_range): Likewise.
+	* gimple-ssa-evrp-analyze.h (class evrp_range_analyzer): Remove
+	most delegators.  Those remaining are exposed as public interfaces.
+	Make vr_values a pointer and private.
+	(evrp_range_analyzer::~evrp_range_analyzer): Delete the attached
+	vr_values.
+	(evrp_range_analyzer::get_vr_value): New method.
+	* gimple-ssa-evrp.c (class evrp_folder): Use DISABLE_COPY_AND_ASSIGN.
+	(evrp_folder::evrp_folder): New ctor to initialize vr_values.
+	(class evrp_dom_walker): Attach evrp_folder class, initialize
+	it in the ctor.  Remove temporary delegators.
+	(evrp_dom_walker::before_dom_children): Call methods in attached
+	evrp_range_analyzer class via class instance pointer.  Use
+	free value_range_constant_singleton to remove need for
+	op_with_constant_singleton_value delegator method.  Do not
+	create a vrp_prop class instance for every call!  Narrow
+	scope of a couple variables.
+	(evrp_dom_walker::cleanup): Call methods in attached
+	evrp_range_analyzer class via class instance pointer.
+	* vr-values.h (class vr_values): Privatize many methods and
+	data members.
+
 2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree.def (REDUC_MAX_EXPR, REDUC_MIN_EXPR, REDUC_PLUS_EXPR): Delete.
