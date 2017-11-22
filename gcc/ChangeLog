@@ -1,5 +1,11 @@
 2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	* config/arm/arm.c (cmse_nonsecure_call_clear_caller_saved): Get rid of
+	padding_bits_to_clear_ptr.
+	(cmse_nonsecure_entry_clear_before_return): Likewise.
+
+2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	* config/arm/arm.c (cmse_nonsecure_call_clear_caller_saved): Use
 	auto_sbitap instead of integer bitfield to control register needing
 	clearing.

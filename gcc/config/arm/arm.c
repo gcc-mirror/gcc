@@ -17020,7 +17020,6 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  bool using_r4, first_param = true;
 	  function_args_iterator args_iter;
 	  uint32_t padding_bits_to_clear[4] = {0U, 0U, 0U, 0U};
-	  uint32_t * padding_bits_to_clear_ptr = &padding_bits_to_clear[0];
 
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
@@ -17104,7 +17103,7 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	      to_clear_args_mask
 		= compute_not_to_clear_mask (arg_type, arg_rtx,
 					     REGNO (arg_rtx),
-					     padding_bits_to_clear_ptr);
+					     &padding_bits_to_clear[0]);
 	      if (to_clear_args_mask)
 		{
 		  for (regno = R0_REGNUM; regno <= maxregno; regno++)
@@ -25152,7 +25151,6 @@ cmse_nonsecure_entry_clear_before_return (void)
 {
   int regno, maxregno = TARGET_HARD_FLOAT ? LAST_VFP_REGNUM : IP_REGNUM;
   uint32_t padding_bits_to_clear = 0;
-  uint32_t * padding_bits_to_clear_ptr = &padding_bits_to_clear;
   auto_sbitmap to_clear_bitmap (maxregno + 1);
   tree result_type;
   rtx result_rtl;
@@ -25205,7 +25203,7 @@ cmse_nonsecure_entry_clear_before_return (void)
       gcc_assert (REG_P (result_rtl));
       to_clear_return_mask
 	= compute_not_to_clear_mask (result_type, result_rtl, 0,
-				     padding_bits_to_clear_ptr);
+				     &padding_bits_to_clear);
       if (to_clear_return_mask)
 	{
 	  gcc_assert ((unsigned) maxregno < sizeof (long long) * __CHAR_BIT__);
