@@ -1,5 +1,12 @@
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83044
+	* tree-vrp.c (vrp_prop::check_array_ref): If eltsize is not
+	INTEGER_CST or is 0, clear up_bound{,_p1} and later ignore tests
+	that need the upper bound.  Subtract offset from
+	get_addr_base_and_unit_offset only if positive and subtract it
+	before division by eltsize rather than after it.
+
 	PR debug/83084
 	* valtrack.c (propagate_for_debug_subst, propagate_for_debug): Reset
 	debug insns if they would contain UNSPEC_VOLATILE or volatile asm.

@@ -1,3 +1,9 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83044
+	* gcc.dg/pr83044.c: New test.
+	* c-c++-common/Warray-bounds.c (fb): Fix up MAX value.
+
 2017-11-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79072
