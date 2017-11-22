@@ -1,3 +1,15 @@
+2017-11-22  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2017-11-21  Martin Liska  <mliska@suse.cz>
+ 
+	Backport from mainline
+	2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/82044
+	PR tree-optimization/82042
+	* dse.c (check_mem_read_rtx): Check for overflow.
+
 2017-11-21  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
