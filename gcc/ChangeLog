@@ -1,3 +1,15 @@
+2017-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/83030
+	* doc/rtl.texi (Flags in an RTL Expression): Alphabetize, add entry
+	for CROSSING_JUMP_P and mention usage of 'jump' for JUMP_INSNs.
+	(Insns): Delete entry for REG_CROSSING_JUMP in register notes.
+	* bb-reorder.c (update_crossing_jump_flags): Do not test whether the
+	CROSSING_JUMP_P flag is already set before setting it.
+	* cfgrtl.c (fixup_partition_crossing): Likewise.
+	* reorg.c (relax_delay_slots): Do not consider a CROSSING_JUMP_P
+	insn as useless.
+
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1) <case VEC_SERIES>:

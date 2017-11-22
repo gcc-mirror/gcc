@@ -2239,10 +2239,7 @@ update_crossing_jump_flags (void)
     FOR_EACH_EDGE (e, ei, bb->succs)
       if (e->flags & EDGE_CROSSING)
 	{
-	  if (JUMP_P (BB_END (bb))
-	      /* Some flags were added during fix_up_fall_thru_edges, via
-		 force_nonfallthru_and_redirect.  */
-	      && !CROSSING_JUMP_P (BB_END (bb)))
+	  if (JUMP_P (BB_END (bb)))
 	    CROSSING_JUMP_P (BB_END (bb)) = 1;
 	  break;
 	}
