@@ -21,4 +21,4 @@ yyy (void)
   xxx (y);
 }
 
-// { dg-final { scan-assembler "jmp\[\t \]+\[^\$\]*?_Z3xxx17integral_constantIbLb1EE" { target i?86-*-* x86_64-*-* } } }
+// { dg-final { scan-assembler "jmp\[\t \]+\[^\$\]*?_Z3xxx17integral_constantIbLb1EE" { target { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } }
