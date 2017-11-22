@@ -1,6 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-require-effective-target arm_v8_2a_fp16_scalar_ok }  */
-/* { dg-options "-O2" }  */
+/* { dg-options "-O2 -mfloat-abi=hard" }  */
 /* { dg-add-options arm_v8_2a_fp16_scalar }  */
 
 __fp16
