@@ -986,7 +986,7 @@ btoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   int i, j;
 
   q = buffer;
-  if (big_endian)
+  if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     {
       const char *p = s;
       for (i = 0; i < len; i++)
@@ -1051,7 +1051,7 @@ otoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   *q = '\0';
   i = k = octet = 0;
 
-  if (big_endian)
+  if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     {
       const char *p = s + len - 1;
       char c = *p;
@@ -1126,7 +1126,7 @@ ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 
   q = buffer;
 
-  if (big_endian)
+  if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
     {
       const char *p = s;
       for (i = 0; i < len; i++)

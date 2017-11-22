@@ -1,3 +1,19 @@
+2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/83097
+	* io/inquire.c (inquire_via_unit): Use __BYTE_ORDER__ predefined
+	macro.
+	* io/open.c (st_open): Likewise.
+	* io/transfer.c (data_transfer_init): Likewise.
+	* io/write.c (btoa_big): Likewise.
+	(otoa_big): Likewise.
+	(ztoa_big): Likewise.
+	* libgfortran.h (big_endian): Remove variable.
+	(GFOR_POINTER_TO_L1): Use __BYTE_ORDER__ macro.
+	* runtime/main.c (determine_endianness): Remove function.
+	(init): Remove call to determine_endianness.
+	* runtime/minimal.c: Remove setting big_endian variable.
+
 2017-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36313
