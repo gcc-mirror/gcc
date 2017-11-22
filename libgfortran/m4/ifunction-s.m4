@@ -18,15 +18,26 @@ dnl Execution should be allowed to continue to the end of the block.
 dnl You should not return or break from the inner loop of the implementation.
 dnl Care should also be taken to avoid using the names defined in iparm.m4
 define(START_ARRAY_FUNCTION,
-`
+`#include <string.h>
+
+static inline int
+compare_fcn (const atype_name *a, const atype_name *b, gfc_charlen_type n)
+{
+  if (sizeof ('atype_name`) == 1)
+    return memcmp (a, b, n);
+  else
+    return memcmp_char4 (a, b, n);
+}
+
 extern void name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict);
+	atype * const restrict, const index_type * const restrict,
+	gfc_charlen_type);
 export_proto(name`'rtype_qual`_'atype_code);
 
 void
 name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
 	atype * const restrict array, 
-	const index_type * const restrict pdim)
+	const index_type * const restrict pdim, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -55,11 +66,11 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len < 0)
     len = 0;
-  delta = GFC_DESCRIPTOR_STRIDE(array,dim);
+  delta = GFC_DESCRIPTOR_STRIDE(array,dim) * string_len;
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n) * string_len;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] < 0)
@@ -67,7 +78,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array, n + 1);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array, n + 1) * string_len;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array, n + 1);
 
       if (extent[n] < 0)
@@ -183,14 +194,14 @@ define(START_MASKED_ARRAY_FUNCTION,
 `
 extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
 	atype * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict);
+	gfc_array_l1 * const restrict, gfc_charlen_type);
 export_proto(`m'name`'rtype_qual`_'atype_code);
 
 void
 `m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
 	atype * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -236,12 +247,12 @@ void
   else
     runtime_error ("Funny sized logical array");
 
-  delta = GFC_DESCRIPTOR_STRIDE(array,dim);
+  delta = GFC_DESCRIPTOR_STRIDE(array,dim) * string_len;
   mdelta = GFC_DESCRIPTOR_STRIDE_BYTES(mask,dim);
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n) * string_len;
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
@@ -251,7 +262,7 @@ void
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1) * string_len;
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask, n + 1);
       extent[n] = GFC_DESCRIPTOR_EXTENT(array, n + 1);
 
@@ -368,14 +379,14 @@ define(SCALAR_ARRAY_FUNCTION,
 `
 extern void `s'name`'rtype_qual`_'atype_code (rtype * const restrict, 
 	atype * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *);
+	GFC_LOGICAL_4 *, gfc_charlen_type);
 export_proto(`s'name`'rtype_qual`_'atype_code);
 
 void
 `s'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
 	atype * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -388,7 +399,7 @@ void
 
   if (*mask)
     {
-      name`'rtype_qual`_'atype_code (retarray, array, pdim);
+      name`'rtype_qual`_'atype_code (retarray, array, pdim, string_len);
       return;
     }
   /* Make dim zero based to avoid confusion.  */
@@ -404,7 +415,7 @@ void
 
   for (n = 0; n < dim; n++)
     {
-      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n) * string_len;
 
       if (extent[n] <= 0)
 	extent[n] = 0;
@@ -413,7 +424,7 @@ void
   for (n = dim; n < rank; n++)
     {
       extent[n] =
-	GFC_DESCRIPTOR_EXTENT(array,n + 1);
+	GFC_DESCRIPTOR_EXTENT(array,n + 1) * string_len;
 
       if (extent[n] <= 0)
 	extent[n] = 0;

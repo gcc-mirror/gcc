@@ -1702,6 +1702,7 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   const char *name;
   int i, j, idim;
   int fkind;
+  int d_num;
 
   f->ts.type = BT_INTEGER;
 
@@ -1752,8 +1753,18 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   else
     name = "maxloc";
 
+  if (dim)
+    {
+      if (array->ts.type != BT_CHARACTER || f->rank != 0)
+	d_num = 1;
+      else
+	d_num = 2;
+    }
+  else
+    d_num = 0;
+
   f->value.function.name
-    = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, dim != NULL, f->ts.kind,
+    = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, d_num, f->ts.kind,
 		      gfc_type_letter (array->ts.type), array->ts.kind);
 
   if (kind)
@@ -1896,6 +1907,7 @@ gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   const char *name;
   int i, j, idim;
   int fkind;
+  int d_num;
 
   f->ts.type = BT_INTEGER;
 
@@ -1946,8 +1958,18 @@ gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   else
     name = "minloc";
 
+  if (dim)
+    {
+      if (array->ts.type != BT_CHARACTER || f->rank != 0)
+	d_num = 1;
+      else
+	d_num = 2;
+    }
+  else
+    d_num = 0;
+
   f->value.function.name
-    = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, dim != NULL, f->ts.kind,
+    = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, d_num, f->ts.kind,
 		      gfc_type_letter (array->ts.type), array->ts.kind);
 
   if (fkind != f->ts.kind)

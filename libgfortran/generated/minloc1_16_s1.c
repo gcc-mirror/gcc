@@ -1,39 +1,60 @@
-dnl Support macro file for intrinsic functions.
-dnl Contains the generic sections of the array functions.
-dnl This file is part of the GNU Fortran Runtime Library (libgfortran)
-dnl Distributed under the GNU GPL with exception.  See COPYING for details.
-dnl
-dnl Pass the implementation for a single section as the parameter to
-dnl {MASK_}ARRAY_FUNCTION.
-dnl The variables base, delta, and len describe the input section.
-dnl For masked section the mask is described by mbase and mdelta.
-dnl These should not be modified. The result should be stored in *dest.
-dnl The names count, extent, sstride, dstride, base, dest, rank, dim
-dnl retarray, array, pdim and mstride should not be used.
-dnl The variable n is declared as index_type and may be used.
-dnl Other variable declarations may be placed at the start of the code,
-dnl The types of the array parameter and the return value are
-dnl atype_name and rtype_name respectively.
-dnl Execution should be allowed to continue to the end of the block.
-dnl You should not return or break from the inner loop of the implementation.
-dnl Care should also be taken to avoid using the names defined in iparm.m4
-define(START_ARRAY_FUNCTION,
-`
-extern void name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict);
-export_proto(name`'rtype_qual`_'atype_code);
+/* Implementation of the MINLOC intrinsic
+   Copyright 2017 Free Software Foundation, Inc.
+   Contributed by Thomas Koenig
+
+This file is part of the GNU Fortran runtime library (libgfortran).
+
+Libgfortran is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation; either
+version 3 of the License, or (at your option) any later version.
+
+Libgfortran is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
+
+#include "libgfortran.h"
+
+
+#if defined (HAVE_GFC_INTEGER_1) && defined (HAVE_GFC_INTEGER_16)
+
+#include <string.h>
+
+static inline int
+compare_fcn (const GFC_INTEGER_1 *a, const GFC_INTEGER_1 *b, gfc_charlen_type n)
+{
+  if (sizeof (GFC_INTEGER_1) == 1)
+    return memcmp (a, b, n);
+  else
+    return memcmp_char4 (a, b, n);
+}
+
+extern void minloc1_16_s1 (gfc_array_i16 * const restrict, 
+	gfc_array_s1 * const restrict, const index_type * const restrict,
+	gfc_charlen_type);
+export_proto(minloc1_16_s1);
 
 void
-name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
-	const index_type * const restrict pdim)
+minloc1_16_s1 (gfc_array_i16 * const restrict retarray, 
+	gfc_array_s1 * const restrict array, 
+	const index_type * const restrict pdim, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const atype_name * restrict base;
-  rtype_name * restrict dest;
+  const GFC_INTEGER_1 * restrict base;
+  GFC_INTEGER_16 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -47,7 +68,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 
   if (unlikely (dim < 0 || dim > rank))
     {
-      runtime_error ("Dim argument incorrect in u_name intrinsic: "
+      runtime_error ("Dim argument incorrect in MINLOC intrinsic: "
  		     "is %ld, should be between 1 and %ld",
 		     (long int) dim + 1, (long int) rank + 1);
     }
@@ -55,11 +76,11 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   len = GFC_DESCRIPTOR_EXTENT(array,dim);
   if (len < 0)
     len = 0;
-  delta = GFC_DESCRIPTOR_STRIDE(array,dim);
+  delta = GFC_DESCRIPTOR_STRIDE(array,dim) * string_len;
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n) * string_len;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] < 0)
@@ -67,7 +88,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array, n + 1);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array, n + 1) * string_len;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array, n + 1);
 
       if (extent[n] < 0)
@@ -94,7 +115,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
-      retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
+      retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
       if (alloc_size == 0)
 	{
 	  /* Make sure we have a zero-sized array.  */
@@ -107,13 +128,13 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " u_name intrinsic: is %ld, should be %ld",
+		       " MINLOC intrinsic: is %ld, should be %ld",
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
       if (unlikely (compile_options.bounds_check))
 	bounds_ifunction_return ((array_t *) retarray, extent,
-				 "return value", "u_name");
+				 "return value", "MINLOC");
     }
 
   for (n = 0; n < rank; n++)
@@ -130,22 +151,28 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   continue_loop = 1;
   while (continue_loop)
     {
-      const atype_name * restrict src;
-      rtype_name result;
+      const GFC_INTEGER_1 * restrict src;
+      GFC_INTEGER_16 result;
       src = base;
       {
-')dnl
-define(START_ARRAY_BLOCK,
-`	if (len <= 0)
-	  *dest = '$1`;
+
+	const GFC_INTEGER_1 *minval;
+	minval = base;
+	result = 1;
+	if (len <= 0)
+	  *dest = 0;
 	else
 	  {
 	    for (n = 0; n < len; n++, src += delta)
 	      {
-')dnl
-define(FINISH_ARRAY_FUNCTION,
-`	      }
-	    '$1`
+
+		if (compare_fcn (src, minval, string_len) < 0)
+		  {
+		    minval = src;
+		    result = (GFC_INTEGER_16)n + 1;
+		  }
+	      }
+	    
 	    *dest = result;
 	  }
       }
@@ -178,27 +205,27 @@ define(FINISH_ARRAY_FUNCTION,
 	    }
 	}
     }
-}')dnl
-define(START_MASKED_ARRAY_FUNCTION,
-`
-extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict);
-export_proto(`m'name`'rtype_qual`_'atype_code);
+}
+
+
+extern void mminloc1_16_s1 (gfc_array_i16 * const restrict, 
+	gfc_array_s1 * const restrict, const index_type * const restrict,
+	gfc_array_l1 * const restrict, gfc_charlen_type);
+export_proto(mminloc1_16_s1);
 
 void
-`m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
+mminloc1_16_s1 (gfc_array_i16 * const restrict retarray, 
+	gfc_array_s1 * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  rtype_name * restrict dest;
-  const atype_name * restrict base;
+  GFC_INTEGER_16 * restrict dest;
+  const GFC_INTEGER_1 * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
   index_type rank;
   index_type dim;
@@ -214,7 +241,7 @@ void
 
   if (unlikely (dim < 0 || dim > rank))
     {
-      runtime_error ("Dim argument incorrect in u_name intrinsic: "
+      runtime_error ("Dim argument incorrect in MINLOC intrinsic: "
  		     "is %ld, should be between 1 and %ld",
 		     (long int) dim + 1, (long int) rank + 1);
     }
@@ -236,12 +263,12 @@ void
   else
     runtime_error ("Funny sized logical array");
 
-  delta = GFC_DESCRIPTOR_STRIDE(array,dim);
+  delta = GFC_DESCRIPTOR_STRIDE(array,dim) * string_len;
   mdelta = GFC_DESCRIPTOR_STRIDE_BYTES(mask,dim);
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n) * string_len;
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
@@ -251,7 +278,7 @@ void
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1);
+      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1) * string_len;
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask, n + 1);
       extent[n] = GFC_DESCRIPTOR_EXTENT(array, n + 1);
 
@@ -286,20 +313,20 @@ void
 	  return;
 	}
       else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
+	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
 
     }
   else
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
-	runtime_error ("rank of return array incorrect in u_name intrinsic");
+	runtime_error ("rank of return array incorrect in MINLOC intrinsic");
 
       if (unlikely (compile_options.bounds_check))
 	{
 	  bounds_ifunction_return ((array_t *) retarray, extent,
-				   "return value", "u_name");
+				   "return value", "MINLOC");
 	  bounds_equal_extents ((array_t *) mask, (array_t *) array,
-	  			"MASK argument", "u_name");
+	  			"MASK argument", "MINLOC");
 	}
     }
 
@@ -316,19 +343,35 @@ void
 
   while (base)
     {
-      const atype_name * restrict src;
+      const GFC_INTEGER_1 * restrict src;
       const GFC_LOGICAL_1 * restrict msrc;
-      rtype_name result;
+      GFC_INTEGER_16 result;
       src = base;
       msrc = mbase;
       {
-')dnl
-define(START_MASKED_ARRAY_BLOCK,
-`	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
+
+	const GFC_INTEGER_1 *minval;
+	minval = base;
+	result = 0;
+	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
-')dnl
-define(FINISH_MASKED_ARRAY_FUNCTION,
-`	  }
+
+		if (*msrc)
+		      {
+			minval = src;
+			result = (GFC_INTEGER_16)n + 1;
+			break;
+		      }
+            }
+	    for (; n < len; n++, src += delta, msrc += mdelta)
+	      {
+		if (*msrc && compare_fcn (src, minval, string_len) < 0)
+		  {
+		    minval = src;
+		    result = (GFC_INTEGER_16)n + 1;
+		  }
+	      
+	  }
 	*dest = result;
       }
       /* Advance to the next element.  */
@@ -363,24 +406,24 @@ define(FINISH_MASKED_ARRAY_FUNCTION,
 	    }
 	}
     }
-}')dnl
-define(SCALAR_ARRAY_FUNCTION,
-`
-extern void `s'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *);
-export_proto(`s'name`'rtype_qual`_'atype_code);
+}
+
+
+extern void sminloc1_16_s1 (gfc_array_i16 * const restrict, 
+	gfc_array_s1 * const restrict, const index_type * const restrict,
+	GFC_LOGICAL_4 *, gfc_charlen_type);
+export_proto(sminloc1_16_s1);
 
 void
-`s'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
+sminloc1_16_s1 (gfc_array_i16 * const restrict retarray, 
+	gfc_array_s1 * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  rtype_name * restrict dest;
+  GFC_INTEGER_16 * restrict dest;
   index_type rank;
   index_type n;
   index_type dim;
@@ -388,7 +431,7 @@ void
 
   if (*mask)
     {
-      name`'rtype_qual`_'atype_code (retarray, array, pdim);
+      minloc1_16_s1 (retarray, array, pdim, string_len);
       return;
     }
   /* Make dim zero based to avoid confusion.  */
@@ -397,14 +440,14 @@ void
 
   if (unlikely (dim < 0 || dim > rank))
     {
-      runtime_error ("Dim argument incorrect in u_name intrinsic: "
+      runtime_error ("Dim argument incorrect in MINLOC intrinsic: "
  		     "is %ld, should be between 1 and %ld",
 		     (long int) dim + 1, (long int) rank + 1);
     }
 
   for (n = 0; n < dim; n++)
     {
-      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n) * string_len;
 
       if (extent[n] <= 0)
 	extent[n] = 0;
@@ -413,7 +456,7 @@ void
   for (n = dim; n < rank; n++)
     {
       extent[n] =
-	GFC_DESCRIPTOR_EXTENT(array,n + 1);
+	GFC_DESCRIPTOR_EXTENT(array,n + 1) * string_len;
 
       if (extent[n] <= 0)
 	extent[n] = 0;
@@ -446,13 +489,13 @@ void
 	  return;
 	}
       else
-	retarray->base_addr = xmallocarray (alloc_size, sizeof (rtype_name));
+	retarray->base_addr = xmallocarray (alloc_size, sizeof (GFC_INTEGER_16));
     }
   else
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " u_name intrinsic: is %ld, should be %ld",
+		       " MINLOC intrinsic: is %ld, should be %ld",
 		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
 		       (long int) rank);
 
@@ -465,7 +508,7 @@ void
 	      ret_extent = GFC_DESCRIPTOR_EXTENT(retarray,n);
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
-			       " u_name intrinsic in dimension %ld:"
+			       " MINLOC intrinsic in dimension %ld:"
 			       " is %ld, should be %ld", (long int) n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
@@ -482,7 +525,7 @@ void
 
   while(1)
     {
-      *dest = '$1`;
+      *dest = 0;
       count[0]++;
       dest += dstride[0];
       n = 0;
@@ -504,16 +547,6 @@ void
 	    }
       	}
     }
-}')dnl
-define(ARRAY_FUNCTION,
-`START_ARRAY_FUNCTION
-$2
-START_ARRAY_BLOCK($1)
-$3
-FINISH_ARRAY_FUNCTION($4)')dnl
-define(MASKED_ARRAY_FUNCTION,
-`START_MASKED_ARRAY_FUNCTION
-$2
-START_MASKED_ARRAY_BLOCK
-$3
-FINISH_MASKED_ARRAY_FUNCTION')dnl
+}
+
+#endif
