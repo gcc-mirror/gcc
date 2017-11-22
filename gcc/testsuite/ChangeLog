@@ -1,3 +1,8 @@
+2017-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_bswap16):
+	Do not skip on alpha and x86 targets.
+
 2017-11-22  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-move-1.c: Add -mfloat-abi=hard option.
