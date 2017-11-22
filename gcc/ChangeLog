@@ -1,3 +1,9 @@
+2017-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83089
+	* tree-if-conv.c (pass_if_conversion::execute): If anything
+	changed reset SCEV and free the number of iteration estimates.
+
 2017-11-21  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82945
