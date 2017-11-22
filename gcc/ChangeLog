@@ -1,3 +1,9 @@
+2017-11-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/83104
+	* vr-values.c (simplify_stmt_using_ranges): Check integral argument,
+	not result.
+
 2017-11-22  Marek Polacek  <polacek@redhat.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Jason Merrill  <jason@redhat.com>

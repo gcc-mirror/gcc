@@ -4091,7 +4091,7 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	 LHS = VAR == VAL1 ? (VAL1 BINOP CST) : (VAL2 BINOP CST) */
 
       if (TREE_CODE_CLASS (rhs_code) == tcc_binary
-	  && INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 	  && ((TREE_CODE (rhs1) == INTEGER_CST
 	       && TREE_CODE (rhs2) == SSA_NAME)
 	      || (TREE_CODE (rhs2) == INTEGER_CST
