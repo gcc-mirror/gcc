@@ -17008,10 +17008,11 @@ cmse_nonsecure_call_clear_caller_saved (void)
 
       FOR_BB_INSNS (bb, insn)
 	{
-	  uint64_t to_clear_mask, float_mask;
+	  unsigned address_regnum, regno, maxregno =
+	    TARGET_HARD_FLOAT_ABI ? D7_VFP_REGNUM : NUM_ARG_REGS - 1;
+	  auto_sbitmap to_clear_bitmap (maxregno + 1);
 	  rtx_insn *seq;
 	  rtx pat, call, unspec, reg, cleared_reg, tmp;
-	  unsigned int regno, maxregno;
 	  rtx address;
 	  CUMULATIVE_ARGS args_so_far_v;
 	  cumulative_args_t args_so_far;
@@ -17042,18 +17043,21 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	    continue;
 
 	  /* Determine the caller-saved registers we need to clear.  */
-	  to_clear_mask = (1LL << (NUM_ARG_REGS)) - 1;
-	  maxregno = NUM_ARG_REGS - 1;
+	  bitmap_clear (to_clear_bitmap);
+	  bitmap_set_range (to_clear_bitmap, R0_REGNUM, NUM_ARG_REGS);
+
 	  /* Only look at the caller-saved floating point registers in case of
 	     -mfloat-abi=hard.  For -mfloat-abi=softfp we will be using the
 	     lazy store and loads which clear both caller- and callee-saved
 	     registers.  */
 	  if (TARGET_HARD_FLOAT_ABI)
 	    {
-	      float_mask = (1LL << (D7_VFP_REGNUM + 1)) - 1;
-	      float_mask &= ~((1LL << FIRST_VFP_REGNUM) - 1);
-	      to_clear_mask |= float_mask;
-	      maxregno = D7_VFP_REGNUM;
+	      auto_sbitmap float_bitmap (maxregno + 1);
+
+	      bitmap_clear (float_bitmap);
+	      bitmap_set_range (float_bitmap, FIRST_VFP_REGNUM,
+				D7_VFP_REGNUM - FIRST_VFP_REGNUM + 1);
+	      bitmap_ior (to_clear_bitmap, to_clear_bitmap, float_bitmap);
 	    }
 
 	  /* Make sure the register used to hold the function address is not
@@ -17061,7 +17065,9 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  address = RTVEC_ELT (XVEC (unspec, 0), 0);
 	  gcc_assert (MEM_P (address));
 	  gcc_assert (REG_P (XEXP (address, 0)));
-	  to_clear_mask &= ~(1LL << REGNO (XEXP (address, 0)));
+	  address_regnum = REGNO (XEXP (address, 0));
+	  if (address_regnum < R0_REGNUM + NUM_ARG_REGS)
+	    bitmap_clear_bit (to_clear_bitmap, address_regnum);
 
 	  /* Set basic block of call insn so that df rescan is performed on
 	     insns inserted here.  */
@@ -17082,6 +17088,7 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  FOREACH_FUNCTION_ARGS (fntype, arg_type, args_iter)
 	    {
 	      rtx arg_rtx;
+	      uint64_t to_clear_args_mask;
 	      machine_mode arg_mode = TYPE_MODE (arg_type);
 
 	      if (VOID_TYPE_P (arg_type))
@@ -17094,10 +17101,18 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	      arg_rtx = arm_function_arg (args_so_far, arg_mode, arg_type,
 					  true);
 	      gcc_assert (REG_P (arg_rtx));
-	      to_clear_mask
-		&= ~compute_not_to_clear_mask (arg_type, arg_rtx,
-					       REGNO (arg_rtx),
-					       padding_bits_to_clear_ptr);
+	      to_clear_args_mask
+		= compute_not_to_clear_mask (arg_type, arg_rtx,
+					     REGNO (arg_rtx),
+					     padding_bits_to_clear_ptr);
+	      if (to_clear_args_mask)
+		{
+		  for (regno = R0_REGNUM; regno <= maxregno; regno++)
+		    {
+		      if (to_clear_args_mask & (1ULL << regno))
+			bitmap_clear_bit (to_clear_bitmap, regno);
+		    }
+		}
 
 	      first_param = false;
 	    }
@@ -17156,7 +17171,7 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	     call.  */
 	  for (regno = R0_REGNUM; regno <= maxregno; regno++)
 	    {
-	      if (!(to_clear_mask & (1LL << regno)))
+	      if (!bitmap_bit_p (to_clear_bitmap, regno))
 		continue;
 
 	      /* If regno is an even vfp register and its successor is also to
@@ -17165,7 +17180,7 @@ cmse_nonsecure_call_clear_caller_saved (void)
 		{
 		  if (TARGET_VFP_DOUBLE
 		      && VFP_REGNO_OK_FOR_DOUBLE (regno)
-		      && to_clear_mask & (1LL << (regno + 1)))
+		      && bitmap_bit_p (to_clear_bitmap, (regno + 1)))
 		    emit_move_insn (gen_rtx_REG (DFmode, regno++),
 				    CONST0_RTX (DFmode));
 		  else
@@ -17179,7 +17194,6 @@ cmse_nonsecure_call_clear_caller_saved (void)
 	  seq = get_insns ();
 	  end_sequence ();
 	  emit_insn_before (seq, insn);
-
 	}
     }
 }

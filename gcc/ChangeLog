@@ -1,3 +1,9 @@
+2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (cmse_nonsecure_call_clear_caller_saved): Use
+	auto_sbitap instead of integer bitfield to control register needing
+	clearing.
+
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83044
