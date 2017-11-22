@@ -1,5 +1,7 @@
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/abi/pr68355.C: Don't expect tail call on ia32.
+
 	PR c++/82401
 	* g++.dg/cpp0x/pr82401.C: New test.
 
