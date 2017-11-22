@@ -1,3 +1,8 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82401
+	* name-lookup.c (member_name_cmp): Return 0 if a == b.
+
 2017-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62170
