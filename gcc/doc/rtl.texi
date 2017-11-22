@@ -565,6 +565,16 @@ that are used in certain types of expression.  Most often they
 are accessed with the following macros, which expand into lvalues.
 
 @table @code
+@findex CROSSING_JUMP_P
+@cindex @code{jump_insn} and @samp{/j}
+@item CROSSING_JUMP_P (@var{x})
+Nonzero in a @code{jump_insn} if it crosses between hot and cold sections,
+which could potentially be very far apart in the executable.  The presence
+of this flag indicates to other optimizations that this branching instruction
+should not be ``collapsed'' into a simpler branching construct.  It is used
+when the optimization to partition basic blocks into hot and cold sections
+is turned on.
+
 @findex CONSTANT_POOL_ADDRESS_P
 @cindex @code{symbol_ref} and @samp{/u}
 @cindex @code{unchanging}, in @code{symbol_ref}
@@ -576,37 +586,6 @@ some targets the addresses are close to the beginning of the function.
 In either case GCC assumes these addresses can be addressed directly,
 perhaps with the help of base registers.
 Stored in the @code{unchanging} field and printed as @samp{/u}.
-
-@findex RTL_CONST_CALL_P
-@cindex @code{call_insn} and @samp{/u}
-@cindex @code{unchanging}, in @code{call_insn}
-@item RTL_CONST_CALL_P (@var{x})
-In a @code{call_insn} indicates that the insn represents a call to a
-const function.  Stored in the @code{unchanging} field and printed as
-@samp{/u}.
-
-@findex RTL_PURE_CALL_P
-@cindex @code{call_insn} and @samp{/i}
-@cindex @code{return_val}, in @code{call_insn}
-@item RTL_PURE_CALL_P (@var{x})
-In a @code{call_insn} indicates that the insn represents a call to a
-pure function.  Stored in the @code{return_val} field and printed as
-@samp{/i}.
-
-@findex RTL_CONST_OR_PURE_CALL_P
-@cindex @code{call_insn} and @samp{/u} or @samp{/i}
-@item RTL_CONST_OR_PURE_CALL_P (@var{x})
-In a @code{call_insn}, true if @code{RTL_CONST_CALL_P} or
-@code{RTL_PURE_CALL_P} is true.
-
-@findex RTL_LOOPING_CONST_OR_PURE_CALL_P
-@cindex @code{call_insn} and @samp{/c}
-@cindex @code{call}, in @code{call_insn}
-@item RTL_LOOPING_CONST_OR_PURE_CALL_P (@var{x})
-In a @code{call_insn} indicates that the insn represents a possibly
-infinite looping call to a const or pure function.  Stored in the
-@code{call} field and printed as @samp{/c}.  Only true if one of
-@code{RTL_CONST_CALL_P} or @code{RTL_PURE_CALL_P} is true.
 
 @findex INSN_ANNULLED_BRANCH_P
 @cindex @code{jump_insn} and @samp{/u}
@@ -702,6 +681,29 @@ Stored in the @code{call} field and printed as @samp{/c}.
 Nonzero in a @code{mem} if the memory reference holds a pointer.
 Stored in the @code{frame_related} field and printed as @samp{/f}.
 
+@findex MEM_READONLY_P
+@cindex @code{mem} and @samp{/u}
+@cindex @code{unchanging}, in @code{mem}
+@item MEM_READONLY_P (@var{x})
+Nonzero in a @code{mem}, if the memory is statically allocated and read-only.
+
+Read-only in this context means never modified during the lifetime of the
+program, not necessarily in ROM or in write-disabled pages.  A common
+example of the later is a shared library's global offset table.  This
+table is initialized by the runtime loader, so the memory is technically
+writable, but after control is transferred from the runtime loader to the
+application, this memory will never be subsequently modified.
+
+Stored in the @code{unchanging} field and printed as @samp{/u}.
+
+@findex PREFETCH_SCHEDULE_BARRIER_P
+@cindex @code{prefetch} and @samp{/v}
+@cindex @code{volatile}, in @code{prefetch}
+@item PREFETCH_SCHEDULE_BARRIER_P (@var{x})
+In a @code{prefetch}, indicates that the prefetch is a scheduling barrier.
+No other INSNs will be moved over it.
+Stored in the @code{volatil} field and printed as @samp{/v}.
+
 @findex REG_FUNCTION_VALUE_P
 @cindex @code{reg} and @samp{/i}
 @cindex @code{return_val}, in @code{reg}
@@ -730,6 +732,37 @@ the compiler.  Stored in the @code{volatil} field and printed as
 The same hard register may be used also for collecting the values of
 functions called by this one, but @code{REG_FUNCTION_VALUE_P} is zero
 in this kind of use.
+
+@findex RTL_CONST_CALL_P
+@cindex @code{call_insn} and @samp{/u}
+@cindex @code{unchanging}, in @code{call_insn}
+@item RTL_CONST_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a call to a
+const function.  Stored in the @code{unchanging} field and printed as
+@samp{/u}.
+
+@findex RTL_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/i}
+@cindex @code{return_val}, in @code{call_insn}
+@item RTL_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a call to a
+pure function.  Stored in the @code{return_val} field and printed as
+@samp{/i}.
+
+@findex RTL_CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/u} or @samp{/i}
+@item RTL_CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn}, true if @code{RTL_CONST_CALL_P} or
+@code{RTL_PURE_CALL_P} is true.
+
+@findex RTL_LOOPING_CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/c}
+@cindex @code{call}, in @code{call_insn}
+@item RTL_LOOPING_CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a possibly
+infinite looping call to a const or pure function.  Stored in the
+@code{call} field and printed as @samp{/c}.  Only true if one of
+@code{RTL_CONST_CALL_P} or @code{RTL_PURE_CALL_P} is true.
 
 @findex RTX_FRAME_RELATED_P
 @cindex @code{insn} and @samp{/f}
@@ -764,21 +797,6 @@ computation performed by this instruction, i.e., one that
 
 This flag is required for exception handling support on targets with RTL
 prologues.
-
-@findex MEM_READONLY_P
-@cindex @code{mem} and @samp{/u}
-@cindex @code{unchanging}, in @code{mem}
-@item MEM_READONLY_P (@var{x})
-Nonzero in a @code{mem}, if the memory is statically allocated and read-only.
-
-Read-only in this context means never modified during the lifetime of the
-program, not necessarily in ROM or in write-disabled pages.  A common
-example of the later is a shared library's global offset table.  This
-table is initialized by the runtime loader, so the memory is technically
-writable, but after control is transferred from the runtime loader to the
-application, this memory will never be subsequently modified.
-
-Stored in the @code{unchanging} field and printed as @samp{/u}.
 
 @findex SCHED_GROUP_P
 @cindex @code{insn} and @samp{/s}
@@ -879,14 +897,6 @@ Stored in the @code{volatil} field and printed as @samp{/v}.
 Most uses of @code{SYMBOL_REF_FLAG} are historic and may be subsumed
 by @code{SYMBOL_REF_FLAGS}.  Certainly use of @code{SYMBOL_REF_FLAGS}
 is mandatory if the target requires more than one bit of storage.
-
-@findex PREFETCH_SCHEDULE_BARRIER_P
-@cindex @code{prefetch} and @samp{/v}
-@cindex @code{volatile}, in @code{prefetch}
-@item PREFETCH_SCHEDULE_BARRIER_P (@var{x})
-In a @code{prefetch}, indicates that the prefetch is a scheduling barrier.
-No other INSNs will be moved over it.
-Stored in the @code{volatil} field and printed as @samp{/v}.
 @end table
 
 These are the fields to which the above macros refer:
@@ -973,6 +983,8 @@ mem unchanged when we access a component.
 In a @code{set}, 1 means it is for a return.
 
 In a @code{call_insn}, 1 means it is a sibling call.
+
+In a @code{jump_insn}, 1 means it is a crossing jump.
 
 In an RTL dump, this flag is represented as @samp{/j}.
 
@@ -3909,16 +3921,6 @@ direct or indirect jump target.  Its purpose is similar to that of
 multiple targets; the last label in the insn (in the highest numbered
 insn-field) goes into the @code{JUMP_LABEL} field and does not have a
 @code{REG_LABEL_TARGET} note.  @xref{Insns, JUMP_LABEL}.
-
-@findex REG_CROSSING_JUMP
-@item REG_CROSSING_JUMP
-This insn is a branching instruction (either an unconditional jump or
-an indirect jump) which crosses between hot and cold sections, which
-could potentially be very far apart in the executable.  The presence
-of this note indicates to other optimizations that this branching
-instruction should not be ``collapsed'' into a simpler branching
-construct.  It is used when the optimization to partition basic blocks
-into hot and cold sections is turned on.
 
 @findex REG_SETJMP
 @item REG_SETJMP

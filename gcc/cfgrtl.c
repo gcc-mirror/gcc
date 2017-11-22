@@ -1333,8 +1333,7 @@ fixup_partition_crossing (edge e)
   if (BB_PARTITION (e->src) != BB_PARTITION (e->dest))
     {
       e->flags |= EDGE_CROSSING;
-      if (JUMP_P (BB_END (e->src))
-	  && !CROSSING_JUMP_P (BB_END (e->src)))
+      if (JUMP_P (BB_END (e->src)))
 	CROSSING_JUMP_P (BB_END (e->src)) = 1;
     }
   else if (BB_PARTITION (e->src) == BB_PARTITION (e->dest))
