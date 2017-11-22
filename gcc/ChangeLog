@@ -1,3 +1,11 @@
+2017-11-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vdot_u32, vdotq_u32)
+	(vdot_s32, vdotq_s32): New.
+	(vdot_lane_u32, vdotq_lane_u32): New.
+	(vdot_lane_s32, vdotq_lane_s32): New.
+
+
 2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/82547
