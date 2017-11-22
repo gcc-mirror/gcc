@@ -1342,6 +1342,12 @@ record_store (rtx body, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
+  if (offset > HOST_WIDE_INT_MAX - width)
+    {
+      clear_rhs_from_active_local_stores ();
+      return 0;
+    }
+
   if (group_id >= 0)
     {
       /* In the restrictive case where the base is a constant or the
@@ -1981,9 +1987,13 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
-  if (offset > HOST_WIDE_INT_MAX - width)
+  if (width == -1
+      ? offset == HOST_WIDE_INT_MIN
+      : offset > HOST_WIDE_INT_MAX - width)
     {
-      clear_rhs_from_active_local_stores ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " adding wild read, due to overflow.\n");
+      add_wild_read (bb_info);
       return;
     }
 

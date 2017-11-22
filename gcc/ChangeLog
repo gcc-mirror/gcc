@@ -1,3 +1,12 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82044
+	PR tree-optimization/82042
+	* dse.c (record_store): Check for overflow.
+	(check_mem_read_rtx): Properly check for overflow if width == -1, call
+	add_wild_read instead of clear_rhs_from_active_local_stores on
+	overflow and log it into dump_file.
+
 2017-11-22  Richard Biener  <rguenther@suse.de>
 
 	* gimple-iterator.c (gimple_find_edge_insert_loc): Ignore
