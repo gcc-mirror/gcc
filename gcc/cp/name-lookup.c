@@ -1469,7 +1469,10 @@ member_name_cmp (const void *a_p, const void *b_p)
      how we order these.  Use UID as a proxy for source ordering, so
      that identically-located decls still have a well-defined stable
      ordering.  */
-  return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+  if (DECL_UID (a) != DECL_UID (b))
+    return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+  gcc_assert (a == b);
+  return 0;
 }
 
 static struct {
