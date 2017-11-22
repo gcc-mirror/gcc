@@ -1,3 +1,9 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/83106
+	* target.c (gomp_target_init): Compute lengths just once and
+	use them in both malloc size and subsequent copying.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* configure.ac: Set CET_FLAGS, update XCFLAGS and FCFLAGS.
