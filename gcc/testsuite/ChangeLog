@@ -1,3 +1,13 @@
+2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-13.c: Adapt expectations
+	to vmov instructions now generated.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard-sp/cmse-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-13.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-7.c: Likewise.
+	* gcc.target/arm/cmse/mainline/hard/cmse-8.c: Likewise.
+
 2017-11-22  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/simd/vdot-compile.c: New.

@@ -1,3 +1,10 @@
+2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (cmse_clear_registers): New function.
+	(cmse_nonsecure_call_clear_caller_saved): Replace register clearing
+	code by call to cmse_clear_registers.
+	(cmse_nonsecure_entry_clear_before_return): Likewise.
+
 2017-11-22  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm_neon.h (vdot_u32, vdotq_u32)
