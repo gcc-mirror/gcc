@@ -1,5 +1,13 @@
 2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR middle-end/82547
+	* wide-int.cc (wi::add_large, wi::sub_large): Fix overflow detection
+	for unsigned values with fewer HWIs than the precision.
+	(test_overflow): New function.
+	(wide_int_cc_tests): Call it.
+
+2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* emit-rtl.c (init_derived_machine_modes): Make sure ptr_mode
 	has the same mode class as Pmode.
 
