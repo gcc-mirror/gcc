@@ -1,3 +1,10 @@
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/82588
+	PR tree-optimization/82583
+	* jit.dg/test-error-array-bounds.c (verify_code): Update expected
+	error message from -Warray-bounds.
+
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/graphite/pr41562.C: Add -Wno-return-type.
