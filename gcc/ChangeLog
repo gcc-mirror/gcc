@@ -1,3 +1,8 @@
+2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* emit-rtl.c (init_derived_machine_modes): Make sure ptr_mode
+	has the same mode class as Pmode.
+
 2017-11-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (cmse_nonsecure_call_clear_caller_saved): Get rid of

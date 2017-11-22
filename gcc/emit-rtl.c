@@ -6003,7 +6003,8 @@ init_derived_machine_modes (void)
 
   byte_mode = opt_byte_mode.require ();
   word_mode = opt_word_mode.require ();
-  ptr_mode = int_mode_for_size (POINTER_SIZE, 0).require ();
+  ptr_mode = as_a <scalar_int_mode>
+    (mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0).require ());
 }
 
 /* Create some permanent unique rtl objects shared between all functions.  */
