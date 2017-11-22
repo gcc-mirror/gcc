@@ -1597,24 +1597,27 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 			? gimple_call_arg_ptr (stmt, 0)
 			: &error_mark_node);
 
-	  /* We use gimple's REDUC_(PLUS|MIN|MAX)_EXPRs for float, signed int
+	  /* We use gimple's IFN_REDUC_(PLUS|MIN|MAX)s for float, signed int
 	     and unsigned int; it will distinguish according to the types of
 	     the arguments to the __builtin.  */
 	  switch (fcode)
 	    {
 	      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
-	        new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-						REDUC_PLUS_EXPR, args[0]);
+	        new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
+						       1, args[0]);
+		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
-		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-						REDUC_MAX_EXPR, args[0]);
+	        new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,
+						       1, args[0]);
+		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
-		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-						REDUC_MIN_EXPR, args[0]);
+	        new_stmt = gimple_build_call_internal (IFN_REDUC_MIN,
+						       1, args[0]);
+		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 		break;
 	      BUILTIN_GPF (BINOP, fmulx, 0)
 		{
