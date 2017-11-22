@@ -9368,26 +9368,6 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
         return target;
       }
 
-    case REDUC_MAX_EXPR:
-    case REDUC_MIN_EXPR:
-    case REDUC_PLUS_EXPR:
-      {
-        op0 = expand_normal (treeop0);
-        this_optab = optab_for_tree_code (code, type, optab_default);
-        machine_mode vec_mode = TYPE_MODE (TREE_TYPE (treeop0));
-
-	struct expand_operand ops[2];
-	enum insn_code icode = optab_handler (this_optab, vec_mode);
-
-	create_output_operand (&ops[0], target, mode);
-	create_input_operand (&ops[1], op0, vec_mode);
-	expand_insn (icode, 2, ops);
-	target = ops[0].value;
-	if (GET_MODE (target) != mode)
-	  return gen_lowpart (tmode, target);
-	return target;
-      }
-
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
       {

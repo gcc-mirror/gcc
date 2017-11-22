@@ -1,3 +1,38 @@
+2017-11-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree.def (REDUC_MAX_EXPR, REDUC_MIN_EXPR, REDUC_PLUS_EXPR): Delete.
+	* cfgexpand.c (expand_debug_expr): Remove handling for them.
+	* expr.c (expand_expr_real_2): Likewise.
+	* fold-const.c (const_unop): Likewise.
+	* optabs-tree.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (verify_gimple_assign_unary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_code_prio): Likewise.
+	(op_symbol_code): Likewise.
+	* internal-fn.def (DEF_INTERNAL_SIGNED_OPTAB_FN): Define.
+	(IFN_REDUC_PLUS, IFN_REDUC_MAX, IFN_REDUC_MIN): New internal functions.
+	* internal-fn.c (direct_internal_fn_optab): New function.
+	(direct_internal_fn_array, direct_internal_fn_supported_p
+	(internal_fn_expanders): Handle DEF_INTERNAL_SIGNED_OPTAB_FN.
+	* fold-const-call.c (fold_const_reduction): New function.
+	(fold_const_call): Handle CFN_REDUC_PLUS, CFN_REDUC_MAX and
+	CFN_REDUC_MIN.
+	* tree-vect-loop.c: Include internal-fn.h.
+	(reduction_code_for_scalar_code): Rename to...
+	(reduction_fn_for_scalar_code): ...this and return an internal
+	function.
+	(vect_model_reduction_cost): Take an internal_fn rather than
+	a tree_code.
+	(vect_create_epilog_for_reduction): Likewise.  Build calls rather
+	than assignments.
+	(vectorizable_reduction): Use internal functions rather than tree
+	codes for the reduction operation.  Update calls to the functions
+	above.
+	* config/aarch64/aarch64-builtins.c (aarch64_gimple_fold_builtin):
+	Use calls to internal functions rather than REDUC tree codes.
+	* config/aarch64/aarch64-simd.md: Update comment accordingly.
+
 2017-11-22  Olivier Hainque  <hainque@adacore.com>
 
        * config/vxworks.c (vxworks_override_options): Pick default

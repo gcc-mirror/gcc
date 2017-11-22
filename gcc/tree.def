@@ -1268,18 +1268,6 @@ DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
    Operand 0: BODY: contains body of the transaction.  */
 DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
 
-/* Reduction operations.
-   Operations that take a vector of elements and "reduce" it to a scalar
-   result (e.g. summing the elements of the vector, finding the minimum over
-   the vector elements, etc).
-   Operand 0 is a vector.
-   The expression returns a scalar, with type the same as the elements of the
-   vector, holding the result of the reduction of all elements of the operand.
-   */
-DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
-DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
-DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
-
 /* Widening dot-product.
    The first two arguments are of type t1.
    The third argument and the result are of type t2, such that t2 is at least

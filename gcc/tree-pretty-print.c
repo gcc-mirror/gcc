@@ -3209,24 +3209,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       is_expr = false;
       break;
 
-    case REDUC_MAX_EXPR:
-      pp_string (pp, " REDUC_MAX_EXPR < ");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (pp, " > ");
-      break;
-
-    case REDUC_MIN_EXPR:
-      pp_string (pp, " REDUC_MIN_EXPR < ");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (pp, " > ");
-      break;
-
-    case REDUC_PLUS_EXPR:
-      pp_string (pp, " REDUC_PLUS_EXPR < ");
-      dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (pp, " > ");
-      break;
-
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
@@ -3606,9 +3588,6 @@ op_code_prio (enum tree_code code)
     case ABS_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-    case REDUC_MAX_EXPR:
-    case REDUC_MIN_EXPR:
-    case REDUC_PLUS_EXPR:
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
@@ -3726,9 +3705,6 @@ op_symbol_code (enum tree_code code)
 
     case PLUS_EXPR:
       return "+";
-
-    case REDUC_PLUS_EXPR:
-      return "r+";
 
     case WIDEN_SUM_EXPR:
       return "w+";

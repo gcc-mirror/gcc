@@ -1717,36 +1717,6 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	return build_vector (type, elts);
       }
 
-    case REDUC_MIN_EXPR:
-    case REDUC_MAX_EXPR:
-    case REDUC_PLUS_EXPR:
-      {
-	unsigned int nelts, i;
-	enum tree_code subcode;
-
-	if (TREE_CODE (arg0) != VECTOR_CST)
-	  return NULL_TREE;
-	nelts = VECTOR_CST_NELTS (arg0);
-
-	switch (code)
-	  {
-	  case REDUC_MIN_EXPR: subcode = MIN_EXPR; break;
-	  case REDUC_MAX_EXPR: subcode = MAX_EXPR; break;
-	  case REDUC_PLUS_EXPR: subcode = PLUS_EXPR; break;
-	  default: gcc_unreachable ();
-	  }
-
-	tree res = VECTOR_CST_ELT (arg0, 0);
-	for (i = 1; i < nelts; i++)
-	  {
-	    res = const_binop (subcode, res, VECTOR_CST_ELT (arg0, i));
-	    if (res == NULL_TREE || !CONSTANT_CLASS_P (res))
-	      return NULL_TREE;
-	  }
-
-	return res;
-      }
-
     default:
       break;
     }

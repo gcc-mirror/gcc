@@ -5051,9 +5051,6 @@ expand_debug_expr (tree exp)
 
     /* Vector stuff.  For most of the codes we don't have rtl codes.  */
     case REALIGN_LOAD_EXPR:
-    case REDUC_MAX_EXPR:
-    case REDUC_MIN_EXPR:
-    case REDUC_PLUS_EXPR:
     case VEC_COND_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
     case VEC_PACK_SAT_EXPR:
