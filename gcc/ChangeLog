@@ -1,5 +1,11 @@
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/83084
+	* valtrack.c (propagate_for_debug_subst, propagate_for_debug): Reset
+	debug insns if they would contain UNSPEC_VOLATILE or volatile asm.
+	(dead_debug_insert_temp): Likewise, but also ignore even non-volatile
+	asm.
+
 	PR middle-end/82875
 	* optabs.c (expand_doubleword_mult, expand_binop): Before calling
 	expand_binop with *mul_widen_optab, make sure at least one of the
