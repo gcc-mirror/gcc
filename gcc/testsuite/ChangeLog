@@ -1,3 +1,8 @@
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83034
+	* gcc.dg/pr83034.c: New test.
+
 2017-11-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83089

@@ -1,5 +1,8 @@
 2017-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/83034
+	* dwarf2out.c (mem_loc_descriptor): Handle VEC_SERIES.
+
 	PR rtl-optimization/82044
 	PR tree-optimization/82042
 	* dse.c (record_store): Check for overflow.
