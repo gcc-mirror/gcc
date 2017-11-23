@@ -865,6 +865,9 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 {
   basic_block bb = e->src;
 
+  if (!valid_irange_ssa (name))
+    return false;
+
   gimple *stmt = SSA_NAME_DEF_STMT (name);
   if (stmt && gimple_bb (stmt) == e->src)
     {
@@ -1087,14 +1090,20 @@ path_ranger::path_range_of_def (irange &r, gimple *g)
       if (get_global_ssa_range (r, phi_def))
         return true;
 
+      // avoid infinite recursion by initializing global cache 
+      r.set_range (phi_def);
+      set_global_ssa_range (phi_def, r);
+
       r.clear (TREE_TYPE (phi_def));
       for (x = 0; x < gimple_phi_num_args (phi); x++)
         {
 	  arg = gimple_phi_arg_def (phi, x);
 	  e = gimple_phi_arg_edge (phi, x);
-	  if (!range_on_edge (range_op2, arg, e))
+	  if (!path_range_edge (range_op2, arg, e))
 	    if (!get_operand_range (range_op2, arg))
 	      return false;
+
+	  normalize_bool_type (r, range_op2);
 	  r.union_ (range_op2);
 	  if (r.range_for_type_p ())
 	    return true;
@@ -1113,6 +1122,10 @@ path_ranger::path_range_of_def (irange &r, gimple *g)
 
   if (get_global_ssa_range (r, name))
     return true;
+
+  // avoid infinite recursion by initializing global cache 
+  r.set_range (name);
+  set_global_ssa_range (name, r);
 
   bool res = path_fold_stmt (r, rn, bb);
 
