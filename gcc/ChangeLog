@@ -1,3 +1,15 @@
+2017-11-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2017-11-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/83111
+	* config/sh/sh.md (udivsi3, divsi3, sibcall_value_pcrel,
+	sibcall_value_pcrel_fdpic): Use local variable instead of
+	operands[3].
+	(calli_tbr_rel): Add missing operand 2.
+	(call_valuei_tbr_rel): Add missing operand 3.
+
 2017-11-22  Richard Biener  <rguenther@suse.de>
 
 	Revert
