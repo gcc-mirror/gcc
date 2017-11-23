@@ -83,6 +83,72 @@ _mm512_mask_compressstoreu_epi16 (void * __A, __mmask32 __B, __m512i __C)
   __builtin_ia32_compressstoreuhi512_mask ((__v32hi *) __A, (__v32hi) __C,
 							(__mmask32) __B);
 }
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_expand_epi8 (__m512i __A, __mmask64 __B, __m512i __C)
+{
+  return (__m512i) __builtin_ia32_expandqi512_mask ((__v64qi) __C,
+						    (__v64qi) __A,
+						    (__mmask64) __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_expand_epi8 (__mmask64 __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_expandqi512_maskz ((__v64qi) __B,
+			(__v64qi) _mm512_setzero_si512 (), (__mmask64) __A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_expandloadu_epi8 (__m512i __A, __mmask64 __B, const void * __C)
+{
+  return (__m512i) __builtin_ia32_expandloadqi512_mask ((const __v64qi *) __C,
+					(__v64qi) __A, (__mmask64) __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_expandloadu_epi8 (__mmask64 __A, const void * __B)
+{
+  return (__m512i) __builtin_ia32_expandloadqi512_maskz ((const __v64qi *) __B,
+			(__v64qi) _mm512_setzero_si512 (), (__mmask64) __A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_expand_epi16 (__m512i __A, __mmask32 __B, __m512i __C)
+{
+  return (__m512i) __builtin_ia32_expandhi512_mask ((__v32hi) __C,
+						    (__v32hi) __A,
+						    (__mmask32) __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_expand_epi16 (__mmask32 __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_expandhi512_maskz ((__v32hi) __B,
+			(__v32hi) _mm512_setzero_si512 (), (__mmask32) __A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_expandloadu_epi16 (__m512i __A, __mmask32 __B, const void * __C)
+{
+  return (__m512i) __builtin_ia32_expandloadhi512_mask ((const __v32hi *) __C,
+					(__v32hi) __A, (__mmask32) __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_expandloadu_epi16 (__mmask32 __A, const void * __B)
+{
+  return (__m512i) __builtin_ia32_expandloadhi512_maskz ((const __v32hi *) __B,
+			(__v32hi) _mm512_setzero_si512 (), (__mmask32) __A);
+}
 #ifdef __DISABLE_AVX512VBMI2BW__
 #undef __DISABLE_AVX512VBMI2BW__
 

@@ -106,6 +106,104 @@ _mm_mask_compressstoreu_epi16 (void * __A, __mmask8 __B, __m128i __C)
   __builtin_ia32_compressstoreuhi128_mask ((__v8hi *) __A, (__v8hi) __C,
 							(__mmask8) __B);
 }
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_expand_epi8 (__m128i __A, __mmask16 __B, __m128i __C)
+{
+  return (__m128i) __builtin_ia32_expandqi128_mask ((__v16qi) __C,
+						    (__v16qi) __A,
+						    (__mmask16) __B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_expand_epi8 (__mmask16 __A, __m128i __B)
+{
+  return (__m128i) __builtin_ia32_expandqi128_maskz ((__v16qi) __B,
+			(__v16qi) _mm_setzero_si128 (), (__mmask16) __A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_expandloadu_epi8 (__m128i __A, __mmask16 __B, const void * __C)
+{
+  return (__m128i) __builtin_ia32_expandloadqi128_mask ((const __v16qi *) __C,
+					(__v16qi) __A, (__mmask16) __B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_expandloadu_epi8 (__mmask16 __A, const void * __B)
+{
+  return (__m128i) __builtin_ia32_expandloadqi128_maskz ((const __v16qi *) __B,
+			(__v16qi) _mm_setzero_si128 (), (__mmask16) __A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_expand_epi16 (__m128i __A, __mmask8 __B, __m128i __C)
+{
+  return (__m128i) __builtin_ia32_expandhi128_mask ((__v8hi) __C,
+						    (__v8hi) __A,
+						    (__mmask8) __B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_expand_epi16 (__mmask8 __A, __m128i __B)
+{
+  return (__m128i) __builtin_ia32_expandhi128_maskz ((__v8hi) __B,
+				(__v8hi) _mm_setzero_si128 (), (__mmask8) __A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_expandloadu_epi16 (__m128i __A, __mmask8 __B, const void * __C)
+{
+  return (__m128i) __builtin_ia32_expandloadhi128_mask ((const __v8hi *) __C,
+						(__v8hi) __A, (__mmask8) __B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_expandloadu_epi16 (__mmask8 __A, const void * __B)
+{
+  return (__m128i) __builtin_ia32_expandloadhi128_maskz ((const __v8hi *) __B,
+				(__v8hi) _mm_setzero_si128 (), (__mmask8) __A);
+}
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_expand_epi16 (__m256i __A, __mmask16 __B, __m256i __C)
+{
+  return (__m256i) __builtin_ia32_expandhi256_mask ((__v16hi) __C,
+						    (__v16hi) __A,
+						    (__mmask16) __B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_expand_epi16 (__mmask16 __A, __m256i __B)
+{
+  return (__m256i) __builtin_ia32_expandhi256_maskz ((__v16hi) __B,
+			(__v16hi) _mm256_setzero_si256 (), (__mmask16) __A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_expandloadu_epi16 (__m256i __A, __mmask16 __B, const void * __C)
+{
+  return (__m256i) __builtin_ia32_expandloadhi256_mask ((const __v16hi *) __C,
+					(__v16hi) __A, (__mmask16) __B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_expandloadu_epi16 (__mmask16 __A, const void * __B)
+{
+  return (__m256i) __builtin_ia32_expandloadhi256_maskz ((const __v16hi *) __B,
+			(__v16hi) _mm256_setzero_si256 (), (__mmask16) __A);
+}
 #ifdef __DISABLE_AVX512VBMI2VL__
 #undef __DISABLE_AVX512VBMI2VL__
 #pragma GCC pop_options
@@ -140,6 +238,39 @@ _mm256_mask_compressstoreu_epi8 (void * __A, __mmask32 __B, __m256i __C)
 {
   __builtin_ia32_compressstoreuqi256_mask ((__v32qi *) __A, (__v32qi) __C,
 							(__mmask32) __B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_expand_epi8 (__m256i __A, __mmask32 __B, __m256i __C)
+{
+  return (__m256i) __builtin_ia32_expandqi256_mask ((__v32qi) __C,
+						    (__v32qi) __A,
+						    (__mmask32) __B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_expand_epi8 (__mmask32 __A, __m256i __B)
+{
+  return (__m256i) __builtin_ia32_expandqi256_maskz ((__v32qi) __B,
+			(__v32qi) _mm256_setzero_si256 (), (__mmask32) __A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_expandloadu_epi8 (__m256i __A, __mmask32 __B, const void * __C)
+{
+  return (__m256i) __builtin_ia32_expandloadqi256_mask ((const __v32qi *) __C,
+					(__v32qi) __A, (__mmask32) __B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_expandloadu_epi8 (__mmask32 __A, const void * __B)
+{
+  return (__m256i) __builtin_ia32_expandloadqi256_maskz ((const __v32qi *) __B,
+			(__v32qi) _mm256_setzero_si256 (), (__mmask32) __A);
 }
 
 #ifdef __DISABLE_AVX512VBMI2VLBW__
