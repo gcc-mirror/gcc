@@ -1,3 +1,10 @@
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/pr65240-1.C: Add -Wno-return-type to dg-options.
+	* g++.dg/pr65240-2.C: Likewise.
+	* g++.dg/pr65240-3.C: Likewise.
+	* g++.dg/pr65240-4.C: Likewise.
+
 2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
 
 	* gcc.target/arm/addr-modes-float.c: New test.
