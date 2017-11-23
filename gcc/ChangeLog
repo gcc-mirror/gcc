@@ -1,5 +1,38 @@
 2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
 
+	* config/arm/arm-protos.h (enum arm_addr_mode_op): New.
+	(struct addr_mode_cost_table): New.
+	(struct tune_params): Add field addr_mode_costs.
+	* config/arm/arm.c (generic_addr_mode_costs): New.
+	(arm_slowmul_tune): Initialise addr_mode_costs field.
+	(arm_fastmul_tune): Likewise.
+	(arm_strongarm_tune): Likewise.
+	(arm_xscale_tune): Likewise.
+	(arm_9e_tune): Likewise.
+	(arm_marvell_pj4_tune): Likewise.
+	(arm_v6t2_tune): Likewise.
+	(arm_cortex_tune): Likewise.
+	(arm_cortex_a8_tune): Likewise.
+	(arm_cortex_a7_tune): Likewise.
+	(arm_cortex_a15_tune): Likewise.
+	(arm_cortex_a35_tune): Likewise.
+	(arm_cortex_a53_tune): Likewise.
+	(arm_cortex_a57_tune): Likewise.
+	(arm_exynosm1_tune): Likewise.
+	(arm_xgene1_tune): Likewise.
+	(arm_cortex_a5_tune): Likewise.
+	(arm_cortex_a9_tune): Likewise.
+	(arm_cortex_a12_tune): Likewise.
+	(arm_cortex_a73_tune): Likewise.
+	(arm_v7m_tune): Likewise.
+	(arm_cortex_m7_tune): Likewise.
+	(arm_v6m_tune): Likewise.
+	(arm_fa726te_tune): Likewise.
+	(arm_mem_costs): Use table lookup to calculate cost of addressing
+	mode.
+
+2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
+
 	* config/arm/arm.c (arm_mem_costs): New function.
 	(arm_rtx_costs_internal): Use arm_mem_costs.
 

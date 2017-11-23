@@ -1763,9 +1763,32 @@ const struct cpu_cost_table v7m_extra_costs =
   }
 };
 
+const struct addr_mode_cost_table generic_addr_mode_costs =
+{
+  /* int.  */
+  {
+    COSTS_N_INSNS (0),	/* AMO_DEFAULT.  */
+    COSTS_N_INSNS (0),	/* AMO_NO_WB.  */
+    COSTS_N_INSNS (0)	/* AMO_WB.  */
+  },
+  /* float.  */
+  {
+    COSTS_N_INSNS (0),	/* AMO_DEFAULT.  */
+    COSTS_N_INSNS (0),	/* AMO_NO_WB.  */
+    COSTS_N_INSNS (0)	/* AMO_WB.  */
+  },
+  /* vector.  */
+  {
+    COSTS_N_INSNS (0),	/* AMO_DEFAULT.  */
+    COSTS_N_INSNS (0),	/* AMO_NO_WB.  */
+    COSTS_N_INSNS (0)	/* AMO_WB.  */
+  }
+};
+
 const struct tune_params arm_slowmul_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1788,6 +1811,7 @@ const struct tune_params arm_slowmul_tune =
 const struct tune_params arm_fastmul_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1813,6 +1837,7 @@ const struct tune_params arm_fastmul_tune =
 const struct tune_params arm_strongarm_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1835,6 +1860,7 @@ const struct tune_params arm_strongarm_tune =
 const struct tune_params arm_xscale_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   xscale_sched_adjust_cost,
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1857,6 +1883,7 @@ const struct tune_params arm_xscale_tune =
 const struct tune_params arm_9e_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1879,6 +1906,7 @@ const struct tune_params arm_9e_tune =
 const struct tune_params arm_marvell_pj4_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1901,6 +1929,7 @@ const struct tune_params arm_marvell_pj4_tune =
 const struct tune_params arm_v6t2_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1925,6 +1954,7 @@ const struct tune_params arm_v6t2_tune =
 const struct tune_params arm_cortex_tune =
 {
   &generic_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1947,6 +1977,7 @@ const struct tune_params arm_cortex_tune =
 const struct tune_params arm_cortex_a8_tune =
 {
   &cortexa8_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1969,6 +2000,7 @@ const struct tune_params arm_cortex_a8_tune =
 const struct tune_params arm_cortex_a7_tune =
 {
   &cortexa7_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -1991,6 +2023,7 @@ const struct tune_params arm_cortex_a7_tune =
 const struct tune_params arm_cortex_a15_tune =
 {
   &cortexa15_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2013,6 +2046,7 @@ const struct tune_params arm_cortex_a15_tune =
 const struct tune_params arm_cortex_a35_tune =
 {
   &cortexa53_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2035,6 +2069,7 @@ const struct tune_params arm_cortex_a35_tune =
 const struct tune_params arm_cortex_a53_tune =
 {
   &cortexa53_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2057,6 +2092,7 @@ const struct tune_params arm_cortex_a53_tune =
 const struct tune_params arm_cortex_a57_tune =
 {
   &cortexa57_extra_costs,
+  &generic_addr_mode_costs,		/* addressing mode costs */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2079,6 +2115,7 @@ const struct tune_params arm_cortex_a57_tune =
 const struct tune_params arm_exynosm1_tune =
 {
   &exynosm1_extra_costs,
+  &generic_addr_mode_costs,			/* Addressing mode costs.  */
   NULL,						/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2101,6 +2138,7 @@ const struct tune_params arm_exynosm1_tune =
 const struct tune_params arm_xgene1_tune =
 {
   &xgene1_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2126,6 +2164,7 @@ const struct tune_params arm_xgene1_tune =
 const struct tune_params arm_cortex_a5_tune =
 {
   &cortexa5_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_cortex_a5_branch_cost,
   &arm_default_vec_cost,
@@ -2148,6 +2187,7 @@ const struct tune_params arm_cortex_a5_tune =
 const struct tune_params arm_cortex_a9_tune =
 {
   &cortexa9_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   cortex_a9_sched_adjust_cost,
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -2170,6 +2210,7 @@ const struct tune_params arm_cortex_a9_tune =
 const struct tune_params arm_cortex_a12_tune =
 {
   &cortexa12_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
@@ -2192,6 +2233,7 @@ const struct tune_params arm_cortex_a12_tune =
 const struct tune_params arm_cortex_a73_tune =
 {
   &cortexa57_extra_costs,
+  &generic_addr_mode_costs,			/* Addressing mode costs.  */
   NULL,						/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,			/* Vectorizer costs.  */
@@ -2221,6 +2263,7 @@ const struct tune_params arm_cortex_a73_tune =
 const struct tune_params arm_v7m_tune =
 {
   &v7m_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_cortex_m_branch_cost,
   &arm_default_vec_cost,
@@ -2245,6 +2288,7 @@ const struct tune_params arm_v7m_tune =
 const struct tune_params arm_cortex_m7_tune =
 {
   &v7m_extra_costs,
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_cortex_m7_branch_cost,
   &arm_default_vec_cost,
@@ -2270,6 +2314,7 @@ const struct tune_params arm_cortex_m7_tune =
 const struct tune_params arm_v6m_tune =
 {
   &generic_extra_costs,			/* Insn extra costs.  */
+  &generic_addr_mode_costs,		/* Addressing mode costs.  */
   NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
@@ -2292,6 +2337,7 @@ const struct tune_params arm_v6m_tune =
 const struct tune_params arm_fa726te_tune =
 {
   &generic_extra_costs,				/* Insn extra costs.  */
+  &generic_addr_mode_costs,			/* Addressing mode costs.  */
   fa726te_sched_adjust_cost,
   arm_default_branch_cost,
   &arm_default_vec_cost,
@@ -9260,6 +9306,41 @@ arm_mem_costs (rtx x, const struct cpu_cost_table *extra_cost,
        additional instruction here.  The cost of the memory access is computed
        below.  See arm.md:calculate_pic_address.  */
     *cost += COSTS_N_INSNS (1);
+
+  /* Calculate cost of the addressing mode.  */
+  if (speed_p)
+    {
+      arm_addr_mode_op op_type;
+      switch (GET_CODE (XEXP (x, 0)))
+	{
+	default:
+	case REG:
+	  op_type = AMO_DEFAULT;
+	  break;
+	case MINUS:
+	  /* MINUS does not appear in RTL, but the architecture supports it,
+	     so handle this case defensively.  */
+	  /* fall through */
+	case PLUS:
+	  op_type = AMO_NO_WB;
+	  break;
+	case PRE_INC:
+	case PRE_DEC:
+	case POST_INC:
+	case POST_DEC:
+	case PRE_MODIFY:
+	case POST_MODIFY:
+	  op_type = AMO_WB;
+	  break;
+	}
+
+      if (VECTOR_MODE_P (mode))
+	  *cost += current_tune->addr_mode_costs->vector[op_type];
+      else if (FLOAT_MODE_P (mode))
+	  *cost += current_tune->addr_mode_costs->fp[op_type];
+      else
+	  *cost += current_tune->addr_mode_costs->integer[op_type];
+    }
 
   /* Calculate cost of memory access.  */
   if (speed_p)
