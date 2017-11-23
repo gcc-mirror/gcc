@@ -5107,7 +5107,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
       else if (GET_CODE (to_rtx) == CONCAT)
 	{
 	  unsigned short mode_bitsize = GET_MODE_BITSIZE (GET_MODE (to_rtx));
-	  if (COMPLEX_MODE_P (TYPE_MODE (TREE_TYPE (from)))
+	  if (TYPE_MODE (TREE_TYPE (from)) == GET_MODE (to_rtx)
+	      && COMPLEX_MODE_P (GET_MODE (to_rtx))
 	      && bitpos == 0
 	      && bitsize == mode_bitsize)
 	    result = store_expr (from, to_rtx, false, nontemporal, reversep);
@@ -5128,14 +5129,30 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				  nontemporal, reversep);
 	  else if (bitpos == 0 && bitsize == mode_bitsize)
 	    {
-	      rtx from_rtx;
 	      result = expand_normal (from);
-	      from_rtx = simplify_gen_subreg (GET_MODE (to_rtx), result,
-					      TYPE_MODE (TREE_TYPE (from)), 0);
-	      emit_move_insn (XEXP (to_rtx, 0),
-			      read_complex_part (from_rtx, false));
-	      emit_move_insn (XEXP (to_rtx, 1),
-			      read_complex_part (from_rtx, true));
+	      if (GET_CODE (result) == CONCAT)
+		{
+		  machine_mode to_mode = GET_MODE_INNER (GET_MODE (to_rtx));
+		  machine_mode from_mode = GET_MODE_INNER (GET_MODE (result));
+		  rtx from_real
+		    = simplify_gen_subreg (to_mode, XEXP (result, 0),
+					   from_mode, 0);
+		  rtx from_imag
+		    = simplify_gen_subreg (to_mode, XEXP (result, 1),
+					   from_mode, 1);
+		  emit_move_insn (XEXP (to_rtx, 0), from_real);
+		  emit_move_insn (XEXP (to_rtx, 1), from_imag);
+		}
+	      else
+		{
+		  rtx from_rtx
+		    = simplify_gen_subreg (GET_MODE (to_rtx), result,
+					   TYPE_MODE (TREE_TYPE (from)), 0);
+		  emit_move_insn (XEXP (to_rtx, 0),
+				  read_complex_part (from_rtx, false));
+		  emit_move_insn (XEXP (to_rtx, 1),
+				  read_complex_part (from_rtx, true));
+		}
 	    }
 	  else
 	    {
