@@ -1115,11 +1115,13 @@ gcc_jit_rvalue_get_type (gcc_jit_rvalue *rvalue)
    result of gcc_jit_context_get_type (GCC_JIT_TYPE_INT).  */
 
 #define RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE(CTXT, NUMERIC_TYPE) \
+  JIT_BEGIN_STMT						     \
   RETURN_NULL_IF_FAIL (NUMERIC_TYPE, CTXT, NULL, "NULL type"); \
   RETURN_NULL_IF_FAIL_PRINTF1 (                                \
     NUMERIC_TYPE->is_numeric (), ctxt, NULL,                   \
     "not a numeric type: %s",                                  \
-    NUMERIC_TYPE->get_debug_string ());
+    NUMERIC_TYPE->get_debug_string ()); \
+  JIT_END_STMT
 
 /* Public entrypoint.  See description in libgccjit.h.
 
