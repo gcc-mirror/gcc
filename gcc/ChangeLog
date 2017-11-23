@@ -1,3 +1,8 @@
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* config/ft32/ft32.h (ASM_OUTPUT_ADDR_VEC_ELT): Remove semicolon after
+	macro.
+
 2017-11-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/83111
