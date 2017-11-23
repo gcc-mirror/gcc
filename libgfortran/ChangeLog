@@ -1,3 +1,11 @@
+2017-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/78549
+	* io/io.h (newunit_free): Add declaration. Clean some whitespace.
+	* io/transfer.c (st_read_done, st_write_done): Call newunit_free.
+	* io/unit.c (newunit_free): Change type from static void to void.
+
 2017-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Rimvydas (RJ)
 
