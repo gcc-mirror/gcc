@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target pthread } */
 /* { dg-options "-O2 -ftree-loop-if-convert -ftree-parallelize-loops=2" } */
 
 int rl, s8;
