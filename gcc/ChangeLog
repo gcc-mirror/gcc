@@ -1,3 +1,8 @@
+2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
+
+	* config/arm/arm.c (arm_mem_costs): New function.
+	(arm_rtx_costs_internal): Use arm_mem_costs.
+
 2017-11-23  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2out.c (init_sections_and_labels): Use generation to create
