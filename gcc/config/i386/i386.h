@@ -2683,7 +2683,8 @@ extern void debug_dispatch_window (int);
 /* Use 128-bit AVX instructions in the auto-vectorizer.  */
 #define TARGET_PREFER_AVX128	(prefer_vector_width_type == PVW_AVX128)
 /* Use 256-bit AVX instructions in the auto-vectorizer.  */
-#define TARGET_PREFER_AVX256	(prefer_vector_width_type == PVW_AVX256)
+#define TARGET_PREFER_AVX256	(TARGET_PREFER_AVX128 \
+				 || prefer_vector_width_type == PVW_AVX256)
 
 #define IX86_HLE_ACQUIRE (1 << 16)
 #define IX86_HLE_RELEASE (1 << 17)
