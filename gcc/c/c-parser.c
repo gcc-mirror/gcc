@@ -17486,11 +17486,11 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
       break;
     case pragma_struct:
     case pragma_param:
+    case pragma_stmt:
       c_parser_error (parser, "%<#pragma omp declare simd%> must be followed by "
 			      "function declaration or definition");
       break;
     case pragma_compound:
-    case pragma_stmt:
       if (c_parser_next_token_is (parser, CPP_KEYWORD)
 	  && c_parser_peek_token (parser)->keyword == RID_EXTENSION)
 	{

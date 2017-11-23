@@ -58,18 +58,6 @@ f7 (int x)
 /* { dg-final { scan-assembler-times "_ZGVeM16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVeN16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
-int
-f9 (int x)
-{
-  if (x)
-    #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
-    extern int f10 (int a, int *b, int c);
-  while (x < 10)
-    #pragma omp declare simd simdlen (8) aligned (b : 8 * sizeof (int))
-    extern int f11 (int a, int *b, int c);
-  return x;
-}
-
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
 int f12 (int c; int *b; int a; int a, int *b, int c);
 
