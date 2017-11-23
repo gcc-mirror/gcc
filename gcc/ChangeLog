@@ -1,5 +1,10 @@
 2017-11-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-fnsummary.c (record_modified_bb_info): Use sreal
+	frequencies. Fix estimation of aggregate parameters.
+
+2017-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraphclones.c (cgraph_node::create_clone): Fix updating of profile
 	when inlining.
 
