@@ -1,3 +1,7 @@
+2017-11-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (ptr-0): New transformation.
+
 2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
 
 	* config/arm/arm-protos.h (enum arm_addr_mode_op): New.
