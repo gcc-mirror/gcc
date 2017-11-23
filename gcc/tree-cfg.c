@@ -280,6 +280,11 @@ replace_loop_annotate_in_block (basic_block bb, struct loop *loop)
 	case annot_expr_ivdep_kind:
 	  loop->safelen = INT_MAX;
 	  break;
+	case annot_expr_unroll_kind:
+	  loop->unroll
+	    = (unsigned short) tree_to_shwi (gimple_call_arg (stmt, 2));
+	  cfun->has_unroll = true;
+	  break;
 	case annot_expr_no_vector_kind:
 	  loop->dont_vectorize = true;
 	  break;
@@ -338,6 +343,7 @@ replace_loop_annotate (void)
 	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
 	    {
 	    case annot_expr_ivdep_kind:
+	    case annot_expr_unroll_kind:
 	    case annot_expr_no_vector_kind:
 	    case annot_expr_vector_kind:
 	      break;
@@ -8019,6 +8025,8 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
       fprintf (file, ", estimate = ");
       print_decu (loop->nb_iterations_estimate, file);
     }
+  if (loop->unroll)
+    fprintf (file, ", unroll = %d", loop->unroll);
   fprintf (file, ")\n");
 
   /* Print loop's body.  */

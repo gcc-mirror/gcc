@@ -2633,6 +2633,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	case annot_expr_ivdep_kind:
 	  pp_string (pp, ", ivdep");
 	  break;
+	case annot_expr_unroll_kind:
+	  pp_printf (pp, ", unroll %d",
+		     (int) TREE_INT_CST_LOW (TREE_OPERAND (node, 2)));
+	  break;
 	case annot_expr_no_vector_kind:
 	  pp_string (pp, ", no-vector");
 	  break;

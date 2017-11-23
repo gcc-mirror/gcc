@@ -3747,6 +3747,7 @@ gimple_boolify (tree expr)
       switch ((enum annot_expr_kind) TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)))
 	{
 	case annot_expr_ivdep_kind:
+	case annot_expr_unroll_kind:
 	case annot_expr_no_vector_kind:
 	case annot_expr_vector_kind:
 	case annot_expr_parallel_kind:
@@ -11390,6 +11391,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    tree cond = TREE_OPERAND (*expr_p, 0);
 	    tree kind = TREE_OPERAND (*expr_p, 1);
+	    tree data = TREE_OPERAND (*expr_p, 2);
 	    tree type = TREE_TYPE (cond);
 	    if (!INTEGRAL_TYPE_P (type))
 	      {
@@ -11400,7 +11402,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    tree tmp = create_tmp_var (type);
 	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
 	    gcall *call
-	      = gimple_build_call_internal (IFN_ANNOTATE, 2, cond, kind);
+	      = gimple_build_call_internal (IFN_ANNOTATE, 3, cond, kind, data);
 	    gimple_call_set_lhs (call, tmp);
 	    gimplify_seq_add_stmt (pre_p, call);
 	    *expr_p = tmp;

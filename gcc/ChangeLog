@@ -1,3 +1,43 @@
+2017-11-23  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/generic.texi (ANNOTATE_EXPR): Document 3rd operand.
+	* cfgloop.h (struct loop): Add unroll field.
+	* function.h (struct function): Add has_unroll bitfield.
+	* gimplify.c (gimple_boolify) <ANNOTATE_EXPR>: Deal with unroll kind.
+	(gimplify_expr) <ANNOTATE_EXPR>: Propagate 3rd operand.
+	* loop-init.c (pass_loop2::gate): Return true if cfun->has_unroll.
+	(pass_rtl_unroll_loops::gate): Likewise.
+	* loop-unroll.c (decide_unrolling): Tweak note message.  Skip loops
+	for which loop->unroll==1.
+	(decide_unroll_constant_iterations): Use note for consistency and
+	take loop->unroll into account.  Return early if loop->unroll is set.
+	Fix thinko in existing test.
+	(decide_unroll_runtime_iterations): Use note for consistency and
+	take loop->unroll into account.
+	(decide_unroll_stupid): Likewise.
+	* lto-streamer-in.c (input_cfg): Read loop->unroll.
+	* lto-streamer-out.c (output_cfg): Write loop->unroll.
+	* tree-cfg.c (replace_loop_annotate_in_block) <annot_expr_unroll_kind>:
+        New case.
+	(replace_loop_annotate) <annot_expr_unroll_kind>: Likewise.
+	(print_loop): Print loop->unroll if set.
+	* tree-core.h (enum annot_expr_kind): Add annot_expr_unroll_kind.
+	* tree-inline.c (copy_loops): Copy unroll and set cfun->has_unroll.
+	* tree-pretty-print.c (dump_generic_node) <annot_expr_unroll_kind>:
+	New case.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Bail out if
+	loop->unroll is set and smaller than the trip count.  Otherwise bypass
+	entirely the heuristics if loop->unroll is set.  Remove dead note.
+	Fix off-by-one bug in other note.
+	(try_peel_loop): Bail out if loop->unroll is set.  Fix formatting.
+	(tree_unroll_loops_completely_1): Force unrolling if loop->unroll
+	is greater than 1.
+	(tree_unroll_loops_completely): Make static.
+	(pass_complete_unroll::execute): Use correct type for variable.
+	(pass_complete_unrolli::execute): Fix formatting.
+	* tree.def (ANNOTATE_EXPR): Add 3rd operand.
+
 2017-11-23  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* config/i386/i386.h (TARGET_PREFER_AVX256): Also

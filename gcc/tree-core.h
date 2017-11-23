@@ -851,6 +851,7 @@ enum tree_node_kind {
 
 enum annot_expr_kind {
   annot_expr_ivdep_kind,
+  annot_expr_unroll_kind,
   annot_expr_no_vector_kind,
   annot_expr_vector_kind,
   annot_expr_parallel_kind,

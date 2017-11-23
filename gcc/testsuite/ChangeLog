@@ -1,3 +1,28 @@
+2017-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/gcc.dg/pr64277.c: Adjust scan.
+	* gcc.dg/tree-prof/unroll-1.c: Use detailed dump and adjust scan.
+	* gcc.dg/tree-ssa/cunroll-1.c: Adjust scan.
+	* gcc.dg/tree-ssa/cunroll-12.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-13.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-14.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-2.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-3.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-5.c: Likewise.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-23.c: Likewise.
+	* gcc.dg/tree-ssa/pr61743-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr61743-2.c: Likewise.
+	* gcc.dg/unroll-2.c (foo): Adjust message.
+	(foo2): Likewise.
+	* gcc.dg/unroll-3.c: Adjust scan.
+	* gcc.dg/unroll-4.c: Likewise.
+	* gcc.dg/unroll-5.c: Likewise.
+	* gcc.dg/unroll-7.c: Use detailed dump and adjust scan.
+	* gnat.dg/unroll1.ad[sb]: New test.
+	* gnat.dg/unroll2.ad[sb]: Likewise.
+	* gnat.dg/unroll3.ad[sb]: Likewise.
+
 2017-11-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/inline-1.c: Update template.

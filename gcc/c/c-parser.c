@@ -6055,9 +6055,10 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
 	 "%<_Cilk_spawn%> statement cannot be used as a condition for while statement"))
     cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
-		   annot_expr_ivdep_kind));
+				  annot_expr_ivdep_kind),
+		   integer_zero_node);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
@@ -6120,9 +6121,10 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
 	 "%<_Cilk_spawn%> statement cannot be used as a condition for a do-while statement"))
     cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
-		   annot_expr_ivdep_kind));
+				  annot_expr_ivdep_kind),
+		   integer_zero_node);
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
   c_finish_loop (loc, cond, NULL, body, new_break, new_cont, false);
@@ -6327,9 +6329,10 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
 					 "expected %<;%>");
 	    }
 	  if (ivdep && cond != error_mark_node)
-	    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+	    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 			   build_int_cst (integer_type_node,
-			   annot_expr_ivdep_kind));
+					  annot_expr_ivdep_kind),
+			   integer_zero_node);
 	}
       /* Parse the increment expression (the third expression in a
 	 for-statement).  In the case of a foreach-statement, this is

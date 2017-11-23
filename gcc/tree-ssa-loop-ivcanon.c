@@ -681,11 +681,9 @@ try_unroll_loop_completely (struct loop *loop,
 			    HOST_WIDE_INT maxiter,
 			    location_t locus)
 {
-  unsigned HOST_WIDE_INT n_unroll = 0, ninsns, unr_insns;
-  struct loop_size size;
+  unsigned HOST_WIDE_INT n_unroll = 0;
   bool n_unroll_found = false;
   edge edge_to_cancel = NULL;
-  dump_flags_t report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS;
 
   /* See if we proved number of iterations to be low constant.
 
@@ -726,7 +724,8 @@ try_unroll_loop_completely (struct loop *loop,
   if (!n_unroll_found)
     return false;
 
-  if (n_unroll > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
+  if (!loop->unroll
+      && n_unroll > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Not unrolling loop %d "
@@ -740,121 +739,137 @@ try_unroll_loop_completely (struct loop *loop,
 
   if (n_unroll)
     {
-      bool large;
       if (ul == UL_SINGLE_ITER)
 	return false;
 
-      /* EXIT can be removed only if we are sure it passes first N_UNROLL
-	 iterations.  */
-      bool remove_exit = (exit && niter
-			  && TREE_CODE (niter) == INTEGER_CST
-			  && wi::leu_p (n_unroll, wi::to_widest (niter)));
+      if (loop->unroll)
+	{
+	  /* If the unrolling factor is too large, bail out.  */
+	  if (n_unroll > (unsigned)loop->unroll)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "Not unrolling loop %d: "
+			 "user didn't want it unrolled completely.\n",
+			 loop->num);
+	      return false;
+	    }
+	}
+      else
+	{
+	  struct loop_size size;
+	  /* EXIT can be removed only if we are sure it passes first N_UNROLL
+	     iterations.  */
+	  bool remove_exit = (exit && niter
+			      && TREE_CODE (niter) == INTEGER_CST
+			      && wi::leu_p (n_unroll, wi::to_widest (niter)));
+	  bool large
+	    = tree_estimate_loop_size
+		(loop, remove_exit ? exit : NULL, edge_to_cancel, &size,
+		 PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
+	  if (large)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: it is too large.\n",
+			 loop->num);
+	      return false;
+	    }
 
-      large = tree_estimate_loop_size
-		 (loop, remove_exit ? exit : NULL, edge_to_cancel, &size,
-		  PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
-      ninsns = size.overall;
-      if (large)
-	{
+	  unsigned HOST_WIDE_INT ninsns = size.overall;
+	  unsigned HOST_WIDE_INT unr_insns
+	    = estimated_unrolled_size (&size, n_unroll);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: it is too large.\n",
-		     loop->num);
-	  return false;
-	}
+	    {
+	      fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
+	      fprintf (dump_file, "  Estimated size after unrolling: %d\n",
+		       (int) unr_insns);
+	    }
 
-      unr_insns = estimated_unrolled_size (&size, n_unroll);
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
-	  fprintf (dump_file, "  Estimated size after unrolling: %d\n",
-		   (int) unr_insns);
+	  /* If the code is going to shrink, we don't need to be extra
+	     cautious on guessing if the unrolling is going to be
+	     profitable.  */
+	  if (unr_insns
+	      /* If there is IV variable that will become constant, we
+		 save one instruction in the loop prologue we do not
+		 account otherwise.  */
+	      <= ninsns + (size.constant_iv != false))
+	    ;
+	  /* We unroll only inner loops, because we do not consider it
+	     profitable otheriwse.  We still can cancel loopback edge
+	     of not rolling loop; this is always a good idea.  */
+	  else if (ul == UL_NO_GROWTH)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: size would grow.\n",
+			 loop->num);
+	      return false;
+	    }
+	  /* Outer loops tend to be less interesting candidates for
+	     complete unrolling unless we can do a lot of propagation
+	     into the inner loop body.  For now we disable outer loop
+	     unrolling when the code would grow.  */
+	  else if (loop->inner)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: "
+			 "it is not innermost and code would grow.\n",
+			 loop->num);
+	      return false;
+	    }
+	  /* If there is call on a hot path through the loop, then
+	     there is most probably not much to optimize.  */
+	  else if (size.num_non_pure_calls_on_hot_path)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: "
+			 "contains call and code would grow.\n",
+			 loop->num);
+	      return false;
+	    }
+	  /* If there is pure/const call in the function, then we can
+	     still optimize the unrolled loop body if it contains some
+	     other interesting code than the calls and code storing or
+	     cumulating the return value.  */
+	  else if (size.num_pure_calls_on_hot_path
+		   /* One IV increment, one test, one ivtmp store and
+		      one useful stmt.  That is about minimal loop
+		      doing pure call.  */
+		   && (size.non_call_stmts_on_hot_path
+		       <= 3 + size.num_pure_calls_on_hot_path))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: "
+			 "contains just pure calls and code would grow.\n",
+			 loop->num);
+	      return false;
+	    }
+	  /* Complete unrolling is major win when control flow is
+	     removed and one big basic block is created.  If the loop
+	     contains control flow the optimization may still be a win
+	     because of eliminating the loop overhead but it also may
+	     blow the branch predictor tables.  Limit number of
+	     branches on the hot path through the peeled sequence.  */
+	  else if (size.num_branches_on_hot_path * (int)n_unroll
+		   > PARAM_VALUE (PARAM_MAX_PEEL_BRANCHES))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: "
+			 "number of branches on hot path in the unrolled "
+			 "sequence reaches --param max-peel-branches limit.\n",
+			 loop->num);
+	      return false;
+	    }
+	  else if (unr_insns
+		   > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Not unrolling loop %d: "
+			 "number of insns in the unrolled sequence reaches "
+			 "--param max-completely-peeled-insns limit.\n",
+			 loop->num);
+	      return false;
+	    }
 	}
-
-      /* If the code is going to shrink, we don't need to be extra cautious
-	 on guessing if the unrolling is going to be profitable.  */
-      if (unr_insns
-	  /* If there is IV variable that will become constant, we save
-	     one instruction in the loop prologue we do not account
-	     otherwise.  */
-	  <= ninsns + (size.constant_iv != false))
-	;
-      /* We unroll only inner loops, because we do not consider it profitable
-	 otheriwse.  We still can cancel loopback edge of not rolling loop;
-	 this is always a good idea.  */
-      else if (ul == UL_NO_GROWTH)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: size would grow.\n",
-		     loop->num);
-	  return false;
-	}
-      /* Outer loops tend to be less interesting candidates for complete
-	 unrolling unless we can do a lot of propagation into the inner loop
-	 body.  For now we disable outer loop unrolling when the code would
-	 grow.  */
-      else if (loop->inner)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: "
-		     "it is not innermost and code would grow.\n",
-		     loop->num);
-	  return false;
-	}
-      /* If there is call on a hot path through the loop, then
-	 there is most probably not much to optimize.  */
-      else if (size.num_non_pure_calls_on_hot_path)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: "
-		     "contains call and code would grow.\n",
-		     loop->num);
-	  return false;
-	}
-      /* If there is pure/const call in the function, then we
-	 can still optimize the unrolled loop body if it contains
-	 some other interesting code than the calls and code
-	 storing or cumulating the return value.  */
-      else if (size.num_pure_calls_on_hot_path
-	       /* One IV increment, one test, one ivtmp store
-		  and one useful stmt.  That is about minimal loop
-		  doing pure call.  */
-	       && (size.non_call_stmts_on_hot_path
-		   <= 3 + size.num_pure_calls_on_hot_path))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: "
-		     "contains just pure calls and code would grow.\n",
-		     loop->num);
-	  return false;
-	}
-      /* Complete unrolling is a major win when control flow is removed and
-	 one big basic block is created.  If the loop contains control flow
-	 the optimization may still be a win because of eliminating the loop
-	 overhead but it also may blow the branch predictor tables.
-	 Limit number of branches on the hot path through the peeled
-	 sequence.  */
-      else if (size.num_branches_on_hot_path * (int)n_unroll
-	       > PARAM_VALUE (PARAM_MAX_PEEL_BRANCHES))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: "
-		     " number of branches on hot path in the unrolled sequence"
-		     " reach --param max-peel-branches limit.\n",
-		     loop->num);
-	  return false;
-	}
-      else if (unr_insns
-	       > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: "
-		     "(--param max-completely-peeled-insns limit reached).\n",
-		     loop->num);
-	  return false;
-	}
-      if (!n_unroll)
-        dump_printf_loc (report_flags, locus,
-                         "loop turned into non-loop; it never loops.\n");
 
       initialize_original_copy_tables ();
       auto_sbitmap wont_exit (n_unroll + 1);
@@ -898,8 +913,8 @@ try_unroll_loop_completely (struct loop *loop,
       else
 	gimple_cond_make_true (cond);
       update_stmt (cond);
-      /* Do not remove the path. Doing so may remove outer loop
-	 and confuse bookkeeping code in tree_unroll_loops_completelly.  */
+      /* Do not remove the path, as doing so may remove outer loop and
+	 confuse bookkeeping code in tree_unroll_loops_completely.  */
     }
 
   /* Store the loop for later unlooping and exit removal.  */
@@ -915,7 +930,7 @@ try_unroll_loop_completely (struct loop *loop,
         {
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
                            "loop with %d iterations completely unrolled",
-			   (int) (n_unroll + 1));
+			   (int) n_unroll);
           if (loop->header->count.initialized_p ())
             dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS,
                          " (header execution count %d)",
@@ -963,7 +978,8 @@ try_peel_loop (struct loop *loop,
   struct loop_size size;
   int peeled_size;
 
-  if (!flag_peel_loops || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
+  if (!flag_peel_loops
+      || PARAM_VALUE (PARAM_MAX_PEEL_TIMES) <= 0
       || !peeled_loops)
     return false;
 
@@ -974,20 +990,29 @@ try_peel_loop (struct loop *loop,
       return false;
     }
 
+  /* We don't peel loops that will be unrolled as this can duplicate a
+     loop more times than the user requested.  */
+  if (loop->unroll)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not peeling: user didn't want it peeled.\n");
+      return false;
+    }
+
   /* Peel only innermost loops.
      While the code is perfectly capable of peeling non-innermost loops,
      the heuristics would probably need some improvements. */
   if (loop->inner)
     {
       if (dump_file)
-        fprintf (dump_file, "Not peeling: outer loop\n");
+	fprintf (dump_file, "Not peeling: outer loop\n");
       return false;
     }
 
   if (!optimize_loop_for_speed_p (loop))
     {
       if (dump_file)
-        fprintf (dump_file, "Not peeling: cold loop\n");
+	fprintf (dump_file, "Not peeling: cold loop\n");
       return false;
     }
 
@@ -1005,7 +1030,7 @@ try_peel_loop (struct loop *loop,
   if (maxiter >= 0 && maxiter <= npeel)
     {
       if (dump_file)
-        fprintf (dump_file, "Not peeling: upper bound is known so can "
+	fprintf (dump_file, "Not peeling: upper bound is known so can "
 		 "unroll completely\n");
       return false;
     }
@@ -1016,7 +1041,7 @@ try_peel_loop (struct loop *loop,
   if (npeel > PARAM_VALUE (PARAM_MAX_PEEL_TIMES) - 1)
     {
       if (dump_file)
-        fprintf (dump_file, "Not peeling: rolls too much "
+	fprintf (dump_file, "Not peeling: rolls too much "
 		 "(%i + 1 > --param max-peel-times)\n", (int) npeel);
       return false;
     }
@@ -1029,7 +1054,7 @@ try_peel_loop (struct loop *loop,
       > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
     {
       if (dump_file)
-        fprintf (dump_file, "Not peeling: peeled sequence size is too large "
+	fprintf (dump_file, "Not peeling: peeled sequence size is too large "
 		 "(%i insns > --param max-peel-insns)", peeled_size);
       return false;
     }
@@ -1317,7 +1342,9 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   if (!loop_father)
     return false;
 
-  if (may_increase_size && optimize_loop_nest_for_speed_p (loop)
+  if (loop->unroll > 1)
+    ul = UL_ALL;
+  else if (may_increase_size && optimize_loop_nest_for_speed_p (loop)
       /* Unroll outermost loops only if asked to do so or they do
 	 not cause code growth.  */
       && (unroll_outer || loop_outer (loop_father)))
@@ -1345,7 +1372,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
    MAY_INCREASE_SIZE is true, perform the unrolling only if the
    size of the code does not increase.  */
 
-unsigned int
+static unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
   bitmap father_bbs = BITMAP_ALLOC (NULL);
@@ -1522,9 +1549,9 @@ pass_complete_unroll::execute (function *fun)
      re-peeling the same loop multiple times.  */
   if (flag_peel_loops)
     peeled_loops = BITMAP_ALLOC (NULL);
-  int val = tree_unroll_loops_completely (flag_unroll_loops
-					  || flag_peel_loops
-					  || optimize >= 3, true);
+  unsigned int val = tree_unroll_loops_completely (flag_unroll_loops
+						   || flag_peel_loops
+						   || optimize >= 3, true);
   if (peeled_loops)
     {
       BITMAP_FREE (peeled_loops);
@@ -1576,8 +1603,7 @@ pass_complete_unrolli::execute (function *fun)
 {
   unsigned ret = 0;
 
-  loop_optimizer_init (LOOPS_NORMAL
-		       | LOOPS_HAVE_RECORDED_EXITS);
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   if (number_of_loops (fun) > 1)
     {
       scev_initialize ();
