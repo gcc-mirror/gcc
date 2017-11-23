@@ -102,6 +102,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (pointer_plus integer_zerop @1)
  (non_lvalue (convert @1)))
 
+/* ptr - 0 -> (type)ptr */
+(simplify
+ (pointer_diff @0 integer_zerop)
+ (convert @0))
+
 /* See if ARG1 is zero and X + ARG1 reduces to X.
    Likewise if the operands are reversed.  */
 (simplify
