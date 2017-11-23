@@ -6580,14 +6580,17 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
     {
-      value_range new_vr = VR_INITIALIZER;
       tree lhs = gimple_assign_lhs (assign_stmt);
-
       if (TREE_CODE (lhs) == SSA_NAME
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	      || POINTER_TYPE_P (TREE_TYPE (lhs))))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && stmt_interesting_for_vrp (stmt))
 	{
-	  vr_values->extract_range_from_assignment (&new_vr, assign_stmt);
+	  edge dummy_e;
+	  tree dummy_tree;
+	  value_range new_vr = VR_INITIALIZER;
+	  vr_values->extract_range_from_stmt (stmt, &dummy_e,
+					      &dummy_tree, &new_vr);
 	  if (range_int_cst_singleton_p (&new_vr))
 	    return new_vr.min;
 	}
@@ -6755,7 +6758,8 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
 {
   size_t i;
 
-  vr_values.values_propagated = true;
+  /* We have completed propagating through the lattice.  */
+  vr_values.set_lattice_propagation_complete ();
 
   if (dump_file)
     {
