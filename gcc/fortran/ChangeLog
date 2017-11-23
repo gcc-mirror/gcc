@@ -1,3 +1,10 @@
+2017-11-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82814
+	* trans-types.c (gfc_sym_type): If a character function result
+	is missing the charlen backend_decl, use the one from the name-
+	space procedure symbol, if present.
+
 2017-11-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/62170
