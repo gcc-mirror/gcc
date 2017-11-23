@@ -765,14 +765,16 @@ extern void unlock_unit (gfc_unit *);
 internal_proto(unlock_unit);
 
 extern void finish_last_advance_record (gfc_unit *u);
-internal_proto (finish_last_advance_record);
+internal_proto(finish_last_advance_record);
 
 extern int unit_truncate (gfc_unit *, gfc_offset, st_parameter_common *);
-internal_proto (unit_truncate);
+internal_proto(unit_truncate);
 
 extern int newunit_alloc (void);
 internal_proto(newunit_alloc);
 
+extern void newunit_free (int);
+internal_proto(newunit_free);
 
 /* open.c */
 
