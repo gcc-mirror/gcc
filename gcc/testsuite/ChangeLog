@@ -1,5 +1,8 @@
 2017-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/gomp/declare-simd-1.c (f9): Remove.
+	* gcc.dg/gomp/declare-simd-5.c: New test.
+
 	* g++.dg/pr65240-1.C: Add -Wno-return-type to dg-options.
 	* g++.dg/pr65240-2.C: Likewise.
 	* g++.dg/pr65240-3.C: Likewise.
