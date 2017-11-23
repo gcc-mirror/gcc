@@ -1,3 +1,9 @@
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Formatting
+	fixes.  Declare temp and g variables at the top in order to avoid
+	{} in most of the cases.
+
 2017-11-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (ptr-0): New transformation.
