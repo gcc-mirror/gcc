@@ -1,5 +1,12 @@
 2017-11-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-profile.c (ipa_propagate_frequency_1): Use count instead of
+	frequency.
+	* cgraph.c (cgraph_edge::dump_edge_flags): Dump sreal frequencies.
+	(cgraph_edge::maybe_hot_p): Use sreal frequencies.
+
+2017-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-fnsummary.c (record_modified_bb_info): Use sreal
 	frequencies. Fix estimation of aggregate parameters.
 
