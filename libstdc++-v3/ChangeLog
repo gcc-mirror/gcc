@@ -1,3 +1,14 @@
+2017-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83134
+	* include/std/type_traits (__not_): Explicitly convert to bool.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error.
+	* testsuite/20_util/logical_traits/83134.cc: New test.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2017-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR go/83102
