@@ -74,6 +74,10 @@
 
 #include <avx512vpopcntdqintrin.h>
 
+#include <avx512vbmi2intrin.h>
+
+#include <avx512vbmi2vlintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>

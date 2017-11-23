@@ -436,6 +436,23 @@ proc check_effective_target_gfni { } {
     } "-mgfni" ]
 }
 
+# Return 1 if avx512vbmi2 instructions can be compiled.
+proc check_effective_target_avx512vbmi2 { } {
+    return [check_no_compiler_messages avx512vbmi2 object {
+        typedef char __v16qi __attribute__ ((__vector_size__ (16)));
+	typedef unsigned long long __mmask16;
+
+	__v16qi
+	_mm_mask_compress_epi8 (__v16qi __A, __mmask16 __B, __v16qi __C)
+	{
+  		return (__v16qi) __builtin_ia32_compressqi128_mask((__v16qi)__C,
+								   (__v16qi)__A,
+								   (__mmask16)__B);
+	}
+    } "-mavx512vbmi2 -mavx512vl" ]
+}
+
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

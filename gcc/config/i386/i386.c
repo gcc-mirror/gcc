@@ -30162,8 +30162,10 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ROUND_ARGS_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
+	       IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -30223,12 +30225,31 @@ ix86_init_mmx_sse_builtins (void)
        i < ARRAY_SIZE (bdesc_args2);
        i++, d++)
     {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_ARGS2_FIRST, i);
       if (d->name == 0)
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
       def_builtin_const2 (d->mask, d->name, ftype, d->code);
     }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_LAST,
+		 IX86_BUILTIN__BDESC_ARGS2_FIRST,
+		 ARRAY_SIZE (bdesc_args2) - 1);
+  
+  for (i = 0, d = bdesc_special_args2;
+       i < ARRAY_SIZE (bdesc_special_args2);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST, i);
+       if (d->name == 0)
+	 continue;
+
+	ftype = (enum ix86_builtin_func_type) d->flag;
+	def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST,
+		 IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
+		 ARRAY_SIZE (bdesc_special_args2) - 1);
 
   /* Add all builtins with rounding.  */
   for (i = 0, d = bdesc_round_args;
@@ -34804,6 +34825,12 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PV16SI_V16SI_UHI:
     case VOID_FTYPE_PV8SI_V8SI_UQI:
     case VOID_FTYPE_PV4SI_V4SI_UQI:
+    case VOID_FTYPE_PV64QI_V64QI_UDI:
+    case VOID_FTYPE_PV32HI_V32HI_USI:
+    case VOID_FTYPE_PV32QI_V32QI_USI:
+    case VOID_FTYPE_PV16QI_V16QI_UHI:
+    case VOID_FTYPE_PV16HI_V16HI_UHI:
+    case VOID_FTYPE_PV8HI_V8HI_UQI:
       switch (icode)
 	{
 	/* These builtins and instructions require the memory
@@ -37401,6 +37428,14 @@ s4fma_expand:
 	  default:
 	    return ix86_expand_args_builtin (bdesc_args2 + i, exp, target);
 	  }
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST;
+      return ix86_expand_special_args_builtin (bdesc_special_args2 + i, exp,
+					       target);
     }
 
   if (fcode >= IX86_BUILTIN__BDESC_COMI_FIRST
