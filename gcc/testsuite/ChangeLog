@@ -1,3 +1,16 @@
+2017-11-16  Julia Koval  <julia.koval@intel.com>
+
+	gcc.target/i386/avx512-check.h: Handle AVX512VBMI2 bit.
+	gcc.target/i386/avx512f-vpcompressb-1.c: New test.
+	gcc.target/i386/avx512f-vpcompressb-2.c: Ditto.
+	gcc.target/i386/avx512f-vpcompressw-1.c: Ditto.
+	gcc.target/i386/avx512f-vpcompressw-2.c: Ditto.
+	gcc.target/i386/avx512vl-vpcompressb-1.c: Ditto.
+	gcc.target/i386/avx512vl-vpcompressb-2.c: Ditto.
+	gcc.target/i386/avx512vl-vpcompressw-1.c: Ditto.
+	gcc.target/i386/avx512vl-vpcompressw-2.c: Ditto.
+	gcc.target/i386/i386.exp (check_effective_target_avx512vbmi2): New.
+
 2017-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/declare-simd-1.c (f9): Remove.

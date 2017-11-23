@@ -194,6 +194,12 @@
   [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")
    V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
 
+;; Same iterator, but without supposed TARGET_AVX512BW
+(define_mode_iterator VI12_AVX512VLBW
+  [(V64QI "TARGET_AVX512BW") (V16QI "TARGET_AVX512VL")
+   (V32QI "TARGET_AVX512VL && TARGET_AVX512BW") (V32HI "TARGET_AVX512BW")
+   (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
+
 (define_mode_iterator VI1_AVX512VL
   [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")])
 
@@ -19298,6 +19304,19 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "compress<mode>_mask"
+  [(set (match_operand:VI12_AVX512VLBW 0 "register_operand" "=v")
+	(unspec:VI12_AVX512VLBW
+	  [(match_operand:VI12_AVX512VLBW 1 "register_operand" "v")
+	   (match_operand:VI12_AVX512VLBW 2 "vector_move_operand" "0C")
+	   (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")]
+	  UNSPEC_COMPRESS))]
+  "TARGET_AVX512VBMI2"
+  "vpcompress<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "<avx512>_compressstore<mode>_mask"
   [(set (match_operand:VI48F 0 "memory_operand" "=m")
 	(unspec:VI48F
@@ -19307,6 +19326,20 @@
 	  UNSPEC_COMPRESS_STORE))]
   "TARGET_AVX512F"
   "v<sseintprefix>compress<ssemodesuffix>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "store")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "compressstore<mode>_mask"
+  [(set (match_operand:VI12_AVX512VLBW 0 "memory_operand" "=m")
+	(unspec:VI12_AVX512VLBW
+	  [(match_operand:VI12_AVX512VLBW 1 "register_operand" "x")
+	   (match_dup 0)
+	   (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")]
+	  UNSPEC_COMPRESS_STORE))]
+  "TARGET_AVX512VBMI2"
+  "vpcompress<ssemodesuffix>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "memory" "store")
