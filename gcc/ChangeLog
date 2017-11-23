@@ -1,3 +1,8 @@
+2017-11-23  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* config/i386/i386.h (TARGET_PREFER_AVX256): Also
+	enable when TARGET_PREFER_AVX128 is set.
+
 2017-11-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-profile.c (ipa_propagate_frequency_1): Use count instead of
