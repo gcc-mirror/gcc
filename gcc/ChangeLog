@@ -1,3 +1,12 @@
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82253
+	* expr.c (expand_assignment): For CONCAT to_rtx, complex type from and
+	bitpos/bitsize covering the whole destination, use store_expr only if
+	the complex mode is the same.  Otherwise, use expand_normal and if
+	it returns CONCAT, subreg each part separately instead of trying to
+	subreg the whole result.
+
 2017-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/23094
