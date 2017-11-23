@@ -1,3 +1,12 @@
+2017-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81403
+	* tree-ssa-pre.c (get_representative_for): Add parameter specifying
+	a block we need a leader relative to.
+	(phi_translate_1): For nary processing require a leader from
+	get_representative_for given we run expression simplification
+	using match-and-simplify.  Remove previous fix.
+
 2017-11-22  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::try_find_new_range):
