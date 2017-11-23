@@ -1,3 +1,14 @@
+2017-11-23  Julia Koval  <julia.koval@intel.com>
+
+	gcc.target/i386/avx512f-vpexpandb-1.c: New test.
+	gcc.target/i386/avx512f-vpexpandb-2.c: Ditto.
+	gcc.target/i386/avx512f-vpexpandw-1.c: Ditto.
+	gcc.target/i386/avx512f-vpexpandw-2.c: Ditto.
+	gcc.target/i386/avx512vl-vpexpandb-1.c: Ditto.
+	gcc.target/i386/avx512vl-vpexpandb-2.c: Ditto.
+	gcc.target/i386/avx512vl-vpexpandw-1.c: Ditto.
+	gcc.target/i386/avx512vl-vpexpandw-2.c: Ditto.
+
 2017-11-16  Julia Koval  <julia.koval@intel.com>
 
 	gcc.target/i386/avx512-check.h: Handle AVX512VBMI2 bit.

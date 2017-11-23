@@ -34914,6 +34914,12 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_PCV2DI_V2DI_UQI:
     case V4DI_FTYPE_PCV4DI_V4DI_UQI:
     case V8DI_FTYPE_PCV8DI_V8DI_UQI:
+    case V64QI_FTYPE_PCV64QI_V64QI_UDI:
+    case V32HI_FTYPE_PCV32HI_V32HI_USI:
+    case V32QI_FTYPE_PCV32QI_V32QI_USI:
+    case V16QI_FTYPE_PCV16QI_V16QI_UHI:
+    case V16HI_FTYPE_PCV16HI_V16HI_UHI:
+    case V8HI_FTYPE_PCV8HI_V8HI_UQI:
       switch (icode)
 	{
 	/* These builtins and instructions require the memory
