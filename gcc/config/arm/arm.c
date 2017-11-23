@@ -9242,8 +9242,52 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
 	  }								\
 	while (0)
 
+/* Helper function for arm_rtx_costs_internal.  Calculates the cost of a MEM,
+   considering the costs of the addressing mode and memory access
+   separately.  */
+static bool
+arm_mem_costs (rtx x, const struct cpu_cost_table *extra_cost,
+	       int *cost, bool speed_p)
+{
+  machine_mode mode = GET_MODE (x);
+
+  *cost = COSTS_N_INSNS (1);
+
+  if (flag_pic
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && will_be_in_index_register (XEXP (XEXP (x, 0), 1)))
+    /* This will be split into two instructions.  Add the cost of the
+       additional instruction here.  The cost of the memory access is computed
+       below.  See arm.md:calculate_pic_address.  */
+    *cost += COSTS_N_INSNS (1);
+
+  /* Calculate cost of memory access.  */
+  if (speed_p)
+    {
+      if (FLOAT_MODE_P (mode))
+	{
+	  if (GET_MODE_SIZE (mode) == 8)
+	    *cost += extra_cost->ldst.loadd;
+	  else
+	    *cost += extra_cost->ldst.loadf;
+	}
+      else if (VECTOR_MODE_P (mode))
+	*cost += extra_cost->ldst.loadv;
+      else
+	{
+	  /* Integer modes */
+	  if (GET_MODE_SIZE (mode) == 8)
+	    *cost += extra_cost->ldst.ldrd;
+	  else
+	    *cost += extra_cost->ldst.load;
+	}
+    }
+
+  return true;
+}
+
 /* RTX costs.  Make an estimate of the cost of executing the operation
-   X, which is contained with an operation with code OUTER_CODE.
+   X, which is contained within an operation with code OUTER_CODE.
    SPEED_P indicates whether the cost desired is the performance cost,
    or the size cost.  The estimate is stored in COST and the return
    value is TRUE if the cost calculation is final, or FALSE if the
@@ -9322,30 +9366,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
 
     case MEM:
-      /* A memory access costs 1 insn if the mode is small, or the address is
-	 a single register, otherwise it costs one insn per word.  */
-      if (REG_P (XEXP (x, 0)))
-	*cost = COSTS_N_INSNS (1);
-      else if (flag_pic
-	       && GET_CODE (XEXP (x, 0)) == PLUS
-	       && will_be_in_index_register (XEXP (XEXP (x, 0), 1)))
-	/* This will be split into two instructions.
-	   See arm.md:calculate_pic_address.  */
-	*cost = COSTS_N_INSNS (2);
-      else
-	*cost = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-
-      /* For speed optimizations, add the costs of the address and
-	 accessing memory.  */
-      if (speed_p)
-#ifdef NOT_YET
-	*cost += (extra_cost->ldst.load
-		  + arm_address_cost (XEXP (x, 0), mode,
-				      ADDR_SPACE_GENERIC, speed_p));
-#else
-        *cost += extra_cost->ldst.load;
-#endif
-      return true;
+      return arm_mem_costs (x, extra_cost, cost, speed_p);
 
     case PARALLEL:
     {

@@ -1,3 +1,9 @@
+2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
+
+	* gcc.target/arm/addr-modes-float.c: New test.
+	* gcc.target/arm/addr-modes-int.c: New test.
+	* gcc.target/arm/addr-modes.h: New header.
+
 2017-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* testsuite/gcc.dg/pr64277.c: Adjust scan.
