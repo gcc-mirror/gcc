@@ -1774,6 +1774,13 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  gcc_assert (!e->symtree->n.sym->ts.deferred);
 	  tmp = e->symtree->n.sym->ts.u.cl->backend_decl;
 	}
+      else if (e->expr_type == EXPR_VARIABLE
+	       && e->symtree->n.sym->attr.function
+	       && e->symtree->n.sym == e->symtree->n.sym->result)
+	{
+	  tmp = gfc_get_fake_result_decl (e->symtree->n.sym, 0);
+	  tmp = gfc_class_len_get (tmp);
+	}
       else
 	tmp = gfc_class_len_get (gfc_get_symbol_decl (e->symtree->n.sym));
       gfc_get_symbol_decl (sym);
