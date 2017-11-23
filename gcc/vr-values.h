@@ -54,7 +54,6 @@ class vr_values
 						   tree, tree, value_range *);
   void extract_range_from_phi_node (gphi *, value_range *);
   void extract_range_basic (value_range *, gimple *);
-  void extract_range_from_assignment (value_range *, gassign *);
   void extract_range_from_stmt (gimple *, edge *, tree *, value_range *);
 
   void vrp_visit_cond_stmt (gcond *, edge *);
@@ -62,14 +61,14 @@ class vr_values
   void simplify_cond_using_ranges_2 (gcond *);
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
 
-  /* This probably belongs in the lattice rather than in here.  */
-  bool values_propagated;
+  /* Indicate that propagation through the lattice is complete.  */
+  void set_lattice_propagation_complete (void) { values_propagated = true; }
 
-  /* Allocation pools for tree-vrp allocations.  */
-  object_allocator<value_range> vrp_value_range_pool;
+  /* Allocate a new value_range object.  */
+  value_range *allocate_value_range (void)
+    { return vrp_value_range_pool.allocate (); }
 
  private:
-  bitmap_obstack vrp_equiv_obstack;
   void add_equivalence (bitmap *, const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
@@ -84,6 +83,7 @@ class vr_values
   tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
 						tree, tree, bool,
 						bool *, bool *);
+  void extract_range_from_assignment (value_range *, gassign *);
   void extract_range_from_assert (value_range *, tree);
   void extract_range_from_ssa_name (value_range *, tree);
   void extract_range_from_binary_expr (value_range *, enum tree_code,
@@ -105,6 +105,15 @@ class vr_values
   bool simplify_float_conversion_using_ranges (gimple_stmt_iterator *,
 					       gimple *);
   bool simplify_internal_call_using_ranges (gimple_stmt_iterator *, gimple *);
+
+  /* Allocation pools for value_range objects.  */
+  object_allocator<value_range> vrp_value_range_pool;
+
+  /* This probably belongs in the lattice rather than in here.  */
+  bool values_propagated;
+
+  /* Allocations for equivalences all come from this obstack.  */
+  bitmap_obstack vrp_equiv_obstack;
 
   /* Value range array.  After propagation, VR_VALUE[I] holds the range
      of values that SSA name N_I may take.  */

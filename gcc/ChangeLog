@@ -1,3 +1,19 @@
+2017-11-22  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::try_find_new_range):
+	Use new method allocate_value_range rather than accessing the
+	vrp_value_range_pool data member directly.
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Tweak slightly
+	to use extract_range_from_stmt method to avoid need for
+	extract_range_from_assignment method.
+	(vrp_prop::vrp_finalize): Use set_lattice_propagation_complete
+	method rather than setting values_propgated data member directly.
+	* vr-values.h (class vr_values): Privatize vrp_value_range_pool,
+	and values propagated data members and extract_range_from_assignment
+	method.  Reorder private data members to conform to standards.
+	Add new methods set_lattice_propagation_complete and
+	allocate_value_range.
+
 2017-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/83030

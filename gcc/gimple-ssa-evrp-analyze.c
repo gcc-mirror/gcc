@@ -84,7 +84,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 	  && vrp_operand_equal_p (old_vr->min, vr.min)
 	  && vrp_operand_equal_p (old_vr->max, vr.max))
 	return NULL;
-      value_range *new_vr = vr_values->vrp_value_range_pool.allocate ();
+      value_range *new_vr = vr_values->allocate_value_range ();
       *new_vr = vr;
       return new_vr;
     }
