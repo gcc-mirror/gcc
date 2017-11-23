@@ -1754,12 +1754,13 @@ extern bool current_function_interrupt;
     }
 
 /* Output an absolute table element.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
-  if (! optimize || TARGET_BIGTABLE)					\
-    asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
-  else									\
-    asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));
-
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE) \
+  do {									\
+    if (! optimize || TARGET_BIGTABLE)					\
+      asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
+    else								\
+      asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));		\
+  } while (0)
 
 /* A C statement to be executed just prior to the output of
    assembler code for INSN, to modify the extracted operands so
