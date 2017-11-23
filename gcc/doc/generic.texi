@@ -1695,7 +1695,7 @@ its sole argument yields the representation for @code{ap}.
 @item ANNOTATE_EXPR
 This node is used to attach markers to an expression. The first operand
 is the annotated expression, the second is an @code{INTEGER_CST} with
-a value from @code{enum annot_expr_kind}.
+a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @end table
 
 

@@ -812,11 +812,12 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep)
   finish_cond (&WHILE_COND (while_stmt), cond);
   begin_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
-    WHILE_COND (while_stmt) = build2 (ANNOTATE_EXPR,
+    WHILE_COND (while_stmt) = build3 (ANNOTATE_EXPR,
 				      TREE_TYPE (WHILE_COND (while_stmt)),
 				      WHILE_COND (while_stmt),
 				      build_int_cst (integer_type_node,
-						     annot_expr_ivdep_kind));
+						     annot_expr_ivdep_kind),
+				      integer_zero_node);
   simplify_loop_decl_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
 }
 
@@ -870,8 +871,9 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep)
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
-		   build_int_cst (integer_type_node, annot_expr_ivdep_kind));
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
+		   integer_zero_node);
   DO_COND (do_stmt) = cond;
 }
 
@@ -990,11 +992,12 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep)
   finish_cond (&FOR_COND (for_stmt), cond);
   begin_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
-    FOR_COND (for_stmt) = build2 (ANNOTATE_EXPR,
+    FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),
 				  FOR_COND (for_stmt),
 				  build_int_cst (integer_type_node,
-						 annot_expr_ivdep_kind));
+						 annot_expr_ivdep_kind),
+				  integer_zero_node);
   simplify_loop_decl_cond (&FOR_COND (for_stmt), FOR_BODY (for_stmt));
 }
 

@@ -3459,9 +3459,10 @@ gfc_trans_forall_loop (forall_info *forall_tmp, tree body,
       cond = fold_build2_loc (input_location, LE_EXPR, logical_type_node,
 			      count, build_int_cst (TREE_TYPE (count), 0));
       if (forall_tmp->do_concurrent)
-	cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+	cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		       build_int_cst (integer_type_node,
-				      annot_expr_parallel_kind));
+				      annot_expr_parallel_kind),
+		       integer_zero_node);
 
       tmp = build1_v (GOTO_EXPR, exit_label);
       tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,

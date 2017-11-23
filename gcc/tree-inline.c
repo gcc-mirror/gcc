@@ -2597,6 +2597,11 @@ copy_loops (copy_body_data *id,
 	  flow_loop_tree_node_add (dest_parent, dest_loop);
 
 	  dest_loop->safelen = src_loop->safelen;
+	  if (src_loop->unroll)
+	    {
+	      dest_loop->unroll = src_loop->unroll;
+	      cfun->has_unroll = true;
+	    }
 	  dest_loop->dont_vectorize = src_loop->dont_vectorize;
 	  if (src_loop->force_vectorize)
 	    {

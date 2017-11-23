@@ -1,3 +1,9 @@
+2017-11-23  Mike Stump  <mikestump@comcast.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-stmt.c (gfc_trans_forall_loop): Pass 3rd operand to
+	ANNOTATE_EXPR.
+
 2017-11-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82814
