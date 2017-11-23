@@ -18036,8 +18036,8 @@ vzipq_f16 (float16x8_t __a, float16x8_t __b)
 
 /* AdvSIMD Dot Product intrinsics.  */
 
-#pragma GCC push_options
 #if __ARM_ARCH >= 8
+#pragma GCC push_options
 #pragma GCC target ("arch=armv8.2-a+dotprod")
 
 __extension__ extern __inline uint32x2_t
