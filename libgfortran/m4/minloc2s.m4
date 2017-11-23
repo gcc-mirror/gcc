@@ -31,7 +31,7 @@ include(iparm.m4)dnl
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)
 
 static inline int
-compare_fcn (const 'atype_name` *a, const 'atype_name` *b, int n)
+compare_fcn (const 'atype_name` *a, const 'atype_name` *b, gfc_charlen_type n)
 {
   if (sizeof ('atype_name`) == 1)
     return memcmp (a, b, n);
@@ -39,7 +39,7 @@ compare_fcn (const 'atype_name` *a, const 'atype_name` *b, int n)
     return memcmp_char4 (a, b, n);
 }
 
-extern 'rtype_name` 'name`'rtype_qual`_'atype_code` ('atype` * const restrict, int);
+extern 'rtype_name` 'name`'rtype_qual`_'atype_code` ('atype` * const restrict, gfc_charlen_type);
 export_proto('name`'rtype_qual`_'atype_code`);
 
 'rtype_name`

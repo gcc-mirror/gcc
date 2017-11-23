@@ -1,3 +1,22 @@
+2017-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* m4/maxloc2s.m4: Replace int for character length by
+	gfc_charlen_type.
+	* m4/minloc2s.m4: Likewise.
+	* generated./maxloc2_16_s1.c: Regenerated.
+	* generated./maxloc2_16_s4.c: Regenerated.
+	* generated./maxloc2_4_s1.c: Regenerated.
+	* generated./maxloc2_4_s4.c: Regenerated.
+	* generated./maxloc2_8_s1.c: Regenerated.
+	* generated./maxloc2_8_s4.c: Regenerated.
+	* generated./minloc2_16_s1.c: Regenerated.
+	* generated./minloc2_16_s4.c: Regenerated.
+	* generated./minloc2_4_s1.c: Regenerated.
+	* generated./minloc2_4_s4.c: Regenerated.
+	* generated./minloc2_8_s1.c: Regenerated.
+	* generated./minloc2_8_s4.c: Regenerated.
+
 2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/eoshift0.c (eoshift0): Make shift an index_type.
