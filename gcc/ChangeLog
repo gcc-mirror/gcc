@@ -1,3 +1,12 @@
+2017-11-23  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (init_sections_and_labels): Use generation to create
+	unique ranges_section_label and ranges_base_label. Return generation.
+	(output_rnglists): Add generation argument. Use generation to create
+	unique ranges labels.
+	(dwarf2out_finish): Get generation from init_sections_and_labels
+	and pass generation to output_rnglists.
+
 2017-11-23  Mike Stump  <mikestump@comcast.net>
             Eric Botcazou  <ebotcazou@adacore.com>
 

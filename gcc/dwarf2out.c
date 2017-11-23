@@ -11182,7 +11182,7 @@ index_rnglists (void)
 /* Emit .debug_rnglists section.  */
 
 static void
-output_rnglists (void)
+output_rnglists (unsigned generation)
 {
   unsigned i;
   dw_ranges *r;
@@ -11192,8 +11192,12 @@ output_rnglists (void)
 
   switch_to_section (debug_ranges_section);
   ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
-  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL, 2);
-  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL, 3);
+  /* There are up to 4 unique ranges labels per generation.
+     See also init_sections_and_labels.  */
+  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL,
+			       2 + generation * 4);
+  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL,
+			       3 + generation * 4);
   if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
     dw2_asm_output_data (4, 0xffffffff,
 			 "Initial length escape value indicating "
@@ -27261,9 +27265,10 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 }
 
 /* Initialize the various sections and labels for dwarf output and prefix
-   them with PREFIX if non-NULL.  */
+   them with PREFIX if non-NULL.  Returns the generation (zero based
+   number of times function was called).  */
 
-static void
+static unsigned
 init_sections_and_labels (bool early_lto_debug)
 {
   /* As we may get called multiple times have a generation count for
@@ -27442,11 +27447,14 @@ init_sections_and_labels (bool early_lto_debug)
   info_section_emitted = false;
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, generation);
+  /* There are up to 4 unique ranges labels per generation.
+     See also output_rnglists.  */
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
-			       DEBUG_RANGES_SECTION_LABEL, generation);
+			       DEBUG_RANGES_SECTION_LABEL, generation * 4);
   if (dwarf_version >= 5 && dwarf_split_debug_info)
     ASM_GENERATE_INTERNAL_LABEL (ranges_base_label,
-				 DEBUG_RANGES_SECTION_LABEL, 2 + generation);
+				 DEBUG_RANGES_SECTION_LABEL,
+				 1 + generation * 4);
   ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
 			       DEBUG_ADDR_SECTION_LABEL, generation);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
@@ -27457,6 +27465,7 @@ init_sections_and_labels (bool early_lto_debug)
 			       generation);
 
   ++generation;
+  return generation - 1;
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -29890,7 +29899,7 @@ dwarf2out_finish (const char *)
   move_marked_base_types ();
 
   /* Initialize sections and labels used for actual assembler output.  */
-  init_sections_and_labels (false);
+  unsigned generation = init_sections_and_labels (false);
 
   /* Traverse the DIE's and add sibling attributes to those DIE's that
      have children.  */
@@ -30179,7 +30188,7 @@ dwarf2out_finish (const char *)
   if (!vec_safe_is_empty (ranges_table))
     {
       if (dwarf_version >= 5)
-	output_rnglists ();
+	output_rnglists (generation);
       else
 	output_ranges ();
     }
