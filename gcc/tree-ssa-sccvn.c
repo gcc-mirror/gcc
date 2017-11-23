@@ -345,7 +345,12 @@ vuse_ssa_val (tree x)
 
   do
     {
-      x = SSA_VAL (x);
+      tree tem = SSA_VAL (x);
+      /* stmt walking can walk over a backedge and reach code we didn't
+	 value-number yet.  */
+      if (tem == VN_TOP)
+	return x;
+      x = tem;
     }
   while (SSA_NAME_IN_FREE_LIST (x));
 
@@ -1867,6 +1872,39 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	{
 	  ao_ref_init (&lhs_ref, lhs);
 	  lhs_ref_ok = true;
+	}
+
+      /* If we reach a clobbering statement try to skip it and see if
+         we find a VN result with exactly the same value as the
+	 possible clobber.  In this case we can ignore the clobber
+	 and return the found value.
+	 Note that we don't need to worry about partial overlapping
+	 accesses as we then can use TBAA to disambiguate against the
+	 clobbering statement when looking up a load (thus the
+	 VN_WALKREWRITE guard).  */
+      if (vn_walk_kind == VN_WALKREWRITE
+	  && is_gimple_reg_type (TREE_TYPE (lhs))
+	  && types_compatible_p (TREE_TYPE (lhs), vr->type))
+	{
+	  tree *saved_last_vuse_ptr = last_vuse_ptr;
+	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
+	  last_vuse_ptr = NULL;
+	  tree saved_vuse = vr->vuse;
+	  hashval_t saved_hashcode = vr->hashcode;
+	  void *res = vn_reference_lookup_2 (ref,
+					     gimple_vuse (def_stmt), 0, vr);
+	  /* Need to restore vr->vuse and vr->hashcode.  */
+	  vr->vuse = saved_vuse;
+	  vr->hashcode = saved_hashcode;
+	  last_vuse_ptr = saved_last_vuse_ptr;
+	  if (res && res != (void *)-1)
+	    {
+	      vn_reference_t vnresult = (vn_reference_t) res;
+	      if (vnresult->result
+		  && operand_equal_p (vnresult->result,
+				      gimple_assign_rhs1 (def_stmt), 0))
+		return res;
+	    }
 	}
     }
   else if (gimple_call_builtin_p (def_stmt, BUILT_IN_NORMAL)

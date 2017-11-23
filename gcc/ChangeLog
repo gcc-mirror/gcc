@@ -1,5 +1,12 @@
 2017-11-23  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/23094
+	* tree-ssa-sccvn.c (vuse_ssa_val): Handle VN_TOP when we
+	come here from walking over backedges in the first iteration.
+	(vn_reference_lookup_3): Skip clobbers that store the same value.
+
+2017-11-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81403
 	* tree-ssa-pre.c (get_representative_for): Add parameter specifying
 	a block we need a leader relative to.
