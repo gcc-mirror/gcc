@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_16)
 
 static inline int
-compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, int n)
+compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
 {
   if (sizeof (GFC_INTEGER_4) == 1)
     return memcmp (a, b, n);
@@ -38,7 +38,8 @@ compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, int n)
     return memcmp_char4 (a, b, n);
 }
 
-extern GFC_INTEGER_16 maxloc2_16_s4 (gfc_array_s4 * const restrict, int);
+extern GFC_INTEGER_16 maxloc2_16_s4 (gfc_array_s4 * const restrict,
+       gfc_charlen_type);
 export_proto(maxloc2_16_s4);
 
 GFC_INTEGER_16
