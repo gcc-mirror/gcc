@@ -62,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit operator bool() const noexcept { return _M_ptr != nullptr; }
 
-      bool empty() const noexcept { return _M_ptr == nullptr; }
+      [[nodiscard]] bool empty() const noexcept { return _M_ptr == nullptr; }
 
     protected:
       constexpr _Node_handle_common() noexcept : _M_ptr(), _M_alloc() {}
