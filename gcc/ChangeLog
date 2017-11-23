@@ -1,5 +1,9 @@
 2017-11-23  Tom de Vries  <tom@codesourcery.com>
 
+	* config/sh/sh.h (ASM_OUTPUT_ADDR_VEC_ELT): Wrap in "do {} while (0)".
+
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
 	* config/ft32/ft32.h (ASM_OUTPUT_ADDR_VEC_ELT): Remove semicolon after
 	macro.
 
