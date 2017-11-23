@@ -104,12 +104,14 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		// TODO(pcc): Read the archive directly instead of using "ar".
 		f.Close()
 		closer = nil
+		var cmd *exec.Cmd
 
-		cmd := exec.Command("ar", "p", fpath)
 		if runtime.GOOS == "aix" && runtime.GOARCH == "ppc64" {
 			// AIX puts both 32-bit and 64-bit objects in the same archive.
 			// Tell the AIX "ar" command to only care about 64-bit objects.
-			cmd.Env = append(os.Environ(), "OBJECT_MODE=64")
+			cmd = exec.Command("ar", "-X64", "p", fpath)
+		} else {
+			cmd = exec.Command("ar", "p", fpath)
 		}
 		var out []byte
 		out, err = cmd.Output()
