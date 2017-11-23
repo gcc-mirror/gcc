@@ -4568,7 +4568,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
 	}
 
-      if (Treat_As_Volatile (gnat_entity))
+      /* Finally get to the appropriate variant, except for the implementation
+	 type of a packed array because the GNU type might be further adjusted
+	 when the original array type is itself processed.  */
+      if (Treat_As_Volatile (gnat_entity)
+	  && !Is_Packed_Array_Impl_Type (gnat_entity))
 	{
 	  const int quals
 	    = TYPE_QUAL_VOLATILE
