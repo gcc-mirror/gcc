@@ -1,3 +1,9 @@
+2017-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/83015
+	* ipa-inline.c (inline_small_functions): Set current badnes correctly
+	when skipping checking.
+
 2017-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83128
