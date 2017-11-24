@@ -127,6 +127,10 @@ struct occurrence {
      inserted in BB.  */
   tree recip_def;
 
+  /* If non-NULL, the SSA_NAME holding the definition for a squared
+     reciprocal inserted in BB.  */
+  tree square_recip_def;
+
   /* If non-NULL, the GIMPLE_ASSIGN for a reciprocal computation that
      was inserted in BB.  */
   gimple *recip_def_stmt;
@@ -270,10 +274,14 @@ insert_bb (struct occurrence *new_occ, basic_block idom,
   *p_head = new_occ;
 }
 
-/* Register that we found a division in BB.  */
+/* Register that we found a division in BB.
+   IMPORTANCE is a measure of how much weighting to give
+   that division.  Use IMPORTANCE = 2 to register a single
+   division.  If the division is going to be found multiple
+   times use 1 (as it is with squares).  */
 
 static inline void
-register_division_in (basic_block bb)
+register_division_in (basic_block bb, int importance)
 {
   struct occurrence *occ;
 
@@ -285,7 +293,7 @@ register_division_in (basic_block bb)
     }
 
   occ->bb_has_division = true;
-  occ->num_divisions++;
+  occ->num_divisions += importance;
 }
 
 
@@ -328,6 +336,39 @@ is_division_by (gimple *use_stmt, tree def)
 	 && gimple_assign_rhs1 (use_stmt) != def;
 }
 
+/* Return whether USE_STMT is DEF * DEF.  */
+static inline bool
+is_square_of (gimple *use_stmt, tree def)
+{
+  if (gimple_code (use_stmt) == GIMPLE_ASSIGN
+      && gimple_assign_rhs_code (use_stmt) == MULT_EXPR)
+    {
+      tree op0 = gimple_assign_rhs1 (use_stmt);
+      tree op1 = gimple_assign_rhs2 (use_stmt);
+
+      return op0 == op1 && op0 == def;
+    }
+  return 0;
+}
+
+/* Return whether USE_STMT is a floating-point division by
+   DEF * DEF.  */
+static inline bool
+is_division_by_square (gimple *use_stmt, tree def)
+{
+  if (gimple_code (use_stmt) == GIMPLE_ASSIGN
+      && gimple_assign_rhs_code (use_stmt) == RDIV_EXPR
+      && gimple_assign_rhs1 (use_stmt) != gimple_assign_rhs2 (use_stmt))
+    {
+      tree denominator = gimple_assign_rhs2 (use_stmt);
+      if (TREE_CODE (denominator) == SSA_NAME)
+	{
+	  return is_square_of (SSA_NAME_DEF_STMT (denominator), def);
+	}
+    }
+  return 0;
+}
+
 /* Walk the subset of the dominator tree rooted at OCC, setting the
    RECIP_DEF field to a definition of 1.0 / DEF that can be used in
    the given basic block.  The field may be left NULL, of course,
@@ -335,20 +376,27 @@ is_division_by (gimple *use_stmt, tree def)
 
    DEF_BSI is an iterator pointing at the statement defining DEF.
    If RECIP_DEF is set, a dominator already has a computation that can
-   be used.  */
+   be used.
+
+   If should_insert_square_recip is set, then this also inserts
+   the square of the reciprocal immediately after the definition
+   of the reciprocal.  */
 
 static void
 insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
-		    tree def, tree recip_def, int threshold)
+		    tree def, tree recip_def, tree square_recip_def,
+		    int should_insert_square_recip, int threshold)
 {
   tree type;
-  gassign *new_stmt;
+  gassign *new_stmt, *new_square_stmt;
   gimple_stmt_iterator gsi;
   struct occurrence *occ_child;
 
   if (!recip_def
       && (occ->bb_has_division || !flag_trapping_math)
-      && occ->num_divisions >= threshold)
+      /* Divide by two as all divisions are counted twice in
+	 the costing loop.  */
+      && occ->num_divisions / 2 >= threshold)
     {
       /* Make a variable with the replacement and substitute it.  */
       type = TREE_TYPE (def);
@@ -356,29 +404,44 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
       new_stmt = gimple_build_assign (recip_def, RDIV_EXPR,
 				      build_one_cst (type), def);
 
+      if (should_insert_square_recip)
+	{
+	  square_recip_def = create_tmp_reg (type, "powmult_reciptmp");
+	  new_square_stmt = gimple_build_assign (square_recip_def, MULT_EXPR,
+						 recip_def, recip_def);
+	}
+
       if (occ->bb_has_division)
-        {
-          /* Case 1: insert before an existing division.  */
-          gsi = gsi_after_labels (occ->bb);
-          while (!gsi_end_p (gsi) && !is_division_by (gsi_stmt (gsi), def))
+	{
+	  /* Case 1: insert before an existing division.  */
+	  gsi = gsi_after_labels (occ->bb);
+	  while (!gsi_end_p (gsi)
+		 && (!is_division_by (gsi_stmt (gsi), def))
+		 && (!is_division_by_square (gsi_stmt (gsi), def)))
 	    gsi_next (&gsi);
 
-          gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
-        }
+	  gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+	}
       else if (def_gsi && occ->bb == def_gsi->bb)
-        {
-          /* Case 2: insert right after the definition.  Note that this will
+	{
+	  /* Case 2: insert right after the definition.  Note that this will
 	     never happen if the definition statement can throw, because in
 	     that case the sole successor of the statement's basic block will
 	     dominate all the uses as well.  */
-          gsi_insert_after (def_gsi, new_stmt, GSI_NEW_STMT);
-        }
+	  gsi = *def_gsi;
+	  gsi_insert_after (def_gsi, new_stmt, GSI_NEW_STMT);
+	}
       else
-        {
-          /* Case 3: insert in a basic block not containing defs/uses.  */
-          gsi = gsi_after_labels (occ->bb);
-          gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
-        }
+	{
+	  /* Case 3: insert in a basic block not containing defs/uses.  */
+	  gsi = gsi_after_labels (occ->bb);
+	  gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+	}
+
+      /* Regardless of which case the reciprocal as inserted in,
+	 we insert the square immediately after the reciprocal.  */
+      if (should_insert_square_recip)
+	gsi_insert_before (&gsi, new_square_stmt, GSI_SAME_STMT);
 
       reciprocal_stats.rdivs_inserted++;
 
@@ -386,8 +449,32 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
     }
 
   occ->recip_def = recip_def;
+  occ->square_recip_def = square_recip_def;
   for (occ_child = occ->children; occ_child; occ_child = occ_child->next)
-    insert_reciprocals (def_gsi, occ_child, def, recip_def, threshold);
+    insert_reciprocals (def_gsi, occ_child, def, recip_def,
+			square_recip_def, should_insert_square_recip,
+			threshold);
+}
+
+/* Replace occurrences of expr / (x * x) with expr * ((1 / x) * (1 / x)).
+   Take as argument the use for (x * x).  */
+static inline void
+replace_reciprocal_squares (use_operand_p use_p)
+{
+  gimple *use_stmt = USE_STMT (use_p);
+  basic_block bb = gimple_bb (use_stmt);
+  struct occurrence *occ = (struct occurrence *) bb->aux;
+
+  if (optimize_bb_for_speed_p (bb) && occ->square_recip_def
+      && occ->recip_def)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+      gimple_assign_set_rhs_code (use_stmt, MULT_EXPR);
+      gimple_assign_set_rhs2 (use_stmt, occ->square_recip_def);
+      SET_USE (use_p, occ->square_recip_def);
+      fold_stmt_inplace (&gsi);
+      update_stmt (use_stmt);
+    }
 }
 
 
@@ -448,32 +535,85 @@ free_bb (struct occurrence *occ)
 static void
 execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 {
-  use_operand_p use_p;
-  imm_use_iterator use_iter;
+  use_operand_p use_p, square_use_p;
+  imm_use_iterator use_iter, square_use_iter;
+  tree square_def;
   struct occurrence *occ;
-  int count = 0, threshold;
+  int count = 0;
+  int threshold;
+  int square_recip_count = 0;
+  int sqrt_recip_count = 0;
 
   gcc_assert (FLOAT_TYPE_P (TREE_TYPE (def)) && is_gimple_reg (def));
+  threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
+
+  /* If this is a square (x * x), we should check whether there are any
+     enough divisions by x on it's own to warrant waiting for that pass.  */
+  if (TREE_CODE (def) == SSA_NAME)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (def);
+
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == MULT_EXPR
+	  && gimple_assign_rhs1 (def_stmt) == gimple_assign_rhs2 (def_stmt))
+	{
+	  /* This statement is a square of something.  We should take this
+	     in to account, as it may be more profitable to not extract
+	     the reciprocal here.  */
+	  tree op0 = gimple_assign_rhs1 (def_stmt);
+	  FOR_EACH_IMM_USE_FAST (use_p, use_iter, op0)
+	    {
+	      gimple *use_stmt = USE_STMT (use_p);
+	      if (is_division_by (use_stmt, op0))
+		sqrt_recip_count ++;
+	    }
+	}
+    }
 
   FOR_EACH_IMM_USE_FAST (use_p, use_iter, def)
     {
       gimple *use_stmt = USE_STMT (use_p);
       if (is_division_by (use_stmt, def))
 	{
-	  register_division_in (gimple_bb (use_stmt));
+	  register_division_in (gimple_bb (use_stmt), 2);
 	  count++;
+	}
+
+      if (is_square_of (use_stmt, def))
+	{
+	  square_def = gimple_assign_lhs (use_stmt);
+	  FOR_EACH_IMM_USE_FAST (square_use_p, square_use_iter, square_def)
+	    {
+	      gimple *square_use_stmt = USE_STMT (square_use_p);
+	      if (is_division_by (square_use_stmt, square_def))
+		{
+		  /* Halve the relative importance as this is called twice
+		     for each division by a square.  */
+		  register_division_in (gimple_bb (square_use_stmt), 1);
+		  square_recip_count ++;
+		}
+	    }
 	}
     }
 
+  /* Square reciprocals will have been counted twice.  */
+  square_recip_count /= 2;
+
+  if (sqrt_recip_count > square_recip_count)
+    /* It will be more profitable to extract a 1 / x expression later,
+       so it is not worth attempting to extract 1 / (x * x) now.  */
+    return;
+
   /* Do the expensive part only if we can hope to optimize something.  */
-  threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
-  if (count >= threshold)
+  if (count + square_recip_count >= threshold
+      && count >= 1)
     {
       gimple *use_stmt;
       for (occ = occ_head; occ; occ = occ->next)
 	{
 	  compute_merit (occ);
-	  insert_reciprocals (def_gsi, occ, def, NULL, threshold);
+	  insert_reciprocals (def_gsi, occ, def, NULL, NULL,
+			      square_recip_count, threshold);
 	}
 
       FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, def)
@@ -482,6 +622,27 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 	    {
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, use_iter)
 		replace_reciprocal (use_p);
+	    }
+	  else if (square_recip_count > 0
+		   && is_square_of (use_stmt, def))
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, use_iter)
+		{
+		  /* Find all uses of the square that are divisions and
+		   * replace them by multiplications with the inverse.  */
+		  imm_use_iterator square_iterator;
+		  gimple *powmult_use_stmt = USE_STMT (use_p);
+		  tree powmult_def_name = gimple_assign_lhs (powmult_use_stmt);
+
+		  FOR_EACH_IMM_USE_STMT (powmult_use_stmt,
+					 square_iterator, powmult_def_name)
+		    FOR_EACH_IMM_USE_ON_STMT (square_use_p, square_iterator)
+		      {
+			gimple *powmult_use_stmt = USE_STMT (square_use_p);
+			if (is_division_by (powmult_use_stmt, powmult_def_name))
+			  replace_reciprocal_squares (square_use_p);
+		      }
+		}
 	    }
 	}
     }

@@ -1,3 +1,10 @@
+2017-11-24  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* gfortran.dg/extract_recip_1.f: New test.
+	* gcc.dg/extract_recip_3.c: New test.
+	* gcc.dg/extract_recip_4.c: New test.
+
 2017-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82402
