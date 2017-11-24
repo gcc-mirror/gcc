@@ -1,5 +1,8 @@
 2017-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new (launder): Add nodiscard attribute.
+	* testsuite/18_support/launder/nodiscard.cc: New test.
+
 	* include/bits/fs_path.h (path::empty): Add nodiscard attribute.
 	* include/bits/range_access.h (empty): Likewise.
 	* include/std/string_view (basic_string_view::empty): Likewise.
