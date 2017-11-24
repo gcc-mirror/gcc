@@ -1,5 +1,10 @@
 2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/83014
+	* ubsan.c (ubsan_type_descriptor): Use pp_unsigned_wide_integer
+	instead of pp_printf with HOST_WIDE_INT_PRINT_DEC.  Avoid calling
+	tree_to_uhwi twice.
+
 	* tree-object-size.c (pass_through_call): Use gimple_call_return_flags
 	ERF_RETURN*ARG* for builtins other than BUILT_IN_ASSUME_ALIGNED,
 	check for the latter with gimple_call_builtin_p.  Do not handle
