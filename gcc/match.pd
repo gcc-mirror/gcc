@@ -2456,9 +2456,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (type))
    (mult @0 { build_int_cst (type, 2); }))))
 
+/* 0 - X  ->  -X.  */
 (simplify
  (minus integer_zerop @1)
  (negate @1))
+(simplify
+ (pointer_diff integer_zerop @1)
+ (negate (convert @1)))
 
 /* (ARG0 - ARG1) is the same as (-ARG1 + ARG0).  So check whether
    ARG0 is zero and X + ARG0 reduces to X, since that would mean
