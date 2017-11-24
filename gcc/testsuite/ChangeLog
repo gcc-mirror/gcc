@@ -1,3 +1,7 @@
+2017-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-object-size-18.c: New test.
+
 2017-11-23  Julia Koval  <julia.koval@intel.com>
 
 	gcc.target/i386/avx512f-vpexpandb-1.c: New test.
