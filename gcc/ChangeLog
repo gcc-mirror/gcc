@@ -1,3 +1,9 @@
+2017-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83128
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Handle STRING_CSTs.
+	(vn_reference_lookup_3): Likewise.
+
 2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83014

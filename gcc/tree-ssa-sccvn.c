@@ -1388,10 +1388,14 @@ fully_constant_vn_reference_p (vn_reference_t ref)
       else if (base->opcode == MEM_REF
 	       && base[1].opcode == ADDR_EXPR
 	       && (TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == VAR_DECL
-		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == CONST_DECL))
+		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == CONST_DECL
+		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == STRING_CST))
 	{
 	  decl = TREE_OPERAND (base[1].op0, 0);
-	  ctor = ctor_for_folding (decl);
+	  if (TREE_CODE (decl) == STRING_CST)
+	    ctor = decl;
+	  else
+	    ctor = ctor_for_folding (decl);
 	}
       if (ctor == NULL_TREE)
 	return build_zero_cst (ref->type);
@@ -2331,7 +2335,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	      rhs = TREE_OPERAND (tem, 0);
 	      rhs_offset += tree_to_uhwi (TREE_OPERAND (tem, 1));
 	    }
-	  else if (DECL_P (tem))
+	  else if (DECL_P (tem)
+		   || TREE_CODE (tem) == STRING_CST)
 	    rhs = build_fold_addr_expr (tem);
 	  else
 	    return (void *)-1;

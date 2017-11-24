@@ -1,3 +1,8 @@
+2017-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83128
+	* gcc.dg/tree-ssa/ssa-fre-62.c: New testcase.
+
 2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83014
