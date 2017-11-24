@@ -1,4 +1,10 @@
-2017-11-23  Dirk Broemmel  <dibr-bugzilla@daswigwam.de>
+2017-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/81304
+	* trans-openmp.c (gfc_trans_omp_array_reduction_or_udr): Set
+	attr.implicit_type in intrinsic_sym to avoid undesirable warning.
+
+2017-11-23  Dirk Broemmel  <d.broemmel@fz-juelich.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/81841
