@@ -1,3 +1,9 @@
+2017-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82402
+	* tree-vect-loop-manip.c (create_lcssa_for_virtual_phi): Properly
+	set SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
 2017-11-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (0-ptr): New transformation.
