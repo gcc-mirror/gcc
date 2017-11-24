@@ -1,4 +1,5 @@
 2017-11-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/36313
 	* m4/maxloc2s.m4: Replace int with gfc_charlen_type, take 3.
 	* m4/minloc2s.m4: Likewise.
