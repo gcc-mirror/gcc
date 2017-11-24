@@ -74,7 +74,7 @@ export_proto('name`'rtype_qual`_'atype_code`);
 }
 
 extern 'rtype_name` m'name`'rtype_qual`_'atype_code` ('atype` * const restrict,
-       		    	gfc_array_l1 *const restrict mask, int);
+                    gfc_array_l1 *const restrict mask, gfc_charlen_type);
 export_proto(m'name`'rtype_qual`_'atype_code`);
 
 'rtype_name`

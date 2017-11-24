@@ -73,7 +73,7 @@ minloc2_4_s4 (gfc_array_s4 * const restrict array, gfc_charlen_type len)
 }
 
 extern GFC_INTEGER_4 mminloc2_4_s4 (gfc_array_s4 * const restrict,
-       		    	gfc_array_l1 *const restrict mask, int);
+                    gfc_array_l1 *const restrict mask, gfc_charlen_type);
 export_proto(mminloc2_4_s4);
 
 GFC_INTEGER_4

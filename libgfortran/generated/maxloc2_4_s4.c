@@ -141,7 +141,7 @@ mmaxloc2_4_s4 (gfc_array_s4 * const restrict array,
 }
 
 extern GFC_INTEGER_4 smaxloc2_4_s4 (gfc_array_s4 * const restrict,
-       		    	GFC_LOGICAL_4 *mask, int);
+                               GFC_LOGICAL_4 *mask, gfc_charlen_type);
 export_proto(smaxloc2_4_s4);
 
 GFC_INTEGER_4

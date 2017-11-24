@@ -141,7 +141,7 @@ mmaxloc2_16_s1 (gfc_array_s1 * const restrict array,
 }
 
 extern GFC_INTEGER_16 smaxloc2_16_s1 (gfc_array_s1 * const restrict,
-       		    	GFC_LOGICAL_4 *mask, int);
+                               GFC_LOGICAL_4 *mask, gfc_charlen_type);
 export_proto(smaxloc2_16_s1);
 
 GFC_INTEGER_16
