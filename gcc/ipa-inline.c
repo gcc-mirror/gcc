@@ -1865,6 +1865,8 @@ inline_small_functions (void)
 	  gcc_assert (cached_badness == current_badness);
 	  gcc_assert (current_badness >= badness);
 	}
+      else
+        current_badness = edge_badness (edge, false);
 #else
       current_badness = edge_badness (edge, false);
 #endif
