@@ -1,3 +1,7 @@
+2017-11-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (0-ptr): New transformation.
+
 2017-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/83015
