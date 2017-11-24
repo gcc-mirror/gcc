@@ -1,3 +1,12 @@
+2017-11-24  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* tree-ssa-math-opts (is_division_by_square, is_square_of): New.
+	(insert_reciprocals): Change to insert reciprocals before a division
+	by a square and to insert the square of a reciprocal.
+	(execute_cse_reciprocals_1): Change to consider division by a square.
+	(register_division_in): Add importance parameter.
+
 2017-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82402
