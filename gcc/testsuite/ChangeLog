@@ -1,3 +1,8 @@
+2017-11-25  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/abi/structret1.C (FrameworkObject::action): Return a
+	value.
+
 2017-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82848
