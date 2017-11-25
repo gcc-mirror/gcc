@@ -6639,11 +6639,15 @@ simplify_if_then_else (rtx x)
 
       if (z)
 	{
-	  temp = subst (simplify_gen_relational (true_code, m, VOIDmode,
+	  machine_mode cm = m;
+	  if ((op == ASHIFT || op == LSHIFTRT || op == ASHIFTRT)
+	      && GET_MODE (c1) != VOIDmode)
+	    cm = GET_MODE (c1);
+	  temp = subst (simplify_gen_relational (true_code, cm, VOIDmode,
 						 cond_op0, cond_op1),
 			pc_rtx, pc_rtx, 0, 0, 0);
-	  temp = simplify_gen_binary (MULT, m, temp,
-				      simplify_gen_binary (MULT, m, c1,
+	  temp = simplify_gen_binary (MULT, cm, temp,
+				      simplify_gen_binary (MULT, cm, c1,
 							   const_true_rtx));
 	  temp = subst (temp, pc_rtx, pc_rtx, 0, 0, 0);
 	  temp = simplify_gen_binary (op, m, gen_lowpart (m, z), temp);

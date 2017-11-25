@@ -1,3 +1,8 @@
+2017-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/81553
+	* gcc.c-torture/compile/pr81553.c: New test.
+
 2017-11-25  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/abi/structret1.C (FrameworkObject::action): Return a
