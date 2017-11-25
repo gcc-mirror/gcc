@@ -16143,6 +16143,12 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (!gimple_call_lhs (stmt) && !rs6000_builtin_valid_without_lhs (fn_code))
     return false;
 
+  /* Don't fold invalid builtins, let rs6000_expand_builtin diagnose it.  */
+  HOST_WIDE_INT mask = rs6000_builtin_info[uns_fncode].mask;
+  bool func_valid_p = (rs6000_builtin_mask & mask) == mask;
+  if (!func_valid_p)
+    return false;
+
   switch (fn_code)
     {
     /* Flavors of vec_add.  We deliberately don't expand
