@@ -1,3 +1,8 @@
+2017-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82848
+	* gcc.target/powerpc/pr82848.c: New test.
+
 2017-11-24  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR tree-optimization/71026

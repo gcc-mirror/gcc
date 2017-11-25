@@ -1,3 +1,9 @@
+2017-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82848
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Don't fold
+	builtins not enabled in the currently selected ISA.
+
 2017-11-24  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR tree-optimization/71026
