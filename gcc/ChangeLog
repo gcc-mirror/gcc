@@ -1,5 +1,11 @@
 2017-11-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/81553
+	* combine.c (simplify_if_then_else): In (if_then_else COND (OP Z C1) Z)
+	to (OP Z (mult COND (C1 * STORE_FLAG_VALUE))) optimization, if OP
+	is a shift where C1 has different mode than the whole shift, use C1's
+	mode for MULT rather than the shift's mode.
+
 	PR target/82848
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Don't fold
 	builtins not enabled in the currently selected ISA.
