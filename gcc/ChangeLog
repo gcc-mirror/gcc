@@ -1,3 +1,12 @@
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* plugin.c (add_new_plugin): Use platform-specific library extensions.
+	(try_init_one_plugin): Alternative implementation for MinGW.
+	* Makefile.in (plugin_implib): New.
+	(gengtype-lex.c): Fix broken AIX workaround.
+	* configure: Regenerate.
+	* doc/plugins.texi: Document support for MinGW.
+
 2017-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/81553

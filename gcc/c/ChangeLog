@@ -1,3 +1,7 @@
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* Make-lang.in (c.install-plugin): Install backend import library.
+
 2017-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_declare_simd): Reject declare simd in
