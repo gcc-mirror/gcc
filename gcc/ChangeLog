@@ -1,4 +1,31 @@
-2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+2017-11-26  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c (processor_target_table): Add skylake_cost for
+	skylake-avx512.
+	* config/i386/x86-tune-costs.h (skylake_memcpy, skylake_memset,
+	skylake_cost): New.
+
+2017-11-26  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu):
+	Detect skylake-avx512.
+
+2017-11-26  Julia Koval  <julia.koval@intel.com>
+
+	* config.gcc: Add -march=cannonlake.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect cannonlake.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle cannonlake.
+	* config/i386/i386.c (processor_costs): Add m_CANNONLAKE.
+	(PTA_CANNONLAKE): New.
+	(processor_target_table): Add cannonlake.
+	(ix86_option_override_internal): Ditto.
+	(fold_builtin_cpu): Ditto.
+	(get_builtin_code_for_version): Handle cannonlake.
+	(M_INTEL_COREI7_CANNONLAKE): New.
+	* config/i386/i386.h (TARGET_CANNONLAKE, PROCESSOR_CANNONLAKE): New.
+	* doc/invoke.texi: Add -march=cannonlake.
+
+2017-11-14  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* plugin.c (add_new_plugin): Use platform-specific library extensions.
 	(try_init_one_plugin): Alternative implementation for MinGW.
@@ -69,12 +96,12 @@
 
 2017-11-23  Julia Koval  <julia.koval@intel.com>
 
-	config/i386/avx512vbmi2intrin.h (_mm512_mask_expand_epi8,
+	* config/i386/avx512vbmi2intrin.h (_mm512_mask_expand_epi8,
 	_mm512_maskz_expand_epi8, _mm512_mask_expandloadu_epi8,
 	_mm512_maskz_expandloadu_epi8, _mm512_mask_expand_epi16,
 	_mm512_maskz_expand_epi16, _mm512_mask_expandloadu_epi16,
 	_mm512_maskz_expandloadu_epi16): New intrinsics.
-	config/i386/avx512vbmi2vlintrin.h (_mm_mask_expand_epi8,
+	* config/i386/avx512vbmi2vlintrin.h (_mm_mask_expand_epi8,
 	_mm_maskz_expand_epi8, _mm_mask_expandloadu_epi8,
 	_mm_maskz_expandloadu_epi8, _mm_mask_expand_epi16,
 	_mm_maskz_expand_epi16, _mm_mask_expandloadu_epi16,
@@ -83,33 +110,33 @@
 	_mm256_maskz_expandloadu_epi16, _mm256_mask_expand_epi8,
 	_mm256_maskz_expand_epi8, _mm256_mask_expandloadu_epi8,
 	_mm256_maskz_expandloadu_epi8): New intrinsics.
-	config/i386/i386-builtin-types.def (V64QI_FTYPE_PCV64QI_V64QI_UDI,
+	* config/i386/i386-builtin-types.def (V64QI_FTYPE_PCV64QI_V64QI_UDI,
 	V32HI_FTYPE_PCV32HI_V32HI_USI, V32QI_FTYPE_PCV32QI_V32QI_USI,
 	V16HI_FTYPE_PCV16HI_V16HI_UHI, V16QI_FTYPE_PCV16QI_V16QI_UHI,
 	V8HI_FTYPE_PCV8HI_V8HI_UQI): New types.
-	config/i386/i386.c (ix86_expand_special_args_builtin): Use new types.
-	config/i386/sse.md (VI248_VLBW): New iterator.
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Use new types.
+	* config/i386/sse.md (VI248_VLBW): New iterator.
 	(expand<mode>_mask, expand<mode>_maskz): New patterns.
 
 2017-11-23  Julia Koval  <julia.koval@intel.com>
 
-	config.gcc (avx512vbmi2intrin.h, avx512vbmi2vlintrin): New headers.
-	config/i386/avx512vbmi2intrin.h (_mm512_mask_compress_epi8,
+	* config.gcc (avx512vbmi2intrin.h, avx512vbmi2vlintrin): New headers.
+	* config/i386/avx512vbmi2intrin.h (_mm512_mask_compress_epi8,
 	_mm512_maskz_compress_epi8, _mm512_mask_compressstoreu_epi8,
 	_mm512_mask_compress_epi16, _mm512_maskz_compress_epi16,
 	_mm512_mask_compressstoreu_epi16): New.
-	config/i386/avx512vbmi2vlintrin.h (_mm_mask_compress_epi8,
+	* config/i386/avx512vbmi2vlintrin.h (_mm_mask_compress_epi8,
 	_mm_maskz_compress_epi8, _mm256_mask_compressstoreu_epi16,
 	_mm_mask_compress_epi16, _mm_maskz_compress_epi16,
 	_mm256_mask_compress_epi16, _mm256_maskz_compress_epi16,
 	_mm_mask_compressstoreu_epi8, _mm_mask_compressstoreu_epi16,
 	_mm256_mask_compress_epi8, _mm256_maskz_compress_epi8,
 	_mm256_mask_compressstoreu_epi8): New.
-	config/i386/i386-builtin-types.def (VOID_FTYPE_PV64QI_V64QI_UDI,
+	* config/i386/i386-builtin-types.def (VOID_FTYPE_PV64QI_V64QI_UDI,
 	VOID_FTYPE_PV32HI_V32HI_USI, VOID_FTYPE_PV32QI_V32QI_USI,
 	VOID_FTYPE_PV16QI_V16QI_UHI, VOID_FTYPE_PV16HI_V16HI_UHI,
 	VOID_FTYPE_PV8HI_V8HI_UQI): New types.
-	config/i386/i386-builtin.def (__builtin_ia32_compressqi512_mask,
+	* config/i386/i386-builtin.def (__builtin_ia32_compressqi512_mask,
 	__builtin_ia32_compresshi512_mask, __builtin_ia32_compressqi256_mask,
 	__builtin_ia32_compressqi128_mask, __builtin_ia32_compresshi256_mask,
 	__builtin_ia32_compresshi128_mask,
@@ -119,12 +146,12 @@
 	__builtin_ia32_compressstoreuqi128_mask,
 	__builtin_ia32_compressstoreuhi256_mask,
 	__builtin_ia32_compressstoreuhi128_mask): New builtins.
-	config/i386/i386.c (ix86_init_mmx_sse_builtins): Create special args
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Create special args
 	array for flags2.
 	(ix86_expand_special_args_builtin): Handle new types.
 	(s4fma_expand): Handle new builtin array.
-	config/i386/immintrin.h: Include new headers.
-	config/i386/sse.md (VI12_AVX512VLBW): New iterator.
+	* config/i386/immintrin.h: Include new headers.
+	* config/i386/sse.md (VI12_AVX512VLBW): New iterator.
 	(compress<mode>_mask, compressstore<mode>_mask): New patterns.
 
 2017-11-23  Jakub Jelinek  <jakub@redhat.com>
@@ -1438,7 +1465,7 @@
 	* config/i386/i386.opt (mavx512vbmi2): New option.
 	* doc/invoke.texi: Add new option.
 
-[2017-11-16  Julia Koval  <julia.koval@intel.com>
+2017-11-16  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/gfniintrin.h (_mm_gf2p8mul_epi8, _mm256_gf2p8mul_epi8,
 	_mm_mask_gf2p8mul_epi8, _mm_maskz_gf2p8mul_epi8,
