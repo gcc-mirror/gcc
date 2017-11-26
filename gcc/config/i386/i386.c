@@ -142,6 +142,7 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_KNL (1U<<PROCESSOR_KNL)
 #define m_KNM (1U<<PROCESSOR_KNM)
 #define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
+#define m_CANNONLAKE (1U<<PROCESSOR_CANNONLAKE)
 #define m_INTEL (1U<<PROCESSOR_INTEL)
 
 #define m_GEODE (1U<<PROCESSOR_GEODE)
@@ -853,7 +854,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
   {"knm", &slm_cost, 16, 15, 16, 7, 16},
-  {"skylake-avx512", &core_cost, 16, 10, 16, 10, 16},
+  {"skylake-avx512", &skylake_cost, 16, 10, 16, 10, 16},
+  {"cannonlake", &core_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
   {"k6", &k6_cost, 32, 7, 32, 7, 32},
@@ -3444,6 +3446,8 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_SKYLAKE_AVX512 \
   (PTA_SKYLAKE | PTA_AVX512F | PTA_AVX512CD | PTA_AVX512VL \
    | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU)
+#define PTA_CANNONLAKE \
+  (PTA_SKYLAKE_AVX512 | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA | PTA_CLWB)
 #define PTA_KNL \
   (PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD)
 #define PTA_BONNELL \
@@ -3516,7 +3520,9 @@ ix86_option_override_internal (bool main_args_p,
       {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
       {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
-      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_SKYLAKE_AVX512},
+      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
+        PTA_SKYLAKE_AVX512},
+      {"cannonlake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_CANNONLAKE},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -31230,7 +31236,9 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_HASWELL:
 	    case PROCESSOR_SKYLAKE_AVX512:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VBMI)
+		arg_str = "cannonlake";
+	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
 	        arg_str = "skylake-avx512";
 	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
 	        arg_str = "skylake";
@@ -31952,7 +31960,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_HASWELL,
     M_INTEL_COREI7_BROADWELL,
     M_INTEL_COREI7_SKYLAKE,
-    M_INTEL_COREI7_SKYLAKE_AVX512
+    M_INTEL_COREI7_SKYLAKE_AVX512,
+    M_INTEL_COREI7_CANNONLAKE
   };
 
   static struct _arch_names_table
@@ -31976,6 +31985,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"broadwell", M_INTEL_COREI7_BROADWELL},
       {"skylake", M_INTEL_COREI7_SKYLAKE},
       {"skylake-avx512", M_INTEL_COREI7_SKYLAKE_AVX512},
+      {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},

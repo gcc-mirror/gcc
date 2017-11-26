@@ -793,24 +793,38 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  /* Kaby Lake.  */
 	  cpu = "skylake";
 	  break;
+	case 0x55:
+	  /* Skylake with AVX-512.  */
+	  cpu = "skylake-avx512";
+	  break;
 	case 0x57:
 	  /* Knights Landing.  */
 	  cpu = "knl";
 	  break;
+	case 0x66:
+	  /* Cannon Lake.  */
+	  cpu = "cannonlake";
+	  break;
 	case 0x85:
-	  /* Knights Mill. */
+	  /* Knights Mill.  */
 	  cpu = "knm";
 	  break;
 	default:
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
-	      /* Assume Knights Landing.  */
-	      if (has_avx512f)
-		cpu = "knl";
-	      /* Assume Knights Mill */
+	      /* Assume Cannon Lake.  */
+	      if (has_avx512vbmi)
+		cpu = "cannonlake";
+	      /* Assume Knights Mill.  */
 	      else if (has_avx5124vnniw)
 		cpu = "knm";
+	      /* Assume Knights Landing.  */
+	      else if (has_avx512er)
+		cpu = "knl";
+	      /* Assume Skylake with AVX-512.  */
+	      else if (has_avx512f)
+		cpu = "skylake-avx512";
 	      /* Assume Skylake.  */
 	      else if (has_clflushopt)
 		cpu = "skylake";

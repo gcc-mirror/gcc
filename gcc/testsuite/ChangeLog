@@ -1,3 +1,8 @@
+2017-11-26  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.dg/ext/mv16.C: Ditto.
+
 2017-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/81553
