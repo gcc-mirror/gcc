@@ -3219,7 +3219,7 @@ get_function_template_decl (const_tree primary_func_tmpl_inst)
 {
   if (! primary_func_tmpl_inst
       || TREE_CODE (primary_func_tmpl_inst) != FUNCTION_DECL
-      || ! primary_template_instantiation_p (primary_func_tmpl_inst))
+      || ! primary_template_specialization_p (primary_func_tmpl_inst))
     return NULL;
 
   return DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (primary_func_tmpl_inst));
@@ -3287,21 +3287,23 @@ make_ith_pack_parameter_name (tree name, int i)
 }
 
 /* Return true if T is a primary function, class or alias template
-   instantiation.  */
+   specialization, not including the template pattern.  */
 
 bool
-primary_template_instantiation_p (const_tree t)
+primary_template_specialization_p (const_tree t)
 {
   if (!t)
     return false;
 
-  if (TREE_CODE (t) == FUNCTION_DECL)
-    return DECL_LANG_SPECIFIC (t)
-	   && DECL_TEMPLATE_INSTANTIATION (t)
-	   && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t));
+  if (TREE_CODE (t) == FUNCTION_DECL || VAR_P (t))
+    return (DECL_LANG_SPECIFIC (t)
+	    && DECL_USE_TEMPLATE (t)
+	    && DECL_TEMPLATE_INFO (t)
+	    && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t)));
   else if (CLASS_TYPE_P (t) && !TYPE_DECL_ALIAS_P (TYPE_NAME (t)))
-    return CLASSTYPE_TEMPLATE_INSTANTIATION (t)
-	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t));
+    return (CLASSTYPE_TEMPLATE_INFO (t)
+	    && CLASSTYPE_USE_TEMPLATE (t)
+	    && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
   else if (alias_template_specialization_p (t))
     return true;
   return false;
@@ -3336,7 +3338,7 @@ get_primary_template_innermost_parameters (const_tree t)
   tree parms = NULL, template_info = NULL;
 
   if ((template_info = get_template_info (t))
-      && primary_template_instantiation_p (t))
+      && primary_template_specialization_p (t))
     parms = INNERMOST_TEMPLATE_PARMS
 	(DECL_TEMPLATE_PARMS (TI_TEMPLATE (template_info)));
 

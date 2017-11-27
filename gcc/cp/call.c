@@ -3895,7 +3895,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 		= bad_arg_conversion_rejection (NULL_TREE, -2,
 						rettype, totype);
 	    }
-	  else if (primary_template_instantiation_p (cand->fn)
+	  else if (primary_template_specialization_p (cand->fn)
 		   && ics->rank > cr_exact)
 	    {
 	      /* 13.3.3.1.2: If the user-defined conversion is specified by
@@ -6111,7 +6111,7 @@ aligned_deallocation_fn_p (tree t)
   /* A template instance is never a usual deallocation function,
      regardless of its signature.  */
   if (TREE_CODE (t) == TEMPLATE_DECL
-      || primary_template_instantiation_p (t))
+      || primary_template_specialization_p (t))
     return false;
 
   tree a = FUNCTION_ARG_CHAIN (t);
@@ -6136,7 +6136,7 @@ usual_deallocation_fn_p (tree t)
   /* A template instance is never a usual deallocation function,
      regardless of its signature.  */
   if (TREE_CODE (t) == TEMPLATE_DECL
-      || primary_template_instantiation_p (t))
+      || primary_template_specialization_p (t))
     return false;
 
   /* If a class T has a member deallocation function named operator delete

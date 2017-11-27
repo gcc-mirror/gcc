@@ -1,3 +1,10 @@
+2017-11-27  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (primary_template_specialization_p): Rename from
+	primary_template_instantiation_p.  Don't check
+	DECL_TEMPLATE_INSTANTIATION.
+	* call.c, cp-tree.h, decl2.c: Adjust.
+
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81675
