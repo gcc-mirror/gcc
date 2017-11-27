@@ -1,3 +1,8 @@
+2017-11-27  Stephan Bergmann  <sbergman@redhat.com>
+
+	* include/bits/unordered_map.h (unordered_map): Fix deduction guide.
+	* include/debug/unordered_map (unordered_map): Likewise.
+
 2017-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new (launder): Add nodiscard attribute.
