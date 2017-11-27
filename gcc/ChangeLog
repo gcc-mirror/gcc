@@ -1,3 +1,9 @@
+2017-11-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR middle_end/82333
+	* varasm.c (compare_constant): Take the mode of the constants into
+	account when comparing floating point constants.
+
 2017-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* hash-set.h (DEFINE_DEBUG_HASH_SET): Remove static qualifier
