@@ -395,7 +395,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
     }
 
   /* Check for an explicit unrolling factor.  */
-  if (loop->unroll)
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
     {
       /* However we cannot unroll completely at the RTL level a loop with
 	 constant number of iterations; it should have been peeled instead.  */
@@ -693,7 +693,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
 
-  if (loop->unroll)
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
     nunroll = loop->unroll;
 
   /* Skip big loops.  */
@@ -1177,7 +1177,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
 
-  if (loop->unroll)
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
     nunroll = loop->unroll;
 
   /* Skip big loops.  */

@@ -1,3 +1,10 @@
+2017-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgloop.h (struct loop): Document usage of USHRT_MAX for unroll.
+	* loop-unroll.c (decide_unroll_constant_iterations): Implement it.
+	(decide_unroll_runtime_iterations): Likewise.
+	(decide_unroll_stupid): Likewise.
+
 2017-11-27  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/83109

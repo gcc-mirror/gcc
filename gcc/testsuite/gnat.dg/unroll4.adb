@@ -1,7 +1,7 @@
 -- { dg-do compile }
--- { dg-options "-O -fdump-tree-cunroll-details" }
+-- { dg-options "-O -fdump-rtl-loop2_unroll-details" }
 
-package body Unroll3 is
+package body Unroll4 is
 
    function "+" (X, Y : Sarray) return Sarray is
       R : Sarray;
@@ -21,6 +21,6 @@ package body Unroll3 is
       end loop;
    end;
 
-end Unroll3;
+end Unroll4;
 
--- { dg-final { scan-tree-dump-times "note: loop with 3 iterations completely unrolled" 2 "cunroll" } }
+-- { dg-final { scan-rtl-dump-times "note: loop unrolled 7 times" 2 "loop2_unroll" } }
