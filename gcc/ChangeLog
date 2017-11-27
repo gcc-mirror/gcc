@@ -1,5 +1,28 @@
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/81307
+	* dbxout.c (lastlineno): New variable.
+	(dbx_debug_hooks): Use dbxout_switch_text_section as
+	switch_text_section debug hook.
+	(dbxout_function_end): Switch to current_function_section
+	rather than function_section.  If crtl->has_bb_partition,
+	output just one N_FUN, depending on in_cold_section_p.
+	(dbxout_source_line): Remember last lineno in lastlineno.
+	(dbxout_switch_text_section): New function.
+	(dbxout_function_decl): Adjust dbxout_block caller.
+	(dbx_block_with_cold_children): New function.
+	(dbxout_block): Return true if any LBRAC/RBRAC have been
+	emitted.  Use dbx_block_with_cold_children at depth == 0
+	in second partition.  Add PARENT_BLOCKNUM argument, pass
+	it optionally adjusted to children.  Output LBRAC/RBRAC
+	around recursive call only if the block is in the current
+	partition, if not and anything was output, emit empty
+	range LBRAC/RBRAC.
+	* final.c (final_scan_insn): Compute cold_function_name
+	before calling switch_text_section debug hook.  Call
+	that hook even if dwarf2out_do_frame if not emitting
+	dwarf debug info.
+
 	PR target/83100
 	* varasm.c (bss_initializer_p): Return true for DECL_COMMON
 	TREE_READONLY decls.
