@@ -1,3 +1,14 @@
+2017-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unroll1.ads: Remove alignment clause.
+	* gnat.dg/unroll2.ads: Likewise.
+	* gnat.dg/unroll3.ads: Likewise.
+	* gnat.dg/unroll1.adb: Remove bogus comment terminator.
+	* gnat.dg/unroll2.adb: Likewise.
+	* gnat.dg/unroll3.adb: Likewise.
+	* gnat.dg/unroll4.ad[sb]: New testcase.
+	* gnat.dg/unroll4_pkg.ads: New helper.
+
 2017-11-27  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/83109
