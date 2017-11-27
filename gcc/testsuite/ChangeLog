@@ -1,3 +1,10 @@
+2017-11-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/81248
+	* g++.dg/ipa/pr81248.C: New test.
+	* gcc.dg/tree-ssa/ssa-pre-31.c: Disable IPA-SRA.
+	* gcc/testsuite/gcc.dg/ipa/ipcp-cstagg-2.c: Likewise.
+
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ubsan/null-8.C (bar): New function.

@@ -1,3 +1,11 @@
+2017-11-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/81248
+	* tree-sra.c (splice_param_accesses): Remove size check.
+	(decide_one_param_reduction): Fix size check.
+	* gimple-pretty-print.c (dump_profile): Silence warning.
+	* params.def (PARAM_IPA_SRA_PTR_GROWTH_FACTOR): Adjust description.
+
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/81307
