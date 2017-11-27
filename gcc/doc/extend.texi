@@ -1045,7 +1045,7 @@ expressions are automatically promoted to @code{float}.
 
 The ARM target provides hardware support for conversions between
 @code{__fp16} and @code{float} values
-as an extension to VFP and NEON (Advanced SIMD), and from ARMv8 provides
+as an extension to VFP and NEON (Advanced SIMD), and from ARMv8-A provides
 hardware support for conversions between @code{__fp16} and @code{double}
 values.  GCC generates code using these hardware instructions if you
 compile with options to select an FPU that provides them;

@@ -15567,8 +15567,8 @@ entirely disabled by the @samp{+nofp} option that follows it.
 Most extension names are generically named, but have an effect that is
 dependent upon the architecture to which it is applied.  For example,
 the @samp{+simd} option can be applied to both @samp{armv7-a} and
-@samp{armv8-a} architectures, but will enable the original ARMv7
-Advanced SIMD (Neon) extensions for @samp{armv7-a} and the ARMv8-a
+@samp{armv8-a} architectures, but will enable the original ARMv7-A
+Advanced SIMD (Neon) extensions for @samp{armv7-a} and the ARMv8-A
 variant for @samp{armv8-a}.
 
 The table below lists the supported extensions for each architecture.
@@ -15709,7 +15709,7 @@ Disable the floating-point and Advanced SIMD instructions.
 @item +crc
 The Cyclic Redundancy Check (CRC) instructions.
 @item +simd
-The ARMv8 Advanced SIMD and floating-point instructions.
+The ARMv8-A Advanced SIMD and floating-point instructions.
 @item +crypto
 The cryptographic instructions.
 @item +nocrypto
@@ -15721,7 +15721,7 @@ Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @item armv8.1-a
 @table @samp
 @item +simd
-The ARMv8.1 Advanced SIMD and floating-point instructions.
+The ARMv8.1-A Advanced SIMD and floating-point instructions.
 
 @item +crypto
 The cryptographic instructions.  This also enables the Advanced SIMD and
@@ -15741,7 +15741,7 @@ The half-precision floating-point data processing instructions.
 This also enables the Advanced SIMD and floating-point instructions.
 
 @item +simd
-The ARMv8.1 Advanced SIMD and floating-point instructions.
+The ARMv8.1-A Advanced SIMD and floating-point instructions.
 
 @item +crypto
 The cryptographic instructions.  This also enables the Advanced SIMD and
@@ -15817,7 +15817,7 @@ The Cyclic Redundancy Check (CRC) instructions.
 @item +fp.sp
 The single-precision FPv5 floating-point instructions.
 @item +simd
-The ARMv8 Advanced SIMD and floating-point instructions.
+The ARMv8-A Advanced SIMD and floating-point instructions.
 @item +crypto
 The cryptographic instructions.
 @item +nocrypto
@@ -16236,9 +16236,9 @@ Divided syntax should be considered deprecated.
 
 @item -mrestrict-it
 @opindex mrestrict-it
-Restricts generation of IT blocks to conform to the rules of ARMv8.
+Restricts generation of IT blocks to conform to the rules of ARMv8-A.
 IT blocks can only contain a single 16-bit instruction from a select
-set of instructions. This option is on by default for ARMv8 Thumb mode.
+set of instructions. This option is on by default for ARMv8-A Thumb mode.
 
 @item -mprint-tune-info
 @opindex mprint-tune-info
