@@ -1,3 +1,8 @@
+2017-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81675
+	* g++.dg/warn/pr81675.C: New test.
+
 2017-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unroll1.ads: Remove alignment clause.
