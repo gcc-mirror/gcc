@@ -1,5 +1,8 @@
 2017-11-27  Stephan Bergmann  <sbergman@redhat.com>
 
+	* include/std/string_view (basic_string_view::find_first_of): Add
+	missing noexcept.
+
 	* include/bits/unordered_map.h (unordered_map): Fix deduction guide.
 	* include/debug/unordered_map (unordered_map): Likewise.
 
