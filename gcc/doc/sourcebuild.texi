@@ -1714,11 +1714,11 @@ Some multilibs may be incompatible with these options.
 
 @item arm_v8_1a_neon_ok
 @anchor{arm_v8_1a_neon_ok}
-ARM target supports options to generate ARMv8.1 Adv.SIMD instructions.
+ARM target supports options to generate ARMv8.1-A Adv.SIMD instructions.
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1a_neon_hw
-ARM target supports executing ARMv8.1 Adv.SIMD instructions.  Some
+ARM target supports executing ARMv8.1-A Adv.SIMD instructions.  Some
 multilibs may be incompatible with the options needed.  Implies
 arm_v8_1a_neon_ok.
 
@@ -1727,34 +1727,34 @@ ARM target supports acquire-release instructions.
 
 @item arm_v8_2a_fp16_scalar_ok
 @anchor{arm_v8_2a_fp16_scalar_ok}
-ARM target supports options to generate instructions for ARMv8.2 and
+ARM target supports options to generate instructions for ARMv8.2-A and
 scalar instructions from the FP16 extension.  Some multilibs may be
 incompatible with these options.
 
 @item arm_v8_2a_fp16_scalar_hw
-ARM target supports executing instructions for ARMv8.2 and scalar
+ARM target supports executing instructions for ARMv8.2-A and scalar
 instructions from the FP16 extension.  Some multilibs may be
 incompatible with these options.  Implies arm_v8_2a_fp16_neon_ok.
 
 @item arm_v8_2a_fp16_neon_ok
 @anchor{arm_v8_2a_fp16_neon_ok}
-ARM target supports options to generate instructions from ARMv8.2 with
+ARM target supports options to generate instructions from ARMv8.2-A with
 the FP16 extension.  Some multilibs may be incompatible with these
 options.  Implies arm_v8_2a_fp16_scalar_ok.
 
 @item arm_v8_2a_fp16_neon_hw
-ARM target supports executing instructions from ARMv8.2 with the FP16
+ARM target supports executing instructions from ARMv8.2-A with the FP16
 extension.  Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_fp16_neon_ok and arm_v8_2a_fp16_scalar_hw.
 
 @item arm_v8_2a_dotprod_neon_ok
 @anchor{arm_v8_2a_dotprod_neon_ok}
-ARM target supports options to generate instructions from ARMv8.2 with
+ARM target supports options to generate instructions from ARMv8.2-A with
 the Dot Product extension. Some multilibs may be incompatible with these
 options.
 
 @item arm_v8_2a_dotprod_neon_hw
-ARM target supports executing instructions from ARMv8.2 with the Dot
+ARM target supports executing instructions from ARMv8.2-A with the Dot
 Product extension. Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_dotprod_neon_ok.
 
@@ -2352,24 +2352,24 @@ arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
 
 @item arm_v8_1a_neon
-Add options for ARMv8.1 with Adv.SIMD support, if this is supported
+Add options for ARMv8.1-A with Adv.SIMD support, if this is supported
 by the target; see the @ref{arm_v8_1a_neon_ok,,arm_v8_1a_neon_ok}
 effective target keyword.
 
 @item arm_v8_2a_fp16_scalar
-Add options for ARMv8.2 with scalar FP16 support, if this is
+Add options for ARMv8.2-A with scalar FP16 support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_fp16_scalar_ok,,arm_v8_2a_fp16_scalar_ok} effective
 target keyword.
 
 @item arm_v8_2a_fp16_neon
-Add options for ARMv8.2 with Adv.SIMD FP16 support, if this is
+Add options for ARMv8.2-A with Adv.SIMD FP16 support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_fp16_neon_ok,,arm_v8_2a_fp16_neon_ok} effective target
 keyword.
 
 @item arm_v8_2a_dotprod_neon
-Add options for ARMv8.2 with Adv.SIMD Dot Product support, if this is
+Add options for ARMv8.2-A with Adv.SIMD Dot Product support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_dotprod_neon_ok} effective target keyword.
 

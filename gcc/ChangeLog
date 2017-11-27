@@ -1,3 +1,9 @@
+2017-11-27  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/extend.texi: Add -A suffix (ARMv8*-A, ARMv7-A).
+	* doc/invoke.texi: Add -A suffix (ARMv8*-A, ARMv7-A).
+	* doc/sourcebuild.texi: Add -A suffix (ARMv8*-A, ARMv7-A).
+
 2017-11-27  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* hash-map.h (gt_cleare_cache): Avoid UB.
