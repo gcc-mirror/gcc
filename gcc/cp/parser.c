@@ -13382,7 +13382,8 @@ cp_parser_decomposition_declaration (cp_parser *parser,
       if (initializer == NULL_TREE
 	  || (TREE_CODE (initializer) == TREE_LIST
 	      && TREE_CHAIN (initializer))
-	  || (TREE_CODE (initializer) == CONSTRUCTOR
+	  || (is_direct_init
+	      && BRACE_ENCLOSED_INITIALIZER_P (initializer)
 	      && CONSTRUCTOR_NELTS (initializer) != 1))
 	{
 	  error_at (loc, "invalid initializer for structured binding "
