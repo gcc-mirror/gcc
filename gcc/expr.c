@@ -4100,10 +4100,13 @@ fixup_args_size_notes (rtx_insn *prev, rtx_insn *last, int end_args_size)
       if (STACK_GROWS_DOWNWARD)
 	this_delta = -(unsigned HOST_WIDE_INT) this_delta;
 
-      args_size -= this_delta;
+      if (saw_unknown)
+	args_size = INT_MIN;
+      else
+	args_size -= this_delta;
     }
 
-  return saw_unknown ? INT_MIN : args_size;
+  return args_size;
 }
 
 #ifdef PUSH_ROUNDING
