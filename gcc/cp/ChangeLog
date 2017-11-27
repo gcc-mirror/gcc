@@ -1,3 +1,139 @@
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* Make-lang.in (c++.install-plugin): Install backend import library.
+
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_declare): Change return type to bool from
+	void, return true for declare simd.
+	(cp_parser_pragma): Return cp_parser_omp_declare returned value
+	rather than always false.
+
+2017-11-23  Mike Stump  <mikestump@comcast.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* pt.c (tsubst_expr) <ANNOTATE_EXPR>: Recurse on 3rd operand.
+	* semantics.c (finish_while_stmt_cond): Pass 3rd operand to
+	ANNOTATE_EXPR.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82401
+	* name-lookup.c (member_name_cmp): Return 0 if a == b.
+
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* error.c (type_to_string): Add leading comment.  Add params
+	"postprocessed", "quote", and "show_color", using them to fix
+	quoting of the "aka" for types involving typedefs.
+	(arg_to_string): Update for new params to type_to_string.
+	(cxx_format_postprocessor::handle): Likewise.
+	(cp_printer): Convert penultimate param from bool to bool *.
+	Update call to type_to_string and calls to
+	defer_phase_2_of_type_diff.
+
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* class.c (layout_class_type): Set DECL_PADDING_P on padding.
+	* decl.c (cxx_init_decl_processing): Set TRANSLATION_UNIT_WARN_EMPTY_P.
+	(grokdeclarator): Set DECL_PADDING_P on unnamed bit-fields.
+
+2017-11-21  Martin Liska  <mliska@suse.cz>
+
+	* class.c (finalize_literal_type_property): Add quotes for
+	constexpr keyword.
+	(explain_non_literal_class): Likewise.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Likewise.
+	(is_valid_constexpr_fn): Likewise.
+	(check_constexpr_ctor_body): Likewise.
+	(register_constexpr_fundef): Likewise.
+	(explain_invalid_constexpr_fn): Likewise.
+	(cxx_eval_builtin_function_call): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	(cxx_eval_loop_expr): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* decl.c (check_previous_goto_1): Likewise.
+	(check_goto): Likewise.
+	(grokfndecl): Likewise.
+	(grokdeclarator): Likewise.
+	* error.c (maybe_print_constexpr_context): Likewise.
+	* method.c (process_subob_fn): Likewise.
+	(defaulted_late_check): Likewise.
+	* parser.c (cp_parser_compound_statement): Likewise.
+
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* constexpr.c (cxx_eval_constant_expression,
+	potential_constant_expression_1): Handle POINTER_DIFF_EXPR.
+	* cp-gimplify.c (cp_fold): Likewise.
+	* error.c (dump_expr): Likewise.
+	* typeck.c (pointer_diff): Use POINTER_DIFF_EXPR.
+
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	P0428R2 - familiar template syntax for generic lambdas
+	* parser.c (cp_parser_lambda_declarator_opt): Don't pedwarn
+	for cxx2a and above, reword pedwarn for C++14/C++17.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81404
+	* name-lookup.c: Include "c-family/known-headers.h"
+	(lookup_name_fuzzy): Call get_cp_stdlib_header_for_name and
+	potentially return a new suggest_missing_header hint.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72786
+	* name-lookup.c (class macro_use_before_def): New class.
+	(lookup_name_fuzzy): Detect macro that were used before being
+	defined, and report them as such.
+
+2017-11-20  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (constrain_class_visibility): Don't warn about artificial
+	fields.
+
+2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0329R4: Designated Initialization
+	* parser.c (cp_parser_initializer_clause): List in comment grammar
+	designated-initializer-list.
+	(cp_parser_initializer_list): Allow .identifier = without pedwarn for
+	C++2A, parse .identifier { ... }.  Improve location_t argument to
+	pedwarn.  Add pedwarn for [cst] = designators.  Diagnose ... in
+	designated initializer list.  Diagnose mixing designated and
+	non-designated initializer clauses for C++2A.  Diagnose duplicated
+	identifiers in designators.
+	* name-lookup.h (search_anon_aggr): New declaration.
+	* name-lookup.c (fields_linear_search): Use search_anon_aggr.
+	(search_anon_aggr): New function.
+	* typeck2.c (process_init_constructor_record): Allow designator
+	to skip over some non-static data members.  Handle anonymous
+	aggregates.  Add diagnostics for designator order not matching
+	member declaration order.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(suggest_alternatives_for): Convert "fuzzy_name" from const char *
+	to name_hint, and rename to "hint".  Pass location to
+	lookup_name_fuzzy.
+	(lookup_name_fuzzy): Convert return type from const char *
+	to name_hint.  Add location_t param.
+	* parser.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(cp_parser_diagnose_invalid_type_name): Convert
+	"suggestion" from const char * to name_hint, and rename to "hint".
+	Pass location to lookup_name_fuzzy.
+
 2017-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/82878

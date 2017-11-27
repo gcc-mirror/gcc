@@ -2338,7 +2338,7 @@
 ;; 'across lanes' max and min ops.
 
 ;; Template for outputting a scalar, so we can create __builtins which can be
-;; gimple_fold'd to the REDUC_(MAX|MIN)_EXPR tree code.  (This is FP smax/smin).
+;; gimple_fold'd to the IFN_REDUC_(MAX|MIN) function.  (This is FP smax/smin).
 (define_expand "reduc_<maxmin_uns>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
    (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")]

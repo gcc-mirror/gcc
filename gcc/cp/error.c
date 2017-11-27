@@ -57,7 +57,7 @@ static const char *expr_to_string (tree);
 static const char *fndecl_to_string (tree, int);
 static const char *op_to_string	(bool, enum tree_code);
 static const char *parm_to_string (int);
-static const char *type_to_string (tree, int);
+static const char *type_to_string (tree, int, bool, bool *, bool);
 
 static void dump_alias_template_specialization (cxx_pretty_printer *, tree, int);
 static void dump_type (cxx_pretty_printer *, tree, int);
@@ -99,7 +99,7 @@ static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
-			int, bool, bool, bool, bool, const char **);
+			int, bool, bool, bool, bool *, const char **);
 
 /* Struct for handling %H or %I, which require delaying printing the
    type until a postprocessing stage.  */
@@ -2246,6 +2246,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_binary_op (pp, "+", t, flags);
       break;
 
+    case POINTER_DIFF_EXPR:
+      dump_binary_op (pp, "-", t, flags);
+      break;
+
     case INIT_EXPR:
     case MODIFY_EXPR:
       dump_binary_op (pp, OVL_OP_INFO (true, NOP_EXPR)->name, t, flags);
@@ -3159,8 +3163,28 @@ op_to_string (bool assop, enum tree_code p)
   return id ? IDENTIFIER_POINTER (id) : M_("<unknown>");
 }
 
+/* Return a GC-allocated representation of type TYP, with verbosity VERBOSE.
+
+   If QUOTE is non-NULL and if *QUOTE is true, then quotes are added to the
+   string in appropriate places, and *QUOTE is written to with false
+   to suppress pp_format's trailing close quote so that e.g.
+     foo_typedef {aka underlying_foo} {enum}
+   can be printed by "%qT" as:
+     `foo_typedef' {aka `underlying_foo'} {enum}
+   rather than:
+     `foo_typedef {aka underlying_foo} {enum}'
+   When adding such quotes, if POSTPROCESSED is true (for handling %H and %I)
+   then a leading open quote will be added, whereas if POSTPROCESSED is false
+   (for handling %T) then any leading quote has already been added by
+   pp_format, or is not needed due to QUOTE being NULL (for template arguments
+   within %H and %I).
+
+   SHOW_COLOR is used to determine the colorization of any quotes that
+   are added.  */
+
 static const char *
-type_to_string (tree typ, int verbose)
+type_to_string (tree typ, int verbose, bool postprocessed, bool *quote,
+		bool show_color)
 {
   int flags = 0;
   if (verbose)
@@ -3168,7 +3192,19 @@ type_to_string (tree typ, int verbose)
   flags |= TFF_TEMPLATE_HEADER;
 
   reinit_cxx_pp ();
+
+  if (postprocessed && quote && *quote)
+    pp_begin_quote (cxx_pp, show_color);
+
+  struct obstack *ob = pp_buffer (cxx_pp)->obstack;
+  int type_start, type_len;
+  type_start = obstack_object_size (ob);
+
   dump_type (cxx_pp, typ, flags);
+
+  /* Remember the end of the initial dump.  */
+  type_len = obstack_object_size (ob) - type_start;
+
   /* If we're printing a type that involves typedefs, also print the
      stripped version.  But sometimes the stripped version looks
      exactly the same, so we don't want it after all.  To avoid printing
@@ -3177,21 +3213,44 @@ type_to_string (tree typ, int verbose)
       && !uses_template_parms (typ))
     {
       int aka_start, aka_len; char *p;
-      struct obstack *ob = pp_buffer (cxx_pp)->obstack;
-      /* Remember the end of the initial dump.  */
-      int len = obstack_object_size (ob);
       tree aka = strip_typedefs (typ);
+      if (quote && *quote)
+	pp_end_quote (cxx_pp, show_color);
       pp_string (cxx_pp, " {aka");
       pp_cxx_whitespace (cxx_pp);
+      if (quote && *quote)
+	pp_begin_quote (cxx_pp, show_color);
       /* And remember the start of the aka dump.  */
       aka_start = obstack_object_size (ob);
       dump_type (cxx_pp, aka, flags);
       aka_len = obstack_object_size (ob) - aka_start;
+      if (quote && *quote)
+	pp_end_quote (cxx_pp, show_color);
       pp_right_brace (cxx_pp);
       p = (char*)obstack_base (ob);
-      /* If they are identical, cut off the aka with a NUL.  */
-      if (len == aka_len && memcmp (p, p+aka_start, len) == 0)
-	p[len] = '\0';
+      /* If they are identical, cut off the aka by unwinding the obstack.  */
+      if (type_len == aka_len
+	  && memcmp (p + type_start, p+aka_start, type_len) == 0)
+	{
+	  /* We can't add a '\0' here, since we may be adding a closing quote
+	     below, and it would be hidden by the '\0'.
+	     Instead, manually unwind the current object within the obstack
+	     so that the insertion point is at the end of the type, before
+	     the "' {aka".  */
+	  int delta = type_start + type_len - obstack_object_size (ob);
+	  gcc_assert (delta <= 0);
+	  obstack_blank_fast (ob, delta);
+	}
+      else
+	if (quote)
+	  /* No further closing quotes are needed.  */
+	  *quote = false;
+    }
+
+  if (quote && *quote)
+    {
+      pp_end_quote (cxx_pp, show_color);
+      *quote = false;
     }
   return pp_ggc_formatted_text (cxx_pp);
 }
@@ -3603,11 +3662,11 @@ maybe_print_constexpr_context (diagnostic_context *context)
       const char *s = expr_as_string (t, 0);
       if (context->show_column)
 	pp_verbatim (context->printer,
-		     _("%r%s:%d:%d:%R   in constexpr expansion of %qs"),
+		     _("%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, xloc.column, s);
       else
 	pp_verbatim (context->printer,
-		     _("%r%s:%d:%R   in constexpr expansion of %qs"),
+		     _("%r%s:%d:%R   in %<constexpr%> expansion of %qs"),
 		     "locus", xloc.file, xloc.line, s);
       pp_newline (context->printer);
     }
@@ -3649,7 +3708,7 @@ static const char *
 arg_to_string (tree arg, bool verbose)
 {
   if (TYPE_P (arg))
-    return type_to_string (arg, verbose);
+    return type_to_string (arg, verbose, true, NULL, false);
   else
     return expr_to_string (arg);
 }
@@ -3939,10 +3998,13 @@ cxx_format_postprocessor::handle (pretty_printer *pp)
 	}
       else
 	{
-	  /* If the types were not comparable, they are printed normally,
-	     and no difference tree is printed.  */
-	  type_a_text = type_to_string (type_a.m_tree, type_a.m_verbose);
-	  type_b_text = type_to_string (type_b.m_tree, type_b.m_verbose);
+	  /* If the types were not comparable (or if only one of %H/%I was
+	     provided), they are printed normally, and no difference tree
+	     is printed.  */
+	  type_a_text = type_to_string (type_a.m_tree, type_a.m_verbose,
+					true, &type_a.m_quote, show_color);
+	  type_b_text = type_to_string (type_b.m_tree, type_b.m_verbose,
+					true, &type_b.m_quote, show_color);
 	}
 
       if (type_a.m_quote)
@@ -4015,7 +4077,7 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose,
-	    bool quoted, const char **buffer_ptr)
+	    bool *quoted, const char **buffer_ptr)
 {
   gcc_assert (pp->m_format_postprocessor);
   cxx_format_postprocessor *postprocessor
@@ -4058,7 +4120,12 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'P': result = parm_to_string (next_int);		break;
     case 'Q': result = op_to_string (true, next_tcode);		break;
     case 'S': result = subst_to_string (next_tree);		break;
-    case 'T': result = type_to_string (next_tree, verbose);	break;
+    case 'T':
+      {
+	result = type_to_string (next_tree, verbose, false, quoted,
+				 pp_show_color (pp));
+      }
+      break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
     case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
 
@@ -4074,14 +4141,14 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'H':
       {
 	defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
-				    buffer_ptr, verbose, quoted);
+				    buffer_ptr, verbose, *quoted);
 	return true;
       }
 
     case 'I':
       {
 	defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
-				    buffer_ptr, verbose, quoted);
+				    buffer_ptr, verbose, *quoted);
 	return true;
       }
 

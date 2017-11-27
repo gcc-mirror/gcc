@@ -2757,7 +2757,14 @@ func (gccgoToolchain) pack(b *Builder, p *load.Package, objDir, afile string, of
 	absAfile := mkAbs(objDir, afile)
 	// Try with D modifier first, then without if that fails.
 	if b.run(p.Dir, p.ImportPath, nil, "ar", "rcD", absAfile, absOfiles) != nil {
-		return b.run(p.Dir, p.ImportPath, nil, "ar", "rc", absAfile, absOfiles)
+		if cfg.Goos == "aix" && cfg.Goarch == "ppc64" {
+			// AIX puts both 32-bit and 64-bit objects in the same archive.
+			// Tell the AIX "ar" command to only care about 64-bit objects.
+			// AIX "ar" command does not know D option.
+			return b.run(p.Dir, p.ImportPath, nil, "ar", "-X64", "rc", absAfile, absOfiles)
+		} else {
+			return b.run(p.Dir, p.ImportPath, nil, "ar", "rc", absAfile, absOfiles)
+		}
 	}
 	return nil
 }

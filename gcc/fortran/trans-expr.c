@@ -8131,6 +8131,8 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 	    {
 	      vptr_expr = NULL;
 	      se.expr = gfc_class_vptr_get (rse->expr);
+	      if (UNLIMITED_POLY (re))
+		from_len = gfc_class_len_get (rse->expr);
 	    }
 	  else if (re->expr_type != EXPR_NULL)
 	    /* Only when rhs is non-NULL use its declared type for vptr

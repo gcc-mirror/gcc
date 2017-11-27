@@ -1859,6 +1859,9 @@ finalize_type_size (tree type)
 	  SET_TYPE_MODE (variant, mode);
 	}
     }
+
+  /* Handle empty records as per the x86-64 psABI.  */
+  TYPE_EMPTY_P (type) = targetm.calls.empty_record_p (type);
 }
 
 /* Return a new underlying object for a bitfield started with FIELD.  */

@@ -142,6 +142,7 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_KNL (1U<<PROCESSOR_KNL)
 #define m_KNM (1U<<PROCESSOR_KNM)
 #define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
+#define m_CANNONLAKE (1U<<PROCESSOR_CANNONLAKE)
 #define m_INTEL (1U<<PROCESSOR_INTEL)
 
 #define m_GEODE (1U<<PROCESSOR_GEODE)
@@ -853,7 +854,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
   {"knm", &slm_cost, 16, 15, 16, 7, 16},
-  {"skylake-avx512", &core_cost, 16, 10, 16, 10, 16},
+  {"skylake-avx512", &skylake_cost, 16, 10, 16, 10, 16},
+  {"cannonlake", &core_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
   {"k6", &k6_cost, 32, 7, 32, 7, 32},
@@ -2847,15 +2849,13 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mstv",				MASK_STV },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD },
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE },
-    { "-mprefer-avx128",		MASK_PREFER_AVX128 },
     { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES }
   };
 
   /* Additional flag options.  */
   static struct ix86_target_opts flag2_opts[] =
   {
-    { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY },
-    { "-mprefer-avx256",		OPTION_MASK_PREFER_AVX256 },
+    { "-mgeneral-regs-only",		OPTION_MASK_GENERAL_REGS_ONLY }
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (isa2_opts)
@@ -3280,7 +3280,7 @@ parse_mtune_ctrl_str (bool dump)
             }
         }
       if (i == X86_TUNE_LAST)
-        error ("Unknown parameter to option -mtune-ctrl: %s",
+        error ("unknown parameter to option -mtune-ctrl: %s",
                clear ? curr_feature_string - 1 : curr_feature_string);
       curr_feature_string = next_feature_string;
     }
@@ -3446,6 +3446,8 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_SKYLAKE_AVX512 \
   (PTA_SKYLAKE | PTA_AVX512F | PTA_AVX512CD | PTA_AVX512VL \
    | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU)
+#define PTA_CANNONLAKE \
+  (PTA_SKYLAKE_AVX512 | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA | PTA_CLWB)
 #define PTA_KNL \
   (PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD)
 #define PTA_BONNELL \
@@ -3518,7 +3520,9 @@ ix86_option_override_internal (bool main_args_p,
       {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
       {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
       {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
-      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_SKYLAKE_AVX512},
+      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
+        PTA_SKYLAKE_AVX512},
+      {"cannonlake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_CANNONLAKE},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -4686,16 +4690,18 @@ ix86_option_override_internal (bool main_args_p,
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+
   /* Enable 128-bit AVX instruction generation
      for the auto-vectorizer.  */
   if (TARGET_AVX128_OPTIMAL
-      && !(opts_set->x_target_flags & MASK_PREFER_AVX128))
-    opts->x_target_flags |= MASK_PREFER_AVX128;
-  /* Use 256-bit AVX instructions instead of 512-bit AVX instructions
+      && (opts_set->x_prefer_vector_width_type == PVW_NONE))
+    opts->x_prefer_vector_width_type = PVW_AVX128;
+
+  /* Use 256-bit AVX instruction generation
      in the auto-vectorizer.  */
   if (ix86_tune_features[X86_TUNE_AVX256_OPTIMAL]
-      && !(opts_set->x_ix86_target_flags & OPTION_MASK_PREFER_AVX256))
-    opts->x_ix86_target_flags |= OPTION_MASK_PREFER_AVX256;
+      && (opts_set->x_prefer_vector_width_type == PVW_NONE))
+    opts->x_prefer_vector_width_type = PVW_AVX256;
 
   if (opts->x_ix86_recip_name)
     {
@@ -7195,6 +7201,26 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   cum->bnds_in_bt = 0;
   cum->force_bnd_pass = 0;
   cum->decl = fndecl;
+
+  cum->warn_empty = !warn_abi || cum->stdarg;
+  if (!cum->warn_empty && fntype)
+    {
+      function_args_iterator iter;
+      tree argtype;
+      bool seen_empty_type = false;
+      FOREACH_FUNCTION_ARGS (fntype, argtype, iter)
+	{
+	  if (VOID_TYPE_P (argtype))
+	    break;
+	  if (TYPE_EMPTY_P (argtype))
+	    seen_empty_type = true;
+	  else if (seen_empty_type)
+	    {
+	      cum->warn_empty = true;
+	      break;
+	    }
+	}
+    }
 
   if (!TARGET_64BIT)
     {
@@ -9883,7 +9909,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
   if (indirect_p)
     type = build_pointer_type (type);
-  size = int_size_in_bytes (type);
+  size = arg_int_size_in_bytes (type);
   rsize = CEIL (size, UNITS_PER_WORD);
 
   nat_mode = type_natural_mode (type, NULL, false);
@@ -28847,6 +28873,46 @@ ix86_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
+/* Implement TARGET_EMPTY_RECORD_P.  */
+
+static bool
+ix86_is_empty_record (const_tree type)
+{
+  if (!TARGET_64BIT)
+    return false;
+  return default_is_empty_record (type);
+}
+
+/* Implement TARGET_WARN_PARAMETER_PASSING_ABI.  */
+
+static void
+ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
+{
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
+  if (!cum->warn_empty)
+    return;
+
+  if (!TYPE_EMPTY_P (type))
+    return;
+
+  const_tree ctx = get_ultimate_context (cum->decl);
+  if (ctx != NULL_TREE
+      && !TRANSLATION_UNIT_WARN_EMPTY_P (ctx))
+    return;
+
+  /* If the actual size of the type is zero, then there is no change
+     in how objects of this size are passed.  */
+  if (int_size_in_bytes (type) == 0)
+    return;
+
+  warning (OPT_Wabi, "empty class %qT parameter passing ABI "
+	   "changes in -fabi-version=12 (GCC 8)", type);
+
+  /* Only warn once.  */
+  cum->warn_empty = false;
+}
+
 /* Compute the alignment for a variable for Intel MCU psABI.  TYPE is
    the data type, and ALIGN is the alignment that the object would
    ordinarily have.  */
@@ -30102,8 +30168,10 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ROUND_ARGS_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
+	       IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -30163,12 +30231,31 @@ ix86_init_mmx_sse_builtins (void)
        i < ARRAY_SIZE (bdesc_args2);
        i++, d++)
     {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_ARGS2_FIRST, i);
       if (d->name == 0)
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
       def_builtin_const2 (d->mask, d->name, ftype, d->code);
     }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_LAST,
+		 IX86_BUILTIN__BDESC_ARGS2_FIRST,
+		 ARRAY_SIZE (bdesc_args2) - 1);
+  
+  for (i = 0, d = bdesc_special_args2;
+       i < ARRAY_SIZE (bdesc_special_args2);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST, i);
+       if (d->name == 0)
+	 continue;
+
+	ftype = (enum ix86_builtin_func_type) d->flag;
+	def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST,
+		 IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
+		 ARRAY_SIZE (bdesc_special_args2) - 1);
 
   /* Add all builtins with rounding.  */
   for (i = 0, d = bdesc_round_args;
@@ -31149,7 +31236,9 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_HASWELL:
 	    case PROCESSOR_SKYLAKE_AVX512:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VBMI)
+		arg_str = "cannonlake";
+	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
 	        arg_str = "skylake-avx512";
 	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_XSAVES)
 	        arg_str = "skylake";
@@ -31871,7 +31960,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_HASWELL,
     M_INTEL_COREI7_BROADWELL,
     M_INTEL_COREI7_SKYLAKE,
-    M_INTEL_COREI7_SKYLAKE_AVX512
+    M_INTEL_COREI7_SKYLAKE_AVX512,
+    M_INTEL_COREI7_CANNONLAKE
   };
 
   static struct _arch_names_table
@@ -31895,6 +31985,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"broadwell", M_INTEL_COREI7_BROADWELL},
       {"skylake", M_INTEL_COREI7_SKYLAKE},
       {"skylake-avx512", M_INTEL_COREI7_SKYLAKE_AVX512},
+      {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},
@@ -34744,6 +34835,12 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PV16SI_V16SI_UHI:
     case VOID_FTYPE_PV8SI_V8SI_UQI:
     case VOID_FTYPE_PV4SI_V4SI_UQI:
+    case VOID_FTYPE_PV64QI_V64QI_UDI:
+    case VOID_FTYPE_PV32HI_V32HI_USI:
+    case VOID_FTYPE_PV32QI_V32QI_USI:
+    case VOID_FTYPE_PV16QI_V16QI_UHI:
+    case VOID_FTYPE_PV16HI_V16HI_UHI:
+    case VOID_FTYPE_PV8HI_V8HI_UQI:
       switch (icode)
 	{
 	/* These builtins and instructions require the memory
@@ -34827,6 +34924,12 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_PCV2DI_V2DI_UQI:
     case V4DI_FTYPE_PCV4DI_V4DI_UQI:
     case V8DI_FTYPE_PCV8DI_V8DI_UQI:
+    case V64QI_FTYPE_PCV64QI_V64QI_UDI:
+    case V32HI_FTYPE_PCV32HI_V32HI_USI:
+    case V32QI_FTYPE_PCV32QI_V32QI_USI:
+    case V16QI_FTYPE_PCV16QI_V16QI_UHI:
+    case V16HI_FTYPE_PCV16HI_V16HI_UHI:
+    case V8HI_FTYPE_PCV8HI_V8HI_UQI:
       switch (icode)
 	{
 	/* These builtins and instructions require the memory
@@ -37341,6 +37444,14 @@ s4fma_expand:
 	  default:
 	    return ix86_expand_args_builtin (bdesc_args2 + i, exp, target);
 	  }
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST;
+      return ix86_expand_special_args_builtin (bdesc_special_args2 + i, exp,
+					       target);
     }
 
   if (fcode >= IX86_BUILTIN__BDESC_COMI_FIRST
@@ -49066,7 +49177,7 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
       || ((val & IX86_HLE_ACQUIRE) && (val & IX86_HLE_RELEASE)))
     {
       warning (OPT_Winvalid_memory_model,
-	       "Unknown architecture specific memory model");
+	       "unknown architecture specific memory model");
       return MEMMODEL_SEQ_CST;
     }
   strong = (is_mm_acq_rel (model) || is_mm_seq_cst (model));
@@ -50573,6 +50684,12 @@ ix86_run_selftests (void)
 #define TARGET_STATIC_RTX_ALIGNMENT ix86_static_rtx_alignment
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT ix86_constant_alignment
+
+#undef TARGET_EMPTY_RECORD_P
+#define TARGET_EMPTY_RECORD_P ix86_is_empty_record
+
+#undef TARGET_WARN_PARAMETER_PASSING_ABI
+#define TARGET_WARN_PARAMETER_PASSING_ABI ix86_warn_parameter_passing_abi
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

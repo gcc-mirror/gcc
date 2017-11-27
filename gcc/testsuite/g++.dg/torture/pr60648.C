@@ -51,7 +51,7 @@ inline component fn2 (direction p1)
     case P:
       return component (3);
     }
-}
+}	// { dg-warning "control reaches end of non-void function" }
 
 void fn3 ()
 {

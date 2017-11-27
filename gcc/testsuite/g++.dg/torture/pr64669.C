@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-return-type" }
+
 typedef unsigned int source_location;
 typedef source_location location_t;
 extern void error_at (location_t, const char *, ...)

@@ -340,7 +340,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 		  && edge->caller->global.inlined_to->frequency
 		     != NODE_FREQUENCY_UNLIKELY_EXECUTED)))
 	  d->maybe_unlikely_executed = false;
-      if (!edge->frequency ())
+      if (edge->count.initialized_p () && !edge->count.nonzero_p ())
 	continue;
       switch (edge->caller->frequency)
         {

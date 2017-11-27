@@ -1087,6 +1087,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	{
 	  compare_values (DECL_PACKED);
 	  compare_values (DECL_NONADDRESSABLE_P);
+	  compare_values (DECL_PADDING_P);
 	  compare_values (DECL_OFFSET_ALIGN);
 	}
       else if (code == VAR_DECL)
@@ -1165,6 +1166,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	compare_values (TYPE_NONALIASED_COMPONENT);
       if (AGGREGATE_TYPE_P (t1))
 	compare_values (TYPE_TYPELESS_STORAGE);
+      compare_values (TYPE_EMPTY_P);
       compare_values (TYPE_PACKED);
       compare_values (TYPE_RESTRICT);
       compare_values (TYPE_USER_ALIGN);

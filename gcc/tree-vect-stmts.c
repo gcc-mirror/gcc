@@ -5265,10 +5265,12 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 
   code = gimple_assign_rhs_code (stmt);
 
-  /* For pointer addition, we should use the normal plus for
-     the vector addition.  */
+  /* For pointer addition and subtraction, we should use the normal
+     plus and minus for the vector operation.  */
   if (code == POINTER_PLUS_EXPR)
     code = PLUS_EXPR;
+  if (code == POINTER_DIFF_EXPR)
+    code = MINUS_EXPR;
 
   /* Support only unary or binary operations.  */
   op_type = TREE_CODE_LENGTH (code);

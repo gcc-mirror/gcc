@@ -986,9 +986,9 @@ decode_reg_name (const char *name)
 bool
 bss_initializer_p (const_tree decl)
 {
-  /* Do not put constants into the .bss section, they belong in a readonly
-     section.  */
-  return (!TREE_READONLY (decl)
+  /* Do not put non-common constants into the .bss section, they belong in
+     a readonly section.  */
+  return ((!TREE_READONLY (decl) || DECL_COMMON (decl))
 	  && (DECL_INITIAL (decl) == NULL
 	      /* In LTO we have no errors in program; error_mark_node is used
 	         to mark offlined constructors.  */
@@ -4615,6 +4615,7 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	}
       return ret;
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       if (TREE_CODE (endtype) == REAL_TYPE)
 	return NULL_TREE;

@@ -79,12 +79,6 @@ namespace __detail
       return __distance_fw(__first, __last, _Tag());
     }
 
-  // Helper type used to detect whether the hash functor is noexcept.
-  template <typename _Key, typename _Hash>
-    struct __is_noexcept_hash : std::__bool_constant<
-	noexcept(declval<const _Hash&>()(declval<const _Key&>()))>
-    { };
-
   struct _Identity
   {
     template<typename _Tp>

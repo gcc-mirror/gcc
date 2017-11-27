@@ -702,6 +702,14 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    emitted.  */
 #define TREE_NO_WARNING(NODE) ((NODE)->base.nowarning_flag)
 
+/* Nonzero if we should warn about the change in empty class parameter
+   passing ABI in this TU.  */
+#define TRANSLATION_UNIT_WARN_EMPTY_P(NODE) \
+  (TRANSLATION_UNIT_DECL_CHECK (NODE)->decl_common.decl_flag_0)
+
+/* Nonzero if this type is "empty" according to the particular psABI.  */
+#define TYPE_EMPTY_P(NODE) (TYPE_CHECK (NODE)->type_common.empty_flag)
+
 /* Used to indicate that this TYPE represents a compiler-generated entity.  */
 #define TYPE_ARTIFICIAL(NODE) (TYPE_CHECK (NODE)->base.nowarning_flag)
 
@@ -2625,6 +2633,10 @@ extern void decl_value_expr_insert (tree, tree);
 #define DECL_NONADDRESSABLE_P(NODE) \
   (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_2)
 
+/* Used in a FIELD_DECL to indicate that this field is padding.  */
+#define DECL_PADDING_P(NODE) \
+  (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_3)
+
 /* A numeric unique identifier for a LABEL_DECL.  The UID allocation is
    dense, unique within any one function, and may be used to index arrays.
    If the value is -1, then no UID has been assigned.  */
@@ -4521,6 +4533,10 @@ storage_order_barrier_p (const_tree t)
 
 extern tree get_containing_scope (const_tree);
 
+/* Returns the ultimate TRANSLATION_UNIT_DECL context of DECL or NULL.  */
+
+extern const_tree get_ultimate_context (const_tree);
+
 /* Return the FUNCTION_DECL which provides this _DECL with its context,
    or zero if none.  */
 extern tree decl_function_context (const_tree);
@@ -5444,6 +5460,9 @@ extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
 extern bool is_redundant_typedef (const_tree);
+extern bool default_is_empty_record (const_tree);
+extern HOST_WIDE_INT arg_int_size_in_bytes (const_tree);
+extern tree arg_size_in_bytes (const_tree);
 
 extern location_t
 set_source_range (tree expr, location_t start, location_t finish);

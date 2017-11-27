@@ -57,6 +57,7 @@ MAKEOVERRIDES =
 build=@build@
 host=@host@
 host_noncanonical=@host_noncanonical@
+host_os=@host_os@
 target=@target@
 target_noncanonical:=@target_noncanonical@
 
@@ -392,6 +393,11 @@ PLUGINCFLAGS = @CXXFLAGS@
 PLUGINLIBS = @pluginlibs@
 
 enable_plugin = @enable_plugin@
+
+# On MinGW plugin installation involves installing import libraries.
+ifeq ($(enable_plugin),yes)
+  plugin_implib := $(if $(strip $(filter mingw%,$(host_os))),yes,no)
+endif
 
 enable_host_shared = @enable_host_shared@
 
@@ -1195,7 +1201,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-cilkplus.o \
   c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
-  c-family/c-attribs.o c-family/c-warn.o
+  c-family/c-attribs.o c-family/c-warn.o c-family/known-headers.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
@@ -1306,6 +1312,7 @@ OBJS = \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-evrp.o \
+	gimple-ssa-evrp-analyze.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
@@ -2831,11 +2838,15 @@ $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o 
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # Generated source files for gengtype.  Prepend inclusion of
-# bconfig.h because AIX requires _LARGE_FILES to be defined before
+# config.h/bconfig.h because AIX requires _LARGE_FILES to be defined before
 # any system header is included.
 gengtype-lex.c : gengtype-lex.l
 	-$(FLEX) $(FLEXFLAGS) -o$@ $< && { \
-	  echo '#include "bconfig.h"' > $@.tmp; \
+	  echo '#ifdef HOST_GENERATOR_FILE' > $@.tmp; \
+	  echo '#include "config.h"'       >> $@.tmp; \
+	  echo '#else'                     >> $@.tmp; \
+	  echo '#include "bconfig.h"'      >> $@.tmp; \
+	  echo '#endif'                    >> $@.tmp; \
 	  cat $@ >> $@.tmp; \
 	  mv $@.tmp $@; \
 	}

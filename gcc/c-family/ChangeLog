@@ -1,3 +1,33 @@
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-pretty-print.c (pp_c_additive_expression,
+	c_pretty_printer::expression): Handle POINTER_DIFF_EXPR.
+
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (get_nonnull_operand): Use tree_to_uhwi.
+
+	PR c++/83059
+	* c-common.c (get_atomic_generic_size): Use TREE_INT_CST_LOW
+	instead of tree_to_uhwi, formatting fix.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81404
+	* known-headers.cc: New file, based on material from c/c-decl.c.
+	(suggest_missing_header): Copied as-is.
+	(get_stdlib_header_for_name): New, based on get_c_name_hint but
+	heavily edited to add C++ support.  Add some knowledge about
+	<limits.h>, <stdint.h>, and <wchar.h>.
+	* known-headers.h: Likewise.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h (enum lookup_name_fuzzy_kind): Move to name-hint.h.
+	(lookup_name_fuzzy): Likewise.  Convert return type from
+	const char * to name_hint.  Add location_t param.
+	* name-hint.h: New header.
+
 2017-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/66618

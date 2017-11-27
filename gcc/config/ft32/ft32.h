@@ -205,7 +205,7 @@ enum reg_class
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-    fprintf (FILE, "\t.long\t.L%d\n", VALUE);				\
+    fprintf (FILE, "\t.long\t.L%d\n", VALUE)				\
 
 /* Passing Arguments in Registers */
 

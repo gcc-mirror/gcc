@@ -1073,6 +1073,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	{
 	  hstate.add_flag (DECL_PACKED (t));
 	  hstate.add_flag (DECL_NONADDRESSABLE_P (t));
+	  hstate.add_flag (DECL_PADDING_P (t));
 	  hstate.add_int (DECL_OFFSET_ALIGN (t));
 	}
       else if (code == VAR_DECL)
@@ -1166,6 +1167,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.commit_flag ();
       hstate.add_int (TYPE_PRECISION (t));
       hstate.add_int (TYPE_ALIGN (t));
+      hstate.add_int (TYPE_EMPTY_P (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
@@ -1929,6 +1931,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);
+      streamer_write_hwi (ob, loop->unroll);
       streamer_write_hwi (ob, loop->dont_vectorize);
       streamer_write_hwi (ob, loop->force_vectorize);
       stream_write_tree (ob, loop->simduid, true);

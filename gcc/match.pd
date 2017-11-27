@@ -102,6 +102,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (pointer_plus integer_zerop @1)
  (non_lvalue (convert @1)))
 
+/* ptr - 0 -> (type)ptr */
+(simplify
+ (pointer_diff @0 integer_zerop)
+ (convert @0))
+
 /* See if ARG1 is zero and X + ARG1 reduces to X.
    Likewise if the operands are reversed.  */
 (simplify
@@ -124,6 +129,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (minus @0 @0)
  (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (type))
   { build_zero_cst (type); }))
+(simplify
+ (pointer_diff @@0 @0)
+ { build_zero_cst (type); })
 
 (simplify
  (mult @0 integer_zerop@1)
@@ -1040,6 +1048,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && !HONOR_SIGN_DEPENDENT_ROUNDING (type)
 	  && !HONOR_SIGNED_ZEROS (type)))
   (minus @1 @0)))
+(simplify
+ (negate (pointer_diff @0 @1))
+ (if (TYPE_OVERFLOW_UNDEFINED (type))
+  (pointer_diff @1 @0)))
 
 /* A - B -> A + (-B) if B is easily negatable.  */
 (simplify
@@ -1342,6 +1354,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @0 @1))))
+/* And for pointers...  */
+(for op (simple_comparison)
+ (simplify
+  (op (pointer_diff@3 @0 @2) (pointer_diff @1 @2))
+  (if (!TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@2)))
+   (op @0 @1))))
+(simplify
+ (minus (pointer_diff@3 @0 @2) (pointer_diff @1 @2))
+ (if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@3))
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@2)))
+  (pointer_diff @0 @1)))
 
 /* Z - X < Z - Y is the same as Y < X when there is no overflow.  */
 (for op (lt le ge gt)
@@ -1358,6 +1381,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @1 @0))))
+/* And for pointers...  */
+(for op (simple_comparison)
+ (simplify
+  (op (pointer_diff@3 @2 @0) (pointer_diff @2 @1))
+  (if (!TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@2)))
+   (op @1 @0))))
+(simplify
+ (minus (pointer_diff@3 @2 @0) (pointer_diff @2 @1))
+ (if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@3))
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@2)))
+  (pointer_diff @1 @0)))
 
 /* X + Y < Y is the same as X < 0 when there is no overflow.  */
 (for op (lt le gt ge)
@@ -1506,6 +1540,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && ((GIMPLE && useless_type_conversion_p (type, TREE_TYPE (@1)))
 	    || (GENERIC && type == TREE_TYPE (@1))))
    @1))
+(simplify
+  (pointer_plus @0 (convert?@2 (pointer_diff@3 @1 @@0)))
+  (if (TYPE_PRECISION (TREE_TYPE (@2)) >= TYPE_PRECISION (TREE_TYPE (@3)))
+   (convert @1)))
 
 /* Pattern match
      tem = (sizetype) ptr;
@@ -1529,6 +1567,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (minus (convert @0) (convert ADDR_EXPR@1))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (with { HOST_WIDE_INT diff; }
+   (if (ptr_difference_const (@0, @1, &diff))
+    { build_int_cst_type (type, diff); }))))
+(simplify
+ (pointer_diff (convert?@2 ADDR_EXPR@0) (convert?@3 @1))
+ (if (tree_nop_conversion_p (TREE_TYPE(@2), TREE_TYPE (@0))
+      && tree_nop_conversion_p (TREE_TYPE(@3), TREE_TYPE (@1)))
+  (with { HOST_WIDE_INT diff; }
+   (if (ptr_difference_const (@0, @1, &diff))
+    { build_int_cst_type (type, diff); }))))
+(simplify
+ (pointer_diff (convert?@2 @0) (convert?@3 ADDR_EXPR@1))
+ (if (tree_nop_conversion_p (TREE_TYPE(@2), TREE_TYPE (@0))
+      && tree_nop_conversion_p (TREE_TYPE(@3), TREE_TYPE (@1)))
   (with { HOST_WIDE_INT diff; }
    (if (ptr_difference_const (@0, @1, &diff))
     { build_int_cst_type (type, diff); }))))
@@ -1644,6 +1696,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (plus:c (minus @0 @1) (minus @2 @0))
    (minus @2 @1))
   (simplify
+   (plus:c (pointer_diff @0 @1) (pointer_diff @2 @0))
+   (if (TYPE_OVERFLOW_UNDEFINED (type)
+	&& !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0)))
+    (pointer_diff @2 @1)))
+  (simplify
    (minus (plus:c @0 @1) (minus @0 @2))
    (plus @1 @2))
 
@@ -1748,6 +1805,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     && TREE_CODE (@1) == INTEGER_CST
 	     && tree_int_cst_sign_bit (@1) == 0))
      (convert @1))))
+   (simplify
+    (pointer_diff (pointer_plus @@0 @1) @0)
+    /* The second argument of pointer_plus must be interpreted as signed, and
+       thus sign-extended if necessary.  */
+    (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
+     (convert (convert:stype @1))))
 
   /* (T)P - (T)(P + A) -> -(T) A */
   (for add (plus pointer_plus)
@@ -1772,6 +1835,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     && TREE_CODE (@1) == INTEGER_CST
 	     && tree_int_cst_sign_bit (@1) == 0))
      (negate (convert @1)))))
+   (simplify
+    (pointer_diff @0 (pointer_plus @@0 @1))
+    /* The second argument of pointer_plus must be interpreted as signed, and
+       thus sign-extended if necessary.  */
+    (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
+     (negate (convert (convert:stype @1)))))
 
   /* (T)(P + A) - (T)(P + B) -> (T)A - (T)B */
   (for add (plus pointer_plus)
@@ -1798,6 +1867,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     && TREE_CODE (@2) == INTEGER_CST
 	     && tree_int_cst_sign_bit (@2) == 0))
      (minus (convert @1) (convert @2)))))))
+   (simplify
+    (pointer_diff (pointer_plus @@0 @1) (pointer_plus @0 @2))
+    /* The second argument of pointer_plus must be interpreted as signed, and
+       thus sign-extended if necessary.  */
+    (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
+     (minus (convert (convert:stype @1)) (convert (convert:stype @2)))))
 
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
@@ -2381,9 +2456,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (type))
    (mult @0 { build_int_cst (type, 2); }))))
 
+/* 0 - X  ->  -X.  */
 (simplify
  (minus integer_zerop @1)
  (negate @1))
+(simplify
+ (pointer_diff integer_zerop @1)
+ (negate (convert @1)))
 
 /* (ARG0 - ARG1) is the same as (-ARG1 + ARG0).  So check whether
    ARG0 is zero and X + ARG0 reduces to X, since that would mean
@@ -2797,10 +2876,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    with the transformation in fold_cond_expr_with_comparison which
    attempts to synthetize ABS_EXPR.  */
 (for cmp (eq ne)
- (simplify
-  (cmp (minus@2 @0 @1) integer_zerop)
-  (if (single_use (@2))
-   (cmp @0 @1))))
+ (for sub (minus pointer_diff)
+  (simplify
+   (cmp (sub@2 @0 @1) integer_zerop)
+   (if (single_use (@2))
+    (cmp @0 @1)))))
 
 /* Transform comparisons of the form X * C1 CMP 0 to X CMP 0 in the
    signed arithmetic case.  That form is created by the compiler

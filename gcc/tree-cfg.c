@@ -280,6 +280,11 @@ replace_loop_annotate_in_block (basic_block bb, struct loop *loop)
 	case annot_expr_ivdep_kind:
 	  loop->safelen = INT_MAX;
 	  break;
+	case annot_expr_unroll_kind:
+	  loop->unroll
+	    = (unsigned short) tree_to_shwi (gimple_call_arg (stmt, 2));
+	  cfun->has_unroll = true;
+	  break;
 	case annot_expr_no_vector_kind:
 	  loop->dont_vectorize = true;
 	  break;
@@ -338,6 +343,7 @@ replace_loop_annotate (void)
 	  switch ((annot_expr_kind) tree_to_shwi (gimple_call_arg (stmt, 1)))
 	    {
 	    case annot_expr_ivdep_kind:
+	    case annot_expr_unroll_kind:
 	    case annot_expr_no_vector_kind:
 	    case annot_expr_vector_kind:
 	      break;
@@ -3142,6 +3148,25 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       CHECK_OP (1, "invalid operand to binary operator");
       break;
 
+    case POINTER_DIFF_EXPR:
+      if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
+	  || !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 1))))
+	{
+	  error ("invalid operand to pointer diff, operand is not a pointer");
+	  return t;
+	}
+      if (TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE
+	  || TYPE_UNSIGNED (TREE_TYPE (t))
+	  || (TYPE_PRECISION (TREE_TYPE (t))
+	      != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))))
+	{
+	  error ("invalid type for pointer diff");
+	  return t;
+	}
+      CHECK_OP (0, "invalid operand to pointer diff");
+      CHECK_OP (1, "invalid operand to pointer diff");
+      break;
+
     case POINTER_PLUS_EXPR:
       /* Check to make sure the first operand is a pointer or reference type. */
       if (!POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
@@ -3773,18 +3798,6 @@ verify_gimple_assign_unary (gassign *stmt)
 
         return false;
       }
-    case REDUC_MAX_EXPR:
-    case REDUC_MIN_EXPR:
-    case REDUC_PLUS_EXPR:
-      if (!VECTOR_TYPE_P (rhs1_type)
-	  || !useless_type_conversion_p (lhs_type, TREE_TYPE (rhs1_type)))
-        {
-	  error ("reduction should convert from vector to element type");
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  return true;
-	}
-      return false;
 
     case VEC_UNPACK_HI_EXPR:
     case VEC_UNPACK_LO_EXPR:
@@ -3968,6 +3981,25 @@ verify_gimple_assign_binary (gassign *stmt)
 	    || !ptrofftype_p (rhs2_type))
 	  {
 	    error ("type mismatch in pointer plus expression");
+	    debug_generic_stmt (lhs_type);
+	    debug_generic_stmt (rhs1_type);
+	    debug_generic_stmt (rhs2_type);
+	    return true;
+	  }
+
+	return false;
+      }
+
+    case POINTER_DIFF_EXPR:
+      {
+	if (!POINTER_TYPE_P (rhs1_type)
+	    || !POINTER_TYPE_P (rhs2_type)
+	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    || TREE_CODE (lhs_type) != INTEGER_TYPE
+	    || TYPE_UNSIGNED (lhs_type)
+	    || TYPE_PRECISION (lhs_type) != TYPE_PRECISION (rhs1_type))
+	  {
+	    error ("type mismatch in pointer diff expression");
 	    debug_generic_stmt (lhs_type);
 	    debug_generic_stmt (rhs1_type);
 	    debug_generic_stmt (rhs2_type);
@@ -7993,6 +8025,8 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
       fprintf (file, ", estimate = ");
       print_decu (loop->nb_iterations_estimate, file);
     }
+  if (loop->unroll)
+    fprintf (file, ", unroll = %d", loop->unroll);
   fprintf (file, ")\n");
 
   /* Print loop's body.  */
@@ -9049,7 +9083,8 @@ pass_warn_function_return::execute (function *fun)
 	  if ((gimple_code (last) == GIMPLE_RETURN
 	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
 	      && location == UNKNOWN_LOCATION
-	      && (location = gimple_location (last)) != UNKNOWN_LOCATION
+	      && ((location = LOCATION_LOCUS (gimple_location (last)))
+		  != UNKNOWN_LOCATION)
 	      && !optimize)
 	    break;
 	  /* When optimizing, replace return stmts in noreturn functions
@@ -9075,7 +9110,6 @@ pass_warn_function_return::execute (function *fun)
      without returning a value.  */
   else if (warn_return_type > 0
 	   && !TREE_NO_WARNING (fun->decl)
-	   && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) > 0
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
     {
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
@@ -9087,13 +9121,43 @@ pass_warn_function_return::execute (function *fun)
 	      && !gimple_no_warning_p (last))
 	    {
 	      location = gimple_location (last);
-	      if (location == UNKNOWN_LOCATION)
+	      if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
 		location = fun->function_end_locus;
-	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
+	      warning_at (location, OPT_Wreturn_type,
+			  "control reaches end of non-void function");
 	      TREE_NO_WARNING (fun->decl) = 1;
 	      break;
 	    }
 	}
+      /* The C++ FE turns fallthrough from the end of non-void function
+	 into __builtin_unreachable () call with BUILTINS_LOCATION.
+	 Recognize those too.  */
+      basic_block bb;
+      if (!TREE_NO_WARNING (fun->decl))
+	FOR_EACH_BB_FN (bb, fun)
+	  if (EDGE_COUNT (bb->succs) == 0)
+	    {
+	      gimple *last = last_stmt (bb);
+	      if (last
+		  && (LOCATION_LOCUS (gimple_location (last))
+		      == BUILTINS_LOCATION)
+		  && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		{
+		  gimple_stmt_iterator gsi = gsi_for_stmt (last);
+		  gsi_prev_nondebug (&gsi);
+		  gimple *prev = gsi_stmt (gsi);
+		  if (prev == NULL)
+		    location = UNKNOWN_LOCATION;
+		  else
+		    location = gimple_location (prev);
+		  if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
+		    location = fun->function_end_locus;
+		  warning_at (location, OPT_Wreturn_type,
+			      "control reaches end of non-void function");
+		  TREE_NO_WARNING (fun->decl) = 1;
+		  break;
+		}
+	    }
     }
   return 0;
 }

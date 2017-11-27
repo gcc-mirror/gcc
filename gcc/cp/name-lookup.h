@@ -307,6 +307,7 @@ extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
 extern tree do_class_using_decl (tree, tree);
 extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
+extern tree search_anon_aggr (tree, tree);
 extern tree get_class_binding_direct (tree, tree, int type_or_fns = -1);
 extern tree get_class_binding (tree, tree, int type_or_fns = -1);
 extern tree *get_member_slot (tree klass, tree name);

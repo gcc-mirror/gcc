@@ -805,8 +805,6 @@ st_open (st_parameter_open *opp)
 	conv = compile_options.convert;
     }
   
-  /* We use big_endian, which is 0 on little-endian machines
-     and 1 on big-endian machines.  */
   switch (conv)
     {
     case GFC_CONVERT_NATIVE:
@@ -814,11 +812,11 @@ st_open (st_parameter_open *opp)
       break;
       
     case GFC_CONVERT_BIG:
-      conv = big_endian ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
+      conv = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
       break;
       
     case GFC_CONVERT_LITTLE:
-      conv = big_endian ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
+      conv = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
       break;
       
     default:

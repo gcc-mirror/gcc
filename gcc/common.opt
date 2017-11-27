@@ -936,7 +936,7 @@ Driver Undocumented
 ;     Default in G++ 7.
 ;
 ; 12: Corrects the calling convention for classes with only deleted copy/move
-;     constructors.
+;     constructors and changes passing/returning of empty records.
 ;     Default in G++ 8.
 ;
 ; Additional positive integers will be assigned as new versions of

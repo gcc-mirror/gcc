@@ -1,3 +1,7 @@
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* gcc-plugin.m4: Add support for MinGW.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* cet.m4: New file.

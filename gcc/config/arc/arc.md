@@ -4935,39 +4935,6 @@
 	       (const_int 4)]
 	      (const_int 2)))])
 
-(define_insn_and_split "eh_return"
-  [(eh_return)
-   (use (match_operand:SI 0 "move_src_operand" "rC32,mCalCpc"))
-   (clobber (match_scratch:SI 1  "=X,r"))
-   (clobber (match_scratch:SI 2 "=&r,r"))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 2) (match_dup 0))]
-{
-  int offs = arc_return_slot_offset ();
-
-  if (offs < 0)
-    operands[2] = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-  else
-    {
-      if (!register_operand (operands[0], Pmode)
-	  && !satisfies_constraint_C32 (operands[0]))
-	{
-	  emit_move_insn (operands[1], operands[0]);
-	  operands[0] = operands[1];
-	}
-      rtx addr = plus_constant (Pmode, stack_pointer_rtx, offs);
-      if (!strict_memory_address_p (Pmode, addr))
-	{
-	  emit_move_insn (operands[2], addr);
-	  addr = operands[2];
-	}
-      operands[2] = gen_frame_mem (Pmode, addr);
-    }
-}
-  [(set_attr "length" "12")])
-
 ;; ??? #ifdefs in function.c require the presence of this pattern, with a
 ;; non-constant predicate.
 (define_expand "return"

@@ -1826,6 +1826,11 @@ Statement*
 Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
 {
   Location loc = this->location();
+  if (!this->expr_->type()->is_numeric_type())
+    {
+      this->report_error("increment or decrement of non-numeric type");
+      return Statement::make_error_statement(loc);
+    }
   Expression* oexpr = Expression::make_integer_ul(1, this->expr_->type(), loc);
   Operator op = this->is_inc_ ? OPERATOR_PLUSEQ : OPERATOR_MINUSEQ;
   return Statement::make_assignment_operation(op, this->expr_, oexpr, loc);

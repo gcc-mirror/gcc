@@ -89,7 +89,6 @@ static int newunit_size; /* Total number of elements in the newunits array.  */
    units are allocated, above and equal to the LWI there may be both
    allocated and free units. */
 static int newunit_lwi;
-static void newunit_free (int);
 
 /* Unit numbers assigned with NEWUNIT start from here.  */
 #define NEWUNIT_START -10
@@ -911,7 +910,7 @@ newunit_alloc (void)
 /* Free a previously allocated newunit= unit number.  unit_lock must
    be held when calling.  */
 
-static void
+void
 newunit_free (int unit)
 {
   int ind = -unit + NEWUNIT_START;

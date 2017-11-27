@@ -20,7 +20,7 @@
 
 bool
 Parse::Enclosing_var_comparison::operator()(const Enclosing_var& v1,
-					    const Enclosing_var& v2)
+					    const Enclosing_var& v2) const
 {
   if (v1.var() == v2.var())
     return false;

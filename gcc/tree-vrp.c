@@ -4795,24 +4795,30 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	 the size of the largest object is PTRDIFF_MAX.  */
       tree eltsize = array_ref_element_size (ref);
 
-      /* FIXME: Handle VLAs.  */
-      if (TREE_CODE (eltsize) != INTEGER_CST)
-	return;
+      if (TREE_CODE (eltsize) != INTEGER_CST
+	  || integer_zerop (eltsize))
+	{
+	  up_bound = NULL_TREE;
+	  up_bound_p1 = NULL_TREE;
+	}
+      else
+	{
+	  tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
+	  tree arg = TREE_OPERAND (ref, 0);
+	  HOST_WIDE_INT off;
 
-      tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
+	  if (get_addr_base_and_unit_offset (arg, &off) && off > 0)
+	    maxbound = wide_int_to_tree (sizetype,
+					 wi::sub (wi::to_wide (maxbound),
+						  off));
+	  else
+	    maxbound = fold_convert (sizetype, maxbound);
 
-      up_bound_p1 = int_const_binop (TRUNC_DIV_EXPR, maxbound, eltsize);
+	  up_bound_p1 = int_const_binop (TRUNC_DIV_EXPR, maxbound, eltsize);
 
-      tree arg = TREE_OPERAND (ref, 0);
-
-      HOST_WIDE_INT off;
-      if (get_addr_base_and_unit_offset (arg, &off))
-	up_bound_p1 = wide_int_to_tree (sizetype,
-					wi::sub (wi::to_wide (up_bound_p1),
-						 off));
-
-      up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
-				  build_int_cst (ptrdiff_type_node, 1));
+	  up_bound = int_const_binop (MINUS_EXPR, up_bound_p1,
+				      build_int_cst (ptrdiff_type_node, 1));
+	}
     }
   else
     up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
@@ -4823,7 +4829,7 @@ vrp_prop::check_array_ref (location_t location, tree ref,
   tree artype = TREE_TYPE (TREE_OPERAND (ref, 0));
 
   /* Empty array.  */
-  if (tree_int_cst_equal (low_bound, up_bound_p1))
+  if (up_bound && tree_int_cst_equal (low_bound, up_bound_p1))
     {
       warning_at (location, OPT_Warray_bounds,
 		  "array subscript %E is above array bounds of %qT",
@@ -4843,7 +4849,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 
   if (vr && vr->type == VR_ANTI_RANGE)
     {
-      if (TREE_CODE (up_sub) == INTEGER_CST
+      if (up_bound
+	  && TREE_CODE (up_sub) == INTEGER_CST
           && (ignore_off_by_one
 	      ? tree_int_cst_lt (up_bound, up_sub)
 	      : tree_int_cst_le (up_bound, up_sub))
@@ -4856,7 +4863,8 @@ vrp_prop::check_array_ref (location_t location, tree ref,
           TREE_NO_WARNING (ref) = 1;
         }
     }
-  else if (TREE_CODE (up_sub) == INTEGER_CST
+  else if (up_bound
+	   && TREE_CODE (up_sub) == INTEGER_CST
 	   && (ignore_off_by_one
 	       ? !tree_int_cst_le (up_sub, up_bound_p1)
 	       : !tree_int_cst_le (up_sub, up_bound)))
@@ -6572,14 +6580,17 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
     {
-      value_range new_vr = VR_INITIALIZER;
       tree lhs = gimple_assign_lhs (assign_stmt);
-
       if (TREE_CODE (lhs) == SSA_NAME
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	      || POINTER_TYPE_P (TREE_TYPE (lhs))))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && stmt_interesting_for_vrp (stmt))
 	{
-	  vr_values->extract_range_from_assignment (&new_vr, assign_stmt);
+	  edge dummy_e;
+	  tree dummy_tree;
+	  value_range new_vr = VR_INITIALIZER;
+	  vr_values->extract_range_from_stmt (stmt, &dummy_e,
+					      &dummy_tree, &new_vr);
 	  if (range_int_cst_singleton_p (&new_vr))
 	    return new_vr.min;
 	}
@@ -6747,7 +6758,8 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
 {
   size_t i;
 
-  vr_values.values_propagated = true;
+  /* We have completed propagating through the lattice.  */
+  vr_values.set_lattice_propagation_complete ();
 
   if (dump_file)
     {

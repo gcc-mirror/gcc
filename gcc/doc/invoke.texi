@@ -1196,7 +1196,7 @@ See RS/6000 and PowerPC Options.
 -mincoming-stack-boundary=@var{num} @gol
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 @gol
 -mrecip  -mrecip=@var{opt} @gol
--mvzeroupper  -mprefer-avx128 -mprefer-avx256 @gol
+-mvzeroupper  -mprefer-avx128 -mprefer-vector-width=@var{opt} @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
@@ -5012,14 +5012,18 @@ void store (int *i)
 @item -Wmaybe-uninitialized
 @opindex Wmaybe-uninitialized
 @opindex Wno-maybe-uninitialized
-For an automatic variable, if there exists a path from the function
-entry to a use of the variable that is initialized, but there exist
+For an automatic (i.e.@ local) variable, if there exists a path from the
+function entry to a use of the variable that is initialized, but there exist
 some other paths for which the variable is not initialized, the compiler
 emits a warning if it cannot prove the uninitialized paths are not
-executed at run time. These warnings are made optional because GCC is
-not smart enough to see all the reasons why the code might be correct
-in spite of appearing to have an error.  Here is one example of how
-this can happen:
+executed at run time.
+
+These warnings are only possible in optimizing compilation, because otherwise
+GCC does not keep track of the state of variables.
+
+These warnings are made optional because GCC may not be able to determine when
+the code is correct in spite of appearing to have an error.  Here is one
+example of how this can happen:
 
 @smallexample
 @group
@@ -5046,9 +5050,7 @@ similar code.
 
 @cindex @code{longjmp} warnings
 This option also warns when a non-volatile automatic variable might be
-changed by a call to @code{longjmp}.  These warnings as well are possible
-only in optimizing compilation.
-
+changed by a call to @code{longjmp}.
 The compiler sees only the calls to @code{setjmp}.  It cannot know
 where @code{longjmp} will be called; in fact, a signal handler could
 call it at any point in the code.  As a result, you may get a warning
@@ -25365,6 +25367,13 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
 AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
+@item cannonlake
+Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
+SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
+XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
+AVX512IFMA, SHA, CLWB and UMIP instruction set support.
+
 @item k6
 AMD K6 CPU with MMX instruction set support.
 
@@ -26139,10 +26148,24 @@ intrinsics.
 This option instructs GCC to use 128-bit AVX instructions instead of
 256-bit AVX instructions in the auto-vectorizer.
 
-@item -mprefer-avx256
-@opindex mprefer-avx256
-This option instructs GCC to use 256-bit AVX instructions instead of
-512-bit AVX instructions in the auto-vectorizer.
+@item -mprefer-vector-width=@var{opt}
+@opindex mprefer-vector-width
+This option instructs GCC to use @var{opt}-bit vector width in instructions
+instead of default on the selected platform.
+
+@table @samp
+@item none
+No extra limitations applied to GCC other than defined by the selected platform.
+
+@item 128
+Prefer 128-bit vector width for instructions.
+
+@item 256
+Prefer 256-bit vector width for instructions.
+
+@item 512
+Prefer 512-bit vector width for instructions.
+@end table
 
 @item -mcx16
 @opindex mcx16

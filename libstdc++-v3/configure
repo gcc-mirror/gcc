@@ -20568,7 +20568,7 @@ $as_echo "$glibcxx_glibc217" >&6; }
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
         ;;
-      freebsd*|netbsd*|dragonfly*)
+      freebsd*|netbsd*|dragonfly*|rtems*)
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -79996,6 +79996,9 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
         enable_libstdcxx_filesystem_ts=yes
         ;;
       gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_filesystem_ts=yes
+        ;;
+      rtems*)
         enable_libstdcxx_filesystem_ts=yes
         ;;
       solaris*)

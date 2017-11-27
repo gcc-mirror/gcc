@@ -374,6 +374,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
 #define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
+#define TARGET_CANNONLAKE (ix86_tune == PROCESSOR_CANNONLAKE)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
@@ -1640,6 +1641,8 @@ typedef struct ix86_args {
   int warn_avx;			/* True when we want to warn about AVX ABI.  */
   int warn_sse;			/* True when we want to warn about SSE ABI.  */
   int warn_mmx;			/* True when we want to warn about MMX ABI.  */
+  int warn_empty;		/* True when we want to warn about empty classes
+				   passing ABI change.  */
   int sse_regno;		/* next available sse register number */
   int mmx_words;		/* # mmx words passed so far */
   int mmx_nregs;		/* # mmx registers available for passing */
@@ -2253,6 +2256,7 @@ enum processor_type
   PROCESSOR_KNL,
   PROCESSOR_KNM,
   PROCESSOR_SKYLAKE_AVX512,
+  PROCESSOR_CANNONLAKE,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
@@ -2677,6 +2681,12 @@ extern void debug_dispatch_window (int);
 #define TARGET_RECIP_SQRT	((recip_mask & RECIP_MASK_SQRT) != 0)
 #define TARGET_RECIP_VEC_DIV	((recip_mask & RECIP_MASK_VEC_DIV) != 0)
 #define TARGET_RECIP_VEC_SQRT	((recip_mask & RECIP_MASK_VEC_SQRT) != 0)
+
+/* Use 128-bit AVX instructions in the auto-vectorizer.  */
+#define TARGET_PREFER_AVX128	(prefer_vector_width_type == PVW_AVX128)
+/* Use 256-bit AVX instructions in the auto-vectorizer.  */
+#define TARGET_PREFER_AVX256	(TARGET_PREFER_AVX128 \
+				 || prefer_vector_width_type == PVW_AVX256)
 
 #define IX86_HLE_ACQUIRE (1 << 16)
 #define IX86_HLE_RELEASE (1 << 17)

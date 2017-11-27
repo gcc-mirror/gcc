@@ -1,3 +1,19 @@
+2017-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/81304
+	* testsuite/libgomp.fortran/pr81304.f90: New test.
+
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/81841
+	* libgomp.fortran/pr81841.f90: New test.
+
+2017-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/83106
+	* target.c (gomp_target_init): Compute lengths just once and
+	use them in both malloc size and subsequent copying.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* configure.ac: Set CET_FLAGS, update XCFLAGS and FCFLAGS.

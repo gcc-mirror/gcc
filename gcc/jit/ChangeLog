@@ -1,3 +1,8 @@
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* libgccjit.c (RETURN_NULL_IF_FAIL_NONNULL_NUMERIC_TYPE): Wrap in
+	JIT_{BEGIN,END}_STMT.
+
 2017-10-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/internals/index.rst (Running the test suite): Document

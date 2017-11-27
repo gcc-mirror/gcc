@@ -2885,6 +2885,11 @@ expand_builtin_strlen (tree exp, rtx target,
       if (!maybe_expand_insn (icode, 4, ops))
 	return NULL_RTX;
 
+      /* Check to see if the argument was declared attribute nonstring
+	 and if so, issue a warning since at this point it's not known
+	 to be nul-terminated.  */
+      maybe_warn_nonstring_arg (TREE_OPERAND (CALL_EXPR_FN (exp), 0), exp);
+
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
       pat = expand_expr (src, src_reg, Pmode, EXPAND_NORMAL);

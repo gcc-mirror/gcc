@@ -583,6 +583,25 @@ fold_const_builtin_nan (tree type, tree arg, bool quiet)
   return NULL_TREE;
 }
 
+/* Fold a call to IFN_REDUC_<CODE> (ARG), returning a value of type TYPE.  */
+
+static tree
+fold_const_reduction (tree type, tree arg, tree_code code)
+{
+  if (TREE_CODE (arg) != VECTOR_CST)
+    return NULL_TREE;
+
+  tree res = VECTOR_CST_ELT (arg, 0);
+  unsigned int nelts = VECTOR_CST_NELTS (arg);
+  for (unsigned int i = 1; i < nelts; i++)
+    {
+      res = const_binop (code, type, res, VECTOR_CST_ELT (arg, i));
+      if (res == NULL_TREE || !CONSTANT_CLASS_P (res))
+	return NULL_TREE;
+    }
+  return res;
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG)
@@ -1147,6 +1166,15 @@ fold_const_call (combined_fn fn, tree type, tree arg)
     CASE_CFN_NANS:
     CASE_FLT_FN_FLOATN_NX (CFN_BUILT_IN_NANS):
       return fold_const_builtin_nan (type, arg, false);
+
+    case CFN_REDUC_PLUS:
+      return fold_const_reduction (type, arg, PLUS_EXPR);
+
+    case CFN_REDUC_MAX:
+      return fold_const_reduction (type, arg, MAX_EXPR);
+
+    case CFN_REDUC_MIN:
+      return fold_const_reduction (type, arg, MIN_EXPR);
 
     default:
       return fold_const_call_1 (fn, type, arg);

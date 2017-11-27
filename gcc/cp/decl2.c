@@ -2549,7 +2549,8 @@ constrain_class_visibility (tree type)
     vis = VISIBILITY_INTERNAL;
 
   for (t = TYPE_FIELDS (type); t; t = DECL_CHAIN (t))
-    if (TREE_CODE (t) == FIELD_DECL && TREE_TYPE (t) != error_mark_node)
+    if (TREE_CODE (t) == FIELD_DECL && TREE_TYPE (t) != error_mark_node
+	&& !DECL_ARTIFICIAL (t))
       {
 	tree ftype = strip_pointer_or_array_types (TREE_TYPE (t));
 	int subvis = type_visibility (ftype);

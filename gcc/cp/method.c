@@ -1293,7 +1293,7 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
       if (diag)
 	{
 	  inform (DECL_SOURCE_LOCATION (fn),
-		  "defaulted constructor calls non-constexpr %qD", fn);
+		  "defaulted constructor calls non-%<constexpr%> %qD", fn);
 	  explain_invalid_constexpr_fn (fn);
 	}
     }
@@ -2257,8 +2257,8 @@ defaulted_late_check (tree fn)
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
 	  error ("explicitly defaulted function %q+D cannot be declared "
-		 "as constexpr because the implicit declaration is not "
-		 "constexpr:", fn);
+		 "as %<constexpr%> because the implicit declaration is not "
+		 "%<constexpr%>:", fn);
 	  explain_implicit_non_constexpr (fn);
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;

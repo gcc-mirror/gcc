@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -43,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-cilkplus.h"
 #include "gcc-rich-location.h"
 #include "tree-iterator.h"
+#include "c-family/name-hint.h"
 
 
 /* The lexer.  */
@@ -3287,16 +3289,16 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   else if (!parser->scope)
     {
       /* Issue an error message.  */
-      const char *suggestion = NULL;
+      name_hint hint;
       if (TREE_CODE (id) == IDENTIFIER_NODE)
-        suggestion = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME);
-      if (suggestion)
+	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME, location);
+      if (hint)
 	{
 	  gcc_rich_location richloc (location);
-	  richloc.add_fixit_replace (suggestion);
+	  richloc.add_fixit_replace (hint.suggestion ());
 	  error_at (&richloc,
 		    "%qE does not name a type; did you mean %qs?",
-		    id, suggestion);
+		    id, hint.suggestion ());
 	}
       else
 	error_at (location, "%qE does not name a type", id);
@@ -10516,9 +10518,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	pedwarn (parser->lexer->next_token->location, 0,
 		 "lambda templates are only available with "
 		 "-std=c++14 or -std=gnu++14");
-      else
+      else if (cxx_dialect < cxx2a)
 	pedwarn (parser->lexer->next_token->location, OPT_Wpedantic,
-		 "ISO C++ does not support lambda templates");
+		 "lambda templates are only available with "
+		 "-std=c++2a or -std=gnu++2a");
 
       cp_lexer_consume_token (parser->lexer);
 
@@ -11298,7 +11301,7 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
   if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
       && !function_body && cxx_dialect < cxx14)
     pedwarn (input_location, OPT_Wpedantic,
-	     "compound-statement in constexpr function");
+	     "compound-statement in %<constexpr%> function");
   /* Begin the compound-statement.  */
   compound_stmt = begin_compound_stmt (bcs_flags);
   /* If the next keyword is `__label__' we have a label declaration.  */
@@ -22227,6 +22230,7 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
 
    braced-init-list:
      { initializer-list , [opt] }
+     { designated-initializer-list , [opt] }
      { }
 
    Returns a CONSTRUCTOR.  The CONSTRUCTOR_ELTS will be
@@ -22343,6 +22347,18 @@ cp_parser_array_designator_p (cp_parser *parser)
      initializer-clause ... [opt]
      initializer-list , initializer-clause ... [opt]
 
+   C++2A Extension:
+
+   designated-initializer-list:
+     designated-initializer-clause
+     designated-initializer-list , designated-initializer-clause
+
+   designated-initializer-clause:
+     designator brace-or-equal-initializer
+
+   designator:
+     . identifier
+
    GNU Extension:
 
    initializer-list:
@@ -22363,6 +22379,8 @@ static vec<constructor_elt, va_gc> *
 cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 {
   vec<constructor_elt, va_gc> *v = NULL;
+  bool first_p = true;
+  tree first_designator = NULL_TREE;
 
   /* Assume all of the expressions are constant.  */
   *non_constant_p = false;
@@ -22374,36 +22392,43 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
       tree designator;
       tree initializer;
       bool clause_non_constant_p;
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
-      /* If the next token is an identifier and the following one is a
-	 colon, we are looking at the GNU designated-initializer
-	 syntax.  */
-      if (cp_parser_allow_gnu_extensions_p (parser)
-	  && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
+      /* Handle the C++2A syntax, '. id ='.  */
+      if ((cxx_dialect >= cxx2a
+	   || cp_parser_allow_gnu_extensions_p (parser))
+	  && cp_lexer_next_token_is (parser->lexer, CPP_DOT)
+	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME
+	  && (cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_EQ
+	      || (cp_lexer_peek_nth_token (parser->lexer, 3)->type
+		  == CPP_OPEN_BRACE)))
 	{
-	  /* Warn the user that they are using an extension.  */
-	  pedwarn (input_location, OPT_Wpedantic, 
-		   "ISO C++ does not allow designated initializers");
-	  /* Consume the identifier.  */
-	  designator = cp_lexer_consume_token (parser->lexer)->u.value;
-	  /* Consume the `:'.  */
-	  cp_lexer_consume_token (parser->lexer);
-	}
-      /* Also handle the C99 syntax, '. id ='.  */
-      else if (cp_parser_allow_gnu_extensions_p (parser)
-	       && cp_lexer_next_token_is (parser->lexer, CPP_DOT)
-	       && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME
-	       && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_EQ)
-	{
-	  /* Warn the user that they are using an extension.  */
-	  pedwarn (input_location, OPT_Wpedantic,
-		   "ISO C++ does not allow C99 designated initializers");
+	  if (cxx_dialect < cxx2a)
+	    pedwarn (loc, OPT_Wpedantic,
+		     "C++ designated initializers only available with "
+		     "-std=c++2a or -std=gnu++2a");
 	  /* Consume the `.'.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Consume the identifier.  */
 	  designator = cp_lexer_consume_token (parser->lexer)->u.value;
-	  /* Consume the `='.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
+	    /* Consume the `='.  */
+	    cp_lexer_consume_token (parser->lexer);
+	}
+      /* Also, if the next token is an identifier and the following one is a
+	 colon, we are looking at the GNU designated-initializer
+	 syntax.  */
+      else if (cp_parser_allow_gnu_extensions_p (parser)
+	       && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	       && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
+		   == CPP_COLON))
+	{
+	  /* Warn the user that they are using an extension.  */
+	  pedwarn (loc, OPT_Wpedantic,
+		   "ISO C++ does not allow GNU designated initializers");
+	  /* Consume the identifier.  */
+	  designator = cp_lexer_consume_token (parser->lexer)->u.value;
+	  /* Consume the `:'.  */
 	  cp_lexer_consume_token (parser->lexer);
 	}
       /* Also handle C99 array designators, '[ const ] ='.  */
@@ -22433,9 +22458,29 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	    designator = NULL_TREE;
 	  else if (non_const)
 	    require_potential_rvalue_constant_expression (designator);
+	  if (designator)
+	    /* Warn the user that they are using an extension.  */
+	    pedwarn (loc, OPT_Wpedantic,
+		     "ISO C++ does not allow C99 designated initializers");
 	}
       else
 	designator = NULL_TREE;
+
+      if (first_p)
+	{
+	  first_designator = designator;
+	  first_p = false;
+	}
+      else if (cxx_dialect >= cxx2a
+	       && first_designator != error_mark_node
+	       && (!first_designator != !designator))
+	{
+	  error_at (loc, "either all initializer clauses should be designated "
+			 "or none of them should be");
+	  first_designator = error_mark_node;
+	}
+      else if (cxx_dialect < cxx2a && !first_designator)
+	first_designator = designator;
 
       /* Parse the initializer.  */
       initializer = cp_parser_initializer_clause (parser,
@@ -22448,11 +22493,17 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	 expansion.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
         {
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
           /* Consume the `...'.  */
           cp_lexer_consume_token (parser->lexer);
 
-          /* Turn the initializer into an initializer expansion.  */
-          initializer = make_pack_expansion (initializer);
+	  if (designator && cxx_dialect >= cxx2a)
+	    error_at (loc,
+		      "%<...%> not allowed in designated initializer list");
+
+	  /* Turn the initializer into an initializer expansion.  */
+	  initializer = make_pack_expansion (initializer);
         }
 
       /* Add it to the vector.  */
@@ -22473,6 +22524,31 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 
       /* Consume the `,' token.  */
       cp_lexer_consume_token (parser->lexer);
+    }
+
+  /* The same identifier shall not appear in multiple designators
+     of a designated-initializer-list.  */
+  if (first_designator)
+    {
+      unsigned int i;
+      tree designator, val;
+      FOR_EACH_CONSTRUCTOR_ELT (v, i, designator, val)
+	if (designator && TREE_CODE (designator) == IDENTIFIER_NODE)
+	  {
+	    if (IDENTIFIER_MARKED (designator))
+	      {
+		error_at (EXPR_LOC_OR_LOC (val, input_location),
+			  "%<.%s%> designator used multiple times in "
+			  "the same initializer list",
+			  IDENTIFIER_POINTER (designator));
+		(*v)[i].index = NULL_TREE;
+	      }
+	    else
+	      IDENTIFIER_MARKED (designator) = 1;
+	  }
+      FOR_EACH_CONSTRUCTOR_ELT (v, i, designator, val)
+	if (designator && TREE_CODE (designator) == IDENTIFIER_NODE)
+	  IDENTIFIER_MARKED (designator) = 0;
     }
 
   return v;
@@ -38060,7 +38136,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       initializer-clause[opt] new-line
    #pragma omp declare target new-line  */
 
-static void
+static bool
 cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 		       enum pragma_context context)
 {
@@ -38074,7 +38150,7 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_simd (parser, pragma_tok,
 				      context);
-	  return;
+	  return true;
 	}
       cp_ensure_no_omp_declare_simd (parser);
       if (strcmp (p, "reduction") == 0)
@@ -38082,23 +38158,24 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_reduction (parser, pragma_tok,
 					   context);
-	  return;
+	  return false;
 	}
       if (!flag_openmp)  /* flag_openmp_simd  */
 	{
 	  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-	  return;
+	  return false;
 	}
       if (strcmp (p, "target") == 0)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_target (parser, pragma_tok);
-	  return;
+	  return false;
 	}
     }
   cp_parser_error (parser, "expected %<simd%> or %<reduction%> "
 			   "or %<target%>");
   cp_parser_require_pragma_eol (parser, pragma_tok);
+  return false;
 }
 
 /* OpenMP 4.5:
@@ -39017,8 +39094,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       return false;
 
     case PRAGMA_OMP_DECLARE:
-      cp_parser_omp_declare (parser, pragma_tok, context);
-      return false;
+      return cp_parser_omp_declare (parser, pragma_tok, context);
 
     case PRAGMA_OACC_DECLARE:
       cp_parser_oacc_declare (parser, pragma_tok);

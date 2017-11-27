@@ -676,6 +676,14 @@ DEFTREECODE (MULT_EXPR, "mult_expr", tcc_binary, 2)
    second operand is an integer of type sizetype.  */
 DEFTREECODE (POINTER_PLUS_EXPR, "pointer_plus_expr", tcc_binary, 2)
 
+/* Pointer subtraction.  The two arguments are pointers, and the result
+   is a signed integer of the same precision.  Pointers are interpreted
+   as unsigned, the difference is computed as if in infinite signed
+   precision.  Behavior is undefined if the difference does not fit in
+   the result type.  The result does not depend on the pointer type,
+   it is not divided by the size of the pointed-to type.  */
+DEFTREECODE (POINTER_DIFF_EXPR, "pointer_diff_expr", tcc_binary, 2)
+
 /* Highpart multiplication.  For an integral type with precision B,
    returns bits [2B-1, B] of the full 2*B product.  */
 DEFTREECODE (MULT_HIGHPART_EXPR, "mult_highpart_expr", tcc_binary, 2)
@@ -1260,18 +1268,6 @@ DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
    Operand 0: BODY: contains body of the transaction.  */
 DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
 
-/* Reduction operations.
-   Operations that take a vector of elements and "reduce" it to a scalar
-   result (e.g. summing the elements of the vector, finding the minimum over
-   the vector elements, etc).
-   Operand 0 is a vector.
-   The expression returns a scalar, with type the same as the elements of the
-   vector, holding the result of the reduction of all elements of the operand.
-   */
-DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
-DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
-DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
-
 /* Widening dot-product.
    The first two arguments are of type t1.
    The third argument and the result are of type t2, such that t2 is at least
@@ -1410,8 +1406,9 @@ DEFTREECODE (TARGET_OPTION_NODE, "target_option_node", tcc_exceptional, 0)
 
 /* ANNOTATE_EXPR.
    Operand 0 is the expression to be annotated.
-   Operand 1 is the annotation kind.  */
-DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 2)
+   Operand 1 is the annotation kind.
+   Operand 2 is additional data.  */
+DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 3)
 
 /* Cilk spawn statement
    Operand 0 is the CALL_EXPR.  */

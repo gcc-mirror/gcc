@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -54,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck-tree.h"
 #include "gcc-rich-location.h"
 #include "asan.h"
+#include "c-family/name-hint.h"
+#include "c-family/known-headers.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -3109,20 +3112,20 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
     return;
 
   bool warned;
-  const char *hint = NULL;
+  name_hint hint;
   if (!olddecl)
-    hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_FUNCTION_NAME);
+    hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_FUNCTION_NAME, loc);
 
   if (flag_isoc99)
     {
       if (hint)
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_replace (hint);
+	  richloc.add_fixit_replace (hint.suggestion ());
 	  warned = pedwarn (&richloc, OPT_Wimplicit_function_declaration,
 			    "implicit declaration of function %qE;"
 			    " did you mean %qs?",
-			    id, hint);
+			    id, hint.suggestion ());
 	}
       else
 	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
@@ -3131,11 +3134,11 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
   else if (hint)
     {
       gcc_rich_location richloc (loc);
-      richloc.add_fixit_replace (hint);
+      richloc.add_fixit_replace (hint.suggestion ());
       warned = warning_at
 	(&richloc, OPT_Wimplicit_function_declaration,
 	 G_("implicit declaration of function %qE; did you mean %qs?"),
-	 id, hint);
+	 id, hint.suggestion ());
     }
   else
     warned = warning_at (loc, OPT_Wimplicit_function_declaration,
@@ -3143,6 +3146,9 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 
   if (olddecl && warned)
     locate_old_decl (olddecl);
+
+  if (!warned)
+    hint.suppress ();
 }
 
 /* This function represents mapping of a function code FCODE
@@ -3466,15 +3472,15 @@ undeclared_variable (location_t loc, tree id)
 
   if (current_function_decl == NULL_TREE)
     {
-      const char *guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+      name_hint guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME, loc);
       if (guessed_id)
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_replace (guessed_id);
+	  richloc.add_fixit_replace (guessed_id.suggestion ());
 	  error_at (&richloc,
 		    "%qE undeclared here (not in a function);"
 		    " did you mean %qs?",
-		    id, guessed_id);
+		    id, guessed_id.suggestion ());
 	}
       else
 	error_at (loc, "%qE undeclared here (not in a function)", id);
@@ -3484,15 +3490,15 @@ undeclared_variable (location_t loc, tree id)
     {
       if (!objc_diagnose_private_ivar (id))
 	{
-	  const char *guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME);
+	  name_hint guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME, loc);
 	  if (guessed_id)
 	    {
 	      gcc_rich_location richloc (loc);
-	      richloc.add_fixit_replace (guessed_id);
+	      richloc.add_fixit_replace (guessed_id.suggestion ());
 	      error_at (&richloc,
 			"%qE undeclared (first use in this function);"
 			" did you mean %qs?",
-			id, guessed_id);
+			id, guessed_id.suggestion ());
 	    }
 	  else
 	    error_at (loc, "%qE undeclared (first use in this function)", id);
@@ -4001,12 +4007,25 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
    identifier to the C frontend.
 
    It also looks for start_typename keywords, to detect "singed" vs "signed"
-   typos.  */
+   typos.
 
-const char *
-lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
+   Use LOC for any deferred diagnostics.  */
+
+name_hint
+lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  /* First, try some well-known names in the C standard library, in case
+     the user forgot a #include.  */
+  const char *header_hint
+    = get_c_stdlib_header_for_name (IDENTIFIER_POINTER (name));
+
+  if (header_hint)
+    return name_hint (NULL,
+		      new suggest_missing_header (loc,
+						  IDENTIFIER_POINTER (name),
+						  header_hint));
 
   best_match<tree, tree> bm (name);
 
@@ -4015,6 +4034,8 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
     for (c_binding *binding = scope->bindings; binding; binding = binding->prev)
       {
 	if (!binding->id || binding->invisible)
+	  continue;
+	if (binding->decl == error_mark_node)
 	  continue;
 	/* Don't use bindings from implicitly declared functions,
 	   as they were likely misspellings themselves.  */
@@ -4094,9 +4115,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 
   tree best = bm.get_best_meaningful_candidate ();
   if (best)
-    return IDENTIFIER_POINTER (best);
+    return name_hint (IDENTIFIER_POINTER (best), NULL);
   else
-    return NULL;
+    return name_hint (NULL, NULL);
 }
 
 
@@ -6801,7 +6822,10 @@ grokdeclarator (const struct c_declarator *declarator,
 			   FIELD_DECL, declarator->u.id, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 	if (bitfield && !declarator->u.id)
-	  TREE_NO_WARNING (decl) = 1;
+	  {
+	    TREE_NO_WARNING (decl) = 1;
+	    DECL_PADDING_P (decl) = 1;
+	  }
 
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;

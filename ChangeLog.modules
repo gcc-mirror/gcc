@@ -1,3 +1,7 @@
+2017-11-27  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r255166.
+
 2017-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	Non-type template parms, & nested template classes.

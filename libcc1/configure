@@ -14552,8 +14552,21 @@ fi
 
 
    pluginlibs=
+   plugin_check=yes
 
    case "${host}" in
+     *-*-mingw*)
+       # Since plugin support under MinGW is not as straightforward as on
+       # other platforms (e.g., we have to link import library, etc), we
+       # only enable it if explicitly requested.
+       if test x"$default_plugin" = x"yes"; then
+         enable_plugin=no
+       elif test x"$enable_plugin" = x"yes"; then
+         # Use make's target variable to derive import library name.
+         pluginlibs='-Wl,--export-all-symbols -Wl,--out-implib=$@.a'
+	 plugin_check=no
+       fi
+     ;;
      *-*-darwin*)
        if test x$build = x$host; then
 	 export_sym_check="nm${exeext} -g"
@@ -14574,7 +14587,7 @@ fi
      ;;
    esac
 
-   if test x"$enable_plugin" = x"yes"; then
+   if test x"$enable_plugin" = x"yes" -a x"$plugin_check" = x"yes"; then
 
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exported symbols" >&5
 $as_echo_n "checking for exported symbols... " >&6; }

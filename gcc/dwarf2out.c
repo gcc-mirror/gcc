@@ -5102,21 +5102,6 @@ get_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind)
   return a ? AT_file (a) : NULL;
 }
 
-/* Returns the ultimate TRANSLATION_UNIT_DECL context of DECL or NULL.  */
-
-static const_tree
-get_ultimate_context (const_tree decl)
-{
-  while (decl && TREE_CODE (decl) != TRANSLATION_UNIT_DECL)
-    {
-      if (TREE_CODE (decl) == BLOCK)
-	decl = BLOCK_SUPERCONTEXT (decl);
-      else
-	decl = get_containing_scope (decl);
-    }
-  return decl;
-}
-
 /* Return TRUE if the language is C++.  */
 
 static inline bool
@@ -11197,7 +11182,7 @@ index_rnglists (void)
 /* Emit .debug_rnglists section.  */
 
 static void
-output_rnglists (void)
+output_rnglists (unsigned generation)
 {
   unsigned i;
   dw_ranges *r;
@@ -11207,8 +11192,12 @@ output_rnglists (void)
 
   switch_to_section (debug_ranges_section);
   ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
-  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL, 2);
-  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL, 3);
+  /* There are up to 4 unique ranges labels per generation.
+     See also init_sections_and_labels.  */
+  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL,
+			       2 + generation * 4);
+  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL,
+			       3 + generation * 4);
   if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
     dw2_asm_output_data (4, 0xffffffff,
 			 "Initial length escape value indicating "
@@ -15605,6 +15594,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case VEC_SELECT:
     case VEC_CONCAT:
     case VEC_DUPLICATE:
+    case VEC_SERIES:
     case UNSPEC:
     case HIGH:
     case FMA:
@@ -16366,92 +16356,111 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
      This means we have to special case the last node, and generate
      a range of [last location start, end of function label].  */
 
-  secname = secname_for_decl (decl);
+  if (cfun && crtl->has_bb_partition)
+    {
+      bool save_in_cold_section_p = in_cold_section_p;
+      in_cold_section_p = first_function_block_is_cold;
+      if (loc_list->last_before_switch == NULL)
+	in_cold_section_p = !in_cold_section_p;
+      secname = secname_for_decl (decl);
+      in_cold_section_p = save_in_cold_section_p;
+    }
+  else
+    secname = secname_for_decl (decl);
 
   for (node = loc_list->first; node; node = node->next)
-    if (GET_CODE (node->loc) == EXPR_LIST
-	|| NOTE_VAR_LOCATION_LOC (node->loc) != NULL_RTX)
-      {
-	if (GET_CODE (node->loc) == EXPR_LIST)
-	  {
-	    /* This requires DW_OP_{,bit_}piece, which is not usable
-	       inside DWARF expressions.  */
-	    if (want_address != 2)
-	      continue;
+    {
+      bool range_across_switch = false;
+      if (GET_CODE (node->loc) == EXPR_LIST
+	  || NOTE_VAR_LOCATION_LOC (node->loc) != NULL_RTX)
+	{
+	  if (GET_CODE (node->loc) == EXPR_LIST)
+	    {
+	      descr = NULL;
+	      /* This requires DW_OP_{,bit_}piece, which is not usable
+		 inside DWARF expressions.  */
+	      if (want_address == 2)
+		descr = dw_sra_loc_expr (decl, node->loc);
+	    }
+	  else
+	    {
+	      initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+	      varloc = NOTE_VAR_LOCATION (node->loc);
+	      descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
+	    }
+	  if (descr)
+	    {
+	      /* If section switch happens in between node->label
+		 and node->next->label (or end of function) and
+		 we can't emit it as a single entry list,
+		 emit two ranges, first one ending at the end
+		 of first partition and second one starting at the
+		 beginning of second partition.  */
+	      if (node == loc_list->last_before_switch
+		  && (node != loc_list->first || loc_list->first->next)
+		  && current_function_decl)
+		{
+		  endname = cfun->fde->dw_fde_end;
+		  range_across_switch = true;
+		}
+	      /* The variable has a location between NODE->LABEL and
+		 NODE->NEXT->LABEL.  */
+	      else if (node->next)
+		endname = node->next->label;
+	      /* If the variable has a location at the last label
+		 it keeps its location until the end of function.  */
+	      else if (!current_function_decl)
+		endname = text_end_label;
+	      else
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+					       current_function_funcdef_no);
+		  endname = ggc_strdup (label_id);
+		}
+
+	      *listp = new_loc_list (descr, node->label, endname, secname);
+	      if (TREE_CODE (decl) == PARM_DECL
+		  && node == loc_list->first
+		  && NOTE_P (node->loc)
+		  && strcmp (node->label, endname) == 0)
+		(*listp)->force = true;
+	      listp = &(*listp)->dw_loc_next;
+	    }
+	}
+
+      if (cfun
+	  && crtl->has_bb_partition
+	  && node == loc_list->last_before_switch)
+	{
+	  bool save_in_cold_section_p = in_cold_section_p;
+	  in_cold_section_p = !first_function_block_is_cold;
+	  secname = secname_for_decl (decl);
+	  in_cold_section_p = save_in_cold_section_p;
+	}
+
+      if (range_across_switch)
+	{
+	  if (GET_CODE (node->loc) == EXPR_LIST)
 	    descr = dw_sra_loc_expr (decl, node->loc);
-	    if (descr == NULL)
-	      continue;
-	  }
-	else
-	  {
-	    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
-	    varloc = NOTE_VAR_LOCATION (node->loc);
-	    descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
-	  }
-	if (descr)
-	  {
-	    bool range_across_switch = false;
-	    /* If section switch happens in between node->label
-	       and node->next->label (or end of function) and
-	       we can't emit it as a single entry list,
-	       emit two ranges, first one ending at the end
-	       of first partition and second one starting at the
-	       beginning of second partition.  */
-	    if (node == loc_list->last_before_switch
-		&& (node != loc_list->first || loc_list->first->next)
-		&& current_function_decl)
-	      {
-		endname = cfun->fde->dw_fde_end;
-		range_across_switch = true;
-	      }
-	    /* The variable has a location between NODE->LABEL and
-	       NODE->NEXT->LABEL.  */
-	    else if (node->next)
-	      endname = node->next->label;
-	    /* If the variable has a location at the last label
-	       it keeps its location until the end of function.  */
-	    else if (!current_function_decl)
-	      endname = text_end_label;
-	    else
-	      {
-		ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-					     current_function_funcdef_no);
-		endname = ggc_strdup (label_id);
-	      }
-
-	    *listp = new_loc_list (descr, node->label, endname, secname);
-	    if (TREE_CODE (decl) == PARM_DECL
-		&& node == loc_list->first
-		&& NOTE_P (node->loc)
-		&& strcmp (node->label, endname) == 0)
-	      (*listp)->force = true;
-	    listp = &(*listp)->dw_loc_next;
-
-	    if (range_across_switch)
-	      {
-		if (GET_CODE (node->loc) == EXPR_LIST)
-		  descr = dw_sra_loc_expr (decl, node->loc);
-		else
-		  {
-		    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
-		    varloc = NOTE_VAR_LOCATION (node->loc);
-		    descr = dw_loc_list_1 (decl, varloc, want_address,
-					   initialized);
-		  }
-		gcc_assert (descr);
-		/* The variable has a location between NODE->LABEL and
-		   NODE->NEXT->LABEL.  */
-		if (node->next)
-		  endname = node->next->label;
-		else
-		  endname = cfun->fde->dw_fde_second_end;
-		*listp = new_loc_list (descr,
-				       cfun->fde->dw_fde_second_begin,
-				       endname, secname);
-		listp = &(*listp)->dw_loc_next;
-	      }
-	  }
-      }
+	  else
+	    {
+	      initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+	      varloc = NOTE_VAR_LOCATION (node->loc);
+	      descr = dw_loc_list_1 (decl, varloc, want_address,
+				     initialized);
+	    }
+	  gcc_assert (descr);
+	  /* The variable has a location between NODE->LABEL and
+	     NODE->NEXT->LABEL.  */
+	  if (node->next)
+	    endname = node->next->label;
+	  else
+	    endname = cfun->fde->dw_fde_second_end;
+	  *listp = new_loc_list (descr, cfun->fde->dw_fde_second_begin,
+				 endname, secname);
+	  listp = &(*listp)->dw_loc_next;
+	}
+    }
 
   /* Try to avoid the overhead of a location list emitting a location
      expression instead, but only if we didn't have more than one
@@ -27256,9 +27265,10 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 }
 
 /* Initialize the various sections and labels for dwarf output and prefix
-   them with PREFIX if non-NULL.  */
+   them with PREFIX if non-NULL.  Returns the generation (zero based
+   number of times function was called).  */
 
-static void
+static unsigned
 init_sections_and_labels (bool early_lto_debug)
 {
   /* As we may get called multiple times have a generation count for
@@ -27437,11 +27447,14 @@ init_sections_and_labels (bool early_lto_debug)
   info_section_emitted = false;
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, generation);
+  /* There are up to 4 unique ranges labels per generation.
+     See also output_rnglists.  */
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
-			       DEBUG_RANGES_SECTION_LABEL, generation);
+			       DEBUG_RANGES_SECTION_LABEL, generation * 4);
   if (dwarf_version >= 5 && dwarf_split_debug_info)
     ASM_GENERATE_INTERNAL_LABEL (ranges_base_label,
-				 DEBUG_RANGES_SECTION_LABEL, 2 + generation);
+				 DEBUG_RANGES_SECTION_LABEL,
+				 1 + generation * 4);
   ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
 			       DEBUG_ADDR_SECTION_LABEL, generation);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
@@ -27452,6 +27465,7 @@ init_sections_and_labels (bool early_lto_debug)
 			       generation);
 
   ++generation;
+  return generation - 1;
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -27507,6 +27521,9 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 static void
 dwarf2out_assembly_start (void)
 {
+  if (text_section_line_info)
+    return;
+
 #ifndef DWARF2_LINENO_DEBUGGING_INFO
   ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
@@ -29882,7 +29899,7 @@ dwarf2out_finish (const char *)
   move_marked_base_types ();
 
   /* Initialize sections and labels used for actual assembler output.  */
-  init_sections_and_labels (false);
+  unsigned generation = init_sections_and_labels (false);
 
   /* Traverse the DIE's and add sibling attributes to those DIE's that
      have children.  */
@@ -30171,7 +30188,7 @@ dwarf2out_finish (const char *)
   if (!vec_safe_is_empty (ranges_table))
     {
       if (dwarf_version >= 5)
-	output_rnglists ();
+	output_rnglists (generation);
       else
 	output_ranges ();
     }

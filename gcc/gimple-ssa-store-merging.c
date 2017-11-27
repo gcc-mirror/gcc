@@ -2390,7 +2390,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
 			    ? try_size - info->bitsize - bitpos
 			    : bitpos))
 	return false;
-      if (n.base_addr && vuse_store)
+      if (this_n.base_addr && vuse_store)
 	{
 	  unsigned int j;
 	  for (j = first; j <= last; ++j)
@@ -3372,7 +3372,30 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
       store_immediate_info *infol = group->stores.last ();
       if (gimple_vuse (op.stmt) == gimple_vuse (infol->ops[j].stmt))
 	{
-	  load_gsi[j] = gsi_for_stmt (op.stmt);
+	  /* We can't pick the location randomly; while we've verified
+	     all the loads have the same vuse, they can be still in different
+	     basic blocks and we need to pick the one from the last bb:
+	     int x = q[0];
+	     if (x == N) return;
+	     int y = q[1];
+	     p[0] = x;
+	     p[1] = y;
+	     otherwise if we put the wider load at the q[0] load, we might
+	     segfault if q[1] is not mapped.  */
+	  basic_block bb = gimple_bb (op.stmt);
+	  gimple *ostmt = op.stmt;
+	  store_immediate_info *info;
+	  FOR_EACH_VEC_ELT (group->stores, i, info)
+	    {
+	      gimple *tstmt = info->ops[j].stmt;
+	      basic_block tbb = gimple_bb (tstmt);
+	      if (dominated_by_p (CDI_DOMINATORS, tbb, bb))
+		{
+		  ostmt = tstmt;
+		  bb = tbb;
+		}
+	    }
+	  load_gsi[j] = gsi_for_stmt (ostmt);
 	  load_addr[j]
 	    = force_gimple_operand_1 (unshare_expr (op.base_addr),
 				      &load_seq[j], is_gimple_mem_ref_addr,

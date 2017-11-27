@@ -2210,8 +2210,17 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  in_cold_section_p = !in_cold_section_p;
 
+	  if (in_cold_section_p)
+	    cold_function_name
+	      = clone_function_name (current_function_decl, "cold");
+
 	  if (dwarf2out_do_frame ())
-	    dwarf2out_switch_text_section ();
+	    {
+	      dwarf2out_switch_text_section ();
+	      if (!dwarf2_debug_info_emitted_p (current_function_decl)
+		  && !DECL_IGNORED_P (current_function_decl))
+		debug_hooks->switch_text_section ();
+	    }
 	  else if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->switch_text_section ();
 
@@ -2223,8 +2232,6 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	     suffixing "cold" to the original function's name.  */
 	  if (in_cold_section_p)
 	    {
-	      cold_function_name
-		= clone_function_name (current_function_decl, "cold");
 #ifdef ASM_DECLARE_COLD_FUNCTION_NAME
 	      ASM_DECLARE_COLD_FUNCTION_NAME (asm_out_file,
 					      IDENTIFIER_POINTER

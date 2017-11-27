@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-pre" } */
+/* { dg-options "-O2 -fdump-tree-pre -fno-ipa-sra" } */
 
 typedef struct {
     unsigned int key;

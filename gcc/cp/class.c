@@ -5370,7 +5370,7 @@ finalize_literal_type_property (tree t)
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
 	  if (!DECL_GENERATED_P (fn)
 	      && pedwarn (DECL_SOURCE_LOCATION (fn), OPT_Wpedantic,
-			  "enclosing class of constexpr non-static member "
+			  "enclosing class of %<constexpr%> non-static member "
 			  "function %q+#D is not a literal type", fn))
 	    explain_non_literal_class (t);
 	}
@@ -5408,7 +5408,7 @@ explain_non_literal_class (tree t)
     {
       inform (UNKNOWN_LOCATION,
 	      "  %q+T is not an aggregate, does not have a trivial "
-	      "default constructor, and has no constexpr constructor that "
+	      "default constructor, and has no %<constexpr%> constructor that "
 	      "is not a copy or move constructor", t);
       if (type_has_non_user_provided_default_constructor (t))
 	/* Note that we can't simply call locate_ctor because when the
@@ -6198,6 +6198,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  DECL_CONTEXT (padding_field) = t;
 	  DECL_ARTIFICIAL (padding_field) = 1;
 	  DECL_IGNORED_P (padding_field) = 1;
+	  DECL_PADDING_P (padding_field) = 1;
 	  layout_nonempty_base_or_field (rli, padding_field,
 					 NULL_TREE,
 					 empty_base_offsets);

@@ -5,4 +5,4 @@ constexpr int f (int i)
 {
 }
 
-constexpr int i = f(42);	// { dg-error "flows off the end" }
+constexpr int i = f(42);	// { dg-error "flows off the end|in .constexpr. expansion of " }

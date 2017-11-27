@@ -84,7 +84,7 @@ debug_gimple_stmt (gimple *gs)
 static const char *
 dump_profile (profile_count &count)
 {
-  char *buf;
+  char *buf = NULL;
   if (!count.initialized_p ())
     return "";
   if (count.ipa_p ())

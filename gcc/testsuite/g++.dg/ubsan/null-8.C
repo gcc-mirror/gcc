@@ -3,13 +3,20 @@
 // { dg-options "-fsanitize=null -std=c++14" }
 // { dg-output "reference binding to null pointer of type 'const int'" }
 
+__attribute__((noinline, noclone))
+void
+bar (int x)
+{
+  asm volatile ("" : : "r" (x) : "memory");
+}
+
 void
 foo (const int &iref)
 {
   if (&iref)
-    __builtin_printf ("iref %d\n", iref);
+    bar (iref);
   else
-    __builtin_printf ("iref is NULL\n");
+    bar (1);
 }
 
 int

@@ -763,7 +763,12 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
      Except for the entry block.  */
   src = e->src;
   if ((e->flags & EDGE_ABNORMAL) == 0
-      && single_succ_p (src)
+      && (single_succ_p (src)
+	  /* Do not count a fake edge as successor as added to infinite
+	     loops by connect_infinite_loops_to_exit.  */
+	  || (EDGE_COUNT (src->succs) == 2
+	      && (EDGE_SUCC (src, 0)->flags & EDGE_FAKE
+		  || EDGE_SUCC (src, 1)->flags & EDGE_FAKE)))
       && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_last_bb (src);

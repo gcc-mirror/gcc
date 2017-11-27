@@ -1,3 +1,127 @@
+2017-11-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/36313
+	* m4/maxloc2s.m4: Replace int with gfc_charlen_type, take 3.
+	* m4/minloc2s.m4: Likewise.
+	* generated/maxloc2_16_s1.c: Regenerated.
+	* generated/maxloc2_16_s4.c: Regenerated.
+	* generated/maxloc2_4_s1.c: Regenerated.
+	* generated/maxloc2_4_s4.c: Regenerated.
+	* generated/maxloc2_8_s1.c: Regenerated.
+	* generated/maxloc2_8_s4.c: Regenerated.
+	* generated/minloc2_16_s1.c: Regenerated.
+	* generated/minloc2_16_s4.c: Regenerated.
+	* generated/minloc2_4_s1.c: Regenerated.
+	* generated/minloc2_4_s4.c: Regenerated.
+	* generated/minloc2_8_s1.c: Regenerated.
+	* generated/minloc2_8_s4.c: Regenerated.
+
+2017-11-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* m4/maxloc2s.m4: Replace int for character length by
+	gfc_charlen_type.
+	* m4/minloc2s.m4: Likewise.
+	* generated./maxloc2_16_s1.c: Regenerated.
+	* generated./maxloc2_16_s4.c: Regenerated.
+	* generated./maxloc2_4_s1.c: Regenerated.
+	* generated./maxloc2_4_s4.c: Regenerated.
+	* generated./maxloc2_8_s1.c: Regenerated.
+	* generated./maxloc2_8_s4.c: Regenerated.
+	* generated./minloc2_16_s1.c: Regenerated.
+	* generated./minloc2_16_s4.c: Regenerated.
+	* generated./minloc2_4_s1.c: Regenerated.
+	* generated./minloc2_4_s4.c: Regenerated.
+	* generated./minloc2_8_s1.c: Regenerated.
+	* generated./minloc2_8_s4.c: Regenerated.
+
+2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/eoshift0.c (eoshift0): Make shift an index_type.
+        * intrinsics/eoshift2.c (eoshift2): Make shift an index_type.
+
+2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/83097
+	* io/inquire.c (inquire_via_unit): Use __BYTE_ORDER__ predefined
+	macro.
+	* io/open.c (st_open): Likewise.
+	* io/transfer.c (data_transfer_init): Likewise.
+	* io/write.c (btoa_big): Likewise.
+	(otoa_big): Likewise.
+	(ztoa_big): Likewise.
+	* libgfortran.h (big_endian): Remove variable.
+	(GFOR_POINTER_TO_L1): Use __BYTE_ORDER__ macro.
+	* runtime/main.c (determine_endianness): Remove function.
+	(init): Remove call to determine_endianness.
+	* runtime/minimal.c: Remove setting big_endian variable.
+
+2017-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* Makefile.am: Add i_maxloc0s_c, i_maxloc1s_c, i_maxloc2s_c,
+	i_minloc0s_c, i_minloc1s_c and i_minloc2s_c.
+	* Makefile.in: Regenerated.
+        * generated/maxloc0_16_s1.c: New file.
+        * generated/maxloc0_16_s4.c: New file.
+        * generated/maxloc0_4_s1.c: New file.
+        * generated/maxloc0_4_s4.c: New file.
+        * generated/maxloc0_8_s1.c: New file.
+        * generated/maxloc0_8_s4.c: New file.
+        * generated/maxloc1_16_s1.c: New file.
+        * generated/maxloc1_16_s4.c: New file.
+        * generated/maxloc1_4_s1.c: New file.
+        * generated/maxloc1_4_s4.c: New file.
+        * generated/maxloc1_8_s1.c: New file.
+        * generated/maxloc1_8_s4.c: New file.
+        * generated/maxloc2_16_s1.c: New file.
+        * generated/maxloc2_16_s4.c: New file.
+        * generated/maxloc2_4_s1.c: New file.
+        * generated/maxloc2_4_s4.c: New file.
+        * generated/maxloc2_8_s1.c: New file.
+        * generated/maxloc2_8_s4.c: New file.
+        * generated/minloc0_16_s1.c: New file.
+        * generated/minloc0_16_s4.c: New file.
+        * generated/minloc0_4_s1.c: New file.
+        * generated/minloc0_4_s4.c: New file.
+        * generated/minloc0_8_s1.c: New file.
+        * generated/minloc0_8_s4.c: New file.
+        * generated/minloc1_16_s1.c: New file.
+        * generated/minloc1_16_s4.c: New file.
+        * generated/minloc1_4_s1.c: New file.
+        * generated/minloc1_4_s4.c: New file.
+        * generated/minloc1_8_s1.c: New file.
+        * generated/minloc1_8_s4.c: New file.
+        * generated/minloc2_16_s1.c: New file.
+        * generated/minloc2_16_s4.c: New file.
+        * generated/minloc2_4_s1.c: New file.
+        * generated/minloc2_4_s4.c: New file.
+        * generated/minloc2_8_s1.c: New file.
+        * generated/minloc2_8_s4.c: New file.
+        * m4/iforeach-s.m4: New file.
+        * m4/ifunction-s.m4: New file.
+        * m4/maxloc0s.m4: New file.
+        * m4/maxloc1s.m4: New file.
+        * m4/maxloc2s.m4: New file.
+        * m4/minloc0s.m4: New file.
+        * m4/minloc1s.m4: New file.
+        * m4/minloc2s.m4: New file.
+	* gfortran.map: Add new functions.
+	* libgfortran.h: Add gfc_array_s1 and gfc_array_s4.
+
+2017-11-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/83070
+	* intrinsics/eoshift0.c (eoshift0): Fix -Wsign-compare warning by
+	making a_ex and r_ex index_type instead of size_t.
+
+2017-11-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78549
+	* io/io.h (newunit_free): Add declaration. Clean some whitespace.
+	* io/transfer.c (st_read_done, st_write_done): Call newunit_free.
+	* io/unit.c (newunit_free): Change type from static void to void.
+
 2017-11-19  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/44292

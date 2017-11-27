@@ -597,6 +597,8 @@ static void arc_finalize_pic (void);
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P arc_modes_tieable_p
+#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
+#define TARGET_BUILTIN_SETJMP_FRAME_VALUE arc_builtin_setjmp_frame_value
 
 /* Try to keep the (mov:DF _, reg) as early as possible so
    that the d<add/sub/mul>h-lr insns appear together and can
@@ -2556,8 +2558,7 @@ arc_compute_function_type (struct function *fun)
    Addition for pic: The gp register needs to be saved if the current
    function changes it to access gotoff variables.
    FIXME: This will not be needed if we used some arbitrary register
-   instead of r26.
-*/
+   instead of r26.  */
 
 static bool
 arc_must_save_register (int regno, struct function *func)
@@ -2620,13 +2621,50 @@ arc_must_save_return_addr (struct function *func)
 /* Helper function to wrap FRAME_POINTER_NEEDED.  We do this as
    FRAME_POINTER_NEEDED will not be true until the IRA (Integrated
    Register Allocator) pass, while we want to get the frame size
-   correct earlier than the IRA pass.  */
+   correct earlier than the IRA pass.
+
+   When a function uses eh_return we must ensure that the fp register
+   is saved and then restored so that the unwinder can restore the
+   correct value for the frame we are going to jump to.
+
+   To do this we force all frames that call eh_return to require a
+   frame pointer (see arc_frame_pointer_required), this
+   will ensure that the previous frame pointer is stored on entry to
+   the function, and will then be reloaded at function exit.
+
+   As the frame pointer is handled as a special case in our prologue
+   and epilogue code it must not be saved and restored using the
+   MUST_SAVE_REGISTER mechanism otherwise we run into issues where GCC
+   believes that the function is not using a frame pointer and that
+   the value in the fp register is the frame pointer, while the
+   prologue and epilogue are busy saving and restoring the fp
+   register.
+
+   During compilation of a function the frame size is evaluated
+   multiple times, it is not until the reload pass is complete the the
+   frame size is considered fixed (it is at this point that space for
+   all spills has been allocated).  However the frame_pointer_needed
+   variable is not set true until the register allocation pass, as a
+   result in the early stages the frame size does not include space
+   for the frame pointer to be spilled.
+
+   The problem that this causes is that the rtl generated for
+   EH_RETURN_HANDLER_RTX uses the details of the frame size to compute
+   the offset from the frame pointer at which the return address
+   lives.  However, in early passes GCC has not yet realised we need a
+   frame pointer, and so has not included space for the frame pointer
+   in the frame size, and so gets the offset of the return address
+   wrong.  This should not be an issue as in later passes GCC has
+   realised that the frame pointer needs to be spilled, and has
+   increased the frame size.  However, the rtl for the
+   EH_RETURN_HANDLER_RTX is not regenerated to use the newer, larger
+   offset, and the wrong smaller offset is used.  */
+
 static bool
 arc_frame_pointer_needed (void)
 {
-  return (frame_pointer_needed);
+  return (frame_pointer_needed || crtl->calls_eh_return);
 }
-
 
 /* Return non-zero if there are registers to be saved or loaded using
    millicode thunks.  We can only use consecutive sequences starting
@@ -2658,26 +2696,32 @@ arc_compute_millicode_save_restore_regs (unsigned int gmask,
   return 0;
 }
 
-/* Return the bytes needed to compute the frame pointer from the current
-   stack pointer.
+/* Return the bytes needed to compute the frame pointer from the
+   current stack pointer.  */
 
-   SIZE is the size needed for local variables.  */
-
-unsigned int
-arc_compute_frame_size (int size)	/* size = # of var. bytes allocated.  */
+static unsigned int
+arc_compute_frame_size (void)
 {
   int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
   unsigned int reg_size, reg_offset;
   unsigned int gmask;
-  struct arc_frame_info *frame_info = &cfun->machine->frame_info;
+  enum arc_function_type fn_type;
+  int interrupt_p;
+  struct arc_frame_info *frame_info;
+  int size;
 
-  size = ARC_STACK_ALIGN (size);
+  /* The answer might already be known.  */
+  if (cfun->machine->frame_info.initialized)
+    return cfun->machine->frame_info.total_size;
 
-  /* 1) Size of locals and temporaries */
+  frame_info = &cfun->machine->frame_info;
+  size = ARC_STACK_ALIGN (get_frame_size ());
+
+  /* 1) Size of locals and temporaries.  */
   var_size	= size;
 
-  /* 2) Size of outgoing arguments */
+  /* 2) Size of outgoing arguments.  */
   args_size	= crtl->outgoing_args_size;
 
   /* 3) Calculate space needed for saved registers.
@@ -2698,12 +2742,29 @@ arc_compute_frame_size (int size)	/* size = # of var. bytes allocated.  */
 	}
     }
 
+  /* In a frame that calls __builtin_eh_return two data registers are
+     used to pass values back to the exception handler.
+
+     Ensure that these registers are spilled to the stack so that the
+     exception throw code can find them, and update the saved values.
+     The handling code will then consume these reloaded values to
+     handle the exception.  */
+  if (crtl->calls_eh_return)
+    for (regno = 0; EH_RETURN_DATA_REGNO (regno) != INVALID_REGNUM; regno++)
+      {
+	reg_size += UNITS_PER_WORD;
+	gmask |= 1 << regno;
+      }
+
   /* 4) Space for back trace data structure.
 	<return addr reg size> (if required) + <fp size> (if required).  */
   frame_info->save_return_addr
-    = (!crtl->is_leaf || df_regs_ever_live_p (RETURN_ADDR_REGNUM));
+    = (!crtl->is_leaf || df_regs_ever_live_p (RETURN_ADDR_REGNUM)
+       || crtl->calls_eh_return);
   /* Saving blink reg in case of leaf function for millicode thunk calls.  */
-  if (optimize_size && !TARGET_NO_MILLICODE_THUNK_SET)
+  if (optimize_size
+      && !TARGET_NO_MILLICODE_THUNK_SET
+      && !crtl->calls_eh_return)
     {
       if (arc_compute_millicode_save_restore_regs (gmask, frame_info))
 	frame_info->save_return_addr = true;
@@ -2731,7 +2792,11 @@ arc_compute_frame_size (int size)	/* size = # of var. bytes allocated.  */
   /* Compute total frame size.  */
   total_size = var_size + args_size + extra_size + pretend_size + reg_size;
 
-  total_size = ARC_STACK_ALIGN (total_size);
+  /* It used to be the case that the alignment was forced at this
+     point.  However, that is dangerous, calculations based on
+     total_size would be wrong.  Given that this has never cropped up
+     as an issue I've changed this to an assert for now.  */
+  gcc_assert (total_size == ARC_STACK_ALIGN (total_size));
 
   /* Compute offset of register save area from stack pointer:
      Frame: pretend_size <blink> reg_size <fp> var_size args_size <--sp
@@ -3010,7 +3075,7 @@ arc_dwarf_emit_irq_save_regs (void)
 void
 arc_expand_prologue (void)
 {
-  int size = get_frame_size ();
+  int size;
   unsigned int gmask = cfun->machine->frame_info.gmask;
   /*  unsigned int frame_pointer_offset;*/
   unsigned int frame_size_to_allocate;
@@ -3024,12 +3089,8 @@ arc_expand_prologue (void)
   if (ARC_NAKED_P (fn_type))
     return;
 
-  size = ARC_STACK_ALIGN (size);
-
-  /* Compute/get total frame size.  */
-  size = (!cfun->machine->frame_info.initialized
-	   ? arc_compute_frame_size (size)
-	   : cfun->machine->frame_info.total_size);
+  /* Compute total frame size.  */
+  size = arc_compute_frame_size ();
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
@@ -3145,13 +3206,10 @@ arc_expand_prologue (void)
 void
 arc_expand_epilogue (int sibcall_p)
 {
-  int size = get_frame_size ();
+  int size;
   unsigned int fn_type = arc_compute_function_type (cfun);
 
-  size = ARC_STACK_ALIGN (size);
-  size = (!cfun->machine->frame_info.initialized
-	   ? arc_compute_frame_size (size)
-	   : cfun->machine->frame_info.total_size);
+  size = arc_compute_frame_size ();
 
   unsigned int pretend_size = cfun->machine->frame_info.pretend_size;
   unsigned int frame_size;
@@ -3319,21 +3377,59 @@ arc_expand_epilogue (int sibcall_p)
   if (size > restored)
     frame_stack_add (size - restored);
 
+  /* For frames that use __builtin_eh_return, the register defined by
+     EH_RETURN_STACKADJ_RTX is set to 0 for all standard return paths.
+     On eh_return paths however, the register is set to the value that
+     should be added to the stack pointer in order to restore the
+     correct stack pointer for the exception handling frame.
+
+     For ARC we are going to use r2 for EH_RETURN_STACKADJ_RTX, add
+     this onto the stack for eh_return frames.  */
+  if (crtl->calls_eh_return)
+    emit_insn (gen_add2_insn (stack_pointer_rtx,
+			      EH_RETURN_STACKADJ_RTX));
+
   /* Emit the return instruction.  */
   if (sibcall_p == FALSE)
     emit_jump_insn (gen_simple_return ());
 }
 
-/* Return the offset relative to the stack pointer where the return address
-   is stored, or -1 if it is not stored.  */
+/* Return rtx for the location of the return address on the stack,
+   suitable for use in __builtin_eh_return.  The new return address
+   will be written to this location in order to redirect the return to
+   the exception handler.  */
 
-int
-arc_return_slot_offset ()
+rtx
+arc_eh_return_address_location (void)
 {
-  struct arc_frame_info *afi = &cfun->machine->frame_info;
+  rtx mem;
+  int offset;
+  struct arc_frame_info *afi;
 
-  return (afi->save_return_addr
-	  ? afi->total_size - afi->pretend_size - afi->extra_size : -1);
+  arc_compute_frame_size ();
+  afi = &cfun->machine->frame_info;
+
+  gcc_assert (crtl->calls_eh_return);
+  gcc_assert (afi->save_return_addr);
+  gcc_assert (afi->extra_size >= 4);
+
+  /* The '-4' removes the size of the return address, which is
+     included in the 'extra_size' field.  */
+  offset = afi->reg_size + afi->extra_size - 4;
+  mem = gen_frame_mem (Pmode,
+		       plus_constant (Pmode, frame_pointer_rtx, offset));
+
+  /* The following should not be needed, and is, really a hack.  The
+     issue being worked around here is that the DSE (Dead Store
+     Elimination) pass will remove this write to the stack as it sees
+     a single store and no corresponding read.  The read however
+     occurs in the epilogue code, which is not added into the function
+     rtl until a later pass.  So, at the time of DSE, the decision to
+     remove this store seems perfectly sensible.  Marking the memory
+     address as volatile obviously has the effect of preventing DSE
+     from removing the store.  */
+  MEM_VOLATILE_P (mem) = 1;
+  return mem;
 }
 
 /* PIC */
@@ -4831,8 +4927,8 @@ arc_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 int
 arc_initial_elimination_offset (int from, int to)
 {
-  if (! cfun->machine->frame_info.initialized)
-     arc_compute_frame_size (get_frame_size ());
+  if (!cfun->machine->frame_info.initialized)
+    arc_compute_frame_size ();
 
   if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     {
@@ -4860,7 +4956,7 @@ arc_initial_elimination_offset (int from, int to)
 static bool
 arc_frame_pointer_required (void)
 {
- return cfun->calls_alloca;
+ return cfun->calls_alloca || crtl->calls_eh_return;
 }
 
 
@@ -10664,6 +10760,28 @@ compact_memory_operand_p (rtx op, machine_mode mode,
 	 for 16-bit load instructions.  */
     }
   return false;
+}
+
+/* Return the frame pointer value to be backed up in the setjmp buffer.  */
+
+static rtx
+arc_builtin_setjmp_frame_value (void)
+{
+  /* We always want to preserve whatever value is currently in the frame
+     pointer register.  For frames that are using the frame pointer the new
+     value of the frame pointer register will have already been computed
+     (as part of the prologue).  For frames that are not using the frame
+     pointer it is important that we backup whatever value is in the frame
+     pointer register, as earlier (more outer) frames may have placed a
+     value into the frame pointer register.  It might be tempting to try
+     and use `frame_pointer_rtx` here, however, this is not what we want.
+     For frames that are using the frame pointer this will give the
+     correct value.  However, for frames that are not using the frame
+     pointer this will still give the value that _would_ have been the
+     frame pointer value for this frame (if the use of the frame pointer
+     had not been removed).  We really do want the raw frame pointer
+     register value.  */
+  return gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);
 }
 
 /* Implement TARGET_USE_ANCHORS_FOR_SYMBOL_P.  We don't want to use

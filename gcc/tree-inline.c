@@ -2597,6 +2597,11 @@ copy_loops (copy_body_data *id,
 	  flow_loop_tree_node_add (dest_parent, dest_loop);
 
 	  dest_loop->safelen = src_loop->safelen;
+	  if (src_loop->unroll)
+	    {
+	      dest_loop->unroll = src_loop->unroll;
+	      cfun->has_unroll = true;
+	    }
 	  dest_loop->dont_vectorize = src_loop->dont_vectorize;
 	  if (src_loop->force_vectorize)
 	    {
@@ -3819,6 +3824,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
     case MULT_HIGHPART_EXPR:
@@ -3876,9 +3882,6 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
 
     case REALIGN_LOAD_EXPR:
 
-    case REDUC_MAX_EXPR:
-    case REDUC_MIN_EXPR:
-    case REDUC_PLUS_EXPR:
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case DOT_PROD_EXPR:
@@ -4674,8 +4677,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Inlining %s to %s with frequency %4.2f\n",
-	       xstrdup_for_dump (id->src_node->dump_name ()),
-	       xstrdup_for_dump (id->dst_node->dump_name ()),
+	       id->src_node->dump_name (),
+	       id->dst_node->dump_name (),
 	       cg_edge->sreal_frequency ().to_double ());
       id->src_node->dump (dump_file);
       id->dst_node->dump (dump_file);

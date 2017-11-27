@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    location rather than implicitly using input_location.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -65,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-rtl-function.h"
 #include "run-rtl-passes.h"
 #include "intl.h"
+#include "c-family/name-hint.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1808,13 +1810,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else
 	{
-	  const char *hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME);
+	  name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME,
+					      here);
 	  if (hint)
 	    {
-	      richloc.add_fixit_replace (hint);
+	      richloc.add_fixit_replace (hint.suggestion ());
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			name, hint);
+			name, hint.suggestion ());
 	    }
 	  else
 	    error_at (here, "unknown type name %qE", name);
@@ -4066,15 +4069,16 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
-	  const char *hint = lookup_name_fuzzy (token->value,
-						FUZZY_LOOKUP_TYPENAME);
+	  name_hint hint = lookup_name_fuzzy (token->value,
+					      FUZZY_LOOKUP_TYPENAME,
+					      token->location);
 	  if (hint)
 	    {
 	      gcc_rich_location richloc (token->location);
-	      richloc.add_fixit_replace (hint);
+	      richloc.add_fixit_replace (hint.suggestion ());
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			token->value, hint);
+			token->value, hint.suggestion ());
 	    }
 	  else
 	    error_at (token->location, "unknown type name %qE", token->value);
@@ -6051,9 +6055,10 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
 	 "%<_Cilk_spawn%> statement cannot be used as a condition for while statement"))
     cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
-		   annot_expr_ivdep_kind));
+				  annot_expr_ivdep_kind),
+		   integer_zero_node);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
@@ -6116,9 +6121,10 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
 	 "%<_Cilk_spawn%> statement cannot be used as a condition for a do-while statement"))
     cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
-		   annot_expr_ivdep_kind));
+				  annot_expr_ivdep_kind),
+		   integer_zero_node);
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
   c_finish_loop (loc, cond, NULL, body, new_break, new_cont, false);
@@ -6323,9 +6329,10 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
 					 "expected %<;%>");
 	    }
 	  if (ivdep && cond != error_mark_node)
-	    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+	    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 			   build_int_cst (integer_type_node,
-			   annot_expr_ivdep_kind));
+					  annot_expr_ivdep_kind),
+			   integer_zero_node);
 	}
       /* Parse the increment expression (the third expression in a
 	 for-statement).  In the case of a foreach-statement, this is
@@ -17479,11 +17486,11 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
       break;
     case pragma_struct:
     case pragma_param:
+    case pragma_stmt:
       c_parser_error (parser, "%<#pragma omp declare simd%> must be followed by "
 			      "function declaration or definition");
       break;
     case pragma_compound:
-    case pragma_stmt:
       if (c_parser_next_token_is (parser, CPP_KEYWORD)
 	  && c_parser_peek_token (parser)->keyword == RID_EXTENSION)
 	{
