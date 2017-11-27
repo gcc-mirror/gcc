@@ -1,3 +1,7 @@
+2017-11-27  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* hash-map.h (gt_cleare_cache): Avoid UB.
+
 2017-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgloop.h (struct loop): Document usage of USHRT_MAX for unroll.
