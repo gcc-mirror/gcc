@@ -1,3 +1,9 @@
+2017-11-27  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/83109
+	* testsuite/gcc.target/i386/cet-sjlj-1.c: Fix test.
+	* testsuite/gcc.target/i386/cet-sjlj-4.c: Likewise.
+
 2017-11-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/81248
