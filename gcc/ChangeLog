@@ -1,3 +1,8 @@
+2017-11-27  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR rtl-optimization/82488
+	* expr.c (fixup_args_size_notes): Avoid signed integer overflow.
+
 2017-11-26  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386.c (processor_target_table): Add skylake_cost for
