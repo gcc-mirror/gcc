@@ -1,3 +1,9 @@
+2017-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83100
+	* varasm.c (bss_initializer_p): Return true for DECL_COMMON
+	TREE_READONLY decls.
+
 2017-11-27  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR rtl-optimization/82488
