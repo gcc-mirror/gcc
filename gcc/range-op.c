@@ -825,12 +825,6 @@ op_rr (opm_mode mode, irange& r, const irange& lh, const irange& rh)
       return true;
     }
 
-  // There is a bug in 128 bit operations which dont set the overflow
-  // bits properly. PR 82547.  This can cause an ICE because we dont
-  // properly handle the overflow, resulting in ranges with LB and UB reversed.
-  if (TYPE_PRECISION (lh.get_type ()) > HOST_BITS_PER_WIDE_INT)
-    return false;
-
   /* Try constant cases first to see if we do anything special with them. */
   if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
     res = op_ir (mode, r, lh.upper_bound (), rh);
