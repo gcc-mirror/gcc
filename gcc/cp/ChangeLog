@@ -1,3 +1,10 @@
+2017-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81888
+	* parser.c (cp_parser_decomposition_declaration): Reject just
+	BRACE_ENCLOSED_INITIALIZER_P initializers with nelts != 1 rather
+	than all such CONSTRUCTORs, and only if is_direct_init is true.
+
 2017-11-27  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (primary_template_specialization_p): Rename from
