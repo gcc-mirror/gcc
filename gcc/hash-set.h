@@ -150,7 +150,7 @@ debug_helper (hash_set<T> &ref)
 }
 
 #define DEFINE_DEBUG_HASH_SET(T) \
-  template static void debug_helper (hash_set<T> &);	\
+  template void debug_helper (hash_set<T> &);		\
   DEBUG_FUNCTION void					\
   debug (hash_set<T> &ref)				\
   {							\
