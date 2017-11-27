@@ -1,5 +1,8 @@
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/ubsan/null-8.C (bar): New function.
+	(foo): Use bar instead of __builtin_printf.
+
 	PR debug/81307
 	* g++.dg/debug/debug9.C: Remove -fno-reorder-blocks-and-partition
 	workaround.
