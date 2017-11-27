@@ -453,8 +453,8 @@ debug_helper (vec<T, va_gc> &ref)
    functions for a type T.  */
 
 #define DEFINE_DEBUG_VEC(T) \
-  template static void debug_helper (vec<T> &);		\
-  template static void debug_helper (vec<T, va_gc> &);	\
+  template void debug_helper (vec<T> &);		\
+  template void debug_helper (vec<T, va_gc> &);		\
   /* Define the vec<T> debug functions.  */		\
   DEBUG_FUNCTION void					\
   debug (vec<T> &ref)					\

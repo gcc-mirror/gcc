@@ -1,3 +1,9 @@
+2017-11-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* hash-set.h (DEFINE_DEBUG_HASH_SET): Remove static qualifier
+	from explicit instantiation of debug_helper.
+	* vec.h (DEFINE_DEBUG_VEC): Ditto.
+
 2017-11-27  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (gimple_fold_builtin_memory_op): Remove dead code,
