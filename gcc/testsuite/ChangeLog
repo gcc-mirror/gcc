@@ -1,5 +1,9 @@
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/81307
+	* g++.dg/debug/debug9.C: Remove -fno-reorder-blocks-and-partition
+	workaround.
+
 	PR target/83100
 	* gcc.dg/pr83100-1.c: New test.
 	* gcc.dg/pr83100-2.c: New test.
