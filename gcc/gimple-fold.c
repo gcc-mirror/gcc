@@ -927,12 +927,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 
       if (!tree_fits_shwi_p (len))
 	return false;
-      /* FIXME:
-         This logic lose for arguments like (type *)malloc (sizeof (type)),
-         since we strip the casts of up to VOID return value from malloc.
-	 Perhaps we ought to inherit type from non-VOID argument here?  */
-      STRIP_NOPS (src);
-      STRIP_NOPS (dest);
       if (!POINTER_TYPE_P (TREE_TYPE (src))
 	  || !POINTER_TYPE_P (TREE_TYPE (dest)))
 	return false;
@@ -942,37 +936,14 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	 using that type.  In theory we could always use a char[len] type
 	 but that only gains us that the destination and source possibly
 	 no longer will have their address taken.  */
-      /* As we fold (void *)(p + CST) to (void *)p + CST undo this here.  */
-      if (TREE_CODE (src) == POINTER_PLUS_EXPR)
-	{
-	  tree tem = TREE_OPERAND (src, 0);
-	  STRIP_NOPS (tem);
-	  if (tem != TREE_OPERAND (src, 0))
-	    src = build1 (NOP_EXPR, TREE_TYPE (tem), src);
-	}
-      if (TREE_CODE (dest) == POINTER_PLUS_EXPR)
-	{
-	  tree tem = TREE_OPERAND (dest, 0);
-	  STRIP_NOPS (tem);
-	  if (tem != TREE_OPERAND (dest, 0))
-	    dest = build1 (NOP_EXPR, TREE_TYPE (tem), dest);
-	}
       srctype = TREE_TYPE (TREE_TYPE (src));
       if (TREE_CODE (srctype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
-	{
-	  srctype = TREE_TYPE (srctype);
-	  STRIP_NOPS (src);
-	  src = build1 (NOP_EXPR, build_pointer_type (srctype), src);
-	}
+	srctype = TREE_TYPE (srctype);
       desttype = TREE_TYPE (TREE_TYPE (dest));
       if (TREE_CODE (desttype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
-	{
-	  desttype = TREE_TYPE (desttype);
-	  STRIP_NOPS (dest);
-	  dest = build1 (NOP_EXPR, build_pointer_type (desttype), dest);
-	}
+	desttype = TREE_TYPE (desttype);
       if (TREE_ADDRESSABLE (srctype)
 	  || TREE_ADDRESSABLE (desttype))
 	return false;
@@ -1000,43 +971,34 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  || src_align < TYPE_ALIGN (srctype))
 	return false;
 
-      destvar = dest;
-      STRIP_NOPS (destvar);
-      if (TREE_CODE (destvar) == ADDR_EXPR
-	  && var_decl_component_p (TREE_OPERAND (destvar, 0))
+      destvar = NULL_TREE;
+      if (TREE_CODE (dest) == ADDR_EXPR
+	  && var_decl_component_p (TREE_OPERAND (dest, 0))
 	  && tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
-	destvar = fold_build2 (MEM_REF, desttype, destvar, off0);
-      else
-	destvar = NULL_TREE;
+	destvar = fold_build2 (MEM_REF, desttype, dest, off0);
 
-      srcvar = src;
-      STRIP_NOPS (srcvar);
-      if (TREE_CODE (srcvar) == ADDR_EXPR
-	  && var_decl_component_p (TREE_OPERAND (srcvar, 0))
+      srcvar = NULL_TREE;
+      if (TREE_CODE (src) == ADDR_EXPR
+	  && var_decl_component_p (TREE_OPERAND (src, 0))
 	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
 	{
 	  if (!destvar
 	      || src_align >= TYPE_ALIGN (desttype))
 	    srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
-				  srcvar, off0);
+				  src, off0);
 	  else if (!STRICT_ALIGNMENT)
 	    {
 	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
 					    src_align);
-	      srcvar = fold_build2 (MEM_REF, srctype, srcvar, off0);
+	      srcvar = fold_build2 (MEM_REF, srctype, src, off0);
 	    }
-	  else
-	    srcvar = NULL_TREE;
 	}
-      else
-	srcvar = NULL_TREE;
 
       if (srcvar == NULL_TREE && destvar == NULL_TREE)
 	return false;
 
       if (srcvar == NULL_TREE)
 	{
-	  STRIP_NOPS (src);
 	  if (src_align >= TYPE_ALIGN (desttype))
 	    srcvar = fold_build2 (MEM_REF, desttype, src, off0);
 	  else
@@ -1050,7 +1012,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	}
       else if (destvar == NULL_TREE)
 	{
-	  STRIP_NOPS (dest);
 	  if (dest_align >= TYPE_ALIGN (srctype))
 	    destvar = fold_build2 (MEM_REF, srctype, dest, off0);
 	  else

@@ -1,5 +1,10 @@
 2017-11-27  Richard Biener  <rguenther@suse.de>
 
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Remove dead code,
+	refactor a bit.
+
+2017-11-27  Richard Biener  <rguenther@suse.de>
+
 	* tree.c (wide_int_to_tree): Free discarded INTEGER_CST.
 	(type_hash_canon): Also clear int_cst_hash_table entry for
 	TYPE_MIN/MAX_VALUE.
