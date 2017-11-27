@@ -1,3 +1,10 @@
+2017-11-27  Richard Biener  <rguenther@suse.de>
+
+	* tree.c (wide_int_to_tree): Free discarded INTEGER_CST.
+	(type_hash_canon): Also clear int_cst_hash_table entry for
+	TYPE_MIN/MAX_VALUE.
+	(build_nonstandard_integer_type): Hash all TYPE_MAX_VALUEs.
+
 2017-11-27  Tamar Christina  <tamar.christina@arm.com>
 
 	* doc/extend.texi: Add -A suffix (ARMv8*-A, ARMv7-A).

@@ -1576,6 +1576,8 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	  t = nt;
 	  *slot = t;
 	}
+      else
+	ggc_free (nt);
     }
 
   return t;
@@ -6496,10 +6498,18 @@ type_hash_canon (unsigned int hashcode, tree type)
 	{
 	  if (TYPE_MIN_VALUE (type)
 	      && TREE_TYPE (TYPE_MIN_VALUE (type)) == type)
-	    ggc_free (TYPE_MIN_VALUE (type));
+	    {
+	      /* Zero is always in TYPE_CACHED_VALUES.  */
+	      if (! TYPE_UNSIGNED (type))
+		int_cst_hash_table->remove_elt (TYPE_MIN_VALUE (type));
+	      ggc_free (TYPE_MIN_VALUE (type));
+	    }
 	  if (TYPE_MAX_VALUE (type)
 	      && TREE_TYPE (TYPE_MAX_VALUE (type)) == type)
-	    ggc_free (TYPE_MAX_VALUE (type));
+	    {
+	      int_cst_hash_table->remove_elt (TYPE_MAX_VALUE (type));
+	      ggc_free (TYPE_MAX_VALUE (type));
+	    }
 	  if (TYPE_CACHED_VALUES_P (type))
 	    ggc_free (TYPE_CACHED_VALUES (type));
 	}
@@ -7486,8 +7496,10 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
     fixup_signed_type (itype);
 
   ret = itype;
-  if (tree_fits_uhwi_p (TYPE_MAX_VALUE (itype)))
-    ret = type_hash_canon (tree_to_uhwi (TYPE_MAX_VALUE (itype)), itype);
+
+  inchash::hash hstate;
+  inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
+  ret = type_hash_canon (hstate.end (), itype);
   if (precision <= MAX_INT_CACHED_PREC)
     nonstandard_integer_type_cache[precision + unsignedp] = ret;
 
