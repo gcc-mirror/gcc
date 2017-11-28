@@ -91,6 +91,62 @@ evrp_range_analyzer::try_find_new_range (tree name,
   return NULL;
 }
 
+/* For LHS record VR in the SSA info.  */
+void
+evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
+{
+  /* Set the SSA with the value range.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+    {
+      if ((vr->type == VR_RANGE
+	   || vr->type == VR_ANTI_RANGE)
+	  && (TREE_CODE (vr->min) == INTEGER_CST)
+	  && (TREE_CODE (vr->max) == INTEGER_CST))
+	set_range_info (lhs, vr->type,
+			wi::to_wide (vr->min),
+			wi::to_wide (vr->max));
+    }
+  else if (POINTER_TYPE_P (TREE_TYPE (lhs))
+	   && ((vr->type == VR_RANGE
+		&& range_includes_zero_p (vr->min,
+					  vr->max) == 0)
+	       || (vr->type == VR_ANTI_RANGE
+		   && range_includes_zero_p (vr->min,
+					     vr->max) == 1)))
+    set_ptr_nonnull (lhs);
+}
+
+/* Return true if all uses of NAME are dominated by STMT or feed STMT
+   via a chain of single immediate uses.  */
+
+static bool
+all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
+{
+  use_operand_p use_p, use2_p;
+  imm_use_iterator iter;
+  basic_block stmt_bb = gimple_bb (stmt);
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p), *use_stmt2;
+      if (use_stmt == stmt
+	  || is_gimple_debug (use_stmt)
+	  || (gimple_bb (use_stmt) != stmt_bb
+	      && dominated_by_p (CDI_DOMINATORS,
+				 gimple_bb (use_stmt), stmt_bb)))
+	continue;
+      while (use_stmt != stmt
+	     && is_gimple_assign (use_stmt)
+	     && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
+	     && single_imm_use (gimple_assign_lhs (use_stmt),
+				&use2_p, &use_stmt2))
+	use_stmt = use_stmt2;
+      if (use_stmt != stmt)
+	return false;
+    }
+  return true;
+}
+
 void
 evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 {
@@ -134,10 +190,23 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      if (vr)
 		vrs.safe_push (std::make_pair (asserts[i].name, vr));
 	    }
+
+	  /* If pred_e is really a fallthru we can record value ranges
+	     in SSA names as well.  */
+	  bool is_fallthru = assert_unreachable_fallthru_edge_p (pred_e);
+
 	  /* Push updated ranges only after finding all of them to avoid
 	     ordering issues that can lead to worse ranges.  */
 	  for (unsigned i = 0; i < vrs.length (); ++i)
-	    push_value_range (vrs[i].first, vrs[i].second);
+	    {
+	      push_value_range (vrs[i].first, vrs[i].second);
+	      if (is_fallthru
+		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))
+		{
+		  set_ssa_range_info (vrs[i].first, vrs[i].second);
+		  maybe_set_nonzero_bits (pred_e, vrs[i].first);
+		}
+	    }
 	}
     }
 }
@@ -185,24 +254,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       vr_values->update_value_range (lhs, &vr_result);
 
       /* Set the SSA with the value range.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-	{
-	  if ((vr_result.type == VR_RANGE
-	       || vr_result.type == VR_ANTI_RANGE)
-	      && (TREE_CODE (vr_result.min) == INTEGER_CST)
-	      && (TREE_CODE (vr_result.max) == INTEGER_CST))
-	    set_range_info (lhs, vr_result.type,
-			    wi::to_wide (vr_result.min),
-			    wi::to_wide (vr_result.max));
-	}
-      else if (POINTER_TYPE_P (TREE_TYPE (lhs))
-	       && ((vr_result.type == VR_RANGE
-		    && range_includes_zero_p (vr_result.min,
-					      vr_result.max) == 0)
-		   || (vr_result.type == VR_ANTI_RANGE
-		       && range_includes_zero_p (vr_result.min,
-						 vr_result.max) == 1)))
-	set_ptr_nonnull (lhs);
+      set_ssa_range_info (lhs, &vr_result);
     }
 }
 
@@ -224,21 +276,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
 	  vr_values->update_value_range (output, &vr);
 
 	  /* Set the SSA with the value range.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (output)))
-	    {
-	      if ((vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
-		  && (TREE_CODE (vr.min) == INTEGER_CST)
-		  && (TREE_CODE (vr.max) == INTEGER_CST))
-		set_range_info (output, vr.type,
-				wi::to_wide (vr.min),
-				wi::to_wide (vr.max));
-	    }
-	  else if (POINTER_TYPE_P (TREE_TYPE (output))
-		   && ((vr.type == VR_RANGE
-			&& range_includes_zero_p (vr.min, vr.max) == 0)
-		       || (vr.type == VR_ANTI_RANGE
-			   && range_includes_zero_p (vr.min, vr.max) == 1)))
-	    set_ptr_nonnull (output);
+	  set_ssa_range_info (output, &vr);
 	}
       else
 	vr_values->set_defs_to_varying (stmt);

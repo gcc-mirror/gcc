@@ -1,3 +1,17 @@
+2017-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80776
+	* gimple-ssa-evrp-analyze.h (evrp_range_analyzer::set_ssa_range_info):
+	Declare.
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::set_ssa_range_info):
+	New function.
+	(evrp_range_analyzer::record_ranges_from_incoming_edges):
+	If the incoming edge is an effective fallthru because the other
+	edge only reaches a __builtin_unreachable () then record ranges
+	derived from the controlling condition in SSA info.
+	(evrp_range_analyzer::record_ranges_from_phis): Use set_ssa_range_info.
+	(evrp_range_analyzer::record_ranges_from_stmt): Likewise.
+
 2017-11-28  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (SELFTEST_FLAGS): Use nul instead of /dev/null

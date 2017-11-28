@@ -68,6 +68,7 @@ class evrp_range_analyzer
   value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
   void record_ranges_from_incoming_edge (basic_block);
   void record_ranges_from_phis (basic_block);
+  void set_ssa_range_info (tree, value_range *);
 
   /* STACK holds the old VR.  */
   auto_vec<std::pair <tree, value_range*> > stack;

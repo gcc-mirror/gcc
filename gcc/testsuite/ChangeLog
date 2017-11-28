@@ -1,3 +1,9 @@
+2017-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80776
+	* gcc.dg/pr80776-1.c: New testcase.
+	* gcc.dg/pr80776-2.c: Likewise.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83117
