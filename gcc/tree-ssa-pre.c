@@ -400,15 +400,6 @@ expression_for_id (unsigned int id)
   return expressions[id];
 }
 
-/* Free the expression id field in all of our expressions,
-   and then destroy the expressions array.  */
-
-static void
-clear_expression_ids (void)
-{
-  expressions.release ();
-}
-
 static object_allocator<pre_expr_d> pre_expr_pool ("pre_expr nodes");
 
 /* Given an SSA_NAME NAME, get or create a pre_expr to represent it.  */
@@ -1266,7 +1257,7 @@ get_expr_type (const pre_expr e)
   gcc_unreachable ();
 }
 
-/* Get a representative SSA_NAME for a given expression.
+/* Get a representative SSA_NAME for a given expression that is available in B.
    Since all of our sub-expressions are treated as values, we require
    them to be SSA_NAME's for simplicity.
    Prior versions of GVNPRE used to use "value handles" here, so that
@@ -1275,9 +1266,9 @@ get_expr_type (const pre_expr e)
    them to be usable without finding leaders).  */
 
 static tree
-get_representative_for (const pre_expr e)
+get_representative_for (const pre_expr e, basic_block b = NULL)
 {
-  tree name;
+  tree name, valnum = NULL_TREE;
   unsigned int value_id = get_expr_value_id (e);
 
   switch (e->kind)
@@ -1298,7 +1289,18 @@ get_representative_for (const pre_expr e)
 	  {
 	    pre_expr rep = expression_for_id (i);
 	    if (rep->kind == NAME)
-	      return VN_INFO (PRE_EXPR_NAME (rep))->valnum;
+	      {
+		tree name = PRE_EXPR_NAME (rep);
+		valnum = VN_INFO (name)->valnum;
+		gimple *def = SSA_NAME_DEF_STMT (name);
+		/* We have to return either a new representative or one
+		   that can be used for expression simplification and thus
+		   is available in B.  */
+		if (! b 
+		    || gimple_nop_p (def)
+		    || dominated_by_p (CDI_DOMINATORS, b, gimple_bb (def)))
+		  return name;
+	      }
 	    else if (rep->kind == CONSTANT)
 	      return PRE_EXPR_CONSTANT (rep);
 	  }
@@ -1314,7 +1316,7 @@ get_representative_for (const pre_expr e)
      to compute it.  */
   name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
   VN_INFO_GET (name)->value_id = value_id;
-  VN_INFO (name)->valnum = name;
+  VN_INFO (name)->valnum = valnum ? valnum : name;
   /* ???  For now mark this SSA name for release by SCCVN.  */
   VN_INFO (name)->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
@@ -1329,7 +1331,6 @@ get_representative_for (const pre_expr e)
 
   return name;
 }
-
 
 
 static pre_expr
@@ -1366,7 +1367,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		leader = find_leader_in_sets (op_val_id, set1, set2);
                 result = phi_translate (leader, set1, set2, pred, phiblock);
 		if (result && result != leader)
-		  newnary->op[i] = get_representative_for (result);
+		  /* Force a leader as well as we are simplifying this
+		     expression.  */
+		  newnary->op[i] = get_representative_for (result, pred);
 		else if (!result)
 		  return NULL;
 
@@ -1408,6 +1411,10 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  return constant;
 	      }
 
+	    /* vn_nary_* do not valueize operands.  */
+	    for (i = 0; i < newnary->length; ++i)
+	      if (TREE_CODE (newnary->op[i]) == SSA_NAME)
+		newnary->op[i] = VN_INFO (newnary->op[i])->valnum;
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,
 						    newnary->type,
@@ -1424,45 +1431,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		PRE_EXPR_NARY (expr) = nary;
 		new_val_id = nary->value_id;
 		get_or_alloc_expression_id (expr);
-		/* When we end up re-using a value number make sure that
-		   doesn't have unrelated (which we can't check here)
-		   range or points-to info on it.  */
-		if (result
-		    && INTEGRAL_TYPE_P (TREE_TYPE (result))
-		    && SSA_NAME_RANGE_INFO (result)
-		    && ! SSA_NAME_IS_DEFAULT_DEF (result))
-		  {
-		    if (! VN_INFO (result)->info.range_info)
-		      {
-			VN_INFO (result)->info.range_info
-			  = SSA_NAME_RANGE_INFO (result);
-			VN_INFO (result)->range_info_anti_range_p
-			  = SSA_NAME_ANTI_RANGE_P (result);
-		      }
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      {
-			fprintf (dump_file, "clearing range info of ");
-			print_generic_expr (dump_file, result);
-			fprintf (dump_file, "\n");
-		      }
-		    SSA_NAME_RANGE_INFO (result) = NULL;
-		  }
-		else if (result
-			 && POINTER_TYPE_P (TREE_TYPE (result))
-			 && SSA_NAME_PTR_INFO (result)
-			 && ! SSA_NAME_IS_DEFAULT_DEF (result))
-		  {
-		    if (! VN_INFO (result)->info.ptr_info)
-		      VN_INFO (result)->info.ptr_info
-			= SSA_NAME_PTR_INFO (result);
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      {
-			fprintf (dump_file, "clearing points-to info of ");
-			print_generic_expr (dump_file, result);
-			fprintf (dump_file, "\n");
-		      }
-		    SSA_NAME_PTR_INFO (result) = NULL;
-		  }
 	      }
 	    else
 	      {
@@ -3004,7 +2972,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       gcc_assert (!(pred->flags & EDGE_ABNORMAL));
       if (!gimple_seq_empty_p (stmts))
 	{
-	  gsi_insert_seq_on_edge (pred, stmts);
+	  basic_block new_bb = gsi_insert_seq_on_edge_immediate (pred, stmts);
+	  gcc_assert (! new_bb);
 	  insertions = true;
 	}
       if (!builtexpr)
@@ -4127,6 +4096,7 @@ static void
 fini_pre ()
 {
   value_expressions.release ();
+  expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
@@ -4181,22 +4151,21 @@ pass_pre::execute (function *fun)
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
   split_critical_edges ();
+  scev_initialize ();
 
   run_scc_vn (VN_WALK);
 
   init_pre ();
-  scev_initialize ();
-
-  /* Collect and value number expressions computed in each basic block.  */
-  compute_avail ();
 
   /* Insert can get quite slow on an incredibly large number of basic
      blocks due to some quadratic behavior.  Until this behavior is
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
-     computing ANTIC, either, even though it's plenty fast.  */
+     computing ANTIC, either, even though it's plenty fast nor do
+     we require AVAIL.  */
   if (n_basic_blocks_for_fn (fun) < 4000)
     {
+      compute_avail ();
       compute_antic ();
       insert ();
     }
@@ -4211,19 +4180,19 @@ pass_pre::execute (function *fun)
      not keeping virtual operands up-to-date.  */
   gcc_assert (!need_ssa_update_p (fun));
 
-  /* Remove all the redundant expressions.  */
-  todo |= vn_eliminate (inserted_exprs);
-
   statistics_counter_event (fun, "Insertions", pre_stats.insertions);
   statistics_counter_event (fun, "PA inserted", pre_stats.pa_insert);
   statistics_counter_event (fun, "HOIST inserted", pre_stats.hoist_insert);
   statistics_counter_event (fun, "New PHIs", pre_stats.phis);
 
-  clear_expression_ids ();
+  /* Remove all the redundant expressions.  */
+  todo |= vn_eliminate (inserted_exprs);
+
+  remove_dead_inserted_code ();
+
+  fini_pre ();
 
   scev_finalize ();
-  remove_dead_inserted_code ();
-  fini_pre ();
   loop_optimizer_finalize ();
 
   /* Restore SSA info before tail-merging as that resets it as well.  */

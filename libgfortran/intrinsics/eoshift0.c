@@ -26,12 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-/* TODO: make this work for large shifts when
-   sizeof(int) < sizeof (index_type).  */
 
 static void
 eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
-	  int shift, const char * pbound, int which, index_type size,
+	  index_type shift, const char * pbound, int which, index_type size,
 	  const char *filler, index_type filler_len)
 {
   /* r.* indicates the return array.  */
@@ -107,7 +105,7 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   if (which > 0)
     {
       /* Test if both ret and array are contiguous.  */
-      size_t r_ex, a_ex;
+      index_type r_ex, a_ex;
       r_ex = 1;
       a_ex = 1;
       do_blocked = true;

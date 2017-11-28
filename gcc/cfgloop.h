@@ -221,6 +221,12 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* True if the loop is part of an oacc kernels region.  */
   unsigned in_oacc_kernels_region : 1;
 
+  /* The number of times to unroll the loop.  0 means no information given,
+     just do what we always do.  A value of 1 means do not unroll the loop.
+     A value of USHRT_MAX means unroll with no specific unrolling factor.
+     Other values means unroll with the given unrolling factor.  */
+  unsigned short unroll;
+
   /* For SIMD loops, this is a unique identifier of the loop, referenced
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
      builtins.  */

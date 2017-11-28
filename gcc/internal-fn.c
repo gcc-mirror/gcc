@@ -90,6 +90,8 @@ init_internal_fns ()
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
 #define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) TYPE##_direct,
+#define DEF_INTERNAL_SIGNED_OPTAB_FN(CODE, FLAGS, SELECTOR, SIGNED_OPTAB, \
+				     UNSIGNED_OPTAB, TYPE) TYPE##_direct,
 #include "internal-fn.def"
   not_direct
 };
@@ -1760,7 +1762,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      tem = convert_modes (mode, hmode, lopart, 1);
 	      tem = expand_shift (LSHIFT_EXPR, mode, tem, hprec, NULL_RTX, 1);
 	      tem = expand_simple_binop (mode, MINUS, loxhi, tem, NULL_RTX,
-					 1, OPTAB_DIRECT);
+					 1, OPTAB_WIDEN);
 	      emit_move_insn (loxhi, tem);
 
 	      emit_label (after_hipart_neg);
@@ -1774,7 +1776,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 					 profile_probability::even ());
 
 	      tem = expand_simple_binop (mode, MINUS, loxhi, larger, NULL_RTX,
-					 1, OPTAB_DIRECT);
+					 1, OPTAB_WIDEN);
 	      emit_move_insn (loxhi, tem);
 
 	      emit_label (after_lopart_neg);
@@ -1783,7 +1785,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  /* loxhi += (uns) lo0xlo1 >> (bitsize / 2);  */
 	  tem = expand_shift (RSHIFT_EXPR, mode, lo0xlo1, hprec, NULL_RTX, 1);
 	  tem = expand_simple_binop (mode, PLUS, loxhi, tem, NULL_RTX,
-				     1, OPTAB_DIRECT);
+				     1, OPTAB_WIDEN);
 	  emit_move_insn (loxhi, tem);
 
 	  /* if (loxhi >> (bitsize / 2)
@@ -1810,7 +1812,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 			       convert_modes (hmode, mode, lo0xlo1, 1), 1);
 
 	  tem = expand_simple_binop (mode, IOR, loxhishifted, tem, res,
-				     1, OPTAB_DIRECT);
+				     1, OPTAB_WIDEN);
 	  if (tem != res)
 	    emit_move_insn (res, tem);
 	  emit_jump (done_label);
@@ -1835,7 +1837,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      if (!op0_medium_p)
 		{
 		  tem = expand_simple_binop (hmode, PLUS, hipart0, const1_rtx,
-					     NULL_RTX, 1, OPTAB_DIRECT);
+					     NULL_RTX, 1, OPTAB_WIDEN);
 		  do_compare_rtx_and_jump (tem, const1_rtx, GTU, true, hmode,
 					   NULL_RTX, NULL, do_error,
 					   profile_probability::very_unlikely ());
@@ -1844,7 +1846,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      if (!op1_medium_p)
 		{
 		  tem = expand_simple_binop (hmode, PLUS, hipart1, const1_rtx,
-					     NULL_RTX, 1, OPTAB_DIRECT);
+					     NULL_RTX, 1, OPTAB_WIDEN);
 		  do_compare_rtx_and_jump (tem, const1_rtx, GTU, true, hmode,
 					   NULL_RTX, NULL, do_error,
 					   profile_probability::very_unlikely ());
@@ -2818,6 +2820,30 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 
+/* Return the optab used by internal function FN.  */
+
+static optab
+direct_internal_fn_optab (internal_fn fn, tree_pair types)
+{
+  switch (fn)
+    {
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+    case IFN_##CODE: break;
+#define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \
+    case IFN_##CODE: return OPTAB##_optab;
+#define DEF_INTERNAL_SIGNED_OPTAB_FN(CODE, FLAGS, SELECTOR, SIGNED_OPTAB, \
+				     UNSIGNED_OPTAB, TYPE)		\
+    case IFN_##CODE: return (TYPE_UNSIGNED (types.SELECTOR)		\
+			     ? UNSIGNED_OPTAB ## _optab			\
+			     : SIGNED_OPTAB ## _optab);
+#include "internal-fn.def"
+
+    case IFN_LAST:
+      break;
+    }
+  gcc_unreachable ();
+}
+
 /* Return true if FN is supported for the types in TYPES when the
    optimization type is OPT_TYPE.  The types are those associated with
    the "type0" and "type1" fields of FN's direct_internal_fn_info
@@ -2835,6 +2861,16 @@ direct_internal_fn_supported_p (internal_fn fn, tree_pair types,
     case IFN_##CODE: \
       return direct_##TYPE##_optab_supported_p (OPTAB##_optab, types, \
 						opt_type);
+#define DEF_INTERNAL_SIGNED_OPTAB_FN(CODE, FLAGS, SELECTOR, SIGNED_OPTAB, \
+				     UNSIGNED_OPTAB, TYPE)		\
+    case IFN_##CODE:							\
+      {									\
+	optab which_optab = (TYPE_UNSIGNED (types.SELECTOR)		\
+			     ? UNSIGNED_OPTAB ## _optab			\
+			     : SIGNED_OPTAB ## _optab);			\
+	return direct_##TYPE##_optab_supported_p (which_optab, types,	\
+						  opt_type);		\
+      }
 #include "internal-fn.def"
 
     case IFN_LAST:
@@ -2873,6 +2909,15 @@ set_edom_supported_p (void)
   expand_##CODE (internal_fn fn, gcall *stmt)		\
   {							\
     expand_##TYPE##_optab_fn (fn, stmt, OPTAB##_optab);	\
+  }
+#define DEF_INTERNAL_SIGNED_OPTAB_FN(CODE, FLAGS, SELECTOR, SIGNED_OPTAB, \
+				     UNSIGNED_OPTAB, TYPE)		\
+  static void								\
+  expand_##CODE (internal_fn fn, gcall *stmt)				\
+  {									\
+    tree_pair types = direct_internal_fn_types (fn, stmt);		\
+    optab which_optab = direct_internal_fn_optab (fn, types);		\
+    expand_##TYPE##_optab_fn (fn, stmt, which_optab);			\
   }
 #include "internal-fn.def"
 

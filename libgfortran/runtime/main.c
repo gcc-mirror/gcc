@@ -33,31 +33,6 @@ stupid_function_name_for_static_linking (void)
   return;
 }
 
-/* This will be 0 for little-endian
-   machines and 1 for big-endian machines.  */
-int big_endian = 0;
-
-
-/* Figure out endianness for this machine.  */
-
-static void
-determine_endianness (void)
-{
-  union
-  {
-    GFC_LOGICAL_8 l8;
-    GFC_LOGICAL_4 l4[2];
-  } u;
-
-  u.l8 = 1;
-  if (u.l4[0])
-    big_endian = 0;
-  else if (u.l4[1])
-    big_endian = 1;
-  else
-    runtime_error ("Unable to determine machine endianness");
-}
-
 
 static int argc_save;
 static char **argv_save;
@@ -89,9 +64,6 @@ get_args (int *argc, char ***argv)
 static void __attribute__((constructor))
 init (void)
 {
-  /* Figure out the machine endianness.  */
-  determine_endianness ();
-
   /* Must be first */
   init_variables ();
 

@@ -7,7 +7,7 @@ static void *func (int n)
 {
   void *p;
   if (p == 0) throw ::A ();
-}
+}	// { dg-warning "control reaches end of non-void function" }
 
 static void *func (int n, B const &)
 {

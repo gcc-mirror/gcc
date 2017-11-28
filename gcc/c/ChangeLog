@@ -1,3 +1,79 @@
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* Make-lang.in (c.install-plugin): Install backend import library.
+
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_declare_simd): Reject declare simd in
+	pragma_stmt context.
+
+2017-11-23  Mike Stump  <mikestump@comcast.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-parser.c (c_parser_while_statement): Pass 3rd operand to
+	ANNOTATE_EXPR.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* c-objc-common.c (c_tree_printer): Convert penultimate param from
+	bool to bool *.  Within '%T' handling, if showing an "aka", use
+	"quoted" param to add appropriate quoting.
+
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* c-decl.c (grokdeclarator): Set DECL_PADDING_P on unnamed bit-fields.
+
+2017-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83056
+	* c-decl.c (lookup_name_fuzzy): Don't suggest names that came from
+	earlier failed lookups.
+
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-fold.c (c_fully_fold_internal): Handle POINTER_DIFF_EXPR.
+	* c-typeck.c (pointer_diff): Use POINTER_DIFF_EXPR.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81404
+	* c-decl.c: Include "c-family/known-headers.h".
+	(get_c_name_hint): Rename to get_stdlib_header_for_name and move
+	to known-headers.cc.
+	(class suggest_missing_header): Move to known-header.h.
+	(lookup_name_fuzzy): Call get_c_stdlib_header_for_name rather
+	than get_c_name_hint.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (get_c_name_hint): New function.
+	(class suggest_missing_header): New class.
+	(lookup_name_fuzzy): Call get_c_name_hint and use it to
+	suggest missing headers to the user.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(implicit_decl_warning): Convert "hint" from
+	const char * to name_hint.  Pass location to
+	lookup_name_fuzzy.  Suppress any deferred diagnostic if the
+	warning was not printed.
+	(undeclared_variable): Likewise for "guessed_id".
+	(lookup_name_fuzzy): Convert return type from const char *
+	to name_hint.  Add location_t param.
+	* c-parser.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(c_parser_declaration_or_fndef): Convert "hint" from
+	const char * to name_hint.  Pass location to lookup_name_fuzzy.
+	(c_parser_parameter_declaration): Likewise.
+
 2017-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/66618

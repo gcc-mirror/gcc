@@ -1,3 +1,61 @@
+2017-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/81304
+	* trans-openmp.c (gfc_trans_omp_array_reduction_or_udr): Set
+	attr.implicit_type in intrinsic_sym to avoid undesirable warning.
+
+2017-11-23  Dirk Broemmel  <d.broemmel@fz-juelich.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/81841
+	* parse.c (parse_spec): Allow ST_OMP_THREADPRIVATE inside of
+	BLOCK DATA.
+
+2017-11-23  Mike Stump  <mikestump@comcast.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-stmt.c (gfc_trans_forall_loop): Pass 3rd operand to
+	ANNOTATE_EXPR.
+
+2017-11-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82814
+	* trans-types.c (gfc_sym_type): If a character function result
+	is missing the charlen backend_decl, use the one from the name-
+	space procedure symbol, if present.
+
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* error.c (gfc_notify_std): Convert "quoted" param from bool to
+	bool *.
+
+2017-11-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* check.c (int_or_real_or_char_check_f2003): New function.
+	* iresolve.c (gfc_resolve_maxloc): Add number "2" for
+	character arguments and rank-zero return value.
+	(gfc_resolve_minloc): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc): Handle case of
+	character arguments and rank-zero return value by removing
+	unneeded arguments and calling the library function.
+
+2017-11-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79072
+	* trans-stmt.c (trans_associate_var): Weaken the over strong
+	condition for using the fake result decl.
+
+2017-11-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79072
+	* trans-expr.c (trans_class_vptr_len_assignment): Set from_len
+	if the temporary is unlimited polymorphic.
+	* trans-stmt.c (trans_associate_var): Use the fake result decl
+	to obtain the 'len' field from an explicit function result when
+	in that function scope.
+
 2017-11-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78990

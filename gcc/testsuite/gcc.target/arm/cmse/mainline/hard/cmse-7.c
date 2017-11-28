@@ -12,14 +12,14 @@
 /* { dg-final { scan-assembler "mov\tr1, r4" } } */
 /* { dg-final { scan-assembler "mov\tr2, r4" } } */
 /* { dg-final { scan-assembler "mov\tr3, r4" } } */
-/* { dg-final { scan-assembler "vldr\.64\td0, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td1, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td2, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td3, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td4, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td5, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td6, .L" } } */
-/* { dg-final { scan-assembler "vldr\.64\td7, .L" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td0, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td1, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td2, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td3, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td4, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td5, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td6, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f64\td7, #1\.0" } } */
 
 /* Now we check that we use the correct intrinsic to call.  */
 /* { dg-final { scan-assembler "bl\t__gnu_cmse_nonsecure_call" } } */

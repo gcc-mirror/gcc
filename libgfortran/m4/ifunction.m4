@@ -42,8 +42,8 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   int continue_loop;
 
   /* Make dim zero based to avoid confusion.  */
-  dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+  dim = (*pdim) - 1;
 
   if (unlikely (dim < 0 || dim > rank))
     {

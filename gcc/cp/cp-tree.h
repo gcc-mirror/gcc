@@ -6556,7 +6556,7 @@ extern void init_template_processing		(void);
 extern void print_template_statistics		(void);
 bool template_template_parameter_p		(const_tree);
 bool template_type_parameter_p                  (const_tree);
-extern bool primary_template_instantiation_p    (const_tree);
+extern bool primary_template_specialization_p   (const_tree);
 extern tree get_primary_template_innermost_parameters	(const_tree);
 extern tree get_template_parms_at_level (tree, int);
 extern tree get_template_innermost_arguments	(const_tree);

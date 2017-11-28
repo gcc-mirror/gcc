@@ -2959,6 +2959,12 @@ pass_if_conversion::execute (function *fun)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
 
+  if (todo)
+    {
+      free_numbers_of_iterations_estimates (fun);
+      scev_reset ();
+    }
+
   if (flag_checking)
     {
       basic_block bb;

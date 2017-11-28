@@ -266,12 +266,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
    simply equal to the kind parameter itself.  */
 #define GFC_SIZE_OF_CHAR_KIND(kind) (kind)
 
-/* This will be 0 on little-endian machines and one on big-endian machines.  */
-extern int big_endian;
-internal_proto(big_endian);
-
 #define GFOR_POINTER_TO_L1(p, kind) \
-  (big_endian * (kind - 1) + (GFC_LOGICAL_1 *)(p))
+  ((__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? 1: 0) * (kind - 1) + (GFC_LOGICAL_1 *)(p))
 
 #define GFC_INTEGER_1_HUGE \
   (GFC_INTEGER_1)((((GFC_UINTEGER_1)1) << 7) - 1)
@@ -376,7 +372,8 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_8) gfc_array_l8;
 #ifdef HAVE_GFC_LOGICAL_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #endif
-
+typedef gfc_array_i1 gfc_array_s1;
+typedef gfc_array_i4 gfc_array_s4;
 
 #define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype & GFC_DTYPE_RANK_MASK)
 #define GFC_DESCRIPTOR_TYPE(desc) (((desc)->dtype & GFC_DTYPE_TYPE_MASK) \

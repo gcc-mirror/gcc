@@ -127,7 +127,7 @@ class Parse
   struct Enclosing_var_comparison
   {
     bool
-    operator()(const Enclosing_var&, const Enclosing_var&);
+    operator()(const Enclosing_var&, const Enclosing_var&) const;
   };
 
   // A set of Enclosing_var entries.

@@ -224,9 +224,16 @@ decide_unrolling (int flags)
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, locus,
-                         ";; *** Considering loop %d at BB %d for "
-                         "unrolling ***\n",
-                         loop->num, loop->header->index);
+			 "considering unrolling loop %d at BB %d\n",
+			 loop->num, loop->header->index);
+
+      if (loop->unroll == 1)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     ";; Not unrolling loop, user didn't want it unrolled\n");
+	  continue;
+	}
 
       /* Do not peel cold areas.  */
       if (optimize_loop_for_size_p (loop))
@@ -256,9 +263,7 @@ decide_unrolling (int flags)
       loop->ninsns = num_loop_insns (loop);
       loop->av_ninsns = average_num_loop_insns (loop);
 
-      /* Try transformations one by one in decreasing order of
-	 priority.  */
-
+      /* Try transformations one by one in decreasing order of priority.  */
       decide_unroll_constant_iterations (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
 	decide_unroll_runtime_iterations (loop, flags);
@@ -347,19 +352,17 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   struct niter_desc *desc;
   widest_int iterations;
 
-  if (!(flags & UAP_UNROLL))
-    {
-      /* We were not asked to, just return back silently.  */
-      return;
-    }
+  /* If we were not asked to unroll this loop, just return back silently.  */
+  if (!(flags & UAP_UNROLL) && !loop->unroll)
+    return;
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "\n;; Considering unrolling loop with constant "
-	     "number of iterations\n");
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE,
+		 "considering unrolling loop with constant "
+		 "number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
-     unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
+     unrolled loop (i.e. if it is 2, we have to duplicate loop body once).  */
   nunroll = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / loop->ninsns;
   nunroll_by_av
     = PARAM_VALUE (PARAM_MAX_AVERAGE_UNROLLED_INSNS) / loop->av_ninsns;
@@ -391,6 +394,24 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
       return;
     }
 
+  /* Check for an explicit unrolling factor.  */
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
+    {
+      /* However we cannot unroll completely at the RTL level a loop with
+	 constant number of iterations; it should have been peeled instead.  */
+      if ((unsigned) loop->unroll - 1 > desc->niter - 2)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; Loop should have been peeled\n");
+	}
+      else
+	{
+	  loop->lpt_decision.decision = LPT_UNROLL_CONSTANT;
+	  loop->lpt_decision.times = loop->unroll - 1;
+	}
+      return;
+    }
+
   /* Check whether the loop rolls enough to consider.  
      Consult also loop bounds and profile; in the case the loop has more
      than one exit it may well loop less than determined maximal number
@@ -412,7 +433,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   best_copies = 2 * nunroll + 10;
 
   i = 2 * nunroll + 2;
-  if (i - 1 >= desc->niter)
+  if (i > desc->niter - 2)
     i = desc->niter - 2;
 
   for (; i >= nunroll - 1; i--)
@@ -651,16 +672,14 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   struct niter_desc *desc;
   widest_int iterations;
 
-  if (!(flags & UAP_UNROLL))
-    {
-      /* We were not asked to, just return back silently.  */
-      return;
-    }
+  /* If we were not asked to unroll this loop, just return back silently.  */
+  if (!(flags & UAP_UNROLL) && !loop->unroll)
+    return;
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "\n;; Considering unrolling loop with runtime "
-	     "computable number of iterations\n");
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE,
+		 "considering unrolling loop with runtime-"
+		 "computable number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -673,6 +692,9 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
+
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
+    nunroll = loop->unroll;
 
   /* Skip big loops.  */
   if (nunroll <= 1)
@@ -712,8 +734,9 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
       return;
     }
 
-  /* Success; now force nunroll to be power of 2, as we are unable to
-     cope with overflows in computation of number of iterations.  */
+  /* Success; now force nunroll to be power of 2, as code-gen
+     requires it, we are unable to cope with overflows in
+     computation of number of iterations.  */
   for (i = 1; 2 * i <= nunroll; i *= 2)
     continue;
 
@@ -824,9 +847,10 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
   return seq;
 }
 
-/* Unroll LOOP for which we are able to count number of iterations in runtime
-   LOOP->LPT_DECISION.TIMES times.  The transformation does this (with some
-   extra care for case n < 0):
+/* Unroll LOOP for which we are able to count number of iterations in
+   runtime LOOP->LPT_DECISION.TIMES times.  The times value must be a
+   power of two.  The transformation does this (with some extra care
+   for case n < 0):
 
    for (i = 0; i < n; i++)
      body;
@@ -1133,14 +1157,12 @@ decide_unroll_stupid (struct loop *loop, int flags)
   struct niter_desc *desc;
   widest_int iterations;
 
-  if (!(flags & UAP_UNROLL_ALL))
-    {
-      /* We were not asked to, just return back silently.  */
-      return;
-    }
+  /* If we were not asked to unroll this loop, just return back silently.  */
+  if (!(flags & UAP_UNROLL_ALL) && !loop->unroll)
+    return;
 
-  if (dump_file)
-    fprintf (dump_file, "\n;; Considering unrolling loop stupidly\n");
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE, "considering unrolling loop stupidly\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -1154,6 +1176,9 @@ decide_unroll_stupid (struct loop *loop, int flags)
 
   if (targetm.loop_unroll_adjust)
     nunroll = targetm.loop_unroll_adjust (nunroll, loop);
+
+  if (loop->unroll > 0 && loop->unroll < USHRT_MAX)
+    nunroll = loop->unroll;
 
   /* Skip big loops.  */
   if (nunroll <= 1)
@@ -1170,7 +1195,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
   if (desc->simple_p && !desc->assumptions)
     {
       if (dump_file)
-	fprintf (dump_file, ";; The loop is simple\n");
+	fprintf (dump_file, ";; Loop is simple\n");
       return;
     }
 

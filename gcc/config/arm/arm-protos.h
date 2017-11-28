@@ -263,12 +263,32 @@ struct cpu_vec_costs {
 
 struct cpu_cost_table;
 
+/* Addressing mode operations.  Used to index tables in struct
+   addr_mode_cost_table.  */
+enum arm_addr_mode_op
+{
+   AMO_DEFAULT,
+   AMO_NO_WB,	/* Offset with no writeback.  */
+   AMO_WB,	/* Offset with writeback.  */
+   AMO_MAX	/* For array size.  */
+};
+
+/* Table of additional costs in units of COSTS_N_INSNS() when using
+   addressing modes for each access type.  */
+struct addr_mode_cost_table
+{
+   const int integer[AMO_MAX];
+   const int fp[AMO_MAX];
+   const int vector[AMO_MAX];
+};
+
 /* Dump function ARM_PRINT_TUNE_INFO should be updated whenever this
    structure is modified.  */
 
 struct tune_params
 {
   const struct cpu_cost_table *insn_extra_cost;
+  const struct addr_mode_cost_table *addr_mode_costs;
   bool (*sched_adjust_cost) (rtx_insn *, int, rtx_insn *, int *);
   int (*branch_cost) (bool, bool);
   /* Vectorizer costs.  */

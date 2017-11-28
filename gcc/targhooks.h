@@ -135,6 +135,8 @@ extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
   (cumulative_args_t, machine_mode, const_tree, bool);
 extern int hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
   (cumulative_args_t, machine_mode, tree, bool);
+extern void hook_void_CUMULATIVE_ARGS_tree
+  (cumulative_args_t, tree);
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance

@@ -90,10 +90,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Base is _Hashtable, dispatched at compile time via template
    *  alias __uset_hashtable.
    */
-  template<class _Value,
-	   class _Hash = hash<_Value>,
-	   class _Pred = std::equal_to<_Value>,
-	   class _Alloc = std::allocator<_Value> >
+  template<typename _Value,
+	   typename _Hash = hash<_Value>,
+	   typename _Pred = equal_to<_Value>,
+	   typename _Alloc = allocator<_Value>>
     class unordered_set
     {
       typedef __uset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
@@ -888,10 +888,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Base is _Hashtable, dispatched at compile time via template
    *  alias __umset_hashtable.
    */
-  template<class _Value,
-	   class _Hash = hash<_Value>,
-	   class _Pred = std::equal_to<_Value>,
-	   class _Alloc = std::allocator<_Value> >
+  template<typename _Value,
+	   typename _Hash = hash<_Value>,
+	   typename _Pred = equal_to<_Value>,
+	   typename _Alloc = allocator<_Value>>
     class unordered_multiset
     {
       typedef __umset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;

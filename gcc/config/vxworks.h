@@ -202,3 +202,13 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 
 /* The diab linker does not handle .gnu_attribute sections.  */
 #undef HAVE_AS_GNU_ATTRIBUTE
+
+/* Default dwarf control values, for non-gdb debuggers that come with
+   VxWorks.  */
+
+#undef VXWORKS_DWARF_VERSION_DEFAULT
+#define VXWORKS_DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 4 : 2)
+
+#undef DWARF_GNAT_ENCODINGS_DEFAULT
+#define DWARF_GNAT_ENCODINGS_DEFAULT \
+  (TARGET_VXWORKS7 ? DWARF_GNAT_ENCODINGS_MINIMAL : DWARF_GNAT_ENCODINGS_ALL)

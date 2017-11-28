@@ -192,6 +192,10 @@ along with GCC; see the file COPYING3.  If not see
    The interesting part is this can be viewed either as general store motion
    or general dead store elimination in either intra/inter-iterations way.
 
+   With trivial effort, we also support load inside Store-Store chains if the
+   load is dominated by a store statement in the same iteration of loop.  You
+   can see this as a restricted Store-Mixed-Load-Store chain.
+
    TODO: For now, we don't support store-store chains in multi-exit loops.  We
    force to not unroll in case of store-store chain even if other chains might
    ask for unroll.
@@ -902,8 +906,6 @@ split_data_refs_to_components (struct loop *loop,
 				gimple_bb (dataref->stmt));
       dataref->pos = comp->refs.length ();
       comp->refs.quick_push (dataref);
-      if (DR_IS_READ (dr))
-	comp->eliminate_store_p = false;
     }
 
   for (i = 0; i < n; i++)
@@ -1039,19 +1041,36 @@ get_chain_root (chain_p chain)
   return chain->refs[0];
 }
 
-/* Given CHAIN, returns the last ref at DISTANCE, or NULL if it doesn't
+/* Given CHAIN, returns the last write ref at DISTANCE, or NULL if it doesn't
    exist.  */
 
 static inline dref
-get_chain_last_ref_at (chain_p chain, unsigned distance)
+get_chain_last_write_at (chain_p chain, unsigned distance)
 {
-  unsigned i;
+  for (unsigned i = chain->refs.length (); i > 0; i--)
+    if (DR_IS_WRITE (chain->refs[i - 1]->ref)
+	&& distance == chain->refs[i - 1]->distance)
+      return chain->refs[i - 1];
 
-  for (i = chain->refs.length (); i > 0; i--)
-    if (distance == chain->refs[i - 1]->distance)
-      break;
+  return NULL;
+}
 
-  return (i > 0) ? chain->refs[i - 1] : NULL;
+/* Given CHAIN, returns the last write ref with the same distance before load
+   at index LOAD_IDX, or NULL if it doesn't exist.  */
+
+static inline dref
+get_chain_last_write_before_load (chain_p chain, unsigned load_idx)
+{
+  gcc_assert (load_idx < chain->refs.length ());
+
+  unsigned distance = chain->refs[load_idx]->distance;
+
+  for (unsigned i = load_idx; i > 0; i--)
+    if (DR_IS_WRITE (chain->refs[i - 1]->ref)
+	&& distance == chain->refs[i - 1]->distance)
+      return chain->refs[i - 1];
+
+  return NULL;
 }
 
 /* Adds REF to the chain CHAIN.  */
@@ -1063,11 +1082,6 @@ add_ref_to_chain (chain_p chain, dref ref)
 
   gcc_assert (wi::les_p (root->offset, ref->offset));
   widest_int dist = ref->offset - root->offset;
-  if (wi::leu_p (MAX_DISTANCE, dist))
-    {
-      free (ref);
-      return;
-    }
   gcc_assert (wi::fits_uhwi_p (dist));
 
   chain->refs.safe_push (ref);
@@ -1079,6 +1093,10 @@ add_ref_to_chain (chain_p chain, dref ref)
       chain->length = ref->distance;
       chain->has_max_use_after = false;
     }
+
+  /* Promote this chain to CT_STORE_STORE if it has multiple stores.  */
+  if (DR_IS_WRITE (ref->ref))
+    chain->type = CT_STORE_STORE;
 
   /* Don't set the flag for store-store chain since there is no use.  */
   if (chain->type != CT_STORE_STORE
@@ -1352,9 +1370,29 @@ determine_roots_comp (struct loop *loop,
     }
 
   comp->refs.qsort (order_drefs);
+
+  /* For Store-Store chain, we only support load if it is dominated by a
+     store statement in the same iteration of loop.  */
+  if (comp->eliminate_store_p)
+    for (a = NULL, i = 0; i < comp->refs.length (); i++)
+      {
+	if (DR_IS_WRITE (comp->refs[i]->ref))
+	  a = comp->refs[i];
+	else if (a == NULL || a->offset != comp->refs[i]->offset)
+	  {
+	    /* If there is load that is not dominated by a store in the
+	       same iteration of loop, clear the flag so no Store-Store
+	       chain is generated for this component.  */
+	    comp->eliminate_store_p = false;
+	    break;
+	  }
+      }
+
+  /* Determine roots and create chains for components.  */
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
       if (!chain
+	  || (chain->type == CT_LOAD && DR_IS_WRITE (a->ref))
 	  || (!comp->eliminate_store_p && DR_IS_WRITE (a->ref))
 	  || wi::leu_p (MAX_DISTANCE, a->offset - last_ofs))
 	{
@@ -1366,11 +1404,11 @@ determine_roots_comp (struct loop *loop,
 	  else
 	    release_chain (chain);
 
-	  if (DR_IS_READ (a->ref))
-	    type = CT_LOAD;
-	  else
-	    type = comp->eliminate_store_p ? CT_STORE_STORE : CT_STORE_LOAD;
-
+	  /* Determine type of the chain.  If the root reference is a load,
+	     this can only be a CT_LOAD chain; other chains are intialized
+	     to CT_STORE_LOAD and might be promoted to CT_STORE_STORE when
+	     new reference is added.  */
+	  type = DR_IS_READ (a->ref) ? CT_LOAD : CT_STORE_LOAD;
 	  chain = make_rooted_chain (a, type);
 	  last_ofs = a->offset;
 	  continue;
@@ -1681,7 +1719,7 @@ is_inv_store_elimination_chain (struct loop *loop, chain_p chain)
      values.  */
   for (unsigned i = 0; i < chain->length; i++)
     {
-      dref a = get_chain_last_ref_at (chain, i);
+      dref a = get_chain_last_write_at (chain, i);
       if (a == NULL)
 	continue;
 
@@ -1725,7 +1763,7 @@ initialize_root_vars_store_elim_1 (chain_p chain)
   /* Initialize root value for eliminated stores at each distance.  */
   for (i = 0; i < n; i++)
     {
-      dref a = get_chain_last_ref_at (chain, i);
+      dref a = get_chain_last_write_at (chain, i);
       if (a == NULL)
 	continue;
 
@@ -1788,10 +1826,13 @@ initialize_root_vars_store_elim_2 (struct loop *loop,
 	{
 	  /* Root value is rhs operand of the store to be eliminated if
 	     it isn't loaded from memory before loop.  */
-	  dref a = get_chain_last_ref_at (chain, i);
+	  dref a = get_chain_last_write_at (chain, i);
 	  val = gimple_assign_rhs1 (a->stmt);
 	  if (TREE_CLOBBER_P (val))
-	    val = get_or_create_ssa_default_def (cfun, SSA_NAME_VAR (var));
+	    {
+	      val = get_or_create_ssa_default_def (cfun, SSA_NAME_VAR (var));
+	      gimple_assign_set_rhs1 (a->stmt, val);
+	    }
 
 	  vtemps[n - i - 1] = val;
 	}
@@ -2059,7 +2100,7 @@ static void
 execute_pred_commoning_chain (struct loop *loop, chain_p chain,
 			      bitmap tmp_vars)
 {
-  unsigned i, n;
+  unsigned i;
   dref a;
   tree var;
   bool in_lhs;
@@ -2096,10 +2137,29 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
 	  finalize_eliminated_stores (loop, chain);
 	}
 
-      /* Eliminate the stores killed by following store.  */
-      n = chain->refs.length ();
-      for (i = 0; i < n - 1; i++)
-	remove_stmt (chain->refs[i]->stmt);
+      bool last_store_p = true;
+      for (i = chain->refs.length (); i > 0; i--)
+	{
+	  a = chain->refs[i - 1];
+	  /* Preserve the last store of the chain.  Eliminate other stores
+	     which are killed by the last one.  */
+	  if (DR_IS_WRITE (a->ref))
+	    {
+	      if (last_store_p)
+		last_store_p = false;
+	      else
+		remove_stmt (a->stmt);
+
+	      continue;
+	    }
+
+	  /* Any load in Store-Store chain must be dominated by a previous
+	     store, we replace the load reference with rhs of the store.  */
+	  dref b = get_chain_last_write_before_load (chain, i - 1);
+	  gcc_assert (b != NULL);
+	  var = gimple_assign_rhs1 (b->stmt);
+	  replace_ref_with (a->stmt, var, false, false);
+	}
     }
   else
     {

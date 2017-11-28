@@ -483,7 +483,7 @@ uw_init_context_1 (struct _Unwind_Context *context, void *outer_cfa,
    macro because __builtin_eh_return must be invoked in the context of
    our caller.  */
 
-#define uw_install_context(CURRENT, TARGET)				 \
+#define uw_install_context(CURRENT, TARGET, FRAMES)				 \
   do									 \
     {									 \
       long offset = uw_install_context_1 ((CURRENT), (TARGET));		 \

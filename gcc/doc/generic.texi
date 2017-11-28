@@ -1224,6 +1224,7 @@ the byte offset of the field, but should not be used directly; call
 @tindex TRUTH_OR_EXPR
 @tindex TRUTH_XOR_EXPR
 @tindex POINTER_PLUS_EXPR
+@tindex POINTER_DIFF_EXPR
 @tindex PLUS_EXPR
 @tindex MINUS_EXPR
 @tindex MULT_EXPR
@@ -1413,8 +1414,16 @@ always of @code{BOOLEAN_TYPE} or @code{INTEGER_TYPE}.
 @item POINTER_PLUS_EXPR
 This node represents pointer arithmetic.  The first operand is always
 a pointer/reference type.  The second operand is always an unsigned
-integer type compatible with sizetype.  This is the only binary
-arithmetic operand that can operate on pointer types.
+integer type compatible with sizetype.  This and POINTER_DIFF_EXPR are
+the only binary arithmetic operators that can operate on pointer types.
+
+@item POINTER_DIFF_EXPR
+This node represents pointer subtraction.  The two operands always
+have pointer/reference type.  It returns a signed integer of the same
+precision as the pointers.  The behavior is undefined if the difference
+of the two pointers, seen as infinite precision non-negative integers,
+does not fit in the result type.  The result does not depend on the
+pointer type, it is not divided by the size of the pointed-to type.
 
 @item PLUS_EXPR
 @itemx MINUS_EXPR
@@ -1686,7 +1695,7 @@ its sole argument yields the representation for @code{ap}.
 @item ANNOTATE_EXPR
 This node is used to attach markers to an expression. The first operand
 is the annotated expression, the second is an @code{INTEGER_CST} with
-a value from @code{enum annot_expr_kind}.
+a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @end table
 
 

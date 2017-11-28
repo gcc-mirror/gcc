@@ -1,3 +1,15 @@
+2017-11-20  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	PR preprocessor/81794
+	* macro.c (check_trad_stringification): Have warning be controlled
+	by -Wtraditional.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72786
+	* include/cpplib.h (cpp_macro_definition_location): New decl.
+	* macro.c (cpp_macro_definition): New function.
+
 2017-11-13  Tom Tromey  <tom@tromey.com>
 
 	* pch.c (cpp_read_state): Set n__VA_OPT__.

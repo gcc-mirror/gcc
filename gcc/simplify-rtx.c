@@ -3566,6 +3566,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
     case VEC_SERIES:
       if (op1 == CONST0_RTX (GET_MODE_INNER (mode)))
 	return gen_vec_duplicate (mode, op0);
+      if (CONSTANT_P (op0) && CONSTANT_P (op1))
+	return gen_const_vec_series (mode, op0, op1);
       return 0;
 
     case VEC_SELECT:
@@ -5651,8 +5653,6 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 					      XEXP (op0, 0), XEXP (op0, 1));
 	    }
 
-	  if (cmp_mode == VOIDmode)
-	    cmp_mode = op0_mode;
 	  temp = simplify_relational_operation (GET_CODE (op0), op0_mode,
 			  			cmp_mode, XEXP (op0, 0),
 						XEXP (op0, 1));
@@ -6654,6 +6654,9 @@ test_vector_ops_series (machine_mode mode, rtx scalar_reg)
   ASSERT_RTX_EQ (series_r_1,
 		 simplify_binary_operation (MINUS, mode, duplicate,
 					    series_0_m1));
+  ASSERT_RTX_EQ (series_0_m1,
+		 simplify_binary_operation (VEC_SERIES, mode, const0_rtx,
+					    constm1_rtx));
 }
 
 /* Verify some simplifications involving vectors.  */

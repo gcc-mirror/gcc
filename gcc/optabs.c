@@ -861,6 +861,11 @@ expand_doubleword_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
   if (target && !REG_P (target))
     target = NULL_RTX;
 
+  /* *_widen_optab needs to determine operand mode, make sure at least
+     one operand has non-VOID mode.  */
+  if (GET_MODE (op0_low) == VOIDmode && GET_MODE (op1_low) == VOIDmode)
+    op0_low = force_reg (word_mode, op0_low);
+
   if (umulp)
     product = expand_binop (mode, umul_widen_optab, op0_low, op1_low,
 			    target, 1, OPTAB_DIRECT);
@@ -1199,6 +1204,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 				  : smul_widen_optab),
 				 wider_mode, mode) != CODE_FOR_nothing))
     {
+      /* *_widen_optab needs to determine operand mode, make sure at least
+	 one operand has non-VOID mode.  */
+      if (GET_MODE (op0) == VOIDmode && GET_MODE (op1) == VOIDmode)
+	op0 = force_reg (mode, op0);
       temp = expand_binop (wider_mode,
 			   unsignedp ? umul_widen_optab : smul_widen_optab,
 			   op0, op1, NULL_RTX, unsignedp, OPTAB_DIRECT);

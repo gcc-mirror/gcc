@@ -12,22 +12,22 @@
 /* { dg-final { scan-assembler "mov\tr1, r4" } } */
 /* { dg-final { scan-assembler "mov\tr2, r4" } } */
 /* { dg-final { scan-assembler "mov\tr3, r4" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts0, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts1, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts2, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts3, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts4, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts5, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts6, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts7, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts8, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts9, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts10, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts11, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts12, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts13, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts14, .L" } } */
-/* { dg-final { scan-assembler "vldr\.32\ts15, .L" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts0, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts1, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts2, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts3, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts4, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts5, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts6, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts7, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts8, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts9, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts10, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts11, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts12, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts13, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts14, #1\.0" } } */
+/* { dg-final { scan-assembler "vmov\.f32\ts15, #1\.0" } } */
 
 /* Now we check that we use the correct intrinsic to call.  */
 /* { dg-final { scan-assembler "bl\t__gnu_cmse_nonsecure_call" } } */

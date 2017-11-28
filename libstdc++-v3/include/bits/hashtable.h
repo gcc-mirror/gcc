@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       =  __not_<__and_<// Do not cache for fast hasher.
 		       __is_fast_hash<_Hash>,
 		       // Mandatory to have erase not throwing.
-		       __detail::__is_noexcept_hash<_Tp, _Hash>>>;
+		       __is_nothrow_invocable<const _Hash&, const _Tp&>>>;
 
   /**
    *  Primary class template _Hashtable.
@@ -186,6 +186,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       __detail::_Hash_node<_Value,
 					    _Traits::__hash_cached::value>>>
     {
+      static_assert(is_same<typename remove_cv<_Value>::type, _Value>::value,
+	  "unordered container must have a non-const, non-volatile value_type");
+#ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Value>{},
+	  "unordered container must have the same value_type as its allocator");
+#endif
+      static_assert(__is_invocable<const _H1&, const _Key&>{},
+	  "hash function must be invocable with an argument of key type");
+      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
+	  "key equality predicate must be invocable with two arguments of "
+	  "key type");
+
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
       using __node_type = __detail::_Hash_node<_Value, __hash_cached::value>;

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 typedef unsigned int UT_uint32;
 typedef UT_uint32 PT_DocPosition;

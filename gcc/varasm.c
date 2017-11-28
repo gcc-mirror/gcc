@@ -986,9 +986,9 @@ decode_reg_name (const char *name)
 bool
 bss_initializer_p (const_tree decl)
 {
-  /* Do not put constants into the .bss section, they belong in a readonly
-     section.  */
-  return (!TREE_READONLY (decl)
+  /* Do not put non-common constants into the .bss section, they belong in
+     a readonly section.  */
+  return ((!TREE_READONLY (decl) || DECL_COMMON (decl))
 	  && (DECL_INITIAL (decl) == NULL
 	      /* In LTO we have no errors in program; error_mark_node is used
 	         to mark offlined constructors.  */
@@ -3118,10 +3118,16 @@ compare_constant (const tree t1, const tree t2)
       return tree_int_cst_equal (t1, t2);
 
     case REAL_CST:
-      /* Real constants are the same only if the same width of type.  */
+      /* Real constants are the same only if the same width of type.  In
+	 addition to the same width, we need to check whether the modes are the
+	 same.  There might be two floating point modes that are the same size
+	 but have different representations, such as the PowerPC that has 2
+	 different 128-bit floating point types (IBM extended double and IEEE
+	 128-bit floating point).  */
       if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
 	return 0;
-
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+	return 0;
       return real_identical (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));
 
     case FIXED_CST:
@@ -4615,6 +4621,7 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 	}
       return ret;
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       if (TREE_CODE (endtype) == REAL_TYPE)
 	return NULL_TREE;

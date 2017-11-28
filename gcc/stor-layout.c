@@ -942,7 +942,7 @@ debug_rli (record_layout_info rli)
   if (!vec_safe_is_empty (rli->pending_statics))
     {
       fprintf (stderr, "pending statics:\n");
-      debug_vec_tree (rli->pending_statics);
+      debug (rli->pending_statics);
     }
 }
 
@@ -1859,6 +1859,9 @@ finalize_type_size (tree type)
 	  SET_TYPE_MODE (variant, mode);
 	}
     }
+
+  /* Handle empty records as per the x86-64 psABI.  */
+  TYPE_EMPTY_P (type) = targetm.calls.empty_record_p (type);
 }
 
 /* Return a new underlying object for a bitfield started with FIELD.  */

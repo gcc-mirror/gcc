@@ -2176,7 +2176,7 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
   if (REG_P (val)
       && GET_MODE (val) == BLKmode)
     {
-      unsigned HOST_WIDE_INT bytes = int_size_in_bytes (valtype);
+      unsigned HOST_WIDE_INT bytes = arg_int_size_in_bytes (valtype);
       opt_scalar_int_mode tmpmode;
 
       /* int_size_in_bytes can return -1.  We don't need a check here

@@ -1494,6 +1494,158 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
     }
 }
 
+/* If EXPR refers to a character array or pointer declared attribute
+   nonstring return a decl for that array or pointer and set *REF to
+   the referenced enclosing object or pointer.  Otherwise returns
+   null.  */
+
+tree
+get_attr_nonstring_decl (tree expr, tree *ref)
+{
+  tree decl = expr;
+  if (TREE_CODE (decl) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (decl);
+
+      if (is_gimple_assign (def))
+	{
+	  tree_code code = gimple_assign_rhs_code (def);
+	  if (code == ADDR_EXPR
+	      || code == COMPONENT_REF
+	      || code == VAR_DECL)
+	    decl = gimple_assign_rhs1 (def);
+	}
+      else if (tree var = SSA_NAME_VAR (decl))
+	decl = var;
+    }
+
+  if (TREE_CODE (decl) == ADDR_EXPR)
+    decl = TREE_OPERAND (decl, 0);
+
+  if (ref)
+    *ref = decl;
+
+  if (TREE_CODE (decl) == COMPONENT_REF)
+    decl = TREE_OPERAND (decl, 1);
+
+  if (DECL_P (decl)
+      && lookup_attribute ("nonstring", DECL_ATTRIBUTES (decl)))
+    return decl;
+
+  return NULL_TREE;
+}
+
+/* Warn about passing a non-string array/pointer to a function that
+   expects a nul-terminated string argument.  */
+
+void
+maybe_warn_nonstring_arg (tree fndecl, tree exp)
+{
+  if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return;
+
+  bool with_bounds = CALL_WITH_BOUNDS_P (exp);
+
+  /* The bound argument to a bounded string function like strncpy.  */
+  tree bound = NULL_TREE;
+
+  /* It's safe to call "bounded" string functions with a non-string
+     argument since the functions provide an explicit bound for this
+     purpose.  */
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
+    case BUILT_IN_STRNCMP:
+    case BUILT_IN_STRNCASECMP:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
+      bound = CALL_EXPR_ARG (exp, with_bounds ? 4 : 2);
+      break;
+
+    case BUILT_IN_STRNDUP:
+      bound = CALL_EXPR_ARG (exp, with_bounds ? 2 : 1);
+      break;
+
+    default:
+      break;
+    }
+
+  /* Determine the range of the bound argument (if specified).  */
+  tree bndrng[2] = { NULL_TREE, NULL_TREE };
+  if (bound)
+    get_size_range (bound, bndrng);
+
+  /* Iterate over the built-in function's formal arguments and check
+     each const char* against the actual argument.  If the actual
+     argument is declared attribute non-string issue a warning unless
+     the argument's maximum length is bounded.  */
+  function_args_iterator it;
+  function_args_iter_init (&it, TREE_TYPE (fndecl));
+
+  for (unsigned argno = 0; ; ++argno, function_args_iter_next (&it))
+    {
+      tree argtype = function_args_iter_cond (&it);
+      if (!argtype)
+	break;
+
+      if (TREE_CODE (argtype) != POINTER_TYPE)
+	continue;
+
+      argtype = TREE_TYPE (argtype);
+
+      if (TREE_CODE (argtype) != INTEGER_TYPE
+	  || !TYPE_READONLY (argtype))
+	continue;
+
+      argtype = TYPE_MAIN_VARIANT (argtype);
+      if (argtype != char_type_node)
+	continue;
+
+      tree callarg = CALL_EXPR_ARG (exp, argno);
+      if (TREE_CODE (callarg) == ADDR_EXPR)
+	callarg = TREE_OPERAND (callarg, 0);
+
+      /* See if the destination is declared with attribute "nonstring".  */
+      tree decl = get_attr_nonstring_decl (callarg);
+      if (!decl)
+	continue;
+
+      tree type = TREE_TYPE (decl);
+
+      offset_int wibnd = 0;
+      if (bndrng[0])
+	wibnd = wi::to_offset (bndrng[0]);
+
+      offset_int asize = wibnd;
+
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	if (tree arrbnd = TYPE_DOMAIN (type))
+	  {
+	    if ((arrbnd = TYPE_MAX_VALUE (arrbnd)))
+	      asize = wi::to_offset (arrbnd) + 1;
+	  }
+
+      location_t loc = EXPR_LOCATION (exp);
+
+      bool warned = false;
+
+      if (wi::ltu_p (asize, wibnd))
+	warned = warning_at (loc, OPT_Wstringop_overflow_,
+			     "%qD argument %i declared attribute %<nonstring%> "
+			     "is smaller than the specified bound %E",
+			     fndecl, argno + 1, bndrng[0]);
+      else if (!bound)
+	warned = warning_at (loc, OPT_Wstringop_overflow_,
+			     "%qD argument %i declared attribute %<nonstring%>",
+			     fndecl, argno + 1);
+
+      if (warned)
+	inform (DECL_SOURCE_LOCATION (decl),
+		"argument %qD declared here", decl);
+    }
+}
+
 /* Issue an error if CALL_EXPR was flagged as requiring
    tall-call optimization.  */
 
@@ -1850,6 +2002,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       args[i].unsignedp = unsignedp;
       args[i].mode = mode;
 
+      targetm.calls.warn_parameter_passing_abi (args_so_far, type);
+
       args[i].reg = targetm.calls.function_arg (args_so_far, mode, type,
 						argpos < n_named_args);
 
@@ -1943,6 +2097,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 alloc_size.  */
       maybe_warn_alloc_args_overflow (fndecl, exp, alloc_args, alloc_idx);
     }
+
+  /* Detect passing non-string arguments to functions expecting
+     nul-terminated strings.  */
+  maybe_warn_nonstring_arg (fndecl, exp);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.
@@ -5358,7 +5516,11 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 Note that in C the default argument promotions
 	 will prevent such mismatches.  */
 
-      size = GET_MODE_SIZE (arg->mode);
+      if (TYPE_EMPTY_P (TREE_TYPE (pval)))
+	size = 0;
+      else
+	size = GET_MODE_SIZE (arg->mode);
+
       /* Compute how much space the push instruction will push.
 	 On many machines, pushing a byte will advance the stack
 	 pointer by a halfword.  */
@@ -5390,10 +5552,12 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
       /* This isn't already where we want it on the stack, so put it there.
 	 This can either be done with push or copy insns.  */
-      if (!emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX,
-		      parm_align, partial, reg, used - size, argblock,
-		      ARGS_SIZE_RTX (arg->locate.offset), reg_parm_stack_space,
-		      ARGS_SIZE_RTX (arg->locate.alignment_pad), true))
+      if (used
+	  && !emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval),
+			      NULL_RTX, parm_align, partial, reg, used - size,
+			      argblock, ARGS_SIZE_RTX (arg->locate.offset),
+			      reg_parm_stack_space,
+			      ARGS_SIZE_RTX (arg->locate.alignment_pad), true))
 	sibcall_failure = 1;
 
       /* Unless this is a partially-in-register argument, the argument is now
@@ -5426,9 +5590,9 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	  /* PUSH_ROUNDING has no effect on us, because emit_push_insn
 	     for BLKmode is careful to avoid it.  */
 	  excess = (arg->locate.size.constant
-		    - int_size_in_bytes (TREE_TYPE (pval))
+		    - arg_int_size_in_bytes (TREE_TYPE (pval))
 		    + partial);
-	  size_rtx = expand_expr (size_in_bytes (TREE_TYPE (pval)),
+	  size_rtx = expand_expr (arg_size_in_bytes (TREE_TYPE (pval)),
 				  NULL_RTX, TYPE_MODE (sizetype),
 				  EXPAND_NORMAL);
 	}
@@ -5504,10 +5668,12 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    }
 	}
 
-      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
-		      parm_align, partial, reg, excess, argblock,
-		      ARGS_SIZE_RTX (arg->locate.offset), reg_parm_stack_space,
-		      ARGS_SIZE_RTX (arg->locate.alignment_pad), false);
+      if (!CONST_INT_P (size_rtx) || INTVAL (size_rtx) != 0)
+	emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
+			parm_align, partial, reg, excess, argblock,
+			ARGS_SIZE_RTX (arg->locate.offset),
+			reg_parm_stack_space,
+			ARGS_SIZE_RTX (arg->locate.alignment_pad), false);
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.
@@ -5584,6 +5750,9 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
      to be constructed into the stack)...  */
   if (TREE_ADDRESSABLE (type))
     return true;
+
+  if (TYPE_EMPTY_P (type))
+    return false;
 
   /* If the padding and mode of the type is such that a copy into
      a register would put it into the wrong part of the register.  */

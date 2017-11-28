@@ -967,6 +967,23 @@ debug (const rtx_def *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
+/* Like debug_rtx but with no newline, as debug_helper will add one.
+
+   Note: No debug_slim(rtx_insn *) variant implemented, as this
+   function can serve for both rtx and rtx_insn.  */
+
+static void
+debug_slim (const_rtx x)
+{
+  rtx_writer w (stderr, 0, false, false, NULL);
+  w.print_rtx (x);
+}
+
+DEFINE_DEBUG_VEC (rtx_def *)
+DEFINE_DEBUG_VEC (rtx_insn *)
+DEFINE_DEBUG_HASH_SET (rtx_def *)
+DEFINE_DEBUG_HASH_SET (rtx_insn *)
+
 /* Count of rtx's to print with debug_rtx_list.
    This global exists because gdb user defined commands have no arguments.  */
 

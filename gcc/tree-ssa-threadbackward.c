@@ -732,7 +732,7 @@ thread_jumps::fsm_find_control_statement_thread_paths (tree name)
 
    It is assumed that BB ends with a control statement and that by
    finding a path where NAME is a constant, we can thread the path.
-   SPEED_P_ indicate that we could increase code size to improve the
+   SPEED_P indicates that we could increase code size to improve the
    code path.  */
 
 void

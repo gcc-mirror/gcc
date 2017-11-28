@@ -3778,7 +3778,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
 }
 
 /* Return a tree for the difference of pointers OP0 and OP1.
-   The resulting tree has type int.  */
+   The resulting tree has type ptrdiff_t.  */
 
 static tree
 pointer_diff (location_t loc, tree op0, tree op1)
@@ -3810,7 +3810,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
       op1 = convert (common_type, op1);
     }
 
-  /* Determine integer type to perform computations in.  This will usually
+  /* Determine integer type result of the subtraction.  This will usually
      be the same as the result type (ptrdiff_t), but may need to be a wider
      type if pointers for the address space are wider than ptrdiff_t.  */
   if (TYPE_PRECISION (restype) < TYPE_PRECISION (TREE_TYPE (op0)))
@@ -3825,14 +3825,21 @@ pointer_diff (location_t loc, tree op0, tree op1)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
 
-  /* First do the subtraction as integers;
-     then drop through to build the divide operator.
-     Do not do default conversions on the minus operator
-     in case restype is a short type.  */
+  /* First do the subtraction, then build the divide operator
+     and only convert at the very end.
+     Do not do default conversions in case restype is a short type.  */
 
-  op0 = build_binary_op (loc,
-			 MINUS_EXPR, convert (inttype, op0),
-			 convert (inttype, op1), false);
+  /* POINTER_DIFF_EXPR requires a signed integer type of the same size as
+     pointers.  If some platform cannot provide that, or has a larger
+     ptrdiff_type to support differences larger than half the address
+     space, cast the pointers to some larger integer type and do the
+     computations in that type.  */
+  if (TYPE_PRECISION (inttype) > TYPE_PRECISION (TREE_TYPE (op0)))
+       op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
+			      convert (inttype, op1), false);
+  else
+    op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
+
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");

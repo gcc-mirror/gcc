@@ -2084,6 +2084,9 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   if (TREE_ADDRESSABLE (type))
     return 1;
 
+  if (TYPE_EMPTY_P (type))
+    return 0;
+
   if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
     return 1;
 
@@ -2527,6 +2530,9 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
       data->entry_parm = data->stack_parm = const0_rtx;
       return;
     }
+
+  targetm.calls.warn_parameter_passing_abi (all->args_so_far,
+					    data->passed_type);
 
   entry_parm = targetm.calls.function_incoming_arg (all->args_so_far,
 						    data->promoted_mode,
@@ -4140,8 +4146,9 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 
   part_size_in_regs = (reg_parm_stack_space == 0 ? partial : 0);
 
-  sizetree
-    = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
+  sizetree = (type
+	      ? arg_size_in_bytes (type)
+	      : size_int (GET_MODE_SIZE (passed_mode)));
   where_pad = targetm.calls.function_arg_padding (passed_mode, type);
   boundary = targetm.calls.function_arg_boundary (passed_mode, type);
   round_boundary = targetm.calls.function_arg_round_boundary (passed_mode,

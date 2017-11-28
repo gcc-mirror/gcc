@@ -1483,6 +1483,16 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	return build_complex (type, arg1, arg2);
       return NULL_TREE;
 
+    case POINTER_DIFF_EXPR:
+      if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST)
+	{
+	  offset_int res = wi::sub (wi::to_offset (arg1),
+				    wi::to_offset (arg2));
+	  return force_fit_type (type, res, 1,
+				 TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
+	}
+      return NULL_TREE;
+
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
       {
@@ -1705,36 +1715,6 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	  }
 
 	return build_vector (type, elts);
-      }
-
-    case REDUC_MIN_EXPR:
-    case REDUC_MAX_EXPR:
-    case REDUC_PLUS_EXPR:
-      {
-	unsigned int nelts, i;
-	enum tree_code subcode;
-
-	if (TREE_CODE (arg0) != VECTOR_CST)
-	  return NULL_TREE;
-	nelts = VECTOR_CST_NELTS (arg0);
-
-	switch (code)
-	  {
-	  case REDUC_MIN_EXPR: subcode = MIN_EXPR; break;
-	  case REDUC_MAX_EXPR: subcode = MAX_EXPR; break;
-	  case REDUC_PLUS_EXPR: subcode = PLUS_EXPR; break;
-	  default: gcc_unreachable ();
-	  }
-
-	tree res = VECTOR_CST_ELT (arg0, 0);
-	for (i = 1; i < nelts; i++)
-	  {
-	    res = const_binop (subcode, res, VECTOR_CST_ELT (arg0, i));
-	    if (res == NULL_TREE || !CONSTANT_CLASS_P (res))
-	      return NULL_TREE;
-	  }
-
-	return res;
       }
 
     default:
@@ -8801,7 +8781,8 @@ fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
 
 static tree
 fold_addr_of_array_ref_difference (location_t loc, tree type,
-				   tree aref0, tree aref1)
+				   tree aref0, tree aref1,
+				   bool use_pointer_diff)
 {
   tree base0 = TREE_OPERAND (aref0, 0);
   tree base1 = TREE_OPERAND (aref1, 0);
@@ -8813,14 +8794,20 @@ fold_addr_of_array_ref_difference (location_t loc, tree type,
   if ((TREE_CODE (base0) == ARRAY_REF
        && TREE_CODE (base1) == ARRAY_REF
        && (base_offset
-	   = fold_addr_of_array_ref_difference (loc, type, base0, base1)))
+	   = fold_addr_of_array_ref_difference (loc, type, base0, base1,
+						use_pointer_diff)))
       || (INDIRECT_REF_P (base0)
 	  && INDIRECT_REF_P (base1)
 	  && (base_offset
-	        = fold_binary_loc (loc, MINUS_EXPR, type,
-				   fold_convert (type, TREE_OPERAND (base0, 0)),
-				   fold_convert (type,
-						 TREE_OPERAND (base1, 0)))))
+	        = use_pointer_diff
+		  ? fold_binary_loc (loc, POINTER_DIFF_EXPR, type,
+				     TREE_OPERAND (base0, 0),
+				     TREE_OPERAND (base1, 0))
+		  : fold_binary_loc (loc, MINUS_EXPR, type,
+				     fold_convert (type,
+						   TREE_OPERAND (base0, 0)),
+				     fold_convert (type,
+						   TREE_OPERAND (base1, 0)))))
       || operand_equal_p (base0, base1, OEP_ADDRESS_OF))
     {
       tree op0 = fold_convert_loc (loc, type, TREE_OPERAND (aref0, 1));
@@ -9694,7 +9681,27 @@ fold_binary_loc (location_t loc,
 
       return NULL_TREE;
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
+      /* Fold &a[i] - &a[j] to i-j.  */
+      if (TREE_CODE (arg0) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF
+	  && TREE_CODE (arg1) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == ARRAY_REF)
+        {
+	  tree tem = fold_addr_of_array_ref_difference (loc, type,
+							TREE_OPERAND (arg0, 0),
+							TREE_OPERAND (arg1, 0),
+							code
+							== POINTER_DIFF_EXPR);
+	  if (tem)
+	    return tem;
+	}
+
+      /* Further transformations are not for pointers.  */
+      if (code == POINTER_DIFF_EXPR)
+	return NULL_TREE;
+
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && negate_expr_p (op1))
@@ -9751,19 +9758,6 @@ fold_binary_loc (location_t loc,
 	return fold_build2_loc (loc, PLUS_EXPR, type,
 				fold_convert_loc (loc, type, arg0),
 				negate_expr (op1));
-
-      /* Fold &a[i] - &a[j] to i-j.  */
-      if (TREE_CODE (arg0) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF
-	  && TREE_CODE (arg1) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == ARRAY_REF)
-        {
-	  tree tem = fold_addr_of_array_ref_difference (loc, type,
-							TREE_OPERAND (arg0, 0),
-							TREE_OPERAND (arg1, 0));
-	  if (tem)
-	    return tem;
-	}
 
       /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the same or
 	 one.  Make sure the type is not saturating and has the signedness of

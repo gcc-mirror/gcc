@@ -40,13 +40,6 @@ stupid_function_name_for_static_linking (void)
 
 options_t options;
 
-/* This will be 0 for little-endian
-   machines and 1 for big-endian machines.
-
-   Currently minimal libgfortran only runs on little-endian devices
-   which don't support constructors so this is just a constant.  */
-int big_endian = 0;
-
 static int argc_save;
 static char **argv_save;
 

@@ -38,7 +38,7 @@ private:
 
 struct MemoTable::dagNodeLt
 {
-  bool operator()(const DagNode*, const DagNode*);
+  bool operator()(const DagNode*, const DagNode*) const;
 };
 
 class MemoTable::MemoMap
