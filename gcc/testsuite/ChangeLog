@@ -1,6 +1,12 @@
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81275
+	* g++.dg/warn/pr81275-1.C: New test.
+	* g++.dg/warn/pr81275-2.C: New test.
+	* g++.dg/warn/pr81275-3.C: New test.
+	* c-c++-common/tsan/pr81275.c: Skip for C++ and -O2.
+
+	PR sanitizer/81275
 	* c-c++-common/tsan/pr81275.c: New test.
 
 2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>

@@ -16124,7 +16124,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       finish_for_cond (tmp, stmt, false);
       tmp = RECUR (FOR_EXPR (t));
       finish_for_expr (tmp, stmt);
-      RECUR (FOR_BODY (t));
+      {
+	bool prev = note_iteration_stmt_body_start ();
+	RECUR (FOR_BODY (t));
+	note_iteration_stmt_body_end (prev);
+      }
       finish_for_stmt (stmt);
       break;
 
@@ -16148,7 +16152,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	else
 	  stmt = cp_convert_range_for (stmt, decl, expr, NULL_TREE, 0,
 				       RANGE_FOR_IVDEP (t));
+	bool prev = note_iteration_stmt_body_start ();
         RECUR (RANGE_FOR_BODY (t));
+	note_iteration_stmt_body_end (prev);
         finish_for_stmt (stmt);
       }
       break;
@@ -16157,13 +16163,21 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       stmt = begin_while_stmt ();
       tmp = RECUR (WHILE_COND (t));
       finish_while_stmt_cond (tmp, stmt, false);
-      RECUR (WHILE_BODY (t));
+      {
+	bool prev = note_iteration_stmt_body_start ();
+	RECUR (WHILE_BODY (t));
+	note_iteration_stmt_body_end (prev);
+      }
       finish_while_stmt (stmt);
       break;
 
     case DO_STMT:
       stmt = begin_do_stmt ();
-      RECUR (DO_BODY (t));
+      {
+	bool prev = note_iteration_stmt_body_start ();
+	RECUR (DO_BODY (t));
+	note_iteration_stmt_body_end (prev);
+      }
       finish_do_body (stmt);
       tmp = RECUR (DO_COND (t));
       finish_do_stmt (tmp, stmt, false);

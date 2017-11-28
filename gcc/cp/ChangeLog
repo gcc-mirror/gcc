@@ -1,3 +1,32 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* cp-tree.h (SWITCH_STMT_ALL_CASES_P): Define.
+	(SWITCH_STMT_NO_BREAK_P): Define.
+	(note_break_stmt, note_iteration_stmt_body_start,
+	note_iteration_stmt_body_end): Declare.
+	* decl.c (struct cp_switch): Add has_default_p, break_stmt_seen_p
+	and in_loop_body_p fields. 
+	(push_switch): Clear them.
+	(pop_switch): Set SWITCH_STMT_CANNOT_FALLTHRU_P if has_default_p
+	and !break_stmt_seen_p.  Assert in_loop_body_p is false.
+	(note_break_stmt, note_iteration_stmt_body_start,
+	note_iteration_stmt_body_end): New functions.
+	(finish_case_label): Set has_default_p when both low and high
+	are NULL_TREE.
+	* parser.c (cp_parser_iteration_statement): Use
+	note_iteration_stmt_body_start and note_iteration_stmt_body_end
+	around parsing iteration body.
+	* pt.c (tsubst_expr): Likewise.
+	* cp-objcp-common.c (cxx_block_may_fallthru): Return false for
+	SWITCH_STMT which contains no BREAK_STMTs, contains a default:
+	CASE_LABEL_EXPR and where SWITCH_STMT_BODY isn't empty and
+	can't fallthru.
+	* semantics.c (finish_break_stmt): Call note_break_stmt.
+	* cp-gimplify.c (genericize_switch_stmt): Copy SWITCH_STMT_ALL_CASES_P
+	bit to SWITCH_ALL_CASES_P.  Assert that if SWITCH_STMT_NO_BREAK_P then
+	the break label is not TREE_USED.
+
 2017-11-28  Julia Koval  <julia.koval@intel.com>
             Sebastian Peryt  <sebastian.peryt@intel.com>
 

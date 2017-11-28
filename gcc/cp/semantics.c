@@ -1102,6 +1102,7 @@ finish_break_stmt (void)
      understand.  */
   if (!block_may_fallthru (cur_stmt_list))
     return void_node;
+  note_break_stmt ();
   return add_stmt (build_stmt (input_location, BREAK_STMT));
 }
 
