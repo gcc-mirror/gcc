@@ -1,3 +1,10 @@
+2017-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/83141
+	* gimple-fold.c (gimple_fold_builtin_memory_op): For aggregate
+	copies generated from memcpy use a character array as reference
+	type.
+
 2017-11-28  Julia Koval  <julia.koval@intel.com>
             Sebastian Peryt  <sebastian.peryt@intel.com>
 
