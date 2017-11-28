@@ -1,3 +1,8 @@
+2017-11-28  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (SELFTEST_FLAGS): Use nul instead of /dev/null
+	on mingw build hosts.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/81307
