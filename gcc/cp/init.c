@@ -2498,9 +2498,9 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 
   /* The number of bytes to add to or subtract from the size of the provided
      buffer based on an offset into an array or an array element reference.
-     Although intermediate results may be negative (as in a[3] - 2) the final
-     result cannot be.  */
-  HOST_WIDE_INT adjust = 0;
+     Although intermediate results may be negative (as in a[3] - 2) a valid
+     final result cannot be.  */
+  offset_int adjust = 0;
   /* True when the size of the entire destination object should be used
      to compute the possibly optimistic estimate of the available space.  */
   bool use_obj_size = false;
@@ -2524,7 +2524,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
      is a constant.  */
   if (TREE_CODE (oper) == POINTER_PLUS_EXPR)
     {
-      /* If the offset is comple-time constant, use it to compute a more
+      /* If the offset is compile-time constant, use it to compute a more
 	 accurate estimate of the size of the buffer.  Since the operand
 	 of POINTER_PLUS_EXPR is represented as an unsigned type, convert
 	 it to signed first.
@@ -2532,7 +2532,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 estimate (this may lead to false negatives).  */
       tree adj = TREE_OPERAND (oper, 1);
       if (CONSTANT_CLASS_P (adj))
-	adjust += tree_to_shwi (convert (ssizetype, adj));
+	adjust += wi::to_offset (convert (ssizetype, adj));
       else
 	use_obj_size = true;
 
@@ -2559,9 +2559,9 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 not a compile-time constant, use the index to determine the
 	 size of the buffer.  Otherwise, use the entire array as
 	 an optimistic estimate of the size.  */
-      const_tree adj = TREE_OPERAND (oper, 1);
+      const_tree adj = fold_non_dependent_expr (TREE_OPERAND (oper, 1));
       if (!use_obj_size && CONSTANT_CLASS_P (adj))
-	adjust += tree_to_shwi (adj);
+	adjust += wi::to_offset (adj);
       else
 	{
 	  use_obj_size = true;
@@ -2580,10 +2580,18 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
      members from arrays of unspecified size.  */
   bool compref = TREE_CODE (oper) == COMPONENT_REF;
 
+  /* For COMPONENT_REF (i.e., a struct member) the size of the entire
+     enclosing struct.  Used to validate the adjustment (offset) into
+     an array at the end of a struct.  */
+  offset_int compsize = 0;
+
   /* Descend into a struct or union to find the member whose address
      is being used as the argument.  */
   if (TREE_CODE (oper) == COMPONENT_REF)
     {
+      tree comptype = TREE_TYPE (TREE_OPERAND (oper, 0));
+      compsize = wi::to_offset (TYPE_SIZE_UNIT (comptype));
+
       tree op0 = oper;
       while (TREE_CODE (op0 = TREE_OPERAND (op0, 0)) == COMPONENT_REF);
       if (VAR_P (op0))
@@ -2591,14 +2599,15 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
       oper = TREE_OPERAND (oper, 1);
     }
 
-  if ((addr_expr || !POINTER_TYPE_P (TREE_TYPE (oper)))
+  tree opertype = TREE_TYPE (oper);
+  if ((addr_expr || !POINTER_TYPE_P (opertype))
       && (VAR_P (oper)
 	  || TREE_CODE (oper) == FIELD_DECL
 	  || TREE_CODE (oper) == PARM_DECL))
     {
       /* A possibly optimistic estimate of the number of bytes available
 	 in the destination buffer.  */
-      unsigned HOST_WIDE_INT bytes_avail = 0;
+      offset_int bytes_avail = 0;
       /* True when the estimate above is in fact the exact size
 	 of the destination buffer rather than an estimate.  */
       bool exact_size = true;
@@ -2613,47 +2622,42 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	  /* Use the size of the entire array object when the expression
 	     refers to a variable or its size depends on an expression
 	     that's not a compile-time constant.  */
-	  bytes_avail = tree_to_uhwi (DECL_SIZE_UNIT (oper));
+	  bytes_avail = wi::to_offset (DECL_SIZE_UNIT (oper));
 	  exact_size = !use_obj_size;
 	}
-      else if (TYPE_SIZE_UNIT (TREE_TYPE (oper))
-	       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (oper))))
+      else if (tree opersize = TYPE_SIZE_UNIT (opertype))
 	{
 	  /* Use the size of the type of the destination buffer object
-	     as the optimistic estimate of the available space in it.  */
-	  bytes_avail = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (oper)));
-	}
-      else if (var_decl)
-	{
-	  /* Constructing into a buffer provided by the flexible array
-	     member of a declared object (which is permitted as a G++
-	     extension).  If the array member has been initialized,
-	     determine its size from the initializer.  Otherwise,
-	     the array size is zero.  */
-	  bytes_avail = 0;
-
-	  if (tree init = find_field_init (oper, DECL_INITIAL (var_decl)))
-	    bytes_avail = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init)));
-	}
-      else
-	{
-	  /* Bail if neither the size of the object nor its type is known.  */
-	  return;
+	     as the optimistic estimate of the available space in it.
+	     Use the maximum possible size for zero-size arrays and
+	     flexible array members (except of initialized objects
+	     thereof).  */
+	  if (TREE_CODE (opersize) == INTEGER_CST)
+	    bytes_avail = wi::to_offset (opersize);
 	}
 
-      tree_code oper_code = TREE_CODE (TREE_TYPE (oper));
+      if (bytes_avail == 0)
+	{
+	  if (var_decl)
+	    {
+	      /* Constructing into a buffer provided by the flexible array
+		 member of a declared object (which is permitted as a G++
+		 extension).  If the array member has been initialized,
+		 determine its size from the initializer.  Otherwise,
+		 the array size is zero.  */
+	      if (tree init = find_field_init (oper, DECL_INITIAL (var_decl)))
+		bytes_avail = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (init)));
+	    }
+	  else
+	    bytes_avail = (wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node))
+			   - compsize);
+	}
+
+      tree_code oper_code = TREE_CODE (opertype);
 
       if (compref && oper_code == ARRAY_TYPE)
 	{
-	  /* Avoid diagnosing flexible array members (which are accepted
-	     as an extension and diagnosed with -Wpedantic) and zero-length
-	     arrays (also an extension).
-	     Overflowing construction in one-element arrays is diagnosed
-	     only at level 2.  */
-	  if (bytes_avail == 0 && !var_decl)
-	    return;
-
-	  tree nelts = array_type_nelts_top (TREE_TYPE (oper));
+	  tree nelts = array_type_nelts_top (opertype);
 	  tree nelts_cst = maybe_constant_value (nelts);
 	  if (TREE_CODE (nelts_cst) == INTEGER_CST
 	      && integer_onep (nelts_cst)
@@ -2662,29 +2666,35 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	    return;
 	}
 
-      /* The size of the buffer can only be adjusted down but not up.  */
-      gcc_checking_assert (0 <= adjust);
-
       /* Reduce the size of the buffer by the adjustment computed above
 	 from the offset and/or the index into the array.  */
-      if (bytes_avail < static_cast<unsigned HOST_WIDE_INT>(adjust))
+      if (bytes_avail < adjust || adjust < 0)
 	bytes_avail = 0;
       else
-	bytes_avail -= adjust;
+	{
+	  tree elttype = (TREE_CODE (opertype) == ARRAY_TYPE
+			  ? TREE_TYPE (opertype) : opertype);
+	  if (tree eltsize = TYPE_SIZE_UNIT (elttype))
+	    {
+	      bytes_avail -= adjust * wi::to_offset (eltsize);
+	      if (bytes_avail < 0)
+		bytes_avail = 0;
+	    }
+	}
 
       /* The minimum amount of space needed for the allocation.  This
 	 is an optimistic estimate that makes it possible to detect
 	 placement new invocation for some undersize buffers but not
 	 others.  */
-      unsigned HOST_WIDE_INT bytes_need;
+      offset_int bytes_need;
 
       if (CONSTANT_CLASS_P (size))
-	bytes_need = tree_to_uhwi (size);
+	bytes_need = wi::to_offset (size);
       else if (nelts && CONSTANT_CLASS_P (nelts))
-	  bytes_need = tree_to_uhwi (nelts)
-	    * tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	bytes_need = (wi::to_offset (nelts)
+		      * wi::to_offset (TYPE_SIZE_UNIT (type)));
       else if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
-	bytes_need = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+	bytes_need = wi::to_offset (TYPE_SIZE_UNIT (type));
       else
 	{
 	  /* The type is a VLA.  */
@@ -2703,9 +2713,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			  : "placement new constructing an object of type "
 			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
 			  "and size at most %qwu",
-			  type, tree_to_uhwi (nelts), bytes_need,
-			  TREE_TYPE (oper),
-			  bytes_avail);
+			  type, tree_to_uhwi (nelts), bytes_need.to_uhwi (),
+			  opertype, bytes_avail.to_uhwi ());
 	    else
 	      warning_at (loc, OPT_Wplacement_new_,
 			  exact_size ?
@@ -2715,8 +2724,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			  : "placement new constructing an array of objects "
 			  "of type %qT and size %qwu in a region of type %qT "
 			  "and size at most %qwu",
-			  type, bytes_need, TREE_TYPE (oper),
-			  bytes_avail);
+			  type, bytes_need.to_uhwi (), opertype,
+			  bytes_avail.to_uhwi ());
 	  else
 	    warning_at (loc, OPT_Wplacement_new_,
 			exact_size ?
@@ -2725,8 +2734,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			: "placement new constructing an object of type %qT "
 			"and size %qwu in a region of type %qT and size "
 			"at most %qwu",
-			type, bytes_need, TREE_TYPE (oper),
-			bytes_avail);
+			type, bytes_need.to_uhwi (), opertype,
+			bytes_avail.to_uhwi ());
 	}
     }
 }
