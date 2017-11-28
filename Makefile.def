@@ -144,8 +144,6 @@ target_modules = { module= libvtv;
 		   bootstrap=true;
 		   lib_path=.libs;
 		   raw_cxx=true; };
-target_modules = { module= libcilkrts;
-		   lib_path=.libs; };
 target_modules = { module= liboffloadmic;
 		   lib_path=.libs;
 		   extra_configure_flags='@extra_liboffloadmic_configure_flags@'; };
@@ -533,7 +531,6 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libitm; cxx=true; };
 lang_env_dependencies = { module=libffi; cxx=true; };
-lang_env_dependencies = { module=libcilkrts; cxx=true; };
 lang_env_dependencies = { module=liboffloadmic; cxx=true; };
 lang_env_dependencies = { module=newlib; no_c=true; };
 lang_env_dependencies = { module=libgloss; no_c=true; };
@@ -567,8 +564,6 @@ dependencies = { module=install-target-libsanitizer; on=install-target-libstdc++
 dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
 dependencies = { module=install-target-libvtv; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-libvtv; on=install-target-libgcc; };
-dependencies = { module=install-target-libcilkrts; on=install-target-libstdc++-v3; };
-dependencies = { module=install-target-libcilkrts; on=install-target-libgcc; };
 dependencies = { module=install-target-liboffloadmic; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-liboffloadmic; on=install-target-libgcc; };
 dependencies = { module=install-target-libitm; on=install-target-libgcc; };

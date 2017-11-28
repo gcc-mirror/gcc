@@ -2098,18 +2098,6 @@ Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
 in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
 are ignored.
 
-@item -fcilkplus
-@opindex fcilkplus
-@cindex Enable Cilk Plus
-Enable the usage of Cilk Plus language extension features for C/C++.
-When the option @option{-fcilkplus} is specified, enable the usage of
-the Cilk Plus Language extension features for C/C++.  The present
-implementation follows ABI version 1.2.  This is an experimental
-feature that is only partially complete, and whose interface may
-change in future versions of GCC as the official specification
-changes.  Currently, all features but @code{_Cilk_for} have been
-implemented.
-
 @item -fgnu-tm
 @opindex fgnu-tm
 When the option @option{-fgnu-tm} is specified, the compiler

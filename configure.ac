@@ -150,7 +150,6 @@ target_libraries="target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
-		target-libcilkrts \
 		target-liboffloadmic \
 		target-libhsail-rt \
 		target-libatomic \
@@ -531,22 +530,6 @@ if test -d ${srcdir}/libatomic; then
 	then
 	    AC_MSG_RESULT([no])
 	    noconfigdirs="$noconfigdirs target-libatomic"
-	else
-	    AC_MSG_RESULT([yes])
-	fi
-    fi
-fi
-
-# Disable libcilkrts on unsupported systems.
-if test -d ${srcdir}/libcilkrts; then
-    if test x$enable_libcilkrts = x; then
-	AC_MSG_CHECKING([for libcilkrts support])
-	if (srcdir=${srcdir}/libcilkrts; \
-		. ${srcdir}/configure.tgt; \
-		test -n "$UNSUPPORTED")
-	then
-	    AC_MSG_RESULT([no])
-	    noconfigdirs="$noconfigdirs target-libcilkrts"
 	else
 	    AC_MSG_RESULT([yes])
 	fi
@@ -2156,19 +2139,19 @@ case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
   fi
 esac
 
-# Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
+# Disable libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
 case ,${enable_languages}, in
   *,c++,*)
-    # Disable libcilkrts, libitm, libsanitizer if we're not building libstdc++
+    # Disable libitm, libsanitizer if we're not building libstdc++
     case "${noconfigdirs}" in
       *target-libstdc++-v3*)
-        noconfigdirs="$noconfigdirs target-libcilkrts target-libitm target-libsanitizer"
+        noconfigdirs="$noconfigdirs target-libitm target-libsanitizer"
         ;;
       *) ;;
     esac
     ;;
   *)
-    noconfigdirs="$noconfigdirs target-libcilkrts target-liboffloadmic target-libitm target-libsanitizer target-libvtv"
+    noconfigdirs="$noconfigdirs target-liboffloadmic target-libitm target-libsanitizer target-libvtv"
     ;;
 esac
 

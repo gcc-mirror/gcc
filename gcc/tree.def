@@ -1131,14 +1131,6 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 7)
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 7)
 
-/* Cilk Plus - #pragma simd [clause1 ... clauseN]
-   Operands like for OMP_FOR.  */
-DEFTREECODE (CILK_SIMD, "cilk_simd", tcc_statement, 7)
-
-/* Cilk Plus - _Cilk_for (..)
-   Operands like for OMP_FOR.  */
-DEFTREECODE (CILK_FOR, "cilk_for", tcc_statement, 7)
-
 /* OpenMP - #pragma omp distribute [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 7)
@@ -1407,13 +1399,6 @@ DEFTREECODE (TARGET_OPTION_NODE, "target_option_node", tcc_exceptional, 0)
    Operand 1 is the annotation kind.
    Operand 2 is additional data.  */
 DEFTREECODE (ANNOTATE_EXPR, "annotate_expr", tcc_expression, 3)
-
-/* Cilk spawn statement
-   Operand 0 is the CALL_EXPR.  */
-DEFTREECODE (CILK_SPAWN_STMT, "cilk_spawn_stmt", tcc_statement, 1)
-
-/* Cilk Sync statement: Does not have any operands.  */
-DEFTREECODE (CILK_SYNC_STMT, "cilk_sync_stmt", tcc_statement, 0)
 
 /*
 Local variables:

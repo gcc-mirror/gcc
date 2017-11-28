@@ -32,7 +32,6 @@ enum tree_code {
 	ERROR_MARK,
 	IDENTIFIER_NODE,
 	OMP_SIMD,
-	CILK_SIMD,
 	MAX_TREE_CODES
 };
 struct tree_identifier {
@@ -192,7 +191,7 @@ cp_parser_omp_for_loop(cp_parser * parser, enum tree_code code, tree clauses,
 	for (i = 0; i < collapse; i++) {
 		bool add_private_clause = false;
 		add_private_clause |=
-		    cp_parser_omp_for_loop_init(parser, code != CILK_SIMD,
+		    cp_parser_omp_for_loop_init(parser, true,
 						this_pre_body, for_block, init,
 						decl, real_decl);
 	}

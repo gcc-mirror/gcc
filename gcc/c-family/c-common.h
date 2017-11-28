@@ -184,9 +184,6 @@ enum rid
   /* C++ transactional memory.  */
   RID_ATOMIC_NOEXCEPT, RID_ATOMIC_CANCEL, RID_SYNCHRONIZED,
 
-  /* Cilk Plus keywords.  */
-  RID_CILK_SPAWN, RID_CILK_SYNC, RID_CILK_FOR,
-  
   /* Objective-C ("AT" reserved words - they are only keywords when
      they follow '@')  */
   RID_AT_ENCODE,   RID_AT_END,
@@ -586,9 +583,6 @@ extern void push_cleanup (tree, tree, bool);
 
 extern tree build_modify_expr (location_t, tree, tree, enum tree_code,
 			       location_t, tree, tree);
-extern tree build_array_notation_expr (location_t, tree, tree, enum tree_code,
-				       location_t, tree, tree);
-extern tree build_array_notation_ref (location_t, tree, tree, tree, tree, tree);
 extern tree build_indirect_ref (location_t, tree, ref_operator);
 
 extern bool has_c_linkage (const_tree decl);
@@ -1255,9 +1249,8 @@ enum c_omp_clause_split
 enum c_omp_region_type
 {
   C_ORT_OMP			= 1 << 0,
-  C_ORT_CILK			= 1 << 1,
-  C_ORT_ACC			= 1 << 2,
-  C_ORT_DECLARE_SIMD		= 1 << 3,
+  C_ORT_ACC			= 1 << 1,
+  C_ORT_DECLARE_SIMD		= 1 << 2,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD
 };
 
@@ -1364,23 +1357,6 @@ enum stv_conv {
 extern enum stv_conv scalar_to_vector (location_t loc, enum tree_code code,
 				       tree op0, tree op1, bool);
 
-/* In c-cilkplus.c  */
-extern tree c_validate_cilk_plus_loop (tree *, int *, void *);
-extern bool c_check_cilk_loop (location_t, tree);
-
-/* These #defines allow users to access different operands of the
-   array notation tree.  */
-
-#define ARRAY_NOTATION_CHECK(NODE) TREE_CHECK (NODE, ARRAY_NOTATION_REF)
-#define ARRAY_NOTATION_ARRAY(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 0)
-#define ARRAY_NOTATION_START(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 1)
-#define ARRAY_NOTATION_LENGTH(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 2)
-#define ARRAY_NOTATION_STRIDE(NODE) \
-  TREE_OPERAND (ARRAY_NOTATION_CHECK (NODE), 3)
-
 /* This structure holds all the scalar values and its appropriate variable 
    replacment.  It is mainly used by the function that pulls all the invariant
    parts that should be executed only once, which comes with array notation 
@@ -1392,75 +1368,11 @@ struct inv_list
   vec<enum tree_code, va_gc> *additional_tcodes; 
 };
 
-/* This structure holds all the important components that can be extracted
-   from an ARRAY_NOTATION_REF expression.  It is used to pass array notation
-   information between the functions that are responsible for expansion.  */
-typedef struct cilkplus_an_parts
-{
-  tree value;
-  tree start;
-  tree length;
-  tree stride;
-  bool is_vector;
-} an_parts;
-
-/* This structure holds the components necessary to create the loop around
-   the ARRAY_REF that is created using the ARRAY_NOTATION information.  */
-
-typedef struct cilkplus_an_loop_parts
-{
-  tree var;         /* Loop induction variable.  */
-  tree incr;        /* Loop increment/decrement expression.  */
-  tree cmp;         /* Loop condition.  */
-  tree ind_init;    /* Initialization of the loop induction variable.  */
-} an_loop_parts; 
-
-/* In array-notation-common.c.  */
-extern HOST_WIDE_INT extract_sec_implicit_index_arg (location_t, tree);
-extern bool is_sec_implicit_index_fn (tree);
-extern void array_notation_init_builtins (void);
-extern struct c_expr fix_array_notation_expr (location_t, enum tree_code, 
-					      struct c_expr);
-extern bool contains_array_notation_expr (tree);
-extern tree expand_array_notation_exprs (tree);
-extern tree fix_conditional_array_notations (tree);
-extern tree find_correct_array_notation_type (tree);
-extern bool length_mismatch_in_expr_p (location_t, vec<vec<an_parts> >);
-extern enum built_in_function is_cilkplus_reduce_builtin (tree);
-extern bool find_rank (location_t, tree, tree, bool, size_t *);
-extern void extract_array_notation_exprs (tree, bool, vec<tree, va_gc> **);
-extern void replace_array_notations (tree *, bool, vec<tree, va_gc> *,
-				     vec<tree, va_gc> *);
 extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
-extern tree find_correct_array_notation_type (tree op);
-extern void cilkplus_extract_an_triplets (vec<tree, va_gc> *, size_t, size_t,
-					  vec<vec<an_parts> > *);
-extern vec <tree, va_gc> *fix_sec_implicit_args
-  (location_t, vec <tree, va_gc> *, vec<an_loop_parts>, size_t, tree);
-extern bool is_cilkplus_vector_p (tree);
 
-/* In cilk.c.  */
-extern tree insert_cilk_frame (tree);
-extern void cilk_init_builtins (void);
-extern int gimplify_cilk_spawn (tree *);
-extern void cilk_install_body_with_frame_cleanup (tree, tree, void *);
-extern bool cilk_detect_spawn_and_unwrap (tree *);
-extern bool cilk_set_spawn_marker (location_t, tree);
-extern tree build_cilk_sync (void);
-extern tree build_cilk_spawn (location_t, tree);
-extern tree make_cilk_frame (tree);
-extern tree create_cilk_function_exit (tree, bool, bool);
-extern void cilk_outline (tree, tree *, void *);
-extern bool contains_cilk_spawn_stmt (tree);
-extern tree cilk_for_number_of_iterations (tree);
-extern bool check_no_cilk (tree, const char *, const char *,
-		           location_t loc = UNKNOWN_LOCATION);
 extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
 extern bool valid_array_size_p (location_t, tree, tree);
-
-extern bool cilk_ignorable_spawn_rhs_op (tree);
-extern bool cilk_recognize_spawn (tree, tree *);
 
 /* In c-warn.c.  */
 extern void constant_expression_warning (tree);

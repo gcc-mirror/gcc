@@ -323,7 +323,6 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_DEFALTMAP  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   0, /* OMP_CLAUSE__SIMT_  */
-  1, /* OMP_CLAUSE__CILK_FOR_COUNT_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
   1, /* OMP_CLAUSE_WORKER  */
   1, /* OMP_CLAUSE_VECTOR  */
@@ -395,7 +394,6 @@ const char * const omp_clause_code_name[] =
   "defaultmap",
   "_simduid_",
   "_simt_",
-  "_Cilk_for_count_",
   "independent",
   "worker",
   "vector",
@@ -11298,7 +11296,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
 

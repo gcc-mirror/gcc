@@ -1174,7 +1174,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
@@ -1486,7 +1485,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_NUM_GANGS:
@@ -1529,39 +1527,13 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
     }
 }
 
-/* Create a new name for omp child function.  Returns an identifier.  If
-   IS_CILK_FOR is true then the suffix for the child function is
-   "_cilk_for_fn."  */
+/* Create a new name for omp child function.  Returns an identifier. */
 
 static tree
-create_omp_child_function_name (bool task_copy, bool is_cilk_for)
+create_omp_child_function_name (bool task_copy)
 {
-  if (is_cilk_for)
-    return clone_function_name (current_function_decl, "_cilk_for_fn");
   return clone_function_name (current_function_decl,
 			      task_copy ? "_omp_cpyfn" : "_omp_fn");
-}
-
-/* Returns the type of the induction variable for the child function for
-   _Cilk_for and the types for _high and _low variables based on TYPE.  */
-
-static tree
-cilk_for_check_loop_diff_type (tree type)
-{
-  if (TYPE_PRECISION (type) <= TYPE_PRECISION (uint32_type_node))
-    {
-      if (TYPE_UNSIGNED (type))
-	return uint32_type_node;
-      else
-	return integer_type_node;
-    }
-  else
-    {
-      if (TYPE_UNSIGNED (type))
-	return uint64_type_node;
-      else
-	return long_long_integer_type_node;
-    }
 }
 
 /* Return true if CTX may belong to offloaded code: either if current function
@@ -1586,24 +1558,10 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 {
   tree decl, type, name, t;
 
-  tree cilk_for_count
-    = (flag_cilkplus && gimple_code (ctx->stmt) == GIMPLE_OMP_PARALLEL)
-      ? omp_find_clause (gimple_omp_parallel_clauses (ctx->stmt),
-			 OMP_CLAUSE__CILK_FOR_COUNT_) : NULL_TREE;
-  tree cilk_var_type = NULL_TREE;
-
-  name = create_omp_child_function_name (task_copy,
-					 cilk_for_count != NULL_TREE);
+  name = create_omp_child_function_name (task_copy);
   if (task_copy)
     type = build_function_type_list (void_type_node, ptr_type_node,
 				     ptr_type_node, NULL_TREE);
-  else if (cilk_for_count)
-    {
-      type = TREE_TYPE (OMP_CLAUSE_OPERAND (cilk_for_count, 0));
-      cilk_var_type = cilk_for_check_loop_diff_type (type);
-      type = build_function_type_list (void_type_node, ptr_type_node,
-				       cilk_var_type, cilk_var_type, NULL_TREE);
-    }
   else
     type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
 
@@ -1660,32 +1618,6 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_CONTEXT (t) = decl;
   DECL_RESULT (decl) = t;
 
-  /* _Cilk_for's child function requires two extra parameters called
-     __low and __high that are set the by Cilk runtime when it calls this
-     function.  */
-  if (cilk_for_count)
-    {
-      t = build_decl (DECL_SOURCE_LOCATION (decl),
-		      PARM_DECL, get_identifier ("__high"), cilk_var_type);
-      DECL_ARTIFICIAL (t) = 1;
-      DECL_NAMELESS (t) = 1;
-      DECL_ARG_TYPE (t) = ptr_type_node;
-      DECL_CONTEXT (t) = current_function_decl;
-      TREE_USED (t) = 1;
-      DECL_CHAIN (t) = DECL_ARGUMENTS (decl);
-      DECL_ARGUMENTS (decl) = t;
-
-      t = build_decl (DECL_SOURCE_LOCATION (decl),
-		      PARM_DECL, get_identifier ("__low"), cilk_var_type);
-      DECL_ARTIFICIAL (t) = 1;
-      DECL_NAMELESS (t) = 1;
-      DECL_ARG_TYPE (t) = ptr_type_node;
-      DECL_CONTEXT (t) = current_function_decl;
-      TREE_USED (t) = 1;
-      DECL_CHAIN (t) = DECL_ARGUMENTS (decl);
-      DECL_ARGUMENTS (decl) = t;
-    }
-
   tree data_name = get_identifier (".omp_data_i");
   t = build_decl (DECL_SOURCE_LOCATION (decl), PARM_DECL, data_name,
 		  ptr_type_node);
@@ -1695,8 +1627,6 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_CONTEXT (t) = current_function_decl;
   TREE_USED (t) = 1;
   TREE_READONLY (t) = 1;
-  if (cilk_for_count)
-    DECL_CHAIN (t) = DECL_ARGUMENTS (decl);
   DECL_ARGUMENTS (decl) = t;
   if (!task_copy)
     ctx->receiver_decl = t;
@@ -8988,7 +8918,7 @@ execute_lower_omp (void)
 
   /* This pass always runs, to provide PROP_gimple_lomp.
      But often, there is nothing to do.  */
-  if (flag_cilkplus == 0 && flag_openacc == 0 && flag_openmp == 0
+  if (flag_openacc == 0 && flag_openmp == 0
       && flag_openmp_simd == 0)
     return 0;
 
@@ -9080,16 +9010,6 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
 
   const char* kind = NULL;
 
-  if (flag_cilkplus)
-    {
-      if ((branch_ctx
-	   && gimple_code (branch_ctx) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (branch_ctx) == GF_OMP_FOR_KIND_CILKSIMD)
-	  || (label_ctx
-	      && gimple_code (label_ctx) == GIMPLE_OMP_FOR
-	      && gimple_omp_for_kind (label_ctx) == GF_OMP_FOR_KIND_CILKSIMD))
-	kind = "Cilk Plus";
-    }
   if (flag_openacc)
     {
       if ((branch_ctx && is_gimple_omp_oacc (branch_ctx))
@@ -9361,7 +9281,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
   {
-    return flag_cilkplus || flag_openacc || flag_openmp || flag_openmp_simd;
+    return flag_openacc || flag_openmp || flag_openmp_simd;
   }
   virtual unsigned int execute (function *)
     {

@@ -156,13 +156,11 @@ enum gf_mask {
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
     GF_OMP_FOR_KIND_TASKLOOP	= 2,
-    GF_OMP_FOR_KIND_CILKFOR     = 3,
     GF_OMP_FOR_KIND_OACC_LOOP	= 4,
     GF_OMP_FOR_KIND_GRID_LOOP = 5,
     /* Flag for SIMD variants of OMP_FOR kinds.  */
     GF_OMP_FOR_SIMD		= 1 << 3,
     GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
-    GF_OMP_FOR_KIND_CILKSIMD	= GF_OMP_FOR_SIMD | 1,
     GF_OMP_FOR_COMBINED		= 1 << 4,
     GF_OMP_FOR_COMBINED_INTO	= 1 << 5,
     /* The following flag must not be used on GF_OMP_FOR_KIND_GRID_LOOP loop

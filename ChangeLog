@@ -1,4 +1,12 @@
 2017-11-28  Julia Koval  <julia.koval@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* Makefile.def (target_modules): Remove libcilkrts.
+	* Makefile.in: Ditto.
+	* configure: Ditto.
+	* configure.ac: Ditto.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 

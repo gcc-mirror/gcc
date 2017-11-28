@@ -614,10 +614,6 @@ finish_goto_stmt (tree destination)
     TREE_USED (destination) = 1;
   else
     {
-      if (check_no_cilk (destination,
-	 "Cilk array notation cannot be used as a computed goto expression",
-	 "%<_Cilk_spawn%> statement cannot be used as a computed goto expression"))
-	destination = error_mark_node;
       destination = mark_rvalue_use (destination);
       if (!processing_template_decl)
 	{
@@ -804,10 +800,6 @@ begin_while_stmt (void)
 void
 finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep)
 {
-  if (check_no_cilk (cond,
-      "Cilk array notation cannot be used as a condition for while statement",
-      "%<_Cilk_spawn%> statement cannot be used as a condition for while statement"))
-    cond = error_mark_node;
   cond = maybe_convert_cond (cond);
   finish_cond (&WHILE_COND (while_stmt), cond);
   begin_maybe_infinite_loop (cond);
@@ -864,10 +856,6 @@ finish_do_body (tree do_stmt)
 void
 finish_do_stmt (tree cond, tree do_stmt, bool ivdep)
 {
-  if (check_no_cilk (cond,
-  "Cilk array notation cannot be used as a condition for a do-while statement",
-  "%<_Cilk_spawn%> statement cannot be used as a condition for a do-while statement"))
-    cond = error_mark_node;
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
@@ -984,10 +972,6 @@ finish_init_stmt (tree for_stmt)
 void
 finish_for_cond (tree cond, tree for_stmt, bool ivdep)
 {
-  if (check_no_cilk (cond,
-	 "Cilk array notation cannot be used in a condition for a for-loop",
-	 "%<_Cilk_spawn%> statement cannot be used in a condition for a for-loop"))
-    cond = error_mark_node;
   cond = maybe_convert_cond (cond);
   finish_cond (&FOR_COND (for_stmt), cond);
   begin_maybe_infinite_loop (cond);
@@ -1151,11 +1135,6 @@ void
 finish_switch_cond (tree cond, tree switch_stmt)
 {
   tree orig_type = NULL;
-
-  if (check_no_cilk (cond,
-	"Cilk array notation cannot be used as a condition for switch statement",
-	"%<_Cilk_spawn%> statement cannot be used as a condition for switch statement"))
-    cond = error_mark_node;
 
   if (!processing_template_decl)
     {
@@ -4080,8 +4059,6 @@ simplify_aggr_init_expr (tree *tp)
     = CALL_EXPR_OPERATOR_SYNTAX (aggr_init_expr);
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (aggr_init_expr);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (aggr_init_expr);
-  /* Preserve CILK_SPAWN flag.  */
-  EXPR_CILK_SPAWN (call_expr) = EXPR_CILK_SPAWN (aggr_init_expr);
 
   if (style == ctor)
     {
@@ -5910,20 +5887,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
 		type = TREE_TYPE (type);
-	      if (ort == C_ORT_CILK)
-		{
-		  if (!INTEGRAL_TYPE_P (type)
-		      && !SCALAR_FLOAT_TYPE_P (type)
-		      && TREE_CODE (type) != POINTER_TYPE)
-		    {
-		      error ("linear clause applied to non-integral, "
-			     "non-floating, non-pointer variable with %qT type",
-			     TREE_TYPE (t));
-		      remove = true;
-		      break;
-		    }
-		}
-	      else if (OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_REF)
+	      if (OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_REF)
 		{
 		  if (!INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (type) != POINTER_TYPE)
@@ -6347,8 +6311,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if (t == error_mark_node)
 	    remove = true;
 	  else if (!type_dependent_expression_p (t)
-		   && (OMP_CLAUSE_SCHEDULE_KIND (c)
-		       != OMP_CLAUSE_SCHEDULE_CILKFOR)
 		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
 	      error ("schedule chunk size expression must be integral");
@@ -6359,27 +6321,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      t = mark_rvalue_use (t);
 	      if (!processing_template_decl)
 		{
-		  if (OMP_CLAUSE_SCHEDULE_KIND (c)
-		      == OMP_CLAUSE_SCHEDULE_CILKFOR)
-		    {
-		      t = convert_to_integer (long_integer_type_node, t);
-		      if (t == error_mark_node)
-			{
-			  remove = true;
-			  break;
-			}
-		    }
-		  else
-		    {
-		      t = maybe_constant_value (t);
-		      if (TREE_CODE (t) == INTEGER_CST
-			  && tree_int_cst_sgn (t) != 1)
-			{
-			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "chunk size value must be positive");
-			  t = integer_one_node;
-			}
-		    }
+		  t = maybe_constant_value (t);
+		  if (TREE_CODE (t) == INTEGER_CST
+		      && tree_int_cst_sgn (t) != 1)
+		  {
+		    warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			      "chunk size value must be positive");
+		    t = integer_one_node;
+		  }
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c) = t;
@@ -7076,7 +7025,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_SEQ:
@@ -7998,7 +7946,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		tree body, tree pre_body, vec<tree> *orig_inits, tree clauses)
 {
   tree omp_for = NULL, orig_incr = NULL;
-  tree decl = NULL, init, cond, incr, orig_decl = NULL_TREE, block = NULL_TREE;
+  tree decl = NULL, init, cond, incr;
   tree last = NULL_TREE;
   location_t elocus;
   int i;
@@ -8164,8 +8112,6 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 				"iteration variable %qE", decl);
 	      return NULL;
 	    }
-	  if (code == CILK_FOR && i == 0)
-	    orig_decl = decl;
 	  if (handle_omp_for_class_iterator (i, locus, code, declv, orig_declv,
 					     initv, condv, incrv, &body,
 					     &pre_body, clauses, &last,
@@ -8223,9 +8169,6 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
   if (IS_EMPTY_STMT (pre_body))
     pre_body = NULL;
 
-  if (code == CILK_FOR && !processing_template_decl)
-    block = push_stmt_list ();
-
   omp_for = c_finish_omp_for (locus, code, declv, orig_declv, initv, condv,
 			      incrv, body, pre_body);
 
@@ -8235,8 +8178,6 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 
   if (omp_for == NULL)
     {
-      if (block)
-	pop_stmt_list (block);
       return NULL;
     }
 
@@ -8338,115 +8279,6 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	    }
 	}
 
-  if (block)
-    {
-      tree omp_par = make_node (OMP_PARALLEL);
-      TREE_TYPE (omp_par) = void_type_node;
-      OMP_PARALLEL_CLAUSES (omp_par) = NULL_TREE;
-      tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-      TREE_SIDE_EFFECTS (bind) = 1;
-      BIND_EXPR_BODY (bind) = pop_stmt_list (block);
-      OMP_PARALLEL_BODY (omp_par) = bind;
-      if (OMP_FOR_PRE_BODY (omp_for))
-	{
-	  add_stmt (OMP_FOR_PRE_BODY (omp_for));
-	  OMP_FOR_PRE_BODY (omp_for) = NULL_TREE;
-	}
-      init = TREE_VEC_ELT (OMP_FOR_INIT (omp_for), 0);
-      decl = TREE_OPERAND (init, 0);
-      cond = TREE_VEC_ELT (OMP_FOR_COND (omp_for), 0);
-      incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), 0);
-      tree t = TREE_OPERAND (cond, 1), c, clauses, *pc;
-      clauses = OMP_FOR_CLAUSES (omp_for);
-      OMP_FOR_CLAUSES (omp_for) = NULL_TREE;
-      for (pc = &clauses; *pc; )
-	if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_SCHEDULE)
-	  {
-	    gcc_assert (OMP_FOR_CLAUSES (omp_for) == NULL_TREE);
-	    OMP_FOR_CLAUSES (omp_for) = *pc;
-	    *pc = OMP_CLAUSE_CHAIN (*pc);
-	    OMP_CLAUSE_CHAIN (OMP_FOR_CLAUSES (omp_for)) = NULL_TREE;
-	  }
-	else
-	  {
-	    gcc_assert (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_FIRSTPRIVATE);
-	    pc = &OMP_CLAUSE_CHAIN (*pc);
-	  }
-      if (TREE_CODE (t) != INTEGER_CST)
-	{
-	  TREE_OPERAND (cond, 1) = get_temp_regvar (TREE_TYPE (t), t);
-	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	  OMP_CLAUSE_DECL (c) = TREE_OPERAND (cond, 1);
-	  OMP_CLAUSE_CHAIN (c) = clauses;
-	  clauses = c;
-	}
-      if (TREE_CODE (incr) == MODIFY_EXPR)
-	{
-	  t = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
-	  if (TREE_CODE (t) != INTEGER_CST)
-	    {
-	      TREE_OPERAND (TREE_OPERAND (incr, 1), 1)
-		= get_temp_regvar (TREE_TYPE (t), t);
-	      c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (TREE_OPERAND (incr, 1), 1);
-	      OMP_CLAUSE_CHAIN (c) = clauses;
-	      clauses = c;
-	    }
-	}
-      t = TREE_OPERAND (init, 1);
-      if (TREE_CODE (t) != INTEGER_CST)
-	{
-	  TREE_OPERAND (init, 1) = get_temp_regvar (TREE_TYPE (t), t);
-	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	  OMP_CLAUSE_DECL (c) = TREE_OPERAND (init, 1);
-	  OMP_CLAUSE_CHAIN (c) = clauses;
-	  clauses = c;
-	}
-      if (orig_decl && orig_decl != decl)
-	{
-	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	  OMP_CLAUSE_DECL (c) = orig_decl;
-	  OMP_CLAUSE_CHAIN (c) = clauses;
-	  clauses = c;
-	}
-      if (last)
-	{
-	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	  OMP_CLAUSE_DECL (c) = last;
-	  OMP_CLAUSE_CHAIN (c) = clauses;
-	  clauses = c;
-	}
-      c = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
-      OMP_CLAUSE_DECL (c) = decl;
-      OMP_CLAUSE_CHAIN (c) = clauses;
-      clauses = c;
-      c = build_omp_clause (input_location, OMP_CLAUSE__CILK_FOR_COUNT_);
-      OMP_CLAUSE_OPERAND (c, 0)
-	= cilk_for_number_of_iterations (omp_for);
-      OMP_CLAUSE_CHAIN (c) = clauses;
-      OMP_PARALLEL_CLAUSES (omp_par) = finish_omp_clauses (c, C_ORT_CILK);
-      add_stmt (omp_par);
-      return omp_par;
-    }
-  else if (code == CILK_FOR && processing_template_decl)
-    {
-      tree c, clauses = OMP_FOR_CLAUSES (omp_for);
-      if (orig_decl && orig_decl != decl)
-	{
-	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	  OMP_CLAUSE_DECL (c) = orig_decl;
-	  OMP_CLAUSE_CHAIN (c) = clauses;
-	  clauses = c;
-	}
-      if (last)
-	{
-	  c = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
-	  OMP_CLAUSE_DECL (c) = last;
-	  OMP_CLAUSE_CHAIN (c) = clauses;
-	  clauses = c;
-	}
-      OMP_FOR_CLAUSES (omp_for) = clauses;
-    }
   return omp_for;
 }
 

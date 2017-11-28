@@ -1389,17 +1389,11 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_TASKLOOP:
 	  kind = " taskloop";
 	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
-	  kind = " _Cilk_for";
-	  break;
 	case GF_OMP_FOR_KIND_OACC_LOOP:
 	  kind = " oacc_loop";
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  kind = " cilksimd";
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1432,16 +1426,11 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_TASKLOOP:
 	  pp_string (buffer, "#pragma omp taskloop");
 	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
-	  break;
 	case GF_OMP_FOR_KIND_OACC_LOOP:
 	  pp_string (buffer, "#pragma acc loop");
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  pp_string (buffer, "#pragma simd");
 	  break;
 	case GF_OMP_FOR_KIND_GRID_LOOP:
 	  pp_string (buffer, "#pragma omp for grid_loop");
@@ -1449,19 +1438,13 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 	default:
 	  gcc_unreachable ();
 	}
-      if (gimple_omp_for_kind (gs) != GF_OMP_FOR_KIND_CILKFOR)
-	dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
+      dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
 	{
 	  if (i)
 	    spc += 2;
-	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
-	    pp_string (buffer, "_Cilk_for (");
-	  else
-	    {
-	      newline_and_indent (buffer, spc);
-	      pp_string (buffer, "for (");
-	    }
+	  newline_and_indent (buffer, spc);
+	  pp_string (buffer, "for (");
 	  dump_generic_node (buffer, gimple_omp_for_index (gs, i), spc,
 			     flags, false);
 	  pp_string (buffer, " = ");
@@ -1507,8 +1490,6 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc,
 
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
-	  if (gimple_omp_for_kind (gs) == GF_OMP_FOR_KIND_CILKFOR)
-	    dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
 	  newline_and_indent (buffer, spc + 2);
 	  pp_left_brace (buffer);
 	  pp_newline (buffer);
