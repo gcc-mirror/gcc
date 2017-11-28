@@ -1039,8 +1039,24 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	    }
+	  new_stmt = gimple_build_assign (destvar, srcvar);
+	  goto set_vop_and_replace;
 	}
-      new_stmt = gimple_build_assign (destvar, srcvar);
+
+      /* We get an aggregate copy.  Use an unsigned char[] type to
+	 perform the copying to preserve padding and to avoid any issues
+	 with TREE_ADDRESSABLE types or float modes behavior on copying.  */
+      desttype = build_array_type_nelts (unsigned_char_type_node,
+					 tree_to_uhwi (len));
+      srctype = desttype;
+      if (src_align > TYPE_ALIGN (srctype))
+	srctype = build_aligned_type (srctype, src_align);
+      if (dest_align > TYPE_ALIGN (desttype))
+	desttype = build_aligned_type (desttype, dest_align);
+      new_stmt
+	= gimple_build_assign (fold_build2 (MEM_REF, desttype, dest, off0),
+			       fold_build2 (MEM_REF, srctype, src, off0));
+set_vop_and_replace:
       gimple_set_vuse (new_stmt, gimple_vuse (stmt));
       gimple_set_vdef (new_stmt, gimple_vdef (stmt));
       if (gimple_vdef (new_stmt)
