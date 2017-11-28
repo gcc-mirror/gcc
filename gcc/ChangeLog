@@ -1,3 +1,8 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/81307
+	* dbxout.c (dbx_block_with_cold_children): Fix function comment.
+
 2017-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/83141
