@@ -13502,7 +13502,11 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   if (c->attr.artificial)
     return true;
 
-  if (sym->attr.vtype && sym->attr.use_assoc)
+  /* Do not allow vtype components to be resolved in nameless namespaces
+     such as block data because the procedure pointers will cause ICEs
+     and vtables are not needed in these contexts.  */
+  if (sym->attr.vtype && sym->attr.use_assoc
+      && sym->ns->proc_name == NULL)
     return true;
 
   /* F2008, C442.  */

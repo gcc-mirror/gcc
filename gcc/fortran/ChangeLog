@@ -1,3 +1,10 @@
+2017-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83021
+	* resolve.c (resolve_component): Only escape for use assciated
+	vtypes if the current namespace has no proc_name and is most
+	particularly block data.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-decl.c (gfc_trans_entry_master_switch): Build SWITCH_EXPR
