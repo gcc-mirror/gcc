@@ -443,15 +443,16 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       && !e->call_stmt_cannot_inline_p
       && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
     {
-      struct ipa_node_params *parms_info;
+      struct ipa_node_params *caller_parms_info, *callee_pi;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       struct ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
       if (e->caller->global.inlined_to)
-	parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
+	caller_parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
       else
-	parms_info = IPA_NODE_REF (e->caller);
+	caller_parms_info = IPA_NODE_REF (e->caller);
+      callee_pi = IPA_NODE_REF (e->callee);
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
@@ -463,7 +464,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       for (i = 0; i < count; i++)
 	{
 	  struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
-	  tree cst = ipa_value_from_jfunc (parms_info, jf);
+	  tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
+					   ipa_get_type (callee_pi, i));
 
 	  if (!cst && e->call_stmt
 	      && i < (int)gimple_call_num_args (e->call_stmt))
@@ -482,8 +484,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	    known_vals[i] = error_mark_node;
 
 	  if (known_contexts_ptr)
-	    (*known_contexts_ptr)[i] = ipa_context_from_jfunc (parms_info, e,
-							       i, jf);
+	    (*known_contexts_ptr)[i]
+	      = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
 	  /* TODO: When IPA-CP starts propagating and merging aggregate jump
 	     functions, use its knowledge of the caller too, just like the
 	     scalar case above.  */

@@ -5445,6 +5445,7 @@ extern bool is_redundant_typedef (const_tree);
 extern bool default_is_empty_record (const_tree);
 extern HOST_WIDE_INT arg_int_size_in_bytes (const_tree);
 extern tree arg_size_in_bytes (const_tree);
+extern bool expr_type_first_operand_type_p (tree_code);
 
 extern location_t
 set_source_range (tree expr, location_t start, location_t finish);

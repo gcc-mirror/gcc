@@ -13898,6 +13898,50 @@ arg_size_in_bytes (const_tree type)
   return TYPE_EMPTY_P (type) ? size_zero_node : size_in_bytes (type);
 }
 
+/* Return true if an expression with CODE has to have the same result type as
+   its first operand.  */
+
+bool
+expr_type_first_operand_type_p (tree_code code)
+{
+  switch (code)
+    {
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+    case BIT_NOT_EXPR:
+    case PAREN_EXPR:
+    case CONJ_EXPR:
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case RDIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_AND_EXPR:
+
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* List of pointer types used to declare builtins before we have seen their
    real declaration.
 
