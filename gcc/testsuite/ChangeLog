@@ -1,3 +1,9 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83117
+	* gcc.target/x86_64/abi/ms-sysv/gen.cc (make_do_tests_decl): Drop
+	const from do_test_{u,v}*.
+
 2017-11-28  Julia Koval  <julia.koval@intel.com>
             Sebastian Peryt  <sebastian.peryt@intel.com>
 
