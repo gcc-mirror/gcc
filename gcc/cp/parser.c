@@ -12043,7 +12043,9 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep)
 	parens.require_close (parser);
 	/* Parse the dependent statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
+	bool prev = note_iteration_stmt_body_start ();
 	cp_parser_already_scoped_statement (parser, if_p, guard_tinfo);
+	note_iteration_stmt_body_end (prev);
 	parser->in_statement = in_statement;
 	/* We're done with the while-statement.  */
 	finish_while_stmt (statement);
@@ -12058,7 +12060,9 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep)
 	statement = begin_do_stmt ();
 	/* Parse the body of the do-statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
+	bool prev = note_iteration_stmt_body_start ();
 	cp_parser_implicitly_scoped_statement (parser, NULL, guard_tinfo);
+	note_iteration_stmt_body_end (prev);
 	parser->in_statement = in_statement;
 	finish_do_body (statement);
 	/* Look for the `while' keyword.  */
@@ -12090,7 +12094,9 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep)
 
 	/* Parse the body of the for-statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
+	bool prev = note_iteration_stmt_body_start ();
 	cp_parser_already_scoped_statement (parser, if_p, guard_tinfo);
+	note_iteration_stmt_body_end (prev);
 	parser->in_statement = in_statement;
 
 	/* We're done with the for-statement.  */

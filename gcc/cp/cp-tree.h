@@ -364,6 +364,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
+      SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -395,6 +396,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
+      SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -4840,6 +4842,14 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SWITCH_STMT_BODY(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 #define SWITCH_STMT_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 #define SWITCH_STMT_SCOPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 3)
+/* True if there are case labels for all possible values of switch cond, either
+   because there is a default: case label or because the case label ranges cover
+   all values.  */
+#define SWITCH_STMT_ALL_CASES_P(NODE) \
+  TREE_LANG_FLAG_0 (SWITCH_STMT_CHECK (NODE))
+/* True if the body of a switch stmt contains no BREAK_STMTs.  */
+#define SWITCH_STMT_NO_BREAK_P(NODE) \
+  TREE_LANG_FLAG_2 (SWITCH_STMT_CHECK (NODE))
 
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)	TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
@@ -6102,6 +6112,9 @@ enum cp_tree_node_structure_enum cp_tree_node_structure
 extern void finish_scope			(void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
+extern void note_break_stmt			(void);
+extern bool note_iteration_stmt_body_start	(void);
+extern void note_iteration_stmt_body_end	(bool);
 extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree);
 extern bool maybe_version_functions		(tree, tree);

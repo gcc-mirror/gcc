@@ -331,6 +331,9 @@ genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   *walk_subtrees = 0;
 
   *stmt_p = build2_loc (stmt_locus, SWITCH_EXPR, type, cond, body);
+  SWITCH_ALL_CASES_P (*stmt_p) = SWITCH_STMT_ALL_CASES_P (stmt);
+  gcc_checking_assert (!SWITCH_STMT_NO_BREAK_P (stmt)
+		       || !TREE_USED (break_block));
   finish_bc_block (stmt_p, bc_break, break_block);
 }
 

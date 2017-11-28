@@ -349,6 +349,11 @@ cxx_block_may_fallthru (const_tree stmt)
     case THROW_EXPR:
       return false;
 
+    case SWITCH_STMT:
+      return (!SWITCH_STMT_ALL_CASES_P (stmt)
+	      || !SWITCH_STMT_NO_BREAK_P (stmt)
+	      || block_may_fallthru (SWITCH_STMT_BODY (stmt)));
+
     default:
       return true;
     }
