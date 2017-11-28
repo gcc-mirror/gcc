@@ -617,6 +617,26 @@
 #define __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, 1, D, E) 
 #define __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, 1, D, E) 
 
+/* avx512vbmi2intrin.h */
+#define __builtin_ia32_vpshld_v32hi(A, B, C) __builtin_ia32_vpshld_v32hi(A, B, 1)
+#define __builtin_ia32_vpshld_v32hi_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v32hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v16si(A, B, C) __builtin_ia32_vpshld_v16si(A, B, 1)
+#define __builtin_ia32_vpshld_v16si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v16si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v8di(A, B, C) __builtin_ia32_vpshld_v8di(A, B, 1)
+#define __builtin_ia32_vpshld_v8di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v8di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v16hi(A, B, C) __builtin_ia32_vpshld_v16hi(A, B, 1)
+#define __builtin_ia32_vpshld_v16hi_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v16hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v8si(A, B, C) __builtin_ia32_vpshld_v8si(A, B, 1)
+#define __builtin_ia32_vpshld_v8si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v8si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v4di(A, B, C) __builtin_ia32_vpshld_v4di(A, B, 1)
+#define __builtin_ia32_vpshld_v4di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v4di_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v8hi(A, B, C) __builtin_ia32_vpshld_v8hi(A, B, 1)
+#define __builtin_ia32_vpshld_v8hi_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v8hi_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v4si(A, B, C) __builtin_ia32_vpshld_v4si(A, B, 1)
+#define __builtin_ia32_vpshld_v4si_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v4si_mask(A, B, 1, D, E)
+#define __builtin_ia32_vpshld_v2di(A, B, C) __builtin_ia32_vpshld_v2di(A, B, 1)
+#define __builtin_ia32_vpshld_v2di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v2di_mask(A, B, 1, D, E)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>

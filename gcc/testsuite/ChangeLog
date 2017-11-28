@@ -1,3 +1,15 @@
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+
+	gcc.target/i386/avx-1.c: Handle new intrinics.
+	gcc.target/i386/sse-13.c: Ditto.
+	gcc.target/i386/sse-23.c: Ditto.
+	gcc.target/i386/avx512f-vpshld-1.c: New test.
+	gcc.target/i386/avx512f-vpshldd-2.c: Ditto.
+	gcc.target/i386/avx512f-vpshldq-2.c: Ditto.
+	gcc.target/i386/avx512vl-vpshld-1.c: Ditto.
+	gcc.target/i386/avx512vl-vpshldd-2.c: Ditto.
+	gcc.target/i386/avx512vl-vpshldq-2.c: Ditto.
+
 2017-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80776

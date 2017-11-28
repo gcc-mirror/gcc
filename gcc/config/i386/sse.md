@@ -160,6 +160,9 @@
   UNSPEC_GF2P8AFFINEINV
   UNSPEC_GF2P8AFFINE
   UNSPEC_GF2P8MUL
+
+  ;; For AVX512VBMI2 support
+  UNSPEC_VPSHLD
 ])
 
 (define_c_enum "unspecv" [
@@ -20088,3 +20091,14 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,maybe_evex,evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vpshld_<mode><mask_name>"
+  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
+	(unspec:VI248_VLBW
+	  [(match_operand:VI248_VLBW 1 "register_operand" "v")
+	(match_operand:VI248_VLBW 2 "nonimmediate_operand" "vm")
+	(match_operand:SI 3 "const_0_to_255_operand" "n")
+] UNSPEC_VPSHLD))]
+  "TARGET_AVX512VBMI2"
+  "vpshld<ssemodesuffix>\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])

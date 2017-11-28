@@ -204,6 +204,215 @@ _mm256_maskz_expandloadu_epi16 (__mmask16 __A, const void * __B)
   return (__m256i) __builtin_ia32_expandloadhi256_maskz ((const __v16hi *) __B,
 			(__v16hi) _mm256_setzero_si256 (), (__mmask16) __A);
 }
+
+#ifdef __OPTIMIZE__
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_shldi_epi16 (__m256i __A, __m256i __B, int __C)
+{
+  return (__m256i) __builtin_ia32_vpshld_v16hi ((__v16hi)__A, (__v16hi) __B,
+									__C);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_shldi_epi16 (__m256i __A, __mmask16 __B, __m256i __C, __m256i __D,
+								int __E)
+{
+  return (__m256i)__builtin_ia32_vpshld_v16hi_mask ((__v16hi)__C,
+			(__v16hi) __D, __E, (__v16hi) __A, (__mmask16)__B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_shldi_epi16 (__mmask16 __A, __m256i __B, __m256i __C, int __D)
+{
+  return (__m256i)__builtin_ia32_vpshld_v16hi_mask ((__v16hi)__B,
+	(__v16hi) __C, __D, (__v16hi) _mm256_setzero_si256 (), (__mmask16)__A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_shldi_epi32 (__m256i __A, __mmask8 __B, __m256i __C, __m256i __D,
+								int __E)
+{
+  return (__m256i)__builtin_ia32_vpshld_v8si_mask ((__v8si)__C, (__v8si) __D,
+					__E, (__v8si) __A, (__mmask8)__B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_shldi_epi32 (__mmask8 __A, __m256i __B, __m256i __C, int __D)
+{
+  return (__m256i)__builtin_ia32_vpshld_v8si_mask ((__v8si)__B, (__v8si) __C,
+			__D, (__v8si) _mm256_setzero_si256 (), (__mmask8)__A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_shldi_epi32 (__m256i __A, __m256i __B, int __C)
+{
+  return (__m256i) __builtin_ia32_vpshld_v8si ((__v8si)__A, (__v8si) __B, __C);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_shldi_epi64 (__m256i __A, __mmask8 __B, __m256i __C, __m256i __D,
+								int __E)
+{
+  return (__m256i)__builtin_ia32_vpshld_v4di_mask ((__v4di)__C, (__v4di) __D,
+					__E, (__v4di) __A, (__mmask8)__B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_shldi_epi64 (__mmask8 __A, __m256i __B, __m256i __C, int __D)
+{
+  return (__m256i)__builtin_ia32_vpshld_v4di_mask ((__v4di)__B, (__v4di) __C,
+			__D, (__v4di) _mm256_setzero_si256 (), (__mmask8)__A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_shldi_epi64 (__m256i __A, __m256i __B, int __C)
+{
+  return (__m256i) __builtin_ia32_vpshld_v4di ((__v4di)__A, (__v4di) __B, __C);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_shldi_epi16 (__m128i __A, __mmask8 __B, __m128i __C, __m128i __D,
+								int __E)
+{
+  return (__m128i)__builtin_ia32_vpshld_v8hi_mask ((__v8hi)__C, (__v8hi) __D,
+					__E, (__v8hi) __A, (__mmask8)__B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_shldi_epi16 (__mmask8 __A, __m128i __B, __m128i __C, int __D)
+{
+  return (__m128i)__builtin_ia32_vpshld_v8hi_mask ((__v8hi)__B, (__v8hi) __C,
+			__D, (__v8hi) _mm_setzero_si128 (), (__mmask8)__A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_shldi_epi16 (__m128i __A, __m128i __B, int __C)
+{
+  return (__m128i) __builtin_ia32_vpshld_v8hi ((__v8hi)__A, (__v8hi) __B, __C);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_shldi_epi32 (__m128i __A, __mmask8 __B, __m128i __C, __m128i __D,
+								int __E)
+{
+  return (__m128i)__builtin_ia32_vpshld_v4si_mask ((__v4si)__C, (__v4si) __D,
+					__E, (__v4si) __A, (__mmask8)__B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_shldi_epi32 (__mmask8 __A, __m128i __B, __m128i __C, int __D)
+{
+  return (__m128i)__builtin_ia32_vpshld_v4si_mask ((__v4si)__B, (__v4si) __C,
+			__D, (__v4si) _mm_setzero_si128 (), (__mmask8)__A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_shldi_epi32 (__m128i __A, __m128i __B, int __C)
+{
+  return (__m128i) __builtin_ia32_vpshld_v4si ((__v4si)__A, (__v4si) __B, __C);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_shldi_epi64 (__m128i __A, __mmask8 __B, __m128i __C, __m128i __D,
+								int __E)
+{
+  return (__m128i)__builtin_ia32_vpshld_v2di_mask ((__v2di)__C, (__v2di) __D,
+					__E, (__v2di) __A, (__mmask8)__B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_shldi_epi64 (__mmask8 __A, __m128i __B, __m128i __C, int __D)
+{
+  return (__m128i)__builtin_ia32_vpshld_v2di_mask ((__v2di)__B, (__v2di) __C,
+			__D, (__v2di) _mm_setzero_si128 (), (__mmask8)__A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_shldi_epi64 (__m128i __A, __m128i __B, int __C)
+{
+  return (__m128i) __builtin_ia32_vpshld_v2di ((__v2di)__A, (__v2di) __B, __C);
+}
+#else
+#define _mm256_shldi_epi16(A, B, C) \
+  ((__m256i) __builtin_ia32_vpshld_v16hi ((__v16hi)(__m256i)(A), \
+						(__v16hi)(__m256i)(B),(int)(C))
+#define _mm256_mask_shldi_epi16(A, B, C, D, E) \
+  ((__m256i) __builtin_ia32_vpshld_v16hi_mask ((__v16hi)(__m256i)(C), \
+	(__v16hi)(__m256i)(D), (int)(E), (__v16hi)(__m256i)(A),(__mmask16)(B))
+#define _mm256_maskz_shldi_epi16(A, B, C, D) \
+  ((__m256i) __builtin_ia32_vpshld_v16hi_mask ((__v16hi)(__m256i)(B), \
+	(__v16hi)(__m256i)(C),(int)(D), \
+	(__v16hi)(__m256i)_mm256_setzero_si256 (), (__mmask16)(A))
+#define _mm256_shldi_epi32(A, B, C) \
+  ((__m256i) __builtin_ia32_vpshld_v8si ((__v8si)(__m256i)(A), \
+	(__v8si)(__m256i)(B),(int)(C))
+#define _mm256_mask_shldi_epi32(A, B, C, D, E) \
+  ((__m256i) __builtin_ia32_vpshld_v8si_mask ((__v8si)(__m256i)(C), \
+	(__v8si)(__m256i)(D), (int)(E), (__v8si)(__m256i)(A),(__mmask8)(B))
+#define _mm256_maskz_shldi_epi32(A, B, C, D) \
+  ((__m256i) __builtin_ia32_vpshld_v8si_mask ((__v8si)(__m256i)(B), \
+	(__v8si)(__m256i)(C),(int)(D), \
+	(__v8si)(__m256i)_mm256_setzero_si256 (), (__mmask8)(A))
+#define _mm256_shldi_epi64(A, B, C) \
+  ((__m256i) __builtin_ia32_vpshld_v4di ((__v4di)(__m256i)(A), \
+	(__v4di)(__m256i)(B),(int)(C))
+#define _mm256_mask_shldi_epi64(A, B, C, D, E) \
+  ((__m256i) __builtin_ia32_vpshld_v4di_mask ((__v4di)(__m256i)(C), \
+	(__v4di)(__m256i)(D), (int)(E), (__v4di)(__m256i)(A),(__mmask8)(B))
+#define _mm256_maskz_shldi_epi64(A, B, C, D) \
+  ((__m256i) __builtin_ia32_vpshld_v4di_mask ((__v4di)(__m256i)(B), \
+	(__v4di)(__m256i)(C),(int)(D), \
+	(__v4di)(__m256i)_mm256_setzero_si256 (), (__mmask8)(A))
+#define _mm_shldi_epi16(A, B, C) \
+  ((__m128i) __builtin_ia32_vpshld_v8hi ((__v8hi)(__m128i)(A), \
+	(__v8hi)(__m128i)(B),(int)(C))
+#define _mm_mask_shldi_epi16(A, B, C, D, E) \
+  ((__m128i) __builtin_ia32_vpshld_v8hi_mask ((__v8hi)(__m128i)(C), \
+	(__v8hi)(__m128i)(D), (int)(E), (__v8hi)(__m128i)(A),(__mmask8)(B))
+#define _mm_maskz_shldi_epi16(A, B, C, D) \
+  ((__m128i) __builtin_ia32_vpshld_v8hi_mask ((__v8hi)(__m128i)(B), \
+	(__v8hi)(__m128i)(C),(int)(D), \
+	(__v8hi)(__m128i)_mm_setzero_si128 (), (__mmask8)(A))
+#define _mm_shldi_epi32(A, B, C) \
+  ((__m128i) __builtin_ia32_vpshld_v4si ((__v4si)(__m128i)(A), \
+	(__v4si)(__m128i)(B),(int)(C))
+#define _mm_mask_shldi_epi32(A, B, C, D, E) \
+  ((__m128i) __builtin_ia32_vpshld_v4si_mask ((__v4si)(__m128i)(C), \
+	(__v4si)(__m128i)(D), (int)(E), (__v4si)(__m128i)(A),(__mmask16)(B))
+#define _mm_maskz_shldi_epi32(A, B, C, D) \
+  ((__m128i) __builtin_ia32_vpshld_v4si_mask ((__v4si)(__m128i)(B), \
+	(__v4si)(__m128i)(C),(int)(D), \
+	(__v4si)(__m128i)_mm_setzero_si128 (), (__mmask8)(A))
+#define _mm_shldi_epi64(A, B, C) \
+  ((__m128i) __builtin_ia32_vpshld_v2di ((__v2di)(__m128i)(A), \
+	(__v2di)(__m128i)(B),(int)(C))
+#define _mm_mask_shldi_epi64(A, B, C, D, E) \
+  ((__m128i) __builtin_ia32_vpshld_v2di_mask ((__v2di)(__m128i)(C), \
+	(__v2di)(__m128i)(D), (int)(E), (__v2di)(__m128i)(A),(__mmask8)(B))
+#define _mm_maskz_shldi_epi64(A, B, C, D) \
+  ((__m128i) __builtin_ia32_vpshld_v2di_mask ((__v2di)(__m128i)(B), \
+	(__v2di)(__m128i)(C),(int)(D), \
+	(__v2di)(__m128i)_mm_setzero_si128 (), (__mmask8)(A))
+#endif
+
 #ifdef __DISABLE_AVX512VBMI2VL__
 #undef __DISABLE_AVX512VBMI2VL__
 #pragma GCC pop_options
