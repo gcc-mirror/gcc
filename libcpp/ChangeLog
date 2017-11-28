@@ -1,3 +1,11 @@
+2017-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82050
+	* include/line-map.h (LINE_MAP_MAX_COLUMN_NUMBER): Move here.
+	* line-map.c (LINE_MAP_MAX_COLUMN_NUMBER): ...from here.
+	(rich_location::maybe_add_fixit): Reject fix-it hints in which
+	the start column exceeds the next column.
+
 2017-11-20  Eric Gallager  <egall@gwmail.gwu.edu>
 
 	PR preprocessor/81794
