@@ -1691,7 +1691,7 @@ layout::print_trailing_fixits (int row)
   /* Now print the corrections.  */
   unsigned i;
   correction *c;
-  int column = 0;
+  int column = m_x_offset;
 
   FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
     {
@@ -1845,7 +1845,7 @@ layout::move_to_column (int *column, int dest_column)
   if (*column > dest_column)
     {
       print_newline ();
-      *column = 0;
+      *column = m_x_offset;
     }
 
   while (*column < dest_column)
