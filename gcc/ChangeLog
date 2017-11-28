@@ -3054,7 +3054,7 @@
 	config/riscv/riscv.c (predict.h): New include.
 	(riscv_slow_unaligned_access_p): No longer static.
 	(riscv_block_move_straight): Add require.
-	config/riscv/riscv-protos.h (riscv_hard_regno_nregs): Delete.
+	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): Delete.
 
 2017-11-08  Jakub Jelinek  <jakub@redhat.com>
 
@@ -3242,7 +3242,7 @@
 	(riscv_adjust_block_mem): Likewise.
 	(riscv_block_move_loop): Likewise.
 	(riscv_expand_block_move): Likewise.
-	gcc/config/riscv/riscv.md (movmemsi): New pattern.
+	* config/riscv/riscv.md (movmemsi): New pattern.
 
 2017-11-07  Michael Clark  <michaeljclark@mac.com>
 
@@ -3622,7 +3622,7 @@
 
 2017-11-04  Daniel Santos  <daniel.santos@pobox.com>
 
-	config/i386/i386.c (choose_basereg): Use optional scratch
+	* config/i386/i386.c (choose_basereg): Use optional scratch
 	register and add assertion.
 	(x86_emit_outlined_ms2sysv_save): Use scratch register when
 	needed, and don't allocate stack.
