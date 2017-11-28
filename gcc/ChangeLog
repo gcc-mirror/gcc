@@ -1,3 +1,9 @@
+2017-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83158
+	* tree-vrp.c (intersect_ranges): Prefer ~[0, 0] in a few more
+	cases.
+
 2017-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR 81288/target
