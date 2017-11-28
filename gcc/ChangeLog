@@ -1,6 +1,14 @@
 2017-11-27  Jim Wilson  <jimw@sifive.com>
 
 	Backport from mainline
+	2017-10-25  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config/riscv/riscv.md (ZERO_EXTEND_LOAD): Define.
+	* config/riscv/pic.md (local_pic_load): Rename to local_pic_load_s,
+	mark as a sign-extending load.
+	(local_pic_load_u): Define.
+
+	Backport from mainline
 	2017-11-03  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/riscv/riscv.c (riscv_legitimize_move): Handle
