@@ -246,7 +246,8 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	     to use VARYING for them.  But we can still resort to
 	     SCEV for loop header PHIs.  */
 	  struct loop *l;
-	  if (interesting
+	  if (scev_initialized_p ()
+	      && interesting
 	      && (l = loop_containing_stmt (phi))
 	      && l->header == gimple_bb (phi))
 	  vr_values->adjust_range_with_scev (&vr_result, l, phi, lhs);
