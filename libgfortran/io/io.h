@@ -735,6 +735,11 @@ gfc_saved_unit;
 extern gfc_offset max_offset;
 internal_proto(max_offset);
 
+/* Default RECL for sequential access if not given in OPEN statement,
+   computed at library initialization time.  */
+extern gfc_offset default_recl;
+internal_proto(default_recl);
+
 /* Unit tree root.  */
 extern gfc_unit *unit_root;
 internal_proto(unit_root);

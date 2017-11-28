@@ -218,7 +218,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_RECL_OUT) != 0)
-    *iqp->recl_out = (u != NULL) ? u->recl : 0;
+    /* F2018 (N2137) 12.10.2.26: If there is no connection, recl is
+       assigned the value -1.  */
+    *iqp->recl_out = (u != NULL) ? u->recl : -1;
 
   if ((cf & IOPARM_INQUIRE_HAS_STRM_POS_OUT) != 0)
     *iqp->strm_pos_out = (u != NULL) ? u->strm_pos : 0;

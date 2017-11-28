@@ -451,7 +451,7 @@ read_block_form (st_parameter_dt *dtp, int *nbytes)
 	  /* For preconnected units with default record length, set bytes left
 	   to unit record length and proceed, otherwise error.  */
 	  if (dtp->u.p.current_unit->unit_number == options.stdin_unit
-	      && dtp->u.p.current_unit->recl == DEFAULT_RECL)
+	      && dtp->u.p.current_unit->recl == default_recl)
             dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	  else
 	    {
@@ -757,7 +757,7 @@ write_block (st_parameter_dt *dtp, int length)
 		       == options.stdout_unit
 		       || dtp->u.p.current_unit->unit_number
 		       == options.stderr_unit)
-		      && dtp->u.p.current_unit->recl == DEFAULT_RECL))
+		      && dtp->u.p.current_unit->recl == default_recl))
 	    dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	  else
 	    {

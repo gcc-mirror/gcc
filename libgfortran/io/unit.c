@@ -95,7 +95,10 @@ static int newunit_lwi;
 
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
+
 gfc_offset max_offset;
+gfc_offset default_recl;
+
 gfc_unit *unit_root;
 #ifdef __GTHREAD_MUTEX_INIT
 __gthread_mutex_t unit_lock = __GTHREAD_MUTEX_INIT;
@@ -575,7 +578,6 @@ void
 init_units (void)
 {
   gfc_unit *u;
-  unsigned int i;
 
 #ifdef HAVE_NEWLOCALE
   c_locale = newlocale (0, "C", 0);
@@ -588,6 +590,22 @@ init_units (void)
 #ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
 #endif
+
+  if (sizeof (max_offset) == 8)
+    {
+      max_offset = GFC_INTEGER_8_HUGE;
+      /* Why this weird value? Because if the recl specifier in the
+	 inquire statement is a 4 byte value, u->recl is truncated,
+	 and this trick ensures it becomes HUGE(0) rather than -1.
+	 The full 8 byte value of default_recl is still 0.99999999 *
+	 max_offset which is large enough for all practical
+	 purposes.  */
+      default_recl = max_offset & ~(1LL<<31);
+    }
+  else if (sizeof (max_offset) == 4)
+    max_offset = default_recl = GFC_INTEGER_4_HUGE;
+  else
+    internal_error (NULL, "sizeof (max_offset) must be 4 or 8");
 
   if (options.stdin_unit >= 0)
     {				/* STDIN */
@@ -611,7 +629,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = NO_ENDFILE;
 
       u->filename = strdup (stdin_name);
@@ -642,7 +660,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stdout_name);
@@ -672,7 +690,7 @@ init_units (void)
       u->flags.share = SHARE_UNSPECIFIED;
       u->flags.cc = CC_LIST;
 
-      u->recl = options.default_recl;
+      u->recl = default_recl;
       u->endfile = AT_ENDFILE;
 
       u->filename = strdup (stderr_name);
@@ -682,13 +700,6 @@ init_units (void)
 
       __gthread_mutex_unlock (&u->lock);
     }
-
-  /* Calculate the maximum file offset in a portable manner.
-     max will be the largest signed number for the type gfc_offset.
-     set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit.  */
-  max_offset = 0;
-  for (i = 0; i < sizeof (max_offset) * 8 - 1; i++)
-    max_offset = max_offset + ((gfc_offset) 1 << i);
 }
 
 

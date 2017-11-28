@@ -1,3 +1,8 @@
+2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* gfortran.texi: Remove mentions of GFORTRAN_DEFAULT_RECL.
+
 2017-11-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83021
