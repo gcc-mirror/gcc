@@ -969,6 +969,7 @@ extern int case_compare (splay_tree_key, splay_tree_key);
 
 extern tree c_add_case_label (location_t, splay_tree, tree, tree, tree, tree,
 			      bool *);
+extern bool c_switch_covers_all_cases_p (splay_tree, tree);
 
 extern tree build_function_call (location_t, tree, tree);
 
