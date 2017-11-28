@@ -116,6 +116,7 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern bool range_int_cst_singleton_p (value_range *);
 extern int value_inside_range (tree, tree, tree);
 extern tree get_single_symbol (tree, bool *, tree *);
+extern void maybe_set_nonzero_bits (edge, tree);
 
 
 struct switch_update {
