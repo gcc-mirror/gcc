@@ -5093,7 +5093,7 @@
  [(set (match_operand:GPF_F16 0 "register_operand")
        (div:GPF_F16 (match_operand:GPF_F16 1 "general_operand")
 		    (match_operand:GPF_F16 2 "register_operand")))]
- "TARGET_SIMD"
+ "TARGET_FLOAT"
 {
   if (aarch64_emit_approx_div (operands[0], operands[1], operands[2]))
     DONE;

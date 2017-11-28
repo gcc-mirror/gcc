@@ -1,3 +1,9 @@
+2017-11-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.md (div<mode>3): Change check to TARGET_FLOAT.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_div): Add early exit
+	for vector mode and !TARGET_SIMD.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.def (SWITCH_EXPR): Change from 3 operand to 2 operand tree.
