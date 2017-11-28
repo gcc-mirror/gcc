@@ -1,3 +1,8 @@
+2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* gfortran.dg/inquire_recl_f2018.f90: New test.
+
 2017-11-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Martin Jambor  <mjambor@suse.cz>
 

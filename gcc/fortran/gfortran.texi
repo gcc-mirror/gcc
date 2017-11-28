@@ -600,7 +600,6 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_UNBUFFERED_PRECONNECTED:: Do not buffer I/O for preconnected units.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
 * GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
-* GFORTRAN_DEFAULT_RECL:: Default record length for new files
 * GFORTRAN_LIST_SEPARATOR::  Separator for list output
 * GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
@@ -682,14 +681,6 @@ a plus sign is printed
 where permitted by the Fortran standard.  If the first letter
 is @samp{n}, @samp{N} or @samp{0}, a plus sign is not printed
 in most cases.  Default is not to print plus signs.
-
-@node GFORTRAN_DEFAULT_RECL
-@section @env{GFORTRAN_DEFAULT_RECL}---Default record length for new files
-
-This environment variable specifies the default record length, in
-bytes, for files which are opened without a @code{RECL} tag in the
-@code{OPEN} statement.  This must be a positive integer.  The
-default value is 1073741824 bytes (1 GB).
 
 @node GFORTRAN_LIST_SEPARATOR
 @section @env{GFORTRAN_LIST_SEPARATOR}---Separator for list output

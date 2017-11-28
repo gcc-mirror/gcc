@@ -586,7 +586,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   else
     {
       u->flags.has_recl = 0;
-      u->recl = max_offset;
+      u->recl = default_recl;
       if (compile_options.max_subrecord_length)
 	{
 	  u->recl_subrecord = compile_options.max_subrecord_length;
@@ -622,7 +622,9 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
   if (flags->access == ACCESS_STREAM)
     {
       u->maxrec = max_offset;
-      u->recl = 1;
+      /* F2018 (N2137) 12.10.2.26: If the connection is for stream
+	 access recl is assigned the value -2.  */
+      u->recl = -2;
       u->bytes_left = 1;
       u->strm_pos = stell (u->s) + 1;
     }

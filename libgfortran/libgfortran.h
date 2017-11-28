@@ -511,7 +511,7 @@ typedef struct
   int separator_len;
   const char *separator;
 
-  int all_unbuffered, unbuffered_preconnected, default_recl;
+  int all_unbuffered, unbuffered_preconnected;
   int fpe, backtrace;
 }
 options_t;
@@ -575,12 +575,6 @@ iexport_data_proto(line);
 
 extern char *filename;
 iexport_data_proto(filename);
-
-
-/* The default value of record length for preconnected units is defined
-   here. This value can be overriden by an environment variable.
-   Default value is 1 Gb.  */
-#define DEFAULT_RECL 1073741824
 
 
 #define CHARACTER2(name) \
