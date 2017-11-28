@@ -1,3 +1,9 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80788
+	* match.pd (X +- C1 CMP C2 -> X CMP C2 -+ C1): If res
+	has TREE_OVERFLOW set, call drop_tree_overflow.
+
 2017-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83158
