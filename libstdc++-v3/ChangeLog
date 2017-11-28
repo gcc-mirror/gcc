@@ -1,3 +1,8 @@
+2017-11-28  Glen Joseph Fernandes  <glenjofe@gmail.com>
+
+	* include/bits/ptr_traits.h (to_address): Implement to_address.
+	* testsuite/20_util/to_address/1.cc: New test.
+
 2017-11-27  Stephan Bergmann  <sbergman@redhat.com>
 
 	* include/std/string_view (basic_string_view::find_first_of): Add
