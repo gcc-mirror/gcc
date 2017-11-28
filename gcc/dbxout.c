@@ -3724,8 +3724,8 @@ dbx_output_rbrac (const char *label,
     dbxout_stab_value_label (label);
 }
 
-/* Return true is at least one block among BLOCK, its children or siblings
-   which has TREE_USED, TREE_ASM_WRITTEN and BLOCK_IN_COLD_SECTION_P
+/* Return true if at least one block among BLOCK, its children or siblings
+   has TREE_USED, TREE_ASM_WRITTEN and BLOCK_IN_COLD_SECTION_P
    set.  If there is none, clear TREE_USED bit on such blocks.  */
 
 static bool
