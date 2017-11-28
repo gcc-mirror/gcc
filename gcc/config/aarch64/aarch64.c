@@ -8442,6 +8442,9 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
       || !use_approx_division_p)
     return false;
 
+  if (!TARGET_SIMD && VECTOR_MODE_P (mode))
+    return false;
+
   /* Estimate the approximate reciprocal.  */
   rtx xrcp = gen_reg_rtx (mode);
   emit_insn ((*get_recpe_type (mode)) (xrcp, den));
