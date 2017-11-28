@@ -1,3 +1,8 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* c-c++-common/tsan/pr81275.c: New test.
+
 2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/53796

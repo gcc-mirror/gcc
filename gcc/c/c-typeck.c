@@ -10360,6 +10360,8 @@ c_finish_case (tree body, tree type)
 			type ? type : TREE_TYPE (cs->switch_expr),
 			SWITCH_COND (cs->switch_expr),
 			cs->bool_cond_p, cs->outside_range_p);
+  if (c_switch_covers_all_cases_p (cs->cases, TREE_TYPE (cs->switch_expr)))
+    SWITCH_ALL_CASES_P (cs->switch_expr) = 1;
 
   /* Pop the stack.  */
   c_switch_stack = cs->next;

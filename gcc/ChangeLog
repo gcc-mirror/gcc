@@ -1,3 +1,9 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* tree.c (block_may_fallthru): Return false if SWITCH_ALL_CASES_P
+	is set on SWITCH_EXPR and !block_may_fallthru (SWITCH_BODY ()).
+
 2017-11-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 	    Martin Jambor  <mjambor@suse.cz>
 

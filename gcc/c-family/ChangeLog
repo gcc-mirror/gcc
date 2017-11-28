@@ -1,3 +1,10 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* c-common.c (c_switch_covers_all_cases_p_1,
+	c_switch_covers_all_cases_p): New functions.
+	* c-common.h (c_switch_covers_all_cases_p): Declare.
+
 2017-11-28  Julia Koval  <julia.koval@intel.com>
             Sebastian Peryt  <sebastian.peryt@intel.com>
 

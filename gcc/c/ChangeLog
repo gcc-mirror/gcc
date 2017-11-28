@@ -1,3 +1,9 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* c-typeck.c (c_finish_case): Set SWITCH_ALL_CASES_P if
+	c_switch_covers_all_cases_p returns true.
+
 2017-11-28  Julia Koval  <julia.koval@intel.com>
             Sebastian Peryt  <sebastian.peryt@intel.com>
 

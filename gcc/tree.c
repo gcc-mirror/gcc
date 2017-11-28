@@ -12348,6 +12348,12 @@ block_may_fallthru (const_tree block)
       return false;
 
     case SWITCH_EXPR:
+      /* If there is a default: label or case labels cover all possible
+	 SWITCH_COND values, then the SWITCH_EXPR will transfer control
+	 to some case label in all cases and all we care is whether the
+	 SWITCH_BODY falls through.  */
+      if (SWITCH_ALL_CASES_P (stmt))
+	return block_may_fallthru (SWITCH_BODY (stmt));
       return true;
 
     case COND_EXPR:
