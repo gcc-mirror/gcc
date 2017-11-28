@@ -338,9 +338,6 @@ const struct c_common_resword c_common_reswords[] =
   { "_Atomic",		RID_ATOMIC,    D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
-  { "_Cilk_spawn",      RID_CILK_SPAWN, 0 },
-  { "_Cilk_sync",       RID_CILK_SYNC,  0 },
-  { "_Cilk_for",        RID_CILK_FOR,   0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
   { "_Float16",         RID_FLOAT16,   D_CONLY },
   { "_Float32",         RID_FLOAT32,   D_CONLY },
@@ -3935,9 +3932,6 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
   targetm.init_builtins ();
 
   build_common_builtin_nodes ();
-
-  if (flag_cilkplus)
-    cilk_init_builtins ();
 }
 
 /* Like get_identifier, but avoid warnings about null arguments when
@@ -7569,7 +7563,6 @@ c_common_init_ts (void)
 {
   MARK_TS_TYPED (C_MAYBE_CONST_EXPR);
   MARK_TS_TYPED (EXCESS_PRECISION_EXPR);
-  MARK_TS_TYPED (ARRAY_NOTATION_REF);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE

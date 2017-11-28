@@ -875,15 +875,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_EXPR_RETURN_SLOT_OPT(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.private_flag)
 
-/* Cilk keywords accessors.  */
-#define CILK_SPAWN_FN(NODE) TREE_OPERAND (CILK_SPAWN_STMT_CHECK (NODE), 0)
-
-/* If this is true, we should insert a __cilk_detach call just before
-   this function call.  */
-#define EXPR_CILK_SPAWN(NODE) \
-  (TREE_CHECK2 (NODE, CALL_EXPR, \
-                AGGR_INIT_EXPR)->base.u.bits.unsigned_flag)
-
 /* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that it is
    passed by invisible reference (and the TREE_TYPE is a pointer to the true
    type).  */

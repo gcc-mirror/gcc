@@ -79,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
-#include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
 #include "stringpool.h"
@@ -891,8 +890,6 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, " always_inline");
       if (s->inlinable)
 	fprintf (f, " inlinable");
-      if (s->contains_cilk_spawn)
-	fprintf (f, " contains_cilk_spawn");
       if (s->fp_expressions)
 	fprintf (f, " fp_expression");
       fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
@@ -2439,8 +2436,6 @@ compute_fn_summary (struct cgraph_node *node, bool early)
        else
 	 info->inlinable = tree_inlinable_function_p (node->decl);
 
-       info->contains_cilk_spawn = fn_contains_cilk_spawn_p (cfun);
-
        /* Type attributes can use parameter indices to describe them.  */
        if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
 	 node->local.can_change_signature = false;
@@ -3263,7 +3258,6 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
-      info->contains_cilk_spawn = bp_unpack_value (&bp, 1);
       info->fp_expressions = bp_unpack_value (&bp, 1);
 
       count2 = streamer_read_uhwi (&ib);
@@ -3417,7 +3411,7 @@ ipa_fn_summary_write (void)
 	  info->time.stream_out (ob);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
-	  bp_pack_value (&bp, info->contains_cilk_spawn, 1);
+	  bp_pack_value (&bp, false, 1);
 	  bp_pack_value (&bp, info->fp_expressions, 1);
 	  streamer_write_bitpack (&bp);
 	  streamer_write_uhwi (ob, vec_safe_length (info->conds));

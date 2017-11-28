@@ -923,7 +923,7 @@ RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
-	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def \
+	gtm-builtins.def sanitizer.def \
 	hsa-builtins.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
@@ -1195,9 +1195,8 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-lex.o c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
-  c-family/c-cilkplus.o \
-  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
-  c-family/c-attribs.o c-family/c-warn.o c-family/known-headers.o
+  c-family/c-ubsan.o c-family/known-headers.o \
+  c-family/c-attribs.o c-family/c-warn.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
@@ -1246,7 +1245,6 @@ OBJS = \
 	cgraphbuild.o \
 	cgraphunit.o \
 	cgraphclones.o \
-	cilk-common.o \
 	combine.o \
 	combine-stack-adj.o \
 	compare-elim.o \
@@ -2508,8 +2506,8 @@ s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
-  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/cilk.h \
-  $(srcdir)/cilk-common.c $(srcdir)/coverage.c  $(srcdir)/rtl.h \
+  $(srcdir)/wide-int.h $(srcdir)/alias.h \
+  $(srcdir)/coverage.c  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \

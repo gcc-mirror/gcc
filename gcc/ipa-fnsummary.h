@@ -98,9 +98,6 @@ struct GTY(()) ipa_fn_summary
 
   /* False when there something makes inlining impossible (such as va_arg).  */
   unsigned inlinable : 1;
-  /* True when function contains cilk spawn (and thus we can not inline
-     into it).  */
-  unsigned contains_cilk_spawn : 1;
   /* True wen there is only one caller of the function before small function
      inlining.  */
   unsigned int single_caller : 1;
@@ -145,7 +142,7 @@ struct GTY(()) ipa_fn_summary
      This is useful for debugging.  */
   ipa_fn_summary ()
     : estimated_self_stack_size (0), self_size (0), min_size (0),
-      inlinable (false), contains_cilk_spawn (false), single_caller (false),
+      inlinable (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
       stack_frame_offset (false), time (0), size (0), conds (NULL),
       size_time_table (NULL), loop_iterations (NULL), loop_stride (NULL),

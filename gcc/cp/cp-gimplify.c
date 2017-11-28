@@ -31,8 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
-#include "cilk.h"
-#include "cp-cilkplus.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
@@ -628,14 +626,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 LHS of an assignment might also be involved in the RHS, as in bug
 	 25979.  */
     case INIT_EXPR:
-      if (fn_contains_cilk_spawn_p (cfun))
-	{
-	  if (cilk_cp_detect_spawn_and_unwrap (expr_p))
-	    return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	  if (seen_error () && contains_cilk_spawn_stmt (*expr_p))
-	    return GS_ERROR;
-	}
-
       cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
@@ -643,10 +633,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case MODIFY_EXPR:
     modify_expr_case:
       {
-	if (fn_contains_cilk_spawn_p (cfun)
-	    && cilk_cp_detect_spawn_and_unwrap (expr_p)
-	    && !seen_error ())
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	/* If the back end isn't clever enough to know that the lhs and rhs
 	   types are the same, add an explicit conversion.  */
 	tree op0 = TREE_OPERAND (*expr_p, 0);
@@ -759,19 +745,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       }
       break;
 
-    case CILK_SPAWN_STMT:
-      gcc_assert(fn_contains_cilk_spawn_p (cfun)
-		 && cilk_cp_detect_spawn_and_unwrap (expr_p));
-
-      if (!seen_error ())
-        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-      return GS_ERROR;
-
     case CALL_EXPR:
-      if (fn_contains_cilk_spawn_p (cfun)
-	  && cilk_cp_detect_spawn_and_unwrap (expr_p)
-	  && !seen_error ())
-        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       ret = GS_OK;
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;
@@ -1001,8 +975,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   code = TREE_CODE (stmt);
   if (code == OMP_FOR || code == OMP_SIMD || code == OMP_DISTRIBUTE
-      || code == OMP_TASKLOOP || code == CILK_FOR || code == CILK_SIMD
-      || code == OACC_LOOP)
+      || code == OMP_TASKLOOP || code == OACC_LOOP)
     {
       tree x;
       int i, n;
@@ -1681,12 +1654,6 @@ cp_genericize (tree fndecl)
   save_bc_label[bc_continue] = bc_label[bc_continue];
   bc_label[bc_break] = NULL_TREE;
   bc_label[bc_continue] = NULL_TREE;
-
-  /* Expand all the array notations here.  */
-  if (flag_cilkplus 
-      && contains_array_notation_expr (DECL_SAVED_TREE (fndecl)))
-    DECL_SAVED_TREE (fndecl)
-      = expand_array_notation_exprs (DECL_SAVED_TREE (fndecl));
 
   /* We do want to see every occurrence of the parms, so we can't just use
      walk_tree's hash functionality.  */

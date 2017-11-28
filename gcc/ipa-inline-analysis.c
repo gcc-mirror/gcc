@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
-#include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
 

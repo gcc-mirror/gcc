@@ -85,7 +85,6 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * Pointer Bounds Checker builtins:: Built-in functions for Pointer Bounds Checker.
-* Cilk Plus Builtins::  Built-in functions for the Cilk Plus language extension.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -3294,9 +3293,6 @@ The optional argument @var{mask} may have the value
 @code{notinbranch} or @code{inbranch},
 and instructs the compiler to generate non-masked or masked
 clones correspondingly. By default, all clones are generated.
-
-The attribute should not be used together with Cilk Plus @code{vector}
-attribute on the same function.
 
 If the attribute is specified and @code{#pragma omp declare simd} is
 present on a declaration and the @option{-fopenmp} or @option{-fopenmp-simd}
@@ -10934,32 +10930,6 @@ with the pointer @var{q}.  With Pointer Bounds Checker off,
 the built-in function returns -1.
 
 @end deftypefn
-
-@node Cilk Plus Builtins
-@section Cilk Plus C/C++ Language Extension Built-in Functions
-
-GCC provides support for the following built-in reduction functions if Cilk Plus
-is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
-
-@itemize @bullet
-@item @code{__sec_implicit_index}
-@item @code{__sec_reduce}
-@item @code{__sec_reduce_add}
-@item @code{__sec_reduce_all_nonzero}
-@item @code{__sec_reduce_all_zero}
-@item @code{__sec_reduce_any_nonzero}
-@item @code{__sec_reduce_any_zero}
-@item @code{__sec_reduce_max}
-@item @code{__sec_reduce_min}
-@item @code{__sec_reduce_max_ind}
-@item @code{__sec_reduce_min_ind}
-@item @code{__sec_reduce_mul}
-@item @code{__sec_reduce_mutating}
-@end itemize
-
-Further details and examples about these built-in functions are described 
-in the Cilk Plus language manual which can be found at 
-@uref{https://www.cilkplus.org}.
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC

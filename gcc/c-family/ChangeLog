@@ -1,3 +1,25 @@
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* array-notation-common.c: Delete.
+	* c-cilkplus.c: Ditto.
+	* c-common.c (_Cilk_spawn, _Cilk_sync, _Cilk_for): Remove.
+	* c-common.def (ARRAY_NOTATION_REF): Remove.
+	* c-common.h (RID_CILK_SPAWN, build_array_notation_expr,
+	build_array_notation_ref, C_ORT_CILK, c_check_cilk_loop,
+	c_validate_cilk_plus_loop, cilkplus_an_parts,
+	cilk_ignorable_spawn_rhs_op,
+	cilk_recognize_spawn): Remove.
+	* c-gimplify.c (CILK_SPAWN_STMT): Remove.
+	* c-omp.c: Remove CILK_SIMD check.
+	* c-pragma.c: Ditto.
+	* c-pragma.h: Remove CILK related pragmas.
+	* c-pretty-print.c (c_pretty_printer::postfix_expression): Remove
+	ARRAY_NOTATION_REF condition.
+	(c_pretty_printer::expression): Ditto.
+	* c.opt (fcilkplus): Remove.
+	* cilk.c: Delete.
+
 2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* c-pretty-print.c (pp_c_additive_expression,

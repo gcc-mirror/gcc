@@ -1330,9 +1330,9 @@ Driver
 static-libmpxwrappers
 Driver
 
-fcilkplus
+fcilkplus Undocumented
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
-Enable Cilk Plus.
+Deprecated in GCC 8.  This switch has no effect.
 
 fconcepts
 C++ ObjC++ Var(flag_concepts)

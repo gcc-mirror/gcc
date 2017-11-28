@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "debug.h"
 #include "plugin.h"
-#include "cilk.h"
 #include "builtins.h"
 #include "gimplify.h"
 #include "asan.h"
@@ -8751,7 +8750,7 @@ grokfndecl (tree ctype,
   if (TYPE_NOTHROW_P (type) || nothrow_libfn_p (decl))
     TREE_NOTHROW (decl) = 1;
 
-  if (flag_openmp || flag_openmp_simd || flag_cilkplus)
+  if (flag_openmp || flag_openmp_simd)
     {
       /* Adjust "omp declare simd" attributes.  */
       tree ods = lookup_attribute ("omp declare simd", *attrlist);
@@ -15467,9 +15466,6 @@ finish_function (bool inline_p)
 
   /* If we're saving up tree structure, tie off the function now.  */
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
-
-  if (fn_contains_cilk_spawn_p (cfun) && !processing_template_decl)
-    cfun->cilk_frame_decl = insert_cilk_frame (fndecl);
 
   finish_fname_decls ();
 

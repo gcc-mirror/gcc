@@ -445,10 +445,6 @@ enum omp_clause_code {
      loop or not.  */
   OMP_CLAUSE__SIMT_,
 
-  /* Internally used only clause, holding _Cilk_for # of iterations
-     on OMP_PARALLEL.  */
-  OMP_CLAUSE__CILK_FOR_COUNT_,
-
   /* OpenACC clause: independent.  */
   OMP_CLAUSE_INDEPENDENT,
 
@@ -489,7 +485,6 @@ enum omp_clause_schedule_kind {
   OMP_CLAUSE_SCHEDULE_GUIDED,
   OMP_CLAUSE_SCHEDULE_AUTO,
   OMP_CLAUSE_SCHEDULE_RUNTIME,
-  OMP_CLAUSE_SCHEDULE_CILKFOR,
   OMP_CLAUSE_SCHEDULE_MASK = (1 << 3) - 1,
   OMP_CLAUSE_SCHEDULE_MONOTONIC = (1 << 3),
   OMP_CLAUSE_SCHEDULE_NONMONOTONIC = (1 << 4),
@@ -1209,10 +1204,6 @@ struct GTY(()) tree_base {
 
        SSA_NAME_OCCURS_IN_ABNORMAL_PHI in
            SSA_NAME
-
-       EXPR_CILK_SPAWN in
-           CALL_EXPR
-           AGGR_INIT_EXPR
 
    used_flag:
 

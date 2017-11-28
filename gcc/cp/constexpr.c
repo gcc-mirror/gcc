@@ -5563,8 +5563,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OACC_ENTER_DATA:
     case OACC_EXIT_DATA:
     case OACC_UPDATE:
-    case CILK_SIMD:
-    case CILK_FOR:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case OBJ_TYPE_REF:
@@ -5848,11 +5846,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	if (!RECUR (TREE_OPERAND (t, i), want_rval))
 	  return false;
       return true;
-
-    case CILK_SYNC_STMT:
-    case CILK_SPAWN_STMT:
-    case ARRAY_NOTATION_REF:
-      return false;
 
     case FMA_EXPR:
     case VEC_PERM_EXPR:

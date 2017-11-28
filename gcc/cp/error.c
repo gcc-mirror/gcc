@@ -1201,17 +1201,6 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_right_bracket (pp);
       break;
 
-    case ARRAY_NOTATION_REF:
-      dump_decl (pp, ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_left_bracket (pp);
-      dump_decl (pp, ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_decl (pp, ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_decl (pp, ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_right_bracket (pp);
-      break;
-
       /* So that we can do dump_decl on an aggr type.  */
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -2302,17 +2291,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_left_bracket (pp);
       dump_expr (pp, TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_right_bracket (pp);
-      break;
-
-    case ARRAY_NOTATION_REF:
-      dump_expr (pp, ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
-      pp_cxx_left_bracket (pp);
-      dump_expr (pp, ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_expr (pp, ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_colon (pp);
-      dump_expr (pp, ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_bracket (pp);
       break;
 

@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "lto-tree.h"
 #include "lto.h"
-#include "cilk.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -1261,9 +1260,6 @@ lto_init (void)
       lto_define_builtins (build_reference_type (va_list_type_node),
 			   va_list_type_node);
     }
-
-  if (flag_cilkplus)
-    cilk_init_builtins ();
 
   targetm.init_builtins ();
   build_common_builtin_nodes ();

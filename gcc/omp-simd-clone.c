@@ -112,19 +112,11 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
   if (n > 0 && args.last () == void_type_node)
     n--;
 
-  /* To distinguish from an OpenMP simd clone, Cilk Plus functions to
-     be cloned have a distinctive artificial label in addition to "omp
-     declare simd".  */
-  bool cilk_clone
-    = (flag_cilkplus
-       && lookup_attribute ("cilk simd function",
-			    DECL_ATTRIBUTES (node->decl)));
-
   /* Allocate one more than needed just in case this is an in-branch
      clone which will require a mask argument.  */
   struct cgraph_simd_clone *clone_info = simd_clone_struct_alloc (n + 1);
   clone_info->nargs = n;
-  clone_info->cilk_elemental = cilk_clone;
+  clone_info->cilk_elemental = false;
 
   if (!clauses)
     goto out;

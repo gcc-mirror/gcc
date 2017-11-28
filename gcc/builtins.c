@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
-#include "cilk.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 #include "internal-fn.h"
@@ -202,10 +201,6 @@ is_builtin_name (const char *name)
   if (strncmp (name, "__sync_", 7) == 0)
     return true;
   if (strncmp (name, "__atomic_", 9) == 0)
-    return true;
-  if (flag_cilkplus 
-      && (!strcmp (name, "__cilkrts_detach")   
-	  || !strcmp (name, "__cilkrts_pop_frame")))
     return true;
   return false;
 }
@@ -7624,14 +7619,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
     case BUILT_IN_SET_THREAD_POINTER:
       expand_builtin_set_thread_pointer (exp);
-      return const0_rtx;
-
-    case BUILT_IN_CILK_DETACH:
-      expand_builtin_cilk_detach (exp);
-      return const0_rtx;
-      
-    case BUILT_IN_CILK_POP_FRAME:
-      expand_builtin_cilk_pop_frame (exp);
       return const0_rtx;
 
     case BUILT_IN_CHKP_INIT_PTR_BOUNDS:

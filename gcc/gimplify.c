@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-low.h"
 #include "gimple-low.h"
-#include "cilk.h"
 #include "gomp-constants.h"
 #include "splay-tree.h"
 #include "gimple-walk.h"
@@ -1457,15 +1456,6 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   if (ret_expr == error_mark_node)
     return GS_ERROR;
-
-  /* Implicit _Cilk_sync must be inserted right before any return statement 
-     if there is a _Cilk_spawn in the function.  If the user has provided a 
-     _Cilk_sync, the optimizer should remove this duplicate one.  */
-  if (fn_contains_cilk_spawn_p (cfun))
-    {
-      tree impl_sync = build0 (CILK_SYNC_STMT, void_type_node);
-      gimplify_and_add (impl_sync, pre_p);
-    }
 
   if (!ret_expr
       || TREE_CODE (ret_expr) == RESULT_DECL
@@ -3098,19 +3088,6 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
   return fold_stmt (gsi);
 }
 
-/* Add a gimple call to __builtin_cilk_detach to GIMPLE sequence PRE_P,
-   with the pointer to the proper cilk frame.  */
-static void
-gimplify_cilk_detach (gimple_seq *pre_p)
-{
-  tree frame = cfun->cilk_frame_decl;
-  tree ptrf = build1 (ADDR_EXPR, cilk_frame_ptr_type_decl,
-		      frame);
-  gcall *detach = gimple_build_call (cilk_detach_fndecl, 1,
-				     ptrf);
-  gimplify_seq_add_stmt(pre_p, detach);
-}
-
 /* Gimplify the CALL_EXPR node *EXPR_P into the GIMPLE sequence PRE_P.
    WANT_VALUE is true if the result of the call is desired.  */
 
@@ -3148,8 +3125,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  vargs.quick_push (CALL_EXPR_ARG (*expr_p, i));
 	}
 
-      if (EXPR_CILK_SPAWN (*expr_p))
-        gimplify_cilk_detach (pre_p);
       gcall *call = gimple_build_call_internal_vec (ifn, vargs);
       gimple_call_set_nothrow (call, TREE_NOTHROW (*expr_p));
       gimplify_seq_add_stmt (pre_p, call);
@@ -3380,8 +3355,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       gimple_stmt_iterator gsi;
       call = gimple_build_call_from_tree (*expr_p, fnptrtype);
       notice_special_calls (call);
-      if (EXPR_CILK_SPAWN (*expr_p))
-        gimplify_cilk_detach (pre_p);
       gimplify_seq_add_stmt (pre_p, call);
       gsi = gsi_last (*pre_p);
       maybe_fold_stmt (&gsi);
@@ -5340,7 +5313,6 @@ is_gimple_stmt (tree t)
     case OMP_PARALLEL:
     case OMP_FOR:
     case OMP_SIMD:
-    case CILK_SIMD:
     case OMP_DISTRIBUTE:
     case OACC_LOOP:
     case OMP_SECTIONS:
@@ -5673,8 +5645,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   ???  This doesn't make it a default-def.  */
 	SSA_NAME_DEF_STMT (*to_p) = gimple_build_nop ();
 
-      if (EXPR_CILK_SPAWN (*from_p))
-        gimplify_cilk_detach (pre_p);
       assign = call_stmt;
     }
   else
@@ -8422,7 +8392,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_HINT:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_NUM_GANGS:
@@ -9225,7 +9194,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_INDEPENDENT:
@@ -9520,7 +9488,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   switch (TREE_CODE (for_stmt))
     {
     case OMP_FOR:
-    case CILK_FOR:
     case OMP_DISTRIBUTE:
       break;
     case OACC_LOOP:
@@ -9533,7 +9500,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	ort = ORT_TASK;
       break;
     case OMP_SIMD:
-    case CILK_SIMD:
       ort = ORT_SIMD;
       break;
     default:
@@ -10208,8 +10174,6 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     {
     case OMP_FOR: kind = GF_OMP_FOR_KIND_FOR; break;
     case OMP_SIMD: kind = GF_OMP_FOR_KIND_SIMD; break;
-    case CILK_SIMD: kind = GF_OMP_FOR_KIND_CILKSIMD; break;
-    case CILK_FOR: kind = GF_OMP_FOR_KIND_CILKFOR; break;
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     case OMP_TASKLOOP: kind = GF_OMP_FOR_KIND_TASKLOOP; break;
     case OACC_LOOP: kind = GF_OMP_FOR_KIND_OACC_LOOP; break;
@@ -11805,8 +11769,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_FOR:
 	case OMP_SIMD:
-	case CILK_SIMD:
-	case CILK_FOR:
 	case OMP_DISTRIBUTE:
 	case OMP_TASKLOOP:
 	case OACC_LOOP:
@@ -11994,22 +11956,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    break;
 	  }
 
-	case CILK_SYNC_STMT:
-	  {
-	    if (!fn_contains_cilk_spawn_p (cfun))
-	      {
-		error_at (EXPR_LOCATION (*expr_p),
-			  "expected %<_Cilk_spawn%> before %<_Cilk_sync%>");
-		ret = GS_ERROR;
-	      }
-	    else
-	      {
-		gimplify_cilk_sync (expr_p, pre_p);
-		ret = GS_ALL_DONE;
-	      }
-	    break;
-	  }
-	
 	default:
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
 	    {

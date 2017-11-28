@@ -1,3 +1,63 @@
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* Makefile.in (cilkplus.def, cilk-builtins.def, c-family/cilk.o, 
+	c-family/c-cilkplus.o, c-family/array-notation-common.o,
+	cilk-common.o, cilk.h, cilk-common.c): Remove.
+	* builtin-types.def
+	(BT_FN_INT_PTR_PTR_PTR_FTYPE_BT_INT_BT_PTR_BT_PTR_BT_PTR): Remove.
+	* builtins.c (is_builtin_name): Remove cilkplus condition.
+	(BUILT_IN_CILK_DETACH, BUILT_IN_CILK_POP_FRAME): Remove.
+	* builtins.def (DEF_CILK_BUILTIN_STUB, DEF_CILKPLUS_BUILTIN,
+	cilk-builtins.def, cilkplus.def): Remove.
+	* cif-code.def (CILK_SPAWN): Remove.
+	* cilk-builtins.def: Delete.
+	* cilk-common.c: Ditto.
+	* cilk.h: Ditto.
+	* cilkplus.def: Ditto.
+	* config/darwin.h (fcilkplus): Delete.
+	* cppbuiltin.c: Ditto.
+	* doc/extend.texi: Remove cilkplus doc.
+	* doc/generic.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+	* doc/passes.texi: Ditto.
+	* gcc.c (fcilkplus): Remove.
+	* gengtype.c (cilk.h): Remove.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Remove cilkplus
+	support.
+	* gimple.h (GF_OMP_FOR_KIND_CILKFOR, GF_OMP_FOR_KIND_CILKSIMD):
+	Remove.
+	* gimplify.c (gimplify_return_expr, maybe_fold_stmt,
+	gimplify_call_expr,
+	is_gimple_stmt, gimplify_modify_expr, gimplify_scan_omp_clauses,
+	gimplify_adjust_omp_clauses, gimplify_omp_for, gimplify_expr): Remove
+	cilkplus conditions.
+	* ipa-fnsummary.c (ipa_dump_fn_summary, compute_fn_summary,
+	inline_read_section): Ditto.
+	* ipa-inline-analysis.c (cilk.h): Remove.
+	* ira.c (ira_setup_eliminable_regset): Remove cilkplus support.
+	* lto-wrapper.c (merge_and_complain, append_compiler_options,
+	append_linker_options): Remove condition for fcilkplus.
+	* lto/lto-lang.c (cilk.h): Remove.
+	(lto_init): Remove condition for fcilkplus.
+	* omp-expand.c (expand_cilk_for_call): Delete.
+	(expand_omp_taskreg, expand_omp_for_static_chunk,
+	expand_omp_for): Remove cilkplus
+	conditions.
+	(expand_cilk_for): Delete.
+	* omp-general.c (omp_extract_for_data): Remove cilkplus support.
+	* omp-low.c (scan_sharing_clauses, create_omp_child_function,
+	execute_lower_omp, diagnose_sb_0): Ditto.
+	* omp-simd-clone.c (simd_clone_clauses_extract): Ditto.
+	* tree-core.h (OMP_CLAUSE__CILK_FOR_COUNT_): Delete.
+	* tree-nested.c: Ditto.
+	* tree-pretty-print.c (dump_omp_clause): Remove cilkplus support.
+	(dump_generic_node): Ditto.
+	* tree.c (OMP_CLAUSE__CILK_FOR_COUNT_): Delete.
+	* tree.def (cilk_simd, cilk_for, cilk_spawn_stmt, cilk_sync_stmt):
+	Delete.
+	* tree.h (CILK_SPAWN_FN, EXPR_CILK_SPAWN): Delete.
+
 2017-11-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.md (div<mode>3): Change check to TARGET_FLOAT.

@@ -1,3 +1,31 @@
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* Make-lang.in (c/c-array-notation.o): Remove.
+	* c-array-notation.c: Delete.
+	* c-decl.c: Remove cilkplus condition.
+	* c-parser.c (c_parser_cilk_simd, c_parser_cilk_for,
+	c_parser_cilk_verify_simd, c_parser_array_notation,
+	c_parser_cilk_clause_vectorlength, c_parser_cilk_grainsize,
+	c_parser_cilk_simd_fn_vector_attrs,
+	c_finish_cilk_simd_fn_tokens): Delete.
+	(c_parser_declaration_or_fndef): Remove cilkplus condition.
+	(c_parser_direct_declarator_inner): Ditto.
+	(CILK_SIMD_FN_CLAUSE_MASK): Delete.
+	(c_parser_attributes, c_parser_compound_statement,
+	c_parser_statement_after_labels, c_parser_if_statement,
+	c_parser_switch_statement, c_parser_while_statement,
+	c_parser_do_statement, c_parser_for_statement,
+	c_parser_unary_expression, c_parser_postfix_expression,
+	c_parser_postfix_expression_after_primary,
+	c_parser_pragma, c_parser_omp_clause_name, c_parser_omp_all_clauses,
+	c_parser_omp_for_loop, c_finish_omp_declare_simd): Remove cilkplus
+	support.
+	* c-typeck.c (build_array_ref, build_function_call_vec,
+	convert_arguments,
+	lvalue_p, build_compound_expr, c_finish_return, c_finish_if_stmt,
+	c_finish_loop, build_binary_op): Remove cilkplus support.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (c_start_case): Build SWITCH_EXPR using build2 instead

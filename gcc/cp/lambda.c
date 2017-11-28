@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "toplev.h"
 #include "gimplify.h"
-#include "cp-cilkplus.h"
 
 /* Constructor for a lambda expression.  */
 

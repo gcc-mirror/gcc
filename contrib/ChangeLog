@@ -1,3 +1,8 @@
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* contrib/gcc_update: Ditto.
+
 2017-11-08  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Fix abbreviations for SI units.

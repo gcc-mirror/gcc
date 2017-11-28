@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
-#include "cilk.h"
 #include "builtins.h"
 #include "spellcheck-tree.h"
 #include "gcc-rich-location.h"
@@ -9387,12 +9386,6 @@ finish_function (void)
 
   /* Tie off the statement tree for this function.  */
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
-
-  /* If the function has _Cilk_spawn in front of a function call inside it
-     i.e. it is a spawning function, then add the appropriate Cilk plus
-     functions inside.  */
-  if (fn_contains_cilk_spawn_p (cfun))
-    cfun->cilk_frame_decl = insert_cilk_frame (fndecl);
 
   finish_fname_decls ();
 

@@ -221,7 +221,6 @@ along with GCC; see the file COPYING3.  If not see
 	       (flag_openacc \
 		|| flag_openmp \
 		|| flag_tree_parallelize_loops > 1 \
-		|| flag_cilkplus \
 		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
 
 #undef DEF_HSA_BUILTIN
@@ -236,13 +235,6 @@ along with GCC; see the file COPYING3.  If not see
                false, false, true, ATTRS, false, \
 	       (false))
 #endif
-
-/* Builtin used by implementation of Cilk Plus.  Most of these are decomposed
-   by the compiler but a few are implemented in libcilkrts.  */ 
-#undef DEF_CILK_BUILTIN_STUB
-#define DEF_CILK_BUILTIN_STUB(ENUM, NAME) \
-  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_LAST, BT_LAST, false, false, \
-	       false, ATTR_LAST, false, false)
 
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */
@@ -262,11 +254,6 @@ along with GCC; see the file COPYING3.  If not see
 				| SANITIZE_UNDEFINED \
 				| SANITIZE_UNDEFINED_NONDEFAULT) \
 	       || flag_sanitize_coverage))
-
-#undef DEF_CILKPLUS_BUILTIN
-#define DEF_CILKPLUS_BUILTIN(ENUM, NAME, TYPE, ATTRS)  \
-  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_FN_INT_VAR, BT_LAST, \
-  	       false, false, false, ATTRS, false, flag_cilkplus) 
 
 /* Builtin used by the implementation of Pointer Bounds Checker.  */
 #undef DEF_CHKP_BUILTIN
@@ -1033,17 +1020,11 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 /* Heterogeneous Systems Architecture.  */
 #include "hsa-builtins.def"
 
-/* Cilk keywords builtins.  */
-#include "cilk-builtins.def"
-
 /* GTM builtins. */
 #include "gtm-builtins.def"
 
 /* Sanitizer builtins. */
 #include "sanitizer.def"
-
-/* Cilk Plus builtins.  */
-#include "cilkplus.def"
 
 /* Pointer Bounds Checker builtins.  */
 #include "chkp-builtins.def"
