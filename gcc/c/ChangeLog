@@ -1,3 +1,8 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_start_case): Build SWITCH_EXPR using build2 instead
+	of build3.
+
 2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
 
 	* Make-lang.in (c.install-plugin): Install backend import library.

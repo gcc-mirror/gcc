@@ -2686,26 +2686,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	      dump_generic_node (pp, SWITCH_BODY (node), spc+4, flags,
 		                 true);
 	    }
-	  else
-	    {
-	      tree vec = SWITCH_LABELS (node);
-	      size_t i, n = TREE_VEC_LENGTH (vec);
-	      for (i = 0; i < n; ++i)
-		{
-		  tree elt = TREE_VEC_ELT (vec, i);
-		  newline_and_indent (pp, spc+4);
-		  if (elt)
-		    {
-		      dump_generic_node (pp, elt, spc+4, flags, false);
-		      pp_string (pp, " goto ");
-		      dump_generic_node (pp, CASE_LABEL (elt), spc+4,
-					 flags, true);
-		      pp_semicolon (pp);
-		    }
-		  else
-		    pp_string (pp, "case ???: goto ???;");
-		}
-	    }
 	  newline_and_indent (pp, spc+2);
 	  pp_right_brace (pp);
 	}

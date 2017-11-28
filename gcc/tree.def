@@ -943,10 +943,8 @@ DEFTREECODE (LOOP_EXPR, "loop_expr", tcc_statement, 1)
    Operand 0 is the expression used to perform the branch,
    Operand 1 is the body of the switch, which probably contains
      CASE_LABEL_EXPRs.  It may also be NULL, in which case operand 2
-     must not be NULL.
-   Operand 2 is either NULL_TREE or a TREE_VEC of the CASE_LABEL_EXPRs
-     of all the cases.  */
-DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 3)
+     must not be NULL.  */
+DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 2)
 
 /* Used to represent a case label.
 

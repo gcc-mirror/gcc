@@ -1172,12 +1172,9 @@ extern void protected_set_expr_location (tree, location_t);
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
   DECL_EXPR_DECL (COMPOUND_LITERAL_EXPR_DECL_EXPR (NODE))
 
-/* SWITCH_EXPR accessors. These give access to the condition, body and
-   original condition type (before any compiler conversions)
-   of the switch statement, respectively.  */
+/* SWITCH_EXPR accessors. These give access to the condition and body.  */
 #define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_EXPR_CHECK (NODE), 0)
 #define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_EXPR_CHECK (NODE), 1)
-#define SWITCH_LABELS(NODE)     TREE_OPERAND (SWITCH_EXPR_CHECK (NODE), 2)
 
 /* CASE_LABEL_EXPR accessors. These give access to the high and low values
    of a case label, respectively.  */
