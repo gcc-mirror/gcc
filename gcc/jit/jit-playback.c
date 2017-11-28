@@ -1689,12 +1689,7 @@ add_case (tree *ptr_t_switch_body,
 
 /* Add a switch statement to the function's statement list.
 
-   My initial attempt at implementing this constructed a TREE_VEC
-   of the cases and set it as SWITCH_LABELS (switch_expr).  However,
-   gimplify.c:gimplify_switch_expr is set up to deal with SWITCH_BODY, and
-   doesn't have any logic for gimplifying SWITCH_LABELS.
-
-   Hence we create a switch body, and populate it with case labels, each
+   We create a switch body, and populate it with case labels, each
    followed by a goto to the desired block.  */
 
 void
@@ -1722,18 +1717,12 @@ add_switch (location *loc,
     {
       tree t_low_value = c->m_min_value->as_tree ();
       tree t_high_value = c->m_max_value->as_tree ();
-      add_case (&t_switch_body,
-		t_low_value,
-		t_high_value,
-		c->m_dest_block);
+      add_case (&t_switch_body, t_low_value, t_high_value, c->m_dest_block);
     }
   /* Default label. */
-  add_case (&t_switch_body,
-	    NULL_TREE, NULL_TREE,
-	    default_block);
+  add_case (&t_switch_body, NULL_TREE, NULL_TREE, default_block);
 
-  tree switch_stmt = build3 (SWITCH_EXPR, t_type, t_expr,
-			     t_switch_body, NULL_TREE);
+  tree switch_stmt = build2 (SWITCH_EXPR, t_type, t_expr, t_switch_body);
   if (loc)
     set_tree_location (switch_stmt, loc);
   add_stmt (switch_stmt);

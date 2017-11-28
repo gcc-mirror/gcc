@@ -1,3 +1,8 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* go-gcc.cc (Gcc_backend::switch_statement): Build SWITCH_EXPR using
+	build2_loc instead of build3_loc.
+
 2017-11-14  Than McIntosh  <thanm@google.com>
 
 	* go-gcc.cc (var_expression): Remove Varexpr_context parameter.

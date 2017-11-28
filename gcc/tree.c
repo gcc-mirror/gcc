@@ -12351,11 +12351,7 @@ block_may_fallthru (const_tree block)
       return false;
 
     case SWITCH_EXPR:
-      /* If SWITCH_LABELS is set, this is lowered, and represents a
-	 branch to a selected label and hence can not fall through.
-	 Otherwise SWITCH_BODY is set, and the switch can fall
-	 through.  */
-      return SWITCH_LABELS (stmt) == NULL_TREE;
+      return true;
 
     case COND_EXPR:
       if (block_may_fallthru (COND_EXPR_THEN (stmt)))

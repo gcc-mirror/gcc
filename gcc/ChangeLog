@@ -1,5 +1,14 @@
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.def (SWITCH_EXPR): Change from 3 operand to 2 operand tree.
+	Adjust comment.
+	* tree.h (SWITCH_LABELS): Remove.
+	* gimplify.c (gimplify_switch_expr): Don't test SWITCH_LABELS,
+	assert SWITCH_BODY is non-NULL.
+	* tree-pretty-print.c (dump_generic_node): Remove SWITCH_LABELS
+	handling.
+	* tree.c (block_may_fallthru): Always return true; for SWITCH_EXPR.
+
 	PR tree-optimization/80788
 	* match.pd (X +- C1 CMP C2 -> X CMP C2 -+ C1): If res
 	has TREE_OVERFLOW set, call drop_tree_overflow.

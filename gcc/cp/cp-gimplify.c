@@ -332,7 +332,7 @@ genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   cp_walk_tree (&type, cp_genericize_r, data, NULL);
   *walk_subtrees = 0;
 
-  *stmt_p = build3_loc (stmt_locus, SWITCH_EXPR, type, cond, body, NULL_TREE);
+  *stmt_p = build2_loc (stmt_locus, SWITCH_EXPR, type, cond, body);
   finish_bc_block (stmt_p, bc_break, break_block);
 }
 

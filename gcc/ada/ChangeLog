@@ -1,3 +1,8 @@
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Build SWITCH_EXPR
+	using build2 instead of build3.
+
 2017-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/83091

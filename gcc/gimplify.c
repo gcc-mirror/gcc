@@ -2287,10 +2287,6 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       tree default_case = NULL_TREE;
       gswitch *switch_stmt;
 
-      /* If someone can be bothered to fill in the labels, they can
-	 be bothered to null out the body too.  */
-      gcc_assert (!SWITCH_LABELS (switch_expr));
-
       /* Save old labels, get new ones from body, then restore the old
          labels.  Save all the things from the switch body to append after.  */
       saved_labels = gimplify_ctxp->case_labels;
@@ -2347,7 +2343,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       labels.release ();
     }
   else
-    gcc_assert (SWITCH_LABELS (switch_expr));
+    gcc_unreachable ();
 
   return GS_ALL_DONE;
 }

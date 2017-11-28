@@ -10330,7 +10330,7 @@ c_start_case (location_t switch_loc,
 
   /* Add this new SWITCH_EXPR to the stack.  */
   cs = XNEW (struct c_switch);
-  cs->switch_expr = build3 (SWITCH_EXPR, orig_type, exp, NULL_TREE, NULL_TREE);
+  cs->switch_expr = build2 (SWITCH_EXPR, orig_type, exp, NULL_TREE);
   SET_EXPR_LOCATION (cs->switch_expr, switch_loc);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
