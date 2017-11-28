@@ -1304,6 +1304,7 @@ OBJS = \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-laddress.o \
+	gimple-loop-interchange.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \

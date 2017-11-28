@@ -8513,12 +8513,10 @@ Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-loop-linear
-@itemx -floop-interchange
 @itemx -floop-strip-mine
 @itemx -floop-block
 @itemx -floop-unroll-and-jam
 @opindex ftree-loop-linear
-@opindex floop-interchange
 @opindex floop-strip-mine
 @opindex floop-block
 @opindex floop-unroll-and-jam
@@ -8612,6 +8610,25 @@ DO I = 1, N
 ENDDO
 @end smallexample
 and the initialization loop is transformed into a call to memset zero.
+
+@item -floop-interchange
+@opindex floop-interchange
+Perform loop interchange outside of graphite.  This flag can improve cache
+performance on loop nest and allow further loop optimizations, like
+vectorization, to take place.  For example, the loop
+@smallexample
+for (int i = 0; i < N; i++)
+  for (int j = 0; j < N; j++)
+    for (int k = 0; k < N; k++)
+      c[i][j] = c[i][j] + a[i][k]*b[k][j];
+@end smallexample
+is transformed to
+@smallexample
+for (int i = 0; i < N; i++)
+  for (int k = 0; k < N; k++)
+    for (int j = 0; j < N; j++)
+      c[i][j] = c[i][j] + a[i][k]*b[k][j];
+@end smallexample
 
 @item -ftree-loop-im
 @opindex ftree-loop-im

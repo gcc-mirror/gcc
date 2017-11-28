@@ -790,6 +790,20 @@ DEFPARAM (PARAM_L2_CACHE_SIZE,
 	  "The size of L2 cache.",
 	  512, 0, 0)
 
+/* Maximum number of statements in loop nest for loop interchange.  */
+
+DEFPARAM (PARAM_LOOP_INTERCHANGE_MAX_NUM_STMTS,
+	  "loop-interchange-max-num-stmts",
+	  "The maximum number of stmts in loop nest for loop interchange.",
+	  64, 0, 0)
+
+/* Minimum stride ratio for loop interchange to be profitiable.  */
+
+DEFPARAM (PARAM_LOOP_INTERCHANGE_STRIDE_RATIO,
+	  "loop-interchange-stride-ratio",
+	  "The minimum stride ratio for loop interchange to be profitable",
+	  2, 0, 0)
+
 /* Whether we should use canonical types rather than deep "structural"
    type checking.  Setting this value to 1 (the default) improves
    compilation performance in the C++ and Objective-C++ front end;

@@ -1504,8 +1504,8 @@ Common Alias(floop-nest-optimize)
 Enable loop nest transforms.  Same as -floop-nest-optimize.
 
 floop-interchange
-Common Alias(floop-nest-optimize)
-Enable loop nest transforms.  Same as -floop-nest-optimize.
+Common Report Var(flag_loop_interchange) Optimization
+Enable loop interchange on trees.
 
 floop-block
 Common Alias(floop-nest-optimize)
