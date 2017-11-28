@@ -1,5 +1,8 @@
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/81020
+	* gcc.dg/pr81020.c: New test.
+
 	PR tree-optimization/80788
 	* gcc.dg/pr80788.c: New test.
 
