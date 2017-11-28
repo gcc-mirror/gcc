@@ -392,7 +392,7 @@ static void make_do_tests_decl (const vector<class arg> &args, ostream &out)
 	    continue;
 
 	  comma.reset ();
-	  out << "static __attribute__ ((ms_abi)) long (*const do_test_"
+	  out << "static __attribute__ ((ms_abi)) long (*do_test_"
 	      << (unaligned ? "u" : "")
 	      << (varargs ? "v" : "") << i << ") (";
 
