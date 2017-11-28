@@ -1,3 +1,9 @@
+2017-11-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::print_trailing_fixits): Handle
+	m_x_offset.
+	(layout::move_to_column): Likewise.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81275
