@@ -2935,7 +2935,8 @@ scev_check:
      scev_check can be reached from two paths, one is a fall through from above
      "varying" label, the other is direct goto from code block which tries to
      avoid infinite simulation.  */
-  if ((l = loop_containing_stmt (phi))
+  if (scev_initialized_p ()
+      && (l = loop_containing_stmt (phi))
       && l->header == gimple_bb (phi))
     adjust_range_with_scev (vr_result, l, phi, lhs);
 
