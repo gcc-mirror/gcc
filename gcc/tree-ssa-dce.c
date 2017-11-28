@@ -1723,3 +1723,56 @@ make_pass_cd_dce (gcc::context *ctxt)
 {
   return new pass_cd_dce (ctxt);
 }
+
+
+/* A cheap DCE interface starting from a seed set of possibly dead stmts.  */
+
+void
+simple_dce_from_worklist (bitmap seeds)
+{
+  /* ???  Re-use seeds as worklist not only as initial set.  This may end up
+     removing more code as well.  If we keep seeds unchanged we could restrict
+     new worklist elements to members of seed.  */
+  bitmap worklist = seeds;
+  while (! bitmap_empty_p (worklist))
+    {
+      /* Pop item.  */
+      unsigned i = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, i);
+
+      tree def = ssa_name (i);
+      /* Removed by somebody else or still in use.  */
+      if (! def || ! has_zero_uses (def))
+	continue;
+
+      gimple *t = SSA_NAME_DEF_STMT (def);
+      if (gimple_has_side_effects (t))
+	continue;
+
+      /* Add uses to the worklist.  */
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      FOR_EACH_PHI_OR_STMT_USE (use_p, t, iter, SSA_OP_USE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+	  if (TREE_CODE (use) == SSA_NAME
+	      && ! SSA_NAME_IS_DEFAULT_DEF (use))
+	    bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
+	}
+
+      /* Remove stmt.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Removing dead stmt:");
+	  print_gimple_stmt (dump_file, t, 0);
+	}
+      gimple_stmt_iterator gsi = gsi_for_stmt (t);
+      if (gimple_code (t) == GIMPLE_PHI)
+	remove_phi_node (&gsi, true);
+      else
+	{
+	  gsi_remove (&gsi, true);
+	  release_defs (t);
+	}
+    }
+}
