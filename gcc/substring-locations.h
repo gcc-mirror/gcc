@@ -77,13 +77,13 @@ class substring_loc
 /* Functions for emitting a warning about a format string.  */
 
 extern bool format_warning_va (const substring_loc &fmt_loc,
-			       const source_range *param_range,
+			       location_t param_loc,
 			       const char *corrected_substring,
 			       int opt, const char *gmsgid, va_list *ap)
   ATTRIBUTE_GCC_DIAG (5,0);
 
 extern bool format_warning_at_substring (const substring_loc &fmt_loc,
-					 const source_range *param_range,
+					 location_t param_loc,
 					 const char *corrected_substring,
 					 int opt, const char *gmsgid, ...)
   ATTRIBUTE_GCC_DIAG (5,0);

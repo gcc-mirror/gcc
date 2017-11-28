@@ -75,6 +75,12 @@ main ()
 #ifdef AVX512VPOPCNTDQ
       && (ecx & bit_AVX512VPOPCNTDQ)
 #endif
+#ifdef GFNI
+      && (ecx & bit_GFNI)
+#endif
+#ifdef AVX512VBMI2
+      && (ecx & bit_AVX512VBMI2)
+#endif
       && avx512f_os_support ())
     {
       DO_TEST ();

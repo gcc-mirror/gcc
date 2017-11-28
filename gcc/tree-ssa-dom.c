@@ -113,7 +113,6 @@ static void eliminate_redundant_computations (gimple_stmt_iterator *,
 					      class avail_exprs_stack *);
 static void record_equivalences_from_stmt (gimple *, int,
 					   class avail_exprs_stack *);
-static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void dump_dominator_optimization_stats (FILE *file,
 					       hash_table<expr_elt_hasher> *);
 
@@ -1012,6 +1011,7 @@ record_equivalences_from_phis (basic_block bb)
       tree rhs = NULL;
       size_t i;
 
+      bool ignored_phi_arg = false;
       for (i = 0; i < gimple_phi_num_args (phi); i++)
 	{
 	  tree t = gimple_phi_arg_def (phi, i);
@@ -1022,10 +1022,14 @@ record_equivalences_from_phis (basic_block bb)
 	  if (lhs == t)
 	    continue;
 
-	  /* If the associated edge is not marked as executable, then it
-	     can be ignored.  */
+	  /* We want to track if we ignored any PHI arguments because
+	     their associated edges were not executable.  This impacts
+	     whether or not we can use any equivalence we might discover.  */
 	  if ((gimple_phi_arg_edge (phi, i)->flags & EDGE_EXECUTABLE) == 0)
-	    continue;
+	    {
+	      ignored_phi_arg = true;
+	      continue;
+	    }
 
 	  t = dom_valueize (t);
 
@@ -1050,44 +1054,17 @@ record_equivalences_from_phis (basic_block bb)
 	 a useful equivalence.  We do not need to record unwind data for
 	 this, since this is a true assignment and not an equivalence
 	 inferred from a comparison.  All uses of this ssa name are dominated
-	 by this assignment, so unwinding just costs time and space.  */
+	 by this assignment, so unwinding just costs time and space.
+
+	 Note that if we ignored a PHI argument and the resulting equivalence
+	 is SSA_NAME = SSA_NAME.  Then we can not use the equivalence as the
+	 uses of the LHS SSA_NAME are not necessarily dominated by the
+	 assignment of the RHS SSA_NAME.  */
       if (i == gimple_phi_num_args (phi)
-	  && may_propagate_copy (lhs, rhs))
+	  && may_propagate_copy (lhs, rhs)
+	  && (!ignored_phi_arg || TREE_CODE (rhs) != SSA_NAME))
 	set_ssa_name_value (lhs, rhs);
     }
-}
-
-/* Ignoring loop backedges, if BB has precisely one incoming edge then
-   return that edge.  Otherwise return NULL.  */
-static edge
-single_incoming_edge_ignoring_loop_edges (basic_block bb)
-{
-  edge retval = NULL;
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      /* A loop back edge can be identified by the destination of
-	 the edge dominating the source of the edge.  */
-      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-	continue;
-
-      /* We can safely ignore edges that are not executable.  */
-      if ((e->flags & EDGE_EXECUTABLE) == 0)
-	continue;
-
-      /* If we have already seen a non-loop edge, then we must have
-	 multiple incoming non-loop edges and thus we return NULL.  */
-      if (retval)
-	return NULL;
-
-      /* This is the first non-loop incoming edge we have found.  Record
-	 it.  */
-      retval = e;
-    }
-
-  return retval;
 }
 
 /* Record any equivalences created by the incoming edge to BB into
@@ -1107,7 +1084,7 @@ record_equivalences_from_incoming_edge (basic_block bb,
      the parent was followed.  */
   parent = get_immediate_dominator (CDI_DOMINATORS, bb);
 
-  e = single_incoming_edge_ignoring_loop_edges (bb);
+  e = single_pred_edge_ignoring_loop_edges (bb, true);
 
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */

@@ -24,6 +24,7 @@
 #include <experimental/filesystem>
 #include <string_view>
 #include <string>
+#define USE_FILESYSTEM_TS
 #include <testsuite_fs.h>
 
 using std::experimental::filesystem::path;

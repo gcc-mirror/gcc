@@ -1,3 +1,171 @@
+2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+
+	* Make-lang.in (c.install-plugin): Install backend import library.
+
+2017-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_declare_simd): Reject declare simd in
+	pragma_stmt context.
+
+2017-11-23  Mike Stump  <mikestump@comcast.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-parser.c (c_parser_while_statement): Pass 3rd operand to
+	ANNOTATE_EXPR.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
+2017-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/62170
+	* c-objc-common.c (c_tree_printer): Convert penultimate param from
+	bool to bool *.  Within '%T' handling, if showing an "aka", use
+	"quoted" param to add appropriate quoting.
+
+2017-11-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60336
+	PR middle-end/67239
+	PR target/68355
+	* c-decl.c (grokdeclarator): Set DECL_PADDING_P on unnamed bit-fields.
+
+2017-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83056
+	* c-decl.c (lookup_name_fuzzy): Don't suggest names that came from
+	earlier failed lookups.
+
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-fold.c (c_fully_fold_internal): Handle POINTER_DIFF_EXPR.
+	* c-typeck.c (pointer_diff): Use POINTER_DIFF_EXPR.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81404
+	* c-decl.c: Include "c-family/known-headers.h".
+	(get_c_name_hint): Rename to get_stdlib_header_for_name and move
+	to known-headers.cc.
+	(class suggest_missing_header): Move to known-header.h.
+	(lookup_name_fuzzy): Call get_c_stdlib_header_for_name rather
+	than get_c_name_hint.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (get_c_name_hint): New function.
+	(class suggest_missing_header): New class.
+	(lookup_name_fuzzy): Call get_c_name_hint and use it to
+	suggest missing headers to the user.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(implicit_decl_warning): Convert "hint" from
+	const char * to name_hint.  Pass location to
+	lookup_name_fuzzy.  Suppress any deferred diagnostic if the
+	warning was not printed.
+	(undeclared_variable): Likewise for "guessed_id".
+	(lookup_name_fuzzy): Convert return type from const char *
+	to name_hint.  Add location_t param.
+	* c-parser.c: Define INCLUDE_UNIQUE_PTR before including system.h.
+	Include "c-family/name-hint.h"
+	(c_parser_declaration_or_fndef): Convert "hint" from
+	const char * to name_hint.  Pass location to lookup_name_fuzzy.
+	(c_parser_parameter_declaration): Likewise.
+
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* c-parser.c (c_parser_omp_atomic): Pass true as LVAL to c_fully_fold
+	where needed.
+	* c-typeck.c (build_unary_op, build_modify_expr, build_asm_expr,
+	handle_omp_array_sections): Likewise.
+	(digest_init): Don't call decl_constant_value_for_optimization.
+	* c-tree.h (decl_constant_value_for_optimization): Removed.
+	* c-fold.c (c_fold_array_ref): New function.
+	(c_fully_fold_internal): Add LVAL argument, propagate it through
+	recursive calls.  For VAR_P call decl_constant_value and
+	unshare if not LVAL and either optimizing or IN_INIT.  Remove
+	decl_constant_value_for_optimization calls.  If IN_INIT and not LVAL,
+	fold ARRAY_REF with STRING_CST and INTEGER_CST operands.
+	(c_fully_fold): Add LVAL argument, pass it through to
+	c_fully_fold_internal.
+	(decl_constant_value_for_optimization): Removed.
+
+2017-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/81156
+	* c-parser.c (check_tgmath_function): New function.
+	(enum tgmath_parm_kind): New enum.
+	(c_parser_postfix_expression): Handle __builtin_tgmath.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (implicit_decl_warning): Update for renaming of
+	pedwarn_at_rich_loc and warning_at_rich_loc.
+	(implicitly_declare): Likewise for renaming of inform_at_rich_loc.
+	(undeclared_variable): Likewise for renaming of error_at_rich_loc.
+	* c-parser.c (c_parser_declaration_or_fndef): Likewise.
+	(c_parser_struct_or_union_specifier): Likewise for renaming of
+	pedwarn_at_rich_loc.
+	(c_parser_parameter_declaration): Likewise for renaming of
+	error_at_rich_loc.
+	* c-typeck.c (build_component_ref): Likewise.
+	(build_unary_op): Likewise for renaming of inform_at_rich_loc.
+	(pop_init_level): Likewise for renaming of warning_at_rich_loc.
+	(set_init_label): Likewise for renaming of error_at_rich_loc.
+
+2017-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Parse conditional
+	stmts.
+
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-decl.c (header_for_builtin_fn): Add support for copysign, fma,
+	fmax, fmin, and sqrt _Float<N> and _Float<N>X variants.
+
+2017-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/7356
+	* c-parser.c (c_parser_declaration_or_fndef): Detect missing
+	semicolons.
+
+2017-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/81706
+	* c-decl.c (merge_decls): Copy "omp declare simd" attributes from
+	newdecl to corresponding __builtin_ if any.
+
+2017-10-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82466
+	* c-decl.c (diagnose_mismatched_decls): Use
+	OPT_Wbuiltin_declaration_mismatch.
+
+2017-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_require): Add "type_is_unique" param and
+	use it to guard calls to maybe_suggest_missing_token_insertion.
+	(c_parser_parms_list_declarator): Override default value of new
+	"type_is_unique" param to c_parser_require.
+	(c_parser_asm_statement): Likewise.
+	* c-parser.h (c_parser_require): Add "type_is_unique" param,
+	defaulting to true.
+
+2017-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (grokdeclarator): Check HAS_DECL_ASSEMBLER_NAME_P too.
+
+2017-10-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-parser.c (c_parser_cilk_clause_vectorlength): Use wi::to_wide when
+	operating on trees as wide_ints.
+	* c-typeck.c (build_c_cast, c_finish_omp_clauses): Likewise.
+	(c_tree_equal): Likewise.
+
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (push_parm_decl): Store c_parm's location into the

@@ -199,7 +199,7 @@ translate_name (char *name)
 	;
 
       key = (char *) alloca (keylen + 1);
-      strncpy (key, &name[1], keylen);
+      memcpy (key, &name[1], keylen);
       key[keylen] = 0;
 
       if (code == '@')

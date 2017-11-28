@@ -89,7 +89,7 @@ extern void guess_outgoing_edge_probabilities (basic_block);
 extern void tree_guess_outgoing_edge_probabilities (basic_block);
 extern void tree_estimate_probability (bool);
 extern void handle_missing_profiles (void);
-extern bool counts_to_freqs (void);
+extern bool update_max_bb_count (void);
 extern bool expensive_function_p (int);
 extern void estimate_bb_frequencies (bool);
 extern void compute_function_frequency (void);
@@ -101,5 +101,8 @@ extern void force_edge_cold (edge, bool);
 extern void propagate_unlikely_bbs_forward (void);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
+
+/* In ipa-pure-const.c   */
+extern void warn_function_cold (tree);
 
 #endif  /* GCC_PREDICT_H */

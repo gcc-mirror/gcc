@@ -125,7 +125,14 @@ check-c : check-gcc
 
 c.install-common:
 c.install-man:
-c.install-plugin:
+
+c.install-plugin: installdirs
+# Install import library.
+ifeq ($(plugin_implib),yes)
+	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
+	$(INSTALL_DATA) cc1$(exeext).a $(DESTDIR)/$(plugin_resourcesdir)/cc1$(exeext).a
+endif
+
 c.uninstall:
 
 #

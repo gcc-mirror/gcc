@@ -408,40 +408,10 @@ uncprop_into_successor_phis (basic_block bb)
     }
 }
 
-/* Ignoring loop backedges, if BB has precisely one incoming edge then
-   return that edge.  Otherwise return NULL.  */
-static edge
-single_incoming_edge_ignoring_loop_edges (basic_block bb)
-{
-  edge retval = NULL;
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      /* A loop back edge can be identified by the destination of
-	 the edge dominating the source of the edge.  */
-      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
-	continue;
-
-      /* If we have already seen a non-loop edge, then we must have
-	 multiple incoming non-loop edges and thus we return NULL.  */
-      if (retval)
-	return NULL;
-
-      /* This is the first non-loop incoming edge we have found.  Record
-	 it.  */
-      retval = e;
-    }
-
-  return retval;
-}
-
 edge
 uncprop_dom_walker::before_dom_children (basic_block bb)
 {
   basic_block parent;
-  edge e;
   bool recorded = false;
 
   /* If this block is dominated by a single incoming edge and that edge
@@ -450,7 +420,7 @@ uncprop_dom_walker::before_dom_children (basic_block bb)
   parent = get_immediate_dominator (CDI_DOMINATORS, bb);
   if (parent)
     {
-      e = single_incoming_edge_ignoring_loop_edges (bb);
+      edge e = single_pred_edge_ignoring_loop_edges (bb, false);
 
       if (e && e->src == parent && e->aux)
 	{

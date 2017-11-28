@@ -10,13 +10,13 @@ public:
   a(char *) : c(0, d) {}
 };
 class e {
-  int f(const int &, const int &, const int &, bool, bool, bool, int, bool);
+  void f(const int &, const int &, const int &, bool, bool, bool, int, bool);
 };
 class g {
 public:
   static g *h();
   void i(a, void *);
 };
-int e::f(const int &, const int &, const int &, bool j, bool, bool, int, bool) {
+void e::f(const int &, const int &, const int &, bool j, bool, bool, int, bool) {
   g::h()->i("", &j);
 }

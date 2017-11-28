@@ -11,11 +11,11 @@ constexpr int f5 (int n) { return 1 >> n; }   // { dg-error "shift expression" }
 
 constexpr int X = __CHAR_BIT__ * sizeof (int) + 1;
 
-constexpr int x1 = f1 (X);
-constexpr int x2 = f2 (-1);
-constexpr int x3 = f3 (-1);
-constexpr int x4 = f4 (X);
-constexpr int x5 = f5 (-1);
+constexpr int x1 = f1 (X);    // { dg-message "in .constexpr. expansion of" }
+constexpr int x2 = f2 (-1);   // { dg-message "in .constexpr. expansion of" }
+constexpr int x3 = f3 (-1);   // { dg-message "in .constexpr. expansion of" }
+constexpr int x4 = f4 (X);    // { dg-message "in .constexpr. expansion of" }
+constexpr int x5 = f5 (-1);   // { dg-message "in .constexpr. expansion of" }
 
 constexpr int y1 =  1 << X;   // { dg-error "shift expression" }
 constexpr int y2 =  1 << -1;  // { dg-error "shift expression" }

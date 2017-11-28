@@ -91,115 +91,115 @@ main (void)
   return 0;
 }
 
-/* { dg-output "value -133 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -129.5 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -129 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 128 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 128.5 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 132 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 256 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 256.5 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 260 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -5 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1.5 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -32773 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -32769.5 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -32769 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 32768 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 32768.5 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 32772 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 65536 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 65536.5 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 65540 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -5 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1.5 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 4.29497e\\\+09 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 4.29497e\\\+09 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 4.29497e\\\+09 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -5 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1.5 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -5 is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1.5 is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -5 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1.5 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'long long unsigned int'" } */
+/* { dg-output " -133 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -129.5 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -129 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 128 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 128.5 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 132 is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'signed char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 256 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 256.5 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 260 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -5 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1.5 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1 is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'unsigned char'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -32773 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -32769.5 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -32769 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 32768 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 32768.5 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 32772 is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'short int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 65536 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 65536.5 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 65540 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -5 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1.5 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1 is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'short unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 2.14748e\\\+09 is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 4.29497e\\\+09 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 4.29497e\\\+09 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 4.29497e\\\+09 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -5 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1.5 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1 is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -5 is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1.5 is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1 is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 9.22337e\\\+18 is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* 1.84467e\\\+19 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -5 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1.5 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -1 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* nan is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -?nan is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* inf is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]* -inf is outside the range of representable values of type 'long long unsigned int'" } */

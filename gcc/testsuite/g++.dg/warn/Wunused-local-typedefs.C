@@ -31,7 +31,7 @@ test0_tmpl(void)
     foo(2);
 }
 
-int
+void
 test0(void)
 {
     test0_tmpl<int>();

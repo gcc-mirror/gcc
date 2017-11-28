@@ -2211,6 +2211,9 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   gfc_gsymbol *gsym = NULL;
   gfc_symbol *dealloc = NULL, *arg = NULL;
 
+  if (derived->attr.pdt_template)
+    return NULL;
+
   /* Find the top-level namespace.  */
   for (ns = gfc_current_ns; ns; ns = ns->parent)
     if (!ns->parent)

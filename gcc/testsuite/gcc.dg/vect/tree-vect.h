@@ -75,3 +75,5 @@ check_vect (void)
 #endif
   signal (SIGILL, SIG_DFL);
 }
+
+#define VECTOR_BITS 128

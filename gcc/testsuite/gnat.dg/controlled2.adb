@@ -1,4 +1,5 @@
---  { dg-do compile }
+-- { dg-do compile }
+-- { dg-options "-gnatws" }
 
 with controlled1; use controlled1;
 package body controlled2 is

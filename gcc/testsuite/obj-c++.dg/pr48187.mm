@@ -1,19 +1,19 @@
 /* { dg-do compile } */
 
 @interface A
-{
+{    /* { dg-error "xpected" } */
   ]  /* { dg-error "xpected" } */
 }
 @end
 
 @interface B
-{
+{     /* { dg-error "xpected" } */
   ];  /* { dg-error "xpected" } */
 }
 @end
 
 @interface C
-{
+{     /* { dg-error "xpected" } */
   ];  /* { dg-error "xpected" } */
   int x;
 }
@@ -21,7 +21,7 @@
 
 @interface D
 {
-  (
+  (  /* { dg-error "xpected" } */
 }  /* { dg-error "xpected" } */
 @end
 

@@ -34,7 +34,11 @@
 #define M34 7716
 #define M44 16
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 5 / 32)
+#else
 #define N 20
+#endif
 
 void foo (unsigned int *__restrict__ pInput, unsigned int *__restrict__ pOutput)
 {
@@ -59,20 +63,43 @@ void foo (unsigned int *__restrict__ pInput, unsigned int *__restrict__ pOutput)
 int main (int argc, const char* argv[])
 {
   unsigned int input[N], output[N], i;
-  unsigned int check_results[N]
-    = {3208, 1334, 28764, 35679, 2789, 13028, 4754, 168364, 91254, 12399, 
-    22848, 8174, 307964, 146829, 22009, 32668, 11594, 447564, 202404, 31619};
 
   check_vect ();
 
   for (i = 0; i < N; i++)
     {
       input[i] = i%256;
-      if (input[i] > 200)
-        abort();
       output[i] = 0;
-      __asm__ volatile ("");
+      asm volatile ("" ::: "memory");
     }
+
+#if N == 20
+  unsigned int check_results[N]
+    = {3208, 1334, 28764, 35679, 2789, 13028, 4754, 168364, 91254, 12399,
+    22848, 8174, 307964, 146829, 22009, 32668, 11594, 447564, 202404, 31619};
+#else
+  volatile unsigned int check_results[N];
+
+  for (i = 0; i < N / 5; i++)
+    {
+      unsigned int a = input[i * 5];
+      unsigned int b = input[i * 5 + 1];
+      unsigned int c = input[i * 5 + 2];
+      unsigned int d = input[i * 5 + 3];
+      unsigned int e = input[i * 5 + 4];
+
+      check_results[i * 5] = M00 * a + M01 * b + M02 * c + M03 * d + M04 * e;
+      check_results[i * 5 + 1] = (M10 * a + M11 * b + M12 * c
+				  + M13 * d + M14 * e);
+      check_results[i * 5 + 2] = (M20 * a + M21 * b + M22 * c
+				  + M23 * d + M24 * e);
+      check_results[i * 5 + 3] = (M30 * a + M31 * b + M32 * c
+				  + M33 * d + M34 * e);
+      check_results[i * 5 + 4] = (M40 * a + M41 * b + M42 * c
+				  + M43 * d + M44 * e);
+      asm volatile ("");
+    }
+#endif
 
   foo (input, output);
 

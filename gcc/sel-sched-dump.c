@@ -989,35 +989,6 @@ debug_blist (blist_t bnds)
   restore_dump ();
 }
 
-/* Dump a rtx vector REF.  */
-DEBUG_FUNCTION void
-debug (vec<rtx_insn *> &ref)
-{
-  switch_dump (stderr);
-  dump_insn_vector (ref);
-  sel_print ("\n");
-  restore_dump ();
-}
-
-DEBUG_FUNCTION void
-debug (vec<rtx_insn *> *ptr)
-{
-  if (ptr)
-    debug (*ptr);
-  else
-    fprintf (stderr, "<nil>\n");
-}
-
-/* Dump an insn vector SUCCS.  */
-DEBUG_FUNCTION void
-debug_insn_vector (rtx_vec_t succs)
-{
-  switch_dump (stderr);
-  dump_insn_vector (succs);
-  sel_print ("\n");
-  restore_dump ();
-}
-
 /* Dump a hard reg set SET to stderr.  */
 DEBUG_FUNCTION void
 debug_hard_reg_set (HARD_REG_SET set)

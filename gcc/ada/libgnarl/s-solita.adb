@@ -44,6 +44,7 @@ with Ada.Exceptions.Is_Null_Occurrence;
 with System.Task_Primitives.Operations;
 with System.Tasking;
 with System.Stack_Checking;
+with System.Secondary_Stack;
 
 package body System.Soft_Links.Tasking is
 
@@ -51,6 +52,8 @@ package body System.Soft_Links.Tasking is
    package SSL  renames System.Soft_Links;
 
    use Ada.Exceptions;
+
+   use type System.Secondary_Stack.SS_Stack_Ptr;
 
    use type System.Tasking.Task_Id;
    use type System.Tasking.Termination_Handler;
@@ -71,8 +74,8 @@ package body System.Soft_Links.Tasking is
    procedure Set_Jmpbuf_Address (Addr : Address);
    --  Get/Set Jmpbuf_Address for current task
 
-   function  Get_Sec_Stack_Addr return  Address;
-   procedure Set_Sec_Stack_Addr (Addr : Address);
+   function  Get_Sec_Stack return SST.SS_Stack_Ptr;
+   procedure Set_Sec_Stack (Stack : SST.SS_Stack_Ptr);
    --  Get/Set location of current task's secondary stack
 
    procedure Timed_Delay_T (Time : Duration; Mode : Integer);
@@ -93,14 +96,14 @@ package body System.Soft_Links.Tasking is
       return STPO.Self.Common.Compiler_Data.Jmpbuf_Address;
    end Get_Jmpbuf_Address;
 
-   function Get_Sec_Stack_Addr return  Address is
+   function Get_Sec_Stack return SST.SS_Stack_Ptr is
    begin
-      return Result : constant Address :=
-        STPO.Self.Common.Compiler_Data.Sec_Stack_Addr
+      return Result : constant SST.SS_Stack_Ptr :=
+        STPO.Self.Common.Compiler_Data.Sec_Stack_Ptr
       do
-         pragma Assert (Result /= Null_Address);
+         pragma Assert (Result /= null);
       end return;
-   end Get_Sec_Stack_Addr;
+   end Get_Sec_Stack;
 
    function Get_Stack_Info return Stack_Checking.Stack_Access is
    begin
@@ -116,10 +119,10 @@ package body System.Soft_Links.Tasking is
       STPO.Self.Common.Compiler_Data.Jmpbuf_Address := Addr;
    end Set_Jmpbuf_Address;
 
-   procedure Set_Sec_Stack_Addr (Addr : Address) is
+   procedure Set_Sec_Stack (Stack : SST.SS_Stack_Ptr) is
    begin
-      STPO.Self.Common.Compiler_Data.Sec_Stack_Addr := Addr;
-   end Set_Sec_Stack_Addr;
+      STPO.Self.Common.Compiler_Data.Sec_Stack_Ptr := Stack;
+   end Set_Sec_Stack;
 
    -------------------
    -- Timed_Delay_T --
@@ -213,20 +216,20 @@ package body System.Soft_Links.Tasking is
 
          SSL.Get_Jmpbuf_Address       := Get_Jmpbuf_Address'Access;
          SSL.Set_Jmpbuf_Address       := Set_Jmpbuf_Address'Access;
-         SSL.Get_Sec_Stack_Addr       := Get_Sec_Stack_Addr'Access;
+         SSL.Get_Sec_Stack            := Get_Sec_Stack'Access;
          SSL.Get_Stack_Info           := Get_Stack_Info'Access;
-         SSL.Set_Sec_Stack_Addr       := Set_Sec_Stack_Addr'Access;
+         SSL.Set_Sec_Stack            := Set_Sec_Stack'Access;
          SSL.Timed_Delay              := Timed_Delay_T'Access;
          SSL.Task_Termination_Handler := Task_Termination_Handler_T'Access;
 
          --  No need to create a new secondary stack, since we will use the
          --  default one created in s-secsta.adb.
 
-         SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
+         SSL.Set_Sec_Stack          (SSL.Get_Sec_Stack_NT);
          SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
       end if;
 
-      pragma Assert (Get_Sec_Stack_Addr /= Null_Address);
+      pragma Assert (Get_Sec_Stack /= null);
    end Init_Tasking_Soft_Links;
 
 end System.Soft_Links.Tasking;

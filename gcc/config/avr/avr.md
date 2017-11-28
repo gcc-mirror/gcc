@@ -334,10 +334,9 @@
         (unspec_volatile:HI [(const_int 0)] UNSPECV_GOTO_RECEIVER))]
   ""
   {
+    rtx offset = gen_int_mode (targetm.starting_frame_offset (), Pmode);
     emit_move_insn (virtual_stack_vars_rtx,
-                    gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx,
-                                  gen_int_mode (STARTING_FRAME_OFFSET,
-                                                Pmode)));
+                    gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx, offset));
     /* ; This might change the hard frame pointer in ways that aren't
        ; apparent to early optimization passes, so force a clobber.  */
     emit_clobber (hard_frame_pointer_rtx);

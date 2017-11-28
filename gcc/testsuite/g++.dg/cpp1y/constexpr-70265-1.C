@@ -10,4 +10,4 @@ foo (int p)
   return t;
 }
 
-static_assert (foo (1) == 0, "");  // { dg-error "non-constant" }
+static_assert (foo (1) == 0, "");  // { dg-error "non-constant|in .constexpr. expansion of " }

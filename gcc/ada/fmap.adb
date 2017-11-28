@@ -306,6 +306,7 @@ package body Fmap is
          else
             Write_Str ("warning: no read access for mapping file """);
          end if;
+
          Write_Str (File_Name);
          Write_Line ("""");
          No_Mapping_File := True;

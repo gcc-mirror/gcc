@@ -17,7 +17,7 @@ namespace __sanitizer {
 ThreadContextBase::ThreadContextBase(u32 tid)
     : tid(tid), unique_id(0), reuse_count(), os_id(0), user_id(0),
       status(ThreadStatusInvalid),
-      detached(false), parent_tid(0), next(0) {
+      detached(false), workerthread(false), parent_tid(0), next(0) {
   name[0] = '\0';
 }
 
@@ -52,14 +52,19 @@ void ThreadContextBase::SetJoined(void *arg) {
 }
 
 void ThreadContextBase::SetFinished() {
-  if (!detached)
-    status = ThreadStatusFinished;
+  // ThreadRegistry::FinishThread calls here in ThreadStatusCreated state
+  // for a thread that never actually started.  In that case the thread
+  // should go to ThreadStatusFinished regardless of whether it was created
+  // as detached.
+  if (!detached || status == ThreadStatusCreated) status = ThreadStatusFinished;
   OnFinished();
 }
 
-void ThreadContextBase::SetStarted(uptr _os_id, void *arg) {
+void ThreadContextBase::SetStarted(tid_t _os_id, bool _workerthread,
+                                   void *arg) {
   status = ThreadStatusRunning;
   os_id = _os_id;
+  workerthread = _workerthread;
   OnStarted(arg);
 }
 
@@ -190,7 +195,7 @@ static bool FindThreadContextByOsIdCallback(ThreadContextBase *tctx,
       tctx->status != ThreadStatusDead);
 }
 
-ThreadContextBase *ThreadRegistry::FindThreadContextByOsIDLocked(uptr os_id) {
+ThreadContextBase *ThreadRegistry::FindThreadContextByOsIDLocked(tid_t os_id) {
   return FindThreadContextLocked(FindThreadContextByOsIdCallback,
                                  (void *)os_id);
 }
@@ -200,7 +205,8 @@ void ThreadRegistry::SetThreadName(u32 tid, const char *name) {
   CHECK_LT(tid, n_contexts_);
   ThreadContextBase *tctx = threads_[tid];
   CHECK_NE(tctx, 0);
-  CHECK_EQ(ThreadStatusRunning, tctx->status);
+  CHECK_EQ(SANITIZER_FUCHSIA ? ThreadStatusCreated : ThreadStatusRunning,
+           tctx->status);
   tctx->SetName(name);
 }
 
@@ -247,31 +253,43 @@ void ThreadRegistry::JoinThread(u32 tid, void *arg) {
   QuarantinePush(tctx);
 }
 
+// Normally this is called when the thread is about to exit.  If
+// called in ThreadStatusCreated state, then this thread was never
+// really started.  We just did CreateThread for a prospective new
+// thread before trying to create it, and then failed to actually
+// create it, and so never called StartThread.
 void ThreadRegistry::FinishThread(u32 tid) {
   BlockingMutexLock l(&mtx_);
   CHECK_GT(alive_threads_, 0);
   alive_threads_--;
-  CHECK_GT(running_threads_, 0);
-  running_threads_--;
   CHECK_LT(tid, n_contexts_);
   ThreadContextBase *tctx = threads_[tid];
   CHECK_NE(tctx, 0);
-  CHECK_EQ(ThreadStatusRunning, tctx->status);
+  bool dead = tctx->detached;
+  if (tctx->status == ThreadStatusRunning) {
+    CHECK_GT(running_threads_, 0);
+    running_threads_--;
+  } else {
+    // The thread never really existed.
+    CHECK_EQ(tctx->status, ThreadStatusCreated);
+    dead = true;
+  }
   tctx->SetFinished();
-  if (tctx->detached) {
+  if (dead) {
     tctx->SetDead();
     QuarantinePush(tctx);
   }
 }
 
-void ThreadRegistry::StartThread(u32 tid, uptr os_id, void *arg) {
+void ThreadRegistry::StartThread(u32 tid, tid_t os_id, bool workerthread,
+                                 void *arg) {
   BlockingMutexLock l(&mtx_);
   running_threads_++;
   CHECK_LT(tid, n_contexts_);
   ThreadContextBase *tctx = threads_[tid];
   CHECK_NE(tctx, 0);
   CHECK_EQ(ThreadStatusCreated, tctx->status);
-  tctx->SetStarted(os_id, arg);
+  tctx->SetStarted(os_id, workerthread, arg);
 }
 
 void ThreadRegistry::QuarantinePush(ThreadContextBase *tctx) {

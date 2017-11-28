@@ -989,7 +989,6 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	enables support for ISO/IEC 29124 Special Math Functions.
       </para>
     </listitem></varlistentry>
-    </variablelist>
 
     <varlistentry><term><code>_GLIBCXX_SANITIZE_VECTOR</code></term>
     <listitem>
@@ -1008,6 +1007,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
         destroy or modify vectors.
       </para>
     </listitem></varlistentry>
+    </variablelist>
 
   </section>
 

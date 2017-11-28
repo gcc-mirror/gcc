@@ -211,7 +211,7 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
 void
 gfc_conv_tree_to_mpz (mpz_t i, tree source)
 {
-  wi::to_mpz (source, i, TYPE_SIGN (TREE_TYPE (source)));
+  wi::to_mpz (wi::to_wide (source), i, TYPE_SIGN (TREE_TYPE (source)));
 }
 
 /* Converts a real constant into backend form.  */

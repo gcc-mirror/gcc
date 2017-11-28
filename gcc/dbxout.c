@@ -244,6 +244,10 @@ static GTY(()) int source_label_number = 1;
 
 static GTY(()) const char *lastfile;
 
+/* Last line number mentioned in a NOTE insn.  */
+
+static GTY(()) unsigned int lastlineno;
+
 /* Used by PCH machinery to detect if 'lastfile' should be reset to
    base_input_file.  */
 static GTY(()) int lastfile_is_base;
@@ -334,6 +338,7 @@ static void debug_free_queue (void);
 
 static void dbxout_source_line (unsigned int, unsigned int, const char *,
 				int, bool);
+static void dbxout_switch_text_section (void);
 static void dbxout_begin_prologue (unsigned int, unsigned int, const char *);
 static void dbxout_source_file (const char *);
 static void dbxout_function_end (tree);
@@ -380,7 +385,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_handle_pch,		         /* handle_pch */
   debug_nothing_rtx_insn,	         /* var_location */
   debug_nothing_tree,			 /* size_function */
-  debug_nothing_void,                    /* switch_text_section */
+  dbxout_switch_text_section,            /* switch_text_section */
   debug_nothing_tree_tree,		 /* set_name */
   0,                                     /* start_end_main_source_file */
   TYPE_SYMTAB_IS_ADDRESS                 /* tree_type_symtab_field */
@@ -714,7 +719,7 @@ stabstr_O (tree cst)
 
   /* If the value is zero, the base indicator will serve as the value
      all by itself.  */
-  if (wi::eq_p (cst, 0))
+  if (wi::to_wide (cst) == 0)
     return;
 
   /* GDB wants constants with no extra leading "1" bits, so
@@ -722,19 +727,19 @@ stabstr_O (tree cst)
      present.  */
   if (res_pres == 1)
     {
-      digit = wi::extract_uhwi (cst, prec - 1, 1);
+      digit = wi::extract_uhwi (wi::to_wide (cst), prec - 1, 1);
       stabstr_C ('0' + digit);
     }
   else if (res_pres == 2)
     {
-      digit = wi::extract_uhwi (cst, prec - 2, 2);
+      digit = wi::extract_uhwi (wi::to_wide (cst), prec - 2, 2);
       stabstr_C ('0' + digit);
     }
 
   prec -= res_pres;
   for (i = prec - 3; i >= 0; i = i - 3)
     {
-      digit = wi::extract_uhwi (cst, i, 3);
+      digit = wi::extract_uhwi (wi::to_wide (cst), i, 3);
       stabstr_C ('0' + digit);
     }
 }
@@ -902,7 +907,7 @@ dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
 
   /* The Lscope label must be emitted even if we aren't doing anything
      else; dbxout_block needs it.  */
-  switch_to_section (function_section (current_function_decl));
+  switch_to_section (current_function_section ());
 
   /* Convert Lscope into the appropriate format for local labels in case
      the system doesn't insert underscores in front of user generated
@@ -923,11 +928,12 @@ dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
   if (crtl->has_bb_partition)
     {
       dbxout_begin_empty_stabs (N_FUN);
-      dbxout_stab_value_label_diff (crtl->subsections.hot_section_end_label,
-				    crtl->subsections.hot_section_label);
-      dbxout_begin_empty_stabs (N_FUN);
-      dbxout_stab_value_label_diff (crtl->subsections.cold_section_end_label,
-				    crtl->subsections.cold_section_label);
+      if (in_cold_section_p)
+	dbxout_stab_value_label_diff (crtl->subsections.cold_section_end_label,
+				      crtl->subsections.cold_section_label);
+      else
+	dbxout_stab_value_label_diff (crtl->subsections.hot_section_end_label,
+				      crtl->subsections.hot_section_label);
     }
   else
     {
@@ -1215,7 +1221,7 @@ dbxout_handle_pch (unsigned at_end)
 
 #if defined (DBX_DEBUGGING_INFO)
 
-static void dbxout_block (tree, int, tree);
+static bool dbxout_block (tree, int, tree, int);
 
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
 
@@ -1289,6 +1295,60 @@ dbxout_source_line (unsigned int lineno, unsigned int column ATTRIBUTE_UNUSED,
   else
     dbxout_stabd (N_SLINE, lineno);
 #endif
+  lastlineno = lineno;
+}
+
+/* Unfortunately, at least when emitting relative addresses, STABS
+   has no way to express multiple partitions.  Represent a function
+   as two functions in this case.  */
+
+static void
+dbxout_switch_text_section (void)
+{
+  /* The N_FUN tag at the end of the function is a GNU extension,
+     which may be undesirable, and is unnecessary if we do not have
+     named sections.  */
+  in_cold_section_p = !in_cold_section_p;
+  switch_to_section (current_function_section ());
+  dbxout_block (DECL_INITIAL (current_function_decl), 0,
+		DECL_ARGUMENTS (current_function_decl), -1);
+  dbxout_function_end (current_function_decl);
+  in_cold_section_p = !in_cold_section_p;
+
+  switch_to_section (current_function_section ());
+
+  tree context = decl_function_context (current_function_decl);
+  extern tree cold_function_name;
+
+  dbxout_begin_complex_stabs ();
+  stabstr_I (cold_function_name);
+  stabstr_S (":f");
+
+  tree type = TREE_TYPE (current_function_decl);
+  if (TREE_TYPE (type))
+    dbxout_type (TREE_TYPE (type), 0);
+  else
+    dbxout_type (void_type_node, 0);
+
+  if (context != 0)
+    {
+      stabstr_C (',');
+      stabstr_I (cold_function_name);
+      stabstr_C (',');
+      stabstr_I (DECL_NAME (context));
+    }
+
+  dbxout_finish_complex_stabs (current_function_decl, N_FUN, 0,
+			       crtl->subsections.cold_section_label, 0);
+
+  /* pre-increment the scope counter */
+  scope_labelno++;
+
+  dbxout_source_line (lastlineno, 0, lastfile, 0, true);
+  /* Output function begin block at function scope, referenced
+     by dbxout_block, dbxout_source_line and dbxout_function_end.  */
+  emit_pending_bincls_if_required ();
+  targetm.asm_out.internal_label (asm_out_file, "LFBB", scope_labelno);
 }
 
 /* Describe the beginning of an internal block within a function.  */
@@ -1322,7 +1382,7 @@ dbxout_function_decl (tree decl)
 #ifndef DBX_FUNCTION_FIRST
   dbxout_begin_function (decl);
 #endif
-  dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
+  dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl), -1);
   dbxout_function_end (decl);
 }
 
@@ -3393,12 +3453,16 @@ dbxout_parms (tree parms)
 {
   ++debug_nesting;
   emit_pending_bincls_if_required ();
+  fixed_size_mode rtl_mode, type_mode;
 
   for (; parms; parms = DECL_CHAIN (parms))
     if (DECL_NAME (parms)
 	&& TREE_TYPE (parms) != error_mark_node
 	&& DECL_RTL_SET_P (parms)
-	&& DECL_INCOMING_RTL (parms))
+	&& DECL_INCOMING_RTL (parms)
+	/* We can't represent variable-sized types in this format.  */
+	&& is_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (parms)), &type_mode)
+	&& is_a <fixed_size_mode> (GET_MODE (DECL_RTL (parms)), &rtl_mode))
       {
 	tree eff_type;
 	char letter;
@@ -3555,10 +3619,9 @@ dbxout_parms (tree parms)
 	    /* Make a big endian correction if the mode of the type of the
 	       parameter is not the same as the mode of the rtl.  */
 	    if (BYTES_BIG_ENDIAN
-		&& TYPE_MODE (TREE_TYPE (parms)) != GET_MODE (DECL_RTL (parms))
-		&& GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))) < UNITS_PER_WORD)
-	      number += (GET_MODE_SIZE (GET_MODE (DECL_RTL (parms)))
-			 - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))));
+		&& type_mode != rtl_mode
+		&& GET_MODE_SIZE (type_mode) < UNITS_PER_WORD)
+	      number += GET_MODE_SIZE (rtl_mode) - GET_MODE_SIZE (type_mode);
 	  }
 	else
 	  /* ??? We don't know how to represent this argument.  */
@@ -3661,6 +3724,26 @@ dbx_output_rbrac (const char *label,
     dbxout_stab_value_label (label);
 }
 
+/* Return true is at least one block among BLOCK, its children or siblings
+   which has TREE_USED, TREE_ASM_WRITTEN and BLOCK_IN_COLD_SECTION_P
+   set.  If there is none, clear TREE_USED bit on such blocks.  */
+
+static bool
+dbx_block_with_cold_children (tree block)
+{
+  bool ret = false;
+  for (; block; block = BLOCK_CHAIN (block))
+    if (TREE_USED (block) && TREE_ASM_WRITTEN (block))
+      {
+	bool children = dbx_block_with_cold_children (BLOCK_SUBBLOCKS (block));
+	if (BLOCK_IN_COLD_SECTION_P (block) || children)
+	  ret = true;
+	else
+	  TREE_USED (block) = false;
+      }
+  return ret;
+}
+
 /* Output everything about a symbol block (a BLOCK node
    that represents a scope level),
    including recursive output of contained blocks.
@@ -3676,22 +3759,31 @@ dbx_output_rbrac (const char *label,
    except for the outermost block.
 
    Actually, BLOCK may be several blocks chained together.
-   We handle them all in sequence.  */
+   We handle them all in sequence.
 
-static void
-dbxout_block (tree block, int depth, tree args)
+   Return true if we emitted any LBRAC/RBRAC.  */
+
+static bool
+dbxout_block (tree block, int depth, tree args, int parent_blocknum)
 {
+  bool ret = false;
   char begin_label[20];
   /* Reference current function start using LFBB.  */
   ASM_GENERATE_INTERNAL_LABEL (begin_label, "LFBB", scope_labelno);
 
-  while (block)
+  /* If called for the second partition, ignore blocks that don't have
+     any children in the second partition.  */
+  if (crtl->has_bb_partition && in_cold_section_p && depth == 0)
+    dbx_block_with_cold_children (block);
+
+  for (; block; block = BLOCK_CHAIN (block))
     {
       /* Ignore blocks never expanded or otherwise marked as real.  */
       if (TREE_USED (block) && TREE_ASM_WRITTEN (block))
 	{
 	  int did_output;
 	  int blocknum = BLOCK_NUMBER (block);
+	  int this_parent = parent_blocknum;
 
 	  /* In dbx format, the syms of a block come before the N_LBRAC.
 	     If nothing is output, we don't need the N_LBRAC, either.  */
@@ -3705,11 +3797,13 @@ dbxout_block (tree block, int depth, tree args)
 	     the block.  Use the block's tree-walk order to generate
 	     the assembler symbols LBBn and LBEn
 	     that final will define around the code in this block.  */
-	  if (did_output)
+	  if (did_output
+	      && BLOCK_IN_COLD_SECTION_P (block) == in_cold_section_p)
 	    {
 	      char buf[20];
 	      const char *scope_start;
 
+	      ret = true;
 	      if (depth == 0)
 		/* The outermost block doesn't get LBB labels; use
 		   the LFBB local symbol emitted by dbxout_begin_prologue.  */
@@ -3718,16 +3812,21 @@ dbxout_block (tree block, int depth, tree args)
 		{
 		  ASM_GENERATE_INTERNAL_LABEL (buf, "LBB", blocknum);
 		  scope_start = buf;
+		  this_parent = blocknum;
 		}
 
 	      dbx_output_lbrac (scope_start, begin_label);
 	    }
 
 	  /* Output the subblocks.  */
-	  dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
+	  bool children
+	    = dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE,
+			    this_parent);
+	  ret |= children;
 
 	  /* Refer to the marker for the end of the block.  */
-	  if (did_output)
+	  if (did_output
+	      && BLOCK_IN_COLD_SECTION_P (block) == in_cold_section_p)
 	    {
 	      char buf[100];
 	      if (depth == 0)
@@ -3740,9 +3839,29 @@ dbxout_block (tree block, int depth, tree args)
 
 	      dbx_output_rbrac (buf, begin_label);
 	    }
+	  else if (did_output && !children)
+	    {
+	      /* If we emitted any vars and didn't output any LBRAC/RBRAC,
+		 either at this level or any lower level, we need to emit
+		 an empty LBRAC/RBRAC pair now.  */
+	      char buf[20];
+	      const char *scope_start;
+
+	      ret = true;
+	      if (parent_blocknum == -1)
+		scope_start = begin_label;
+	      else
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (buf, "LBB", parent_blocknum);
+		  scope_start = buf;
+		}
+
+	      dbx_output_lbrac (scope_start, begin_label);
+	      dbx_output_rbrac (scope_start, begin_label);
+	    }
 	}
-      block = BLOCK_CHAIN (block);
     }
+  return ret;
 }
 
 /* Output the information about a function and its arguments and result.

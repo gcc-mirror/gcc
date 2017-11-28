@@ -75,7 +75,7 @@ package body System.Tasking.Protected_Objects is
 
    begin
       if Init_Priority = Unspecified_Priority then
-         Init_Priority  := System.Priority'Last;
+         Init_Priority := System.Priority'Last;
       end if;
 
       Initialize_Lock (Init_Priority, Object.L'Access);

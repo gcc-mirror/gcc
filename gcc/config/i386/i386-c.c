@@ -184,6 +184,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__skylake_avx512");
       def_or_undef (parse_in, "__skylake_avx512__");
       break;
+    case PROCESSOR_CANNONLAKE:
+      def_or_undef (parse_in, "__cannonlake");
+      def_or_undef (parse_in, "__cannonlake__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -302,6 +306,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_SKYLAKE_AVX512:
       def_or_undef (parse_in, "__tune_skylake_avx512__");
       break;
+    case PROCESSOR_CANNONLAKE:
+      def_or_undef (parse_in, "__tune_cannonlake__");
+      break;
     case PROCESSOR_LAKEMONT:
       def_or_undef (parse_in, "__tune_lakemont__");
       break;
@@ -385,6 +392,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX512IFMA__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124VNNIW)
     def_or_undef (parse_in, "__AVX5124VNNIW__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512VBMI2)
+    def_or_undef (parse_in, "__AVX512VBMI2__");
   if (isa_flag2 & OPTION_MASK_ISA_SGX)
     def_or_undef (parse_in, "__SGX__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124FMAPS)
@@ -447,7 +456,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__XSAVEC__");
   if (isa_flag & OPTION_MASK_ISA_XSAVES)
     def_or_undef (parse_in, "__XSAVES__");
-  if (isa_flag & OPTION_MASK_ISA_MPX)
+  if (isa_flag2 & OPTION_MASK_ISA_MPX)
     def_or_undef (parse_in, "__MPX__");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
     def_or_undef (parse_in, "__CLWB__");
@@ -457,6 +466,20 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PKU__");
   if (isa_flag2 & OPTION_MASK_ISA_RDPID)
     def_or_undef (parse_in, "__RDPID__");
+  if (isa_flag & OPTION_MASK_ISA_GFNI)
+    def_or_undef (parse_in, "__GFNI__");
+  if (isa_flag2 & OPTION_MASK_ISA_IBT)
+    {
+      def_or_undef (parse_in, "__IBT__");
+      if (flag_cf_protection != CF_NONE)
+	def_or_undef (parse_in, "__CET__");
+    }
+  if (isa_flag2 & OPTION_MASK_ISA_SHSTK)
+    {
+      def_or_undef (parse_in, "__SHSTK__");
+      if (flag_cf_protection != CF_NONE)
+	def_or_undef (parse_in, "__CET__");
+    }
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

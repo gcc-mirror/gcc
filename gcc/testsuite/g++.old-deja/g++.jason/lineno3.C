@@ -7,7 +7,7 @@ template <class T> class A
 {
 public:
 # 200 "lineno3.C"
-      int foo () { undef1(); } // { dg-error "" "" { target *-*-* } 200 }
+      void foo () { undef1(); } // { dg-error "" "" { target *-*-* } 200 }
       // { dg-message "note" "note" { target *-*-* } 200 }
 };
 

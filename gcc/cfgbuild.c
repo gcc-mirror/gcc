@@ -499,7 +499,6 @@ find_bb_boundaries (basic_block bb)
 	  remove_edge (fallthru);
 	  /* BB is unreachable at this point - we need to determine its profile
 	     once edges are built.  */
-	  bb->frequency = 0;
 	  bb->count = profile_count::uninitialized ();
 	  flow_transfer_insn = NULL;
 	  debug_insn = NULL;
@@ -576,10 +575,8 @@ compute_outgoing_frequencies (basic_block b)
 	  e = BRANCH_EDGE (b);
 	  e->probability
 		 = profile_probability::from_reg_br_prob_note (probability);
-	  e->count = b->count.apply_probability (e->probability);
 	  f = FALLTHRU_EDGE (b);
 	  f->probability = e->probability.invert ();
-	  f->count = b->count - e->count;
 	  return;
 	}
       else
@@ -591,7 +588,6 @@ compute_outgoing_frequencies (basic_block b)
     {
       e = single_succ_edge (b);
       e->probability = profile_probability::always ();
-      e->count = b->count;
       return;
     }
   else
@@ -610,10 +606,6 @@ compute_outgoing_frequencies (basic_block b)
       if (complex_edge)
         guess_outgoing_edge_probabilities (b);
     }
-
-  if (b->count.initialized_p ())
-    FOR_EACH_EDGE (e, ei, b->succs)
-      e->count = b->count.apply_probability (e->probability);
 }
 
 /* Assume that some pass has inserted labels or control flow
@@ -676,18 +668,15 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	  {
 	    bool initialized_src = false, uninitialized_src = false;
 	    bb->count = profile_count::zero ();
-	    bb->frequency = 0;
 	    FOR_EACH_EDGE (e, ei, bb->preds)
 	      {
-		if (e->count.initialized_p ())
+		if (e->count ().initialized_p ())
 		  {
-		    bb->count += e->count;
+		    bb->count += e->count ();
 		    initialized_src = true;
 		  }
 		else
 		  uninitialized_src = true;
-		if (e->probability.initialized_p ())
-		  bb->frequency += EDGE_FREQUENCY (e);
 	      }
 	    /* When some edges are missing with read profile, this is
 	       most likely because RTL expansion introduced loop.
@@ -699,7 +688,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	       precisely once.  */
 	    if (!initialized_src
 		|| (uninitialized_src
-		     && profile_status_for_fn (cfun) != PROFILE_READ))
+		     && profile_status_for_fn (cfun) < PROFILE_GUESSED))
 	      bb->count = profile_count::uninitialized ();
 	  }
  	/* If nothing changed, there is no need to create new BBs.  */

@@ -447,12 +447,6 @@ typedef struct GTY (()) machine_function
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET epiphany_stack_offset
-
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
 #define STACK_POINTER_OFFSET epiphany_stack_offset

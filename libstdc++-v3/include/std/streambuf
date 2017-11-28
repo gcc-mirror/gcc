@@ -159,6 +159,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     const _CharT2&);
 
+      template<typename _CharT2, typename _Distance>
+        friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
+					       void>::__type
+        advance(istreambuf_iterator<_CharT2>&, _Distance);
+
       template<typename _CharT2, typename _Traits2>
         friend basic_istream<_CharT2, _Traits2>&
         operator>>(basic_istream<_CharT2, _Traits2>&, _CharT2*);

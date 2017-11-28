@@ -1298,23 +1298,13 @@ class Var_expression : public Expression
  public:
   Var_expression(Named_object* variable, Location location)
     : Expression(EXPRESSION_VAR_REFERENCE, location),
-      variable_(variable), in_lvalue_pos_(VE_rvalue)
+      variable_(variable)
   { }
 
   // Return the variable.
   Named_object*
   named_object() const
   { return this->variable_; }
-
-  // Does this var expression appear in an lvalue (assigned-to) context?
-  bool
-  in_lvalue_pos() const
-  { return this->in_lvalue_pos_ == VE_lvalue; }
-
-  // Mark a var_expression as appearing in an lvalue context.
-  void
-  set_in_lvalue_pos()
-  { this->in_lvalue_pos_ = VE_lvalue; }
 
  protected:
   Expression*
@@ -1346,8 +1336,6 @@ class Var_expression : public Expression
  private:
   // The variable we are referencing.
   Named_object* variable_;
-  // Set to TRUE if var expression appears in lvalue context
-  Varexpr_context in_lvalue_pos_;
 };
 
 // A reference to a variable within an enclosing function.

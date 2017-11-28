@@ -1078,6 +1078,14 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       && omp_var_to_track (stmt))
     omp_cxx_notice_variable (wtd->omp_ctx, stmt);
 
+  /* Don't dereference parms in a thunk, pass the references through. */
+  if ((TREE_CODE (stmt) == CALL_EXPR && CALL_FROM_THUNK_P (stmt))
+      || (TREE_CODE (stmt) == AGGR_INIT_EXPR && AGGR_INIT_FROM_THUNK_P (stmt)))
+    {
+      *walk_subtrees = 0;
+      return NULL;
+    }
+
   /* Dereference invisible reference parms.  */
   if (wtd->handle_invisiref_parm_p && is_invisiref_parm (stmt))
     {
@@ -1556,10 +1564,11 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
 
 /* If a function that should end with a return in non-void
    function doesn't obviously end with return, add ubsan
-   instrumentation code to verify it at runtime.  */
+   instrumentation code to verify it at runtime.  If -fsanitize=return
+   is not enabled, instrument __builtin_unreachable.  */
 
 static void
-cp_ubsan_maybe_instrument_return (tree fndecl)
+cp_maybe_instrument_return (tree fndecl)
 {
   if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
       || DECL_CONSTRUCTOR_P (fndecl)
@@ -1600,7 +1609,16 @@ cp_ubsan_maybe_instrument_return (tree fndecl)
   tree *p = &DECL_SAVED_TREE (fndecl);
   if (TREE_CODE (*p) == BIND_EXPR)
     p = &BIND_EXPR_BODY (*p);
-  t = ubsan_instrument_return (DECL_SOURCE_LOCATION (fndecl));
+
+  location_t loc = DECL_SOURCE_LOCATION (fndecl);
+  if (sanitize_flags_p (SANITIZE_RETURN, fndecl))
+    t = ubsan_instrument_return (loc);
+  else
+    {
+      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
+      t = build_call_expr_loc (BUILTINS_LOCATION, fndecl, 0);
+    }
+
   append_to_statement_list (t, p);
 }
 
@@ -1674,9 +1692,7 @@ cp_genericize (tree fndecl)
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl), true);
 
-  if (sanitize_flags_p (SANITIZE_RETURN)
-      && current_function_decl != NULL_TREE)
-    cp_ubsan_maybe_instrument_return (fndecl);
+  cp_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */
   c_genericize (fndecl);
@@ -1709,6 +1725,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
   if (arg2)
     defparm = TREE_CHAIN (defparm);
 
+  bool is_method = TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE;
   if (TREE_CODE (TREE_TYPE (arg1)) == ARRAY_TYPE)
     {
       tree inner_type = TREE_TYPE (arg1);
@@ -1757,8 +1774,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
-					   TREE_PURPOSE (parm), fn, i,
-					   tf_warning_or_error);
+					   TREE_PURPOSE (parm), fn,
+					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
       t = fold_convert (void_type_node, t);
       t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
@@ -1790,8 +1807,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
-					   TREE_PURPOSE (parm),
-					   fn, i, tf_warning_or_error);
+					   TREE_PURPOSE (parm), fn,
+					   i - is_method, tf_warning_or_error);
       t = build_call_a (fn, i, argarray);
       t = fold_convert (void_type_node, t);
       return fold_build_cleanup_point_expr (TREE_TYPE (t), t);
@@ -2039,11 +2056,9 @@ cp_fully_fold (tree x)
    C_MAYBE_CONST_EXPR.  */
 
 tree
-c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
+c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/, bool lval)
 {
-  /* c_fully_fold is only used on rvalues, and we need to fold CONST_DECL to
-     INTEGER_CST.  */
-  return cp_fold_rvalue (x);
+  return cp_fold_maybe_rvalue (x, !lval);
 }
 
 static GTY((deletable)) hash_map<tree, tree> *fold_cache;
@@ -2212,6 +2227,7 @@ cp_fold (tree x)
       /* FALLTHRU */
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
@@ -2283,13 +2299,6 @@ cp_fold (tree x)
 
     case VEC_COND_EXPR:
     case COND_EXPR:
-
-      /* Don't bother folding a void condition, since it can't produce a
-	 constant value.  Also, some statement-level uses of COND_EXPR leave
-	 one of the branches NULL, so folding would crash.  */
-      if (VOID_TYPE_P (TREE_TYPE (x)))
-	return x;
-
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
       op1 = cp_fold (TREE_OPERAND (x, 1));
@@ -2302,6 +2311,29 @@ cp_fold (tree x)
 	    op1 = cp_truthvalue_conversion (op1);
 	  if (!VOID_TYPE_P (TREE_TYPE (op2)))
 	    op2 = cp_truthvalue_conversion (op2);
+	}
+      else if (VOID_TYPE_P (TREE_TYPE (x)))
+	{
+	  if (TREE_CODE (op0) == INTEGER_CST)
+	    {
+	      /* If the condition is constant, fold can fold away
+		 the COND_EXPR.  If some statement-level uses of COND_EXPR
+		 have one of the branches NULL, avoid folding crash.  */
+	      if (!op1)
+		op1 = build_empty_stmt (loc);
+	      if (!op2)
+		op2 = build_empty_stmt (loc);
+	    }
+	  else
+	    {
+	      /* Otherwise, don't bother folding a void condition, since
+		 it can't produce a constant value.  */
+	      if (op0 != TREE_OPERAND (x, 0)
+		  || op1 != TREE_OPERAND (x, 1)
+		  || op2 != TREE_OPERAND (x, 2))
+		x = build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
+	      break;
+	    }
 	}
 
       if (op0 != TREE_OPERAND (x, 0)

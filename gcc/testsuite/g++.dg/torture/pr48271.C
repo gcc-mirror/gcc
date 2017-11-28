@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-ftree-vrp -fno-guess-branch-probability -fnon-call-exceptions" }
+// { dg-additional-options "-Wno-return-type" }
 
 void *xalloc ();
 void xfree (void *);

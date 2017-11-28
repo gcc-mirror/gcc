@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -670,14 +670,33 @@ package Lib.Writ is
    --      binder do the consistency check, but not include the unit in the
    --      partition closure (unless it is properly With'ed somewhere).
 
+   --  --------------------
+   --  -- T  Task Stacks --
+   --  --------------------
+
+   --  Following the W lines (if any, or the U line if not), is an optional
+   --  line that identifies the number of default-sized primary and secondary
+   --  stacks that the binder needs to create for the tasks declared within the
+   --  unit. For each compilation unit, a line is present in the form:
+
+   --    T primary-stack-quantity secondary-stack-quantity
+
+   --     The first parameter of T defines the number of task objects declared
+   --     in the unit that have no Storage_Size specified. The second parameter
+   --     defines the number of task objects declared in the unit that have no
+   --     Secondary_Stack_Size specified. These values are non-zero only if
+   --     the restrictions No_Implicit_Heap_Allocations or
+   --     No_Implicit_Task_Allocations are active.
+
    --  -----------------------
    --  -- L  Linker_Options --
    --  -----------------------
 
-   --  Following the W lines (if any, or the U line if not), are an optional
-   --  series of lines that indicates the usage of the pragma Linker_Options in
-   --  the associated unit. For each appearance of a pragma Linker_Options (or
-   --  Link_With) in the unit, a line is present with the form:
+   --  Following the T and W lines (if any, or the U line if not), are
+   --  an optional series of lines that indicates the usage of the pragma
+   --  Linker_Options in the associated unit. For each appearance of a pragma
+   --  Linker_Options (or Link_With) in the unit, a line is present with the
+   --  form:
 
    --    L "string"
 

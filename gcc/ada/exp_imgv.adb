@@ -436,7 +436,7 @@ package body Exp_Imgv is
       Imid      : RE_Id;
       Ptyp      : Entity_Id;
       Rtyp      : Entity_Id;
-      Tent      : Entity_Id;
+      Tent      : Entity_Id := Empty;
       Ttyp      : Entity_Id;
       Proc_Ent  : Entity_Id;
       Enum_Case : Boolean;

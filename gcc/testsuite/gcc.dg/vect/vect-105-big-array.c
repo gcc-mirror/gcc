@@ -16,8 +16,6 @@ static int a[N][N];
 static int b[N][N];
 static int c[N][N];
 
-volatile int y;
-
 __attribute__ ((noinline))
 int main1 (int x) {
   int i,j, off;
@@ -29,8 +27,7 @@ int main1 (int x) {
      {
        a[i][j] = (i*7 + j*17)%53;
        b[i][j] = (i*11+ j*13)%41;
-       if (y)
-	 abort (); /* to avoid vectorization.  */
+       asm volatile ("" ::: "memory");
      }
    }
   for (i = 0; i < N; i++)
@@ -38,8 +35,7 @@ int main1 (int x) {
     for (j = 0; j < N; j++)
      {
        c[i][j] = a[i][j];
-       if (y)
-	 abort (); /* to avoid vectorization.  */
+       asm volatile ("" ::: "memory");
      }
    }
   for (i = 1; i < N; i++)
@@ -53,8 +49,7 @@ int main1 (int x) {
 	*(&c[0][0]+x+i+j) = *(&b[0][0] + off - N*N);
       else
 	*(&c[0][0]+x+i+j) = *(&a[0][0] + off);
-       if (y)
-	 abort (); /* to avoid vectorization.  */
+      asm volatile ("" ::: "memory");
     }
   }
 
@@ -64,10 +59,7 @@ int main1 (int x) {
      {
        p->a[i][j] = a[i][j];
        p->b[i][j] = b[i][j];
-       /* Because Y is volatile, the compiler cannot move this check out
-	  of the loop.  */
-       if (y)
-	 abort (); /* to avoid vectorization.  */
+       asm volatile ("" ::: "memory");
      }
    }
 

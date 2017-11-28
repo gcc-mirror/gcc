@@ -7,7 +7,7 @@ struct Iter
   void operator++ ();
 };
 
-bool operator!= (Iter &, Iter &) { }
+bool operator!= (Iter &, Iter &) { return true; }
 
 struct Container
 {

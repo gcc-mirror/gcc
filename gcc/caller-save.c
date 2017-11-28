@@ -1034,10 +1034,7 @@ mark_referenced_regs (rtx *loc, refmarker_fn *mark, void *arg)
 	      /* If we're setting only part of a multi-word register,
 		 we shall mark it as referenced, because the words
 		 that are not being set should be restored.  */
-	      && ((GET_MODE_SIZE (GET_MODE (*loc))
-		   >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (*loc))))
-		  || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (*loc)))
-		      <= UNITS_PER_WORD))))
+	      && !read_modify_subreg_p (*loc)))
 	return;
     }
   if (code == MEM || code == SUBREG)
@@ -1132,17 +1129,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	{
 	  /* This is gen_lowpart_if_possible(), but without validating
 	     the newly-formed address.  */
-	  int offset = 0;
-
-	  if (WORDS_BIG_ENDIAN)
-	    offset = (MAX (GET_MODE_SIZE (GET_MODE (mem)), UNITS_PER_WORD)
-		      - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
-	  if (BYTES_BIG_ENDIAN)
-	    /* Adjust the address so that the address-after-the-data is
-	       unchanged.  */
-	    offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (mem))));
-
+	  HOST_WIDE_INT offset = byte_lowpart_offset (mode, GET_MODE (mem));
 	  mem = adjust_address_nv (mem, mode, offset);
 	}
     }

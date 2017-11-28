@@ -1,6 +1,14 @@
 /* { dg-do compile } */
 
-struct __attribute__((aligned (32)))
+#include "tree-vect.h"
+
+#if VECTOR_BITS > 256
+#define ALIGNMENT (VECTOR_BITS / 8)
+#else
+#define ALIGNMENT 32
+#endif
+
+struct __attribute__((aligned (ALIGNMENT)))
 {
   char misaligner;
   int foo[100];

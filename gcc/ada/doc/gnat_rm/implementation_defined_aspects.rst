@@ -302,11 +302,15 @@ Aspect Iterable
 This aspect provides a light-weight mechanism for loops and quantified
 expressions over container types, without the overhead imposed by the tampering
 checks of standard Ada 2012 iterators. The value of the aspect is an aggregate
-with four named components: ``First``, ``Next``, ``Has_Element``, and ``Element`` (the
-last one being optional). When only 3 components are specified, only the
-``for .. in`` form of iteration over cursors is available. When all 4 components
-are specified, both this form and the ``for .. of`` form of iteration over
-elements are available. The following is a typical example of use:
+with six named components, or which the last three are optional: ``First``,
+ ``Next``, ``Has_Element``,``Element``, ``Last``, and ``Previous``.
+When only the first three components are specified, only the
+``for .. in`` form of iteration over cursors is available. When ``Element``
+is specified, both this form and the ``for .. of`` form of iteration over
+elements are available. If the last two components are specified, reverse
+iterations over the container can be specified (analogous to what can be done
+over predefined containers that support the Reverse_Iterator interface).
+The following is a typical example of use:
 
 .. code-block:: ada
 

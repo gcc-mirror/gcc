@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    location rather than implicitly using input_location.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -65,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-rtl-function.h"
 #include "run-rtl-passes.h"
 #include "intl.h"
+#include "c-family/name-hint.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1041,13 +1043,21 @@ get_matching_symbol (enum cpp_ttype type)
    If MATCHING_LOCATION is not UNKNOWN_LOCATION, then highlight it
    within any error as the location of an "opening" token matching
    the close token TYPE (e.g. the location of the '(' when TYPE is
-   CPP_CLOSE_PAREN).  */
+   CPP_CLOSE_PAREN).
+
+   If TYPE_IS_UNIQUE is true (the default) then msgid describes exactly
+   one type (e.g. "expected %<)%>") and thus it may be reasonable to
+   attempt to generate a fix-it hint for the problem.
+   Otherwise msgid describes multiple token types (e.g.
+   "expected %<;%>, %<,%> or %<)%>"), and thus we shouldn't attempt to
+   generate a fix-it hint.  */
 
 bool
 c_parser_require (c_parser *parser,
 		  enum cpp_ttype type,
 		  const char *msgid,
-		  location_t matching_location)
+		  location_t matching_location,
+		  bool type_is_unique)
 {
   if (c_parser_next_token_is (parser, type))
     {
@@ -1058,6 +1068,13 @@ c_parser_require (c_parser *parser,
     {
       location_t next_token_loc = c_parser_peek_token (parser)->location;
       gcc_rich_location richloc (next_token_loc);
+
+      /* Potentially supply a fix-it hint, suggesting to add the
+	 missing token immediately after the *previous* token.
+	 This may move the primary location within richloc.  */
+      if (!parser->error && type_is_unique)
+	maybe_suggest_missing_token_insertion (&richloc, type,
+					       parser->last_token_location);
 
       /* If matching_location != UNKNOWN_LOCATION, highlight it.
 	 Attempt to consolidate diagnostics by printing it as a
@@ -1770,36 +1787,37 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	{
 	  /* This is not C++ with its implicit typedef.  */
 	  richloc.add_fixit_insert_before ("struct ");
-	  error_at_rich_loc (&richloc,
-			     "unknown type name %qE;"
-			     " use %<struct%> keyword to refer to the type",
-			     name);
+	  error_at (&richloc,
+		    "unknown type name %qE;"
+		    " use %<struct%> keyword to refer to the type",
+		    name);
 	}
       else if (tag_exists_p (UNION_TYPE, name))
 	{
 	  richloc.add_fixit_insert_before ("union ");
-	  error_at_rich_loc (&richloc,
-			     "unknown type name %qE;"
-			     " use %<union%> keyword to refer to the type",
-			     name);
+	  error_at (&richloc,
+		    "unknown type name %qE;"
+		    " use %<union%> keyword to refer to the type",
+		    name);
 	}
       else if (tag_exists_p (ENUMERAL_TYPE, name))
 	{
 	  richloc.add_fixit_insert_before ("enum ");
-	  error_at_rich_loc (&richloc,
-			     "unknown type name %qE;"
-			     " use %<enum%> keyword to refer to the type",
-			     name);
+	  error_at (&richloc,
+		    "unknown type name %qE;"
+		    " use %<enum%> keyword to refer to the type",
+		    name);
 	}
       else
 	{
-	  const char *hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME);
+	  name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME,
+					      here);
 	  if (hint)
 	    {
-	      richloc.add_fixit_replace (hint);
-	      error_at_rich_loc (&richloc,
-				 "unknown type name %qE; did you mean %qs?",
-				 name, hint);
+	      richloc.add_fixit_replace (hint.suggestion ());
+	      error_at (&richloc,
+			"unknown type name %qE; did you mean %qs?",
+			name, hint.suggestion ());
 	    }
 	  else
 	    error_at (here, "unknown type name %qE", name);
@@ -2226,11 +2244,37 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       if (!start_function (specs, declarator, all_prefix_attrs))
 	{
-	  /* This can appear in many cases looking nothing like a
-	     function definition, so we don't give a more specific
-	     error suggesting there was one.  */
-	  c_parser_error (parser, "expected %<=%>, %<,%>, %<;%>, %<asm%> "
-			  "or %<__attribute__%>");
+	  /* At this point we've consumed:
+	       declaration-specifiers declarator
+	     and the next token isn't CPP_EQ, CPP_COMMA, CPP_SEMICOLON,
+	     RID_ASM, RID_ATTRIBUTE, or RID_IN,
+	     but the
+	       declaration-specifiers declarator
+	     aren't grokkable as a function definition, so we have
+	     an error.  */
+	  gcc_assert (!c_parser_next_token_is (parser, CPP_SEMICOLON));
+	  if (c_parser_next_token_starts_declspecs (parser))
+	    {
+	      /* If we have
+		   declaration-specifiers declarator decl-specs
+		 then assume we have a missing semicolon, which would
+		 give us:
+		   declaration-specifiers declarator  decl-specs
+						    ^
+						    ;
+		   <~~~~~~~~~ declaration ~~~~~~~~~~>
+		 Use c_parser_require to get an error with a fix-it hint.  */
+	      c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>");
+	      parser->error = false;
+	    }
+	  else
+	    {
+	      /* This can appear in many cases looking nothing like a
+		 function definition, so we don't give a more specific
+		 error suggesting there was one.  */
+	      c_parser_error (parser, "expected %<=%>, %<,%>, %<;%>, %<asm%> "
+			      "or %<__attribute__%>");
+	    }
 	  if (nested)
 	    c_pop_function_context ();
 	  break;
@@ -3127,9 +3171,8 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 		= c_parser_peek_token (parser)->location;
 	      gcc_rich_location richloc (semicolon_loc);
 	      richloc.add_fixit_remove ();
-	      pedwarn_at_rich_loc
-		(&richloc, OPT_Wpedantic,
-		 "extra semicolon in struct or union specified");
+	      pedwarn (&richloc, OPT_Wpedantic,
+		       "extra semicolon in struct or union specified");
 	      c_parser_consume_token (parser);
 	      continue;
 	    }
@@ -3975,7 +4018,8 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr)
 	    return get_parm_info (false, expr);
 	}
       if (!c_parser_require (parser, CPP_COMMA,
-			     "expected %<;%>, %<,%> or %<)%>"))
+			     "expected %<;%>, %<,%> or %<)%>",
+			     UNKNOWN_LOCATION, false))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	  return NULL;
@@ -4025,15 +4069,16 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
-	  const char *hint = lookup_name_fuzzy (token->value,
-						FUZZY_LOOKUP_TYPENAME);
+	  name_hint hint = lookup_name_fuzzy (token->value,
+					      FUZZY_LOOKUP_TYPENAME,
+					      token->location);
 	  if (hint)
 	    {
 	      gcc_rich_location richloc (token->location);
-	      richloc.add_fixit_replace (hint);
-	      error_at_rich_loc (&richloc,
-				 "unknown type name %qE; did you mean %qs?",
-				 token->value, hint);
+	      richloc.add_fixit_replace (hint.suggestion ());
+	      error_at (&richloc,
+			"unknown type name %qE; did you mean %qs?",
+			token->value, hint.suggestion ());
 	    }
 	  else
 	    error_at (token->location, "unknown type name %qE", token->value);
@@ -6010,9 +6055,10 @@ c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
 	 "%<_Cilk_spawn%> statement cannot be used as a condition for while statement"))
     cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
-		   annot_expr_ivdep_kind));
+				  annot_expr_ivdep_kind),
+		   integer_zero_node);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
@@ -6075,9 +6121,10 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
 	 "%<_Cilk_spawn%> statement cannot be used as a condition for a do-while statement"))
     cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node,
-		   annot_expr_ivdep_kind));
+				  annot_expr_ivdep_kind),
+		   integer_zero_node);
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
   c_finish_loop (loc, cond, NULL, body, new_break, new_cont, false);
@@ -6282,9 +6329,10 @@ c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
 					 "expected %<;%>");
 	    }
 	  if (ivdep && cond != error_mark_node)
-	    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+	    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 			   build_int_cst (integer_type_node,
-			   annot_expr_ivdep_kind));
+					  annot_expr_ivdep_kind),
+			   integer_zero_node);
 	}
       /* Parse the increment expression (the third expression in a
 	 for-statement).  In the case of a foreach-statement, this is
@@ -6429,7 +6477,8 @@ c_parser_asm_statement (c_parser *parser)
       if (!c_parser_require (parser, CPP_COLON,
 			     is_goto
 			     ? G_("expected %<:%>")
-			     : G_("expected %<:%> or %<)%>")))
+			     : G_("expected %<:%> or %<)%>"),
+			     UNKNOWN_LOCATION, is_goto))
 	goto error_close_paren;
 
       /* Once past any colon, we're no longer a simple asm.  */
@@ -7787,6 +7836,61 @@ c_parser_generic_selection (c_parser *parser)
   return matched_assoc.expression;
 }
 
+/* Check the validity of a function pointer argument *EXPR (argument
+   position POS) to __builtin_tgmath.  Return the number of function
+   arguments if possibly valid; return 0 having reported an error if
+   not valid.  */
+
+static unsigned int
+check_tgmath_function (c_expr *expr, unsigned int pos)
+{
+  tree type = TREE_TYPE (expr->value);
+  if (!FUNCTION_POINTER_TYPE_P (type))
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> is not a function pointer",
+		pos);
+      return 0;
+    }
+  type = TREE_TYPE (type);
+  if (!prototype_p (type))
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> is unprototyped", pos);
+      return 0;
+    }
+  if (stdarg_p (type))
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> has variable arguments",
+		pos);
+      return 0;
+    }
+  unsigned int nargs = 0;
+  function_args_iterator iter;
+  tree t;
+  FOREACH_FUNCTION_ARGS (type, t, iter)
+    {
+      if (t == void_type_node)
+	break;
+      nargs++;
+    }
+  if (nargs == 0)
+    {
+      error_at (expr->get_location (),
+		"argument %u of %<__builtin_tgmath%> has no arguments", pos);
+      return 0;
+    }
+  return nargs;
+}
+
+/* Ways in which a parameter or return value of a type-generic macro
+   may vary between the different functions the macro may call.  */
+enum tgmath_parm_kind
+  {
+    tgmath_fixed, tgmath_real, tgmath_complex
+  };
+
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2,
    C11 6.5.1-6.5.2).  Compound literals aren't handled here; callers have to
    call c_parser_postfix_expression_after_paren_type on encountering them.
@@ -7827,6 +7931,7 @@ c_parser_generic_selection (c_parser *parser)
 			     assignment-expression ,
 			     assignment-expression )
      __builtin_types_compatible_p ( type-name , type-name )
+     __builtin_tgmath ( expr-list )
      __builtin_complex ( assignment-expression , assignment-expression )
      __builtin_shuffle ( assignment-expression , assignment-expression )
      __builtin_shuffle ( assignment-expression ,
@@ -8253,6 +8358,513 @@ c_parser_postfix_expression (c_parser *parser)
 	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	  }
 	  break;
+	case RID_BUILTIN_TGMATH:
+	  {
+	    vec<c_expr_t, va_gc> *cexpr_list;
+	    location_t close_paren_loc;
+
+	    c_parser_consume_token (parser);
+	    if (!c_parser_get_builtin_args (parser,
+					    "__builtin_tgmath",
+					    &cexpr_list, false,
+					    &close_paren_loc))
+	      {
+		expr.set_error ();
+		break;
+	      }
+
+	    if (vec_safe_length (cexpr_list) < 3)
+	      {
+		error_at (loc, "too few arguments to %<__builtin_tgmath%>");
+		expr.set_error ();
+		break;
+	      }
+
+	    unsigned int i;
+	    c_expr_t *p;
+	    FOR_EACH_VEC_ELT (*cexpr_list, i, p)
+	      *p = convert_lvalue_to_rvalue (loc, *p, true, true);
+	    unsigned int nargs = check_tgmath_function (&(*cexpr_list)[0], 1);
+	    if (nargs == 0)
+	      {
+		expr.set_error ();
+		break;
+	      }
+	    if (vec_safe_length (cexpr_list) < nargs)
+	      {
+		error_at (loc, "too few arguments to %<__builtin_tgmath%>");
+		expr.set_error ();
+		break;
+	      }
+	    unsigned int num_functions = vec_safe_length (cexpr_list) - nargs;
+	    if (num_functions < 2)
+	      {
+		error_at (loc, "too few arguments to %<__builtin_tgmath%>");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* The first NUM_FUNCTIONS expressions are the function
+	       pointers.  The remaining NARGS expressions are the
+	       arguments that are to be passed to one of those
+	       functions, chosen following <tgmath.h> rules.  */
+	    for (unsigned int j = 1; j < num_functions; j++)
+	      {
+		unsigned int this_nargs
+		  = check_tgmath_function (&(*cexpr_list)[j], j + 1);
+		if (this_nargs == 0)
+		  {
+		    expr.set_error ();
+		    goto out;
+		  }
+		if (this_nargs != nargs)
+		  {
+		    error_at ((*cexpr_list)[j].get_location (),
+			      "argument %u of %<__builtin_tgmath%> has "
+			      "wrong number of arguments", j + 1);
+		    expr.set_error ();
+		    goto out;
+		  }
+	      }
+
+	    /* The functions all have the same number of arguments.
+	       Determine whether arguments and return types vary in
+	       ways permitted for <tgmath.h> functions.  */
+	    /* The first entry in each of these vectors is for the
+	       return type, subsequent entries for parameter
+	       types.  */
+	    auto_vec<enum tgmath_parm_kind> parm_kind (nargs + 1);
+	    auto_vec<tree> parm_first (nargs + 1);
+	    auto_vec<bool> parm_complex (nargs + 1);
+	    auto_vec<bool> parm_varies (nargs + 1);
+	    tree first_type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[0].value));
+	    tree first_ret = TYPE_MAIN_VARIANT (TREE_TYPE (first_type));
+	    parm_first.quick_push (first_ret);
+	    parm_complex.quick_push (TREE_CODE (first_ret) == COMPLEX_TYPE);
+	    parm_varies.quick_push (false);
+	    function_args_iterator iter;
+	    tree t;
+	    unsigned int argpos;
+	    FOREACH_FUNCTION_ARGS (first_type, t, iter)
+	      {
+		if (t == void_type_node)
+		  break;
+		parm_first.quick_push (TYPE_MAIN_VARIANT (t));
+		parm_complex.quick_push (TREE_CODE (t) == COMPLEX_TYPE);
+		parm_varies.quick_push (false);
+	      }
+	    for (unsigned int j = 1; j < num_functions; j++)
+	      {
+		tree type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[j].value));
+		tree ret = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+		if (ret != parm_first[0])
+		  {
+		    parm_varies[0] = true;
+		    if (!SCALAR_FLOAT_TYPE_P (parm_first[0])
+			&& !COMPLEX_FLOAT_TYPE_P (parm_first[0]))
+		      {
+			error_at ((*cexpr_list)[0].get_location (),
+				  "invalid type-generic return type for "
+				  "argument %u of %<__builtin_tgmath%>",
+				  1);
+			expr.set_error ();
+			goto out;
+		      }
+		    if (!SCALAR_FLOAT_TYPE_P (ret)
+			&& !COMPLEX_FLOAT_TYPE_P (ret))
+		      {
+			error_at ((*cexpr_list)[j].get_location (),
+				  "invalid type-generic return type for "
+				  "argument %u of %<__builtin_tgmath%>",
+				  j + 1);
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+		if (TREE_CODE (ret) == COMPLEX_TYPE)
+		  parm_complex[0] = true;
+		argpos = 1;
+		FOREACH_FUNCTION_ARGS (type, t, iter)
+		  {
+		    if (t == void_type_node)
+		      break;
+		    t = TYPE_MAIN_VARIANT (t);
+		    if (t != parm_first[argpos])
+		      {
+			parm_varies[argpos] = true;
+			if (!SCALAR_FLOAT_TYPE_P (parm_first[argpos])
+			    && !COMPLEX_FLOAT_TYPE_P (parm_first[argpos]))
+			  {
+			    error_at ((*cexpr_list)[0].get_location (),
+				      "invalid type-generic type for "
+				      "argument %u of argument %u of "
+				      "%<__builtin_tgmath%>", argpos, 1);
+			    expr.set_error ();
+			    goto out;
+			  }
+			if (!SCALAR_FLOAT_TYPE_P (t)
+			    && !COMPLEX_FLOAT_TYPE_P (t))
+			  {
+			    error_at ((*cexpr_list)[j].get_location (),
+				      "invalid type-generic type for "
+				      "argument %u of argument %u of "
+				      "%<__builtin_tgmath%>", argpos, j + 1);
+			    expr.set_error ();
+			    goto out;
+			  }
+		      }
+		    if (TREE_CODE (t) == COMPLEX_TYPE)
+		      parm_complex[argpos] = true;
+		    argpos++;
+		  }
+	      }
+	    enum tgmath_parm_kind max_variation = tgmath_fixed;
+	    for (unsigned int j = 0; j <= nargs; j++)
+	      {
+		enum tgmath_parm_kind this_kind;
+		if (parm_varies[j])
+		  {
+		    if (parm_complex[j])
+		      max_variation = this_kind = tgmath_complex;
+		    else
+		      {
+			this_kind = tgmath_real;
+			if (max_variation != tgmath_complex)
+			  max_variation = tgmath_real;
+		      }
+		  }
+		else
+		  this_kind = tgmath_fixed;
+		parm_kind.quick_push (this_kind);
+	      }
+	    if (max_variation == tgmath_fixed)
+	      {
+		error_at (loc, "function arguments of %<__builtin_tgmath%> "
+			  "all have the same type");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* Identify a parameter (not the return type) that varies,
+	       including with complex types if any variation includes
+	       complex types; there must be at least one such
+	       parameter.  */
+	    unsigned int tgarg = 0;
+	    for (unsigned int j = 1; j <= nargs; j++)
+	      if (parm_kind[j] == max_variation)
+		{
+		  tgarg = j;
+		  break;
+		}
+	    if (tgarg == 0)
+	      {
+		error_at (loc, "function arguments of %<__builtin_tgmath%> "
+			  "lack type-generic parameter");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* Determine the type of the relevant parameter for each
+	       function.  */
+	    auto_vec<tree> tg_type (num_functions);
+	    for (unsigned int j = 0; j < num_functions; j++)
+	      {
+		tree type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[j].value));
+		argpos = 1;
+		FOREACH_FUNCTION_ARGS (type, t, iter)
+		  {
+		    if (argpos == tgarg)
+		      {
+			tg_type.quick_push (TYPE_MAIN_VARIANT (t));
+			break;
+		      }
+		    argpos++;
+		  }
+	      }
+
+	    /* Verify that the corresponding types are different for
+	       all the listed functions.  Also determine whether all
+	       the types are complex, whether all the types are
+	       standard or binary, and whether all the types are
+	       decimal.  */
+	    bool all_complex = true;
+	    bool all_binary = true;
+	    bool all_decimal = true;
+	    hash_set<tree> tg_types;
+	    FOR_EACH_VEC_ELT (tg_type, i, t)
+	      {
+		if (TREE_CODE (t) == COMPLEX_TYPE)
+		  all_decimal = false;
+		else
+		  {
+		    all_complex = false;
+		    if (DECIMAL_FLOAT_TYPE_P (t))
+		      all_binary = false;
+		    else
+		      all_decimal = false;
+		  }
+		if (tg_types.add (t))
+		  {
+		    error_at ((*cexpr_list)[i].get_location (),
+			      "duplicate type-generic parameter type for "
+			      "function argument %u of %<__builtin_tgmath%>",
+			      i + 1);
+		    expr.set_error ();
+		    goto out;
+		  }
+	      }
+
+	    /* Verify that other parameters and the return type whose
+	       types vary have their types varying in the correct
+	       way.  */
+	    for (unsigned int j = 0; j < num_functions; j++)
+	      {
+		tree exp_type = tg_type[j];
+		tree exp_real_type = exp_type;
+		if (TREE_CODE (exp_type) == COMPLEX_TYPE)
+		  exp_real_type = TREE_TYPE (exp_type);
+		tree type = TREE_TYPE (TREE_TYPE ((*cexpr_list)[j].value));
+		tree ret = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+		if ((parm_kind[0] == tgmath_complex && ret != exp_type)
+		    || (parm_kind[0] == tgmath_real && ret != exp_real_type))
+		  {
+		    error_at ((*cexpr_list)[j].get_location (),
+			      "bad return type for function argument %u "
+			      "of %<__builtin_tgmath%>", j + 1);
+		    expr.set_error ();
+		    goto out;
+		  }
+		argpos = 1;
+		FOREACH_FUNCTION_ARGS (type, t, iter)
+		  {
+		    if (t == void_type_node)
+		      break;
+		    t = TYPE_MAIN_VARIANT (t);
+		    if ((parm_kind[argpos] == tgmath_complex
+			 && t != exp_type)
+			|| (parm_kind[argpos] == tgmath_real
+			    && t != exp_real_type))
+		      {
+			error_at ((*cexpr_list)[j].get_location (),
+				  "bad type for argument %u of "
+				  "function argument %u of "
+				  "%<__builtin_tgmath%>", argpos, j + 1);
+			expr.set_error ();
+			goto out;
+		      }
+		    argpos++;
+		  }
+	      }
+
+	    /* The functions listed are a valid set of functions for a
+	       <tgmath.h> macro to select between.  Identify the
+	       matching function, if any.  First, the argument types
+	       must be combined following <tgmath.h> rules.  Integer
+	       types are treated as _Decimal64 if any type-generic
+	       argument is decimal, or if the only alternatives for
+	       type-generic arguments are of decimal types, and are
+	       otherwise treated as double (or _Complex double for
+	       complex integer types).  After that adjustment, types
+	       are combined following the usual arithmetic
+	       conversions.  If the function only accepts complex
+	       arguments, a complex type is produced.  */
+	    bool arg_complex = all_complex;
+	    bool arg_binary = all_binary;
+	    bool arg_int_decimal = all_decimal;
+	    for (unsigned int j = 1; j <= nargs; j++)
+	      {
+		if (parm_kind[j] == tgmath_fixed)
+		  continue;
+		c_expr_t *ce = &(*cexpr_list)[num_functions + j - 1];
+		tree type = TREE_TYPE (ce->value);
+		if (!INTEGRAL_TYPE_P (type)
+		    && !SCALAR_FLOAT_TYPE_P (type)
+		    && TREE_CODE (type) != COMPLEX_TYPE)
+		  {
+		    error_at (ce->get_location (),
+			      "invalid type of argument %u of type-generic "
+			      "function", j);
+		    expr.set_error ();
+		    goto out;
+		  }
+		if (DECIMAL_FLOAT_TYPE_P (type))
+		  {
+		    arg_int_decimal = true;
+		    if (all_complex)
+		      {
+			error_at (ce->get_location (),
+				  "decimal floating-point argument %u to "
+				  "complex-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (all_binary)
+		      {
+			error_at (ce->get_location (),
+				  "decimal floating-point argument %u to "
+				  "binary-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_complex)
+		      {
+			error_at (ce->get_location (),
+				  "both complex and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_binary)
+		      {
+			error_at (ce->get_location (),
+				  "both binary and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+		else if (TREE_CODE (type) == COMPLEX_TYPE)
+		  {
+		    arg_complex = true;
+		    if (COMPLEX_FLOAT_TYPE_P (type))
+		      arg_binary = true;
+		    if (all_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "complex argument %u to "
+				  "decimal-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_int_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "both complex and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+		else if (SCALAR_FLOAT_TYPE_P (type))
+		  {
+		    arg_binary = true;
+		    if (all_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "binary argument %u to "
+				  "decimal-only type-generic function", j);
+			expr.set_error ();
+			goto out;
+		      }
+		    else if (arg_int_decimal)
+		      {
+			error_at (ce->get_location (),
+				  "both binary and decimal floating-point "
+				  "arguments to type-generic function");
+			expr.set_error ();
+			goto out;
+		      }
+		  }
+	      }
+	    tree arg_real = NULL_TREE;
+	    for (unsigned int j = 1; j <= nargs; j++)
+	      {
+		if (parm_kind[j] == tgmath_fixed)
+		  continue;
+		c_expr_t *ce = &(*cexpr_list)[num_functions + j - 1];
+		tree type = TYPE_MAIN_VARIANT (TREE_TYPE (ce->value));
+		if (TREE_CODE (type) == COMPLEX_TYPE)
+		  type = TREE_TYPE (type);
+		if (INTEGRAL_TYPE_P (type))
+		  type = (arg_int_decimal
+			  ? dfloat64_type_node
+			  : double_type_node);
+		if (arg_real == NULL_TREE)
+		  arg_real = type;
+		else
+		  arg_real = common_type (arg_real, type);
+		if (arg_real == error_mark_node)
+		  {
+		    expr.set_error ();
+		    goto out;
+		  }
+	      }
+	    tree arg_type = (arg_complex
+			     ? build_complex_type (arg_real)
+			     : arg_real);
+
+	    /* Look for a function to call with type-generic parameter
+	       type ARG_TYPE.  */
+	    c_expr_t *fn = NULL;
+	    for (unsigned int j = 0; j < num_functions; j++)
+	      {
+		if (tg_type[j] == arg_type)
+		  {
+		    fn = &(*cexpr_list)[j];
+		    break;
+		  }
+	      }
+	    if (fn == NULL
+		&& parm_kind[0] == tgmath_fixed
+		&& SCALAR_FLOAT_TYPE_P (parm_first[0]))
+	      {
+		/* Presume this is a macro that rounds its result to a
+		   narrower type, and look for the first function with
+		   at least the range and precision of the argument
+		   type.  */
+		for (unsigned int j = 0; j < num_functions; j++)
+		  {
+		    if (arg_complex
+			!= (TREE_CODE (tg_type[j]) == COMPLEX_TYPE))
+		      continue;
+		    tree real_tg_type = (arg_complex
+					 ? TREE_TYPE (tg_type[j])
+					 : tg_type[j]);
+		    if (DECIMAL_FLOAT_TYPE_P (arg_real)
+			!= DECIMAL_FLOAT_TYPE_P (real_tg_type))
+		      continue;
+		    scalar_float_mode arg_mode
+		      = SCALAR_FLOAT_TYPE_MODE (arg_real);
+		    scalar_float_mode tg_mode
+		      = SCALAR_FLOAT_TYPE_MODE (real_tg_type);
+		    const real_format *arg_fmt = REAL_MODE_FORMAT (arg_mode);
+		    const real_format *tg_fmt = REAL_MODE_FORMAT (tg_mode);
+		    if (arg_fmt->b == tg_fmt->b
+			&& arg_fmt->p <= tg_fmt->p
+			&& arg_fmt->emax <= tg_fmt->emax
+			&& (arg_fmt->emin - arg_fmt->p
+			    >= tg_fmt->emin - tg_fmt->p))
+		      {
+			fn = &(*cexpr_list)[j];
+			break;
+		      }
+		  }
+	      }
+	    if (fn == NULL)
+	      {
+		error_at (loc, "no matching function for type-generic call");
+		expr.set_error ();
+		break;
+	      }
+
+	    /* Construct a call to FN.  */
+	    vec<tree, va_gc> *args;
+	    vec_alloc (args, nargs);
+	    vec<tree, va_gc> *origtypes;
+	    vec_alloc (origtypes, nargs);
+	    auto_vec<location_t> arg_loc (nargs);
+	    for (unsigned int j = 0; j < nargs; j++)
+	      {
+		c_expr_t *ce = &(*cexpr_list)[num_functions + j];
+		args->quick_push (ce->value);
+		arg_loc.quick_push (ce->get_location ());
+		origtypes->quick_push (ce->original_type);
+	      }
+	    expr.value = c_build_function_call_vec (loc, arg_loc, fn->value,
+						    args, origtypes);
+	    set_c_expr_source_range (&expr, loc, close_paren_loc);
+	    break;
+	  }
 	case RID_BUILTIN_CALL_WITH_STATIC_CHAIN:
 	  {
 	    vec<c_expr_t, va_gc> *cexpr_list;
@@ -8521,6 +9133,7 @@ c_parser_postfix_expression (c_parser *parser)
       expr.set_error ();
       break;
     }
+ out:
   return c_parser_postfix_expression_after_primary
     (parser, EXPR_LOC_OR_LOC (expr.value, loc), expr);
 }
@@ -14706,7 +15319,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
     case NOP_EXPR: /* atomic write */
       v = c_parser_cast_expression (parser, NULL).value;
       non_lvalue_p = !lvalue_p (v);
-      v = c_fully_fold (v, false, NULL);
+      v = c_fully_fold (v, false, NULL, true);
       if (v == error_mark_node)
 	goto saw_error;
       if (non_lvalue_p)
@@ -14725,7 +15338,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	{
 	  lhs = c_parser_cast_expression (parser, NULL).value;
 	  non_lvalue_p = !lvalue_p (lhs);
-	  lhs = c_fully_fold (lhs, false, NULL);
+	  lhs = c_fully_fold (lhs, false, NULL, true);
 	  if (lhs == error_mark_node)
 	    goto saw_error;
 	  if (non_lvalue_p)
@@ -14751,7 +15364,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	{
 	  v = c_parser_cast_expression (parser, NULL).value;
 	  non_lvalue_p = !lvalue_p (v);
-	  v = c_fully_fold (v, false, NULL);
+	  v = c_fully_fold (v, false, NULL, true);
 	  if (v == error_mark_node)
 	    goto saw_error;
 	  if (non_lvalue_p)
@@ -14772,7 +15385,7 @@ restart:
   lhs = expr.value;
   expr = default_function_array_conversion (eloc, expr);
   unfolded_lhs = expr.value;
-  lhs = c_fully_fold (lhs, false, NULL);
+  lhs = c_fully_fold (lhs, false, NULL, true);
   orig_lhs = lhs;
   switch (TREE_CODE (lhs))
     {
@@ -14912,15 +15525,19 @@ restart:
 	      if (c_tree_equal (TREE_OPERAND (rhs1, 0), unfolded_lhs))
 		{
 		  opcode = TREE_CODE (rhs1);
-		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL);
-		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL);
+		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL,
+				      true);
+		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL,
+				       true);
 		  goto stmt_done;
 		}
 	      if (c_tree_equal (TREE_OPERAND (rhs1, 1), unfolded_lhs))
 		{
 		  opcode = TREE_CODE (rhs1);
-		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL);
-		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL);
+		  rhs = c_fully_fold (TREE_OPERAND (rhs1, 0), false, NULL,
+				      true);
+		  rhs1 = c_fully_fold (TREE_OPERAND (rhs1, 1), false, NULL,
+				       true);
 		  swapped = !commutative_tree_code (opcode);
 		  goto stmt_done;
 		}
@@ -14939,7 +15556,7 @@ restart:
 		  lhs = NULL_TREE;
 		  expr = default_function_array_read_conversion (eloc, expr);
 		  unfolded_lhs1 = expr.value;
-		  lhs1 = c_fully_fold (unfolded_lhs1, false, NULL);
+		  lhs1 = c_fully_fold (unfolded_lhs1, false, NULL, true);
 		  rhs1 = NULL_TREE;
 		  c_parser_consume_token (parser);
 		  goto restart;
@@ -14948,7 +15565,7 @@ restart:
 		{
 		  opcode = NOP_EXPR;
 		  expr = default_function_array_read_conversion (eloc, expr);
-		  rhs = c_fully_fold (expr.value, false, NULL);
+		  rhs = c_fully_fold (expr.value, false, NULL, true);
 		  rhs1 = NULL_TREE;
 		  goto stmt_done;
 		}
@@ -14969,7 +15586,7 @@ restart:
       expr = c_parser_expression (parser);
       expr = default_function_array_read_conversion (eloc, expr);
       rhs = expr.value;
-      rhs = c_fully_fold (rhs, false, NULL);
+      rhs = c_fully_fold (rhs, false, NULL, true);
       break;
     }
 stmt_done:
@@ -14979,7 +15596,7 @@ stmt_done:
 	goto saw_error;
       v = c_parser_cast_expression (parser, NULL).value;
       non_lvalue_p = !lvalue_p (v);
-      v = c_fully_fold (v, false, NULL);
+      v = c_fully_fold (v, false, NULL, true);
       if (v == error_mark_node)
 	goto saw_error;
       if (non_lvalue_p)
@@ -14991,7 +15608,7 @@ stmt_done:
       lhs1 = expr.value;
       expr = default_function_array_read_conversion (eloc, expr);
       unfolded_lhs1 = expr.value;
-      lhs1 = c_fully_fold (lhs1, false, NULL);
+      lhs1 = c_fully_fold (lhs1, false, NULL, true);
       if (lhs1 == error_mark_node)
 	goto saw_error;
       if (!lvalue_p (unfolded_lhs1))
@@ -16869,11 +17486,11 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
       break;
     case pragma_struct:
     case pragma_param:
+    case pragma_stmt:
       c_parser_error (parser, "%<#pragma omp declare simd%> must be followed by "
 			      "function declaration or definition");
       break;
     case pragma_compound:
-    case pragma_stmt:
       if (c_parser_next_token_is (parser, CPP_KEYWORD)
 	  && c_parser_peek_token (parser)->keyword == RID_EXTENSION)
 	{
@@ -17832,7 +18449,7 @@ c_parser_cilk_clause_vectorlength (c_parser *parser, tree clauses,
 	   || !INTEGRAL_TYPE_P (TREE_TYPE (expr)))
   
     error_at (loc, "vectorlength must be an integer constant");  
-  else if (wi::exact_log2 (expr) == -1)
+  else if (wi::exact_log2 (wi::to_wide (expr)) == -1)
     error_at (loc, "vectorlength must be a power of 2");
   else
     {

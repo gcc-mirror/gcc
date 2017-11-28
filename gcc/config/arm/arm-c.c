@@ -72,11 +72,11 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_QRDMX", TARGET_NEON_RDMA);
 
-  if (TARGET_CRC32)
-    builtin_define ("__ARM_FEATURE_CRC32");
-
+  def_or_undef_macro (pfile, "__ARM_FEATURE_CRC32", TARGET_CRC32);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_DOTPROD", TARGET_DOTPROD);
   def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT);
 
+  cpp_undef (pfile, "__ARM_FEATURE_CMSE");
   if (arm_arch8 && !arm_arch_notm)
     {
       if (arm_arch_cmse && use_cmse)

@@ -117,6 +117,37 @@ int_or_real_check (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is integer or real; allow character for
+   F2003 or later.  */
+
+static bool
+int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL)
+    {
+      if (e->ts.type == BT_CHARACTER)
+	return gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Character for "
+			       "%qs argument of %qs intrinsic at %L",
+			       gfc_current_intrinsic_arg[n]->name,
+			       gfc_current_intrinsic, &e->where);
+      else
+	{
+	  if (gfc_option.allow_std & GFC_STD_F2003)
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or CHARACTER",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	  else
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL", gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	}
+      return false;
+    }
+
+  return true;
+}
+
 
 /* Check that an expression is real or complex.  */
 
@@ -427,15 +458,22 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
 /* Make sure two expressions have the same type.  */
 
 static bool
-same_type_check (gfc_expr *e, int n, gfc_expr *f, int m)
+same_type_check (gfc_expr *e, int n, gfc_expr *f, int m, bool assoc = false)
 {
   gfc_typespec *ets = &e->ts;
   gfc_typespec *fts = &f->ts;
 
-  if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
-    ets = &e->symtree->n.sym->ts;
-  if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
-    fts = &f->symtree->n.sym->ts;
+  if (assoc)
+    {
+      /* Procedure pointer component expressions have the type of the interface
+	 procedure. If they are being tested for association with a procedure
+	 pointer (ie. not a component), the type of the procedure must be
+	 determined.  */
+      if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
+	ets = &e->symtree->n.sym->ts;
+      if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
+	fts = &f->symtree->n.sym->ts;
+    }
 
   if (gfc_compare_types (ets, fts))
     return true;
@@ -1002,7 +1040,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     }
 
   t = true;
-  if (!same_type_check (pointer, 0, target, 1))
+  if (!same_type_check (pointer, 0, target, 1, true))
     t = false;
   if (!rank_check (target, 0, pointer->rank))
     t = false;
@@ -1210,20 +1248,6 @@ gfc_check_failed_or_stopped_images (gfc_expr *team, gfc_expr *kind)
 	  return false;
 	}
     }
-  return true;
-}
-
-bool
-gfc_check_get_team (gfc_expr *level)
-{
-  if (level)
-    {
-      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
-		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
-		 &level->where);
-      return false;
-    }
-
   return true;
 }
 
@@ -1745,7 +1769,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
-      gfc_error ("A argument at %L has type %s but the function passed as "
+      gfc_error ("The A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
 		 &a->where, gfc_typename (&a->ts), &op->where,
 		 gfc_typename (&sym->result->ts));
@@ -2275,6 +2299,7 @@ gfc_check_fn_c (gfc_expr *a)
 
   return true;
 }
+
 
 /* A single real argument.  */
 
@@ -3192,14 +3217,15 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 bool
 gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 {
-  gfc_expr *a, *m, *d;
+  gfc_expr *a, *m, *d, *k;
 
   a = ap->expr;
-  if (!int_or_real_check (a, 0) || !array_check (a, 0))
+  if (!int_or_real_or_char_check_f2003 (a, 0) || !array_check (a, 0))
     return false;
 
   d = ap->next->expr;
   m = ap->next->next->expr;
+  k = ap->next->next->next->expr;
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
       && ap->next->name == NULL)
@@ -3225,6 +3251,9 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[2]->name,
 				 gfc_current_intrinsic))
+    return false;
+
+  if (!kind_check (k, 1, BT_INTEGER))
     return false;
 
   return true;
@@ -5520,19 +5549,6 @@ gfc_check_ttynam (gfc_expr *unit)
     return false;
 
   if (!type_check (unit, 0, BT_INTEGER))
-    return false;
-
-  return true;
-}
-
-
-/* Common check function for the half a dozen intrinsics that have a
-   single real argument.  */
-
-bool
-gfc_check_x (gfc_expr *x)
-{
-  if (!type_check (x, 0, BT_REAL))
     return false;
 
   return true;

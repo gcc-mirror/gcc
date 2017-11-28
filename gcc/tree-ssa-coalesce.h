@@ -23,5 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 extern var_map coalesce_ssa_name (void);
 extern bool gimple_can_coalesce_p (tree, tree);
 extern bitmap get_parm_default_def_partitions (var_map);
+extern bitmap get_undefined_value_partitions (var_map);
 
 #endif /* GCC_TREE_SSA_COALESCE_H */

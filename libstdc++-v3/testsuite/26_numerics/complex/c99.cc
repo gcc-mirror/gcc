@@ -26,7 +26,8 @@
 
 int main()
 {
-#if _GLIBCXX_HAVE_COMPLEX_H
+#if _GLIBCXX_HAVE_COMPLEX_H && !defined(__STRICT_ANSI__)
+  // This is a GNU extension.
   double _Complex x = .5;
   double _Complex y = cacos (x);
   (void)y;

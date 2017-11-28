@@ -195,7 +195,7 @@ extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_expand_reg_equiv (void);
 extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx_insn *);
 
-extern void ira_sort_regnos_for_alter_reg (int *, int, unsigned int *);
+extern void ira_sort_regnos_for_alter_reg (int *, int, machine_mode *);
 extern void ira_mark_allocation_change (int);
 extern void ira_mark_memory_move_deletion (int, int);
 extern bool ira_reassign_pseudos (int *, int, HARD_REG_SET, HARD_REG_SET *,

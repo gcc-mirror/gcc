@@ -3,8 +3,13 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS * 2 / 32)
+#define OFF (VECTOR_BITS / 32)
+#else
 #define N 8
 #define OFF 8
+#endif
 
 /* Check handling of accesses for which the "initial condition" -
    the expression that represents the first location accessed - is
@@ -45,4 +50,5 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { target { ! vect_align_stack_vars } xfail { ! vect_unaligned_possible } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { target vect_align_stack_vars xfail { ! vect_unaligned_possible } } } } */

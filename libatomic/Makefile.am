@@ -123,7 +123,7 @@ libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix _$(s)_.lo,$(SIZEOBJS)))
 ## On a target-specific basis, include alternates to be selected by IFUNC.
 if HAVE_IFUNC
 if ARCH_ARM_LINUX
-IFUNC_OPTIONS	     = -march=armv7-a -DHAVE_KERNEL64
+IFUNC_OPTIONS	     = -march=armv7-a+fp -DHAVE_KERNEL64
 libatomic_la_LIBADD += $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
 libatomic_la_LIBADD += $(addsuffix _8_2_.lo,$(SIZEOBJS))
 endif

@@ -755,6 +755,8 @@ private
    pragma Inline (Num_Source_Files);
    pragma Inline (Num_Source_Lines);
 
+   pragma Inline (Line_Start);
+
    No_Instance_Id : constant Instance_Id := 0;
 
    -------------------------

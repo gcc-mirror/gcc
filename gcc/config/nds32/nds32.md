@@ -2336,7 +2336,7 @@ create_template:
 (define_insn "clzsi2"
   [(set (match_operand:SI 0 "register_operand"         "=r")
 	(clz:SI (match_operand:SI 1 "register_operand" " r")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "clz\t%0, %1"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
@@ -2345,7 +2345,7 @@ create_template:
   [(set (match_operand:SI 0 "register_operand"          "=r")
 	(smax:SI (match_operand:SI 1 "register_operand" " r")
 		 (match_operand:SI 2 "register_operand" " r")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "max\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
@@ -2354,7 +2354,7 @@ create_template:
   [(set (match_operand:SI 0 "register_operand"          "=r")
 	(smin:SI (match_operand:SI 1 "register_operand" " r")
 		 (match_operand:SI 2 "register_operand" " r")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "min\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
@@ -2364,7 +2364,7 @@ create_template:
 	(zero_extract:SI (match_operand:SI 1 "register_operand"  "    r")
 			 (const_int 1)
 			 (match_operand:SI 2 "immediate_operand" " Iu05")))]
-  "TARGET_PERF_EXT"
+  "TARGET_EXT_PERF"
   "btst\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])

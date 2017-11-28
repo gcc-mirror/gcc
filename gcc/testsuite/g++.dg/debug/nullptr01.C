@@ -10,6 +10,7 @@ template <class T> nullptr_t g(T t);
 template <> nullptr_t g(A<nullptr_t>)
 {
   nullptr_t local;
+  return nullptr;
 }
 // { dg-final { scan-assembler "_Z1fDn" } }
 // { dg-final { scan-assembler "_Z1gI1AIDnEEDnT_" } }

@@ -1109,10 +1109,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
     are at negative offsets from the frame pointer.  */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* Offset from the frame pointer to the first local variable slot to
-   be allocated.  */
-#define STARTING_FRAME_OFFSET  0
-
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
 /* Don't define PUSH_ROUNDING, since the hardware doesn't do this.
@@ -1758,12 +1754,13 @@ extern bool current_function_interrupt;
     }
 
 /* Output an absolute table element.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
-  if (! optimize || TARGET_BIGTABLE)					\
-    asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
-  else									\
-    asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));
-
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE) \
+  do {									\
+    if (! optimize || TARGET_BIGTABLE)					\
+      asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
+    else								\
+      asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));		\
+  } while (0)
 
 /* A C statement to be executed just prior to the output of
    assembler code for INSN, to modify the extracted operands so

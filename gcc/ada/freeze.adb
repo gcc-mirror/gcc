@@ -1173,8 +1173,7 @@ package body Freeze is
 
       Component_Aliased : Boolean;
 
-      Comp_Byte_Aligned : Boolean;
-      pragma Warnings (Off, Comp_Byte_Aligned);
+      Comp_Byte_Aligned : Boolean := False;
       --  Set for the record case, True if Comp is aligned on byte boundaries
       --  (in which case it is allowed to have different storage order).
 
@@ -2788,7 +2787,6 @@ package body Freeze is
                      elsif Csiz mod System_Storage_Unit = 0
                        and then Is_Composite_Type (Ctyp)
                      then
-
                         Set_Is_Packed            (Base_Type (Arr), True);
                         Set_Has_Non_Standard_Rep (Base_Type (Arr), True);
                         Set_Is_Bit_Packed_Array  (Base_Type (Arr), False);
@@ -8450,7 +8448,7 @@ package body Freeze is
             --  The analysis of the expression may generate insert actions,
             --  which of course must not be executed. We wrap those actions
             --  in a procedure that is not called, and later on eliminated.
-            --  The following cases have no side-effects, and are analyzed
+            --  The following cases have no side effects, and are analyzed
             --  directly.
 
             if Nkind (Dcopy) = N_Identifier

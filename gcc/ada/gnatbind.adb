@@ -330,9 +330,7 @@ procedure Gnatbind is
       then
          Output_File_Name_Seen := True;
 
-         if Argv'Length = 0
-           or else (Argv'Length >= 1 and then Argv (1) = '-')
-         then
+         if Argv'Length = 0 or else Argv (1) = '-' then
             Fail ("output File_Name missing after -o");
 
          else

@@ -1,4 +1,4 @@
-// Class filesystem::path -*- C++ -*-
+// Class experimental::filesystem::path -*- C++ -*-
 
 // Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
@@ -28,9 +28,10 @@
 
 #include <experimental/filesystem>
 
-using std::experimental::filesystem::path;
+namespace fs = std::experimental::filesystem;
+using fs::path;
 
-std::experimental::filesystem::filesystem_error::~filesystem_error() = default;
+fs::filesystem_error::~filesystem_error() = default;
 
 constexpr path::value_type path::preferred_separator;
 
@@ -461,7 +462,7 @@ path::_S_convert_loc(const char* __first, const char* __last,
 }
 
 std::size_t
-std::experimental::filesystem::hash_value(const path& p) noexcept
+fs::hash_value(const path& p) noexcept
 {
   // [path.non-member]
   // "If for two paths, p1 == p2 then hash_value(p1) == hash_value(p2)."
@@ -477,3 +478,29 @@ std::experimental::filesystem::hash_value(const path& p) noexcept
     }
   return seed;
 }
+
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+namespace filesystem
+{
+  extern string
+  fs_err_concat(const string& __what, const string& __path1,
+		const string& __path2);
+} // namespace filesystem
+
+namespace experimental::filesystem::v1 {
+_GLIBCXX_BEGIN_NAMESPACE_CXX11
+
+  std::string filesystem_error::_M_gen_what()
+  {
+    using std::filesystem::fs_err_concat;
+    return fs_err_concat(system_error::what(), _M_path1.native(),
+			 _M_path2.native());
+  }
+
+_GLIBCXX_END_NAMESPACE_CXX11
+} // namespace experimental::filesystem::v1
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std

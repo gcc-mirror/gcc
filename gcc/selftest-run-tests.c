@@ -56,6 +56,7 @@ selftest::run_tests ()
 
   /* Low-level data structures.  */
   bitmap_c_tests ();
+  sbitmap_c_tests ();
   et_forest_c_tests ();
   hash_map_tests_c_tests ();
   hash_set_tests_c_tests ();
@@ -66,6 +67,7 @@ selftest::run_tests ()
   sreal_c_tests ();
   fibonacci_heap_c_tests ();
   typed_splay_tree_c_tests ();
+  unique_ptr_tests_cc_tests ();
 
   /* Mid-level data structures.  */
   input_c_tests ();
@@ -93,6 +95,7 @@ selftest::run_tests ()
 
   store_merging_c_tests ();
   predict_c_tests ();
+  simplify_rtx_c_tests ();
 
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();

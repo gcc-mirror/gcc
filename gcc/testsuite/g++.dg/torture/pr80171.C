@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename> struct remove_reference;
 template <typename _Tp> struct remove_reference<_Tp &> { typedef _Tp type; };

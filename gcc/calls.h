@@ -39,5 +39,7 @@ extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
 				     tree, bool);
 extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
 extern bool get_size_range (tree, tree[2]);
+extern tree get_attr_nonstring_decl (tree, tree * = NULL);
+extern void maybe_warn_nonstring_arg (tree, tree);
 
 #endif // GCC_CALLS_H

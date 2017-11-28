@@ -22,14 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
-typedef hash_map<tree, tree> parameter_rename_map_t;
-typedef hash_map<basic_block, vec<basic_block> > bb_map_t;
-typedef hash_map<tree, vec<tree> > rename_map_t;
 typedef struct ifsese_s *ifsese;
-/* First phi is the new codegenerated phi second one is original phi.  */
-typedef std::pair <gphi *, gphi *> phi_rename;
-/* First edge is the init edge and second is the back edge w.r.t. a loop.  */
-typedef std::pair<edge, edge> init_back_edge_pair_t;
 
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
@@ -92,23 +85,11 @@ typedef struct sese_info_t
   /* Parameters used within the SCOP.  */
   vec<tree> params;
 
-  /* Maps an old name to one or more new names.  When there are several new
-     names, one has to select the definition corresponding to the immediate
-     dominator.  */
-  rename_map_t *rename_map;
-
-  /* Parameters to be renamed.  */
-  parameter_rename_map_t *parameter_rename_map;
+  /* Maps an old name to a new decl.  */
+  hash_map<tree, tree> *rename_map;
 
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
-
-  /* Copied basic blocks indexed by the original bb.  */
-  bb_map_t *copied_bb_map;
-
-  /* A vector of phi nodes to be updated when all arguments are available.  The
-     pair contains first the old_phi and second the new_phi.  */
-  vec<phi_rename> incomplete_phis;
 
   /* The condition region generated for this sese.  */
   ifsese if_region;
@@ -333,6 +314,8 @@ gbb_loop_at_index (gimple_poly_bb_p gbb, sese_l &region, int index)
 
   while (--depth > index)
     loop = loop_outer (loop);
+
+  gcc_assert (loop_in_sese_p (loop, region));
 
   return loop;
 }

@@ -14,7 +14,7 @@ struct s {
   int v;
 };
 
-constexpr s bang;		// { dg-error "" }
+constexpr s bang;		// { dg-error "|" }
 
 struct R {
   int i,j;

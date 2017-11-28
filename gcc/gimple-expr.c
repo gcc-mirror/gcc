@@ -337,9 +337,8 @@ gimple_decl_printable_name (tree decl, int verbosity)
   if (!DECL_NAME (decl))
     return NULL;
 
-  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl) && DECL_ASSEMBLER_NAME_SET_P (decl))
     {
-      const char *str, *mangled_str;
       int dmgl_opts = DMGL_NO_OPTS;
 
       if (verbosity >= 2)
@@ -352,9 +351,10 @@ gimple_decl_printable_name (tree decl, int verbosity)
 	    dmgl_opts |= DMGL_PARAMS;
 	}
 
-      mangled_str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      str = cplus_demangle_v3 (mangled_str, dmgl_opts);
-      return (str) ? str : mangled_str;
+      const char *mangled_str
+	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME_RAW (decl));
+      const char *str = cplus_demangle_v3 (mangled_str, dmgl_opts);
+      return str ? str : mangled_str;
     }
 
   return IDENTIFIER_POINTER (DECL_NAME (decl));

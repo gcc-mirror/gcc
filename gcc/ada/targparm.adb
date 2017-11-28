@@ -158,8 +158,8 @@ package body Targparm is
       Set_NUP : Set_NUP_Type := null)
    is
       FD   : File_Descriptor;
-      Text : Source_Buffer_Ptr;
       Hi   : Source_Ptr;
+      Text : Source_Buffer_Ptr;
 
    begin
       if Parameters_Obtained then
@@ -173,11 +173,13 @@ package body Targparm is
 
       if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
+
          if FD = Null_FD then
             Write_Line ("cannot locate file system.ads");
          else
             Write_Line ("no read access for file system.ads");
          end if;
+
          raise Unrecoverable_Error;
       end if;
 

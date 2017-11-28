@@ -184,15 +184,16 @@ brig_basic_inst_handler::build_unpack (tree_stl_vec &operands)
   tree and_mask_vec = build_constructor (vec_type, and_mask_vals);
 
   tree perm = build3 (VEC_PERM_EXPR, vec_type,
-		      build_reinterpret_cast (vec_type, operands[0]),
-		      build_reinterpret_cast (vec_type, operands[0]), mask_vec);
+		      build_resize_convert_view (vec_type, operands[0]),
+		      build_resize_convert_view (vec_type, operands[0]),
+		      mask_vec);
 
   tree cleared = build2 (BIT_AND_EXPR, vec_type, perm, and_mask_vec);
 
   size_t s = int_size_in_bytes (TREE_TYPE (cleared)) * BITS_PER_UNIT;
   tree raw_type = build_nonstandard_integer_type (s, true);
 
-  tree as_int = build_reinterpret_cast (raw_type, cleared);
+  tree as_int = build_resize_convert_view (raw_type, cleared);
 
   if (int_size_in_bytes (src_element_type) < 4)
     {
@@ -217,7 +218,7 @@ brig_basic_inst_handler::build_pack (tree_stl_vec &operands)
   size_t vecsize = int_size_in_bytes (TREE_TYPE (operands[0])) * BITS_PER_UNIT;
   tree wide_type = build_nonstandard_integer_type (vecsize, 1);
 
-  tree src_vect = build_reinterpret_cast (wide_type, operands[0]);
+  tree src_vect = build_resize_convert_view (wide_type, operands[0]);
   src_vect = add_temp_var ("src_vect", src_vect);
 
   tree scalar = operands[1];
@@ -650,10 +651,10 @@ brig_basic_inst_handler::operator () (const BrigBase *base)
 
       if (is_fp16_operation)
 	old_value = build_h2f_conversion
-	  (build_reinterpret_cast (half_storage_type, operands[0]));
+	  (build_resize_convert_view (half_storage_type, operands[0]));
       else
 	old_value
-	  = build_reinterpret_cast (TREE_TYPE (instr_expr), operands[0]);
+	  = build_resize_convert_view (TREE_TYPE (instr_expr), operands[0]);
 
       size_t esize = is_fp16_operation ? 32 : element_size_bits;
 

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "dumpfile.h"
 #include "gimplify.h"
+#include "attribs.h"
 #include "debug.h"
 
 /* Data type for the expressions representing sizes of data types.
@@ -941,7 +942,7 @@ debug_rli (record_layout_info rli)
   if (!vec_safe_is_empty (rli->pending_statics))
     {
       fprintf (stderr, "pending statics:\n");
-      debug_vec_tree (rli->pending_statics);
+      debug (rli->pending_statics);
     }
 }
 
@@ -1106,7 +1107,7 @@ handle_warn_if_not_align (tree field, unsigned int record_align)
 
   if (!warn_if_not_align
       && warn_packed_not_aligned
-      && TYPE_USER_ALIGN (type))
+      && lookup_attribute ("aligned", TYPE_ATTRIBUTES (type)))
     {
       warn_if_not_align = TYPE_ALIGN (type);
       opt_w = OPT_Wpacked_not_aligned;
@@ -1858,6 +1859,9 @@ finalize_type_size (tree type)
 	  SET_TYPE_MODE (variant, mode);
 	}
     }
+
+  /* Handle empty records as per the x86-64 psABI.  */
+  TYPE_EMPTY_P (type) = targetm.calls.empty_record_p (type);
 }
 
 /* Return a new underlying object for a bitfield started with FIELD.  */
@@ -2362,9 +2366,11 @@ layout_type (tree type)
 		    && tree_int_cst_lt (ub, lb))
 		  {
 		    lb = wide_int_to_tree (ssizetype,
-					   offset_int::from (lb, SIGNED));
+					   offset_int::from (wi::to_wide (lb),
+							     SIGNED));
 		    ub = wide_int_to_tree (ssizetype,
-					   offset_int::from (ub, SIGNED));
+					   offset_int::from (wi::to_wide (ub),
+							     SIGNED));
 		  }
 		length
 		  = fold_convert (sizetype,

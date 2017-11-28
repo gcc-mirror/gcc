@@ -337,19 +337,7 @@ package body Switch.C is
 
             when 'C' =>
                Ptr := Ptr + 1;
-
-               if not CodePeer_Mode then
-                  CodePeer_Mode := True;
-
-                  --  Suppress compiler warnings by default, since what we are
-                  --  interested in here is what CodePeer can find out. Note
-                  --  that if -gnatwxxx is specified after -gnatC on the
-                  --  command line, we do not want to override this setting in
-                  --  Adjust_Global_Switches, and assume that the user wants to
-                  --  get both warnings from GNAT and CodePeer messages.
-
-                  Warning_Mode := Suppress;
-               end if;
+               CodePeer_Mode := True;
 
             --  -gnatd (compiler debug options)
 
@@ -548,7 +536,6 @@ package body Switch.C is
                         Warn_On_Bad_Fixed_Value          := True; -- -gnatwb
                         Warn_On_Biased_Representation    := True; -- -gnatw.b
                         Warn_On_Export_Import            := True; -- -gnatwx
-                        Warn_On_Modified_Unread          := True; -- -gnatwm
                         Warn_On_No_Value_Assigned        := True; -- -gnatwv
                         Warn_On_Object_Renames_Function  := True; -- -gnatw.r
                         Warn_On_Overlap                  := True; -- -gnatw.i

@@ -836,100 +836,6 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
   return this;
 }
 
-
-// Helper class to locate a root Var_expression within an expression
-// tree and mark it as being in an "lvalue" or assignment
-// context. Examples:
-//
-//    x, y = 40, foo(w)
-//    x[2] = bar(v)
-//    x.z.w[blah(v + u)], y.another = 2, 3
-//
-// In the code above, vars "x" and "y" appear in lvalue / assignment
-// context, whereas the other vars "v", "u", etc are in rvalue context.
-//
-// Note: at the moment the Var_expression version of "do_copy()"
-// defaults to returning the original object, not a new object,
-// meaning that a given Var_expression can be referenced from more
-// than one place in the tree. This means that when we want to mark a
-// Var_expression as having lvalue semantics, we need to make a copy
-// of it. Example:
-//
-//    mystruct.myfield += 42
-//
-// When this is lowered to eliminate the += operator, we get a tree
-//
-//    mystruct.myfield = mystruct.field + 42
-//
-// in which the "mystruct" same Var_expression is referenced on both
-// LHS and RHS subtrees. This in turn means that if we try to mark the
-// LHS Var_expression the RHS Var_expression will also be marked.  To
-// address this issue, the code below clones any var_expression before
-// applying an lvalue marking.
-//
-
-class Mark_lvalue_varexprs : public Traverse
-{
- public:
-  Mark_lvalue_varexprs()
-    : Traverse(traverse_expressions)
-  { }
-
- protected:
-  int
-  expression(Expression**);
-
- private:
-};
-
-int Mark_lvalue_varexprs::expression(Expression** ppexpr)
-{
-  Expression* e = *ppexpr;
-
-  Var_expression* ve = e->var_expression();
-  if (ve)
-    {
-      ve = new Var_expression(ve->named_object(), ve->location());
-      ve->set_in_lvalue_pos();
-      *ppexpr = ve;
-      return TRAVERSE_EXIT;
-    }
-
-  Field_reference_expression* fre = e->field_reference_expression();
-  if (fre != NULL)
-    return TRAVERSE_CONTINUE;
-
-  Array_index_expression* aie = e->array_index_expression();
-  if (aie != NULL)
-    {
-      Mark_lvalue_varexprs mlve;
-      aie->set_is_lvalue();
-      aie->array()->traverse_subexpressions(&mlve);
-      return TRAVERSE_EXIT;
-    }
-
-  Unary_expression* ue = e->unary_expression();
-  if (ue && ue->op() == OPERATOR_MULT)
-    return TRAVERSE_CONTINUE;
-
-  Type_conversion_expression* ce = e->conversion_expression();
-  if (ce)
-    return TRAVERSE_CONTINUE;
-
-  Temporary_reference_expression* tre =
-      e->temporary_reference_expression();
-  if (tre)
-    {
-      tre = new Temporary_reference_expression(tre->statement(),
-                                               tre->location());
-      *ppexpr = tre;
-      tre->set_is_lvalue();
-      return TRAVERSE_EXIT;
-    }
-
-  return TRAVERSE_EXIT;
-}
-
 // Convert an assignment statement to the backend representation.
 
 Bstatement*
@@ -941,9 +847,6 @@ Assignment_statement::do_get_backend(Translate_context* context)
       Bfunction* bfunction = context->function()->func_value()->get_decl();
       return context->backend()->expression_statement(bfunction, rhs);
     }
-
-  Mark_lvalue_varexprs mlve;
-  Expression::traverse(&this->lhs_, &mlve);
 
   Bexpression* lhs = this->lhs_->get_backend(context);
   Expression* conv =
@@ -1923,6 +1826,11 @@ Statement*
 Inc_dec_statement::do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
 {
   Location loc = this->location();
+  if (!this->expr_->type()->is_numeric_type())
+    {
+      this->report_error("increment or decrement of non-numeric type");
+      return Statement::make_error_statement(loc);
+    }
   Expression* oexpr = Expression::make_integer_ul(1, this->expr_->type(), loc);
   Operator op = this->is_inc_ ? OPERATOR_PLUSEQ : OPERATOR_MINUSEQ;
   return Statement::make_assignment_operation(op, this->expr_, oexpr, loc);

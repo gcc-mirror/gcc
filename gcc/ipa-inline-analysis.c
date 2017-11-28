@@ -175,11 +175,11 @@ do_estimate_edge_time (struct cgraph_edge *edge)
      edges and for those we disable size limits.  Don't do that when
      probability that caller will call the callee is low however, since it
      may hurt optimization of the caller's hot path.  */
-  if (edge->count.initialized_p () && edge->maybe_hot_p ()
-      && (edge->count.apply_scale (2, 1)
+  if (edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
+      && (edge->count.ipa ().apply_scale (2, 1)
           > (edge->caller->global.inlined_to
-	     ? edge->caller->global.inlined_to->count
-	     : edge->caller->count)))
+	     ? edge->caller->global.inlined_to->count.ipa ()
+	     : edge->caller->count.ipa ())))
     hints |= INLINE_HINT_known_hot;
 
   known_vals.release ();

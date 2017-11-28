@@ -1693,6 +1693,7 @@ package body Sem_Aux is
         and then Nkind (N) /= N_Package_Renaming_Declaration
         and then Nkind (N) /= N_Procedure_Instantiation
         and then Nkind (N) /= N_Protected_Body
+        and then Nkind (N) /= N_Protected_Type_Declaration
         and then Nkind (N) /= N_Subprogram_Declaration
         and then Nkind (N) /= N_Subprogram_Body
         and then Nkind (N) /= N_Subprogram_Body_Stub

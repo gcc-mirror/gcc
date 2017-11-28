@@ -373,7 +373,7 @@ hash_odr_vtable (const_tree t)
       v = TREE_OPERAND (TREE_OPERAND (v, 0), 0);
     }
 
-  hstate.add_wide_int (IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (v)));
+  hstate.add_hwi (IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (v)));
   return hstate.end ();
 }
 
@@ -2625,14 +2625,14 @@ polymorphic_call_target_hasher::hash (const polymorphic_call_target_d *odr_query
 {
   inchash::hash hstate (odr_query->otr_token);
 
-  hstate.add_wide_int (odr_query->type->id);
+  hstate.add_hwi (odr_query->type->id);
   hstate.merge_hash (TYPE_UID (odr_query->context.outer_type));
-  hstate.add_wide_int (odr_query->context.offset);
+  hstate.add_hwi (odr_query->context.offset);
 
   if (odr_query->context.speculative_outer_type)
     {
       hstate.merge_hash (TYPE_UID (odr_query->context.speculative_outer_type));
-      hstate.add_wide_int (odr_query->context.speculative_offset);
+      hstate.add_hwi (odr_query->context.speculative_offset);
     }
   hstate.add_flag (odr_query->speculative);
   hstate.add_flag (odr_query->context.maybe_in_construction);
@@ -3566,7 +3566,7 @@ ipa_devirt (void)
 	    bool final;
 
 	    if (final_warning_records)
-	      final_warning_records->dyn_count = e->count;
+	      final_warning_records->dyn_count = e->count.ipa ();
 
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
@@ -3727,8 +3727,7 @@ ipa_devirt (void)
 		nconverted++;
 		update = true;
 		e->make_speculative
-		  (likely_target, e->count.apply_scale (8, 10),
-		   e->frequency * 8 / 10);
+		  (likely_target, e->count.apply_scale (8, 10));
 	      }
 	  }
       if (update)

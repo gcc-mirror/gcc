@@ -1153,11 +1153,11 @@ avr_outgoing_args_size (void)
 }
 
 
-/* Implement `STARTING_FRAME_OFFSET'.  */
+/* Implement TARGET_STARTING_FRAME_OFFSET.  */
 /* This is the offset from the frame pointer register to the first stack slot
    that contains a variable living in the frame.  */
 
-int
+static HOST_WIDE_INT
 avr_starting_frame_offset (void)
 {
   return 1 + avr_outgoing_args_size ();
@@ -1314,8 +1314,8 @@ avr_build_builtin_va_list (void)
 
 /* Implement `TARGET_BUILTIN_SETJMP_FRAME_VALUE'.  */
 /* Actual start of frame is virtual_stack_vars_rtx this is offset from
-   frame pointer by +STARTING_FRAME_OFFSET.
-   Using saved frame = virtual_stack_vars_rtx - STARTING_FRAME_OFFSET
+   frame pointer by +TARGET_STARTING_FRAME_OFFSET.
+   Using saved frame = virtual_stack_vars_rtx - TARGET_STARTING_FRAME_OFFSET
    avoids creating add/sub of offset in nonlocal goto and setjmp.  */
 
 static rtx
@@ -1323,7 +1323,7 @@ avr_builtin_setjmp_frame_value (void)
 {
   rtx xval = gen_reg_rtx (Pmode);
   emit_insn (gen_subhi3 (xval, virtual_stack_vars_rtx,
-                         gen_int_mode (STARTING_FRAME_OFFSET, Pmode)));
+                         gen_int_mode (avr_starting_frame_offset (), Pmode)));
   return xval;
 }
 
@@ -14495,7 +14495,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             break;
           }
 
-        tmap = wide_int_to_tree (map_type, arg[0]);
+        tmap = wide_int_to_tree (map_type, wi::to_wide (arg[0]));
         map = TREE_INT_CST_LOW (tmap);
 
         if (TREE_CODE (tval) != INTEGER_CST
@@ -14788,6 +14788,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_LEGITIMATE_COMBINED_INSN
 #define TARGET_LEGITIMATE_COMBINED_INSN avr_legitimate_combined_insn
+
+#undef  TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET avr_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

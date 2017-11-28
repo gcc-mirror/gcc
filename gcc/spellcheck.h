@@ -178,6 +178,13 @@ class best_match
     return m_best_candidate;
   }
 
+  /* Get the closest candidate so far, without applying any filtering.  */
+
+  candidate_t blithely_get_best_candidate () const
+  {
+    return m_best_candidate;
+  }
+
   edit_distance_t get_best_distance () const { return m_best_distance; }
   size_t get_best_candidate_length () const { return m_best_candidate_len; }
 

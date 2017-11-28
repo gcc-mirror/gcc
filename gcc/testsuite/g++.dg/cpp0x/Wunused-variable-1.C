@@ -15,6 +15,7 @@ int
 foo ()
 {
   C {} (1, 1L, 1LL, 1.0);
+  return 0;
 }
 
 template<int N>

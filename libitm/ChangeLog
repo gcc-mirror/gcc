@@ -1,3 +1,23 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* config/x86/sjlj.S: Include cet.h.
+	(_ITM_beginTransaction): Add _CET_ENDBR.
+	Save Shadow Stack pointer.
+	(GTM_longjmp): Add _CET_ENDBR. Restore Shadow Stack pointer.
+	* config/x86/target.h (struct gtm_jmpbuf):
+	Add new field for Shadow Stack pointer.
+	* configure: Regenerate.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+	* configure.ac: Update libtool_VERSION for x86.
+	* testsuite/Makefile.in: Regenerate.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* libitm/config/x86/target.h: Add new field (ssp).
+	* libitm/config/x86/sjlj.S: Change offsets.
+
 2017-05-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libitm.exp: Load scanlang.exp.

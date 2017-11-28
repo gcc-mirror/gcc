@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Style_Check:Python_Fragment (meaning no pyflakes check)
 #
 # GNAT build configuration file
 

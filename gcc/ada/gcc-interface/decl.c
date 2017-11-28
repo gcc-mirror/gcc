@@ -4568,7 +4568,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
 	}
 
-      if (Treat_As_Volatile (gnat_entity))
+      /* Finally get to the appropriate variant, except for the implementation
+	 type of a packed array because the GNU type might be further adjusted
+	 when the original array type is itself processed.  */
+      if (Treat_As_Volatile (gnat_entity)
+	  && !Is_Packed_Array_Impl_Type (gnat_entity))
 	{
 	  const int quals
 	    = TYPE_QUAL_VOLATILE
@@ -8070,7 +8074,7 @@ annotate_value (tree gnu_size)
 	 can appear for discriminants in expressions for variants.  */
       if (tree_int_cst_sgn (gnu_size) < 0)
 	{
-	  tree t = wide_int_to_tree (sizetype, wi::neg (gnu_size));
+	  tree t = wide_int_to_tree (sizetype, -wi::to_wide (gnu_size));
 	  tcode = Negate_Expr;
 	  ops[0] = UI_From_gnu (t);
 	}
@@ -8174,7 +8178,8 @@ annotate_value (tree gnu_size)
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
 	  tree op1 = TREE_OPERAND (gnu_size, 1);
-	  wide_int signed_op1 = wi::sext (op1, TYPE_PRECISION (sizetype));
+	  wide_int signed_op1 = wi::sext (wi::to_wide (op1),
+					  TYPE_PRECISION (sizetype));
 	  if (wi::neg_p (signed_op1))
 	    {
 	      op1 = wide_int_to_tree (sizetype, wi::neg (signed_op1));

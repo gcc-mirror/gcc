@@ -4,8 +4,7 @@
 
 int A[10];
 
-int foo () {
-
+void foo () {
   /* C compiler uses the term "undeclared" whereas C++ compiler uses
     "not declared".  Thus, grepping for declared seem to be the easiest.  */
   char c = (char)N; /* { dg-error "declared" } */
@@ -15,12 +14,8 @@ int foo () {
   A[l:s:c];
 }
 
-int foo1 (int N) {
-
+void foo1 (int N) {
   char c = (char)N;
   short s = (short)N;
   A[l:s:c]; /* { dg-error "declared" } */
 }
-
-
-

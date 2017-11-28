@@ -454,8 +454,8 @@ set_nonzero_bits (tree name, const wide_int_ref &mask)
       if (mask == -1)
 	return;
       set_range_info_raw (name, VR_RANGE,
-			  TYPE_MIN_VALUE (TREE_TYPE (name)),
-			  TYPE_MAX_VALUE (TREE_TYPE (name)));
+			  wi::to_wide (TYPE_MIN_VALUE (TREE_TYPE (name))),
+			  wi::to_wide (TYPE_MAX_VALUE (TREE_TYPE (name))));
     }
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
   ri->set_nonzero_bits (mask);
@@ -468,7 +468,7 @@ wide_int
 get_nonzero_bits (const_tree name)
 {
   if (TREE_CODE (name) == INTEGER_CST)
-    return name;
+    return wi::to_wide (name);
 
   /* Use element_precision instead of TYPE_PRECISION so complex and
      vector types get a non-zero precision.  */

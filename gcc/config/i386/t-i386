@@ -24,6 +24,22 @@ i386-c.o: $(srcdir)/config/i386/i386-c.c
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
+x86-tune-sched.o: $(srcdir)/config/i386/x86-tune-sched.c
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)
+
+x86-tune-sched-bd.o: $(srcdir)/config/i386/x86-tune-sched-bd.c
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)
+
+x86-tune-sched-atom.o: $(srcdir)/config/i386/x86-tune-sched-atom.c
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)
+
+x86-tune-sched-core.o: $(srcdir)/config/i386/x86-tune-sched-core.c
+	  $(COMPILE) $<
+	  $(POSTCOMPILE)
+
 i386.o: i386-builtin-types.inc
 
 i386-builtin-types.inc: s-i386-bt ; @true

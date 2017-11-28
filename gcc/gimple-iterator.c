@@ -83,7 +83,6 @@ static void
 update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 {
   struct cgraph_node *cfun_node = NULL;
-  int bb_freq = 0;
   gimple_seq_node n;
 
   for (n = first; n ; n = n->next)
@@ -94,15 +93,11 @@ update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
 	/* These function calls are expensive enough that we want
 	   to avoid calling them if we never see any calls.  */
 	if (cfun_node == NULL)
-	  {
-	    cfun_node = cgraph_node::get (current_function_decl);
-	    bb_freq = (compute_call_stmt_bb_frequency
-		       (current_function_decl, bb));
-	  }
+	  cfun_node = cgraph_node::get (current_function_decl);
 
 	e = cfun_node->get_edge (n);
 	if (e != NULL)
-	  e->frequency = bb_freq;
+	  e->count = bb->count;
       }
 }
 
@@ -768,7 +763,12 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
      Except for the entry block.  */
   src = e->src;
   if ((e->flags & EDGE_ABNORMAL) == 0
-      && single_succ_p (src)
+      && (single_succ_p (src)
+	  /* Do not count a fake edge as successor as added to infinite
+	     loops by connect_infinite_loops_to_exit.  */
+	  || (EDGE_COUNT (src->succs) == 2
+	      && (EDGE_SUCC (src, 0)->flags & EDGE_FAKE
+		  || EDGE_SUCC (src, 1)->flags & EDGE_FAKE)))
       && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_last_bb (src);

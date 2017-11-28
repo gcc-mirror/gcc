@@ -31,7 +31,9 @@
 #ifndef _HASHTABLE_POLICY_H
 #define _HASHTABLE_POLICY_H 1
 
-#include <bits/stl_algobase.h> // for std::min.
+#include <tuple>		// for std::tuple, std::forward_as_tuple
+#include <cstdint>		// for std::uint_fast64_t
+#include <bits/stl_algobase.h>	// for std::min.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -76,12 +78,6 @@ namespace __detail
       typedef typename std::iterator_traits<_Iterator>::iterator_category _Tag;
       return __distance_fw(__first, __last, _Tag());
     }
-
-  // Helper type used to detect whether the hash functor is noexcept.
-  template <typename _Key, typename _Hash>
-    struct __is_noexcept_hash : std::__bool_constant<
-	noexcept(declval<const _Hash&>()(declval<const _Key&>()))>
-    { };
 
   struct _Identity
   {

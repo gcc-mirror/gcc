@@ -115,10 +115,11 @@ static void set_std_cxx2a (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
+static void set_std_c17 (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
-static void add_prefixed_path (const char *, size_t);
+static void add_prefixed_path (const char *, incpath_kind);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
@@ -236,8 +237,8 @@ c_common_init_options (unsigned int decoded_options_count,
 
   if (c_language == clk_c)
     {
-      /* The default for C is gnu11.  */
-      set_std_c11 (false /* ISO */);
+      /* The default for C is gnu17.  */
+      set_std_c17 (false /* ISO */);
 
       /* If preprocessing assembly language, accept any of the C-family
 	 front end options since the driver may pass them through.  */
@@ -316,7 +317,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_I:
       if (strcmp (arg, "-"))
-	add_path (xstrdup (arg), BRACKET, 0, true);
+	add_path (xstrdup (arg), INC_BRACKET, 0, true);
       else
 	{
 	  if (quote_chain_split)
@@ -550,7 +551,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_idirafter:
-      add_path (xstrdup (arg), AFTER, 0, true);
+      add_path (xstrdup (arg), INC_AFTER, 0, true);
       break;
 
     case OPT_imacros:
@@ -567,7 +568,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_iquote:
-      add_path (xstrdup (arg), QUOTE, 0, true);
+      add_path (xstrdup (arg), INC_QUOTE, 0, true);
       break;
 
     case OPT_isysroot:
@@ -575,15 +576,15 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_isystem:
-      add_path (xstrdup (arg), SYSTEM, 0, true);
+      add_path (xstrdup (arg), INC_SYSTEM, 0, true);
       break;
 
     case OPT_iwithprefix:
-      add_prefixed_path (arg, SYSTEM);
+      add_prefixed_path (arg, INC_SYSTEM);
       break;
 
     case OPT_iwithprefixbefore:
-      add_prefixed_path (arg, BRACKET);
+      add_prefixed_path (arg, INC_BRACKET);
       break;
 
     case OPT_lang_asm:
@@ -673,6 +674,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_std_gnu11:
       if (!preprocessing_asm_p)
 	set_std_c11 (false /* ISO */);
+      break;
+
+    case OPT_std_c17:
+      if (!preprocessing_asm_p)
+	set_std_c17 (true /* ISO */);
+      break;
+
+    case OPT_std_gnu17:
+      if (!preprocessing_asm_p)
+	set_std_c17 (false /* ISO */);
       break;
 
     case OPT_trigraphs:
@@ -977,6 +988,9 @@ c_common_post_options (const char **pfilename)
       else
 	flag_extern_tls_init = 1;
     }
+
+  if (warn_return_type == -1)
+    warn_return_type = c_dialect_cxx ();
 
   if (num_in_fnames > 1)
     error ("too many filenames given.  Type %s --help for usage",
@@ -1326,7 +1340,7 @@ sanitize_cpp_opts (void)
 
 /* Add include path with a prefix at the front of its name.  */
 static void
-add_prefixed_path (const char *suffix, size_t chain)
+add_prefixed_path (const char *suffix, incpath_kind chain)
 {
   char *path;
   const char *prefix;
@@ -1558,6 +1572,21 @@ set_std_c11 (int iso)
   flag_isoc94 = 1;
   lang_hooks.name = "GNU C11";
 }
+
+/* Set the C 17 standard (without GNU extensions if ISO).  */
+static void
+set_std_c17 (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC17: CLK_GNUC17);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_isoc11 = 1;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
+  lang_hooks.name = "GNU C17";
+}
+
 
 /* Set the C++ 98 standard (without GNU extensions if ISO).  */
 static void

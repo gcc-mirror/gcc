@@ -1310,11 +1310,13 @@ operand is validated with @code{is_gimple_operand}).
 @end deftypefn
 
 
-@deftypefn {GIMPLE function} gcall *gimple_build_call_from_tree (tree call_expr)
-Build a @code{GIMPLE_CALL} from a @code{CALL_EXPR} node.  The arguments and the
-function are taken from the expression directly.  This routine
-assumes that @code{call_expr} is already in GIMPLE form.  That is, its
-operands are GIMPLE values and the function call needs no further
+@deftypefn {GIMPLE function} gcall *gimple_build_call_from_tree (tree call_expr, @
+tree fnptrtype)
+Build a @code{GIMPLE_CALL} from a @code{CALL_EXPR} node.  The arguments
+and the function are taken from the expression directly.  The type of the
+@code{GIMPLE_CALL} is set from the second parameter passed by a caller.
+This routine assumes that @code{call_expr} is already in GIMPLE form.
+That is, its operands are GIMPLE values and the function call needs no further
 simplification.  All the call flags in @code{call_expr} are copied over
 to the new @code{GIMPLE_CALL}.
 @end deftypefn

@@ -590,9 +590,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Offset from stack-pointer to first location of outgoing args.  */
 #define STACK_POINTER_OFFSET (TARGET_64BIT ? 160 : 96)
 
-/* Offset within stack frame to start allocating local variables at.  */
-#define STARTING_FRAME_OFFSET 0
-
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL) \

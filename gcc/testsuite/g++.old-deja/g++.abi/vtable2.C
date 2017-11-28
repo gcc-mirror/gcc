@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-options "-Wno-attributes -fno-strict-aliasing" }
+// { dg-options "-Wno-attribute-alias -fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100

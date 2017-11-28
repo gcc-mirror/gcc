@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-void foo() x; /* { dg-error "expected" } */
+void foo() x; /* { dg-error "-:expected" } */

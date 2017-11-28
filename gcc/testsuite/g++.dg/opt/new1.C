@@ -15,8 +15,8 @@ namespace QScript {
     namespace Ecma {
         class Core {
         public:
-            inline QScriptEnginePrivate *engine() const     { }
-            inline QScriptClassInfo *classInfo() const     { }
+            inline QScriptEnginePrivate *engine() const     { return 0; }
+            inline QScriptClassInfo *classInfo() const     { return 0; }
             QScriptValueImpl publicPrototype;
         };
         class Boolean: public Core {

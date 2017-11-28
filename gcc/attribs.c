@@ -1125,9 +1125,9 @@ attribute_value_equal (const_tree attr1, const_tree attr2)
 				     TREE_VALUE (attr2)) == 1);
     }
 
-  if ((flag_openmp || flag_openmp_simd)
-      && TREE_VALUE (attr1) && TREE_VALUE (attr2)
+  if (TREE_VALUE (attr1)
       && TREE_CODE (TREE_VALUE (attr1)) == OMP_CLAUSE
+      && TREE_VALUE (attr2)
       && TREE_CODE (TREE_VALUE (attr2)) == OMP_CLAUSE)
     return omp_declare_simd_clauses_equal (TREE_VALUE (attr1),
 					   TREE_VALUE (attr2));
@@ -1181,6 +1181,9 @@ comp_type_attributes (const_tree type1, const_tree type2)
 	return 1;
     }
   if (lookup_attribute ("transaction_safe", CONST_CAST_TREE (a)))
+    return 0;
+  if ((lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (type1)) != NULL)
+      ^ (lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (type2)) != NULL))
     return 0;
   /* As some type combinations - like default calling-convention - might
      be compatible, we have to call the target hook to get the final result.  */
@@ -1317,6 +1320,44 @@ merge_decl_attributes (tree olddecl, tree newdecl)
 {
   return merge_attributes (DECL_ATTRIBUTES (olddecl),
 			   DECL_ATTRIBUTES (newdecl));
+}
+
+/* Duplicate all attributes with name NAME in ATTR list to *ATTRS if
+   they are missing there.  */
+
+void
+duplicate_one_attribute (tree *attrs, tree attr, const char *name)
+{
+  attr = lookup_attribute (name, attr);
+  if (!attr)
+    return;
+  tree a = lookup_attribute (name, *attrs);
+  while (attr)
+    {
+      tree a2;
+      for (a2 = a; a2; a2 = lookup_attribute (name, TREE_CHAIN (a2)))
+	if (attribute_value_equal (attr, a2))
+	  break;
+      if (!a2)
+	{
+	  a2 = copy_node (attr);
+	  TREE_CHAIN (a2) = *attrs;
+	  *attrs = a2;
+	}
+      attr = lookup_attribute (name, TREE_CHAIN (attr));
+    }
+}
+
+/* Duplicate all attributes from user DECL to the corresponding
+   builtin that should be propagated.  */
+
+void
+copy_attributes_to_builtin (tree decl)
+{
+  tree b = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
+  if (b)
+    duplicate_one_attribute (&DECL_ATTRIBUTES (b),
+			     DECL_ATTRIBUTES (decl), "omp declare simd");
 }
 
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,35 @@ package body System.Parameters is
    pragma Import (C, ada_pthread_minimum_stack_size,
      "_ada_pthread_minimum_stack_size");
 
+   -------------------------
+   -- Adjust_Storage_Size --
+   -------------------------
+
+   function Adjust_Storage_Size (Size : Size_Type) return Size_Type is
+   begin
+      if Size = Unspecified_Size then
+         return Default_Stack_Size;
+
+      elsif Size < Minimum_Stack_Size then
+         return Minimum_Stack_Size;
+
+      else
+         return Size;
+      end if;
+   end Adjust_Storage_Size;
+
+   ----------------------------
+   -- Default_Sec_Stack_Size --
+   ----------------------------
+
+   function Default_Sec_Stack_Size return Size_Type is
+      Default_SS_Size : Integer;
+      pragma Import (C, Default_SS_Size,
+                     "__gnat_default_ss_size");
+   begin
+      return Size_Type (Default_SS_Size);
+   end Default_Sec_Stack_Size;
+
    ------------------------
    -- Default_Stack_Size --
    ------------------------
@@ -57,22 +86,5 @@ package body System.Parameters is
    begin
       return Size_Type (ada_pthread_minimum_stack_size);
    end Minimum_Stack_Size;
-
-   -------------------------
-   -- Adjust_Storage_Size --
-   -------------------------
-
-   function Adjust_Storage_Size (Size : Size_Type) return Size_Type is
-   begin
-      if Size = Unspecified_Size then
-         return Default_Stack_Size;
-
-      elsif Size < Minimum_Stack_Size then
-         return Minimum_Stack_Size;
-
-      else
-         return Size;
-      end if;
-   end Adjust_Storage_Size;
 
 end System.Parameters;

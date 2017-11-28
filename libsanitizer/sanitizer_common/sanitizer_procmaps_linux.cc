@@ -16,70 +16,57 @@
 namespace __sanitizer {
 
 void ReadProcMaps(ProcSelfMapsBuff *proc_maps) {
-  CHECK(ReadFileToBuffer("/proc/self/maps", &proc_maps->data,
-                         &proc_maps->mmaped_size, &proc_maps->len));
+  ReadFileToBuffer("/proc/self/maps", &proc_maps->data, &proc_maps->mmaped_size,
+                   &proc_maps->len);
 }
 
 static bool IsOneOf(char c, char c1, char c2) {
   return c == c1 || c == c2;
 }
 
-bool MemoryMappingLayout::Next(uptr *start, uptr *end, uptr *offset,
-                               char filename[], uptr filename_size,
-                               uptr *protection) {
-  char *last = proc_self_maps_.data + proc_self_maps_.len;
-  if (current_ >= last) return false;
-  uptr dummy;
-  if (!start) start = &dummy;
-  if (!end) end = &dummy;
-  if (!offset) offset = &dummy;
-  if (!protection) protection = &dummy;
-  char *next_line = (char*)internal_memchr(current_, '\n', last - current_);
+bool MemoryMappingLayout::Next(MemoryMappedSegment *segment) {
+  char *last = data_.proc_self_maps.data + data_.proc_self_maps.len;
+  if (data_.current >= last) return false;
+  char *next_line =
+      (char *)internal_memchr(data_.current, '\n', last - data_.current);
   if (next_line == 0)
     next_line = last;
   // Example: 08048000-08056000 r-xp 00000000 03:0c 64593   /foo/bar
-  *start = ParseHex(&current_);
-  CHECK_EQ(*current_++, '-');
-  *end = ParseHex(&current_);
-  CHECK_EQ(*current_++, ' ');
-  CHECK(IsOneOf(*current_, '-', 'r'));
-  *protection = 0;
-  if (*current_++ == 'r')
-    *protection |= kProtectionRead;
-  CHECK(IsOneOf(*current_, '-', 'w'));
-  if (*current_++ == 'w')
-    *protection |= kProtectionWrite;
-  CHECK(IsOneOf(*current_, '-', 'x'));
-  if (*current_++ == 'x')
-    *protection |= kProtectionExecute;
-  CHECK(IsOneOf(*current_, 's', 'p'));
-  if (*current_++ == 's')
-    *protection |= kProtectionShared;
-  CHECK_EQ(*current_++, ' ');
-  *offset = ParseHex(&current_);
-  CHECK_EQ(*current_++, ' ');
-  ParseHex(&current_);
-  CHECK_EQ(*current_++, ':');
-  ParseHex(&current_);
-  CHECK_EQ(*current_++, ' ');
-  while (IsDecimal(*current_))
-    current_++;
+  segment->start = ParseHex(&data_.current);
+  CHECK_EQ(*data_.current++, '-');
+  segment->end = ParseHex(&data_.current);
+  CHECK_EQ(*data_.current++, ' ');
+  CHECK(IsOneOf(*data_.current, '-', 'r'));
+  segment->protection = 0;
+  if (*data_.current++ == 'r') segment->protection |= kProtectionRead;
+  CHECK(IsOneOf(*data_.current, '-', 'w'));
+  if (*data_.current++ == 'w') segment->protection |= kProtectionWrite;
+  CHECK(IsOneOf(*data_.current, '-', 'x'));
+  if (*data_.current++ == 'x') segment->protection |= kProtectionExecute;
+  CHECK(IsOneOf(*data_.current, 's', 'p'));
+  if (*data_.current++ == 's') segment->protection |= kProtectionShared;
+  CHECK_EQ(*data_.current++, ' ');
+  segment->offset = ParseHex(&data_.current);
+  CHECK_EQ(*data_.current++, ' ');
+  ParseHex(&data_.current);
+  CHECK_EQ(*data_.current++, ':');
+  ParseHex(&data_.current);
+  CHECK_EQ(*data_.current++, ' ');
+  while (IsDecimal(*data_.current)) data_.current++;
   // Qemu may lack the trailing space.
   // https://github.com/google/sanitizers/issues/160
-  // CHECK_EQ(*current_++, ' ');
+  // CHECK_EQ(*data_.current++, ' ');
   // Skip spaces.
-  while (current_ < next_line && *current_ == ' ')
-    current_++;
+  while (data_.current < next_line && *data_.current == ' ') data_.current++;
   // Fill in the filename.
-  uptr i = 0;
-  while (current_ < next_line) {
-    if (filename && i < filename_size - 1)
-      filename[i++] = *current_;
-    current_++;
+  if (segment->filename) {
+    uptr len =
+        Min((uptr)(next_line - data_.current), segment->filename_size - 1);
+    internal_strncpy(segment->filename, data_.current, len);
+    segment->filename[len] = 0;
   }
-  if (filename && i < filename_size)
-    filename[i] = 0;
-  current_ = next_line + 1;
+
+  data_.current = next_line + 1;
   return true;
 }
 

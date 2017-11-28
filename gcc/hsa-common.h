@@ -157,6 +157,9 @@ public:
   /* Convert an operand to a destination type DTYPE and attach insns
      to HBB if needed.  */
   hsa_op_with_type *get_in_type (BrigType16_t dtype, hsa_bb *hbb);
+  /* If this operand has integer type smaller than 32 bits, extend it to 32
+     bits, adding instructions to HBB if needed.  */
+  hsa_op_with_type *extend_int_to_32bit (hsa_bb *hbb);
 
 protected:
   hsa_op_with_type (BrigKind16_t k, BrigType16_t t);

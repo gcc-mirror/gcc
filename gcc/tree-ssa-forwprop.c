@@ -1491,9 +1491,14 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
    applied, otherwise return false.
 
    We are looking for X with unsigned type T with bitsize B, OP being
-   +, | or ^, some type T2 wider than T and
+   +, | or ^, some type T2 wider than T.  For:
    (X << CNT1) OP (X >> CNT2)				iff CNT1 + CNT2 == B
    ((T) ((T2) X << CNT1)) OP ((T) ((T2) X >> CNT2))	iff CNT1 + CNT2 == B
+
+   transform these into:
+   X r<< CNT1
+
+   Or for:
    (X << Y) OP (X >> (B - Y))
    (X << (int) Y) OP (X >> (int) (B - Y))
    ((T) ((T2) X << Y)) OP ((T) ((T2) X >> (B - Y)))
@@ -1503,12 +1508,23 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
    ((T) ((T2) X << Y)) | ((T) ((T2) X >> ((-Y) & (B - 1))))
    ((T) ((T2) X << (int) Y)) | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
 
-   and transform these into:
-   X r<< CNT1
+   transform these into:
    X r<< Y
 
+   Or for:
+   (X << (Y & (B - 1))) | (X >> ((-Y) & (B - 1)))
+   (X << (int) (Y & (B - 1))) | (X >> (int) ((-Y) & (B - 1)))
+   ((T) ((T2) X << (Y & (B - 1)))) | ((T) ((T2) X >> ((-Y) & (B - 1))))
+   ((T) ((T2) X << (int) (Y & (B - 1)))) \
+     | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
+
+   transform these into:
+   X r<< (Y & (B - 1))
+
    Note, in the patterns with T2 type, the type of OP operands
-   might be even a signed type, but should have precision B.  */
+   might be even a signed type, but should have precision B.
+   Expressions with & (B - 1) should be recognized only if B is
+   a power of 2.  */
 
 static bool
 simplify_rotate (gimple_stmt_iterator *gsi)
@@ -1578,7 +1594,9 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	def_arg1[i] = tem;
       }
   /* Both shifts have to use the same first operand.  */
-  if (TREE_CODE (def_arg1[0]) != SSA_NAME || def_arg1[0] != def_arg1[1])
+  if (!operand_equal_for_phi_arg_p (def_arg1[0], def_arg1[1])
+      || !types_compatible_p (TREE_TYPE (def_arg1[0]),
+			      TREE_TYPE (def_arg1[1])))
     return false;
   if (!TYPE_UNSIGNED (TREE_TYPE (def_arg1[0])))
     return false;
@@ -1649,8 +1667,10 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	/* The above sequence isn't safe for Y being 0,
 	   because then one of the shifts triggers undefined behavior.
 	   This alternative is safe even for rotation count of 0.
-	   One shift count is Y and the other (-Y) & (B - 1).  */
+	   One shift count is Y and the other (-Y) & (B - 1).
+	   Or one shift count is Y & (B - 1) and the other (-Y) & (B - 1).  */
 	else if (cdef_code[i] == BIT_AND_EXPR
+		 && pow2p_hwi (TYPE_PRECISION (rtype))
 		 && tree_fits_shwi_p (cdef_arg2[i])
 		 && tree_to_shwi (cdef_arg2[i])
 		    == TYPE_PRECISION (rtype) - 1
@@ -1675,17 +1695,50 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		    rotcnt = tem;
 		    break;
 		  }
-		defcodefor_name (tem, &code, &tem, NULL);
+		tree tem2;
+		defcodefor_name (tem, &code, &tem2, NULL);
 		if (CONVERT_EXPR_CODE_P (code)
-		    && INTEGRAL_TYPE_P (TREE_TYPE (tem))
-		    && TYPE_PRECISION (TREE_TYPE (tem))
+		    && INTEGRAL_TYPE_P (TREE_TYPE (tem2))
+		    && TYPE_PRECISION (TREE_TYPE (tem2))
 		       > floor_log2 (TYPE_PRECISION (rtype))
-		    && type_has_mode_precision_p (TREE_TYPE (tem))
-		    && (tem == def_arg2[1 - i]
-			|| tem == def_arg2_alt[1 - i]))
+		    && type_has_mode_precision_p (TREE_TYPE (tem2)))
 		  {
-		    rotcnt = tem;
-		    break;
+		    if (tem2 == def_arg2[1 - i]
+			|| tem2 == def_arg2_alt[1 - i])
+		      {
+			rotcnt = tem2;
+			break;
+		      }
+		  }
+		else
+		  tem2 = NULL_TREE;
+
+		if (cdef_code[1 - i] == BIT_AND_EXPR
+		    && tree_fits_shwi_p (cdef_arg2[1 - i])
+		    && tree_to_shwi (cdef_arg2[1 - i])
+		       == TYPE_PRECISION (rtype) - 1
+		    && TREE_CODE (cdef_arg1[1 - i]) == SSA_NAME)
+		  {
+		    if (tem == cdef_arg1[1 - i]
+			|| tem2 == cdef_arg1[1 - i])
+		      {
+			rotcnt = def_arg2[1 - i];
+			break;
+		      }
+		    tree tem3;
+		    defcodefor_name (cdef_arg1[1 - i], &code, &tem3, NULL);
+		    if (CONVERT_EXPR_CODE_P (code)
+			&& INTEGRAL_TYPE_P (TREE_TYPE (tem3))
+			&& TYPE_PRECISION (TREE_TYPE (tem3))
+			   > floor_log2 (TYPE_PRECISION (rtype))
+			&& type_has_mode_precision_p (TREE_TYPE (tem3)))
+		      {
+			if (tem == tem3 || tem2 == tem3)
+			  {
+			    rotcnt = def_arg2[1 - i];
+			    break;
+			  }
+		      }
 		  }
 	      }
 	  }

@@ -113,8 +113,6 @@ __lcbb(const void *ptr, int bndry)
 #define vec_unsigned(X) __builtin_s390_vclgdb((X), 0, 0)
 #define vec_doublee(X) __builtin_s390_vfll((X))
 #define vec_floate(X) __builtin_s390_vflr((X), 0, 0)
-#define vec_madd __builtin_s390_vfmadb
-#define vec_msub __builtin_s390_vfmsdb
 #define vec_load_len_r(X,Y) __builtin_s390_vlrl((Y),(X))
 #define vec_store_len_r(X,Y) __builtin_s390_vstrl((Y),(X))
 
@@ -306,6 +304,8 @@ __lcbb(const void *ptr, int bndry)
 #define vec_ld2f __builtin_s390_vec_ld2f
 #define vec_st2f __builtin_s390_vec_st2f
 #define vec_double __builtin_s390_vec_double
+#define vec_madd __builtin_s390_vec_madd
+#define vec_msub __builtin_s390_vec_msub
 #define vec_nmadd __builtin_s390_vec_nmadd
 #define vec_nmsub __builtin_s390_vec_nmsub
 #define vec_nabs __builtin_s390_vec_nabs

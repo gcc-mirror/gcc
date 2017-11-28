@@ -277,8 +277,7 @@ fi
 fi])
 
 AC_DEFUN([gcc_AC_INITFINI_ARRAY],
-[AC_REQUIRE([gcc_SUN_LD_VERSION])dnl
-AC_ARG_ENABLE(initfini-array,
+[AC_ARG_ENABLE(initfini-array,
 	[  --enable-initfini-array	use .init_array/.fini_array sections],
 	[], [
 AC_CACHE_CHECK(for .preinit_array/.init_array/.fini_array support,
@@ -555,43 +554,6 @@ ifelse([$8],,,[dnl
 if test $[$2] != yes; then
   $8
 fi])])
-
-dnl gcc_SUN_LD_VERSION
-dnl
-dnl Determines Sun linker version numbers, setting gcc_cv_sun_ld_vers to
-dnl the complete version number and gcc_cv_sun_ld_vers_{major, minor} to
-dnl the corresponding fields.
-dnl
-dnl ld and ld.so.1 are guaranteed to be updated in lockstep, so ld version
-dnl numbers can be used in ld.so.1 feature checks even if a different
-dnl linker is configured.
-dnl
-AC_DEFUN([gcc_SUN_LD_VERSION],
-[changequote(,)dnl
-if test "x${build}" = "x${target}" && test "x${build}" = "x${host}"; then
-  case "${target}" in
-    *-*-solaris2*)
-      #
-      # Solaris 2 ld -V output looks like this for a regular version:
-      #
-      # ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
-      #
-      # but test versions add stuff at the end:
-      #
-      # ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
-      #
-      gcc_cv_sun_ld_ver=`/usr/ccs/bin/ld -V 2>&1`
-      if echo "$gcc_cv_sun_ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
-	gcc_cv_sun_ld_vers=`echo $gcc_cv_sun_ld_ver | sed -n \
-	  -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
-	gcc_cv_sun_ld_vers_major=`expr "$gcc_cv_sun_ld_vers" : '\([0-9]*\)'`
-	gcc_cv_sun_ld_vers_minor=`expr "$gcc_cv_sun_ld_vers" : '[0-9]*\.\([0-9]*\)'`
-      fi
-      ;;
-  esac
-fi
-changequote([,])dnl
-])
 
 dnl GCC_TARGET_TEMPLATE(KEY)
 dnl ------------------------

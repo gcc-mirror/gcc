@@ -144,8 +144,8 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
       || rhs->is_error_expression())
     return Expression::make_error(location);
 
-  if (lhs_type->forwarded() != rhs_type->forwarded()
-      && lhs_type->interface_type() != NULL)
+  bool are_identical = Type::are_identical(lhs_type, rhs_type, false, NULL);
+  if (!are_identical && lhs_type->interface_type() != NULL)
     {
       if (rhs_type->interface_type() == NULL)
         return Expression::convert_type_to_interface(lhs_type, rhs, location);
@@ -153,8 +153,7 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
         return Expression::convert_interface_to_interface(lhs_type, rhs, false,
                                                           location);
     }
-  else if (lhs_type->forwarded() != rhs_type->forwarded()
-	   && rhs_type->interface_type() != NULL)
+  else if (!are_identical && rhs_type->interface_type() != NULL)
     return Expression::convert_interface_to_type(lhs_type, rhs, location);
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())
     {
@@ -165,8 +164,15 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
     }
   else if (rhs_type->is_nil_type())
     return Expression::make_nil(location);
-  else if (Type::are_identical(lhs_type, rhs_type, false, NULL))
+  else if (are_identical)
     {
+      if (lhs_type->forwarded() != rhs_type->forwarded())
+	{
+	  // Different but identical types require an explicit
+	  // conversion.  This happens with type aliases.
+	  return Expression::make_cast(lhs_type, rhs, location);
+	}
+
       // No conversion is needed.
       return rhs;
     }
@@ -765,7 +771,7 @@ Var_expression::do_get_backend(Translate_context* context)
     go_unreachable();
 
   Bexpression* ret =
-      context->backend()->var_expression(bvar, this->in_lvalue_pos_, loc);
+      context->backend()->var_expression(bvar, loc);
   if (is_in_heap)
     ret = context->backend()->indirect_expression(btype, ret, true, loc);
   return ret;
@@ -892,10 +898,7 @@ Temporary_reference_expression::do_get_backend(Translate_context* context)
 {
   Gogo* gogo = context->gogo();
   Bvariable* bvar = this->statement_->get_backend_variable(context);
-  Varexpr_context ve_ctxt = (this->is_lvalue_ ? VE_lvalue : VE_rvalue);
-
-  Bexpression* ret = gogo->backend()->var_expression(bvar, ve_ctxt,
-                                                     this->location());
+  Bexpression* ret = gogo->backend()->var_expression(bvar, this->location());
 
   // The backend can't always represent the same set of recursive types
   // that the Go frontend can.  In some cases this means that a
@@ -966,7 +969,7 @@ Set_and_use_temporary_expression::do_get_backend(Translate_context* context)
   Location loc = this->location();
   Gogo* gogo = context->gogo();
   Bvariable* bvar = this->statement_->get_backend_variable(context);
-  Bexpression* lvar_ref = gogo->backend()->var_expression(bvar, VE_lvalue, loc);
+  Bexpression* lvar_ref = gogo->backend()->var_expression(bvar, loc);
 
   Named_object* fn = context->function();
   go_assert(fn != NULL);
@@ -974,7 +977,7 @@ Set_and_use_temporary_expression::do_get_backend(Translate_context* context)
   Bexpression* bexpr = this->expr_->get_backend(context);
   Bstatement* set = gogo->backend()->assignment_statement(bfn, lvar_ref,
                                                           bexpr, loc);
-  Bexpression* var_ref = gogo->backend()->var_expression(bvar, VE_rvalue, loc);
+  Bexpression* var_ref = gogo->backend()->var_expression(bvar, loc);
   Bexpression* ret = gogo->backend()->compound_expression(set, var_ref, loc);
   return ret;
 }
@@ -1078,11 +1081,11 @@ Sink_expression::do_get_backend(Translate_context* context)
 	gogo->backend()->temporary_variable(fn_ctx, context->bblock(), bt, NULL,
 					    false, loc, &decl);
       Bexpression* var_ref =
-          gogo->backend()->var_expression(this->bvar_, VE_lvalue, loc);
+          gogo->backend()->var_expression(this->bvar_, loc);
       var_ref = gogo->backend()->compound_expression(decl, var_ref, loc);
       return var_ref;
     }
-  return gogo->backend()->var_expression(this->bvar_, VE_lvalue, loc);
+  return gogo->backend()->var_expression(this->bvar_, loc);
 }
 
 // Ast dump for sink expression.
@@ -1296,7 +1299,7 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
   Named_object* no = this->fn_;
   Location loc = no->location();
   if (this->dvar_ != NULL)
-    return context->backend()->var_expression(this->dvar_, VE_rvalue, loc);
+    return context->backend()->var_expression(this->dvar_, loc);
 
   Gogo* gogo = context->gogo();
   std::string var_name(gogo->function_descriptor_name(no));
@@ -1334,7 +1337,7 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
     }
 
   this->dvar_ = bvar;
-  return gogo->backend()->var_expression(bvar, VE_rvalue, loc);
+  return gogo->backend()->var_expression(bvar, loc);
 }
 
 // Print a function descriptor expression.
@@ -4280,7 +4283,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	  Temporary_statement* temp = sut->temporary();
 	  Bvariable* bvar = temp->get_backend_variable(context);
           Bexpression* bvar_expr =
-              gogo->backend()->var_expression(bvar, VE_lvalue, loc);
+              gogo->backend()->var_expression(bvar, loc);
           Bexpression* bval = sut->expression()->get_backend(context);
 
           Named_object* fn = context->function();
@@ -4367,7 +4370,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	  gogo->backend()->implicit_variable_set_init(implicit, var_name, btype,
 						      true, copy_to_heap, false,
 						      bexpr);
-	  bexpr = gogo->backend()->var_expression(implicit, VE_rvalue, loc);
+	  bexpr = gogo->backend()->var_expression(implicit, loc);
 
 	  // If we are not copying a slice initializer to the heap,
 	  // then it can be changed by the program, so if it can
@@ -4377,7 +4380,7 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      && this->expr_->type()->has_pointer())
 	    {
 	      Bexpression* root =
-                  gogo->backend()->var_expression(implicit, VE_rvalue, loc);
+                  gogo->backend()->var_expression(implicit, loc);
 	      root = gogo->backend()->address_expression(root, loc);
 	      Type* type = Type::make_pointer_type(this->expr_->type());
 	      gogo->add_gc_root(Expression::make_backend(root, type, loc));
@@ -4394,7 +4397,7 @@ Unary_expression::do_get_backend(Translate_context* context)
                                                 true, false, btype, loc);
           gogo->backend()->immutable_struct_set_init(decl, var_name, true,
 						     false, btype, loc, bexpr);
-          bexpr = gogo->backend()->var_expression(decl, VE_rvalue, loc);
+          bexpr = gogo->backend()->var_expression(decl, loc);
         }
 
       go_assert(!this->create_temp_ || this->expr_->is_variable());
@@ -14303,7 +14306,7 @@ Heap_expression::do_get_backend(Translate_context* context)
   Bstatement* assn;
   if (!etype->has_pointer())
     {
-      space = gogo->backend()->var_expression(space_temp, VE_lvalue, loc);
+      space = gogo->backend()->var_expression(space_temp, loc);
       Bexpression* ref =
 	gogo->backend()->indirect_expression(expr_btype, space, true, loc);
       assn = gogo->backend()->assignment_statement(fndecl, ref, bexpr, loc);
@@ -14316,12 +14319,12 @@ Heap_expression::do_get_backend(Translate_context* context)
 					    expr_btype, bexpr, true, loc,
 					    &edecl);
       Bexpression* btempref = gogo->backend()->var_expression(btemp,
-							      VE_lvalue, loc);
+							      loc);
       Bexpression* addr = gogo->backend()->address_expression(btempref, loc);
 
       Expression* td = Expression::make_type_descriptor(etype, loc);
       Type* etype_ptr = Type::make_pointer_type(etype);
-      space = gogo->backend()->var_expression(space_temp, VE_rvalue, loc);
+      space = gogo->backend()->var_expression(space_temp, loc);
       Expression* elhs = Expression::make_backend(space, etype_ptr, loc);
       Expression* erhs = Expression::make_backend(addr, etype_ptr, loc);
       Expression* call = Runtime::make_call(Runtime::TYPEDMEMMOVE, loc, 3,
@@ -14331,7 +14334,7 @@ Heap_expression::do_get_backend(Translate_context* context)
       assn = gogo->backend()->compound_statement(edecl, s);
     }
   decl = gogo->backend()->compound_statement(decl, assn);
-  space = gogo->backend()->var_expression(space_temp, VE_rvalue, loc);
+  space = gogo->backend()->var_expression(space_temp, loc);
   return gogo->backend()->compound_expression(decl, space, loc);
 }
 
@@ -14655,7 +14658,7 @@ Ptrmask_symbol_expression::do_get_backend(Translate_context* context)
 
   Bvariable* bvar = this->type_->gc_ptrmask_var(gogo, ptrsize, ptrdata);
   Location bloc = Linemap::predeclared_location();
-  Bexpression* bref = gogo->backend()->var_expression(bvar, VE_rvalue, bloc);
+  Bexpression* bref = gogo->backend()->var_expression(bvar, bloc);
   Bexpression* baddr = gogo->backend()->address_expression(bref, bloc);
 
   Type* uint8_type = Type::lookup_integer_type("uint8");
@@ -15374,8 +15377,7 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   Location loc = Linemap::predeclared_location();
   if (this->bvar_ != NULL)
-    return gogo->backend()->var_expression(this->bvar_, VE_rvalue,
-                                           this->location());
+    return gogo->backend()->var_expression(this->bvar_, this->location());
 
   const Typed_identifier_list* interface_methods = this->itype_->methods();
   go_assert(!interface_methods->empty());
@@ -15415,8 +15417,7 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
       this->bvar_ =
           gogo->backend()->immutable_struct_reference(mangled_name, asm_name,
                                                       btype, loc);
-      return gogo->backend()->var_expression(this->bvar_, VE_rvalue,
-                                             this->location());
+      return gogo->backend()->var_expression(this->bvar_, this->location());
     }
 
   // The first element is the type descriptor.
@@ -15481,7 +15482,7 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
 						  !is_public, btype, loc);
   gogo->backend()->immutable_struct_set_init(this->bvar_, mangled_name, false,
                                              !is_public, btype, loc, ctor);
-  return gogo->backend()->var_expression(this->bvar_, VE_lvalue, loc);
+  return gogo->backend()->var_expression(this->bvar_, loc);
 }
 
 void

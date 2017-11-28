@@ -812,11 +812,12 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep)
   finish_cond (&WHILE_COND (while_stmt), cond);
   begin_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
-    WHILE_COND (while_stmt) = build2 (ANNOTATE_EXPR,
+    WHILE_COND (while_stmt) = build3 (ANNOTATE_EXPR,
 				      TREE_TYPE (WHILE_COND (while_stmt)),
 				      WHILE_COND (while_stmt),
 				      build_int_cst (integer_type_node,
-						     annot_expr_ivdep_kind));
+						     annot_expr_ivdep_kind),
+				      integer_zero_node);
   simplify_loop_decl_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
 }
 
@@ -870,8 +871,9 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep)
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
-    cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
-		   build_int_cst (integer_type_node, annot_expr_ivdep_kind));
+    cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
+		   integer_zero_node);
   DO_COND (do_stmt) = cond;
 }
 
@@ -990,11 +992,12 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep)
   finish_cond (&FOR_COND (for_stmt), cond);
   begin_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
-    FOR_COND (for_stmt) = build2 (ANNOTATE_EXPR,
+    FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),
 				  FOR_COND (for_stmt),
 				  build_int_cst (integer_type_node,
-						 annot_expr_ivdep_kind));
+						 annot_expr_ivdep_kind),
+				  integer_zero_node);
   simplify_loop_decl_cond (&FOR_COND (for_stmt), FOR_BODY (for_stmt));
 }
 
@@ -2705,8 +2708,12 @@ finish_compound_literal (tree type, tree compound_literal,
 
   if (tree anode = type_uses_auto (type))
     if (CLASS_PLACEHOLDER_TEMPLATE (anode))
-      type = do_auto_deduction (type, compound_literal, anode, complain,
-				adc_variable_type);
+      {
+	type = do_auto_deduction (type, compound_literal, anode, complain,
+				  adc_variable_type);
+	if (type == error_mark_node)
+	  return error_mark_node;
+      }
 
   if (processing_template_decl)
     {
@@ -3265,6 +3272,8 @@ outer_var_p (tree decl)
 {
   return ((VAR_P (decl) || TREE_CODE (decl) == PARM_DECL)
 	  && DECL_FUNCTION_SCOPE_P (decl)
+	  /* Don't get confused by temporaries.  */
+	  && DECL_NAME (decl)
 	  && (DECL_CONTEXT (decl) != current_function_decl
 	      || parsing_nsdmi ()));
 }
@@ -3279,10 +3288,14 @@ outer_automatic_var_p (tree decl)
 }
 
 /* DECL satisfies outer_automatic_var_p.  Possibly complain about it or
-   rewrite it for lambda capture.  */
+   rewrite it for lambda capture.
+
+   If ODR_USE is true, we're being called from mark_use, and we complain about
+   use of constant variables.  If ODR_USE is false, we're being called for the
+   id-expression, and we do lambda capture.  */
 
 tree
-process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
+process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
 {
   if (cp_unevaluated_operand)
     /* It's not a use (3.2) if we're in an unevaluated context.  */
@@ -3303,24 +3316,22 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
 
-  /* Core issue 696: Only an odr-use of an outer automatic variable causes a
-     capture (or error), and a constant variable can decay to a prvalue
-     constant without odr-use.  So don't capture yet.  */
-  if (decl_constant_var_p (decl) && !force_use)
-    return decl;
-
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
       /* Check whether we've already built a proxy.  */
-      tree d = retrieve_local_specialization (decl);
-      if (d && is_capture_proxy (d))
+      tree var = decl;
+      while (is_normal_capture_proxy (var))
+	var = DECL_CAPTURED_VARIABLE (var);
+      tree d = retrieve_local_specialization (var);
+
+      if (d && d != decl && is_capture_proxy (d))
 	{
 	  if (DECL_CONTEXT (d) == containing_function)
 	    /* We already have an inner proxy.  */
 	    return d;
 	  else
 	    /* We need to capture an outer proxy.  */
-	    return process_outer_var_ref (d, complain, force_use);
+	    return process_outer_var_ref (d, complain, odr_use);
 	}
     }
 
@@ -3366,12 +3377,19 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
 	error ("cannot capture member %qD of anonymous union", decl);
       return error_mark_node;
     }
-  if (context == containing_function)
+  /* Do lambda capture when processing the id-expression, not when
+     odr-using a variable.  */
+  if (!odr_use && context == containing_function)
     {
       decl = add_default_capture (lambda_stack,
 				  /*id=*/DECL_NAME (decl),
 				  initializer);
     }
+  /* Only an odr-use of an outer automatic variable causes an
+     error, and a constant variable can decay to a prvalue
+     constant without odr-use.  So don't complain yet.  */
+  else if (!odr_use && decl_constant_var_p (decl))
+    return decl;
   else if (lambda_expr)
     {
       if (complain & tf_error)
@@ -3383,7 +3401,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool force_use)
 	    inform (location_of (closure),
 		    "the lambda has no capture-default");
 	  else if (TYPE_CLASS_SCOPE_P (closure))
-	    inform (0, "lambda in local class %q+T cannot "
+	    inform (UNKNOWN_LOCATION, "lambda in local class %q+T cannot "
 		    "capture variables from the enclosing context",
 		    TYPE_CONTEXT (closure));
 	  inform (DECL_SOURCE_LOCATION (decl), "%q#D declared here", decl);
@@ -5083,7 +5101,7 @@ omp_reduction_id (enum tree_code reduction_code, tree reduction_id, tree type)
     case BIT_IOR_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      reduction_id = cp_operator_id (reduction_code);
+      reduction_id = ovl_op_identifier (false, reduction_code);
       break;
     case MIN_EXPR:
       p = "min";
@@ -5761,7 +5779,7 @@ cp_finish_omp_clause_depend_sink (tree sink_clause)
       if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
 	{
 	  tree offset = TREE_PURPOSE (t);
-	  bool neg = wi::neg_p ((wide_int) offset);
+	  bool neg = wi::neg_p (wi::to_wide (offset));
 	  offset = fold_unary (ABS_EXPR, TREE_TYPE (offset), offset);
 	  decl = mark_rvalue_use (decl);
 	  decl = convert_from_reference (decl);
@@ -6213,8 +6231,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				      "positive");
 			  t = integer_one_node;
 			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_OPERAND (c, 1) = t;
 	    }
@@ -7095,8 +7113,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				    "integral constant");
 			  remove = true;
 			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 
 		/* Update list item.  */
@@ -9004,8 +9022,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   tree fns = NULL_TREE;
 
   if (assign_p || TYPE_HAS_COPY_CTOR (type))
-    fns = get_class_binding (type,
-			     assign_p ? cp_assignment_operator_id (NOP_EXPR)
+    fns = get_class_binding (type, assign_p ? assign_op_identifier
 			     : ctor_identifier);
 
   bool saw_copy = false;

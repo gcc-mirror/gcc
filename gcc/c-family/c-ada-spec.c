@@ -2362,7 +2362,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	pp_unsigned_wide_integer (buffer, tree_to_uhwi (node));
       else
 	{
-	  wide_int val = node;
+	  wide_int val = wi::to_wide (node);
 	  int i;
 	  if (wi::neg_p (val))
 	    {

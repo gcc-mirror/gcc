@@ -2568,10 +2568,6 @@ package body Osint is
       FD  : out File_Descriptor;
       T   : File_Type := Source)
    is
-      --  Source_File_FD : File_Descriptor;
-      --  The file descriptor for the current source file. A negative value
-      --  indicates failure to open the specified source file.
-
       Len : Integer;
       --  Length of file, assume no more than 2 gigabytes of source
 

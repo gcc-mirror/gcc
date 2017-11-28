@@ -7,4 +7,5 @@ double f(double * A, double * B)
   return __sec_reduce_add((B[0:500])(; /* { dg-error "called object" "" { target c } } */
 /* { dg-error "expected expression before ';' token" "" { target c } .-1 } */
 /* { dg-error "expected primary-expression before ';' token" "" { target c++ } .-2 } */
-} /* { dg-error "expected" "" { target c } } */
+/* { dg-error "expected" "" { target c } .-3 } */
+}

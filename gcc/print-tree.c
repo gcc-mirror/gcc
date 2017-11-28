@@ -118,7 +118,7 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
 	fprintf (file, " overflow");
 
       fprintf (file, " ");
-      print_dec (node, file, TYPE_SIGN (TREE_TYPE (node)));
+      print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
     }
   if (TREE_CODE (node) == REAL_CST)
     {
@@ -721,7 +721,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    fprintf (file, " overflow");
 
 	  fprintf (file, " ");
-	  print_dec (node, file, TYPE_SIGN (TREE_TYPE (node)));
+	  print_dec (wi::to_wide (node), file, TYPE_SIGN (TREE_TYPE (node)));
 	  break;
 
 	case REAL_CST:
@@ -1095,32 +1095,6 @@ debug_raw (vec<tree, va_gc> &ref)
 }
 
 DEBUG_FUNCTION void
-debug (vec<tree, va_gc> &ref)
-{
-  tree elt;
-  unsigned ix;
-
-  /* Print the slot this node is in, and its code, and address.  */
-  fprintf (stderr, "<VEC");
-  dump_addr (stderr, " ", ref.address ());
-
-  FOR_EACH_VEC_ELT (ref, ix, elt)
-    {
-      fprintf (stderr, "elt:%d ", ix);
-      debug (elt);
-    }
-}
-
-DEBUG_FUNCTION void
-debug (vec<tree, va_gc> *ptr)
-{
-  if (ptr)
-    debug (*ptr);
-  else
-    fprintf (stderr, "<nil>\n");
-}
-
-DEBUG_FUNCTION void
 debug_raw (vec<tree, va_gc> *ptr)
 {
   if (ptr)
@@ -1129,8 +1103,11 @@ debug_raw (vec<tree, va_gc> *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
-DEBUG_FUNCTION void
-debug_vec_tree (vec<tree, va_gc> *vec)
+static void
+debug_slim (tree t)
 {
-  debug_raw (vec);
+  print_node_brief (stderr, "", t, 0);
 }
+
+DEFINE_DEBUG_VEC (tree)
+DEFINE_DEBUG_HASH_SET (tree)

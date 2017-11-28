@@ -751,6 +751,21 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 		error_at (info->loc,
 			  "vec_select parallel with %d elements, expected %d",
 			  XVECLEN (XEXP (pattern, 1), 0), expected);
+	      else if (VECTOR_MODE_P (imode))
+		{
+		  unsigned int nelems = GET_MODE_NUNITS (imode);
+		  int i;
+		  for (i = 0; i < expected; ++i)
+		    if (CONST_INT_P (XVECEXP (XEXP (pattern, 1), 0, i))
+			&& (UINTVAL (XVECEXP (XEXP (pattern, 1), 0, i))
+			    >= nelems))
+		      error_at (info->loc,
+				"out of bounds selector %u in vec_select, "
+				"expected at most %u",
+				(unsigned)
+				UINTVAL (XVECEXP (XEXP (pattern, 1), 0, i)),
+				nelems - 1);
+		}
 	    }
 	  if (imode != VOIDmode && !VECTOR_MODE_P (imode))
 	    error_at (info->loc, "%smode of first vec_select operand is not a "

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
+#include "tree-object-size.h"
 #include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "ipa-utils.h"
@@ -59,6 +60,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "diagnostic-core.h"
+#include "intl.h"
+#include "calls.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -923,12 +927,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 
       if (!tree_fits_shwi_p (len))
 	return false;
-      /* FIXME:
-         This logic lose for arguments like (type *)malloc (sizeof (type)),
-         since we strip the casts of up to VOID return value from malloc.
-	 Perhaps we ought to inherit type from non-VOID argument here?  */
-      STRIP_NOPS (src);
-      STRIP_NOPS (dest);
       if (!POINTER_TYPE_P (TREE_TYPE (src))
 	  || !POINTER_TYPE_P (TREE_TYPE (dest)))
 	return false;
@@ -938,37 +936,14 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	 using that type.  In theory we could always use a char[len] type
 	 but that only gains us that the destination and source possibly
 	 no longer will have their address taken.  */
-      /* As we fold (void *)(p + CST) to (void *)p + CST undo this here.  */
-      if (TREE_CODE (src) == POINTER_PLUS_EXPR)
-	{
-	  tree tem = TREE_OPERAND (src, 0);
-	  STRIP_NOPS (tem);
-	  if (tem != TREE_OPERAND (src, 0))
-	    src = build1 (NOP_EXPR, TREE_TYPE (tem), src);
-	}
-      if (TREE_CODE (dest) == POINTER_PLUS_EXPR)
-	{
-	  tree tem = TREE_OPERAND (dest, 0);
-	  STRIP_NOPS (tem);
-	  if (tem != TREE_OPERAND (dest, 0))
-	    dest = build1 (NOP_EXPR, TREE_TYPE (tem), dest);
-	}
       srctype = TREE_TYPE (TREE_TYPE (src));
       if (TREE_CODE (srctype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
-	{
-	  srctype = TREE_TYPE (srctype);
-	  STRIP_NOPS (src);
-	  src = build1 (NOP_EXPR, build_pointer_type (srctype), src);
-	}
+	srctype = TREE_TYPE (srctype);
       desttype = TREE_TYPE (TREE_TYPE (dest));
       if (TREE_CODE (desttype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
-	{
-	  desttype = TREE_TYPE (desttype);
-	  STRIP_NOPS (dest);
-	  dest = build1 (NOP_EXPR, build_pointer_type (desttype), dest);
-	}
+	desttype = TREE_TYPE (desttype);
       if (TREE_ADDRESSABLE (srctype)
 	  || TREE_ADDRESSABLE (desttype))
 	return false;
@@ -996,43 +971,34 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  || src_align < TYPE_ALIGN (srctype))
 	return false;
 
-      destvar = dest;
-      STRIP_NOPS (destvar);
-      if (TREE_CODE (destvar) == ADDR_EXPR
-	  && var_decl_component_p (TREE_OPERAND (destvar, 0))
+      destvar = NULL_TREE;
+      if (TREE_CODE (dest) == ADDR_EXPR
+	  && var_decl_component_p (TREE_OPERAND (dest, 0))
 	  && tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
-	destvar = fold_build2 (MEM_REF, desttype, destvar, off0);
-      else
-	destvar = NULL_TREE;
+	destvar = fold_build2 (MEM_REF, desttype, dest, off0);
 
-      srcvar = src;
-      STRIP_NOPS (srcvar);
-      if (TREE_CODE (srcvar) == ADDR_EXPR
-	  && var_decl_component_p (TREE_OPERAND (srcvar, 0))
+      srcvar = NULL_TREE;
+      if (TREE_CODE (src) == ADDR_EXPR
+	  && var_decl_component_p (TREE_OPERAND (src, 0))
 	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
 	{
 	  if (!destvar
 	      || src_align >= TYPE_ALIGN (desttype))
 	    srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
-				  srcvar, off0);
+				  src, off0);
 	  else if (!STRICT_ALIGNMENT)
 	    {
 	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
 					    src_align);
-	      srcvar = fold_build2 (MEM_REF, srctype, srcvar, off0);
+	      srcvar = fold_build2 (MEM_REF, srctype, src, off0);
 	    }
-	  else
-	    srcvar = NULL_TREE;
 	}
-      else
-	srcvar = NULL_TREE;
 
       if (srcvar == NULL_TREE && destvar == NULL_TREE)
 	return false;
 
       if (srcvar == NULL_TREE)
 	{
-	  STRIP_NOPS (src);
 	  if (src_align >= TYPE_ALIGN (desttype))
 	    srcvar = fold_build2 (MEM_REF, desttype, src, off0);
 	  else
@@ -1046,7 +1012,6 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	}
       else if (destvar == NULL_TREE)
 	{
-	  STRIP_NOPS (dest);
 	  if (dest_align >= TYPE_ALIGN (srctype))
 	    destvar = fold_build2 (MEM_REF, srctype, dest, off0);
 	  else
@@ -1553,12 +1518,34 @@ static bool
 gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 			     tree dest, tree src, tree len)
 {
-  location_t loc = gimple_location (gsi_stmt (*gsi));
-  tree fn;
+  gimple *stmt = gsi_stmt (*gsi);
+  location_t loc = gimple_location (stmt);
+  bool nonstring = get_attr_nonstring_decl (dest) != NULL_TREE;
 
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
     {
+      /* Avoid warning if the destination refers to a an array/pointer
+	 decorate with attribute nonstring.  */
+      if (!nonstring)
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  gcall *call = as_a <gcall *> (stmt);
+
+	  /* Warn about the lack of nul termination: the result is not
+	     a (nul-terminated) string.  */
+	  tree slen = get_maxval_strlen (src, 0);
+	  if (slen && !integer_zerop (slen))
+	    warning_at (loc, OPT_Wstringop_truncation,
+			"%G%qD destination unchanged after copying no bytes "
+			"from a string of length %E",
+			call, fndecl, slen);
+	  else
+	    warning_at (loc, OPT_Wstringop_truncation,
+			"%G%qD destination unchanged after copying no bytes",
+			call, fndecl);
+	}
+
       replace_call_with_value (gsi, dest);
       return true;
     }
@@ -1573,16 +1560,49 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   if (!slen || TREE_CODE (slen) != INTEGER_CST)
     return false;
 
-  slen = size_binop_loc (loc, PLUS_EXPR, slen, ssize_int (1));
+  /* The size of the source string including the terminating nul.  */
+  tree ssize = size_binop_loc (loc, PLUS_EXPR, slen, ssize_int (1));
 
   /* We do not support simplification of this case, though we do
      support it when expanding trees into RTL.  */
   /* FIXME: generate a call to __builtin_memset.  */
-  if (tree_int_cst_lt (slen, len))
+  if (tree_int_cst_lt (ssize, len))
     return false;
 
+  if (!nonstring)
+    {
+      if (tree_int_cst_lt (len, slen))
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  gcall *call = as_a <gcall *> (stmt);
+
+	  warning_at (loc, OPT_Wstringop_truncation,
+		      (tree_int_cst_equal (size_one_node, len)
+		       ? G_("%G%qD output truncated copying %E byte "
+			    "from a string of length %E")
+		       : G_("%G%qD output truncated copying %E bytes "
+			    "from a string of length %E")),
+		      call, fndecl, len, slen);
+	}
+      else if (tree_int_cst_equal (len, slen))
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  gcall *call = as_a <gcall *> (stmt);
+
+	  warning_at (loc, OPT_Wstringop_truncation,
+		      (tree_int_cst_equal (size_one_node, len)
+		       ? G_("%G%qD output truncated before terminating nul "
+			    "copying %E byte from a string of the same "
+			    "length")
+		       : G_("%G%qD output truncated before terminating nul "
+			    "copying %E bytes from a string of the same "
+			    "length")),
+		      call, fndecl, len);
+	}
+    }
+
   /* OK transform into builtin memcpy.  */
-  fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
+  tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
   if (!fn)
     return false;
 
@@ -1591,6 +1611,7 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 				  NULL_TREE, true, GSI_SAME_STMT);
   gimple *repl = gimple_build_call (fn, 3, dest, src, len);
   replace_call_with_call_and_fold (gsi, repl);
+
   return true;
 }
 
@@ -1887,24 +1908,71 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  /* If the requested len is greater than or equal to the string
-     length, call strcat.  */
-  if (TREE_CODE (len) == INTEGER_CST && p
-      && compare_tree_int (len, strlen (p)) >= 0)
+  if (TREE_CODE (len) != INTEGER_CST || !p)
+    return false;
+
+  unsigned srclen = strlen (p);
+
+  int cmpsrc = compare_tree_int (len, srclen);
+
+  /* Return early if the requested len is less than the string length.
+     Warnings will be issued elsewhere later.  */
+  if (cmpsrc < 0)
+    return false;
+
+  unsigned HOST_WIDE_INT dstsize;
+
+  bool nowarn = gimple_no_warning_p (stmt);
+
+  if (!nowarn && compute_builtin_object_size (dst, 1, &dstsize))
     {
-      tree fn = builtin_decl_implicit (BUILT_IN_STRCAT);
+      int cmpdst = compare_tree_int (len, dstsize);
 
-      /* If the replacement _DECL isn't initialized, don't do the
-	 transformation.  */
-      if (!fn)
-	return false;
+      if (cmpdst >= 0)
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
 
-      gcall *repl = gimple_build_call (fn, 2, dst, src);
-      replace_call_with_call_and_fold (gsi, repl);
-      return true;
+	  /* Strncat copies (at most) LEN bytes and always appends
+	     the terminating NUL so the specified bound should never
+	     be equal to (or greater than) the size of the destination.
+	     If it is, the copy could overflow.  */
+	  location_t loc = gimple_location (stmt);
+	  nowarn = warning_at (loc, OPT_Wstringop_overflow_,
+			       cmpdst == 0
+			       ? G_("%G%qD specified bound %E equals "
+				    "destination size")
+			       : G_("%G%qD specified bound %E exceeds "
+				    "destination size %wu"),
+			       stmt, fndecl, len, dstsize);
+	  if (nowarn)
+	    gimple_set_no_warning (stmt, true);
+	}
     }
 
-  return false;
+  if (!nowarn && cmpsrc == 0)
+    {
+      tree fndecl = gimple_call_fndecl (stmt);
+
+      /* To avoid certain truncation the specified bound should also
+	 not be equal to (or less than) the length of the source.  */
+      location_t loc = gimple_location (stmt);
+      if (warning_at (loc, OPT_Wstringop_overflow_,
+		      "%G%qD specified bound %E equals source length",
+		      stmt, fndecl, len))
+	gimple_set_no_warning (stmt, true);
+    }
+
+  tree fn = builtin_decl_implicit (BUILT_IN_STRCAT);
+
+  /* If the replacement _DECL isn't initialized, don't do the
+     transformation.  */
+  if (!fn)
+    return false;
+
+  /* Otherwise, emit a call to strcat.  */
+  gcall *repl = gimple_build_call (fn, 2, dst, src);
+  replace_call_with_call_and_fold (gsi, repl);
+  return true;
 }
 
 /* Fold a call to the __strncat_chk builtin with arguments DEST, SRC,
@@ -2138,6 +2206,21 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 	}
 
       gsi_replace_with_seq_vops (gsi, stmts);
+      return true;
+    }
+
+  /* If length is larger than the length of one constant string, 
+     replace strncmp with corresponding strcmp */ 
+  if (fcode == BUILT_IN_STRNCMP 
+      && length > 0
+      && ((p2 && (size_t) length > strlen (p2)) 
+          || (p1 && (size_t) length > strlen (p1))))
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCMP);
+      if (!fn)
+        return false;
+      gimple *repl = gimple_build_call (fn, 2, str1, str2);
+      replace_call_with_call_and_fold (gsi, repl);
       return true;
     }
 
@@ -6586,7 +6669,6 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   gcc_assert (init);
   if (init == error_mark_node)
     {
-      gcc_assert (in_lto_p);
       /* Pass down that we lost track of the target.  */
       if (can_refer)
 	*can_refer = false;
@@ -6784,7 +6866,7 @@ gimple_fold_indirect_ref (tree t)
 	  || DECL_P (TREE_OPERAND (addr, 0)))
 	return fold_build2 (MEM_REF, type,
 			    addr,
-			    wide_int_to_tree (ptype, off));
+			    wide_int_to_tree (ptype, wi::to_wide (off)));
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */

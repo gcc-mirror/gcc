@@ -43,6 +43,7 @@ void InitializeFlags() {
     CommonFlags cf;
     cf.CopyFrom(*common_flags());
     cf.print_summary = false;
+    cf.external_symbolizer_path = GetEnv("UBSAN_SYMBOLIZER_PATH");
     OverrideCommonFlags(cf);
   }
 
@@ -65,22 +66,8 @@ void InitializeFlags() {
 
 }  // namespace __ubsan
 
-extern "C" {
-
-#if !SANITIZER_SUPPORTS_WEAK_HOOKS
-SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
-const char *__ubsan_default_options() { return ""; }
-#endif
-
-#if SANITIZER_WINDOWS
-const char *__ubsan_default_default_options() { return ""; }
-# ifdef _WIN64
-#  pragma comment(linker, "/alternatename:__ubsan_default_options=__ubsan_default_default_options")
-# else
-#  pragma comment(linker, "/alternatename:___ubsan_default_options=___ubsan_default_default_options")
-# endif
-#endif
-
-}  // extern "C"
+SANITIZER_INTERFACE_WEAK_DEF(const char *, __ubsan_default_options, void) {
+  return "";
+}
 
 #endif  // CAN_SANITIZE_UB

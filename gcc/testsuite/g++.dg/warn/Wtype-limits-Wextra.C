@@ -69,7 +69,7 @@ void f(Int x) {
   assert(0 <= x and x <= D);
 }
 
-int ff(void) {
+void ff(void) {
   f<unsigned char, 2>(5);
   f<signed char, 2>(5);
 }
@@ -78,7 +78,7 @@ template <typename Int, Int D>
 void g(void) {
   assert(0 <= D);
 }
-int gg(void) {
+void gg(void) {
   g<unsigned char, 2>();
 }
 

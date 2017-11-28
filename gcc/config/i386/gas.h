@@ -40,10 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DBX_NO_XREFS
 #undef DBX_CONTIN_LENGTH
 
-/* Ask for COFF symbols.  */
-
-#define SDB_DEBUGGING_INFO 1
-
 /* Output #ident as a .ident.  */
 
 #undef TARGET_ASM_OUTPUT_IDENT

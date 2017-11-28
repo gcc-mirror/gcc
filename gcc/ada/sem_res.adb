@@ -63,8 +63,8 @@ with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
-with Sem_Elim; use Sem_Elim;
 with Sem_Elab; use Sem_Elab;
+with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Intr; use Sem_Intr;
 with Sem_Util; use Sem_Util;
@@ -1030,7 +1030,7 @@ package body Sem_Res is
          if Nkind (N) in N_Has_Etype and then Etype (N) = Any_Type then
             return;
          elsif Nkind (N) in N_Has_Chars
-           and then Chars (N) in Error_Name_Or_No_Name
+           and then not Is_Valid_Name (Chars (N))
          then
             return;
          end if;
@@ -1212,7 +1212,7 @@ package body Sem_Res is
       Func      : constant Entity_Id := Entity (Name (N));
       Is_Binary : constant Boolean   := Present (Act2);
       Op_Node   : Node_Id;
-      Opnd_Type : Entity_Id;
+      Opnd_Type : Entity_Id := Empty;
       Orig_Type : Entity_Id := Empty;
       Pack      : Entity_Id;
 
@@ -1324,6 +1324,12 @@ package body Sem_Res is
 
    begin
       Op_Node := New_Node (Operator_Kind (Op_Name, Is_Binary), Sloc (N));
+
+      --  Ensure that the corresponding operator has the same parent as the
+      --  original call. This guarantees that parent traversals performed by
+      --  the ABE mechanism succeed.
+
+      Set_Parent (Op_Node, Parent (N));
 
       --  Binary operator
 
@@ -1517,6 +1523,7 @@ package body Sem_Res is
             --  Operator may be defined in an extension of System
 
             elsif Present (System_Aux_Id)
+              and then Present (Opnd_Type)
               and then Scope (Opnd_Type) = System_Aux_Id
             then
                null;
@@ -2433,22 +2440,27 @@ package body Sem_Res is
                   Set_Entity (N, Seen);
                   Generate_Reference (Seen, N);
 
-               elsif Nkind (N) = N_Case_Expression then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_Character_Literal then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_If_Expression then
+               elsif Nkind_In (N, N_Case_Expression,
+                                  N_Character_Literal,
+                                  N_Delta_Aggregate,
+                                  N_If_Expression)
+               then
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
                --  implicit dereference. If type matches context, no implicit
-               --  dereference is involved.
+               --  dereference is involved. If the expression is an entity,
+               --  generate a reference to it, as this is not done for an
+               --  overloaded construct during analysis.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);
                   Set_Is_Overloaded (N, False);
+
+                  if Is_Entity_Name (N) then
+                     Generate_Reference (Entity (N), N);
+                  end if;
+
                   exit Interp_Loop;
 
                elsif Is_Overloaded (N)
@@ -3132,12 +3144,12 @@ package body Sem_Res is
       Loc    : constant Source_Ptr := Sloc (N);
       A      : Node_Id;
       A_Id   : Entity_Id;
-      A_Typ  : Entity_Id;
+      A_Typ  : Entity_Id := Empty; -- init to avoid warning
       F      : Entity_Id;
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
-      Real_F : Entity_Id;
+      Real_F : Entity_Id := Empty; -- init to avoid warning
 
       Real_Subp : Entity_Id;
       --  If the subprogram being called is an inherited operation for
@@ -3171,14 +3183,6 @@ package body Sem_Res is
       --  If the actual is missing in a call, insert in the actuals list
       --  an instance of the default expression. The insertion is always
       --  a named association.
-
-      procedure Property_Error
-        (Var      : Node_Id;
-         Var_Id   : Entity_Id;
-         Prop_Nam : Name_Id);
-      --  Emit an error concerning variable Var with entity Var_Id that has
-      --  enabled property Prop_Nam when it acts as an actual parameter in a
-      --  call and the corresponding formal parameter is of mode IN.
 
       function Same_Ancestor (T1, T2 : Entity_Id) return Boolean;
       --  Check whether T1 and T2, or their full views, are derived from a
@@ -3628,23 +3632,6 @@ package body Sem_Res is
          Prev := Actval;
       end Insert_Default;
 
-      --------------------
-      -- Property_Error --
-      --------------------
-
-      procedure Property_Error
-        (Var      : Node_Id;
-         Var_Id   : Entity_Id;
-         Prop_Nam : Name_Id)
-      is
-      begin
-         Error_Msg_Name_1 := Prop_Nam;
-         Error_Msg_NE
-           ("external variable & with enabled property % cannot appear as "
-            & "actual in procedure call (SPARK RM 7.1.3(10))", Var, Var_Id);
-         Error_Msg_N ("\\corresponding formal parameter has mode In", Var);
-      end Property_Error;
-
       -------------------
       -- Same_Ancestor --
       -------------------
@@ -3763,6 +3750,21 @@ package body Sem_Res is
            and then Is_Entity_Name (A)
            and then Comes_From_Source (A)
          then
+            --  Annotate the tree by creating a variable reference marker when
+            --  the actual denotes a variable reference, in case the reference
+            --  is folded or optimized away. The variable reference marker is
+            --  automatically saved for later examination by the ABE Processing
+            --  phase. The status of the reference is set as follows:
+
+            --    status   mode
+            --    read     IN, IN OUT
+            --    write    IN OUT, OUT
+
+            Build_Variable_Reference_Marker
+              (N     => A,
+               Read  => Ekind (F) /= E_Out_Parameter,
+               Write => Ekind (F) /= E_In_Parameter);
+
             Orig_A := Entity (A);
 
             if Present (Orig_A) then
@@ -4653,26 +4655,28 @@ package body Sem_Res is
                   Flag_Effectively_Volatile_Objects (A);
                end if;
 
-               --  Detect an external variable with an enabled property that
-               --  does not match the mode of the corresponding formal in a
-               --  procedure call. Functions are not considered because they
-               --  cannot have effectively volatile formal parameters in the
-               --  first place.
+               --  An effectively volatile variable cannot act as an actual
+               --  parameter in a procedure call when the variable has enabled
+               --  property Effective_Reads and the corresponding formal is of
+               --  mode IN (SPARK RM 7.1.3(10)).
 
                if Ekind (Nam) = E_Procedure
                  and then Ekind (F) = E_In_Parameter
                  and then Is_Entity_Name (A)
-                 and then Present (Entity (A))
-                 and then Ekind (Entity (A)) = E_Variable
                then
                   A_Id := Entity (A);
 
-                  if Async_Readers_Enabled (A_Id) then
-                     Property_Error (A, A_Id, Name_Async_Readers);
-                  elsif Effective_Reads_Enabled (A_Id) then
-                     Property_Error (A, A_Id, Name_Effective_Reads);
-                  elsif Effective_Writes_Enabled (A_Id) then
-                     Property_Error (A, A_Id, Name_Effective_Writes);
+                  if Ekind (A_Id) = E_Variable
+                    and then Is_Effectively_Volatile (Etype (A_Id))
+                    and then Effective_Reads_Enabled (A_Id)
+                  then
+                     Error_Msg_NE
+                       ("effectively volatile variable & cannot appear as "
+                        & "actual in procedure call", A, A_Id);
+
+                     Error_Msg_Name_1 := Name_Effective_Reads;
+                     Error_Msg_N ("\\variable has enabled property %", A);
+                     Error_Msg_N ("\\corresponding formal has mode IN", A);
                   end if;
                end if;
             end if;
@@ -4851,10 +4855,17 @@ package body Sem_Res is
          --  are explicitly marked as coming from source but do not need to be
          --  checked for limited initialization. To exclude this case, ensure
          --  that the parent of the allocator is a source node.
+         --  The return statement constructed for an Expression_Function does
+         --  not come from source but requires a limited check.
 
          if Is_Limited_Type (Etype (E))
            and then Comes_From_Source (N)
-           and then Comes_From_Source (Parent (N))
+           and then
+             (Comes_From_Source (Parent (N))
+               or else
+                 (Ekind (Current_Scope) = E_Function
+                   and then Nkind (Original_Node (Unit_Declaration_Node
+                              (Current_Scope))) = N_Expression_Function))
            and then not In_Instance_Body
          then
             if not OK_For_Limited_Init (Etype (E), Expression (E)) then
@@ -5140,6 +5151,20 @@ package body Sem_Res is
 
             if not Is_Static_Coextension (N) then
                Set_Is_Dynamic_Coextension (N);
+
+               --  ??? We currently do not handle finalization and deallocation
+               --  of coextensions properly so let's at least warn the user
+               --  about it.
+
+               if Is_Controlled (Desig_T) then
+                  Error_Msg_N
+                    ("??coextension will not be finalized when its "
+                     & "associated owner is deallocated or finalized", N);
+               else
+                  Error_Msg_N
+                    ("??coextension will not be deallocated when its "
+                     & "associated owner is deallocated", N);
+               end if;
             end if;
 
          --  Cleanup for potential static coextensions
@@ -5147,6 +5172,21 @@ package body Sem_Res is
          else
             Set_Is_Dynamic_Coextension (N, False);
             Set_Is_Static_Coextension  (N, False);
+
+            --  ??? It seems we also do not properly finalize anonymous
+            --  access-to-controlled objects within their declared scope and
+            --  instead finalize them with their associated unit. Warn the
+            --  user about it here.
+
+            if Ekind (Typ) = E_Anonymous_Access_Type
+              and then Is_Controlled_Active (Desig_T)
+            then
+               Error_Msg_N
+                 ("??object designated by anonymous access object might not "
+                  & "be finalized until its enclosing library unit goes out "
+                  & "of scope", N);
+               Error_Msg_N ("\use named access type instead", N);
+            end if;
          end if;
       end if;
 
@@ -5785,6 +5825,16 @@ package body Sem_Res is
    --  Start of processing for Resolve_Call
 
    begin
+      --  Preserve relevant elaboration-related attributes of the context which
+      --  are no longer available or very expensive to recompute once analysis,
+      --  resolution, and expansion are over.
+
+      Mark_Elaboration_Attributes
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
+
       --  The context imposes a unique interpretation with type Typ on a
       --  procedure or function call. Find the entity of the subprogram that
       --  yields the expected type, and propagate the corresponding formal
@@ -5841,10 +5891,15 @@ package body Sem_Res is
 
       elsif Nkind_In (Subp, N_Selected_Component, N_Indexed_Component)
         or else (Is_Entity_Name (Subp)
-                  and then Ekind (Entity (Subp)) = E_Entry)
+                  and then Ekind_In (Entity (Subp), E_Entry, E_Entry_Family))
       then
          Resolve_Entry_Call (N, Typ);
-         Check_Elab_Call (N);
+
+         --  Annotate the tree by creating a call marker in case the original
+         --  call is transformed by expansion. The call marker is automatically
+         --  saved for later examination by the ABE Processing phase.
+
+         Build_Call_Marker (N);
 
          --  Kill checks and constant values, as above for indirect case
          --  Who knows what happens when another task is activated?
@@ -6100,14 +6155,14 @@ package body Sem_Res is
                      --  the proper indexed component.
 
                      Index_Node :=
-                        Make_Indexed_Component (Loc,
-                          Prefix       =>
-                            Make_Function_Call (Loc,
-                               Name                   => New_Subp,
-                               Parameter_Associations =>
-                                 New_List
-                                   (Remove_Head (Parameter_Associations (N)))),
-                           Expressions => Parameter_Associations (N));
+                       Make_Indexed_Component (Loc,
+                         Prefix      =>
+                           Make_Function_Call (Loc,
+                             Name                   => New_Subp,
+                             Parameter_Associations =>
+                               New_List
+                                 (Remove_Head (Parameter_Associations (N)))),
+                         Expressions => Parameter_Associations (N));
                   end if;
 
                   --  Preserve the parenthesis count of the node
@@ -6122,7 +6177,13 @@ package body Sem_Res is
                   Set_Etype (Prefix (N), Ret_Type);
                   Set_Etype (N, Typ);
                   Resolve_Indexed_Component (N, Typ);
-                  Check_Elab_Call (Prefix (N));
+
+                  --  Annotate the tree by creating a call marker in case
+                  --  the original call is transformed by expansion. The call
+                  --  marker is automatically saved for later examination by
+                  --  the ABE Processing phase.
+
+                  Build_Call_Marker (Prefix (N));
                end if;
             end if;
 
@@ -6633,7 +6694,12 @@ package body Sem_Res is
       --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);
-      Check_Elab_Call (N);
+
+      --  Annotate the tree by creating a call marker in case the original call
+      --  is transformed by expansion. The call marker is automatically saved
+      --  for later examination by the ABE Processing phase.
+
+      Build_Call_Marker (N);
 
       --  In GNATprove mode, expansion is disabled, but we want to inline some
       --  subprograms to facilitate formal verification. Indirect calls through
@@ -7176,7 +7242,7 @@ package body Sem_Res is
 
          else
             Error_Msg_N
-               ("invalid use of subtype mark in expression or call", N);
+              ("invalid use of subtype mark in expression or call", N);
          end if;
 
       --  Check discriminant use if entity is discriminant in current scope,
@@ -7195,9 +7261,13 @@ package body Sem_Res is
       elsif Ekind (E) = E_Generic_Function then
          Error_Msg_N ("illegal use of generic function", N);
 
-      --  In Ada 83 an OUT parameter cannot be read
+      --  In Ada 83 an OUT parameter cannot be read, but attributes of
+      --  array types (i.e. bounds and length) are legal.
 
       elsif Ekind (E) = E_Out_Parameter
+        and then (Nkind (Parent (N)) /= N_Attribute_Reference
+                   or else Is_Scalar_Type (Etype (E)))
+
         and then (Nkind (Parent (N)) in N_Op
                    or else Nkind (Parent (N)) = N_Explicit_Dereference
                    or else Is_Assignment_Or_Object_Expression
@@ -7267,17 +7337,6 @@ package body Sem_Res is
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
                   & "(SPARK RM 7.1.3(12))", N);
-            end if;
-
-            --  Check for possible elaboration issues with respect to reads of
-            --  variables. The act of renaming the variable is not considered a
-            --  read as it simply establishes an alias.
-
-            if Ekind (E) = E_Variable
-              and then Dynamic_Elaboration_Checks
-              and then Nkind (Par) /= N_Object_Renaming_Declaration
-            then
-               Check_Elab_Call (N);
             end if;
 
             --  The variable may eventually become a constituent of a single
@@ -7524,14 +7583,13 @@ package body Sem_Res is
    ------------------------
 
    procedure Resolve_Entry_Call (N : Node_Id; Typ : Entity_Id) is
-      Entry_Name  : constant Node_Id    := Name (N);
-      Loc         : constant Source_Ptr := Sloc (Entry_Name);
-      Actuals     : List_Id;
-      First_Named : Node_Id;
-      Nam         : Entity_Id;
-      Norm_OK     : Boolean;
-      Obj         : Node_Id;
-      Was_Over    : Boolean;
+      Entry_Name : constant Node_Id    := Name (N);
+      Loc        : constant Source_Ptr := Sloc (Entry_Name);
+
+      Nam      : Entity_Id;
+      Norm_OK  : Boolean;
+      Obj      : Node_Id;
+      Was_Over : Boolean;
 
    begin
       --  We kill all checks here, because it does not seem worth the effort to
@@ -7645,7 +7703,6 @@ package body Sem_Res is
         and then Present (Contract_Wrapper (Nam))
         and then Current_Scope /= Contract_Wrapper (Nam)
       then
-
          --  Note the entity being called before rewriting the call, so that
          --  it appears used at this point.
 
@@ -7760,16 +7817,32 @@ package body Sem_Res is
                Entry_Name);
          end if;
 
-         Actuals := Parameter_Associations (N);
-         First_Named := First_Named_Actual (N);
+         declare
+            Entry_Call : Node_Id;
 
-         Rewrite (N,
-           Make_Entry_Call_Statement (Loc,
-             Name                   => Entry_Name,
-             Parameter_Associations => Actuals));
+         begin
+            Entry_Call :=
+              Make_Entry_Call_Statement (Loc,
+                Name                   => Entry_Name,
+                Parameter_Associations => Parameter_Associations (N));
 
-         Set_First_Named_Actual (N, First_Named);
-         Set_Analyzed (N, True);
+            --  Inherit relevant attributes from the original call
+
+            Set_First_Named_Actual
+              (Entry_Call, First_Named_Actual (N));
+
+            Set_Is_Elaboration_Checks_OK_Node
+              (Entry_Call, Is_Elaboration_Checks_OK_Node (N));
+
+            Set_Is_Elaboration_Warnings_OK_Node
+              (Entry_Call, Is_Elaboration_Warnings_OK_Node (N));
+
+            Set_Is_SPARK_Mode_On_Node
+              (Entry_Call, Is_SPARK_Mode_On_Node (N));
+
+            Rewrite (N, Entry_Call);
+            Set_Analyzed (N, True);
+         end;
 
       --  Protected functions can return on the secondary stack, in which
       --  case we must trigger the transient scope mechanism.

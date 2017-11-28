@@ -198,6 +198,11 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_type = INTEL_COREI7;
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
 	      break;
+	    case 0x66:
+	      /* Cannon Lake.  */
+	      __cpu_model.__cpu_type = INTEL_COREI7;
+	      __cpu_model.__cpu_subtype = INTEL_COREI7_CANNONLAKE;
+	      break;
 	    case 0x17:
 	    case 0x1d:
 	      /* Penryn.  */

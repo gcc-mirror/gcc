@@ -92,7 +92,7 @@ void
 __gnat_fill_arg (char *a, int i)
 {
   if (gnat_argv != NULL)
-    strncpy (a, gnat_argv[i], strlen(gnat_argv[i]));
+    memcpy (a, gnat_argv[i], strlen (gnat_argv[i]));
 }
 
 int
@@ -118,7 +118,7 @@ void
 __gnat_fill_env (char *a, int i)
 {
   if (gnat_envp != NULL)
-    strncpy (a, gnat_envp[i], strlen (gnat_envp[i]));
+    memcpy (a, gnat_envp[i], strlen (gnat_envp[i]));
 }
 
 #ifdef __cplusplus

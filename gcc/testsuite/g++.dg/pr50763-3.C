@@ -53,5 +53,5 @@ long sExt::evalPoint(const v2d & crUV, v3d & rPnt) const {
    if (!_Dom.cop2d(crUV)) {
       sUV = _Dom.clp2d(crUV);
    }
-   eval();
+   return eval();
 }   

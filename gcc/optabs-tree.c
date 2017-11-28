@@ -146,17 +146,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case FMA_EXPR:
       return fma_optab;
 
-    case REDUC_MAX_EXPR:
-      return TYPE_UNSIGNED (type)
-	     ? reduc_umax_scal_optab : reduc_smax_scal_optab;
-
-    case REDUC_MIN_EXPR:
-      return TYPE_UNSIGNED (type)
-	     ? reduc_umin_scal_optab : reduc_smin_scal_optab;
-
-    case REDUC_PLUS_EXPR:
-      return reduc_plus_scal_optab;
-
     case VEC_WIDEN_MULT_HI_EXPR:
       return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
@@ -223,6 +212,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	return TYPE_UNSIGNED (type) ? usadd_optab : ssadd_optab;
       return trapv ? addv_optab : add_optab;
 
+    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       if (TYPE_SATURATING (type))
 	return TYPE_UNSIGNED (type) ? ussub_optab : sssub_optab;

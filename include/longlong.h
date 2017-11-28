@@ -1050,6 +1050,56 @@ extern UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif
 
+#if defined(__riscv)
+#ifdef __riscv_mul
+#define __umulsidi3(u,v) ((UDWtype)(UWtype)(u) * (UWtype)(v))
+#define __muluw3(a, b) ((UWtype)(a) * (UWtype)(b))
+#else
+#if __riscv_xlen == 32
+  #define MULUW3 "call __mulsi3"
+#elif __riscv_xlen == 64
+  #define MULUW3 "call __muldi3"
+#else
+#error unsupport xlen
+#endif /* __riscv_xlen */
+/* We rely on the fact that MULUW3 doesn't clobber the t-registers.
+   It can get better register allocation result.  */
+#define __muluw3(a, b) \
+  ({ \
+    register UWtype __op0 asm ("a0") = a; \
+    register UWtype __op1 asm ("a1") = b; \
+    asm volatile (MULUW3 \
+                  : "+r" (__op0), "+r" (__op1) \
+                  : \
+                  : "ra", "a2", "a3"); \
+    __op0; \
+  })
+#endif /* __riscv_mul */
+#define umul_ppmm(w1, w0, u, v) \
+  do { \
+    UWtype __x0, __x1, __x2, __x3; \
+    UHWtype __ul, __vl, __uh, __vh; \
+ \
+    __ul = __ll_lowpart (u); \
+    __uh = __ll_highpart (u); \
+    __vl = __ll_lowpart (v); \
+    __vh = __ll_highpart (v); \
+ \
+    __x0 = __muluw3 (__ul, __vl); \
+    __x1 = __muluw3 (__ul, __vh); \
+    __x2 = __muluw3 (__uh, __vl); \
+    __x3 = __muluw3 (__uh, __vh); \
+ \
+    __x1 += __ll_highpart (__x0);/* this can't give carry */ \
+    __x1 += __x2; /* but this indeed can */ \
+    if (__x1 < __x2) /* did we get it? */ \
+      __x3 += __ll_B; /* yes, add it in the proper pos.  */ \
+ \
+    (w1) = __x3 + __ll_highpart (__x1); \
+    (w0) = __ll_lowpart (__x1) * __ll_B + __ll_lowpart (__x0); \
+  } while (0)
+#endif /* __riscv */
+
 #if defined(__sh__) && W_TYPE_SIZE == 32
 #ifndef __sh1__
 #define umul_ppmm(w1, w0, u, v) \

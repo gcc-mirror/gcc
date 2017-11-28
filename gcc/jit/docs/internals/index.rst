@@ -103,7 +103,9 @@ and detailed logs in:
 
   jit/build/gcc/testsuite/jit/jit.log
 
-The test executables can be seen as:
+The test executables are normally deleted after each test is run.  For
+debugging, they can be preserved by setting :envvar:`PRESERVE_EXECUTABLES`
+in the environment.  If so, they can then be seen as:
 
 .. code-block:: console
 
@@ -115,7 +117,9 @@ You can compile and run individual tests by passing "jit.exp=TESTNAME" to RUNTES
 
 .. code-block:: console
 
-   [gcc] $ make check-jit RUNTESTFLAGS="-v -v -v jit.exp=test-factorial.c"
+   [gcc] $ PRESERVE_EXECUTABLES= \
+             make check-jit \
+               RUNTESTFLAGS="-v -v -v jit.exp=test-factorial.c"
 
 and once a test has been compiled, you can debug it directly:
 
@@ -130,7 +134,7 @@ and once a test has been compiled, you can debug it directly:
 Running under valgrind
 **********************
 
-The jit testsuite detects if RUN_UNDER_VALGRIND is present in the
+The jit testsuite detects if :envvar:`RUN_UNDER_VALGRIND` is present in the
 environment (with any value).  If it is present, it runs the test client
 code under `valgrind <http://valgrind.org>`_,
 specifcally, the default

@@ -62,20 +62,6 @@ package System.Parameters is
    Unspecified_Size : constant Size_Type := Size_Type'First;
    --  Value used to indicate that no size type is set
 
-   subtype Percentage is Size_Type range -1 .. 100;
-   Dynamic : constant Size_Type := -1;
-   --  The secondary stack ratio is a constant between 0 and 100 which
-   --  determines the percentage of the allocated task stack that is
-   --  used by the secondary stack (the rest being the primary stack).
-   --  The special value of minus one indicates that the secondary
-   --  stack is to be allocated from the heap instead.
-
-   Sec_Stack_Percentage : constant Percentage := Dynamic;
-   --  This constant defines the handling of the secondary stack
-
-   Sec_Stack_Dynamic : constant Boolean := Sec_Stack_Percentage = Dynamic;
-   --  Convenient Boolean for testing for dynamic secondary stack
-
    function Default_Stack_Size return Size_Type;
    --  Default task stack size used if none is specified
 
@@ -100,6 +86,18 @@ package System.Parameters is
    --  This constant indicates whether the stack grows up (False) or
    --  down (True) in memory as functions are called. It is used for
    --  proper implementation of the stack overflow check.
+
+   Runtime_Default_Sec_Stack_Size : constant Size_Type := 10 * 1024;
+   --  The run-time chosen default size for secondary stacks that may be
+   --  overriden by the user with the use of binder -D switch.
+
+   function Default_Sec_Stack_Size return Size_Type;
+   --  The default initial size for secondary stacks that reflects any user
+   --  specified default via the binder -D switch.
+
+   Sec_Stack_Dynamic : constant Boolean := True;
+   --  Indicates if secondary stacks can grow and shrink at run-time. If False,
+   --  the size of a secondary stack is fixed at the point of its creation.
 
    ----------------------------------------------
    -- Characteristics of Types in Interfaces.C --

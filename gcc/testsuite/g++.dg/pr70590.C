@@ -12,13 +12,13 @@ foo ()
 
 void blah (int *);
 
-int
+void
 bar ()
 {
   blah (foo ());
 }
 
-int
+void
 baz ()
 {
   blah (foo ());

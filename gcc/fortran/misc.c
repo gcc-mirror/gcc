@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "gfortran.h"
+#include "spellcheck.h"
 
 
 /* Initialize a typespec to unknown.  */
@@ -279,4 +280,44 @@ get_c_kind(const char *c_kind_name, CInteropKind_t kinds_table[])
       return index;
 
   return ISOCBINDING_INVALID;
+}
+
+
+/* For a given name TYPO, determine the best candidate from CANDIDATES
+   perusing Levenshtein distance.  Frees CANDIDATES before returning.  */
+
+const char *
+gfc_closest_fuzzy_match (const char *typo, char **candidates)
+{
+  /* Determine closest match.  */
+  const char *best = NULL;
+  char **cand = candidates;
+  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
+  const size_t tl = strlen (typo);
+
+  while (cand && *cand)
+    {
+      edit_distance_t dist = levenshtein_distance (typo, tl, *cand,
+	  strlen (*cand));
+      if (dist < best_distance)
+	{
+	   best_distance = dist;
+	   best = *cand;
+	}
+      cand++;
+    }
+  /* If more than half of the letters were misspelled, the suggestion is
+     likely to be meaningless.  */
+  if (best)
+    {
+      unsigned int cutoff = MAX (tl, strlen (best)) / 2;
+
+      if (best_distance > cutoff)
+	{
+	  XDELETEVEC (candidates);
+	  return NULL;
+	}
+      XDELETEVEC (candidates);
+    }
+  return best;
 }

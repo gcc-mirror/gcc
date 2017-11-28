@@ -35,25 +35,19 @@ pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get an
 --  infinite loop from the code within the Poll routine itself.
 
-with System.Parameters;
-
 pragma Warnings (Off);
---  Disable warnings since System.Secondary_Stack is currently not Preelaborate
-with System.Secondary_Stack;
+--  Disable warnings as System.Soft_Links.Initialize is not Preelaborate. It is
+--  safe to with this unit as its elaboration routine will only be initializing
+--  NT_TSD, which is part of this package spec.
+with System.Soft_Links.Initialize;
 pragma Warnings (On);
 
 package body System.Soft_Links is
 
-   package SST renames System.Secondary_Stack;
-
-   NT_TSD : TSD;
-   --  Note: we rely on the default initialization of NT_TSD
-
+   Stack_Limit : aliased System.Address := System.Null_Address;
+   pragma Export (C, Stack_Limit, "__gnat_stack_limit");
    --  Needed for Vx6Cert (Vx653mc) GOS cert and ravenscar-cert runtimes,
    --  VxMILS cert, ravenscar-cert and full runtimes, Vx 5 default runtime
-   Stack_Limit : aliased System.Address := System.Null_Address;
-
-   pragma Export (C, Stack_Limit, "__gnat_stack_limit");
 
    --------------------
    -- Abort_Defer_NT --
@@ -125,14 +119,16 @@ package body System.Soft_Links is
    -- Create_TSD --
    ----------------
 
-   procedure Create_TSD (New_TSD : in out TSD) is
-      use Parameters;
-      SS_Ratio_Dynamic : constant Boolean := Sec_Stack_Percentage = Dynamic;
+   procedure Create_TSD
+     (New_TSD        : in out TSD;
+      Sec_Stack      : SST.SS_Stack_Ptr;
+      Sec_Stack_Size : System.Parameters.Size_Type)
+   is
    begin
-      if SS_Ratio_Dynamic then
-         SST.SS_Init
-           (New_TSD.Sec_Stack_Addr, SST.Default_Secondary_Stack_Size);
-      end if;
+      New_TSD.Jmpbuf_Address := Null_Address;
+
+      New_TSD.Sec_Stack_Ptr := Sec_Stack;
+      SST.SS_Init (New_TSD.Sec_Stack_Ptr, Sec_Stack_Size);
    end Create_TSD;
 
    -----------------------
@@ -150,7 +146,7 @@ package body System.Soft_Links is
 
    procedure Destroy_TSD (Old_TSD : in out TSD) is
    begin
-      SST.SS_Free (Old_TSD.Sec_Stack_Addr);
+      SST.SS_Free (Old_TSD.Sec_Stack_Ptr);
    end Destroy_TSD;
 
    ---------------------
@@ -198,23 +194,23 @@ package body System.Soft_Links is
       return Get_Jmpbuf_Address.all;
    end Get_Jmpbuf_Address_Soft;
 
-   ---------------------------
-   -- Get_Sec_Stack_Addr_NT --
-   ---------------------------
+   ----------------------
+   -- Get_Sec_Stack_NT --
+   ----------------------
 
-   function Get_Sec_Stack_Addr_NT return  Address is
+   function Get_Sec_Stack_NT return SST.SS_Stack_Ptr is
    begin
-      return NT_TSD.Sec_Stack_Addr;
-   end Get_Sec_Stack_Addr_NT;
+      return NT_TSD.Sec_Stack_Ptr;
+   end Get_Sec_Stack_NT;
 
    -----------------------------
-   -- Get_Sec_Stack_Addr_Soft --
+   -- Get_Sec_Stack_Soft --
    -----------------------------
 
-   function Get_Sec_Stack_Addr_Soft return  Address is
+   function Get_Sec_Stack_Soft return SST.SS_Stack_Ptr is
    begin
-      return Get_Sec_Stack_Addr.all;
-   end Get_Sec_Stack_Addr_Soft;
+      return Get_Sec_Stack.all;
+   end Get_Sec_Stack_Soft;
 
    -----------------------
    -- Get_Stack_Info_NT --
@@ -254,23 +250,23 @@ package body System.Soft_Links is
       Set_Jmpbuf_Address (Addr);
    end Set_Jmpbuf_Address_Soft;
 
-   ---------------------------
-   -- Set_Sec_Stack_Addr_NT --
-   ---------------------------
+   ----------------------
+   -- Set_Sec_Stack_NT --
+   ----------------------
 
-   procedure Set_Sec_Stack_Addr_NT (Addr : Address) is
+   procedure Set_Sec_Stack_NT (Stack : SST.SS_Stack_Ptr) is
    begin
-      NT_TSD.Sec_Stack_Addr := Addr;
-   end Set_Sec_Stack_Addr_NT;
+      NT_TSD.Sec_Stack_Ptr := Stack;
+   end Set_Sec_Stack_NT;
 
-   -----------------------------
-   -- Set_Sec_Stack_Addr_Soft --
-   -----------------------------
+   ------------------------
+   -- Set_Sec_Stack_Soft --
+   ------------------------
 
-   procedure Set_Sec_Stack_Addr_Soft (Addr : Address) is
+   procedure Set_Sec_Stack_Soft (Stack : SST.SS_Stack_Ptr) is
    begin
-      Set_Sec_Stack_Addr (Addr);
-   end Set_Sec_Stack_Addr_Soft;
+      Set_Sec_Stack (Stack);
+   end Set_Sec_Stack_Soft;
 
    ------------------
    -- Task_Lock_NT --
@@ -308,5 +304,4 @@ package body System.Soft_Links is
    begin
       null;
    end Task_Unlock_NT;
-
 end System.Soft_Links;

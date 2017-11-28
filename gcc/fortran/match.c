@@ -1595,19 +1595,16 @@ gfc_match_if (gfc_statement *if_type)
   match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
   match ("backspace", gfc_match_backspace, ST_BACKSPACE)
   match ("call", gfc_match_call, ST_CALL)
-  match ("change team", gfc_match_change_team, ST_CHANGE_TEAM)
   match ("close", gfc_match_close, ST_CLOSE)
   match ("continue", gfc_match_continue, ST_CONTINUE)
   match ("cycle", gfc_match_cycle, ST_CYCLE)
   match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
   match ("end file", gfc_match_endfile, ST_END_FILE)
-  match ("end team", gfc_match_end_team, ST_END_TEAM)
   match ("error stop", gfc_match_error_stop, ST_ERROR_STOP)
   match ("event post", gfc_match_event_post, ST_EVENT_POST)
   match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT)
   match ("exit", gfc_match_exit, ST_EXIT)
   match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE)
-  match ("form team", gfc_match_form_team, ST_FORM_TEAM)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
   match ("go to", gfc_match_goto, ST_GOTO)
@@ -1623,7 +1620,6 @@ gfc_match_if (gfc_statement *if_type)
   match ("rewind", gfc_match_rewind, ST_REWIND)
   match ("stop", gfc_match_stop, ST_STOP)
   match ("wait", gfc_match_wait, ST_WAIT)
-  match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM)
   match ("sync all", gfc_match_sync_all, ST_SYNC_CALL);
   match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
   match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
@@ -1663,6 +1659,7 @@ got_match:
       gfc_free_expr (expr);
       return MATCH_ERROR;
     }
+
   /* At this point, we've matched the single IF and the action clause
      is in new_st.  Rearrange things so that the IF statement appears
      in new_st.  */
@@ -4096,7 +4093,10 @@ gfc_match_allocate (void)
   saw_stat = saw_errmsg = saw_source = saw_mold = saw_deferred = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
-    goto syntax;
+    {
+      gfc_syntax_error (ST_ALLOCATE);
+      return MATCH_ERROR;
+    }
 
   /* Match an optional type-spec.  */
   old_locus = gfc_current_locus;
@@ -6332,7 +6332,7 @@ gfc_match_type_is (void)
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Ssyntax error in TYPE IS specification at %C");
+  gfc_error ("Syntax error in TYPE IS specification at %C");
 
 cleanup:
   if (c != NULL)

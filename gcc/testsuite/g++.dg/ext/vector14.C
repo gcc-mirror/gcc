@@ -8,7 +8,11 @@
 
 #define vector __attribute__((vector_size(16)))
 
-template<int N> vector signed int foo (vector float value) {}
+template<int N> vector signed int foo (vector float value)
+{
+  vector signed int a;
+  return a;
+}
 
 template<int> void foo (float) {}
 
@@ -19,4 +23,6 @@ main ()
   float f;
   foo<1> (v);
   foo<1> (f);
+
+  return 0;
 }

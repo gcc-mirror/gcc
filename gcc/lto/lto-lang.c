@@ -854,11 +854,13 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
          flag_pie is 2.  */
       flag_pie = MAX (flag_pie, flag_pic);
       flag_pic = flag_pie;
+      flag_shlib = 0;
       break;
 
     case LTO_LINKER_OUTPUT_EXEC: /* Normal executable */
       flag_pic = 0;
       flag_pie = 0;
+      flag_shlib = 0;
       break;
 
     case LTO_LINKER_OUTPUT_UNKNOWN:

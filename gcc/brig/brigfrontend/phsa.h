@@ -61,9 +61,10 @@ typedef struct __attribute__((__packed__))
 #define PHSA_DESC_SECTION_PREFIX "phsa.desc."
 #define PHSA_HOST_DEF_PTR_PREFIX "__phsa.host_def."
 
-/* The frontend error messages are parsed by the host runtime, known
+/* The frontend error messages are parsed by the host runtime.  Known
    prefix strings are used to separate the different runtime error
    codes.  */
-#define PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE "Incompatible module:"
+#define PHSA_ERROR_PREFIX_INCOMPATIBLE_MODULE "Incompatible module: "
+#define PHSA_ERROR_PREFIX_CORRUPTED_MODULE "Corrupted module: "
 
 #endif

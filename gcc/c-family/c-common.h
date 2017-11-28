@@ -101,6 +101,7 @@ enum rid
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
+  RID_BUILTIN_TGMATH,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -827,7 +828,7 @@ extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
 extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree, tree,
 						   bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
-extern tree c_fully_fold (tree, bool, bool *);
+extern tree c_fully_fold (tree, bool, bool *, bool = false);
 extern tree c_wrap_maybe_const (tree, bool);
 extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
@@ -989,18 +990,6 @@ extern tree finish_label_address_expr (tree, location_t);
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
-
-enum lookup_name_fuzzy_kind {
-  /* Names of types.  */
-  FUZZY_LOOKUP_TYPENAME,
-
-  /* Names of function decls.  */
-  FUZZY_LOOKUP_FUNCTION_NAME,
-
-  /* Any name.  */
-  FUZZY_LOOKUP_NAME
-};
-extern const char *lookup_name_fuzzy (tree, enum lookup_name_fuzzy_kind);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
@@ -1550,6 +1539,9 @@ extern int c_flt_eval_method (bool ts18661_p);
 extern void add_no_sanitize_value (tree node, unsigned int flags);
 
 extern void maybe_add_include_fixit (rich_location *, const char *);
+extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
+						   enum cpp_ttype token_type,
+						   location_t prev_token_loc);
 
 #if CHECKING_P
 namespace selftest {

@@ -168,6 +168,11 @@ aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
       qualifier_none, qualifier_lane_index };
 #define TYPES_QUADOP_LANE (aarch64_types_quadop_lane_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_quadopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_lane_index };
+#define TYPES_QUADOPU_LANE (aarch64_types_quadopu_lane_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -1062,8 +1067,8 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 					    GET_MODE_NUNITS (builtin_mode),
 					    exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
-		  op[opc] =
-		    GEN_INT (ENDIAN_LANE_N (builtin_mode, INTVAL (op[opc])));
+		  op[opc] = aarch64_endian_lane_rtx (builtin_mode,
+						     INTVAL (op[opc]));
 		}
 	      goto constant_arg;
 
@@ -1076,7 +1081,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		  aarch64_simd_lane_bounds (op[opc],
 					    0, GET_MODE_NUNITS (vmode), exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
-		  op[opc] = GEN_INT (ENDIAN_LANE_N (vmode, INTVAL (op[opc])));
+		  op[opc] = aarch64_endian_lane_rtx (vmode, INTVAL (op[opc]));
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
@@ -1592,24 +1597,27 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 			? gimple_call_arg_ptr (stmt, 0)
 			: &error_mark_node);
 
-	  /* We use gimple's REDUC_(PLUS|MIN|MAX)_EXPRs for float, signed int
+	  /* We use gimple's IFN_REDUC_(PLUS|MIN|MAX)s for float, signed int
 	     and unsigned int; it will distinguish according to the types of
 	     the arguments to the __builtin.  */
 	  switch (fcode)
 	    {
 	      BUILTIN_VALL (UNOP, reduc_plus_scal_, 10)
-	        new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-						REDUC_PLUS_EXPR, args[0]);
+	        new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
+						       1, args[0]);
+		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10)
-		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-						REDUC_MAX_EXPR, args[0]);
+	        new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,
+						       1, args[0]);
+		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 		break;
 	      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10)
 	      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10)
-		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-						REDUC_MIN_EXPR, args[0]);
+	        new_stmt = gimple_build_call_internal (IFN_REDUC_MIN,
+						       1, args[0]);
+		gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 		break;
 	      BUILTIN_GPF (BINOP, fmulx, 0)
 		{

@@ -45,7 +45,7 @@ remainder.  @command{g++} accepts mostly the same options as @command{gcc}.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
-cpp(1), gcov(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1)
+cpp(1), gcov(1), as(1), ld(1), gdb(1), dbx(1)
 and the Info entries for @file{gcc}, @file{cpp}, @file{as},
 @file{ld}, @file{binutils} and @file{gdb}.
 @c man end
@@ -314,8 +314,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{len}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
--Wstringop-overflow=@var{n} @gol
--Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
+-Wstringop-overflow=@var{n} -Wstringop-truncation @gol
+-Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
 -Wmissing-format-attribute  -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
@@ -342,7 +342,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program}.
-@gccoptlist{-g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-@var{version} @gol
+@gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gcolumn-info  -gno-column-info @gol
@@ -461,6 +461,7 @@ Objective-C and Objective-C++ Dialects}.
 -fchkp-check-read  -fchkp-check-write  -fchkp-store-bounds @gol
 -fchkp-instrument-calls  -fchkp-instrument-marked-only @gol
 -fchkp-use-wrappers  -fchkp-flexible-struct-trailing-arrays@gol
+-fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]} @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -742,7 +743,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msmall-model  -mno-lsim}
 
 @emph{FT32 Options}
-@gccoptlist{-msim  -mlra  -mnodiv}
+@gccoptlist{-msim  -mlra  -mnodiv  -mft32b  -mcompress  -mnopm}
 
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
@@ -947,6 +948,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{Nios II Options}
 @gccoptlist{-G @var{num}  -mgpopt=@var{option}  -mgpopt  -mno-gpopt @gol
+-mgprel-sec=@var{regexp} -mr0rel-sec=@var{regexp} @gol
 -mel  -meb @gol
 -mno-bypass-cache  -mbypass-cache @gol
 -mno-cache-volatile  -mcache-volatile @gol
@@ -987,7 +989,7 @@ See RS/6000 and PowerPC Options.
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
 -mstrict-align -mno-strict-align @gol
--mcmodel=@var{code-model} @gol
+-mcmodel=medlow -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol}
 
 @emph{RL78 Options}
@@ -1194,7 +1196,7 @@ See RS/6000 and PowerPC Options.
 -mincoming-stack-boundary=@var{num} @gol
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 @gol
 -mrecip  -mrecip=@var{opt} @gol
--mvzeroupper  -mprefer-avx128 -mprefer-avx256 @gol
+-mvzeroupper  -mprefer-avx128 -mprefer-vector-width=@var{opt} @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
@@ -1202,7 +1204,8 @@ See RS/6000 and PowerPC Options.
 -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
--mmwaitx  -mclzero  -mpku  -mthreads @gol
+-mmwaitx  -mclzero  -mpku  -mthreads -mgfni @gol
+-mcet -mibt -mshstk -mforce-indirect-call -mavx512vbmi2 @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -1828,6 +1831,16 @@ substantially completely supported, modulo bugs, floating-point issues
 Annexes F and G) and the optional Annexes K (Bounds-checking
 interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
+@item c17
+@itemx c18
+@itemx iso9899:2017
+@itemx iso9899:2018
+ISO C17, the 2017 revision of the ISO C standard (expected to be
+published in 2018).  This standard is
+same as C11 except for corrections of defects (all of which are also
+applied with @option{-std=c11}) and a new value of
+@code{__STDC_VERSION__}, and so is supported to the same extent as C11.
+
 @item gnu90
 @itemx gnu89
 GNU dialect of ISO C90 (including some C99 features).
@@ -1838,8 +1851,12 @@ GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  This is the default for C code.
+GNU dialect of ISO C11.
 The name @samp{gnu1x} is deprecated.
+
+@item gnu17
+@itemx gnu18
+GNU dialect of ISO C17.  This is the default for C code.
 
 @item c++98
 @itemx c++03
@@ -4957,14 +4974,18 @@ void store (int *i)
 @item -Wmaybe-uninitialized
 @opindex Wmaybe-uninitialized
 @opindex Wno-maybe-uninitialized
-For an automatic variable, if there exists a path from the function
-entry to a use of the variable that is initialized, but there exist
+For an automatic (i.e.@ local) variable, if there exists a path from the
+function entry to a use of the variable that is initialized, but there exist
 some other paths for which the variable is not initialized, the compiler
 emits a warning if it cannot prove the uninitialized paths are not
-executed at run time. These warnings are made optional because GCC is
-not smart enough to see all the reasons why the code might be correct
-in spite of appearing to have an error.  Here is one example of how
-this can happen:
+executed at run time.
+
+These warnings are only possible in optimizing compilation, because otherwise
+GCC does not keep track of the state of variables.
+
+These warnings are made optional because GCC may not be able to determine when
+the code is correct in spite of appearing to have an error.  Here is one
+example of how this can happen:
 
 @smallexample
 @group
@@ -4991,9 +5012,7 @@ similar code.
 
 @cindex @code{longjmp} warnings
 This option also warns when a non-volatile automatic variable might be
-changed by a call to @code{longjmp}.  These warnings as well are possible
-only in optimizing compilation.
-
+changed by a call to @code{longjmp}.
 The compiler sees only the calls to @code{setjmp}.  It cannot know
 where @code{longjmp} will be called; in fact, a signal handler could
 call it at any point in the code.  As a result, you may get a warning
@@ -5201,7 +5220,56 @@ whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
 
-@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]}
+@item -Wstringop-truncation
+@opindex Wstringop-truncation
+@opindex Wno-stringop-truncation
+Warn for calls to bounded string manipulation functions such as @code{strncat},
+@code{strncpy}, and @code{stpncpy} that may either truncate the copied string
+or leave the destination unchanged.
+
+In the following example, the call to @code{strncat} specifies a bound that
+is less than the length of the source string.  As a result, the copy of
+the source will be truncated and so the call is diagnosed.  To avoid the
+warning use @code{bufsize - strlen (buf) - 1)} as the bound.
+
+@smallexample
+void append (char *buf, size_t bufsize)
+@{
+  strncat (buf, ".txt", 3);
+@}
+@end smallexample
+
+As another example, the following call to @code{strncpy} results in copying
+to @code{d} just the characters preceding the terminating NUL, without
+appending the NUL to the end.  Assuming the result of @code{strncpy} is
+necessarily a NUL-terminated string is a common mistake, and so the call
+is diagnosed.  To avoid the warning when the result is not expected to be
+NUL-terminated, call @code{memcpy} instead.
+
+@smallexample
+void copy (char *d, const char *s)
+@{
+  strncpy (d, s, strlen (s));
+@}
+@end smallexample
+
+In the following example, the call to @code{strncpy} specifies the size
+of the destination buffer as the bound.  If the length of the source
+string is equal to or greater than this size the result of the copy will
+not be NUL-terminated.  Therefore, the call is also diagnosed.  To avoid
+the warning, specify @code{sizeof buf - 1} as the bound and set the last
+element of the buffer to @code{NUL}.
+
+@smallexample
+void copy (const char *s)
+@{
+  char buf[80];
+  strncpy (buf, s, sizeof buf);
+  @dots{}
+@}
+@end smallexample
+
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
@@ -5211,21 +5279,25 @@ attributes currently supported are listed below.
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
+@itemx -Wsuggest-attribute=malloc
 @opindex Wsuggest-attribute=pure
 @opindex Wno-suggest-attribute=pure
 @opindex Wsuggest-attribute=const
 @opindex Wno-suggest-attribute=const
 @opindex Wsuggest-attribute=noreturn
 @opindex Wno-suggest-attribute=noreturn
+@opindex Wsuggest-attribute=malloc
+@opindex Wno-suggest-attribute=malloc
 
 Warn about functions that might be candidates for attributes
-@code{pure}, @code{const} or @code{noreturn}.  The compiler only warns for
-functions visible in other compilation units or (in the case of @code{pure} and
-@code{const}) if it cannot prove that the function returns normally. A function
-returns normally if it doesn't contain an infinite loop or return abnormally
-by throwing, calling @code{abort} or trapping.  This analysis requires option
-@option{-fipa-pure-const}, which is enabled by default at @option{-O} and
-higher.  Higher optimization levels improve the accuracy of the analysis.
+@code{pure}, @code{const} or @code{noreturn} or @code{malloc}. The compiler
+only warns for functions visible in other compilation units or (in the case of
+@code{pure} and @code{const}) if it cannot prove that the function returns
+normally. A function returns normally if it doesn't contain an infinite loop or
+return abnormally by throwing, calling @code{abort} or trapping.  This analysis
+requires option @option{-fipa-pure-const}, which is enabled by default at
+@option{-O} and higher.  Higher optimization levels improve the accuracy
+of the analysis.
 
 @item -Wsuggest-attribute=format
 @itemx -Wmissing-format-attribute
@@ -5253,6 +5325,15 @@ might be appropriate for any function that calls a function like
 @code{vprintf} or @code{vscanf}, but this might not always be the
 case, and some functions for which @code{format} attributes are
 appropriate may not be detected.
+
+@item -Wsuggest-attribute=cold
+@opindex Wsuggest-attribute=cold
+@opindex Wno-suggest-attribute=cold
+
+Warn about functions that might be candidates for @code{cold} attribute.  This
+is based on static detection and generally will only warn about functions which
+always leads to a call to another @code{cold} function such as wrappers of
+C++ @code{throw} or fatal error reporting functions leading to @code{abort}.
 @end table
 
 @item -Wsuggest-final-types
@@ -5392,6 +5473,11 @@ arrays at the end of a struct and for arrays accessed through
 pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
+
+@item -Wattribute-alias
+Warn about declarations using the @code{alias} and similar attributes whose
+target is incompatible with the type of the alias.  @xref{Function Attributes,
+,Declaring Attributes of Functions}.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -6199,11 +6285,26 @@ not an array, but a pointer.  This warning is enabled by @option{-Wall}.
 @opindex Wsizeof-pointer-memaccess
 @opindex Wno-sizeof-pointer-memaccess
 Warn for suspicious length parameters to certain string and memory built-in
-functions if the argument uses @code{sizeof}.  This warning warns e.g.@:
-about @code{memset (ptr, 0, sizeof (ptr));} if @code{ptr} is not an array,
-but a pointer, and suggests a possible fix, or about
-@code{memcpy (&foo, ptr, sizeof (&foo));}.  This warning is enabled by
-@option{-Wall}.
+functions if the argument uses @code{sizeof}.  This warning triggers for
+example for @code{memset (ptr, 0, sizeof (ptr));} if @code{ptr} is not
+an array, but a pointer, and suggests a possible fix, or about
+@code{memcpy (&foo, ptr, sizeof (&foo));}.  @option{-Wsizeof-pointer-memaccess}
+also warns about calls to bounded string copy functions like @code{strncat}
+or @code{strncpy} that specify as the bound a @code{sizeof} expression of
+the source array.  For example, in the following function the call to
+@code{strncat} specifies the size of the source string as the bound.  That
+is almost certainly a mistake and so the call is diagnosed.
+@smallexample
+void make_file (const char *name)
+@{
+  char path[PATH_MAX];
+  strncpy (path, name, sizeof path - 1);
+  strncat (path, ".text", sizeof ".text");
+  @dots{}
+@}
+@end smallexample
+
+The @option{-Wsizeof-pointer-memaccess} option is enabled by @option{-Wall}.
 
 @item -Wsizeof-array-argument
 @opindex Wsizeof-array-argument
@@ -6304,7 +6405,8 @@ attributes.
 @item -Wno-builtin-declaration-mismatch
 @opindex Wno-builtin-declaration-mismatch
 @opindex Wbuiltin-declaration-mismatch
-Warn if a built-in function is declared with the wrong signature.
+Warn if a built-in function is declared with the wrong signature or 
+as non-function.
 This warning is enabled by default.
 
 @item -Wno-builtin-macro-redefined
@@ -6879,7 +6981,7 @@ in their names, but apply to all currently-supported versions of DWARF.
 Produce debugging information in stabs format (if that is supported),
 without GDB extensions.  This is the format used by DBX on most BSD
 systems.  On MIPS, Alpha and System V Release 4 systems this option
-produces stabs debugging output that is not understood by DBX or SDB@.
+produces stabs debugging output that is not understood by DBX@.
 On System V Release 4 systems this option requires the GNU assembler.
 
 @item -gstabs+
@@ -6888,12 +6990,6 @@ Produce debugging information in stabs format (if that is supported),
 using GNU extensions understood only by the GNU debugger (GDB)@.  The
 use of these extensions is likely to make other debuggers crash or
 refuse to read the program.
-
-@item -gcoff
-@opindex gcoff
-Produce debugging information in COFF format (if that is supported).
-This is the format used by SDB on most System V systems prior to
-System V Release 4.
 
 @item -gxcoff
 @opindex gxcoff
@@ -6916,7 +7012,6 @@ supported).  This is the format used by DEBUG on Alpha/VMS systems.
 @item -g@var{level}
 @itemx -ggdb@var{level}
 @itemx -gstabs@var{level}
-@itemx -gcoff@var{level}
 @itemx -gxcoff@var{level}
 @itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
@@ -6965,7 +7060,12 @@ link processing time.  Merging is enabled by default.
 @item -fdebug-prefix-map=@var{old}=@var{new}
 @opindex fdebug-prefix-map
 When compiling files in directory @file{@var{old}}, record debugging
-information describing them as in @file{@var{new}} instead.
+information describing them as in @file{@var{new}} instead.  This can be
+used to replace a build-time path with an install-time path in the debug info.
+It can also be used to change an absolute path to a relative path by using
+@file{.} for @var{new}.  This can give more reproducible builds, which are
+location independent, but may require an extra command to tell GDB where to
+find the source files.
 
 @item -fvar-tracking
 @opindex fvar-tracking
@@ -7049,7 +7149,7 @@ Allow using extensions of later DWARF standard version than selected with
 @opindex gno-column-info
 Emit location column information into DWARF debugging information, rather
 than just file and line.
-This option is disabled by default.
+This option is enabled by default.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz
@@ -7228,6 +7328,7 @@ compilation time.
 -fipa-reference @gol
 -fmerge-constants @gol
 -fmove-loop-invariants @gol
+-fomit-frame-pointer @gol
 -freorder-blocks @gol
 -fshrink-wrap @gol
 -fshrink-wrap-separate @gol
@@ -7251,9 +7352,6 @@ compilation time.
 -ftree-pta @gol
 -ftree-ter @gol
 -funit-at-a-time}
-
-@option{-O} also turns on @option{-fomit-frame-pointer} on machines
-where doing so does not interfere with debugging.
 
 @item -O2
 @opindex O2
@@ -7406,29 +7504,18 @@ The default is @option{-ffp-contract=fast}.
 
 @item -fomit-frame-pointer
 @opindex fomit-frame-pointer
-Don't keep the frame pointer in a register for functions that
-don't need one.  This avoids the instructions to save, set up and
-restore frame pointers; it also makes an extra register available
-in many functions.  @strong{It also makes debugging impossible on
-some machines.}
+Omit the frame pointer in functions that don't need one.  This avoids the
+instructions to save, set up and restore the frame pointer; on many targets
+it also makes an extra register available.
 
-On some machines, such as the VAX, this flag has no effect, because
-the standard calling sequence automatically handles the frame pointer
-and nothing is saved by pretending it doesn't exist.  The
-machine-description macro @code{FRAME_POINTER_REQUIRED} controls
-whether a target machine supports this flag.  @xref{Registers,,Register
-Usage, gccint, GNU Compiler Collection (GCC) Internals}.
+On some targets this flag has no effect because the standard calling sequence
+always uses a frame pointer, so it cannot be omitted.
 
-The default setting (when not optimizing for
-size) for 32-bit GNU/Linux x86 and 32-bit Darwin x86 targets is
-@option{-fomit-frame-pointer}.  You can configure GCC with the
-@option{--enable-frame-pointer} configure option to change the default.
+Note that @option{-fno-omit-frame-pointer} doesn't guarantee the frame pointer
+is used in all functions.  Several targets always omit the frame pointer in
+leaf functions.
 
-Note that @option{-fno-omit-frame-pointer} doesn't force a new stack
-frame for all functions if it isn't otherwise needed, and hence doesn't
-guarantee a new frame pointer for all functions.
-
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled by default at @option{-O} and higher.
 
 @item -foptimize-sibling-calls
 @opindex foptimize-sibling-calls
@@ -7823,7 +7910,7 @@ Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
 This option is enabled by default on most targets.  On Nios II ELF, it
-defaults to off.  On AVR and CR16, this option is completely disabled.  
+defaults to off.  On AVR, CR16, and MSP430, this option is completely disabled.
 
 Passes that use the dataflow information
 are enabled independently at different optimization levels.
@@ -9698,18 +9785,26 @@ file if the target supports arbitrary sections.  The name of the
 function or the name of the data item determines the section's name
 in the output file.
 
-Use these options on systems where the linker can perform optimizations
-to improve locality of reference in the instruction space.  Most systems
-using the ELF object format and SPARC processors running Solaris 2 have
-linkers with such optimizations.  AIX may have these optimizations in
-the future.
+Use these options on systems where the linker can perform optimizations to
+improve locality of reference in the instruction space.  Most systems using the
+ELF object format have linkers with such optimizations.  On AIX, the linker
+rearranges sections (CSECTs) based on the call graph.  The performance impact
+varies.
 
-Only use these options when there are significant benefits from doing
-so.  When you specify these options, the assembler and linker
-create larger object and executable files and are also slower.
-You cannot use @command{gprof} on all systems if you
-specify this option, and you may have problems with debugging if
-you specify both this option and @option{-g}.
+Together with a linker garbage collection (linker @option{--gc-sections}
+option) these options may lead to smaller statically-linked executables (after
+stripping).
+
+On ELF/DWARF systems these options do not degenerate the quality of the debug
+information.  There could be issues with other object files/debug info formats.
+
+Only use these options when there are significant benefits from doing so.  When
+you specify these options, the assembler and linker create larger object and
+executable files and are also slower.  These options affect code generation.
+They prevent optimizations by the compiler and assembler using relative
+locations inside a translation unit since the locations are unknown until
+link time.  An example of such an optimization is relaxing calls to short call
+instructions.
 
 @item -fbranch-target-load-optimize
 @opindex fbranch-target-load-optimize
@@ -10723,6 +10818,12 @@ is 0.
 Schedule type of omp schedule for loops parallelized by parloops (static,
 dynamic, guided, auto, runtime).  The default is static.
 
+@item parloops-min-per-thread
+The minimum number of iterations per thread of an innermost parallelized
+loop for which the parallelized variant is prefered over the single threaded
+one.  The default is 100.  Note that for a parallelized loop nest the
+minimum number of iterations of the outermost loop per thread is two.
+
 @item max-ssa-name-query-depth
 Maximum depth of recursion when querying properties of SSA names in things
 like fold routines.  One level of recursion corresponds to following a
@@ -10837,9 +10938,9 @@ Link your object files with @option{-lgcov} or @option{-fprofile-arcs}
 Run the program on a representative workload to generate the arc profile
 information.  This may be repeated any number of times.  You can run
 concurrent instances of your program, and provided that the file system
-supports locking, the data files will be correctly updated.  Also
-@code{fork} calls are detected and correctly handled (double counting
-will not happen).
+supports locking, the data files will be correctly updated.  Unless
+a strict ISO C dialect option is in effect, @code{fork} calls are
+detected and correctly handled without double counting.
 
 @item
 For profile-directed optimizations, compile the source files again with
@@ -11127,6 +11228,15 @@ to verify the referenced object has the correct dynamic type.
 This option enables instrumentation of pointer arithmetics.  If the pointer
 arithmetics overflows, a run-time error is issued.
 
+@item -fsanitize=builtin
+@opindex fsanitize=builtin
+
+This option enables instrumentation of arguments to selected builtin
+functions.  If an invalid value is passed to such arguments, a run-time
+error is issued.  E.g.@ passing 0 as the argument to @code{__builtin_ctz}
+or @code{__builtin_clz} invokes undefined behavior and is diagnosed
+by this option.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
@@ -11386,6 +11496,33 @@ with calls to wrapper functions.  When @option{-fchkp-use-wrappers}
 is used to link a program, the GCC driver automatically links
 against @file{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
 Enabled by default.
+
+@item -fcf-protection==@r{[}full@r{|}branch@r{|}return@r{|}none@r{]}
+@opindex fcf-protection
+Enable code instrumentation of control-flow transfers to increase
+program security by checking that target addresses of control-flow
+transfer instructions (such as indirect function call, function return,
+indirect jump) are valid.  This prevents diverting the flow of control
+to an unexpected target.  This is intended to protect against such
+threats as Return-oriented Programming (ROP), and similarly
+call/jmp-oriented programming (COP/JOP).
+
+The value @code{branch} tells the compiler to implement checking of
+validity of control-flow transfer at the point of indirect branch
+instructions, i.e. call/jmp instructions.  The value @code{return}
+implements checking of validity at the point of returning from a
+function.  The value @code{full} is an alias for specifying both
+@code{branch} and @code{return}. The value @code{none} turns off
+instrumentation.
+
+You can also use the @code{nocf_check} attribute to identify
+which functions and calls should be skipped from instrumentation
+(@pxref{Function Attributes}).
+
+Currently the x86 GNU/Linux target provides an implementation based
+on Intel Control-flow Enforcement Technology (CET).  Instrumentation
+for x86 is controlled by target-specific options @option{-mcet},
+@option{-mibt} and @option{-mshstk} (@pxref{x86 Options}).
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -14265,7 +14402,7 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{exynos-m1}, @samp{falkor}, @samp{qdf24xx},
+@samp{exynos-m1}, @samp{falkor}, @samp{qdf24xx}, @samp{saphira},
 @samp{xgene1}, @samp{vulcan}, @samp{thunderx},
 @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{cortex-a57.cortex-a53},
@@ -14368,6 +14505,8 @@ Enable FP16 extension.  This also enables floating-point instructions.
 Enable the RcPc extension.  This does not change code generation from GCC,
 but is passed on to the assembler, enabling inline asm statements to use
 instructions from the RcPc extension.
+@item dotprod
+Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
 
 @end table
 
@@ -15397,7 +15536,7 @@ Permissible names are:
 @samp{armv6}, @samp{armv6j}, @samp{armv6k}, @samp{armv6kz}, @samp{armv6t2},
 @samp{armv6z}, @samp{armv6zk},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
-@samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a},
+@samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -15428,8 +15567,8 @@ entirely disabled by the @samp{+nofp} option that follows it.
 Most extension names are generically named, but have an effect that is
 dependent upon the architecture to which it is applied.  For example,
 the @samp{+simd} option can be applied to both @samp{armv7-a} and
-@samp{armv8-a} architectures, but will enable the original ARMv7
-Advanced SIMD (Neon) extensions for @samp{armv7-a} and the ARMv8-a
+@samp{armv8-a} architectures, but will enable the original ARMv7-A
+Advanced SIMD (Neon) extensions for @samp{armv7-a} and the ARMv8-A
 variant for @samp{armv8-a}.
 
 The table below lists the supported extensions for each architecture.
@@ -15570,7 +15709,7 @@ Disable the floating-point and Advanced SIMD instructions.
 @item +crc
 The Cyclic Redundancy Check (CRC) instructions.
 @item +simd
-The ARMv8 Advanced SIMD and floating-point instructions.
+The ARMv8-A Advanced SIMD and floating-point instructions.
 @item +crypto
 The cryptographic instructions.
 @item +nocrypto
@@ -15582,7 +15721,7 @@ Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @item armv8.1-a
 @table @samp
 @item +simd
-The ARMv8.1 Advanced SIMD and floating-point instructions.
+The ARMv8.1-A Advanced SIMD and floating-point instructions.
 
 @item +crypto
 The cryptographic instructions.  This also enables the Advanced SIMD and
@@ -15602,11 +15741,14 @@ The half-precision floating-point data processing instructions.
 This also enables the Advanced SIMD and floating-point instructions.
 
 @item +simd
-The ARMv8.1 Advanced SIMD and floating-point instructions.
+The ARMv8.1-A Advanced SIMD and floating-point instructions.
 
 @item +crypto
 The cryptographic instructions.  This also enables the Advanced SIMD and
 floating-point instructions.
+
+@item +dotprod
+Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
 
 @item +nocrypto
 Disable the cryptographic extension.
@@ -15675,7 +15817,7 @@ The Cyclic Redundancy Check (CRC) instructions.
 @item +fp.sp
 The single-precision FPv5 floating-point instructions.
 @item +simd
-The ARMv8 Advanced SIMD and floating-point instructions.
+The ARMv8-A Advanced SIMD and floating-point instructions.
 @item +crypto
 The cryptographic instructions.
 @item +nocrypto
@@ -15794,6 +15936,9 @@ Permissible names for this option are the same as those for
 The following extension options are common to the listed CPUs:
 
 @table @samp
+@item +nodsp
+Disable the DSP instructions on @samp{cortex-m33}.
+
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
@@ -16091,9 +16236,9 @@ Divided syntax should be considered deprecated.
 
 @item -mrestrict-it
 @opindex mrestrict-it
-Restricts generation of IT blocks to conform to the rules of ARMv8.
+Restricts generation of IT blocks to conform to the rules of ARMv8-A.
 IT blocks can only contain a single 16-bit instruction from a select
-set of instructions. This option is on by default for ARMv8 Thumb mode.
+set of instructions. This option is on by default for ARMv8-A Thumb mode.
 
 @item -mprint-tune-info
 @opindex mprint-tune-info
@@ -16671,9 +16816,7 @@ Certain other options, such as @option{-mid-shared-library} and
 @opindex momit-leaf-frame-pointer
 Don't keep the frame pointer in a register for leaf functions.  This
 avoids the instructions to save, set up and restore frame pointers and
-makes an extra register available in leaf functions.  The option
-@option{-fomit-frame-pointer} removes the frame pointer for all functions,
-which might make debugging harder.
+makes an extra register available in leaf functions.
 
 @item -mspecld-anomaly
 @opindex mspecld-anomaly
@@ -17685,6 +17828,18 @@ so by default the compiler uses standard reload.
 @item -mnodiv
 @opindex mnodiv
 Do not use div and mod instructions.
+
+@item -mft32b
+@opindex mft32b
+Enable use of the extended instructions of the FT32B processor.
+
+@item -mcompress
+@opindex mcompress
+Compress all code using the Ft32B code compression scheme.
+
+@item -mnopm
+@opindex  mnopm
+Do not generate code that reads program memory.
 
 @end table
 
@@ -21097,6 +21252,32 @@ GOT data sections.  In this case, the 16-bit offset for GP-relative
 addressing may not be large enough to allow access to the entire 
 small data section.
 
+@item -mgprel-sec=@var{regexp}
+@opindex mgprel-sec
+This option specifies additional section names that can be accessed via
+GP-relative addressing.  It is most useful in conjunction with 
+@code{section} attributes on variable declarations 
+(@pxref{Common Variable Attributes}) and a custom linker script.  
+The @var{regexp} is a POSIX Extended Regular Expression.
+
+This option does not affect the behavior of the @option{-G} option, and 
+and the specified sections are in addition to the standard @code{.sdata} 
+and @code{.sbss} small-data sections that are recognized by @option{-mgpopt}.
+
+@item -mr0rel-sec=@var{regexp}
+@opindex mr0rel-sec
+This option specifies names of sections that can be accessed via a 
+16-bit offset from @code{r0}; that is, in the low 32K or high 32K 
+of the 32-bit address space.  It is most useful in conjunction with 
+@code{section} attributes on variable declarations 
+(@pxref{Common Variable Attributes}) and a custom linker script.  
+The @var{regexp} is a POSIX Extended Regular Expression.
+
+In contrast to the use of GP-relative addressing for small data, 
+zero-based addressing is never generated by default and there are no 
+conventional section names used in standard linker scripts for sections
+in the low or high areas of memory.
+
 @item -mel
 @itemx -meb
 @opindex mel
@@ -21600,9 +21781,26 @@ When generating PIC code, allow the use of PLTs. Ignored for non-PIC.
 
 @item -mabi=@var{ABI-string}
 @opindex mabi
-Specify integer and floating-point calling convention.  This defaults to the
-natural calling convention: e.g.@ LP64 for RV64I, ILP32 for RV32I, LP64D for
-RV64G.
+@item -mabi=@var{ABI-string}
+@opindex mabi
+Specify integer and floating-point calling convention.  @var{ABI-string}
+contains two parts: the size of integer types and the registers used for
+floating-point types.  For example @samp{-march=rv64ifd -mabi=lp64d} means that
+@samp{long} and pointers are 64-bit (implicitly defining @samp{int} to be
+32-bit), and that floating-point values up to 64 bits wide are passed in F
+registers.  Contrast this with @samp{-march=rv64ifd -mabi=lp64f}, which still
+allows the compiler to generate code that uses the F and D extensions but only
+allows floating-point values up to 32 bits long to be passed in registers; or
+@samp{-march=rv64ifd -mabi=lp64}, in which no floating-point arguments will be
+passed in registers.
+
+The default for this argument is system dependent, users who want a specific
+calling convention should specify one explicitly.  The valid calling
+conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
+@samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
+implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
+invalid because the ABI requires 64-bit values be passed in F registers, but F
+registers are only 32 bits wide.
 
 @item -mfdiv
 @itemx -mno-fdiv
@@ -21640,9 +21838,18 @@ Use smaller but slower prologue and epilogue code.
 @opindex mstrict-align
 Do not generate unaligned memory accesses.
 
-@item -mcmodel=@var{code-model}
-@opindex mcmodel
-Specify the code model.
+@item -mcmodel=medlow
+@opindex mcmodel=medlow
+Generate code for the medium-low code model. The program and its statically
+defined symbols must lie within a single 2 GiB address range and must lie
+between absolute addresses @minus{}2 GiB and +2 GiB. Programs can be
+statically or dynamically linked. This is the default code model.
+
+@item -mcmodel=medany
+@opindex mcmodel=medany
+Generate code for the medium-any code model. The program and its statically
+defined symbols must be within any single 2 GiB address range. Programs can be
+statically or dynamically linked.
 
 @end table
 
@@ -22545,12 +22752,18 @@ Disable Book-E SPE ABI extensions for the current ABI@.
 @item -mabi=ibmlongdouble
 @opindex mabi=ibmlongdouble
 Change the current ABI to use IBM extended-precision long double.
-This is a PowerPC 32-bit SYSV ABI option.
+This is not likely to work if your system defaults to using IEEE
+extended-precision long double.  If you change the long double type
+from IEEE extended-precision, the compiler will issue a warning unless
+you use the @option{-Wno-psabi} option.
 
 @item -mabi=ieeelongdouble
 @opindex mabi=ieeelongdouble
 Change the current ABI to use IEEE extended-precision long double.
-This is a PowerPC 32-bit Linux ABI option.
+This is not likely to work if your system defaults to using IBM
+extended-precision long double.  If you change the long double type
+from IBM extended-precision, the compiler will issue a warning unless
+you use the @option{-Wno-psabi} option.
 
 @item -mabi=elfv1
 @opindex mabi=elfv1
@@ -25108,6 +25321,13 @@ SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
 AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
+@item cannonlake
+Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
+SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
+XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
+AVX512IFMA, SHA, CLWB and UMIP instruction set support.
+
 @item k6
 AMD K6 CPU with MMX instruction set support.
 
@@ -25790,15 +26010,25 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mclzero
 @opindex mclzero
+@need 200
 @itemx -mpku
 @opindex mpku
+@need 200
+@itemx -mcet
+@opindex mcet
+@need 200
+@itemx -mavx512vbmi2
+@opindex mavx512vbmi2
+@need 200
+@itemx -mgfni
+@opindex mgfni
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
-AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA AVX512VBMI, BMI, BMI2, FXSR,
-XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, 3DNow!@: or enhanced 3DNow!@:
-extended instruction sets.  Each has a corresponding @option{-mno-} option
-to disable use of these instructions.
+AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2,
+FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
+GFNI, 3DNow!@: or enhanced 3DNow!@: extended instruction sets.  Each has a
+corresponding @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -25817,6 +26047,13 @@ perform run-time CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
+
+The @option{-mcet} option turns on the @option{-mibt} and @option{-mshstk}
+options.  The @option{-mibt} option enables indirect branch tracking support
+and the @option{-mshstk} option enables shadow stack support from
+Intel Control-flow Enforcement Technology (CET).  The compiler also provides
+a number of built-in functions for fine-grained control in a CET-based
+application.  See @xref{x86 Built-in Functions}, for more information.
 
 @item -mdump-tune-features
 @opindex mdump-tune-features
@@ -25865,10 +26102,24 @@ intrinsics.
 This option instructs GCC to use 128-bit AVX instructions instead of
 256-bit AVX instructions in the auto-vectorizer.
 
-@item -mprefer-avx256
-@opindex mprefer-avx256
-This option instructs GCC to use 256-bit AVX instructions instead of
-512-bit AVX instructions in the auto-vectorizer.
+@item -mprefer-vector-width=@var{opt}
+@opindex mprefer-vector-width
+This option instructs GCC to use @var{opt}-bit vector width in instructions
+instead of default on the selected platform.
+
+@table @samp
+@item none
+No extra limitations applied to GCC other than defined by the selected platform.
+
+@item 128
+Prefer 128-bit vector width for instructions.
+
+@item 256
+Prefer 256-bit vector width for instructions.
+
+@item 512
+Prefer 512-bit vector width for instructions.
+@end table
 
 @item -mcx16
 @opindex mcx16
@@ -25895,6 +26146,24 @@ see @ref{Other Builtins} for details.
 @opindex mmovbe
 This option enables use of the @code{movbe} instruction to implement
 @code{__builtin_bswap32} and @code{__builtin_bswap64}.
+
+@item -mibt
+@opindex mibt
+This option tells the compiler to use indirect branch tracking support
+(for indirect calls and jumps) from x86 Control-flow Enforcement
+Technology (CET).  The option has effect only if the
+@option{-fcf-protection=full} or @option{-fcf-protection=branch} option
+is specified. The option @option{-mibt} is on by default when the
+@code{-mcet} option is specified.
+
+@item -mshstk
+@opindex mshstk
+This option tells the compiler to use shadow stack support (return
+address tracking) from x86 Control-flow Enforcement Technology (CET).
+The option has effect only if the @option{-fcf-protection=full} or
+@option{-fcf-protection=return} option is specified.  The option
+@option{-mshstk} is on by default when the @option{-mcet} option is
+specified.
 
 @item -mcrc32
 @opindex mcrc32
@@ -25993,6 +26262,12 @@ ABI when targeting Microsoft Windows and the SysV ABI on all other systems.
 You can control this behavior for specific functions by
 using the function attributes @code{ms_abi} and @code{sysv_abi}.
 @xref{Function Attributes}.
+
+@item -mforce-indirect-call
+@opindex mforce-indirect-call
+Force all calls to functions to be indirect. This is useful
+when using Intel Processor Trace where it generates more precise timing
+information for function calls.
 
 @item -mcall-ms2sysv-xlogues
 @opindex mcall-ms2sysv-xlogues

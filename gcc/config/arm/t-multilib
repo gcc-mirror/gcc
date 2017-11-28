@@ -68,7 +68,7 @@ v7ve_vfpv4_simd_variants := +simd
 v8_a_nosimd_variants	:= +crc
 v8_a_simd_variants	:= $(call all_feat_combs, simd crypto)
 v8_1_a_simd_variants	:= $(call all_feat_combs, simd crypto)
-v8_2_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto)
+v8_2_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto dotprod)
 
 
 ifneq (,$(HAS_APROFILE))

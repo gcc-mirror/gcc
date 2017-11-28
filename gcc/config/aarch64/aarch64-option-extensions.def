@@ -43,8 +43,8 @@
 AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO | AARCH64_FL_F16, "fp")
 
 /* Enabling "simd" also enables "fp".
-   Disabling "simd" also disables "crypto".  */
-AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO, "asimd")
+   Disabling "simd" also disables "crypto" and "dotprod".  */
+AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD, "asimd")
 
 /* Enabling "crypto" also enables "fp", "simd".
    Disabling "crypto" just disables "crypto".  */
@@ -66,5 +66,9 @@ AARCH64_OPT_EXTENSION("rcpc", AARCH64_FL_RCPC, 0, 0, "lrcpc")
 /* Enabling "rdma" also enables "fp", "simd".
    Disabling "rdma" just disables "rdma".  */
 AARCH64_OPT_EXTENSION("rdma", AARCH64_FL_RDMA, AARCH64_FL_FP | AARCH64_FL_SIMD, 0, "asimdrdm")
+
+/* Enabling "dotprod" also enables "simd".
+   Disabling "dotprod" only disables "dotprod".  */
+AARCH64_OPT_EXTENSION("dotprod", AARCH64_FL_DOTPROD, AARCH64_FL_SIMD, 0, "asimddp")
 
 #undef AARCH64_OPT_EXTENSION

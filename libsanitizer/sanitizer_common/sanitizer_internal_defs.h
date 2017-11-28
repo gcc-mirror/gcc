@@ -19,8 +19,11 @@
 
 // Only use SANITIZER_*ATTRIBUTE* before the function return type!
 #if SANITIZER_WINDOWS
+#if SANITIZER_IMPORT_INTERFACE
+# define SANITIZER_INTERFACE_ATTRIBUTE __declspec(dllimport)
+#else
 # define SANITIZER_INTERFACE_ATTRIBUTE __declspec(dllexport)
-// FIXME find out what we need on Windows, if anything.
+#endif
 # define SANITIZER_WEAK_ATTRIBUTE
 #elif SANITIZER_GO
 # define SANITIZER_INTERFACE_ATTRIBUTE
@@ -30,11 +33,56 @@
 # define SANITIZER_WEAK_ATTRIBUTE  __attribute__((weak))
 #endif
 
-#if (SANITIZER_LINUX || SANITIZER_WINDOWS) && !SANITIZER_GO
+// TLS is handled differently on different platforms
+#if SANITIZER_LINUX
+# define SANITIZER_TLS_INITIAL_EXEC_ATTRIBUTE \
+    __attribute__((tls_model("initial-exec"))) thread_local
+#else
+# define SANITIZER_TLS_INITIAL_EXEC_ATTRIBUTE
+#endif
+
+//--------------------------- WEAK FUNCTIONS ---------------------------------//
+// When working with weak functions, to simplify the code and make it more
+// portable, when possible define a default implementation using this macro:
+//
+// SANITIZER_INTERFACE_WEAK_DEF(<return_type>, <name>, <parameter list>)
+//
+// For example:
+//   SANITIZER_INTERFACE_WEAK_DEF(bool, compare, int a, int b) { return a > b; }
+//
+#if SANITIZER_WINDOWS
+#include "sanitizer_win_defs.h"
+# define SANITIZER_INTERFACE_WEAK_DEF(ReturnType, Name, ...)                   \
+  WIN_WEAK_EXPORT_DEF(ReturnType, Name, __VA_ARGS__)
+#else
+# define SANITIZER_INTERFACE_WEAK_DEF(ReturnType, Name, ...)                   \
+  extern "C" SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE            \
+  ReturnType Name(__VA_ARGS__)
+#endif
+
+// SANITIZER_SUPPORTS_WEAK_HOOKS means that we support real weak functions that
+// will evaluate to a null pointer when not defined.
+#ifndef SANITIZER_SUPPORTS_WEAK_HOOKS
+#if (SANITIZER_LINUX || SANITIZER_MAC) && !SANITIZER_GO
 # define SANITIZER_SUPPORTS_WEAK_HOOKS 1
 #else
 # define SANITIZER_SUPPORTS_WEAK_HOOKS 0
 #endif
+#endif // SANITIZER_SUPPORTS_WEAK_HOOKS
+// For some weak hooks that will be called very often and we want to avoid the
+// overhead of executing the default implementation when it is not necessary,
+// we can use the flag SANITIZER_SUPPORTS_WEAK_HOOKS to only define the default
+// implementation for platforms that doesn't support weak symbols. For example:
+//
+//   #if !SANITIZER_SUPPORT_WEAK_HOOKS
+//     SANITIZER_INTERFACE_WEAK_DEF(bool, compare_hook, int a, int b) {
+//       return a > b;
+//     }
+//   #endif
+//
+// And then use it as: if (compare_hook) compare_hook(a, b);
+//----------------------------------------------------------------------------//
+
 
 // We can use .preinit_array section on Linux to call sanitizer initialization
 // functions very early in the process startup (unless PIC macro is defined).
@@ -89,12 +137,8 @@ typedef int error_t;
 #endif
 typedef int pid_t;
 
-// WARNING: OFF_T may be different from OS type off_t, depending on the value of
-// _FILE_OFFSET_BITS. This definition of OFF_T matches the ABI of system calls
-// like pread and mmap, as opposed to pread64 and mmap64.
-// FreeBSD, Mac and Linux/x86-64 are special.
-#if SANITIZER_FREEBSD || SANITIZER_MAC || \
-  (SANITIZER_LINUX && defined(__x86_64__))
+#if SANITIZER_FREEBSD || SANITIZER_NETBSD || SANITIZER_MAC || \
+    (SANITIZER_LINUX && defined(__x86_64__))
 typedef u64 OFF_T;
 #else
 typedef uptr OFF_T;
@@ -112,6 +156,12 @@ typedef u32 operator_new_size_type;
 # endif
 #endif
 
+#if SANITIZER_MAC
+// On Darwin, thread IDs are 64-bit even on 32-bit systems.
+typedef u64 tid_t;
+#else
+typedef uptr tid_t;
+#endif
 
 // ----------- ATTENTION -------------
 // This header should NOT include any other headers to avoid portability issues.
@@ -211,8 +261,8 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
 
 #define CHECK_IMPL(c1, op, c2) \
   do { \
-    __sanitizer::u64 v1 = (u64)(c1); \
-    __sanitizer::u64 v2 = (u64)(c2); \
+    __sanitizer::u64 v1 = (__sanitizer::u64)(c1); \
+    __sanitizer::u64 v2 = (__sanitizer::u64)(c2); \
     if (UNLIKELY(!(v1 op v2))) \
       __sanitizer::CheckFailed(__FILE__, __LINE__, \
         "(" #c1 ") " #op " (" #c2 ")", v1, v2); \
@@ -287,13 +337,13 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
 enum LinkerInitialized { LINKER_INITIALIZED = 0 };
 
 #if !defined(_MSC_VER) || defined(__clang__)
-# if SANITIZER_S390_31
-#  define GET_CALLER_PC() \
-  (uptr)__builtin_extract_return_addr(__builtin_return_address(0))
-# else
-#  define GET_CALLER_PC() (uptr)__builtin_return_address(0)
-# endif
-# define GET_CURRENT_FRAME() (uptr)__builtin_frame_address(0)
+#if SANITIZER_S390_31
+#define GET_CALLER_PC() \
+  (__sanitizer::uptr) __builtin_extract_return_addr(__builtin_return_address(0))
+#else
+#define GET_CALLER_PC() (__sanitizer::uptr) __builtin_return_address(0)
+#endif
+#define GET_CURRENT_FRAME() (__sanitizer::uptr) __builtin_frame_address(0)
 inline void Trap() {
   __builtin_trap();
 }
@@ -302,9 +352,10 @@ extern "C" void* _ReturnAddress(void);
 extern "C" void* _AddressOfReturnAddress(void);
 # pragma intrinsic(_ReturnAddress)
 # pragma intrinsic(_AddressOfReturnAddress)
-# define GET_CALLER_PC() (uptr)_ReturnAddress()
+#define GET_CALLER_PC() (__sanitizer::uptr) _ReturnAddress()
 // CaptureStackBackTrace doesn't need to know BP on Windows.
-# define GET_CURRENT_FRAME() (((uptr)_AddressOfReturnAddress()) + sizeof(uptr))
+#define GET_CURRENT_FRAME() \
+  (((__sanitizer::uptr)_AddressOfReturnAddress()) + sizeof(__sanitizer::uptr))
 
 extern "C" void __ud2(void);
 # pragma intrinsic(__ud2)
@@ -322,11 +373,11 @@ inline void Trap() {
   }
 
 // Forces the compiler to generate a frame pointer in the function.
-#define ENABLE_FRAME_POINTER                                       \
-  do {                                                             \
-    volatile uptr enable_fp;                                       \
-    enable_fp = GET_CURRENT_FRAME();                               \
-    (void)enable_fp;                                               \
+#define ENABLE_FRAME_POINTER              \
+  do {                                    \
+    volatile __sanitizer::uptr enable_fp; \
+    enable_fp = GET_CURRENT_FRAME();      \
+    (void)enable_fp;                      \
   } while (0)
 
 }  // namespace __sanitizer

@@ -1,3 +1,8 @@
+2017-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_version_svn: Ignore the GCC 5 branch.
+	* crontab: Remove entry for the GCC 5 branch.
+
 2017-05-23  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc_release (XZ): Default to xz --best.

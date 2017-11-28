@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-vectorizer.h"
 #include "tree-ssa-loop-manip.h"
+#include "tree-ssa.h"
+#include "tree-into-ssa.h"
 #include "graphite.h"
 
 /* Print global statistics to FILE.  */
@@ -109,7 +111,7 @@ print_global_statistics (FILE* file)
   fprintf (file, "LOOPS:%ld, ", n_loops);
   fprintf (file, "CONDITIONS:%ld, ", n_conditions);
   fprintf (file, "STMTS:%ld)\n", n_stmts);
-  fprintf (file, "\nGlobal profiling statistics (");
+  fprintf (file, "Global profiling statistics (");
   fprintf (file, "BBS:");
   n_p_bbs.dump (file);
   fprintf (file, ", LOOPS:");
@@ -118,7 +120,7 @@ print_global_statistics (FILE* file)
   n_p_conditions.dump (file);
   fprintf (file, ", STMTS:");
   n_p_stmts.dump (file);
-  fprintf (file, ")\n");
+  fprintf (file, ")\n\n");
 }
 
 /* Print statistics for SCOP to FILE.  */
@@ -183,7 +185,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
   fprintf (file, "LOOPS:%ld, ", n_loops);
   fprintf (file, "CONDITIONS:%ld, ", n_conditions);
   fprintf (file, "STMTS:%ld)\n", n_stmts);
-  fprintf (file, "\nSCoP profiling statistics (");
+  fprintf (file, "SCoP profiling statistics (");
   fprintf (file, "BBS:");
   n_p_bbs.dump (file);
   fprintf (file, ", LOOPS:");
@@ -192,7 +194,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
   n_p_conditions.dump (file);
   fprintf (file, ", STMTS:");
   n_p_stmts.dump (file);
-  fprintf (file, ")\n");
+  fprintf (file, ")\n\n");
 }
 
 /* Print statistics for SCOPS to FILE.  */
@@ -201,73 +203,10 @@ static void
 print_graphite_statistics (FILE* file, vec<scop_p> scops)
 {
   int i;
-
   scop_p scop;
 
   FOR_EACH_VEC_ELT (scops, i, scop)
     print_graphite_scop_statistics (file, scop);
-
-  /* Print the loop structure.  */
-  print_loops (file, 2);
-  print_loops (file, 3);
-}
-
-/* Initialize graphite: when there are no loops returns false.  */
-
-static bool
-graphite_initialize (void)
-{
-  int min_loops = PARAM_VALUE (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION);
-  int nloops = number_of_loops (cfun);
-
-  if (nloops <= min_loops)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  if (nloops <= min_loops)
-	    fprintf (dump_file, "\nFunction does not have enough loops: "
-		     "PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION = %d.\n",
-		     min_loops);
-
-	  fprintf (dump_file, "\nnumber of SCoPs: 0\n");
-	  print_global_statistics (dump_file);
-	}
-
-      return false;
-    }
-
-  calculate_dominance_info (CDI_DOMINATORS);
-  initialize_original_copy_tables ();
-
-  if (dump_file && dump_flags)
-    {
-      dump_function_to_file (current_function_decl, dump_file, dump_flags);
-      print_loops (dump_file, 3);
-    }
-
-  return true;
-}
-
-/* Finalize graphite: perform CFG cleanup when NEED_CFG_CLEANUP_P is
-   true.  */
-
-static void
-graphite_finalize (bool need_cfg_cleanup_p)
-{
-  if (need_cfg_cleanup_p)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      scev_reset ();
-      cleanup_tree_cfg ();
-      profile_status_for_fn (cfun) = PROFILE_ABSENT;
-      release_recorded_exits (cfun);
-      tree_estimate_probability (false);
-    }
-
-  free_original_copy_tables ();
-
-  if (dump_file && dump_flags)
-    print_loops (dump_file, 3);
 }
 
 /* Deletes all scops in SCOPS.  */
@@ -396,7 +335,7 @@ graphite_transform_loops (void)
 {
   int i;
   scop_p scop;
-  bool need_cfg_cleanup_p = false;
+  bool changed = false;
   vec<scop_p> scops = vNULL;
   isl_ctx *ctx;
 
@@ -405,8 +344,7 @@ graphite_transform_loops (void)
   if (parallelized_function_p (cfun->decl))
     return;
 
-  if (!graphite_initialize ())
-    return;
+  calculate_dominance_info (CDI_DOMINATORS);
 
   ctx = isl_ctx_alloc ();
   isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
@@ -414,6 +352,13 @@ graphite_transform_loops (void)
 
   sort_sibling_loops (cfun);
   canonicalize_loop_closed_ssa_form ();
+
+  /* Print the loop structure.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      print_loops (dump_file, 2);
+      print_loops (dump_file, 3);
+    }
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
   build_scops (&scops);
@@ -435,17 +380,25 @@ graphite_transform_loops (void)
 	if (!apply_poly_transforms (scop))
 	  continue;
 
-	location_t loc = find_loop_location
-	  (scops[i]->scop_info->region.entry->dest->loop_father);
-
-	need_cfg_cleanup_p = true;
-	if (!graphite_regenerate_ast_isl (scop))
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			   "loop nest not optimized, code generation error\n");
-	else
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			   "loop nest optimized\n");
+	changed = true;
+	if (graphite_regenerate_ast_isl (scop))
+	  {
+	    location_t loc = find_loop_location
+	      (scops[i]->scop_info->region.entry->dest->loop_father);
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			     "loop nest optimized\n");
+	  }
       }
+
+  if (changed)
+    {
+      mark_virtual_operands_for_renaming (cfun);
+      update_ssa (TODO_update_ssa);
+      checking_verify_ssa (true, true);
+      rewrite_into_loop_closed_ssa (NULL, 0);
+      scev_reset ();
+      checking_verify_loop_structure ();
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -461,9 +414,17 @@ graphite_transform_loops (void)
     }
 
   free_scops (scops);
-  graphite_finalize (need_cfg_cleanup_p);
   the_isl_ctx = NULL;
   isl_ctx_free (ctx);
+
+  if (changed)
+    {
+      cleanup_tree_cfg ();
+      profile_status_for_fn (cfun) = PROFILE_ABSENT;
+      release_recorded_exits (cfun);
+      tree_estimate_probability (false);
+    }
+
 }
 
 #else /* If isl is not available: #ifndef HAVE_isl.  */

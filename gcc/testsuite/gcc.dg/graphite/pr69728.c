@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -floop-nest-optimize" } */
+/* { dg-options "-O3 -floop-nest-optimize -fdump-tree-graphite-details" } */
 
-int a[1];
+int a[9];
 int b, c, d, e;
 void
 fn1 ()
@@ -19,3 +19,9 @@ fn1 ()
 	}
     }
 }
+
+/* At the moment only ISL figures that if (d) is always true.  We've
+   run into scheduling issues before here, not being able to handle
+   empty domains.  */
+
+/* { dg-final { scan-tree-dump "loop nest optimized" "graphite" } }  */

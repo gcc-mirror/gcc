@@ -71,6 +71,8 @@ class AddrHashMap {
 
     ~Handle();
     T *operator->();
+    T &operator*();
+    const T &operator*() const;
     bool created() const;
     bool exists() const;
 
@@ -132,6 +134,16 @@ AddrHashMap<T, kSize>::Handle::~Handle() {
 template <typename T, uptr kSize>
 T *AddrHashMap<T, kSize>::Handle::operator->() {
   return &cell_->val;
+}
+
+template <typename T, uptr kSize>
+const T &AddrHashMap<T, kSize>::Handle::operator*() const {
+  return cell_->val;
+}
+
+template <typename T, uptr kSize>
+T &AddrHashMap<T, kSize>::Handle::operator*() {
+  return cell_->val;
 }
 
 template<typename T, uptr kSize>

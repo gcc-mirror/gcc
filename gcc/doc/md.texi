@@ -6734,6 +6734,15 @@ scheduler and other passes from moving instructions and using register
 equivalences across the boundary defined by the blockage insn.
 This needs to be an UNSPEC_VOLATILE pattern or a volatile ASM.
 
+@cindex @code{memory_blockage} instruction pattern
+@item @samp{memory_blockage}
+This pattern, if defined, represents a compiler memory barrier, and will be
+placed at points across which RTL passes may not propagate memory accesses.
+This instruction needs to read and write volatile BLKmode memory.  It does
+not need to generate any machine instruction.  If this pattern is not defined,
+the compiler falls back to emitting an instruction corresponding
+to @code{asm volatile ("" ::: "memory")}.
+
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
 If the target memory model is not fully synchronous, then this pattern
@@ -9608,7 +9617,7 @@ their result is ready in two cycles.  The simple integer insns are
 issued into the first pipeline unless it is reserved, otherwise they
 are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
-pipeline and their results are ready correspondingly in 8 and 4
+pipeline and their results are ready correspondingly in 9 and 4
 cycles.  The integer division is not pipelined, i.e.@: the subsequent
 integer division insn can not be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
@@ -9625,7 +9634,7 @@ incurred.  To describe all of this we could specify
 (define_insn_reservation "mult" 4 (eq_attr "type" "mult")
                          "i1_pipeline, nothing*2, (port0 | port1)")
 
-(define_insn_reservation "div" 8 (eq_attr "type" "div")
+(define_insn_reservation "div" 9 (eq_attr "type" "div")
                          "i1_pipeline, div*7, div + (port0 | port1)")
 
 (define_insn_reservation "float" 3 (eq_attr "type" "float")

@@ -12,7 +12,7 @@ class A : public SnmpSyntax
 {
 public:
   A (int);
-  SnmpSyntax *m_fn1 () const {}
+  SnmpSyntax *m_fn1 () const { return 0; } 
   SnmpSyntax &operator=(const SnmpSyntax &);
 };
 int a;

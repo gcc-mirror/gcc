@@ -227,7 +227,8 @@ convert_boz (gfc_expr *x, int kind)
 }
 
 
-/* Test that the expression is an constant array.  */
+/* Test that the expression is an constant array, simplifying if
+   we are dealing with a parameter array.  */
 
 static bool
 is_constant_array_expr (gfc_expr *e)
@@ -236,6 +237,10 @@ is_constant_array_expr (gfc_expr *e)
 
   if (e == NULL)
     return true;
+
+  if (e->expr_type == EXPR_VARIABLE && e->rank > 0
+      && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
+    gfc_simplify_expr (e, 1);
 
   if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
     return false;
@@ -2495,28 +2500,6 @@ gfc_simplify_failed_or_stopped_images (gfc_expr *team ATTRIBUTE_UNUSED,
   return NULL;
 }
 
-gfc_expr *
-gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
-{
-  if (flag_coarray == GFC_FCOARRAY_NONE)
-    {
-      gfc_current_locus = *gfc_current_intrinsic_where;
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
-      return &gfc_bad_expr;
-    }
-
-  if (flag_coarray == GFC_FCOARRAY_SINGLE)
-    {
-      gfc_expr *result;
-      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
-      result->rank = 0;
-      return result;
-    }
-
-  /* For fcoarray = lib no simplification is possible, because it is not known
-     what images failed or are stopped at compile time.  */
-  return NULL;
-}
 
 gfc_expr *
 gfc_simplify_float (gfc_expr *a)
@@ -6593,8 +6576,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
     return NULL;
 
   /* Calculate the size of the source.  */
-  if (source->expr_type == EXPR_ARRAY
-      && !gfc_array_size (source, &tmp))
+  if (source->expr_type == EXPR_ARRAY && !gfc_array_size (source, &tmp))
     gfc_internal_error ("Failure getting length of a constant array.");
 
   /* Create an empty new expression with the appropriate characteristics.  */
@@ -6602,7 +6584,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 				  &source->where);
   result->ts = mold->ts;
 
-  mold_element = mold->expr_type == EXPR_ARRAY
+  mold_element = (mold->expr_type == EXPR_ARRAY && mold->value.constructor)
 		 ? gfc_constructor_first (mold->value.constructor)->expr
 		 : mold;
 

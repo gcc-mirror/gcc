@@ -46,8 +46,9 @@ struct GTY((user)) edge_def {
 
   int flags;			/* see cfg-flags.def */
   profile_probability probability;
-  profile_count count;		/* Expected number of executions calculated
-				   in profile.c  */
+
+  /* Return count of edge E.  */
+  inline profile_count count () const;
 };
 
 /* Masks for edge.flags.  */
@@ -146,9 +147,6 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
 
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
-
-  /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
-  int frequency;
 
   /* The discriminator for this block.  The discriminator distinguishes
      among several basic blocks that share a common locus, allowing for
@@ -300,7 +298,7 @@ enum cfg_bb_flags
 					 ? EDGE_SUCC ((bb), 1) : EDGE_SUCC ((bb), 0))
 
 /* Return expected execution frequency of the edge E.  */
-#define EDGE_FREQUENCY(e)		e->probability.apply (e->src->frequency)
+#define EDGE_FREQUENCY(e)		e->count ().to_frequency (cfun)
 
 /* Compute a scale factor (or probability) suitable for scaling of
    gcov_type values via apply_probability() and apply_scale().  */
@@ -637,6 +635,12 @@ has_abnormal_call_or_eh_pred_edge_p (basic_block bb)
       return true;
 
   return false;
+}
+
+/* Return count of edge E.  */
+inline profile_count edge_def::count () const
+{
+  return src->count.apply_probability (probability);
 }
 
 #endif /* GCC_BASIC_BLOCK_H */

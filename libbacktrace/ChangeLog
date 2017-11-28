@@ -1,3 +1,10 @@
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* configure.ac: Add CET_FLAGS to EXTRA_FLAGS.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Likewise.
+	* configure: Likewise.
+
 2017-10-06  Ian Lance Taylor  <iant@golang.org>
 
 	* ztest.c (test_large): Pass unsigned long *, not size_t *, to

@@ -294,7 +294,7 @@ try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
   /* Calculate how many bytes the start of local variables is off from
      stack alignment.  */
   frame_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-  frame_off = STARTING_FRAME_OFFSET % frame_alignment;
+  frame_off = targetm.starting_frame_offset () % frame_alignment;
   frame_phase = frame_off ? frame_alignment - frame_off : 0;
 
   /* Round the frame offset to the specified alignment.  */
@@ -499,7 +499,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
     addr = plus_constant (Pmode, frame_pointer_rtx,
 			  trunc_int_for_mode
 			  (slot_offset + bigend_correction
-			   + STARTING_FRAME_OFFSET, Pmode));
+			   + targetm.starting_frame_offset (), Pmode));
   else
     addr = plus_constant (Pmode, virtual_stack_vars_rtx,
 			  trunc_int_for_mode
@@ -1930,7 +1930,7 @@ instantiate_virtual_regs (void)
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
-  var_offset = STARTING_FRAME_OFFSET;
+  var_offset = targetm.starting_frame_offset ();
   dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
   out_arg_offset = STACK_POINTER_OFFSET;
 #ifdef FRAME_POINTER_CFA_OFFSET
@@ -2083,6 +2083,9 @@ aggregate_value_p (const_tree exp, const_tree fntype)
      and thus can't be returned in registers.  */
   if (TREE_ADDRESSABLE (type))
     return 1;
+
+  if (TYPE_EMPTY_P (type))
+    return 0;
 
   if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
     return 1;
@@ -2527,6 +2530,9 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
       data->entry_parm = data->stack_parm = const0_rtx;
       return;
     }
+
+  targetm.calls.warn_parameter_passing_abi (all->args_so_far,
+					    data->passed_type);
 
   entry_parm = targetm.calls.function_incoming_arg (all->args_so_far,
 						    data->promoted_mode,
@@ -4049,10 +4055,9 @@ gimplify_parameters (void)
 		  DECL_IGNORED_P (addr) = 0;
 		  local = build_fold_indirect_ref (addr);
 
-		  t = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		  t = build_call_expr (t, 2, DECL_SIZE_UNIT (parm),
-				       size_int (DECL_ALIGN (parm)));
-
+		  t = build_alloca_call_expr (DECL_SIZE_UNIT (parm),
+					      DECL_ALIGN (parm),
+					      max_int_size_in_bytes (type));
 		  /* The call has been built for a variable-sized object.  */
 		  CALL_ALLOCA_FOR_VAR_P (t) = 1;
 		  t = fold_convert (ptr_type, t);
@@ -4141,8 +4146,9 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 
   part_size_in_regs = (reg_parm_stack_space == 0 ? partial : 0);
 
-  sizetree
-    = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
+  sizetree = (type
+	      ? arg_size_in_bytes (type)
+	      : size_int (GET_MODE_SIZE (passed_mode)));
   where_pad = targetm.calls.function_arg_padding (passed_mode, type);
   boundary = targetm.calls.function_arg_boundary (passed_mode, type);
   round_boundary = targetm.calls.function_arg_round_boundary (passed_mode,
@@ -4710,11 +4716,11 @@ number_blocks (tree fn)
   int n_blocks;
   tree *block_vector;
 
-  /* For SDB and XCOFF debugging output, we start numbering the blocks
+  /* For XCOFF debugging output, we start numbering the blocks
      from 1 within each function, rather than keeping a running
      count.  */
-#if SDB_DEBUGGING_INFO || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == SDB_DEBUG || write_symbols == XCOFF_DEBUG)
+#if defined (XCOFF_DEBUGGING_INFO)
+  if (write_symbols == XCOFF_DEBUG)
     next_block_index = 1;
 #endif
 
@@ -5249,7 +5255,7 @@ expand_function_start (tree subr)
     }
 
   /* The following was moved from init_function_start.
-     The move is supposed to make sdb output more accurate.  */
+     The move was supposed to make sdb output more accurate.  */
   /* Indicate the beginning of the function body,
      as opposed to parm setup.  */
   emit_note (NOTE_INSN_FUNCTION_BEG);
@@ -5440,7 +5446,7 @@ expand_function_end (void)
   do_pending_stack_adjust ();
 
   /* Output a linenumber for the end of the function.
-     SDB depends on this.  */
+     SDB depended on this.  */
   set_curr_insn_location (input_location);
 
   /* Before the return label (if any), clobber the return

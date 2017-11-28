@@ -5,6 +5,7 @@ extern "C" {
     extern JSErrorCallback p;
 };
 
+int
 main()
 {
   if ( x == ONE && p == 0)

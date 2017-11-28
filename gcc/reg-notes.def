@@ -232,3 +232,10 @@ REG_NOTE (STACK_CHECK)
    The decl might not be available in the call due to splitting of the call
    insn.  This note is a SYMBOL_REF.  */
 REG_NOTE (CALL_DECL)
+
+/* Indicate that a call should not be verified for control-flow consistency.
+   The target address of the call is assumed as a valid address and no check
+   to validate a branch to the target address is needed.  The call is marked
+   when a called function has a 'notrack' attribute.  This note is used by the
+   compiler when the option -fcf-protection=branch is specified.  */
+REG_NOTE (CALL_NOCF_CHECK)

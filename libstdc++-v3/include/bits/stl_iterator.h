@@ -1244,6 +1244,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
 #endif // C++11
 
+#if __cpp_deduction_guides >= 201606
+  // These helper traits are used for deduction guides
+  // of associative containers.
+  template<typename _InputIterator>
+    using __iter_key_t = remove_const_t<
+    typename iterator_traits<_InputIterator>::value_type::first_type>;
+
+  template<typename _InputIterator>
+    using __iter_val_t =
+    typename iterator_traits<_InputIterator>::value_type::second_type;
+
+  template<typename _T1, typename _T2>
+    struct pair;
+
+  template<typename _InputIterator>
+    using __iter_to_alloc_t =
+    pair<add_const_t<__iter_key_t<_InputIterator>>,
+	 __iter_val_t<_InputIterator>>;
+
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

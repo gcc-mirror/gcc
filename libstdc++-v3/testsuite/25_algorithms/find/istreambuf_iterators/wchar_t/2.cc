@@ -44,8 +44,7 @@ void test01()
       ++found;
       VERIFY( *beg == L'1' );
 
-      for (unsigned sk = 0; sk < 9; sk++)
-	++beg;
+      advance(beg, 9);
       VERIFY( *beg == L'0' );
     }
   VERIFY( found == 1500 );

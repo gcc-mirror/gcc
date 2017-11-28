@@ -882,13 +882,6 @@ DEFPARAM (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP,
 	  "maximum number of arrays per scop.",
 	  100, 0, 0)
 
-/* Maximal number of basic blocks in the functions analyzed by Graphite.  */
-
-DEFPARAM (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION,
-	  "graphite-min-loops-per-function",
-	  "minimal number of loops per function to be analyzed by Graphite.",
-	  2, 0, 0)
-
 DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
 	  "max-isl-operations",
 	  "maximum number of isl operations, 0 means unlimited",
@@ -978,8 +971,8 @@ DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,
 
 DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "ipa-sra-ptr-growth-factor",
-	  "Maximum allowed growth of size of new parameters ipa-sra replaces "
-	  "a pointer to an aggregate with.",
+	  "Maximum allowed growth of number and total size of new parameters "
+	  "that ipa-sra replaces a pointer to an aggregate with.",
 	  2, 0, 0)
 
 DEFPARAM (PARAM_TM_MAX_AGGREGATE_SIZE,
@@ -1246,6 +1239,12 @@ DEFPARAMENUM5 (PARAM_PARLOOPS_SCHEDULE,
 	       "parloops (static, dynamic, guided, auto, runtime).",
 	       static,
 	       static, dynamic, guided, auto, runtime)
+
+DEFPARAM (PARAM_PARLOOPS_MIN_PER_THREAD,
+	  "parloops-min-per-thread",
+	  "Minimum number of iterations per thread of an innermost "
+	  "parallelized loop.",
+	  100, 2, 0)
 
 DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "max-ssa-name-query-depth",

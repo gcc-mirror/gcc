@@ -158,8 +158,7 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
   bool matched_bracket = false;
   gfc_expr *tmp;
   bool stat_just_seen = false;
-  bool team_just_seen = false;
-  
+
   memset (ar, '\0', sizeof (*ar));
 
   ar->where = gfc_current_locus;
@@ -231,7 +230,6 @@ coarray:
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
 
-      team_just_seen = false;
       stat_just_seen = false;
 
       if (gfc_match (" , team = %e", &tmp) == MATCH_YES && ar->stat == NULL)

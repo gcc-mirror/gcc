@@ -1,6 +1,7 @@
 /* PR c/81854 - weak alias of an incompatible symbol accepted
    { dg-do compile }
-   { dg-require-ifunc "" } */
+   { dg-require-ifunc "" }
+   { dg-options "-Wextra" } */
 
 const char* __attribute__ ((weak, alias ("f0_target")))
 f0 (void);          /* { dg-error "alias between function and variable" } */
@@ -26,39 +27,37 @@ const char* f2_target (int i)   /* { dg-message "aliased declaration here" } */
   return 0;
 }
 
-
 int __attribute__ ((ifunc ("f3_resolver")))
-f3 (void);          /* { dg-error ".ifunc. resolver must return a function pointer" } */
+f3 (void);          /* { dg-message "resolver indirect function declared here" } */
 
-int f3_resolver (void)   /* { dg-message "resolver declaration here" } */
+void* f3_resolver (void) /* { dg-warning "ifunc. resolver for .f3. should return .int \\(\\*\\)\\(void\\)." } */
 {
   return 0;
 }
 
 
 int __attribute__ ((ifunc ("f4_resolver")))
-f4 (void);          /* { dg-warning ".ifunc. resolver should return a function pointer" } */
+f4 (void);          /* { dg-message "resolver indirect function declared here" } */
 
-void* f4_resolver (void) /* { dg-message "resolver declaration here" } */
+typedef void F4 (void);
+F4* f4_resolver (void) /* { dg-warning ".ifunc. resolver for .f4. should return .int \\(\\*\\)\\(void\\)" } */
 {
   return 0;
 }
 
+const char* __attribute__ ((ifunc ("f5_resolver")))
+f5 (void);
 
-int __attribute__ ((ifunc ("f5_resolver")))
-f5 (void);          /* { dg-warning "alias between functions of incompatible types" } */
-
-typedef void F5 (void);
-F5* f5_resolver (void) /* { dg-message "aliased declaration here" } */
+typedef const char* F5 (void);
+F5* f5_resolver (void)
 {
   return 0;
 }
 
-const char* __attribute__ ((ifunc ("f6_resolver")))
-f6 (void);
+int __attribute__ ((ifunc ("f6_resolver")))
+f6 (void);          /* { dg-message "resolver indirect function declared here" } */
 
-typedef const char* F6 (void);
-F6* f6_resolver (void)
+int f6_resolver (void)   /* { dg-error ".ifunc. resolver for 'f6' must return .int \\(\\*\\)\\(void\\)." } */
 {
   return 0;
 }

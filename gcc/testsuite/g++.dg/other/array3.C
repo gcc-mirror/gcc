@@ -10,5 +10,6 @@ extern unsigned char xvalue_store[];
 bool reserve (int want)
 {
   new unsigned char[want];
+  return true;
 }
 unsigned char xvalue_store[257];

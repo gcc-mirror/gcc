@@ -42,6 +42,10 @@ struct ssaexpand
   /* If partition I contains an SSA name that has a default def for a
      parameter, bit I will be set in this bitmap.  */
   bitmap partitions_for_parm_default_defs;
+
+  /* If partition I contains an SSA name that has an undefined value,
+     bit I will be set in this bitmap.  */
+  bitmap partitions_for_undefined_values;
 };
 
 /* This is the singleton described above.  */

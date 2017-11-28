@@ -1342,6 +1342,12 @@ record_store (rtx body, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
+  if (offset > HOST_WIDE_INT_MAX - width)
+    {
+      clear_rhs_from_active_local_stores ();
+      return 0;
+    }
+
   if (group_id >= 0)
     {
       /* In the restrictive case where the base is a constant or the
@@ -1653,7 +1659,7 @@ find_shift_sequence (int access_size,
       cost = 0;
       for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
-	  cost += insn_rtx_cost (PATTERN (insn), speed);
+	  cost += insn_cost (insn, speed);
 
       /* The computation up to here is essentially independent
 	 of the arguments and could be precomputed.  It may
@@ -1980,6 +1986,16 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
     width = -1;
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
+
+  if (width == -1
+      ? offset == HOST_WIDE_INT_MIN
+      : offset > HOST_WIDE_INT_MAX - width)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " adding wild read, due to overflow.\n");
+      add_wild_read (bb_info);
+      return;
+    }
 
   read_info = read_info_type_pool.allocate ();
   read_info->group_id = group_id;

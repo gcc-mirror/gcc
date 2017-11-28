@@ -867,7 +867,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct _Identity
-    : public unary_function<_Tp,_Tp>
+    : public unary_function<_Tp, _Tp>
     {
       _Tp&
       operator()(_Tp& __x) const
@@ -877,6 +877,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x) const
       { return __x; }
     };
+
+  // Partial specialization, avoids confusing errors in e.g. std::set<const T>.
+  template<typename _Tp> struct _Identity<const _Tp> : _Identity<_Tp> { };
 
   template<typename _Pair>
     struct _Select1st

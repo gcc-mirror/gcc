@@ -1,3 +1,14 @@
+2017-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* class.c (CLASS_TABLE_HASH): Wrap in "do {} while (0)".
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Likeiwse.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update XCFLAGS.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -957,15 +957,14 @@ access_fn_component_p (tree op)
 }
 
 /* Determines the base object and the list of indices of memory reference
-   DR, analyzed in LOOP and instantiated in loop nest NEST.  */
+   DR, analyzed in LOOP and instantiated before NEST.  */
 
 static void
-dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
+dr_analyze_indices (struct data_reference *dr, edge nest, loop_p loop)
 {
   vec<tree> access_fns = vNULL;
   tree ref, op;
   tree base, off, access_fn;
-  basic_block before_loop;
 
   /* If analyzing a basic-block there are no indices to analyze
      and thus no access functions.  */
@@ -977,7 +976,6 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     }
 
   ref = DR_REF (dr);
-  before_loop = block_before_loop (nest);
 
   /* REALPART_EXPR and IMAGPART_EXPR can be handled like accesses
      into a two element array with a constant index.  The base is
@@ -1002,7 +1000,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	{
 	  op = TREE_OPERAND (ref, 1);
 	  access_fn = analyze_scalar_evolution (loop, op);
-	  access_fn = instantiate_scev (before_loop, loop, access_fn);
+	  access_fn = instantiate_scev (nest, loop, access_fn);
 	  access_fns.safe_push (access_fn);
 	}
       else if (TREE_CODE (ref) == COMPONENT_REF
@@ -1034,7 +1032,7 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
     {
       op = TREE_OPERAND (ref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
-      access_fn = instantiate_scev (before_loop, loop, access_fn);
+      access_fn = instantiate_scev (nest, loop, access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
 	  tree orig_type;
@@ -1060,12 +1058,15 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 	  if (TYPE_SIZE_UNIT (TREE_TYPE (ref))
 	      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (ref))) == INTEGER_CST
 	      && !integer_zerop (TYPE_SIZE_UNIT (TREE_TYPE (ref))))
-	    rem = wi::mod_trunc (off, TYPE_SIZE_UNIT (TREE_TYPE (ref)), SIGNED);
+	    rem = wi::mod_trunc
+	      (wi::to_wide (off),
+	       wi::to_wide (TYPE_SIZE_UNIT (TREE_TYPE (ref))),
+	       SIGNED);
 	  else
 	    /* If we can't compute the remainder simply force the initial
 	       condition to zero.  */
-	    rem = off;
-	  off = wide_int_to_tree (ssizetype, wi::sub (off, rem));
+	    rem = wi::to_wide (off);
+	  off = wide_int_to_tree (ssizetype, wi::to_wide (off) - rem);
 	  memoff = wide_int_to_tree (TREE_TYPE (memoff), rem);
 	  /* And finally replace the initial condition.  */
 	  access_fn = chrec_replace_initial_condition
@@ -1136,7 +1137,7 @@ free_data_ref (data_reference_p dr)
    in which the data reference should be analyzed.  */
 
 struct data_reference *
-create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
+create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
 		 bool is_read, bool is_conditional_in_stmt)
 {
   struct data_reference *dr;
@@ -1207,35 +1208,28 @@ data_ref_compare_tree (tree t1, tree t2)
   if (t2 == NULL)
     return 1;
 
-  STRIP_NOPS (t1);
-  STRIP_NOPS (t2);
+  STRIP_USELESS_TYPE_CONVERSION (t1);
+  STRIP_USELESS_TYPE_CONVERSION (t2);
+  if (t1 == t2)
+    return 0;
 
-  if (TREE_CODE (t1) != TREE_CODE (t2))
+  if (TREE_CODE (t1) != TREE_CODE (t2)
+      && ! (CONVERT_EXPR_P (t1) && CONVERT_EXPR_P (t2)))
     return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
 
   code = TREE_CODE (t1);
   switch (code)
     {
-    /* For const values, we can just use hash values for comparisons.  */
     case INTEGER_CST:
-    case REAL_CST:
-    case FIXED_CST:
+      return tree_int_cst_compare (t1, t2);
+
     case STRING_CST:
-    case COMPLEX_CST:
-    case VECTOR_CST:
-      {
-	hashval_t h1 = iterative_hash_expr (t1, 0);
-	hashval_t h2 = iterative_hash_expr (t2, 0);
-	if (h1 != h2)
-	  return h1 < h2 ? -1 : 1;
-	break;
-      }
+      if (TREE_STRING_LENGTH (t1) != TREE_STRING_LENGTH (t2))
+	return TREE_STRING_LENGTH (t1) < TREE_STRING_LENGTH (t2) ? -1 : 1;
+      return memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+		     TREE_STRING_LENGTH (t1));
 
     case SSA_NAME:
-      cmp = data_ref_compare_tree (SSA_NAME_VAR (t1), SSA_NAME_VAR (t2));
-      if (cmp != 0)
-	return cmp;
-
       if (SSA_NAME_VERSION (t1) != SSA_NAME_VERSION (t2))
 	return SSA_NAME_VERSION (t1) < SSA_NAME_VERSION (t2) ? -1 : 1;
       break;
@@ -1243,22 +1237,26 @@ data_ref_compare_tree (tree t1, tree t2)
     default:
       tclass = TREE_CODE_CLASS (code);
 
-      /* For var-decl, we could compare their UIDs.  */
+      /* For decls, compare their UIDs.  */
       if (tclass == tcc_declaration)
 	{
 	  if (DECL_UID (t1) != DECL_UID (t2))
 	    return DECL_UID (t1) < DECL_UID (t2) ? -1 : 1;
 	  break;
 	}
-
-      /* For expressions with operands, compare their operands recursively.  */
-      for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
+      /* For expressions, compare their operands recursively.  */
+      else if (IS_EXPR_CODE_CLASS (tclass))
 	{
-	  cmp = data_ref_compare_tree (TREE_OPERAND (t1, i),
-				       TREE_OPERAND (t2, i));
-	  if (cmp != 0)
-	    return cmp;
+	  for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
+	    {
+	      cmp = data_ref_compare_tree (TREE_OPERAND (t1, i),
+					   TREE_OPERAND (t2, i));
+	      if (cmp != 0)
+		return cmp;
+	    }
 	}
+      else
+	gcc_unreachable ();
     }
 
   return 0;
@@ -1488,14 +1486,16 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	    std::swap (*dr_a1, *dr_a2);
 
 	  bool do_remove = false;
-	  wide_int diff = wi::sub (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr));
+	  wide_int diff = (wi::to_wide (DR_INIT (dr_a2->dr))
+			   - wi::to_wide (DR_INIT (dr_a1->dr)));
 	  wide_int min_seg_len_b;
 	  tree new_seg_len;
 
 	  if (TREE_CODE (dr_b1->seg_len) == INTEGER_CST)
-	    min_seg_len_b = wi::abs (dr_b1->seg_len);
+	    min_seg_len_b = wi::abs (wi::to_wide (dr_b1->seg_len));
 	  else
-	    min_seg_len_b = wi::mul (factor, wi::abs (DR_STEP (dr_b1->dr)));
+	    min_seg_len_b
+	      = factor * wi::abs (wi::to_wide (DR_STEP (dr_b1->dr)));
 
 	  /* Now we try to merge alias check dr_a1 & dr_b and dr_a2 & dr_b.
 
@@ -1534,7 +1534,7 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      /* Adjust diff according to access size of both references.  */
 	      tree size_a1 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a1->dr)));
 	      tree size_a2 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a2->dr)));
-	      diff = wi::add (diff, wi::sub (size_a2, size_a1));
+	      diff += wi::to_wide (size_a2) - wi::to_wide (size_a1);
 	      /* Case A.1.  */
 	      if (wi::leu_p (diff, min_seg_len_b)
 		  /* Case A.2 and B combined.  */
@@ -1542,11 +1542,12 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 		{
 		  if (tree_fits_uhwi_p (dr_a1->seg_len)
 		      && tree_fits_uhwi_p (dr_a2->seg_len))
-		    new_seg_len
-		      = wide_int_to_tree (sizetype,
-					  wi::umin (wi::sub (dr_a1->seg_len,
-							     diff),
-						    dr_a2->seg_len));
+		    {
+		      wide_int min_len
+			= wi::umin (wi::to_wide (dr_a1->seg_len) - diff,
+				    wi::to_wide (dr_a2->seg_len));
+		      new_seg_len = wide_int_to_tree (sizetype, min_len);
+		    }
 		  else
 		    new_seg_len
 		      = size_binop (MINUS_EXPR, dr_a2->seg_len,
@@ -1565,11 +1566,12 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 		{
 		  if (tree_fits_uhwi_p (dr_a1->seg_len)
 		      && tree_fits_uhwi_p (dr_a2->seg_len))
-		    new_seg_len
-		      = wide_int_to_tree (sizetype,
-					  wi::umax (wi::add (dr_a2->seg_len,
-							     diff),
-						    dr_a1->seg_len));
+		    {
+		      wide_int max_len
+			= wi::umax (wi::to_wide (dr_a2->seg_len) + diff,
+				    wi::to_wide (dr_a1->seg_len));
+		      new_seg_len = wide_int_to_tree (sizetype, max_len);
+		    }
 		  else
 		    new_seg_len
 		      = size_binop (PLUS_EXPR, dr_a2->seg_len,
@@ -4966,7 +4968,8 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
-      dr = create_data_ref (nest, loop_containing_stmt (stmt), ref->ref,
+      dr = create_data_ref (nest ? loop_preheader_edge (nest) : NULL,
+			    loop_containing_stmt (stmt), ref->ref,
 			    stmt, ref->is_read, ref->is_conditional_in_stmt);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
@@ -4982,7 +4985,7 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
    should be analyzed.  */
 
 bool
-graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
+graphite_find_data_references_in_stmt (edge nest, loop_p loop, gimple *stmt,
 				       vec<data_reference_p> *datarefs)
 {
   unsigned i;

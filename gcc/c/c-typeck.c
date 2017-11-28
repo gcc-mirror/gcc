@@ -2406,10 +2406,9 @@ build_component_ref (location_t loc, tree datum, tree component,
 	      gcc_rich_location rich_loc (reported_loc);
 	      if (component_loc != UNKNOWN_LOCATION)
 		rich_loc.add_fixit_misspelled_id (component_loc, guessed_id);
-	      error_at_rich_loc
-		(&rich_loc,
-		 "%qT has no member named %qE; did you mean %qE?",
-		 type, component, guessed_id);
+	      error_at (&rich_loc,
+			"%qT has no member named %qE; did you mean %qE?",
+			type, component, guessed_id);
 	    }
 	  else
 	    error_at (loc, "%qT has no member named %qE", type, component);
@@ -2483,9 +2482,9 @@ build_component_ref (location_t loc, tree datum, tree component,
       rich_location richloc (line_table, loc);
       /* "loc" should be the "." token.  */
       richloc.add_fixit_replace ("->");
-      error_at_rich_loc (&richloc,
-			 "%qE is a pointer; did you mean to use %<->%>?",
-			 datum);
+      error_at (&richloc,
+		"%qE is a pointer; did you mean to use %<->%>?",
+		datum);
       return error_mark_node;
     }
   else if (code != ERROR_MARK)
@@ -3779,7 +3778,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
 }
 
 /* Return a tree for the difference of pointers OP0 and OP1.
-   The resulting tree has type int.  */
+   The resulting tree has type ptrdiff_t.  */
 
 static tree
 pointer_diff (location_t loc, tree op0, tree op1)
@@ -3811,7 +3810,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
       op1 = convert (common_type, op1);
     }
 
-  /* Determine integer type to perform computations in.  This will usually
+  /* Determine integer type result of the subtraction.  This will usually
      be the same as the result type (ptrdiff_t), but may need to be a wider
      type if pointers for the address space are wider than ptrdiff_t.  */
   if (TYPE_PRECISION (restype) < TYPE_PRECISION (TREE_TYPE (op0)))
@@ -3826,14 +3825,21 @@ pointer_diff (location_t loc, tree op0, tree op1)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
 
-  /* First do the subtraction as integers;
-     then drop through to build the divide operator.
-     Do not do default conversions on the minus operator
-     in case restype is a short type.  */
+  /* First do the subtraction, then build the divide operator
+     and only convert at the very end.
+     Do not do default conversions in case restype is a short type.  */
 
-  op0 = build_binary_op (loc,
-			 MINUS_EXPR, convert (inttype, op0),
-			 convert (inttype, op1), false);
+  /* POINTER_DIFF_EXPR requires a signed integer type of the same size as
+     pointers.  If some platform cannot provide that, or has a larger
+     ptrdiff_type to support differences larger than half the address
+     space, cast the pointers to some larger integer type and do the
+     computations in that type.  */
+  if (TYPE_PRECISION (inttype) > TYPE_PRECISION (TREE_TYPE (op0)))
+       op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
+			      convert (inttype, op1), false);
+  else
+    op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
+
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
@@ -4276,8 +4282,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    {
 	      gcc_rich_location richloc (location);
 	      richloc.add_fixit_insert_before (location, "!");
-	      inform_at_rich_loc (&richloc, "did you mean to use logical "
-				  "not?");
+	      inform (&richloc, "did you mean to use logical not?");
 	    }
 	  if (!noconvert)
 	    arg = default_conversion (arg);
@@ -4400,7 +4405,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	}
 
       /* Ensure the argument is fully folded inside any SAVE_EXPR.  */
-      arg = c_fully_fold (arg, false, NULL);
+      arg = c_fully_fold (arg, false, NULL, true);
 
       bool atomic_op;
       atomic_op = really_atomic_lvalue (arg);
@@ -5684,7 +5689,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	    }
 	  else if (TREE_OVERFLOW (value))
 	    /* Reset VALUE's overflow flags, ensuring constant sharing.  */
-	    value = wide_int_to_tree (TREE_TYPE (value), value);
+	    value = wide_int_to_tree (TREE_TYPE (value), wi::to_wide (value));
 	}
     }
 
@@ -5824,7 +5829,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 
   if (modifycode != NOP_EXPR)
     {
-      lhs = c_fully_fold (lhs, false, NULL);
+      lhs = c_fully_fold (lhs, false, NULL, true);
       lhs = stabilize_reference (lhs);
 
       /* Construct the RHS for any non-atomic compound assignemnt. */
@@ -7291,7 +7296,6 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       inside_init = TREE_OPERAND (inside_init, 0);
     }
   inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
-  inside_init = decl_constant_value_for_optimization (inside_init);
 
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
@@ -8256,9 +8260,9 @@ pop_init_level (location_t loc, int implicit,
       && !constructor_zeroinit)
     {
       gcc_assert (initializer_stack->missing_brace_richloc);
-      warning_at_rich_loc (initializer_stack->missing_brace_richloc,
-			   OPT_Wmissing_braces,
-			   "missing braces around initializer");
+      warning_at (initializer_stack->missing_brace_richloc,
+		  OPT_Wmissing_braces,
+		  "missing braces around initializer");
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
@@ -8580,10 +8584,9 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 	{
 	  gcc_rich_location rich_loc (fieldname_loc);
 	  rich_loc.add_fixit_misspelled_id (fieldname_loc, guessed_id);
-	  error_at_rich_loc
-	    (&rich_loc,
-	     "%qT has no member named %qE; did you mean %qE?",
-	     constructor_type, fieldname, guessed_id);
+	  error_at (&rich_loc,
+		    "%qT has no member named %qE; did you mean %qE?",
+		    constructor_type, fieldname, guessed_id);
 	}
       else
 	error_at (fieldname_loc, "%qT has no member named %qE",
@@ -9902,7 +9905,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
     {
       tree output = TREE_VALUE (tail);
 
-      output = c_fully_fold (output, false, NULL);
+      output = c_fully_fold (output, false, NULL, true);
 
       /* ??? Really, this should not be here.  Users should be using a
 	 proper lvalue, dammit.  But there's a long history of using casts
@@ -9960,7 +9963,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	     mark it addressable.  */
 	  if (!allows_reg && allows_mem)
 	    {
-	      input = c_fully_fold (input, false, NULL);
+	      input = c_fully_fold (input, false, NULL, true);
 
 	      /* Strip the nops as we allow this case.  FIXME, this really
 		 should be rejected or made deprecated.  */
@@ -12726,7 +12729,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	}
       if (tem)
 	first = build2 (COMPOUND_EXPR, TREE_TYPE (first), tem, first);
-      first = c_fully_fold (first, false, NULL);
+      first = c_fully_fold (first, false, NULL, true);
       OMP_CLAUSE_DECL (c) = first;
     }
   else
@@ -13504,7 +13507,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE)
 		    {
 		      tree offset = TREE_PURPOSE (t);
-		      bool neg = wi::neg_p ((wide_int) offset);
+		      bool neg = wi::neg_p (wi::to_wide (offset));
 		      offset = fold_unary (ABS_EXPR, TREE_TYPE (offset), offset);
 		      tree t2 = pointer_int_sum (OMP_CLAUSE_LOCATION (c),
 						 neg ? MINUS_EXPR : PLUS_EXPR,
@@ -14237,7 +14240,7 @@ c_tree_equal (tree t1, tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return wi::eq_p (t1, t2);
+      return wi::to_wide (t1) == wi::to_wide (t2);
 
     case REAL_CST:
       return real_equal (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));

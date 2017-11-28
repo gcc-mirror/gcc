@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-require-effective-target arm_soft_ok } */
 /* { dg-skip-if "skip override" { *-*-* } { "-mfloat-abi=softfp" "-mfloat-abi=hard" } { "" } } */
 /* { dg-options "-O2 -mfloat-abi=soft --save-temps" } */
 extern void abort (void);

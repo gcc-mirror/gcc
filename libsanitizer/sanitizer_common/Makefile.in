@@ -71,7 +71,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/enable.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -80,15 +81,16 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
-	sanitizer_common_libcdep.lo sanitizer_coverage_libcdep.lo \
-	sanitizer_coverage_mapping_libcdep.lo \
+am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
+	sanitizer_allocator_checks.lo sanitizer_common.lo \
+	sanitizer_common_libcdep.lo sanitizer_coverage_libcdep_new.lo \
 	sanitizer_deadlock_detector1.lo \
-	sanitizer_deadlock_detector2.lo sanitizer_flags.lo \
-	sanitizer_flag_parser.lo sanitizer_libc.lo \
-	sanitizer_libignore.lo sanitizer_linux.lo \
+	sanitizer_deadlock_detector2.lo sanitizer_errno.lo \
+	sanitizer_file.lo sanitizer_flags.lo sanitizer_flag_parser.lo \
+	sanitizer_libc.lo sanitizer_libignore.lo sanitizer_linux.lo \
 	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
-	sanitizer_mac.lo sanitizer_persistent_allocator.lo \
+	sanitizer_mac.lo sanitizer_mac_libcdep.lo \
+	sanitizer_persistent_allocator.lo \
 	sanitizer_platform_limits_linux.lo \
 	sanitizer_platform_limits_posix.lo sanitizer_posix.lo \
 	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
@@ -98,8 +100,8 @@ am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_stacktrace_libcdep.lo sanitizer_symbolizer_mac.lo \
 	sanitizer_stacktrace_printer.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
-	sanitizer_suppressions.lo sanitizer_symbolizer.lo \
-	sanitizer_symbolizer_libbacktrace.lo \
+	sanitizer_stoptheworld_mac.lo sanitizer_suppressions.lo \
+	sanitizer_symbolizer.lo sanitizer_symbolizer_libbacktrace.lo \
 	sanitizer_symbolizer_libcdep.lo \
 	sanitizer_symbolizer_posix_libcdep.lo \
 	sanitizer_symbolizer_win.lo sanitizer_termination.lo \
@@ -176,6 +178,9 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+EXTRA_ASFLAGS = @EXTRA_ASFLAGS@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
+EXTRA_CXXFLAGS = @EXTRA_CXXFLAGS@
 FGREP = @FGREP@
 FORMAT_FILE = @FORMAT_FILE@
 GREP = @GREP@
@@ -296,17 +301,21 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
 	-Wno-variadic-macros $(LIBSTDCXX_RAW_CXX_CXXFLAGS) \
-	-std=gnu++11 $(am__append_1)
+	-std=gnu++11 $(EXTRA_CXXFLAGS) $(am__append_1)
+AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libsanitizer_common.la
 sanitizer_common_files = \
+	sancov_flags.cc \
 	sanitizer_allocator.cc \
+	sanitizer_allocator_checks.cc \
 	sanitizer_common.cc \
 	sanitizer_common_libcdep.cc \
-	sanitizer_coverage_libcdep.cc \
-	sanitizer_coverage_mapping_libcdep.cc \
+	sanitizer_coverage_libcdep_new.cc \
 	sanitizer_deadlock_detector1.cc \
 	sanitizer_deadlock_detector2.cc \
+	sanitizer_errno.cc \
+	sanitizer_file.cc \
 	sanitizer_flags.cc \
 	sanitizer_flag_parser.cc \
 	sanitizer_libc.cc \
@@ -315,6 +324,7 @@ sanitizer_common_files = \
 	sanitizer_linux_libcdep.cc \
 	sanitizer_linux_s390.cc \
 	sanitizer_mac.cc \
+	sanitizer_mac_libcdep.cc \
 	sanitizer_persistent_allocator.cc \
 	sanitizer_platform_limits_linux.cc \
 	sanitizer_platform_limits_posix.cc \
@@ -331,6 +341,7 @@ sanitizer_common_files = \
 	sanitizer_symbolizer_mac.cc \
 	sanitizer_stacktrace_printer.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
+	sanitizer_stoptheworld_mac.cc \
 	sanitizer_suppressions.cc \
 	sanitizer_symbolizer.cc \
 	sanitizer_symbolizer_libbacktrace.cc \
@@ -439,13 +450,16 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sancov_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_allocator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_allocator_checks.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_common_libcdep.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_coverage_libcdep.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_coverage_mapping_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_coverage_libcdep_new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_deadlock_detector1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_deadlock_detector2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_errno.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_file.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_flag_parser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_libc.Plo@am__quote@
@@ -456,6 +470,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_s390.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_x86_64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_persistent_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_posix.Plo@am__quote@
@@ -471,6 +486,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_printer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stoptheworld_linux_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stoptheworld_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_suppressions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_libbacktrace.Plo@am__quote@

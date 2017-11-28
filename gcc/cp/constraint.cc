@@ -2504,7 +2504,12 @@ check_function_concept (tree fn)
     {
       location_t loc = DECL_SOURCE_LOCATION (fn);
       if (TREE_CODE (body) == STATEMENT_LIST && !STATEMENT_LIST_HEAD (body))
-        error_at (loc, "definition of concept %qD is empty", fn);
+	{
+	  if (seen_error ())
+	    /* The definition was probably erroneous, not empty.  */;
+	  else
+	    error_at (loc, "definition of concept %qD is empty", fn);
+	}
       else
         error_at (loc, "definition of concept %qD has multiple statements", fn);
     }

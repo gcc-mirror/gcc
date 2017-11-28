@@ -33,6 +33,20 @@ extern GTY(()) tree pchar_type_node;
 extern GTY(()) tree gfc_float128_type_node;
 extern GTY(()) tree gfc_complex_float128_type_node;
 
+/* logical_type_node is the Fortran LOGICAL type of default kind.  In
+   addition to uses mandated by the Fortran standard, also prefer it
+   for compiler generated temporary variables, is it avoids some minor
+   issues with boolean_type_node (the C/C++ _Bool/bool). Namely:
+   - On x86, partial register stalls with 8/16 bit register access,
+     and length prefix changes.
+   - On s390 there is a compare with immediate and jump instruction,
+     but it works only with 32-bit quantities and not 8-bit such as
+     boolean_type_node.
+*/
+extern GTY(()) tree logical_type_node;
+extern GTY(()) tree logical_true_node;
+extern GTY(()) tree logical_false_node;
+
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */
 /* TODO: This is still hardcoded as kind=4 in some bits of the compiler

@@ -210,6 +210,12 @@ extern tree arm_fp16_type_node;
 /* FPU supports ARMv8.1 Adv.SIMD extensions.  */
 #define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
+/* Supports the Dot Product AdvSIMD extensions.  */
+#define TARGET_DOTPROD (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,		\
+					isa_bit_dotprod)		\
+			&& arm_arch8_2)
+
 /* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_VFP_FP16INST \
   (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
@@ -1250,12 +1256,6 @@ enum reg_class
   (TARGET_CALLER_INTERWORKING				\
    && crtl->outgoing_args_size != 0		\
    ? UNITS_PER_WORD : 0)
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
-#define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */

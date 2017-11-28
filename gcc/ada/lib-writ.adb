@@ -96,6 +96,8 @@ package body Lib.Writ is
          Main_CPU               => -1,
          Munit_Index            => 0,
          No_Elab_Code_All       => False,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
          Serial_Number          => 0,
          Version                => 0,
          Error_Location         => No_Location,
@@ -157,6 +159,8 @@ package body Lib.Writ is
          Main_CPU               => -1,
          Munit_Index            => 0,
          No_Elab_Code_All       => False,
+         Primary_Stack_Count    => 0,
+         Sec_Stack_Count        => 0,
          Serial_Number          => 0,
          Version                => 0,
          Error_Location         => No_Location,
@@ -616,6 +620,19 @@ package body Lib.Writ is
 
          Write_With_Lines;
 
+         --  Generate task stack lines
+
+         if Primary_Stack_Count (Unit_Num) > 0
+           or else Sec_Stack_Count (Unit_Num) > 0
+         then
+            Write_Info_Initiate ('T');
+            Write_Info_Char (' ');
+            Write_Info_Int (Primary_Stack_Count (Unit_Num));
+            Write_Info_Char (' ');
+            Write_Info_Int (Sec_Stack_Count (Unit_Num));
+            Write_Info_EOL;
+         end if;
+
          --  Generate the linker option lines
 
          for J in 1 .. Linker_Option_Lines.Last loop
@@ -677,7 +694,7 @@ package body Lib.Writ is
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
-                  case Pragma_Name_Unmapped (N) is
+                  case Pragma_Name (N) is
                      when Name_Annotate =>
                         C := 'A';
                      when Name_Comment =>
@@ -1548,14 +1565,6 @@ package body Lib.Writ is
       if Generate_SCO then
          SCO_Record_Filtered;
          SCO_Output;
-      end if;
-
-      --  Output SPARK cross-reference information if needed
-
-      if Opt.Xref_Active and then GNATprove_Mode then
-         SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
-                                             Num_Sdep   => Num_Sdep);
-         SPARK_Specific.Output_SPARK_Xrefs;
       end if;
 
       --  Output final blank line and we are done. This final blank line is

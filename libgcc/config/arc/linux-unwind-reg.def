@@ -1,0 +1,42 @@
+/* Copyright (C) 2017 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.
+*/
+
+REGISTER_IN_STACK(bta, -1)
+REGISTER_IN_STACK(lp_start, -1)
+REGISTER_IN_STACK(lp_end, -1)
+REGISTER_IN_STACK(lp_count, -1)
+REGISTER_IN_STACK(status32, -1)
+REGISTER_IN_STACK(ret, -1)
+REGISTER_IN_STACK(blink, 31)
+REGISTER_IN_STACK(fp, 27)
+REGISTER_IN_STACK(gp, 26)
+REGISTER_IN_STACK(r12, 12)
+REGISTER_IN_STACK(r11, 11)
+REGISTER_IN_STACK(r10, 10)
+REGISTER_IN_STACK(r9, 9)
+REGISTER_IN_STACK(r8, 8)
+REGISTER_IN_STACK(r7, 7)
+REGISTER_IN_STACK(r6, 6)
+REGISTER_IN_STACK(r5, 5)
+REGISTER_IN_STACK(r4, 4)
+REGISTER_IN_STACK(r3, 3)
+REGISTER_IN_STACK(r2, 2)
+REGISTER_IN_STACK(r1, 1)
+REGISTER_IN_STACK(r0, 0)
+REGISTER_IN_STACK(sp, 28)

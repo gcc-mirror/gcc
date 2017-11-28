@@ -436,11 +436,11 @@ extern void free_data_ref (data_reference_p);
 extern void free_data_refs (vec<data_reference_p> );
 extern bool find_data_references_in_stmt (struct loop *, gimple *,
 					  vec<data_reference_p> *);
-extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple *,
+extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
 						   vec<data_reference_p> *);
 tree find_data_references_in_loop (struct loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
-struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool,
+struct data_reference *create_data_ref (edge, loop_p, tree, gimple *, bool,
 					bool);
 extern bool find_loop_nest (struct loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation

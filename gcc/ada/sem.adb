@@ -612,6 +612,14 @@ package body Sem is
          when N_With_Clause =>
             Analyze_With_Clause (N);
 
+         --  A call to analyze a marker is ignored because the node does not
+         --  have any static and run-time semantics.
+
+         when N_Call_Marker
+            | N_Variable_Reference_Marker
+         =>
+            null;
+
          --  A call to analyze the Empty node is an error, but most likely it
          --  is an error caused by an attempt to analyze a malformed piece of
          --  tree caused by some other error, so if there have been any other
@@ -732,17 +740,32 @@ package body Sem is
 
       Debug_A_Exit ("analyzing  ", N, "  (done)");
 
-      --  Mark relevant use-type and use-package clauses as effective using the
-      --  original node, because constant folding may have occurred and removed
-      --  references that need to be examined. If the node in question is
-      --  overloaded then this is deferred until resolution.
+      --  Mark relevant use-type and use-package clauses as effective
+      --  preferring the original node over the analyzed one in the case that
+      --  constant folding has occurred and removed references that need to be
+      --  examined. Also, if the node in question is overloaded then this is
+      --  deferred until resolution.
 
-      if Nkind (Original_Node (N)) in N_Op
-        and then Present (Entity (Original_Node (N)))
-        and then not Is_Overloaded (Original_Node (N))
-      then
-         Mark_Use_Clauses (Original_Node (N));
-      end if;
+      declare
+         Operat : Node_Id := Empty;
+      begin
+         --  Attempt to obtain a checkable operator node
+
+         if Nkind (Original_Node (N)) in N_Op then
+            Operat := Original_Node (N);
+         elsif Nkind (N) in N_Op then
+            Operat := N;
+         end if;
+
+         --  Mark the operator
+
+         if Present (Operat)
+           and then Present (Entity (Operat))
+           and then not Is_Overloaded (Operat)
+         then
+            Mark_Use_Clauses (Operat);
+         end if;
+      end;
 
       --  Now that we have analyzed the node, we call the expander to perform
       --  possible expansion. We skip this for subexpressions, because we don't
@@ -1241,6 +1264,15 @@ package body Sem is
       Scope_Stack.Release;
       Scope_Stack.Locked := True;
    end Lock;
+
+   ------------------------
+   -- Preanalysis_Active --
+   ------------------------
+
+   function Preanalysis_Active return Boolean is
+   begin
+      return not Full_Analysis and not Expander_Active;
+   end Preanalysis_Active;
 
    ----------------
    -- Preanalyze --

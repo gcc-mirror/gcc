@@ -4,28 +4,41 @@
 
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 128
+#define N (VECTOR_BITS / 8)
+#else
+#define N 16
+#endif
+
 extern void abort(void);
 
-unsigned char in[16] __attribute__((__aligned__(16)));
+unsigned char in[N] __attribute__((__aligned__(16)));
 
 int
 main (unsigned char argc, char **argv)
 {
   unsigned char i = 0;
   unsigned char sum = 1;
+  unsigned char expected = 1;
 
   check_vect ();
 
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < N; i++)
     in[i] = (i + i + 1) & 0xfd;
+
+  for (i = 0; i < N; i++)
+    {
+      expected |= in[i];
+      asm volatile ("");
+    }
 
   /* Prevent constant propagation of the entire loop below.  */
   asm volatile ("" : : : "memory");
 
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < N; i++)
     sum |= in[i];
 
-  if (sum != 29)
+  if (sum != expected)
     {
       __builtin_printf("Failed %d\n", sum);
       abort();

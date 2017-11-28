@@ -1,3 +1,109 @@
+2017-11-26  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Handle cannonlake.
+	* config/i386/cpuinfo.h (processor_subtypes): Add
+	INTEL_COREI7_CANNONLAKE.
+
+2017-11-20  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR bootstrap/83015
+	* config/cr16/unwind-cr16.c (uw_install_context): Add FRAMES
+	parameter.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise
+	* config/ia64/unwind-ia64.c: Add frames parameter.
+	* unwind-sjlj.c: Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* config/i386/linux-unwind.h: Include
+	config/i386/shadow-stack-unwind.h.
+	* config/i386/shadow-stack-unwind.h: New file.
+	* unwind-dw2.c: (uw_install_context): Add a frame parameter and
+	pass it to _Unwind_Frames_Extra.
+	* unwind-generic.h (_Unwind_Frames_Extra): New.
+	* unwind.inc (_Unwind_RaiseException_Phase2): Add frames_p
+	parameter. Add local variable frames to count number of frames.
+	(_Unwind_ForcedUnwind_Phase2): Likewise.
+	(_Unwind_RaiseException): Add local variable frames to count
+	number of frames, pass it to _Unwind_RaiseException_Phase2 and
+	uw_install_context.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* Makefile.in (configure_deps): Add $(srcdir)/../config/cet.m4.
+	(CET_FLAGS): New.
+	* config/i386/morestack.S: Include <cet.h>.
+	(__morestack_large_model): Add _CET_ENDBR at function entrance.
+	* config/i386/resms64.h: Include <cet.h>.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/savms64.h: Likewise.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): Add $(CET_FLAGS).
+	(CRTSTUFF_T_CFLAGS): Likewise.
+	* configure.ac: Include ../config/cet.m4.
+	Set and substitute CET_FLAGS.
+	* configure: Regenerated.
+
+2017-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (*-*-solaris2*): Adapt comment for Solaris 12
+	renaming.
+	* config/sol2/crtpg.c (__start_crt_compiler): Likewise.
+	* configure.ac (libgcc_cv_solaris_crts): Likewise.
+	* configure: Regenerate.
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	* config/rs6000/aix-unwind.h (REGISTER_CFA_OFFSET_FOR): Remove semicolon
+	after "do {} while (0)".
+
+2017-11-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* config/aarch64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Remove
+	semicolon after "do {} while (0)".
+	* config/i386/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/ia64/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/mips/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+	* config/rs6000/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Same.
+
+2017-11-04  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR libgcc/82635
+	* config/i386/freebsd-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Use a
+	sysctl to determine whether we're in a trampoline.
+	Keep the pattern matching method for systems without
+	KERN_PROC_SIGTRAMP sysctl.
+
+2017-11-03  Cupertino Miranda  <cmiranda@synopsys.com>
+	    Vineet Gupta <vgupta@synopsys.com>
+
+	* config.host (arc*-*-linux*): Set md_unwind_header variable.
+	* config/arc/linux-unwind-reg.def: New file.
+	* config/arc/linux-unwind-reg.h: Likewise.
+
+2017-10-23  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/subdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added subdi3.S to LIB2ADD.
+
+2017-10-13  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/adddi3.S: New assembly file.
+	* config/rl78/t-rl78: Added adddi3.S to LIB2ADD.
+
+2017-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82274
+	* libgcc2.c (__mulvDI3): If both operands have
+	the same highpart of -1 and the topmost bit of lowpart is 0,
+	multiplication overflows even if both lowparts are 0.
+
 2017-09-28  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/crti-hw.S: Add watchdog vector, FT930 IRQ support.

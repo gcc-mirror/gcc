@@ -428,7 +428,7 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Size_OK
 
    begin
-      --  The normal aggregate limit is 50000, but we increase this limit to
+      --  The normal aggregate limit is 500000, but we increase this limit to
       --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code) or
       --  Restrictions (No_Implicit_Loops) is specified, since in either case
       --  we are at risk of declaring the program illegal because of this
@@ -448,7 +448,7 @@ package body Exp_Aggr is
       --  Finally, we use a small limit in CodePeer mode where we favor loops
       --  instead of thousands of single assignments (from large aggregates).
 
-      Max_Aggr_Size := 50000;
+      Max_Aggr_Size := 500000;
 
       if CodePeer_Mode then
          Max_Aggr_Size := 100;
@@ -1251,6 +1251,7 @@ package body Exp_Aggr is
 
             if Finalization_OK
               and then not Is_Limited_Type (Comp_Typ)
+              and then not Is_Build_In_Place_Function_Call (Init_Expr)
               and then not
                 (Is_Array_Type (Comp_Typ)
                   and then Is_Controlled (Component_Type (Comp_Typ))
@@ -4125,25 +4126,6 @@ package body Exp_Aggr is
    -- Convert_To_Assignments --
    ----------------------------
 
-   function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean is
-      P : Node_Id := Parent (N);
-   begin
-      while Nkind (P) = N_Qualified_Expression loop
-         P := Parent (P);
-      end loop;
-
-      if Nkind (P) = N_Simple_Return_Statement then
-         null;
-      elsif Nkind (Parent (P)) = N_Extended_Return_Statement then
-         P := Parent (P);
-      else
-         return False;
-      end if;
-
-      return Is_Build_In_Place_Function
-        (Return_Applies_To (Return_Statement_Entity (P)));
-   end Is_Build_In_Place_Aggregate_Return;
-
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       T    : Entity_Id;
@@ -4176,8 +4158,9 @@ package body Exp_Aggr is
             Unc_Decl :=
               not Is_Entity_Name (Object_Definition (Parent_Node))
                 or else (Nkind (N) = N_Aggregate
-                           and then Has_Discriminants
-                             (Entity (Object_Definition (Parent_Node))))
+                          and then
+                            Has_Discriminants
+                              (Entity (Object_Definition (Parent_Node))))
                 or else Is_Class_Wide_Type
                           (Entity (Object_Definition (Parent_Node)));
          end if;
@@ -6671,8 +6654,8 @@ package body Exp_Aggr is
    --  individual assignments to the given components.
 
    procedure Expand_N_Extension_Aggregate (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
       A   : constant Node_Id    := Ancestor_Part (N);
+      Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
 
    begin
@@ -7476,6 +7459,33 @@ package body Exp_Aggr is
       return False;
    end Has_Default_Init_Comps;
 
+   ----------------------------------------
+   -- Is_Build_In_Place_Aggregate_Return --
+   ----------------------------------------
+
+   function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean is
+      P : Node_Id := Parent (N);
+
+   begin
+      while Nkind (P) = N_Qualified_Expression loop
+         P := Parent (P);
+      end loop;
+
+      if Nkind (P) = N_Simple_Return_Statement then
+         null;
+
+      elsif Nkind (Parent (P)) = N_Extended_Return_Statement then
+         P := Parent (P);
+
+      else
+         return False;
+      end if;
+
+      return
+        Is_Build_In_Place_Function
+          (Return_Applies_To (Return_Statement_Entity (P)));
+   end Is_Build_In_Place_Aggregate_Return;
+
    --------------------------
    -- Is_Delayed_Aggregate --
    --------------------------
@@ -7523,7 +7533,7 @@ package body Exp_Aggr is
       Typ : constant Entity_Id := Base_Type (Etype (N));
 
    begin
-      return Static_Dispatch_Tables
+      return Building_Static_Dispatch_Tables
         and then Tagged_Type_Expansion
         and then RTU_Loaded (Ada_Tags)
 

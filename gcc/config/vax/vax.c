@@ -62,6 +62,7 @@ static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
 static int vax_return_pops_args (tree, tree, int);
 static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
+static HOST_WIDE_INT vax_starting_frame_offset (void);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -119,6 +120,9 @@ static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE vax_option_override
+
+#undef TARGET_STARTING_FRAME_OFFSET
+#define TARGET_STARTING_FRAME_OFFSET vax_starting_frame_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -208,7 +212,7 @@ vax_expand_prologue (void)
 
   /* Allocate the local stack frame.  */
   size = get_frame_size ();
-  size -= STARTING_FRAME_OFFSET;
+  size -= vax_starting_frame_offset ();
   emit_insn (gen_addsi3 (stack_pointer_rtx,
 			 stack_pointer_rtx, GEN_INT (-size)));
 
@@ -2179,3 +2183,12 @@ vax_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   ? (GET_MODE_SIZE (mode) + 3) & ~3
 	   : (int_size_in_bytes (type) + 3) & ~3);
 }
+
+static HOST_WIDE_INT
+vax_starting_frame_offset (void)
+{
+  /* On ELF targets, reserve the top of the stack for exception handler
+     stackadj value.  */
+  return TARGET_ELF ? -4 : 0;
+}
+

@@ -106,6 +106,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
 
   aarch64_def_or_undef (TARGET_CRC32, "__ARM_FEATURE_CRC32", pfile);
+  aarch64_def_or_undef (TARGET_DOTPROD, "__ARM_FEATURE_DOTPROD", pfile);
 
   cpp_undef (pfile, "__AARCH64_CMODEL_TINY__");
   cpp_undef (pfile, "__AARCH64_CMODEL_SMALL__");
@@ -165,7 +166,7 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
      information that it specifies.  */
   if (args)
     {
-      if (!aarch64_process_target_attr (args, "pragma"))
+      if (!aarch64_process_target_attr (args))
 	return false;
 
       aarch64_override_options_internal (&global_options);

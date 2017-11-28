@@ -16,11 +16,13 @@ main ()
 	      break;		// { dg-error "break" }
 	    }
 	  };
-	  l = []()		// { dg-warning "statement will never be executed" }
+	  l = []()
 	    {
 	    case 3:		// { dg-error "case" }
 	      break;		// { dg-error "break" }
-	    };
+	    };		// { dg-warning "statement will never be executed" }
 	}
     }
 }
+
+// { dg-prune-output "\\\[-Wswitch-unreachable]" }

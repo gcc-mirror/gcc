@@ -273,6 +273,9 @@ handle_lto_debug_sections (const char **name)
       *name = *name + sizeof (".gnu.lto_") - 1;
       return 1;
     }
+  /* Copy over .note.GNU-stack section under the same name if present.  */
+  else if (strcmp (*name, ".note.GNU-stack") == 0)
+    return 1;
   return 0;
 }
 

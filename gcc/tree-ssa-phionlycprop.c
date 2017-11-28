@@ -298,7 +298,6 @@ propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 
 			  te->probability += e->probability;
 
-			  te->count += e->count;
 			  remove_edge (e);
 			  cfg_altered = true;
 			}

@@ -10,7 +10,7 @@ struct T
   foo (S<N> *p)
   {
     S<N> u;
-    [&u] ()->bool {} ();
+    [&u] ()->bool { return true; } ();
   }
 };
 

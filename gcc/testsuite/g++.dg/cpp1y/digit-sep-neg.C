@@ -26,5 +26,5 @@ main()
 }
 
 // { dg-error "exponent has no digits" "exponent has no digits" { target *-*-* } 21 }
-// { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 14 }
-// { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 25 }
+// { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 13 }
+// { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 24 }

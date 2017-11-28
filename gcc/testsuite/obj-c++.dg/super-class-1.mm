@@ -1,6 +1,7 @@
 /* Test calling super from within a category method.  */
 
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
 
 #include <objc/objc.h>
 

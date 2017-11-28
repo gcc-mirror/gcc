@@ -62,15 +62,22 @@ package body CStand is
    -----------------------
 
    procedure Build_Float_Type
-     (E    : Entity_Id;
-      Siz  : Int;
-      Rep  : Float_Rep_Kind;
-      Digs : Int);
+     (E     : Entity_Id;
+      Digs  : Int;
+      Rep   : Float_Rep_Kind;
+      Siz   : Int;
+      Align : Int);
    --  Procedure to build standard predefined float base type. The first
-   --  parameter is the entity for the type, and the second parameter is the
-   --  size in bits. The third parameter indicates the kind of representation
-   --  to be used. The fourth parameter is the digits value. Each type
+   --  parameter is the entity for the type. The second parameter is the
+   --  digits value. The third parameter indicates the representation to
+   --  be used for the type. The fourth parameter is the size in bits.
+   --  The fifth parameter is the alignment in storage units. Each type
    --  is added to the list of predefined floating point types.
+   --
+   --  Note that both RM_Size and Esize are set to the specified size, i.e.
+   --  we do not set the RM_Size to the precision passed by the back end.
+   --  This is consistent with the semantics of 'Size specified in the RM
+   --  because we cannot pack components of the type tighter than this size.
 
    procedure Build_Signed_Integer_Type (E : Entity_Id; Siz : Nat);
    --  Procedure to build standard predefined signed integer subtype. The
@@ -189,10 +196,11 @@ package body CStand is
    ----------------------
 
    procedure Build_Float_Type
-     (E    : Entity_Id;
-      Siz  : Int;
-      Rep  : Float_Rep_Kind;
-      Digs : Int)
+     (E     : Entity_Id;
+      Digs  : Int;
+      Rep   : Float_Rep_Kind;
+      Siz   : Int;
+      Align : Int)
    is
    begin
       Set_Type_Definition (Parent (E),
@@ -201,10 +209,10 @@ package body CStand is
 
       Set_Ekind                      (E, E_Floating_Point_Type);
       Set_Etype                      (E, E);
-      Set_Float_Rep (E, Rep);
-      Init_Size                      (E, Siz);
-      Set_Elem_Alignment             (E);
       Init_Digits_Value              (E, Digs);
+      Set_Float_Rep                  (E, Rep);
+      Init_Size                      (E, Siz);
+      Set_Elem_Alignment             (E, Align);
       Set_Float_Bounds               (E);
       Set_Is_Frozen                  (E);
       Set_Is_Public                  (E);
@@ -295,8 +303,9 @@ package body CStand is
 
    procedure Copy_Float_Type (To : Entity_Id; From : Entity_Id) is
    begin
-      Build_Float_Type (To, UI_To_Int (Esize (From)), Float_Rep (From),
-                        UI_To_Int (Digits_Value (From)));
+      Build_Float_Type
+        (To, UI_To_Int (Digits_Value (From)), Float_Rep (From),
+         UI_To_Int (Esize (From)), UI_To_Int (Alignment (From)));
    end Copy_Float_Type;
 
    ----------------------
@@ -2065,15 +2074,17 @@ package body CStand is
       Size      : Positive;
       Alignment : Natural)
    is
+      pragma Unreferenced (Precision);
+      --  See Build_Float_Type for the rationale
+
       Ent : constant Entity_Id := New_Standard_Entity;
 
    begin
       Set_Defining_Identifier (New_Node (N_Full_Type_Declaration, Stloc), Ent);
       Make_Name (Ent, Name);
       Set_Scope (Ent, Standard_Standard);
-      Build_Float_Type (Ent, Int (Size), Float_Rep, Pos (Digs));
-      Set_RM_Size (Ent, UI_From_Int (Int (Precision)));
-      Set_Alignment (Ent, UI_From_Int (Int (Alignment / 8)));
+      Build_Float_Type
+        (Ent, Pos (Digs), Float_Rep, Int (Size), Int (Alignment / 8));
 
       if No (Back_End_Float_Types) then
          Back_End_Float_Types := New_Elmt_List;

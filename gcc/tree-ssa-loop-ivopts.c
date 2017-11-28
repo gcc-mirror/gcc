@@ -1550,9 +1550,6 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   bitmap_set_bit (data->relevant, SSA_NAME_VERSION (op));
 }
 
-static tree
-strip_offset (tree expr, unsigned HOST_WIDE_INT *offset);
-
 /* Record a group of TYPE.  */
 
 static struct iv_group *
@@ -2160,8 +2157,8 @@ constant_multiple_of (tree top, tree bot, widest_int *mul)
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = widest_int::from (top, SIGNED);
-      p1 = widest_int::from (bot, SIGNED);
+      p0 = widest_int::from (wi::to_wide (top), SIGNED);
+      p1 = widest_int::from (wi::to_wide (bot), SIGNED);
       if (p1 == 0)
 	return false;
       *mul = wi::sext (wi::divmod_trunc (p0, p1, SIGNED, &res), precision);
@@ -2863,7 +2860,7 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
-static tree
+tree
 strip_offset (tree expr, unsigned HOST_WIDE_INT *offset)
 {
   HOST_WIDE_INT off;
@@ -3140,7 +3137,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
      statement.  */
   if (use_bb->loop_father != data->current_loop
       || !dominated_by_p (CDI_DOMINATORS, data->current_loop->latch, use_bb)
-      || stmt_could_throw_p (use->stmt)
+      || stmt_can_throw_internal (use->stmt)
       || !cst_and_fits_in_hwi (step))
     return;
 
@@ -4334,18 +4331,25 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
   machine_mode addr_mode = TYPE_MODE (type);
   machine_mode mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
+  /* Only true if ratio != 1.  */
+  bool ok_with_ratio_p = false;
+  bool ok_without_ratio_p = false;
 
   if (!aff_combination_const_p (aff_inv))
     {
       parts.index = integer_one_node;
       /* Addressing mode "base + index".  */
-      if (valid_mem_ref_p (mem_mode, as, &parts))
+      ok_without_ratio_p = valid_mem_ref_p (mem_mode, as, &parts);
+      if (ratio != 1)
 	{
 	  parts.step = wide_int_to_tree (type, ratio);
 	  /* Addressing mode "base + index << scale".  */
-	  if (ratio != 1 && !valid_mem_ref_p (mem_mode, as, &parts))
+	  ok_with_ratio_p = valid_mem_ref_p (mem_mode, as, &parts);
+	  if (!ok_with_ratio_p)
 	    parts.step = NULL_TREE;
-
+	}
+      if (ok_with_ratio_p || ok_without_ratio_p)
+	{
 	  if (aff_inv->offset != 0)
 	    {
 	      parts.offset = wide_int_to_tree (sizetype, aff_inv->offset);
@@ -4443,7 +4447,9 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 
   if (parts.symbol != NULL_TREE)
     cost.complexity += 1;
-  if (parts.step != NULL_TREE && !integer_onep (parts.step))
+  /* Don't increase the complexity of adding a scaled index if it's
+     the only kind of index that the target allows.  */
+  if (parts.step != NULL_TREE && ok_without_ratio_p)
     cost.complexity += 1;
   if (parts.base != NULL_TREE && parts.index != NULL_TREE)
     cost.complexity += 1;
@@ -4460,8 +4466,8 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 static comp_cost
 get_scaled_computation_cost_at (ivopts_data *data, gimple *at, comp_cost cost)
 {
-   int loop_freq = data->current_loop->header->frequency;
-   int bb_freq = gimple_bb (at)->frequency;
+   int loop_freq = data->current_loop->header->count.to_frequency (cfun);
+   int bb_freq = gimple_bb (at)->count.to_frequency (cfun);
    if (loop_freq != 0)
      {
        gcc_assert (cost.scratch <= cost.cost);

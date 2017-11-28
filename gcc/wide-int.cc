@@ -1158,7 +1158,7 @@ wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
       val[len] = mask0 + mask1 + carry;
       len++;
       if (overflow)
-	*overflow = false;
+	*overflow = (sgn == UNSIGNED && carry);
     }
   else if (overflow)
     {
@@ -1552,7 +1552,7 @@ wi::sub_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
       val[len] = mask0 - mask1 - borrow;
       len++;
       if (overflow)
-	*overflow = false;
+	*overflow = (sgn == UNSIGNED && borrow);
     }
   else if (overflow)
     {
@@ -2146,6 +2146,39 @@ template void generic_wide_int <wide_int_ref_storage <true> >::dump () const;
 template void offset_int::dump () const;
 template void widest_int::dump () const;
 
+/* We could add all the above ::dump variants here, but wide_int and
+   widest_int should handle the common cases.  Besides, you can always
+   call the dump method directly.  */
+
+DEBUG_FUNCTION void
+debug (const wide_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const wide_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int &ref)
+{
+  ref.dump ();
+}
+
+DEBUG_FUNCTION void
+debug (const widest_int *ptr)
+{
+  if (ptr)
+    debug (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
 
 #if CHECKING_P
 
@@ -2220,6 +2253,17 @@ test_printing ()
   VALUE_TYPE a = from_int<VALUE_TYPE> (42);
   assert_deceq ("42", a, SIGNED);
   assert_hexeq ("0x2a", a);
+  assert_hexeq ("0x1fffffffffffffffff", wi::shwi (-1, 69));
+  assert_hexeq ("0xffffffffffffffff", wi::mask (64, false, 69));
+  assert_hexeq ("0xffffffffffffffff", wi::mask <widest_int> (64, false));
+  if (WIDE_INT_MAX_PRECISION > 128)
+    {
+      assert_hexeq ("0x20000000000000000fffffffffffffffe",
+		    wi::lshift (1, 129) + wi::lshift (1, 64) - 2);
+      assert_hexeq ("0x200000000000004000123456789abcdef",
+		    wi::lshift (1, 129) + wi::lshift (1, 74)
+		    + wi::lshift (0x1234567, 32) + 0x89abcdef);
+    }
 }
 
 /* Verify that various operations work correctly for VALUE_TYPE,
@@ -2301,14 +2345,54 @@ static void run_all_wide_int_tests ()
   test_comparisons <VALUE_TYPE> ();
 }
 
+/* Test overflow conditions.  */
+
+static void
+test_overflow ()
+{
+  static int precs[] = { 31, 32, 33, 63, 64, 65, 127, 128 };
+  static int offsets[] = { 16, 1, 0 };
+  for (unsigned int i = 0; i < ARRAY_SIZE (precs); ++i)
+    for (unsigned int j = 0; j < ARRAY_SIZE (offsets); ++j)
+      {
+	int prec = precs[i];
+	int offset = offsets[j];
+	bool overflow;
+	wide_int sum, diff;
+
+	sum = wi::add (wi::max_value (prec, UNSIGNED) - offset, 1,
+		       UNSIGNED, &overflow);
+	ASSERT_EQ (sum, -offset);
+	ASSERT_EQ (overflow, offset == 0);
+
+	sum = wi::add (1, wi::max_value (prec, UNSIGNED) - offset,
+		       UNSIGNED, &overflow);
+	ASSERT_EQ (sum, -offset);
+	ASSERT_EQ (overflow, offset == 0);
+
+	diff = wi::sub (wi::max_value (prec, UNSIGNED) - offset,
+			wi::max_value (prec, UNSIGNED),
+			UNSIGNED, &overflow);
+	ASSERT_EQ (diff, -offset);
+	ASSERT_EQ (overflow, offset != 0);
+
+	diff = wi::sub (wi::max_value (prec, UNSIGNED) - offset,
+			wi::max_value (prec, UNSIGNED) - 1,
+			UNSIGNED, &overflow);
+	ASSERT_EQ (diff, 1 - offset);
+	ASSERT_EQ (overflow, offset > 1);
+    }
+}
+
 /* Run all of the selftests within this file, for all value types.  */
 
 void
 wide_int_cc_tests ()
 {
- run_all_wide_int_tests <wide_int> ();
- run_all_wide_int_tests <offset_int> ();
- run_all_wide_int_tests <widest_int> ();
+  run_all_wide_int_tests <wide_int> ();
+  run_all_wide_int_tests <offset_int> ();
+  run_all_wide_int_tests <widest_int> ();
+  test_overflow ();
 }
 
 } // namespace selftest

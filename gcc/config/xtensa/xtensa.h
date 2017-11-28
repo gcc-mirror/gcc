@@ -432,10 +432,6 @@ enum reg_class
 
 #define FRAME_GROWS_DOWNWARD flag_stack_protect
 
-/* Offset within stack frame to start allocating local variables at.  */
-#define STARTING_FRAME_OFFSET						\
-  (FRAME_GROWS_DOWNWARD ? 0 : crtl->outgoing_args_size)
-
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
    they are eliminated to either the stack pointer or hard frame pointer.  */
 #define ELIMINABLE_REGS							\

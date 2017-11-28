@@ -217,6 +217,11 @@ dump_gcov_file (const char *filename)
     printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
   }
 
+  /* Support for unexecuted basic blocks.  */
+  unsigned support_unexecuted_blocks = gcov_read_unsigned ();
+  if (!support_unexecuted_blocks)
+    printf ("%s: has_unexecuted_block is not supported\n", filename);
+
   while (1)
     {
       gcov_position_t base, position = gcov_position ();
@@ -308,9 +313,15 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
 	  
 	  name = gcov_read_string ();
 	  printf (", `%s'", name ? name : "NULL");
+	  unsigned artificial = gcov_read_unsigned ();
 	  name = gcov_read_string ();
 	  printf (" %s", name ? name : "NULL");
-	  printf (":%u", gcov_read_unsigned ());
+	  unsigned line_start = gcov_read_unsigned ();
+	  unsigned column_start = gcov_read_unsigned ();
+	  unsigned line_end = gcov_read_unsigned ();
+	  printf (":%u:%u:%u", line_start, column_start, line_end);
+	  if (artificial)
+	    printf (", artificial");
 	}
     }
 }

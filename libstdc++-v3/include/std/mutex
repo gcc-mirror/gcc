@@ -688,6 +688,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         __set_once_functor_lock_ptr(0);
 #endif
 
+#ifdef __clang_analyzer__
+      // PR libstdc++/82481
+      __once_callable = nullptr;
+      __once_call = nullptr;
+#endif
+
       if (__e)
 	__throw_system_error(__e);
     }

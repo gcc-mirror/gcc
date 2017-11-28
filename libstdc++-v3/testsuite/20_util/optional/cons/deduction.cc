@@ -24,8 +24,8 @@
 struct MoveOnly
 {
   MoveOnly() = default;
-  MoveOnly(MoveOnly&&) {}
-  MoveOnly& operator=(MoveOnly&&) {}
+  MoveOnly(MoveOnly&&);
+  MoveOnly& operator=(MoveOnly&&);
 };
 
 int main()

@@ -197,13 +197,13 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
   struct mem_addr_template *templ;
 
   if (addr->step && !integer_onep (addr->step))
-    st = immed_wide_int_const (addr->step, pointer_mode);
+    st = immed_wide_int_const (wi::to_wide (addr->step), pointer_mode);
   else
     st = NULL_RTX;
 
   if (addr->offset && !integer_zerop (addr->offset))
     {
-      offset_int dc = offset_int::from (addr->offset, SIGNED);
+      offset_int dc = offset_int::from (wi::to_wide (addr->offset), SIGNED);
       off = immed_wide_int_const (dc, pointer_mode);
     }
   else

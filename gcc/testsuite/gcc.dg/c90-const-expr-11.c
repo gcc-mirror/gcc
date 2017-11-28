@@ -20,7 +20,7 @@ f (void)
   /* Overflow.  */
   struct t b = { INT_MAX + 1 }; /* { dg-warning "integer overflow in expression" } */
   /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
-  struct t c = { DBL_MAX }; /* { dg-warning "overflow in conversion from .double. to .int. chages value " } */
+  struct t c = { DBL_MAX }; /* { dg-warning "overflow in conversion from .double. to .int. changes value " } */
   /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
   /* Bad operator outside sizeof.  */
   struct s d = { 1 ? 1.0 : atan (a.d) }; /* { dg-error "is not a constant expression|near initialization" } */

@@ -43,6 +43,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -1711,10 +1712,12 @@ package body Exp_Ch3 is
       Rec_Type  : Entity_Id;
       Set_Tag   : Entity_Id := Empty;
 
-      function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
-      --  Build an assignment statement which assigns the default expression
-      --  to its corresponding record component if defined. The left hand side
-      --  of the assignment is marked Assignment_OK so that initialization of
+      function Build_Assignment
+        (Id      : Entity_Id;
+         Default : Node_Id) return List_Id;
+      --  Build an assignment statement that assigns the default expression to
+      --  its corresponding record component if defined. The left-hand side of
+      --  the assignment is marked Assignment_OK so that initialization of
       --  limited private records works correctly. This routine may also build
       --  an adjustment call if the component is controlled.
 
@@ -1783,13 +1786,16 @@ package body Exp_Ch3 is
       -- Build_Assignment --
       ----------------------
 
-      function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id is
-         N_Loc : constant Source_Ptr := Sloc (N);
-         Typ   : constant Entity_Id := Underlying_Type (Etype (Id));
+      function Build_Assignment
+        (Id      : Entity_Id;
+         Default : Node_Id) return List_Id
+      is
+         Default_Loc : constant Source_Ptr := Sloc (Default);
+         Typ         : constant Entity_Id  := Underlying_Type (Etype (Id));
 
          Adj_Call : Node_Id;
-         Exp      : Node_Id   := N;
-         Kind     : Node_Kind := Nkind (N);
+         Exp      : Node_Id   := Default;
+         Kind     : Node_Kind := Nkind (Default);
          Lhs      : Node_Id;
          Res      : List_Id;
 
@@ -1815,10 +1821,11 @@ package body Exp_Ch3 is
               and then Present (Discriminal_Link (Entity (N)))
             then
                Val :=
-                 Make_Selected_Component (N_Loc,
+                 Make_Selected_Component (Default_Loc,
                    Prefix        => New_Copy_Tree (Lhs),
                    Selector_Name =>
-                     New_Occurrence_Of (Discriminal_Link (Entity (N)), N_Loc));
+                     New_Occurrence_Of
+                       (Discriminal_Link (Entity (N)), Default_Loc));
 
                if Present (Val) then
                   Rewrite (N, New_Copy_Tree (Val));
@@ -1835,9 +1842,9 @@ package body Exp_Ch3 is
 
       begin
          Lhs :=
-           Make_Selected_Component (N_Loc,
+           Make_Selected_Component (Default_Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
-             Selector_Name => New_Occurrence_Of (Id, N_Loc));
+             Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
          if Nkind (Exp) = N_Aggregate
@@ -1866,16 +1873,16 @@ package body Exp_Ch3 is
          --  traversing the expression. ???
 
          if Kind = N_Attribute_Reference
-           and then Nam_In (Attribute_Name (N), Name_Unchecked_Access,
-                                                Name_Unrestricted_Access)
-           and then Is_Entity_Name (Prefix (N))
-           and then Is_Type (Entity (Prefix (N)))
-           and then Entity (Prefix (N)) = Rec_Type
+           and then Nam_In (Attribute_Name (Default), Name_Unchecked_Access,
+                                                      Name_Unrestricted_Access)
+           and then Is_Entity_Name (Prefix (Default))
+           and then Is_Type (Entity (Prefix (Default)))
+           and then Entity (Prefix (Default)) = Rec_Type
          then
             Exp :=
-              Make_Attribute_Reference (N_Loc,
+              Make_Attribute_Reference (Default_Loc,
                 Prefix         =>
-                  Make_Identifier (N_Loc, Name_uInit),
+                  Make_Identifier (Default_Loc, Name_uInit),
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
@@ -1899,33 +1906,33 @@ package body Exp_Ch3 is
 
          if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
             Append_To (Res,
-              Make_Assignment_Statement (N_Loc,
+              Make_Assignment_Statement (Default_Loc,
                 Name       =>
-                  Make_Selected_Component (N_Loc,
+                  Make_Selected_Component (Default_Loc,
                     Prefix        =>
                       New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
-                      New_Occurrence_Of (First_Tag_Component (Typ), N_Loc)),
+                      New_Occurrence_Of
+                        (First_Tag_Component (Typ), Default_Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
                     New_Occurrence_Of
-                      (Node
-                        (First_Elmt
-                          (Access_Disp_Table (Underlying_Type (Typ)))),
-                       N_Loc))));
+                      (Node (First_Elmt (Access_Disp_Table (Underlying_Type
+                         (Typ)))),
+                       Default_Loc))));
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
          --  that will be expanded inline.
 
          if Kind = N_Qualified_Expression then
-            Kind := Nkind (Expression (N));
+            Kind := Nkind (Expression (Default));
          end if;
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Limited_View (Typ)
+           and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
               Make_Adjust_Call
@@ -2169,7 +2176,7 @@ package body Exp_Ch3 is
             --  Generate
             --    function Fxx (O : in Rec_Typ) return Storage_Offset is
             --    begin
-            --       return O.Iface_Comp'Position;
+            --       return -O.Iface_Comp'Position;
             --    end Fxx;
 
             Body_Node := New_Node (N_Subprogram_Body, Loc);
@@ -2192,15 +2199,16 @@ package body Exp_Ch3 is
                 Statements     => New_List (
                   Make_Simple_Return_Statement (Loc,
                     Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         =>
-                          Make_Selected_Component (Loc,
-                            Prefix        =>
-                              Unchecked_Convert_To (Acc_Type,
-                                Make_Identifier (Loc, Name_uO)),
-                            Selector_Name =>
-                              New_Occurrence_Of (Iface_Comp, Loc)),
-                        Attribute_Name => Name_Position)))));
+                      Make_Op_Minus (Loc,
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            Make_Selected_Component (Loc,
+                              Prefix        =>
+                                Unchecked_Convert_To (Acc_Type,
+                                  Make_Identifier (Loc, Name_uO)),
+                              Selector_Name =>
+                                New_Occurrence_Of (Iface_Comp, Loc)),
+                          Attribute_Name => Name_Position))))));
 
             Set_Ekind       (Func_Id, E_Function);
             Set_Mechanism   (Func_Id, Default_Mechanism);
@@ -2537,6 +2545,7 @@ package body Exp_Ch3 is
                then
                   declare
                      Elab_Sec_DT_Stmts_List : constant List_Id := New_List;
+                     Elab_List              : List_Id          := New_List;
 
                   begin
                      Init_Secondary_Tags
@@ -2547,24 +2556,30 @@ package body Exp_Ch3 is
                         Fixed_Comps    => True,
                         Variable_Comps => False);
 
-                     Append_To (Elab_Sec_DT_Stmts_List,
-                       Make_Assignment_Statement (Loc,
-                         Name       =>
-                           New_Occurrence_Of
-                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
-                         Expression =>
-                           New_Occurrence_Of (Standard_False, Loc)));
-
-                     Prepend_List_To (Body_Stmts, New_List (
+                     Elab_List := New_List (
                        Make_If_Statement (Loc,
                          Condition       => New_Occurrence_Of (Set_Tag, Loc),
-                         Then_Statements => Init_Tags_List),
+                         Then_Statements => Init_Tags_List));
 
-                       Make_If_Statement (Loc,
-                         Condition       =>
-                           New_Occurrence_Of
-                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
-                         Then_Statements => Elab_Sec_DT_Stmts_List)));
+                     if Elab_Flag_Needed (Rec_Type) then
+                        Append_To (Elab_Sec_DT_Stmts_List,
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                              New_Occurrence_Of
+                                (Access_Disp_Table_Elab_Flag (Rec_Type),
+                                 Loc),
+                            Expression =>
+                              New_Occurrence_Of (Standard_False, Loc)));
+
+                        Append_To (Elab_List,
+                          Make_If_Statement (Loc,
+                            Condition       =>
+                              New_Occurrence_Of
+                                (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
+                            Then_Statements => Elab_Sec_DT_Stmts_List));
+                     end if;
+
+                     Prepend_List_To (Body_Stmts, Elab_List);
                   end;
                else
                   Prepend_To (Body_Stmts,
@@ -2716,36 +2731,30 @@ package body Exp_Ch3 is
            and then not Restriction_Active (No_Exception_Propagation)
          then
             declare
-               DF_Call : Node_Id;
-               DF_Id   : Entity_Id;
+               DF_Id : Entity_Id;
 
             begin
                --  Create a local version of Deep_Finalize which has indication
                --  of partial initialization state.
 
-               DF_Id := Make_Temporary (Loc, 'F');
+               DF_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Name_uFinalizer));
 
                Append_To (Decls, Make_Local_Deep_Finalize (Rec_Type, DF_Id));
-
-               DF_Call :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name                   => New_Occurrence_Of (DF_Id, Loc),
-                   Parameter_Associations => New_List (
-                     Make_Identifier (Loc, Name_uInit),
-                     New_Occurrence_Of (Standard_False, Loc)));
-
-               --  Do not emit warnings related to the elaboration order when a
-               --  controlled object is declared before the body of Finalize is
-               --  seen.
-
-               Set_No_Elaboration_Check (DF_Call);
 
                Set_Exception_Handlers (Handled_Stmt_Node, New_List (
                  Make_Exception_Handler (Loc,
                    Exception_Choices => New_List (
                      Make_Others_Choice (Loc)),
                    Statements        => New_List (
-                     DF_Call,
+                     Make_Procedure_Call_Statement (Loc,
+                       Name                   =>
+                         New_Occurrence_Of (DF_Id, Loc),
+                       Parameter_Associations => New_List (
+                         Make_Identifier (Loc, Name_uInit),
+                         New_Occurrence_Of (Standard_False, Loc))),
+
                      Make_Raise_Statement (Loc)))));
             end;
          else
@@ -5580,6 +5589,15 @@ package body Exp_Ch3 is
       --  arithmetic might yield a meaningless value for the length of the
       --  array, or its corresponding attribute.
 
+      procedure Count_Default_Sized_Task_Stacks
+        (Typ         : Entity_Id;
+         Pri_Stacks  : out Int;
+         Sec_Stacks  : out Int);
+      --  Count the number of default-sized primary and secondary task stacks
+      --  required for task objects contained within type Typ. If the number of
+      --  task objects contained within the type is not known at compile time
+      --  the procedure will return the stack counts of zero.
+
       procedure Default_Initialize_Object (After : Node_Id);
       --  Generate all default initialization actions for object Def_Id. Any
       --  new code is inserted after node After.
@@ -5772,6 +5790,119 @@ package body Exp_Ch3 is
          end if;
       end Check_Large_Modular_Array;
 
+      -------------------------------------
+      -- Count_Default_Sized_Task_Stacks --
+      -------------------------------------
+
+      procedure Count_Default_Sized_Task_Stacks
+        (Typ         : Entity_Id;
+         Pri_Stacks  : out Int;
+         Sec_Stacks  : out Int)
+      is
+         Component : Entity_Id;
+
+      begin
+         --  To calculate the number of default-sized task stacks required for
+         --  an object of Typ, a depth-first recursive traversal of the AST
+         --  from the Typ entity node is undertaken. Only type nodes containing
+         --  task objects are visited.
+
+         Pri_Stacks := 0;
+         Sec_Stacks := 0;
+
+         if not Has_Task (Typ) then
+            return;
+         end if;
+
+         case Ekind (Typ) is
+            when E_Task_Subtype
+               | E_Task_Type
+            =>
+               --  A task type is found marking the bottom of the descent. If
+               --  the type has no representation aspect for the corresponding
+               --  stack then that stack is using the default size.
+
+               if Present (Get_Rep_Item (Typ, Name_Storage_Size)) then
+                  Pri_Stacks := 0;
+               else
+                  Pri_Stacks := 1;
+               end if;
+
+               if Present (Get_Rep_Item (Typ, Name_Secondary_Stack_Size)) then
+                  Sec_Stacks := 0;
+               else
+                  Sec_Stacks := 1;
+               end if;
+
+            when E_Array_Subtype
+               | E_Array_Type
+            =>
+               --  First find the number of default stacks contained within an
+               --  array component.
+
+               Count_Default_Sized_Task_Stacks
+                 (Component_Type (Typ),
+                  Pri_Stacks,
+                  Sec_Stacks);
+
+               --  Then multiply the result by the size of the array
+
+               declare
+                  Quantity : constant Int := Number_Of_Elements_In_Array (Typ);
+                  --  Number_Of_Elements_In_Array is non-trival, consequently
+                  --  its result is captured as an optimization.
+
+               begin
+                  Pri_Stacks := Pri_Stacks * Quantity;
+                  Sec_Stacks := Sec_Stacks * Quantity;
+               end;
+
+            when E_Protected_Subtype
+               | E_Protected_Type
+               | E_Record_Subtype
+               | E_Record_Type
+            =>
+               Component := First_Component_Or_Discriminant (Typ);
+
+               --  Recursively descend each component of the composite type
+               --  looking for tasks, but only if the component is marked as
+               --  having a task.
+
+               while Present (Component) loop
+                  if Has_Task (Etype (Component)) then
+                     declare
+                        P : Int;
+                        S : Int;
+
+                     begin
+                        Count_Default_Sized_Task_Stacks
+                          (Etype (Component), P, S);
+                        Pri_Stacks := Pri_Stacks + P;
+                        Sec_Stacks := Sec_Stacks + S;
+                     end;
+                  end if;
+
+                  Next_Component_Or_Discriminant (Component);
+               end loop;
+
+            when E_Limited_Private_Subtype
+               | E_Limited_Private_Type
+               | E_Record_Subtype_With_Private
+               | E_Record_Type_With_Private
+            =>
+               --  Switch to the full view of the private type to continue
+               --  search.
+
+               Count_Default_Sized_Task_Stacks
+                 (Full_View (Typ), Pri_Stacks, Sec_Stacks);
+
+            --  Other types should not contain tasks
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Count_Default_Sized_Task_Stacks;
+
       -------------------------------
       -- Default_Initialize_Object --
       -------------------------------
@@ -5809,6 +5940,7 @@ package body Exp_Ch3 is
 
          Aggr_Init  : Node_Id;
          Comp_Init  : List_Id := No_List;
+         Fin_Block  : Node_Id;
          Fin_Call   : Node_Id;
          Init_Stmts : List_Id := No_List;
          Obj_Init   : Node_Id := Empty;
@@ -5951,14 +6083,7 @@ package body Exp_Ch3 is
                  Skip_Self => True);
 
             if Present (Fin_Call) then
-
-               --  Do not emit warnings related to the elaboration order when a
-               --  controlled object is declared before the body of Finalize is
-               --  seen.
-
-               Set_No_Elaboration_Check (Fin_Call);
-
-               Append_To (Init_Stmts,
+               Fin_Block :=
                  Make_Block_Statement (Loc,
                    Declarations               => No_List,
 
@@ -5973,7 +6098,14 @@ package body Exp_Ch3 is
 
                            Statements        => New_List (
                              Fin_Call,
-                             Make_Raise_Statement (Loc)))))));
+                             Make_Raise_Statement (Loc))))));
+
+               --  Signal the ABE mechanism that the block carries out
+               --  initialization actions.
+
+               Set_Is_Initialization_Block (Fin_Block);
+
+               Append_To (Init_Stmts, Fin_Block);
             end if;
 
          --  Otherwise finalization is not required, the initialization calls
@@ -6133,6 +6265,19 @@ package body Exp_Ch3 is
          return;
       end if;
 
+      --  No action needed for the internal imported dummy object added by
+      --  Make_DT to compute the offset of the components that reference
+      --  secondary dispatch tables; required to avoid never-ending loop
+      --  processing this internal object declaration.
+
+      if Tagged_Type_Expansion
+        and then Is_Internal (Def_Id)
+        and then Is_Imported (Def_Id)
+        and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
+      then
+         return;
+      end if;
+
       --  First we do special processing for objects of a tagged type where
       --  this is the point at which the type is frozen. The creation of the
       --  dispatch table and the initialization procedure have to be deferred
@@ -6142,7 +6287,7 @@ package body Exp_Ch3 is
       --  Force construction of dispatch tables of library level tagged types
 
       if Tagged_Type_Expansion
-        and then Static_Dispatch_Tables
+        and then Building_Static_Dispatch_Tables
         and then Is_Library_Level_Entity (Def_Id)
         and then Is_Library_Level_Tagged_Type (Base_Typ)
         and then Ekind_In (Base_Typ, E_Record_Type,
@@ -6183,6 +6328,37 @@ package body Exp_Ch3 is
       end if;
 
       Check_Large_Modular_Array;
+
+      --  If No_Implicit_Heap_Allocations or No_Implicit_Task_Allocations
+      --  restrictions are active then default-sized secondary stacks are
+      --  generated by the binder and allocated by SS_Init. To provide the
+      --  binder the number of stacks to generate, the number of default-sized
+      --  stacks required for task objects contained within the object
+      --  declaration N is calculated here as it is at this point where
+      --  unconstrained types become constrained. The result is stored in the
+      --  enclosing unit's Unit_Record.
+
+      --  Note if N is an array object declaration that has an initialization
+      --  expression, a second object declaration for the initialization
+      --  expression is created by the compiler. To prevent double counting
+      --  of the stacks in this scenario, the stacks of the first array are
+      --  not counted.
+
+      if Has_Task (Typ)
+        and then not Restriction_Active (No_Secondary_Stack)
+        and then (Restriction_Active (No_Implicit_Heap_Allocations)
+          or else Restriction_Active (No_Implicit_Task_Allocations))
+        and then not (Ekind_In (Ekind (Typ), E_Array_Type, E_Array_Subtype)
+                      and then (Has_Init_Expression (N)))
+      then
+         declare
+            PS_Count, SS_Count : Int := 0;
+         begin
+            Count_Default_Sized_Task_Stacks (Typ, PS_Count, SS_Count);
+            Increment_Primary_Stack_Count (PS_Count);
+            Increment_Sec_Stack_Count (SS_Count);
+         end;
+      end if;
 
       --  Default initialization required, and no expression present
 
@@ -6301,6 +6477,23 @@ package body Exp_Ch3 is
 
          elsif Is_Build_In_Place_Function_Call (Expr_Q) then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
+
+            --  The previous call expands the expression initializing the
+            --  built-in-place object into further code that will be analyzed
+            --  later. No further expansion needed here.
+
+            return;
+
+         --  This is the same as the previous 'elsif', except that the call has
+         --  been transformed by other expansion activities into something like
+         --  F(...)'Reference.
+
+         elsif Nkind (Expr_Q) = N_Reference
+           and then Is_Build_In_Place_Function_Call (Prefix (Expr_Q))
+           and then not Is_Expanded_Build_In_Place_Call
+                          (Unqual_Conv (Prefix (Expr_Q)))
+         then
+            Make_Build_In_Place_Call_In_Anonymous_Context (Prefix (Expr_Q));
 
             --  The previous call expands the expression initializing the
             --  built-in-place object into further code that will be analyzed
@@ -6542,8 +6735,11 @@ package body Exp_Ch3 is
                   declare
                      New_Id    : constant Entity_Id := Defining_Identifier (N);
                      Next_Temp : constant Entity_Id := Next_Entity (New_Id);
-                     S_Flag    : constant Boolean   :=
+                     Save_CFS  : constant Boolean   :=
                                    Comes_From_Source (Def_Id);
+                     Save_SP   : constant Node_Id   := SPARK_Pragma (Def_Id);
+                     Save_SPI  : constant Boolean   :=
+                                   SPARK_Pragma_Inherited (Def_Id);
 
                   begin
                      Set_Next_Entity (New_Id, Next_Entity (Def_Id));
@@ -6555,8 +6751,20 @@ package body Exp_Ch3 is
                      Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
+
+                     --  ??? This is extremely dangerous!!! Exchanging entities
+                     --  is very low level, and as a result it resets flags and
+                     --  fields which belong to the original Def_Id. Several of
+                     --  these attributes are saved and restored, but there may
+                     --  be many more that need to be preserverd.
+
                      Exchange_Entities (Defining_Identifier (N), Def_Id);
-                     Set_Comes_From_Source (Def_Id, S_Flag);
+
+                     --  Restore clobbered attributes
+
+                     Set_Comes_From_Source      (Def_Id, Save_CFS);
+                     Set_SPARK_Pragma           (Def_Id, Save_SP);
+                     Set_SPARK_Pragma_Inherited (Def_Id, Save_SPI);
                   end;
                end;
             end if;
@@ -6581,7 +6789,8 @@ package body Exp_Ch3 is
                --  allocated in place, delay checks until assignments are
                --  made, because the discriminants are not initialized.
 
-               if Nkind (Expr) = N_Allocator and then No_Initialization (Expr)
+               if Nkind (Expr) = N_Allocator
+                 and then No_Initialization (Expr)
                then
                   null;
 
@@ -6617,15 +6826,7 @@ package body Exp_Ch3 is
             --  adjustment is required if we are going to rewrite the object
             --  declaration into a renaming declaration.
 
-            if Is_Build_In_Place_Result_Type (Typ)
-              and then Nkind (Parent (N)) = N_Extended_Return_Statement
-              and then not Is_Definite_Subtype
-                (Etype (Return_Applies_To
-                         (Return_Statement_Entity (Parent (N)))))
-            then
-               null;
-
-            elsif Needs_Finalization (Typ)
+            if Needs_Finalization (Typ)
               and then not Is_Limited_View (Typ)
               and then not Rewrite_As_Renaming
             then
@@ -8323,13 +8524,14 @@ package body Exp_Ch3 is
 
                   Unchecked_Convert_To
                     (RTE (RE_Storage_Offset),
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         Make_Selected_Component (Loc,
-                           Prefix        => New_Copy_Tree (Target),
-                           Selector_Name =>
-                             New_Occurrence_Of (Tag_Comp, Loc)),
-                       Attribute_Name => Name_Position)),
+                     Make_Op_Minus (Loc,
+                       Make_Attribute_Reference (Loc,
+                         Prefix         =>
+                           Make_Selected_Component (Loc,
+                             Prefix        => New_Copy_Tree (Target),
+                             Selector_Name =>
+                               New_Occurrence_Of (Tag_Comp, Loc)),
+                         Attribute_Name => Name_Position))),
 
                   Unchecked_Convert_To (RTE (RE_Offset_To_Top_Function_Ptr),
                     Make_Attribute_Reference (Loc,
@@ -8352,32 +8554,37 @@ package body Exp_Ch3 is
                       New_Occurrence_Of (Offset_To_Top_Comp, Loc)),
 
                 Expression =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix       =>
-                      Make_Selected_Component (Loc,
-                        Prefix        => New_Copy_Tree (Target),
-                        Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
-                  Attribute_Name => Name_Position)));
+                  Make_Op_Minus (Loc,
+                    Make_Attribute_Reference (Loc,
+                      Prefix       =>
+                        Make_Selected_Component (Loc,
+                          Prefix        => New_Copy_Tree (Target),
+                          Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
+                    Attribute_Name => Name_Position))));
 
          --  Normal case: No discriminants in the parent type
 
          else
-            --  Don't need to set any value if this interface shares the
-            --  primary dispatch table.
+            --  Don't need to set any value if the offset-to-top field is
+            --  statically set or if this interface shares the primary
+            --  dispatch table.
 
-            if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
+            if not Building_Static_Secondary_DT (Typ)
+              and then not Is_Ancestor (Iface, Typ, Use_Full_View => True)
+            then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
                    Iface_Tag    => New_Occurrence_Of (Iface_Tag, Loc),
                    Offset_Value =>
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           Make_Selected_Component (Loc,
-                             Prefix        => New_Copy_Tree (Target),
-                             Selector_Name =>
-                               New_Occurrence_Of (Tag_Comp, Loc)),
-                         Attribute_Name => Name_Position))));
+                       Make_Op_Minus (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         =>
+                             Make_Selected_Component (Loc,
+                               Prefix        => New_Copy_Tree (Target),
+                               Selector_Name =>
+                                 New_Occurrence_Of (Tag_Comp, Loc)),
+                           Attribute_Name => Name_Position)))));
             end if;
 
             --  Generate:
@@ -8388,7 +8595,9 @@ package body Exp_Ch3 is
             --       Offset_Value => n,
             --       Offset_Func  => null);
 
-            if RTE_Available (RE_Register_Interface_Offset) then
+            if not Building_Static_Secondary_DT (Typ)
+              and then RTE_Available (RE_Register_Interface_Offset)
+            then
                Append_To (Stmts_List,
                  Make_Procedure_Call_Statement (Loc,
                    Name                   =>
@@ -8406,13 +8615,14 @@ package body Exp_Ch3 is
                      New_Occurrence_Of (Standard_True, Loc),
 
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                       Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           Make_Selected_Component (Loc,
-                             Prefix         => New_Copy_Tree (Target),
-                             Selector_Name  =>
-                               New_Occurrence_Of (Tag_Comp, Loc)),
-                         Attribute_Name => Name_Position)),
+                       Make_Op_Minus (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         =>
+                             Make_Selected_Component (Loc,
+                               Prefix         => New_Copy_Tree (Target),
+                               Selector_Name  =>
+                                 New_Occurrence_Of (Tag_Comp, Loc)),
+                           Attribute_Name => Name_Position))),
 
                      Make_Null (Loc))));
             end if;
@@ -8516,15 +8726,11 @@ package body Exp_Ch3 is
             --  Initialize secondary tags
 
             else
-               Append_To (Init_Tags_List,
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix => New_Copy_Tree (Target),
-                       Selector_Name =>
-                         New_Occurrence_Of (Node (Iface_Comp_Elmt), Loc)),
-                   Expression =>
-                     New_Occurrence_Of (Node (Iface_Tag_Elmt), Loc)));
+               Initialize_Tag
+                 (Typ       => Full_Typ,
+                  Iface     => Node (Iface_Elmt),
+                  Tag_Comp  => Tag_Comp,
+                  Iface_Tag => Node (Iface_Tag_Elmt));
             end if;
 
          --  Otherwise generate code to initialize the tag
@@ -8533,10 +8739,11 @@ package body Exp_Ch3 is
             if (In_Variable_Pos and then Variable_Comps)
               or else (not In_Variable_Pos and then Fixed_Comps)
             then
-               Initialize_Tag (Full_Typ,
-                 Iface     => Node (Iface_Elmt),
-                 Tag_Comp  => Tag_Comp,
-                 Iface_Tag => Node (Iface_Tag_Elmt));
+               Initialize_Tag
+                 (Typ       => Full_Typ,
+                  Iface     => Node (Iface_Elmt),
+                  Tag_Comp  => Tag_Comp,
+                  Iface_Tag => Node (Iface_Tag_Elmt));
             end if;
          end if;
 

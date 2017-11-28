@@ -7,9 +7,9 @@
 float x[256];
 
 __attribute__ ((noinline))
-double *foo(void)
+float *foo(void)
 {
- double *z = malloc (sizeof(double) * 256);
+ float *z = malloc (sizeof(float) * 256);
 
  int i;
  for (i=0; i<256; ++i)

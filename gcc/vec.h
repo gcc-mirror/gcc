@@ -407,6 +407,83 @@ struct GTY((user)) vec
 {
 };
 
+/* Generic vec<> debug helpers.
+
+   These need to be instantiated for each vec<TYPE> used throughout
+   the compiler like this:
+
+    DEFINE_DEBUG_VEC (TYPE)
+
+   The reason we have a debug_helper() is because GDB can't
+   disambiguate a plain call to debug(some_vec), and it must be called
+   like debug<TYPE>(some_vec).  */
+
+template<typename T>
+void
+debug_helper (vec<T> &ref)
+{
+  unsigned i;
+  for (i = 0; i < ref.length (); ++i)
+    {
+      fprintf (stderr, "[%d] = ", i);
+      debug_slim (ref[i]);
+      fputc ('\n', stderr);
+    }
+}
+
+/* We need a separate va_gc variant here because default template
+   argument for functions cannot be used in c++-98.  Once this
+   restriction is removed, those variant should be folded with the
+   above debug_helper.  */
+
+template<typename T>
+void
+debug_helper (vec<T, va_gc> &ref)
+{
+  unsigned i;
+  for (i = 0; i < ref.length (); ++i)
+    {
+      fprintf (stderr, "[%d] = ", i);
+      debug_slim (ref[i]);
+      fputc ('\n', stderr);
+    }
+}
+
+/* Macro to define debug(vec<T>) and debug(vec<T, va_gc>) helper
+   functions for a type T.  */
+
+#define DEFINE_DEBUG_VEC(T) \
+  template void debug_helper (vec<T> &);		\
+  template void debug_helper (vec<T, va_gc> &);		\
+  /* Define the vec<T> debug functions.  */		\
+  DEBUG_FUNCTION void					\
+  debug (vec<T> &ref)					\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (vec<T> *ptr)					\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }							\
+  /* Define the vec<T, va_gc> debug functions.  */	\
+  DEBUG_FUNCTION void					\
+  debug (vec<T, va_gc> &ref)				\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (vec<T, va_gc> *ptr)				\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }
+
 /* Default-construct N elements in DST.  */
 
 template <typename T>

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 2014, Free Software Foundation, Inc.           *
+ *            Copyright (C) 2014-2017, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -40,7 +40,7 @@ extern void __gnat_runtime_finalize (void);
    at all, the intention is that this be replaced by system specific code
    where finalization is required.
 
-   Note that __gnat_runtime_initialize() is called in adafinal()   */
+   Note that __gnat_runtime_finalize() is called in adafinal()   */
 
 extern int __gnat_rt_init_count;
 /*  see initialize.c  */

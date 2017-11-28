@@ -1206,8 +1206,7 @@ Type::type_descriptor_pointer(Gogo* gogo, Location location)
       go_assert(t->type_descriptor_var_ != NULL);
     }
   Bexpression* var_expr =
-      gogo->backend()->var_expression(t->type_descriptor_var_,
-                                      VE_rvalue, location);
+      gogo->backend()->var_expression(t->type_descriptor_var_, location);
   Bexpression* var_addr =
       gogo->backend()->address_expression(var_expr, location);
   Type* td_type = Type::make_type_descriptor_type();
@@ -2385,7 +2384,7 @@ Type::gc_symbol_pointer(Gogo* gogo)
     }
   Location bloc = Linemap::predeclared_location();
   Bexpression* var_expr =
-      gogo->backend()->var_expression(t->gc_symbol_var_, VE_rvalue, bloc);
+      gogo->backend()->var_expression(t->gc_symbol_var_, bloc);
   Bexpression* addr_expr =
       gogo->backend()->address_expression(var_expr, bloc);
 
@@ -7395,7 +7394,6 @@ Array_type::get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const
       else if (ve != NULL)
         {
           ve = new Var_expression(ve->named_object(), ve->location());
-          ve->set_in_lvalue_pos();
           array = ve;
         }
     }

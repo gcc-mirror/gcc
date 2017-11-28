@@ -1329,6 +1329,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::forward<__element_type&&>(std::get<__i>(__t));
     }
 
+  /// Return a const rvalue reference to the ith element of a const tuple rvalue.
+  template<std::size_t __i, typename... _Elements>
+    constexpr const __tuple_element_t<__i, tuple<_Elements...>>&&
+    get(const tuple<_Elements...>&& __t) noexcept
+    {
+      typedef __tuple_element_t<__i, tuple<_Elements...>> __element_type;
+      return std::forward<const __element_type&&>(std::get<__i>(__t));
+    }
+
 #if __cplusplus > 201103L
 
 #define __cpp_lib_tuples_by_type 201304
@@ -1360,6 +1369,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&
     get(const tuple<_Types...>& __t) noexcept
     { return std::__get_helper2<_Tp>(__t); }
+
+  /// Return a const reference to the unique element of type _Tp of
+  /// a const tuple rvalue.
+  template <typename _Tp, typename... _Types>
+    constexpr const _Tp&&
+    get(const tuple<_Types...>&& __t) noexcept
+    { return std::forward<const _Tp&&>(std::__get_helper2<_Tp>(__t)); }
 #endif
 
   // This class performs the comparison operations on tuples

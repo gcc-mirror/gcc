@@ -197,7 +197,9 @@ struct ipa_call_summary
   int call_stmt_time;
   /* Depth of loop nest, 0 means no nesting.  */
   unsigned int loop_depth;
-  
+  /* Indicates whether the caller returns the value of it's callee.  */
+  bool is_return_callee_uncaptured;
+
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
   ipa_call_summary ()
@@ -263,5 +265,7 @@ void estimate_node_size_and_time (struct cgraph_node *node,
 				  ipa_hints *ret_hints,
 				  vec<inline_param_summary>
 				  inline_param_summary);
+
+void ipa_fnsummary_c_finalize (void);
 
 #endif /* GCC_IPA_FNSUMMARY_H */

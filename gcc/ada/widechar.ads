@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,5 +94,8 @@ package Widechar is
      (S : Source_Buffer_Ptr;
       P : Source_Ptr) return Boolean;
    --  Determines if S (P) is the start of a wide character sequence
+
+private
+   pragma Inline (Is_Start_Of_Wide_Char);
 
 end Widechar;

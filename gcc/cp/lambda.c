@@ -201,7 +201,7 @@ lambda_function (tree lambda)
   if (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       && !COMPLETE_OR_OPEN_TYPE_P (type))
     return NULL_TREE;
-  lambda = lookup_member (type, cp_operator_id (CALL_EXPR),
+  lambda = lookup_member (type, call_op_identifier,
 			  /*protect=*/0, /*want_type=*/false,
 			  tf_warning_or_error);
   if (lambda)
@@ -245,7 +245,8 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
     {
       type = non_reference (unlowered_expr_type (expr));
 
-      if (!is_this && by_reference_p)
+      if (!is_this
+	  && (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE))
 	type = build_reference_type (type);
     }
 
@@ -297,7 +298,17 @@ void
 insert_capture_proxy (tree var)
 {
   if (is_normal_capture_proxy (var))
-    register_local_specialization (var, DECL_CAPTURED_VARIABLE (var));
+    {
+      tree cap = DECL_CAPTURED_VARIABLE (var);
+      if (CHECKING_P)
+	{
+	  gcc_assert (!is_normal_capture_proxy (cap));
+	  tree old = retrieve_local_specialization (cap);
+	  if (old)
+	    gcc_assert (DECL_CONTEXT (old) != DECL_CONTEXT (var));
+	}
+      register_local_specialization (var, cap);
+    }
 
   /* Put the capture proxy in the extra body block so that it won't clash
      with a later local variable.  */
@@ -547,8 +558,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	{
 	  gcc_assert (POINTER_TYPE_P (type));
 	  type = TREE_TYPE (type);
-	  initializer = cp_build_indirect_ref (initializer, RO_NULL,
-					       tf_warning_or_error);
+	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
 
       if (dependent_type_p (type))
@@ -852,8 +862,7 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
   if (tree lam = resolvable_dummy_lambda (object))
     if (tree cap = lambda_expr_this_capture (lam, add_capture_p))
       if (cap != error_mark_node)
-	object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
-				       RO_NULL, tf_warning_or_error);
+	object = build_fold_indirect_ref (cap);
 
   return object;
 }
@@ -1029,8 +1038,7 @@ maybe_add_lambda_conv_op (tree type)
 	 return expression for a deduced return call op to allow for simple
 	 implementation of the conversion operator.  */
 
-      tree instance = cp_build_indirect_ref (thisarg, RO_NULL,
-					     tf_warning_or_error);
+      tree instance = cp_build_fold_indirect_ref (thisarg);
       tree objfn = build_min (COMPONENT_REF, NULL_TREE,
 			      instance, DECL_NAME (callop), NULL_TREE);
       int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
@@ -1073,7 +1081,10 @@ maybe_add_lambda_conv_op (tree type)
 
 	if (generic_lambda_p)
 	  {
+	    /* Avoid capturing variables in this context.  */
+	    ++cp_unevaluated_operand;
 	    tree a = forward_parm (tgt);
+	    --cp_unevaluated_operand;
 
 	    CALL_EXPR_ARG (call, ix) = a;
 	    if (decltype_call)
@@ -1091,7 +1102,6 @@ maybe_add_lambda_conv_op (tree type)
 	src = TREE_CHAIN (src);
       }
   }
-
 
   if (generic_lambda_p)
     {
@@ -1130,7 +1140,6 @@ maybe_add_lambda_conv_op (tree type)
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
-  SET_OVERLOADED_OPERATOR_CODE (fn, TYPE_EXPR);
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);
   rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
@@ -1184,11 +1193,9 @@ maybe_add_lambda_conv_op (tree type)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
   if (flag_sanitize & SANITIZE_NULL)
-    {
-      /* Don't UBsan this function; we're deliberately calling op() with a null
-	 object argument.  */
-      add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
-    }
+    /* Don't UBsan this function; we're deliberately calling op() with a null
+       object argument.  */
+    add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
 
   add_method (type, fn, false);
 

@@ -7,6 +7,7 @@ int main (void)
   
   array2[:] = array2[1: :] ;  /* { dg-error "expected expression before" "" { target c }  } */ 
   /* { dg-error "expected primary-expression before" "" { target c++ }  .-1 } */
+  /* { dg-error "expected ';' before" "" { target c } .-2 } */
 
-  return 0; /* { dg-error "expected ';' before" "" { target c } } */
+  return 0;
 }

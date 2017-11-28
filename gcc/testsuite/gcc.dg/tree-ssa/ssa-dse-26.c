@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dse1-details" } */
+/* { dg-options "-O2 -fdump-tree-dse1-details -fno-short-enums" } */
 
 enum constraint_expr_type
 {
@@ -30,4 +30,3 @@ constraint_equal (struct constraint a, struct constraint b)
 }
 
 /* { dg-final { scan-tree-dump-times "Deleted dead store" 2 "dse1" } } */
-

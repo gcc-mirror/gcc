@@ -11,6 +11,7 @@ sinclude(../config/dfp.m4)
 sinclude(../config/unwind_ipinfo.m4)
 sinclude(../config/gthr.m4)
 sinclude(../config/sjlj.m4)
+sinclude(../config/cet.m4)
 
 AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
@@ -236,6 +237,9 @@ GCC_CHECK_UNWIND_GETIPINFO
 # Check if the compiler is configured for setjmp/longjmp exceptions.
 GCC_CHECK_SJLJ_EXCEPTIONS
 
+GCC_CET_FLAGS(CET_FLAGS)
+AC_SUBST(CET_FLAGS)
+
 AC_ARG_ENABLE([explicit-exception-frame-registration],
   [AC_HELP_STRING([--enable-explicit-exception-frame-registration],
      [register exception tables explicitly at module start, for use
@@ -296,7 +300,7 @@ esac
 
 case ${host} in
 *-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  # Check for system-provided CRTs on Solaris 11.4.
   AC_CACHE_CHECK([system-provided CRTs on Solaris],
     		 [libgcc_cv_solaris_crts],
     [libgcc_cv_solaris_crts=no

@@ -205,6 +205,14 @@
   BUILTIN_VSDQ_I_DI (BINOP, srshl, 0)
   BUILTIN_VSDQ_I_DI (BINOP_UUS, urshl, 0)
 
+  /* Implemented by aarch64_<sur><dotprod>{_lane}{q}<dot_mode>.  */
+  BUILTIN_VB (TERNOP, sdot, 0)
+  BUILTIN_VB (TERNOPU, udot, 0)
+  BUILTIN_VB (QUADOP_LANE, sdot_lane, 0)
+  BUILTIN_VB (QUADOPU_LANE, udot_lane, 0)
+  BUILTIN_VB (QUADOP_LANE, sdot_laneq, 0)
+  BUILTIN_VB (QUADOPU_LANE, udot_laneq, 0)
+
   BUILTIN_VDQ_I (SHIFTIMM, ashr, 3)
   VAR1 (SHIFTIMM, ashr_simd, 0, di)
   BUILTIN_VDQ_I (SHIFTIMM, lshr, 3)

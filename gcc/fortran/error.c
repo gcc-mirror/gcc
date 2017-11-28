@@ -918,7 +918,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 static bool
 gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 		    int precision, bool wide, bool set_locus, bool hash,
-		    bool quoted, const char **buffer_ptr)
+		    bool *quoted, const char **buffer_ptr)
 {
   switch (*spec)
     {

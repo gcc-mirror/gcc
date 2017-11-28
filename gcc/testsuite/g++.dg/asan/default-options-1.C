@@ -3,7 +3,7 @@
 const char *kAsanDefaultOptions="verbosity=1 foo=bar";
 
 extern "C"
-__attribute__((no_sanitize_address))
+__attribute__((no_sanitize_address, used))
 const char *__asan_default_options() {
   return kAsanDefaultOptions;
 }

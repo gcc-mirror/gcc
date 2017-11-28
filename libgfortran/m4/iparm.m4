@@ -4,7 +4,7 @@ dnl This file is part of the GNU Fortran 95 Runtime Library (libgfortran)
 dnl Distributed under the GNU GPL with exception.  See COPYING for details.
 dnl M4 macro file to get type names from filenames
 define(get_typename2, `GFC_$1_$2')dnl
-define(get_typename, `get_typename2(ifelse($1,i,INTEGER,ifelse($1,r,REAL,ifelse($1,l,LOGICAL,ifelse($1,c,COMPLEX,unknown)))),`$2')')dnl
+define(get_typename, `get_typename2(ifelse($1,i,INTEGER,ifelse($1,r,REAL,ifelse($1,l,LOGICAL,ifelse($1,c,COMPLEX,ifelse($1,s,INTEGER,unknown))))),`$2')')dnl
 define(get_arraytype, `gfc_array_$1$2')dnl
 define(define_type, `dnl
 ifelse(regexp($2,`^[0-9]'),-1,`dnl

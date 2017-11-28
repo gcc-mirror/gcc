@@ -209,7 +209,7 @@ ucontext_for (struct _Unwind_Context *context)
 do { \
 (FS)->regs.reg[REGNO].how = REG_SAVED_OFFSET; \
 (FS)->regs.reg[REGNO].loc.offset = (long) (ADDR) - (CFA); \
-} while (0);
+} while (0)
 
 static _Unwind_Reason_Code
 ppc_aix_fallback_frame_state (struct _Unwind_Context *context,

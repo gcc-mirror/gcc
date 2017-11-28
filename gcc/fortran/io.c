@@ -111,6 +111,9 @@ static gfc_dt *current_dt;
 
 #define RESOLVE_TAG(x, y) if (!resolve_tag (x, y)) return false;
 
+/* Are we currently processing an asynchronous I/O statement? */
+
+bool async_io_dt;
 
 /**************** Fortran 95 FORMAT parser  *****************/
 
@@ -1944,7 +1947,15 @@ static int
 compare_to_allowed_values (const char *specifier, const char *allowed[],
 			   const char *allowed_f2003[], 
 			   const char *allowed_gnu[], gfc_char_t *value,
-			   const char *statement, bool warn)
+			   const char *statement, bool warn,
+			   int *num = NULL);
+
+
+static int
+compare_to_allowed_values (const char *specifier, const char *allowed[],
+			   const char *allowed_f2003[], 
+			   const char *allowed_gnu[], gfc_char_t *value,
+			   const char *statement, bool warn, int *num)
 {
   int i;
   unsigned int len;
@@ -1961,7 +1972,11 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
   for (i = 0; allowed[i]; i++)
     if (len == strlen (allowed[i])
 	&& gfc_wide_strncasecmp (value, allowed[i], strlen (allowed[i])) == 0)
+      {
+	if (num)
+	  *num = i;
       return 1;
+      }
 
   for (i = 0; allowed_f2003 && allowed_f2003[i]; i++)
     if (len == strlen (allowed_f2003[i])
@@ -3611,7 +3626,8 @@ terminate_io (gfc_code *io_code)
 
 /* Check the constraints for a data transfer statement.  The majority of the
    constraints appearing in 9.4 of the standard appear here.  Some are handled
-   in resolve_tag and others in gfc_resolve_dt.  */
+   in resolve_tag and others in gfc_resolve_dt.  Also set the async_io_dt flag
+   and, if necessary, the asynchronous flag on the SIZE argument.  */
 
 static match
 check_io_constraints (io_kind k, gfc_dt *dt, gfc_code *io_code,
@@ -3719,6 +3735,7 @@ if (condition) \
 
   if (dt->asynchronous) 
     {
+      int num;
       static const char * asynchronous[] = { "YES", "NO", NULL };
 
       if (!gfc_reduce_init_expr (dt->asynchronous))
@@ -3734,9 +3751,16 @@ if (condition) \
       if (!compare_to_allowed_values
 		("ASYNCHRONOUS", asynchronous, NULL, NULL,
 		 dt->asynchronous->value.character.string,
-		 io_kind_name (k), warn))
+		 io_kind_name (k), warn, &num))
 	return MATCH_ERROR;
+
+      /* Best to put this here because the yes/no info is still around.  */
+      async_io_dt = num == 0;
+      if (async_io_dt && dt->size)
+	dt->size->symtree->n.sym->attr.asynchronous = 1;
     }
+  else
+    async_io_dt = false;
 
   if (dt->id)
     {

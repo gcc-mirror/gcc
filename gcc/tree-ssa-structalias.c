@@ -2849,41 +2849,33 @@ lookup_vi_for_tree (tree t)
 static const char *
 alias_get_name (tree decl)
 {
-  const char *res = NULL;
-  char *temp;
-
-  if (!dump_file)
-    return "NULL";
-
-  if (TREE_CODE (decl) == SSA_NAME)
+  const char *res = "NULL";
+  if (dump_file)
     {
-      res = get_name (decl);
-      if (res)
-	temp = xasprintf ("%s_%u", res, SSA_NAME_VERSION (decl));
-      else
-	temp = xasprintf ("_%u", SSA_NAME_VERSION (decl));
-      res = ggc_strdup (temp);
-      free (temp);
-    }
-  else if (DECL_P (decl))
-    {
-      if (DECL_ASSEMBLER_NAME_SET_P (decl))
-	res = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      else
+      char *temp = NULL;
+      if (TREE_CODE (decl) == SSA_NAME)
+	{
+	  res = get_name (decl);
+	  temp = xasprintf ("%s_%u", res ? res : "", SSA_NAME_VERSION (decl));
+	}
+      else if (HAS_DECL_ASSEMBLER_NAME_P (decl)
+	       && DECL_ASSEMBLER_NAME_SET_P (decl))
+	res = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME_RAW (decl));
+      else if (DECL_P (decl))
 	{
 	  res = get_name (decl);
 	  if (!res)
-	    {
-	      temp = xasprintf ("D.%u", DECL_UID (decl));
-	      res = ggc_strdup (temp);
-	      free (temp);
-	    }
+	    temp = xasprintf ("D.%u", DECL_UID (decl));
+	}
+
+      if (temp)
+	{
+	  res = ggc_strdup (temp);
+	  free (temp);
 	}
     }
-  if (res != NULL)
-    return res;
 
-  return "NULL";
+  return res;
 }
 
 /* Find the variable id for tree T in the map.
@@ -3098,7 +3090,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   else
     {
       /* Sign-extend the offset.  */
-      offset_int soffset = offset_int::from (offset, SIGNED);
+      offset_int soffset = offset_int::from (wi::to_wide (offset), SIGNED);
       if (!wi::fits_shwi_p (soffset))
 	rhsoffset = UNKNOWN_OFFSET;
       else

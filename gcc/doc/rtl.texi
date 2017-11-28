@@ -565,6 +565,16 @@ that are used in certain types of expression.  Most often they
 are accessed with the following macros, which expand into lvalues.
 
 @table @code
+@findex CROSSING_JUMP_P
+@cindex @code{jump_insn} and @samp{/j}
+@item CROSSING_JUMP_P (@var{x})
+Nonzero in a @code{jump_insn} if it crosses between hot and cold sections,
+which could potentially be very far apart in the executable.  The presence
+of this flag indicates to other optimizations that this branching instruction
+should not be ``collapsed'' into a simpler branching construct.  It is used
+when the optimization to partition basic blocks into hot and cold sections
+is turned on.
+
 @findex CONSTANT_POOL_ADDRESS_P
 @cindex @code{symbol_ref} and @samp{/u}
 @cindex @code{unchanging}, in @code{symbol_ref}
@@ -576,37 +586,6 @@ some targets the addresses are close to the beginning of the function.
 In either case GCC assumes these addresses can be addressed directly,
 perhaps with the help of base registers.
 Stored in the @code{unchanging} field and printed as @samp{/u}.
-
-@findex RTL_CONST_CALL_P
-@cindex @code{call_insn} and @samp{/u}
-@cindex @code{unchanging}, in @code{call_insn}
-@item RTL_CONST_CALL_P (@var{x})
-In a @code{call_insn} indicates that the insn represents a call to a
-const function.  Stored in the @code{unchanging} field and printed as
-@samp{/u}.
-
-@findex RTL_PURE_CALL_P
-@cindex @code{call_insn} and @samp{/i}
-@cindex @code{return_val}, in @code{call_insn}
-@item RTL_PURE_CALL_P (@var{x})
-In a @code{call_insn} indicates that the insn represents a call to a
-pure function.  Stored in the @code{return_val} field and printed as
-@samp{/i}.
-
-@findex RTL_CONST_OR_PURE_CALL_P
-@cindex @code{call_insn} and @samp{/u} or @samp{/i}
-@item RTL_CONST_OR_PURE_CALL_P (@var{x})
-In a @code{call_insn}, true if @code{RTL_CONST_CALL_P} or
-@code{RTL_PURE_CALL_P} is true.
-
-@findex RTL_LOOPING_CONST_OR_PURE_CALL_P
-@cindex @code{call_insn} and @samp{/c}
-@cindex @code{call}, in @code{call_insn}
-@item RTL_LOOPING_CONST_OR_PURE_CALL_P (@var{x})
-In a @code{call_insn} indicates that the insn represents a possibly
-infinite looping call to a const or pure function.  Stored in the
-@code{call} field and printed as @samp{/c}.  Only true if one of
-@code{RTL_CONST_CALL_P} or @code{RTL_PURE_CALL_P} is true.
 
 @findex INSN_ANNULLED_BRANCH_P
 @cindex @code{jump_insn} and @samp{/u}
@@ -702,6 +681,29 @@ Stored in the @code{call} field and printed as @samp{/c}.
 Nonzero in a @code{mem} if the memory reference holds a pointer.
 Stored in the @code{frame_related} field and printed as @samp{/f}.
 
+@findex MEM_READONLY_P
+@cindex @code{mem} and @samp{/u}
+@cindex @code{unchanging}, in @code{mem}
+@item MEM_READONLY_P (@var{x})
+Nonzero in a @code{mem}, if the memory is statically allocated and read-only.
+
+Read-only in this context means never modified during the lifetime of the
+program, not necessarily in ROM or in write-disabled pages.  A common
+example of the later is a shared library's global offset table.  This
+table is initialized by the runtime loader, so the memory is technically
+writable, but after control is transferred from the runtime loader to the
+application, this memory will never be subsequently modified.
+
+Stored in the @code{unchanging} field and printed as @samp{/u}.
+
+@findex PREFETCH_SCHEDULE_BARRIER_P
+@cindex @code{prefetch} and @samp{/v}
+@cindex @code{volatile}, in @code{prefetch}
+@item PREFETCH_SCHEDULE_BARRIER_P (@var{x})
+In a @code{prefetch}, indicates that the prefetch is a scheduling barrier.
+No other INSNs will be moved over it.
+Stored in the @code{volatil} field and printed as @samp{/v}.
+
 @findex REG_FUNCTION_VALUE_P
 @cindex @code{reg} and @samp{/i}
 @cindex @code{return_val}, in @code{reg}
@@ -730,6 +732,37 @@ the compiler.  Stored in the @code{volatil} field and printed as
 The same hard register may be used also for collecting the values of
 functions called by this one, but @code{REG_FUNCTION_VALUE_P} is zero
 in this kind of use.
+
+@findex RTL_CONST_CALL_P
+@cindex @code{call_insn} and @samp{/u}
+@cindex @code{unchanging}, in @code{call_insn}
+@item RTL_CONST_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a call to a
+const function.  Stored in the @code{unchanging} field and printed as
+@samp{/u}.
+
+@findex RTL_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/i}
+@cindex @code{return_val}, in @code{call_insn}
+@item RTL_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a call to a
+pure function.  Stored in the @code{return_val} field and printed as
+@samp{/i}.
+
+@findex RTL_CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/u} or @samp{/i}
+@item RTL_CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn}, true if @code{RTL_CONST_CALL_P} or
+@code{RTL_PURE_CALL_P} is true.
+
+@findex RTL_LOOPING_CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/c}
+@cindex @code{call}, in @code{call_insn}
+@item RTL_LOOPING_CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a possibly
+infinite looping call to a const or pure function.  Stored in the
+@code{call} field and printed as @samp{/c}.  Only true if one of
+@code{RTL_CONST_CALL_P} or @code{RTL_PURE_CALL_P} is true.
 
 @findex RTX_FRAME_RELATED_P
 @cindex @code{insn} and @samp{/f}
@@ -764,21 +797,6 @@ computation performed by this instruction, i.e., one that
 
 This flag is required for exception handling support on targets with RTL
 prologues.
-
-@findex MEM_READONLY_P
-@cindex @code{mem} and @samp{/u}
-@cindex @code{unchanging}, in @code{mem}
-@item MEM_READONLY_P (@var{x})
-Nonzero in a @code{mem}, if the memory is statically allocated and read-only.
-
-Read-only in this context means never modified during the lifetime of the
-program, not necessarily in ROM or in write-disabled pages.  A common
-example of the later is a shared library's global offset table.  This
-table is initialized by the runtime loader, so the memory is technically
-writable, but after control is transferred from the runtime loader to the
-application, this memory will never be subsequently modified.
-
-Stored in the @code{unchanging} field and printed as @samp{/u}.
 
 @findex SCHED_GROUP_P
 @cindex @code{insn} and @samp{/s}
@@ -879,14 +897,6 @@ Stored in the @code{volatil} field and printed as @samp{/v}.
 Most uses of @code{SYMBOL_REF_FLAG} are historic and may be subsumed
 by @code{SYMBOL_REF_FLAGS}.  Certainly use of @code{SYMBOL_REF_FLAGS}
 is mandatory if the target requires more than one bit of storage.
-
-@findex PREFETCH_SCHEDULE_BARRIER_P
-@cindex @code{prefetch} and @samp{/v}
-@cindex @code{volatile}, in @code{prefetch}
-@item PREFETCH_SCHEDULE_BARRIER_P (@var{x})
-In a @code{prefetch}, indicates that the prefetch is a scheduling barrier.
-No other INSNs will be moved over it.
-Stored in the @code{volatil} field and printed as @samp{/v}.
 @end table
 
 These are the fields to which the above macros refer:
@@ -973,6 +983,8 @@ mem unchanged when we access a component.
 In a @code{set}, 1 means it is for a return.
 
 In a @code{call_insn}, 1 means it is a sibling call.
+
+In a @code{jump_insn}, 1 means it is a crossing jump.
 
 In an RTL dump, this flag is represented as @samp{/j}.
 
@@ -1625,7 +1637,8 @@ accessed with @code{CONST_FIXED_VALUE_LOW}.
 @item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
 Represents a vector constant.  The square brackets stand for the vector
 containing the constant elements.  @var{x0}, @var{x1} and so on are
-the @code{const_int}, @code{const_double} or @code{const_fixed} elements.
+the @code{const_int}, @code{const_wide_int}, @code{const_double} or
+@code{const_fixed} elements.
 
 The number of units in a @code{const_vector} is obtained with the macro
 @code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
@@ -1667,14 +1680,18 @@ Usually that is the only mode for which a label is directly valid.
 
 @findex const
 @item (const:@var{m} @var{exp})
-Represents a constant that is the result of an assembly-time
-arithmetic computation.  The operand, @var{exp}, is an expression that
-contains only constants (@code{const_int}, @code{symbol_ref} and
-@code{label_ref} expressions) combined with @code{plus} and
-@code{minus}.  However, not all combinations are valid, since the
-assembler cannot do arbitrary arithmetic on relocatable symbols.
+Wraps an rtx computation @var{exp} whose inputs and result do not
+change during the execution of a thread.  There are two valid uses.
+The first is to represent a global or thread-local address calculation.
+In this case @var{exp} should contain @code{const_int},
+@code{symbol_ref}, @code{label_ref} or @code{unspec} expressions,
+combined with @code{plus} and @code{minus}.  Any such @code{unspec}s
+are target-specific and typically represent some form of relocation
+operator.  @var{m} should be a valid address mode.
 
-@var{m} should be @code{Pmode}.
+The second use of @code{const} is to wrap a vector operation.
+In this case @var{exp} must be a @code{vec_duplicate} or
+@code{vec_series} expression.
 
 @findex high
 @item (high:@var{m} @var{exp})
@@ -1786,11 +1803,11 @@ If @code{FRAME_GROWS_DOWNWARD} is defined to a nonzero value, this points
 to immediately above the first variable on the stack.  Otherwise, it points
 to the first variable on the stack.
 
-@cindex @code{STARTING_FRAME_OFFSET} and virtual registers
+@cindex @code{TARGET_STARTING_FRAME_OFFSET} and virtual registers
 @cindex @code{FRAME_POINTER_REGNUM} and virtual registers
 @code{VIRTUAL_STACK_VARS_REGNUM} is replaced with the sum of the
 register given by @code{FRAME_POINTER_REGNUM} and the value
-@code{STARTING_FRAME_OFFSET}.
+@code{TARGET_STARTING_FRAME_OFFSET}.
 
 @findex VIRTUAL_STACK_DYNAMIC_REGNUM
 @item VIRTUAL_STACK_DYNAMIC_REGNUM
@@ -1921,19 +1938,32 @@ false.
 When @var{m1} is at least as narrow as @var{m2} the @code{subreg}
 expression is called @dfn{normal}.
 
+@findex REGMODE_NATURAL_SIZE
 Normal @code{subreg}s restrict consideration to certain bits of
-@var{reg}.  There are two cases.  If @var{m1} is smaller than a word,
-the @code{subreg} refers to the least-significant part (or
-@dfn{lowpart}) of one word of @var{reg}.  If @var{m1} is word-sized or
-greater, the @code{subreg} refers to one or more complete words.
+@var{reg}.  For this purpose, @var{reg} is divided into
+individually-addressable blocks in which each block has:
 
-When used as an lvalue, @code{subreg} is a word-based accessor.
-Storing to a @code{subreg} modifies all the words of @var{reg} that
-overlap the @code{subreg}, but it leaves the other words of @var{reg}
+@smallexample
+REGMODE_NATURAL_SIZE (@var{m2})
+@end smallexample
+
+bytes.  Usually the value is @code{UNITS_PER_WORD}; that is,
+most targets usually treat each word of a register as being
+independently addressable.
+
+There are two types of normal @code{subreg}.  If @var{m1} is known
+to be no bigger than a block, the @code{subreg} refers to the
+least-significant part (or @dfn{lowpart}) of one block of @var{reg}.
+If @var{m1} is known to be larger than a block, the @code{subreg} refers
+to two or more complete blocks.
+
+When used as an lvalue, @code{subreg} is a block-based accessor.
+Storing to a @code{subreg} modifies all the blocks of @var{reg} that
+overlap the @code{subreg}, but it leaves the other blocks of @var{reg}
 alone.
 
-When storing to a normal @code{subreg} that is smaller than a word,
-the other bits of the referenced word are usually left in an undefined
+When storing to a normal @code{subreg} that is smaller than a block,
+the other bits of the referenced block are usually left in an undefined
 state.  This laxity makes it easier to generate efficient code for
 such instructions.  To represent an instruction that preserves all the
 bits outside of those in the @code{subreg}, use @code{strict_low_part}
@@ -1991,10 +2021,11 @@ number of undefined bits.  For example:
 (subreg:PSI (reg:SI 0) 0)
 @end smallexample
 
+@findex REGMODE_NATURAL_SIZE
 accesses the whole of @samp{(reg:SI 0)}, but the exact relationship
 between the @code{PSImode} value and the @code{SImode} value is not
-defined.  If we assume @samp{UNITS_PER_WORD <= 4}, then the following
-two @code{subreg}s:
+defined.  If we assume @samp{REGMODE_NATURAL_SIZE (DImode) <= 4},
+then the following two @code{subreg}s:
 
 @smallexample
 (subreg:PSI (reg:DI 0) 0)
@@ -2005,7 +2036,7 @@ represent independent 4-byte accesses to the two halves of
 @samp{(reg:DI 0)}.  Both @code{subreg}s have an unknown number
 of undefined bits.
 
-If @samp{UNITS_PER_WORD <= 2} then these two @code{subreg}s:
+If @samp{REGMODE_NATURAL_SIZE (PSImode) <= 2} then these two @code{subreg}s:
 
 @smallexample
 (subreg:HI (reg:PSI 0) 0)
@@ -2719,6 +2750,10 @@ the same submodes as the input vector mode or the scalar modes, and the
 number of output parts must be an integer multiple of the number of input
 parts.
 
+@findex vec_series
+@item (vec_series:@var{m} @var{base} @var{step})
+This operation creates a vector in which element @var{i} is equal to
+@samp{@var{base} + @var{i}*@var{step}}.  @var{m} must be a vector integer mode.
 @end table
 
 @node Conversions
@@ -2874,7 +2909,7 @@ The presence of @code{strict_low_part} says that the part of the
 register which is meaningful in mode @var{n}, but is not part of
 mode @var{m}, is not to be altered.  Normally, an assignment to such
 a subreg is allowed to have undefined effects on the rest of the
-register when @var{m} is less than a word.
+register when @var{m} is smaller than @samp{REGMODE_NATURAL_SIZE (@var{n})}.
 @end table
 
 @node Side Effects
@@ -3887,16 +3922,6 @@ multiple targets; the last label in the insn (in the highest numbered
 insn-field) goes into the @code{JUMP_LABEL} field and does not have a
 @code{REG_LABEL_TARGET} note.  @xref{Insns, JUMP_LABEL}.
 
-@findex REG_CROSSING_JUMP
-@item REG_CROSSING_JUMP
-This insn is a branching instruction (either an unconditional jump or
-an indirect jump) which crosses between hot and cold sections, which
-could potentially be very far apart in the executable.  The presence
-of this note indicates to other optimizations that this branching
-instruction should not be ``collapsed'' into a simpler branching
-construct.  It is used when the optimization to partition basic blocks
-into hot and cold sections is turned on.
-
 @findex REG_SETJMP
 @item REG_SETJMP
 Appears attached to each @code{CALL_INSN} to @code{setjmp} or a
@@ -4038,6 +4063,22 @@ of the JUMP@.  The format is a bitmask of ATTR_FLAG_* values.
 This is used on an RTX_FRAME_RELATED_P insn wherein the attached expression
 is used in place of the actual insn pattern.  This is done in cases where
 the pattern is either complex or misleading.
+@end table
+
+The note @code{REG_CALL_NOCF_CHECK} is used in conjunction with the
+@option{-fcf-protection=branch} option.  The note is set if a
+@code{nocf_check} attribute is specified for a function type or a
+pointer to function type.  The note is stored in the @code{REG_NOTES}
+field of an insn.
+
+@table @code
+@findex REG_CALL_NOCF_CHECK
+@item REG_CALL_NOCF_CHECK
+Users have control through the @code{nocf_check} attribute to identify
+which calls to a function should be skipped from control-flow instrumentation
+when the option @option{-fcf-protection=branch} is specified.  The compiler
+puts a @code{REG_CALL_NOCF_CHECK} note on each @code{CALL_INSN} instruction
+that has a function type marked with a @code{nocf_check} attribute.
 @end table
 
 For convenience, the machine mode in an @code{insn_list} or

@@ -36,7 +36,6 @@ static const struct default_options arm_option_optimization_table[] =
   {
     /* Enable section anchors by default at -O1 or higher.  */
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
@@ -63,7 +62,13 @@ arm_except_unwind_info (struct gcc_options *opts)
 	return UI_TARGET;
     }
 
-  /* ... we use sjlj exceptions for backwards compatibility.  */
+  /* ... honor target configurations requesting DWARF2 EH...  */
+#ifdef DWARF2_UNWIND_INFO
+  if (DWARF2_UNWIND_INFO)
+    return UI_DWARF2;
+#endif
+
+  /* ... or fallback to sjlj exceptions for backwards compatibility.  */
   return UI_SJLJ;
 }
 
