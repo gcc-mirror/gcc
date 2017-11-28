@@ -1,3 +1,11 @@
+2017-11-28  Jim Wilson  <jimw@sifive.com>
+
+	Backport from mainline
+	2017-11-07  Michael Clark  <michaeljclark@mac.com>
+
+	* config/riscv/linux.h (MUSL_ABI_SUFFIX): New define.
+	(MUSL_DYNAMIC_LINKER): Likewise.
+
 2017-11-27  Jim Wilson  <jimw@sifive.com>
 
 	Backport from mainline
