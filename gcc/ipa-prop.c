@@ -3207,19 +3207,20 @@ try_decrement_rdesc_refcount (struct ipa_jump_func *jfunc)
 
 /* Try to find a destination for indirect edge IE that corresponds to a simple
    call or a call of a member function pointer and where the destination is a
-   pointer formal parameter described by jump function JFUNC.  If it can be
-   determined, return the newly direct edge, otherwise return NULL.
+   pointer formal parameter described by jump function JFUNC.  TARGET_TYPE is
+   the type of the parameter to which the result of JFUNC is passed.  If it can
+   be determined, return the newly direct edge, otherwise return NULL.
    NEW_ROOT_INFO is the node info that JFUNC lattices are relative to.  */
 
 static struct cgraph_edge *
 try_make_edge_direct_simple_call (struct cgraph_edge *ie,
-				  struct ipa_jump_func *jfunc,
+				  struct ipa_jump_func *jfunc, tree target_type,
 				  struct ipa_node_params *new_root_info)
 {
   struct cgraph_edge *cs;
   tree target;
   bool agg_contents = ie->indirect_info->agg_contents;
-  tree scalar = ipa_value_from_jfunc (new_root_info, jfunc);
+  tree scalar = ipa_value_from_jfunc (new_root_info, jfunc, target_type);
   if (agg_contents)
     {
       bool from_global_constant;
@@ -3397,7 +3398,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 {
   struct ipa_edge_args *top;
   struct cgraph_edge *ie, *next_ie, *new_direct_edge;
-  struct ipa_node_params *new_root_info;
+  struct ipa_node_params *new_root_info, *inlined_node_info;
   bool res = false;
 
   ipa_check_create_edge_args ();
@@ -3405,6 +3406,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
   new_root_info = IPA_NODE_REF (cs->caller->global.inlined_to
 				? cs->caller->global.inlined_to
 				: cs->caller);
+  inlined_node_info = IPA_NODE_REF (cs->callee->function_symbol ());
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
@@ -3445,8 +3447,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc, ctx);
 	}
       else
-	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
-							    new_root_info);
+	{
+	  tree target_type =  ipa_get_type (inlined_node_info, param_index);
+	  new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
+							      target_type,
+							      new_root_info);
+	}
+
       /* If speculation was removed, then we need to do nothing.  */
       if (new_direct_edge && new_direct_edge != ie
 	  && new_direct_edge->callee == spec_target)

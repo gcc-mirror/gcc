@@ -1,3 +1,31 @@
+2017-11-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/82808
+	* tree.h (expr_type_first_operand_type_p): Declare
+	* tree.c (expr_type_first_operand_type_p): New function.
+	* ipa-prop.h (ipa_get_type): Allow i to be out of bounds.
+	(ipa_value_from_jfunc): Adjust declaration.
+	* ipa-cp.c (ipa_get_jf_pass_through_result): New parameter RES_TYPE.
+	Use it as result type for arithmetics, unless it is NULL in which case
+	be more conservative.
+	(ipa_value_from_jfunc): New parameter PARM_TYPE, pass it to
+	ipa_get_jf_pass_through_result.
+	(propagate_vals_across_pass_through): Likewise.
+	(propagate_scalar_across_jump_function): New parameter PARM_TYPE, pass
+	is to propagate_vals_across_pass_through.
+	(propagate_constants_across_call): Pass PARM_TYPE to
+	propagate_scalar_across_jump_function.
+	(find_more_scalar_values_for_callers_subset): Pass parameter type to
+	ipa_value_from_jfunc.
+	(cgraph_edge_brings_all_scalars_for_node): Likewise.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Renamed parms_info
+	to caller_parms_info, pass parameter type to ipa_value_from_jfunc.
+	* ipa-prop.c (try_make_edge_direct_simple_call): New parameter
+	target_type, pass it to ipa_value_from_jfunc.
+	(update_indirect_edges_after_inlining): Pass parameter type to
+	try_make_edge_direct_simple_call.
+
 2017-11-28  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-evrp-analyze.c

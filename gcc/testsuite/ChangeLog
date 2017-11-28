@@ -1,3 +1,9 @@
+2017-11-28  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/82808
+	* gcc.dg/ipa/pr82808.c: New test.
+
 2017-11-28  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx-1.c: Handle new intrinsics.
