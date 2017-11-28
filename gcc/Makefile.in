@@ -1912,9 +1912,12 @@ rest.cross: specs
 # Specify -o /dev/null so the output of -S is discarded. More importantly
 # It does not try to create a file with the name "null.s" on POSIX and
 # "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
+# Beware that /dev/null is not available to mingw tools, so directly use
+# "nul" instead of "/dev/null" if we're building on a mingw machine.
 # Specify the path to gcc/testsuite/selftests within the srcdir
 # as an argument to -fself-test.
-SELFTEST_FLAGS = -nostdinc /dev/null -S -o /dev/null \
+DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
+SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
 
 C_SELFTEST_FLAGS = -xc $(SELFTEST_FLAGS)
