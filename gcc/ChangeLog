@@ -1,5 +1,8 @@
 2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80929
+	* rtlanal.c (seq_cost): For non-single_set insns try to use insn_cost.
+
 	PR target/80819
 	* config/i386/sse.md (vec_concatv2di): Remove * from (=Yr,0,*rm)
 	alternative.
