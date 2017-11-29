@@ -1,3 +1,9 @@
+2017-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80819
+	* gcc.target/i386/pr80819-1.c: New test.
+	* gcc.target/i386/pr80819-2.c: New test.
+
 2017-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c

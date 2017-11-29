@@ -1,3 +1,9 @@
+2017-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80819
+	* config/i386/sse.md (vec_concatv2di): Remove * from (=Yr,0,*rm)
+	alternative.
+
 2017-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (layout::print_trailing_fixits): Handle
