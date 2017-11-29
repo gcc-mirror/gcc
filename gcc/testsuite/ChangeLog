@@ -1,3 +1,12 @@
+2017-11-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-8.c: Add vspltisb to expected
+	output.
+	* gcc.target/powerpc/fold-vec-splats-int.c: Add mtvsrws to expected
+	output.
+	* gcc.target/powerpc/fold-vec-splats-longlong.c: Add mtvsrdd to
+	expected output.
+
 2017-11-29  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512f-vpshldv-1.c: New test.
