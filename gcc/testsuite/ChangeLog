@@ -1,3 +1,8 @@
+2017-11-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83187
+	* g++.dg/opt/pr83187.C: New.
+
 2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83185
