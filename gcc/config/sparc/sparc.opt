@@ -253,6 +253,10 @@ Enable workarounds for the errata of the GR712RC processor.
 TargetVariable
 unsigned int sparc_fix_b2bst
 
+;; Enable workaround for GRLIB-TN-0013 errata
+TargetVariable
+unsigned int sparc_fix_lost_divsqrt
+
 Mask(LONG_DOUBLE_128)
 ;; Use 128-bit long double
 
