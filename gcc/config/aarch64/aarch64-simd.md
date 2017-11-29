@@ -3047,8 +3047,8 @@
 	   (match_operand:VDC 2 "register_operand" "w, r")))]
   "TARGET_SIMD"
   "@
-   stp\\t%d1, %d2, %0
-   stp\\t%x1, %x2, %0"
+   stp\\t%d1, %d2, %y0
+   stp\\t%x1, %x2, %y0"
   [(set_attr "type" "neon_stp, store_16")]
 )
 

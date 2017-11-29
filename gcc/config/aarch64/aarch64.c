@@ -150,6 +150,7 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 bool is_packed);
 static machine_mode
 aarch64_simd_container_mode (scalar_mode mode, unsigned width);
+static void aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -5225,7 +5226,11 @@ static const int aarch64_nzcv_codes[] =
      'L':		Output constant address specified by X
 			with a relocation offset if appropriate.
      'G':		Prints address of X, specifying a PC relative
-			relocation mode if appropriate.  */
+			relocation mode if appropriate.
+     'y':		Output address of LDP or STP - this is used for
+			some LDP/STPs which don't use a PARALLEL in their
+			pattern (so the mode needs to be adjusted).
+     'z':		Output address of a typical LDP or STP.  */
 
 static void
 aarch64_print_operand (FILE *f, rtx x, int code)
@@ -5427,8 +5432,6 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 
 	case MEM:
 	  output_address (GET_MODE (x), XEXP (x, 0));
-	  /* Check all memory references are Pmode - even with ILP32.  */
-	  gcc_assert (GET_MODE (XEXP (x, 0)) == Pmode);
 	  break;
 
 	case CONST:
@@ -5592,18 +5595,48 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       }
       break;
 
+    case 'y':
+    case 'z':
+      {
+	machine_mode mode = GET_MODE (x);
+
+	if (GET_CODE (x) != MEM)
+	  {
+	    output_operand_lossage ("invalid operand for '%%%c'", code);
+	    return;
+	  }
+
+	if (code == 'y')
+	  {
+	    /* LDP/STP which uses a single double-width memory operand.
+	       Adjust the mode to appear like a typical LDP/STP.
+	       Currently this is supported for 16-byte accesses only.  */
+	    gcc_assert (GET_MODE_SIZE (mode) == 16);
+	    mode = DFmode;
+	  }
+
+	aarch64_print_ldpstp_address (f, mode, XEXP (x, 0));
+      }
+      break;
+
     default:
       output_operand_lossage ("invalid operand prefix '%%%c'", code);
       return;
     }
 }
 
+/* Print address 'x' of a memory access with mode 'mode'.
+   'op' is the context required by aarch64_classify_address.  It can either be
+   MEM for a normal memory access or PARALLEL for LDP/STP.  */
 static void
-aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
+aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 {
   struct aarch64_address_info addr;
 
-  if (aarch64_classify_address (&addr, x, mode, MEM, true))
+  /* Check all addresses are Pmode - including ILP32.  */
+  gcc_assert (GET_MODE (x) == Pmode);
+
+  if (aarch64_classify_address (&addr, x, mode, op, true))
     switch (addr.type)
       {
       case ADDRESS_REG_IMM:
@@ -5684,6 +5717,20 @@ aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
       }
 
   output_addr_const (f, x);
+}
+
+/* Print address 'x' of a LDP/STP with mode 'mode'.  */
+static void
+aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x)
+{
+  aarch64_print_address_internal (f, mode, x, PARALLEL);
+}
+
+/* Print address 'x' of a memory access with mode 'mode'.  */
+static void
+aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
+{
+  aarch64_print_address_internal (f, mode, x, MEM);
 }
 
 bool
