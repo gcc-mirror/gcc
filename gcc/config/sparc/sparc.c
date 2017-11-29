@@ -945,6 +945,31 @@ mem_ref (rtx x)
   return NULL_RTX;
 }
 
+/* True if INSN is a floating-point instruction.  */
+
+static bool
+fpop_insn_p (rtx_insn *insn)
+{
+  if (GET_CODE (PATTERN (insn)) != SET)
+    return false;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_FPMOVE:
+    case TYPE_FPCMOVE:
+    case TYPE_FP:
+    case TYPE_FPCMP:
+    case TYPE_FPMUL:
+    case TYPE_FPDIVS:
+    case TYPE_FPSQRTS:
+    case TYPE_FPDIVD:
+    case TYPE_FPSQRTD:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* We use a machine specific pass to enable workarounds for errata.
 
    We need to have the (essentially) final form of the insn stream in order
@@ -970,11 +995,34 @@ sparc_do_work_around_errata (void)
     {
       bool insert_nop = false;
       rtx set;
+      rtx_insn *jump;
+      rtx_sequence *seq;
 
       /* Look into the instruction in a delay slot.  */
-      if (NONJUMP_INSN_P (insn))
-	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
-	  insn = seq->insn (1);
+      if (NONJUMP_INSN_P (insn)
+	  && (seq = dyn_cast <rtx_sequence *> (PATTERN (insn))))
+	  {
+	    jump = seq->insn (0);
+	    insn = seq->insn (1);
+	  }
+      else if (JUMP_P (insn))
+	jump = insn;
+      else
+	jump = NULL;
+
+      /* Place a NOP at the branch target of an integer branch if it is
+	 a floating-point operation or a floating-point branch.  */
+      if (sparc_fix_gr712rc
+	  && jump != NULL_RTX
+	  && get_attr_branch_type (jump) == BRANCH_TYPE_ICC)
+	{
+	  rtx_insn *target = next_active_insn (JUMP_LABEL_AS_INSN (jump));
+	  if (target
+	      && (fpop_insn_p (target)
+		  || ((JUMP_P (target)
+		       && get_attr_branch_type (target) == BRANCH_TYPE_FCC))))
+	    emit_insn_before (gen_nop (), target);
+	}
 
       /* Look for either of these two sequences:
 
@@ -1303,7 +1351,8 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return sparc_fix_at697f || sparc_fix_ut699 || sparc_fix_b2bst;
+      return sparc_fix_at697f || sparc_fix_ut699 || sparc_fix_b2bst
+	  || sparc_fix_gr712rc;
     }
 
   virtual unsigned int execute (function *)

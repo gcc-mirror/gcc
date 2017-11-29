@@ -1,3 +1,14 @@
+2017-11-29  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (fpop_insn_p): New function.
+	(sparc_do_work_around_errata): Insert NOP instructions to
+	prevent sequences that could trigger the TN-0012 errata for
+	GR712RC.
+	(pass_work_around_errata::gate): Also test sparc_fix_gr712rc.
+	* config/sparc/sparc.md (fix_gr712rc): New attribute.
+	(in_branch_annul_delay): Prevent floating-point instructions
+	in delay slot of annulled integer branch.
+
 2017-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83202
