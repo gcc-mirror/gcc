@@ -1,3 +1,18 @@
+2017-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83202
+	* tree-vect-slp.c (scalar_stmts_set_t): New typedef.
+	(bst_fail): Use it.
+	(vect_analyze_slp_cost_1): Add visited set, do not account SLP
+	nodes vectorized to the same stmts multiple times.
+	(vect_analyze_slp_cost): Allocate a visited set and pass it down.
+	(vect_analyze_slp_instance): Adjust.
+	(scalar_stmts_to_slp_tree_map_t): New typedef.
+	(vect_schedule_slp_instance): Add a map recording the SLP node
+	representing the vectorized stmts for a set of scalar stmts.
+	Avoid code-generating redundancies.
+	(vect_schedule_slp): Allocate map and pass it down.
+
 2017-11-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83187
