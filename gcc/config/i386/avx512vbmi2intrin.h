@@ -432,7 +432,77 @@ _mm512_maskz_shrdv_epi64 (__mmask8 __A, __m512i __B, __m512i __C, __m512i __D)
   return (__m512i)__builtin_ia32_vpshrdv_v8di_maskz ((__v8di)__B, (__v8di) __C,
 						 (__v8di) __D, (__mmask8)__A);
 }
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_shldv_epi16 (__m512i __A, __m512i __B, __m512i __C)
+{
+  return (__m512i) __builtin_ia32_vpshldv_v32hi ((__v32hi)__A, (__v32hi) __B,
+							 (__v32hi) __C);
+}
 
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_shldv_epi16 (__m512i __A, __mmask32 __B, __m512i __C, __m512i __D)
+{
+  return (__m512i)__builtin_ia32_vpshldv_v32hi_mask ((__v32hi)__A,
+				(__v32hi) __C, (__v32hi) __D, (__mmask32)__B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_shldv_epi16 (__mmask32 __A, __m512i __B, __m512i __C, __m512i __D)
+{
+  return (__m512i)__builtin_ia32_vpshldv_v32hi_maskz ((__v32hi)__B,
+				(__v32hi) __C, (__v32hi) __D, (__mmask32)__A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_shldv_epi32 (__m512i __A, __m512i __B, __m512i __C)
+{
+  return (__m512i) __builtin_ia32_vpshldv_v16si ((__v16si)__A, (__v16si) __B,
+								(__v16si) __C);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_shldv_epi32 (__m512i __A, __mmask16 __B, __m512i __C, __m512i __D)
+{
+  return (__m512i)__builtin_ia32_vpshldv_v16si_mask ((__v16si)__A,
+				(__v16si) __C, (__v16si) __D, (__mmask16)__B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_shldv_epi32 (__mmask16 __A, __m512i __B, __m512i __C, __m512i __D)
+{
+  return (__m512i)__builtin_ia32_vpshldv_v16si_maskz ((__v16si)__B,
+				(__v16si) __C, (__v16si) __D, (__mmask16)__A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_shldv_epi64 (__m512i __A, __m512i __B, __m512i __C)
+{
+  return (__m512i) __builtin_ia32_vpshldv_v8di ((__v8di)__A, (__v8di) __B,
+								(__v8di) __C);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_shldv_epi64 (__m512i __A, __mmask8 __B, __m512i __C, __m512i __D)
+{
+  return (__m512i)__builtin_ia32_vpshldv_v8di_mask ((__v8di)__A, (__v8di) __C,
+						(__v8di) __D, (__mmask8)__B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_shldv_epi64 (__mmask8 __A, __m512i __B, __m512i __C, __m512i __D)
+{
+  return (__m512i)__builtin_ia32_vpshldv_v8di_maskz ((__v8di)__B, (__v8di) __C,
+						(__v8di) __D, (__mmask8)__A);
+}
 
 #ifdef __DISABLE_AVX512VBMI2BW__
 #undef __DISABLE_AVX512VBMI2BW__
