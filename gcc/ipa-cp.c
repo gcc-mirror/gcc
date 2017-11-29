@@ -1224,20 +1224,20 @@ ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
   if (!is_gimple_ip_invariant (input))
     return NULL_TREE;
 
-  if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-      == tcc_unary)
-    res = fold_unary (ipa_get_jf_pass_through_operation (jfunc),
-		      TREE_TYPE (input), input);
+  tree_code opcode = ipa_get_jf_pass_through_operation (jfunc);
+  if (TREE_CODE_CLASS (opcode) == tcc_comparison)
+    restype = boolean_type_node;
+  else if (expr_type_first_operand_type_p (opcode))
+    restype = TREE_TYPE (input);
   else
-    {
-      if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
-	  == tcc_comparison)
-	restype = boolean_type_node;
-      else
-	restype = TREE_TYPE (input);
-      res = fold_binary (ipa_get_jf_pass_through_operation (jfunc), restype,
-			 input, ipa_get_jf_pass_through_operand (jfunc));
-    }
+    return NULL_TREE;
+
+  if (TREE_CODE_CLASS (opcode) == tcc_unary)
+    res = fold_unary (opcode, restype, input);
+  else
+    res = fold_binary (opcode, restype, input,
+		       ipa_get_jf_pass_through_operand (jfunc));
+
   if (res && !is_gimple_ip_invariant (res))
     return NULL_TREE;
 
