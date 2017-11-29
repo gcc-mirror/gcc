@@ -1,5 +1,9 @@
 2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83185
+	* tree.c (build_simple_mem_ref_loc): Handle
+	get_addr_base_and_unit_offset returning a MEM_REF.
+
 	PR middle-end/80929
 	* rtlanal.c (seq_cost): For non-single_set insns try to use insn_cost.
 
