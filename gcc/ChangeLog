@@ -1,3 +1,7 @@
+2017-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*add<mode>3_carry_in_internal2): New.
+
 2017-11-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/80818
