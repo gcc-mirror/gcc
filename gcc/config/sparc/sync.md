@@ -212,7 +212,7 @@
   "cas<modesuffix>\t%1, %2, %0"
   [(set_attr "type" "multi")])
 
-(define_insn "*atomic_compare_and_swap_leon3_1"
+(define_insn "atomic_compare_and_swap_leon3_1"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operand:SI 1 "mem_noofs_operand" "+w"))
    (set (match_dup 1)
