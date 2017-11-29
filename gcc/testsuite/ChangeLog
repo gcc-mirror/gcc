@@ -1,5 +1,14 @@
 2017-11-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-ld-char.c: Add lxv to expected output.
+	* gcc.target/powerpc/fold-vec-ld-double.c: Likewise.
+	* gcc.target/powerpc/fold-vec-ld-float.c: Likewise.
+	* gcc.target/powerpc/fold-vec-ld-int.c: Likewise.
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-ld-short.c: Likewise.
+
+2017-11-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-splat-8.c: Add vspltisb to expected
 	output.
 	* gcc.target/powerpc/fold-vec-splats-int.c: Add mtvsrws to expected
