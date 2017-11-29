@@ -430,6 +430,10 @@
    (symbol_ref "(sparc_fix_b2bst != 0
 		 ? FIX_B2BST_TRUE : FIX_B2BST_FALSE)"))
 
+(define_attr "fix_lost_divsqrt" "false,true"
+   (symbol_ref "(sparc_fix_lost_divsqrt != 0
+		 ? FIX_LOST_DIVSQRT_TRUE : FIX_LOST_DIVSQRT_FALSE)"))
+
 (define_attr "fix_gr712rc" "false,true"
    (symbol_ref "(sparc_fix_gr712rc != 0
 		 ? FIX_GR712RC_TRUE : FIX_GR712RC_FALSE)"))
@@ -580,6 +584,9 @@
 
 (define_attr "in_branch_delay" "false,true"
   (cond [(eq_attr "type" "uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
+	   (const_string "false")
+	 (and (eq_attr "fix_lost_divsqrt" "true")
+	      (eq_attr "type" "fpdivs,fpsqrts,fpdivd,fpsqrtd"))
 	   (const_string "false")
 	 (and (eq_attr "fix_b2bst" "true") (eq_attr "type" "store,fpstore"))
 	   (const_string "false")
