@@ -1,5 +1,11 @@
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
+	* config/sparc/sync.md (swapsi): 16-byte align if sparc_fix_gr712rc.
+	(atomic_compare_and_swap_leon3_1): Likewise.
+	(ldstub): Likewise.
+
+2017-11-29  Daniel Cederman  <cederman@gaisler.com>
+
 	* config/sparc/sparc.c (fpop_insn_p): New function.
 	(sparc_do_work_around_errata): Insert NOP instructions to
 	prevent sequences that could trigger the TN-0012 errata for
