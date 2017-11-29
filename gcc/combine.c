@@ -3035,13 +3035,25 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 1));
     }
 
-  /* Verify that I2 and I1 are valid for combining.  */
-  if (! can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src)
-      || (i1 && ! can_combine_p (i1, i3, i0, NULL, i2, NULL,
-				 &i1dest, &i1src))
-      || (i0 && ! can_combine_p (i0, i3, NULL, NULL, i1, i2,
-				 &i0dest, &i0src)))
+  /* Verify that I2 and maybe I1 and I0 can be combined into I3.  */
+  if (!can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src))
     {
+      if (dump_file)
+	fprintf (dump_file, "Can't combine i2 into i3\n");
+      undo_all ();
+      return 0;
+    }
+  if (i1 && !can_combine_p (i1, i3, i0, NULL, i2, NULL, &i1dest, &i1src))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Can't combine i1 into i3\n");
+      undo_all ();
+      return 0;
+    }
+  if (i0 && !can_combine_p (i0, i3, NULL, NULL, i1, i2, &i0dest, &i0src))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Can't combine i0 into i3\n");
       undo_all ();
       return 0;
     }
