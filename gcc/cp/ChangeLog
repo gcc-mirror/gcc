@@ -1,3 +1,9 @@
+2017-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82293
+	* lambda.c (nonlambda_method_basetype): Don't use LAMBDA_TYPE_P
+	on a null type.
+
 2017-11-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82760 - memory corruption with aligned new.
@@ -12,7 +18,7 @@
 	(note_break_stmt, note_iteration_stmt_body_start,
 	note_iteration_stmt_body_end): Declare.
 	* decl.c (struct cp_switch): Add has_default_p, break_stmt_seen_p
-	and in_loop_body_p fields. 
+	and in_loop_body_p fields.
 	(push_switch): Clear them.
 	(pop_switch): Set SWITCH_STMT_CANNOT_FALLTHRU_P if has_default_p
 	and !break_stmt_seen_p.  Assert in_loop_body_p is false.

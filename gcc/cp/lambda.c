@@ -920,7 +920,7 @@ nonlambda_method_basetype (void)
     return NULL_TREE;
 
   type = current_class_type;
-  if (!LAMBDA_TYPE_P (type))
+  if (!type || !LAMBDA_TYPE_P (type))
     return type;
 
   /* Find the nearest enclosing non-lambda function.  */
