@@ -1,3 +1,15 @@
+2017-11-29  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Add new
+	cases for printing LDP/STP memory addresses.
+	(aarch64_print_address_internal): Renamed from
+	aarch64_print_operand_address, added parameter, add Pmode check.
+	(aarch64_print_ldpstp_address): New function for LDP/STP addresses.
+	(aarch64_print_operand_address): Indirect to
+	aarch64_print_address_internal.
+	* config/aarch64/aarch64-simd.md (store_pair_lanes): Use new
+	'y' operand output specifier.
+
 2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83185
