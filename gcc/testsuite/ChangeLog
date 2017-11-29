@@ -1,3 +1,16 @@
+2017-11-29  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-vpshrdv-1.c: New test.
+	* gcc.target/i386/avx512f-vpshrdvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshrdvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshrdvw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshrdw-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshrdv-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshrdvd-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshrdvq-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshrdvw-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshrdw-2.c: Ditto.
+
 2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83195
