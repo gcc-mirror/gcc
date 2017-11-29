@@ -1321,7 +1321,8 @@ sparc_do_work_around_errata (void)
 	       && NONJUMP_INSN_P (insn)
 	       && (set = single_set (insn)) != NULL_RTX
 	       && GET_MODE_SIZE (GET_MODE (SET_SRC (set))) <= 4
-	       && mem_ref (SET_SRC (set)) != NULL_RTX
+	       && (mem_ref (SET_SRC (set)) != NULL_RTX
+		   || INSN_CODE (insn) == CODE_FOR_movsi_pic_gotdata_op)
 	       && REG_P (SET_DEST (set))
 	       && REGNO (SET_DEST (set)) < 32)
 	{
@@ -1358,6 +1359,11 @@ sparc_do_work_around_errata (void)
 			       && REGNO (src) < 32
 			       && REGNO (src) != REGNO (x)))
 		       && !reg_mentioned_p (x, XEXP (dest, 0)))
+		insert_nop = true;
+
+	      /* GOT accesses uses LD.  */
+	      else if (INSN_CODE (next) == CODE_FOR_movsi_pic_gotdata_op
+		       && !reg_mentioned_p (x, XEXP (XEXP (src, 0), 1)))
 		insert_nop = true;
 	    }
 	}
