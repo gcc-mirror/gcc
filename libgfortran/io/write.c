@@ -1552,7 +1552,7 @@ select_string (st_parameter_dt *dtp, const fnode *f, char *buf, size_t *size,
 	       int kind)
 {
   char *result;
-  *size = size_from_kind (dtp, f, kind) + f->u.real.d;
+  *size = size_from_kind (dtp, f, kind) + f->u.real.d + 1;
   if (*size > BUF_STACK_SZ)
      result = xmalloc (*size);
   else
