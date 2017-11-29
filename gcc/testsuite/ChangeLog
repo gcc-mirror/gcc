@@ -1,5 +1,8 @@
 2017-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83185
+	* gcc.dg/asan/pr83185.c: New test.
+
 	PR target/80819
 	* gcc.target/i386/pr80819-1.c: New test.
 	* gcc.target/i386/pr80819-2.c: New test.
