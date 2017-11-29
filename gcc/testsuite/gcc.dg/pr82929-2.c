@@ -5,6 +5,9 @@
 void
 foo (short *p, short *q, short *r)
 {
+  p = __builtin_assume_aligned (p, __alignof__ (int));
+  q = __builtin_assume_aligned (q, __alignof__ (int));
+  r = __builtin_assume_aligned (r, __alignof__ (int));
   short a = q[0];
   short b = q[1];
   short c = ~a;
@@ -15,4 +18,4 @@ foo (short *p, short *q, short *r)
   p[1] = e & f;
 }
 
-/* { dg-final { scan-tree-dump-times "Merging successful" 1 "store-merging" { target { ! arm*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Merging successful" 1 "store-merging" } } */

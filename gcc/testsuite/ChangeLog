@@ -1,3 +1,9 @@
+2017-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83195
+	* gcc.dg/pr82929.c: Don't check for "Merging successful" on arm.
+	* gcc.dg/pr82929-2.c: New test.
+
 2017-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83202
