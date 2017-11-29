@@ -1,3 +1,8 @@
+2017-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83202
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr83202.c: New testcase.
+
 2017-11-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83187
