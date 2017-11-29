@@ -2530,7 +2530,7 @@ static void cp_parser_late_parsing_default_args
   (cp_parser *, tree);
 static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
-static tree cp_parser_trait_expr
+static cp_expr cp_parser_trait_expr
   (cp_parser *, enum rid);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
@@ -7981,6 +7981,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    bool saved_non_integral_constant_expression_p;
 	    bool saved_greater_than_is_operator_p;
 
+	    location_t start_loc = token->location;
+
 	    cp_lexer_consume_token (parser->lexer);
 	    matching_parens parens;
 	    parens.require_open (parser);
@@ -8017,8 +8019,19 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    parser->type_definition_forbidden_message = saved_message;
 
+	    location_t finish_loc
+	      = cp_lexer_peek_token (parser->lexer)->location;
 	    parens.require_close (parser);
-	    return finish_noexcept_expr (expr, tf_warning_or_error);
+
+	    /* Construct a location of the form:
+	       noexcept (expr)
+	       ^~~~~~~~~~~~~~~
+	       with start == caret, finishing at the close-paren.  */
+	    location_t noexcept_loc
+	      = make_location (start_loc, start_loc, finish_loc);
+
+	    return cp_expr (finish_noexcept_expr (expr, tf_warning_or_error),
+			    noexcept_loc);
 	  }
 
 	default:
@@ -9760,7 +9773,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
    Returns a representation of the expression, the underlying type
    of the type at issue when KEYWORD is RID_UNDERLYING_TYPE.  */
 
-static tree
+static cp_expr
 cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 {
   cp_trait_kind kind;
@@ -9873,6 +9886,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       gcc_unreachable ();
     }
 
+  /* Get location of initial token.  */
+  location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
+
   /* Consume the token.  */
   cp_lexer_consume_token (parser->lexer);
 
@@ -9916,20 +9932,27 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 	}
     }
 
+  location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
   parens.require_close (parser);
+
+  /* Construct a location of the form:
+       __is_trivially_copyable(_Tp)
+       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     with start == caret, finishing at the close-paren.  */
+  location_t trait_loc = make_location (start_loc, start_loc, finish_loc);
 
   /* Complete the trait expression, which may mean either processing
      the trait expr now or saving it for template instantiation.  */
   switch (kind)
     {
     case CPTK_UNDERLYING_TYPE:
-      return finish_underlying_type (type1);
+      return cp_expr (finish_underlying_type (type1), trait_loc);
     case CPTK_BASES:
-      return finish_bases (type1, false);
+      return cp_expr (finish_bases (type1, false), trait_loc);
     case CPTK_DIRECT_BASES:
-      return finish_bases (type1, true);
+      return cp_expr (finish_bases (type1, true), trait_loc);
     default:
-      return finish_trait_expr (kind, type1, type2);
+      return cp_expr (finish_trait_expr (kind, type1, type2), trait_loc);
     }
 }
 
@@ -13725,16 +13748,14 @@ cp_parser_linkage_specification (cp_parser* parser)
 static void 
 cp_parser_static_assert(cp_parser *parser, bool member_p)
 {
-  tree condition;
+  cp_expr condition;
+  location_t token_loc;
   tree message;
-  cp_token *token;
-  location_t saved_loc;
   bool dummy;
 
   /* Peek at the `static_assert' token so we can keep track of exactly
      where the static assertion started.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  saved_loc = token->location;
+  token_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Look for the `static_assert' keyword.  */
   if (!cp_parser_require_keyword (parser, RID_STATIC_ASSERT, 
@@ -13790,9 +13811,16 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
   /* A semicolon terminates the declaration.  */
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
+  /* Get the location for the static assertion.  Use that of the
+     condition if available, otherwise, use that of the "static_assert"
+     token.  */
+  location_t assert_loc = condition.get_location ();
+  if (assert_loc == UNKNOWN_LOCATION)
+    assert_loc = token_loc;
+
   /* Complete the static assertion, which may mean either processing 
      the static assert now or saving it for template instantiation.  */
-  finish_static_assert (condition, message, saved_loc, member_p);
+  finish_static_assert (condition, message, assert_loc, member_p);
 }
 
 /* Parse the expression in decltype ( expression ).  */
