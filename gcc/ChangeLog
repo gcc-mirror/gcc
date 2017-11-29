@@ -1,3 +1,10 @@
+2017-11-29  Daniel Cederman  <cederman@gaisler.com>
+
+	Backport from mainline
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Treat the
+        movsi_pic_gotdata_op instruction as a load for the UT699 errata
+        workaround.
+
 2017-11-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline
