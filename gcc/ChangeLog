@@ -1,5 +1,19 @@
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
+	* config/sparc/sparc.c (fpop_reg_depend_p): New function.
+	(div_sqrt_insn_p): New function.
+	(sparc_do_work_around_errata): Insert NOP instructions to
+	prevent sequences that could trigger the TN-0013 errata for
+	certain LEON3 processors.
+	(pass_work_around_errata::gate): Also test sparc_fix_lost_divsqrt.
+	(sparc_option_override): Set sparc_fix_lost_divsqrt appropriately.
+	* config/sparc/sparc.md (fix_lost_divsqrt): New attribute.
+	(in_branch_delay): Prevent div and sqrt in delay slot if
+	fix_lost_divsqrt.
+	* config/sparc/sparc.opt (sparc_fix_lost_divsqrt): New variable.
+
+2017-11-29  Daniel Cederman  <cederman@gaisler.com>
+
 	* config/sparc/sparc.c (atomic_insn_p): New function.
 	(sparc_do_work_around_errata): Insert NOP instructions to
 	prevent sequences that could trigger the TN-0010 errata for
