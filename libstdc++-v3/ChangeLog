@@ -1,3 +1,8 @@
+2017-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/20_util/duration/literals/range.cc: Update expected
+	line of a static_assert failure.
+
 2017-11-28  Glen Joseph Fernandes  <glenjofe@gmail.com>
 
 	* include/bits/ptr_traits.h (to_address): Implement to_address.

@@ -1,3 +1,13 @@
+2017-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_unary_expression): Generate a location for
+	"noexcept".
+	(cp_parser_trait_expr): Generate and return a location_t,
+	converting the return type from tree to cp_expr.
+	(cp_parser_static_assert): Pass location of the condition to
+	finish_static_assert, rather than that of the "static_assert"
+	token, where available.
+
 2017-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82293
