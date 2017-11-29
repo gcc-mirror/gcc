@@ -1,5 +1,36 @@
 2017-11-29  Julia Koval  <julia.koval@intel.com>
 
+	* config/i386/avx512vbmi2intrin.h (_mm512_shldv_epi16,
+	_mm512_mask_shldv_epi16, _mm512_maskz_shldv_epi16, _mm512_shldv_epi32,
+	_mm512_mask_shldv_epi32, _mm512_maskz_shldv_epi32, _mm512_shldv_epi64,
+	_mm512_mask_shldv_epi64, _mm512_maskz_shldv_epi64): New intrinsics.
+	* config/i386/avx512vbmi2vlintrin.h (_mm256_shldv_epi16,
+	_mm256_mask_shldv_epi16, _mm256_maskz_shldv_epi16, _mm256_shldv_epi32,
+	_mm256_mask_shldv_epi32, _mm256_maskz_shldv_epi32, _mm256_shldv_epi64,
+	_mm256_mask_shldv_epi64, _mm256_maskz_shldv_epi64, _mm_shldv_epi16,
+	_mm_mask_shldv_epi16, _mm_maskz_shldv_epi16, _mm_shldv_epi32,
+	_mm_mask_shldv_epi32, _mm_maskz_shldv_epi32, _mm_shldv_epi64,
+	_mm_mask_shldv_epi64, _mm_maskz_shldv_epi64): Ditto.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpshldv_v32hi,
+	__builtin_ia32_vpshldv_v32hi_mask, __builtin_ia32_vpshldv_v32hi_maskz,
+	__builtin_ia32_vpshldv_v16hi, __builtin_ia32_vpshldv_v16hi_mask,
+	__builtin_ia32_vpshldv_v16hi_maskz, __builtin_ia32_vpshldv_v8hi,
+	__builtin_ia32_vpshldv_v8hi_mask, __builtin_ia32_vpshldv_v8hi_maskz,
+	__builtin_ia32_vpshldv_v16si, __builtin_ia32_vpshldv_v16si_mask,
+	__builtin_ia32_vpshldv_v16si_maskz, __builtin_ia32_vpshldv_v8si,
+	__builtin_ia32_vpshldv_v8si_mask, __builtin_ia32_vpshldv_v8si_maskz,
+	__builtin_ia32_vpshldv_v4si, __builtin_ia32_vpshldv_v4si_mask,
+	__builtin_ia32_vpshldv_v4si_maskz, __builtin_ia32_vpshldv_v8di,
+	__builtin_ia32_vpshldv_v8di_mask, __builtin_ia32_vpshldv_v8di_maskz,
+	__builtin_ia32_vpshldv_v4di, __builtin_ia32_vpshldv_v4di_mask,
+	__builtin_ia32_vpshldv_v4di_maskz, __builtin_ia32_vpshldv_v2di,
+	__builtin_ia32_vpshldv_v2di_mask,
+	__builtin_ia32_vpshldv_v2di_maskz): New builtins.
+	* config/i386/sse.md (vpshldv_<mode>, vpshldv_<mode>_mask,
+	vpshldv_<mode>_maskz, vpshldv_<mode>_maskz_1): New patterns.
+
+2017-11-29  Julia Koval  <julia.koval@intel.com>
+
 	* config/i386/avx512vbmi2intrin.h (_mm512_shrdv_epi16,
 	_mm512_mask_shrdv_epi16, _mm512_maskz_shrdv_epi16, _mm512_shrdv_epi32,
 	_mm512_mask_shrdv_epi32, _mm512_maskz_shrdv_epi32, _mm512_shrdv_epi64,

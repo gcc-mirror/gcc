@@ -1,5 +1,16 @@
 2017-11-29  Julia Koval  <julia.koval@intel.com>
 
+	* gcc.target/i386/avx512f-vpshldv-1.c: New test.
+	* gcc.target/i386/avx512f-vpshldvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshldvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshldvw-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshldv-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshldvd-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshldvq-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vpshldvw-2.c: Ditto.
+
+2017-11-29  Julia Koval  <julia.koval@intel.com>
+
 	* gcc.target/i386/avx512f-vpshrdv-1.c: New test.
 	* gcc.target/i386/avx512f-vpshrdvd-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpshrdvq-2.c: Ditto.

@@ -762,6 +762,151 @@ _mm_maskz_shrdv_epi64 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
 						 (__v2di) __D, (__mmask8)__A);
 }
 
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_shldv_epi16 (__m256i __A, __m256i __B, __m256i __C)
+{
+  return (__m256i) __builtin_ia32_vpshldv_v16hi ((__v16hi)__A, (__v16hi) __B,
+								(__v16hi) __C);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_shldv_epi16 (__m256i __A, __mmask16 __B, __m256i __C, __m256i __D)
+{
+  return (__m256i)__builtin_ia32_vpshldv_v16hi_mask ((__v16hi)__A,
+				(__v16hi) __C, (__v16hi) __D, (__mmask16)__B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_shldv_epi16 (__mmask16 __A, __m256i __B, __m256i __C, __m256i __D)
+{
+  return (__m256i)__builtin_ia32_vpshldv_v16hi_maskz ((__v16hi)__B,
+				(__v16hi) __C, (__v16hi) __D, (__mmask16)__A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_shldv_epi32 (__m256i __A, __m256i __B, __m256i __C)
+{
+  return (__m256i) __builtin_ia32_vpshldv_v8si ((__v8si)__A, (__v8si) __B,
+								(__v8si) __C);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_shldv_epi32 (__m256i __A, __mmask8 __B, __m256i __C, __m256i __D)
+{
+  return (__m256i)__builtin_ia32_vpshldv_v8si_mask ((__v8si)__A, (__v8si) __C,
+						(__v8si) __D, (__mmask8)__B) ;
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_shldv_epi32 (__mmask8 __A, __m256i __B, __m256i __C, __m256i __D)
+{
+  return (__m256i)__builtin_ia32_vpshldv_v8si_maskz ((__v8si)__B, (__v8si) __C,
+						(__v8si) __D, (__mmask8)__A);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_shldv_epi64 (__m256i __A, __m256i __B, __m256i __C)
+{
+  return (__m256i) __builtin_ia32_vpshldv_v4di ((__v4di)__A, (__v4di) __B,
+								(__v4di) __C);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_shldv_epi64 (__m256i __A, __mmask8 __B, __m256i __C, __m256i __D)
+{
+  return (__m256i)__builtin_ia32_vpshldv_v4di_mask ((__v4di)__A, (__v4di) __C,
+						(__v4di) __D, (__mmask8)__B);
+}
+
+extern __inline __m256i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_shldv_epi64 (__mmask8 __A, __m256i __B, __m256i __C, __m256i __D)
+{
+  return (__m256i)__builtin_ia32_vpshldv_v4di_maskz ((__v4di)__B, (__v4di) __C,
+						 (__v4di) __D, (__mmask8)__A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_shldv_epi16 (__m128i __A, __m128i __B, __m128i __C)
+{
+  return (__m128i) __builtin_ia32_vpshldv_v8hi ((__v8hi)__A, (__v8hi) __B,
+								(__v8hi) __C);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_shldv_epi16 (__m128i __A, __mmask8 __B, __m128i __C, __m128i __D)
+{
+  return (__m128i)__builtin_ia32_vpshldv_v8hi_mask ((__v8hi)__A, (__v8hi) __C,
+						(__v8hi) __D, (__mmask8)__B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_shldv_epi16 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
+{
+  return (__m128i)__builtin_ia32_vpshldv_v8hi_maskz ((__v8hi)__B, (__v8hi) __C,
+						 (__v8hi) __D, (__mmask8)__A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_shldv_epi32 (__m128i __A, __m128i __B, __m128i __C)
+{
+  return (__m128i) __builtin_ia32_vpshldv_v4si ((__v4si)__A, (__v4si) __B,
+								(__v4si) __C);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_shldv_epi32 (__m128i __A, __mmask8 __B, __m128i __C, __m128i __D)
+{
+  return (__m128i)__builtin_ia32_vpshldv_v4si_mask ((__v4si)__A, (__v4si) __C,
+						(__v4si) __D, (__mmask8)__B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_shldv_epi32 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
+{
+  return (__m128i)__builtin_ia32_vpshldv_v4si_maskz ((__v4si)__B, (__v4si) __C,
+						 (__v4si) __D, (__mmask8)__A);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_shldv_epi64 (__m128i __A, __m128i __B, __m128i __C)
+{
+  return (__m128i) __builtin_ia32_vpshldv_v2di ((__v2di)__A, (__v2di) __B,
+								(__v2di) __C);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_shldv_epi64 (__m128i __A, __mmask8 __B, __m128i __C, __m128i __D)
+{
+  return (__m128i)__builtin_ia32_vpshldv_v2di_mask ((__v2di)__A, (__v2di) __C,
+						(__v2di) __D, (__mmask8)__B);
+}
+
+extern __inline __m128i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_shldv_epi64 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
+{
+  return (__m128i)__builtin_ia32_vpshldv_v2di_maskz ((__v2di)__B, (__v2di) __C,
+						(__v2di) __D, (__mmask8)__A);
+}
+
+
 
 
 #ifdef __DISABLE_AVX512VBMI2VL__

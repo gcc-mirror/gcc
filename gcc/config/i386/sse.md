@@ -165,6 +165,7 @@
   UNSPEC_VPSHLD
   UNSPEC_VPSHRD
   UNSPEC_VPSHRDV
+  UNSPEC_VPSHLDV
 ])
 
 (define_c_enum "unspecv" [
@@ -20169,5 +20170,61 @@
 )]
   "TARGET_AVX512VBMI2"
   "vpshrdv<ssemodesuffix>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vpshldv_<mode>"
+  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
+	(unspec:VI248_VLBW
+	  [(match_operand:VI248_VLBW 1 "register_operand" "0")
+	   (match_operand:VI248_VLBW 2 "register_operand" "v")
+	   (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")
+] UNSPEC_VPSHLDV))]
+  "TARGET_AVX512VBMI2"
+  "vpshldv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vpshldv_<mode>_mask"
+  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
+	(vec_merge:VI248_VLBW (unspec:VI248_VLBW
+	  [(match_operand:VI248_VLBW 1 "register_operand" "0")
+	   (match_operand:VI248_VLBW 2 "register_operand" "v")
+	   (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPSHLDV)
+	   (match_dup 1)
+	   (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VBMI2"
+  "vpshldv<ssemodesuffix>\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "vpshldv_<mode>_maskz"
+  [(match_operand:VI248_VLBW 0 "register_operand")
+   (match_operand:VI248_VLBW 1 "register_operand")
+   (match_operand:VI248_VLBW 2 "register_operand")
+   (match_operand:VI248_VLBW 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512VBMI2"
+{
+  emit_insn (gen_vpshldv_<mode>_maskz_1 (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "vpshldv_<mode>_maskz_1"
+  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
+	(vec_merge:VI248_VLBW (unspec:VI248_VLBW
+	  [(match_operand:VI248_VLBW 1 "register_operand" "0")
+	   (match_operand:VI248_VLBW 2 "register_operand" "v")
+	   (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPSHLDV)
+	  (match_operand:VI248_VLBW 4 "const0_operand" "C")
+	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VBMI2"
+  "vpshldv<ssemodesuffix>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
    [(set_attr ("prefix") ("evex"))
    (set_attr "mode" "<sseinsnmode>")])
