@@ -1,3 +1,15 @@
+2017-11-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80818
+	* lra.c (collect_non_operand_hard_regs): New arg insn.  Pass it
+	recursively.  Use insn code for clobber.
+	(lra_set_insn_recog_data): Pass the new arg to
+	collect_non_operand_hard_regs.
+	(add_regs_to_insn_regno_info): Pass insn instead of uid.  Use insn
+	code for clobber.
+	(lra_update_insn_regno_info): Pass insn to
+	add_regs_to_insn_regno_info.
+
 2017-11-29  Jim Wilson  <jimw@sifive.com>
 	    Andrew Waterman  <andrew@sifive.com>
 
