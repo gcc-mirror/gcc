@@ -1,5 +1,10 @@
 2017-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (try_combine): Print a message to dump file whenever
+	I0, I1, or I2 cannot be combined into I3.
+
+2017-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/83156
 	PR rtl-optimization/82621
 	* combine.c (try_combine): Don't split an I2 if one of the dests is
