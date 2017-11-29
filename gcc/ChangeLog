@@ -1,3 +1,9 @@
+2017-11-29  Martin Aberg  <maberg@gaisler.com>
+
+	* config/sparc/sparc.md (divdf3_fix): Add NOP and adjust length
+        to prevent b2bst errata sequence.
+        (sqrtdf2_fix): Likewise.
+
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.c (fpop_reg_depend_p): New function.
