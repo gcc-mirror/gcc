@@ -1,3 +1,9 @@
+2017-11-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82760 - memory corruption with aligned new.
+	* call.c (build_operator_new_call): Update *args if we add the
+	align_arg.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81275
