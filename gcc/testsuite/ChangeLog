@@ -1,3 +1,11 @@
+2017-11-29  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/riscv.exp: New.
+	* gcc.target/riscv/zero-extend-1.c: New.
+	* gcc.target/riscv/zero-extend-2.c: New.
+	* gcc.target/riscv/zero-extend-3.c: New.
+	* gcc.target/riscv/zero-extend-4.c: New.
+
 2017-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/cpp1y/static_assert3.C: New test case.
