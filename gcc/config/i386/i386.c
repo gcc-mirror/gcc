@@ -33828,6 +33828,13 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8DI_V8HI_UQI:
     case V8SI_FTYPE_V8DI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI:
+    case V16SI_FTYPE_V16SI_V16SI_V16SI:
+    case V8DI_FTYPE_V8DI_V8DI_V8DI:
+    case V32HI_FTYPE_V32HI_V32HI_V32HI:
+    case V2DI_FTYPE_V2DI_V2DI_V2DI:
+    case V16HI_FTYPE_V16HI_V16HI_V16HI:
+    case V8SI_FTYPE_V8SI_V8SI_V8SI:
+    case V8HI_FTYPE_V8HI_V8HI_V8HI:
       nargs = 3;
       break;
     case V32QI_FTYPE_V32QI_V32QI_INT:
@@ -33989,6 +33996,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case USI_FTYPE_V32HI_V32HI_INT_USI:
     case UHI_FTYPE_V16HI_V16HI_INT_UHI:
     case UQI_FTYPE_V8HI_V8HI_INT_UQI:
+    case V32HI_FTYPE_V32HI_V32HI_V32HI_INT:
+    case V16HI_FTYPE_V16HI_V16HI_V16HI_INT:
+    case V8HI_FTYPE_V8HI_V8HI_V8HI_INT:
+    case V8SI_FTYPE_V8SI_V8SI_V8SI_INT:
+    case V4DI_FTYPE_V4DI_V4DI_V4DI_INT:
+    case V8DI_FTYPE_V8DI_V8DI_V8DI_INT:
+    case V16SI_FTYPE_V16SI_V16SI_V16SI_INT:
+    case V2DI_FTYPE_V2DI_V2DI_V2DI_INT:
+    case V4SI_FTYPE_V4SI_V4SI_V4SI_INT:
       nargs = 4;
       mask_pos = 1;
       nargs_constant = 1;

@@ -1,3 +1,27 @@
+2017-11-29  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/avx512vbmi2intrin.h (_mm512_shrdv_epi16,
+	_mm512_mask_shrdv_epi16, _mm512_maskz_shrdv_epi16, _mm512_shrdv_epi32,
+	_mm512_mask_shrdv_epi32, _mm512_maskz_shrdv_epi32, _mm512_shrdv_epi64,
+	_mm512_mask_shrdv_epi64, _mm512_maskz_shrdv_epi64): New intrinsics.
+	* config/i386/avx512vbmi2vlintrin.h (_mm256_shrdv_epi16,
+	_mm256_mask_shrdv_epi16, _mm256_maskz_shrdv_epi16, _mm256_shrdv_epi32,
+	_mm256_mask_shrdv_epi32, _mm256_maskz_shrdv_epi32, _mm256_shrdv_epi64,
+	_mm256_mask_shrdv_epi64, _mm256_maskz_shrdv_epi64, _mm_shrdv_epi16,
+	_mm_mask_shrdv_epi16, _mm_maskz_shrdv_epi16, _mm_shrdv_epi32,
+	_mm_mask_shrdv_epi32, _mm_maskz_shrdv_epi32, _mm_shrdv_epi64,
+	_mm_mask_shrdv_epi64, _mm_maskz_shrdv_epi64): Ditto.
+	* config/i386/i386-builtin-types.def (V32HI_FTYPE_V32HI_V32HI_V32HI,
+	V32HI_FTYPE_V32HI_V32HI_V32HI_INT, V16HI_FTYPE_V16HI_V16HI_V16HI_INT,
+	V8HI_FTYPE_V8HI_V8HI_V8HI_INT, V8SI_FTYPE_V8SI_V8SI_V8SI_INT,
+	V4SI_FTYPE_V4SI_V4SI_V4SI_INT, V8DI_FTYPE_V8DI_V8DI_V8DI,
+	V8DI_FTYPE_V8DI_V8DI_V8DI_INT, V4DI_FTYPE_V4DI_V4DI_V4DI_INT,
+	V16SI_FTYPE_V16SI_V16SI_V16SI, V16SI_FTYPE_V16SI_V16SI_V16SI_INT,
+	V2DI_FTYPE_V2DI_V2DI_V2DI_INT): New types.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle new types.
+	* config/i386/sse.md (vpshrdv_<mode>, vpshrdv_<mode>_mask,
+	vpshrdv_<mode>_maskz, vpshrdv_<mode>_maskz_1): New pattern.
+
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Treat the
