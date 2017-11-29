@@ -1429,6 +1429,8 @@ riscv_extend_cost (rtx op, bool unsigned_p)
 
 /* Implement TARGET_RTX_COSTS.  */
 
+#define SINGLE_SHIFT_COST 1
+
 static bool
 riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UNUSED,
 		 int *total, bool speed)
@@ -1489,10 +1491,21 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       *total = riscv_binary_cost (x, 1, 2);
       return false;
 
+    case ZERO_EXTRACT:
+      /* This is an SImode shift.  */
+      if (outer_code == SET && (INTVAL (XEXP (x, 2)) > 0)
+	  && (INTVAL (XEXP (x, 1)) + INTVAL (XEXP (x, 2)) == 32))
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      return false;
+
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
-      *total = riscv_binary_cost (x, 1, CONSTANT_P (XEXP (x, 1)) ? 4 : 9);
+      *total = riscv_binary_cost (x, SINGLE_SHIFT_COST,
+				  CONSTANT_P (XEXP (x, 1)) ? 4 : 9);
       return false;
 
     case ABS:
@@ -1504,6 +1517,14 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return true;
 
     case LT:
+      /* This is an SImode shift.  */
+      if (outer_code == SET && GET_MODE (x) == DImode
+	  && GET_MODE (XEXP (x, 0)) == SImode)
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      /* Fall through.  */
     case LTU:
     case LE:
     case LEU:
@@ -1601,8 +1622,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	*total = COSTS_N_INSNS (1);
       return false;
 
-    case SIGN_EXTEND:
     case ZERO_EXTEND:
+      /* This is an SImode shift.  */
+      if (GET_CODE (XEXP (x, 0)) == LSHIFTRT)
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      /* Fall through.  */
+    case SIGN_EXTEND:
       *total = riscv_extend_cost (XEXP (x, 0), GET_CODE (x) == ZERO_EXTEND);
       return false;
 
