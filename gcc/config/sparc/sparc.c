@@ -970,6 +970,22 @@ fpop_insn_p (rtx_insn *insn)
     }
 }
 
+/* True if INSN is an atomic instruction.  */
+
+static bool
+atomic_insn_for_leon3_p (rtx_insn *insn)
+{
+  switch (INSN_CODE (insn))
+    {
+    case CODE_FOR_swapsi:
+    case CODE_FOR_ldstub:
+    case CODE_FOR_atomic_compare_and_swap_leon3_1:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* We use a machine specific pass to enable workarounds for errata.
 
    We need to have the (essentially) final form of the insn stream in order
@@ -1022,6 +1038,31 @@ sparc_do_work_around_errata (void)
 		  || ((JUMP_P (target)
 		       && get_attr_branch_type (target) == BRANCH_TYPE_FCC))))
 	    emit_insn_before (gen_nop (), target);
+	}
+
+      /* Insert a NOP between load instruction and atomic
+	 instruction.  Insert a NOP at branch target if load
+	 in delay slot and atomic instruction at branch target.  */
+      if (sparc_fix_ut700
+	  && NONJUMP_INSN_P (insn)
+	  && (set = single_set (insn)) != NULL_RTX
+	  && MEM_P (SET_SRC (set))
+	  && REG_P (SET_DEST (set)))
+	{
+	  if (jump)
+	    {
+	      rtx_insn *target = next_active_insn (JUMP_LABEL_AS_INSN (jump));
+	      if (target
+		  && atomic_insn_for_leon3_p (target))
+		emit_insn_before (gen_nop (), target);
+	    }
+
+	  next = next_active_insn (insn);
+	  if (!next)
+	    break;
+
+	  if (atomic_insn_for_leon3_p (next))
+	    insert_nop = true;
 	}
 
       /* Look for either of these two sequences:
@@ -1352,7 +1393,7 @@ public:
   virtual bool gate (function *)
     {
       return sparc_fix_at697f || sparc_fix_ut699 || sparc_fix_b2bst
-	  || sparc_fix_gr712rc;
+	  || sparc_fix_gr712rc || sparc_fix_ut700;
     }
 
   virtual unsigned int execute (function *)
