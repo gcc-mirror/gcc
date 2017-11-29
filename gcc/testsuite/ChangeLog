@@ -1,3 +1,8 @@
+2017-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82293
+	* g++.dg/cpp0x/lambda/lambda-ice24.C: New.
+
 2017-11-29  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-ld-char.c: Add lxv to expected output.
