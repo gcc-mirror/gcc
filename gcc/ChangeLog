@@ -1,5 +1,12 @@
 2017-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/83156
+	PR rtl-optimization/82621
+	* combine.c (try_combine): Don't split an I2 if one of the dests is
+	set again before I3.  Allow unused dests.
+
+2017-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (*add<mode>3_carry_in_internal2): New.
 
 2017-11-29  Vladimir Makarov  <vmakarov@redhat.com>
