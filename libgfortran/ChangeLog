@@ -1,7 +1,22 @@
+2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* io/inquire.c (inquire_via_unit): Set recl to -1 for unconnected
+	units.
+	* io/io.h (default_recl): New variable.
+	* io/open.c (new_unit): Set recl to default_recl for sequential,
+	-2 for stream access.
+	* io/transfer.c (read_block_form): Test against default_recl
+	instead of DEFAULT_RECL.
+	(write_block): Likewise.
+	* io/unit.c (init_units): Calculate max_offset, default_recl.
+	* libgfortran.h (DEFAULT_RECL): Remove.
+	* runtime/environ.c: Remove GFORTRAN_DEFAULT_RECL.
+
 2017-11-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/83168
-	* io/write.c (select_string): Bump size by one to avoid 
+	* io/write.c (select_string): Bump size by one to avoid
 	overrun.
 
 2017-11-24  Janne Blomqvist  <jb@gcc.gnu.org>
