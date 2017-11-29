@@ -1,3 +1,9 @@
+2017-11-29  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83817
+	* tree.c (build_complex_type): Fix canonicalization.  Only fill in
+	type if it is new.
+
 2017-11-29  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Add new

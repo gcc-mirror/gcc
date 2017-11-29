@@ -8083,65 +8083,66 @@ build_offset_type (tree basetype, tree type)
 tree
 build_complex_type (tree component_type, bool named)
 {
-  tree t;
-
   gcc_assert (INTEGRAL_TYPE_P (component_type)
 	      || SCALAR_FLOAT_TYPE_P (component_type)
 	      || FIXED_POINT_TYPE_P (component_type));
 
   /* Make a node of the sort we want.  */
-  t = make_node (COMPLEX_TYPE);
+  tree probe = make_node (COMPLEX_TYPE);
 
-  TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
+  TREE_TYPE (probe) = TYPE_MAIN_VARIANT (component_type);
 
   /* If we already have such a type, use the old one.  */
-  hashval_t hash = type_hash_canon_hash (t);
-  t = type_hash_canon (hash, t);
+  hashval_t hash = type_hash_canon_hash (probe);
+  tree t = type_hash_canon (hash, probe);
 
-  if (!COMPLETE_TYPE_P (t))
-    layout_type (t);
-
-  if (TYPE_CANONICAL (t) == t)
+  if (t == probe)
     {
-      if (TYPE_STRUCTURAL_EQUALITY_P (component_type))
+      /* We created a new type.  The hash insertion will have laid
+	 out the type.  We need to check the canonicalization and
+	 maybe set the name.  */
+      gcc_checking_assert (COMPLETE_TYPE_P (t)
+			   && !TYPE_NAME (t)
+			   && TYPE_CANONICAL (t) == t);
+
+      if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (t)))
 	SET_TYPE_STRUCTURAL_EQUALITY (t);
-      else if (TYPE_CANONICAL (component_type) != component_type)
+      else if (TYPE_CANONICAL (TREE_TYPE (t)) != TREE_TYPE (t))
 	TYPE_CANONICAL (t)
-	  = build_complex_type (TYPE_CANONICAL (component_type), named);
-    }
+	  = build_complex_type (TYPE_CANONICAL (TREE_TYPE (t)), named);
 
-  /* We need to create a name, since complex is a fundamental type.  */
-  if (!TYPE_NAME (t) && named)
-    {
-      const char *name;
-      if (component_type == char_type_node)
-	name = "complex char";
-      else if (component_type == signed_char_type_node)
-	name = "complex signed char";
-      else if (component_type == unsigned_char_type_node)
-	name = "complex unsigned char";
-      else if (component_type == short_integer_type_node)
-	name = "complex short int";
-      else if (component_type == short_unsigned_type_node)
-	name = "complex short unsigned int";
-      else if (component_type == integer_type_node)
-	name = "complex int";
-      else if (component_type == unsigned_type_node)
-	name = "complex unsigned int";
-      else if (component_type == long_integer_type_node)
-	name = "complex long int";
-      else if (component_type == long_unsigned_type_node)
-	name = "complex long unsigned int";
-      else if (component_type == long_long_integer_type_node)
-	name = "complex long long int";
-      else if (component_type == long_long_unsigned_type_node)
-	name = "complex long long unsigned int";
-      else
-	name = 0;
+      /* We need to create a name, since complex is a fundamental type.  */
+      if (named)
+	{
+	  const char *name = NULL;
 
-      if (name != 0)
-	TYPE_NAME (t) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
-	    			    get_identifier (name), t);
+	  if (TREE_TYPE (t) == char_type_node)
+	    name = "complex char";
+	  else if (TREE_TYPE (t) == signed_char_type_node)
+	    name = "complex signed char";
+	  else if (TREE_TYPE (t) == unsigned_char_type_node)
+	    name = "complex unsigned char";
+	  else if (TREE_TYPE (t) == short_integer_type_node)
+	    name = "complex short int";
+	  else if (TREE_TYPE (t) == short_unsigned_type_node)
+	    name = "complex short unsigned int";
+	  else if (TREE_TYPE (t) == integer_type_node)
+	    name = "complex int";
+	  else if (TREE_TYPE (t) == unsigned_type_node)
+	    name = "complex unsigned int";
+	  else if (TREE_TYPE (t) == long_integer_type_node)
+	    name = "complex long int";
+	  else if (TREE_TYPE (t) == long_unsigned_type_node)
+	    name = "complex long unsigned int";
+	  else if (TREE_TYPE (t) == long_long_integer_type_node)
+	    name = "complex long long int";
+	  else if (TREE_TYPE (t) == long_long_unsigned_type_node)
+	    name = "complex long long unsigned int";
+
+	  if (name != NULL)
+	    TYPE_NAME (t) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+					get_identifier (name), t);
+	}
     }
 
   return build_qualified_type (t, TYPE_QUALS (component_type));
