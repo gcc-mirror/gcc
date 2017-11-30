@@ -1,3 +1,10 @@
+2017-11-30  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-abs-char-fwrapv.c: Add xxspltib insn
+	to expected output.
+	* gcc.target/powerpc/fold-vec-abs-char.c: Add xxspltib insn
+	to expected output.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83210
