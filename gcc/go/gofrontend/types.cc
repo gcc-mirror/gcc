@@ -7717,10 +7717,10 @@ Map_type::backend_zero_value(Gogo* gogo)
   std::string asm_name(go_selectively_encode_id(zname));
   Bvariable* zvar =
       gogo->backend()->implicit_variable(zname, asm_name,
-                                         barray_type, false, true, true,
-				       Map_type::zero_value_align);
+                                         barray_type, false, false, true,
+					 Map_type::zero_value_align);
   gogo->backend()->implicit_variable_set_init(zvar, zname, barray_type,
-					      false, true, true, NULL);
+					      false, false, true, NULL);
   return zvar;
 }
 
