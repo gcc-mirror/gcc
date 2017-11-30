@@ -1,3 +1,65 @@
+2017-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR libgcc/83112
+	* config/rs6000/float128-ifunc.c (__addkf3_resolve): Use the
+	correct type for all ifunc resolvers to silence -Wattribute-alias
+	warnings.  Eliminate the forward declaration of the resolver
+	functions which is no longer needed.
+	(__subkf3_resolve): Likewise.
+	(__mulkf3_resolve): Likewise.
+	(__divkf3_resolve): Likewise.
+	(__negkf2_resolve): Likewise.
+	(__eqkf2_resolve): Likewise.
+	(__nekf2_resolve): Likewise.
+	(__gekf2_resolve): Likewise.
+	(__gtkf2_resolve): Likewise.
+	(__lekf2_resolve): Likewise.
+	(__ltkf2_resolve): Likewise.
+	(__unordkf2_resolve): Likewise.
+	(__extendsfkf2_resolve): Likewise.
+	(__extenddfkf2_resolve): Likewise.
+	(__trunckfsf2_resolve): Likewise.
+	(__trunckfdf2_resolve): Likewise.
+	(__fixkfsi_resolve): Likewise.
+	(__fixkfdi_resolve): Likewise.
+	(__fixunskfsi_resolve): Likewise.
+	(__fixunskfdi_resolve): Likewise.
+	(__floatsikf_resolve): Likewise.
+	(__floatdikf_resolve): Likewise.
+	(__floatunsikf_resolve): Likewise.
+	(__floatundikf_resolve): Likewise.
+	(__extendkftf2_resolve): Likewise.
+	(__trunctfkf2_resolve): Likewise.
+
+	PR libgcc/83103
+	* config/rs6000/quad-float128.h (TF): Don't define if long double
+	is IEEE 128-bit floating point.
+	(TCtype): Define as either TCmode or KCmode, depending on whether
+	long double is IEEE 128-bit floating point.
+	(__mulkc3_sw): Add declarations for software/hardware versions of
+	complex multiply/divide.
+	(__divkc3_sw): Likewise.
+	(__mulkc3_hw): Likewise.
+	(__divkc3_hw): Likewise.
+	* config/rs6000/_mulkc3.c (_mulkc3): If we are building ifunc
+	handlers to switch between using software emulation and hardware
+	float128 instructions, build the complex multiply/divide functions
+	for both software and hardware support.
+	* config/rs6000/_divkc3.c (_divkc3): Likewise.
+	* config/rs6000/float128-ifunc.c (__mulkc3_resolve): Likewise.
+	(__divkc3_resolve): Likewise.
+	(__mulkc3): Likewise.
+	(__divkc3): Likewise.
+	* config/rs6000/t-float128-hw (fp128_hardfp_src): Likewise.
+	(fp128_hw_src): Likewise.
+	(fp128_hw_static_obj): Likewise.
+	(fp128_hw_shared_obj): Likewise.
+	(_mulkc3-hw.c): Create _mulkc3-hw.c and _divkc3-hw.c from
+	_mulkc3.c and _divkc3.c, changing the function name.
+	(_divkc3-hw.c): Likewise.
+	* config/rs6000/t-float128 (clean-float128): Delete _mulkc3-hw.c
+	and _divkc3-hw.c.
+
 2017-11-26  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/cpuinfo.c (get_intel_cpu): Handle cannonlake.
