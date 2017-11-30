@@ -1,3 +1,20 @@
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* spellcheck-tree.c (test_find_closest_identifier): Use ; instead
+	of ;;.
+	* gengtype-state.c (read_state_pair): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_string_compare): Likewise.
+	* sel-sched-dump.c (dump_insn_rtx_1): Likewise.
+	* ipa-cp.c (intersect_aggregates_with_edge): Likewise.
+	* ifcvt.c (noce_try_store_flag_constants): Likewise.
+	* tree-ssa-ccp.c (ccp_finalize): Likewise.
+	* omp-grid.c (grid_process_kernel_body_copy): Likewise.
+	* builtins.c (fold_builtin_3): Likewise.
+	* graphite-scop-detection.c
+	(scop_detection::stmt_has_simple_data_refs_p): Likewise.
+	* hsa-gen.c (hsa_function_representation::hsa_function_representation):
+	Likewise.
+
 2017-12-01  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/81697

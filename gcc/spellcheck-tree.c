@@ -123,7 +123,7 @@ test_find_closest_identifier ()
   ASSERT_EQ (apple, find_closest_identifier (get_identifier ("app"),
 					     &candidates));
   ASSERT_EQ (banana, find_closest_identifier (get_identifier ("banyan"),
-					      &candidates));;
+					      &candidates));
   ASSERT_EQ (cherry, find_closest_identifier (get_identifier ("berry"),
 					      &candidates));
   ASSERT_EQ (NULL,

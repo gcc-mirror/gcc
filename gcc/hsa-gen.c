@@ -211,7 +211,7 @@ hsa_function_representation::hsa_function_representation
     m_seen_error (false), m_temp_symbol_count (0), m_ssa_map (),
     m_modified_cfg (modified_cfg)
 {
-  int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;;
+  int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;
   m_local_symbols = new hash_table <hsa_noop_symbol_hasher> (sym_init_len);
   m_ssa_map.safe_grow_cleared (ssa_names_count);
 }

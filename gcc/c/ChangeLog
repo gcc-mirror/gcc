@@ -1,3 +1,7 @@
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression): Use ; instead of ;;.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81275

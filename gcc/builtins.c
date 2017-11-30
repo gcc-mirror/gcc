@@ -9088,7 +9088,7 @@ fold_builtin_3 (location_t loc, tree fndecl,
     break;
 
     case BUILT_IN_MEMCMP:
-      return fold_builtin_memcmp (loc, arg0, arg1, arg2);;
+      return fold_builtin_memcmp (loc, arg0, arg1, arg2);
 
     case BUILT_IN_EXPECT:
       return fold_builtin_expect (loc, arg0, arg1, arg2);

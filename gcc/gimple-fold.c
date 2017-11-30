@@ -2145,7 +2145,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 	    r = strncmp (p1, p2, length);
 	    if (r == 0)
 	      known_result = true;
-	    break;;
+	    break;
 	  }
 	default:
 	  gcc_unreachable ();

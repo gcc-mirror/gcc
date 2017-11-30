@@ -989,7 +989,7 @@ ccp_finalize (bool nonzero_p)
 
   free (const_val);
   const_val = NULL;
-  return something_changed;;
+  return something_changed;
 }
 
 
