@@ -1358,17 +1358,6 @@ enum stv_conv {
 extern enum stv_conv scalar_to_vector (location_t loc, enum tree_code code,
 				       tree op0, tree op1, bool);
 
-/* This structure holds all the scalar values and its appropriate variable 
-   replacment.  It is mainly used by the function that pulls all the invariant
-   parts that should be executed only once, which comes with array notation 
-   expressions.  */
-struct inv_list
-{
-  vec<tree, va_gc> *list_values;
-  vec<tree, va_gc> *replacement;
-  vec<enum tree_code, va_gc> *additional_tcodes; 
-};
-
 extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
 

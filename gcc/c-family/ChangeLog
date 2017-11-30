@@ -1,3 +1,7 @@
+2017-11-30  Julia Koval  <julia.koval@intel.com>
+
+	* c-common.h (inv_list): Remove.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81275
