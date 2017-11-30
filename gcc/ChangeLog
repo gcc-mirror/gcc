@@ -1,3 +1,9 @@
+2017-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_cannot_substitue_mem_equiv_p): New
+	function.
+	(TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P): Define.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83210
