@@ -2934,6 +2934,19 @@ gfc_resolve_image_status (gfc_expr *f, gfc_expr *image ATTRIBUTE_UNUSED,
 }
 
 
+/* Resolve get_team ().  */
+
+void
+gfc_resolve_get_team (gfc_expr *f, gfc_expr *level ATTRIBUTE_UNUSED)
+{
+  static char get_team[] = "_gfortran_caf_get_team";
+  f->rank = 0;
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = get_team;
+}
+
+
 /* Resolve image_index (...).  */
 
 void
