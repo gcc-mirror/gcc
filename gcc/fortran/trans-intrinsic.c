@@ -1846,7 +1846,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 
 static tree
 conv_caf_send (gfc_code *code) {
-  gfc_expr *lhs_expr, *rhs_expr, *tmp_stat;
+  gfc_expr *lhs_expr, *rhs_expr, *tmp_stat, *tmp_team;
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
@@ -2078,6 +2078,18 @@ conv_caf_send (gfc_code *code) {
       gfc_add_block_to_block (&block, &stat_se.post);
     }
 
+  tmp_team = gfc_find_team_co (lhs_expr);
+
+  if (tmp_team)
+    {
+      gfc_se team_se;
+      gfc_init_se (&team_se, NULL);
+      gfc_conv_expr_reference (&team_se, tmp_team);
+      dst_team = team_se.expr;
+      gfc_add_block_to_block (&block, &team_se.pre);
+      gfc_add_block_to_block (&block, &team_se.post);
+    }
+
   if (!gfc_is_coindexed (rhs_expr))
     {
       if (lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
@@ -2093,10 +2105,10 @@ conv_caf_send (gfc_code *code) {
 				     may_require_tmp, dst_realloc, src_stat);
 	  }
       else
-	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 10,
+	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 11,
 				   token, offset, image_index, lhs_se.expr, vec,
 				   rhs_se.expr, lhs_kind, rhs_kind,
-				   may_require_tmp, src_stat);
+				   may_require_tmp, src_stat, dst_team);
     }
   else
     {
@@ -9544,6 +9556,7 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
 
     case GFC_ISYM_CSHIFT:
     case GFC_ISYM_EOSHIFT:
+    case GFC_ISYM_GET_TEAM:
     case GFC_ISYM_FAILED_IMAGES:
     case GFC_ISYM_STOPPED_IMAGES:
     case GFC_ISYM_PACK:
