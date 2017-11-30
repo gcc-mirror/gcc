@@ -1,3 +1,7 @@
+2017-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
 2017-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/20_util/duration/literals/range.cc: Update expected
