@@ -1,3 +1,10 @@
+2017-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83226
+	* include/bits/node_handle.h (_Node_handle::__pointer): Avoid forming
+	pointer-to-reference types.
+	* testsuite/23_containers/map/modifiers/insert/83226.cc: New test.
+
 2017-11-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
