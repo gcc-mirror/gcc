@@ -149,7 +149,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr _Tp*
     __to_address(_Tp* __ptr) noexcept
-    { return __ptr; }
+    {
+      static_assert(!std::is_function<_Tp>::value, "not a function pointer");
+      return __ptr;
+    }
 
 #if __cplusplus <= 201703L
   template<typename _Ptr>
@@ -177,10 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     constexpr _Tp*
     to_address(_Tp* __ptr) noexcept
-    {
-      static_assert(!std::is_function_v<_Tp>, "not a pointer to function");
-      return __ptr;
-    }
+    { return std::__to_address(__ptr); }
 
   /**
    * @brief Obtain address referenced by a pointer to an object
