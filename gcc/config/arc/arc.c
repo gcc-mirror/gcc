@@ -10805,11 +10805,23 @@ arc_use_anchors_for_symbol_p (const_rtx symbol)
   return default_use_anchors_for_symbol_p (symbol);
 }
 
+/* Return true if SUBST can't safely replace its equivalent during RA.  */
+static bool
+arc_cannot_substitute_mem_equiv_p (rtx)
+{
+  /* If SUBST is mem[base+index], the address may not fit ISA,
+     thus return true.  */
+  return true;
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
+#define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P arc_cannot_substitute_mem_equiv_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
