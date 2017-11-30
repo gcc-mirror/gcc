@@ -7501,6 +7501,9 @@ hwloop_optimize (hwloop_info loop)
   /* Insert the loop end label before the last instruction of the
      loop.  */
   emit_label_after (end_label, loop->last_insn);
+  /* Make sure we mark the begining and end label as used.  */
+  LABEL_NUSES (loop->end_label)++;
+  LABEL_NUSES (loop->start_label)++;
 
   return true;
 }
