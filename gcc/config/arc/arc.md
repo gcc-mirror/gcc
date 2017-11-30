@@ -471,6 +471,8 @@
 	     (symbol_ref "(arc_hazard (prev_active_insn (insn), insn)
 			   + arc_hazard (insn, next_active_insn (insn)))"))
 	 (const_string "false")
+	 (match_test "find_reg_note (insn, REG_SAVE_NOTE, GEN_INT (2))")
+	 (const_string "false")
 	 (eq_attr "iscompact" "maybe") (const_string "true")
 	 ]
 
@@ -497,6 +499,8 @@
 (define_attr "cond_delay_insn" "no,yes"
   (cond [(eq_attr "cond" "!canuse") (const_string "no")
 	 (eq_attr "type" "call,branch,uncond_branch,jump,brcc")
+	 (const_string "no")
+	 (match_test "find_reg_note (insn, REG_SAVE_NOTE, GEN_INT (2))")
 	 (const_string "no")
 	 (eq_attr "length" "2,4") (const_string "yes")]
 	(const_string "no")))
