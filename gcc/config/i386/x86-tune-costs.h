@@ -2243,11 +2243,11 @@ struct processor_costs generic_cost = {
    COSTS_N_INSNS (4),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
    COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
+   COSTS_N_INSNS (4)},			/*			      other */
   0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
+  {COSTS_N_INSNS (16),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (22),			/*			    HI */
+   COSTS_N_INSNS (30),			/*			    SI */
    COSTS_N_INSNS (74),			/*			    DI */
    COSTS_N_INSNS (74)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
@@ -2275,13 +2275,13 @@ struct processor_costs generic_cost = {
   2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
   {6, 6, 6, 10, 15},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 10, 15, 20},			/* cost of unaligned loads.  */
+  {6, 6, 6, 10, 15},			/* cost of unaligned loads.  */
   {6, 6, 6, 10, 15},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 10, 15, 20},			/* cost of unaligned storess.  */
-  20, 20,				/* SSE->integer and integer->SSE moves */
-  6, 6,					/* Gather load static, per_elt.  */
-  6, 6,					/* Gather store static, per_elt.  */
+  {6, 6, 6, 10, 15},			/* cost of unaligned storess.  */
+  6, 6,					/* SSE->integer and integer->SSE moves */
+  18, 6,				/* Gather load static, per_elt.  */
+  18, 6,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -2290,11 +2290,11 @@ struct processor_costs generic_cost = {
      value is increased to perhaps more appropriate value of 5.  */
   3,					/* Branch cost */
   COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (3),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (20),			/* cost of FSQRT instruction.  */
 
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
@@ -2306,7 +2306,7 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (32),			/* cost of DIVSD instruction.  */
   COSTS_N_INSNS (30),			/* cost of SQRTSS instruction.  */
   COSTS_N_INSNS (58),			/* cost of SQRTSD instruction.  */
-  1, 2, 1, 1,				/* reassoc int, fp, vec_int, vec_fp.  */
+  1, 4, 3, 3,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */

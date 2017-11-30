@@ -1,3 +1,19 @@
+2017-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* gcc.target/i386/l_fma_double_1.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_double_2.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_double_3.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_double_4.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_double_5.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_double_6.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_float_1.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_float_2.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_float_3.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_float_4.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_float_5.c: Update count of fma instructions.
+	* gcc.target/i386/l_fma_float_6.c: Update count of fma instructions.
+
 2017-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83202

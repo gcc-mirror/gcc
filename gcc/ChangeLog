@@ -1,3 +1,8 @@
+2017-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* x86-tnue-costs.h (generic_cost): Revise for modern CPUs
+
 2017-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83202
