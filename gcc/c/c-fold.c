@@ -167,7 +167,10 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       /* Except for variables which we can optimize to its initializer.  */
       if (VAR_P (expr) && !lval && (optimize || in_init))
 	{
-	  ret = decl_constant_value (expr);
+	  if (in_init)
+	    ret = decl_constant_value_1 (expr);
+	  else
+	    ret = decl_constant_value (expr);
 	  /* Avoid unwanted tree sharing between the initializer and current
 	     function's body where the tree can be modified e.g. by the
 	     gimplifier.  */

@@ -1,3 +1,12 @@
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83222
+	* c-tree.h (decl_constant_value_1): Declare.
+	* c-typeck.c (decl_constant_value_1): New function.
+	(decl_constant_value): Use it.
+	* c-fold.c (c_fully_fold_internal): If in_init, use
+	decl_constant_value_1 instead of decl_constant_value.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_postfix_expression): Use ; instead of ;;.
