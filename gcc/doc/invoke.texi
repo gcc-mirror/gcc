@@ -979,7 +979,6 @@ See RS/6000 and PowerPC Options.
 
 @emph{RISC-V Options}
 @gccoptlist{-mbranch-cost=@var{N-instruction} @gol
--mmemcpy  -mno-memcpy @gol
 -mplt  -mno-plt @gol
 -mabi=@var{ABI-string} @gol
 -mfdiv  -mno-fdiv @gol
@@ -21757,18 +21756,12 @@ These command-line options are defined for RISC-V targets:
 @opindex mbranch-cost
 Set the cost of branches to roughly @var{n} instructions.
 
-@item -mmemcpy
-@itemx -mno-memcpy
-@opindex mmemcpy
-Don't optimize block moves.
-
 @item -mplt
 @itemx -mno-plt
 @opindex plt
-When generating PIC code, allow the use of PLTs. Ignored for non-PIC.
+When generating PIC code, do or don't allow the use of PLTs. Ignored for
+non-PIC.  The default is @option{-mplt}.
 
-@item -mabi=@var{ABI-string}
-@opindex mabi
 @item -mabi=@var{ABI-string}
 @opindex mabi
 Specify integer and floating-point calling convention.  @var{ABI-string}
@@ -21793,13 +21786,16 @@ registers are only 32 bits wide.
 @item -mfdiv
 @itemx -mno-fdiv
 @opindex mfdiv
-Use hardware floating-point divide and square root instructions.  This requires
-the F or D extensions for floating-point registers.
+Do or don't use hardware floating-point divide and square root instructions.
+This requires the F or D extensions for floating-point registers.  The default
+is to use them if the specified architecture has these instructions.
 
 @item -mdiv
 @itemx -mno-div
 @opindex mdiv
-Use hardware instructions for integer division.  This requires the M extension.
+Do or don't use hardware instructions for integer division.  This requires the
+M extension.  The default is to use them if the specified architecture has
+these instructions.
 
 @item -march=@var{ISA-string}
 @opindex march
@@ -21819,12 +21815,16 @@ Put global and static data smaller than @var{n} bytes into a special section
 @item -msave-restore
 @itemx -mno-save-restore
 @opindex msave-restore
-Use smaller but slower prologue and epilogue code.
+Do or don't use smaller but slower prologue and epilogue code that uses
+library function calls.  The default is to use fast inline prologues and
+epilogues.
 
 @item -mstrict-align
 @itemx -mno-strict-align
 @opindex mstrict-align
-Do not generate unaligned memory accesses.
+Do not or do generate unaligned memory accesses.  The default is set depending
+on whether the processor we are optimizing for supports fast unaligned access
+or not.
 
 @item -mcmodel=medlow
 @opindex mcmodel=medlow
@@ -21838,6 +21838,12 @@ statically or dynamically linked. This is the default code model.
 Generate code for the medium-any code model. The program and its statically
 defined symbols must be within any single 2 GiB address range. Programs can be
 statically or dynamically linked.
+
+@item -mexplicit-relocs
+@itemx -mno-exlicit-relocs
+Use or do not use assembler relocation operators when dealing with symbolic
+addresses.  The alternative is to use assembler macros instead, which may
+limit optimization.
 
 @end table
 

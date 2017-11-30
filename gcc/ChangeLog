@@ -1,3 +1,10 @@
+2017-11-30  Jim Wilson  <jimw@sifive.com>
+
+	* doc/invoke.texi (RISC-V Options): Delete nonexistent -mmemcpy and
+	-mno-memcpy options.  For -mplt, -mfdiv, -mdiv, -msave-restore, and
+	-mstrict-align, add info on default value.  Delete redundant lines for
+	-mabi.  Add missing -mexplicit-relocs docs.
+
 2017-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (trap): New pattern.
