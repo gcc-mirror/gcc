@@ -679,7 +679,7 @@ try_unroll_loop_completely (struct loop *loop,
 			    edge exit, tree niter,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
-			    location_t locus)
+			    location_t locus, bool allow_peel)
 {
   unsigned HOST_WIDE_INT n_unroll = 0;
   bool n_unroll_found = false;
@@ -711,7 +711,8 @@ try_unroll_loop_completely (struct loop *loop,
     exit = NULL;
 
   /* See if we can improve our estimate by using recorded loop bounds.  */
-  if (maxiter >= 0
+  if ((allow_peel || maxiter == 0 || ul == UL_NO_GROWTH)
+      && maxiter >= 0
       && (!n_unroll_found || (unsigned HOST_WIDE_INT)maxiter < n_unroll))
     {
       n_unroll = maxiter;
@@ -1139,7 +1140,7 @@ try_peel_loop (struct loop *loop,
 static bool
 canonicalize_loop_induction_variables (struct loop *loop,
 				       bool create_iv, enum unroll_level ul,
-				       bool try_eval)
+				       bool try_eval, bool allow_peel)
 {
   edge exit = NULL;
   tree niter;
@@ -1207,7 +1208,8 @@ canonicalize_loop_induction_variables (struct loop *loop,
      populates the loop bounds.  */
   modified |= remove_redundant_iv_tests (loop);
 
-  if (try_unroll_loop_completely (loop, exit, niter, ul, maxiter, locus))
+  if (try_unroll_loop_completely (loop, exit, niter, ul, maxiter, locus,
+				  allow_peel))
     return true;
 
   if (create_iv
@@ -1238,7 +1240,7 @@ canonicalize_induction_variables (void)
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,
-							true);
+							true, false);
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -1353,7 +1355,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
     ul = UL_NO_GROWTH;
 
   if (canonicalize_loop_induction_variables
-        (loop, false, ul, !flag_tree_loop_ivcanon))
+        (loop, false, ul, !flag_tree_loop_ivcanon, unroll_outer))
     {
       /* If we'll continue unrolling, we need to propagate constants
 	 within the new basic blocks to fold away induction variable
