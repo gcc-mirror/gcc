@@ -7408,6 +7408,12 @@ hwloop_optimize (hwloop_info loop)
 		 loop->loop_no);
       last_insn = emit_insn_after (gen_nopv (), last_insn);
     }
+
+  /* SAVE_NOTE is used by haifa scheduler.  However, we are after it
+     and we can use it to indicate the last ZOL instruction cannot be
+     part of a delay slot.  */
+  add_reg_note (last_insn, REG_SAVE_NOTE, GEN_INT (2));
+
   loop->last_insn = last_insn;
 
   /* Get the loop iteration register.  */

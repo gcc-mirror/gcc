@@ -1,5 +1,12 @@
 2017-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (hwloop_optimize): Prevent the last ZOL
+	instruction to end into a delay slot.
+	* config/arc/arc.md (cond_delay_insn): Check if the instruction
+	can be placed into a delay slot against reg_note.
+
+2017-11-30  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (hwloop_optimize): Update hw-loop's end/start
 	labels number of usages.
 
