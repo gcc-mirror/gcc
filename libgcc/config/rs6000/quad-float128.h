@@ -30,12 +30,19 @@
 /* quad.h defines the TFtype type by:
    typedef float TFtype __attribute__ ((mode (TF)));
 
-   This define forces it to use KFmode (aka, ieee 128-bit floating point).  */
+   This define forces it to use KFmode (aka, ieee 128-bit floating point).
+   However, when the compiler's default is changed so that long double is IEEE
+   128-bit floating point, we need to go back to using TFmode and TCmode.  */
+#ifndef __LONG_DOUBLE_IEEE128__
 #define TF KF
 
 /* We also need TCtype to represent complex ieee 128-bit float for
    __mulkc3 and __divkc3.  */
 typedef __complex float TCtype __attribute__ ((mode (KC)));
+
+#else
+typedef __complex float TCtype __attribute__ ((mode (TC)));
+#endif
 
 /* Force the use of the VSX instruction set.  */
 #if defined(_ARCH_PPC) && (!defined(__VSX__) || !defined(__FLOAT128__))
@@ -88,6 +95,8 @@ extern TFtype __floatunsikf_sw (USItype_ppc);
 extern TFtype __floatundikf_sw (UDItype_ppc);
 extern IBM128_TYPE __extendkftf2_sw (TFtype);
 extern TFtype __trunctfkf2_sw (IBM128_TYPE);
+extern TCtype __mulkc3_sw (TFtype, TFtype, TFtype, TFtype);
+extern TCtype __divkc3_sw (TFtype, TFtype, TFtype, TFtype);
 
 #ifdef _ARCH_PPC64
 /* We do not provide ifunc resolvers for __fixkfti, __fixunskfti, __floattikf,
@@ -128,6 +137,8 @@ extern TFtype __floatunsikf_hw (USItype_ppc);
 extern TFtype __floatundikf_hw (UDItype_ppc);
 extern IBM128_TYPE __extendkftf2_hw (TFtype);
 extern TFtype __trunctfkf2_hw (IBM128_TYPE);
+extern TCtype __mulkc3_hw (TFtype, TFtype, TFtype, TFtype);
+extern TCtype __divkc3_hw (TFtype, TFtype, TFtype, TFtype);
 
 /* Ifunc function declarations, to automatically switch between software
    emulation and hardware support.  */
