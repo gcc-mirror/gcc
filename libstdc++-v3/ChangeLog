@@ -1,3 +1,9 @@
+2017-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65927
+	* include/bits/locale_facets_nonio.h (__timepunct::_M_am_pm_format):
+	Remove statement with no effect.
+
 2017-11-30  Glen Joseph Fernandes  <glenjofe@gmail.com>
 
 	* include/bits/ptr_traits.h (__to_address, to_address): Move static
