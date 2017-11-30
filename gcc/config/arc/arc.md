@@ -4301,6 +4301,13 @@
 ; use it for lack of inter-procedural branch shortening.
 ; Link-time relaxation would help...
 
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  "!TARGET_ARC600_FAMILY"
+  "trap_s\\t5"
+  [(set_attr "type" "misc")
+   (set_attr "length" "2")])
+
 (define_insn "nop"
   [(const_int 0)]
   ""
