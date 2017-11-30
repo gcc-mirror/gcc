@@ -1,3 +1,7 @@
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto.c (create_subid_section_table): Use ; instead of ;;.
+
 2017-11-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/60336

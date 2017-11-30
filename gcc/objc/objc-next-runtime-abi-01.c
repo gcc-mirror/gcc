@@ -1662,7 +1662,7 @@ generate_dispatch_table (tree chain, const char *name, tree attr)
 {
   tree decl, method_list_template, initlist;
   vec<constructor_elt, va_gc> *v = NULL;
-  int size;;
+  int size;
 
   if (!chain || !name || !(size = list_length (chain)))
     return NULL_TREE;

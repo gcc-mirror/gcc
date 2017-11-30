@@ -1989,7 +1989,7 @@ create_subid_section_table (struct lto_section_slot *ls, splay_tree file_ids,
       file_data = ggc_alloc<lto_file_decl_data> ();
       memset(file_data, 0, sizeof (struct lto_file_decl_data));
       file_data->id = id;
-      file_data->section_hash_table = lto_obj_create_section_hash_table ();;
+      file_data->section_hash_table = lto_obj_create_section_hash_table ();
       lto_splay_tree_insert (file_ids, id, file_data);
 
       /* Maintain list in linker order */

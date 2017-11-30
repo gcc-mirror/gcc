@@ -4192,7 +4192,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	}
       else
 	{
-	  src_plats = ipa_get_parm_lattices (caller_info, src_idx);;
+	  src_plats = ipa_get_parm_lattices (caller_info, src_idx);
 	  /* Currently we do not produce clobber aggregate jump
 	     functions, adjust when we do.  */
 	  gcc_checking_assert (!src_plats->aggs || !jfunc->agg.items);
@@ -4214,7 +4214,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 	FOR_EACH_VEC_ELT (inter, k, item)
 	  {
 	    int l = 0;
-	    bool found = false;;
+	    bool found = false;
 
 	    if (!item->value)
 	      continue;

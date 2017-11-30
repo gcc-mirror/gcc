@@ -1005,7 +1005,7 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  edge nest = scop.entry;;
+  edge nest = scop.entry;
   loop_p loop = loop_containing_stmt (stmt);
   if (!loop_in_sese_p (loop, scop))
     loop = NULL;

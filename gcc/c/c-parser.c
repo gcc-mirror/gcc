@@ -7763,7 +7763,7 @@ c_parser_postfix_expression (c_parser *parser)
 {
   struct c_expr expr, e1;
   struct c_type_name *t1, *t2;
-  location_t loc = c_parser_peek_token (parser)->location;;
+  location_t loc = c_parser_peek_token (parser)->location;
   source_range tok_range = c_parser_peek_token (parser)->get_range ();
   expr.original_code = ERROR_MARK;
   expr.original_type = NULL;

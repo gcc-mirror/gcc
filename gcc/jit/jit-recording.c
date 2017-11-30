@@ -4487,7 +4487,7 @@ recording::memento_of_new_rvalue_from_const <long>::write_reproducer (reproducer
 	       id,
 	       r.get_identifier (get_context ()),
 	       r.get_identifier_as_type (m_type),
-	       m_value + 1);;
+	       m_value + 1);
       return;
     }
 
