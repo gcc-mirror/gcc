@@ -1,3 +1,13 @@
+2017-12-01  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/81697
+	* asan.c (asan_protect_global): Add new ignore_decl_rtl_set_p
+	parameter. Return true if ignore_decl_rtl_set_p is true and other
+	conditions are satisfied.
+	* asan.h (asan_protect_global): Add new parameter.
+	* varasm.c (categorize_decl_for_section): Pass true as second parameter
+	to asan_protect_global calls.
+
 2017-11-30  Jim Wilson  <jimw@sifive.com>
 
 	* doc/invoke.texi (RISC-V Options): Delete nonexistent -mmemcpy and

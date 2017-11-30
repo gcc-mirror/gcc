@@ -6530,6 +6530,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
     }
   else if (VAR_P (decl))
     {
+      tree d = CONST_CAST_TREE (decl);
       if (bss_initializer_p (decl))
 	ret = SECCAT_BSS;
       else if (! TREE_READONLY (decl)
@@ -6550,7 +6551,17 @@ categorize_decl_for_section (const_tree decl, int reloc)
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
       else if (reloc || flag_merge_constants < 2
 	       || ((flag_sanitize & SANITIZE_ADDRESS)
-		   && asan_protect_global (CONST_CAST_TREE (decl))))
+		   /* PR 81697: for architectures that use section anchors we
+		      need to ignore DECL_RTL_SET_P (decl) for string constants
+		      inside this asan_protect_global call because otherwise
+		      we'll wrongly put them into SECCAT_RODATA_MERGE_CONST
+		      section, set DECL_RTL (decl) later on and add DECL to
+		      protected globals via successive asan_protect_global
+		      calls.  In this scenario we'll end up with wrong
+		      alignment of these strings at runtime and possible ASan
+		      false positives.  */
+		   && asan_protect_global (d, use_object_blocks_p ()
+					      && use_blocks_for_decl_p (d))))
 	/* C and C++ don't allow different variables to share the same
 	   location.  -fmerge-all-constants allows even that (at the
 	   expense of not conforming).  */
