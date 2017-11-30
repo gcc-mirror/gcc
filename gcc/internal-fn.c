@@ -1462,6 +1462,49 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   type = build_nonstandard_integer_type (GET_MODE_PRECISION (mode), uns);
   sign = uns ? UNSIGNED : SIGNED;
   icode = optab_handler (uns ? umulv4_optab : mulv4_optab, mode);
+  if (uns
+      && (integer_pow2p (arg0) || integer_pow2p (arg1))
+      && (optimize_insn_for_speed_p () || icode == CODE_FOR_nothing))
+    {
+      /* Optimize unsigned multiplication by power of 2 constant
+	 using 2 shifts, one for result, one to extract the shifted
+	 out bits to see if they are all zero.
+	 Don't do this if optimizing for size and we have umulv4_optab,
+	 in that case assume multiplication will be shorter.
+	 This is heuristics based on the single target that provides
+	 umulv4 right now (i?86/x86_64), if further targets add it, this
+	 might need to be revisited.
+	 Cases where both operands are constant should be folded already
+	 during GIMPLE, and cases where one operand is constant but not
+	 power of 2 are questionable, either the WIDEN_MULT_EXPR case
+	 below can be done without multiplication, just by shifts and adds,
+	 or we'd need to divide the result (and hope it actually doesn't
+	 really divide nor multiply) and compare the result of the division
+	 with the original operand.  */
+      rtx opn0 = op0;
+      rtx opn1 = op1;
+      tree argn0 = arg0;
+      tree argn1 = arg1;
+      if (integer_pow2p (arg0))
+	{
+	  std::swap (opn0, opn1);
+	  std::swap (argn0, argn1);
+	}
+      int cnt = tree_log2 (argn1);
+      if (cnt >= 0 && cnt < GET_MODE_PRECISION (mode))
+	{
+	  rtx upper = const0_rtx;
+	  res = expand_shift (LSHIFT_EXPR, mode, opn0, cnt, NULL_RTX, uns);
+	  if (cnt != 0)
+	    upper = expand_shift (RSHIFT_EXPR, mode, opn0,
+				  GET_MODE_PRECISION (mode) - cnt,
+				  NULL_RTX, uns);
+	  do_compare_rtx_and_jump (upper, const0_rtx, EQ, true, mode,
+				   NULL_RTX, NULL, done_label,
+				   profile_probability::very_likely ());
+	  goto do_error_label;
+	}
+    }
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[4];

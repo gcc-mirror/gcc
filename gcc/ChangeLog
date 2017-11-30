@@ -1,7 +1,13 @@
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83210
+	* internal-fn.c (expand_mul_overflow): Optimize unsigned
+	multiplication by power of 2 constant into two shifts + comparison.
+
 2017-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/81616
-	* x86-tnue-costs.h (generic_cost): Revise for modern CPUs
+	* config/i386/x86-tune-costs.h (generic_cost): Revise for modern CPUs.
 
 2017-11-30  Richard Biener  <rguenther@suse.de>
 
