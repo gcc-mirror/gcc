@@ -1,3 +1,9 @@
+2017-11-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82219 - bogus -Wignored-qualifiers with template
+	* pt.c (tsubst_copy_and_build) [STATIC_CAST_EXPR]: Suppress
+	-Wignored-qualifiers.
+
 2017-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (cp_parser_unary_expression): Generate a location for
