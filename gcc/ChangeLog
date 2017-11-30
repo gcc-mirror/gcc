@@ -1,3 +1,13 @@
+2017-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83202
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Add
+	allow_peel argument and guard peeling.
+	(canonicalize_loop_induction_variables): Likewise.
+	(canonicalize_induction_variables): Pass false.
+	(tree_unroll_loops_completely_1): Pass unroll_outer to disallow
+	peeling from cunrolli.
+
 2017-11-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (try_combine): Print a message to dump file whenever

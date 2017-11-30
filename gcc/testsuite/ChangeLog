@@ -1,3 +1,9 @@
+2017-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83202
+	* gcc.dg/vect/pr83202-1.c: New testcase.
+	* gcc.dg/tree-ssa/pr61743-1.c: Adjust.
+
 2017-11-29  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/riscv.exp: New.
