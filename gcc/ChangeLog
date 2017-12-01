@@ -1,3 +1,10 @@
+2017-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83232
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Fix
+	detection of same access. Instead of breaking the group here
+	do not consider the duplicate.  Add comment explaining real fix.
+
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/md.texi (Insn Splitting): Fix "central flowgraph" typo.
