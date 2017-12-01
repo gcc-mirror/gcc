@@ -1174,7 +1174,7 @@ static bool
 get_pdt_constructor (gfc_expr *expr, gfc_constructor **constr,
 		     gfc_symbol *derived)
 {
-  gfc_constructor *cons;
+  gfc_constructor *cons = NULL;
   gfc_component *comp;
   bool t = true;
 
@@ -14010,6 +14010,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
     {
       for (f = sym->formal; f; f = f->next)
 	{
+	  if (!f->sym)
+	    continue;
 	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
 	  if (c == NULL)
 	    {
@@ -14283,7 +14285,7 @@ resolve_fl_parameter (gfc_symbol *sym)
 }
 
 
-/* Called by resolve_symbol to chack PDTs.  */
+/* Called by resolve_symbol to check PDTs.  */
 
 static void
 resolve_pdt (gfc_symbol* sym)
@@ -14293,11 +14295,18 @@ resolve_pdt (gfc_symbol* sym)
   gfc_component *c;
   bool const_len_exprs = true;
   bool assumed_len_exprs = false;
+  symbol_attribute *attr;
 
   if (sym->ts.type == BT_DERIVED)
-    derived = sym->ts.u.derived;
+    {
+      derived = sym->ts.u.derived;
+      attr = &(sym->attr);
+    }
   else if (sym->ts.type == BT_CLASS)
-    derived = CLASS_DATA (sym)->ts.u.derived;
+    {
+      derived = CLASS_DATA (sym)->ts.u.derived;
+      attr = &(CLASS_DATA (sym)->attr);
+    }
   else
     gcc_unreachable ();
 
@@ -14315,6 +14324,14 @@ resolve_pdt (gfc_symbol* sym)
 	const_len_exprs = false;
       else if (param->spec_type == SPEC_ASSUMED)
 	assumed_len_exprs = true;
+
+      if (param->spec_type == SPEC_DEFERRED
+	  && !attr->allocatable && !attr->pointer)
+	gfc_error ("The object %qs at %L has a deferred LEN "
+		   "parameter %qs and is neither allocatable "
+		   "nor a pointer", sym->name, &sym->declared_at,
+		   param->name);
+
     }
 
   if (!const_len_exprs

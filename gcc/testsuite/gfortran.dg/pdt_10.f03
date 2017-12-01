@@ -10,6 +10,7 @@ program p
    use, intrinsic :: iso_fortran_env, only : CK => character_kinds
    implicit none
    character(kind = 4), parameter :: c = 'a'
+   character(kind = 4), parameter :: hello = "Hello World!"
    type :: pdt_t(k,l)
       integer, kind :: k = CK(1)
       integer, len :: l
@@ -23,8 +24,8 @@ program p
    if (KIND (foo%s) .ne. 1) call abort
    if (len (foo%s) .ne. 12) call abort
 
-   foo_4%s = "Hello World!"
-   if (foo_4%s .ne. "Hello World!") call abort
-   if (KIND (foo_4%s) .ne. 1) call abort
+   foo_4%s = hello
+   if (foo_4%s .ne. hello) call abort
+   if (KIND (foo_4%s) .ne. 4) call abort
    if (len (foo_4%s) .ne. 12) call abort
 end program

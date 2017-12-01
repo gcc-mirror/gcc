@@ -2146,7 +2146,12 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
   ss = gfc_get_array_ss (gfc_ss_terminator, NULL, cm->as->rank,
 			 GFC_SS_COMPONENT);
   ss_array = &ss->info->data.array;
-  ss_array->shape = gfc_get_shape (cm->as->rank);
+
+  if (cm->attr.pdt_array)
+    ss_array->shape = NULL;
+  else
+    ss_array->shape = gfc_get_shape (cm->as->rank);
+
   ss_array->descriptor = expr;
   ss_array->data = gfc_conv_array_data (expr);
   ss_array->offset = gfc_conv_array_offset (expr);
@@ -2155,10 +2160,15 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
       ss_array->start[n] = gfc_conv_array_lbound (expr, n);
       ss_array->stride[n] = gfc_index_one_node;
 
-      mpz_init (ss_array->shape[n]);
-      mpz_sub (ss_array->shape[n], cm->as->upper[n]->value.integer,
-               cm->as->lower[n]->value.integer);
-      mpz_add_ui (ss_array->shape[n], ss_array->shape[n], 1);
+      if (cm->attr.pdt_array)
+	ss_array->end[n] = gfc_conv_array_ubound (expr, n);
+      else
+	{
+	  mpz_init (ss_array->shape[n]);
+	  mpz_sub (ss_array->shape[n], cm->as->upper[n]->value.integer,
+		   cm->as->lower[n]->value.integer);
+	  mpz_add_ui (ss_array->shape[n], ss_array->shape[n], 1);
+	}
     }
 
   /* Once we got ss, we use scalarizer to create the loop.  */
@@ -2193,8 +2203,11 @@ transfer_array_component (tree expr, gfc_component * cm, locus * where)
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);
 
-  gcc_assert (ss_array->shape != NULL);
-  gfc_free_shape (&ss_array->shape, cm->as->rank);
+  if (!cm->attr.pdt_array)
+    {
+      gcc_assert (ss_array->shape != NULL);
+      gfc_free_shape (&ss_array->shape, cm->as->rank);
+    }
   gfc_cleanup_loop (&loop);
 
   return gfc_finish_block (&block);
@@ -2452,6 +2465,10 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 
 	      for (c = ts->u.derived->components; c; c = c->next)
 		{
+		  /* Ignore hidden string lengths.  */
+		  if (c->name[0] == '_')
+		    continue;
+
 		  field = c->backend_decl;
 		  gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
 
@@ -2466,9 +2483,29 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 		    }
 		  else
 		    {
-		      if (!c->attr.pointer)
+		      tree strlen = NULL_TREE;
+
+		      if (!c->attr.pointer && !c->attr.pdt_string)
 			tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+
+		      /* Use the hidden string length for pdt strings.  */
+		      if (c->attr.pdt_string
+			  && gfc_deferred_strlen (c, &strlen)
+			  && strlen != NULL_TREE)
+			{
+			  strlen = fold_build3_loc (UNKNOWN_LOCATION,
+						    COMPONENT_REF,
+						    TREE_TYPE (strlen),
+						    expr, strlen, NULL_TREE);
+			  se->string_length = strlen;
+			}
+
 		      transfer_expr (se, &c->ts, tmp, code, NULL_TREE);
+
+		      /* Reset so that the pdt string length does not propagate
+			 through to other strings.  */
+		      if (c->attr.pdt_string && strlen)
+			se->string_length = NULL_TREE;
 		   }
 		}
 	      return;

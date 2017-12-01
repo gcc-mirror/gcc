@@ -1971,7 +1971,8 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
     c->ts.u.cl = cl;
 
   if (c->ts.type != BT_CLASS && c->ts.type != BT_DERIVED
-      && c->ts.kind == 0 && saved_kind_expr != NULL)
+      && (c->ts.kind == 0 || c->ts.type == BT_CHARACTER)
+      && saved_kind_expr != NULL)
     c->kind_expr = gfc_copy_expr (saved_kind_expr);
 
   c->attr = current_attr;
@@ -3250,6 +3251,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	name_seen = true;
       param = type_param_name_list->sym;
 
+      if (!param || !param->name)
+	continue;
+
       c1 = gfc_find_component (pdt, param->name, false, true, NULL);
       /* An error should already have been thrown in resolve.c
 	 (resolve_fl_derived0).  */
@@ -3406,8 +3410,18 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   for (; c1; c1 = c1->next)
     {
       gfc_add_component (instance, c1->name, &c2);
+
       c2->ts = c1->ts;
       c2->attr = c1->attr;
+
+      /* The order of declaration of the type_specs might not be the
+	 same as that of the components.  */
+      if (c1->attr.pdt_kind || c1->attr.pdt_len)
+	{
+	  for (tail = type_param_spec_list; tail; tail = tail->next)
+	    if (strcmp (c1->name, tail->name) == 0)
+	      break;
+	}
 
       /* Deal with type extension by recursively calling this function
 	 to obtain the instance of the extended type.  */
@@ -3453,17 +3467,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 	  instance->attr.extension = c2->ts.u.derived->attr.extension + 1;
 
-	  /* Advance the position in the spec list by the number of
-	     parameters in the extended type.  */
-	  tail = type_param_spec_list;
-	  for (f = c1->ts.u.derived->formal; f && f->next; f = f->next)
-	    tail = tail->next;
-
 	  continue;
 	}
 
       /* Set the component kind using the parameterized expression.  */
-      if (c1->ts.kind == 0 && c1->kind_expr != NULL)
+      if ((c1->ts.kind == 0 || c1->ts.type == BT_CHARACTER)
+	   && c1->kind_expr != NULL)
 	{
 	  gfc_expr *e = gfc_copy_expr (c1->kind_expr);
 	  gfc_insert_kind_parameter_exprs (e);
@@ -3509,8 +3518,6 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
 	  if (!c2->initializer && c1->initializer)
 	    c2->initializer = gfc_copy_expr (c1->initializer);
-
-	  tail = tail->next;
 	}
 
       /* Copy the array spec.  */
@@ -5944,18 +5951,24 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
       if (gfc_match_char ('*') == MATCH_YES)
 	{
 	  sym = NULL;
-	  if (!gfc_notify_std (GFC_STD_F95_OBS, "Alternate-return argument "
-			       "at %C"))
+	  if (!typeparam && !gfc_notify_std (GFC_STD_F95_OBS,
+			     "Alternate-return argument at %C"))
 	    {
 	      m = MATCH_ERROR;
 	      goto cleanup;
 	    }
+	  else if (typeparam)
+	    gfc_error_now ("A parameter name is required at %C");
 	}
       else
 	{
 	  m = gfc_match_name (name);
 	  if (m != MATCH_YES)
-	    goto cleanup;
+	    {
+	      if(typeparam)
+		gfc_error_now ("A parameter name is required at %C");
+	      goto cleanup;
+	    }
 
 	  if (!typeparam && gfc_get_symbol (name, NULL, &sym))
 	    goto cleanup;
@@ -9828,9 +9841,11 @@ gfc_match_derived_decl (void)
 
   if (parameterized_type)
     {
-      /* Ignore error or mismatches to avoid the component declarations
-	 causing problems later.  */
-      gfc_match_formal_arglist (sym, 0, 0, true);
+      /* Ignore error or mismatches by going to the end of the statement
+	 in order to avoid the component declarations causing problems.  */
+      m = gfc_match_formal_arglist (sym, 0, 0, true);
+      if (m != MATCH_YES)
+	gfc_error_recovery ();
       m = gfc_match_eos ();
       if (m != MATCH_YES)
 	return m;
