@@ -1,5 +1,7 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/ext/ropeimpl.h (rope::_S_dump): Use const char*.
+
 	* libsupc++/nested_exception.h (__throw_with_nested_impl): Add
 	noreturn attribute.
 

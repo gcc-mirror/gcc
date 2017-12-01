@@ -1139,7 +1139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  char* __kind;
+	  const char* __kind;
 	  
 	  switch (__r->_M_tag)
 	    {
