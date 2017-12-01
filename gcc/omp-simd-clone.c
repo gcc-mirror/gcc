@@ -116,7 +116,6 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
      clone which will require a mask argument.  */
   struct cgraph_simd_clone *clone_info = simd_clone_struct_alloc (n + 1);
   clone_info->nargs = n;
-  clone_info->cilk_elemental = false;
 
   if (!clauses)
     goto out;

@@ -1,5 +1,16 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* function.h (struct function): Remove cilk_frame_decl,
+	is_cilk_function and calls_cilk_spawn fields.
+	* tree-inline.h (struct copy_body_data): Remove remap_var_for_cilk
+	field.
+	* omp-simd-clone.c (simd_clone_clauses_extract): Don't clear
+	cilk_elemental field.
+	* cgraph.h (struct cgraph_simd_clone): Remove cilk_elemental field.
+	* target.def: Adjust comment.
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Don't test cilk_elemental.
+
 	PR tree-optimization/83233
 	* gimple-ssa-store-merging.c (nop_stats, bswap_stats): Use
 	bswap_stat name for the struct.

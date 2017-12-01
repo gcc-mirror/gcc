@@ -149,10 +149,6 @@ struct copy_body_data
      when inlining a call within an OpenMP SIMD-on-SIMT loop.  */
   vec<tree> *dst_simt_vars;
 
-  /* Cilk keywords currently need to replace some variables that
-     ordinary nested functions do not.  */
-  bool remap_var_for_cilk;
-
   /* Do not create new declarations when within type remapping.  */
   bool prevent_decl_creation_for_types;
 };

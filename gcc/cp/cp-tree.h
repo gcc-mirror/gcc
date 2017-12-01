@@ -7402,9 +7402,6 @@ extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
 
-/* In c-family/cilk.c */
-extern bool cilk_valid_spawn                    (tree);
-
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);
 extern void cp_ubsan_instrument_member_accesses (tree *);
