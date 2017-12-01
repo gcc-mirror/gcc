@@ -644,6 +644,8 @@ namespace experimental
   {
   inline namespace string_view_literals
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     inline constexpr basic_string_view<char>
     operator""sv(const char* __str, size_t __len) noexcept
     { return basic_string_view<char>{__str, __len}; }
@@ -663,6 +665,7 @@ namespace experimental
     operator""sv(const char32_t* __str, size_t __len) noexcept
     { return basic_string_view<char32_t>{__str, __len}; }
 #endif
+#pragma GCC diagnostic pop
   } // namespace string_literals
   } // namespace literals
 } // namespace experimental
