@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "is-a.h"
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
@@ -270,11 +271,8 @@ unsupported_edge (edge e)
 reduction_p
 loop_cand::find_reduction_by_stmt (gimple *stmt)
 {
-  gphi *phi = NULL;
+  gphi *phi = dyn_cast <gphi *> (stmt);
   reduction_p re;
-
-  if (is_a <gphi *> (stmt))
-    phi = as_a <gphi *> (stmt);
 
   for (unsigned i = 0; m_reductions.iterate (i, &re); ++i)
     if ((phi != NULL && phi == re->lcssa_phi)
@@ -591,10 +589,8 @@ loop_cand::analyze_iloop_reduction_var (tree var)
 	continue;
 
       /* Or else it's used in PHI itself.  */
-      use_phi = NULL;
-      if (is_a <gphi *> (stmt)
-	  && (use_phi = as_a <gphi *> (stmt)) != NULL
-	  && use_phi == phi)
+      use_phi = dyn_cast <gphi *> (stmt);
+      if (use_phi == phi)
 	continue;
 
       if (use_phi != NULL
@@ -684,12 +680,7 @@ loop_cand::analyze_oloop_reduction_var (loop_cand *iloop, tree var)
       if (is_gimple_debug (stmt))
 	continue;
 
-      if (!flow_bb_inside_loop_p (m_loop, gimple_bb (stmt)))
-	return false;
-
-      if (! is_a <gphi *> (stmt)
-	  || (use_phi = as_a <gphi *> (stmt)) == NULL
-	  || use_phi != inner_re->phi)
+      if (stmt != inner_re->phi)
 	return false;
     }
 
@@ -701,10 +692,8 @@ loop_cand::analyze_oloop_reduction_var (loop_cand *iloop, tree var)
 	continue;
 
       /* Or else it's used in PHI itself.  */
-      use_phi = NULL;
-      if (is_a <gphi *> (stmt)
-	  && (use_phi = as_a <gphi *> (stmt)) != NULL
-	  && use_phi == phi)
+      use_phi = dyn_cast <gphi *> (stmt);
+      if (use_phi == phi)
 	continue;
 
       if (lcssa_phi == NULL
