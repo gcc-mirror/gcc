@@ -1,3 +1,10 @@
+2017-12-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgnarl/s-osinte__rtems.ads (pthread_cond_t): Use correct size and
+	alignment.
+	(pthread_mutex_t): Likewise.
+	(pthread_rwlock_t): Likewise.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/trans.c (Case_Statement_to_gnu): Build SWITCH_EXPR
