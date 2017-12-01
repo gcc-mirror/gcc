@@ -1,3 +1,9 @@
+2017-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79228 - extensions hide C++14 complex literal operators
+	* expr.c (interpret_float_suffix): Ignore 'i' in C++14 and up.
+	(interpret_int_suffix): Likewise.
+
 2017-11-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/82050

@@ -1,3 +1,9 @@
+2017-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79228 - extensions hide C++14 complex literal operators
+	* parser.c (cp_parser_userdef_numeric_literal): Be helpful about
+	'i' in C++14 and up.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_new): Don't clear cilk_simd_fn_info.

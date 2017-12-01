@@ -90,6 +90,8 @@ static cpp_num parse_has_include (cpp_reader *, enum include_type);
 static unsigned int
 interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
+  size_t orig_len = len;
+  const uchar *orig_s = s;
   size_t flags;
   size_t f, d, l, w, q, i, fn, fnx, fn_bits;
 
@@ -269,8 +271,20 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   if (fn && fn_bits == 96)
     return 0;
 
-  if (i && !CPP_OPTION (pfile, ext_numeric_literals))
-    return 0;
+  if (i)
+    {
+      if (!CPP_OPTION (pfile, ext_numeric_literals))
+	return 0;
+
+      /* In C++14 and up these suffixes are in the standard library, so treat
+	 them as user-defined literals.  */
+      if (CPP_OPTION (pfile, cplusplus)
+	  && CPP_OPTION (pfile, lang) > CLK_CXX11
+	  && (!memcmp (orig_s, "i", orig_len)
+	      || !memcmp (orig_s, "if", orig_len)
+	      || !memcmp (orig_s, "il", orig_len)))
+	return 0;
+    }
 
   if ((w || q) && !CPP_OPTION (pfile, ext_numeric_literals))
     return 0;
@@ -299,6 +313,7 @@ cpp_interpret_float_suffix (cpp_reader *pfile, const char *s, size_t len)
 static unsigned int
 interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
+  size_t orig_len = len;
   size_t u, l, i;
 
   u = l = i = 0;
@@ -321,8 +336,20 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   if (l > 2 || u > 1 || i > 1)
     return 0;
 
-  if (i && !CPP_OPTION (pfile, ext_numeric_literals))
-    return 0;
+  if (i)
+    {
+      if (!CPP_OPTION (pfile, ext_numeric_literals))
+	return 0;
+
+      /* In C++14 and up these suffixes are in the standard library, so treat
+	 them as user-defined literals.  */
+      if (CPP_OPTION (pfile, cplusplus)
+	  && CPP_OPTION (pfile, lang) > CLK_CXX11
+	  && (!memcmp (s, "i", orig_len)
+	      || !memcmp (s, "if", orig_len)
+	      || !memcmp (s, "il", orig_len)))
+	return 0;
+    }
 
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (u ? CPP_N_UNSIGNED : 0)
