@@ -249,7 +249,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   expr1 = co->expr1;
-  if (expr1->ts.type != BT_CHARACTER || expr1->rank != 0
+  if (expr1->ts.type != BT_CHARACTER
       || !gfc_expr_attr(expr1).allocatable
       || !expr1->ts.deferred)
     return 0;
@@ -270,8 +270,9 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       if (!found_substr)
 	return 0;
     }
-  else if (expr2->expr_type != EXPR_OP
-	   || expr2->value.op.op != INTRINSIC_CONCAT)
+  else if (expr2->expr_type != EXPR_ARRAY
+	   && (expr2->expr_type != EXPR_OP
+	       || expr2->value.op.op != INTRINSIC_CONCAT))
     return 0;
   
   if (!gfc_check_dependency (expr1, expr2, true))

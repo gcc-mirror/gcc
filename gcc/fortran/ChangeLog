@@ -1,3 +1,9 @@
+2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83224
+	* frontend-passes.c (realloc_string_callback): Handle
+	case for which the RHS is an array expression.
+
 2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/53796

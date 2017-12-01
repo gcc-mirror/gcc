@@ -1,3 +1,8 @@
+2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83224
+	* gfortran.dg/dependency_50.f90: New test.
+
 2016-11-17  Kirill Yukhin  <kirill.yukhin@gmail.com>
 
 	* gcc.target/i386/avx512f-vpcompressb-2.c: Fix popcnt for 32-bit mode.
