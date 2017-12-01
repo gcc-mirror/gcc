@@ -10449,9 +10449,11 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
 	case MODE_V2DF:
 	case MODE_V4SF:
 	  gcc_assert (TARGET_SSE2);
-	  return (TARGET_AVX
-		  ? "vpcmpeqd\t%0, %0, %0"
-		  : "pcmpeqd\t%0, %0");
+	  return (TARGET_AVX512F
+		  ? "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}"
+		  : TARGET_AVX
+		    ? "vpcmpeqd\t%0, %0, %0"
+		    : "pcmpeqd\t%0, %0");
 
 	default:
 	  gcc_unreachable ();
