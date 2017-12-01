@@ -343,8 +343,6 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_returns_nonnull_attribute, false },
   { "omp declare simd",       0, -1, true,  false, false,
 			      handle_omp_declare_simd_attribute, false },
-  { "cilk simd function",     0, -1, true,  false, false,
-			      handle_omp_declare_simd_attribute, false },
   { "simd",		      0, 1, true,  false, false,
 			      handle_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
@@ -2435,50 +2433,37 @@ handle_simd_attribute (tree *node, tree name, tree args, int, bool *no_add_attrs
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      if (lookup_attribute ("cilk simd function",
-			    DECL_ATTRIBUTES (*node)) != NULL)
+      tree t = get_identifier ("omp declare simd");
+      tree attr = NULL_TREE;
+      if (args)
 	{
-	  error_at (DECL_SOURCE_LOCATION (*node),
-		    "%<__simd__%> attribute cannot be used in the same "
-		    "function marked as a Cilk Plus SIMD-enabled function");
-	  *no_add_attrs = true;
-	}
-      else
-	{
-	  tree t = get_identifier ("omp declare simd");
-	  tree attr = NULL_TREE;
-	  if (args)
+	  tree id = TREE_VALUE (args);
+
+	  if (TREE_CODE (id) != STRING_CST)
 	    {
-	      tree id = TREE_VALUE (args);
-
-	      if (TREE_CODE (id) != STRING_CST)
-		{
-		  error ("attribute %qE argument not a string", name);
-		  *no_add_attrs = true;
-		  return NULL_TREE;
-		}
-
-	      if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
-		attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
-					 OMP_CLAUSE_NOTINBRANCH);
-	      else
-		if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
-		  attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
-					   OMP_CLAUSE_INBRANCH);
-		else
-		{
-		  error ("only %<inbranch%> and %<notinbranch%> flags are "
-			 "allowed for %<__simd__%> attribute");
-		  *no_add_attrs = true;
-		  return NULL_TREE;
-		}
+	      error ("attribute %qE argument not a string", name);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
 	    }
 
-	  DECL_ATTRIBUTES (*node) = tree_cons (t,
-					       build_tree_list (NULL_TREE,
-								attr),
-					       DECL_ATTRIBUTES (*node));
+	  if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
+	    attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				     OMP_CLAUSE_NOTINBRANCH);
+	  else if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
+	    attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				     OMP_CLAUSE_INBRANCH);
+	  else
+	    {
+	      error ("only %<inbranch%> and %<notinbranch%> flags are "
+		     "allowed for %<__simd__%> attribute");
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
 	}
+
+      DECL_ATTRIBUTES (*node)
+	= tree_cons (t, build_tree_list (NULL_TREE, attr),
+		     DECL_ATTRIBUTES (*node));
     }
   else
     {

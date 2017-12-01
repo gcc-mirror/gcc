@@ -1,3 +1,10 @@
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Remove "cilk simd function"
+	attribute.
+	(handle_simd_attribute): Don't check for "cilk simd function"
+	attribute.  Reindent, formatting changes.
+
 2017-11-30  Julia Koval  <julia.koval@intel.com>
 
 	* c-common.h (inv_list): Remove.

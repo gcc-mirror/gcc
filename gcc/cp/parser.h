@@ -199,8 +199,7 @@ struct GTY (()) cp_parser_context {
 };
 
 
-/* Helper data structure for parsing #pragma omp declare simd, and Cilk Plus
-   SIMD-enabled functions' vector attribute.  */
+/* Helper data structure for parsing #pragma omp declare simd.  */
 struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
@@ -368,10 +367,6 @@ struct GTY(()) cp_parser {
   /* When parsing #pragma omp declare simd, this is a pointer to a
      helper data structure.  */
   cp_omp_declare_simd_data * GTY((skip)) omp_declare_simd;
-
-  /* When parsing Cilk Plus SIMD-enabled functions' vector attributes,
-     this is a pointer to a helper data structure.  */
-  cp_omp_declare_simd_data * GTY((skip)) cilk_simd_fn_info;
 
   /* When parsing #pragma acc routine, this is a pointer to a helper data
      structure.  */

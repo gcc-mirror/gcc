@@ -3915,7 +3915,6 @@ cp_parser_new (void)
 
   /* Special parsing data structures.  */
   parser->omp_declare_simd = NULL;
-  parser->cilk_simd_fn_info = NULL;
   parser->oacc_routine = NULL;
 
   /* Not declaring an implicit function template.  */
@@ -20675,8 +20674,7 @@ parsing_nsdmi (void)
    Returns the type indicated by the type-id.
 
    In addition to this, parse any queued up #pragma omp declare simd
-   clauses, Cilk Plus SIMD-enabled functions' vector attributes, and
-   #pragma acc routine clauses.
+   clauses, and #pragma acc routine clauses.
 
    QUALS is either a bitmask of cv_qualifiers or -1 for a non-member
    function.  */
@@ -34536,8 +34534,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
   return build2 (MODIFY_EXPR, TREE_TYPE (decl), decl, rhs);
 }
 
-/* Parse the initialization statement of either an OpenMP for loop or
-   a Cilk Plus for loop.
+/* Parse the initialization statement of an OpenMP for loop.
 
    Return true if the resulting construct should have an
    OMP_CLAUSE_PRIVATE added to it.  */

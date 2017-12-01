@@ -1,5 +1,12 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_new): Don't clear cilk_simd_fn_info.
+	(parsing_nsdmi): Adjust comment.
+	(cp_parser_omp_for_loop_init): Likewise.
+	* parser.h (struct cp_omp_declare_simd_data): Adjust comment.
+	(struct cp_parser): Remove cilk_simd_fn_info field.
+	* cp-tree.h (cilk_valid_spawn): Remove.
+
 	PR c/79153
 	* cp-gimplify.c (genericize_switch_stmt): Emit LABEL_EXPR for the
 	break label into SWITCH_BODY instead of after it and set
