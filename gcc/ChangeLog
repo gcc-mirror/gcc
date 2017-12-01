@@ -1,3 +1,11 @@
+2017-12-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md (plus16_Q_operand): New predicate.
+	* config/s390/s390.md: Disable MVC merging peephole if it would
+	disable operand forwarding.
+	(new peephole2): Split MVCs if it would turn them into up to 2
+	forwardable MVCs.
+
 2017-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83232
