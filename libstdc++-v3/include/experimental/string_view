@@ -422,11 +422,11 @@ inline namespace fundamentals_v1
       static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
-	return difference_type{__n1 - __n2} > std::numeric_limits<int>::max()
+	return difference_type(__n1 - __n2) > std::numeric_limits<int>::max()
 	     ? std::numeric_limits<int>::max()
-	     : difference_type{__n1 - __n2} < std::numeric_limits<int>::min()
+	     : difference_type(__n1 - __n2) < std::numeric_limits<int>::min()
 	     ? std::numeric_limits<int>::min()
-	     : static_cast<int>(difference_type{__n1 - __n2});
+	     : static_cast<int>(difference_type(__n1 - __n2));
       }
 
       size_t	    _M_len;

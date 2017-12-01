@@ -1,5 +1,9 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/string_view (basic_string_view::_S_compare):
+	Use value-init so narrowing conversions are not ill-formed.
+	* include/std/string_view (basic_string_view::_S_compare): Likewise.
+
 	* include/bits/basic_string.h (operator""s): Add pragmas to disable
 	-Wliteral-suffix warnings.
 	* include/experimental/string_view (operator""sv): Likewise.
