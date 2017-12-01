@@ -1,3 +1,8 @@
+2017-12-01  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* config/i386/i386.c (standard_sse_constant_opcode): Fix
+	registers type for 128bit mode.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* spellcheck-tree.c (test_find_closest_identifier): Use ; instead
