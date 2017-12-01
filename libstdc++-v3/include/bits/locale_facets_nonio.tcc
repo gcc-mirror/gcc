@@ -282,6 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 		  ++__beg;
 		else
 		  __testvalid = false;
+		// fallthrough
 	      case money_base::none:
 		// Only if not at the end of the pattern.
 		if (__i != 3)
