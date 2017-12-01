@@ -112,6 +112,7 @@ go_langhook_init (void)
   args.check_divide_overflow = go_check_divide_overflow;
   args.compiling_runtime = go_compiling_runtime;
   args.debug_escape_level = go_debug_escape_level;
+  args.nil_check_size_threshold = 4096;
   args.linemap = go_get_linemap();
   args.backend = go_get_backend();
   go_create_gogo (&args);
