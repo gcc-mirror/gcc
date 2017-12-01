@@ -1,3 +1,7 @@
+2017-12-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/asm-4.c: Skip on AArch64 with ILP32 as test is incorrect.
+
 2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83224
