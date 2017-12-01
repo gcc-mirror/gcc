@@ -767,7 +767,7 @@ create_var (gfc_expr * e, const char *vname)
     }
 
   deferred = 0;
-  if (e->ts.type == BT_CHARACTER && e->rank == 0)
+  if (e->ts.type == BT_CHARACTER)
     {
       gfc_expr *length;
 
@@ -778,6 +778,8 @@ create_var (gfc_expr * e, const char *vname)
       else
 	{
 	  symbol->attr.allocatable = 1;
+	  symbol->ts.u.cl->length = NULL;
+	  symbol->ts.deferred = 1;
 	  deferred = 1;
 	}
     }
@@ -790,7 +792,7 @@ create_var (gfc_expr * e, const char *vname)
 
   result = gfc_get_expr ();
   result->expr_type = EXPR_VARIABLE;
-  result->ts = e->ts;
+  result->ts = symbol->ts;
   result->ts.deferred = deferred;
   result->rank = e->rank;
   result->shape = gfc_copy_shape (e->shape, e->rank);
