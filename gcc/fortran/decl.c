@@ -3362,7 +3362,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	}
 
       gfc_extract_int (kind_expr, &kind_value);
-      sprintf (name, "%s_%d", name, kind_value);
+      sprintf (name + strlen (name), "_%d", kind_value);
 
       if (!name_seen && actual_param)
 	actual_param = actual_param->next;

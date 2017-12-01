@@ -1,3 +1,8 @@
+2017-12-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* decl.c (gfc_get_pdt_instance): Adjust the call to sprintf
+	to avoid the same buffer being both source and destination.
+
 2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83224
