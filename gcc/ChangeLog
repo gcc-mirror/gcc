@@ -1,3 +1,7 @@
+2017-12-01  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/arm/vfp.md (*movhf_vfp_fp16): Add conds attribute.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* function.h (struct function): Remove cilk_frame_decl,

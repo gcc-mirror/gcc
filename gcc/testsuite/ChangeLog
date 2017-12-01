@@ -1,3 +1,7 @@
+2017-12-01  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-2.c: New test.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79153
