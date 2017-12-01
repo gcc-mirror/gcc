@@ -1,3 +1,9 @@
+2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83224
+	* frontend-passes.c (create_var): Also handle
+	character arrays, handling deferred lenghts.
+
 2017-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82605
