@@ -4397,11 +4397,75 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
 
   release_tree_vector (args);
 
-  error ("unable to find numeric literal operator %qD", name);
-  if (!cpp_get_options (parse_in)->ext_numeric_literals)
-    inform (token->location, "use -std=gnu++11 or -fext-numeric-literals "
+  /* In C++14 the standard library defines complex number suffixes that
+     conflict with GNU extensions.  Prefer them if <complex> is #included.  */
+  bool ext = cpp_get_options (parse_in)->ext_numeric_literals;
+  bool i14 = (cxx_dialect > cxx11
+	      && (id_equal (suffix_id, "i")
+		  || id_equal (suffix_id, "if")
+		  || id_equal (suffix_id, "il")));
+  diagnostic_t kind = DK_ERROR;
+  int opt = 0;
+
+  if (i14 && ext)
+    {
+      tree cxlit = lookup_qualified_name (std_node,
+					  get_identifier ("complex_literals"),
+					  0, false, false);
+      if (cxlit == error_mark_node)
+	{
+	  /* No <complex>, so pedwarn and use GNU semantics.  */
+	  kind = DK_PEDWARN;
+	  opt = OPT_Wpedantic;
+	}
+    }
+
+  bool complained
+    = emit_diagnostic (kind, input_location, opt,
+		       "unable to find numeric literal operator %qD", name);
+
+  if (!complained)
+    /* Don't inform either.  */;
+  else if (i14)
+    {
+      inform (token->location, "add %<using namespace std::complex_literals%> "
+	      "(from <complex>) to enable the C++14 user-defined literal "
+	      "suffixes");
+      if (ext)
+	inform (token->location, "or use %<j%> instead of %<i%> for the "
+		"GNU built-in suffix");
+    }
+  else if (!ext)
+    inform (token->location, "use -fext-numeric-literals "
 	    "to enable more built-in suffixes");
-  return error_mark_node;
+
+  if (kind == DK_ERROR)
+    value = error_mark_node;
+  else
+    {
+      /* Use the built-in semantics.  */
+      tree type;
+      if (id_equal (suffix_id, "i"))
+	{
+	  if (TREE_CODE (value) == INTEGER_CST)
+	    type = integer_type_node;
+	  else
+	    type = double_type_node;
+	}
+      else if (id_equal (suffix_id, "if"))
+	type = float_type_node;
+      else /* if (id_equal (suffix_id, "il")) */
+	type = long_double_type_node;
+
+      value = build_complex (build_complex_type (type),
+			     fold_convert (type, integer_zero_node),
+			     fold_convert (type, value));
+    }
+
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
+    /* Avoid repeated diagnostics.  */
+    token->u.value = value;
+  return value;
 }
 
 /* Parse a user-defined string constant.  Returns a call to a user-defined
