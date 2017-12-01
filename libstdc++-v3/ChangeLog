@@ -1,5 +1,9 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex_executor.tcc (_Executor::_M_rep_once_more):
+	Remove semi-colon after function body.
+	* include/bits/uniform_int_dist.h (_Power_of_2): Likewise.
+
 	* include/tr1/modified_bessel_func.tcc (__airy): Use value-init not
 	list-init.
 

@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Power_of_2(_Tp __x)
       {
 	return ((__x - 1) & __x) == 0;
-      };
+      }
   }
 
   /**
