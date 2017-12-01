@@ -1,6 +1,12 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wbuffer_convert::_M_conv_get): Fix typo.
+	* testsuite/22_locale/conversions/buffer/3.cc: New test.
+
+	Backport from mainline
 	2017-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/node_handle.h (_Node_insert_return::get): Remove, as
