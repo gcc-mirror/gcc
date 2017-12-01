@@ -897,6 +897,10 @@ conforming C library (such as the GNU C Library), and want to construct complex
 constants of floating type, you should include @code{<complex.h>} and
 use the macros @code{I} or @code{_Complex_I} instead.
 
+The ISO C++14 library also defines the @samp{i} suffix, so C++14 code
+that includes the @samp{<complex>} header cannot use @samp{i} for the
+GNU extension.  The @samp{j} suffix still has the GNU meaning.
+
 @cindex @code{__real__} keyword
 @cindex @code{__imag__} keyword
 To extract the real part of a complex-valued expression @var{exp}, write
