@@ -1,3 +1,7 @@
+2016-11-17  Kirill Yukhin  <kirill.yukhin@gmail.com>
+
+	* gcc.target/i386/avx512f-vpcompressb-2.c: Fix popcnt for 32-bit mode.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83222
