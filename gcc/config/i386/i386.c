@@ -34987,6 +34987,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	default:
 	  break;
 	}
+      /* FALLTHRU */
     case V64QI_FTYPE_PCCHAR_V64QI_UDI:
     case V32QI_FTYPE_PCCHAR_V32QI_USI:
     case V16QI_FTYPE_PCCHAR_V16QI_UHI:

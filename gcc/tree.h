@@ -766,6 +766,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define FALLTHROUGH_LABEL_P(NODE) \
   (LABEL_DECL_CHECK (NODE)->base.private_flag)
 
+/* Set on the artificial label created for break; stmt from a switch.
+   This is used to implement -Wimplicit-fallthrough.  */
+#define SWITCH_BREAK_LABEL_P(NODE) \
+  (LABEL_DECL_CHECK (NODE)->base.protected_flag)
+
 /* Nonzero means this expression is volatile in the C sense:
    its address should be of type `volatile WHATEVER *'.
    In other words, the declared item is volatile qualified.

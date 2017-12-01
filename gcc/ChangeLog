@@ -1,5 +1,20 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/79153
+	* tree.h (SWITCH_BREAK_LABEL_P): Define.
+	* gimplify.c (collect_fallthrough_labels): Handle GIMPLE_BIND
+	starting with a GIMPLE_SWITCH and ending with GIMPLE_LABEL with
+	SWITCH_BREAK_LABEL_P set on the label.
+	(gimplify_switch_expr): Set SWITCH_BREAK_LABEL_P on the label
+	added for default case if it was missing and not all cases covered.
+	Wrap GIMPLE_SWITCH and the switch_body_seq into a GIMPLE_BIND if
+	switch_body_seq ends with a GIMPLE_LABEL with SWITCH_BREAK_LABEL_P
+	set on the label.
+	* tree-chrec.c (evolution_function_is_univariate_p): Add return true;
+	to avoid -Wimplicit-fallthrough warning.
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Add
+	FALLTHRU comment to avoid -Wimplicit-fallthrough warning.
+
 	PR tree-optimization/83221
 	* tree-ssa-reassoc.c (sort_by_operand_rank): Shift bb_rank
 	down by 16.

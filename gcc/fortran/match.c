@@ -1240,6 +1240,7 @@ loop:
 	default:
 	  gfc_internal_error ("gfc_match(): Bad match code %c", c);
 	}
+      /* FALLTHRU */
 
     default:
 

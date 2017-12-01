@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "run-rtl-passes.h"
 #include "intl.h"
 #include "c-family/name-hint.h"
+#include "tree-iterator.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -5846,14 +5847,15 @@ c_parser_switch_statement (c_parser *parser, bool *if_p)
   if (!open_brace_p && c_parser_peek_token (parser)->type != CPP_SEMICOLON)
     warn_for_multistatement_macros (loc_after_labels, next_loc, switch_loc,
 				    RID_SWITCH);
-  c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
       location_t here = c_parser_peek_token (parser)->location;
       tree t = build1 (LABEL_EXPR, void_type_node, c_break_label);
       SET_EXPR_LOCATION (t, here);
-      add_stmt (t);
+      SWITCH_BREAK_LABEL_P (c_break_label) = 1;
+      append_to_statement_list_force (t, &body);
     }
+  c_finish_case (body, ce.original_type);
   c_break_label = save_break;
   add_stmt (c_end_compound_stmt (switch_loc, block, flag_isoc99));
   c_parser_maybe_reclassify_token (parser);

@@ -1,3 +1,9 @@
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79153
+	* match.c (gfc_match): Add FALLTHRU comment to avoid
+	-Wimplicit-fallthrough warning.
+
 2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83224
