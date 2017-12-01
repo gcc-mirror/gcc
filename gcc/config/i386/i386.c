@@ -10403,7 +10403,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
 		  : "vpxor\t%x0, %x0, %x0");
 	case MODE_TI:
 	  return (TARGET_AVX512VL
-		  ? "vpxord\t%t0, %t0, %t0"
+		  ? "vpxord\t%x0, %x0, %x0"
 		  : "%vpxor\t%0, %d0");
 
 	case MODE_V8DF:
