@@ -417,7 +417,8 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
       rhs = Expression::make_temporary_reference(rhs_temp, loc);
     }
 
-  Expression* indir = Expression::make_unary(OPERATOR_MULT, lhs, loc);
+  Expression* indir =
+      Expression::make_dereference(lhs, Expression::NIL_CHECK_DEFAULT, loc);
   Statement* assign = Statement::make_assignment(indir, rhs, loc);
 
   lhs = Expression::make_temporary_reference(lhs_temp, loc);

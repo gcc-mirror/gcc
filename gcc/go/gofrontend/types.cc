@@ -2215,10 +2215,10 @@ Type::write_named_equal(Gogo* gogo, Named_type* name)
 
   // Compare the values for equality.
   Expression* t1 = Expression::make_temporary_reference(p1, bloc);
-  t1 = Expression::make_unary(OPERATOR_MULT, t1, bloc);
+  t1 = Expression::make_dereference(t1, Expression::NIL_CHECK_NOT_NEEDED, bloc);
 
   Expression* t2 = Expression::make_temporary_reference(p2, bloc);
-  t2 = Expression::make_unary(OPERATOR_MULT, t2, bloc);
+  t2 = Expression::make_dereference(t2, Expression::NIL_CHECK_NOT_NEEDED, bloc);
 
   Expression* cond = Expression::make_binary(OPERATOR_EQEQ, t1, t2, bloc);
 
@@ -5911,7 +5911,9 @@ Struct_type::field_reference_depth(Expression* struct_expr,
 	  Expression* here = Expression::make_field_reference(struct_expr, i,
 							      location);
 	  if (pf->type()->points_to() != NULL)
-	    here = Expression::make_unary(OPERATOR_MULT, here, location);
+            here = Expression::make_dereference(here,
+                                                Expression::NIL_CHECK_DEFAULT,
+                                                location);
 	  while (sub->expr() != NULL)
 	    {
 	      sub = sub->expr()->deref()->field_reference_expression();
@@ -6342,11 +6344,13 @@ Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
 
       // Compare one field in both P1 and P2.
       Expression* f1 = Expression::make_temporary_reference(p1, bloc);
-      f1 = Expression::make_unary(OPERATOR_MULT, f1, bloc);
+      f1 = Expression::make_dereference(f1, Expression::NIL_CHECK_DEFAULT,
+                                        bloc);
       f1 = Expression::make_field_reference(f1, field_index, bloc);
 
       Expression* f2 = Expression::make_temporary_reference(p2, bloc);
-      f2 = Expression::make_unary(OPERATOR_MULT, f2, bloc);
+      f2 = Expression::make_dereference(f2, Expression::NIL_CHECK_DEFAULT,
+                                        bloc);
       f2 = Expression::make_field_reference(f2, field_index, bloc);
 
       Expression* cond = Expression::make_binary(OPERATOR_NOTEQ, f1, f2, bloc);
@@ -7193,12 +7197,12 @@ Array_type::write_equal_function(Gogo* gogo, Named_type* name)
 
   // Compare element in P1 and P2.
   Expression* e1 = Expression::make_temporary_reference(p1, bloc);
-  e1 = Expression::make_unary(OPERATOR_MULT, e1, bloc);
+  e1 = Expression::make_dereference(e1, Expression::NIL_CHECK_DEFAULT, bloc);
   ref = Expression::make_temporary_reference(index, bloc);
   e1 = Expression::make_array_index(e1, ref, NULL, NULL, bloc);
 
   Expression* e2 = Expression::make_temporary_reference(p2, bloc);
-  e2 = Expression::make_unary(OPERATOR_MULT, e2, bloc);
+  e2 = Expression::make_dereference(e2, Expression::NIL_CHECK_DEFAULT, bloc);
   ref = Expression::make_temporary_reference(index, bloc);
   e2 = Expression::make_array_index(e2, ref, NULL, NULL, bloc);
 
@@ -11219,7 +11223,8 @@ Type::apply_field_indexes(Expression* expr,
   if (expr->type()->struct_type() == NULL)
     {
       go_assert(expr->type()->points_to() != NULL);
-      expr = Expression::make_unary(OPERATOR_MULT, expr, location);
+      expr = Expression::make_dereference(expr, Expression::NIL_CHECK_DEFAULT,
+                                          location);
       go_assert(expr->type()->struct_type() == stype);
     }
   return Expression::make_field_reference(expr, field_indexes->field_index,
@@ -11323,7 +11328,8 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
       && type->points_to() != NULL
       && type->points_to()->points_to() != NULL)
     {
-      expr = Expression::make_unary(OPERATOR_MULT, expr, location);
+      expr = Expression::make_dereference(expr, Expression::NIL_CHECK_DEFAULT,
+                                          location);
       type = type->points_to();
       if (type->deref()->is_error_type())
 	return Expression::make_error(location);
@@ -11356,8 +11362,9 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
                   return Expression::make_error(location);
                 }
 	      go_assert(type->points_to() != NULL);
-	      expr = Expression::make_unary(OPERATOR_MULT, expr,
-					    location);
+              expr = Expression::make_dereference(expr,
+                                                  Expression::NIL_CHECK_DEFAULT,
+                                                  location);
 	      go_assert(expr->type()->struct_type() == st);
 	    }
 	  ret = st->field_reference(expr, name, location);

@@ -55,6 +55,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     check_divide_overflow_(true),
     compiling_runtime_(false),
     debug_escape_level_(0),
+    nil_check_size_threshold_(4096),
     verify_types_(),
     interface_types_(),
     specific_type_functions_(),
@@ -5567,7 +5568,10 @@ Function::build(Gogo* gogo, Named_object* named_function)
               vars.push_back(bvar);
 	      Expression* parm_ref =
                   Expression::make_var_reference(parm_no, loc);
-	      parm_ref = Expression::make_unary(OPERATOR_MULT, parm_ref, loc);
+              parm_ref =
+                  Expression::make_dereference(parm_ref,
+                                               Expression::NIL_CHECK_DEFAULT,
+                                               loc);
 	      if ((*p)->var_value()->is_in_heap())
 		parm_ref = Expression::make_heap_expression(parm_ref, loc);
               var_inits.push_back(parm_ref->get_backend(&context));

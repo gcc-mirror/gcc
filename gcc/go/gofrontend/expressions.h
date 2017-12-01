@@ -506,6 +506,23 @@ class Expression
   static Expression*
   make_backend(Bexpression*, Type*, Location);
 
+  enum Nil_check_classification
+    {
+      // Use the default policy for deciding if this deref needs a check.
+      NIL_CHECK_DEFAULT,
+      // An explicit check is required for this dereference operation.
+      NIL_CHECK_NEEDED,
+      // No check needed for this dereference operation.
+      NIL_CHECK_NOT_NEEDED,
+      // A type error or error construct was encountered when determining
+      // whether this deref needs an explicit check.
+      NIL_CHECK_ERROR_ENCOUNTERED
+    };
+
+  // Make a dereference expression.
+  static Expression*
+  make_dereference(Expression*, Nil_check_classification, Location);
+
   // Return the expression classification.
   Expression_classification
   classification() const
@@ -1730,7 +1747,8 @@ class Unary_expression : public Expression
   Unary_expression(Operator op, Expression* expr, Location location)
     : Expression(EXPRESSION_UNARY, location),
       op_(op), escapes_(true), create_temp_(false), is_gc_root_(false),
-      is_slice_init_(false), expr_(expr), issue_nil_check_(false)
+      is_slice_init_(false), expr_(expr),
+      issue_nil_check_(NIL_CHECK_DEFAULT)
   { }
 
   // Return the operator.
@@ -1792,6 +1810,17 @@ class Unary_expression : public Expression
   static Expression*
   do_import(Import*);
 
+  // Declare that this deref does or does not require an explicit nil check.
+  void
+  set_requires_nil_check(bool needed)
+  {
+    go_assert(this->op_ == OPERATOR_MULT);
+    if (needed)
+      this->issue_nil_check_ = NIL_CHECK_NEEDED;
+    else
+      this->issue_nil_check_ = NIL_CHECK_NOT_NEEDED;
+  }
+
  protected:
   int
   do_traverse(Traverse* traverse)
@@ -1847,11 +1876,19 @@ class Unary_expression : public Expression
 
   void
   do_issue_nil_check()
-  { this->issue_nil_check_ = (this->op_ == OPERATOR_MULT); }
+  {
+    if (this->op_ == OPERATOR_MULT)
+      this->set_requires_nil_check(true);
+  }
 
  private:
   static bool
   base_is_static_initializer(Expression*);
+
+  // Return a determination as to whether this dereference expression
+  // requires a nil check.
+  Nil_check_classification
+  requires_nil_check(Gogo*);
 
   // The unary operator to apply.
   Operator op_;
@@ -1874,7 +1911,7 @@ class Unary_expression : public Expression
   Expression* expr_;
   // Whether or not to issue a nil check for this expression if its address
   // is being taken.
-  bool issue_nil_check_;
+  Nil_check_classification issue_nil_check_;
 };
 
 // A binary expression.
