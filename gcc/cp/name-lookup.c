@@ -5414,6 +5414,9 @@ get_std_name_hint (const char *name)
   static const std_name_hint hints[] = {
     /* <array>.  */
     {"array", "<array>"}, // C++11
+    /* <complex>.  */
+    {"complex", "<complex>"},
+    {"complex_literals", "<complex>"},
     /* <deque>.  */
     {"deque", "<deque>"},
     /* <forward_list>.  */
