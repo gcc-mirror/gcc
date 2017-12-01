@@ -1,6 +1,13 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82685
+	* include/experimental/string_view (operator""sv): Add noexcept.
+	* include/std/string_view (operator""sv): Likewise.
+
+	Backport from mainline
 	2017-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83226
