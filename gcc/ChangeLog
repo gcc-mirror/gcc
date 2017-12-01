@@ -1,5 +1,10 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83221
+	* tree-ssa-reassoc.c (sort_by_operand_rank): Shift bb_rank
+	down by 16.
+	(init_reassoc): Formatting fix.
+
 	PR sanitizer/81275
 	* tree-cfg.c (group_case_labels_stmt): Don't optimize away
 	C++ FE implicitly added __builtin_unreachable () until -Wreturn-type

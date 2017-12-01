@@ -543,7 +543,7 @@ sort_by_operand_rank (const void *pa, const void *pb)
 	    return -1;
 	  /* If neither is, compare bb_rank.  */
 	  if (bb_rank[bbb->index] != bb_rank[bba->index])
-	    return bb_rank[bbb->index] - bb_rank[bba->index];
+	    return (bb_rank[bbb->index] >> 16) - (bb_rank[bba->index] >> 16);
 	}
 
       bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
@@ -6131,7 +6131,7 @@ init_reassoc (void)
 
   /* Set up rank for each BB  */
   for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
-    bb_rank[bbs[i]] = ++rank  << 16;
+    bb_rank[bbs[i]] = ++rank << 16;
 
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);
