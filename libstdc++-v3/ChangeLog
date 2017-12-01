@@ -1,5 +1,8 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/nested_exception.h (__throw_with_nested_impl): Add
+	noreturn attribute.
+
 	* include/bits/regex_executor.tcc (_Executor::_M_rep_once_more):
 	Remove semi-colon after function body.
 	* include/bits/uniform_int_dist.h (_Power_of_2): Likewise.
