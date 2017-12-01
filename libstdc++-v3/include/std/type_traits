@@ -151,10 +151,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Pp>
     struct __not_
-    : public integral_constant<bool, !_Pp::value>
+    : public __bool_constant<!bool(_Pp::value)>
     { };
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 
 #define __cpp_lib_logical_traits 201510
 
@@ -174,18 +174,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   template<typename... _Bn>
-    inline constexpr bool conjunction_v
-    = conjunction<_Bn...>::value;
+    inline constexpr bool conjunction_v = conjunction<_Bn...>::value;
 
   template<typename... _Bn>
-    inline constexpr bool disjunction_v
-    = disjunction<_Bn...>::value;
+    inline constexpr bool disjunction_v = disjunction<_Bn...>::value;
 
   template<typename _Pp>
-    inline constexpr bool negation_v
-    = negation<_Pp>::value;
+    inline constexpr bool negation_v = negation<_Pp>::value;
 
-#endif
+#endif // C++17
 
   // For several sfinae-friendly trait implementations we transport both the
   // result information (as the member type) and the failure information (no
