@@ -1,6 +1,14 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83226
+	* include/bits/node_handle.h (_Node_handle::__pointer): Avoid forming
+	pointer-to-reference types.
+	* testsuite/23_containers/map/modifiers/insert/83226.cc: New test.
+
+	Backport from mainline
 	2017-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wbuffer_convert::_M_conv_get): Fix typo.
