@@ -1,3 +1,8 @@
+2017-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83232
+	* gfortran.dg/vect/pr83232.f90: New testcase.
+
 2017-12-01  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/arm/armv8_2-fp16-move-2.c: New test.
