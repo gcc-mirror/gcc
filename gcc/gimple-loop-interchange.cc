@@ -1325,42 +1325,6 @@ tree_loop_interchange::move_code_to_inner_loop (struct loop *outer,
     }
 }
 
-/* Estimate and return the value of EXPR by replacing variables in EXPR
-   with CST_TREE and simplifying.  */
-
-static tree
-estimate_val_by_simplify_replace (tree expr, tree cst_tree)
-{
-  unsigned i, n;
-  tree ret = NULL_TREE, e, se;
-
-  if (!expr)
-    return NULL_TREE;
-
-  /* Do not bother to replace constants.  */
-  if (CONSTANT_CLASS_P (expr))
-    return expr;
-
-  if (!EXPR_P (expr))
-    return cst_tree;
-
-  n = TREE_OPERAND_LENGTH (expr);
-  for (i = 0; i < n; i++)
-    {
-      e = TREE_OPERAND (expr, i);
-      se = estimate_val_by_simplify_replace (e, cst_tree);
-      if (e == se)
-	continue;
-
-      if (!ret)
-	ret = copy_node (expr);
-
-      TREE_OPERAND (ret, i) = se;
-    }
-
-  return (ret ? fold (ret) : expr);
-}
-
 /* Given data reference DR in LOOP_NEST, the function computes DR's access
    stride at each level of loop from innermost LOOP to outer.  On success,
    it saves access stride at each level loop in a vector which is pointed
@@ -1388,44 +1352,31 @@ compute_access_stride (struct loop *loop_nest, struct loop *loop,
 
   tree ref = DR_REF (dr);
   tree scev_base = build_fold_addr_expr (ref);
-  tree access_size = TYPE_SIZE_UNIT (TREE_TYPE (ref));
-  tree niters = build_int_cst (sizetype, AVG_LOOP_NITER);
-  access_size = fold_build2 (MULT_EXPR, sizetype, niters, access_size);
-
-  do {
-    tree scev_fn = analyze_scalar_evolution (loop, scev_base);
-    if (chrec_contains_undetermined (scev_fn)
-	|| chrec_contains_symbols_defined_in_loop (scev_fn, loop->num))
-      break;
-
-    if (TREE_CODE (scev_fn) != POLYNOMIAL_CHREC)
-      {
-	scev_base = scev_fn;
-	strides->safe_push (build_int_cst (sizetype, 0));
-	continue;
-      }
-
-    scev_base = CHREC_LEFT (scev_fn);
-    if (tree_contains_chrecs (scev_base, NULL))
-      break;
-
-    tree scev_step = fold_convert (sizetype, CHREC_RIGHT (scev_fn));
-
-    enum ev_direction scev_dir = scev_direction (scev_fn);
-    /* Estimate if step isn't constant.  */
-    if (scev_dir == EV_DIR_UNKNOWN)
-      {
-	scev_step = estimate_val_by_simplify_replace (scev_step, niters);
-	if (TREE_CODE (scev_step) != INTEGER_CST
-	    || tree_int_cst_lt (scev_step, access_size))
-	  scev_step = access_size;
-      }
-    /* Compute absolute value of scev step.  */
-    else if (scev_dir == EV_DIR_DECREASES)
-      scev_step = fold_build1 (NEGATE_EXPR, sizetype, scev_step);
-
-    strides->safe_push (scev_step);
-  } while (loop != loop_nest && (loop = loop_outer (loop)) != NULL);
+  tree scev = analyze_scalar_evolution (loop, scev_base);
+  scev = instantiate_scev (loop_preheader_edge (loop_nest), loop, scev);
+  if (! chrec_contains_undetermined (scev))
+    {
+      tree sl = scev;
+      struct loop *expected = loop;
+      while (TREE_CODE (sl) == POLYNOMIAL_CHREC)
+	{
+	  struct loop *sl_loop = get_chrec_loop (sl);
+	  while (sl_loop != expected)
+	    {
+	      strides->safe_push (size_int (0));
+	      expected = loop_outer (expected);
+	    }
+	  strides->safe_push (CHREC_RIGHT (sl));
+	  sl = CHREC_LEFT (sl);
+	  expected = loop_outer (expected);
+	}
+      if (! tree_contains_chrecs (sl, NULL))
+	while (expected != loop_outer (loop_nest))
+	  {
+	    strides->safe_push (size_int (0));
+	    expected = loop_outer (expected);
+	  }
+    }
 
   dr->aux = strides;
 }
@@ -1538,6 +1489,9 @@ should_interchange_loops (unsigned i_idx, unsigned o_idx,
   struct data_reference *dr;
   bool all_seq_dr_before_p = true, all_seq_dr_after_p = true;
   widest_int iloop_strides = 0, oloop_strides = 0;
+  unsigned num_unresolved_drs = 0;
+  unsigned num_resolved_ok_drs = 0;
+  unsigned num_resolved_not_ok_drs = 0;
 
   if (dump_info_p && dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nData ref strides:\n\tmem_ref:\t\tiloop\toloop\n");
@@ -1546,28 +1500,42 @@ should_interchange_loops (unsigned i_idx, unsigned o_idx,
     {
       vec<tree> *stride = DR_ACCESS_STRIDE (dr);
       tree iloop_stride = (*stride)[i_idx], oloop_stride = (*stride)[o_idx];
-      gcc_assert (TREE_CODE (iloop_stride) == INTEGER_CST);
-      gcc_assert (TREE_CODE (oloop_stride) == INTEGER_CST);
 
       bool subloop_stride_p = false;
       /* Data ref can't be invariant or sequential access at current loop if
 	 its address changes with respect to any subloops.  */
       for (j = i_idx + 1; j < stride->length (); ++j)
-	if (integer_nonzerop ((*stride)[j]))
+	if (!integer_zerop ((*stride)[j]))
 	  {
 	    subloop_stride_p = true;
 	    break;
 	  }
 
-      if (integer_nonzerop (iloop_stride))
-	iloop_strides = wi::add (iloop_strides, wi::to_widest (iloop_stride));
-      else if (!subloop_stride_p)
-	num_old_inv_drs++;
+      if (integer_zerop (iloop_stride))
+	{
+	  if (!subloop_stride_p)
+	    num_old_inv_drs++;
+	}
+      if (integer_zerop (oloop_stride))
+	{
+	  if (!subloop_stride_p)
+	    num_new_inv_drs++;
+	}
 
-      if (integer_nonzerop (oloop_stride))
-	oloop_strides = wi::add (oloop_strides, wi::to_widest (oloop_stride));
-      else if (!subloop_stride_p)
-	num_new_inv_drs++;
+      if (TREE_CODE (iloop_stride) == INTEGER_CST
+	  && TREE_CODE (oloop_stride) == INTEGER_CST)
+	{
+	  iloop_strides = wi::add (iloop_strides, wi::to_widest (iloop_stride));
+	  oloop_strides = wi::add (oloop_strides, wi::to_widest (oloop_stride));
+	}
+      else if (multiple_of_p (TREE_TYPE (iloop_stride),
+			      iloop_stride, oloop_stride))
+	num_resolved_ok_drs++;
+      else if (multiple_of_p (TREE_TYPE (iloop_stride),
+			      oloop_stride, iloop_stride))
+	num_resolved_not_ok_drs++;
+      else
+	num_unresolved_drs++;
 
       /* Data ref can't be sequential access if its address changes in sub
 	 loop.  */
@@ -1581,10 +1549,12 @@ should_interchange_loops (unsigned i_idx, unsigned o_idx,
 	 interchange.  Note invariant is considered sequential here.  */
       tree access_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
       if (all_seq_dr_before_p
-	  && wi::gtu_p (wi::to_wide (iloop_stride), wi::to_wide (access_size)))
+	  && ! (integer_zerop (iloop_stride)
+		|| operand_equal_p (access_size, iloop_stride, 0)))
 	all_seq_dr_before_p = false;
       if (all_seq_dr_after_p
-	  && wi::gtu_p (wi::to_wide (oloop_stride), wi::to_wide (access_size)))
+	  && ! (integer_zerop (oloop_stride)
+		|| operand_equal_p (access_size, oloop_stride, 0)))
 	all_seq_dr_after_p = false;
     }
 
@@ -1601,7 +1571,16 @@ should_interchange_loops (unsigned i_idx, unsigned o_idx,
       fprintf (dump_file, "All consecutive stride: before(%s), after(%s)\n",
 	       all_seq_dr_before_p ? "true" : "false",
 	       all_seq_dr_after_p ? "true" : "false");
+      fprintf (dump_file, "OK to interchage with variable strides: %d\n",
+	       num_resolved_ok_drs);
+      fprintf (dump_file, "Not OK to interchage with variable strides: %d\n",
+	       num_resolved_not_ok_drs);
+      fprintf (dump_file, "Variable strides we cannot decide: %d\n",
+	       num_unresolved_drs);
     }
+
+  if (num_unresolved_drs != 0 || num_resolved_not_ok_drs != 0)
+    return false;
 
   /* We use different stride comparison ratio for interchanging innermost
      two loops or not.  The idea is to be conservative in interchange for
