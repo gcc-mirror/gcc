@@ -170,7 +170,7 @@
 
 namespace {
 
-struct
+struct bswap_stat
 {
   /* Number of hand-written 16-bit nop / bswaps found.  */
   int found_16bit;

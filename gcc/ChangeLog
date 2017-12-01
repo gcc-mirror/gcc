@@ -1,5 +1,9 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83233
+	* gimple-ssa-store-merging.c (nop_stats, bswap_stats): Use
+	bswap_stat name for the struct.
+
 	PR c/79153
 	* tree.h (SWITCH_BREAK_LABEL_P): Define.
 	* gimplify.c (collect_fallthrough_labels): Handle GIMPLE_BIND
