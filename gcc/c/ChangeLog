@@ -1,5 +1,11 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/79153
+	* c-parser.c: Include tree-iterator.h.
+	(c_parser_switch_statement): Emit LABEL_EXPR for the break label
+	into SWITCH_BODY instead of after it and set SWITCH_BREAK_LABEL_P
+	on it.
+
 	PR c/83222
 	* c-tree.h (decl_constant_value_1): Declare.
 	* c-typeck.c (decl_constant_value_1): New function.

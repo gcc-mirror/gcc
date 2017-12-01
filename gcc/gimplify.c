@@ -1897,6 +1897,27 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 
   do
     {
+      if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_BIND)
+	{
+	  /* Recognize the special GIMPLE_BIND added by gimplify_switch_expr,
+	     which starts on a GIMPLE_SWITCH and ends with a break label.
+	     Handle that as a single statement that can fall through.  */
+	  gbind *bind = as_a <gbind *> (gsi_stmt (*gsi_p));
+	  gimple *first = gimple_seq_first_stmt (gimple_bind_body (bind));
+	  gimple *last = gimple_seq_last_stmt (gimple_bind_body (bind));
+	  if (last
+	      && gimple_code (first) == GIMPLE_SWITCH
+	      && gimple_code (last) == GIMPLE_LABEL)
+	    {
+	      tree label = gimple_label_label (as_a <glabel *> (last));
+	      if (SWITCH_BREAK_LABEL_P (label))
+		{
+		  prev = bind;
+		  gsi_next (gsi_p);
+		  continue;
+		}
+	    }
+	}
       if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_BIND
 	  || gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_TRY)
 	{
@@ -2315,6 +2336,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
       preprocess_case_label_vec_for_gimple (labels, index_type,
 					    &default_case);
 
+      bool add_bind = false;
       if (!default_case)
 	{
 	  glabel *new_default;
@@ -2322,14 +2344,46 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	  default_case
 	    = build_case_label (NULL_TREE, NULL_TREE,
 				create_artificial_label (UNKNOWN_LOCATION));
+	  if (old_in_switch_expr)
+	    {
+	      SWITCH_BREAK_LABEL_P (CASE_LABEL (default_case)) = 1;
+	      add_bind = true;
+	    }
 	  new_default = gimple_build_label (CASE_LABEL (default_case));
 	  gimplify_seq_add_stmt (&switch_body_seq, new_default);
 	}
+      else if (old_in_switch_expr)
+	{
+	  gimple *last = gimple_seq_last_stmt (switch_body_seq);
+	  if (last && gimple_code (last) == GIMPLE_LABEL)
+	    {
+	      tree label = gimple_label_label (as_a <glabel *> (last));
+	      if (SWITCH_BREAK_LABEL_P (label))
+		add_bind = true;
+	    }
+	}
 
       switch_stmt = gimple_build_switch (SWITCH_COND (switch_expr),
-					   default_case, labels);
-      gimplify_seq_add_stmt (pre_p, switch_stmt);
-      gimplify_seq_add_seq (pre_p, switch_body_seq);
+					 default_case, labels);
+      /* For the benefit of -Wimplicit-fallthrough, if switch_body_seq
+	 ends with a GIMPLE_LABEL holding SWITCH_BREAK_LABEL_P LABEL_DECL,
+	 wrap the GIMPLE_SWITCH up to that GIMPLE_LABEL into a GIMPLE_BIND,
+	 so that we can easily find the start and end of the switch
+	 statement.  */
+      if (add_bind)
+	{
+	  gimple_seq bind_body = NULL;
+	  gimplify_seq_add_stmt (&bind_body, switch_stmt);
+	  gimple_seq_add_seq (&bind_body, switch_body_seq);
+	  gbind *bind = gimple_build_bind (NULL_TREE, bind_body, NULL_TREE);
+	  gimple_set_location (bind, EXPR_LOCATION (switch_expr));
+	  gimplify_seq_add_stmt (pre_p, bind);
+	}
+      else
+	{
+	  gimplify_seq_add_stmt (pre_p, switch_stmt);
+	  gimplify_seq_add_seq (pre_p, switch_body_seq);
+	}
       labels.release ();
     }
   else

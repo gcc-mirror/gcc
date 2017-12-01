@@ -1161,6 +1161,7 @@ evolution_function_is_univariate_p (const_tree chrec)
 	    return false;
 	  break;
 	}
+      return true;
 
     default:
       return true;

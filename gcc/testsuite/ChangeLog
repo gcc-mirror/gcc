@@ -1,5 +1,10 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/79153
+	* c-c++-common/Wimplicit-fallthrough-7.c: Adjust expected warning
+	line.
+	* c-c++-common/Wimplicit-fallthrough-36.c: New test.
+
 	PR sanitizer/81275
 	* c-c++-common/tsan/pr81275.c: Remove dg-skip-if.
 

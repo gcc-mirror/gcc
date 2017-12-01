@@ -1,3 +1,12 @@
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79153
+	* cp-gimplify.c (genericize_switch_stmt): Emit LABEL_EXPR for the
+	break label into SWITCH_BODY instead of after it and set
+	SWITCH_BREAK_LABEL_P on it.
+	* parser.c (cp_parser_objc_expression): Add FALLTHRU comment to avoid
+	-Wimplicit-fallthrough warning.
+
 2017-11-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82219 - bogus -Wignored-qualifiers with template

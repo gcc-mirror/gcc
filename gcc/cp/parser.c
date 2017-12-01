@@ -29003,6 +29003,7 @@ cp_parser_objc_expression (cp_parser* parser)
 	default:
 	  break;
 	}
+      /* FALLTHRU */
     default:
       error_at (kwd->location,
 		"misplaced %<@%D%> Objective-C++ construct",
