@@ -1,3 +1,56 @@
+2017-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82605
+	* resolve.c (get_pdt_constructor): Initialize 'cons' to NULL.
+	(resolve_pdt): Correct typo in prior comment. Emit an error if
+	any parameters are deferred and the object is neither pointer
+	nor allocatable.
+
+	PR fortran/82606
+	* decl.c (gfc_get_pdt_instance): Continue if the parameter sym
+	is not present or has no name. Select the parameter by name
+	of component, rather than component order. Remove all the other
+	manipulations of 'tail' when building the pdt instance.
+	(gfc_match_formal_arglist): Emit and error if a star is picked
+	up in a PDT decl parameter list.
+
+	PR fortran/82622
+	* trans-array.c (set_loop_bounds): If a GFC_SS_COMPONENT has an
+	info->end, use it rather than falling through to
+	gcc_unreachable.
+	(structure_alloc_comps): Check that param->name is non-null
+	before comparing with the component name.
+	* trans-decl.c (gfc_get_symbol_decl): Do not use the static
+	initializer for PDT symbols.
+	(gfc_init_default_dt): Do nothing for PDT symbols.
+	* trans-io.c (transfer_array_component): Parameterized array
+	components use the descriptor ubound since the shape is not
+	available.
+
+	PR fortran/82719
+	PR fortran/82720
+	* trans-expr.c (gfc_conv_component_ref): Do not use the charlen
+	backend_decl of pdt strings. Use the hidden component instead.
+	* trans-io.c (transfer_expr): Do not do IO on "hidden" string
+	lengths. Use the hidden string length for pdt string transfers
+	by adding it to the se structure. When finished nullify the
+	se string length.
+
+	PR fortran/82866
+	* decl.c (gfc_match_formal_arglist): If a name is not found or
+	star is found, while reading a type parameter list, emit an
+	immediate error.
+	(gfc_match_derived_decl): On reading a PDT parameter list, on
+	failure to match call gfc_error_recovery.
+
+	PR fortran/82978
+	* decl.c (build_struct): Character kind defaults to 1, so use
+	kind_expr whatever is the set value.
+	(gfc_get_pdt_instance): Ditto.
+	* trans-array.c (structure_alloc_comps): Copy the expression
+	for the PDT string length before parameter substitution. Use
+	this expression for evaluation and free it after use.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79153

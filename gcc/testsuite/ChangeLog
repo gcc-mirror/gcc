@@ -1,3 +1,28 @@
+2017-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82605
+	* gfortran.dg/pdt_4.f03 : Incorporate the new error.
+
+	PR fortran/82606
+	* gfortran.dg/pdt_19.f03 : New test.
+	* gfortran.dg/pdt_21.f03 : New test.
+
+	PR fortran/82622
+	* gfortran.dg/pdt_20.f03 : New test.
+	* gfortran.dg/pdt_22.f03 : New test.
+
+	PR fortran/82719
+	PR fortran/82720
+	* gfortran.dg/pdt_23.f03 : New test.
+
+	PR fortran/82866
+	* gfortran.dg/pdt_24.f03 : New test.
+
+	PR fortran/82978
+	* gfortran.dg/pdt_10.f03 : Correct for error in coding the for
+	kind 4 component and change the kind check appropriately.
+	* gfortran.dg/pdt_25.f03 : New test.
+
 2017-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83232

@@ -5043,6 +5043,17 @@ set_loop_bounds (gfc_loopinfo *loop)
 		break;
 	      }
 
+	    case GFC_SS_COMPONENT:
+	      {
+		if (info->end[dim] != NULL_TREE)
+		  {
+		    loop->to[n] = info->end[dim];
+		    break;
+		  }
+		else
+		  gcc_unreachable ();
+	      }
+
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -8975,7 +8986,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_actual_arglist *param = pdt_param_list;
 	      gfc_init_se (&tse, NULL);
 	      for (; param; param = param->next)
-		if (!strcmp (c->name, param->name))
+		if (param->name && !strcmp (c->name, param->name))
 		  c_expr = param->expr;
 
 	      if (!c_expr)
@@ -8992,14 +9003,15 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	    {
 	      gfc_se tse;
 	      gfc_init_se (&tse, NULL);
-	      tree strlen;
+	      tree strlen = NULL_TREE;
+	      gfc_expr *e = gfc_copy_expr (c->ts.u.cl->length);
 	      /* Convert the parameterized string length to its value. The
 		 string length is stored in a hidden field in the same way as
 		 deferred string lengths.  */
-	      gfc_insert_parameter_exprs (c->ts.u.cl->length, pdt_param_list);
+	      gfc_insert_parameter_exprs (e, pdt_param_list);
 	      if (gfc_deferred_strlen (c, &strlen) && strlen != NULL_TREE)
 		{
-		  gfc_conv_expr_type (&tse, c->ts.u.cl->length,
+		  gfc_conv_expr_type (&tse, e,
 				      TREE_TYPE (strlen));
 		  strlen = fold_build3_loc (input_location, COMPONENT_REF,
 					    TREE_TYPE (strlen),
@@ -9007,6 +9019,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		  gfc_add_modify (&fnblock, strlen, tse.expr);
 		  c->ts.u.cl->backend_decl = strlen;
 		}
+	      gfc_free_expr (e);
+
 	      /* Scalar parameterizied strings can be allocated now.  */
 	      if (!c->as)
 		{
