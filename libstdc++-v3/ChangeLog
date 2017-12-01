@@ -1,5 +1,8 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/node_handle.h (_Node_handle_common::operator=)
+	(_Node_handle_common::_M_swap): Add braces around debug assertions.
+
 	* include/ext/ropeimpl.h (rope::_S_dump): Use const char*.
 
 	* libsupc++/nested_exception.h (__throw_with_nested_impl): Add

@@ -87,10 +87,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		|| !this->_M_alloc)
 	      this->_M_alloc = std::move(__nh._M_alloc);
 	    else
-	      __glibcxx_assert(this->_M_alloc == __nh._M_alloc);
+	      {
+		__glibcxx_assert(this->_M_alloc == __nh._M_alloc);
+	      }
 	  }
 	else
-	  __glibcxx_assert(_M_alloc);
+	  {
+	    __glibcxx_assert(_M_alloc);
+	  }
 	__nh._M_ptr = nullptr;
 	__nh._M_alloc = nullopt;
 	return *this;
@@ -109,7 +113,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || !_M_alloc || !__nh._M_alloc)
 	  _M_alloc.swap(__nh._M_alloc);
 	else
-	  __glibcxx_assert(_M_alloc == __nh._M_alloc);
+	  {
+	    __glibcxx_assert(_M_alloc == __nh._M_alloc);
+	  }
       }
 
     private:
