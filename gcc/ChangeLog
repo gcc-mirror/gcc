@@ -1,3 +1,12 @@
+2017-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81959
+	* config/rs6000/rs6000.c (rs6000_address_for_fpconvert): Check for
+	whether we can allocate pseudos before trying to fix an address.
+	* config/rs6000/rs6000.md (float_<mode>si2_hw): Make sure the
+	memory address is indexed or indirect.
+	(floatuns_<mode>si2_hw2): Likewise.
+
 2017-12-01  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (TAGS): Add c-family/*.cc.
