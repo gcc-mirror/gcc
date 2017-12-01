@@ -659,11 +659,23 @@ private
 
    type pthread_t is new rtems_id;
 
-   type pthread_mutex_t is new rtems_id;
+   type pthread_mutex_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE);
+   end record;
+   pragma Convention (C, pthread_mutex_t);
+   for pthread_mutex_t'Alignment use Interfaces.C.double'Alignment;
 
-   type pthread_rwlock_t is new rtems_id;
+   type pthread_rwlock_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCK_SIZE);
+   end record;
+   pragma Convention (C, pthread_rwlock_t);
+   for pthread_rwlock_t'Alignment use Interfaces.C.double'Alignment;
 
-   type pthread_cond_t is new rtems_id;
+   type pthread_cond_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);
+   end record;
+   pragma Convention (C, pthread_cond_t);
+   for pthread_cond_t'Alignment use Interfaces.C.double'Alignment;
 
    type pthread_key_t is new rtems_id;
 

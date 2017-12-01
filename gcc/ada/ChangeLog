@@ -1,3 +1,10 @@
+2017-12-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* s-osinte-rtems.ads (pthread_cond_t): Use correct size and
+	alignment.
+	(pthread_mutex_t): Likewise.
+	(pthread_rwlock_t): Likewise.
+
 2017-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert) <RECORD_TYPE>: Add comment and do
