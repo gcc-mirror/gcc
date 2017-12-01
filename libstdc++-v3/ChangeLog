@@ -1,5 +1,8 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/tr1/modified_bessel_func.tcc (__airy): Use value-init not
+	list-init.
+
 	* include/std/type_traits (integral_constant): Make member functions
 	noexcept (LWG 2346).
 	* include/std/utility (integer_sequence): Likewise.
