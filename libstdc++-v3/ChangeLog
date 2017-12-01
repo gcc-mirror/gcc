@@ -1,5 +1,15 @@
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h (operator""s): Add pragmas to disable
+	-Wliteral-suffix warnings.
+	* include/experimental/string_view (operator""sv): Likewise.
+	* include/std/chrono (operator""h, operator""min, operator""s)
+	(operator""ms, operator""us, operator""ns): Likewise.
+	* include/std/complex (operator""if, operator""i, operator""il):
+	Likewise.
+	* include/std/string_view (operator""sv): Likewise.
+	* testsuite/20_util/duration/literals/range.cc: Adjust dg-error.
+
 	* include/bits/locale_facets_nonio.tcc (money_get::_M_extract): Add
 	fallthrough comment.
 

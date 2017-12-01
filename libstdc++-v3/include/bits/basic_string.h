@@ -6665,6 +6665,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   inline namespace string_literals
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char>
     operator""s(const char* __str, size_t __len)
@@ -6689,6 +6691,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<char32_t>{__str, __len}; }
 #endif
 
+#pragma GCC diagnostic pop
   } // inline namespace string_literals
   } // inline namespace literals
 
