@@ -1,3 +1,7 @@
+2017-12-01  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (TAGS): Add c-family/*.cc.
+
 2017-12-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (call_insn): Use %c rather than %a.
