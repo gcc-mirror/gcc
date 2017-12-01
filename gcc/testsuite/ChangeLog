@@ -1,3 +1,8 @@
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* c-c++-common/tsan/pr81275.c: Remove dg-skip-if.
+
 2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83224

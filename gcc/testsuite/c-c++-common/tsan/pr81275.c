@@ -1,7 +1,6 @@
 /* PR sanitizer/81275 */
 /* { dg-do compile } */
 /* { dg-options "-Wreturn-type -fsanitize=thread" } */
-/* { dg-skip-if "" { c++ } { "*" } { "-O0" } } */
 
 int
 f1 (int a, int b)
