@@ -1,3 +1,8 @@
+2017-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81959
+	* gcc.target/powerpc/pr81959.c: New test.
+
 2017-12-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.dg/asm-4.c: Skip on AArch64 with ILP32 as test is incorrect.
