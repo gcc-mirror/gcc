@@ -5713,10 +5713,11 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	return;
 
       case ADDRESS_SYMBOLIC:
-	break;
+	output_addr_const (f, x);
+	return;
       }
 
-  output_addr_const (f, x);
+  output_operand_lossage ("invalid operand for '%%%c'", op);
 }
 
 /* Print address 'x' of a LDP/STP with mode 'mode'.  */

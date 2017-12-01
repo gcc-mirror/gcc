@@ -1,3 +1,19 @@
+2017-12-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (call_insn): Use %c rather than %a.
+	(call_value_insn): Likewise.
+	(sibcall_insn): Likewise.
+	(sibcall_value_insn): Likewise.
+	(movsi_aarch64): Likewise.
+	(movdi_aarch64): Likewise.
+	(add_losym_): Likewise.
+	(ldr_got_small_): Likewise.
+	(ldr_got_small_sidi): Likewise.
+	(ldr_got_small_28k_): Likewise.
+	(ldr_got_small_28k_sidi): Likewise.
+	* config/aarch64/aarch64.c (aarch64_print_address_internal):
+	Move output_addr_const to symbolic case. Add error check.
+
 2017-12-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md (plus16_Q_operand): New predicate.

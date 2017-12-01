@@ -749,7 +749,7 @@
   ""
   "@
   blr\\t%0
-  bl\\t%a0"
+  bl\\t%c0"
   [(set_attr "type" "call, call")]
 )
 
@@ -775,7 +775,7 @@
   ""
   "@
   blr\\t%1
-  bl\\t%a1"
+  bl\\t%c1"
   [(set_attr "type" "call, call")]
 )
 
@@ -811,7 +811,7 @@
   "SIBLING_CALL_P (insn)"
   "@
    br\\t%0
-   b\\t%a0"
+   b\\t%c0"
   [(set_attr "type" "branch, branch")]
 )
 
@@ -824,7 +824,7 @@
   "SIBLING_CALL_P (insn)"
   "@
    br\\t%1
-   b\\t%a1"
+   b\\t%c1"
   [(set_attr "type" "branch, branch")]
 )
 
@@ -946,7 +946,7 @@
    ldr\\t%s0, %1
    str\\t%w1, %0
    str\\t%s1, %0
-   adr\\t%x0, %a1
+   adr\\t%x0, %c1
    adrp\\t%x0, %A1
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
@@ -981,7 +981,7 @@
    ldr\\t%d0, %1
    str\\t%x1, %0
    str\\t%d1, %0
-   adr\\t%x0, %a1
+   adr\\t%x0, %c1
    adrp\\t%x0, %A1
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
@@ -5401,7 +5401,7 @@
 	(lo_sum:P (match_operand:P 1 "register_operand" "r")
 		  (match_operand 2 "aarch64_valid_symref" "S")))]
   ""
-  "add\\t%<w>0, %<w>1, :lo12:%a2"
+  "add\\t%<w>0, %<w>1, :lo12:%c2"
   [(set_attr "type" "alu_imm")]
 )
 
@@ -5412,7 +5412,7 @@
 			      (match_operand:PTR 2 "aarch64_valid_symref" "S")))]
 		    UNSPEC_GOTSMALLPIC))]
   ""
-  "ldr\\t%<w>0, [%1, #:got_lo12:%a2]"
+  "ldr\\t%<w>0, [%1, #:got_lo12:%c2]"
   [(set_attr "type" "load_<ldst_sz>")]
 )
 
@@ -5424,7 +5424,7 @@
 			     (match_operand:DI 2 "aarch64_valid_symref" "S")))]
 		    UNSPEC_GOTSMALLPIC)))]
   "TARGET_ILP32"
-  "ldr\\t%w0, [%1, #:got_lo12:%a2]"
+  "ldr\\t%w0, [%1, #:got_lo12:%c2]"
   [(set_attr "type" "load_4")]
 )
 
@@ -5435,7 +5435,7 @@
 			      (match_operand:PTR 2 "aarch64_valid_symref" "S")))]
 		    UNSPEC_GOTSMALLPIC28K))]
   ""
-  "ldr\\t%<w>0, [%1, #:<got_modifier>:%a2]"
+  "ldr\\t%<w>0, [%1, #:<got_modifier>:%c2]"
   [(set_attr "type" "load_<ldst_sz>")]
 )
 
@@ -5447,7 +5447,7 @@
 			     (match_operand:DI 2 "aarch64_valid_symref" "S")))]
 		    UNSPEC_GOTSMALLPIC28K)))]
   "TARGET_ILP32"
-  "ldr\\t%w0, [%1, #:gotpage_lo14:%a2]"
+  "ldr\\t%w0, [%1, #:gotpage_lo14:%c2]"
   [(set_attr "type" "load_4")]
 )
 
