@@ -37,6 +37,8 @@ typedef __complex float KCtype __attribute__ ((mode (KC)));
 #define __divkc3 __divkc3_sw
 #endif
 
+extern KCtype __divkc3 (KFtype, KFtype, KFtype, KFtype);
+
 KCtype
 __divkc3 (KFtype a, KFtype b, KFtype c, KFtype d)
 {

@@ -35,6 +35,8 @@ typedef __complex float KCtype __attribute__ ((mode (KC)));
 #define __mulkc3 __mulkc3_sw
 #endif
 
+extern KCtype __mulkc3 (KFtype, KFtype, KFtype, KFtype);
+
 KCtype
 __mulkc3 (KFtype a, KFtype b, KFtype c, KFtype d)
 {
