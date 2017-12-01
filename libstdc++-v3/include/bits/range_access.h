@@ -230,7 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++14
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 #define __cpp_lib_nonmember_container_access 201411
 
   /**
@@ -239,7 +239,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template <typename _Container>
     constexpr auto
-    size(const _Container& __cont) -> decltype(__cont.size())
+    size(const _Container& __cont) noexcept(noexcept(__cont.size()))
+    -> decltype(__cont.size())
     { return __cont.size(); }
 
   /**
@@ -257,7 +258,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template <typename _Container>
     constexpr auto
-    empty(const _Container& __cont) -> decltype(__cont.empty())
+    empty(const _Container& __cont) noexcept(noexcept(__cont.empty()))
+    -> decltype(__cont.empty())
     { return __cont.empty(); }
 
   /**
@@ -284,7 +286,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template <typename _Container>
     constexpr auto
-    data(_Container& __cont) -> decltype(__cont.data())
+    data(_Container& __cont) noexcept(noexcept(__cont.data()))
+    -> decltype(__cont.data())
     { return __cont.data(); }
 
   /**
@@ -293,7 +296,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template <typename _Container>
     constexpr auto
-    data(const _Container& __cont) -> decltype(__cont.data())
+    data(const _Container& __cont) noexcept(noexcept(__cont.data()))
+    -> decltype(__cont.data())
     { return __cont.data(); }
 
   /**
