@@ -1,5 +1,10 @@
 2017-12-01  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
+	* config/i386/i386.c (standard_sse_constant_opcode): Fix wrong form for
+	vpcmpeqd instruction.
+
+2017-12-01  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
 	* config/i386/i386.c (standard_sse_constant_opcode): Fix
 	registers type for 128bit mode.
 
