@@ -1,3 +1,9 @@
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83219
+	* tree-cfg.c: Include asan.h.
+	(gimple_seq_unreachable_p): Return false for -fsanitize=unreachable.
+
 2017-12-01  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* config/i386/i386.md: Fix AVX512 register width in AVX512 instruction.
