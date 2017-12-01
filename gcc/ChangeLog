@@ -1,3 +1,7 @@
+2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/md.texi (Insn Splitting): Fix "central flowgraph" typo.
+
 2017-12-01  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/arm/vfp.md (*movhf_vfp_fp16): Add conds attribute.

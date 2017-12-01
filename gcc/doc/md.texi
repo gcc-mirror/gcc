@@ -7890,7 +7890,7 @@ are not valid.
 
 The splitter is allowed to split jump instructions into sequence of
 jumps or create new jumps in while splitting non-jump instructions.  As
-the central flowgraph and branch prediction information needs to be updated,
+the control flow graph and branch prediction information needs to be updated,
 several restriction apply.
 
 Splitting of jump instruction into sequence that over by another jump
