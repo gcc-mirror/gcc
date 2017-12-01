@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct integer_sequence
     {
       typedef _Tp value_type;
-      static constexpr size_t size() { return sizeof...(_Idx); }
+      static constexpr size_t size() noexcept { return sizeof...(_Idx); }
     };
 
   /// Alias template make_integer_sequence
