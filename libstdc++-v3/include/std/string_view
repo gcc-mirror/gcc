@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
-	const difference_type __diff{__n1 - __n2};
+	const difference_type __diff = __n1 - __n2;
 	if (__diff > std::numeric_limits<int>::max())
 	  return std::numeric_limits<int>::max();
 	if (__diff < std::numeric_limits<int>::min())
