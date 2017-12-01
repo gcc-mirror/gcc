@@ -1,5 +1,10 @@
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81275
+	* tree-cfg.c (group_case_labels_stmt): Don't optimize away
+	C++ FE implicitly added __builtin_unreachable () until -Wreturn-type
+	is diagnosed.
+
 	PR sanitizer/83219
 	* tree-cfg.c: Include asan.h.
 	(gimple_seq_unreachable_p): Return false for -fsanitize=unreachable.
