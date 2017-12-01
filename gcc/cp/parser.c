@@ -3365,6 +3365,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		      id, parser->scope);
 	  if (DECL_P (decl))
 	    inform (DECL_SOURCE_LOCATION (decl), "%qD declared here", decl);
+	  else if (decl == error_mark_node)
+	    suggest_alternative_in_explicit_scope (location, id,
+						   parser->scope);
 	}
       else if (CLASS_TYPE_P (parser->scope)
 	       && constructor_name_p (id, parser->scope))
@@ -18408,7 +18411,13 @@ cp_parser_namespace_name (cp_parser* parser)
       || TREE_CODE (namespace_decl) != NAMESPACE_DECL)
     {
       if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
-	error_at (token->location, "%qD is not a namespace-name", identifier);
+	{
+	  error_at (token->location, "%qD is not a namespace-name", identifier);
+	  if (namespace_decl == error_mark_node
+	      && parser->scope && TREE_CODE (parser->scope) == NAMESPACE_DECL)
+	    suggest_alternative_in_explicit_scope (token->location, identifier,
+						   parser->scope);
+	}
       cp_parser_error (parser, "expected namespace-name");
       namespace_decl = error_mark_node;
     }

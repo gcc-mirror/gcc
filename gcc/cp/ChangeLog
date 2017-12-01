@@ -1,5 +1,11 @@
 2017-12-01  Jason Merrill  <jason@redhat.com>
 
+	Give #include hints for <complex>.
+	* name-lookup.c (get_std_name_hint): Add <complex>.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Call
+	suggest_alternative_in_explicit_scope.
+	(cp_parser_namespace_name): Likewise.
+
 	PR c++/79228 - extensions hide C++14 complex literal operators
 	* parser.c (cp_parser_userdef_numeric_literal): Be helpful about
 	'i' in C++14 and up.
