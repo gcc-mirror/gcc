@@ -1,5 +1,8 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-chkp.c (chkp_compute_bounds_for_assignment): Handle
+	POINTER_DIFF_EXPR.
+
 	PR c++/81212
 	* tree-cfg.c (pass_warn_function_return::execute): Handle
 	__builtin_ubsan_handle_missing_return like __builtin_unreachable

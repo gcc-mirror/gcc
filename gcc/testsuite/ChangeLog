@@ -1,5 +1,7 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/mpx/pointer-diff-1.c: New test.
+
 	PR c++/81212
 	* g++.dg/ubsan/pr81212.C: New test.
 	* g++.dg/ubsan/return-1.C: Add -Wno-return-type to dg-options.
