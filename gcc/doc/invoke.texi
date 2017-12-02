@@ -13317,7 +13317,7 @@ Produce a core dump whenever an error occurs.
 @item -dp
 @opindex dp
 Annotate the assembler output with a comment indicating which
-pattern and alternative is used.  The length of each instruction is
+pattern and alternative is used.  The length and cost of each instruction are
 also printed.
 
 @item -dP
