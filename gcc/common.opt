@@ -137,7 +137,7 @@ enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
 
 ; Nonzero means use GNU-only extensions in the generated symbolic
 ; debugging information.  Currently, this only has an effect when
-; write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.
+; write_symbols is set to DBX_DEBUG or XCOFF_DEBUG.
 Variable
 bool use_gnu_debug_info_extensions
 
