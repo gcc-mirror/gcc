@@ -9151,10 +9151,13 @@ pass_warn_function_return::execute (function *fun)
 	  if (EDGE_COUNT (bb->succs) == 0)
 	    {
 	      gimple *last = last_stmt (bb);
+	      const enum built_in_function ubsan_missing_ret
+		= BUILT_IN_UBSAN_HANDLE_MISSING_RETURN;
 	      if (last
-		  && (LOCATION_LOCUS (gimple_location (last))
-		      == BUILTINS_LOCATION)
-		  && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		  && ((LOCATION_LOCUS (gimple_location (last))
+		       == BUILTINS_LOCATION
+		       && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		      || gimple_call_builtin_p (last, ubsan_missing_ret)))
 		{
 		  gimple_stmt_iterator gsi = gsi_for_stmt (last);
 		  gsi_prev_nondebug (&gsi);

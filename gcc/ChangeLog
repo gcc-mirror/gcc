@@ -1,5 +1,10 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81212
+	* tree-cfg.c (pass_warn_function_return::execute): Handle
+	__builtin_ubsan_handle_missing_return like __builtin_unreachable
+	with BUILTINS_LOCATION.
+
 	PR target/78643
 	PR target/80583
 	* expr.c (get_inner_reference): If DECL_MODE of a non-bitfield
