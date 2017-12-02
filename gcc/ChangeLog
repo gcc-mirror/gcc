@@ -1,5 +1,11 @@
 2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (ipcp_lattice<valtype>::print): Update dumping.
+	(update_specialized_profile): Fix updating of counts.
+	(perhaps_add_new_callers): Likewise.
+
+2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR target/81616
 	* x86-tune.def: Remove obsolette FIXMEs.
 	(X86_TUNE_PARTIAL_FLAG_REG_STALL): Disable for generic
