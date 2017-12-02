@@ -3469,16 +3469,20 @@ output_asm_name (void)
 {
   if (debug_insn)
     {
-      int num = INSN_CODE (debug_insn);
-      fprintf (asm_out_file, "\t%s %d\t%s",
-	       ASM_COMMENT_START, INSN_UID (debug_insn),
-	       insn_data[num].name);
-      if (insn_data[num].n_alternatives > 1)
-	fprintf (asm_out_file, "/%d", which_alternative + 1);
+      fprintf (asm_out_file, "\t%s %d\t",
+	       ASM_COMMENT_START, INSN_UID (debug_insn));
 
+      fprintf (asm_out_file, "[c=%d",
+	       insn_cost (debug_insn, optimize_insn_for_speed_p ()));
       if (HAVE_ATTR_length)
-	fprintf (asm_out_file, "\t[length = %d]",
+	fprintf (asm_out_file, " l=%d",
 		 get_attr_length (debug_insn));
+      fprintf (asm_out_file, "]  ");
+
+      int num = INSN_CODE (debug_insn);
+      fprintf (asm_out_file, "%s", insn_data[num].name);
+      if (insn_data[num].n_alternatives > 1)
+	fprintf (asm_out_file, "/%d", which_alternative);
 
       /* Clear this so only the first assembler insn
 	 of any rtl insn will get the special comment for -dp.  */
@@ -3823,6 +3827,10 @@ output_asm_insn (const char *templ, rtx *operands)
       default:
 	putc (c, asm_out_file);
       }
+
+  /* Try to keep the asm a bit more readable.  */
+  if ((flag_verbose_asm || flag_print_asm_name) && strlen (templ) < 9)
+    putc ('\t', asm_out_file);
 
   /* Write out the variable names for operands, if we know them.  */
   if (flag_verbose_asm)

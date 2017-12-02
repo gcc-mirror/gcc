@@ -1,3 +1,9 @@
+2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* final.c (output_asm_name): Print insn_cost.  Shorten output.  Print
+	which_alternative instead of which_alternative + 1.
+	(output_asm_insn): Print an extra tab if the template is short.
+
 2017-12-01  Jim Wilson  <jimw@sifive.com>
 
 	* common.opt (use_gnu_debug_info_extensions): Delete DWARF_DEBUG from
