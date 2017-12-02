@@ -1,3 +1,9 @@
+2017-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78643
+	PR target/80583
+	* gcc.target/i386/pr80583.c: New test.
+
 2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/fusion.c: Add -dp to options.  Adjust the expected
