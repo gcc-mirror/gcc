@@ -11,6 +11,10 @@ import (
 	"unsafe"
 )
 
+// Functions called by cgo-generated code.
+//go:linkname cgoCheckPointer runtime.cgoCheckPointer
+//go:linkname cgoCheckResult runtime.cgoCheckResult
+
 // Pointer checking for cgo code.
 
 // We want to detect all cases where a program that does not use
