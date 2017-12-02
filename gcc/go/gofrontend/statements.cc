@@ -4866,8 +4866,8 @@ Select_clauses::get_backend(Translate_context* context,
 			    Location location)
 {
   size_t count = this->clauses_.size();
-  std::vector<std::vector<Bexpression*> > cases(count);
-  std::vector<Bstatement*> clauses(count);
+  std::vector<std::vector<Bexpression*> > cases(count + 1);
+  std::vector<Bstatement*> clauses(count + 1);
 
   Type* int_type = Type::lookup_integer_type("int");
 
@@ -4905,10 +4905,15 @@ Select_clauses::get_backend(Translate_context* context,
       return context->backend()->expression_statement(bfunction, bcall);
     }
 
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+
+  Expression* crash = Runtime::make_call(Runtime::UNREACHABLE, location, 0);
+  Bexpression* bcrash = crash->get_backend(context);
+  clauses[count] = context->backend()->expression_statement(bfunction, bcrash);
+
   std::vector<Bstatement*> statements;
   statements.reserve(2);
 
-  Bfunction* bfunction = context->function()->func_value()->get_decl();
   Bstatement* switch_stmt = context->backend()->switch_statement(bfunction,
 								 bcall,
 								 cases,
