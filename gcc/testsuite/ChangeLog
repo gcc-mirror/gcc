@@ -1,3 +1,9 @@
+2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* gcc.target/i386/pad-1.c: Compile for amdfam10.
+	* gcc.target/i386/align-limit.c: Likewise.
+
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83170

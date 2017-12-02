@@ -1,3 +1,13 @@
+2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* x86-tune.def: Remove obsolette FIXMEs.
+	(X86_TUNE_PARTIAL_FLAG_REG_STALL): Disable for generic
+	(X86_TUNE_FUSE_CMP_AND_BRANCH_32, X86_TUNE_FUSE_CMP_AND_BRANCH_64,
+	X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, X86_TUNE_FUSE_ALU_AND_BRANCH):
+	Enable for generic.
+	(X86_TUNE_PAD_RETURNS): Disable for generic.
+
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83170
