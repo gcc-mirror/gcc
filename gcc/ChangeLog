@@ -1,5 +1,11 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/78643
+	PR target/80583
+	* expr.c (get_inner_reference): If DECL_MODE of a non-bitfield
+	is BLKmode for vector field with vector raw mode, use TYPE_MODE
+	instead of DECL_MODE.
+
 	* config/i386/i386-protos.h (standard_sse_constant_opcode): Change
 	last argument to rtx pointer.
 	* config/i386/i386.c (standard_sse_constant_opcode): Replace X argument

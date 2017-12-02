@@ -7032,7 +7032,16 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	     size.  */
 	mode = TYPE_MODE (DECL_BIT_FIELD_TYPE (field));
       else if (!DECL_BIT_FIELD (field))
-	mode = DECL_MODE (field);
+	{
+	  mode = DECL_MODE (field);
+	  /* For vector fields re-check the target flags, as DECL_MODE
+	     could have been set with different target flags than
+	     the current function has.  */
+	  if (mode == BLKmode
+	      && VECTOR_TYPE_P (TREE_TYPE (field))
+	      && VECTOR_MODE_P (TYPE_MODE_RAW (TREE_TYPE (field))))
+	    mode = TYPE_MODE (TREE_TYPE (field));
+	}
       else if (DECL_MODE (field) == BLKmode)
 	blkmode_bitfield = true;
 
