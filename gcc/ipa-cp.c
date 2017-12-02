@@ -497,8 +497,8 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
 
 	  fprintf (f, " [from:");
 	  for (s = val->sources; s; s = s->next)
-	    fprintf (f, " %i(%i)", s->cs->caller->order,
-		     s->cs->frequency ());
+	    fprintf (f, " %i(%f)", s->cs->caller->order,
+		     s->cs->sreal_frequency ().to_double ());
 	  fprintf (f, "]");
 	}
 
@@ -3751,10 +3751,7 @@ update_specialized_profile (struct cgraph_node *new_node,
   orig_node->count -= redirected_sum;
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)
-    if (cs->frequency ())
-      cs->count += cs->count.apply_scale (redirected_sum, new_node_count);
-    else
-      cs->count = profile_count::zero ();
+    cs->count += cs->count.apply_scale (redirected_sum, new_node_count);
 
   for (cs = orig_node->callees; cs; cs = cs->next_callee)
     {
@@ -4482,7 +4479,7 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 	}
     }
 
-  if (redirected_sum > profile_count::zero ())
+  if (redirected_sum.nonzero_p ())
     update_specialized_profile (val->spec_node, node, redirected_sum);
 }
 
