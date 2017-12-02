@@ -1,5 +1,9 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83170
+	PR tree-optimization/83241
+	* gcc.dg/store_merging_17.c: New test.
+
 	* gcc.target/i386/mpx/pointer-diff-1.c: New test.
 
 	PR c++/81212

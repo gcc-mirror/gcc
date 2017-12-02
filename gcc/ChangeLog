@@ -1,5 +1,12 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83170
+	PR tree-optimization/83241
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::try_coalesce_bswap): Update vuse field from
+	gimple_vuse (ins_stmt) in case it has changed.
+	(imm_store_chain_info::output_merged_store): Likewise.
+
 	* tree-chkp.c (chkp_compute_bounds_for_assignment): Handle
 	POINTER_DIFF_EXPR.
 
