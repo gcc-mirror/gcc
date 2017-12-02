@@ -1,5 +1,9 @@
 2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* doc/invoke.texi (-dp): Say that instruction cost is printed as well.
+
+2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-protos.h (emit_fusion_addis): Remove last two
 	parameters from prototype.
 	* config/rs6000/rs6000.c (emit_fusion_addis): Remove last two
