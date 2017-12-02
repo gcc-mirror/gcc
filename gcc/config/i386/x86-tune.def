@@ -75,12 +75,10 @@ DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs", m_ATHLON_K8)
    setting full flags.
 
    The flags does not affect generation of INC and DEC that is controlled
-   by X86_TUNE_USE_INCDEC.
+   by X86_TUNE_USE_INCDEC.  */
 
-   This flag may be dropped from generic once core2-corei5 machines are
-   rare enough.  */
 DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
-          m_CORE2 | m_GENERIC)
+          m_CORE2)
 
 /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
    partial dependencies.  */
@@ -96,28 +94,26 @@ DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
 	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_GENERIC)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_32: Fuse compare with a subsequent
-   conditional jump instruction for 32 bit TARGET.
-   FIXME: revisit for generic.  */
+   conditional jump instruction for 32 bit TARGET.  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_32, "fuse_cmp_and_branch_32",
-	  m_CORE_ALL | m_BDVER | m_ZNVER1)
+	  m_CORE_ALL | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_64: Fuse compare with a subsequent
-   conditional jump instruction for TARGET_64BIT.
-   FIXME: revisit for generic.  */
+   conditional jump instruction for TARGET_64BIT.  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_64, "fuse_cmp_and_branch_64",
-	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1)
+	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS: Fuse compare with a
    subsequent conditional jump instruction when the condition jump
    check sign flag (SF) or overflow flag (OF).  */
 DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS, "fuse_cmp_and_branch_soflags",
-	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1)
+	  m_NEHALEM | m_SANDYBRIDGE | m_HASWELL | m_BDVER | m_ZNVER1 | m_GENERIC)
 
 /* X86_TUNE_FUSE_ALU_AND_BRANCH: Fuse alu with a subsequent conditional
    jump instruction when the alu instruction produces the CCFLAG consumed by
    the conditional jump instruction. */
 DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
-          m_SANDYBRIDGE | m_HASWELL)
+          m_SANDYBRIDGE | m_HASWELL | m_GENERIC)
 
 
 /*****************************************************************************/
@@ -130,12 +126,8 @@ DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
    This increase code size by about 5% in 32bit mode, less so in 64bit mode
    because parameters are passed in registers.  It is considerable
    win for targets without stack engine that prevents multple push operations
-   to happen in parallel.
+   to happen in parallel.  */
 
-   FIXME: the flags is incorrectly enabled for amdfam10, Bulldozer,
-   Bobcat and Generic.  This is because disabling it causes large
-   regression on mgrid due to IRA limitation leading to unecessary
-   use of the frame pointer in 32bit mode.  */
 DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args",
 	  m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
 	  | m_ATHLON_K8)
@@ -194,7 +186,7 @@ DEF_TUNE (X86_TUNE_PAD_SHORT_FUNCTION, "pad_short_function", m_BONNELL)
    architecture expect at most one jump per 2 byte window.  Failing to
    pad returns leads to misaligned return stack.  */
 DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
-          m_ATHLON_K8 | m_AMDFAM10 | m_GENERIC)
+          m_ATHLON_K8 | m_AMDFAM10)
 
 /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
    than 4 branch instructions in the 16 byte window.  */
@@ -380,8 +372,7 @@ DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_FROM_VEC, "inter_unit_moves_from_vec",
           ~m_ATHLON_K8)
 
 /* X86_TUNE_INTER_UNIT_CONVERSIONS: Enable float<->integer conversions
-   to use both SSE and integer registers at a same time.
-   FIXME: revisit importance of this for generic.  */
+   to use both SSE and integer registers at a same time.  */
 DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions",
           ~(m_AMDFAM10 | m_BDVER))
 
