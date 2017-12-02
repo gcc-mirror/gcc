@@ -10380,12 +10380,13 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
 }
 
 /* Return the opcode of the special instruction to be used to load
-   the constant X.  */
+   the constant operands[1] into operands[0].  */
 
 const char *
-standard_sse_constant_opcode (rtx_insn *insn, rtx x)
+standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 {
   machine_mode mode;
+  rtx x = operands[1];
 
   gcc_assert (TARGET_SSE);
 
@@ -10395,34 +10396,51 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
     {
       switch (get_attr_mode (insn))
 	{
-	case MODE_XI:
-	  return "vpxord\t%g0, %g0, %g0";
-	case MODE_OI:
-	  return (TARGET_AVX512VL
-		  ? "vpxord\t%x0, %x0, %x0"
-		  : "vpxor\t%x0, %x0, %x0");
 	case MODE_TI:
-	  return (TARGET_AVX512VL
-		  ? "vpxord\t%x0, %x0, %x0"
-		  : "%vpxor\t%0, %d0");
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "%vpxor\t%0, %d0";
+	  /* FALLTHRU */
+	case MODE_XI:
+	case MODE_OI:
+	  if (EXT_REX_SSE_REG_P (operands[0]))
+	    return (TARGET_AVX512VL
+		    ? "vpxord\t%x0, %x0, %x0"
+		    : "vpxord\t%g0, %g0, %g0");
+	  return "vpxor\t%x0, %x0, %x0";
 
-	case MODE_V8DF:
-	  return (TARGET_AVX512DQ
-		  ? "vxorpd\t%g0, %g0, %g0"
-		  : "vpxorq\t%g0, %g0, %g0");
-	case MODE_V4DF:
-	  return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V2DF:
-	  return "%vxorpd\t%0, %d0";
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "%vxorpd\t%0, %d0";
+	  /* FALLTHRU */
+	case MODE_V8DF:
+	case MODE_V4DF:
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "vxorpd\t%x0, %x0, %x0";
+	  else if (TARGET_AVX512DQ)
+	    return (TARGET_AVX512VL
+		    ? "vxorpd\t%x0, %x0, %x0"
+		    : "vxorpd\t%g0, %g0, %g0");
+	  else
+	    return (TARGET_AVX512VL
+		    ? "vpxorq\t%x0, %x0, %x0"
+		    : "vpxorq\t%g0, %g0, %g0");
 
-	case MODE_V16SF:
-	  return (TARGET_AVX512DQ
-		  ? "vxorps\t%g0, %g0, %g0"
-		  : "vpxord\t%g0, %g0, %g0");
-	case MODE_V8SF:
-	  return "vxorps\t%x0, %x0, %x0";
 	case MODE_V4SF:
-	  return "%vxorps\t%0, %d0";
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "%vxorps\t%0, %d0";
+	  /* FALLTHRU */
+	case MODE_V16SF:
+	case MODE_V8SF:
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "vxorps\t%x0, %x0, %x0";
+	  else if (TARGET_AVX512DQ)
+	    return (TARGET_AVX512VL
+		    ? "vxorps\t%x0, %x0, %x0"
+		    : "vxorps\t%g0, %g0, %g0");
+	  else
+	    return (TARGET_AVX512VL
+		    ? "vpxord\t%x0, %x0, %x0"
+		    : "vpxord\t%g0, %g0, %g0");
 
 	default:
 	  gcc_unreachable ();
@@ -10449,11 +10467,14 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
 	case MODE_V2DF:
 	case MODE_V4SF:
 	  gcc_assert (TARGET_SSE2);
-	  return (TARGET_AVX512F
-		  ? "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}"
-		  : TARGET_AVX
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return (TARGET_AVX
 		    ? "vpcmpeqd\t%0, %0, %0"
 		    : "pcmpeqd\t%0, %0");
+	  else if (TARGET_AVX512VL)
+	    return "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}";
+	  else
+	    return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
 
 	default:
 	  gcc_unreachable ();

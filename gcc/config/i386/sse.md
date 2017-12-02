@@ -923,7 +923,7 @@
   switch (get_attr_type (insn))
     {
     case TYPE_SSELOG1:
-      return standard_sse_constant_opcode (insn, operands[1]);
+      return standard_sse_constant_opcode (insn, operands);
 
     case TYPE_SSEMOV:
       /* There is no evex-encoded vmov* for sizes smaller than 64-bytes

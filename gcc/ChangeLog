@@ -1,3 +1,18 @@
+2017-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-protos.h (standard_sse_constant_opcode): Change
+	last argument to rtx pointer.
+	* config/i386/i386.c (standard_sse_constant_opcode): Replace X argument
+	with OPERANDS.  For AVX+ 128-bit VEX encoded instructions over 256-bit
+	or 512-bit.  If setting EXT_REX_SSE_REG_P, use EVEX encoded insn
+	depending on the chosen ISAs.
+	* config/i386/i386.md (*movxi_internal_avx512f, *movoi_internal_avx,
+	*movti_internal, *movdi_internal, *movsi_internal, *movtf_internal,
+	*movdf_internal, *movsf_internal): Adjust standard_sse_constant_opcode
+	callers.
+	* config/i386/sse.md (mov<mode>_internal): Likewise.
+	* config/i386/mmx.md (*mov<mode>_internal): Likewise.
+
 2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/invoke.texi (-dp): Say that instruction cost is printed as well.
