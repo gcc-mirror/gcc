@@ -96,7 +96,7 @@ extern bool quad_address_p (rtx, machine_mode, bool);
 extern bool quad_load_store_p (rtx, rtx);
 extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
-extern void emit_fusion_addis (rtx, rtx, const char *, const char *);
+extern void emit_fusion_addis (rtx, rtx);
 extern void emit_fusion_load_store (rtx, rtx, rtx, const char *);
 extern const char *emit_fusion_gpr_load (rtx, rtx);
 extern bool fusion_p9_p (rtx, rtx, rtx, rtx);

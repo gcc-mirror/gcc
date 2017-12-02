@@ -1,3 +1,10 @@
+2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/fusion.c: Add -dp to options.  Adjust the expected
+	output.
+	* gcc.target/powerpc/fusion3.c: Ditto.
+	* gcc.target/powerpc/fusion4.c: Ditto.
+
 2017-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/81959
