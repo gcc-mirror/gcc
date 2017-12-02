@@ -1,5 +1,11 @@
 2017-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81212
+	* g++.dg/ubsan/pr81212.C: New test.
+	* g++.dg/ubsan/return-1.C: Add -Wno-return-type to dg-options.
+	* g++.dg/ubsan/return-2.C: Likewise.
+	* g++.dg/ubsan/return-7.C: Likewise.
+
 	PR target/78643
 	PR target/80583
 	* gcc.target/i386/pr80583.c: New test.
