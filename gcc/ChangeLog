@@ -1,5 +1,17 @@
 2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-protos.h (emit_fusion_addis): Remove last two
+	parameters from prototype.
+	* config/rs6000/rs6000.c (emit_fusion_addis): Remove last two
+	parameters.  Don't print a comment.
+	(emit_fusion_gpr_load): Adjust.
+	(emit_fusion_load_store): Adjust.
+	* config/rs6000/rs6000.md (*fusion_p9_<mode>_constant): Adjust.
+	* config/rs6000/vsx.md (two peepholes): Print the "vector load fusion"
+	comment on the second line.
+
+2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR target/43871
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
 	rs6000_cpu based on cpu_index, not tune_index.

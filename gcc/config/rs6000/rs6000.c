@@ -38630,16 +38630,10 @@ expand_fusion_gpr_load (rtx *operands)
    sequence.  */
 
 void
-emit_fusion_addis (rtx target, rtx addis_value, const char *comment,
-		   const char *mode_name)
+emit_fusion_addis (rtx target, rtx addis_value)
 {
   rtx fuse_ops[10];
-  char insn_template[80];
   const char *addis_str = NULL;
-  const char *comment_str = ASM_COMMENT_START;
-
-  if (*comment_str == ' ')
-    comment_str++;
 
   /* Emit the addis instruction.  */
   fuse_ops[0] = target;
@@ -38719,9 +38713,7 @@ emit_fusion_addis (rtx target, rtx addis_value, const char *comment,
   if (!addis_str)
     fatal_insn ("Could not generate addis value for fusion", addis_value);
 
-  sprintf (insn_template, "%s\t\t%s %s, type %s", addis_str, comment_str,
-	   comment, mode_name);
-  output_asm_insn (insn_template, fuse_ops);
+  output_asm_insn (addis_str, fuse_ops);
 }
 
 /* Emit a D-form load or store instruction that is the second instruction
@@ -38854,7 +38846,6 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   rtx addr;
   rtx load_offset;
   const char *load_str = NULL;
-  const char *mode_name = NULL;
   machine_mode mode;
 
   if (GET_CODE (mem) == ZERO_EXTEND)
@@ -38870,25 +38861,21 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   switch (mode)
     {
     case E_QImode:
-      mode_name = "char";
       load_str = "lbz";
       break;
 
     case E_HImode:
-      mode_name = "short";
       load_str = "lhz";
       break;
 
     case E_SImode:
     case E_SFmode:
-      mode_name = (mode == SFmode) ? "float" : "int";
       load_str = "lwz";
       break;
 
     case E_DImode:
     case E_DFmode:
       gcc_assert (TARGET_POWERPC64);
-      mode_name = (mode == DFmode) ? "double" : "long";
       load_str = "ld";
       break;
 
@@ -38897,7 +38884,7 @@ emit_fusion_gpr_load (rtx target, rtx mem)
     }
 
   /* Emit the addis instruction.  */
-  emit_fusion_addis (target, addis_value, "gpr load fusion", mode_name);
+  emit_fusion_addis (target, addis_value);
 
   /* Emit the D-form load instruction.  */
   emit_fusion_load_store (target, target, load_offset, load_str);
@@ -39166,7 +39153,7 @@ emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
   fusion_split_address (addr, &hi, &lo);
 
   /* Emit the addis instruction.  */
-  emit_fusion_addis (tmp_reg, hi, "power9 load fusion", GET_MODE_NAME (mode));
+  emit_fusion_addis (tmp_reg, hi);
 
   /* Emit the D-form load instruction.  */
   emit_fusion_load_store (reg, tmp_reg, lo, load_string);
@@ -39253,7 +39240,7 @@ emit_fusion_p9_store (rtx mem, rtx reg, rtx tmp_reg)
   fusion_split_address (addr, &hi, &lo);
 
   /* Emit the addis instruction.  */
-  emit_fusion_addis (tmp_reg, hi, "power9 store fusion", GET_MODE_NAME (mode));
+  emit_fusion_addis (tmp_reg, hi);
 
   /* Emit the D-form load instruction.  */
   emit_fusion_load_store (reg, tmp_reg, lo, store_string);
