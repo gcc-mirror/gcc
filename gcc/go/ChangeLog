@@ -1,3 +1,9 @@
+2017-12-01  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define
+	__builtin_unreachable.
+	(Gcc_backend::function): Add does_not_return parameter.
+
 2017-12-01  Than McIntosh  <thanm@google.com>
 
 	* go-c.h (go_create_gogo_args): Add nil_check_size_threshold

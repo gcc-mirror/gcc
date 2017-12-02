@@ -363,6 +363,9 @@ DEF_GO_RUNTIME(PRINTNL, "runtime.printnl", P0(), R0())
 DEF_GO_RUNTIME(FIELDTRACK, "__go_fieldtrack", P1(POINTER), R0())
 
 
+// Unreachable code.
+DEF_GO_RUNTIME(UNREACHABLE, "__builtin_unreachable", P0(), R0())
+
 // Remove helper macros.
 #undef ABFT6
 #undef ABFT2

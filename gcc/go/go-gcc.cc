@@ -486,7 +486,8 @@ class Gcc_backend : public Backend
   Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
            bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool in_unique_section, Location);
+           bool disable_split_stack, bool does_not_return,
+	   bool in_unique_section, Location);
 
   Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
@@ -760,6 +761,12 @@ Gcc_backend::Gcc_backend()
 							const_ptr_type_node,
 							NULL_TREE),
 		       false, false);
+
+  // The compiler uses __builtin_unreachable for cases that can not
+  // occur.
+  this->define_builtin(BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
+		       build_function_type(void_type_node, void_list_node),
+		       true, true);
 }
 
 // Get an unnamed integer type.
@@ -3012,8 +3019,8 @@ Bfunction*
 Gcc_backend::function(Btype* fntype, const std::string& name,
                       const std::string& asm_name, bool is_visible,
                       bool is_declaration, bool is_inlinable,
-                      bool disable_split_stack, bool in_unique_section,
-                      Location location)
+                      bool disable_split_stack, bool does_not_return,
+		      bool in_unique_section, Location location)
 {
   tree functype = fntype->get_tree();
   if (functype != error_mark_node)
@@ -3049,6 +3056,8 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
       tree attr = get_identifier ("no_split_stack");
       DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
     }
+  if (does_not_return)
+    TREE_THIS_VOLATILE(decl) = 1;
   if (in_unique_section)
     resolve_unique_section(decl, 0, 1);
 
