@@ -1,3 +1,16 @@
+2017-12-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libgfortran/83191
+	* io/transfer.c (list_formatted_read_scalar): Do not set
+	namelist_mode bit here. (namelist_read): Likewise.
+	(data_transfer_init): Clear the mode bit here.
+	(finalize_transfer): Do set the mode bit just before any calls
+	to namelist_read or namelist_write. It can now be referred to
+	in complex_write.
+	^ io/write.c (write_complex): Suppress the leading blanks when
+	namelist_mode bit is not set to 1.
+
 2017-12-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/83225
