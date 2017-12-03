@@ -1809,9 +1809,11 @@ write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
                            precision, buf_size, result1, &res_len1);
   get_float_string (dtp, &f, source + size / 2 , kind, 0, buffer,
                            precision, buf_size, result2, &res_len2);
-  lblanks = width - res_len1 - res_len2 - 3;
-
-  write_x (dtp, lblanks, lblanks);
+  if (!dtp->u.p.namelist_mode)
+    {
+      lblanks = width - res_len1 - res_len2 - 3;
+      write_x (dtp, lblanks, lblanks);
+    }
   write_char (dtp, '(');
   write_float_string (dtp, result1, res_len1);
   write_char (dtp, semi_comma);
