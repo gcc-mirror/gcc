@@ -3,7 +3,7 @@
 	PR libgfortran/83225
 	* io/io.h (is_internal_unit): Use the unit_is_internal bit.
 	* io/transfer.c (data_transfer_init): Set the bit to true for
-	internal umits. Use that bit for checks for internal unit
+	internal units. Use that bit for checks for internal unit
 	initializations.
 	* io/unit.c (insert_unit): As a precaution, set the
 	internal_unit_kind to zero when a unit structure is first created.
