@@ -2099,8 +2099,6 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
   int c, i, m;
   int err = 0;
 
-  dtp->u.p.namelist_mode = 0;
-
   /* Set the next_char and push_char worker functions.  */
   set_workers (dtp);
 
@@ -3546,7 +3544,6 @@ namelist_read (st_parameter_dt *dtp)
      name.  */
   namelist_info *prev_nl = NULL;
 
-  dtp->u.p.namelist_mode = 1;
   dtp->u.p.input_complete = 0;
   dtp->u.p.expanded_read = 0;
 

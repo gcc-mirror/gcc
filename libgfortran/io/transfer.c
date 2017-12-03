@@ -2671,7 +2671,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   dtp->u.p.ionml = ionml;
   dtp->u.p.mode = read_flag ? READING : WRITING;
-
+  dtp->u.p.namelist_mode = 0;
   dtp->u.p.cc.len = 0;
 
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
@@ -3890,6 +3890,7 @@ finalize_transfer (st_parameter_dt *dtp)
   if ((dtp->u.p.ionml != NULL)
       && (cf & IOPARM_DT_HAS_NAMELIST_NAME) != 0)
     {
+       dtp->u.p.namelist_mode = 1;
        if ((cf & IOPARM_DT_NAMELIST_READ_MODE) != 0)
 	 namelist_read (dtp);
        else
