@@ -4571,7 +4571,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   actual = expr->value.function.actual;
   arrayexpr = actual->expr;
 
-  /* Special case for character maxval.  Remove unneeded actual
+  /* Special case for character maxloc.  Remove unneeded actual
      arguments, then call a library function.  */
   
   if (arrayexpr->ts.type == BT_CHARACTER)
@@ -5039,6 +5039,34 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
       return;
     }
 
+  actual = expr->value.function.actual;
+  arrayexpr = actual->expr;
+
+  if (arrayexpr->ts.type == BT_CHARACTER)
+    {
+      gfc_actual_arglist *a2, *a3;
+      a2 = actual->next;  /* dim */
+      a3 = a2->next;      /* mask */
+      if (a2->expr == NULL || expr->rank == 0)
+	{
+	  if (a3->expr == NULL)
+	    actual->next = NULL;
+	  else
+	    {
+	      actual->next = a3;
+	      a2->next = NULL;
+	    }
+	  gfc_free_actual_arglist (a2);
+	}
+      else
+	if (a3->expr == NULL)
+	  {
+	    a2->next = NULL;
+	    gfc_free_actual_arglist (a3);
+	  }
+      gfc_conv_intrinsic_funcall (se, expr);
+      return;
+    }
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
   limit = gfc_create_var (type, "limit");
@@ -5087,8 +5115,6 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_add_modify (&se->pre, limit, tmp);
 
   /* Walk the arguments.  */
-  actual = expr->value.function.actual;
-  arrayexpr = actual->expr;
   arrayss = gfc_walk_expr (arrayexpr);
   gcc_assert (arrayss != gfc_ss_terminator);
 

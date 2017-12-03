@@ -1,3 +1,26 @@
+2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* Makefile.am: Add new files for character-valued
+	maxval and minval.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add new functions.
+	* m4/iforeach-s2.m4: New file.
+	* m4/ifunction-s2.m4: New file.
+	* m4/iparm.m4: Add intitval for minval and maxval.
+	* m4/maxval0s.m4: New file.
+	* m4/maxval1s.m4: New file.
+	* m4/minval0s.m4: New file.
+	* m4/minval1s.m4: New file.
+        * generated/maxval0_s1.c: New file.
+        * generated/maxval0_s4.c: New file.
+        * generated/maxval1_s1.c: New file.
+        * generated/maxval1_s4.c: New file.
+        * generated/minval0_s1.c: New file.
+        * generated/minval0_s4.c: New file.
+        * generated/minval1_s1.c: New file.
+        * generated/minval1_s4.c: New file.
+
 2017-12-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
