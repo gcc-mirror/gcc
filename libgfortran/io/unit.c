@@ -231,6 +231,7 @@ insert_unit (int n)
 {
   gfc_unit *u = xcalloc (1, sizeof (gfc_unit));
   u->unit_number = n;
+  u->internal_unit_kind = 0;
 #ifdef __GTHREAD_MUTEX_INIT
   {
     __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
