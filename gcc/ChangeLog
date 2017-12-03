@@ -1,3 +1,9 @@
+2017-12-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_legitimate_address_p): For scaled indexing,
+	require base operand is a REG_POINTER prior to reload on targets
+	with non-equivalent space registers.
+
 2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipcp_lattice<valtype>::print): Update dumping.
