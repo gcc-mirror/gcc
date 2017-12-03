@@ -69,7 +69,7 @@ internal_proto(old_locale_lock);
 
 #define is_array_io(dtp) ((dtp)->internal_unit_desc)
 
-#define is_internal_unit(dtp) ((dtp)->u.p.current_unit->internal_unit_kind)
+#define is_internal_unit(dtp) ((dtp)->u.p.unit_is_internal)
 
 #define is_stream_io(dtp) ((dtp)->u.p.current_unit->flags.access == ACCESS_STREAM)
 
