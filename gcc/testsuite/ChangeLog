@@ -1,3 +1,15 @@
+2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* gfortran.dg/maxval_char_1.f90: New test.
+	* gfortran.dg/maxval_char_2.f90: New test.
+	* gfortran.dg/maxval_char_3.f90: New test.
+	* gfortran.dg/maxval_char_4.f90: New test.
+	* gfortran.dg/minval_char_1.f90: New test.
+	* gfortran.dg/minval_char_2.f90: New test.
+	* gfortran.dg/minval_char_3.f90: New test.
+	* gfortran.dg/minval_char_4.f90: New test.
+
 2017-12-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/831916

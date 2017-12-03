@@ -3317,7 +3317,7 @@ check_reduction (gfc_actual_arglist *ap)
 bool
 gfc_check_minval_maxval (gfc_actual_arglist *ap)
 {
-  if (!int_or_real_check (ap->expr, 0)
+  if (!int_or_real_or_char_check_f2003 (ap->expr, 0)
       || !array_check (ap->expr, 0))
     return false;
 

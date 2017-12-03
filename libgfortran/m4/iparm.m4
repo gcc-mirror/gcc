@@ -35,3 +35,4 @@ define(name, regexp(regexp(file, `[^/]*$', `\&'), `^\([^_]*\)_', `\1'))dnl
 define(`upcase', `translit(`$*', `a-z', `A-Z')')dnl
 define(`u_name',`regexp(upcase(name),`\([A-Z]*\)',`\1')')dnl
 define(rtype_ccode,ifelse(rtype_letter,`i',rtype_kind,rtype_code))dnl
+define(initval,ifelse(index(name,`maxval'),0,0,index(name,`minval'),0,255))dnl

@@ -1,3 +1,16 @@
+2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* check.c (gfc_check_minval_maxval): Use
+	int_orLreal_or_char_check_f2003 for array argument.
+	* iresolve.c (gfc_resolve_maxval): Insert number in
+	function name for character arguments.
+	(gfc_resolve_minval): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc):
+	Fix comment.
+	(gfc_conv_intrinsic_minmaxval): Resort arguments and call library
+	function if dealing with a character function.
+
 2017-12-01  Qing Zhao  <qing.zhao@oracle.com>
 
 	* decl.c (gfc_get_pdt_instance): Adjust the call to sprintf
