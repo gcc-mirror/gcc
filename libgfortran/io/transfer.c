@@ -2766,6 +2766,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       else
 	dtp->u.p.current_unit->has_size = false;
     }
+  else if (dtp->u.p.current_unit->internal_unit_kind > 0)
+    dtp->u.p.unit_is_internal = 1;
 
   /* Check the action.  */
 
@@ -4084,7 +4086,7 @@ st_read_done (st_parameter_dt *dtp)
   if (dtp->u.p.current_unit != NULL
       && dtp->u.p.current_unit->child_dtio == 0)
     {
-      if (is_internal_unit (dtp))
+      if (dtp->u.p.unit_is_internal)
 	{
 	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
 	    {
@@ -4098,7 +4100,7 @@ st_read_done (st_parameter_dt *dtp)
 	    }
 	  newunit_free (dtp->common.unit);
 	}
-      if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
+      if (dtp->u.p.unit_is_internal || dtp->u.p.format_not_saved)
 	{
 	  free_format_data (dtp->u.p.fmt);
 	  free_format (dtp);
@@ -4155,7 +4157,7 @@ st_write_done (st_parameter_dt *dtp)
 
       /* If this is a parent WRITE statement we do not need to retain the
 	 internal unit structure for child use.  */
-      if (is_internal_unit (dtp))
+      if (dtp->u.p.unit_is_internal)
 	{
 	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0)
 	    {
@@ -4169,7 +4171,7 @@ st_write_done (st_parameter_dt *dtp)
 	    }
 	  newunit_free (dtp->common.unit);
 	}
-      if (is_internal_unit (dtp) || dtp->u.p.format_not_saved)
+      if (dtp->u.p.unit_is_internal || dtp->u.p.format_not_saved)
 	{
 	  free_format_data (dtp->u.p.fmt);
 	  free_format (dtp);
