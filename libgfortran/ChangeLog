@@ -8,7 +8,7 @@
 	(finalize_transfer): Do set the mode bit just before any calls
 	to namelist_read or namelist_write. It can now be referred to
 	in complex_write.
-	^ io/write.c (write_complex): Suppress the leading blanks when
+	* io/write.c (write_complex): Suppress the leading blanks when
 	namelist_mode bit is not set to 1.
 
 2017-12-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
