@@ -720,6 +720,32 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
     ub = integer_zero_node;
 
   edge last_e = single_succ_edge (split_edge (next_e));
+
+  /* Compensate for the fact that we emit a do { } while loop from
+     a for ISL AST.
+     ???  We often miss constraints on niter because the SESE region
+     doesn't cover loop header copies.  Ideally we'd add constraints
+     for all relevant dominating conditions.  */
+  if (TREE_CODE (lb) == INTEGER_CST && TREE_CODE (ub) == INTEGER_CST
+      && tree_int_cst_compare (lb, ub) <= 0)
+    ;
+  else
+    {
+      tree one = build_one_cst (POINTER_TYPE_P (type) ? sizetype : type);
+      /* Adding +1 and using LT_EXPR helps with loop latches that have a
+	 loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this
+	 becomes 2^k-1 due to integer overflow, and the condition lb <= ub
+	 is true, even if we do not want this.  However lb < ub + 1 is false,
+	 as expected.  */
+      tree ub_one = fold_build2 (POINTER_TYPE_P (type)
+				 ? POINTER_PLUS_EXPR : PLUS_EXPR,
+				 type, ub, one);
+      create_empty_if_region_on_edge (next_e,
+				      fold_build2 (LT_EXPR, boolean_type_node,
+						   lb, ub_one));
+      next_e = get_true_edge_from_guard_bb (next_e->dest);
+    }
+
   translate_isl_ast_for_loop (context_loop, node, next_e,
 			      type, lb, ub, ip);
   return last_e;
