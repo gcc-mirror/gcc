@@ -1,3 +1,13 @@
+2017-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/83265
+	Revert
+	2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/43871
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
+	rs6000_cpu based on cpu_index, not tune_index.
+
 2017-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83238
