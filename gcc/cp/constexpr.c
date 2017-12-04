@@ -5524,6 +5524,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return RECUR (STMT_EXPR_STMT (t), rval);
 
     case LAMBDA_EXPR:
+      if (cxx_dialect >= cxx17)
+	/* In C++17 lambdas can be constexpr, don't give up yet.  */
+	return true;
+      else if (flags & tf_error)
+	error_at (loc, "lambda-expression is not a constant expression "
+		  "before C++17");
+      return false;
+
     case DYNAMIC_CAST_EXPR:
     case PSEUDO_DTOR_EXPR:
     case NEW_EXPR:

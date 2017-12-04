@@ -1,3 +1,11 @@
+2017-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83273 - constexpr if allows non-constant condition
+	* semantics.c (finish_if_stmt_cond): Use require_constant_expression
+	rather than is_constant_expression.
+	* constexpr.c (potential_constant_expression_1) [LAMBDA_EXPR]: Allow
+	in C++17.
+
 2017-12-01  Jason Merrill  <jason@redhat.com>
 
 	Give #include hints for <complex>.
