@@ -620,7 +620,7 @@ private
 
    type pid_t is new int;
 
-   type time_t is new long;
+   type time_t is new Long_Long_Integer;
 
    type timespec is record
       tv_sec  : time_t;
@@ -649,13 +649,13 @@ private
       Data : char_array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE);
    end  record;
    pragma Convention (C, pthread_mutexattr_t);
-   for pthread_mutexattr_t'Alignment use Interfaces.C.double'Alignment;
+   for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
 
    type pthread_rwlockattr_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCKATTR_SIZE);
    end record;
    pragma Convention (C, pthread_rwlockattr_t);
-   for pthread_rwlockattr_t'Alignment use Interfaces.C.double'Alignment;
+   for pthread_rwlockattr_t'Alignment use Interfaces.C.int'Alignment;
 
    type pthread_t is new rtems_id;
 
@@ -669,13 +669,13 @@ private
       Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCK_SIZE);
    end record;
    pragma Convention (C, pthread_rwlock_t);
-   for pthread_rwlock_t'Alignment use Interfaces.C.double'Alignment;
+   for pthread_rwlock_t'Alignment use Interfaces.C.size_t'Alignment;
 
    type pthread_cond_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);
    end record;
    pragma Convention (C, pthread_cond_t);
-   for pthread_cond_t'Alignment use Interfaces.C.double'Alignment;
+   for pthread_cond_t'Alignment use Interfaces.C.size_t'Alignment;
 
    type pthread_key_t is new rtems_id;
 
