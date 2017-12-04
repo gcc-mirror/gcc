@@ -1,3 +1,11 @@
+2017-12-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78496
+	* gcc.dg/builtin-unreachable-6.c: Disable DOM.
+	* gcc.dg/builtin-unreachable-6a.c: New test.
+	* gcc.dg/tree-ssa/20030922-1.c: No longer XFAIL.
+	* gcc.dg/ssa-dom-branch-1.c: Tweak expected output.
+
 2017-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83255

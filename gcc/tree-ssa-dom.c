@@ -46,6 +46,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-cfgcleanup.h"
 #include "dbgcnt.h"
+#include "alloc-pool.h"
+#include "tree-vrp.h"
+#include "vr-values.h"
+#include "gimple-ssa-evrp-analyze.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -584,6 +588,9 @@ private:
   class const_and_copies *m_const_and_copies;
   class avail_exprs_stack *m_avail_exprs_stack;
 
+  /* VRP data.  */
+  class evrp_range_analyzer evrp_range_analyzer;
+
   /* Dummy condition to avoid creating lots of throw away statements.  */
   gcond *m_dummy_cond;
 
@@ -835,6 +842,9 @@ make_pass_dominator (gcc::context *ctxt)
   return new pass_dominator (ctxt);
 }
 
+/* A hack until we remove threading from tree-vrp.c and bring the
+   simplification routine into the dom_opt_dom_walker class.  */
+static class vr_values *x_vr_values;
 
 /* A trivial wrapper so that we can present the generic jump
    threading code with a simple API for simplifying statements.  */
@@ -844,7 +854,95 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 				  class avail_exprs_stack *avail_exprs_stack,
 				  basic_block bb ATTRIBUTE_UNUSED)
 {
-  return avail_exprs_stack->lookup_avail_expr (stmt, false, true);
+  /* First query our hash table to see if the the expression is available
+     there.  A non-NULL return value will be either a constant or another
+     SSA_NAME.  */
+  tree cached_lhs =  avail_exprs_stack->lookup_avail_expr (stmt, false, true);
+  if (cached_lhs)
+    return cached_lhs;
+
+  /* If the hash table query failed, query VRP information.  This is
+     essentially the same as tree-vrp's simplification routine.  The
+     copy in tree-vrp is scheduled for removal in gcc-9.  */
+  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    {
+      cached_lhs
+	= x_vr_values->vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+						 gimple_cond_lhs (cond_stmt),
+						 gimple_cond_rhs (cond_stmt),
+						 within_stmt);
+      return cached_lhs;
+    }
+
+  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
+    {
+      tree op = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (op) != SSA_NAME)
+	return NULL_TREE;
+
+      value_range *vr = x_vr_values->get_value_range (op);
+      if ((vr->type != VR_RANGE && vr->type != VR_ANTI_RANGE)
+	  || symbolic_range_p (vr))
+	return NULL_TREE;
+
+      if (vr->type == VR_RANGE)
+	{
+	  size_t i, j;
+
+	  find_case_label_range (switch_stmt, vr->min, vr->max, &i, &j);
+
+	  if (i == j)
+	    {
+	      tree label = gimple_switch_label (switch_stmt, i);
+
+	      if (CASE_HIGH (label) != NULL_TREE
+		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min) <= 0
+		     && tree_int_cst_compare (CASE_HIGH (label), vr->max) >= 0)
+		  : (tree_int_cst_equal (CASE_LOW (label), vr->min)
+		     && tree_int_cst_equal (vr->min, vr->max)))
+		return label;
+
+	      if (i > j)
+		return gimple_switch_label (switch_stmt, 0);
+	    }
+	}
+
+      if (vr->type == VR_ANTI_RANGE)
+          {
+            unsigned n = gimple_switch_num_labels (switch_stmt);
+            tree min_label = gimple_switch_label (switch_stmt, 1);
+            tree max_label = gimple_switch_label (switch_stmt, n - 1);
+
+            /* The default label will be taken only if the anti-range of the
+               operand is entirely outside the bounds of all the (non-default)
+               case labels.  */
+            if (tree_int_cst_compare (vr->min, CASE_LOW (min_label)) <= 0
+                && (CASE_HIGH (max_label) != NULL_TREE
+                    ? tree_int_cst_compare (vr->max, CASE_HIGH (max_label)) >= 0
+                    : tree_int_cst_compare (vr->max, CASE_LOW (max_label)) >= 0))
+            return gimple_switch_label (switch_stmt, 0);
+          }
+	return NULL_TREE;
+    }
+
+  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
+    {
+      tree lhs = gimple_assign_lhs (assign_stmt);
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && stmt_interesting_for_vrp (stmt))
+	{
+	  edge dummy_e;
+	  tree dummy_tree;
+	  value_range new_vr = VR_INITIALIZER;
+	  x_vr_values->extract_range_from_stmt (stmt, &dummy_e,
+					      &dummy_tree, &new_vr);
+	  if (range_int_cst_singleton_p (&new_vr))
+	    return new_vr.min;
+	}
+    }
+  return NULL;
 }
 
 /* Valueize hook for gimple_fold_stmt_to_constant_1.  */
@@ -1310,6 +1408,8 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nOptimizing block #%d\n\n", bb->index);
 
+  evrp_range_analyzer.enter (bb);
+
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
   m_avail_exprs_stack->push_marker ();
@@ -1332,7 +1432,10 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 
   edge taken_edge = NULL;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    taken_edge = this->optimize_stmt (bb, gsi);
+    {
+      evrp_range_analyzer.record_ranges_from_stmt (gsi_stmt (gsi));
+      taken_edge = this->optimize_stmt (bb, gsi);
+    }
 
   /* Now prepare to process dominated blocks.  */
   record_edge_info (bb);
@@ -1350,13 +1453,16 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
+  x_vr_values = evrp_range_analyzer.get_vr_values ();
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
 			 m_avail_exprs_stack,
 			 simplify_stmt_for_jump_threading);
+  x_vr_values = NULL;
 
   /* These remove expressions local to BB from the tables.  */
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
+  evrp_range_analyzer.leave (bb);
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -1901,6 +2007,31 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 				   fold_convert (TREE_TYPE (lhs),
 						 integer_zero_node));
 	      gimple_set_modified (stmt, true);
+	    }
+	  else if (TREE_CODE (lhs) == SSA_NAME)
+	    {
+	      /* Exploiting EVRP data is not yet fully integrated into DOM
+		 but we need to do something for this case to avoid regressing
+		 udr4.f90 and new1.C which have unexecutable blocks with
+		 undefined behavior that get diagnosed if they're left in the
+		 IL because we've attached range information to new
+		 SSA_NAMES.  */
+	      edge taken_edge = NULL;
+	      evrp_range_analyzer.vrp_visit_cond_stmt (as_a <gcond *> (stmt),
+						       &taken_edge);
+	      if (taken_edge)
+		{
+		  if (taken_edge->flags & EDGE_TRUE_VALUE)
+		    gimple_cond_make_true (as_a <gcond *> (stmt));
+		  else if (taken_edge->flags & EDGE_FALSE_VALUE)
+		    gimple_cond_make_false (as_a <gcond *> (stmt));
+		  else
+		    gcc_unreachable ();
+		  gimple_set_modified (stmt, true);
+		  update_stmt (stmt);
+		  cfg_altered = true;
+		  return taken_edge;
+		}
 	    }
 	}
 
