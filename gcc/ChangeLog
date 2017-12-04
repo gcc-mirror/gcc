@@ -1,3 +1,9 @@
+2017-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83255
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_for):
+	Re-add zero-iteration check.
+
 2017-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/83245
