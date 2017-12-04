@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-dce.h"
 #include "tree-data-ref.h"
+#include "tree-vectorizer.h"
 
 /* This pass performs loop interchange: for example, the loop nest
 
@@ -551,23 +552,29 @@ loop_cand::analyze_iloop_reduction_var (tree var)
      in a way that reduction operation is seen as black box.  In general,
      we can ignore reassociation of reduction operator; we can handle fake
      reductions in which VAR is not even used to compute NEXT.  */
-  FOR_EACH_IMM_USE_FAST (use_p, iterator, var)
+  if (! single_imm_use (var, &use_p, &single_use)
+      || ! flow_bb_inside_loop_p (m_loop, gimple_bb (single_use)))
+    return false;
+
+  /* Check the reduction operation.  We require a left-associative operation.
+     For FP math we also need to be allowed to associate operations.  */
+  if (gassign *ass = dyn_cast <gassign *> (single_use))
     {
-      stmt = USE_STMT (use_p);
-      if (is_gimple_debug (stmt))
-	continue;
-
-      if (!flow_bb_inside_loop_p (m_loop, gimple_bb (stmt)))
+      enum tree_code code = gimple_assign_rhs_code (ass);
+      if (! (associative_tree_code (code)
+	     || (code == MINUS_EXPR
+		 && use_p->use == gimple_assign_rhs1_ptr (ass)))
+	  || (FLOAT_TYPE_P (TREE_TYPE (var))
+	      && ! flag_associative_math))
 	return false;
-
-      if (single_use != NULL)
-	return false;
-
-      single_use = stmt;
     }
+  else
+    return false;
 
+  /* Handle and verify a series of stmts feeding the reduction op.  */
   if (single_use != next_def
-      && !stmt_dominates_stmt_p (single_use, next_def))
+      && !check_reduction_path (UNKNOWN_LOCATION, m_loop, phi, next,
+				gimple_assign_rhs_code (single_use)))
     return false;
 
   /* Only support cases in which INIT is used in inner loop.  */
@@ -1964,7 +1971,7 @@ prepare_perfect_loop_nest (struct loop *loop, vec<loop_p> *loop_nest,
 			   vec<data_reference_p> *datarefs, vec<ddr_p> *ddrs)
 {
   struct loop *start_loop = NULL, *innermost = loop;
-  struct loop *outermost = superloop_at_depth (loop, 0);
+  struct loop *outermost = loops_for_fn (cfun)->tree_root;
 
   /* Find loop nest from the innermost loop.  The outermost is the innermost
      outer*/
@@ -1985,21 +1992,26 @@ prepare_perfect_loop_nest (struct loop *loop, vec<loop_p> *loop_nest,
   if (!start_loop || !start_loop->inner)
     return false;
 
+  /* Prepare the data reference vector for the loop nest, pruning outer
+     loops we cannot handle.  */
   datarefs->create (20);
-  if ((start_loop = prepare_data_references (start_loop, datarefs)) == NULL
+  start_loop = prepare_data_references (start_loop, datarefs);
+  if (!start_loop
       /* Check if there is no data reference.  */
       || datarefs->is_empty ()
       /* Check if there are too many of data references.  */
-      || (int) datarefs->length () > MAX_DATAREFS
-      /* Compute access strides for all data references.  */
-      || ((start_loop = compute_access_strides (start_loop, innermost,
-						*datarefs)) == NULL)
-      /* Check if loop nest should be interchanged.  */
-      || !should_interchange_loop_nest (start_loop, innermost, *datarefs))
-    {
-      free_data_refs_with_aux (*datarefs);
-      return false;
-    }
+      || (int) datarefs->length () > MAX_DATAREFS)
+    return false;
+
+  /* Compute access strides for all data references, pruning outer
+     loops we cannot analyze refs in.  */
+  start_loop = compute_access_strides (start_loop, innermost, *datarefs);
+  if (!start_loop)
+    return false;
+
+  /* Check if any interchange is profitable in the loop nest.  */
+  if (!should_interchange_loop_nest (start_loop, innermost, *datarefs))
+    return false;
 
   /* Check if data dependences can be computed for loop nest starting from
      start_loop.  */
@@ -2029,14 +2041,15 @@ prepare_perfect_loop_nest (struct loop *loop, vec<loop_p> *loop_nest,
 	return true;
       }
 
+    /* ???  We should be able to adjust DDRs we already computed by
+       truncating distance vectors.  */
     free_dependence_relations (*ddrs);
+    *ddrs = vNULL;
     /* Try to compute data dependences with the outermost loop stripped.  */
     loop = start_loop;
     start_loop = start_loop->inner;
   } while (start_loop && start_loop->inner);
 
-  loop_nest->release ();
-  free_data_refs_with_aux (*datarefs);
   return false;
 }
 
@@ -2050,19 +2063,20 @@ pass_linterchange::execute (function *fun)
 
   bool changed_p = false;
   struct loop *loop;
-  vec<loop_p> loop_nest;
-  vec<data_reference_p> datarefs;
-  vec<ddr_p> ddrs;
-
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
-    if (prepare_perfect_loop_nest (loop, &loop_nest, &datarefs, &ddrs))
-      {
-	tree_loop_interchange loop_interchange (loop_nest);
-	changed_p |= loop_interchange.interchange (datarefs, ddrs);
-	free_dependence_relations (ddrs);
-	free_data_refs_with_aux (datarefs);
-	loop_nest.release ();
-      }
+    {
+      vec<loop_p> loop_nest = vNULL;
+      vec<data_reference_p> datarefs = vNULL;
+      vec<ddr_p> ddrs = vNULL;
+      if (prepare_perfect_loop_nest (loop, &loop_nest, &datarefs, &ddrs))
+	{
+	  tree_loop_interchange loop_interchange (loop_nest);
+	  changed_p |= loop_interchange.interchange (datarefs, ddrs);
+	}
+      free_dependence_relations (ddrs);
+      free_data_refs_with_aux (datarefs);
+      loop_nest.release ();
+    }
 
   if (changed_p)
     scev_reset_htab ();

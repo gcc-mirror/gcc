@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -floop-interchange -fdump-tree-linterchange-details" }
+! { dg-options "-O3 -ffast-math -floop-interchange -fdump-tree-linterchange-details" }
 
         subroutine mat_times_vec(y,x,a,axp,ayp,azp,axm,aym,azm,
      $  nb,nx,ny,nz)

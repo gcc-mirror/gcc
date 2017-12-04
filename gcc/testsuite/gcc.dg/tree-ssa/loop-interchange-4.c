@@ -47,4 +47,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Loop_pair<outer:., inner:.> is interchanged" 1 "linterchange"} } */
+/* { dg-final { scan-tree-dump-times "Loop_pair<outer:., inner:.> is interchanged" 1 "linterchange" { xfail *-*-* } } } */

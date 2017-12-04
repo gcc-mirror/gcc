@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -floop-interchange -fassociative-math -fno-signed-zeros -fno-trapping-math -fdump-tree-linterchange-details" } */
+/* { dg-options "-O2 -floop-interchange -fdump-tree-linterchange-details" } */
 
 /* Copied from graphite/interchange-4.c */
 
@@ -10,8 +10,8 @@
 
 double u[1782225];
 
-static int __attribute__((noinline))
-foo (int N, int *res)
+static void __attribute__((noinline))
+foo (int N, double *res)
 {
   int i, j;
   double sum = 0;
@@ -19,10 +19,7 @@ foo (int N, int *res)
     for (j = 0; j < N; j++)
       sum = sum + u[i + 1335 * j];
 
-  for (i = 0; i < N; i++)
-    u[1336 * i] *= 2;
-
-  *res = sum + N + u[1336 * 2] + u[1336];
+  *res = sum;
 }
 
 extern void abort ();
@@ -30,10 +27,15 @@ extern void abort ();
 int
 main (void)
 {
-  int i, j, res;
+  int i, j;
+  double res;
 
   for (i = 0; i < 1782225; i++)
-    u[i] = 2;
+    u[i] = 0;
+  u[0] = __DBL_MAX__;
+  u[1335] = -__DBL_MAX__;
+  u[1] = __DBL_MAX__;
+  u[1336] = -__DBL_MAX__;
 
   foo (1335, &res);
 
@@ -41,10 +43,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  if (res != 3565793)
+  if (res != 0.0)
     abort ();
 
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Loop_pair<outer:., inner:.> is interchanged" 1 "linterchange"} } */
+/* { dg-final { scan-tree-dump-not "is interchanged" "linterchange"} } */
