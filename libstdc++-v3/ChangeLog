@@ -1,5 +1,9 @@
 2017-12-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex_compiler.tcc: Use C-style comment to work around
+	PR preprocessor/61638.
+	(__INSERT_REGEX_MATCHER): Replace GNU extension with __VA_ARGS__.
+
 	* config/io/basic_file_stdio.h (__basic_file): Remove name of unused
 	parameter.
 	* include/bits/boost_concept_check.h: Add pragmas to disable
