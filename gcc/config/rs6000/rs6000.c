@@ -4184,8 +4184,8 @@ rs6000_option_override_internal (bool global_init_p)
 	  }
     }
 
-  gcc_assert (cpu_index >= 0);
-  rs6000_cpu = processor_target_table[cpu_index].processor;
+  gcc_assert (tune_index >= 0);
+  rs6000_cpu = processor_target_table[tune_index].processor;
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64
