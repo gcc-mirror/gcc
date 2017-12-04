@@ -1,3 +1,10 @@
+2017-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c: Adjust comment.
+	(use_crosses_set_p): Delete.
+	(can_combine_p): Use modified_between_p instead of use_crosses_set_p.
+	(try_combine): Ditto.
+
 2017-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83255
