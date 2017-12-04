@@ -508,6 +508,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
+#define TARGET_EMIT_VZEROUPPER \
+	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -1120,6 +1122,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
    || (MODE) == V4TImode)
+
+#define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
+  (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
 
 #define VALID_AVX512VL_128_REG_MODE(MODE)				\
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
