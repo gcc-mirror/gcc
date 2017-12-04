@@ -888,14 +888,10 @@ collect_non_operand_hard_regs (rtx_insn *insn, rtx *x,
 					    list, OP_IN, false);
       break;
     case CLOBBER:
-      {
-	int code = INSN_CODE (insn);
-	/* We treat clobber of non-operand hard registers as early
-	   clobber (the behavior is expected from asm).  */
-	list = collect_non_operand_hard_regs (insn, &XEXP (op, 0), data,
-					      list, OP_OUT, code < 0);
-	break;
-      }
+      /* We treat clobber of non-operand hard registers as early clobber.  */
+      list = collect_non_operand_hard_regs (insn, &XEXP (op, 0), data,
+					    list, OP_OUT, true);
+      break;
     case PRE_INC: case PRE_DEC: case POST_INC: case POST_DEC:
       list = collect_non_operand_hard_regs (insn, &XEXP (op, 0), data,
 					    list, OP_INOUT, false);
