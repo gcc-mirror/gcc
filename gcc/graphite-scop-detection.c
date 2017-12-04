@@ -570,8 +570,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
      which post-dominates dom, until it stabilizes.  Also, ENTRY->SRC and
      EXIT->DEST should be in the same loop nest.  */
   if (!dominated_by_p (CDI_DOMINATORS, pdom, dom)
-      || loop_depth (entry->src->loop_father)
-	 != loop_depth (exit->dest->loop_father))
+      || entry->src->loop_father != exit->dest->loop_father)
     return invalid_sese;
 
   /* For now we just bail out when there is a loop exit in the region

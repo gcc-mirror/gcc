@@ -1,3 +1,9 @@
+2017-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83238
+	* graphite-scop-detection.c (scop_detection::merge_sese): Make
+	code match comment, rejecting invalid SESE regions.
+
 2017-12-03  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_legitimate_address_p): For scaled indexing,
