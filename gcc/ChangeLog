@@ -1,3 +1,8 @@
+2017-12-04  Luis Machado  <luis.machado@linaro.org>
+
+	* ipa-pure-const.c (check_decl): Add missing newline.
+	(state_from_flags): Likewise.
+
 2017-12-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimizatin/78496
