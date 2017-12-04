@@ -1,5 +1,11 @@
 2017-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/83245
+	* lra.c (collect_non_operand_hard_regs): Treat clobbers of non-operand
+	hard registers as earlyclobber, also if not in an asm.
+
+2017-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR bootstrap/83265
 	Revert
 	2017-12-01  Segher Boessenkool  <segher@kernel.crashing.org>
