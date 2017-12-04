@@ -561,7 +561,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       _GLIBCXX_CONSTEXPR _WordT
-      _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
+      _M_getword(size_t) const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       _GLIBCXX_CONSTEXPR _WordT

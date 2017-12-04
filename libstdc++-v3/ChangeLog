@@ -1,3 +1,22 @@
+2017-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/io/basic_file_stdio.h (__basic_file): Remove name of unused
+	parameter.
+	* include/bits/boost_concept_check.h: Add pragmas to disable
+	-Wunused-local-typedef warnings.
+	* include/bits/codecvt.h (codecvt_byname<char16_t, char, mbstate_t>)
+	(codecvt_byname<char32_t, char, mbstate_t>): Remove name of unused
+	parameter.
+	* include/bits/locale_facets_nonio.tcc (time_get::do_get_weekday)
+	(time_get::do_get_monthname, time_get::do_get_year): Remove unused
+	variables.
+	* include/std/bitset (_Base_bitset<0>::_M_getword): Remove name of
+	unused parameter.
+	* include/std/streambuf (_IsUnused): Define.
+	(basic_streambuf::imbue, basic_streambuf::pbackfail)
+	(basic_streambuf::overflow): Add macro to unused parameters.
+	* testsuite/24_iterators/operations/prev_neg.cc: Adjust dg-error.
+
 2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/string_view (basic_string_view::_S_compare):
