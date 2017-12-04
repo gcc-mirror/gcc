@@ -1,3 +1,8 @@
+2017-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Use mem_ref
+	instead of MEM_P in a couple more places.  Fix formatting issues.
+
 2017-12-04  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_for_each_saved_reg): Use GP_REG_LAST
