@@ -3336,7 +3336,7 @@ riscv_for_each_saved_reg (HOST_WIDE_INT sp_offset, riscv_save_restore_fn fn)
 
   /* Save the link register and s-registers. */
   offset = cfun->machine->frame.gp_sp_offset - sp_offset;
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST-1; regno++)
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
 	riscv_save_restore_reg (word_mode, regno, offset, fn);
@@ -3424,7 +3424,7 @@ riscv_adjust_libcall_cfi_prologue ()
   int saved_size = cfun->machine->frame.save_libcall_adjustment;
   int offset;
 
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST-1; regno++)
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
 	/* The save order is ra, s0, s1, s2 to s11.  */
@@ -3552,7 +3552,7 @@ riscv_adjust_libcall_cfi_epilogue ()
   dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx,
 			  dwarf);
 
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST-1; regno++)
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
 	reg = gen_rtx_REG (SImode, regno);

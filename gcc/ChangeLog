@@ -1,3 +1,12 @@
+2017-12-04  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_for_each_saved_reg): Use GP_REG_LAST
+	instead of GP_REG_LAST-1.
+	(riscv_adjust_libcall_cfi_prologue): Likewise.
+	(riscv_adjust_libcall_cri_epilogue): Likewise.
+	* config/riscv/riscv.h (CALL_USED_REGISTERS): Change a6 to t6 in
+	comment.
+
 2017-12-04  Luis Machado  <luis.machado@linaro.org>
 
 	* ipa-pure-const.c (check_decl): Add missing newline.
