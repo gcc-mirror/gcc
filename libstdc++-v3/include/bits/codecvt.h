@@ -612,7 +612,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       explicit
-      codecvt_byname(const char* __s, size_t __refs = 0)
+      codecvt_byname(const char*, size_t __refs = 0)
       : codecvt<char16_t, char, mbstate_t>(__refs) { }
 
       explicit
@@ -630,7 +630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       explicit
-      codecvt_byname(const char* __s, size_t __refs = 0)
+      codecvt_byname(const char*, size_t __refs = 0)
       : codecvt<char32_t, char, mbstate_t>(__refs) { }
 
       explicit

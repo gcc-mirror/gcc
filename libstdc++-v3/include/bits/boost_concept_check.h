@@ -48,6 +48,9 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+
 #define _IsUnused __attribute__ ((__unused__))
 
 // When the C-C code is in use, we would like this function to do as little
@@ -783,6 +786,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
+#pragma GCC diagnostic pop
 #undef _IsUnused
 
 #endif // _GLIBCXX_BOOST_CONCEPT_CHECK
