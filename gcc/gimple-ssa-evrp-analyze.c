@@ -271,8 +271,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
       edge taken_edge;
       value_range vr = VR_INITIALIZER;
       vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
-      if (output
-	  && (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE))
+      if (output)
 	{
 	  vr_values->update_value_range (output, &vr);
 
