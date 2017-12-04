@@ -1,3 +1,13 @@
+2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* athlon.md: Disable for generic.
+	* haswell.md: Enable for generic.
+	* i386.c (ix86_sched_init_global): Add core hooks for generic.
+	* x86-tune-sched.c (ix86_issue_rate): Increase issue rate for generic
+	to 4.
+	(ix86_adjust_cost): Move generic to haswell path.
+
 2017-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Use mem_ref
