@@ -1,4 +1,11 @@
 2017-12-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/83168
+	* io/write.c (select_string): Bump size by one to avoid
+	overrun.
+
+2017-12-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	Backport from trunk
