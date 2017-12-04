@@ -1,3 +1,22 @@
+2017-12-04  Sebastian Peryt  <sebastian.peryt@intel.com>
+	H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from trunk
+	PR target/82941
+	PR target/82942
+	PR target/82990
+	* gcc.target/i386/pr82941-1.c: New test.
+	* gcc.target/i386/pr82941-2.c: Likewise.
+	* gcc.target/i386/pr82942-1.c: Likewise.
+	* gcc.target/i386/pr82942-2.c: Likewise.
+	* gcc.target/i386/pr82990-1.c: Likewise.
+	* gcc.target/i386/pr82990-2.c: Likewise.
+	* gcc.target/i386/pr82990-3.c: Likewise.
+	* gcc.target/i386/pr82990-4.c: Likewise.
+	* gcc.target/i386/pr82990-5.c: Likewise.
+	* gcc.target/i386/pr82990-6.c: Likewise.
+	* gcc.target/i386/pr82990-7.c: Likewise.
+
 2017-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline

@@ -555,3 +555,7 @@ DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
    if-converted to one.  */
 DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
 	  m_SILVERMONT | m_KNL | m_INTEL | m_CORE_ALL | m_GENERIC)
+
+/* X86_TUNE_EMIT_VZEROUPPER: This enables vzeroupper instruction insertion
+   before a transfer of control flow out of the function.  */
+DEF_TUNE (X86_TUNE_EMIT_VZEROUPPER, "emit_vzeroupper", ~m_KNL)
