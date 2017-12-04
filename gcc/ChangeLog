@@ -1,3 +1,10 @@
+2017-12-04  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::extract_range_from_stmt):  Always use
+	vr_values::update_value_range so preexisting range info is
+	medged with new range info, even if the new range is VR_VARYING.
+
 2017-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c: Adjust comment.
