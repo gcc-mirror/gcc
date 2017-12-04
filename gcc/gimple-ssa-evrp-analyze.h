@@ -51,13 +51,7 @@ class evrp_range_analyzer
      true, then we are transferring ownership.  Else we keep ownership.
 
      This should be converted to a unique_ptr.  */
-  class vr_values *get_vr_values (bool transfer)
-    {
-      class vr_values *x = vr_values;
-      if (transfer)
-	vr_values = NULL;
-      return x;
-    }
+  class vr_values *get_vr_values (void) { return vr_values; }
 
  private:
   DISABLE_COPY_AND_ASSIGN (evrp_range_analyzer);

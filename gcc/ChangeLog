@@ -1,5 +1,21 @@
 2017-12-04  Jeff Law  <law@redhat.com>
 
+	PR tree-optimizatin/78496
+	* gimple-ssa-evrp-analyze.h
+	(evrp_range_analyzer::get_vr_values): Simplify.
+	* gimple-ssa-evrp-analyze.c: Corresponding changes.
+	* tree-ssa-dom.c: Include alloc-pool.h, tree-vrp.h, vr-values.h
+	and gimple-ssa-evrp-analyze.h.
+	(dom_opt_dom_walker class): Add evrp_range_analyzer member.
+	(simplify_stmt_for_jump_threading): Copy a blob of code from
+	tree-vrp.c to use ranges to simplify statements.
+	(dom_opt_dom_walker::before_dom_children): Call
+	evrp_range_analyzer::{enter,record_ranges_from_stmt} methods.
+	(dom_opt_dom_walker::after_dom_children): Similarly for
+	evrp_range_analyzer::leave.
+	(dom_opt_dom_walker::optimize_stmt): Use EVRP ranges to optimize
+	conditionals.
+
 	* gimple-ssa-evrp-analyze.c
 	(evrp_range_analyzer::extract_range_from_stmt):  Always use
 	vr_values::update_value_range so preexisting range info is
