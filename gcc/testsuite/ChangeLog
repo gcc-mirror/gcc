@@ -1,3 +1,8 @@
+2017-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83238
+	* gcc.dg/graphite/pr83238.c: New testcase.
+
 2017-12-04  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr82875.c: Require effective target alloca.
