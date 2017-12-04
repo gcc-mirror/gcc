@@ -1,3 +1,13 @@
+2017-12-04  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc-interface/Makefile.in (RTEMS): Use s-osprim__rtems.adb.
+	* libgnat/s-osprim__rtems.adb: New file.
+	* libgnarl/s-osinte__rtems.adb (pthread_cond_t): Fix alignment.
+	(pthread_mutexattr_t): Likewise.
+	(pthread_rwlockattr_t): Likewise.
+	(pthread_rwlock_t): Likewise.
+	(time_t): Use 64-bit integer.
+
 2017-12-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgnarl/s-osinte__rtems.ads (pthread_cond_t): Use correct size and
