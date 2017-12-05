@@ -1137,8 +1137,10 @@ should_copy_to_new_region (gimple *stmt, sese_info_p region)
   if (is_gimple_assign (stmt)
       && (lhs = gimple_assign_lhs (stmt))
       && TREE_CODE (lhs) == SSA_NAME
-      && is_gimple_reg (lhs)
-      && scev_analyzable_p (lhs, region->region))
+      && scev_analyzable_p (lhs, region->region)
+      /* But to code-generate liveouts - liveout PHI generation is
+         in generic sese.c code that cannot do code generation.  */
+      && ! bitmap_bit_p (region->liveout, SSA_NAME_VERSION (lhs)))
     return false;
 
   return true;

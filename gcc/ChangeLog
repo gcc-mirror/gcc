@@ -1,3 +1,9 @@
+2017-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83277
+	* graphite-isl-ast-to-gimple.c (should_copy_to_new_region): Make sure
+	to code-gen liveout vars.
+
 2017-12-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64-simd.md (aarch64_simd_bsldi_internal)
