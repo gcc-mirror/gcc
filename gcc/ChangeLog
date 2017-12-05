@@ -1,3 +1,13 @@
+2017-12-05  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/thunderx2-t99.md (thunderx2t99_branch): Add trap
+	to reservation.
+	(thunderx2t99_nothing): New insn reservation.
+	(thunderx2t99_mrs): New insn reservation.
+	(thunderx2t99_multiple): New insn reservation.
+	(thunderx2t99_alu_basi): Add bfx to reservation.
+	(thunderx2t99_fp_cmp): Add fccmps and fccmpd to reservation.
+
 2017-12-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/82248
