@@ -310,7 +310,7 @@ package body Exp_Ch7 is
    function Build_Cleanup_Statements
      (N                  : Node_Id;
       Additional_Cleanup : List_Id) return List_Id;
-   --  Create the clean up calls for an asynchronous call block, task master,
+   --  Create the cleanup calls for an asynchronous call block, task master,
    --  protected subprogram body, task allocation block or task body, or
    --  additional cleanup actions parked on a transient block. If the context
    --  does not contain the above constructs, the routine returns an empty
@@ -479,7 +479,7 @@ package body Exp_Ch7 is
          return False;
 
       --  Do not consider C and C++ types since it is assumed that the non-Ada
-      --  side will handle their clean up.
+      --  side will handle their cleanup.
 
       elsif Convention (Desig_Typ) = Convention_C
         or else Convention (Desig_Typ) = Convention_CPP
@@ -1554,8 +1554,8 @@ package body Exp_Ch7 is
             Jump_Alts := New_List;
          end if;
 
-         --  If the context requires additional clean up, the finalization
-         --  machinery is added after the clean up code.
+         --  If the context requires additional cleanup, the finalization
+         --  machinery is added after the cleanup code.
 
          if Acts_As_Clean then
             Finalizer_Stmts       := Clean_Stmts;
@@ -1784,7 +1784,7 @@ package body Exp_Ch7 is
          end if;
 
          --  Protect the statements with abort defer/undefer. This is only when
-         --  aborts are allowed and the clean up statements require deferral or
+         --  aborts are allowed and the cleanup statements require deferral or
          --  there are controlled objects to be finalized. Note that the abort
          --  defer/undefer pair does not require an extra block because each
          --  finalization exception is caught in its corresponding finalization
@@ -1800,7 +1800,7 @@ package body Exp_Ch7 is
 
          --  The local exception does not need to be reraised for library-level
          --  finalizers. Note that this action must be carried out after object
-         --  clean up, secondary stack release and abort undeferral. Generate:
+         --  cleanup, secondary stack release, and abort undeferral. Generate:
 
          --    if Raised and then not Abort then
          --       Raise_From_Controlled_Operation (E);
@@ -1907,7 +1907,7 @@ package body Exp_Ch7 is
             Append_To (Spec_Decls, Fin_Spec);
             Analyze (Fin_Spec);
 
-            --  When the finalizer acts solely as a clean up routine, the body
+            --  When the finalizer acts solely as a cleanup routine, the body
             --  is inserted right after the spec.
 
             if Acts_As_Clean and not Has_Ctrl_Objs then
@@ -4200,13 +4200,22 @@ package body Exp_Ch7 is
    ----------------------------
 
    procedure Expand_Cleanup_Actions (N : Node_Id) is
+      pragma Assert
+        (Nkind_In (N,
+                   N_Extended_Return_Statement,
+                   N_Block_Statement,
+                   N_Subprogram_Body,
+                   N_Task_Body,
+                   N_Entry_Body));
+
       Scop : constant Entity_Id := Current_Scope;
 
       Is_Asynchronous_Call   : constant Boolean :=
                                  Nkind (N) = N_Block_Statement
                                    and then Is_Asynchronous_Call_Block (N);
       Is_Master              : constant Boolean :=
-                                 Nkind (N) /= N_Entry_Body
+                                 Nkind (N) /= N_Extended_Return_Statement
+                                   and then Nkind (N) /= N_Entry_Body
                                    and then Is_Task_Master (N);
       Is_Protected_Subp_Body : constant Boolean :=
                                  Nkind (N) = N_Subprogram_Body
@@ -4301,6 +4310,62 @@ package body Exp_Ch7 is
          return;
       end if;
 
+      --  If we are generating expanded code for debugging purposes, use the
+      --  Sloc of the point of insertion for the cleanup code. The Sloc will be
+      --  updated subsequently to reference the proper line in .dg files. If we
+      --  are not debugging generated code, use No_Location instead, so that
+      --  no debug information is generated for the cleanup code. This makes
+      --  the behavior of the NEXT command in GDB monotonic, and makes the
+      --  placement of breakpoints more accurate.
+
+      if Debug_Generated_Code then
+         Loc := Sloc (Scop);
+      else
+         Loc := No_Location;
+      end if;
+
+      --  If an extended return statement contains something like
+      --     X := F (...);
+      --  where F is a build-in-place function call returning a controlled
+      --  type, then a temporary object will be implicitly declared as part of
+      --  the statement list, and this will need cleanup. In such cases, we
+      --  transform:
+      --
+      --    return Result : T := ... do
+      --       <statements> -- possibly with handlers
+      --    end return;
+      --
+      --  into:
+      --
+      --    return Result : T := ... do
+      --       declare -- no declarations
+      --       begin
+      --          <statements> -- possibly with handlers
+      --       end; -- no handlers
+      --    end return;
+      --
+      --  So Expand_Cleanup_Actions will end up being called recursively on the
+      --  block statement.
+
+      if Nkind (N) = N_Extended_Return_Statement then
+         declare
+            Block : constant Node_Id :=
+              Make_Block_Statement (Loc,
+               Declarations => Empty_List,
+               Handled_Statement_Sequence =>
+                 Handled_Statement_Sequence (N));
+         begin
+            Set_Handled_Statement_Sequence
+              (N, Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Block)));
+            Analyze (Block);
+         end;
+
+         --  Analysis of the block did all the work
+
+         return;
+      end if;
+
       if Needs_Custom_Cleanup then
          Cln := Cleanup_Actions (N);
       else
@@ -4315,20 +4380,6 @@ package body Exp_Ch7 is
          Old_Poll  : Boolean;
 
       begin
-         --  If we are generating expanded code for debugging purposes, use the
-         --  Sloc of the point of insertion for the cleanup code. The Sloc will
-         --  be updated subsequently to reference the proper line in .dg files.
-         --  If we are not debugging generated code, use No_Location instead,
-         --  so that no debug information is generated for the cleanup code.
-         --  This makes the behavior of the NEXT command in GDB monotonic, and
-         --  makes the placement of breakpoints more accurate.
-
-         if Debug_Generated_Code then
-            Loc := Sloc (Scop);
-         else
-            Loc := No_Location;
-         end if;
-
          --  Set polling off. The finalization and cleanup code is executed
          --  with aborts deferred.
 
@@ -5207,10 +5258,10 @@ package body Exp_Ch7 is
             then
                Loc := Sloc (Obj_Decl);
 
-               --  Before generating the clean up code for the first transient
+               --  Before generating the cleanup code for the first transient
                --  object, create a wrapper block which houses all hook clear
                --  statements and finalization calls. This wrapper is needed by
-               --  the back-end.
+               --  the back end.
 
                if not Built then
                   Built     := True;
@@ -8680,10 +8731,10 @@ package body Exp_Ch7 is
       --       Finalizer;
       --    end;
 
-      --  A special case is made for Boolean expressions so that the back-end
+      --  A special case is made for Boolean expressions so that the back end
       --  knows to generate a conditional branch instruction, if running with
-      --  -fpreserve-control-flow. This ensures that a control flow change
-      --  signalling the decision outcome occurs before the cleanup actions.
+      --  -fpreserve-control-flow. This ensures that a control-flow change
+      --  signaling the decision outcome occurs before the cleanup actions.
 
       if Opt.Suppress_Control_Flow_Optimizations
         and then Is_Boolean_Type (Typ)

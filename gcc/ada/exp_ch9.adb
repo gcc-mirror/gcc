@@ -13450,6 +13450,12 @@ package body Exp_Ch9 is
                        Selector_Name => Make_Identifier (Loc, Chars (D))));
                Add (Decl);
 
+               --  Set debug info needed on this renaming declaration even
+               --  though it does not come from source, so that the debugger
+               --  will get the right information for these generated names.
+
+               Set_Debug_Info_Needed (Discriminal (D));
+
                Next_Discriminant (D);
             end loop;
          end;
