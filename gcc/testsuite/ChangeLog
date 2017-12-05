@@ -1,3 +1,8 @@
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83283
+	* g++.dg/torture/pr83283.C: New test.
+
 2017-12-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/private_overriding.adb: New testcase.
