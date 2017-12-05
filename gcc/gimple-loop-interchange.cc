@@ -81,8 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_NUM_STMT    (PARAM_VALUE (PARAM_LOOP_INTERCHANGE_MAX_NUM_STMTS))
 /* Maximum number of data references in loop nest.  */
 #define MAX_DATAREFS    (PARAM_VALUE (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS))
-/* Default average number of loop iterations.  */
-#define AVG_LOOP_NITER  (PARAM_VALUE (PARAM_AVG_LOOP_NITER))
 
 /* Comparison ratio of access stride between inner/outer loops to be
    interchanged.  This is the minimum stride ratio for loop interchange
@@ -105,7 +103,7 @@ typedef struct induction
   /* IV's base and step part of SCEV.  */
   tree base;
   tree step;
-}* induction_p;
+} *induction_p;
 
 /* Enum type for loop reduction variable.  */
 enum reduction_type
@@ -136,7 +134,7 @@ typedef struct reduction
      reference.  */
   tree fini_ref;
   enum reduction_type type;
-}* reduction_p;
+} *reduction_p;
 
 
 /* Dump reduction RE.  */
@@ -302,24 +300,17 @@ loop_cand::supported_operations (basic_block bb, loop_cand *iloop,
       if (is_gimple_debug (stmt))
 	continue;
 
-      if (gimple_has_volatile_ops (stmt)
-	  || gimple_has_side_effects (stmt))
+      if (gimple_has_side_effects (stmt))
 	return false;
 
       bb_num_stmts++;
-      if (is_gimple_call (stmt))
+      if (gcall *call = dyn_cast <gcall *> (stmt))
 	{
-	  int cflags = gimple_call_flags (stmt);
-	  /* Only support const/pure calls.  */
-	  if (!(cflags & (ECF_CONST | ECF_PURE)))
-	    return false;
-
 	  /* In basic block of outer loop, the call should be cheap since
 	     it will be moved to inner loop.  */
 	  if (iloop != NULL
-	      && !gimple_inexpensive_call_p (as_a <gcall *> (stmt)))
+	      && !gimple_inexpensive_call_p (call))
 	    return false;
-
 	  continue;
 	}
 
@@ -334,6 +325,7 @@ loop_cand::supported_operations (basic_block bb, loop_cand *iloop,
       tree lhs;
       /* Support loop invariant memory reference if it's only used once by
 	 inner loop.  */
+      /* ???  How's this checking for invariantness?  */
       if (gimple_assign_single_p (stmt)
 	  && (lhs = gimple_assign_lhs (stmt)) != NULL_TREE
 	  && TREE_CODE (lhs) == SSA_NAME
@@ -347,7 +339,7 @@ loop_cand::supported_operations (basic_block bb, loop_cand *iloop,
   /* Allow PHI nodes in any basic block of inner loop, PHI nodes in outer
      loop's header, or PHI nodes in dest bb of inner loop's exit edge.  */
   if (!iloop || bb == m_loop->header
-      || bb == single_dom_exit (iloop->m_loop)->dest)
+      || bb == iloop->m_exit->dest)
     return true;
 
   /* Don't allow any other PHI nodes.  */
@@ -484,7 +476,6 @@ loop_cand::analyze_iloop_reduction_var (tree var)
   gphi *lcssa_phi = NULL, *use_phi;
   tree init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (m_loop));
   tree next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (m_loop));
-  edge e = single_exit (m_loop);
   reduction_p re;
   gimple *stmt, *next_def, *single_use = NULL;
   use_operand_p use_p;
@@ -571,8 +562,8 @@ loop_cand::analyze_iloop_reduction_var (tree var)
 
       if (use_phi != NULL
 	  && lcssa_phi == NULL
-	  && gimple_bb (stmt) == e->dest
-	  && PHI_ARG_DEF_FROM_EDGE (use_phi, e) == next)
+	  && gimple_bb (stmt) == m_exit->dest
+	  && PHI_ARG_DEF_FROM_EDGE (use_phi, m_exit) == next)
 	lcssa_phi = use_phi;
       else
 	return false;
@@ -621,7 +612,6 @@ loop_cand::analyze_oloop_reduction_var (loop_cand *iloop, tree var)
   gphi *lcssa_phi = NULL, *use_phi;
   tree init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (m_loop));
   tree next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (m_loop));
-  edge e = single_exit (m_loop);
   reduction_p re;
   gimple *stmt, *next_def;
   use_operand_p use_p;
@@ -671,8 +661,8 @@ loop_cand::analyze_oloop_reduction_var (loop_cand *iloop, tree var)
 
       if (lcssa_phi == NULL
 	  && use_phi != NULL
-	  && gimple_bb (stmt) == e->dest
-	  && PHI_ARG_DEF_FROM_EDGE (use_phi, e) == next)
+	  && gimple_bb (stmt) == m_exit->dest
+	  && PHI_ARG_DEF_FROM_EDGE (use_phi, m_exit) == next)
 	lcssa_phi = use_phi;
       else
 	return false;
@@ -781,10 +771,8 @@ loop_cand::analyze_carried_vars (loop_cand *iloop)
 bool
 loop_cand::analyze_lcssa_phis (void)
 {
-  edge e = single_exit (m_loop);
   gphi_iterator gsi;
-
-  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_start_phis (m_exit->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
 
@@ -810,7 +798,7 @@ loop_cand::analyze_lcssa_phis (void)
 static void
 find_deps_in_bb_for_stmt (gimple_seq *stmts, basic_block bb, gimple *consumer)
 {
-  auto_vec<gimple *> worklist;
+  auto_vec<gimple *, 4> worklist;
   use_operand_p use_p;
   ssa_op_iter iter;
   gimple *stmt, *def_stmt;
@@ -845,7 +833,7 @@ find_deps_in_bb_for_stmt (gimple_seq *stmts, basic_block bb, gimple *consumer)
       if (gimple_plf (stmt, GF_PLF_1))
 	{
 	  gsi_remove (&gsi, false);
-	  gimple_seq_add_stmt (stmts, stmt);
+	  gimple_seq_add_stmt_without_update (stmts, stmt);
 	}
       else
 	gsi_next_nondebug (&gsi);
@@ -898,7 +886,7 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
       gimple_set_vuse (re->producer, NULL_TREE);
       from = gsi_for_stmt (re->producer);
       gsi_remove (&from, false);
-      gimple_seq_add_stmt (&stmts, re->producer);
+      gimple_seq_add_stmt_without_update (&stmts, re->producer);
       new_var = re->init;
     }
   else
@@ -908,7 +896,7 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
       /* Because we generate new stmt loading from the MEM_REF to TMP.  */
       tree tmp = copy_ssa_name (re->var);
       stmt = gimple_build_assign (tmp, re->init_ref);
-      gimple_seq_add_stmt (&stmts, stmt);
+      gimple_seq_add_stmt_without_update (&stmts, stmt);
 
       /* Init new_var to MEM_REF or CONST depending on if it is the first
 	 iteration.  */
@@ -916,7 +904,7 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
       tree cond = fold_build2 (NE_EXPR, boolean_type_node, iv->var, iv->init);
       new_var = copy_ssa_name (re->var);
       stmt = gimple_build_assign (new_var, COND_EXPR, cond, tmp, re->init);
-      gimple_seq_add_stmt (&stmts, stmt);
+      gimple_seq_add_stmt_without_update (&stmts, stmt);
     }
   gsi_insert_seq_before (&to, stmts, GSI_SAME_STMT);
 
@@ -932,10 +920,11 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
     }
 
   /* Move consumer stmt into inner loop, just after reduction next's def.  */
+  unlink_stmt_vdef (re->consumer);
+  release_ssa_name (gimple_vdef (re->consumer));
   gimple_set_vdef (re->consumer, NULL_TREE);
   gimple_set_vuse (re->consumer, NULL_TREE);
   gimple_assign_set_rhs1 (re->consumer, re->next);
-  update_stmt (re->consumer);
   from = gsi_for_stmt (re->consumer);
   to = gsi_for_stmt (SSA_NAME_DEF_STMT (re->next));
   gsi_move_after (&from, &to);
@@ -1129,6 +1118,10 @@ tree_loop_interchange::interchange_loops (loop_cand &iloop, loop_cand &oloop)
   o_niters = force_gimple_operand_gsi (&gsi, unshare_expr (o_niters), true,
 				       NULL_TREE, false, GSI_CONTINUE_LINKING);
 
+  /* Move src's code to tgt loop.  This is necessary when src is the outer
+     loop and tgt is the inner loop.  */
+  move_code_to_inner_loop (oloop.m_loop, iloop.m_loop, oloop.m_bbs);
+
   /* Map outer loop's IV to inner loop, and vice versa.  */
   map_inductions_to_loop (oloop, iloop);
   map_inductions_to_loop (iloop, oloop);
@@ -1137,10 +1130,10 @@ tree_loop_interchange::interchange_loops (loop_cand &iloop, loop_cand &oloop)
      loop is actually from inner/outer loop.  Also we record the new IV
      created for the outer loop so that it can be skipped in later loop
      interchange.  */
-  create_canonical_iv (oloop.m_loop, single_exit (oloop.m_loop),
+  create_canonical_iv (oloop.m_loop, oloop.m_exit,
 		       i_niters, &m_niters_iv_var, &var_after);
   bitmap_set_bit (m_dce_seeds, SSA_NAME_VERSION (var_after));
-  create_canonical_iv (iloop.m_loop, single_exit (iloop.m_loop),
+  create_canonical_iv (iloop.m_loop, iloop.m_exit,
 		       o_niters, NULL, &var_after);
   bitmap_set_bit (m_dce_seeds, SSA_NAME_VERSION (var_after));
 
@@ -1151,6 +1144,11 @@ tree_loop_interchange::interchange_loops (loop_cand &iloop, loop_cand &oloop)
   oloop.m_loop->any_upper_bound = false;
   oloop.m_loop->any_likely_upper_bound = false;
   free_numbers_of_iterations_estimates (oloop.m_loop);
+
+  /* ???  The association between the loop data structure and the
+     CFG changed, so what was loop N at the source level is now
+     loop M.  We should think of retaining the association or breaking
+     it fully by creating a new loop instead of re-using the "wrong" one.  */
 }
 
 /* Map induction variables of SRC loop to TGT loop.  The function firstly
@@ -1180,14 +1178,8 @@ void
 tree_loop_interchange::map_inductions_to_loop (loop_cand &src, loop_cand &tgt)
 {
   induction_p iv;
-  edge e = single_exit (tgt.m_loop);
+  edge e = tgt.m_exit;
   gimple_stmt_iterator incr_pos = gsi_last_bb (e->src), gsi;
-  bool move_code_p = flow_loop_nested_p (src.m_loop, tgt.m_loop);
-
-  /* Move src's code to tgt loop.  This is necessary when src is the outer
-     loop and tgt is the inner loop.  */
-  if (move_code_p)
-    move_code_to_inner_loop (src.m_loop, tgt.m_loop, src.m_bbs);
 
   /* Map source loop's IV to target loop.  */
   for (unsigned i = 0; src.m_inductions.iterate (i, &iv); ++i)
@@ -1234,26 +1226,6 @@ tree_loop_interchange::map_inductions_to_loop (loop_cand &src, loop_cand &tgt)
     }
 }
 
-/* Compute the insert position at inner loop when moving code from outer
-   loop to inner one.  */
-
-static inline void
-insert_pos_at_inner_loop (struct loop *outer, struct loop *inner,
-			  basic_block bb, gimple_stmt_iterator *pos)
-{
-  /* Move code from header/latch to header/latch.  */
-  if (bb == outer->header)
-    *pos = gsi_after_labels (inner->header);
-  else if (bb == outer->latch)
-    *pos = gsi_after_labels (inner->latch);
-  else
-    {
-      /* Otherwise, simply move to exit->src.  */
-      edge e = single_exit (inner);
-      *pos = gsi_last_bb (e->src);
-    }
-}
-
 /* Move stmts of outer loop to inner loop.  */
 
 void
@@ -1272,7 +1244,15 @@ tree_loop_interchange::move_code_to_inner_loop (struct loop *outer,
       if (flow_bb_inside_loop_p (inner, bb))
 	continue;
 
-      insert_pos_at_inner_loop (outer, inner, bb, &to);
+      /* Move code from header/latch to header/latch.  */
+      if (bb == outer->header)
+	to = gsi_after_labels (inner->header);
+      else if (bb == outer->latch)
+	to = gsi_after_labels (inner->latch);
+      else
+	/* Otherwise, simply move to exit->src.  */
+	to = gsi_last_bb (single_exit (inner)->src);
+
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -1287,7 +1267,11 @@ tree_loop_interchange::move_code_to_inner_loop (struct loop *outer,
 	  if (gimple_vuse (stmt))
 	    gimple_set_vuse (stmt, NULL_TREE);
 	  if (gimple_vdef (stmt))
-	    gimple_set_vdef (stmt, NULL_TREE);
+	    {
+	      unlink_stmt_vdef (stmt);
+	      release_ssa_name (gimple_vdef (stmt));
+	      gimple_set_vdef (stmt, NULL_TREE);
+	    }
 
 	  reset_debug_uses (stmt);
 	  gsi_move_before (&gsi, &to);
@@ -1756,18 +1740,20 @@ proper_loop_form_for_interchange (struct loop *loop, struct loop **min_outer)
   free (bbs);
 
   tree niters = number_of_latch_executions (loop);
+  niters = analyze_scalar_evolution (loop_outer (loop), niters);
   if (!niters || chrec_contains_undetermined (niters))
     return false;
 
   /* Record the innermost outer loop that doesn't form rectangle loop nest.  */
-  for (loop = loop_outer (loop);
-       loop && flow_loop_nested_p (*min_outer, loop);
-       loop = loop_outer (loop))
+  for (loop_p loop2 = loop_outer (loop);
+       loop2 && flow_loop_nested_p (*min_outer, loop2);
+       loop2 = loop_outer (loop2))
     {
-      niters = instantiate_scev (loop_preheader_edge (loop), loop, niters);
-      if (!evolution_function_is_invariant_p (niters, loop->num))
+      niters = instantiate_scev (loop_preheader_edge (loop2),
+				 loop_outer (loop), niters);
+      if (!evolution_function_is_invariant_p (niters, loop2->num))
 	{
-	  *min_outer = loop;
+	  *min_outer = loop2;
 	  break;
 	}
     }
@@ -1968,7 +1954,6 @@ prepare_perfect_loop_nest (struct loop *loop, vec<loop_p> *loop_nest,
 
   /* Prepare the data reference vector for the loop nest, pruning outer
      loops we cannot handle.  */
-  datarefs->create (20);
   start_loop = prepare_data_references (start_loop, datarefs);
   if (!start_loop
       /* Check if there is no data reference.  */
@@ -1990,9 +1975,7 @@ prepare_perfect_loop_nest (struct loop *loop, vec<loop_p> *loop_nest,
   /* Check if data dependences can be computed for loop nest starting from
      start_loop.  */
   loop = start_loop;
-  loop_nest->create (3);
   do {
-    ddrs->create (20);
     loop_nest->truncate (0);
 
     if (loop != start_loop)
@@ -2015,8 +1998,6 @@ prepare_perfect_loop_nest (struct loop *loop, vec<loop_p> *loop_nest,
 	return true;
       }
 
-    /* ???  We should be able to adjust DDRs we already computed by
-       truncating distance vectors.  */
     free_dependence_relations (*ddrs);
     *ddrs = vNULL;
     /* Try to compute data dependences with the outermost loop stripped.  */
