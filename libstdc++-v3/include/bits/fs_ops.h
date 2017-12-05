@@ -253,7 +253,7 @@ namespace filesystem
 
   void
   permissions(const path& __p, perms __prms, perm_options __opts,
-	      error_code& __ec);
+	      error_code& __ec) noexcept;
 
   inline path proximate(const path& __p, error_code& __ec)
   { return proximate(__p, current_path(), __ec); }
