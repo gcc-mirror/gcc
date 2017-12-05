@@ -480,13 +480,6 @@ package Sem_Util is
    --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
    --  False).
 
-   function Contains_Refined_State (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Prag contains a reference to the entity of an
-   --  abstract state with a visible refinement. Prag must denote one of the
-   --  following pragmas:
-   --    Depends
-   --    Global
-
    function Copy_Component_List
      (R_Typ : Entity_Id;
       Loc   : Source_Ptr) return List_Id;

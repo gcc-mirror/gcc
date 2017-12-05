@@ -574,6 +574,38 @@ package body Exp_Unst is
                   end if;
                end if;
 
+            --  Record a 'Access as a (potential) call
+
+            elsif Nkind (N) = N_Attribute_Reference then
+               declare
+                  Attr : constant Attribute_Id :=
+                           Get_Attribute_Id (Attribute_Name (N));
+               begin
+                  case Attr is
+                     when Attribute_Access
+                        | Attribute_Unchecked_Access
+                        | Attribute_Unrestricted_Access
+                     =>
+                        Ent := Entity (Prefix (N));
+
+                        --  We are only interested in calls to subprograms
+                        --  nested within Subp.
+
+                        if Scope_Within (Ent, Subp) then
+                           if Is_Imported (Ent) then
+                              null;
+
+                           elsif Is_Subprogram (Ent) then
+                              Append_Unique_Call
+                                ((N, Current_Subprogram, Ent));
+                           end if;
+                        end if;
+
+                     when others =>
+                        null;
+                  end case;
+               end;
+
             --  Record a subprogram. We record a subprogram body that acts as
             --  a spec. Otherwise we record a subprogram declaration, providing
             --  that it has a corresponding body we can get hold of. The case
@@ -1616,7 +1648,9 @@ package body Exp_Unst is
             Act    : Node_Id;
 
          begin
-            if Present (STT.ARECnF) then
+            if Present (STT.ARECnF)
+              and then Nkind (CTJ.N) /= N_Attribute_Reference
+            then
 
                --  CTJ.N is a call to a subprogram which may require a pointer
                --  to an activation record. The subprogram containing the call

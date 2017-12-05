@@ -1400,6 +1400,11 @@ Alternatively, you may run the script using the following command line:
          Each nonempty line should contain the name of an existing file.
          Several such switches may be specified simultaneously.
 
+     :switch:`--ignore={filename}`
+        Do not process the sources listed in a specified file. This option cannot
+        be used in incremental mode.
+
+
      :switch:`-q`
          Quiet
 
@@ -2753,6 +2758,12 @@ Alternatively, you may run the script using the following command line:
     Several such switches may be specified simultaneously.
 
 
+  .. index:: --ignore (gnatmetric)
+
+  :switch:`--ignore={filename}`
+    Do not process the sources listed in a specified file.
+
+
   .. index:: -j (gnatmetric)
 
   :switch:`-j{n}`
@@ -3464,6 +3475,13 @@ Alternatively, you may run the script using the following command line:
      Text file ``file`` may contain empty lines that are ignored.
      Each nonempty line should contain the name of an existing file.
      Several such switches may be specified simultaneously.
+
+
+  .. index:: --ignore (gnatpp)
+
+  :switch:`--ignore={filename}`
+    Do not process the sources listed in a specified file. This option cannot
+    be used in incremental mode.
 
 
    .. index:: -j (gnatpp)
@@ -4293,6 +4311,11 @@ Alternatively, you may run the script using the following command line:
     Text file ``file`` may contain empty lines that are ignored.
     Each nonempty line should contain the name of an existing file.
     Several such switches may be specified simultaneously.
+
+    .. index:: --ignore (gnattest)
+
+  :switch:`--ignore={filename}`
+    Do not process the sources listed in a specified file.
 
     .. index:: --RTS (gnattest)
 

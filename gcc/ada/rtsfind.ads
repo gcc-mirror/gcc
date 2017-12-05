@@ -543,6 +543,7 @@ package Rtsfind is
      RE_Null,
 
      RO_CA_Time,                         -- Ada.Calendar
+     RO_CA_Clock_Time,                   -- Ada.Calendar
 
      RO_CA_Delay_For,                    -- Ada.Calendar.Delays
      RO_CA_Delay_Until,                  -- Ada.Calendar.Delays
@@ -582,6 +583,7 @@ package Rtsfind is
      RE_Names,                           -- Ada.Interrupts.Names
 
      RE_Clock,                           -- Ada.Real_Time
+     RE_Clock_Time,                      -- Ada.Real_Time
      RE_Time_Span,                       -- Ada.Real_Time
      RE_Time_Span_Zero,                  -- Ada.Real_Time
      RO_RT_Time,                         -- Ada.Real_Time
@@ -1779,6 +1781,7 @@ package Rtsfind is
      RE_Null                             => RTU_Null,
 
      RO_CA_Time                          => Ada_Calendar,
+     RO_CA_Clock_Time                    => Ada_Calendar,
 
      RO_CA_Delay_For                     => Ada_Calendar_Delays,
      RO_CA_Delay_Until                   => Ada_Calendar_Delays,
@@ -1818,6 +1821,7 @@ package Rtsfind is
      RE_Names                            => Ada_Interrupts_Names,
 
      RE_Clock                            => Ada_Real_Time,
+     RE_Clock_Time                       => Ada_Real_Time,
      RE_Time_Span                        => Ada_Real_Time,
      RE_Time_Span_Zero                   => Ada_Real_Time,
      RO_RT_Time                          => Ada_Real_Time,

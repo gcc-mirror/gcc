@@ -1,3 +1,7 @@
+2017-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/private_overriding.adb: New testcase.
+
 2017-12-05  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 

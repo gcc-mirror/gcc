@@ -1,3 +1,80 @@
+2017-12-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Contains_Refined_State): Remove.
+
+2017-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case Predicate): A
+	predicate cannot apply to a formal type.
+
+2017-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.ads: Fix typos.
+
+2017-12-05  Jerome Lambourg  <lambourg@adacore.com>
+
+	* libgnarl/s-taprop__qnx.adb: Better detect priority ceiling bug in
+	QNX.  At startup, the first mutex created has a non-zero ceiling
+	priority whatever its actual policy. This makes some tests fail
+	(c940013 for example).
+
+2017-12-05  Bob Duff  <duff@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Handled_Sequence_Of_Statements): Call
+	Expand_Cleanup_Actions for N_Extended_Return_Statement.
+	* exp_ch7.adb (Expand_Cleanup_Actions): Handle
+	N_Extended_Return_Statement by transforming the statements into a
+	block, and (indirectly) calling Expand_Cleanup_Actions on the block.
+	It's too hard for Expand_Cleanup_Actions to operate directly on the
+	N_Extended_Return_Statement, because it has a different structure than
+	the other node kinds that Expand_Cleanup_Actions.
+	* exp_util.adb (Requires_Cleanup_Actions): Add support for
+	N_Extended_Return_Statement.  Change "when others => return False;" to
+	"when others => raise ...;" so it's clear what nodes this function
+	handles.  Use named notation where appropriate.
+	* exp_util.ads: Mark incorrect comment with ???.
+
+2017-12-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Install_Private_Data_Declarations): Add missing
+	Debug_Info_Needed decoration of internally generated discriminal
+	renaming declaration.
+
+2017-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Add handling of 'Access on
+	nested subprograms.
+
+2017-12-05  Sergey Rybin  <rybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Add description of '--ignore'
+	option for gnatmetric, gnatpp, gnat2xml, and gnattest.
+
+2017-12-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Contains_Refined_State): Remove.
+
+2017-12-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* rtsfind.ads: Add new enumeration literals: RE_Clock_Time (for
+	Ada.Real_Time.Clock_Time) and RO_CA_Clock_Time (for
+	Ada.Calendar.Clock_Time).
+
+2017-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Is_Private_Overriding): If the candidate private
+	subprogram is overloaded, scan the list of homonyms in the same
+	scope, to find the inherited operation that may be overridden
+	by the candidate.
+	* exp_ch11.adb, exp_ch7.adb: Minor reformatting.
+
+2017-12-05  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): If the
+	Init_Assignment is rewritten, we need to set Assignment_OK on the new
+	node.  Otherwise, we will get spurious errors when initializing via
+	assignment statement.
+
 2017-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb: Update the terminology and switch sections.

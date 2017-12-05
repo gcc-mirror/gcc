@@ -2389,6 +2389,10 @@ package body Sem_Ch13 is
                   elsif Is_Incomplete_Type (E) then
                      Error_Msg_N
                        ("predicate cannot apply to incomplete view", Aspect);
+
+                  elsif Is_Generic_Type (E) then
+                     Error_Msg_N
+                       ("predicate cannot apply to formal type", Aspect);
                      goto Continue;
                   end if;
 

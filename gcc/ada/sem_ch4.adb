@@ -9411,14 +9411,31 @@ package body Sem_Ch4 is
          ---------------------------
 
          function Is_Private_Overriding (Op : Entity_Id) return Boolean is
-            Visible_Op : constant Entity_Id := Homonym (Op);
+            Visible_Op : Entity_Id;
 
          begin
-            return Present (Visible_Op)
-              and then Scope (Op) = Scope (Visible_Op)
-              and then not Comes_From_Source (Visible_Op)
-              and then Alias (Visible_Op) = Op
-              and then not Is_Hidden (Visible_Op);
+            --  The subprogram may be overloaded with both visible and private
+            --  entities with the same name. We have to scan the chain of
+            --  homonyms to determine whether there is a previous implicit
+            --  declaration in the same scope that is overridden by the
+            --  private candidate.
+
+            Visible_Op := Homonym (Op);
+            while Present (Visible_Op) loop
+               if Scope (Op) /= Scope (Visible_Op) then
+                  return False;
+
+               elsif not Comes_From_Source (Visible_Op)
+                 and then Alias (Visible_Op) = Op
+                 and then not Is_Hidden (Visible_Op)
+               then
+                  return True;
+               end if;
+
+               Visible_Op := Homonym (Visible_Op);
+            end loop;
+
+            return False;
          end Is_Private_Overriding;
 
          -----------------
