@@ -52,13 +52,14 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_1 = $(foreach \
+@ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_1 = $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_2 = $(foreach \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	s,$(SIZES),$(addsuffix \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_$(s)_1_.lo,$(SIZEOBJS))) \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	$(addsuffix \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_8_2_.lo,$(SIZEOBJS))
-@ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@am__append_2 = $(addsuffix _8_1_.lo,$(SIZEOBJS))
-@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_3 = $(addsuffix _16_1_.lo,$(SIZEOBJS))
+@ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@am__append_3 = $(addsuffix _8_1_.lo,$(SIZEOBJS))
+@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_4 = $(addsuffix _16_1_.lo,$(SIZEOBJS))
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -346,7 +347,8 @@ all_c_files := $(foreach dir,$(search_path),$(wildcard $(dir)/*.c))
 M_SRC = $(firstword $(filter %/$(M_FILE), $(all_c_files)))
 libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix \
 	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) $(am__append_2) \
-	$(am__append_3)
+	$(am__append_3) $(am__append_4)
+@ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv8.1-a
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=i586
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -mcx16

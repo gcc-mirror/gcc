@@ -608,6 +608,8 @@ ARCH_I386_FALSE
 ARCH_I386_TRUE
 ARCH_ARM_LINUX_FALSE
 ARCH_ARM_LINUX_TRUE
+ARCH_AARCH64_LINUX_FALSE
+ARCH_AARCH64_LINUX_TRUE
 HAVE_IFUNC_FALSE
 HAVE_IFUNC_TRUE
 SIZES
@@ -11118,7 +11120,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11121 "configure"
+#line 11123 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11224,7 +11226,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11227 "configure"
+#line 11229 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11525,6 +11527,13 @@ $as_echo "$target_thread_file" >&6; }
 if test -n "$UNSUPPORTED"; then
   as_fn_error "Configuration ${target} is unsupported." "$LINENO" 5
 fi
+
+# Write out the ifunc resolver arg type.
+
+cat >>confdefs.h <<_ACEOF
+#define IFUNC_RESOLVER_ARGS $IFUNC_RESOLVER_ARGS
+_ACEOF
+
 
 # Disable fallbacks to __sync routines from libgcc.  Otherwise we'll
 # make silly decisions about what the cpu can do.
@@ -15313,6 +15322,14 @@ else
   HAVE_IFUNC_FALSE=
 fi
 
+ if expr "$config_path" : ".* linux/aarch64 .*" > /dev/null; then
+  ARCH_AARCH64_LINUX_TRUE=
+  ARCH_AARCH64_LINUX_FALSE='#'
+else
+  ARCH_AARCH64_LINUX_TRUE='#'
+  ARCH_AARCH64_LINUX_FALSE=
+fi
+
  if expr "$config_path" : ".* linux/arm .*" > /dev/null; then
   ARCH_ARM_LINUX_TRUE=
   ARCH_ARM_LINUX_FALSE='#'
@@ -15501,6 +15518,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_IFUNC_TRUE}" && test -z "${HAVE_IFUNC_FALSE}"; then
   as_fn_error "conditional \"HAVE_IFUNC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_AARCH64_LINUX_TRUE}" && test -z "${ARCH_AARCH64_LINUX_FALSE}"; then
+  as_fn_error "conditional \"ARCH_AARCH64_LINUX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_ARM_LINUX_TRUE}" && test -z "${ARCH_ARM_LINUX_FALSE}"; then
