@@ -953,6 +953,19 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_dwarf_split_debug_info)
     opts->x_debug_generate_pub_sections = 2;
 
+  if ((opts->x_flag_sanitize
+       & (SANITIZE_USER_ADDRESS | SANITIZE_KERNEL_ADDRESS)) == 0)
+    {
+      if (opts->x_flag_sanitize & SANITIZE_POINTER_COMPARE)
+	error_at (loc,
+		  "%<-fsanitize=pointer-compare%> must be combined with "
+		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
+      if (opts->x_flag_sanitize & SANITIZE_POINTER_SUBTRACT)
+	error_at (loc,
+		  "%<-fsanitize=pointer-subtract%> must be combined with "
+		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
+    }
+
   /* Userspace and kernel ASan conflict with each other.  */
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
@@ -1497,6 +1510,8 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (address, (SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS), true),
   SANITIZER_OPT (kernel-address, (SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS),
 		 true),
+  SANITIZER_OPT (pointer-compare, SANITIZE_POINTER_COMPARE, true),
+  SANITIZER_OPT (pointer-subtract, SANITIZE_POINTER_SUBTRACT, true),
   SANITIZER_OPT (thread, SANITIZE_THREAD, false),
   SANITIZER_OPT (leak, SANITIZE_LEAK, false),
   SANITIZER_OPT (shift, SANITIZE_SHIFT, true),

@@ -1,3 +1,11 @@
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.c (pointer_diff): Add new argument and instrument
+	pointer subtraction.
+	(cp_build_binary_op): Create compound expression if doing an
+	instrumentation.
+
 2017-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cp_maybe_instrument_return): Don't add

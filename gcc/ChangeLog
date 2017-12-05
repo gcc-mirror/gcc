@@ -1,3 +1,15 @@
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi: Document the options.
+	* flag-types.h (enum sanitize_code): Add
+	SANITIZE_POINTER_COMPARE and SANITIZE_POINTER_SUBTRACT.
+	* ipa-inline.c (sanitize_attrs_match_for_inline_p): Add handling
+	of SANITIZE_POINTER_COMPARE and SANITIZE_POINTER_SUBTRACT.
+	* opts.c: Define new sanitizer options.
+	* sanitizer.def (BUILT_IN_ASAN_POINTER_COMPARE): Likewise.
+	(BUILT_IN_ASAN_POINTER_SUBTRACT): Likewise.
+
 2017-12-05  Julia Koval  <julia.koval@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VNNI_SET,

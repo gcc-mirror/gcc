@@ -260,8 +260,12 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
   if (!caller || !callee)
     return true;
 
-  return sanitize_flags_p (SANITIZE_ADDRESS, caller)
-    == sanitize_flags_p (SANITIZE_ADDRESS, callee);
+  return ((sanitize_flags_p (SANITIZE_ADDRESS, caller)
+	   == sanitize_flags_p (SANITIZE_ADDRESS, callee))
+	  && (sanitize_flags_p (SANITIZE_POINTER_COMPARE, caller)
+	      == sanitize_flags_p (SANITIZE_POINTER_COMPARE, callee))
+	  && (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT, caller)
+	      == sanitize_flags_p (SANITIZE_POINTER_SUBTRACT, callee)));
 }
 
 /* Used for flags where it is safe to inline when caller's value is

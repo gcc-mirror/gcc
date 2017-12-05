@@ -1,3 +1,13 @@
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/pointer-compare-1.c: New test.
+	* c-c++-common/asan/pointer-compare-2.c: New test.
+	* c-c++-common/asan/pointer-subtract-1.c: New test.
+	* c-c++-common/asan/pointer-subtract-2.c: New test.
+	* c-c++-common/asan/pointer-subtract-3.c: New test.
+	* c-c++-common/asan/pointer-subtract-4.c: New test.
+
 2017-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/missing-return.C: Add -O to dg-options.
