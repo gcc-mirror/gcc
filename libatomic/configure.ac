@@ -163,6 +163,10 @@ if test -n "$UNSUPPORTED"; then
   AC_MSG_ERROR([Configuration ${target} is unsupported.])
 fi
 
+# Write out the ifunc resolver arg type.
+AC_DEFINE_UNQUOTED(IFUNC_RESOLVER_ARGS, $IFUNC_RESOLVER_ARGS,
+	[Define ifunc resolver function argument.])
+
 # Disable fallbacks to __sync routines from libgcc.  Otherwise we'll
 # make silly decisions about what the cpu can do.
 CFLAGS="$save_CFLAGS -fno-sync-libcalls $XCFLAGS"
@@ -251,6 +255,8 @@ AC_SUBST(LIBS)
 AC_SUBST(SIZES)
 
 AM_CONDITIONAL(HAVE_IFUNC, test x$libat_cv_have_ifunc = xyes)
+AM_CONDITIONAL(ARCH_AARCH64_LINUX,
+	       [expr "$config_path" : ".* linux/aarch64 .*" > /dev/null])
 AM_CONDITIONAL(ARCH_ARM_LINUX,
 	       [expr "$config_path" : ".* linux/arm .*" > /dev/null])
 AM_CONDITIONAL(ARCH_I386,

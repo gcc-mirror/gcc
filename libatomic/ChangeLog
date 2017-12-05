@@ -1,3 +1,18 @@
+2017-12-04  Steve Ellcey  <sellcey@cavium.com>
+
+	* Makefile.am (ARCH_AARCH64_LINUX): Add IFUNC_OPTIONS and
+	libatomic_la_LIBADD.
+	* config/linux/aarch64/host-config.h: New file.
+	* configure.ac (IFUNC_RESOLVER_ARGS): Define.
+	(ARCH_AARCH64_LINUX): New conditional for IFUNC builds.
+	* configure.tgt (aarch64): Set ARCH and try_ifunc.
+	(aarch64*-*-linux*) Update config_path.
+	(aarch64*-*-linux*) Set IFUNC_RESOLVER_ARGS.
+	* libatomic_i.h (GEN_SELECTOR): Add IFUNC_RESOLVER_ARGS argument.
+	* Makefile.in: Regenerate.
+	* auto-config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* configure.ac: Set CET_FLAGS, update XCFLAGS.
