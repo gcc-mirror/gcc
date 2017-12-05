@@ -1,3 +1,14 @@
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/83289
+	* gcc.target/i386/avx256-unaligned-load-1.c: Adjust for -dp
+	alternative numbers being 0 based instead of former 1 based.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-4.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-2.c: Likewise.
+
 2017-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83277
