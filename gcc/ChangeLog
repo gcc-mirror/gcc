@@ -1,3 +1,11 @@
+2017-12-05  Richard Biener   <rguenther@suse.de>
+
+	* timevar.def (TV_TREE_RECIP, TV_TREE_SINCOS, TV_TREE_WIDEN_MUL):
+	Add.
+	* tree-ssa-math-opts.c (pass_data_cse_reciprocal): Use TV_TREE_RECIP.
+	(pass_data_cse_sincos): Use TV_TREE_SINCOS.
+	(pass_data_optimize_widening_mul): Use TV_TREE_WIDEN_MUL.
+
 2017-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* dbxout.c (dbxout_block): Grow buf to 30 bytes.
