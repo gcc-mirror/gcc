@@ -432,8 +432,6 @@ void
 loop_cand::classify_simple_reduction (reduction_p re)
 {
   gimple *producer, *consumer;
-  enum tree_code code;
-  tree lhs, rhs;
 
   /* Check init variable of reduction and how it is initialized.  */
   if (TREE_CODE (re->init) == SSA_NAME)
@@ -444,50 +442,21 @@ loop_cand::classify_simple_reduction (reduction_p re)
       if (!bb || bb->loop_father != m_outer)
 	return;
 
-      if (!is_gimple_assign (producer))
+      if (!gimple_assign_load_p (producer))
 	return;
 
-      code = gimple_assign_rhs_code (producer);
-      if (get_gimple_rhs_class (code) != GIMPLE_SINGLE_RHS)
-	return;
-
-      lhs = gimple_assign_lhs (producer);
-      if (lhs != re->init)
-	return;
-
-      rhs = gimple_assign_rhs1 (producer);
-      if (!REFERENCE_CLASS_P (rhs))
-	return;
-
-      re->init_ref = rhs;
+      re->init_ref = gimple_assign_rhs1 (producer);
     }
   else if (!CONSTANT_CLASS_P (re->init))
     return;
 
-  /* Check how reduction variable is used.  Note usually reduction variable
-     is used outside of its defining loop, we don't require that in terms of
-     loop interchange.  */
-  if (!re->lcssa_phi)
-    consumer = single_use_in_loop (re->next, m_loop);
-  else
-    consumer = single_use_in_loop (PHI_RESULT (re->lcssa_phi), m_outer);
-
-  if (!consumer || !is_gimple_assign (consumer))
+  /* Check how reduction variable is used.  */
+  consumer = single_use_in_loop (PHI_RESULT (re->lcssa_phi), m_outer);
+  if (!consumer
+      || !gimple_store_p (consumer))
     return;
 
-  code = gimple_assign_rhs_code (consumer);
-  if (get_gimple_rhs_class (code) != GIMPLE_SINGLE_RHS)
-    return;
-
-  lhs = gimple_assign_lhs (consumer);
-  if (!REFERENCE_CLASS_P (lhs))
-    return;
-
-  rhs = gimple_assign_rhs1 (consumer);
-  if (rhs != PHI_RESULT (re->lcssa_phi))
-    return;
-
-  re->fini_ref = lhs;
+  re->fini_ref = gimple_get_lhs (consumer);
   re->consumer = consumer;
 
   /* Simple reduction with constant initializer.  */
@@ -608,6 +577,9 @@ loop_cand::analyze_iloop_reduction_var (tree var)
       else
 	return false;
     }
+  if (!lcssa_phi)
+    return false;
+
   re = XCNEW (struct reduction);
   re->var = var;
   re->init = init;
@@ -681,15 +653,9 @@ loop_cand::analyze_oloop_reduction_var (loop_cand *iloop, tree var)
 
   /* Outer loop's reduction should only be used to initialize inner loop's
      simple reduction.  */
-  FOR_EACH_IMM_USE_FAST (use_p, iterator, var)
-    {
-      stmt = USE_STMT (use_p);
-      if (is_gimple_debug (stmt))
-	continue;
-
-      if (stmt != inner_re->phi)
-	return false;
-    }
+  if (! single_imm_use (var, &use_p, &stmt)
+      || stmt != inner_re->phi)
+    return false;
 
   /* Check this reduction is correctly used outside of loop via lcssa phi.  */
   FOR_EACH_IMM_USE_FAST (use_p, iterator, next)
@@ -711,6 +677,8 @@ loop_cand::analyze_oloop_reduction_var (loop_cand *iloop, tree var)
       else
 	return false;
     }
+  if (!lcssa_phi)
+    return false;
 
   re = XCNEW (struct reduction);
   re->var = var;
@@ -1146,12 +1114,18 @@ tree_loop_interchange::interchange_loops (loop_cand &iloop, loop_cand &oloop)
   edge instantiate_below = loop_preheader_edge (loop_nest);
   gsi = gsi_last_bb (loop_preheader_edge (loop_nest)->src);
   i_niters = number_of_latch_executions (iloop.m_loop);
-  i_niters = instantiate_scev (instantiate_below, loop_nest, i_niters);
+  i_niters = analyze_scalar_evolution (loop_outer (iloop.m_loop), i_niters);
+  i_niters = instantiate_scev (instantiate_below, loop_outer (iloop.m_loop),
+			       i_niters);
   i_niters = force_gimple_operand_gsi (&gsi, unshare_expr (i_niters), true,
 				       NULL_TREE, false, GSI_CONTINUE_LINKING);
   o_niters = number_of_latch_executions (oloop.m_loop);
   if (oloop.m_loop != loop_nest)
-    o_niters = instantiate_scev (instantiate_below, loop_nest, o_niters);
+    {
+      o_niters = analyze_scalar_evolution (loop_outer (oloop.m_loop), o_niters);
+      o_niters = instantiate_scev (instantiate_below, loop_outer (oloop.m_loop),
+				   o_niters);
+    }
   o_niters = force_gimple_operand_gsi (&gsi, unshare_expr (o_niters), true,
 				       NULL_TREE, false, GSI_CONTINUE_LINKING);
 
