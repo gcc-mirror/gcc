@@ -136,9 +136,9 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
-      --  Define pragma GNAT_Annotate as an alias of pragma Annotate,
-      --  to be able to work around bootstrap limitations with the old syntax
-      --  of pragma Annotate, and use pragma GNAT_Annotate in compiler sources
+      --  Define pragma GNAT_Annotate as an alias of pragma Annotate, to be
+      --  able to work around bootstrap limitations with the old syntax of
+      --  pragma Annotate, and use pragma GNAT_Annotate in compiler sources
       --  when needed.
 
       Map_Pragma_Name (From => Name_Gnat_Annotate, To => Name_Annotate);

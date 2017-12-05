@@ -6812,8 +6812,16 @@ package body Checks is
       --  evaluation is always a potential source of inefficiency, and is
       --  functionally incorrect in the volatile case.
 
-      if not Is_Entity_Name (N) or else Treat_As_Volatile (Entity (N)) then
-         Force_Evaluation (N);
+      --  We skip the evaluation of attribute references because, after these
+      --  runtime checks are generated, the expander may need to rewrite this
+      --  node (for example, see Attribute_Max_Size_In_Storage_Elements in
+      --  Expand_N_Attribute_Reference).
+
+      if Nkind (N) /= N_Attribute_Reference
+        and then (not Is_Entity_Name (N)
+                    or else Treat_As_Volatile (Entity (N)))
+      then
+         Force_Evaluation (N, Mode => Strict);
       end if;
 
       --  The easiest case is when Source_Base_Type and Target_Base_Type are

@@ -15008,6 +15008,25 @@ package body Sem_Prag is
                      Set_Elaborate_Present (Citem, True);
                      Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
+                     --  With the pragma present, elaboration calls on
+                     --  subprograms from the named unit need no further
+                     --  checks, as long as the pragma appears in the current
+                     --  compilation unit. If the pragma appears in some unit
+                     --  in the context, there might still be a need for an
+                     --  Elaborate_All_Desirable from the current compilation
+                     --  to the named unit, so we keep the check enabled. This
+                     --  does not apply in SPARK mode, where we allow pragma
+                     --  Elaborate, but we don't trust it to be right so we
+                     --  will still insist on the Elaborate_All.
+
+                     if Legacy_Elaboration_Checks
+                       and then In_Extended_Main_Source_Unit (N)
+                       and then SPARK_Mode /= On
+                     then
+                        Set_Suppress_Elaboration_Warnings
+                          (Entity (Name (Citem)));
+                     end if;
+
                      exit Inner;
                   end if;
 
@@ -15067,6 +15086,17 @@ package body Sem_Prag is
                      Set_Elaborate_All_Present (Citem, True);
                      Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
+                     --  Suppress warnings and elaboration checks on the named
+                     --  unit if the pragma is in the current compilation, as
+                     --  for pragma Elaborate.
+
+                     if Legacy_Elaboration_Checks
+                       and then In_Extended_Main_Source_Unit (N)
+                     then
+                        Set_Suppress_Elaboration_Warnings
+                          (Entity (Name (Citem)));
+                     end if;
+
                      exit Innr;
                   end if;
 
@@ -15116,6 +15146,27 @@ package body Sem_Prag is
             else
                Set_Body_Required (Cunit_Node);
                Set_Has_Pragma_Elaborate_Body (Cunit_Ent);
+
+               --  If we are in dynamic elaboration mode, then we suppress
+               --  elaboration warnings for the unit, since it is definitely
+               --  fine NOT to do dynamic checks at the first level (and such
+               --  checks will be suppressed because no elaboration boolean
+               --  is created for Elaborate_Body packages).
+               --
+               --  But in the static model of elaboration, Elaborate_Body is
+               --  definitely NOT good enough to ensure elaboration safety on
+               --  its own, since the body may WITH other units that are not
+               --  safe from an elaboration point of view, so a client must
+               --  still do an Elaborate_All on such units.
+               --
+               --  Debug flag -gnatdD restores the old behavior of 3.13, where
+               --  Elaborate_Body always suppressed elab warnings.
+
+               if Legacy_Elaboration_Checks
+                 and then (Dynamic_Elaboration_Checks or Debug_Flag_DD)
+               then
+                  Set_Suppress_Elaboration_Warnings (Cunit_Ent);
+               end if;
             end if;
          end Elaborate_Body;
 
@@ -20193,6 +20244,10 @@ package body Sem_Prag is
                else
                   if not Debug_Flag_U then
                      Set_Is_Preelaborated (Ent);
+
+                     if Legacy_Elaboration_Checks then
+                        Set_Suppress_Elaboration_Warnings (Ent);
+                     end if;
                   end if;
                end if;
             end if;
@@ -20820,6 +20875,10 @@ package body Sem_Prag is
             if not Debug_Flag_U then
                Set_Is_Pure (Ent);
                Set_Has_Pragma_Pure (Ent);
+
+               if Legacy_Elaboration_Checks then
+                  Set_Suppress_Elaboration_Warnings (Ent);
+               end if;
             end if;
          end Pure;
 

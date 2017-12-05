@@ -5116,6 +5116,7 @@ package body Sem_Res is
       --  statement.
 
       if Nkind (N) = N_Allocator then
+
          --  Avoid coextension processing for an allocator that is the
          --  expansion of a build-in-place function call.
 
@@ -5166,9 +5167,10 @@ package body Sem_Res is
                if not Is_Static_Coextension (N) then
                   Set_Is_Dynamic_Coextension (N);
 
-                  --  ??? We currently do not handle finalization and
-                  --  deallocation of coextensions properly so let's at
-                  --  least warn the user about it.
+                  --  Finalization and deallocation of coextensions utilizes an
+                  --  approximate implementation which does not directly adhere
+                  --  to the semantic rules. Warn on potential issues involving
+                  --  coextensions.
 
                   if Is_Controlled (Desig_T) then
                      Error_Msg_N
@@ -5187,10 +5189,11 @@ package body Sem_Res is
                Set_Is_Dynamic_Coextension (N, False);
                Set_Is_Static_Coextension  (N, False);
 
-               --  ??? It seems we also do not properly finalize anonymous
-               --  access-to-controlled objects within their declared scope and
-               --  instead finalize them with their associated unit. Warn the
-               --  user about it here.
+               --  Anonymous access-to-controlled objects are not finalized on
+               --  time because this involves run-time ownership and currently
+               --  this property is not available. In rare cases the object may
+               --  not be finalized at all. Warn on potential issues involving
+               --  anonymous access-to-controlled objects.
 
                if Ekind (Typ) = E_Anonymous_Access_Type
                  and then Is_Controlled_Active (Desig_T)
@@ -5910,6 +5913,10 @@ package body Sem_Res is
       then
          Resolve_Entry_Call (N, Typ);
 
+         if Legacy_Elaboration_Checks then
+            Check_Elab_Call (N);
+         end if;
+
          --  Annotate the tree by creating a call marker in case the original
          --  call is transformed by expansion. The call marker is automatically
          --  saved for later examination by the ABE Processing phase.
@@ -6192,6 +6199,10 @@ package body Sem_Res is
                   Set_Etype (Prefix (N), Ret_Type);
                   Set_Etype (N, Typ);
                   Resolve_Indexed_Component (N, Typ);
+
+                  if Legacy_Elaboration_Checks then
+                     Check_Elab_Call (Prefix (N));
+                  end if;
 
                   --  Annotate the tree by creating a call marker in case
                   --  the original call is transformed by expansion. The call
@@ -6709,6 +6720,10 @@ package body Sem_Res is
       --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);
+
+      if Legacy_Elaboration_Checks then
+         Check_Elab_Call (N);
+      end if;
 
       --  Annotate the tree by creating a call marker in case the original call
       --  is transformed by expansion. The call marker is automatically saved
@@ -7352,6 +7367,18 @@ package body Sem_Res is
                SPARK_Msg_N
                  ("volatile object cannot appear in this context "
                   & "(SPARK RM 7.1.3(12))", N);
+            end if;
+
+            --  Check for possible elaboration issues with respect to reads of
+            --  variables. The act of renaming the variable is not considered a
+            --  read as it simply establishes an alias.
+
+            if Legacy_Elaboration_Checks
+              and then Ekind (E) = E_Variable
+              and then Dynamic_Elaboration_Checks
+              and then Nkind (Par) /= N_Object_Renaming_Declaration
+            then
+               Check_Elab_Call (N);
             end if;
 
             --  The variable may eventually become a constituent of a single

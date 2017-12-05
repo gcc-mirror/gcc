@@ -28,6 +28,7 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -873,6 +874,17 @@ package body Sem_Attr is
 
             else
                Kill_Current_Values;
+            end if;
+
+            --  In the static elaboration model, treat the attribute reference
+            --  as a subprogram call for elaboration purposes. Suppress this
+            --  treatment under debug flag. In any case, we are all done.
+
+            if Legacy_Elaboration_Checks
+              and not Dynamic_Elaboration_Checks
+              and not Debug_Flag_Dot_UU
+            then
+               Check_Elab_Call (N);
             end if;
 
             return;

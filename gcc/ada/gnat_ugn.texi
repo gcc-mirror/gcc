@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 16, 2017
+GNAT User's Guide for Native Platforms , Dec 05, 2017
 
 AdaCore
 
@@ -460,7 +460,7 @@ Specifying a Run-Time Library
 
 GNU/Linux Topics
 
-* Required Packages on GNU/Linux;: Required Packages on GNU/Linux. 
+* Required Packages on GNU/Linux:: 
 
 Microsoft Windows Topics
 
@@ -542,6 +542,7 @@ Elaboration Order Handling in GNAT
 * Dynamic Elaboration Model in GNAT:: 
 * Static Elaboration Model in GNAT:: 
 * SPARK Elaboration Model in GNAT:: 
+* Legacy Elaboration Model in GNAT:: 
 * Mixing Elaboration Models:: 
 * Elaboration Circularities:: 
 * Resolving Elaboration Circularities:: 
@@ -17943,8 +17944,8 @@ Do not look for library files in the system default directory.
 
 Specify an alternate ali file extension. The default is @code{ali} and other
 extensions (e.g. @code{gli} for C/C++ sources) may be specified via this switch.
-Note that if this switch overrides the default, which means that only the
-new extension will be considered.
+Note that if this switch overrides the default, only the new extension will
+be considered.
 @end table
 
 @geindex --RTS (gnatxref)
@@ -18200,9 +18201,8 @@ Do not look for library files in the system default directory.
 @item @code{--ext=@emph{extension}}
 
 Specify an alternate ali file extension. The default is @code{ali} and other
-extensions (e.g. @code{gli} for C/C++ sources when using @code{-fdump-xref})
-may be specified via this switch. Note that if this switch overrides the
-default, which means that only the new extension will be considered.
+extensions may be specified via this switch. Note that if this switch
+overrides the default, only the new extension will be considered.
 @end table
 
 @geindex --RTS (gnatfind)
@@ -23789,13 +23789,13 @@ Program_Error.
 This section describes topics that are specific to GNU/Linux platforms.
 
 @menu
-* Required Packages on GNU/Linux;: Required Packages on GNU/Linux. 
+* Required Packages on GNU/Linux:: 
 
 @end menu
 
 @node Required Packages on GNU/Linux,,,GNU/Linux Topics
 @anchor{gnat_ugn/platform_specific_information id7}@anchor{1dc}@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1dd}
-@subsection Required Packages on GNU/Linux:
+@subsection Required Packages on GNU/Linux
 
 
 GNAT requires the C library developer's package to be installed.
@@ -23812,16 +23812,16 @@ Debian, Ubuntu: @code{libc6-dev} (normally installed by default).
 @end itemize
 
 If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
-you'll need the 32-bit version of that package instead:
+you'll need the 32-bit version of the glibc and glibc-devel packages:
 
 
 @itemize *
 
 @item 
-RedHat, SUSE: @code{glibc-devel.i686};
+RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}
 
 @item 
-Debian, Ubuntu: @code{libc6-dev:i386}.
+Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}
 @end itemize
 
 Other GNU/Linux distributions might be choosing a different name
@@ -27083,6 +27083,7 @@ GNAT, either automatically or with explicit programming features.
 * Dynamic Elaboration Model in GNAT:: 
 * Static Elaboration Model in GNAT:: 
 * SPARK Elaboration Model in GNAT:: 
+* Legacy Elaboration Model in GNAT:: 
 * Mixing Elaboration Models:: 
 * Elaboration Circularities:: 
 * Resolving Elaboration Circularities:: 
@@ -27832,6 +27833,25 @@ region subject to SPARK_Mode On, otherwise the dynamic or static model is in
 effect.
 @end itemize
 
+@geindex Legacy elaboration model
+
+
+@itemize *
+
+@item 
+@emph{Legacy elaboration model}
+
+In addition to the three elabortaion models outlined above, GNAT provides the
+elaboration model of pre-18.x versions referred to as @cite{legacy elaboration model}. The legacy elaboration model is enabled with compiler switch
+@code{-gnatH}.
+@end itemize
+
+@geindex Relaxed elaboration mode
+
+The dynamic, legacy, and static models can be relaxed using compiler switch
+@code{-gnatJ}, making them more permissive. Note that in this mode, GNAT
+may not diagnose certain elaboration issues or install run-time checks.
+
 @node Common Elaboration-model Traits,Dynamic Elaboration Model in GNAT,Controlling the Elaboration Order in GNAT,Elaboration Order Handling in GNAT
 @anchor{gnat_ugn/elaboration_order_handling_in_gnat common-elaboration-model-traits}@anchor{23c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id7}@anchor{23d}
 @section Common Elaboration-model Traits
@@ -28101,7 +28121,7 @@ along with any additional dependencies that @code{Server} may require, are
 elaborated prior to the body of @code{Static_Model}.
 @end itemize
 
-@node SPARK Elaboration Model in GNAT,Mixing Elaboration Models,Static Elaboration Model in GNAT,Elaboration Order Handling in GNAT
+@node SPARK Elaboration Model in GNAT,Legacy Elaboration Model in GNAT,Static Elaboration Model in GNAT,Elaboration Order Handling in GNAT
 @anchor{gnat_ugn/elaboration_order_handling_in_gnat id10}@anchor{242}@anchor{gnat_ugn/elaboration_order_handling_in_gnat spark-elaboration-model-in-gnat}@anchor{243}
 @section SPARK Elaboration Model in GNAT
 
@@ -28124,8 +28144,19 @@ external, and compiler switch @code{-gnatd.v} is in effect.
 4. end SPARK_Model;
 @end example
 
-@node Mixing Elaboration Models,Elaboration Circularities,SPARK Elaboration Model in GNAT,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat mixing-elaboration-models}@anchor{244}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id11}@anchor{245}
+@node Legacy Elaboration Model in GNAT,Mixing Elaboration Models,SPARK Elaboration Model in GNAT,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat legacy-elaboration-model-in-gnat}@anchor{244}
+@section Legacy Elaboration Model in GNAT
+
+
+The legacy elaboration model is provided for compatibility with code bases
+developed with pre-18.x versions of GNAT. It is similar in functionality to
+the dynamic and static models of post-18.x version of GNAT, but may differ
+in terms of diagnostics and run-time checks. The legacy elaboration model is
+enabled with compiler switch @code{-gnatH}.
+
+@node Mixing Elaboration Models,Elaboration Circularities,Legacy Elaboration Model in GNAT,Elaboration Order Handling in GNAT
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat mixing-elaboration-models}@anchor{245}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id11}@anchor{246}
 @section Mixing Elaboration Models
 
 
@@ -28169,7 +28200,7 @@ warning:   "y.ads" which has static elaboration checks
 The warnings can be suppressed by binder switch @code{-ws}.
 
 @node Elaboration Circularities,Resolving Elaboration Circularities,Mixing Elaboration Models,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id12}@anchor{246}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-circularities}@anchor{247}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id12}@anchor{247}@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-circularities}@anchor{248}
 @section Elaboration Circularities
 
 
@@ -28228,7 +28259,7 @@ they @emph{with}, must be elaborated prior to @code{Client}. However, @code{Serv
 @code{Client}, and this leads to a circularity.
 
 @node Resolving Elaboration Circularities,Resolving Task Issues,Elaboration Circularities,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id13}@anchor{248}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-elaboration-circularities}@anchor{249}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id13}@anchor{249}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-elaboration-circularities}@anchor{24a}
 @section Resolving Elaboration Circularities
 
 
@@ -28260,6 +28291,29 @@ identical to that specified by the Ada Reference Manual. The binder will
 generate an executable program that may or may not raise @code{Program_Error},
 and it is the programmer's responsibility to ensure that it does not raise
 @code{Program_Error}.
+
+If the compilation was performed using a post-18.x version of GNAT, consider
+using the legacy elaboration model, in the following order:
+
+
+@itemize -
+
+@item 
+Use the legacy static elaboration model, with compiler switch
+@code{-gnatH}.
+
+@item 
+Use the legacy dynamic elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatE}.
+
+@item 
+Use the relaxed legacy static elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ}.
+
+@item 
+Use the relaxed legacy dynamic elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ} @code{-gnatE}.
+@end itemize
 
 @item 
 @emph{Suppress all elaboration checks}
@@ -28373,7 +28427,7 @@ run-time checks.
 @end itemize
 
 @node Resolving Task Issues,Elaboration-related Compiler Switches,Resolving Elaboration Circularities,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat id14}@anchor{24a}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-task-issues}@anchor{24b}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat id14}@anchor{24b}@anchor{gnat_ugn/elaboration_order_handling_in_gnat resolving-task-issues}@anchor{24c}
 @section Resolving Task Issues
 
 
@@ -28669,201 +28723,12 @@ static model will verify that no entry calls take place at elaboration time.
 @end itemize
 
 @node Elaboration-related Compiler Switches,Summary of Procedures for Elaboration Control,Resolving Task Issues,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-related-compiler-switches}@anchor{24c}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id15}@anchor{24d}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat elaboration-related-compiler-switches}@anchor{24d}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id15}@anchor{24e}
 @section Elaboration-related Compiler Switches
 
 
 GNAT has several switches that affect the elaboration model and consequently
 the elaboration order chosen by the binder.
-
-@geindex -gnatdE (gnat)
-
-
-@table @asis
-
-@item @code{-gnatdE}
-
-Elaboration checks on predefined units
-
-When this switch is in effect, GNAT will consider scenarios and targets that
-come from the Ada, GNAT, Interfaces, and System hierarchies. This switch is
-useful when a programmer has defined a custom grandchild of those packages.
-@end table
-
-@geindex -gnatd.G (gnat)
-
-
-@table @asis
-
-@item @code{-gnatd.G}
-
-Ignore calls through generic formal parameters for elaboration
-
-When this switch is in effect, GNAT will ignore calls that invoke generic
-actual entries, operators, or subprograms via generic formal subprograms. As
-a result, GNAT will not generate implicit @code{Elaborate} and @code{Elaborate_All}
-pragmas, and run-time checks for such calls. Note that this switch does not
-overlap with @code{-gnatdL}.
-
-@example
-package body Ignore_Calls is
-   function ABE return Integer;
-
-   generic
-      with function Gen_Formal return Integer;
-   package Gen is
-      Val : constant Integer := Gen_Formal;
-   end Gen;
-
-   package Inst is new Gen (ABE);
-
-   function ABE return Integer is
-   begin
-      ...
-   end ABE;
-end Ignore_Calls;
-@end example
-
-In the example above, the call to function @code{ABE} will be ignored because it
-occurs during the elaboration of instance @code{Inst}, through a call to generic
-formal subprogram @code{Gen_Formal}.
-@end table
-
-@geindex -gnatdL (gnat)
-
-
-@table @asis
-
-@item @code{-gnatdL}
-
-Ignore external calls from instances for elaboration
-
-When this switch is in effect, GNAT will ignore calls that originate from
-within an instance and directly target an entry, operator, or subprogram
-defined outside the instance. As a result, GNAT will not generate implicit
-@code{Elaborate} and @code{Elaborate_All} pragmas, and run-time checks for such
-calls.  Note that this switch does not overlap with @code{-gnatd.G}.
-
-@example
-package body Ignore_Calls is
-   function ABE return Integer;
-
-   generic
-   package Gen is
-      Val : constant Integer := ABE;
-   end Gen;
-
-   package Inst is new Gen;
-
-   function ABE return Integer is
-   begin
-      ...
-   end ABE;
-end Ignore_Calls;
-@end example
-
-In the example above, the call to function @code{ABE} will be ignored because it
-originates from within an instance and targets a subprogram defined outside
-the instance.
-@end table
-
-@geindex -gnatd.o (gnat)
-
-
-@table @asis
-
-@item @code{-gnatd.o}
-
-Conservative elaboration order for indirect calls
-
-When this switch is in effect, GNAT will treat @code{'Access} of an entry,
-operator, or subprogram as an immediate call to that target. As a result,
-GNAT will generate implicit @code{Elaborate} and @code{Elaborate_All} pragmas as
-well as run-time checks for such attribute references.
-
-@example
- 1. package body Attribute_Call is
- 2.    function Func return Integer;
- 3.    type Func_Ptr is access function return Integer;
- 4.
- 5.    Ptr : constant Func_Ptr := Func'Access;
-                                      |
-    >>> warning: cannot call "Func" before body seen
-    >>> warning: Program_Error may be raised at run time
-    >>> warning:   body of unit "Attribute_Call" elaborated
-    >>> warning:   "Access" of "Func" taken at line 5
-    >>> warning:   function "Func" called at line 5
-
- 6.
- 7.    function Func return Integer is
- 8.    begin
- 9.       ...
-10.    end Func;
-11. end Attribute_Call;
-@end example
-
-In the example above, the elaboration of declaration @code{Ptr} is assigned
-@code{Func'Access} before the body of @code{Func} has been elaborated.
-@end table
-
-@geindex -gnatd.U (gnat)
-
-
-@table @asis
-
-@item @code{-gnatd.U}
-
-Ignore indirect calls for static elaboration
-
-When this switch is in effect, GNAT will ignore @code{'Access} of an entry,
-operator, or subprogram when the static model is in effect.
-@end table
-
-@geindex -gnatd.v (gnat)
-
-
-@table @asis
-
-@item @code{-gnatd.v}
-
-Enforce SPARK elaboration rules in SPARK code
-
-When this switch is in effect, GNAT will enforce the SPARK rules of
-elaboration as defined in the SPARK Reference Manual, section 7.7. As a
-result, constructs which violate the SPARK elaboration rules are no longer
-accepted, even if GNAT is able to statically ensure that these constructs
-will not lead to ABE problems.
-@end table
-
-@geindex -gnatd.y (gnat)
-
-
-@table @asis
-
-@item @code{-gnatd.y}
-
-Disable implicit pragma Elaborate[_All] on task bodies
-
-When this switch is in effect, GNAT will not generate @code{Elaborate} and
-@code{Elaborate_All} pragmas if the need for the pragma came directly or
-indirectly from a task body.
-
-@example
-with Server;
-package body Disable_Task is
-   task T;
-
-   task body T is
-   begin
-      Server.Proc;
-   end T;
-end Disable_Task;
-@end example
-
-In the example above, the activation of single task @code{T} invokes
-@code{Server.Proc}, which implies that @code{Server} requires @code{Elaborate_All},
-however GNAT will not generate the pragma.
-@end table
 
 @geindex -gnatE (gnat)
 
@@ -28922,6 +28787,33 @@ a unit. This diagnostic requires compiler switch @code{-gnatd.v}.
 4. end Client;
 @end example
 @end itemize
+@end table
+
+@geindex -gnatH (gnat)
+
+
+@table @asis
+
+@item @code{-gnatH}
+
+Legacy elaboration checking mode enabled
+
+When this switch is in effect, GNAT will utilize the pre-18.x elaboration
+model.
+@end table
+
+@geindex -gnatJ (gnat)
+
+
+@table @asis
+
+@item @code{-gnatJ}
+
+Relaxed elaboration checking mode enabled
+
+When this switch is in effect, GNAT will not process certain scenarios
+resulting in a more permissive elaboration model. Note that this may
+eliminate some diagnostics and run-time checks.
 @end table
 
 @geindex -gnatw.f (gnat)
@@ -29008,7 +28900,7 @@ checks. The example above will still fail at run time with an ABE.
 @end table
 
 @node Summary of Procedures for Elaboration Control,Inspecting the Chosen Elaboration Order,Elaboration-related Compiler Switches,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat summary-of-procedures-for-elaboration-control}@anchor{24e}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id16}@anchor{24f}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat summary-of-procedures-for-elaboration-control}@anchor{24f}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id16}@anchor{250}
 @section Summary of Procedures for Elaboration Control
 
 
@@ -29016,6 +28908,7 @@ A programmer should first compile the program with the default options, using
 none of the binder or compiler switches. If the binder succeeds in finding an
 elaboration order, then apart from possible cases involing dispatching calls
 and access-to-subprogram types, the program is free of elaboration errors.
+
 If it is important for the program to be portable to compilers other than GNAT,
 then the programmer should use compiler switch @code{-gnatel} and consider
 the messages about missing or implicitly created @code{Elaborate} and
@@ -29028,9 +28921,11 @@ options:
 @itemize *
 
 @item 
-Ensure that warnings are enabled. This will allow the static model to output
-trace information of elaboration issues. The trace information could shed
-light on previously unforeseen dependencies, as well as their origins.
+Ensure that elaboration warnings are enabled. This will allow the static
+model to output trace information of elaboration issues. The trace
+information could shed light on previously unforeseen dependencies, as well
+as their origins. Elaboration warnings are enabled with compiler switch
+@code{-gnatwl}.
 
 @item 
 Use switch @code{-gnatel} to obtain messages on generated implicit
@@ -29039,21 +28934,38 @@ indicate why a server unit must be elaborated prior to a client unit.
 
 @item 
 If the warnings produced by the static model indicate that a task is
-involved, consider the options in the section on resolving task issues as
-well as compiler switch @code{-gnatd.y}.
+involved, consider the options in section @ref{24b,,Resolving Task Issues}.
 
 @item 
-If the warnings produced by the static model indicate that an generic
-instantiations are involved, consider using compiler switches
-@code{-gnatd.G} and @code{-gnatdL}.
+If none of the steps outlined above resolve the circularity, use a more
+permissive elaboration model, in the following order:
+
+
+@itemize -
 
 @item 
-If none of the steps outlined above resolve the circularity, recompile the
-program using the dynamic model by using compiler switch @code{-gnatE}.
+Use the dynamic elaboration model, with compiler switch @code{-gnatE}.
+
+@item 
+Use the legacy static elaboration model, with compiler switch
+@code{-gnatH}.
+
+@item 
+Use the legacy dynamic elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatE}.
+
+@item 
+Use the relaxed legacy static elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ}.
+
+@item 
+Use the relaxed legacy dynamic elaboration model, with compiler switches
+@code{-gnatH} @code{-gnatJ} @code{-gnatE}.
+@end itemize
 @end itemize
 
 @node Inspecting the Chosen Elaboration Order,,Summary of Procedures for Elaboration Control,Elaboration Order Handling in GNAT
-@anchor{gnat_ugn/elaboration_order_handling_in_gnat inspecting-the-chosen-elaboration-order}@anchor{250}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id17}@anchor{251}
+@anchor{gnat_ugn/elaboration_order_handling_in_gnat inspecting-the-chosen-elaboration-order}@anchor{251}@anchor{gnat_ugn/elaboration_order_handling_in_gnat id17}@anchor{252}
 @section Inspecting the Chosen Elaboration Order
 
 
@@ -29190,7 +29102,7 @@ gdbstr (body)
 @end example
 
 @node Inline Assembler,GNU Free Documentation License,Elaboration Order Handling in GNAT,Top
-@anchor{gnat_ugn/inline_assembler inline-assembler}@anchor{10}@anchor{gnat_ugn/inline_assembler doc}@anchor{252}@anchor{gnat_ugn/inline_assembler id1}@anchor{253}
+@anchor{gnat_ugn/inline_assembler inline-assembler}@anchor{10}@anchor{gnat_ugn/inline_assembler doc}@anchor{253}@anchor{gnat_ugn/inline_assembler id1}@anchor{254}
 @chapter Inline Assembler
 
 
@@ -29249,7 +29161,7 @@ and with assembly language programming.
 @end menu
 
 @node Basic Assembler Syntax,A Simple Example of Inline Assembler,,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id2}@anchor{254}@anchor{gnat_ugn/inline_assembler basic-assembler-syntax}@anchor{255}
+@anchor{gnat_ugn/inline_assembler id2}@anchor{255}@anchor{gnat_ugn/inline_assembler basic-assembler-syntax}@anchor{256}
 @section Basic Assembler Syntax
 
 
@@ -29365,7 +29277,7 @@ Intel: Destination first; for example @code{mov eax, 4}@w{ }
 
 
 @node A Simple Example of Inline Assembler,Output Variables in Inline Assembler,Basic Assembler Syntax,Inline Assembler
-@anchor{gnat_ugn/inline_assembler a-simple-example-of-inline-assembler}@anchor{256}@anchor{gnat_ugn/inline_assembler id3}@anchor{257}
+@anchor{gnat_ugn/inline_assembler a-simple-example-of-inline-assembler}@anchor{257}@anchor{gnat_ugn/inline_assembler id3}@anchor{258}
 @section A Simple Example of Inline Assembler
 
 
@@ -29514,7 +29426,7 @@ If there are no errors, @code{as} will generate an object file
 @code{nothing.out}.
 
 @node Output Variables in Inline Assembler,Input Variables in Inline Assembler,A Simple Example of Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id4}@anchor{258}@anchor{gnat_ugn/inline_assembler output-variables-in-inline-assembler}@anchor{259}
+@anchor{gnat_ugn/inline_assembler id4}@anchor{259}@anchor{gnat_ugn/inline_assembler output-variables-in-inline-assembler}@anchor{25a}
 @section Output Variables in Inline Assembler
 
 
@@ -29881,7 +29793,7 @@ end Get_Flags_3;
 @end quotation
 
 @node Input Variables in Inline Assembler,Inlining Inline Assembler Code,Output Variables in Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id5}@anchor{25a}@anchor{gnat_ugn/inline_assembler input-variables-in-inline-assembler}@anchor{25b}
+@anchor{gnat_ugn/inline_assembler id5}@anchor{25b}@anchor{gnat_ugn/inline_assembler input-variables-in-inline-assembler}@anchor{25c}
 @section Input Variables in Inline Assembler
 
 
@@ -29970,7 +29882,7 @@ _increment__incr.1:
 @end quotation
 
 @node Inlining Inline Assembler Code,Other Asm Functionality,Input Variables in Inline Assembler,Inline Assembler
-@anchor{gnat_ugn/inline_assembler id6}@anchor{25c}@anchor{gnat_ugn/inline_assembler inlining-inline-assembler-code}@anchor{25d}
+@anchor{gnat_ugn/inline_assembler id6}@anchor{25d}@anchor{gnat_ugn/inline_assembler inlining-inline-assembler-code}@anchor{25e}
 @section Inlining Inline Assembler Code
 
 
@@ -30041,7 +29953,7 @@ movl %esi,%eax
 thus saving the overhead of stack frame setup and an out-of-line call.
 
 @node Other Asm Functionality,,Inlining Inline Assembler Code,Inline Assembler
-@anchor{gnat_ugn/inline_assembler other-asm-functionality}@anchor{25e}@anchor{gnat_ugn/inline_assembler id7}@anchor{25f}
+@anchor{gnat_ugn/inline_assembler other-asm-functionality}@anchor{25f}@anchor{gnat_ugn/inline_assembler id7}@anchor{260}
 @section Other @code{Asm} Functionality
 
 
@@ -30056,7 +29968,7 @@ and @code{Volatile}, which inhibits unwanted optimizations.
 @end menu
 
 @node The Clobber Parameter,The Volatile Parameter,,Other Asm Functionality
-@anchor{gnat_ugn/inline_assembler the-clobber-parameter}@anchor{260}@anchor{gnat_ugn/inline_assembler id8}@anchor{261}
+@anchor{gnat_ugn/inline_assembler the-clobber-parameter}@anchor{261}@anchor{gnat_ugn/inline_assembler id8}@anchor{262}
 @subsection The @code{Clobber} Parameter
 
 
@@ -30120,7 +30032,7 @@ Use 'register' name @code{memory} if you changed a memory location
 @end itemize
 
 @node The Volatile Parameter,,The Clobber Parameter,Other Asm Functionality
-@anchor{gnat_ugn/inline_assembler the-volatile-parameter}@anchor{262}@anchor{gnat_ugn/inline_assembler id9}@anchor{263}
+@anchor{gnat_ugn/inline_assembler the-volatile-parameter}@anchor{263}@anchor{gnat_ugn/inline_assembler id9}@anchor{264}
 @subsection The @code{Volatile} Parameter
 
 
@@ -30156,7 +30068,7 @@ to @code{True} only if the compiler's optimizations have created
 problems.
 
 @node GNU Free Documentation License,Index,Inline Assembler,Top
-@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license doc}@anchor{264}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{265}
+@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license doc}@anchor{265}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{266}
 @chapter GNU Free Documentation License
 
 

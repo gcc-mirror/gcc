@@ -1148,6 +1148,10 @@ package body Sem_Ch7 is
 
       if Is_Comp_Unit then
          Set_Body_Required (Parent (N), Body_Required);
+
+         if Legacy_Elaboration_Checks and not Body_Required then
+            Set_Suppress_Elaboration_Warnings (Id);
+         end if;
       end if;
 
       End_Package_Scope (Id);
