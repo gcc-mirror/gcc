@@ -98,10 +98,11 @@ typedef struct induction
 {
   /* IV itself.  */
   tree var;
-  /* Initializer.  */
-  tree init;
-  /* IV's base and step part of SCEV.  */
-  tree base;
+  /* IV's initializing value, which is the init arg of the IV PHI node.  */
+  tree init_val;
+  /* IV's initializing expr, which is (the expanded result of) init_val.  */
+  tree init_expr;
+  /* IV's step.  */
   tree step;
 } *induction_p;
 
@@ -159,7 +160,7 @@ dump_induction (struct loop *loop, induction_p iv)
   fprintf (dump_file, "  Induction:  ");
   print_generic_expr (dump_file, iv->var, TDF_SLIM);
   fprintf (dump_file, " = {");
-  print_generic_expr (dump_file, iv->base, TDF_SLIM);
+  print_generic_expr (dump_file, iv->init_expr, TDF_SLIM);
   fprintf (dump_file, ", ");
   print_generic_expr (dump_file, iv->step, TDF_SLIM);
   fprintf (dump_file, "}_%d\n", loop->num);
@@ -700,8 +701,8 @@ loop_cand::analyze_induction_var (tree var, tree chrec)
     {
       struct induction *iv = XCNEW (struct induction);
       iv->var = var;
-      iv->init = init;
-      iv->base = chrec;
+      iv->init_val = init;
+      iv->init_expr = chrec;
       iv->step = build_int_cst (TREE_TYPE (chrec), 0);
       m_inductions.safe_push (iv);
       return true;
@@ -715,8 +716,8 @@ loop_cand::analyze_induction_var (tree var, tree chrec)
 
   struct induction *iv = XCNEW (struct induction);
   iv->var = var;
-  iv->init = init;
-  iv->base = CHREC_LEFT (chrec);
+  iv->init_val = init;
+  iv->init_expr = CHREC_LEFT (chrec);
   iv->step = CHREC_RIGHT (chrec);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -894,14 +895,14 @@ loop_cand::undo_simple_reduction (reduction_p re, bitmap dce_seeds)
       /* Find all stmts on which expression "MEM_REF[idx]" depends.  */
       find_deps_in_bb_for_stmt (&stmts, gimple_bb (re->consumer), re->consumer);
       /* Because we generate new stmt loading from the MEM_REF to TMP.  */
-      tree tmp = copy_ssa_name (re->var);
+      tree cond, tmp = copy_ssa_name (re->var);
       stmt = gimple_build_assign (tmp, re->init_ref);
       gimple_seq_add_stmt_without_update (&stmts, stmt);
 
       /* Init new_var to MEM_REF or CONST depending on if it is the first
 	 iteration.  */
       induction_p iv = m_inductions[0];
-      tree cond = fold_build2 (NE_EXPR, boolean_type_node, iv->var, iv->init);
+      cond = fold_build2 (NE_EXPR, boolean_type_node, iv->var, iv->init_val);
       new_var = copy_ssa_name (re->var);
       stmt = gimple_build_assign (new_var, COND_EXPR, cond, tmp, re->init);
       gimple_seq_add_stmt_without_update (&stmts, stmt);
@@ -964,7 +965,6 @@ public:
 private:
   void update_data_info (unsigned, unsigned, vec<data_reference_p>, vec<ddr_p>);
   bool valid_data_dependences (unsigned, unsigned, vec<ddr_p>);
-  bool can_interchange_loops (loop_cand &, loop_cand &);
   void interchange_loops (loop_cand &, loop_cand &);
   void map_inductions_to_loop (loop_cand &, loop_cand &);
   void move_code_to_inner_loop (struct loop *, struct loop *, basic_block *);
@@ -1054,21 +1054,6 @@ tree_loop_interchange::valid_data_dependences (unsigned i_idx, unsigned o_idx,
     }
 
   return true;
-}
-
-/* Return true if ILOOP and OLOOP can be interchanged in terms of code
-   transformation.  */
-
-bool
-tree_loop_interchange::can_interchange_loops (loop_cand &iloop,
-					      loop_cand &oloop)
-{
-  return (iloop.analyze_carried_vars (NULL)
-	  && iloop.analyze_lcssa_phis ()
-	  && oloop.analyze_carried_vars (&iloop)
-	  && oloop.analyze_lcssa_phis ()
-	  && iloop.can_interchange_p (NULL)
-	  && oloop.can_interchange_p (&iloop));
 }
 
 /* Interchange two loops specified by ILOOP and OLOOP.  */
@@ -1193,7 +1178,8 @@ tree_loop_interchange::map_inductions_to_loop (loop_cand &src, loop_cand &tgt)
 	{
 	  /* Map the IV by creating the same one in target loop.  */
 	  tree var_before, var_after;
-	  tree base = unshare_expr (iv->base), step = unshare_expr (iv->step);
+	  tree base = unshare_expr (iv->init_expr);
+	  tree step = unshare_expr (iv->step);
 	  create_iv (base, step, SSA_NAME_VAR (iv->var),
 		     tgt.m_loop, &incr_pos, false, &var_before, &var_after);
 	  bitmap_set_bit (m_dce_seeds, SSA_NAME_VERSION (var_before));
@@ -1580,7 +1566,12 @@ tree_loop_interchange::interchange (vec<data_reference_p> datarefs,
       loop_cand oloop (m_loop_nest[o_idx], m_loop_nest[o_idx]);
 
       /* Check if we can do transformation for loop interchange.  */
-      if (!can_interchange_loops (iloop, oloop))
+      if (!iloop.analyze_carried_vars (NULL)
+	  || !iloop.analyze_lcssa_phis ()
+	  || !oloop.analyze_carried_vars (&iloop)
+	  || !oloop.analyze_lcssa_phis ()
+	  || !iloop.can_interchange_p (NULL)
+	  || !oloop.can_interchange_p (&iloop))
 	break;
 
       /* Check profitability for loop interchange.  */
