@@ -1,3 +1,12 @@
+2017-12-05  Jason Merrill  <jason@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (copy, copy_file): Remove noexcept.
+	(permissions): Add noexcept.
+	* include/bits/fs_ops.h (permissions): Add noexcept.
+	* libsupc++/eh_throw.cc (__cxa_init_primary_exception): Add
+	_GLIBCXX_NOTHROW.
+
 2017-12-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex_compiler.tcc: Use C-style comment to work around
