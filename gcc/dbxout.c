@@ -3844,7 +3844,7 @@ dbxout_block (tree block, int depth, tree args, int parent_blocknum)
 	      /* If we emitted any vars and didn't output any LBRAC/RBRAC,
 		 either at this level or any lower level, we need to emit
 		 an empty LBRAC/RBRAC pair now.  */
-	      char buf[20];
+	      char buf[30];
 	      const char *scope_start;
 
 	      ret = true;
