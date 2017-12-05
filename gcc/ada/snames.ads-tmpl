@@ -760,6 +760,7 @@ package Snames is
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
+   Name_Gnat_Annotate                  : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
    Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
