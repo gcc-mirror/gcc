@@ -3673,7 +3673,7 @@ package body Exp_Ch5 is
       Array_Typ  : constant Entity_Id  := Base_Type (Etype (Array_Node));
       Array_Dim  : constant Pos        := Number_Dimensions (Array_Typ);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Loc        : constant Source_Ptr := Sloc (N);
+      Loc        : constant Source_Ptr := Sloc (Isc);
       Stats      : constant List_Id    := Statements (N);
       Core_Loop  : Node_Id;
       Dim1       : Int;
@@ -3734,7 +3734,7 @@ package body Exp_Ch5 is
       end if;
 
       Core_Loop :=
-        Make_Loop_Statement (Loc,
+        Make_Loop_Statement (Sloc (N),
           Iteration_Scheme =>
             Make_Iteration_Scheme (Loc,
               Loop_Parameter_Specification =>
@@ -3771,7 +3771,7 @@ package body Exp_Ch5 is
             --    end loop;
 
             Core_Loop :=
-              Make_Loop_Statement (Loc,
+              Make_Loop_Statement (Sloc (N),
                 Iteration_Scheme =>
                   Make_Iteration_Scheme (Loc,
                     Loop_Parameter_Specification =>

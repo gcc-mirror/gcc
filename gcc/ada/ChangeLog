@@ -1,3 +1,46 @@
+2017-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Use the SLOC of the
+	iteration scheme throughout, except for the new loop statement(s).
+
+2017-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Gen_Assign): Do not analyze the expressionn of the
+	assignment if it is part of an Iterated_Component_Association: the
+	analysis needs to take place once the loop structure is analyzed and
+	the loop parameter made visible, because references to it typically
+	appear in the corresponding expression.  This is necessary if the
+	expression is an aggregate, because previous pre-analysis of the
+	expression does not handle nested aggregates properly.
+
+2017-12-05  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Allocator): Avoid coextension processing for an
+	allocator that is the expansion of a build-in-place function call.
+
+2017-12-05  Olivier Hainque  <hainque@adacore.com>
+
+libgnat/
+	* s-trasym__dwarf.adb (spec of Module_Name.Get): Instead of
+	possibly adjusting the lookup address by a load address, expect
+	a extra argument through which the load address can be conveyed
+	separately.
+	(Multi_Module_Symbolic_Traceback): Adjust accordingly. Pass the
+	retrieved load address to Init_Module.
+	* s-tsmona__linux.adb (Get): Honor the new interface.
+	* s-tsmona__mingw.adb (Get): Likewise.
+	* s-dwalin.ads: Adjust comments to be explicit about which
+	addresses are from module info and which are run-time addresses,
+	offsetted by the module load address.
+	* s-dwalin.adb (Set_Load_Address): Simply set C.Load_Slide.
+	Do not alter the module Low and High (relative) addresses.
+	(Is_Inside): Improve documentation regarding the kinds of addresses
+	at hand and correct the test.
+	(Symbolic_Traceback): Use separate variables with explicit names
+	for the address in traceback (run-time value) and the address to
+	lookup within the shared object (module-relative). Adjust the
+	computation of address passed to Symbolic_Address for symbolization.
+
 2017-12-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* opt.ads (Expand_Nonbinary_Modular_Ops): New flag.

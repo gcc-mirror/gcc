@@ -5116,76 +5116,91 @@ package body Sem_Res is
       --  statement.
 
       if Nkind (N) = N_Allocator then
+         --  Avoid coextension processing for an allocator that is the
+         --  expansion of a build-in-place function call.
 
-         --  An anonymous access discriminant is the definition of a
-         --  coextension.
-
-         if Ekind (Typ) = E_Anonymous_Access_Type
-           and then Nkind (Associated_Node_For_Itype (Typ)) =
-                      N_Discriminant_Specification
+         if Nkind (Original_Node (N)) = N_Allocator
+           and then Nkind (Expression (Original_Node (N))) =
+                      N_Qualified_Expression
+           and then Nkind (Expression (Expression (Original_Node (N)))) =
+                      N_Function_Call
+           and then Is_Expanded_Build_In_Place_Call
+                      (Expression (Expression (Original_Node (N))))
          then
-            declare
-               Discr : constant Entity_Id :=
-                         Defining_Identifier (Associated_Node_For_Itype (Typ));
-
-            begin
-               Check_Restriction (No_Coextensions, N);
-
-               --  Ada 2012 AI05-0052: If the designated type of the allocator
-               --  is limited, then the allocator shall not be used to define
-               --  the value of an access discriminant unless the discriminated
-               --  type is immutably limited.
-
-               if Ada_Version >= Ada_2012
-                 and then Is_Limited_Type (Desig_T)
-                 and then not Is_Limited_View (Scope (Discr))
-               then
-                  Error_Msg_N
-                    ("only immutably limited types can have anonymous "
-                     & "access discriminants designating a limited type", N);
-               end if;
-            end;
-
-            --  Avoid marking an allocator as a dynamic coextension if it is
-            --  within a static construct.
-
-            if not Is_Static_Coextension (N) then
-               Set_Is_Dynamic_Coextension (N);
-
-               --  ??? We currently do not handle finalization and deallocation
-               --  of coextensions properly so let's at least warn the user
-               --  about it.
-
-               if Is_Controlled (Desig_T) then
-                  Error_Msg_N
-                    ("??coextension will not be finalized when its "
-                     & "associated owner is deallocated or finalized", N);
-               else
-                  Error_Msg_N
-                    ("??coextension will not be deallocated when its "
-                     & "associated owner is deallocated", N);
-               end if;
-            end if;
-
-         --  Cleanup for potential static coextensions
+            null; -- b-i-p function call case
 
          else
-            Set_Is_Dynamic_Coextension (N, False);
-            Set_Is_Static_Coextension  (N, False);
-
-            --  ??? It seems we also do not properly finalize anonymous
-            --  access-to-controlled objects within their declared scope and
-            --  instead finalize them with their associated unit. Warn the
-            --  user about it here.
+            --  An anonymous access discriminant is the definition of a
+            --  coextension.
 
             if Ekind (Typ) = E_Anonymous_Access_Type
-              and then Is_Controlled_Active (Desig_T)
+              and then Nkind (Associated_Node_For_Itype (Typ)) =
+                         N_Discriminant_Specification
             then
-               Error_Msg_N
-                 ("??object designated by anonymous access object might not "
-                  & "be finalized until its enclosing library unit goes out "
-                  & "of scope", N);
-               Error_Msg_N ("\use named access type instead", N);
+               declare
+                  Discr : constant Entity_Id :=
+                    Defining_Identifier (Associated_Node_For_Itype (Typ));
+
+               begin
+                  Check_Restriction (No_Coextensions, N);
+
+                  --  Ada 2012 AI05-0052: If the designated type of the
+                  --  allocator is limited, then the allocator shall not
+                  --  be used to define the value of an access discriminant
+                  --  unless the discriminated type is immutably limited.
+
+                  if Ada_Version >= Ada_2012
+                    and then Is_Limited_Type (Desig_T)
+                    and then not Is_Limited_View (Scope (Discr))
+                  then
+                     Error_Msg_N
+                       ("only immutably limited types can have anonymous "
+                        & "access discriminants designating a limited type",
+                        N);
+                  end if;
+               end;
+
+               --  Avoid marking an allocator as a dynamic coextension if it is
+               --  within a static construct.
+
+               if not Is_Static_Coextension (N) then
+                  Set_Is_Dynamic_Coextension (N);
+
+                  --  ??? We currently do not handle finalization and
+                  --  deallocation of coextensions properly so let's at
+                  --  least warn the user about it.
+
+                  if Is_Controlled (Desig_T) then
+                     Error_Msg_N
+                       ("??coextension will not be finalized when its "
+                        & "associated owner is deallocated or finalized", N);
+                  else
+                     Error_Msg_N
+                       ("??coextension will not be deallocated when its "
+                        & "associated owner is deallocated", N);
+                  end if;
+               end if;
+
+            --  Cleanup for potential static coextensions
+
+            else
+               Set_Is_Dynamic_Coextension (N, False);
+               Set_Is_Static_Coextension  (N, False);
+
+               --  ??? It seems we also do not properly finalize anonymous
+               --  access-to-controlled objects within their declared scope and
+               --  instead finalize them with their associated unit. Warn the
+               --  user about it here.
+
+               if Ekind (Typ) = E_Anonymous_Access_Type
+                 and then Is_Controlled_Active (Desig_T)
+               then
+                  Error_Msg_N
+                    ("??object designated by anonymous access object might "
+                     & "not be finalized until its enclosing library unit "
+                     & "goes out of scope", N);
+                  Error_Msg_N ("\use named access type instead", N);
+               end if;
             end if;
          end if;
       end if;

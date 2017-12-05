@@ -1533,7 +1533,14 @@ package body Exp_Aggr is
             --  the analysis of non-array aggregates now in order to get the
             --  value of Expansion_Delayed flag for the inner aggregate ???
 
-            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
+            --  In the case of an iterated component association, the analysis
+            --  of the generated loop will analyze the expression in the
+            --  proper context, in which the loop parameter is visible.
+
+            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ)
+              and then
+                Nkind (Parent (Expr_Q)) /= N_Iterated_Component_Association
+            then
                Analyze_And_Resolve (Expr_Q, Comp_Typ);
             end if;
 
@@ -5366,6 +5373,10 @@ package body Exp_Aggr is
             Expr : Node_Id;
 
          begin
+            if Nkind (Parent (Aggr)) = N_Iterated_Component_Association then
+               return False;
+            end if;
+
             if Present (Expressions (Aggr)) then
                Expr := First (Expressions (Aggr));
                while Present (Expr) loop
