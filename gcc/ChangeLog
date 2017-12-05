@@ -1,3 +1,7 @@
+2017-12-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dbxout.c (dbxout_block): Grow buf to 30 bytes.
+
 2017-12-05  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
