@@ -844,9 +844,9 @@ package Opt is
 
    Ignore_Unrecognized_VWY_Switches : Boolean := False;
    --  GNAT
-   --  Set True to ignore unrecognized y, V, w switches. Can be set True
-   --  by use of -gnateu, causing subsequent unrecognized switches to result
-   --  in a warning rather than an error.
+   --  Set True to ignore unrecognized y, V, w switches. Can be set True by
+   --  use of -gnateu, causing subsequent unrecognized switches to result in
+   --  a warning rather than an error.
 
    Implementation_Unit_Warnings : Boolean := True;
    --  GNAT
@@ -935,6 +935,11 @@ package Opt is
    --  GNATBIND
    --  Set to True to enable leap seconds support in Ada.Calendar and its
    --  children.
+
+   Legacy_Elaboration_Checks : Boolean := False;
+   --  GNAT
+   --  Set to True when the pre-18.x access-before-elaboration model is to be
+   --  used. Modified by use of -gnatH.
 
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRBUILD
@@ -1352,6 +1357,12 @@ package Opt is
    --  GNAT
    --  Set to True to enable compatibility mode with Rational compiler, and
    --  to accept renamings of implicit operations in their own scope.
+
+   Relaxed_Elaboration_Checks : Boolean := False;
+   --  GNAT
+   --  Set to True to ignore certain elaboration scenarios, thus making the
+   --  current ABE mechanism more permissive. This behavior is applicable to
+   --  both the default and the legacy ABE models. Modified by use of -gnatJ.
 
    Relaxed_RM_Semantics : Boolean := False;
    --  GNAT

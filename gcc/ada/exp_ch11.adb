@@ -1421,9 +1421,9 @@ package body Exp_Ch11 is
 
       --  Add clean up actions if required
 
-      if not Nkind_In (Parent (N), N_Package_Body,
-                                   N_Accept_Statement,
-                                   N_Extended_Return_Statement)
+      if not Nkind_In (Parent (N), N_Accept_Statement,
+                                   N_Extended_Return_Statement,
+                                   N_Package_Body)
         and then not Delay_Cleanups (Current_Scope)
 
         --  No cleanup action needed in thunks associated with interfaces

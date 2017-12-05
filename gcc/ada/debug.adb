@@ -145,6 +145,60 @@ package body Debug is
    --  d.Y
    --  d.Z  Do not enable expansion in configurable run-time mode
 
+   --  d_a  Stop elaboration checks on accept or select statement
+   --  d_b
+   --  d_c
+   --  d_d
+   --  d_e  Ignore entry calls and requeue statements for elaboration
+   --  d_f
+   --  d_g
+   --  d_h
+   --  d_i
+   --  d_j
+   --  d_k
+   --  d_l
+   --  d_m
+   --  d_n
+   --  d_o
+   --  d_p  Ignore assertion pragmas for elaboration
+   --  d_q
+   --  d_r
+   --  d_s
+   --  d_t
+   --  d_u
+   --  d_v
+   --  d_w
+   --  d_x
+   --  d_y
+   --  d_z
+
+   --  d_A
+   --  d_B
+   --  d_C
+   --  d_D
+   --  d_E
+   --  d_F
+   --  d_G
+   --  d_H
+   --  d_I
+   --  d_J
+   --  d_K
+   --  d_L  Output trace information on elaboration checking
+   --  d_M
+   --  d_N
+   --  d_O
+   --  d_P
+   --  d_Q
+   --  d_R
+   --  d_S
+   --  d_T
+   --  d_U
+   --  d_V
+   --  d_W
+   --  d_X
+   --  d_Y
+   --  d_Z
+
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages
    --  d3   Dump bad node in Comperr on an abort
@@ -164,6 +218,16 @@ package body Debug is
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
    --  d.8
    --  d.9  Disable build-in-place for nonlimited types
+
+   --  d_1
+   --  d_2
+   --  d_3
+   --  d_4
+   --  d_5
+   --  d_6
+   --  d_7
+   --  d_8
+   --  d_9
 
    --  Debug flags for binder (GNATBIND)
 
@@ -759,6 +823,24 @@ package body Debug is
    --       case if debug flag -gnatd.Z is used. This is to deal with the case
    --       where we discover difficulties in this new processing.
 
+   --  d_a  The compiler stops the examination of a task body once it reaches
+   --       an accept or select statement for the static elaboration model. The
+   --       behavior is similar to that of No_Entry_Calls_In_Elaboration_Code,
+   --       but does not penalize actual entry calls in elaboration code.
+
+   --  d_e  The compiler ignores simple entry calls, asynchronous transfer of
+   --       control, conditional entry calls, timed entry calls, and requeue
+   --       statements in both the static and dynamic elaboration models.
+
+   --  d_p  The compiler ignores calls to subprograms which verify the run-time
+   --       semantics of invariants and postconditions in both the static and
+   --       dynamic elaboration models.
+
+   --  d_L  Output trace information on elaboration checking. This debug switch
+   --       causes output to be generated showing each call or instantiation as
+   --       it is checked, and the progress of the recursive trace through
+   --       elaboration calls at compile time.
+
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
    --       debugging errors caused by expanded code, where the source location
@@ -944,7 +1026,7 @@ package body Debug is
    --------------------
 
    procedure Set_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig is Character range '1' .. '9';
+      subtype Dig  is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
       subtype ULet is Character range 'A' .. 'Z';
 
@@ -1090,7 +1172,7 @@ package body Debug is
    ---------------------------
 
    procedure Set_Dotted_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig is Character range '1' .. '9';
+      subtype Dig  is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
       subtype ULet is Character range 'A' .. 'Z';
 
@@ -1230,5 +1312,154 @@ package body Debug is
          end case;
       end if;
    end Set_Dotted_Debug_Flag;
+
+   --------------------------------
+   -- Set_Underscored_Debug_Flag --
+   --------------------------------
+
+   procedure Set_Underscored_Debug_Flag
+     (C   : Character;
+      Val : Boolean := True)
+   is
+      subtype Dig  is Character range '1' .. '9';
+      subtype LLet is Character range 'a' .. 'z';
+      subtype ULet is Character range 'A' .. 'Z';
+
+   begin
+      if C in Dig then
+         case Dig (C) is
+            when '1' =>
+               Debug_Flag_Underscore_1 := Val;
+            when '2' =>
+               Debug_Flag_Underscore_2 := Val;
+            when '3' =>
+               Debug_Flag_Underscore_3 := Val;
+            when '4' =>
+               Debug_Flag_Underscore_4 := Val;
+            when '5' =>
+               Debug_Flag_Underscore_5 := Val;
+            when '6' =>
+               Debug_Flag_Underscore_6 := Val;
+            when '7' =>
+               Debug_Flag_Underscore_7 := Val;
+            when '8' =>
+               Debug_Flag_Underscore_8 := Val;
+            when '9' =>
+               Debug_Flag_Underscore_9 := Val;
+         end case;
+
+      elsif C in ULet then
+         case ULet (C) is
+            when 'A' =>
+               Debug_Flag_Underscore_AA := Val;
+            when 'B' =>
+               Debug_Flag_Underscore_BB := Val;
+            when 'C' =>
+               Debug_Flag_Underscore_CC := Val;
+            when 'D' =>
+               Debug_Flag_Underscore_DD := Val;
+            when 'E' =>
+               Debug_Flag_Underscore_EE := Val;
+            when 'F' =>
+               Debug_Flag_Underscore_FF := Val;
+            when 'G' =>
+               Debug_Flag_Underscore_GG := Val;
+            when 'H' =>
+               Debug_Flag_Underscore_HH := Val;
+            when 'I' =>
+               Debug_Flag_Underscore_II := Val;
+            when 'J' =>
+               Debug_Flag_Underscore_JJ := Val;
+            when 'K' =>
+               Debug_Flag_Underscore_KK := Val;
+            when 'L' =>
+               Debug_Flag_Underscore_LL := Val;
+            when 'M' =>
+               Debug_Flag_Underscore_MM := Val;
+            when 'N' =>
+               Debug_Flag_Underscore_NN := Val;
+            when 'O' =>
+               Debug_Flag_Underscore_OO := Val;
+            when 'P' =>
+               Debug_Flag_Underscore_PP := Val;
+            when 'Q' =>
+               Debug_Flag_Underscore_QQ := Val;
+            when 'R' =>
+               Debug_Flag_Underscore_RR := Val;
+            when 'S' =>
+               Debug_Flag_Underscore_SS := Val;
+            when 'T' =>
+               Debug_Flag_Underscore_TT := Val;
+            when 'U' =>
+               Debug_Flag_Underscore_UU := Val;
+            when 'V' =>
+               Debug_Flag_Underscore_VV := Val;
+            when 'W' =>
+               Debug_Flag_Underscore_WW := Val;
+            when 'X' =>
+               Debug_Flag_Underscore_XX := Val;
+            when 'Y' =>
+               Debug_Flag_Underscore_YY := Val;
+            when 'Z' =>
+               Debug_Flag_Underscore_ZZ := Val;
+         end case;
+
+      else
+         case LLet (C) is
+            when 'a' =>
+               Debug_Flag_Underscore_A := Val;
+            when 'b' =>
+               Debug_Flag_Underscore_B := Val;
+            when 'c' =>
+               Debug_Flag_Underscore_C := Val;
+            when 'd' =>
+               Debug_Flag_Underscore_D := Val;
+            when 'e' =>
+               Debug_Flag_Underscore_E := Val;
+            when 'f' =>
+               Debug_Flag_Underscore_F := Val;
+            when 'g' =>
+               Debug_Flag_Underscore_G := Val;
+            when 'h' =>
+               Debug_Flag_Underscore_H := Val;
+            when 'i' =>
+               Debug_Flag_Underscore_I := Val;
+            when 'j' =>
+               Debug_Flag_Underscore_J := Val;
+            when 'k' =>
+               Debug_Flag_Underscore_K := Val;
+            when 'l' =>
+               Debug_Flag_Underscore_L := Val;
+            when 'm' =>
+               Debug_Flag_Underscore_M := Val;
+            when 'n' =>
+               Debug_Flag_Underscore_N := Val;
+            when 'o' =>
+               Debug_Flag_Underscore_O := Val;
+            when 'p' =>
+               Debug_Flag_Underscore_P := Val;
+            when 'q' =>
+               Debug_Flag_Underscore_Q := Val;
+            when 'r' =>
+               Debug_Flag_Underscore_R := Val;
+            when 's' =>
+               Debug_Flag_Underscore_S := Val;
+            when 't' =>
+               Debug_Flag_Underscore_T := Val;
+            when 'u' =>
+               Debug_Flag_Underscore_U := Val;
+            when 'v' =>
+               Debug_Flag_Underscore_V := Val;
+            when 'w' =>
+               Debug_Flag_Underscore_W := Val;
+            when 'x' =>
+               Debug_Flag_Underscore_X := Val;
+            when 'y' =>
+               Debug_Flag_Underscore_Y := Val;
+            when 'z' =>
+               Debug_Flag_Underscore_Z := Val;
+         end case;
+      end if;
+   end Set_Underscored_Debug_Flag;
 
 end Debug;

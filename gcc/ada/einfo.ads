@@ -4445,6 +4445,20 @@ package Einfo is
 --       for the outer level subprogram, this is the starting index in the Subp
 --       table for the entries for this subprogram.
 
+--    Suppress_Elaboration_Warnings (Flag303)
+--       NOTE: this flag is relevant only for the legacy ABE mechanism and
+--       should not be used outside of that context.
+--
+--       Defined in all entities, can be set only for subprogram entities and
+--       for variables. If this flag is set then Sem_Elab will not generate
+--       elaboration warnings for the subprogram or variable. Suppression of
+--       such warnings is automatic for subprograms for which elaboration
+--       checks are suppressed (without the need to set this flag), but the
+--       flag is also set for various internal entities (such as init procs)
+--       which are known not to generate any possible access before elaboration
+--       and it is set on variables when a warning is given to avoid multiple
+--       elaboration warnings for the same variable.
+
 --    Suppress_Initialization (Flag105)
 --       Defined in all variable, type and subtype entities. If set for a base
 --       type, then the generation of initialization procedures is suppressed
@@ -5604,6 +5618,7 @@ package Einfo is
    --    Referenced                          (Flag156)
    --    Referenced_As_LHS                   (Flag36)
    --    Referenced_As_Out_Parameter         (Flag227)
+   --    Suppress_Elaboration_Warnings       (Flag303)
    --    Suppress_Style_Checks               (Flag165)
    --    Suppress_Value_Tracking_On_Call     (Flag217)
    --    Used_As_Generic_Actual              (Flag222)
@@ -7437,6 +7452,7 @@ package Einfo is
    function String_Literal_Low_Bound            (Id : E) return N;
    function Subprograms_For_Type                (Id : E) return L;
    function Subps_Index                         (Id : E) return U;
+   function Suppress_Elaboration_Warnings       (Id : E) return B;
    function Suppress_Initialization             (Id : E) return B;
    function Suppress_Style_Checks               (Id : E) return B;
    function Suppress_Value_Tracking_On_Call     (Id : E) return B;
@@ -8134,6 +8150,7 @@ package Einfo is
    procedure Set_String_Literal_Low_Bound        (Id : E; V : N);
    procedure Set_Subprograms_For_Type            (Id : E; V : L);
    procedure Set_Subps_Index                     (Id : E; V : U);
+   procedure Set_Suppress_Elaboration_Warnings   (Id : E; V : B := True);
    procedure Set_Suppress_Initialization         (Id : E; V : B := True);
    procedure Set_Suppress_Style_Checks           (Id : E; V : B := True);
    procedure Set_Suppress_Value_Tracking_On_Call (Id : E; V : B := True);
@@ -8991,6 +9008,7 @@ package Einfo is
    pragma Inline (String_Literal_Low_Bound);
    pragma Inline (Subprograms_For_Type);
    pragma Inline (Subps_Index);
+   pragma Inline (Suppress_Elaboration_Warnings);
    pragma Inline (Suppress_Initialization);
    pragma Inline (Suppress_Style_Checks);
    pragma Inline (Suppress_Value_Tracking_On_Call);
@@ -9475,6 +9493,7 @@ package Einfo is
    pragma Inline (Set_String_Literal_Low_Bound);
    pragma Inline (Set_Subprograms_For_Type);
    pragma Inline (Set_Subps_Index);
+   pragma Inline (Set_Suppress_Elaboration_Warnings);
    pragma Inline (Set_Suppress_Initialization);
    pragma Inline (Set_Suppress_Style_Checks);
    pragma Inline (Set_Suppress_Value_Tracking_On_Call);

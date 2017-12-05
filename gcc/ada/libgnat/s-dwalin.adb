@@ -578,14 +578,21 @@ package body System.Dwarf_Lines is
          Initialize_State_Machine (C);
       end if;
 
-      --  Read the next prologue
+      --  If we have reached the next prologue, read it. Beware of possibly
+      --  empty blocks.
+
+      --  When testing for the end of section, beware of possible zero padding
+      --  at the end. Bail out as soon as there's not even room for at least a
+      --  DW_LNE_end_sequence, 3 bytes from Off to Off+2. This resolves to
+      --  Off+2 > Last_Offset_Within_Section, that is Off+2 > Section_Length-1,
+      --  or Off+3 > Section_Length.
 
       Tell (C.Lines, Off);
       while Off = C.Next_Prologue loop
          Initialize_State_Machine (C);
          Parse_Prologue (C);
          Tell (C.Lines, Off);
-         exit when Off + 4 >= Length (C.Lines);
+         exit when Off + 3 > Length (C.Lines);
       end loop;
 
       --  Test whether we're done
@@ -595,7 +602,7 @@ package body System.Dwarf_Lines is
       --  We are finished when we either reach the end of the section, or we
       --  have reached zero padding at the end of the section.
 
-      if Prologue.Unit_Length = 0 or else Off + 4 >= Length (C.Lines) then
+      if Prologue.Unit_Length = 0 or else Off + 3 > Length (C.Lines) then
          Done := True;
          return;
       end if;

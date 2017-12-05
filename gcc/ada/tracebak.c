@@ -373,7 +373,11 @@ extern void __runnit(); /* thread entry point.  */
   (defined (__powerpc__) && defined (__Lynx__) && defined(__ELF__)) || \
   (defined (__linux__) && defined (__powerpc__))
 
+#if defined (_ARCH_PPC64) && !defined (__USING_SJLJ_EXCEPTIONS__)
+#define USE_GCC_UNWINDER
+#else
 #define USE_GENERIC_UNWINDER
+#endif
 
 struct layout
 {

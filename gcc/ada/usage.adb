@@ -302,6 +302,11 @@ begin
    Write_Switch_Char ("h");
    Write_Line ("Output this usage (help) information");
 
+   --  Line for -gnatH switch
+
+   Write_Switch_Char ("H");
+   Write_Line ("Legacy elaboration checking mode enabled");
+
    --  Line for -gnati switch
 
    Write_Switch_Char ("i?");
@@ -316,6 +321,11 @@ begin
 
    Write_Switch_Char ("jnn");
    Write_Line ("Format error and warning messages to fit nn character lines");
+
+   --  Line for -gnatJ switch
+
+   Write_Switch_Char ("J");
+   Write_Line ("Relaxed elaboration checking mode enabled");
 
    --  Line for -gnatk switch
 

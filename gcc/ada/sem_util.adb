@@ -9086,7 +9086,8 @@ package body Sem_Util is
 
          Lit := First_Literal (Btyp);
 
-         --  Position in the enumeration type starts at 0.
+         --  Position in the enumeration type starts at 0
+
          if UI_To_Int (Pos) < 0 then
             raise Constraint_Error;
          end if;
@@ -12224,7 +12225,8 @@ package body Sem_Util is
    ---------------------------------------
 
    function Incomplete_View_From_Limited_With
-     (Typ : Entity_Id) return Entity_Id is
+     (Typ : Entity_Id) return Entity_Id
+   is
    begin
       --  It might make sense to make this an attribute in Einfo, and set it
       --  in Sem_Ch10 in Build_Shadow_Entity. However, we're running short on
@@ -18026,6 +18028,14 @@ package body Sem_Util is
    --  Start of processing for Mark_Elaboration_Attributes
 
    begin
+      --  Do not capture any elaboration-related attributes when switch -gnatH
+      --  (legacy elaboration checking mode enabled) is in effect because the
+      --  attributes are useless to the legacy model.
+
+      if Legacy_Elaboration_Checks then
+         return;
+      end if;
+
       if Nkind (N_Id) in N_Entity then
          Mark_Elaboration_Attributes_Id (N_Id);
       else

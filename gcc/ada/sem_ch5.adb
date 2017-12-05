@@ -552,6 +552,7 @@ package body Sem_Ch5 is
       --  in-place.
 
       if Should_Transform_BIP_Assignment (Typ => T1) then
+
          --  In certain cases involving user-defined concatenation operators,
          --  we need to resolve the right-hand side before transforming the
          --  assignment.
@@ -580,10 +581,10 @@ package body Sem_Ch5 is
                   end loop;
                end;
 
-            when N_Op
+            when N_Attribute_Reference
                | N_Expanded_Name
                | N_Identifier
-               | N_Attribute_Reference
+               | N_Op
             =>
                null;
 
@@ -985,6 +986,14 @@ package body Sem_Ch5 is
         and then (not Has_Size_Clause (T1) or else Esize (T1) > 64)
       then
          Error_Msg_CRT ("composite assignment", N);
+      end if;
+
+      --  Check elaboration warning for left side if not in elab code
+
+      if Legacy_Elaboration_Checks
+        and not In_Subprogram_Or_Concurrent_Unit
+      then
+         Check_Elab_Assign (Lhs);
       end if;
 
       --  Save the scenario for later examination by the ABE Processing phase

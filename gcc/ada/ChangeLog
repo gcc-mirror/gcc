@@ -1,3 +1,161 @@
+2017-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* s-dwalin.adb (Read_And_Execute_Isn): Adjust test checking for the end
+	of section. Add comments explaining the rationale of the computation.
+
+2017-12-05  Bob Duff  <duff@adacore.com>
+
+	* exp_ch11.adb: Minor refactoring.
+
+2017-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Add debug switches d_a, d_e, and d_p, along with
+	documentation.
+	(Set_Underscored_Debug_Flag): New routine.
+	* debug.ads: Add the flags for all underscore switches.
+	(Set_Underscored_Debug_Flag): New routine.
+	* einfo.adb: Flag303 is now Suppress_Elaboration_Warnings.
+	(Suppress_Elaboration_Warnings): New routine.
+	(Set_Suppress_Elaboration_Warnings): New routine.
+	(Write_Entity_Flags): Add output for Suppress_Elaboration_Warnings.
+	* einfo.ads: Add new flag Suppress_Elaboration_Warnings.
+	(Suppress_Elaboration_Warnings): New routine along with pragma Inline.
+	(Set_Suppress_Elaboration_Warnings): New routine along with pragma
+	Inline.
+	* exp_ch3.adb (Build_Init_Procedure): Restore the behavior of the
+	legacy elaboration model.
+	(Default_Initialize_Object): Restore the behavior of the legacy
+	elaboration model.
+	* exp_ch9.adb: Add with and use clause for Sem_Elab.
+	(Build_Task_Activation_Call): Restore the behavior of the legacy
+	elaboration model.
+	* frontend.adb (Frontend): Restore the behavior of the legacy
+	elaboration model.
+	* opt.ads: Add new flags Legacy_Elaboration_Checks and
+	Relaxed_Elaboration_Checks, along with documentation.
+	* sem_attr.adb (Analyze_Access_Attribute): Restore the behavior of the
+	legacy elaboration model.
+	* sem_ch5.adb (Analyze_Assignment): Restore the behavior of the legacy
+	elaboration model.
+	* sem_ch7.adb (Analyze_Package_Declaration): Restore the behavior of
+	the legacy elaboration model.
+	* sem_ch8.adb (Attribute_Renaming): Restore the behavior of the legacy
+	elaboration model.
+	* sem_ch12.adb (Analyze_Instance_And_Renamings): Restore the behavior
+	of the legacy elaboration model.
+	(Analyze_Package_Instantiation): Restore the behavior of the legacy
+	elaboration model.
+	(Analyze_Subprogram_Instantiation): Restore the behavior of the legacy
+	elaboration model.
+	* sem_elab.adb: Update the documentation of the Processing phase.
+	Update the documentation on elaboration-related compilation
+	switches.  Update the documentation on adding a new target.  Add
+	Processing_Attributes which represent the state of the Processing
+	phase.  Resurrect the previous elaboration model as "legacy elaboration
+	model".
+	(Build_Call_Marker): This routine does not function when the legacy
+	elaboration model is in effect. Do not consider entry calls and requeue
+	statements when debug flag d_e is in effect. Do not consider calls to
+	subprograms which verify the runtime semantics of certain assertion
+	pragmas when debug flag d_p is in effect.
+	(Build_Variable_Reference_Marker): This routine does not function when
+	the legacy elaboration model is in effect.
+	(Check_Elaboration_Scenarios): This routine does not function when the
+	legacy elaboration model is in effect.
+	(Ensure_Prior_Elaboration): The various flags have now been replaced
+	with a state. Do not generate implicit Elaborate[_All] pragmas when
+	their creation has been suppressed.
+	(Ensure_Prior_Elaboration_Static): The with clause is marked based on
+	the requested pragma, not on the nature of the scenario.
+	(In_External_Context): Removed.
+	(Is_Assertion_Pragma_Target): New routine.
+	(Is_Potential_Scenario): Stop the traversal of a task body when
+	reaching an accept or select statement, and debug switch d_a is in
+	effect.
+	(Kill_Elaboration_Scenario): This routine does not function when the
+	legacy elaboration model is in effect.
+	(Process_Activation_Generic): The various flags have now been replaced
+	with a state.
+	(Process_Conditional_ABE): The various flags have now been replaced
+	with a state.
+	(Process_Conditional_ABE_Access): The various flags have now been
+	replaced with a state.
+	(Process_Conditional_ABE_Activation_Impl): The various flags have now
+	been replaced with a state. Do not process an activation call which
+	activates a task whose type is defined in an external instance, and
+	debug switch dL is in effect. Suppress the generation of implicit
+	Elaborate[_All] pragmas once a conditional ABE check has been
+	installed.
+	(Process_Conditional_ABE_Call): The various flags have now been
+	replaced with a state. Do not process a call which invokes a subprogram
+	defined in an external instance, and debug switch dL is in effect.
+	(Process_Conditional_ABE_Call_Ada): The various flags have now been
+	replaced with a state. Suppress the generation of implicit
+	Elaborate[_All] pragmas once a conditional ABE check has been
+	installed.
+	(Process_Conditional_ABE_Call_SPARK): The various flags have now been
+	replaced with a state.
+	(Process_Conditional_ABE_Instantiation): The various flags have now
+	been replaced with a state.
+	(Process_Conditional_ABE_Instantiation_Ada): The various flags have now
+	been replaced with a state. Suppress the generation of implicit
+	Elaborate[_All] pragmas once a conditional ABE check has been
+	installed.
+	(Process_Conditional_ABE_Instantiation_SPARK): The various flags have
+	now been replaced with a state.
+	(Process_Guaranteed_ABE_Activation_Impl): The various flags have now
+	been replaced with a state.
+	(Process_Single_Activation): The various flags have now been replaced
+	with a state.
+	(Record_Elaboration_Scenario): This routine does not function when the
+	legacy elaboration model is in effect.
+	(Traverse_Body): The various flags have now been replaced with a state.
+	* sem_elab.ads: Resurrect the pre-18.x elaboration model as "legacy
+	elaboration model".
+	* sem_prag.adb (Analyze_Pragma): Restore the behavior of the legacy
+	elaboration model.
+	* sem_res.adb (Resolve_Call): Restore the behavior of the legacy
+	elaboration model.
+	(Resolve_Entity_Name): Restore the behavior of the legacy elaboration
+	model.
+	* sem_util.adb (Mark_Elaboration_Attributes): This routine does not
+	function when the legacy elaboration model is in effect.
+	* sinfo.adb (Is_Known_Guaranteed_ABE): Update the assertion check.
+	(No_Elaboration_Check): New routine.
+	(Set_Is_Known_Guaranteed_ABE): Update the assertion check.
+	(Set_No_Elaboration_Check): New routine.
+	* sinfo.ads: Update the documentation of flag Is_Known_Guaranteed_ABE
+	along with occurrences in nodes.  Add new flag No_Elaboration_Check
+	along with occurrences in nodes.
+	* switch-c.adb (Scan_Front_End_Switches): Add processing for debug
+	switches with underscores.  Add processing for switches -gnatH and
+	-gnatJ.
+	* usage.adb (Usage): Add output for switches -gnatH and -gnatJ.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update the
+	documentation to include the legacy and relaxed elaboration models.
+	* gnat_ugn.texi: Regenerate.
+
+2017-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Minor edit.
+	Improve doc on required packages for linux 32bits.
+
+2017-12-05  Doug Rupp  <rupp@adacore.com>
+
+	* tracebak.c (ppc64-vx7): USE_GCC_UNWINDER for 64bit.
+
+2017-12-05  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Generate_Range_Check): Force evaluation of the node in
+	more cases.  This patch was written to improve the code generated by
+	the CCG compiler but it is enabled for all targets since double
+	evaluation is always a potential source of inefficiency.
+
+2017-12-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Remove reference to obsolete
+	-fdump-xref switch.
+
 2017-12-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Use the SLOC of the
