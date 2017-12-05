@@ -1,3 +1,7 @@
+2017-12-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc-interface/Makefile.in (RTEMS): Define EH_MECHANISM.
+
 2017-12-04  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc-interface/Makefile.in (RTEMS): Use s-osprim__rtems.adb.

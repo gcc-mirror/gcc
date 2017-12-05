@@ -1368,6 +1368,11 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-stchop.adb<libgnat/s-stchop__rtems.adb \
   s-interr.adb<libgnarl/s-interr__hwint.adb
+  ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
+    EH_MECHANISM=-arm
+  else
+    EH_MECHANISM=-gcc
+  endif
 endif
 
 # PikeOS
