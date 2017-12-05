@@ -634,7 +634,7 @@ elaboration order and to diagnose elaboration problems.
 
 * *Legacy elaboration model*
 
-  In addition to the three elabortaion models outlined above, GNAT provides the
+  In addition to the three elaboration models outlined above, GNAT provides the
   elaboration model of pre-18.x versions referred to as `legacy elaboration
   model`. The legacy elaboration model is enabled with compiler switch
   :switch:`-gnatH`.
@@ -1515,7 +1515,7 @@ the elaboration order chosen by the binder.
 :switch:`-gnatJ`
   Relaxed elaboration checking mode enabled
 
-  When this switch is in effect, GNAT will not process certain scenarios
+  When this switch is in effect, GNAT will not process certain scenarios,
   resulting in a more permissive elaboration model. Note that this may
   eliminate some diagnostics and run-time checks.
 
