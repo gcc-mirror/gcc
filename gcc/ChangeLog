@@ -1,3 +1,13 @@
+2017-12-05  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-dce.c (simple_dce_from_worklist): Move and rename from
+	tree-ssa-pre.c::remove_dead_inserted_code.
+	* tree-ssa-dce.h: New file.
+	* tree-ssa-pre.c (tree-ssa-dce.h): Include new header file.
+	(remove_dead_inserted_code): Move and rename to function
+	tree-ssa-dce.c::simple_dce_from_worklist.
+	(pass_pre::execute): Update use.
+
 2017-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83277
