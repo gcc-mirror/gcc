@@ -460,7 +460,8 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define FRAME_GROWS_DOWNWARD flag_stack_protect
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect \
+			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* Offset within stack frame to start allocating local variables at.  */
 #define STARTING_FRAME_OFFSET						\
