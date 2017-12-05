@@ -1,3 +1,9 @@
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79228
+	* expr.c (interpret_float_suffix): Avoid memcmp.
+	(interpret_int_suffix): Likewise.  Don't check for if.
+
 2017-12-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/79228 - extensions hide C++14 complex literal operators

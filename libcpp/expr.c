@@ -280,9 +280,10 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	 them as user-defined literals.  */
       if (CPP_OPTION (pfile, cplusplus)
 	  && CPP_OPTION (pfile, lang) > CLK_CXX11
-	  && (!memcmp (orig_s, "i", orig_len)
-	      || !memcmp (orig_s, "if", orig_len)
-	      || !memcmp (orig_s, "il", orig_len)))
+	  && orig_s[0] == 'i'
+	  && (orig_len == 1
+	      || (orig_len == 2
+		  && (orig_s[1] == 'f' || orig_s[1] == 'l'))))
 	return 0;
     }
 
@@ -345,9 +346,8 @@ interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	 them as user-defined literals.  */
       if (CPP_OPTION (pfile, cplusplus)
 	  && CPP_OPTION (pfile, lang) > CLK_CXX11
-	  && (!memcmp (s, "i", orig_len)
-	      || !memcmp (s, "if", orig_len)
-	      || !memcmp (s, "il", orig_len)))
+	  && s[0] == 'i'
+	  && (orig_len == 1 || (orig_len == 2 && s[1] == 'l')))
 	return 0;
     }
 
