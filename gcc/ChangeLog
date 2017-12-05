@@ -1,3 +1,8 @@
+2017-12-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/82248
+	* config/arm/arm.md (probe_stack) : Use the 'o' constraint.
+
 2017-12-05  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-dce.c (simple_dce_from_worklist): Move and rename from

@@ -8612,8 +8612,11 @@
    (set_attr "type" "block")]
 )
 
+;; Since we hard code r0 here use the 'o' constraint to prevent
+;; provoking undefined behaviour in the hardware with putting out
+;; auto-increment operations with potentially r0 as the base register.
 (define_insn "probe_stack"
-  [(set (match_operand:SI 0 "memory_operand" "=m")
+  [(set (match_operand:SI 0 "memory_operand" "=o")
         (unspec:SI [(const_int 0)] UNSPEC_PROBE_STACK))]
   "TARGET_32BIT"
   "str%?\\tr0, %0"
