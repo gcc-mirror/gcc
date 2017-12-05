@@ -3230,6 +3230,13 @@ build_min (enum tree_code code, tree tt, ...)
     }
 
   va_end (p);
+
+  if (code == CAST_EXPR)
+    /* The single operand is a TREE_LIST, which we have to check.  */
+    for (tree v = TREE_OPERAND (t, 0); v; v = TREE_CHAIN (v))
+      if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
+	lookup_keep (TREE_VALUE (v), true);
+
   return t;
 }
 

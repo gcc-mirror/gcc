@@ -1,3 +1,8 @@
+2017-12-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83287
+	* tree.c (build_min): Check CAST_EXPR arg for OVERLOADs.
+
 2017-12-05  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 

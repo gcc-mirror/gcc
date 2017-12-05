@@ -1,3 +1,8 @@
+2017-12-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83287
+	* g++.dg/lookup/pr83287.C: New.
+
 2017-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/83289
