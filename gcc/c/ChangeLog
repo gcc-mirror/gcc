@@ -1,3 +1,10 @@
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (pointer_diff): Add new argument and instrument
+	pointer subtraction.
+	(build_binary_op): Similar for pointer comparison.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79153

@@ -95,7 +95,7 @@ static tree lookup_field (tree, tree);
 static int convert_arguments (location_t, vec<location_t>, tree,
 			      vec<tree, va_gc> *, vec<tree, va_gc> *, tree,
 			      tree);
-static tree pointer_diff (location_t, tree, tree);
+static tree pointer_diff (location_t, tree, tree, tree *);
 static tree convert_for_assignment (location_t, location_t, tree, tree, tree,
 				    enum impl_conv, bool, tree, tree, int);
 static tree valid_compound_expr_initializer (tree, tree);
@@ -3768,10 +3768,11 @@ parser_build_binary_op (location_t location, enum tree_code code,
 }
 
 /* Return a tree for the difference of pointers OP0 and OP1.
-   The resulting tree has type ptrdiff_t.  */
+   The resulting tree has type ptrdiff_t.  If POINTER_SUBTRACT sanitization is
+   enabled, assign to INSTRUMENT_EXPR call to libsanitizer.  */
 
 static tree
-pointer_diff (location_t loc, tree op0, tree op1)
+pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
 {
   tree restype = ptrdiff_type_node;
   tree result, inttype;
@@ -3815,6 +3816,17 @@ pointer_diff (location_t loc, tree op0, tree op1)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
 
+  if (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
+    {
+      gcc_assert (current_function_decl != NULL_TREE);
+
+      op0 = save_expr (op0);
+      op1 = save_expr (op1);
+
+      tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_SUBTRACT);
+      *instrument_expr = build_call_expr_loc (loc, tt, 2, op0, op1);
+    }
+
   /* First do the subtraction, then build the divide operator
      and only convert at the very end.
      Do not do default conversions in case restype is a short type.  */
@@ -3825,8 +3837,8 @@ pointer_diff (location_t loc, tree op0, tree op1)
      space, cast the pointers to some larger integer type and do the
      computations in that type.  */
   if (TYPE_PRECISION (inttype) > TYPE_PRECISION (TREE_TYPE (op0)))
-       op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
-			      convert (inttype, op1), false);
+    op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
+			   convert (inttype, op1), false);
   else
     op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
 
@@ -11113,7 +11125,7 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
 	  && comp_target_types (location, type0, type1))
 	{
-	  ret = pointer_diff (location, op0, op1);
+	  ret = pointer_diff (location, op0, op1, &instrument_expr);
 	  goto return_build_binary_op;
 	}
       /* Handle pointer minus int.  Just like pointer plus int.  */
@@ -11663,6 +11675,17 @@ build_binary_op (location_t location, enum tree_code code,
 	  result_type = type1;
 	  pedwarn (location, 0, "comparison between pointer and integer");
 	}
+
+      if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
+	{
+	  op0 = save_expr (op0);
+	  op1 = save_expr (op1);
+
+	  tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_COMPARE);
+	  instrument_expr = build_call_expr_loc (location, tt, 2, op0, op1);
+	}
+
       if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
 	   || truth_value_p (TREE_CODE (orig_op0)))
 	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
