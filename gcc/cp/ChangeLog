@@ -1,3 +1,9 @@
+2017-12-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82331 - ICE with variadic partial specialization of auto
+	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Set processing_template_decl
+	around call to tsubst.
+
 2017-12-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83287
