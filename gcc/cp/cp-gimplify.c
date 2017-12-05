@@ -1554,6 +1554,18 @@ cp_maybe_instrument_return (tree fndecl)
       || !targetm.warn_func_return (fndecl))
     return;
 
+  if (!sanitize_flags_p (SANITIZE_RETURN, fndecl)
+      /* Don't add __builtin_unreachable () if not optimizing, it will not
+	 improve any optimizations in that case, just break UB code.
+	 Don't add it if -fsanitize=unreachable -fno-sanitize=return either,
+	 UBSan covers this with ubsan_instrument_return above where sufficient
+	 information is provided, while the __builtin_unreachable () below
+	 if return sanitization is disabled will just result in hard to
+	 understand runtime error without location.  */
+      && (!optimize
+	  || sanitize_flags_p (SANITIZE_UNREACHABLE, fndecl)))
+    return;
+
   tree t = DECL_SAVED_TREE (fndecl);
   while (t)
     {
