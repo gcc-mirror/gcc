@@ -1,3 +1,46 @@
+2017-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb: Update the terminology and switch sections.
+	(Check_SPARK_Model_In_Effect): New routine.
+	(Check_SPARK_Scenario): Verify the model in effect for SPARK.
+	(Process_Conditional_ABE_Call_SPARK): Verify the model in effect for
+	SPARK.
+	(Process_Conditional_ABE_Instantiation_SPARK): Verify the model in
+	effect for SPARK.
+	(Process_Conditional_ABE_Variable_Assignment_SPARK): Verify the model
+	in effect for SPARK.
+
+2017-12-05  Nicolas Setton  <setton@adacore.com>
+
+	* terminals.c (__gnat_setup_child_communication): As documented,
+	__gnat_setup_child_communication should not terminate - it is intended
+	to be used as the child process of a call to fork().  However, execvp
+	might actually return in some cases, for instance when attempting to
+	run a 32-bit binary on a 64-bit Linux distribution when the
+	compatibility packages are not installed. In these cases, exit the
+	program to conform to the documentation.
+
+2017-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-tsmona.adb: Fix for oversight in the tsmona interface
+	update.
+
+2017-12-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Minor typo fix
+	and reformatting.
+	* gnat_ugn.texi: Regenerate.
+
+2017-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* sem_util.adb (Set_Convention): Always clear Can_Use_Internal_Rep
+	on access to subprogram types with foreign convention.
+
+2017-12-05  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Fix User's
+	Guide description of default settings of warnings.
+
 2017-12-05  Olivier Hainque  <hainque@adacore.com>
 
 	* s-dwalin.adb (Read_And_Execute_Isn): Adjust test checking for the end

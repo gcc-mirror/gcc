@@ -12729,7 +12729,13 @@ When no switch @code{-gnatw} is used, this is equivalent to:
 @code{-gnatwD}
 
 @item 
+@code{-gnatw.D}
+
+@item 
 @code{-gnatwF}
+
+@item 
+@code{-gnatw.F}
 
 @item 
 @code{-gnatwg}
@@ -12738,16 +12744,22 @@ When no switch @code{-gnatw} is used, this is equivalent to:
 @code{-gnatwH}
 
 @item 
-@code{-gnatwi}
+@code{-gnatw.H}
 
 @item 
-@code{-gnatw.I}
+@code{-gnatwi}
 
 @item 
 @code{-gnatwJ}
 
 @item 
+@code{-gnatw.J}
+
+@item 
 @code{-gnatwK}
+
+@item 
+@code{-gnatw.K}
 
 @item 
 @code{-gnatwL}
@@ -12763,6 +12775,9 @@ When no switch @code{-gnatw} is used, this is equivalent to:
 
 @item 
 @code{-gnatwn}
+
+@item 
+@code{-gnatw.N}
 
 @item 
 @code{-gnatwo}
@@ -12795,13 +12810,19 @@ When no switch @code{-gnatw} is used, this is equivalent to:
 @code{-gnatwT}
 
 @item 
-@code{-gnatw.T}
+@code{-gnatw.t}
 
 @item 
 @code{-gnatwU}
 
 @item 
+@code{-gnatw.U}
+
+@item 
 @code{-gnatwv}
+
+@item 
+@code{-gnatw.v}
 
 @item 
 @code{-gnatww}
@@ -12819,7 +12840,13 @@ When no switch @code{-gnatw} is used, this is equivalent to:
 @code{-gnatwy}
 
 @item 
+@code{-gnatw.Y}
+
+@item 
 @code{-gnatwz}
+
+@item 
+@code{-gnatw.z}
 @end itemize
 @end quotation
 
@@ -27841,7 +27868,7 @@ effect.
 @item 
 @emph{Legacy elaboration model}
 
-In addition to the three elabortaion models outlined above, GNAT provides the
+In addition to the three elaboration models outlined above, GNAT provides the
 elaboration model of pre-18.x versions referred to as @cite{legacy elaboration model}. The legacy elaboration model is enabled with compiler switch
 @code{-gnatH}.
 @end itemize
@@ -28811,7 +28838,7 @@ model.
 
 Relaxed elaboration checking mode enabled
 
-When this switch is in effect, GNAT will not process certain scenarios
+When this switch is in effect, GNAT will not process certain scenarios,
 resulting in a more permissive elaboration model. Note that this may
 eliminate some diagnostics and run-time checks.
 @end table

@@ -23090,17 +23090,7 @@ package body Sem_Util is
         and then Is_Access_Subprogram_Type (Base_Type (E))
         and then Has_Foreign_Convention (E)
       then
-
-         --  A pragma Convention in an instance may apply to the subtype
-         --  created for a formal, in which case we have already verified
-         --  that conventions of actual and formal match and there is nothing
-         --  to flag on the subtype.
-
-         if In_Instance then
-            null;
-         else
-            Set_Can_Use_Internal_Rep (E, False);
-         end if;
+         Set_Can_Use_Internal_Rep (E, False);
       end if;
 
       --  If E is an object, including a component, and the type of E is an

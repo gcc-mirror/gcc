@@ -48,8 +48,12 @@ package body Module_Name is
    -- Get --
    ---------
 
-   function Get (Addr : access System.Address) return String is
+   function Get (Addr : System.Address;
+                 Load_Addr : access System.Address)
+      return String
+   is
       pragma Unreferenced (Addr);
+      pragma Unreferenced (Load_Addr);
 
    begin
       return "";

@@ -117,6 +117,9 @@ package body Sem_Elab is
    -- Terminology --
    -----------------
 
+   --  * ABE - An attempt to activate, call, or instantiate a scenario which
+   --    has not been fully elaborated.
+   --
    --  * Bridge target - A type of target. A bridge target is a link between
    --    scenarios. It is usually a byproduct of expansion and does not have
    --    any direct ABE ramifications.
@@ -421,6 +424,8 @@ package body Sem_Elab is
    --           calls to subprograms which verify the run-time semantics of
    --           the following assertion pragmas:
    --
+   --              Default_Initial_Condition
+   --              Initial_Condition
    --              Invariant
    --              Invariant'Class
    --              Post
@@ -429,8 +434,8 @@ package body Sem_Elab is
    --              Type_Invariant
    --              Type_Invariant_Class
    --
-   --           As a result, the assertion expressions of the pragmas will not
-   --           be processed.
+   --           As a result, the assertion expressions of the pragmas are not
+   --           processed.
    --
    --  -gnatd.U ignore indirect calls for static elaboration
    --
@@ -1043,6 +1048,12 @@ package body Sem_Elab is
    pragma Inline (Check_SPARK_Instantiation);
    --  Verify that expanded instance Exp_Inst does not precede the generic body
    --  it instantiates (SPARK RM 7.7(6)).
+
+   procedure Check_SPARK_Model_In_Effect (N : Node_Id);
+   pragma Inline (Check_SPARK_Model_In_Effect);
+   --  Determine whether a suitable elaboration model is currently in effect
+   --  for verifying the SPARK rules of scenario N. Emit a warning if this is
+   --  not the case.
 
    procedure Check_SPARK_Scenario (N : Node_Id);
    pragma Inline (Check_SPARK_Scenario);
@@ -2696,12 +2707,57 @@ package body Sem_Elab is
       end if;
    end Check_SPARK_Instantiation;
 
+   ---------------------------------
+   -- Check_SPARK_Model_In_Effect --
+   ---------------------------------
+
+   SPARK_Model_Warning_Posted : Boolean := False;
+   --  This flag prevents the same SPARK model-related warning from being
+   --  emitted multiple times.
+
+   procedure Check_SPARK_Model_In_Effect (N : Node_Id) is
+   begin
+      --  Do not emit the warning multiple times as this creates useless noise
+
+      if SPARK_Model_Warning_Posted then
+         null;
+
+      --  SPARK rule verification requires the "strict" static model
+
+      elsif Static_Elaboration_Checks and not Relaxed_Elaboration_Checks then
+         null;
+
+      --  Any other combination of models does not guarantee the absence of ABE
+      --  problems for SPARK rule verification purposes. Note that there is no
+      --  need to check for the legacy ABE mechanism because the legacy code
+      --  has its own orthogonal processing for SPARK rules.
+
+      else
+         SPARK_Model_Warning_Posted := True;
+
+         Error_Msg_N
+           ("??SPARK elaboration checks require static elaboration model", N);
+
+         if Dynamic_Elaboration_Checks then
+            Error_Msg_N ("\dynamic elaboration model is in effect", N);
+         else
+            pragma Assert (Relaxed_Elaboration_Checks);
+            Error_Msg_N ("\relaxed elaboration model is in effect", N);
+         end if;
+      end if;
+   end Check_SPARK_Model_In_Effect;
+
    --------------------------
    -- Check_SPARK_Scenario --
    --------------------------
 
    procedure Check_SPARK_Scenario (N : Node_Id) is
    begin
+      --  Ensure that a suitable elaboration model is in effect for SPARK rule
+      --  verification.
+
+      Check_SPARK_Model_In_Effect (N);
+
       --  Add the current scenario to the stack of active scenarios
 
       Push_Active_Scenario (N);
@@ -9211,6 +9267,11 @@ package body Sem_Elab is
       Region : Node_Id;
 
    begin
+      --  Ensure that a suitable elaboration model is in effect for SPARK rule
+      --  verification.
+
+      Check_SPARK_Model_In_Effect (Call);
+
       --  The call and the target body are both in the main unit
 
       if Present (Target_Attrs.Body_Decl)
@@ -9674,6 +9735,11 @@ package body Sem_Elab is
       Req_Nam : Name_Id;
 
    begin
+      --  Ensure that a suitable elaboration model is in effect for SPARK rule
+      --  verification.
+
+      Check_SPARK_Model_In_Effect (Inst);
+
       --  A source instantiation imposes an Elaborate[_All] requirement on the
       --  context of the main unit. Determine whether the context has a pragma
       --  strong enough to meet the requirement. The check is orthogonal to the
@@ -9807,6 +9873,11 @@ package body Sem_Elab is
       Spec_Id  : constant Entity_Id := Find_Top_Unit (Var_Decl);
 
    begin
+      --  Ensure that a suitable elaboration model is in effect for SPARK rule
+      --  verification.
+
+      Check_SPARK_Model_In_Effect (Asmt);
+
       --  Emit an error when an initialized variable declared in a package spec
       --  without pragma Elaborate_Body is further modified by elaboration code
       --  within the corresponding body.
