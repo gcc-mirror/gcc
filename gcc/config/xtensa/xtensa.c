@@ -176,6 +176,7 @@ static bool xtensa_member_type_forces_blk (const_tree,
 					   machine_mode mode);
 
 static void xtensa_conditional_register_usage (void);
+static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 
 
 
@@ -303,6 +304,9 @@ static void xtensa_conditional_register_usage (void);
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE xtensa_conditional_register_usage
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET xtensa_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4335,6 +4339,14 @@ enum reg_class xtensa_regno_to_class (int regno)
     return GR_REGS;
   else
     return regno_to_class[regno];
+}
+
+/* Implement TARGET_ASAN_SHADOW_OFFSET.  */
+
+static unsigned HOST_WIDE_INT
+xtensa_asan_shadow_offset (void)
+{
+  return HOST_WIDE_INT_UC (0x10000000);
 }
 
 #include "gt-xtensa.h"
