@@ -1,3 +1,7 @@
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/missing-return.C: Add -O to dg-options.
+
 2017-12-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/78496

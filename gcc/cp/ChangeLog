@@ -1,3 +1,8 @@
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_maybe_instrument_return): Don't add
+	__builtin_unreachable if -O0 or if -fsanitize=unreachable.
+
 2017-12-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/83273 - constexpr if allows non-constant condition
