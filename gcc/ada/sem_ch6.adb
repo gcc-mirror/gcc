@@ -8140,6 +8140,13 @@ package body Sem_Ch6 is
                 (E, Formal_Typ, E, BIP_Formal_Suffix (BIP_Object_Access));
          end;
       end if;
+
+      --  If this is an instance of a generic, we need to have extra formals
+      --  for the Alias.
+
+      if Is_Generic_Instance (E) and then Present (Alias (E)) then
+         Set_Extra_Formals (Alias (E), Extra_Formals (E));
+      end if;
    end Create_Extra_Formals;
 
    -----------------------------

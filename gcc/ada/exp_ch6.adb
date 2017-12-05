@@ -650,9 +650,7 @@ package body Exp_Ch6 is
      (Func : Entity_Id;
       Kind : BIP_Formal_Kind) return Entity_Id
    is
-      Formal_Name  : constant Name_Id :=
-                       New_External_Name
-                         (Chars (Func), BIP_Formal_Suffix (Kind));
+      Formal_Suffix : constant String := BIP_Formal_Suffix (Kind);
       Extra_Formal : Entity_Id := Extra_Formals (Func);
 
    begin
@@ -669,9 +667,21 @@ package body Exp_Ch6 is
          Extra_Formal := Extra_Formals (Func);
       end if;
 
+      --  We search for a formal with a matching suffix. We can't search
+      --  for the full name, because of the code at the end of Sem_Ch6.-
+      --  Create_Extra_Formals, which copies the Extra_Formals over to
+      --  the Alias of an instance, which will cause the formals to have
+      --  "incorrect" names.
+
       loop
          pragma Assert (Present (Extra_Formal));
-         exit when Chars (Extra_Formal) = Formal_Name;
+         declare
+            Name : constant String := Get_Name_String (Chars (Extra_Formal));
+         begin
+            exit when Name'Length >= Formal_Suffix'Length
+              and then Formal_Suffix =
+                Name (Name'Last - Formal_Suffix'Length + 1 .. Name'Last);
+         end;
 
          Next_Formal_With_Extras (Extra_Formal);
       end loop;

@@ -1,3 +1,15 @@
+2017-12-05  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Build_In_Place_Formal): Search for the formal by suffix
+	instead of the full name.
+	* sem_ch6.adb (Create_Extra_Formals): Make sure there are extra formals
+	in the case of an instance of a generic.
+
+2017-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	(Adjust_Global_Switches): Create an alias GNAT_Annotate to map to
+	pragma Annotate.
+
 2017-12-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc-interface/Makefile.in (RTEMS): Define EH_MECHANISM.
