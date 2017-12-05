@@ -1,3 +1,11 @@
+2017-12-05  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_asan_shadow_offset): New
+	function.
+	(TARGET_ASAN_SHADOW_OFFSET): New macro definition.
+	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): Set to 1 if
+	ASAN is enabled.
+
 2017-12-05  Richard Biener   <rguenther@suse.de>
 
 	* timevar.def (TV_TREE_RECIP, TV_TREE_SINCOS, TV_TREE_WIDEN_MUL):
