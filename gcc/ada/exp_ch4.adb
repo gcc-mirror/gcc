@@ -4172,10 +4172,10 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Nonbinary_Modular_Op
 
    begin
-      --  No action needed if we are not generating C code for a nonbinary
-      --  modular operand.
+      --  No action needed if front-end expansion is not required or if we
+      --  have a binary modular operand.
 
-      if not Modify_Tree_For_C
+      if not Expand_Nonbinary_Modular_Ops
         or else not Non_Binary_Modulus (Typ)
       then
          return;
@@ -6899,12 +6899,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular additions into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Add;
 
    ---------------------
@@ -6930,12 +6925,7 @@ package body Exp_Ch4 is
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
 
-      --  When generating C code, convert nonbinary modular operators into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_And;
 
    ------------------------
@@ -7178,12 +7168,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular divisions into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Divide;
 
    --------------------
@@ -8687,12 +8672,7 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Typ);
       end if;
 
-      --  When generating C code, convert nonbinary modular minus into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Minus;
 
    ---------------------
@@ -9170,12 +9150,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular multiplications
-      --  into code that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Multiply;
 
    --------------------
@@ -9487,12 +9462,7 @@ package body Exp_Ch4 is
          Expand_Intrinsic_Call (N, Entity (N));
       end if;
 
-      --  When generating C code, convert nonbinary modular operators into code
-      --  that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Or;
 
    ----------------------
@@ -9926,12 +9896,7 @@ package body Exp_Ch4 is
 
       Check_Float_Op_Overflow (N);
 
-      --  When generating C code, convert nonbinary modular subtractions into
-      --  code that relies on the front-end expansion of operator Mod.
-
-      if Modify_Tree_For_C then
-         Expand_Nonbinary_Modular_Op (N);
-      end if;
+      Expand_Nonbinary_Modular_Op (N);
    end Expand_N_Op_Subtract;
 
    ---------------------
@@ -9955,7 +9920,6 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
-
       end if;
    end Expand_N_Op_Xor;
 

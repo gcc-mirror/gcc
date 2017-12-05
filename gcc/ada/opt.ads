@@ -640,6 +640,10 @@ package Opt is
    --  Set to True to store tracebacks in exception occurrences and enable
    --  symbolic tracebacks (-Es).
 
+   Expand_Nonbinary_Modular_Ops : Boolean := False;
+   --  Set to True to convert nonbinary modular additions into code
+   --  that relies on the front-end expansion of operator Mod.
+
    Extensions_Allowed : Boolean := False;
    --  GNAT
    --  Set to True by switch -gnatX if GNAT specific language extensions

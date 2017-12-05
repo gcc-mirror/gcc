@@ -1,3 +1,24 @@
+2017-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads (Expand_Nonbinary_Modular_Ops): New flag.
+	* exp_ch4.adb (Expand_Nonbinary_Modular_Op): Use
+	Expand_Nonbinary_Modular_Ops instead of Modify_Tree_For_C, so that
+	other back-ends can also benefit from the front-end expansion. Remove
+	test for Modify_Tree_For_C in all callers to better share code.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Expand_Nonbinary_Modular_Ops when generating C code.
+
+2017-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Loop): Ensure that the loop
+	parameter becomes invisible after analyzing the loop, which has been
+	rewritten as a while-loop.
+
+2017-12-05  Doug Rupp  <rupp@adacore.com>
+
+	* vxaddr2line.adb: Revise and enhance for new ports, remove dead ports,
+	and update for 64bit ports.
+
 2017-12-05  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Build_In_Place_Formal): Search for the formal by suffix
