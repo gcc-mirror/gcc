@@ -1,3 +1,10 @@
+2017-12-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_bsldi_internal)
+	(aarch64_simd_bsldi_alt): Check REG_P before GP_REGNUM_P.
+	(aarch64_cm<optab>di, aarch64_cmtstdi): Add leading "&&" to
+	split condition.
+
 2017-12-05  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_asan_shadow_offset): New

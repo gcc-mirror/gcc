@@ -2484,7 +2484,7 @@
   bit\\t%0.8b, %2.8b, %1.8b
   bif\\t%0.8b, %3.8b, %1.8b
   #"
-  "&& GP_REGNUM_P (REGNO (operands[0]))"
+  "&& REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
   [(match_dup 1) (match_dup 1) (match_dup 2) (match_dup 3)]
 {
   /* Split back to individual operations.  If we're before reload, and
@@ -2526,7 +2526,7 @@
   bit\\t%0.8b, %3.8b, %1.8b
   bif\\t%0.8b, %2.8b, %1.8b
   #"
-  "&& GP_REGNUM_P (REGNO (operands[0]))"
+  "&& REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
   [(match_dup 0) (match_dup 1) (match_dup 2) (match_dup 3)]
 {
   /* Split back to individual operations.  If we're before reload, and
@@ -4453,7 +4453,7 @@
      (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (COMPARISONS:DI
@@ -4516,7 +4516,7 @@
     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (UCOMPARISONS:DI
@@ -4587,7 +4587,7 @@
     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (ne:DI
