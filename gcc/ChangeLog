@@ -1,3 +1,18 @@
+2017-12-05  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
+	2017-05-08  Max Filippov  <jcmvbkbc@gmail.com>
+	* config/xtensa/xtensa-protos.h
+       	(xtensa_initial_elimination_offset): New declaration.
+	* config/xtensa/xtensa.c (xtensa_initial_elimination_offset):
+	New function. Move its body from the INITIAL_ELIMINATION_OFFSET
+	macro definition, add case for FRAME_POINTER_REGNUM when
+	FRAME_GROWS_DOWNWARD.
+	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): New macro
+	definition.
+	(INITIAL_ELIMINATION_OFFSET): Replace body with call to
+	xtensa_initial_elimination_offset.
+
 2017-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Use mem_ref
