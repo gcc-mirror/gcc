@@ -2747,7 +2747,7 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
 							   location);
   closure_ref =
       Expression::make_dereference(closure_ref,
-                                   Expression::NIL_CHECK_DEFAULT,
+                                   Expression::NIL_CHECK_NOT_NEEDED,
                                    location);
 
   // The closure structure holds pointers to the variables, so we need
@@ -2755,7 +2755,8 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
   Expression* e = Expression::make_field_reference(closure_ref,
 						   ins.first->index(),
 						   location);
-  e = Expression::make_dereference(e, Expression::NIL_CHECK_DEFAULT, location);
+  e = Expression::make_dereference(e, Expression::NIL_CHECK_NOT_NEEDED,
+                                   location);
   return Expression::make_enclosing_var_reference(e, var, location);
 }
 
