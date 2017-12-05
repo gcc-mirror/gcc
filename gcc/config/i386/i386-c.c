@@ -394,6 +394,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX5124VNNIW__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX512VBMI2)
     def_or_undef (parse_in, "__AVX512VBMI2__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512VNNI)
+    def_or_undef (parse_in, "__AVX512VNNI__");
   if (isa_flag2 & OPTION_MASK_ISA_SGX)
     def_or_undef (parse_in, "__SGX__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124FMAPS)

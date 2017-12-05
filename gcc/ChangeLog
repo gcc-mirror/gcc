@@ -1,3 +1,16 @@
+2017-12-05  Julia Koval  <julia.koval@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VNNI_SET,
+	OPTION_MASK_ISA_AVX512VNNI_UNSET): New.
+	(ix86_handle_option): Handle -mavx512vnni.
+	* config/i386/cpuid.h (bit_AVX512VNNI): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle new bit.
+	* config/i386/i386-c (__AVX512VNNI__): New.
+	* config/i386/i386.c (ix86_target_string): Handle new option.
+	(ix86_valid_target_attribute_inner_p): Handle new option.
+	* config/i386/i386.h (TARGET_AVX512VNNI, TARGET_AVX512VNNI_P): New.
+	* config/i386/i386.opt (mavx512vnni): New option.
+
 2017-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/81616

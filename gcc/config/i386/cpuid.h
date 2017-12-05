@@ -100,6 +100,7 @@
 #define bit_AVX512VBMI2	(1 << 6)
 #define bit_SHSTK	(1 << 7)
 #define bit_GFNI	(1 << 8)
+#define bit_AVX512VNNI	(1 << 11)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_RDPID	(1 << 22)
 
