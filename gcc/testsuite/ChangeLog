@@ -1,3 +1,12 @@
+2017-12-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69224
+	PR tree-optimization/80907
+	PR tree-optimization/82286
+	* gcc.dg/pr69224.c: New test.
+	* gcc.dg/pr80907.c: New test.
+	* gcc.dg/pr82286.c: New test.
+
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80259
