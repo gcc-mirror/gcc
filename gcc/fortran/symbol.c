@@ -3832,7 +3832,7 @@ free_tb_tree (gfc_symtree *t)
 
   /* TODO: Free type-bound procedure structs themselves; probably needs some
      sort of ref-counting mechanism.  */
-
+  free (t->n.tb);
   free (t);
 }
 
@@ -5073,7 +5073,7 @@ gfc_get_typebound_proc (gfc_typebound_proc *tb0)
 
   result = XCNEW (gfc_typebound_proc);
   if (tb0)
-    *result = *tb0;
+    memcpy (result, tb0, sizeof (gfc_typebound_proc));
   result->error = 1;
 
   latest_undo_chgset->tbps.safe_push (result);
