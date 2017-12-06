@@ -1,5 +1,8 @@
 2017-12-06  Martin Sebor  <msebor@redhat.com>
 
+	* doc/invoke.texi (-Wstringop-truncation): Mention attribute
+	nonstring.
+
 	PR tree-optimization/83075
 	* tree-ssa-strlen.c (handle_builtin_stxncpy): Avoid assuming
 	strncat/strncpy don't change length of source string.
