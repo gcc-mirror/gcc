@@ -1,3 +1,11 @@
+2017-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81945
+	* cfgloop.h (FOR_EACH_LOOP_FN): Use FN instead of hardcoding fn.
+	* tree-cfg.c (move_sese_region_to_fn): If any of the loops moved
+	to dest_cfun has orig_loop_num set, either remap it to the new
+	loop number if the loop got moved too, or clear it.
+
 2017-12-05  Steve Ellcey  <sellcey@cavium.com>
 
 	* config/aarch64/thunderx2-t99.md (thunderx2t99_branch): Add trap

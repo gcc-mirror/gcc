@@ -1,3 +1,8 @@
+2017-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81945
+	* gcc.dg/graphite/pr81945.c: New test.
+
 2017-12-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* gcc.c-torture/unsorted/dump-noaddr.x: Generate dump files in
