@@ -1,5 +1,20 @@
 2017-12-06  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/83236
+	* c-common.c (selftest::c_family_tests): Call
+	selftest::c_spellcheck_cc_tests.
+	* c-common.h (selftest::c_spellcheck_cc_tests): New decl.
+	* c-spellcheck.cc: Include "selftest.h".
+	(name_reserved_for_implementation_p): New function.
+	(should_suggest_as_macro_p): New function.
+	(find_closest_macro_cpp_cb): Move the check for NT_MACRO to
+	should_suggest_as_macro_p and call it.
+	(selftest::test_name_reserved_for_implementation_p): New function.
+	(selftest::c_spellcheck_cc_tests): New function.
+	* c-spellcheck.h (name_reserved_for_implementation_p): New decl.
+
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-spellcheck.cc: New file, taken from macro-handling code in
 	spellcheck-tree.c.
 	* c-spellcheck.h: New file, taken from macro-handling code in

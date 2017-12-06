@@ -1,5 +1,11 @@
 2017-12-06  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/83236
+	* c-decl.c (lookup_name_fuzzy): Don't suggest names that are
+	reserved for use by the implementation.
+
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-decl.c: Include "c-family/c-spellcheck.h".
 
 2017-12-05  Martin Liska  <mliska@suse.cz>

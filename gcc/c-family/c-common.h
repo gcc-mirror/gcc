@@ -1450,6 +1450,7 @@ namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
   extern void c_format_c_tests (void);
+  extern void c_spellcheck_cc_tests (void);
 
   /* The entrypoint for running all of the above tests.  */
   extern void c_family_tests (void);

@@ -25,6 +25,37 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "spellcheck-tree.h"
 #include "c-family/c-spellcheck.h"
+#include "selftest.h"
+
+/* Return true iff STR begin with an underscore and either an uppercase
+   letter or another underscore, and is thus, for C and C++, reserved for
+   use by the implementation.  */
+
+bool
+name_reserved_for_implementation_p (const char *str)
+{
+  if (str[0] != '_')
+    return false;
+  return (str[1] == '_' || ISUPPER(str[1]));
+}
+
+/* Return true iff HASHNODE is a macro that should be offered as a
+   suggestion for a misspelling.  */
+
+static bool
+should_suggest_as_macro_p (cpp_hashnode *hashnode)
+{
+  if (hashnode->type != NT_MACRO)
+    return false;
+
+  /* Don't suggest names reserved for the implementation, but do suggest the builtin
+     macros such as __FILE__, __LINE__ etc.  */
+  if (name_reserved_for_implementation_p ((const char *)hashnode->ident.str)
+      && !(hashnode->flags & NODE_BUILTIN))
+    return false;
+
+  return true;
+}
 
 /* A callback for cpp_forall_identifiers, for use by best_macro_match's ctor.
    Process HASHNODE and update the best_macro_match instance pointed to be
@@ -34,7 +65,7 @@ static int
 find_closest_macro_cpp_cb (cpp_reader *, cpp_hashnode *hashnode,
 			   void *user_data)
 {
-  if (hashnode->type != NT_MACRO)
+  if (!should_suggest_as_macro_p (hashnode))
     return 1;
 
   best_macro_match *bmm = (best_macro_match *)user_data;
@@ -55,3 +86,36 @@ best_macro_match::best_macro_match (tree goal,
 {
   cpp_forall_identifiers (reader, find_closest_macro_cpp_cb, this);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Selftests.  */
+
+/* Verify that name_reserved_for_implementation_p is sane.  */
+
+static void
+test_name_reserved_for_implementation_p ()
+{
+  ASSERT_FALSE (name_reserved_for_implementation_p (""));
+  ASSERT_FALSE (name_reserved_for_implementation_p ("foo"));
+  ASSERT_FALSE (name_reserved_for_implementation_p ("_"));
+  ASSERT_FALSE (name_reserved_for_implementation_p ("_foo"));
+  ASSERT_FALSE (name_reserved_for_implementation_p ("_42"));
+  ASSERT_TRUE (name_reserved_for_implementation_p ("_Foo"));
+  ASSERT_TRUE (name_reserved_for_implementation_p ("__"));
+  ASSERT_TRUE (name_reserved_for_implementation_p ("__foo"));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+c_spellcheck_cc_tests ()
+{
+  test_name_reserved_for_implementation_p ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
