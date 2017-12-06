@@ -4455,10 +4455,23 @@ Unary_expression::do_get_backend(Translate_context* context)
             case NIL_CHECK_NEEDED:
               {
                 go_assert(this->expr_->is_variable());
+
+                // If we're nil-checking the result of a set-and-use-temporary
+                // expression, then pick out the target temp and use that
+                // for the final result of the conditional.
+                Bexpression* tbexpr = bexpr;
+                Bexpression* ubexpr = bexpr;
+                Set_and_use_temporary_expression* sut =
+                    this->expr_->set_and_use_temporary_expression();
+                if (sut != NULL) {
+                  Temporary_statement* temp = sut->temporary();
+                  Bvariable* bvar = temp->get_backend_variable(context);
+                  ubexpr = gogo->backend()->var_expression(bvar, loc);
+                }
                 Bexpression* nil =
                     Expression::make_nil(loc)->get_backend(context);
                 Bexpression* compare =
-                    gogo->backend()->binary_expression(OPERATOR_EQEQ, bexpr,
+                    gogo->backend()->binary_expression(OPERATOR_EQEQ, tbexpr,
                                                        nil, loc);
                 Bexpression* crash =
                     gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
@@ -4466,7 +4479,7 @@ Unary_expression::do_get_backend(Translate_context* context)
                 Bfunction* bfn = context->function()->func_value()->get_decl();
                 bexpr = gogo->backend()->conditional_expression(bfn, btype,
                                                                 compare,
-                                                                crash, bexpr,
+                                                                crash, ubexpr,
                                                                 loc);
                 known_valid = true;
                 break;
