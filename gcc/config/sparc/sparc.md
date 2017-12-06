@@ -6212,10 +6212,10 @@ visl")
 	(div:DF (match_operand:DF 1 "register_operand" "e")
 		(match_operand:DF 2 "register_operand" "e")))]
   "TARGET_FPU && sparc_fix_ut699"
-  "fdivd\t%1, %2, %0\n\tnop\n\tstd\t%0, [%%sp-8]\n\tnop"
+  "fdivd\t%1, %2, %0\n\tstd\t%0, [%%sp-8]\n\tnop"
   [(set_attr "type" "fpdivd")
    (set_attr "fptype" "double")
-   (set_attr "length" "4")])
+   (set_attr "length" "3")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -6464,10 +6464,10 @@ visl")
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(sqrt:DF (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU && sparc_fix_ut699"
-  "fsqrtd\t%1, %0\n\tnop\n\tstd\t%0, [%%sp-8]\n\tnop"
+  "fsqrtd\t%1, %0\n\tstd\t%0, [%%sp-8]\n\tnop"
   [(set_attr "type" "fpsqrtd")
    (set_attr "fptype" "double")
-   (set_attr "length" "4")])
+   (set_attr "length" "3")])
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
