@@ -3418,7 +3418,7 @@ insert_initializers (slsr_cand_t c)
 		  gsi_insert_after (&gsi, cast_stmt, GSI_NEW_STMT);
 		  gimple_set_location (cast_stmt, loc);
 		}
-	      gsi_insert_after (&gsi, init_stmt, GSI_SAME_STMT);
+	      gsi_insert_after (&gsi, init_stmt, GSI_NEW_STMT);
 	    }
 
 	  gimple_set_location (init_stmt, gimple_location (basis_stmt));

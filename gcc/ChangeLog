@@ -1,5 +1,10 @@
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83293
+	* gimple-ssa-strength-reduction.c (insert_initializers): Use
+	GSI_NEW_STMT instead of GSI_SAME_STMT in gsi_insert_after that
+	might insert into empty bb.
+
 	PR sanitizer/81281
 	* match.pd ((T)(P + A) - (T)P -> (T) A): Split into separate
 	simplify for plus with :c added, and pointer_plus without that.
