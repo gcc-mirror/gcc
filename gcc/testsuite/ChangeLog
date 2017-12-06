@@ -1,3 +1,23 @@
+2017-12-06  Charles Baylis  <charles.baylis@linaro.org>
+
+	* gcc.target/arm/addr-modes-float.c: Place dg-add-options after
+	dg-require-effective-target.
+	(ATTR): New define.
+	(POST_STORE): Pass ATTR as 2nd argument.
+	(POST_LOAD): Likewise.
+	(POST_STORE_VEC): Likewise.
+	* gcc.target/arm/addr-modes-int.c (ATTR): New define.
+	(PRE_STORE): Pass ATTR as 2nd argument.
+	(POST_STORE): Likewise.
+	(PRE_LOAD): Likewise.
+	(POST_LOAD): Likewise.
+	* gcc.target/arm/addr-modes.h: 	(PRE_STORE): New parameter.
+	(POST_STORE): Likewise.
+	(POST_STORE_VEC): Likewise.
+	(PRE_LOAD): Likewise.
+	(POST_LOAD): Likewise.
+	(POST_LOAD_VEC): Likewise.
+
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81945
