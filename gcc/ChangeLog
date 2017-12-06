@@ -1,3 +1,12 @@
+2017-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2017-11-29  Martin Aberg  <maberg@gaisler.com>
+
+	* config/sparc/sparc.md (divdf3_fix): Add NOP and adjust length
+	to prevent b2bst errata sequence.
+	(sqrtdf2_fix): Likewise.
+
 2017-12-05  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
@@ -95,21 +104,18 @@
 
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
-	Backport from mainline
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Treat the
-        movsi_pic_gotdata_op instruction as a load for the UT699 errata
-        workaround.
+	movsi_pic_gotdata_op instruction as a load for the UT699 errata
+	workaround.
 
 2017-11-29  Martin Aberg  <maberg@gaisler.com>
 
-	Backport from mainline
 	* config/sparc/sparc.md (divdf3_fix): Add NOP and adjust length
-        to prevent b2bst errata sequence.
-        (sqrtdf2_fix): Likewise.
+	to prevent b2bst errata sequence.
+	(sqrtdf2_fix): Likewise.
 
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
-	Backport from mainline
 	* config/sparc/sparc.c (fpop_reg_depend_p): New function.
 	(div_sqrt_insn_p): New function.
 	(sparc_do_work_around_errata): Insert NOP instructions to
@@ -124,7 +130,6 @@
 
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
-	Backport from mainline
 	* config/sparc/sparc.c (atomic_insn_p): New function.
 	(sparc_do_work_around_errata): Insert NOP instructions to
 	prevent sequences that could trigger the TN-0010 errata for
@@ -134,14 +139,12 @@
 
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
-	Backport from mainline
 	* config/sparc/sync.md (swapsi): 16-byte align if sparc_fix_gr712rc.
 	(atomic_compare_and_swap_leon3_1): Likewise.
 	(ldstub): Likewise.
 
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
-	Backport from mainline
 	* config/sparc/sparc.c (fpop_insn_p): New function.
 	(sparc_do_work_around_errata): Insert NOP instructions to
 	prevent sequences that could trigger the TN-0012 errata for
