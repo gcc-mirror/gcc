@@ -1,3 +1,18 @@
+2017-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81281
+	* match.pd ((T)(P + A) - (T)P -> (T) A): Split into separate
+	simplify for plus with :c added, and pointer_plus without that.
+	((T)P - (T)(P + A) -> -(T) A): Likewise.  If type is integral
+	with undefined overflow and the conversion is not widening,
+	perform negation in utype and only convert to type afterwards.
+	((T)(P + A) - (T)(P + B) -> (T)A - (T)B): Split into separate
+	simplify for plus with :c added, and pointer_plus without that.
+	If type is integral with undefined overflow and the conversion is
+	not widening, perform minus in utype and only convert to type
+	afterwards.  Move the last pointer_diff_expr simplify into the
+	two outermost ifs.
+
 2017-12-06  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82646

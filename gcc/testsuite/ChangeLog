@@ -1,3 +1,12 @@
+2017-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81281
+	* gcc.c-torture/execute/pr81281.c: New test.
+	* gcc.dg/pr81281-1.c: New test.
+	* gcc.dg/pr81281-2.c: New test.
+	* g++.dg/ubsan/pr81281.C: New test.
+	* g++.dg/ubsan/pr81281-aux.cc: New test.
+
 2017-12-06  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82646
