@@ -23916,7 +23916,7 @@ instantiation_dependent_scope_ref_p (tree t)
    can be tested for value dependence.  */
 
 bool
-value_dependent_expression_p (tree expression)
+value_dependent_expression_p (tree expression, bool lval /* = false */)
 {
   if (!processing_template_decl || expression == NULL_TREE)
     return false;
@@ -23950,6 +23950,7 @@ value_dependent_expression_p (tree expression)
       /* A non-type template parm.  */
       if (DECL_TEMPLATE_PARM_P (expression))
 	return true;
+      gcc_checking_assert (!lval);
       return value_dependent_expression_p (DECL_INITIAL (expression));
 
     case VAR_DECL:
@@ -23959,7 +23960,8 @@ value_dependent_expression_p (tree expression)
           Note that a non-dependent parenthesized initializer will have
           already been replaced with its constant value, so if we see
           a TREE_LIST it must be dependent.  */
-      if (DECL_INITIAL (expression)
+      if (!lval
+	  && DECL_INITIAL (expression)
 	  && decl_constant_var_p (expression)
 	  && (TREE_CODE (DECL_INITIAL (expression)) == TREE_LIST
 	      /* cp_finish_decl doesn't fold reference initializers.  */
@@ -23969,7 +23971,7 @@ value_dependent_expression_p (tree expression)
       if (DECL_HAS_VALUE_EXPR_P (expression))
 	{
 	  tree value_expr = DECL_VALUE_EXPR (expression);
-	  if (value_dependent_expression_p (value_expr))
+	  if (value_dependent_expression_p (value_expr, lval))
 	    return true;
 	}
       return false;
@@ -24005,7 +24007,7 @@ value_dependent_expression_p (tree expression)
 	if (TREE_CODE (expression) == TREE_LIST)
 	  return any_value_dependent_elements_p (expression);
 
-	return value_dependent_expression_p (expression);
+	return value_dependent_expression_p (expression, lval);
       }
 
     case SIZEOF_EXPR:
@@ -24039,7 +24041,7 @@ value_dependent_expression_p (tree expression)
       return instantiation_dependent_scope_ref_p (expression);
 
     case COMPONENT_REF:
-      return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
+      return (value_dependent_expression_p (TREE_OPERAND (expression, 0), lval)
 	      || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
 
     case NONTYPE_ARGUMENT_PACK:
@@ -24087,7 +24089,7 @@ value_dependent_expression_p (tree expression)
     case ADDR_EXPR:
       {
 	tree op = TREE_OPERAND (expression, 0);
-	return (value_dependent_expression_p (op)
+	return (value_dependent_expression_p (op, true)
 		|| has_value_dependent_address (op));
       }
 

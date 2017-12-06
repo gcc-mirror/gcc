@@ -6542,7 +6542,7 @@ extern bool type_dependent_object_expression_p	(tree);
 extern bool any_type_dependent_arguments_p      (const vec<tree, va_gc> *);
 extern bool any_type_dependent_elements_p       (const_tree);
 extern bool type_dependent_expression_p_push	(tree);
-extern bool value_dependent_expression_p	(tree);
+extern bool value_dependent_expression_p	(tree, bool = false);
 extern bool instantiation_dependent_expression_p (tree);
 extern bool instantiation_dependent_uneval_expression_p (tree);
 extern bool any_value_dependent_elements_p      (const_tree);
