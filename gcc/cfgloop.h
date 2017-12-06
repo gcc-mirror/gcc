@@ -766,7 +766,7 @@ loop_iterator::~loop_iterator ()
        (LOOP) = li.next ())
 
 #define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
-  for (loop_iterator li(fn, &(LOOP), FLAGS); \
+  for (loop_iterator li(FN, &(LOOP), FLAGS); \
        (LOOP); \
        (LOOP) = li.next ())
 
