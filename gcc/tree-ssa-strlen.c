@@ -1941,10 +1941,9 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   int sidx = get_stridx (src);
   strinfo *sisrc = sidx > 0 ? get_strinfo (sidx) : NULL;
 
-  /* Strncpy() et al. cannot modify the source string.  Prevent the rest
-     of the pass from invalidating the strinfo data.  */
-  if (sisrc)
-    sisrc->dont_invalidate = true;
+  /* strncat() and strncpy() can modify the source string by writing
+     over the terminating nul so SISRC->DONT_INVALIDATE must be left
+     clear.  */
 
   /* Retrieve the strinfo data for the string S that LEN was computed
      from as some function F of strlen (S) (i.e., LEN need not be equal
