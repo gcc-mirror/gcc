@@ -1,5 +1,12 @@
 2017-12-06  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/82646
+	* gcc.dg/builtin-stringop-chk-1.c: Adjust.
+	* gcc.dg/builtin-stringop-chk-9.c: New test.
+	* g++.dg/ext/strncpy-chk1.C: Adjust.
+
+2017-12-06  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/83075
 	* gcc.dg/tree-ssa/strncat.c: New test.
 	* gcc.dg/tree-ssa/strncpy-2.c: Same.

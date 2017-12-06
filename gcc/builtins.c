@@ -9861,6 +9861,8 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
      (such as __strncat_chk) or null if the operation isn't bounded
      (such as __strcat_chk).  */
   tree maxlen = NULL_TREE;
+  /* The exact size of the access (such as in __strncpy_chk).  */
+  tree size = NULL_TREE;
 
   switch (fcode)
     {
@@ -9888,7 +9890,7 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
     case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STPNCPY_CHK:
       srcstr = CALL_EXPR_ARG (exp, 1);
-      maxlen = CALL_EXPR_ARG (exp, 2);
+      size = CALL_EXPR_ARG (exp, 2);
       objsize = CALL_EXPR_ARG (exp, 3);
       break;
 
@@ -9911,7 +9913,7 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
     }
 
   check_sizes (OPT_Wstringop_overflow_, exp,
-	       /*size=*/NULL_TREE, maxlen, srcstr, objsize);
+	       size, maxlen, srcstr, objsize);
 }
 
 /* Emit warning if a buffer overflow is detected at compile time

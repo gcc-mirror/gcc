@@ -1,5 +1,11 @@
 2017-12-06  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/82646
+	* builtins.c (maybe_emit_chk_warning): Use size as the bound for
+	strncpy, not maxlen.
+
+2017-12-06  Martin Sebor  <msebor@redhat.com>
+
 	* doc/invoke.texi (-Wstringop-truncation): Mention attribute
 	nonstring.
 
