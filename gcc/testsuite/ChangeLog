@@ -9,6 +9,9 @@
 
 2017-12-06  Martin Sebor  <msebor@redhat.com>
 
+	PR testsuite/83303
+	* g++.dg/opt/new1.C: Prune warning from test output.
+
 	PR tree-optimization/82646
 	* gcc.dg/builtin-stringop-chk-1.c: Adjust.
 	* gcc.dg/builtin-stringop-chk-9.c: New test.
