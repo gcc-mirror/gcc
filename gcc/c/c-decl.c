@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "c-family/name-hint.h"
 #include "c-family/known-headers.h"
+#include "c-family/c-spellcheck.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
