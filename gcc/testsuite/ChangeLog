@@ -1,3 +1,9 @@
+2017-12-06  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83075
+	* gcc.dg/tree-ssa/strncat.c: New test.
+	* gcc.dg/tree-ssa/strncpy-2.c: Same.
+
 2017-12-06  Bin Cheng  <bin.cheng@arm.com>
 
 	* g++.dg/graphite/pr41305.C: Refine test option.
