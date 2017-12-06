@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "spellcheck.h"
 
+extern bool name_reserved_for_implementation_p (const char *str);
+
 /* Specialization of edit_distance_traits for preprocessor macros.  */
 
 template <>

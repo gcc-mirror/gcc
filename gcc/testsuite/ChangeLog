@@ -1,3 +1,8 @@
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83236
+	* c-c++-common/spellcheck-reserved.c: New test case.
+
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83293

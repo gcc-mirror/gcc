@@ -5617,6 +5617,10 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  bm.consider (IDENTIFIER_POINTER (best_matching_field));
       }
 
+  /* Only suggest names reserved for the implementation if NAME begins
+     with an underscore.  */
+  bool consider_implementation_names = (IDENTIFIER_POINTER (name)[0] == '_');
+
   for (tree t = lvl->names; t; t = TREE_CHAIN (t))
     {
       tree d = t;
@@ -5637,10 +5641,23 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  && DECL_ANTICIPATED (d))
 	continue;
 
-      if (tree name = DECL_NAME (d))
-	/* Ignore internal names with spaces in them.  */
-	if (!strchr (IDENTIFIER_POINTER (name), ' '))
-	  bm.consider (IDENTIFIER_POINTER (name));
+      tree suggestion = DECL_NAME (d);
+      if (!suggestion)
+	continue;
+
+      const char *suggestion_str = IDENTIFIER_POINTER (suggestion);
+
+      /* Ignore internal names with spaces in them.  */
+      if (strchr (suggestion_str, ' '))
+	continue;
+
+      /* Don't suggest names that are reserved for use by the
+	 implementation, unless NAME began with an underscore.  */
+      if (name_reserved_for_implementation_p (suggestion_str)
+	  && !consider_implementation_names)
+	continue;
+
+      bm.consider (suggestion_str);
     }
 }
 
