@@ -1,3 +1,7 @@
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c: Include "c-family/c-spellcheck.h".
+
 2017-12-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82331 - ICE with variadic partial specialization of auto

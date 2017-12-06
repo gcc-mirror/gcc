@@ -1,3 +1,10 @@
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-spellcheck.cc: New file, taken from macro-handling code in
+	spellcheck-tree.c.
+	* c-spellcheck.h: New file, taken from macro-handling code in
+	spellcheck-tree.h.
+
 2017-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (c_common_attribute_table): Remove "cilk simd function"

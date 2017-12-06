@@ -1,3 +1,14 @@
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (C_COMMON_OBJS): Add c-family/c-spellcheck.o.
+	* spellcheck-tree.c (find_closest_macro_cpp_cb): Move to
+	c-family/c-spellcheck.cc.
+	(best_macro_match::best_macro_match): Likewise.
+	* spellcheck-tree.h
+	(struct edit_distance_traits<cpp_hashnode *>): Move to
+	c-family/c-spellcheck.h.
+	(class best_macro_match): Likewise.
+
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83293
