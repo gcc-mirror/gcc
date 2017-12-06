@@ -1,3 +1,26 @@
+2017-12-06  Bin Cheng  <bin.cheng@arm.com>
+
+	* g++.dg/graphite/pr41305.C: Refine test option.
+	* gcc.dg/graphite/pr42205-1.c: Ditto.
+	* gcc.dg/graphite/pr42205-2.c: Ditto.
+	* gcc.dg/graphite/pr42211.c: Ditto.
+	* gcc.dg/graphite/pr46185.c: Ditto.
+	* gcc.dg/graphite/pr46966.c: Ditto.
+	* gcc.dg/graphite/pr59817-1.c: Ditto.
+	* gcc.dg/graphite/pr59817-2.c: Ditto.
+	* gcc.dg/graphite/pr60740.c: Ditto.
+	* gcc.dg/graphite/pr60785.c: Ditto.
+	* gcc.dg/graphite/pr68715-2.c: Ditto.
+	* gcc.dg/graphite/pr68715.c: Ditto.
+	* gcc.dg/graphite/pr70045.c: Ditto.
+	* gfortran.dg/graphite/pr14741.f90: Ditto.
+	* gfortran.dg/graphite/pr40982.f90: Ditto.
+	* gfortran.dg/graphite/pr42285.f90: Ditto.
+	* gfortran.dg/graphite/pr42334-1.f: Ditto.
+	* gfortran.dg/graphite/pr42334.f90: Ditto.
+	* gfortran.dg/graphite/pr43349.f: Ditto.
+	* gfortran.dg/graphite/pr59817.f: Ditto.
+
 2017-12-06  Charles Baylis  <charles.baylis@linaro.org>
 
 	* gcc.target/arm/addr-modes-float.c: Place dg-add-options after
