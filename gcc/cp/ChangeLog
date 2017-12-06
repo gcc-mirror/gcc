@@ -1,3 +1,9 @@
+2017-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82115 - ICE with variable initialized with its own address.
+	* pt.c (value_dependent_expression_p): Add lval parameter.  Don't
+	consider DECL_INITIAL if it's true.
+
 2017-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/83236
