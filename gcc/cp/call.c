@@ -7350,7 +7350,7 @@ type_passed_as (tree type)
       /* There are no other pointers to this temporary.  */
       type = cp_build_qualified_type (type, TYPE_QUAL_RESTRICT);
     }
-  else if (targetm.calls.promote_prototypes (type)
+  else if (targetm.calls.promote_prototypes (NULL_TREE)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
@@ -7390,7 +7390,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   /* Pass classes with copy ctors by invisible reference.  */
   else if (TREE_ADDRESSABLE (type))
     val = build1 (ADDR_EXPR, build_reference_type (type), val);
-  else if (targetm.calls.promote_prototypes (type)
+  else if (targetm.calls.promote_prototypes (NULL_TREE)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
