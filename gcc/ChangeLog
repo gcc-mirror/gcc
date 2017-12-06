@@ -1,3 +1,12 @@
+2017-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2017-11-29  Martin Aberg  <maberg@gaisler.com>
+
+	* config/sparc/sparc.md (divdf3_fix): Add NOP and adjust length
+	to prevent b2bst errata sequence.
+	(sqrtdf2_fix): Likewise.
+
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81945
@@ -556,14 +565,14 @@
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Treat the
-        movsi_pic_gotdata_op instruction as a load for the UT699 errata
-        workaround.
+	movsi_pic_gotdata_op instruction as a load for the UT699 errata
+	workaround.
 
 2017-11-29  Martin Aberg  <maberg@gaisler.com>
 
 	* config/sparc/sparc.md (divdf3_fix): Add NOP and adjust length
-        to prevent b2bst errata sequence.
-        (sqrtdf2_fix): Likewise.
+	to prevent b2bst errata sequence.
+	(sqrtdf2_fix): Likewise.
 
 2017-11-29  Daniel Cederman  <cederman@gaisler.com>
 
