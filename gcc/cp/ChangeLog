@@ -1,3 +1,8 @@
+2017-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80259
+	* decl2.c (grokfield): Diagnose = delete redefinition of a friend.
+
 2017-12-06  Jason Merrill  <jason@redhat.com>
 
 	* call.c (convert_for_arg_passing): Pass NULL_TREE to
