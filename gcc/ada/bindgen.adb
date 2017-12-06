@@ -450,6 +450,18 @@ package body Bindgen is
    begin
       WBI ("   procedure " & Ada_Final_Name.all & " is");
 
+      --  If task termination is not allowed, as is the case in restricted
+      --  runtimes, such as Ravenscar or ZFP, but may not be the case for all
+      --  configurable runtimes, we do not need program-level finalization.
+
+      if Cumulative_Restrictions.Set (No_Task_Termination) then
+         WBI ("   begin");
+         WBI ("      null;");
+         WBI ("   end " & Ada_Final_Name.all & ";");
+         WBI ("");
+         return;
+      end if;
+
       --  Call s_stalib_adafinal to await termination of tasks and so on. We
       --  want to do this if there is a main program, either in Ada or in some
       --  other language. (Note that Bind_Main_Program is True for Ada mains,

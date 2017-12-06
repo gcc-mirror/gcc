@@ -1,3 +1,9 @@
+2017-12-06  Simon Wright  <simon@pushface.org>
+
+	PR ada/66205
+	* bindgen.adb (Gen_AdaFinal): If the restriction No_Task_Termination is
+	set, generate a null body.
+
 2017-12-05  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Contains_Refined_State): Remove.
