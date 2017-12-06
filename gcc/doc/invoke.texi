@@ -5256,6 +5256,14 @@ void copy (const char *s)
 @}
 @end smallexample
 
+In situations where a character array is intended to store a sequence
+of bytes with no terminating @code{NUL} such an array may be annotated
+with attribute @code{nonstring} to avoid this warning.  Such arrays,
+however, are not suitable arguments to functions that expect
+@code{NUL}-terminated strings.  To help detect accidental misuses of
+such arrays GCC issues warnings unless it can prove that the use is
+safe.  @xref{Common Variable Attributes}.
+
 @item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}cold@r{|}malloc@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
