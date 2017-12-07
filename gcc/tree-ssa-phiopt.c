@@ -672,7 +672,6 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, new_var);
-  reset_flow_sensitive_info_in_bb (cond_bb);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -1138,22 +1137,22 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 					      cond_rhs, false, rhs2))))))
     {
       gsi = gsi_for_stmt (cond);
+      /* Moving ASSIGN might change VR of lhs, e.g. when moving u_6
+	 def-stmt in:
+	   if (n_5 != 0)
+	     goto <bb 3>;
+	   else
+	     goto <bb 4>;
+
+	   <bb 3>:
+	   # RANGE [0, 4294967294]
+	   u_6 = n_5 + 4294967295;
+
+	   <bb 4>:
+	   # u_3 = PHI <u_6(3), 4294967295(2)>  */
+      reset_flow_sensitive_info (lhs);
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
 	{
-	  /* Moving ASSIGN might change VR of lhs, e.g. when moving u_6
-	     def-stmt in:
-	     if (n_5 != 0)
-	       goto <bb 3>;
-	     else
-	       goto <bb 4>;
-
-	     <bb 3>:
-	     # RANGE [0, 4294967294]
-	     u_6 = n_5 + 4294967295;
-
-	     <bb 4>:
-	     # u_3 = PHI <u_6(3), 4294967295(2)>  */
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
 	  /* If available, we can use VR of phi result at least.  */
 	  tree phires = gimple_phi_result (phi);
 	  struct range_info_def *phires_range_info
@@ -1166,7 +1165,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       for (int i = prep_cnt - 1; i >= 0; --i)
 	{
 	  tree plhs = gimple_assign_lhs (prep_stmt[i]);
-	  SSA_NAME_RANGE_INFO (plhs) = NULL;
+	  reset_flow_sensitive_info (plhs);
 	  gsi_from = gsi_for_stmt (prep_stmt[i]);
 	  gsi_move_before (&gsi_from, &gsi);
 	}
@@ -1490,6 +1489,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       /* Move the statement from the middle block.  */
       gsi = gsi_last_bb (cond_bb);
       gsi_from = gsi_last_nondebug_bb (middle_bb);
+      reset_flow_sensitive_info (SINGLE_SSA_TREE_OPERAND (gsi_stmt (gsi_from),
+							  SSA_OP_DEF));
       gsi_move_before (&gsi_from, &gsi);
     }
 
@@ -1508,7 +1509,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
-  reset_flow_sensitive_info_in_bb (cond_bb);
 
   return true;
 }
@@ -1636,7 +1636,6 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
-  reset_flow_sensitive_info_in_bb (cond_bb);
 
   /* Note that we optimized this PHI.  */
   return true;

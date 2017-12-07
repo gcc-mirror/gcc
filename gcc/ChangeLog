@@ -1,3 +1,15 @@
+2017-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83296
+	PR tree-optimization/67769
+	* tree-ssa-phiopt.c (conditional_replacement): Do not reset
+	flow sensitive info in an unrelated BB.
+	(value_replacement): Use reset_flow_sensitive_info.
+	(minmax_replacement): Reset flow sensitive info on the def
+	we move.  Do not reset flow sensitive info in the whole BB
+	we move the stmt to.
+	(abs_replacement): Likewise.
+
 2017-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/43871
