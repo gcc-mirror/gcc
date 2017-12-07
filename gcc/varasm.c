@@ -3007,13 +3007,11 @@ const_hash_1 (const tree exp)
 
     case VECTOR_CST:
       {
-	unsigned i;
-
-	hi = 7 + VECTOR_CST_NELTS (exp);
-
-	for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
-	  hi = hi * 563 + const_hash_1 (VECTOR_CST_ELT (exp, i));
-
+	hi = 7 + VECTOR_CST_NPATTERNS (exp);
+	hi = hi * 563 + VECTOR_CST_NELTS_PER_PATTERN (exp);
+	unsigned int count = vector_cst_encoded_nelts (exp);
+	for (unsigned int i = 0; i < count; ++i)
+	  hi = hi * 563 + const_hash_1 (VECTOR_CST_ENCODED_ELT (exp, i));
 	return hi;
       }
 
@@ -3151,14 +3149,18 @@ compare_constant (const tree t1, const tree t2)
 
     case VECTOR_CST:
       {
-	unsigned i;
-
-        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
+	if (VECTOR_CST_NPATTERNS (t1)
+	    != VECTOR_CST_NPATTERNS (t2))
 	  return 0;
 
-	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
-	  if (!compare_constant (VECTOR_CST_ELT (t1, i),
-				 VECTOR_CST_ELT (t2, i)))
+	if (VECTOR_CST_NELTS_PER_PATTERN (t1)
+	    != VECTOR_CST_NELTS_PER_PATTERN (t2))
+	  return 0;
+
+	unsigned int count = vector_cst_encoded_nelts (t1);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!compare_constant (VECTOR_CST_ENCODED_ELT (t1, i),
+				 VECTOR_CST_ENCODED_ELT (t2, i)))
 	    return 0;
 
 	return 1;

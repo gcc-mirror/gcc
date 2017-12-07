@@ -2338,13 +2338,9 @@ integer_zerop (const_tree expr)
       return (integer_zerop (TREE_REALPART (expr))
 	      && integer_zerop (TREE_IMAGPART (expr)));
     case VECTOR_CST:
-      {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	  if (!integer_zerop (VECTOR_CST_ELT (expr, i)))
-	    return false;
-	return true;
-      }
+      return (VECTOR_CST_NPATTERNS (expr) == 1
+	      && VECTOR_CST_DUPLICATE_P (expr)
+	      && integer_zerop (VECTOR_CST_ENCODED_ELT (expr, 0)));
     default:
       return false;
     }
@@ -2364,13 +2360,9 @@ integer_onep (const_tree expr)
       return (integer_onep (TREE_REALPART (expr))
 	      && integer_zerop (TREE_IMAGPART (expr)));
     case VECTOR_CST:
-      {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	  if (!integer_onep (VECTOR_CST_ELT (expr, i)))
-	    return false;
-	return true;
-      }
+      return (VECTOR_CST_NPATTERNS (expr) == 1
+	      && VECTOR_CST_DUPLICATE_P (expr)
+	      && integer_onep (VECTOR_CST_ENCODED_ELT (expr, 0)));
     default:
       return false;
     }
@@ -2401,13 +2393,9 @@ integer_all_onesp (const_tree expr)
     return 1;
 
   else if (TREE_CODE (expr) == VECTOR_CST)
-    {
-      unsigned i;
-      for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	if (!integer_all_onesp (VECTOR_CST_ELT (expr, i)))
-	  return 0;
-      return 1;
-    }
+    return (VECTOR_CST_NPATTERNS (expr) == 1
+	    && VECTOR_CST_DUPLICATE_P (expr)
+	    && integer_all_onesp (VECTOR_CST_ENCODED_ELT (expr, 0)));
 
   else if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
@@ -2630,9 +2618,11 @@ real_zerop (const_tree expr)
 	     && real_zerop (TREE_IMAGPART (expr));
     case VECTOR_CST:
       {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	  if (!real_zerop (VECTOR_CST_ELT (expr, i)))
+	/* Don't simply check for a duplicate because the predicate
+	   accepts both +0.0 and -0.0.  */
+	unsigned count = vector_cst_encoded_nelts (expr);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!real_zerop (VECTOR_CST_ENCODED_ELT (expr, i)))
 	    return false;
 	return true;
       }
@@ -2657,13 +2647,9 @@ real_onep (const_tree expr)
       return real_onep (TREE_REALPART (expr))
 	     && real_zerop (TREE_IMAGPART (expr));
     case VECTOR_CST:
-      {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	  if (!real_onep (VECTOR_CST_ELT (expr, i)))
-	    return false;
-	return true;
-      }
+      return (VECTOR_CST_NPATTERNS (expr) == 1
+	      && VECTOR_CST_DUPLICATE_P (expr)
+	      && real_onep (VECTOR_CST_ENCODED_ELT (expr, 0)));
     default:
       return false;
     }
@@ -2684,13 +2670,9 @@ real_minus_onep (const_tree expr)
       return real_minus_onep (TREE_REALPART (expr))
 	     && real_zerop (TREE_IMAGPART (expr));
     case VECTOR_CST:
-      {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	  if (!real_minus_onep (VECTOR_CST_ELT (expr, i)))
-	    return false;
-	return true;
-      }
+      return (VECTOR_CST_NPATTERNS (expr) == 1
+	      && VECTOR_CST_DUPLICATE_P (expr)
+	      && real_minus_onep (VECTOR_CST_ENCODED_ELT (expr, 0)));
     default:
       return false;
     }
@@ -7102,9 +7084,11 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
       return;
     case VECTOR_CST:
       {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (t); ++i)
-	  inchash::add_expr (VECTOR_CST_ELT (t, i), hstate, flags);
+	hstate.add_int (VECTOR_CST_NPATTERNS (t));
+	hstate.add_int (VECTOR_CST_NELTS_PER_PATTERN (t));
+	unsigned int count = vector_cst_encoded_nelts (t);
+	for (unsigned int i = 0; i < count; ++i)
+	  inchash::add_expr (VECTOR_CST_ENCODED_ELT (t, i), hstate, flags);
 	return;
       }
     case SSA_NAME:
@@ -10431,13 +10415,9 @@ initializer_zerop (const_tree init)
 	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
 
     case VECTOR_CST:
-      {
-	unsigned i;
-	for (i = 0; i < VECTOR_CST_NELTS (init); ++i)
-	  if (!initializer_zerop (VECTOR_CST_ELT (init, i)))
-	    return false;
-	return true;
-      }
+      return (VECTOR_CST_NPATTERNS (init) == 1
+	      && VECTOR_CST_DUPLICATE_P (init)
+	      && initializer_zerop (VECTOR_CST_ENCODED_ELT (init, 0)));
 
     case CONSTRUCTOR:
       {
@@ -10486,12 +10466,9 @@ uniform_vector_p (const_tree vec)
 
   if (TREE_CODE (vec) == VECTOR_CST)
     {
-      first = VECTOR_CST_ELT (vec, 0);
-      for (i = 1; i < VECTOR_CST_NELTS (vec); ++i)
-	if (!operand_equal_p (first, VECTOR_CST_ELT (vec, i), 0))
-	  return NULL_TREE;
-
-      return first;
+      if (VECTOR_CST_NPATTERNS (vec) == 1 && VECTOR_CST_DUPLICATE_P (vec))
+	return VECTOR_CST_ENCODED_ELT (vec, 0);
+      return NULL_TREE;
     }
 
   else if (TREE_CODE (vec) == CONSTRUCTOR)
