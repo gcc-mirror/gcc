@@ -1,3 +1,9 @@
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* selftest.h (ASSERT_TRUE_AT, ASSERT_FALSE_AT, ASSERT_EQ_AT)
+	(ASSERT_NE, ASSERT_PRED1): Add underscores to local variable names
+	* selftest-rtl.h (ASSERT_RTX_EQ, ASSERT_RTX_PTR_EQ): Likewise.
+
 2017-12-07  Bin Cheng  <bin.cheng@arm.com>
 	    Richard Biener  <rguenther@suse.de>
 
