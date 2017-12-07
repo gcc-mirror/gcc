@@ -1574,6 +1574,7 @@ OBJS = \
 	tree-vect-loop-manip.o \
 	tree-vect-slp.o \
 	tree-vectorizer.o \
+	tree-vector-builder.o \
 	tree-vrp.o \
 	tree.o \
 	typed-splay-tree.o \
