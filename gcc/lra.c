@@ -1476,15 +1476,11 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
       add_regs_to_insn_regno_info (data, SET_SRC (x), insn, OP_IN, false, 0);
       break;
     case CLOBBER:
-      {
-	int code = INSN_CODE (insn);
-
-	/* We treat clobber of non-operand hard registers as early
-	   clobber (the behavior is expected from asm).  */
-	add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_OUT,
-				     code < 0, code < 0 ? ALL_ALTERNATIVES : 0);
-	break;
-      }
+      /* We treat clobber of non-operand hard registers as early
+	 clobber.  */
+      add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_OUT,
+				   true, ALL_ALTERNATIVES);
+      break;
     case PRE_INC: case PRE_DEC: case POST_INC: case POST_DEC:
       add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_INOUT, false, 0);
       break;

@@ -1,3 +1,12 @@
+2017-12-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/83252
+	PR rtl-optimization/80818
+	* lra.c (add_regs_to_insn_regno_info): Make a hard reg in CLOBBER
+	always early clobbered.
+	* lra-lives.c (process_bb_lives): Check input hard regs for early
+	clobbered non-operand hard reg.
+
 2017-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83164
