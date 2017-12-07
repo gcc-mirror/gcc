@@ -1,3 +1,11 @@
+2017-12-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm.c (INCLUDE_STRING): Define.
+	(arm_last_printed_arch_string, arm_last_printed_fpu_string): New.
+	(arm_declare_function_name): Conservatively emit .arch, .arch_extensions
+	and .fpu.
+
 2017-12-07  Michael Matz  <matz@suse.de>
 
 	Add unroll and jam pass
