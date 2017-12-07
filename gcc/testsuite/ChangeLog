@@ -1,3 +1,12 @@
+2017-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83075
+	* gcc.dg/tree-ssa/strncpy-2.c: Use size_t instead of unsigned, add
+	separate function with noipa attribute to also verify behavior when
+	optimizers don't know the sizes and aliasing, verify resulting sizes
+	and array content.  Add -Wstringop-overflow to dg-options.
+	* gcc.dg/tree-ssa/strncat.c: Likewise.
+
 2017-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_fstack_protector):
