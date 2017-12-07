@@ -1064,7 +1064,11 @@ proc check_effective_target_static {} {
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
     return [check_runtime fstack_protector {
-	int main (void) { return 0; }
+	#include <string.h>
+	int main (int argc, char *argv[]) {
+	  char buf[64];
+	  return !strcpy (buf, strrchr (argv[0], '/'));
+	}
     } "-fstack-protector"]
 }
 

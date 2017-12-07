@@ -1,3 +1,8 @@
+2017-12-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_fstack_protector):
+	Copy filename in local buffer to trigger stack protection.
+
 2017-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-align-7.c, gcc.dg/c11-align-8.c,
