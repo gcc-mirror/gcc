@@ -1,5 +1,11 @@
 2017-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR target/43871
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
+	rs6000_cpu to the given -mcpu=, or to the default processor.
+
+2017-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.h (rs6000_cpu_attr): Delete.
 	* config/rs6000/rs6000.c (rs6000_variable_issue_1): Use rs6000_tune
 	instead of rs6000_cpu_attr.
