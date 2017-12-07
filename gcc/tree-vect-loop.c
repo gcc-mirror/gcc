@@ -3978,11 +3978,9 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
   tree vectype = get_vectype_for_scalar_type (scalar_type);
-  int nunits;
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree def_for_init;
   tree init_def;
-  int i;
   bool nested_in_vect_loop = false;
   REAL_VALUE_TYPE real_init_val = dconst0;
   int int_init_val = 0;
@@ -3990,7 +3988,6 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   gimple_seq stmts = NULL;
 
   gcc_assert (vectype);
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   gcc_assert (POINTER_TYPE_P (scalar_type) || INTEGRAL_TYPE_P (scalar_type)
 	      || SCALAR_FLOAT_TYPE_P (scalar_type));
@@ -4063,11 +4060,10 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 	else
 	  {
 	    /* Option2: the first element is INIT_VAL.  */
-	    auto_vec<tree, 32> elts (nunits);
+	    tree_vector_builder elts (vectype, 1, 2);
 	    elts.quick_push (init_val);
-	    for (i = 1; i < nunits; ++i)
-	      elts.quick_push (def_for_init);
-	    init_def = gimple_build_vector (&stmts, vectype, elts);
+	    elts.quick_push (def_for_init);
+	    init_def = gimple_build_vector (&stmts, &elts);
 	  }
       }
       break;
@@ -4192,7 +4188,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   number_of_copies = nunits * number_of_vectors / group_size;
 
   number_of_places_left_in_vector = nunits;
-  auto_vec<tree, 32> elts (nunits);
+  tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   for (j = 0; j < number_of_copies; j++)
     {
@@ -4215,12 +4211,14 @@ get_initial_defs_for_reduction (slp_tree slp_node,
           if (number_of_places_left_in_vector == 0)
             {
 	      gimple_seq ctor_seq = NULL;
-	      tree init = gimple_build_vector (&ctor_seq, vector_type, elts);
+	      tree init = gimple_build_vector (&ctor_seq, &elts);
 	      if (ctor_seq != NULL)
 		gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
 	      voprnds.quick_push (init);
 
               number_of_places_left_in_vector = nunits;
+	      elts.new_vector (vector_type, nunits, 1);
+	      elts.quick_grow (nunits);
             }
         }
     }
@@ -6708,7 +6706,7 @@ vectorizable_induction (gimple *phi,
       unsigned ivn;
       for (ivn = 0; ivn < nivs; ++ivn)
 	{
-	  auto_vec<tree, 32> elts (nunits);
+	  tree_vector_builder elts (vectype, nunits, 1);
 	  stmts = NULL;
 	  for (unsigned eltn = 0; eltn < nunits; ++eltn)
 	    {
@@ -6718,7 +6716,7 @@ vectorizable_induction (gimple *phi,
 				    elt, step_expr);
 	      elts.quick_push (elt);
 	    }
-	  vec_init = gimple_build_vector (&stmts, vectype, elts);
+	  vec_init = gimple_build_vector (&stmts, &elts);
 	  if (stmts)
 	    {
 	      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -6825,7 +6823,7 @@ vectorizable_induction (gimple *phi,
       stmts = NULL;
       new_name = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
 
-      auto_vec<tree, 32> elts (nunits);
+      tree_vector_builder elts (vectype, nunits, 1);
       elts.quick_push (new_name);
       for (i = 1; i < nunits; i++)
 	{
@@ -6836,7 +6834,7 @@ vectorizable_induction (gimple *phi,
 	}
       /* Create a vector from [new_name_0, new_name_1, ...,
 	 new_name_nunits-1]  */
-      vec_init = gimple_build_vector (&stmts, vectype, elts);
+      vec_init = gimple_build_vector (&stmts, &elts);
       if (stmts)
 	{
 	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);

@@ -96,6 +96,16 @@ tree_vector_builder::new_binary_operation (tree type, tree t1, tree t2,
   return true;
 }
 
+/* Return a vector element with the value BASE + FACTOR * STEP.  */
+
+tree
+tree_vector_builder::apply_step (tree base, unsigned int factor,
+				 const wide_int &step) const
+{
+  return wide_int_to_tree (TREE_TYPE (base),
+			   wi::to_wide (base) + factor * step);
+}
+
 /* Return a VECTOR_CST for the current constant.  */
 
 tree

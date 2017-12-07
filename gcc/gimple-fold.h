@@ -135,11 +135,13 @@ gimple_build_vector_from_val (gimple_seq *seq, tree type, tree op)
   return gimple_build_vector_from_val (seq, UNKNOWN_LOCATION, type, op);
 }
 
-extern tree gimple_build_vector (gimple_seq *, location_t, tree, vec<tree>);
+class tree_vector_builder;
+extern tree gimple_build_vector (gimple_seq *, location_t,
+				 tree_vector_builder *);
 inline tree
-gimple_build_vector (gimple_seq *seq, tree type, vec<tree> elts)
+gimple_build_vector (gimple_seq *seq, tree_vector_builder *builder)
 {
-  return gimple_build_vector (seq, UNKNOWN_LOCATION, type, elts);
+  return gimple_build_vector (seq, UNKNOWN_LOCATION, builder);
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);
