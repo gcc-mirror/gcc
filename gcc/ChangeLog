@@ -1,3 +1,24 @@
+2017-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.opt (rs6000_tune): New variable.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Also set
+	rs6000_tune.  Use rs6000_tune instead of rs6000_cpu where appropriate.
+	(rs6000_loop_align): Use rs6000_tune instead of rs6000_cpu where
+	appropriate.
+	(rs6000_reassociation_width): Ditto.
+	(rs6000_emit_epilogue): Ditto.
+	(rs6000_adjust_cost): Ditto.
+	(is_microcoded_insn): Ditto.
+	(is_cracked_insn): Ditto.
+	(rs6000_adjust_priority): Ditto.
+	(rs6000_sched_reorder): Ditto.
+	(rs6000_sched_reorder2): Ditto.
+	(insn_must_be_first_in_group): Ditto.
+	(insn_must_be_last_in_group): Ditto.
+	(rs6000_register_move_cost): Ditto.
+	* config/rs6000/rs6000.h (rs6000_cpu_attr): Use rs6000_tune instead of
+	rs6000_cpu.
+
 2017-12-07  Julia Koval  <julia.koval@intel.com>
 
 	* config.gcc: Add vaesintrin.h.
