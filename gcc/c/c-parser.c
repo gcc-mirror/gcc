@@ -504,6 +504,7 @@ c_keyword_starts_typename (enum rid keyword)
     case RID_ACCUM:
     case RID_SAT:
     case RID_AUTO_TYPE:
+    case RID_ALIGNAS:
       return true;
     default:
       if (keyword >= RID_FIRST_INT_N
@@ -2594,7 +2595,8 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	 has simply forgotten a semicolon, so we exit.  */
       if ((!typespec_ok || specs->typespec_kind == ctsk_tagdef)
 	  && c_parser_next_tokens_start_typename (parser, la)
-	  && !c_parser_next_token_is_qualifier (parser))
+	  && !c_parser_next_token_is_qualifier (parser)
+	  && !c_parser_next_token_is_keyword (parser, RID_ALIGNAS))
 	break;
 
       if (c_parser_next_token_is (parser, CPP_NAME))
@@ -3225,6 +3227,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
    specifier-qualifier-list:
      type-specifier specifier-qualifier-list[opt]
      type-qualifier specifier-qualifier-list[opt]
+     alignment-specifier specifier-qualifier-list[opt]
      attributes specifier-qualifier-list[opt]
 
    struct-declarator-list:
@@ -4410,20 +4413,22 @@ c_parser_attributes (c_parser *parser)
   return attrs;
 }
 
-/* Parse a type name (C90 6.5.5, C99 6.7.6, C11 6.7.7).
+/* Parse a type name (C90 6.5.5, C99 6.7.6, C11 6.7.7).  ALIGNAS_OK
+   says whether alignment specifiers are OK (only in cases that might
+   be the type name of a compound literal).
 
    type-name:
      specifier-qualifier-list abstract-declarator[opt]
 */
 
 struct c_type_name *
-c_parser_type_name (c_parser *parser)
+c_parser_type_name (c_parser *parser, bool alignas_ok)
 {
   struct c_declspecs *specs = build_null_declspecs ();
   struct c_declarator *declarator;
   struct c_type_name *ret;
   bool dummy = false;
-  c_parser_declspecs (parser, specs, false, true, true, false, false,
+  c_parser_declspecs (parser, specs, false, true, true, alignas_ok, false,
 		      cla_prefer_type);
   if (!specs->declspecs_seen_p)
     {
@@ -7019,7 +7024,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       struct c_expr expr;
       matching_parens parens;
       parens.consume_open (parser);
-      type_name = c_parser_type_name (parser);
+      type_name = c_parser_type_name (parser, true);
       parens.skip_until_found_close (parser);
       if (type_name == NULL)
 	{
@@ -7035,6 +7040,9 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	return c_parser_postfix_expression_after_paren_type (parser, type_name,
 							     cast_loc);
+      if (type_name->specs->alignas_p)
+	error_at (type_name->specs->locations[cdw_alignas],
+		  "alignment specified for type name in cast");
       {
 	location_t expr_loc = c_parser_peek_token (parser)->location;
 	expr = c_parser_cast_expression (parser, NULL);
@@ -7238,7 +7246,7 @@ c_parser_sizeof_expression (c_parser *parser)
       matching_parens parens;
       parens.consume_open (parser);
       expr_loc = c_parser_peek_token (parser)->location;
-      type_name = c_parser_type_name (parser);
+      type_name = c_parser_type_name (parser, true);
       parens.skip_until_found_close (parser);
       finish = parser->tokens_buf[0].location;
       if (type_name == NULL)
@@ -7260,6 +7268,9 @@ c_parser_sizeof_expression (c_parser *parser)
 	  goto sizeof_expr;
 	}
       /* sizeof ( type-name ).  */
+      if (type_name->specs->alignas_p)
+	error_at (type_name->specs->locations[cdw_alignas],
+		  "alignment specified for type name in %<sizeof%>");
       c_inhibit_evaluation_warnings--;
       in_sizeof--;
       result = c_expr_sizeof_type (expr_loc, type_name);
@@ -7321,7 +7332,7 @@ c_parser_alignof_expression (c_parser *parser)
       matching_parens parens;
       parens.consume_open (parser);
       loc = c_parser_peek_token (parser)->location;
-      type_name = c_parser_type_name (parser);
+      type_name = c_parser_type_name (parser, true);
       end_loc = c_parser_peek_token (parser)->location;
       parens.skip_until_found_close (parser);
       if (type_name == NULL)
@@ -7342,6 +7353,10 @@ c_parser_alignof_expression (c_parser *parser)
 	  goto alignof_expr;
 	}
       /* alignof ( type-name ).  */
+      if (type_name->specs->alignas_p)
+	error_at (type_name->specs->locations[cdw_alignas],
+		  "alignment specified for type name in %qE",
+		  alignof_spelling);
       c_inhibit_evaluation_warnings--;
       in_alignof--;
       ret.value = c_sizeof_or_alignof_type (loc, groktypename (type_name,
@@ -8969,7 +8984,21 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 	       ? CONSTRUCTOR_NON_CONST (init.value)
 	       : init.original_code == C_MAYBE_CONST_EXPR);
   non_const |= !type_expr_const;
-  expr.value = build_compound_literal (start_loc, type, init.value, non_const);
+  unsigned int alignas_align = 0;
+  if (type != error_mark_node
+      && type_name->specs->align_log != -1)
+    {
+      alignas_align = 1U << type_name->specs->align_log;
+      if (alignas_align < min_align_of_type (type))
+	{
+	  error_at (type_name->specs->locations[cdw_alignas],
+		    "%<_Alignas%> specifiers cannot reduce "
+		    "alignment of compound literal");
+	  alignas_align = 0;
+	}
+    }
+  expr.value = build_compound_literal (start_loc, type, init.value, non_const,
+				       alignas_align);
   set_c_expr_source_range (&expr, init.src_range);
   expr.original_code = ERROR_MARK;
   expr.original_type = NULL;

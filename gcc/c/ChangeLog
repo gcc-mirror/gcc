@@ -1,3 +1,25 @@
+2017-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (build_compound_literal): Add parameter alignas_align
+	and set alignment of decl if nonzero.
+	* c-parser.c (c_keyword_starts_typename): Allow RID_ALIGNAS.
+	(c_parser_declspecs): Allow RID_ALIGNAS to follow a type, like a
+	qualifier.
+	(c_parser_struct_declaration): Update syntax comment.
+	(c_parser_type_name): Add alignas_ok argument and pass it to
+	c_parser_declspecs.
+	(c_parser_cast_expression): Pass true to c_parser_type_name and
+	give error if a cast used an _Alignas specifier.
+	(c_parser_sizeof_expression): Pass true to c_parser_type_name and
+	give error if sizeof (type-name) used an _Alignas specifier.
+	(c_parser_alignof_expression): Pass true to c_parser_type_name and
+	give error if _Alignof (type-name) used an _Alignas specifier.
+	(c_parser_postfix_expression_after_paren_type): Check specified
+	alignment for a compound literal and pass it to
+	build_compound_literal.
+	* c-parser.h (c_parser_type_name): Update prototype.
+	* c-tree.h (build_compound_literal): Update prototype.
+
 2017-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81544
