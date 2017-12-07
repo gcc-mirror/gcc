@@ -566,10 +566,10 @@ fold_negate_expr_1 (location_t loc, tree t)
 
     case VECTOR_CST:
       {
-	int count = VECTOR_CST_NELTS (t), i;
-
-	auto_vec<tree, 32> elts (count);
-	for (i = 0; i < count; i++)
+	tree_vector_builder elts;
+	elts.new_unary_operation (type, t, true);
+	unsigned int count = elts.encoded_nelts ();
+	for (unsigned int i = 0; i < count; ++i)
 	  {
 	    tree elt = fold_negate_expr (loc, VECTOR_CST_ELT (t, i));
 	    if (elt == NULL_TREE)
@@ -577,7 +577,7 @@ fold_negate_expr_1 (location_t loc, tree t)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     case COMPLEX_EXPR:
@@ -1121,6 +1121,27 @@ int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2)
   return int_const_binop_1 (code, arg1, arg2, 1);
 }
 
+/* Return true if binary operation OP distributes over addition in operand
+   OPNO, with the other operand being held constant.  OPNO counts from 1.  */
+
+static bool
+distributes_over_addition_p (tree_code op, int opno)
+{
+  switch (op)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      return true;
+
+    case LSHIFT_EXPR:
+      return opno == 1;
+
+    default:
+      return false;
+    }
+}
+
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
    constant.  We assume ARG1 and ARG2 have the same data type, or at least
    are the same kind of constant and the same machine mode.  Return zero if
@@ -1442,10 +1463,12 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       && TREE_CODE (arg2) == INTEGER_CST)
     {
       tree type = TREE_TYPE (arg1);
-      int count = VECTOR_CST_NELTS (arg1), i;
-
-      auto_vec<tree, 32> elts (count);
-      for (i = 0; i < count; i++)
+      bool step_ok_p = distributes_over_addition_p (code, 1);
+      tree_vector_builder elts;
+      if (!elts.new_unary_operation (type, arg1, step_ok_p))
+	return NULL_TREE;
+      unsigned int count = elts.encoded_nelts ();
+      for (unsigned int i = 0; i < count; ++i)
 	{
 	  tree elem1 = VECTOR_CST_ELT (arg1, i);
 
@@ -1458,7 +1481,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  elts.quick_push (elt);
 	}
 
-      return build_vector (type, elts);
+      return elts.build ();
     }
   return NULL_TREE;
 }
@@ -1649,10 +1672,12 @@ const_unop (enum tree_code code, tree type, tree arg0)
       else if (TREE_CODE (arg0) == VECTOR_CST)
 	{
 	  tree elem;
-	  unsigned count = VECTOR_CST_NELTS (arg0), i;
 
-	  auto_vec<tree, 32> elements (count);
-	  for (i = 0; i < count; i++)
+	  /* This can cope with stepped encodings because ~x == -1 - x.  */
+	  tree_vector_builder elements;
+	  elements.new_unary_operation (type, arg0, true);
+	  unsigned int i, count = elements.encoded_nelts ();
+	  for (i = 0; i < count; ++i)
 	    {
 	      elem = VECTOR_CST_ELT (arg0, i);
 	      elem = const_unop (BIT_NOT_EXPR, TREE_TYPE (type), elem);
@@ -1661,7 +1686,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	      elements.quick_push (elem);
 	    }
 	  if (i == count)
-	    return build_vector (type, elements);
+	    return elements.build ();
 	}
       break;
 
@@ -2135,10 +2160,19 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       if (TREE_CODE (arg1) == VECTOR_CST
 	  && TYPE_VECTOR_SUBPARTS (type) == VECTOR_CST_NELTS (arg1))
 	{
-	  int len = VECTOR_CST_NELTS (arg1);
 	  tree elttype = TREE_TYPE (type);
-	  auto_vec<tree, 32> v (len);
-	  for (int i = 0; i < len; ++i)
+	  tree arg1_elttype = TREE_TYPE (TREE_TYPE (arg1));
+	  /* We can't handle steps directly when extending, since the
+	     values need to wrap at the original precision first.  */
+	  bool step_ok_p
+	    = (INTEGRAL_TYPE_P (elttype)
+	       && INTEGRAL_TYPE_P (arg1_elttype)
+	       && TYPE_PRECISION (elttype) <= TYPE_PRECISION (arg1_elttype));
+	  tree_vector_builder v;
+	  if (!v.new_unary_operation (type, arg1, step_ok_p))
+	    return NULL_TREE;
+	  unsigned int len = v.encoded_nelts ();
+	  for (unsigned int i = 0; i < len; ++i)
 	    {
 	      tree elt = VECTOR_CST_ELT (arg1, i);
 	      tree cvt = fold_convert_const (code, elttype, elt);
@@ -2146,7 +2180,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 		return NULL_TREE;
 	      v.quick_push (cvt);
 	    }
-	  return build_vector (type, v);
+	  return v.build ();
 	}
     }
   return NULL_TREE;
@@ -8832,7 +8866,6 @@ exact_inverse (tree type, tree cst)
   REAL_VALUE_TYPE r;
   tree unit_type;
   machine_mode mode;
-  unsigned vec_nelts, i;
 
   switch (TREE_CODE (cst))
     {
@@ -8846,12 +8879,14 @@ exact_inverse (tree type, tree cst)
 
     case VECTOR_CST:
       {
-	vec_nelts = VECTOR_CST_NELTS (cst);
 	unit_type = TREE_TYPE (type);
 	mode = TYPE_MODE (unit_type);
 
-	auto_vec<tree, 32> elts (vec_nelts);
-	for (i = 0; i < vec_nelts; i++)
+	tree_vector_builder elts;
+	if (!elts.new_unary_operation (type, cst, false))
+	  return NULL_TREE;
+	unsigned int count = elts.encoded_nelts ();
+	for (unsigned int i = 0; i < count; ++i)
 	  {
 	    r = TREE_REAL_CST (VECTOR_CST_ELT (cst, i));
 	    if (!exact_real_inverse (mode, &r))
@@ -8859,7 +8894,7 @@ exact_inverse (tree type, tree cst)
 	    elts.quick_push (build_real (unit_type, r));
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     default:

@@ -1,5 +1,20 @@
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* fold-const.c (fold_negate_expr_1): Use tree_vector_builder and
+	new_unary_operation, operating only on the encoded elements.
+	(const_unop): Likewise.
+	(exact_inverse): Likewise.
+	(distributes_over_addition_p): New function.
+	(const_binop): Use tree_vector_builder and new_unary_operation
+	for combinations of VECTOR_CST and INTEGER_CST.  Operate only
+	on the encoded elements unless the encoding is strided and the
+	operation does not distribute over addition.
+	(fold_convert_const):  Use tree_vector_builder and
+	new_unary_operation.  Operate only on the encoded elements
+	for truncating integer conversions, or for non-stepped encodings.
+
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/sparc/sparc.c: Include tree-vector-builder.h.
 	(sparc_fold_builtin): Use tree_vector_builder instead of build_vector.
 	* expmed.c: Include tree-vector-builder.h.
