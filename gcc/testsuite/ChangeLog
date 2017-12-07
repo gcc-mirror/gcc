@@ -1,3 +1,8 @@
+2017-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83164
+	* gcc.c-torture/compile/pr83164.c: New test.
+
 2017-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81544

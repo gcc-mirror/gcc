@@ -4007,7 +4007,9 @@ verify_gimple_assign_binary (gassign *stmt)
       {
 	if (!POINTER_TYPE_P (rhs1_type)
 	    || !POINTER_TYPE_P (rhs2_type)
-	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    /* Because we special-case pointers to void we allow difference
+	       of arbitrary pointers with the same mode.  */
+	    || TYPE_MODE (rhs1_type) != TYPE_MODE (rhs2_type)
 	    || TREE_CODE (lhs_type) != INTEGER_TYPE
 	    || TYPE_UNSIGNED (lhs_type)
 	    || TYPE_PRECISION (lhs_type) != TYPE_PRECISION (rhs1_type))
