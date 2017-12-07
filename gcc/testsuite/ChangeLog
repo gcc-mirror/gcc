@@ -1,3 +1,11 @@
+2017-12-07  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512-check.h: Handle bit_VAES.
+	* gcc.target/i386/avx512f-aesdec-2.c: New test.
+	* gcc.target/i386/avx512fvl-vaes-1.c: Ditto.
+	* gcc.target/i386/avx512vl-aesdec-2.c: Ditto.
+	* gcc.target/i386/i386.exp (check_effective_target_avx512vaes): New.
+
 2017-12-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69224

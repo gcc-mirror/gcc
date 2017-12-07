@@ -166,6 +166,12 @@
   UNSPEC_VPSHRD
   UNSPEC_VPSHRDV
   UNSPEC_VPSHLDV
+
+  ;; For AVX512VNNI support
+  UNSPEC_VPMADDUBSWACCD
+  UNSPEC_VPMADDUBSWACCSSD
+  UNSPEC_VPMADDWDACCD
+  UNSPEC_VPMADDWDACCSSD
 ])
 
 (define_c_enum "unspecv" [
@@ -20228,3 +20234,218 @@
   "vpshldv<ssemodesuffix>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
    [(set_attr ("prefix") ("evex"))
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vpdpbusd_<mode>"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+] UNSPEC_VPMADDUBSWACCD))]
+  "TARGET_AVX512VNNI"
+  "vpdpbusd\t{%3, %2, %0|%0, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_insn "vpdpbusd_<mode>_mask"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDUBSWACCD)
+           (match_dup 1)
+           (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpbusd\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_expand "vpdpbusd_<mode>_maskz"
+  [(match_operand:VI4_AVX512VL 0 "register_operand")
+   (match_operand:VI4_AVX512VL 1 "register_operand")
+   (match_operand:VI4_AVX512VL 2 "register_operand")
+   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512VNNI"
+{
+  emit_insn (gen_vpdpbusd_<mode>_maskz_1 (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "vpdpbusd_<mode>_maskz_1"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDUBSWACCD)
+	  (match_operand:VI4_AVX512VL 4 "const0_operand" "C")
+          (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpbusd\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+
+(define_insn "vpdpbusds_<mode>"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+] UNSPEC_VPMADDUBSWACCSSD))]
+  "TARGET_AVX512VNNI"
+  "vpdpbusds\t{%3, %2, %0|%0, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_insn "vpdpbusds_<mode>_mask"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDUBSWACCSSD)
+           (match_dup 1)
+           (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpbusds\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_expand "vpdpbusds_<mode>_maskz"
+  [(match_operand:VI4_AVX512VL 0 "register_operand")
+   (match_operand:VI4_AVX512VL 1 "register_operand")
+   (match_operand:VI4_AVX512VL 2 "register_operand")
+   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512VNNI"
+{
+  emit_insn (gen_vpdpbusds_<mode>_maskz_1 (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "vpdpbusds_<mode>_maskz_1"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDUBSWACCSSD)
+	  (match_operand:VI4_AVX512VL 4 "const0_operand" "C")
+          (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpbusds\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+
+(define_insn "vpdpwssd_<mode>"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+] UNSPEC_VPMADDWDACCD))]
+  "TARGET_AVX512VNNI"
+  "vpdpwssd\t{%3, %2, %0|%0, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_insn "vpdpwssd_<mode>_mask"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDWDACCD)
+           (match_dup 1)
+           (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpwssd\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_expand "vpdpwssd_<mode>_maskz"
+  [(match_operand:VI4_AVX512VL 0 "register_operand")
+   (match_operand:VI4_AVX512VL 1 "register_operand")
+   (match_operand:VI4_AVX512VL 2 "register_operand")
+   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512VNNI"
+{
+  emit_insn (gen_vpdpwssd_<mode>_maskz_1 (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "vpdpwssd_<mode>_maskz_1"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDWDACCD)
+	  (match_operand:VI4_AVX512VL 4 "const0_operand" "C")
+          (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpwssd\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+
+(define_insn "vpdpwssds_<mode>"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+] UNSPEC_VPMADDWDACCSSD))]
+  "TARGET_AVX512VNNI"
+  "vpdpwssds\t{%3, %2, %0|%0, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_insn "vpdpwssds_<mode>_mask"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDWDACCSSD)
+           (match_dup 1)
+           (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpwssds\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
+
+(define_expand "vpdpwssds_<mode>_maskz"
+  [(match_operand:VI4_AVX512VL 0 "register_operand")
+   (match_operand:VI4_AVX512VL 1 "register_operand")
+   (match_operand:VI4_AVX512VL 2 "register_operand")
+   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512VNNI"
+{
+  emit_insn (gen_vpdpwssds_<mode>_maskz_1 (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]));
+  DONE;
+})
+
+(define_insn "vpdpwssds_<mode>_maskz_1"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI4_AVX512VL (unspec:VI4_AVX512VL
+	  [(match_operand:VI4_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI4_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI4_AVX512VL 3 "nonimmediate_operand" "vm")
+	] UNSPEC_VPMADDWDACCSSD)
+	  (match_operand:VI4_AVX512VL 4 "const0_operand" "C")
+          (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk"))
+)]
+  "TARGET_AVX512VNNI"
+  "vpdpwssds\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
+   [(set_attr ("prefix") ("evex"))])
