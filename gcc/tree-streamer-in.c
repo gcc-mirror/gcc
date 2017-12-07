@@ -592,8 +592,10 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
     }
   else if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     {
-      HOST_WIDE_INT len = streamer_read_hwi (ib);
-      result = make_vector (len);
+      bitpack_d bp = streamer_read_bitpack (ib);
+      unsigned int log2_npatterns = bp_unpack_value (&bp, 8);
+      unsigned int nelts_per_pattern = bp_unpack_value (&bp, 8);
+      result = make_vector (log2_npatterns, nelts_per_pattern);
     }
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     {
@@ -650,9 +652,9 @@ static void
 lto_input_ts_vector_tree_pointers (struct lto_input_block *ib,
 				   struct data_in *data_in, tree expr)
 {
-  unsigned i;
-  for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-    VECTOR_CST_ELT (expr, i) = stream_read_tree (ib, data_in);
+  unsigned int count = vector_cst_encoded_nelts (expr);
+  for (unsigned int i = 0; i < count; ++i)
+    VECTOR_CST_ENCODED_ELT (expr, i) = stream_read_tree (ib, data_in);
 }
 
 

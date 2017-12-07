@@ -1084,10 +1084,77 @@ These nodes are used to represent complex number constants, that is a
 imaginary parts respectively.
 
 @item VECTOR_CST
-These nodes are used to represent vector constants, whose parts are
-constant nodes.  Each individual constant node is either an integer or a
-double constant node.  The first operand is a @code{TREE_LIST} of the
-constant nodes and is accessed through @code{TREE_VECTOR_CST_ELTS}.
+These nodes are used to represent vector constants.  Each vector
+constant @var{v} is treated as a specific instance of an arbitrary-length
+sequence that itself contains @samp{VECTOR_CST_NPATTERNS (@var{v})}
+interleaved patterns.  Each pattern has the form:
+
+@smallexample
+@{ @var{base0}, @var{base1}, @var{base1} + @var{step}, @var{base1} + @var{step} * 2, @dots{} @}
+@end smallexample
+
+The first three elements in each pattern are enough to determine the
+values of the other elements.  However, if all @var{step}s are zero,
+only the first two elements are needed.  If in addition each @var{base1}
+is equal to the corresponding @var{base0}, only the first element in
+each pattern is needed.  The number of encoded elements per pattern
+is given by @samp{VECTOR_CST_NELTS_PER_PATTERN (@var{v})}.
+
+For example, the constant:
+
+@smallexample
+@{ 0, 1, 2, 6, 3, 8, 4, 10, 5, 12, 6, 14, 7, 16, 8, 18 @}
+@end smallexample
+
+is interpreted as an interleaving of the sequences:
+
+@smallexample
+@{ 0, 2, 3, 4, 5, 6, 7, 8 @}
+@{ 1, 6, 8, 10, 12, 14, 16, 18 @}
+@end smallexample
+
+where the sequences are represented by the following patterns:
+
+@smallexample
+@var{base0} == 0, @var{base1} == 2, @var{step} == 1
+@var{base0} == 1, @var{base1} == 6, @var{step} == 2
+@end smallexample
+
+In this case:
+
+@smallexample
+VECTOR_CST_NPATTERNS (@var{v}) == 2
+VECTOR_CST_NELTS_PER_PATTERN (@var{v}) == 3
+@end smallexample
+
+The vector is therefore encoded using the first 6 elements
+(@samp{@{ 0, 1, 2, 6, 3, 8 @}}), with the remaining 10 elements
+being implicit extensions of them.
+
+Sometimes this scheme can create two possible encodings of the same
+vector.  For example @{ 0, 1 @} could be seen as two patterns with
+one element each or one pattern with two elements (@var{base0} and
+@var{base1}).  The canonical encoding is always the one with the
+fewest patterns or (if both encodings have the same number of
+petterns) the one with the fewest encoded elements.
+
+@samp{vector_cst_encoding_nelts (@var{v})} gives the total number of
+encoded elements in @var{v}, which is 6 in the example above.
+@code{VECTOR_CST_ENCODED_ELTS (@var{v})} gives a pointer to the elements
+encoded in @var{v} and @code{VECTOR_CST_ENCODED_ELT (@var{v}, @var{i})}
+accesses the value of encoded element @var{i}.
+
+@samp{VECTOR_CST_DUPLICATE_P (@var{v})} is true if @var{v} simply contains
+repeated instances of @samp{VECTOR_CST_NPATTERNS (@var{v})} values.  This is
+a shorthand for testing @samp{VECTOR_CST_NELTS_PER_PATTERN (@var{v}) == 1}.
+
+@samp{VECTOR_CST_STEPPED_P (@var{v})} is true if at least one
+pattern in @var{v} has a nonzero step.  This is a shorthand for
+testing @samp{VECTOR_CST_NELTS_PER_PATTERN (@var{v}) == 3}.
+
+The utility function @code{vector_cst_elt} gives the value of an
+arbitrary index as a @code{tree}.  @code{vector_cst_int_elt} gives
+the same value as a @code{wide_int}.
 
 @item STRING_CST
 These nodes represent string-constants.  The @code{TREE_STRING_LENGTH}

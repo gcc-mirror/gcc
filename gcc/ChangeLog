@@ -1,3 +1,47 @@
+2017-12-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/generic.texi (VECTOR_CST): Describe new representation of
+	vector constants.
+	* vector-builder.h: New file.
+	* tree-vector-builder.h: Likewise.
+	* tree-vector-builder.c: Likewise.
+	* Makefile.in (OBJS): Add tree-vector-builder.o.
+	* tree.def (VECTOR_CST): Update comment to refer to generic.texi.
+	* tree-core.h (tree_base): Add a vector_cst field to the u union.
+	(tree_vector): Change the number of elements to
+	vector_cst_encoded_nelts.
+	* tree.h (VECTOR_CST_NELTS): Redefine using TYPE_VECTOR_SUBPARTS.
+	(VECTOR_CST_ELTS): Delete.
+	(VECTOR_CST_ELT): Redefine using vector_cst_elt.
+	(VECTOR_CST_LOG2_NPATTERNS, VECTOR_CST_NPATTERNS): New macros.
+	(VECTOR_CST_NELTS_PER_PATTERN, VECTOR_CST_DUPLICATE_P): Likewise.
+	(VECTOR_CST_STEPPED_P, VECTOR_CST_ENCODED_ELTS): Likewise.
+	(VECTOR_CST_ENCODED_ELT): Likewise.
+	(vector_cst_encoded_nelts): New function.
+	(make_vector): Take the values of VECTOR_CST_LOG2_NPATTERNS and
+	VECTOR_CST_NELTS_PER_PATTERN as arguments.
+	(vector_cst_int_elt, vector_cst_elt): Declare.
+	* tree.c: Include tree-vector-builder.h.
+	(tree_code_size): Abort if passed VECTOR_CST.
+	(tree_size): Update for new VECTOR_CST layout.
+	(make_vector): Take the values of VECTOR_CST_LOG2_NPATTERNS and
+	VECTOR_CST_NELTS_PER_PATTERN as arguments.
+	(build_vector): Use tree_vector_builder.
+	(vector_cst_int_elt, vector_cst_elt): New functions.
+	(drop_tree_overflow): For VECTOR_CST, drop the TREE_OVERFLOW from the
+	encoded elements and then create the vector in the canonical form.
+	(check_vector_cst, check_vector_cst_duplicate, check_vector_cst_fill)
+	(check_vector_cst_stepped, test_vector_cst_patterns): New functions.
+	(tree_c_tests): Call test_vector_cst_patterns.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Handle the new
+	VECTOR_CST fields.
+	(hash_tree): Likewise.
+	* tree-streamer-out.c (write_ts_vector_tree_pointers): Likewise.
+	(streamer_write_tree_header): Likewise.
+	* tree-streamer-in.c (lto_input_ts_vector_tree_pointers): Likewise.
+	(streamer_alloc_tree): Likewise.  Update call to make_vector.
+	* fold-const.c (fold_ternary_loc): Avoid using VECTOR_CST_ELTS.
+
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* selftest.h (ASSERT_TRUE_AT, ASSERT_FALSE_AT, ASSERT_EQ_AT)

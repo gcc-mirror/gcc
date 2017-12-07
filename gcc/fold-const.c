@@ -11610,9 +11610,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  unsigned int nelts = VECTOR_CST_NELTS (arg0);
 		  auto_vec<tree, 32> elts (nelts);
 		  elts.quick_grow (nelts);
-		  memcpy (&elts[0], VECTOR_CST_ELTS (arg0),
-			  sizeof (tree) * nelts);
-		  elts[k] = arg1;
+		  for (unsigned int i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
+		    elts[i] = (i == k ? arg1 : VECTOR_CST_ELT (arg0, i));
 		  return build_vector (type, elts);
 		}
 	    }

@@ -972,8 +972,17 @@ struct GTY(()) tree_base {
     /* VEC length.  This field is only used with TREE_VEC.  */
     int length;
 
-    /* Number of elements.  This field is only used with VECTOR_CST.  */
-    unsigned int nelts;
+    /* This field is only used with VECTOR_CST.  */
+    struct {
+      /* The value of VECTOR_CST_LOG2_NPATTERNS.  */
+      unsigned int log2_npatterns : 8;
+
+      /* The value of VECTOR_CST_NELTS_PER_PATTERN.  */
+      unsigned int nelts_per_pattern : 8;
+
+      /* For future expansion.  */
+      unsigned int unused : 16;
+    } vector_cst;
 
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
@@ -1325,7 +1334,7 @@ struct GTY(()) tree_complex {
 
 struct GTY(()) tree_vector {
   struct tree_typed typed;
-  tree GTY ((length ("VECTOR_CST_NELTS ((tree) &%h)"))) elts[1];
+  tree GTY ((length ("vector_cst_encoded_nelts ((tree) &%h)"))) elts[1];
 };
 
 struct GTY(()) tree_identifier {
