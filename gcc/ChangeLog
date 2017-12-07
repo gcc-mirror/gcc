@@ -1,3 +1,25 @@
+2017-12-07  Michael Matz  <matz@suse.de>
+
+	Add unroll and jam pass
+
+	* gimple-loop-jam.c: New file.
+	* Makefile.in (OBJS): Add gimple-loop-jam.o.
+	* common.opt (funroll-and-jam): New option.
+	* opts.c (default_options_table): Add unroll-and-jam at -O3.
+	* params.def (PARAM_UNROLL_JAM_MIN_PERCENT): New param.
+	(PARAM_UNROLL_JAM_MAX_UNROLL): Ditto.
+	* passes.def: Add pass_loop_jam.
+	* timevar.def (TV_LOOP_JAM): Add.
+	* tree-pass.h (make_pass_loop_jam): Declare.
+	* cfgloop.c (flow_loop_tree_node_add): Add AT argument.
+	* cfgloop.h (flow_loop_tree_node_add): Adjust declaration.
+	* cfgloopmanip.c (duplicate_loop): Add AT argument, adjust call
+	to flow_loop_tree_node_add.
+	(duplicate_subloops, copy_loops_to): Append to sibling list.
+	* cfgloopmanip.h: (duplicate_loop): Adjust declaration.
+	* doc/invoke.texi (-funroll-and-jam): Document new option.
+	(unroll-jam-min-percent, unroll-jam-max-unroll): Document new params.
+
 2017-12-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83296

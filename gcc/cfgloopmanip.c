@@ -1000,9 +1000,11 @@ copy_loop_info (struct loop *loop, struct loop *target)
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
-   created loop into loops structure.  */
+   created loop into loops structure.  If AFTER is non-null
+   the new loop is added at AFTER->next, otherwise in front of TARGETs
+   sibling list.  */
 struct loop *
-duplicate_loop (struct loop *loop, struct loop *target)
+duplicate_loop (struct loop *loop, struct loop *target, struct loop *after)
 {
   struct loop *cloop;
   cloop = alloc_loop ();
@@ -1014,36 +1016,46 @@ duplicate_loop (struct loop *loop, struct loop *target)
   set_loop_copy (loop, cloop);
 
   /* Add it to target.  */
-  flow_loop_tree_node_add (target, cloop);
+  flow_loop_tree_node_add (target, cloop, after);
 
   return cloop;
 }
 
 /* Copies structure of subloops of LOOP into TARGET loop, placing
-   newly created loops into loop tree.  */
+   newly created loops into loop tree at the end of TARGETs sibling
+   list in the original order.  */
 void
 duplicate_subloops (struct loop *loop, struct loop *target)
 {
-  struct loop *aloop, *cloop;
+  struct loop *aloop, *cloop, *tail;
 
+  for (tail = target->inner; tail && tail->next; tail = tail->next)
+    ;
   for (aloop = loop->inner; aloop; aloop = aloop->next)
     {
-      cloop = duplicate_loop (aloop, target);
+      cloop = duplicate_loop (aloop, target, tail);
+      tail = cloop;
+      gcc_assert(!tail->next);
       duplicate_subloops (aloop, cloop);
     }
 }
 
 /* Copies structure of subloops of N loops, stored in array COPIED_LOOPS,
-   into TARGET loop, placing newly created loops into loop tree.  */
+   into TARGET loop, placing newly created loops into loop tree adding
+   them to TARGETs sibling list at the end in order.  */
 static void
 copy_loops_to (struct loop **copied_loops, int n, struct loop *target)
 {
-  struct loop *aloop;
+  struct loop *aloop, *tail;
   int i;
 
+  for (tail = target->inner; tail && tail->next; tail = tail->next)
+    ;
   for (i = 0; i < n; i++)
     {
-      aloop = duplicate_loop (copied_loops[i], target);
+      aloop = duplicate_loop (copied_loops[i], target, tail);
+      tail = aloop;
+      gcc_assert(!tail->next);
       duplicate_subloops (copied_loops[i], aloop);
     }
 }
@@ -1072,14 +1084,15 @@ can_duplicate_loop_p (const struct loop *loop)
 }
 
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
-   loop structure and dominators.  E's destination must be LOOP header for
-   this to work, i.e. it must be entry or latch edge of this loop; these are
-   unique, as the loops must have preheaders for this function to work
-   correctly (in case E is latch, the function unrolls the loop, if E is entry
-   edge, it peels the loop).  Store edges created by copying ORIG edge from
-   copies corresponding to set bits in WONT_EXIT bitmap (bit 0 corresponds to
-   original LOOP body, the other copies are numbered in order given by control
-   flow through them) into TO_REMOVE array.  Returns false if duplication is
+   loop structure and dominators (order of inner subloops is retained).
+   E's destination must be LOOP header for this to work, i.e. it must be entry
+   or latch edge of this loop; these are unique, as the loops must have
+   preheaders for this function to work correctly (in case E is latch, the
+   function unrolls the loop, if E is entry edge, it peels the loop).  Store
+   edges created by copying ORIG edge from copies corresponding to set bits in
+   WONT_EXIT bitmap (bit 0 corresponds to original LOOP body, the other copies
+   are numbered in order given by control flow through them) into TO_REMOVE
+   array.  Returns false if duplication is
    impossible.  */
 
 bool

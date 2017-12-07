@@ -1293,6 +1293,16 @@ DEFPARAM (PARAM_VECT_EPILOGUES_NOMASK,
 	  "Enable loop epilogue vectorization using smaller vector size.",
 	  0, 0, 1)
 
+DEFPARAM(PARAM_UNROLL_JAM_MIN_PERCENT,
+	 "unroll-jam-min-percent",
+	 "Minimum percentage of memrefs that must go away for unroll-and-jam to be considered profitable.",
+	 1, 0, 100)
+
+DEFPARAM(PARAM_UNROLL_JAM_MAX_UNROLL,
+	 "unroll-jam-max-unroll",
+	 "Maximum unroll factor for the unroll-and-jam transformation.",
+	 4, 0, 0)
+
 /*
 
 Local variables:

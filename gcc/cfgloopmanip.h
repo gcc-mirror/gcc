@@ -47,7 +47,8 @@ extern struct loop *loopify (edge, edge,
 			     profile_probability, profile_probability);
 extern void unloop (struct loop *, bool *, bitmap);
 extern void copy_loop_info (struct loop *loop, struct loop *target);
-extern struct loop * duplicate_loop (struct loop *, struct loop *);
+extern struct loop * duplicate_loop (struct loop *, struct loop *,
+				     struct loop * = NULL);
 extern void duplicate_subloops (struct loop *, struct loop *);
 extern bool can_duplicate_loop_p (const struct loop *loop);
 extern bool duplicate_loop_to_header_edge (struct loop *, edge,

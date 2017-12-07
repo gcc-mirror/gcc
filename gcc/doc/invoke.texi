@@ -437,7 +437,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-reassoc  -ftree-sink  -ftree-slsr  -ftree-sra @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
 -ftree-ter  -ftree-vectorize  -ftree-vrp  -funconstrained-commons @gol
--funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
+-funit-at-a-time  -funroll-all-loops  -funroll-loops -funroll-and-jam @gol
 -funsafe-math-optimizations  -funswitch-loops @gol
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
 -fweb  -fwhole-program  -fwpa  -fuse-linker-plugin @gol
@@ -9771,6 +9771,12 @@ for one side of the iteration space and false for the other.
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
 
+@item -funroll-and-jam
+@opindex funroll-and-jam
+Apply unroll and jam transoformations on feasible loops.  In a loop
+nest this unrolls the outer loop by some factor and fuses the resulting
+multiple inner loops.
+
 @item -ffunction-sections
 @itemx -fdata-sections
 @opindex ffunction-sections
@@ -10838,6 +10844,14 @@ we may be able to devirtualize speculatively.
 @item max-vrp-switch-assertions
 The maximum number of assertions to add along the default edge of a switch
 statement during VRP.  The default is 10.
+
+@item unroll-jam-min-percent
+The minimum percentage of memory references that must be optimized
+away for the unroll-and-jam transformation to be considered profitable.
+
+@item unroll-jam-max-unroll
+The maximum number of times the outer loop should be unrolled by
+the unroll-and-jam transformation.
 @end table
 @end table
 
