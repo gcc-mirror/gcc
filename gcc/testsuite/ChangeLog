@@ -1,3 +1,9 @@
+2017-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83296
+	PR tree-optimization/67769
+	* g++.dg/warn/Wstringop-overflow-1.C: New testcase.
+
 2017-12-07  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512-check.h: Handle bit_VAES.
