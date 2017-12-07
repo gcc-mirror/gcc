@@ -1,3 +1,10 @@
+2017-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-align-7.c, gcc.dg/c11-align-8.c,
+	gcc.dg/c11-align-9.c, gcc.dg/gnu11-align-1.c: New tests.
+	* gcc.dg/c11-align-5.c (test): Update expected error for sizeof
+	case.
+
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/asm-2.c: New test.
