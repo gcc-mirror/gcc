@@ -2493,9 +2493,14 @@ are automatically detected and this attribute is ignored.
 @cindex @code{const} function attribute
 @cindex functions that have no side effects
 Many functions do not examine any values except their arguments, and
-have no effects except the return value.  Basically this is just slightly
-more strict class than the @code{pure} attribute below, since function is not
-allowed to read global memory.
+have no effects except to return a value.  Calls to such functions lend
+themselves to optimization such as common subexpression elimination.
+The @code{const} attribute imposes greater restrictions on a function's
+definition than the similar @code{pure} attribute below because it prohibits
+the function from reading global variables.  Consequently, the presence of
+the attribute on a function declarations allows GCC to emit more efficient
+code for some calls to the function.  Decorating the same function with
+both the @code{const} and the @code{pure} attribute is diagnnosed.
 
 @cindex pointer arguments
 Note that a function that has pointer arguments and examines the data
@@ -3190,7 +3195,7 @@ to prevent recursion.
 @cindex functions that have no side effects
 Many functions have no effects except the return value and their
 return value depends only on the parameters and/or global variables.
-Such a function can be subject
+Calls to such functions can be subject
 to common subexpression elimination and loop optimization just as an
 arithmetic operator would be.  These functions should be declared
 with the attribute @code{pure}.  For example,
@@ -3207,6 +3212,11 @@ Some common examples of pure functions are @code{strlen} or @code{memcmp}.
 Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
+
+The @code{pure} attribute imposes similar but looser restrictions on
+a function's defintion than the @code{const} attribute: it allows the
+function to read global variables.  Decorating the same function with
+both the @code{pure} and the @code{const} attribute is diagnosed.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute

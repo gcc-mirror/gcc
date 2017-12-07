@@ -1178,10 +1178,12 @@ s390_handle_vectorbool_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 }
 
 static const struct attribute_spec s390_attribute_table[] = {
-  { "hotpatch", 2, 2, true, false, false, s390_handle_hotpatch_attribute, false },
-  { "s390_vector_bool", 0, 0, false, true, false, s390_handle_vectorbool_attribute, true },
+  { "hotpatch", 2, 2, true, false, false,
+    s390_handle_hotpatch_attribute, false, NULL },
+  { "s390_vector_bool", 0, 0, false, true, false,
+    s390_handle_vectorbool_attribute, true, NULL },
   /* End element.  */
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Return the alignment for LABEL.  We default to the -falign-labels

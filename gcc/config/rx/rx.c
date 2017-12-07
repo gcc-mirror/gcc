@@ -2732,16 +2732,16 @@ rx_handle_vector_attribute (tree * node,
 const struct attribute_spec rx_attribute_table[] =
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
+     affects_type_identity, exclusions.  */
   { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute,
-    false },
+    false, NULL },
   { "interrupt",      0, -1, true, false, false, rx_handle_func_attribute,
-    false },
+    false, NULL },
   { "naked",          0, 0, true, false, false, rx_handle_func_attribute,
-    false },
+    false, NULL },
   { "vector",         1, -1, true, false, false, rx_handle_vector_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+    false, NULL },
+  { NULL,             0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */

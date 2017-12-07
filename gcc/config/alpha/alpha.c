@@ -7506,9 +7506,10 @@ common_object_handler (tree *node, tree name ATTRIBUTE_UNUSED,
 static const struct attribute_spec vms_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { COMMON_OBJECT,   0, 1, true,  false, false, common_object_handler, false },
-  { NULL,            0, 0, false, false, false, NULL, false }
+       affects_type_identity, exclusions } */
+  { COMMON_OBJECT,   0, 1, true,  false, false, common_object_handler, false,
+    NULL },
+  { NULL,            0, 0, false, false, false, NULL, false, NULL }
 };
 
 void

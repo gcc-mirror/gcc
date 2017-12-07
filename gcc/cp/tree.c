@@ -4330,24 +4330,24 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
 const struct attribute_spec cxx_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "init_priority",  1, 1, true,  false, false,
-    handle_init_priority_attribute, false },
+    handle_init_priority_attribute, false, NULL },
   { "abi_tag", 1, -1, false, false, false,
-    handle_abi_tag_attribute, true },
-  { NULL,	      0, 0, false, false, false, NULL, false }
+    handle_abi_tag_attribute, true, NULL },
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Table of C++ standard attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "maybe_unused", 0, 0, false, false, false,
-    handle_unused_attribute, false },
+    handle_unused_attribute, false, NULL },
   { "nodiscard", 0, 0, false, false, false,
-    handle_nodiscard_attribute, false },
-  { NULL,	      0, 0, false, false, false, NULL, false }
+    handle_nodiscard_attribute, false, NULL },
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Handle an "init_priority" attribute; arguments as in

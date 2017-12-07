@@ -7215,12 +7215,12 @@ spu_constant_alignment (const_tree, HOST_WIDE_INT align)
 static const struct attribute_spec spu_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute,
-    false },
+    false, NULL },
   { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+    false, NULL },
+  { NULL,             0, 0, false, false, false, NULL, false, NULL }
 };
 
 /*  TARGET overrides.  */

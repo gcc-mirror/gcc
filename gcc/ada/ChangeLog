@@ -1,3 +1,9 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Initialize
+	new member of struct attribute_spec.
+
 2017-12-06  Simon Wright  <simon@pushface.org>
 
 	PR ada/66205

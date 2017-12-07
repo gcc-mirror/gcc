@@ -360,17 +360,17 @@ static bool ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d);
 static const struct attribute_spec ia64_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "syscall_linkage", 0, 0, false, true,  true,  NULL, false },
+       affects_type_identity, exclusions } */
+  { "syscall_linkage", 0, 0, false, true,  true,  NULL, false, NULL },
   { "model",	       1, 1, true, false, false, ia64_handle_model_attribute,
-    false },
+    false, NULL },
 #if TARGET_ABI_OPEN_VMS
   { "common_object",   1, 1, true, false, false,
-    ia64_vms_common_object_attribute, false },
+    ia64_vms_common_object_attribute, false, NULL },
 #endif
   { "version_id",      1, 1, true, false, false,
-    ia64_handle_version_id_attribute, false },
-  { NULL,	       0, 0, false, false, false, NULL, false }
+    ia64_handle_version_id_attribute, false, NULL },
+  { NULL,	       0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Initialize the GCC target structure.  */

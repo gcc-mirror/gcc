@@ -1,3 +1,16 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* c-c++-common/Wattributes-2.c: New test.
+	* c-c++-common/Wattributes.c: New test.
+	* c-c++-common/attributes-3.c: Adjust.
+	* gcc.dg/Wattributes-6.c: New test.
+	* gcc.dg/Wattributes-7.c: New test.
+	* gcc.dg/attr-noinline.c
+	* gcc.dg/pr44964.c: Same.
+	* gcc.dg/torture/pr42363.c: Same.
+	* gcc.dg/tree-ssa/ssa-ccp-2.c: Same.
+
 2017-12-07  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641

@@ -450,16 +450,16 @@ const struct attribute_spec brig_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        do_diagnostic } */
   { "leaf",		      0, 0, true,  false, false,
-			      handle_leaf_attribute, false },
+			      handle_leaf_attribute, false, NULL },
   { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false },
+			      handle_const_attribute, false, NULL },
   { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false },
+			      handle_pure_attribute, false, NULL },
   { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false },
+			      handle_nothrow_attribute, false, NULL },
   { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+			      handle_returns_twice_attribute, false, NULL },
+  { NULL,                     0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Attribute handlers.  */

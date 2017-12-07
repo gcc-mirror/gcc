@@ -1482,7 +1482,31 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 		       attributes, flags);
     }
   else
-    decl_attributes (decl, attributes, flags);
+    {
+      tree last_decl = (DECL_P (*decl) && DECL_NAME (*decl)
+			? lookup_name (DECL_NAME (*decl)) : NULL_TREE);
+
+      if (last_decl && TREE_CODE (last_decl) == OVERLOAD)
+	for (ovl_iterator iter (last_decl, true); ; ++iter)
+	  {
+	    if (!iter)
+	      {
+		last_decl = NULL_TREE;
+		break;
+	      }
+
+	    if (TREE_CODE (*iter) == OVERLOAD)
+	      continue;
+
+	    if (decls_match (*decl, *iter, /*record_decls=*/false))
+	      {
+		last_decl = *iter;
+		break;
+	      }
+	  }
+
+      decl_attributes (decl, attributes, flags, last_decl);
+    }
 
   if (TREE_CODE (*decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));

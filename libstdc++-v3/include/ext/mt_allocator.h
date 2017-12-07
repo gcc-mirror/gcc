@@ -355,7 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // XXX GLIBCXX_ABI Deprecated
-      _GLIBCXX_CONST void 
+      void
       _M_destroy_thread_key(void*) throw ();
 
       size_t 

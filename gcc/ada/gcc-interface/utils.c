@@ -110,45 +110,47 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        affects_type_identity } */
   { "const",        0, 0,  true,  false, false, handle_const_attribute,
-    false },
+    false, NULL },
   { "nothrow",      0, 0,  true,  false, false, handle_nothrow_attribute,
-    false },
+    false, NULL },
   { "pure",         0, 0,  true,  false, false, handle_pure_attribute,
-    false },
+    false, NULL },
   { "no vops",      0, 0,  true,  false, false, handle_novops_attribute,
-    false },
+    false, NULL },
   { "nonnull",      0, -1, false, true,  true,  handle_nonnull_attribute,
-    false },
+    false, NULL },
   { "sentinel",     0, 1,  false, true,  true,  handle_sentinel_attribute,
-    false },
+    false, NULL },
   { "noreturn",     0, 0,  true,  false, false, handle_noreturn_attribute,
-    false },
+    false, NULL },
   { "noinline",     0, 0,  true,  false, false, handle_noinline_attribute,
-    false },
+    false, NULL },
   { "noclone",      0, 0,  true,  false, false, handle_noclone_attribute,
-    false },
+    false, NULL },
   { "leaf",         0, 0,  true,  false, false, handle_leaf_attribute,
-    false },
+    false, NULL },
   { "always_inline",0, 0,  true,  false, false, handle_always_inline_attribute,
-    false },
+    false, NULL },
   { "malloc",       0, 0,  true,  false, false, handle_malloc_attribute,
-    false },
+    false, NULL },
   { "type generic", 0, 0,  false, true, true, handle_type_generic_attribute,
-    false },
+    false, NULL },
 
   { "vector_size",  1, 1,  false, true, false,  handle_vector_size_attribute,
-    false },
+    false, NULL },
   { "vector_type",  0, 0,  false, true, false,  handle_vector_type_attribute,
-    false },
-  { "may_alias",    0, 0, false, true, false, NULL, false },
+    false, NULL },
+  { "may_alias",    0, 0, false, true, false, NULL, false, NULL },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
      of the common builtins.def contents.  */
-  { "format",     3, 3,  false, true,  true,  fake_attribute_handler, false },
-  { "format_arg", 1, 1,  false, true,  true,  fake_attribute_handler, false },
+  { "format",     3, 3,  false, true,  true,  fake_attribute_handler, false,
+    NULL },
+  { "format_arg", 1, 1,  false, true,  true,  fake_attribute_handler, false,
+    NULL },
 
-  { NULL,         0, 0, false, false, false, NULL, false }
+  { NULL,         0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in

@@ -1,3 +1,50 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* attribs.c (empty_attribute_table): Initialize new member of
+	struct attribute_spec.
+	(decl_attributes): Add argument.  Handle mutually exclusive
+	combinations of attributes.
+	(selftests::test_attribute_exclusions): New function.
+	(selftests::attribute_c_tests): Ditto.
+	* attribs.h (decl_attributes): Add default argument.
+	* selftest.h (attribute_c_tests): Declare.
+	* selftest-run-tests.c (selftest::run_tests): Call attribute_c_tests.
+	* tree-core.h (attribute_spec::exclusions, exclude): New type and
+	member.
+	* doc/extend.texi (Common Function Attributes): Update const and pure.
+	* config/alpha/alpha.c (vms_attribute_table): Initialize new member
+	of struct attribute_spec.
+	* config/arc/arc.c (arc_attribute_table): Same.
+	* config/arm/arm.c (arm_attribute_table): Same.
+	* config/avr/avr.c ( avr_attribute_table): Same.
+	* config/bfin/bfin.c (bfin_attribute_table): Same.
+	* config/cr16/cr16.c (cr16_attribute_table): Same.
+	* config/epiphany/epiphany.c (epiphany_attribute_table): Same.
+	* config/h8300/h8300.c (h8300_attribute_table): Same.
+	* config/i386/i386.c (ix86_attribute_table): Same.
+	* config/ia64/ia64.c (ia64_attribute_table): Same.
+	* config/m32c/m32c.c (m32c_attribute_table): Same.
+	* config/m32r/m32r.c (m32r_attribute_table): Same.
+	* config/m68k/m68k.c (m68k_attribute_table): Same.
+	* config/mcore/mcore.c (mcore_attribute_table): Same.
+	* config/microblaze/microblaze.c (microblaze_attribute_table): Same.
+	* config/mips/mips.c (mips_attribute_table): Same.
+	* config/msp430/msp430.c (msp430_attribute_table): Same.
+	* config/nds32/nds32.c (nds32_attribute_table): Same.
+	* config/nvptx/nvptx.c (nvptx_attribute_table): Same.
+	* config/powerpcspe/powerpcspe.c (rs6000_attribute_table): Same.
+	* config/rl78/rl78.c (rl78__attribute_table): Same.
+	* config/rs6000/rs6000.c (rs6000_attribute_table): Same.
+	* onfig/rx/rx.c (rx_attribute_table): Same.
+	* config/s390/s390.c (s390_handle_vectorbool_attribute): Same.
+	* config/sh/sh.c (sh_attribute_table): Same.
+	* config/sparc/sparc.c (sparc_attribute_table): Same.
+	* config/spu/spu.c (spu_attribute_table): Same.
+	* config/stormy16/stormy16.c (xstormy16_attribute_table): Same.
+	* config/v850/v850.c (v850_attribute_table): Same.
+	* config/visium/visium.c (visium_attribute_table): Same.
+
 2017-12-07  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641

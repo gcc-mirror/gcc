@@ -4632,7 +4632,16 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	attributes = tree_cons (get_identifier ("omp declare target"),
 				NULL_TREE, attributes);
     }
-  return decl_attributes (node, attributes, flags);
+
+  /* Look up the current declaration with all the attributes merged
+     so far so that attributes on the current declaration that's
+     about to be pushed that conflict with the former can be detected,
+     diagnosed, and rejected as appropriate.  */
+  tree last_decl = lookup_name (DECL_NAME (*node));
+  if (!last_decl)
+    last_decl = lookup_name_in_scope (DECL_NAME (*node), external_scope);
+
+  return decl_attributes (node, attributes, flags, last_decl);
 }
 
 

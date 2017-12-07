@@ -1,3 +1,20 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	PR c/81566
+	* c-attribs.c (attr_aligned_exclusions): New array.
+	(attr_alloc_exclusions, attr_cold_hot_exclusions): Same.
+	(attr_common_exclusions, attr_const_pure_exclusions): Same.
+	(attr_gnu_inline_exclusions, attr_inline_exclusions): Same.
+	(attr_noreturn_exclusions, attr_returns_twice_exclusions): Same.
+	(attr_warn_unused_result_exclusions): Same.
+	(handle_hot_attribute, handle_cold_attribute): Simplify.
+	(handle_const_attribute): Warn on function returning void.
+	(handle_pure_attribute): Same.
+	(handle_aligned_attribute): Diagnose conflicting attribute
+	specifications.
+	* c-warn.c (diagnose_mismatched_attributes): Simplify.
+
 2017-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/83236

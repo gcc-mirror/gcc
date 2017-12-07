@@ -92,12 +92,12 @@ static const struct attribute_spec gfc_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        affects_type_identity } */
   { "omp declare target", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
+    gfc_handle_omp_declare_target_attribute, false, NULL },
   { "omp declare target link", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
+    gfc_handle_omp_declare_target_attribute, false, NULL },
   { "oacc function", 0, -1, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false },
-  { NULL,		  0, 0, false, false, false, NULL, false }
+    gfc_handle_omp_declare_target_attribute, false, NULL },
+  { NULL,		  0, 0, false, false, false, NULL, false, NULL }
 };
 
 #undef LANG_HOOKS_NAME

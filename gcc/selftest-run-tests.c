@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "langhooks.h"
 #include "options.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This function needed to be split out from selftest.c as it references
    tests from the whole source tree, and so is within
@@ -85,6 +87,7 @@ selftest::run_tests ()
   spellcheck_c_tests ();
   spellcheck_tree_c_tests ();
   tree_cfg_c_tests ();
+  attribute_c_tests ();
 
   /* This one relies on most of the above.  */
   function_tests_c_tests ();

@@ -6116,7 +6116,7 @@ extern void note_break_stmt			(void);
 extern bool note_iteration_stmt_body_start	(void);
 extern void note_iteration_stmt_body_end	(bool);
 extern tree make_lambda_name			(void);
-extern int decls_match				(tree, tree);
+extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
