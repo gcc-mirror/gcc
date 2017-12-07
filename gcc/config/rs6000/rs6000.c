@@ -30546,7 +30546,7 @@ rs6000_variable_issue_1 (rtx_insn *insn, int more)
       return cached_can_issue_more;
     }
 
-  if (rs6000_cpu_attr == CPU_CELL && is_nonpipeline_insn (insn))
+  if (rs6000_tune == PROCESSOR_CELL && is_nonpipeline_insn (insn))
     return 0;
 
   cached_can_issue_more = more - 1;
@@ -30582,7 +30582,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	   some cycles later.  */
 
 	/* Separate a load from a narrower, dependent store.  */
-	if ((rs6000_sched_groups || rs6000_cpu_attr == CPU_POWER9)
+	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && GET_CODE (XEXP (PATTERN (insn), 1)) == MEM
@@ -30605,22 +30605,22 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
           case TYPE_BRANCH:
             /* Leave some extra cycles between a compare and its
                dependent branch, to inhibit expensive mispredicts.  */
-            if ((rs6000_cpu_attr == CPU_PPC603
-                 || rs6000_cpu_attr == CPU_PPC604
-                 || rs6000_cpu_attr == CPU_PPC604E
-                 || rs6000_cpu_attr == CPU_PPC620
-                 || rs6000_cpu_attr == CPU_PPC630
-                 || rs6000_cpu_attr == CPU_PPC750
-                 || rs6000_cpu_attr == CPU_PPC7400
-                 || rs6000_cpu_attr == CPU_PPC7450
-                 || rs6000_cpu_attr == CPU_PPCE5500
-                 || rs6000_cpu_attr == CPU_PPCE6500
-                 || rs6000_cpu_attr == CPU_POWER4
-                 || rs6000_cpu_attr == CPU_POWER5
-		 || rs6000_cpu_attr == CPU_POWER7
-		 || rs6000_cpu_attr == CPU_POWER8
-		 || rs6000_cpu_attr == CPU_POWER9
-                 || rs6000_cpu_attr == CPU_CELL)
+            if ((rs6000_tune == PROCESSOR_PPC603
+                 || rs6000_tune == PROCESSOR_PPC604
+                 || rs6000_tune == PROCESSOR_PPC604e
+                 || rs6000_tune == PROCESSOR_PPC620
+                 || rs6000_tune == PROCESSOR_PPC630
+                 || rs6000_tune == PROCESSOR_PPC750
+                 || rs6000_tune == PROCESSOR_PPC7400
+                 || rs6000_tune == PROCESSOR_PPC7450
+                 || rs6000_tune == PROCESSOR_PPCE5500
+                 || rs6000_tune == PROCESSOR_PPCE6500
+                 || rs6000_tune == PROCESSOR_POWER4
+                 || rs6000_tune == PROCESSOR_POWER5
+		 || rs6000_tune == PROCESSOR_POWER7
+		 || rs6000_tune == PROCESSOR_POWER8
+		 || rs6000_tune == PROCESSOR_POWER9
+                 || rs6000_tune == PROCESSOR_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
 
@@ -30878,7 +30878,7 @@ is_microcoded_insn (rtx_insn *insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  if (rs6000_cpu_attr == CPU_CELL)
+  if (rs6000_tune == PROCESSOR_CELL)
     return get_attr_cell_micro (insn) == CELL_MICRO_ALWAYS;
 
   if (rs6000_sched_groups
@@ -31078,8 +31078,8 @@ rs6000_adjust_priority (rtx_insn *insn ATTRIBUTE_UNUSED, int priority)
   if (GET_CODE (PATTERN (insn)) == USE)
     return priority;
 
-  switch (rs6000_cpu_attr) {
-  case CPU_PPC750:
+  switch (rs6000_tune) {
+  case PROCESSOR_PPC750:
     switch (get_attr_type (insn))
       {
       default:
@@ -31165,40 +31165,40 @@ rs6000_issue_rate (void)
   if (!reload_completed && !flag_sched_pressure)
     return 1;
 
-  switch (rs6000_cpu_attr) {
-  case CPU_RS64A:
-  case CPU_PPC601: /* ? */
-  case CPU_PPC7450:
+  switch (rs6000_tune) {
+  case PROCESSOR_RS64A:
+  case PROCESSOR_PPC601: /* ? */
+  case PROCESSOR_PPC7450:
     return 3;
-  case CPU_PPC440:
-  case CPU_PPC603:
-  case CPU_PPC750:
-  case CPU_PPC7400:
-  case CPU_PPC8540:
-  case CPU_PPC8548:
-  case CPU_CELL:
-  case CPU_PPCE300C2:
-  case CPU_PPCE300C3:
-  case CPU_PPCE500MC:
-  case CPU_PPCE500MC64:
-  case CPU_PPCE5500:
-  case CPU_PPCE6500:
-  case CPU_TITAN:
+  case PROCESSOR_PPC440:
+  case PROCESSOR_PPC603:
+  case PROCESSOR_PPC750:
+  case PROCESSOR_PPC7400:
+  case PROCESSOR_PPC8540:
+  case PROCESSOR_PPC8548:
+  case PROCESSOR_CELL:
+  case PROCESSOR_PPCE300C2:
+  case PROCESSOR_PPCE300C3:
+  case PROCESSOR_PPCE500MC:
+  case PROCESSOR_PPCE500MC64:
+  case PROCESSOR_PPCE5500:
+  case PROCESSOR_PPCE6500:
+  case PROCESSOR_TITAN:
     return 2;
-  case CPU_PPC476:
-  case CPU_PPC604:
-  case CPU_PPC604E:
-  case CPU_PPC620:
-  case CPU_PPC630:
+  case PROCESSOR_PPC476:
+  case PROCESSOR_PPC604:
+  case PROCESSOR_PPC604e:
+  case PROCESSOR_PPC620:
+  case PROCESSOR_PPC630:
     return 4;
-  case CPU_POWER4:
-  case CPU_POWER5:
-  case CPU_POWER6:
-  case CPU_POWER7:
+  case PROCESSOR_POWER4:
+  case PROCESSOR_POWER5:
+  case PROCESSOR_POWER6:
+  case PROCESSOR_POWER7:
     return 5;
-  case CPU_POWER8:
+  case PROCESSOR_POWER8:
     return 7;
-  case CPU_POWER9:
+  case PROCESSOR_POWER9:
     return 6;
   default:
     return 1;
@@ -31211,13 +31211,13 @@ rs6000_issue_rate (void)
 static int
 rs6000_use_sched_lookahead (void)
 {
-  switch (rs6000_cpu_attr)
+  switch (rs6000_tune)
     {
-    case CPU_PPC8540:
-    case CPU_PPC8548:
+    case PROCESSOR_PPC8540:
+    case PROCESSOR_PPC8548:
       return 4;
 
-    case CPU_CELL:
+    case PROCESSOR_CELL:
       return (reload_completed ? 8 : 0);
 
     default:
@@ -31233,7 +31233,7 @@ rs6000_use_sched_lookahead_guard (rtx_insn *insn, int ready_index)
   if (ready_index == 0)
     return 0;
 
-  if (rs6000_cpu_attr != CPU_CELL)
+  if (rs6000_tune != PROCESSOR_CELL)
     return 0;
 
   gcc_assert (insn != NULL_RTX && INSN_P (insn));
@@ -31624,7 +31624,7 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
 
   /* Reorder the ready list, if the second to last ready insn
      is a nonepipeline insn.  */
-  if (rs6000_cpu_attr == CPU_CELL && n_ready > 1)
+  if (rs6000_tune == PROCESSOR_CELL && n_ready > 1)
   {
     if (is_nonpipeline_insn (ready[n_ready - 1])
         && (recog_memoized (ready[n_ready - 2]) > 0))
@@ -32261,8 +32261,8 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
 	can_issue_more--;
 
       /* Do we have a special group ending nop? */
-      if (rs6000_cpu_attr == CPU_POWER6 || rs6000_cpu_attr == CPU_POWER7
-	  || rs6000_cpu_attr == CPU_POWER8)
+      if (rs6000_tune == PROCESSOR_POWER6 || rs6000_tune == PROCESSOR_POWER7
+	  || rs6000_tune == PROCESSOR_POWER8)
 	{
 	  nop = gen_group_ending_nop ();
 	  emit_insn_before (nop, next_insn);

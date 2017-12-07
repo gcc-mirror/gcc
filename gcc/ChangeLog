@@ -1,5 +1,21 @@
 2017-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.h (rs6000_cpu_attr): Delete.
+	* config/rs6000/rs6000.c (rs6000_variable_issue_1): Use rs6000_tune
+	instead of rs6000_cpu_attr.
+	(rs6000_adjust_cost): Ditto.
+	(is_microcoded_insn): Ditto.
+	(rs6000_adjust_priority): Ditto.
+	(rs6000_issue_rate): Ditto.
+	(rs6000_use_sched_lookahead): Ditto.
+	(rs6000_use_sched_lookahead_guard): Ditto.
+	(rs6000_sched_reorder): Ditto.
+	(force_new_group): Ditto.
+	* config/rs6000/rs6000.md (cpu attribute): Ditto.
+	(group_ending_nop): Ditto.
+
+2017-12-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.opt (rs6000_tune): New variable.
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Also set
 	rs6000_tune.  Use rs6000_tune instead of rs6000_cpu where appropriate.
