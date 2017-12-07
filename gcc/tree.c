@@ -1757,7 +1757,7 @@ build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
   unsigned HOST_WIDE_INT idx;
   tree value;
 
-  auto_vec<tree, 32> vec (nelts);
+  tree_vector_builder vec (type, nelts, 1);
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
     {
       if (TREE_CODE (value) == VECTOR_CST)
@@ -1769,7 +1769,7 @@ build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
   while (vec.length () < nelts)
     vec.quick_push (build_zero_cst (TREE_TYPE (type)));
 
-  return build_vector (type, vec);
+  return vec.build ();
 }
 
 /* Build a vector of type VECTYPE where all the elements are SCs.  */
@@ -1792,10 +1792,9 @@ build_vector_from_val (tree vectype, tree sc)
 
   if (CONSTANT_CLASS_P (sc))
     {
-      auto_vec<tree, 32> v (nunits);
-      for (i = 0; i < nunits; ++i)
-	v.quick_push (sc);
-      return build_vector (vectype, v);
+      tree_vector_builder v (vectype, 1, 1);
+      v.quick_push (sc);
+      return v.build ();
     }
   else
     {

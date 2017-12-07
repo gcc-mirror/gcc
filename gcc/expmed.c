@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "tree-vector-builder.h"
 
 struct target_expmed default_target_expmed;
 #if SWITCHABLE_TARGET
@@ -5184,14 +5185,14 @@ make_tree (tree type, rtx x)
 	int i;
 
 	/* Build a tree with vector elements.  */
-	auto_vec<tree, 32> elts (units);
+	tree_vector_builder elts (type, units, 1);
 	for (i = 0; i < units; ++i)
 	  {
 	    rtx elt = CONST_VECTOR_ELT (x, i);
 	    elts.quick_push (make_tree (itype, elt));
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     case PLUS:

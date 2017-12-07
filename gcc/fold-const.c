@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-vector-builder.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -1507,7 +1508,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	gcc_assert (in_nelts == VECTOR_CST_NELTS (arg2)
 		    && out_nelts == TYPE_VECTOR_SUBPARTS (type));
 
-	auto_vec<tree, 32> elts (out_nelts);
+	tree_vector_builder elts (type, out_nelts, 1);
 	for (i = 0; i < out_nelts; i++)
 	  {
 	    tree elt = (i < in_nelts
@@ -1521,7 +1522,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     case VEC_WIDEN_MULT_LO_EXPR:
@@ -1548,7 +1549,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	else /* if (code == VEC_WIDEN_MULT_ODD_EXPR) */
 	  scale = 1, ofs = 1;
 
-	auto_vec<tree, 32> elts (out_nelts);
+	tree_vector_builder elts (type, out_nelts, 1);
 	for (out = 0; out < out_nelts; out++)
 	  {
 	    unsigned int in = (out << scale) + ofs;
@@ -1565,7 +1566,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     default:;
@@ -1704,7 +1705,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	else
 	  subcode = FLOAT_EXPR;
 
-	auto_vec<tree, 32> elts (out_nelts);
+	tree_vector_builder elts (type, out_nelts, 1);
 	for (i = 0; i < out_nelts; i++)
 	  {
 	    tree elt = fold_convert_const (subcode, TREE_TYPE (type),
@@ -1714,7 +1715,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     default:
@@ -7377,7 +7378,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, int len)
   if (size * count > len)
     return NULL_TREE;
 
-  auto_vec<tree, 32> elements (count);
+  tree_vector_builder elements (type, count, 1);
   for (i = 0; i < count; ++i)
     {
       elem = native_interpret_expr (etype, ptr+(i*size), size);
@@ -7385,7 +7386,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, int len)
 	return NULL_TREE;
       elements.quick_push (elem);
     }
-  return build_vector (type, elements);
+  return elements.build ();
 }
 
 
@@ -8755,7 +8756,7 @@ fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
       || !vec_cst_ctor_to_array (arg1, nelts, in_elts + nelts))
     return NULL_TREE;
 
-  auto_vec<tree, 32> out_elts (nelts);
+  tree_vector_builder out_elts (type, nelts, 1);
   for (i = 0; i < nelts; i++)
     {
       if (!CONSTANT_CLASS_P (in_elts[sel[i]]))
@@ -8772,7 +8773,7 @@ fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
       return build_constructor (type, v);
     }
   else
-    return build_vector (type, out_elts);
+    return out_elts.build ();
 }
 
 /* Try to fold a pointer difference of type TYPE two address expressions of
@@ -11426,10 +11427,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  if (n == 1)
 		    return VECTOR_CST_ELT (arg0, idx);
 
-		  auto_vec<tree, 32> vals (n);
+		  tree_vector_builder vals (type, n, 1);
 		  for (unsigned i = 0; i < n; ++i)
 		    vals.quick_push (VECTOR_CST_ELT (arg0, idx + i));
-		  return build_vector (type, vals);
+		  return vals.build ();
 		}
 	    }
 	}
@@ -11565,10 +11566,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  if (need_mask_canon && arg2 == op2)
 	    {
 	      tree eltype = TREE_TYPE (TREE_TYPE (arg2));
-	      auto_vec<tree, 32> tsel (nelts);
+	      tree_vector_builder tsel (TREE_TYPE (arg2), nelts, 1);
 	      for (i = 0; i < nelts; i++)
 		tsel.quick_push (build_int_cst (eltype, sel[i]));
-	      op2 = build_vector (TREE_TYPE (arg2), tsel);
+	      op2 = tsel.build ();
 	      changed = true;
 	    }
 
@@ -11608,11 +11609,11 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      else
 		{
 		  unsigned int nelts = VECTOR_CST_NELTS (arg0);
-		  auto_vec<tree, 32> elts (nelts);
+		  tree_vector_builder elts (type, nelts, 1);
 		  elts.quick_grow (nelts);
-		  for (unsigned int i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
+		  for (unsigned int i = 0; i < nelts; ++i)
 		    elts[i] = (i == k ? arg1 : VECTOR_CST_ELT (arg0, i));
-		  return build_vector (type, elts);
+		  return elts.build ();
 		}
 	    }
 	}

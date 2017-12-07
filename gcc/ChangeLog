@@ -1,3 +1,43 @@
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/sparc/sparc.c: Include tree-vector-builder.h.
+	(sparc_fold_builtin): Use tree_vector_builder instead of build_vector.
+	* expmed.c: Include tree-vector-builder.h.
+	(make_tree): Use tree_vector_builder instead of build_vector.
+	* fold-const.c: Include tree-vector-builder.h.
+	(const_binop): Use tree_vector_builder instead of build_vector.
+	(const_unop): Likewise.
+	(native_interpret_vector): Likewise.
+	(fold_vec_perm): Likewise.
+	(fold_ternary_loc): Likewise.
+	* gimple-fold.c: Include tree-vector-builder.h.
+	(gimple_fold_stmt_to_constant_1): Use tree_vector_builder instead
+	of build_vector.
+	* tree-ssa-forwprop.c: Include tree-vector-builder.h.
+	(simplify_vector_constructor): Use tree_vector_builder instead
+	of build_vector.
+	* tree-vect-generic.c: Include tree-vector-builder.h.
+	(add_rshift): Use tree_vector_builder instead of build_vector.
+	(expand_vector_divmod): Likewise.
+	(optimize_vector_constructor): Likewise.
+	* tree-vect-loop.c: Include tree-vector-builder.h.
+	(vect_create_epilog_for_reduction): Use tree_vector_builder instead
+	of build_vector.  Explicitly use a stepped encoding for
+	{ 1, 2, 3, ... }.
+	* tree-vect-slp.c: Include tree-vector-builder.h.
+	(vect_get_constant_vectors): Use tree_vector_builder instead
+	of build_vector.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c: Include tree-vector-builder.h.
+	(vectorizable_bswap): Use tree_vector_builder instead of build_vector.
+	(vect_gen_perm_mask_any): Likewise.
+	(vectorizable_call): Likewise.  Explicitly use a stepped encoding.
+	* tree.c: (build_vector_from_ctor): Use tree_vector_builder instead
+	of build_vector.
+	(build_vector_from_val): Likewise.  Explicitly use a duplicate
+	encoding.
+
 2017-12-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/generic.texi (VECTOR_CST): Describe new representation of

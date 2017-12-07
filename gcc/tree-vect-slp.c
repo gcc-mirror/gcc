@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "gimple-walk.h"
 #include "dbgcnt.h"
+#include "tree-vector-builder.h"
 
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
@@ -3222,7 +3223,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   number_of_places_left_in_vector = nunits;
   constant_p = true;
-  auto_vec<tree, 32> elts (nunits);
+  tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   bool place_after_defs = false;
   for (j = 0; j < number_of_copies; j++)
@@ -3340,7 +3341,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
           if (number_of_places_left_in_vector == 0)
             {
 	      if (constant_p)
-		vec_cst = build_vector (vector_type, elts);
+		vec_cst = elts.build ();
 	      else
 		{
 		  vec<constructor_elt, va_gc> *v;
@@ -3371,6 +3372,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	      place_after_defs = false;
               number_of_places_left_in_vector = nunits;
 	      constant_p = true;
+	      elts.new_vector (vector_type, nunits, 1);
+	      elts.quick_grow (nunits);
             }
         }
     }
@@ -3667,11 +3670,11 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		  
 		  if (! noop_p)
 		    {
-		      auto_vec<tree, 32> mask_elts (nunits);
+		      tree_vector_builder mask_elts (mask_type, nunits, 1);
 		      for (int l = 0; l < nunits; ++l)
 			mask_elts.quick_push (build_int_cst (mask_element_type,
 							     mask[l]));
-		      mask_vec = build_vector (mask_type, mask_elts);
+		      mask_vec = mask_elts.build ();
 		    }
 
 		  if (second_vec_index == -1)
@@ -3823,7 +3826,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  for (j = 0; j < v0.length (); ++j)
 	    {
 	      unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
-	      auto_vec<tree, 32> melts (nunits);
+	      tree_vector_builder melts (mvectype, nunits, 1);
 	      for (l = 0; l < nunits; ++l)
 		{
 		  if (k >= group_size)
@@ -3831,7 +3834,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 		  tree t = build_int_cst (meltype, mask[k++] * nunits + l);
 		  melts.quick_push (t);
 		}
-	      tmask = build_vector (mvectype, melts);
+	      tmask = melts.build ();
 
 	      /* ???  Not all targets support a VEC_PERM_EXPR with a
 	         constant mask that would translate to a vec_merge RTX

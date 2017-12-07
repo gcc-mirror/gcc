@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-if-conv.h"
 #include "internal-fn.h"
+#include "tree-vector-builder.h"
 
 /* Loop Vectorization Pass.
 
@@ -4507,10 +4508,10 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	 vector size (STEP).  */
 
       /* Create a {1,2,3,...} vector.  */
-      auto_vec<tree, 32> vtemp (nunits_out);
-      for (k = 0; k < nunits_out; ++k)
+      tree_vector_builder vtemp (cr_index_vector_type, 1, 3);
+      for (k = 0; k < 3; ++k)
 	vtemp.quick_push (build_int_cst (cr_index_scalar_type, k + 1));
-      tree series_vect = build_vector (cr_index_vector_type, vtemp);
+      tree series_vect = vtemp.build ();
 
       /* Create a vector of the step value.  */
       tree step = build_int_cst (cr_index_scalar_type, nunits_out);

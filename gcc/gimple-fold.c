@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "intl.h"
 #include "calls.h"
+#include "tree-vector-builder.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -6022,7 +6023,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		  tree val;
 
 		  nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
-		  auto_vec<tree, 32> vec (nelts);
+		  tree_vector_builder vec (TREE_TYPE (rhs), nelts, 1);
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
 		      val = (*valueize) (val);
@@ -6034,7 +6035,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 			return NULL_TREE;
 		    }
 
-		  return build_vector (TREE_TYPE (rhs), vec);
+		  return vec.build ();
 		}
 	      if (subcode == OBJ_TYPE_REF)
 		{
