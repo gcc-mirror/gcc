@@ -44693,69 +44693,71 @@ ix86_expand_round_sse4 (rtx op0, rtx op1)
 static const struct attribute_spec ix86_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
   { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+    true, NULL },
   /* Fastcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
   { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+    true, NULL },
   /* Thiscall attribute says callee is responsible for popping arguments
      if they are not variable.  */
   { "thiscall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+    true, NULL },
   /* Cdecl attribute says the callee is a normal C declaration */
   { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+    true, NULL },
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
   { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+    true, NULL },
   /* Sseregparm attribute says we are using x86_64 calling conventions
      for FP arguments.  */
   { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute,
-    true },
+    true, NULL },
   /* The transactional memory builtins are implicitly regparm or fastcall
      depending on the ABI.  Override the generic do-nothing attribute that
      these builtins were declared with.  */
   { "*tm regparm", 0, 0, false, true, true, ix86_handle_tm_regparm_attribute,
-    true },
+    true, NULL },
   /* force_align_arg_pointer says this function realigns the stack at entry.  */
   { (const char *)&ix86_force_align_arg_pointer_string, 0, 0,
-    false, true,  true, ix86_handle_force_align_arg_pointer_attribute, false },
+    false, true,  true, ix86_handle_force_align_arg_pointer_attribute, false,
+    NULL },
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport", 0, 0, false, false, false, handle_dll_attribute, false },
-  { "dllexport", 0, 0, false, false, false, handle_dll_attribute, false },
+  { "dllimport", 0, 0, false, false, false, handle_dll_attribute, false, NULL },
+  { "dllexport", 0, 0, false, false, false, handle_dll_attribute, false, NULL },
   { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute,
-    false },
+    false, NULL },
 #endif
   { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute,
-    false },
+    false, NULL },
   { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute,
-    false },
+    false, NULL },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
   /* ms_abi and sysv_abi calling convention function attributes.  */
-  { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
-  { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
-  { "ms_abi va_list", 0, 0, false, false, false, NULL, false },
-  { "sysv_abi va_list", 0, 0, false, false, false, NULL, false },
+  { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true, NULL },
+  { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true,
+    NULL },
+  { "ms_abi va_list", 0, 0, false, false, false, NULL, false, NULL },
+  { "sysv_abi va_list", 0, 0, false, false, false, NULL, false, NULL },
   { "ms_hook_prologue", 0, 0, true, false, false, ix86_handle_fndecl_attribute,
-    false },
+    false, NULL },
   { "callee_pop_aggregate_return", 1, 1, false, true, true,
-    ix86_handle_callee_pop_aggregate_return, true },
+    ix86_handle_callee_pop_aggregate_return, true, NULL },
   { "interrupt", 0, 0, false, true, true,
-    ix86_handle_interrupt_attribute, false },
+    ix86_handle_interrupt_attribute, false, NULL },
   { "no_caller_saved_registers", 0, 0, false, true, true,
-    ix86_handle_no_caller_saved_registers_attribute, false },
+    ix86_handle_no_caller_saved_registers_attribute, false, NULL },
   { "naked", 0, 0, true, false, false,
-    ix86_handle_fndecl_attribute, false },
+    ix86_handle_fndecl_attribute, false, NULL },
 
   /* End element.  */
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */

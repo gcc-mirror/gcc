@@ -111,11 +111,11 @@ static HOST_WIDE_INT m32r_starting_frame_offset (void);
 static const struct attribute_spec m32r_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt", 0, 0, true,  false, false, NULL, false },
+       affects_type_identity, exclusions } */
+  { "interrupt", 0, 0, true,  false, false, NULL, false, NULL },
   { "model",     1, 1, true,  false, false, m32r_handle_model_attribute,
-    false },
-  { NULL,        0, 0, false, false, false, NULL, false }
+    false, NULL },
+  { NULL,        0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Initialize the GCC target structure.  */

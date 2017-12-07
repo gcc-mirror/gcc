@@ -146,9 +146,10 @@ static inline bool current_function_has_lr_slot (void);
 static const struct attribute_spec visium_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false},
-  {NULL, 0, 0, false, false, false, NULL, false}
+       affects_type_identity, exclusions } */
+  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false,
+   NULL},
+  {NULL, 0, 0, false, false, false, NULL, false, NULL},
 };
 
 static struct machine_function *visium_init_machine_status (void);

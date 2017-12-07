@@ -1,3 +1,9 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* include/ext/mt_allocator.h (_M_destroy_thread_key): Remove
+	attribute const.
+
 2017-12-05  Jason Merrill  <jason@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

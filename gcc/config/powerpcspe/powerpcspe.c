@@ -1534,21 +1534,21 @@ static const char alt_reg_names[][8] =
 static const struct attribute_spec rs6000_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute,
-    false },
+    false, NULL },
   { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
+    false, NULL },
   { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
+    false, NULL },
   { "ms_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
+    false, NULL },
   { "gcc_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
+    false, NULL },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, NULL, false, NULL }
 };
 
 #ifndef TARGET_PROFILE_KERNEL

@@ -4458,10 +4458,12 @@ nvptx_handle_shared_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 static const struct attribute_spec nvptx_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "kernel", 0, 0, true, false,  false, nvptx_handle_kernel_attribute, false },
-  { "shared", 0, 0, true, false,  false, nvptx_handle_shared_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+       affects_type_identity, exclusions } */
+  { "kernel", 0, 0, true, false,  false, nvptx_handle_kernel_attribute, false,
+    NULL },
+  { "shared", 0, 0, true, false,  false, nvptx_handle_shared_attribute, false,
+    NULL },
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Limit vector alignments to BIGGEST_ALIGNMENT.  */

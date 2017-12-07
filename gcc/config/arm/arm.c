@@ -323,24 +323,24 @@ static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 static const struct attribute_spec arm_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 26 bit addressing range of a normal function
      call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL, false },
+  { "long_call",    0, 0, false, true,  true,  NULL, false, NULL },
   /* Whereas these functions are always known to reside within the 26 bit
      addressing range.  */
-  { "short_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",   0, 0, false, true,  true,  NULL, false, NULL },
   /* Specify the procedure call conventions for a function.  */
   { "pcs",          1, 1, false, true,  true,  arm_handle_pcs_attribute,
-    false },
+    false, NULL },
   /* Interrupt Service Routines have special prologue and epilogue requirements.  */
   { "isr",          0, 1, false, false, false, arm_handle_isr_attribute,
-    false },
+    false, NULL },
   { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute,
-    false },
+    false, NULL },
   { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute,
-    false },
+    false, NULL },
 #ifdef ARM_PE
   /* ARM/PE has three new attributes:
      interfacearm - ?
@@ -351,22 +351,24 @@ static const struct attribute_spec arm_attribute_table[] =
      them with spaces.  We do NOT support this.  Instead, use __declspec
      multiple times.
   */
-  { "dllimport",    0, 0, true,  false, false, NULL, false },
-  { "dllexport",    0, 0, true,  false, false, NULL, false },
+  { "dllimport",    0, 0, true,  false, false, NULL, false, NULL },
+  { "dllexport",    0, 0, true,  false, false, NULL, false, NULL },
   { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute,
-    false },
+    false, NULL },
 #elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport",    0, 0, false, false, false, handle_dll_attribute, false },
-  { "dllexport",    0, 0, false, false, false, handle_dll_attribute, false },
+  { "dllimport",    0, 0, false, false, false, handle_dll_attribute, false,
+    NULL },
+  { "dllexport",    0, 0, false, false, false, handle_dll_attribute, false,
+    NULL },
   { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute,
-    false },
+    false, NULL },
 #endif
   /* ARMv8-M Security Extensions support.  */
   { "cmse_nonsecure_entry", 0, 0, true, false, false,
-    arm_handle_cmse_nonsecure_entry, false },
+    arm_handle_cmse_nonsecure_entry, false, NULL },
   { "cmse_nonsecure_call", 0, 0, true, false, false,
-    arm_handle_cmse_nonsecure_call, true },
-  { NULL,           0, 0, false, false, false, NULL, false }
+    arm_handle_cmse_nonsecure_call, true, NULL },
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Initialize the GCC target structure.  */

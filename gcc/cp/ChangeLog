@@ -1,3 +1,14 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* cp-tree.h (decls_match): Add default argument.
+	* decl.c (decls_match): Avoid calling into the target back end
+	and triggering an error.
+	* decl2.c (cplus_decl_attributes): Look up existing declaration and
+	pass it to decl_attributes.
+	* tree.c (cxx_attribute_table): Initialize new member of struct
+	attribute_spec.
+
 2017-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80259

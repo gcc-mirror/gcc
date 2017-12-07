@@ -2052,20 +2052,25 @@ const struct attribute_spec msp430_attribute_table[] =
   /* Name        min_num_args     type_req,             affects_type_identity
                       max_num_args,     fn_type_req
                           decl_req               handler.  */
-  { ATTR_INTR,        0, 1, true,  false, false, msp430_attr, false },
-  { ATTR_NAKED,       0, 0, true,  false, false, msp430_attr, false },
-  { ATTR_REENT,       0, 0, true,  false, false, msp430_attr, false },
-  { ATTR_CRIT,        0, 0, true,  false, false, msp430_attr, false },
-  { ATTR_WAKEUP,      0, 0, true,  false, false, msp430_attr, false },
+  { ATTR_INTR,        0, 1, true,  false, false, msp430_attr, false, NULL },
+  { ATTR_NAKED,       0, 0, true,  false, false, msp430_attr, false, NULL },
+  { ATTR_REENT,       0, 0, true,  false, false, msp430_attr, false, NULL },
+  { ATTR_CRIT,        0, 0, true,  false, false, msp430_attr, false, NULL },
+  { ATTR_WAKEUP,      0, 0, true,  false, false, msp430_attr, false, NULL },
 
-  { ATTR_LOWER,       0, 0, true,  false, false, msp430_section_attr, false },
-  { ATTR_UPPER,       0, 0, true,  false, false, msp430_section_attr, false },
-  { ATTR_EITHER,      0, 0, true,  false, false, msp430_section_attr, false },
+  { ATTR_LOWER,       0, 0, true,  false, false, msp430_section_attr, false,
+    NULL },
+  { ATTR_UPPER,       0, 0, true,  false, false, msp430_section_attr, false,
+    NULL },
+  { ATTR_EITHER,      0, 0, true,  false, false, msp430_section_attr, false,
+    NULL },
 
-  { ATTR_NOINIT,      0, 0, true,  false, false, msp430_data_attr, false },
-  { ATTR_PERSIST,     0, 0, true,  false, false, msp430_data_attr, false },
+  { ATTR_NOINIT,      0, 0, true,  false, false, msp430_data_attr, false,
+    NULL },
+  { ATTR_PERSIST,     0, 0, true,  false, false, msp430_data_attr, false,
+    NULL },
 
-  { NULL,             0, 0, false, false, false, NULL, false }
+  { NULL,             0, 0, false, false, false, NULL, false, NULL }
 };
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE

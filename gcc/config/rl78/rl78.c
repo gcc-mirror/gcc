@@ -860,14 +860,14 @@ const struct attribute_spec rl78_attribute_table[] =
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
      affects_type_identity.  */
   { "interrupt",      0, 0, true, false, false, rl78_handle_func_attribute,
-    false },
+    false, NULL },
   { "brk_interrupt",  0, 0, true, false, false, rl78_handle_func_attribute,
-    false },
+    false, NULL },
   { "naked",          0, 0, true, false, false, rl78_handle_naked_attribute,
-    false },
+    false, NULL },
   { "saddr",          0, 0, true, false, false, rl78_handle_saddr_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+    false, NULL },
+  { NULL,             0, 0, false, false, false, NULL, false, NULL }
 };
 
 

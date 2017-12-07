@@ -1,3 +1,9 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* lto-lang.c (lto_attribute_table): Initialize new member of struct
+	attribute_spec.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto.c (create_subid_section_table): Use ; instead of ;;.

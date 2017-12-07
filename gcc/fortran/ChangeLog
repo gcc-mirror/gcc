@@ -1,3 +1,9 @@
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* f95-lang.c (gfc_attribute_table): Initialize new member of struct
+	attribute_spec.
+
 2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36313

@@ -219,21 +219,23 @@ const struct attribute_spec arc_attribute_table[] =
 {
  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
       affects_type_identity } */
-  { "interrupt", 1, 1, true, false, false, arc_handle_interrupt_attribute, true },
+  { "interrupt", 1, 1, true, false, false, arc_handle_interrupt_attribute,
+      true, NULL },
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 21/25 bit addressing range of a normal function
      call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL, false },
+  { "long_call",    0, 0, false, true,  true,  NULL, false, NULL },
   /* Whereas these functions are always known to reside within the 25 bit
      addressing range of unconditionalized bl.  */
-  { "medium_call",   0, 0, false, true,  true,  NULL, false },
+  { "medium_call",   0, 0, false, true,  true,  NULL, false, NULL },
   /* And these functions are always known to reside within the 21 bit
      addressing range of blcc.  */
-  { "short_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",   0, 0, false, true,  true,  NULL, false, NULL },
   /* Function which are not having the prologue and epilogue generated
      by the compiler.  */
-  { "naked", 0, 0, true, false, false, arc_handle_fndecl_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+  { "naked", 0, 0, true, false, false, arc_handle_fndecl_attribute, false,
+    NULL },
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 static int arc_comp_type_attributes (const_tree, const_tree);
 static void arc_file_start (void);

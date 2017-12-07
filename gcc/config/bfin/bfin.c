@@ -4906,29 +4906,30 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 static const struct attribute_spec bfin_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "interrupt_handler", 0, 0, false, true,  true, handle_int_attribute,
-    false },
+    false, NULL },
   { "exception_handler", 0, 0, false, true,  true, handle_int_attribute,
-    false },
-  { "nmi_handler", 0, 0, false, true,  true, handle_int_attribute, false },
-  { "nesting", 0, 0, false, true,  true, NULL, false },
-  { "kspisusp", 0, 0, false, true,  true, NULL, false },
-  { "saveall", 0, 0, false, true,  true, NULL, false },
+    false, NULL },
+  { "nmi_handler", 0, 0, false, true,  true, handle_int_attribute, false,
+    NULL },
+  { "nesting", 0, 0, false, true,  true, NULL, false, NULL },
+  { "kspisusp", 0, 0, false, true,  true, NULL, false, NULL },
+  { "saveall", 0, 0, false, true,  true, NULL, false, NULL },
   { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute,
-    false },
+    false, NULL },
   { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute,
-    false },
+    false, NULL },
   { "l1_text", 0, 0, true, false, false,  bfin_handle_l1_text_attribute,
-    false },
+    false, NULL },
   { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
-    false },
+    false, NULL },
   { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute,
-    false },
+    false, NULL },
   { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
-    false },
-  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+    false, NULL },
+  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute, false, NULL },
+  { NULL, 0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* Implementation of TARGET_ASM_INTEGER.  When using FD-PIC, we need to

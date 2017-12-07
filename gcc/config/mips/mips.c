@@ -597,27 +597,27 @@ static tree mips_handle_use_shadow_register_set_attr (tree *, tree, tree, int,
 static const struct attribute_spec mips_attribute_table[] = {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        om_diagnostic } */
-  { "long_call",   0, 0, false, true,  true,  NULL, false },
-  { "short_call",  0, 0, false, true,  true,  NULL, false },
-  { "far",     	   0, 0, false, true,  true,  NULL, false },
-  { "near",        0, 0, false, true,  true,  NULL, false },
+  { "long_call",   0, 0, false, true,  true,  NULL, false, NULL },
+  { "short_call",  0, 0, false, true,  true,  NULL, false, NULL },
+  { "far",     	   0, 0, false, true,  true,  NULL, false, NULL },
+  { "near",        0, 0, false, true,  true,  NULL, false, NULL },
   /* We would really like to treat "mips16" and "nomips16" as type
      attributes, but GCC doesn't provide the hooks we need to support
      the right conversion rules.  As declaration attributes, they affect
      code generation but don't carry other semantics.  */
-  { "mips16", 	   0, 0, true,  false, false, NULL, false },
-  { "nomips16",    0, 0, true,  false, false, NULL, false },
-  { "micromips",   0, 0, true,  false, false, NULL, false },
-  { "nomicromips", 0, 0, true,  false, false, NULL, false },
-  { "nocompression", 0, 0, true,  false, false, NULL, false },
+  { "mips16", 	   0, 0, true,  false, false, NULL, false, NULL },
+  { "nomips16",    0, 0, true,  false, false, NULL, false, NULL },
+  { "micromips",   0, 0, true,  false, false, NULL, false, NULL },
+  { "nomicromips", 0, 0, true,  false, false, NULL, false, NULL },
+  { "nocompression", 0, 0, true,  false, false, NULL, false, NULL },
   /* Allow functions to be specified as interrupt handlers */
   { "interrupt",   0, 1, false, true,  true, mips_handle_interrupt_attr,
-    false },
+    false, NULL },
   { "use_shadow_register_set",	0, 1, false, true,  true,
-    mips_handle_use_shadow_register_set_attr, false },
-  { "keep_interrupts_masked",	0, 0, false, true,  true, NULL, false },
-  { "use_debug_exception_return", 0, 0, false, true,  true, NULL, false },
-  { NULL,	   0, 0, false, false, false, NULL, false }
+    mips_handle_use_shadow_register_set_attr, false, NULL },
+  { "keep_interrupts_masked",	0, 0, false, true,  true, NULL, false, NULL },
+  { "use_debug_exception_return", 0, 0, false, true,  true, NULL, false, NULL },
+  { NULL,	   0, 0, false, false, false, NULL, false, NULL }
 };
 
 /* A table describing all the processors GCC knows about; see
