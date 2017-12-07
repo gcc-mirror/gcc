@@ -1736,18 +1736,6 @@ make_vector (unsigned log2_npatterns,
 }
 
 /* Return a new VECTOR_CST node whose type is TYPE and whose values
-   are given by VALS.  */
-
-tree
-build_vector (tree type, vec<tree> vals MEM_STAT_DECL)
-{
-  gcc_assert (vals.length () == TYPE_VECTOR_SUBPARTS (type));
-  tree_vector_builder builder (type, vals.length (), 1);
-  builder.splice (vals);
-  return builder.build ();
-}
-
-/* Return a new VECTOR_CST node whose type is TYPE and whose values
    are extracted from V, a vector of CONSTRUCTOR_ELT.  */
 
 tree
@@ -14064,6 +14052,18 @@ test_labels ()
 				identifier, void_type_node);
   ASSERT_EQ (-1, LABEL_DECL_UID (label_decl));
   ASSERT_FALSE (FORCED_LABEL (label_decl));
+}
+
+/* Return a new VECTOR_CST node whose type is TYPE and whose values
+   are given by VALS.  */
+
+static tree
+build_vector (tree type, vec<tree> vals MEM_STAT_DECL)
+{
+  gcc_assert (vals.length () == TYPE_VECTOR_SUBPARTS (type));
+  tree_vector_builder builder (type, vals.length (), 1);
+  builder.splice (vals);
+  return builder.build ();
 }
 
 /* Check that VECTOR_CST ACTUAL contains the elements in EXPECTED.  */
