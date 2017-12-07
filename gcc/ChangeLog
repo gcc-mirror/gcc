@@ -1,3 +1,9 @@
+2017-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83164
+	* tree-cfg.c (verify_gimple_assign_binary): Don't require
+	types_compatible_p, just that TYPE_MODE is the same.
+
 2017-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81544
