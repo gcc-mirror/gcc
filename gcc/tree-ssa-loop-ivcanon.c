@@ -76,10 +76,13 @@ enum unroll_level
 };
 
 /* Adds a canonical induction variable to LOOP iterating NITER times.  EXIT
-   is the exit edge whose condition is replaced.  */
+   is the exit edge whose condition is replaced.  The ssa versions of the new
+   IV before and after increment will be stored in VAR_BEFORE and VAR_AFTER
+   if they are not NULL.  */
 
-static void
-create_canonical_iv (struct loop *loop, edge exit, tree niter)
+void
+create_canonical_iv (struct loop *loop, edge exit, tree niter,
+		     tree *var_before = NULL, tree *var_after = NULL)
 {
   edge in;
   tree type, var;
@@ -112,7 +115,9 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
   create_iv (niter,
 	     build_int_cst (type, -1),
 	     NULL_TREE, loop,
-	     &incr_at, false, NULL, &var);
+	     &incr_at, false, var_before, &var);
+  if (var_after)
+    *var_after = var;
 
   cmp = (exit->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
   gimple_cond_set_code (cond, cmp);

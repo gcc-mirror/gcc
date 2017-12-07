@@ -2626,6 +2626,114 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 }
 
 
+/* Return true if the reduction PHI in LOOP with latch arg LOOP_ARG and
+   reduction operation CODE has a handled computation expression.  */
+
+bool
+check_reduction_path (location_t loc, loop_p loop, gphi *phi, tree loop_arg,
+		      enum tree_code code)
+{
+  auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
+  auto_bitmap visited;
+  tree lookfor = PHI_RESULT (phi);
+  ssa_op_iter curri;
+  use_operand_p curr = op_iter_init_phiuse (&curri, phi, SSA_OP_USE);
+  while (USE_FROM_PTR (curr) != loop_arg)
+    curr = op_iter_next_use (&curri);
+  curri.i = curri.numops;
+  do
+    {
+      path.safe_push (std::make_pair (curri, curr));
+      tree use = USE_FROM_PTR (curr);
+      if (use == lookfor)
+	break;
+      gimple *def = SSA_NAME_DEF_STMT (use);
+      if (gimple_nop_p (def)
+	  || ! flow_bb_inside_loop_p (loop, gimple_bb (def)))
+	{
+pop:
+	  do
+	    {
+	      std::pair<ssa_op_iter, use_operand_p> x = path.pop ();
+	      curri = x.first;
+	      curr = x.second;
+	      do
+		curr = op_iter_next_use (&curri);
+	      /* Skip already visited or non-SSA operands (from iterating
+	         over PHI args).  */
+	      while (curr != NULL_USE_OPERAND_P
+		     && (TREE_CODE (USE_FROM_PTR (curr)) != SSA_NAME
+			 || ! bitmap_set_bit (visited,
+					      SSA_NAME_VERSION
+					        (USE_FROM_PTR (curr)))));
+	    }
+	  while (curr == NULL_USE_OPERAND_P && ! path.is_empty ());
+	  if (curr == NULL_USE_OPERAND_P)
+	    break;
+	}
+      else
+	{
+	  if (gimple_code (def) == GIMPLE_PHI)
+	    curr = op_iter_init_phiuse (&curri, as_a <gphi *>(def), SSA_OP_USE);
+	  else
+	    curr = op_iter_init_use (&curri, def, SSA_OP_USE);
+	  while (curr != NULL_USE_OPERAND_P
+		 && (TREE_CODE (USE_FROM_PTR (curr)) != SSA_NAME
+		     || ! bitmap_set_bit (visited,
+					  SSA_NAME_VERSION
+					    (USE_FROM_PTR (curr)))))
+	    curr = op_iter_next_use (&curri);
+	  if (curr == NULL_USE_OPERAND_P)
+	    goto pop;
+	}
+    }
+  while (1);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      dump_printf_loc (MSG_NOTE, loc, "reduction path: ");
+      unsigned i;
+      std::pair<ssa_op_iter, use_operand_p> *x;
+      FOR_EACH_VEC_ELT (path, i, x)
+	{
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, USE_FROM_PTR (x->second));
+	  dump_printf (MSG_NOTE, " ");
+	}
+      dump_printf (MSG_NOTE, "\n");
+    }
+
+  /* Check whether the reduction path detected is valid.  */
+  bool fail = path.length () == 0;
+  bool neg = false;
+  for (unsigned i = 1; i < path.length (); ++i)
+    {
+      gimple *use_stmt = USE_STMT (path[i].second);
+      tree op = USE_FROM_PTR (path[i].second);
+      if (! has_single_use (op)
+	  || ! is_gimple_assign (use_stmt))
+	{
+	  fail = true;
+	  break;
+	}
+      if (gimple_assign_rhs_code (use_stmt) != code)
+	{
+	  if (code == PLUS_EXPR
+	      && gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
+	    {
+	      /* Track whether we negate the reduction value each iteration.  */
+	      if (gimple_assign_rhs2 (use_stmt) == op)
+		neg = ! neg;
+	    }
+	  else
+	    {
+	      fail = true;
+	      break;
+	    }
+	}
+    }
+  return ! fail && ! neg;
+}
+
+
 /* Function vect_is_simple_reduction
 
    (1) Detect a cross-iteration def-use cycle that represents a simple
@@ -3128,106 +3236,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
     }
 
   /* Look for the expression computing loop_arg from loop PHI result.  */
-  auto_vec<std::pair<ssa_op_iter, use_operand_p> > path;
-  auto_bitmap visited;
-  tree lookfor = PHI_RESULT (phi);
-  ssa_op_iter curri;
-  use_operand_p curr = op_iter_init_phiuse (&curri, as_a <gphi *>(phi),
-					    SSA_OP_USE);
-  while (USE_FROM_PTR (curr) != loop_arg)
-    curr = op_iter_next_use (&curri);
-  curri.i = curri.numops;
-  do
-    {
-      path.safe_push (std::make_pair (curri, curr));
-      tree use = USE_FROM_PTR (curr);
-      if (use == lookfor)
-	break;
-      gimple *def = SSA_NAME_DEF_STMT (use);
-      if (gimple_nop_p (def)
-	  || ! flow_bb_inside_loop_p (loop, gimple_bb (def)))
-	{
-pop:
-	  do
-	    {
-	      std::pair<ssa_op_iter, use_operand_p> x = path.pop ();
-	      curri = x.first;
-	      curr = x.second;
-	      do
-		curr = op_iter_next_use (&curri);
-	      /* Skip already visited or non-SSA operands (from iterating
-	         over PHI args).  */
-	      while (curr != NULL_USE_OPERAND_P
-		     && (TREE_CODE (USE_FROM_PTR (curr)) != SSA_NAME
-			 || ! bitmap_set_bit (visited,
-					      SSA_NAME_VERSION
-					        (USE_FROM_PTR (curr)))));
-	    }
-	  while (curr == NULL_USE_OPERAND_P && ! path.is_empty ());
-	  if (curr == NULL_USE_OPERAND_P)
-	    break;
-	}
-      else
-	{
-	  if (gimple_code (def) == GIMPLE_PHI)
-	    curr = op_iter_init_phiuse (&curri, as_a <gphi *>(def), SSA_OP_USE);
-	  else
-	    curr = op_iter_init_use (&curri, def, SSA_OP_USE);
-	  while (curr != NULL_USE_OPERAND_P
-		 && (TREE_CODE (USE_FROM_PTR (curr)) != SSA_NAME
-		     || ! bitmap_set_bit (visited,
-					  SSA_NAME_VERSION
-					    (USE_FROM_PTR (curr)))))
-	    curr = op_iter_next_use (&curri);
-	  if (curr == NULL_USE_OPERAND_P)
-	    goto pop;
-	}
-    }
-  while (1);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "reduction path: ");
-      unsigned i;
-      std::pair<ssa_op_iter, use_operand_p> *x;
-      FOR_EACH_VEC_ELT (path, i, x)
-	{
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, USE_FROM_PTR (x->second));
-	  dump_printf (MSG_NOTE, " ");
-	}
-      dump_printf (MSG_NOTE, "\n");
-    }
-
-  /* Check whether the reduction path detected is valid.  */
-  bool fail = path.length () == 0;
-  bool neg = false;
-  for (unsigned i = 1; i < path.length (); ++i)
-    {
-      gimple *use_stmt = USE_STMT (path[i].second);
-      tree op = USE_FROM_PTR (path[i].second);
-      if (! has_single_use (op)
-	  || ! is_gimple_assign (use_stmt))
-	{
-	  fail = true;
-	  break;
-	}
-      if (gimple_assign_rhs_code (use_stmt) != code)
-	{
-	  if (code == PLUS_EXPR
-	      && gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
-	    {
-	      /* Track whether we negate the reduction value each iteration.  */
-	      if (gimple_assign_rhs2 (use_stmt) == op)
-		neg = ! neg;
-	    }
-	  else
-	    {
-	      fail = true;
-	      break;
-	    }
-	}
-    }
-  if (! fail && ! neg)
+  if (check_reduction_path (vect_location, loop, as_a <gphi *> (phi), loop_arg,
+			    code))
     return def_stmt;
 
   if (dump_enabled_p ())

@@ -1,3 +1,26 @@
+2017-12-07  Bin Cheng  <bin.cheng@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* Makefile.in (gimple-loop-interchange.o): New object file.
+	* common.opt (floop-interchange): Reuse the option from graphite.
+	* doc/invoke.texi (-floop-interchange): Ditto.  New document for
+	-floop-interchange and mention it for -O3.
+	* opts.c (default_options_table): Enable -floop-interchange at -O3.
+	* gimple-loop-interchange.cc: New file.
+	* params.def (PARAM_LOOP_INTERCHANGE_MAX_NUM_STMTS): New parameter.
+	(PARAM_LOOP_INTERCHANGE_STRIDE_RATIO): New parameter.
+	* passes.def (pass_linterchange): New pass.
+	* timevar.def (TV_LINTERCHANGE): New time var.
+	* tree-pass.h (make_pass_linterchange): New declaration.
+	* tree-ssa-loop-ivcanon.c (create_canonical_iv): Change to external
+	interchange.  Record IV before/after increment in new parameters.
+	* tree-ssa-loop-ivopts.h (create_canonical_iv): New declaration.
+	* tree-vect-loop.c (vect_is_simple_reduction): Factor out reduction
+	path check into...
+	(check_reduction_path): ...New function here.
+	* tree-vectorizer.h (check_reduction_path): New declaration.
+
 2017-12-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/83252

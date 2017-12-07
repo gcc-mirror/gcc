@@ -7409,6 +7409,7 @@ by @option{-O2} and also turns on the following optimization flags:
 -ftree-loop-vectorize @gol
 -ftree-loop-distribution @gol
 -ftree-loop-distribute-patterns @gol
+-floop-interchange @gol
 -fsplit-paths @gol
 -ftree-slp-vectorize @gol
 -fvect-cost-model @gol
@@ -8508,12 +8509,10 @@ Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-loop-linear
-@itemx -floop-interchange
 @itemx -floop-strip-mine
 @itemx -floop-block
 @itemx -floop-unroll-and-jam
 @opindex ftree-loop-linear
-@opindex floop-interchange
 @opindex floop-strip-mine
 @opindex floop-block
 @opindex floop-unroll-and-jam
@@ -8607,6 +8606,25 @@ DO I = 1, N
 ENDDO
 @end smallexample
 and the initialization loop is transformed into a call to memset zero.
+
+@item -floop-interchange
+@opindex floop-interchange
+Perform loop interchange outside of graphite.  This flag can improve cache
+performance on loop nest and allow further loop optimizations, like
+vectorization, to take place.  For example, the loop
+@smallexample
+for (int i = 0; i < N; i++)
+  for (int j = 0; j < N; j++)
+    for (int k = 0; k < N; k++)
+      c[i][j] = c[i][j] + a[i][k]*b[k][j];
+@end smallexample
+is transformed to
+@smallexample
+for (int i = 0; i < N; i++)
+  for (int k = 0; k < N; k++)
+    for (int j = 0; j < N; j++)
+      c[i][j] = c[i][j] + a[i][k]*b[k][j];
+@end smallexample
 
 @item -ftree-loop-im
 @opindex ftree-loop-im
@@ -10478,6 +10496,12 @@ The size of L1 cache, in kilobytes.
 
 @item l2-cache-size
 The size of L2 cache, in kilobytes.
+
+@item loop-interchange-max-num-stmts
+The maximum number of stmts in a loop to be interchanged.
+
+@item loop-interchange-stride-ratio
+The minimum ratio between stride of two loops for interchange to be profitable.
 
 @item min-insn-to-prefetch-ratio
 The minimum ratio between the number of instructions and the
