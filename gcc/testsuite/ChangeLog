@@ -1,3 +1,12 @@
+2017-12-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_arch_attribute_2.c: New.
+	* gcc.target/arm/pragma_arch_attribute_2.c: New.
+	* gcc.target/arm/pragma_arch_attribute_3.c: New.
+	* gcc.target/arm/pragma_fpu_attribute.c: New.
+	* gcc.target/arm/pragma_fpu_attribute_2.c: New.
+
 2017-12-07  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/unroll-and-jam.c: New test.
