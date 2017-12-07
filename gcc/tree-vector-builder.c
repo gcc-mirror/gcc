@@ -49,6 +49,53 @@ tree_vector_builder::new_unary_operation (tree type, tree t,
   return true;
 }
 
+/* Try to start building a new vector of type TYPE that holds the result of
+   a binary operation on VECTOR_CSTs T1 and T2.  ALLOW_STEPPED_P is true if
+   the operation can handle stepped encodings directly, without having to
+   expand the full sequence.
+
+   Return true if the operation is possible.  Leave the builder unchanged
+   otherwise.  */
+
+bool
+tree_vector_builder::new_binary_operation (tree type, tree t1, tree t2,
+					   bool allow_stepped_p)
+{
+  unsigned int full_nelts = TYPE_VECTOR_SUBPARTS (type);
+  gcc_assert (full_nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1))
+	      && full_nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2)));
+  /* Conceptually we split the patterns in T1 and T2 until we have
+     an equal number for both.  Each split pattern requires the same
+     number of elements per pattern as the original.  E.g. splitting:
+
+       { 1, 2, 3, ... }
+
+     into two gives:
+
+       { 1, 3, 5, ... }
+       { 2, 4, 6, ... }
+
+     while splitting:
+
+       { 1, 0, ... }
+
+     into two gives:
+
+       { 1, 0, ... }
+       { 0, 0, ... }.  */
+  unsigned int npatterns = least_common_multiple (VECTOR_CST_NPATTERNS (t1),
+						  VECTOR_CST_NPATTERNS (t2));
+  unsigned int nelts_per_pattern = MAX (VECTOR_CST_NELTS_PER_PATTERN (t1),
+					VECTOR_CST_NELTS_PER_PATTERN (t2));
+  if (!allow_stepped_p && nelts_per_pattern > 2)
+    {
+      npatterns = full_nelts;
+      nelts_per_pattern = 1;
+    }
+  new_vector (type, npatterns, nelts_per_pattern);
+  return true;
+}
+
 /* Return a VECTOR_CST for the current constant.  */
 
 tree

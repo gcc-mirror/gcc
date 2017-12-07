@@ -1435,13 +1435,40 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
     }
 
   if (TREE_CODE (arg1) == VECTOR_CST
-      && TREE_CODE (arg2) == VECTOR_CST)
+      && TREE_CODE (arg2) == VECTOR_CST
+      && (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1))
+	  == TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2))))
     {
       tree type = TREE_TYPE (arg1);
-      int count = VECTOR_CST_NELTS (arg1), i;
+      bool step_ok_p;
+      if (VECTOR_CST_STEPPED_P (arg1)
+	  && VECTOR_CST_STEPPED_P (arg2))
+	/* We can operate directly on the encoding if:
 
-      auto_vec<tree, 32> elts (count);
-      for (i = 0; i < count; i++)
+	      a3 - a2 == a2 - a1 && b3 - b2 == b2 - b1
+	    implies
+	      (a3 op b3) - (a2 op b2) == (a2 op b2) - (a1 op b1)
+
+	   Addition and subtraction are the supported operators
+	   for which this is true.  */
+	step_ok_p = (code == PLUS_EXPR || code == MINUS_EXPR);
+      else if (VECTOR_CST_STEPPED_P (arg1))
+	/* We can operate directly on stepped encodings if:
+
+	     a3 - a2 == a2 - a1
+	   implies:
+	     (a3 op c) - (a2 op c) == (a2 op c) - (a1 op c)
+
+	   which is true if (x -> x op c) distributes over addition.  */
+	step_ok_p = distributes_over_addition_p (code, 1);
+      else
+	/* Similarly in reverse.  */
+	step_ok_p = distributes_over_addition_p (code, 2);
+      tree_vector_builder elts;
+      if (!elts.new_binary_operation (type, arg1, arg2, step_ok_p))
+	return NULL_TREE;
+      unsigned int count = elts.encoded_nelts ();
+      for (unsigned int i = 0; i < count; ++i)
 	{
 	  tree elem1 = VECTOR_CST_ELT (arg1, i);
 	  tree elem2 = VECTOR_CST_ELT (arg2, i);
@@ -1455,7 +1482,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  elts.quick_push (elt);
 	}
 
-      return build_vector (type, elts);
+      return elts.build ();
     }
 
   /* Shifts allow a scalar offset for a vector.  */
@@ -13770,11 +13797,10 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 	  return constant_boolean_node (true, type);
 	}
-      unsigned count = VECTOR_CST_NELTS (op0);
-      gcc_assert (VECTOR_CST_NELTS (op1) == count
-		  && TYPE_VECTOR_SUBPARTS (type) == count);
-
-      auto_vec<tree, 32> elts (count);
+      tree_vector_builder elts;
+      if (!elts.new_binary_operation (type, op0, op1, false))
+	return NULL_TREE;
+      unsigned int count = elts.encoded_nelts ();
       for (unsigned i = 0; i < count; i++)
 	{
 	  tree elem_type = TREE_TYPE (type);
@@ -13791,7 +13817,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 					  integer_zerop (tem) ? 0 : -1));
 	}
 
-      return build_vector (type, elts);
+      return elts.build ();
     }
 
   /* From here on we only handle LT, LE, GT, GE, EQ and NE.

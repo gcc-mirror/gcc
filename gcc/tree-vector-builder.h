@@ -38,6 +38,7 @@ public:
 
   void new_vector (tree, unsigned int, unsigned int);
   bool new_unary_operation (tree, tree, bool);
+  bool new_binary_operation (tree, tree, tree, bool);
 
 private:
   bool equal_p (const_tree, const_tree) const;
