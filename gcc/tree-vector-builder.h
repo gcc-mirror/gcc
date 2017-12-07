@@ -45,6 +45,7 @@ private:
   bool allow_steps_p () const;
   bool integral_p (const_tree) const;
   wide_int step (const_tree, const_tree) const;
+  tree apply_step (tree, unsigned int, const wide_int &) const;
   bool can_elide_p (const_tree) const;
   void note_representative (tree *, tree);
 

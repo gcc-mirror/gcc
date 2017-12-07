@@ -68,6 +68,10 @@ along with GCC; see the file COPYING3.  If not see
 	  given integral_p (ELT1) && integral_p (ELT2).  There is no fixed
 	  choice of StepType.
 
+      T apply_step (T base, unsigned int factor, StepType step) const;
+
+	  Return a vector element with the value BASE + FACTOR * STEP.
+
       bool can_elide_p (T elt) const;
 
 	  Return true if we can drop element ELT, even if the retained
@@ -91,6 +95,7 @@ public:
   unsigned int nelts_per_pattern () const { return m_nelts_per_pattern; }
   unsigned int encoded_nelts () const;
   bool encoded_full_vector_p () const;
+  T elt (unsigned int) const;
 
   void finalize ();
 
@@ -161,6 +166,38 @@ vector_builder<T, Derived>::new_vector (unsigned int full_nelts,
   m_nelts_per_pattern = nelts_per_pattern;
   this->reserve (encoded_nelts ());
   this->truncate (0);
+}
+
+/* Return the value of vector element I, which might or might not be
+   encoded explicitly.  */
+
+template<typename T, typename Derived>
+T
+vector_builder<T, Derived>::elt (unsigned int i) const
+{
+  /* This only makes sense if the encoding has been fully populated.  */
+  gcc_checking_assert (encoded_nelts () <= this->length ());
+
+  /* First handle elements that are already present in the underlying
+     vector, regardless of whether they're part of the encoding or not.  */
+  if (i < this->length ())
+    return (*this)[i];
+
+  /* Identify the pattern that contains element I and work out the index of
+     the last encoded element for that pattern.  */
+  unsigned int pattern = i % m_npatterns;
+  unsigned int count = i / m_npatterns;
+  unsigned int final_i = encoded_nelts () - m_npatterns + pattern;
+  T final = (*this)[final_i];
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (m_nelts_per_pattern <= 2)
+    return final;
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  T prev = (*this)[final_i - m_npatterns];
+  return derived ()->apply_step (final, count - 2,
+				 derived ()->step (prev, final));
 }
 
 /* Change the encoding to NPATTERNS patterns of NELTS_PER_PATTERN each,

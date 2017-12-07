@@ -1,5 +1,22 @@
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* vector-builder.h (vector_builder::derived): New const overload.
+	(vector_builder::elt): New function.
+	* tree-vector-builder.h (tree_vector_builder::type): New function.
+	(tree_vector_builder::apply_step): Declare.
+	* tree-vector-builder.c (tree_vector_builder::apply_step): New
+	function.
+	* gimple-fold.h (tree_vector_builder): Declare.
+	(gimple_build_vector): Take a tree_vector_builder instead of a
+	type and vector of elements.
+	* gimple-fold.c (gimple_build_vector): Likewise.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Update call
+	accordingly.
+	(get_initial_defs_for_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vector-builder.h
 	(tree_vector_builder::new_binary_operation): Declare.
 	* tree-vector-builder.c
