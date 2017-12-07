@@ -1,3 +1,10 @@
+2017-12-08  Joseph Myers  <joseph@codesourcery.com>
+	    Alexander Monakov  <amonakov@ispras.ru>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81906
+	* config/i386/i386.c (ix86_expand_rint): Handle flag_rounding_math.
+
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_print_address_internal): Return

@@ -1,5 +1,8 @@
 2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/81906
+	* gcc.target/i386/pr81906.c: New test.
+
 	PR tree-optimization/83075
 	* gcc.dg/tree-ssa/strncpy-2.c: Use size_t instead of unsigned, add
 	separate function with noipa attribute to also verify behavior when
