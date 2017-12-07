@@ -410,10 +410,10 @@ negate_expr_p (tree t)
 	if (FLOAT_TYPE_P (TREE_TYPE (type)) || TYPE_OVERFLOW_WRAPS (type))
 	  return true;
 
-	int count = VECTOR_CST_NELTS (t), i;
-
-	for (i = 0; i < count; i++)
-	  if (!negate_expr_p (VECTOR_CST_ELT (t, i)))
+	/* Steps don't prevent negation.  */
+	unsigned int count = vector_cst_encoded_nelts (t);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!negate_expr_p (VECTOR_CST_ENCODED_ELT (t, i)))
 	    return false;
 
 	return true;
@@ -2981,17 +2981,19 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
       case VECTOR_CST:
 	{
-	  unsigned i;
-
-	  if (VECTOR_CST_NELTS (arg0) != VECTOR_CST_NELTS (arg1))
+	  if (VECTOR_CST_LOG2_NPATTERNS (arg0)
+	      != VECTOR_CST_LOG2_NPATTERNS (arg1))
 	    return 0;
 
-	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
-	    {
-	      if (!operand_equal_p (VECTOR_CST_ELT (arg0, i),
-				    VECTOR_CST_ELT (arg1, i), flags))
-		return 0;
-	    }
+	  if (VECTOR_CST_NELTS_PER_PATTERN (arg0)
+	      != VECTOR_CST_NELTS_PER_PATTERN (arg1))
+	    return 0;
+
+	  unsigned int count = vector_cst_encoded_nelts (arg0);
+	  for (unsigned int i = 0; i < count; ++i)
+	    if (!operand_equal_p (VECTOR_CST_ENCODED_ELT (arg0, i),
+				  VECTOR_CST_ENCODED_ELT (arg1, i), flags))
+	      return 0;
 	  return 1;
 	}
 
@@ -11992,8 +11994,9 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  fold_checksum_tree (TREE_IMAGPART (expr), ctx, ht);
 	  break;
 	case VECTOR_CST:
-	  for (i = 0; i < (int) VECTOR_CST_NELTS (expr); ++i)
-	    fold_checksum_tree (VECTOR_CST_ELT (expr, i), ctx, ht);
+	  len = vector_cst_encoded_nelts (expr);
+	  for (i = 0; i < len; ++i)
+	    fold_checksum_tree (VECTOR_CST_ENCODED_ELT (expr, i), ctx, ht);
 	  break;
 	default:
 	  break;

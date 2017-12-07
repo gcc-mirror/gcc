@@ -40,6 +40,8 @@ public:
   bool new_unary_operation (tree, tree, bool);
   bool new_binary_operation (tree, tree, tree, bool);
 
+  static unsigned int binary_encoded_nelts (tree, tree);
+
 private:
   bool equal_p (const_tree, const_tree) const;
   bool allow_steps_p () const;

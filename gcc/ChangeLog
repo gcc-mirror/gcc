@@ -1,5 +1,25 @@
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vector-builder.h
+	(tree_vector_builder::binary_encoded_nelts): Declare.
+	* tree-vector-builder.c
+	(tree_vector_builder::binary_encoded_nelts): New function.
+	* fold-const.c (negate_expr_p): Likewise.
+	(operand_equal_p, fold_checksum_tree): Likewise.
+	* tree-loop-distribution.c (const_with_all_bytes_same): Likewise.
+	* tree.c (integer_zerop, integer_onep, integer_all_onesp, real_zerop)
+	(real_onep, real_minus_onep, add_expr, initializer_zerop): Likewise.
+	(uniform_vector_p): Likewise.
+	* varasm.c (const_hash_1, compare_constant): Likewise.
+	* tree-ssa-ccp.c: Include tree-vector-builder.h.
+	(valid_lattice_transition): Operate directly on the VECTOR_CST
+	encoding.
+	* ipa-icf.c: Include tree-vector-builder.h.
+	(sem_variable::equals): Operate directly on the VECTOR_CST encoding.
+	* print-tree.c (print_node): Print encoding of VECTOR_CSTs.
+
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree.c (build_vector): Delete.
 	* tree.h (build_vector): Make static and move into the self-testing
 	block.

@@ -96,6 +96,24 @@ tree_vector_builder::new_binary_operation (tree type, tree t1, tree t2,
   return true;
 }
 
+/* Return the number of elements that the caller needs to operate on in
+   order to handle a binary operation on VECTOR_CSTs T1 and T2.  This static
+   function is used instead of new_binary_operation if the result of the
+   operation is not a VECTOR_CST.  */
+
+unsigned int
+tree_vector_builder::binary_encoded_nelts (tree t1, tree t2)
+{
+  unsigned int nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1));
+  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2)));
+  /* See new_binary_operation for details.  */
+  unsigned int npatterns = least_common_multiple (VECTOR_CST_NPATTERNS (t1),
+						  VECTOR_CST_NPATTERNS (t2));
+  unsigned int nelts_per_pattern = MAX (VECTOR_CST_NELTS_PER_PATTERN (t1),
+					VECTOR_CST_NELTS_PER_PATTERN (t2));
+  return MIN (npatterns * nelts_per_pattern, nelts);
+}
+
 /* Return a vector element with the value BASE + FACTOR * STEP.  */
 
 tree
