@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify-me.h"
 #include "gimplify.h"
 #include "tree-cfg.h"
+#include "tree-vector-builder.h"
 
 
 static void expand_vector_operations_1 (gimple_stmt_iterator *);
@@ -398,11 +399,10 @@ add_rshift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts)
   if (op != unknown_optab
       && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
     {
-      auto_vec<tree, 32> vec (nunits);
+      tree_vector_builder vec (type, nunits, 1);
       for (i = 0; i < nunits; i++)
 	vec.quick_push (build_int_cst (TREE_TYPE (type), shiftcnts[i]));
-      return gimplify_build2 (gsi, RSHIFT_EXPR, type, op0,
-			      build_vector (type, vec));
+      return gimplify_build2 (gsi, RSHIFT_EXPR, type, op0, vec.build ());
     }
 
   return NULL_TREE;
@@ -635,12 +635,12 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      mask_type = build_same_sized_truth_vector_type (type);
 	      zero = build_zero_cst (type);
 	      cond = build2 (LT_EXPR, mask_type, op0, zero);
-	      auto_vec<tree, 32> vec (nunits);
+	      tree_vector_builder vec (type, nunits, 1);
 	      for (i = 0; i < nunits; i++)
 		vec.quick_push (build_int_cst (TREE_TYPE (type),
 					       (HOST_WIDE_INT_1U
 						<< shifts[i]) - 1));
-	      cst = build_vector (type, vec);
+	      cst = vec.build ();
 	      addend = make_ssa_name (type);
 	      stmt = gimple_build_assign (addend, VEC_COND_EXPR, cond,
 					  cst, zero);
@@ -674,12 +674,12 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       else
 	{
 	  tree mask;
-	  auto_vec<tree, 32> vec (nunits);
+	  tree_vector_builder vec (type, nunits, 1);
 	  for (i = 0; i < nunits; i++)
 	    vec.quick_push (build_int_cst (TREE_TYPE (type),
 					   (HOST_WIDE_INT_1U
 					    << shifts[i]) - 1));
-	  mask = build_vector (type, vec);
+	  mask = vec.build ();
 	  op = optab_for_tree_code (BIT_AND_EXPR, type, optab_default);
 	  if (op != unknown_optab
 	      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
@@ -753,10 +753,10 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       return NULL_TREE;
     }
 
-  auto_vec<tree, 32> vec (nunits);
+  tree_vector_builder vec (type, nunits, 1);
   for (i = 0; i < nunits; i++)
     vec.quick_push (build_int_cst (TREE_TYPE (type), mulc[i]));
-  mulcst = build_vector (type, vec);
+  mulcst = vec.build ();
 
   cur_op = gimplify_build2 (gsi, MULT_HIGHPART_EXPR, type, cur_op, mulcst);
 
@@ -1104,7 +1104,7 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
       }
   if (all_same)
     return;
-  auto_vec<tree, 32> cst (nelts);
+  tree_vector_builder cst (type, nelts, 1);
   for (i = 0; i < nelts; i++)
     {
       tree this_base = CONSTRUCTOR_ELT (rhs, i)->value;
@@ -1127,7 +1127,7 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
   g = gimple_build_assign (make_ssa_name (type), rhs);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   g = gimple_build_assign (lhs, PLUS_EXPR, gimple_assign_lhs (g),
-			   build_vector (type, cst));
+			   cst.build ());
   gsi_replace (gsi, g, false);
 }
 

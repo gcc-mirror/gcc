@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "builtins.h"
 #include "internal-fn.h"
+#include "tree-vector-builder.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -2520,10 +2521,10 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
       return true;
     }
 
-  auto_vec<tree, 32> telts (num_bytes);
+  tree_vector_builder telts (char_vectype, num_bytes, 1);
   for (unsigned i = 0; i < num_bytes; ++i)
     telts.quick_push (build_int_cst (char_type_node, elts[i]));
-  tree bswap_vconst = build_vector (char_vectype, telts);
+  tree bswap_vconst = telts.build ();
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
@@ -2941,11 +2942,11 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  if (gimple_call_internal_p (stmt)
 	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
 	    {
-	      auto_vec<tree, 32> v (nunits_out);
-	      for (int k = 0; k < nunits_out; ++k)
+	      tree_vector_builder v (vectype_out, 1, 3);
+	      for (int k = 0; k < 3; ++k)
 		v.quick_push (build_int_cst (unsigned_type_node,
 					     j * nunits_out + k));
-	      tree cst = build_vector (vectype_out, v);
+	      tree cst = v.build ();
 	      tree new_var
 		= vect_get_new_ssa_name (vectype_out, vect_simple_var, "cst_");
 	      gimple *init_stmt = gimple_build_assign (new_var, cst);
@@ -6507,7 +6508,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 tree
 vect_gen_perm_mask_any (tree vectype, vec_perm_indices sel)
 {
-  tree mask_elt_type, mask_type, mask_vec;
+  tree mask_elt_type, mask_type;
 
   unsigned int nunits = sel.length ();
   gcc_checking_assert (nunits == TYPE_VECTOR_SUBPARTS (vectype));
@@ -6516,12 +6517,10 @@ vect_gen_perm_mask_any (tree vectype, vec_perm_indices sel)
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
-  auto_vec<tree, 32> mask_elts (nunits);
+  tree_vector_builder mask_elts (mask_type, nunits, 1);
   for (unsigned int i = 0; i < nunits; ++i)
     mask_elts.quick_push (build_int_cst (mask_elt_type, sel[i]));
-  mask_vec = build_vector (mask_type, mask_elts);
-
-  return mask_vec;
+  return mask_elts.build ();
 }
 
 /* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_p,
