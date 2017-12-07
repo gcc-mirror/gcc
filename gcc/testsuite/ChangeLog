@@ -1,3 +1,22 @@
+2017-12-07  Bin Cheng  <bin.cheng@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* gcc.dg/tree-ssa/loop-interchange-1.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-1b.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-2.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-3.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-4.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-5.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-6.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-7.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-8.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-9.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-10.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-11.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-12.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-13.c: New test.
+
 2017-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83164
