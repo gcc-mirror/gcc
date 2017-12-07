@@ -4184,8 +4184,11 @@ rs6000_option_override_internal (bool global_init_p)
 	  }
     }
 
-  gcc_assert (tune_index >= 0);
-  rs6000_cpu = processor_target_table[tune_index].processor;
+  if (cpu_index >= 0)
+    rs6000_cpu = processor_target_table[cpu_index].processor;
+  else
+    rs6000_cpu = TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT;
+
   gcc_assert (tune_index >= 0);
   rs6000_tune = processor_target_table[tune_index].processor;
 
