@@ -1,3 +1,10 @@
+2017-12-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR libstdc++/83120
+	* testsuite/ext/special_functions/hyperg/check_value.cc: Add
+	-ffp-contract=off. Add -ffloat-store for m68* and ia32.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/check_value.cc: Same.
+
 2017-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81544
