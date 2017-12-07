@@ -1,5 +1,11 @@
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree.c (build_vector): Delete.
+	* tree.h (build_vector): Make static and move into the self-testing
+	block.
+
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* vector-builder.h (vector_builder::derived): New const overload.
 	(vector_builder::elt): New function.
 	* tree-vector-builder.h (tree_vector_builder::type): New function.
