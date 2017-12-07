@@ -150,7 +150,7 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 bool is_packed);
 static machine_mode
 aarch64_simd_container_mode (scalar_mode mode, unsigned width);
-static void aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x);
+static bool aarch64_print_ldpstp_address (FILE *, machine_mode, rtx);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -5600,22 +5600,21 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       {
 	machine_mode mode = GET_MODE (x);
 
-	if (GET_CODE (x) != MEM)
+	if (GET_CODE (x) != MEM
+	    || (code == 'y' && GET_MODE_SIZE (mode) != 16))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
 	  }
 
 	if (code == 'y')
-	  {
-	    /* LDP/STP which uses a single double-width memory operand.
-	       Adjust the mode to appear like a typical LDP/STP.
-	       Currently this is supported for 16-byte accesses only.  */
-	    gcc_assert (GET_MODE_SIZE (mode) == 16);
-	    mode = DFmode;
-	  }
+	  /* LDP/STP which uses a single double-width memory operand.
+	     Adjust the mode to appear like a typical LDP/STP.
+	     Currently this is supported for 16-byte accesses only.  */
+	  mode = DFmode;
 
-	aarch64_print_ldpstp_address (f, mode, XEXP (x, 0));
+	if (!aarch64_print_ldpstp_address (f, mode, XEXP (x, 0)))
+	  output_operand_lossage ("invalid operand prefix '%%%c'", code);
       }
       break;
 
@@ -5628,7 +5627,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 /* Print address 'x' of a memory access with mode 'mode'.
    'op' is the context required by aarch64_classify_address.  It can either be
    MEM for a normal memory access or PARALLEL for LDP/STP.  */
-static void
+static bool
 aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 {
   struct aarch64_address_info addr;
@@ -5645,7 +5644,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	else
 	  asm_fprintf (f, "[%s, %wd]", reg_names [REGNO (addr.base)],
 		       INTVAL (addr.offset));
-	return;
+	return true;
 
       case ADDRESS_REG_REG:
 	if (addr.shift == 0)
@@ -5654,7 +5653,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	else
 	  asm_fprintf (f, "[%s, %s, lsl %u]", reg_names [REGNO (addr.base)],
 		       reg_names [REGNO (addr.offset)], addr.shift);
-	return;
+	return true;
 
       case ADDRESS_REG_UXTW:
 	if (addr.shift == 0)
@@ -5663,7 +5662,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	else
 	  asm_fprintf (f, "[%s, w%d, uxtw %u]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM, addr.shift);
-	return;
+	return true;
 
       case ADDRESS_REG_SXTW:
 	if (addr.shift == 0)
@@ -5672,7 +5671,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	else
 	  asm_fprintf (f, "[%s, w%d, sxtw %u]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM, addr.shift);
-	return;
+	return true;
 
       case ADDRESS_REG_WB:
 	switch (GET_CODE (x))
@@ -5680,27 +5679,27 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	  case PRE_INC:
 	    asm_fprintf (f, "[%s, %d]!", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (mode));
-	    return;
+	    return true;
 	  case POST_INC:
 	    asm_fprintf (f, "[%s], %d", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (mode));
-	    return;
+	    return true;
 	  case PRE_DEC:
 	    asm_fprintf (f, "[%s, -%d]!", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (mode));
-	    return;
+	    return true;
 	  case POST_DEC:
 	    asm_fprintf (f, "[%s], -%d", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (mode));
-	    return;
+	    return true;
 	  case PRE_MODIFY:
 	    asm_fprintf (f, "[%s, %wd]!", reg_names [REGNO (addr.base)],
 			 INTVAL (addr.offset));
-	    return;
+	    return true;
 	  case POST_MODIFY:
 	    asm_fprintf (f, "[%s], %wd", reg_names [REGNO (addr.base)],
 			 INTVAL (addr.offset));
-	    return;
+	    return true;
 	  default:
 	    break;
 	  }
@@ -5710,28 +5709,29 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 	asm_fprintf (f, "[%s, #:lo12:", reg_names [REGNO (addr.base)]);
 	output_addr_const (f, addr.offset);
 	asm_fprintf (f, "]");
-	return;
+	return true;
 
       case ADDRESS_SYMBOLIC:
 	output_addr_const (f, x);
-	return;
+	return true;
       }
 
-  output_operand_lossage ("invalid operand for '%%%c'", op);
+  return false;
 }
 
 /* Print address 'x' of a LDP/STP with mode 'mode'.  */
-static void
+static bool
 aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x)
 {
-  aarch64_print_address_internal (f, mode, x, PARALLEL);
+  return aarch64_print_address_internal (f, mode, x, PARALLEL);
 }
 
 /* Print address 'x' of a memory access with mode 'mode'.  */
 static void
 aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
 {
-  aarch64_print_address_internal (f, mode, x, MEM);
+  if (!aarch64_print_address_internal (f, mode, x, MEM))
+    output_addr_const (f, x);
 }
 
 bool

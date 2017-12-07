@@ -1,5 +1,16 @@
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_print_address_internal): Return
+	a bool success value.  Don't call output_operand_lossage here.
+	(aarch64_print_ldpstp_address): Return a bool success value.
+	(aarch64_print_operand_address): Call output_addr_const if
+	aarch64_print_address_internal fails.
+	(aarch64_print_operand): Don't assert that the mode is 16 bytes for
+	'y'; call output_operand_lossage instead.  Call output_operand_lossage
+	if aarch64_print_ldpstp_address fails.
+
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vector-builder.h
 	(tree_vector_builder::binary_encoded_nelts): Declare.
 	* tree-vector-builder.c
