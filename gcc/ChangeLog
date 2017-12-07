@@ -1,5 +1,17 @@
 2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vector-builder.h
+	(tree_vector_builder::new_binary_operation): Declare.
+	* tree-vector-builder.c
+	(tree_vector_builder::new_binary_operation): New function.
+	* fold-const.c (fold_relational_const): Use it.
+	(const_binop): Likewise.  Check that both input vectors have
+	the same number of elements, thus excluding things like WIDEN_SUM.
+	Check whether it is possible to operate directly on the encodings
+	of stepped inputs.
+
+2017-12-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* fold-const.c (fold_negate_expr_1): Use tree_vector_builder and
 	new_unary_operation, operating only on the encoded elements.
 	(const_unop): Likewise.
