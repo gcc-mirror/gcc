@@ -296,8 +296,8 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	         variable.  */
 	      if (DECL_P (base)
 		  && ref.size != -1
-		  && ref.max_size == ref.size
-		  && (ref.offset + ref.size <= 0
+		  && ((ref.max_size == ref.size
+		       && ref.offset + ref.size <= 0)
 		      || (ref.offset >= 0
 			  && DECL_SIZE (base)
 			  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST

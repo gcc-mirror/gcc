@@ -1,3 +1,9 @@
+2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81782
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Properly
+	handle accesses outside of zero-sized vars.
+
 2017-12-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/83141
