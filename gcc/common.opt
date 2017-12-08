@@ -1512,8 +1512,8 @@ Common Alias(floop-nest-optimize)
 Enable loop nest transforms.  Same as -floop-nest-optimize.
 
 floop-unroll-and-jam
-Common Alias(floop-nest-optimize)
-Enable loop nest transforms.  Same as -floop-nest-optimize.
+Common Report Var(flag_unroll_jam) Optimization
+Perform unroll-and-jam on loops.
 
 fgnu-tm
 Common Report Var(flag_tm)
@@ -2694,10 +2694,6 @@ Perform loop unswitching.
 fsplit-loops
 Common Report Var(flag_split_loops) Optimization
 Perform loop splitting.
-
-funroll-and-jam
-Common Report Var(flag_unroll_jam) Optimization
-Perform unroll-and-jam on loops.
 
 funwind-tables
 Common Report Var(flag_unwind_tables) Optimization

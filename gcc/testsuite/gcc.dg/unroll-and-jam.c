@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -funroll-and-jam --param unroll-jam-min-percent=0 -fdump-tree-unrolljam-details" } */
+/* { dg-options "-O3 -floop-unroll-and-jam --param unroll-jam-min-percent=0 -fdump-tree-unrolljam-details" } */
 /* { dg-require-effective-target int32plus } */
 
 #include <stdio.h>
