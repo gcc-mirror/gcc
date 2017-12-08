@@ -2,6 +2,7 @@
 // { dg-do run }
 // { dg-options "-O3" }
 // { dg-additional-options "-mbmi2 -mtune=intel" { target bmi2 } }
+// { dg-additional-options "-mclear-hwcap" { target *-*-solaris* } }
 
 #if __SIZEOF_INT__ == 4 && __SIZEOF_LONG_LONG__ == 8 && __CHAR_BIT__ == 8
 
