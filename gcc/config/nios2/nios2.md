@@ -224,14 +224,14 @@
 	gcc_unreachable ();
       }
   }
-  "(nios2_symbolic_memory_operand_p (operands[0]) 
-   || nios2_symbolic_memory_operand_p (operands[1]))"
+  "(nios2_large_constant_memory_operand_p (operands[0]) 
+   || nios2_large_constant_memory_operand_p (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
   {
-    if (nios2_symbolic_memory_operand_p (operands[0]))
-      operands[0] = nios2_split_symbolic_memory_operand (operands[0]);
+    if (nios2_large_constant_memory_operand_p (operands[0]))
+      operands[0] = nios2_split_large_constant_memory_operand (operands[0]);
     else
-      operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+      operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
   }
   [(set_attr "type" "st,ld,mov")])
 
@@ -253,14 +253,14 @@
 	gcc_unreachable ();
       }
   }
-  "(nios2_symbolic_memory_operand_p (operands[0]) 
-   || nios2_symbolic_memory_operand_p (operands[1]))"
+  "(nios2_large_constant_memory_operand_p (operands[0]) 
+   || nios2_large_constant_memory_operand_p (operands[1]))"
   [(set (match_dup 0) (match_dup 1))]
   {
-    if (nios2_symbolic_memory_operand_p (operands[0]))
-      operands[0] = nios2_split_symbolic_memory_operand (operands[0]);
+    if (nios2_large_constant_memory_operand_p (operands[0]))
+      operands[0] = nios2_split_large_constant_memory_operand (operands[0]);
     else
-      operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+      operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
   }
   [(set_attr "type" "st,ld,mov")])
 
@@ -296,15 +296,17 @@
 	gcc_unreachable ();
       }
   }
-  "(nios2_symbolic_memory_operand_p (operands[0]) 
-    || nios2_symbolic_memory_operand_p (operands[1])
-    || nios2_large_constant_p (operands[1]))"
+  "(nios2_large_constant_memory_operand_p (operands[0]) 
+    || nios2_large_constant_memory_operand_p (operands[1])
+    || (nios2_large_constant_p (operands[1]) 
+        && !SMALL_INT_UNSIGNED (INTVAL (operands[1]))
+	&& !UPPER16_INT (INTVAL (operands[1]))))"
   [(set (match_dup 0) (match_dup 1))]
   {
-    if (nios2_symbolic_memory_operand_p (operands[0]))
-      operands[0] = nios2_split_symbolic_memory_operand (operands[0]);
-    else if (nios2_symbolic_memory_operand_p (operands[1]))
-      operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+    if (nios2_large_constant_memory_operand_p (operands[0]))
+      operands[0] = nios2_split_large_constant_memory_operand (operands[0]);
+    else if (nios2_large_constant_memory_operand_p (operands[1]))
+      operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
     else
       operands[1] = nios2_split_large_constant (operands[1], operands[0]);
   }
@@ -364,10 +366,10 @@
   "@
     andi%.\\t%0, %1, 0xffff
     ldhu%o1%.\\t%0, %1"
-  "nios2_symbolic_memory_operand_p (operands[1])"
+  "nios2_large_constant_memory_operand_p (operands[1])"
   [(set (match_dup 0) (zero_extend:SI (match_dup 1)))]
   {
-    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+    operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
   }
   [(set_attr "type"     "and,ld")])
 
@@ -378,10 +380,10 @@
   "@
     andi%.\\t%0, %1, 0xff
     ldbu%o1%.\\t%0, %1"
-  "nios2_symbolic_memory_operand_p (operands[1])"
+  "nios2_large_constant_memory_operand_p (operands[1])"
   [(set (match_dup 0) (zero_extend:QX (match_dup 1)))]
   {
-    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+    operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
   }
   [(set_attr "type"     "and,ld")])
 
@@ -394,10 +396,10 @@
   "@
    #
    ldh%o1%.\\t%0, %1"
-  "nios2_symbolic_memory_operand_p (operands[1])"
+  "nios2_large_constant_memory_operand_p (operands[1])"
   [(set (match_dup 0) (sign_extend:SI (match_dup 1)))]
   {
-    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+    operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
   }
   [(set_attr "type" "alu,ld")])
 
@@ -408,10 +410,10 @@
   "@
    #
    ldb%o1%.\\t%0, %1"
-  "nios2_symbolic_memory_operand_p (operands[1])"
+  "nios2_large_constant_memory_operand_p (operands[1])"
   [(set (match_dup 0) (sign_extend:QX (match_dup 1)))]
   {
-    operands[1] = nios2_split_symbolic_memory_operand (operands[1]);
+    operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
   }
   [(set_attr "type" "alu,ld")])
 
