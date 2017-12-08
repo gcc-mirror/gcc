@@ -1,3 +1,15 @@
+2017-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arc/arc.c (arc_attribute_table): Add exclusions to
+	the comment.
+	* config/avr/avr.c (avr_attribute_table): Likewise.
+	* config/msp430/msp430.c (msp430_attribute_table): Likewise.
+	* config/rl78/rl78.c (rl78_attribute_table): Likewise.
+	* config/nds32/nds32.c (nds32_attribute_table): Likewise.
+	* config/darwin.h (SUBTARGET_ATTRIBUTE_TABLE): Initialize new member
+	of struct attribute_spec.
+	* config/i386/cygming.h (SUBTARGET_ATTRIBUTE_TABLE): Likewise.
+
 2017-12-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/82960

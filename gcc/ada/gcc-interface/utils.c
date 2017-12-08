@@ -108,7 +108,7 @@ static tree fake_attribute_handler (tree *, tree, tree, int, bool *);
 const struct attribute_spec gnat_internal_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "const",        0, 0,  true,  false, false, handle_const_attribute,
     false, NULL },
   { "nothrow",      0, 0,  true,  false, false, handle_nothrow_attribute,

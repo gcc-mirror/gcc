@@ -218,7 +218,7 @@ static tree arc_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 const struct attribute_spec arc_attribute_table[] =
 {
  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-      affects_type_identity } */
+      affects_type_identity, exclusions } */
   { "interrupt", 1, 1, true, false, false, arc_handle_interrupt_attribute,
       true, NULL },
   /* Function calls made to this symbol must be done indirectly, because

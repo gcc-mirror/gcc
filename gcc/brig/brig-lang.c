@@ -448,7 +448,7 @@ brig_localize_identifier (const char *ident)
 const struct attribute_spec brig_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       do_diagnostic } */
+       affects_type_identity, exclusions } */
   { "leaf",		      0, 0, true,  false, false,
 			      handle_leaf_attribute, false, NULL },
   { "const",                  0, 0, true,  false, false,
