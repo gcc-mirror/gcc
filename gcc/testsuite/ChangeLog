@@ -1,3 +1,7 @@
+2017-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/opt/pr83252.C: Add -mclear-hwcap on *-*-solaris*.
+
 2017-12-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/83141
