@@ -406,8 +406,8 @@ along with GCC; see the file COPYING3.  If not see
 /* #pragma init and #pragma fini are implemented on top of init and
    fini attributes.  */
 #define SOLARIS_ATTRIBUTE_TABLE						\
-  { "init",      0, 0, true,  false,  false, NULL, false },		\
-  { "fini",      0, 0, true,  false,  false, NULL, false }
+  { "init",      0, 0, true,  false,  false, NULL, false, NULL },	\
+  { "fini",      0, 0, true,  false,  false, NULL, false, NULL }
 
 /* Solaris-specific #pragmas are implemented on top of attributes.  Hook in
    the bits from config/sol2.c.  */
