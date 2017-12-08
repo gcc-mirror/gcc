@@ -1,3 +1,9 @@
+2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* gcc.target/i386/vectorize9.c: New testcase.
+	* gcc.target/i386/vectorize10.c: New testcase.
+
 2017-12-08  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512f-vnni-1.c: Add vdpwssd checks.

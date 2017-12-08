@@ -7791,7 +7791,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 static bool
 vect_is_simple_cond (tree cond, vec_info *vinfo,
-		     tree *comp_vectype, enum vect_def_type *dts)
+		     tree *comp_vectype, enum vect_def_type *dts,
+		     tree vectype)
 {
   tree lhs, rhs;
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
@@ -7844,6 +7845,20 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
     return false;
 
   *comp_vectype = vectype1 ? vectype1 : vectype2;
+  /* Invariant comparison.  */
+  if (! *comp_vectype)
+    {
+      tree scalar_type = TREE_TYPE (lhs);
+      /* If we can widen the comparison to match vectype do so.  */
+      if (INTEGRAL_TYPE_P (scalar_type)
+	  && tree_int_cst_lt (TYPE_SIZE (scalar_type),
+			      TYPE_SIZE (TREE_TYPE (vectype))))
+	scalar_type = build_nonstandard_integer_type
+	  (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
+	   TYPE_UNSIGNED (scalar_type));
+      *comp_vectype = get_vectype_for_scalar_type (scalar_type);
+    }
+
   return true;
 }
 
@@ -7941,7 +7956,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   else_clause = gimple_assign_rhs3 (stmt);
 
   if (!vect_is_simple_cond (cond_expr, stmt_info->vinfo,
-			    &comp_vectype, &dts[0])
+			    &comp_vectype, &dts[0], vectype)
       || !comp_vectype)
     return false;
 

@@ -1,3 +1,13 @@
+2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* tree-vect-stmts.c (vect_is_simple_cond): For invariant
+	conditions try to create a comparison vector type matching
+	the data vector type.
+	(vectorizable_condition): Adjust.
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern):
+	Leave invariant conditions alone in case we can vectorize those.
+
 2017-12-08  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/avx512vnniintrin.h (_mm512_dpwssd_epi32,
