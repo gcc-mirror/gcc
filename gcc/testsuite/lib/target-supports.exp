@@ -1856,6 +1856,20 @@ proc check_effective_target_avx512f_runtime { } {
     return 0
 }
 
+# Return 1 if bmi2 instructions can be compiled.
+proc check_effective_target_bmi2 { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+        return 0
+    }
+    return [check_no_compiler_messages bmi2 object {
+	unsigned int
+	_bzhi_u32 (unsigned int __X, unsigned int __Y)
+	{
+	    return __builtin_ia32_bzhi_si (__X, __Y);
+	}
+    } "-mbmi2" ]
+}
+
 # Return 1 if the target supports executing MIPS Paired-Single instructions,
 # 0 otherwise.  Cache the result.
 
