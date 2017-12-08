@@ -1,3 +1,8 @@
+2017-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/81595
+	* gcc.c-torture/compile/pr81595.c: New test.
+
 2017-12-08  Michael Matz  <matz@suse.de>
 
 	Fix PR tree-optimization/83323
