@@ -652,7 +652,7 @@ stmt_may_be_vtbl_ptr_store (gimple *stmt)
 	  if (TREE_CODE (lhs) == COMPONENT_REF
 	      && !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1)))
 	    return false;
-	  /* In the future we might want to use get_base_ref_and_offset to find
+	  /* In the future we might want to use get_ref_base_and_extent to find
 	     if there is a field corresponding to the offset and if so, proceed
 	     almost like if it was a component ref.  */
 	}

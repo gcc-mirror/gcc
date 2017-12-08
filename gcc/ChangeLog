@@ -1,3 +1,9 @@
+2017-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-polymorphic-call.c (noncall_stmt_may_be_vtbl_ptr_store): Fix
+	a comment typo, get_base_ref_and_offset -> get_ref_base_and_extent.
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Likewise.
+
 2017-12-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81782
