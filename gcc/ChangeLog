@@ -1,3 +1,10 @@
+2017-06-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (arm_asm_auto_mfpu): Declare.
+	(ASM_CPU_SPEC_FUNCTIONS): Add new rule asm_auto_mfpu.
+	(ASM_CPU_SPEC): Use it if -mfpu is set to auto.
+	* common/config/arm/arm-common.c (arm_asm_auto_mfpu): New function.
+
 2017-06-08  Tristan Gingold  <gindold@adacore.com>
 
 	PR ada/81470
