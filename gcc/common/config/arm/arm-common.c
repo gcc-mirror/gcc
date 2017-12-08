@@ -823,6 +823,86 @@ arm_be8_option (int argc, const char **argv)
   return "";
 }
 
+/* Generate a -mfpu= option for passing to the assembler.  This is
+   only called when -mfpu was set (possibly defaulted) to auto and is
+   needed to ensure that the assembler knows the correct FPU to use.
+   It wouldn't really be needed except that the compiler can be used
+   to invoke the assembler directly on hand-written files that lack
+   the necessary internal .fpu directives.  We assume that the architecture
+   canonicalization calls have already been made so that we have a final
+   -march= option to derive the fpu from.  */
+const char*
+arm_asm_auto_mfpu (int argc, const char **argv)
+{
+  static char *auto_fpu = NULL;
+  const char *arch = NULL;
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+  const arch_option *selected_arch;
+  static const char* fpuname = "softvfp";
+
+  /* Handle multiple calls to this routine.  */
+  if (auto_fpu)
+    {
+      free (auto_fpu);
+      auto_fpu = NULL;
+    }
+
+  while (argc)
+    {
+      if (strcmp (argv[0], "arch") == 0)
+	arch = argv[1];
+      else
+	fatal_error (input_location,
+		     "unrecognized operand to %%:asm_auto_mfpu");
+      argc -= 2;
+      argv += 2;
+    }
+
+  auto_sbitmap target_isa (isa_num_bits);
+  auto_sbitmap fpubits (isa_num_bits);
+
+  gcc_assert (arch != NULL);
+  selected_arch = arm_parse_arch_option_name (all_architectures,
+					      "-march", arch);
+  if (selected_arch == NULL)
+    return "";
+
+  arm_initialize_isa (target_isa, selected_arch->common.isa_bits);
+  arm_parse_option_features (target_isa, &selected_arch->common,
+			     strchr (arch, '+'));
+  arm_initialize_isa (fpubits, fpu_bitlist);
+
+  bitmap_and (fpubits, fpubits, target_isa);
+
+  /* The logic below is essentially identical to that in
+     arm.c:arm_identify_fpu_from_isa(), but that only works in the main
+     part of the compiler.  */
+
+  /* If there are no FPU capability bits, we just pass -mfpu=softvfp.  */
+  if (!bitmap_empty_p (fpubits))
+    {
+      unsigned int i;
+      auto_sbitmap cand_fpubits (isa_num_bits);
+      for (i = 0; i < TARGET_FPU_auto; i++)
+	{
+	  arm_initialize_isa (cand_fpubits, all_fpus[i].isa_bits);
+	  if (bitmap_equal_p (fpubits, cand_fpubits))
+	    {
+	      fpuname = all_fpus[i].name;
+	      break;
+	    }
+	}
+
+      gcc_assert (i != TARGET_FPU_auto);
+    }
+
+  auto_fpu = (char *) xmalloc (strlen (fpuname) + sizeof ("-mfpu="));
+  strcpy (auto_fpu, "-mfpu=");
+  strcat (auto_fpu, fpuname);
+  return auto_fpu;
+}
+
 #undef ARM_CPU_NAME_LENGTH
 
 

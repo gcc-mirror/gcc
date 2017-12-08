@@ -2166,13 +2166,16 @@ extern int making_const_table;
 
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
 extern const char *arm_rewrite_march (int argc, const char **argv);
+extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
 #define ASM_CPU_SPEC_FUNCTIONS			\
   { "rewrite_mcpu", arm_rewrite_mcpu },	\
-  { "rewrite_march", arm_rewrite_march },
+  { "rewrite_march", arm_rewrite_march },	\
+  { "asm_auto_mfpu", arm_asm_auto_mfpu },
 
 #define ASM_CPU_SPEC							\
+  " %{mfpu=auto:%<mfpu=auto %:asm_auto_mfpu(%{march=*: arch %*})}"	\
   " %{mcpu=generic-*:-march=%:rewrite_march(%{mcpu=generic-*:%*});"	\
-  "   march=*:-march=%:rewrite_march(%{march=*:%*});"		\
+  "   march=*:-march=%:rewrite_march(%{march=*:%*});"			\
   "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
   " }"
 
