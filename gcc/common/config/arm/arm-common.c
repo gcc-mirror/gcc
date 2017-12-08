@@ -18,6 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_LIST
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -30,6 +31,7 @@
 #include "flags.h"
 #include "sbitmap.h"
 #include "diagnostic.h"
+#include <algorithm>
 
 /* Set default optimization options.  */
 static const struct default_options arm_option_optimization_table[] =
@@ -114,26 +116,99 @@ arm_rewrite_mcpu (int argc, const char **argv)
   return arm_rewrite_selected_cpu (argv[argc - 1]);
 }
 
-/* Truncate NAME at the first '+' character seen, or return
-   NAME unmodified.  Similar to arm_rewrite_selected_cpu, but we must
-   preserve '.' as that is part of some architecture names.  */
+static bool
+compare_opt_names (const char *first, const char *second)
+{
+  for (int i = 0; ; i++)
+    if (first[i] == 0
+	|| first[i] < second[i])
+      return true;
+  return false;
+}
 
+/* Rewrite the architecture string for passing to the assembler.
+   Although the syntax is similar we cannot assume that it supports
+   the newer FP related options.  So strip any option that only
+   defines features in the standard -mfpu options out.  We'll generate
+   a suitable -mfpu option elsewhere to carry that information.  NAME
+   should already have been canonicalized, so we do not expect to
+   encounter +no.. options that remove features.  A final problem is
+   that the assembler expects the feature extensions to be listed
+   alphabetically, so we build a list of required options and then
+   sort them into canonical order in the resulting string.  */
 const char *
 arm_rewrite_selected_arch (const char *name)
 {
-  static char output_buf[ARM_CPU_NAME_LENGTH + 1] = {0};
-  char *arg_pos;
+  /* The result we return needs to be semi persistent, so handle being
+     re-invoked.  */
+  static char *asm_arch = NULL;
 
-  strncpy (output_buf, name, ARM_CPU_NAME_LENGTH);
-  output_buf[ARM_CPU_NAME_LENGTH] = 0;
+  if (asm_arch)
+    {
+      free (asm_arch);
+      asm_arch = NULL;
+    }
 
-  arg_pos = strchr (output_buf, '+');
+  const char *arg_pos = strchr (name, '+');
 
-  /* If we found a '+' truncate the entry at that point.  */
-  if (arg_pos)
-    *arg_pos = '\0';
+  /* No extension options? just return the original string.  */
+  if (arg_pos == NULL)
+    return name;
 
-  return output_buf;
+  const arch_option *arch_opt
+    = arm_parse_arch_option_name (all_architectures, "-march", name);
+
+  auto_sbitmap fpu_bits (isa_num_bits);
+  static const enum isa_feature fpu_bitlist[]
+    = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+
+  arm_initialize_isa (fpu_bits, fpu_bitlist);
+
+  auto_sbitmap opt_bits (isa_num_bits);
+
+  /* Ensure that the resulting string is large enough for the result.  We
+     never add options, so using strdup here will ensure that.  */
+  asm_arch = xstrdup (name);
+  asm_arch[arg_pos - name] = '\0';
+
+  std::vector<const char *>optlist;
+
+  while (arg_pos)
+    {
+      const char *end = strchr (arg_pos + 1, '+');
+      size_t len = end ? end - arg_pos : strlen (arg_pos);
+
+      for (const cpu_arch_extension *entry = arch_opt->common.extensions;
+	   entry->name != NULL;
+	   entry++)
+	{
+	  if (strncmp (entry->name, arg_pos + 1, len - 1) == 0
+	      && entry->name[len - 1] == '\0')
+	    {
+	      /* Don't expect removal options.  */
+	      gcc_assert (!entry->remove);
+	      arm_initialize_isa (opt_bits, entry->isa_bits);
+	      if (!bitmap_subset_p (opt_bits, fpu_bits))
+		optlist.push_back (entry->name);
+	      bitmap_clear (opt_bits);
+	      break;
+	    }
+	}
+
+      arg_pos = end;
+    }
+
+  std::sort (optlist.begin (), optlist.end (), compare_opt_names);
+
+  for (std::vector<const char *>::iterator opt_iter = optlist.begin ();
+       opt_iter != optlist.end ();
+       ++opt_iter)
+    {
+      strcat (asm_arch, "+");
+      strcat (asm_arch, (*opt_iter));
+    }
+
+  return asm_arch;
 }
 
 /* Called by the driver to rewrite a name passed to the -march
