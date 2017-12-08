@@ -2050,7 +2050,7 @@ msp430_data_attr (tree * node,
 const struct attribute_spec msp430_attribute_table[] =
 {
   /* Name        min_num_args     type_req,             affects_type_identity
-                      max_num_args,     fn_type_req
+		      max_num_args,     fn_type_req		exclusions
                           decl_req               handler.  */
   { ATTR_INTR,        0, 1, true,  false, false, msp430_attr, false, NULL },
   { ATTR_NAKED,       0, 0, true,  false, false, msp430_attr, false, NULL },

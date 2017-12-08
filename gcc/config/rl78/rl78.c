@@ -858,7 +858,7 @@ rl78_handle_saddr_attribute (tree * node,
 const struct attribute_spec rl78_attribute_table[] =
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
+     affects_type_identity, exclusions.  */
   { "interrupt",      0, 0, true, false, false, rl78_handle_func_attribute,
     false, NULL },
   { "brk_interrupt",  0, 0, true, false, false, rl78_handle_func_attribute,

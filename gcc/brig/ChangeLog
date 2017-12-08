@@ -1,3 +1,7 @@
+2017-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* brig-lang.c (brig_attribute_table): Fix up comment.
+
 2017-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* brigfrontend/brig-branch-inst-handler.cc

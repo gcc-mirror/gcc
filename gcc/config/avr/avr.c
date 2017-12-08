@@ -9875,7 +9875,7 @@ static const struct attribute_spec
 avr_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+       affects_type_identity, exclusions } */
   { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute,
     false, NULL },
   { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,

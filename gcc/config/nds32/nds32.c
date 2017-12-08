@@ -83,7 +83,8 @@ static const char * const nds32_intrinsic_register_names[] =
 static const struct attribute_spec nds32_attribute_table[] =
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
-	       function_type_required, handler, affects_type_identity } */
+	       function_type_required, handler, affects_type_identity,
+	       exclusions } */
 
   /* The interrupt vid: [0-63]+ (actual vector number starts from 9 to 72).  */
   { "interrupt",    1, 64, false, false, false, NULL, false, NULL },
