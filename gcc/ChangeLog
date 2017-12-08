@@ -1,3 +1,8 @@
+2017-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (SOLARIS_ATTRIBUTE_TABLE): Initialize new member
+	of struct attribute_spec.
+
 2017-12-08  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/avx512vnniintrin.h (_mm512_dpwssds_epi32,
