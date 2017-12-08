@@ -12,6 +12,12 @@
 /* { dg-final { scan-assembler-times "vpdpbusds\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpdpbusds\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\\n\\r]*%xmm\[0-9\]+\[^\\n\\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpdpbusds\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\\n\\r]*%xmm\[0-9\]+\[^\\n\\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpdpwssd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpdpwssd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\\n\\r]*%ymm\[0-9\]+\[^\\n\\r\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpdpwssd\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\\n\\r]*%ymm\[0-9\]+\[^\\n\\r\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpdpwssd\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpdpwssd\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\\n\\r]*%xmm\[0-9\]+\[^\\n\\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vpdpwssd\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\\n\\r]*%xmm\[0-9\]+\[^\\n\\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 
 
 #include <immintrin.h>
@@ -38,5 +44,13 @@ avx512f_test (void)
   x_ = _mm_dpbusds_epi32 (x_, y_, z_);
   x_ = _mm_mask_dpbusds_epi32 (x_, m, y_, z_);
   x_ = _mm_maskz_dpbusds_epi32 (m, x_, y_, z_);
+
+  x = _mm256_dpwssd_epi32 (x, y, z);
+  x = _mm256_mask_dpwssd_epi32 (x, m, y, z);
+  x = _mm256_maskz_dpwssd_epi32 (m, x, y, z);
+
+  x_ = _mm_dpwssd_epi32 (x_, y_, z_);
+  x_ = _mm_mask_dpwssd_epi32 (x_, m, y_, z_);
+  x_ = _mm_maskz_dpwssd_epi32 (m, x_, y_, z_);
 
 }

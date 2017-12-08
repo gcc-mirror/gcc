@@ -1,10 +1,16 @@
 2017-12-08  Julia Koval  <julia.koval@intel.com>
 
-	* gcc.target/i386/avx512-check.h: Handle bit_VAES.
-	* gcc.target/i386/avx512f-aesdec-2.c: New test.
-	* gcc.target/i386/avx512fvl-vaes-1.c: Ditto.
-	* gcc.target/i386/avx512vl-aesdec-2.c: Ditto.
-	* gcc.target/i386/i386.exp (check_effective_target_avx512vaes): New.
+	* gcc.target/i386/avx512f-vnni-1.c: Add vdpwssd checks.
+	* gcc.target/i386/avx512vl-vnni-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpdpwssd-2.c: New.
+	* gcc.target/i386/avx512vl-vpdpwssd-2.c: Ditto.
+
+2017-12-08  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-vnni-1.c: Add vpdpbusds check.
+	* gcc.target/i386/avx512vl-vnni-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpdpbusds-2.c: New.
+	* gcc.target/i386/avx512vl-vpdpbusds-2.c: Ditto.
 
 2017-12-07  Sandra Loosemore  <sandra@codesourcery.com>
 
