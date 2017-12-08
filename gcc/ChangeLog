@@ -1,5 +1,14 @@
 2017-06-08  Richard Earnshaw  <rearnsha@arm.com>
 
+	* common/config/arm/arm-common.c: Include <algorithm>.
+	(INCLUDE_VECTOR): Define.
+	(compare_opt_names): New function.
+	(arm_rewrite_selected_arch): Only strip out extensions that can be
+	expressed through -mfpu.  Sort the remaining extensions
+	alphabetically.
+
+2017-06-08  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/arm.h (arm_asm_auto_mfpu): Declare.
 	(ASM_CPU_SPEC_FUNCTIONS): Add new rule asm_auto_mfpu.
 	(ASM_CPU_SPEC): Use it if -mfpu is set to auto.
