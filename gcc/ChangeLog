@@ -1,3 +1,8 @@
+2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	* gimple-loop-interchange.cc (tree_loop_interchange::interchange):
+	Provide -fopt-info-loop feedback when we interchange in a nest.
+
 2017-06-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/driver-arm.c (arm_cpu_table): Use fp-capable product names
