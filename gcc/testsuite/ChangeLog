@@ -1,3 +1,9 @@
+2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81303
+	* gfortran.dg/pr81303.f: New testcase.
+	* gfortran.dg/vect/pr81303.f: Likewise.
+
 2017-12-08  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512f-vnni-1.c: Add checks for vdpdwssds.
