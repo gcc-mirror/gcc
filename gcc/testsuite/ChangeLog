@@ -1,5 +1,11 @@
 2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/83252
+	* gcc.target/i386/i386.exp (check_effective_target_bmi2): Moved to ...
+	* lib/target-supports.exp (check_effective_target_bmi2): ... here.  Guard with
+	i?86-*-* x86_64-*-*.
+	* g++.dg/opt/pr83252.C: New test.
+
 	PR target/81906
 	* gcc.target/i386/pr81906.c: New test.
 
