@@ -667,18 +667,6 @@ public:
       return c;
     }
 
-  /* The profiling runtime uses gcov_type, which is usually 64bit integer.
-     Conversions back and forth are used to read the coverage and get it
-     into internal representation.  */
-  static profile_count from_gcov_type (gcov_type v)
-    {
-      profile_count ret;
-      gcc_checking_assert (v >= 0 && (uint64_t) v <= max_count);
-      ret.m_val = v;
-      ret.m_quality = profile_precise;
-      return ret;
-    }
-
   /* Conversion to gcov_type is lossy.  */
   gcov_type to_gcov_type () const
     {
@@ -1082,6 +1070,11 @@ public:
      and if IPA is zero, turning THIS into corresponding local profile with
      global0.  */
   profile_count combine_with_ipa_count (profile_count ipa);
+
+  /* The profiling runtime uses gcov_type, which is usually 64bit integer.
+     Conversions back and forth are used to read the coverage and get it
+     into internal representation.  */
+  static profile_count from_gcov_type (gcov_type v);
 
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);
