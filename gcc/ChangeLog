@@ -1,5 +1,10 @@
 2017-06-08  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config/arm/driver-arm.c (arm_cpu_table): Use fp-capable product names
+	for armv6 ARM CPU IDs.
+
+2017-06-08  Richard Earnshaw  <rearnsha@arm.com>
+
 	* common/config/arm/arm-common.c: Include <algorithm>.
 	(INCLUDE_VECTOR): Define.
 	(compare_opt_names): New function.
