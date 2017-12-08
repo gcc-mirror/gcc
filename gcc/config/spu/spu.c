@@ -2029,8 +2029,9 @@ pad_bb(void)
   for (; insn; insn = next_insn)
     {
       next_insn = next_active_insn (insn);
-      if (INSN_CODE (insn) == CODE_FOR_iprefetch
-	  || INSN_CODE (insn) == CODE_FOR_hbr)
+      if (INSN_P (insn)
+          && (INSN_CODE (insn) == CODE_FOR_iprefetch
+	      || INSN_CODE (insn) == CODE_FOR_hbr))
 	{
 	  if (hbr_insn)
 	    {
@@ -2048,7 +2049,7 @@ pad_bb(void)
 	    }
 	  hbr_insn = insn;
 	}
-      if (INSN_CODE (insn) == CODE_FOR_blockage && next_insn)
+      if (INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_blockage && next_insn)
 	{
 	  if (GET_MODE (insn) == TImode)
 	    PUT_MODE (next_insn, TImode);
