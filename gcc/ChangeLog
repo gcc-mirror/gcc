@@ -1,3 +1,9 @@
+2017-06-08  Tristan Gingold  <gindold@adacore.com>
+
+	PR ada/81470
+	* dwarf2out.c (dwarf2out_do_cfi_startproc): Only emit
+	.cfi_personality or .cfi_lsda if the eh data format is dwarf2.
+
 2017-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.h (SOLARIS_ATTRIBUTE_TABLE): Initialize new member
