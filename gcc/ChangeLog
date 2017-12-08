@@ -1,3 +1,8 @@
+2017-12-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/83317
+	* lra-constraints.c (process_address_1): Add insn code check.
+
 2017-12-08  Michael Matz  <matz@suse.de>
 
 	Fix PR tree-optimization/83323
