@@ -1,3 +1,9 @@
+2017-12-07  Andrew Waterman  <andrew@sifive.com>
+
+	* config/riscv/riscv.c (TARGET_ASM_SELECT_SECTION): New define.
+	(TARGET_HAVE_SRODATA_SECTION): New define.
+	(riscv_select_section): New function.
+
 2017-12-08  Joseph Myers  <joseph@codesourcery.com>
 	    Alexander Monakov  <amonakov@ispras.ru>
 	    Jakub Jelinek  <jakub@redhat.com>

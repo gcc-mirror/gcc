@@ -3042,6 +3042,22 @@ riscv_in_small_data_p (const_tree x)
   return riscv_size_ok_for_small_data_p (int_size_in_bytes (TREE_TYPE (x)));
 }
 
+/* Switch to the appropriate section for output of DECL.  */
+
+static section *
+riscv_select_section (tree decl, int reloc,
+		      unsigned HOST_WIDE_INT align)
+{
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_SRODATA:
+      return get_named_section (decl, ".srodata", reloc);
+
+    default:
+      return default_elf_select_section (decl, reloc, align);
+    }
+}
+
 /* Return a section for X, handling small data. */
 
 static section *
@@ -4319,6 +4335,12 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P riscv_in_small_data_p
+
+#undef TARGET_HAVE_SRODATA_SECTION
+#define TARGET_HAVE_SRODATA_SECTION true
+
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION riscv_select_section
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  riscv_elf_select_rtx_section
