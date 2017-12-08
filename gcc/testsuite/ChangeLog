@@ -1,3 +1,8 @@
+2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81782
+	* gcc.dg/uninit-pr81782.c: New testcase.
+
 2017-12-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/opt/pr83252.C: Add -mclear-hwcap on *-*-solaris*.
