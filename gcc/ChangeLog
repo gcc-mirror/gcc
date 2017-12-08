@@ -1,3 +1,10 @@
+2017-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83609
+	* profile-count.c (profile_count::from_gcov_type): Move from
+	profile-count.h; handle overflow.
+	* profile-count.h (profile_count::from_gcov_type): Move offline.
+
 2017-12-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/83304
