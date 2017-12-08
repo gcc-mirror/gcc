@@ -1,3 +1,15 @@
+2017-12-08  Julia Koval  <julia.koval@intel.com>
+
+	* config.gcc: Add vaesintrin.h.
+	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI_V64QI): New type.
+	* config/i386/i386-builtin.def (__builtin_ia32_vaesdec_v16qi,
+	__builtin_ia32_vaesdec_v32qi, __builtin_ia32_vaesdec_v64qi): New builtins.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle new type.
+	* config/i386/immintrin.h: Include vaesintrin.h.
+	* config/i386/sse.md (vaesdec_<mode>): New pattern.
+	* config/i386/vaesintrin.h (_mm256_aesdec_epi128, _mm512_aesdec_epi128,
+	_mm_aesdec_epi128): New intrinsics.
+
 2017-12-07  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (ld<bhw_uns>io): Add splitter for memory
