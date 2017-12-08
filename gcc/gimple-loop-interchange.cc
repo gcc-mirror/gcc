@@ -1550,6 +1550,7 @@ bool
 tree_loop_interchange::interchange (vec<data_reference_p> datarefs,
 				    vec<ddr_p> ddrs)
 {
+  location_t loc = find_loop_location (m_loop_nest[0]);
   bool changed_p = false;
   /* In each iteration we try to interchange I-th loop with (I+1)-th loop.
      The overall effect is to push inner loop to outermost level in whole
@@ -1597,8 +1598,12 @@ tree_loop_interchange::interchange (vec<data_reference_p> datarefs,
 		     oloop.m_loop->num, iloop.m_loop->num);
 	}
     }
-
   simple_dce_from_worklist (m_dce_seeds);
+
+  if (changed_p)
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		     "loops interchanged in loop nest\n");
+
   return changed_p;
 }
 
