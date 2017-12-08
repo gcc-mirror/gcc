@@ -437,7 +437,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-reassoc  -ftree-sink  -ftree-slsr  -ftree-sra @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
 -ftree-ter  -ftree-vectorize  -ftree-vrp  -funconstrained-commons @gol
--funit-at-a-time  -funroll-all-loops  -funroll-loops -funroll-and-jam @gol
+-funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
 -funsafe-math-optimizations  -funswitch-loops @gol
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
 -fweb  -fwhole-program  -fwpa  -fuse-linker-plugin @gol
@@ -8511,11 +8511,9 @@ at @option{-O} and higher.
 @item -ftree-loop-linear
 @itemx -floop-strip-mine
 @itemx -floop-block
-@itemx -floop-unroll-and-jam
 @opindex ftree-loop-linear
 @opindex floop-strip-mine
 @opindex floop-block
-@opindex floop-unroll-and-jam
 Perform loop nest optimizations.  Same as
 @option{-floop-nest-optimize}.  To use this code transformation, GCC has
 to be configured with @option{--with-isl} to enable the Graphite loop
@@ -9789,8 +9787,8 @@ for one side of the iteration space and false for the other.
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
 
-@item -funroll-and-jam
-@opindex funroll-and-jam
+@item -floop-unroll-and-jam
+@opindex floop-unroll-and-jam
 Apply unroll and jam transoformations on feasible loops.  In a loop
 nest this unrolls the outer loop by some factor and fuses the resulting
 multiple inner loops.

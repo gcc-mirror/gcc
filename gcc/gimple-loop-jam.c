@@ -152,7 +152,7 @@ merge_loop_tree (struct loop *loop, struct loop *old)
   free (bbs);
 }
 
-/* BB exits the outer loop of an unroll-and-jam situation.
+/* BB is part of the outer loop of an unroll-and-jam situation.
    Check if any statements therein would prevent the transformation.  */
 
 static bool
@@ -160,9 +160,10 @@ bb_prevents_fusion_p (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   /* BB is duplicated by outer unrolling and then all N-1 first copies
-     move into the body of the fused inner loop.  The last copy remains
-     the exit block of the outer loop and is still outside the inner loop
-     also after fusion.  We can't allow this for some effects of BB:
+     move into the body of the fused inner loop.  If BB exits the outer loop
+     the last copy still doess so, and the first N-1 copies are cancelled
+     by loop unrolling, so also after fusion it's the exit block.
+     But there might be other reasons that prevent fusion:
        * stores or unknown side-effects prevent fusion
        * loads don't
        * computations into SSA names: these aren't problematic.  Their
@@ -204,6 +205,19 @@ unroll_jam_possible_p (struct loop *outer, struct loop *loop)
   if (outer->inner != loop || loop->next)
     return false;
 
+  /* Prevent head-controlled inner loops, that we usually have.
+     The guard block would need to be accepted
+     (invariant condition either entering or skipping the loop),
+     without also accepting arbitrary control flow.  When unswitching
+     ran before us (as with -O3) this won't be a problem because its
+     outer loop unswitching will have moved out the invariant condition.
+
+     If we do that we need to extend fuse_loops() to cope with this
+     by threading through the (still invariant) copied condition
+     between the two loop copies.  */
+  if (!dominated_by_p (CDI_DOMINATORS, outer->latch, loop->header))
+    return false;
+
   /* The number of iterations of the inner loop must be loop invariant
      with respect to the outer loop.  */
   if (!number_of_iterations_exit (loop, single_exit (loop), &niter,
@@ -218,23 +232,8 @@ unroll_jam_possible_p (struct loop *outer, struct loop *loop)
   n = get_loop_body_with_size (outer, bbs, n_basic_blocks_for_fn (cfun));
 
   for (i = 0; i < n; i++)
-    {
-      if (bbs[i]->loop_father == outer
-	  && bbs[i] != outer->latch && bbs[i] != outer->header
-	  && (!loop_exits_from_bb_p (outer, bbs[i])
-	      || bb_prevents_fusion_p (bbs[i])))
-	break;
-      /* XXX Note that the above disallows head-controlled inner loops,
-         that we usually have.  The guard block would need to be accepted
-	 (invariant condition either entering or skipping the loop),
-	 without also accepting arbitrary control flow.  When unswitching
-	 ran before us (as with -O3) this won't be a problem because its
-	 outer loop unswitching will have moved out the invariant condition.
-	 
-	 If we do that we need to extend fuse_loops() to cope with this
-	 by threading through the (still invariant) copied condition
-	 between the two loop copies.  */
-    }
+    if (bbs[i]->loop_father == outer && bb_prevents_fusion_p (bbs[i]))
+      break;
   free (bbs);
   if (i != n)
     return false;

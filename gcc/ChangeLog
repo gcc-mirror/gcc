@@ -1,3 +1,14 @@
+2017-12-08  Michael Matz  <matz@suse.de>
+
+	Fix PR tree-optimization/83323
+	* gimple-loop-jam (unroll_jam_possible_p): Correct test for
+	head-controlled loops and loop BBs.
+	* common.opt (funroll-and-jam): Remove, instead ...
+	(floop-unroll-and-jam): ... reuse this option.
+	* opts.c (default_options_table): Use OPT_floop_unroll_and_jam.
+	* doc/invoke.texi (-funroll-and-jam): Move docu to ...
+	(-floop-unroll-and-jam): ... this option.
+
 2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-polymorphic-call.c (noncall_stmt_may_be_vtbl_ptr_store): Fix

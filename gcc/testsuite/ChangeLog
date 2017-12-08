@@ -1,3 +1,9 @@
+2017-12-08  Michael Matz  <matz@suse.de>
+
+	Fix PR tree-optimization/83323
+	* gcc.dg/pr83323.c: New test.
+	* gcc.dg/unroll-and-jam.c: Use -floop-unroll-and-jam.
+
 2017-12-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81782
