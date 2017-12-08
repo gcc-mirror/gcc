@@ -1,5 +1,14 @@
 2017-12-07  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* config/nios2/nios2.md (ld<bhw_uns>io): Add splitter for memory
+	operand.
+	(ld<bh>io_signed): Likewise.
+	(st<bhw>io): Likewise.
+	* config/nios2/predicates.md (ldstio_memory_operand): Allow
+	SMALL_INT12 constant integer operand.
+
+2017-12-07  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* config/nios2/nios2.c (nios2_symbolic_constant_allowed):
 	Rename to...
 	(nios2_large_constant_allowed): ...this.  Adjust uses.

@@ -146,6 +146,8 @@
         return (REG_P (XEXP (addr, 0))
                 && CONST_INT_P (XEXP (addr, 1))
                 && SMALL_INT12 (INTVAL (XEXP (addr, 1))));
+      else if (CONST_INT_P (addr))
+        return SMALL_INT12 (INTVAL (addr));
       return false;
     }
   return memory_operand (op, mode);
