@@ -1,3 +1,9 @@
+2017-12-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/83141
+	* gcc.dg/tree-ssa/pr83141.c: New test.
+	* gcc.dg/guality/pr54970.c: XFAIL tests querying a[0].
+
 2017-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83609

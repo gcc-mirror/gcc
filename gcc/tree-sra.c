@@ -1141,6 +1141,33 @@ contains_view_convert_expr_p (const_tree ref)
   return false;
 }
 
+/* Return true if REF contains a VIEW_CONVERT_EXPR or a MEM_REF that performs
+   type conversion or a COMPONENT_REF with a bit-field field declaration.  */
+
+static bool
+contains_vce_or_bfcref_p (const_tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
+	  || (TREE_CODE (ref) == COMPONENT_REF
+	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
+	return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  if (TREE_CODE (ref) != MEM_REF
+      || TREE_CODE (TREE_OPERAND (ref, 0)) != ADDR_EXPR)
+    return false;
+
+  tree mem = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (ref))
+      != TYPE_MAIN_VARIANT (TREE_TYPE (mem)))
+    return true;
+
+  return false;
+}
+
 /* Search the given tree for a declaration by skipping handled components and
    exclude it from the candidates.  */
 
@@ -1339,7 +1366,14 @@ build_accesses_from_assign (gimple *stmt)
       racc->grp_assignment_read = 1;
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
-	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+	{
+	  if (contains_vce_or_bfcref_p (rhs))
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (racc->base));
+	  else
+	    bitmap_set_bit (should_scalarize_away_bitmap,
+			    DECL_UID (racc->base));
+	}
       if (storage_order_barrier_p (lhs))
 	racc->grp_unscalarizable_region = 1;
     }
@@ -3414,24 +3448,6 @@ get_repl_default_def_ssa_name (struct access *racc)
   if (!racc->replacement_decl)
     racc->replacement_decl = create_access_replacement (racc);
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
-}
-
-/* Return true if REF has an VIEW_CONVERT_EXPR or a COMPONENT_REF with a
-   bit-field field declaration somewhere in it.  */
-
-static inline bool
-contains_vce_or_bfcref_p (const_tree ref)
-{
-  while (handled_component_p (ref))
-    {
-      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
-	  || (TREE_CODE (ref) == COMPONENT_REF
-	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
-	return true;
-      ref = TREE_OPERAND (ref, 0);
-    }
-
-  return false;
 }
 
 /* Examine both sides of the assignment statement pointed to by STMT, replace
