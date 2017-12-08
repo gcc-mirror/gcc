@@ -1,3 +1,23 @@
+2017-12-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_symbolic_constant_allowed):
+	Rename to...
+	(nios2_large_constant_allowed): ...this.  Adjust uses.
+	(nios2_plus_symbolic_constant_p): Rename to...
+	(nios2_plus_large_constant_p): ...this.  Adjust uses.
+	(nios2_legitimate_address_p): Correct CONST_INT handling.
+	(nios2_symbolic_memory_operand_p): Rename to...
+	(nios2_large_constant_memory_operand_p): ...this.  Adjust uses.
+	(nios2_large_constant_p): Check for large constant integers too.
+	(nios2_split_large_constant): Handle constant integers.
+	(nios2_split_symbolic_memory_operand): Rename to...
+	(nios2_split_large_constant_memory_operand): ...this.  Adjust uses.
+	(nios2_legitimize_constant_address): Handle constant integers.
+	(r0rel_constant_p): Handle small constant integers.
+	(nios2_print_operand_address): Handle r0-relative integer addresses.
+	* config/nios2/nios2-protos.h: Adjust for renamed functions.
+	* config/nios2/nios2.md: Adjust for renamed functions.
+
 2017-12-07  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/riscv.c (TARGET_ASM_SELECT_SECTION): New define.
