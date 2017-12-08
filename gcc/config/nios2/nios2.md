@@ -318,12 +318,18 @@
 (define_mode_attr bhw [(QI "b") (HI "h") (SI "w")])
 (define_mode_attr bhw_uns [(QI "bu") (HI "hu") (SI "w")])
 
-(define_insn "ld<bhw_uns>io"
+(define_insn_and_split "ld<bhw_uns>io"
   [(set (match_operand:BHW 0 "register_operand" "=r")
         (unspec_volatile:BHW
           [(match_operand:BHW 1 "ldstio_memory_operand" "w")] UNSPECV_LDXIO))]
   ""
   "ld<bhw_uns>io\\t%0, %1"
+  "nios2_large_constant_memory_operand_p (operands[1])"
+  [(set (match_dup 0) 
+        (unspec_volatile:BHW [(match_dup 1)] UNSPECV_LDXIO))]
+  {
+    operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
+  }
   [(set_attr "type" "ld")])
 
 (define_expand "ld<bh>io"
@@ -337,21 +343,32 @@
   DONE;
 })
 
-(define_insn "ld<bh>io_signed"
+(define_insn_and_split "ld<bh>io_signed"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (sign_extend:SI
           (unspec_volatile:BH
             [(match_operand:BH 1 "ldstio_memory_operand" "w")] UNSPECV_LDXIO)))]
   ""
   "ld<bh>io\\t%0, %1"
+  "nios2_large_constant_memory_operand_p (operands[1])"
+  [(set (match_dup 0) 
+        (sign_extend:SI (unspec_volatile:BH [(match_dup 1)] UNSPECV_LDXIO)))]
+  {
+    operands[1] = nios2_split_large_constant_memory_operand (operands[1]);
+  }
   [(set_attr "type" "ld")])
 
-(define_insn "st<bhw>io"
+(define_insn_and_split "st<bhw>io"
   [(set (match_operand:BHW 0 "ldstio_memory_operand" "=w")
         (unspec_volatile:BHW
           [(match_operand:BHW 1 "reg_or_0_operand" "rM")] UNSPECV_STXIO))]
   ""
   "st<bhw>io\\t%z1, %0"
+  "nios2_large_constant_memory_operand_p (operands[0])"
+  [(set (match_dup 0) (unspec_volatile:BHW [(match_dup 1)] UNSPECV_STXIO))]
+  {
+    operands[0] = nios2_split_large_constant_memory_operand (operands[0]);
+  }
   [(set_attr "type" "st")])
 
 
