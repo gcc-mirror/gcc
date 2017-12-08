@@ -1,3 +1,11 @@
+2017-12-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/83141
+	* tree-sra.c (contains_vce_or_bfcref_p): Move up in the file, also
+	test for MEM_REFs implicitely changing types with padding.  Remove
+	inline keyword.
+	(build_accesses_from_assign): Added contains_vce_or_bfcref_p checks.
+
 2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/arc/arc.c (arc_attribute_table): Add exclusions to
