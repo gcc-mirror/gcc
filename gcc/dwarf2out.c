@@ -963,9 +963,15 @@ dwarf2out_do_cfi_startproc (bool second)
 {
   int enc;
   rtx ref;
-  rtx personality = get_personality_function (current_function_decl);
 
   fprintf (asm_out_file, "\t.cfi_startproc\n");
+
+  /* .cfi_personality and .cfi_lsda are only relevant to DWARF2
+     eh unwinders.  */
+  if (targetm_common.except_unwind_info (&global_options) != UI_DWARF2)
+    return;
+
+  rtx personality = get_personality_function (current_function_decl);
 
   if (personality)
     {
