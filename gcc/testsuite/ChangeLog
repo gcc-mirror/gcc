@@ -1,3 +1,10 @@
+2017-12-08  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/avx512f-vnni-1.c: Add checks for vdpdwssds.
+	* gcc.target/i386/avx512vl-vnni-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpdpwssds-2.c: New test.
+	* gcc.target/i386/avx512vl-vpdpwssds-2.c: Ditto.
+
 2017-12-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81303
