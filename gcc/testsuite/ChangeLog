@@ -1,3 +1,9 @@
+2017-12-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/const-addr-1.c: New.
+	* gcc.target/nios2/const-addr-2.c: New.
+	* gcc.target/nios2/const-addr-3.c: New.
+
 2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83252
