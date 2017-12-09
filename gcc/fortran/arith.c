@@ -2514,6 +2514,18 @@ gfc_int2log (gfc_expr *src, int kind)
   return result;
 }
 
+/* Convert character to character. We only use wide strings internally,
+   so we only set the kind.  */
+
+gfc_expr *
+gfc_character2character (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_copy_expr (src);
+  result->ts.kind = kind;
+
+  return result;
+}
 
 /* Helper function to set the representation in a Hollerith conversion.  
    This assumes that the ts.type and ts.kind of the result have already
