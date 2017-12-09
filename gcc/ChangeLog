@@ -1,3 +1,10 @@
+2017-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83338
+	* tree-vect-stmts.c (vectorizable_operation): Handle POINTER_DIFF_EXPR
+	vectorization as MINUS_EXPR with a subsequent VIEW_CONVERT_EXPR from
+	vector of unsigned integers to vector of signed integers.
+
 2017-12-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/83317
