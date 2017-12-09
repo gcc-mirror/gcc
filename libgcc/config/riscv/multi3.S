@@ -23,6 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "riscv-asm.h"
+
   .text
   .align 2
 
@@ -31,8 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __multi3 __muldi3
 #endif
 
-  .globl __multi3
-__multi3:
+FUNC_BEGIN (__multi3)
 
 #if __riscv_xlen == 32
 /* Our RV64 64-bit routines are equivalent to our RV32 32-bit routines.  */
@@ -79,3 +80,11 @@ __multi3:
   mv  a0, t2
   mv  a1, t4
   jr  t0
+
+#if __riscv_xlen == 32
+/* Our RV64 64-bit routines are equivalent to our RV32 32-bit routines.  */
+# undef __muldi3
+#endif
+
+FUNC_END (__multi3)
+	
