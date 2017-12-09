@@ -1,3 +1,10 @@
+2017-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83316
+	* arith.c (gfc_character2character): New function.
+	* arith.h: Add prototype.
+	* simplify.c (gfc_convert_constant): Handle character type.
+
 2017-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81544
