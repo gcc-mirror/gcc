@@ -1,3 +1,9 @@
+2017-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82934
+	PR fortran/83318
+	* match.c (gfc_match_allocate): Enforce F2008:C631.
+
 2017-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83316
