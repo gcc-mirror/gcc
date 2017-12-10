@@ -4680,7 +4680,7 @@ Linux API emulation layer in the Win32 subsystem.
 @item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for
 the Win32 subsystem that provides a subset of POSIX.
 @item MKS i386-pc-mks: NuTCracker from MKS.  See
-@uref{http://www.mkssoftware.com/} for more information.
+@uref{https://www.mkssoftware.com} for more information.
 @end itemize
 
 @subheading Intel 64-bit versions

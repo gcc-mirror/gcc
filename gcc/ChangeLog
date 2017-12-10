@@ -1,3 +1,7 @@
+2017-12-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Tweak link to mkssoftware.com.
+
 2017-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83337
