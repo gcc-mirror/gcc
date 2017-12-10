@@ -697,7 +697,7 @@
 	const from do_test_{u,v}*.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* c-c++-common/attr-simd-3.c: Delete.
 	* c-c++-common/cilk-plus/AN/an-if.c: Delete.
@@ -12610,7 +12610,7 @@
 	PR tree-optimization/77644
 	* gcc.dg/tree-ssa/pr77644.c: New test-case.
 
-2017-05-10  Alexandre Oliva <aoliva@redhat.com>
+2017-05-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/guality/inline-params-2.c: New.
 
@@ -17317,7 +17317,7 @@
 	PR tree-optimization/79267
 	* g++.dg/opt/pr79267.C: New test.
 
-2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+2017-01-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/63238
 	* gcc.dg/debug/dwarf2/align-1.c: New.

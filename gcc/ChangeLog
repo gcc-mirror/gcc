@@ -5,8 +5,8 @@
 2017-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83337
-	* gimple-loop-interchange.cc (compute_access_stride): Handle bitfield DRs
-	properly.
+	* gimple-loop-interchange.cc (compute_access_stride): Handle
+	bitfield DRs properly.
 
 2017-12-09  Jakub Jelinek  <jakub@redhat.com>
 
@@ -540,9 +540,11 @@
 2017-12-07  Julia Koval  <julia.koval@intel.com>
 
 	* config.gcc: Add vaesintrin.h.
-	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI_V64QI): New type.
+	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI_V64QI):
+	New type.
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesdec_v16qi,
-	__builtin_ia32_vaesdec_v32qi, __builtin_ia32_vaesdec_v64qi): New builtins.
+	__builtin_ia32_vaesdec_v32qi, __builtin_ia32_vaesdec_v64qi):
+	New builtins.
 	* config/i386/i386.c (ix86_expand_args_builtin): Handle new type.
 	* config/i386/immintrin.h: Include vaesintrin.h.
 	* config/i386/sse.md (vaesdec_<mode>): New pattern.
@@ -660,8 +662,7 @@
 
 2017-12-05  Richard Biener   <rguenther@suse.de>
 
-	* timevar.def (TV_TREE_RECIP, TV_TREE_SINCOS, TV_TREE_WIDEN_MUL):
-	Add.
+	* timevar.def (TV_TREE_RECIP, TV_TREE_SINCOS, TV_TREE_WIDEN_MUL): Add.
 	* tree-ssa-math-opts.c (pass_data_cse_reciprocal): Use TV_TREE_RECIP.
 	(pass_data_cse_sincos): Use TV_TREE_SINCOS.
 	(pass_data_optimize_widening_mul): Use TV_TREE_WIDEN_MUL.
@@ -1396,9 +1397,9 @@
 	type.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
-	* Makefile.in (cilkplus.def, cilk-builtins.def, c-family/cilk.o, 
+	* Makefile.in (cilkplus.def, cilk-builtins.def, c-family/cilk.o,
 	c-family/c-cilkplus.o, c-family/array-notation-common.o,
 	cilk-common.o, cilk.h, cilk-common.c): Remove.
 	* builtin-types.def
@@ -1479,8 +1480,7 @@
 2017-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83158
-	* tree-vrp.c (intersect_ranges): Prefer ~[0, 0] in a few more
-	cases.
+	* tree-vrp.c (intersect_ranges): Prefer ~[0, 0] in a few more cases.
 
 2017-11-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -1777,8 +1777,7 @@
 	(arm_cortex_m7_tune): Likewise.
 	(arm_v6m_tune): Likewise.
 	(arm_fa726te_tune): Likewise.
-	(arm_mem_costs): Use table lookup to calculate cost of addressing
-	mode.
+	(arm_mem_costs): Use table lookup to calculate cost of addressing mode.
 
 2017-11-23  Charles Baylis  <charles.baylis@linaro.org>
 
@@ -1795,7 +1794,7 @@
 	and pass generation to output_rnglists.
 
 2017-11-23  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/generic.texi (ANNOTATE_EXPR): Document 3rd operand.
 	* cfgloop.h (struct loop): Add unroll field.
@@ -1815,7 +1814,7 @@
 	* lto-streamer-in.c (input_cfg): Read loop->unroll.
 	* lto-streamer-out.c (output_cfg): Write loop->unroll.
 	* tree-cfg.c (replace_loop_annotate_in_block) <annot_expr_unroll_kind>:
-        New case.
+	New case.
 	(replace_loop_annotate) <annot_expr_unroll_kind>: Likewise.
 	(print_loop): Print loop->unroll if set.
 	* tree-core.h (enum annot_expr_kind): Add annot_expr_unroll_kind.
@@ -2016,11 +2015,11 @@
 
 2017-11-22  Olivier Hainque  <hainque@adacore.com>
 
-       * config/vxworks.c (vxworks_override_options): Pick default
+	* config/vxworks.c (vxworks_override_options): Pick default
 	dwarf version from macro value, VXWORKS_DWARF_VERSION_DEFAULT.
-       * config/vxworks.h: Define VXWORKS_DWARF_VERSION_DEFAULT and
-       DWARF_GNAT_ENCODINGS_DEFAULT.
-       * config/vxworksae.h: Likewise.
+	* config/vxworks.h: Define VXWORKS_DWARF_VERSION_DEFAULT and
+	DWARF_GNAT_ENCODINGS_DEFAULT.
+	* config/vxworksae.h: Likewise.
 
 2017-11-22  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -2057,7 +2056,8 @@
 	instead of int_size_in_bytes.
 	* expr.c (copy_blkmode_to_reg): Likewise.
 	* function.c (aggregate_value_p): Return 0 for empty types.
-	(assign_parm_find_entry_rtl): Call warn_parameter_passing_abi target hook.
+	(assign_parm_find_entry_rtl): Call warn_parameter_passing_abi
+	target hook.
 	(locate_and_pad_parm): Call arg size_in_bytes instead
 	size_in_bytes.
 	* lto-streamer-out.c (hash_tree): Hash TYPE_EMPTY_P and DECL_PADDING_P.
@@ -19982,6 +19982,7 @@
 	altivec_vmulosw): New patterns.
 	* config/rs6000/rs6000-builtin.def (VMLEUW, VMULESW, VMULOUW,
 	VMULOSW): Add definitions.
+
 2017-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c: Include predict.h.
