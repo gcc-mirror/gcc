@@ -3267,7 +3267,7 @@
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Thread
 	blocks is post order.
 
-2017-11-15  Alexandre Oliva <aoliva@redhat.com>
+2017-11-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dumpfile.h (TDF_COMPARE_DEBUG): New.
 	* final.c (rest_of_clean_state): Set it for the
@@ -10745,7 +10745,7 @@
 	(s390_prologue_plus_offset): New function.
 	(s390_emit_stack_probe): Likewise.
 
-2017-09-20  Alexandre Oliva <aoliva@redhat.com>
+2017-09-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* common.opt (Wa, Wl, Wp, g, gz=): Add
 	RejectNegative.
@@ -28161,7 +28161,7 @@
 	* config/aarch64/cortex-a57-fma-steering.c (merge_forest):
 	Move member access before delete.
 
-2017-05-10  Alexandre Oliva <aoliva@redhat.com>
+2017-05-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-inline.c (expand_call_inline): Split block at stmt
 	before the call.
@@ -31820,7 +31820,7 @@
 	* doc/tm.texi.in: Same.
 	* doc/trouble.texi: Same.
 
-2017-03-21  Alexandre Oliva <aoliva@redhat.com>
+2017-03-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/63238
 	* dwarf2out.c (struct checksum_attributes): Add at_alignment.
@@ -32130,7 +32130,7 @@
 	* sese.c (free_sese_info): Properly release rename_map and
 	copied_bb_map elements.
 
-2017-03-16  Alexandre Oliva <aoliva@redhat.com>
+2017-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gimple-ssa-store-merging.c (struct imm_store_chain_info):
 	Add linked-list forward and backlinks.  Insert on
@@ -35221,7 +35221,7 @@
 	* value-prof.c (gimple_ic): Only drop lhs for noreturn calls
 	if should_remove_lhs_p is true.
 
-2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+2017-01-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/63238
 	* dwarf2out.c (clone_as_declaration): Drop DW_AT_alignment.
@@ -37591,7 +37591,7 @@
 	that the transition from a max line width >= 1<<10 to narrower
 	lines works correctly.
 
-2017-01-07  Alexandre Oliva <aoliva@redhat.com>
+2017-01-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/options.texi (PerFunction): New.
 	* opt-functions.awk (switch_flags): Map both Optimization and
@@ -38006,26 +38006,26 @@
 	and prune MEMs that are not at the toplevel of a SET_SRC rtx.  Look
 	through ZERO_EXTEND and SIGN_EXTEND when trying to avoid pruning MEMs.
 
-2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+2017-01-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* input.c (assert_char_at_range): Default-initialize actual_range.
 
-2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+2017-01-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* df-scan.c (df_ref_create_structure): Make regno unsigned,
 	to match the caller.
 
-2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+2017-01-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cfgexpand.c (expand_gimple_basic_block): Disregard debug
 	insns after final jump in test to emit dummy move.
 
-2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+2017-01-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gimple-iterator.h (gsi_one_nondebug_before_end_p): New.
 	* tree-eh.c (cleanup_empty_eh): Skip more debug stmts.
 
-2017-01-04  Alexandre Oliva <aoliva@redhat.com>
+2017-01-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* multiple_target.c (create_dispatcher_calls): Init e_next.
 	* tree-ssa-loop-split.c (split_loop): Init border.
