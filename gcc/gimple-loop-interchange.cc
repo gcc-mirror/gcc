@@ -1291,6 +1291,30 @@ compute_access_stride (struct loop *loop_nest, struct loop *loop,
   gcc_assert (loop == bb->loop_father);
 
   tree ref = DR_REF (dr);
+  if (TREE_CODE (ref) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+    {
+      /* We can't take address of bitfields.  If the bitfield is at constant
+	 offset from the start of the struct, just use address of the
+	 struct, for analysis of the strides that shouldn't matter.  */
+      if (!TREE_OPERAND (ref, 2)
+	  || TREE_CODE (TREE_OPERAND (ref, 2)) == INTEGER_CST)
+	ref = TREE_OPERAND (ref, 0);
+      /* Otherwise, if we have a bit field representative, use that.  */
+      else if (DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (ref, 1))
+	       != NULL_TREE)
+	{
+	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (ref, 1));
+	  ref = build3 (COMPONENT_REF, TREE_TYPE (repr), TREE_OPERAND (ref, 0),
+			repr, TREE_OPERAND (ref, 2));
+	}
+      /* Otherwise punt.  */
+      else
+	{
+	  dr->aux = strides;
+	  return;
+	}
+    }
   tree scev_base = build_fold_addr_expr (ref);
   tree scev = analyze_scalar_evolution (loop, scev_base);
   scev = instantiate_scev (loop_preheader_edge (loop_nest), loop, scev);
