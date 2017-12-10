@@ -1,3 +1,12 @@
+2017-12-10  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	PR c/81875
+	2017-09-16  Tom de Vries  <tom@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_for_loop): Fold only operands of cond, not
+	cond itself.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
