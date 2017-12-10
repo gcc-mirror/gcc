@@ -1,3 +1,12 @@
+2017-12-10  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/53478
+	* gfortran.h (gfc_find_case_gsymbol): New prototype.
+	* symbol.c (gfc_find_case_gsymbol): New procedure, case
+	insensistive version of gfc_find_gsymbol.
+	* resolve.c (resolve_common_blocks): Use it.
+	Replace %s with %qs where needed.
+
 2017-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/82934
