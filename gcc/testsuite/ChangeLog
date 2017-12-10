@@ -1,3 +1,16 @@
+2017-12-10  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/53478
+	* gfortran.dg/binding_label_tests_4.f03: Update dg-error.
+	* gfortran.dg/binding_label_tests_6.f03: Likewise.
+	* gfortran.dg/binding_label_tests_7.f03: Likewise.
+	* gfortran.dg/binding_label_tests_8.f03: Likewise.
+	* gfortran.dg/binding_label_tests_10_main.f03: Likewise.
+	* gfortran.dg/binding_label_tests_11_main.f03: Likewise.
+	* gfortran.dg/binding_label_tests_13_main.f03: Likewise.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Likewise.
+	* gfortran.dg/binding_label_tests_29.f90: New test.
+
 2017-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83337

@@ -4291,6 +4291,29 @@ gfc_find_gsymbol (gfc_gsymbol *symbol, const char *name)
 }
 
 
+/* Case insensitive search a tree for the global symbol.  */
+
+gfc_gsymbol *
+gfc_find_case_gsymbol (gfc_gsymbol *symbol, const char *name)
+{
+  int c;
+
+  if (symbol == NULL)
+    return NULL;
+
+  while (symbol)
+    {
+      c = strcasecmp (name, symbol->name);
+      if (!c)
+	return symbol;
+
+      symbol = (c < 0) ? symbol->left : symbol->right;
+    }
+
+  return NULL;
+}
+
+
 /* Compare two global symbols. Used for managing the BB tree.  */
 
 static int
