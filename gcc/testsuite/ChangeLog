@@ -1,3 +1,9 @@
+2017-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83337
+	* gcc.dg/tree-ssa/loop-interchange-14.c: New test.
+	* gcc.dg/tree-ssa/loop-interchange-15.c: New test.
+
 2017-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/82934

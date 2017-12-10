@@ -1,3 +1,9 @@
+2017-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83337
+	* gimple-loop-interchange.cc (compute_access_stride): Handle bitfield DRs
+	properly.
+
 2017-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83338
