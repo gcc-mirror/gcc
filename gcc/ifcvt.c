@@ -5446,6 +5446,10 @@ if_convert (bool after_combine)
   if (optimize == 1)
     df_remove_problem (df_live);
 
+  /* Some non-cold blocks may now be only reachable from cold blocks.
+     Fix that up.  */
+  fixup_partitions ();
+
   checking_verify_flow_info ();
 }
 
