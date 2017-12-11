@@ -1,3 +1,9 @@
+2017-12-11  Andi Kleen  <ak@linux.intel.com>
+
+	PR gcov-profile/83355
+	* auto-profile.c (string_table::get_index_by_decl): Don't
+	recurse when abstract origin points to itself.
+
 2017-12-11  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/83320

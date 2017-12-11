@@ -360,6 +360,8 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
     case LTO_label_decl_ref:
     case LTO_translation_unit_decl_ref:
     case LTO_namelist_decl_ref:
+      if (!data_in->file_data->current_decl_state)
+	      printf("tag %d\n", tag);
       ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
       break;
