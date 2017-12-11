@@ -1,3 +1,15 @@
+2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45689
+	* simplify.c (min_max_choose): Add prototype.
+	(gfc_count): Format correctly.
+	(simplify_transformation): Pass array argument to init_result_expr.
+	(gfc_simplify_minval_maxval): Remove.
+	(gfc_min): New function.
+	(gfc_simplify_minval): Call simplify_transformation.
+	(gfc_max): New function.
+	(gfc_simplify_maxval): Call simplify_transformation.
+
 2017-12-10  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/53478
