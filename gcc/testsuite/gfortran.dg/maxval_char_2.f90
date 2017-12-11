@@ -18,9 +18,9 @@ program main
   if (res /= 4_'00030') call abort
   do
      call random_number(r)
-     if (count(r>0.2) > 1) exit
+     v = int(r * 100)
+     if (count(v > 20) > 1) exit
   end do
-   v = int(r * 100)
   write (unit=b,fmt='(I5.5)') v
   write (unit=res,fmt='(I5.5)') maxval(v)
   if (res /= maxval(b)) call abort
@@ -29,7 +29,7 @@ program main
   smask = .false.
   if (all_zero /= maxval(b, smask)) call abort
 
-  mask = v < 30
+  mask = v > 20
   write (unit=res,fmt='(I5.5)') maxval(v,mask)
   if (res /= maxval(b, mask)) call abort
   mask = .false.

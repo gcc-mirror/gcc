@@ -17,10 +17,10 @@ program main
   res = minval(a)
   if (res /= '00026') call abort
   do
-    call random_number(r)
-    if (count(r<0.2) > 1) exit
+     call random_number(r)
+     v = int(r * 100)
+     if (count(v < 30) > 1) exit
   end do
-  v = int(r * 100)
   write (unit=b,fmt='(I5.5)') v
   write (unit=res,fmt='(I5.5)') minval(v)
   if (res /= minval(b)) call abort
