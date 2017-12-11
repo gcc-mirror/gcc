@@ -945,7 +945,7 @@ free_data_refs_with_aux (vec<data_reference_p> datarefs)
     if (dr->aux != NULL)
       {
 	DR_ACCESS_STRIDE (dr)->release ();
-	free (dr->aux);
+	delete (vec<tree> *) dr->aux;
       }
 
   free_data_refs (datarefs);
@@ -1867,7 +1867,7 @@ prune_datarefs_not_in_loop (struct loop *loop, vec<data_reference_p> datarefs)
 	  if (dr->aux)
 	    {
 	      DR_ACCESS_STRIDE (dr)->release ();
-	      free (dr->aux);
+	      delete (vec<tree> *) dr->aux;
 	    }
 	  free_data_ref (dr);
 	}
