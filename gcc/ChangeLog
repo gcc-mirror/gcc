@@ -1,3 +1,9 @@
+2017-12-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/83320
+	* gimple-loop-interchange.cc (free_data_refs_with_aux): Use delete.
+	(prune_datarefs_not_in_loop): Ditto.
+
 2017-12-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Tweak link to mkssoftware.com.
