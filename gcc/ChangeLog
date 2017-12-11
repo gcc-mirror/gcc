@@ -1,3 +1,10 @@
+2017-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Don't start
+	output_operand_lossage first argument with capital letter.
+	(aarch64_override_options): Don't start error and sorry first argument
+	with capital letter.
+
 2017-12-11  Andi Kleen  <ak@linux.intel.com>
 
 	PR gcov-profile/83355
