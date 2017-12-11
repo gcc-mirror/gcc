@@ -1,3 +1,8 @@
+2017-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/83361
+	* gcc.dg/pr83361.c: New testcase.
+
 2017-12-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-splat-misc-invalid.c: New.

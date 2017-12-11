@@ -1,3 +1,8 @@
+2017-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/83361
+	* ifcvt.c (if_convert): Call fixup_partitions.
+
 2017-12-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add support for
