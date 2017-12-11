@@ -1,3 +1,13 @@
+2017-12-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c++/83301
+
+	Backport trunk r243377:
+	2016-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78692
+	* g++.dg/torture/pr78692.C: New test.
+
 2017-12-04  Sebastian Peryt  <sebastian.peryt@intel.com>
 	H.J. Lu  <hongjiu.lu@intel.com>
 
