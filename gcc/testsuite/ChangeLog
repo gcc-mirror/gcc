@@ -1,3 +1,11 @@
+2017-12-11  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/80693
+	PR rtl-optimization/81019
+	PR rtl-optimization/81020
+	* gcc.dg/pr80693.c: New.
+	* gcc.dg/pr81019.c: New.
+
 2017-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/83361
