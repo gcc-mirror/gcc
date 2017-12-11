@@ -9994,18 +9994,21 @@ that of the first such element in array element order.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
-result value for that row is zero.
+result value for that row is zero. If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it is of
+default kind.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
+@var{KIND} argument are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK])}
-@item @code{RESULT = MAXLOC(ARRAY [, MASK])}
+@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK] [,KIND])}
+@item @code{RESULT = MAXLOC(ARRAY [, MASK] [,KIND])}
 @end multitable
 
 @item @emph{Arguments}:
@@ -10017,6 +10020,8 @@ Transformational function
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
 @end multitable
 
 @item @emph{Return value}:
@@ -10342,29 +10347,34 @@ that of the first such element in array element order.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
-result value for that row is zero.
+result value for that row is zero. If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it is of
+default kind.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
+@var{KIND} argument are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK])}
-@item @code{RESULT = MINLOC(ARRAY [, MASK])}
+@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK] [,KIND])}
+@item @code{RESULT = MINLOC(ARRAY [, MASK], [,KIND])}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER} or
-@code{REAL}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
+@code{REAL} or @code{CHARACTER}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
 @item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
 and conformable with @var{ARRAY}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
 @end multitable
 
 @item @emph{Return value}:

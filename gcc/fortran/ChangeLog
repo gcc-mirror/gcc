@@ -1,5 +1,11 @@
 2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* intrinsic.texi (MAXLOC): Update documentation for
+	character arrays and KIND argument.
+	(MINLOC): Likewise.
+
+2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/45689
 	* simplify.c (min_max_choose): Add prototype.
 	(gfc_count): Format correctly.
