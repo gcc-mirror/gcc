@@ -1,3 +1,7 @@
+2017-12-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-splat-misc-invalid.c: New.
+
 2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83379

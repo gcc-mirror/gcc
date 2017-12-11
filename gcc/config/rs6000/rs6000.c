@@ -16621,6 +16621,28 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       fold_compare_helper (gsi, LE_EXPR, stmt);
       return true;
 
+    /* flavors of vec_splat_[us]{8,16,32}.  */
+    case ALTIVEC_BUILTIN_VSPLTISB:
+    case ALTIVEC_BUILTIN_VSPLTISH:
+    case ALTIVEC_BUILTIN_VSPLTISW:
+      {
+	 arg0 = gimple_call_arg (stmt, 0);
+	 lhs = gimple_call_lhs (stmt);
+	 /* Only fold the vec_splat_*() if arg0 is constant.  */
+	 if (TREE_CODE (arg0) != INTEGER_CST)
+	   return false;
+	 gimple_seq stmts = NULL;
+	 location_t loc = gimple_location (stmt);
+	 tree splat_value = gimple_convert (&stmts, loc,
+					    TREE_TYPE (TREE_TYPE (lhs)), arg0);
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	 tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
+	 g = gimple_build_assign (lhs, splat_tree);
+	 gimple_set_location (g, gimple_location (stmt));
+	 gsi_replace (gsi, g, true);
+	 return true;
+      }
+
     default:
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
