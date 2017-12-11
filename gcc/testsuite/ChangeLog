@@ -1,3 +1,15 @@
+2017-12-11  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_extract_fp32_from_shorth,
+	vec_extract_fp32_from_shortl]): Add #defines.
+	* config/rs6000/rs6000-builtin.def (VSLDOI_2DI): Add macro expansion.
+	* config/rs6000/rs6000-c.c (ALTIVEC_BUILTIN_VEC_UNPACKH,
+	ALTIVEC_BUILTIN_VEC_UNPACKL, ALTIVEC_BUILTIN_VEC_AND,
+	ALTIVEC_BUILTIN_VEC_SLD, ALTIVEC_BUILTIN_VEC_SRL,
+	ALTIVEC_BUILTIN_VEC_SRO, ALTIVEC_BUILTIN_VEC_SLD,
+	ALTIVEC_BUILTIN_VEC_SLL): Add expansions.
+	* doc/extend.texi: Add documentation for the added builtins.
+
 2017-12-11  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/80693

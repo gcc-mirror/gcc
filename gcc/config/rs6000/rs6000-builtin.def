@@ -999,6 +999,7 @@ BU_ALTIVEC_3 (VSEL_1TI_UNS,   "vsel_1ti_uns",   CONST, 	vector_select_v1ti_uns)
 BU_ALTIVEC_3 (VSLDOI_16QI,    "vsldoi_16qi",    CONST, 	altivec_vsldoi_v16qi)
 BU_ALTIVEC_3 (VSLDOI_8HI,     "vsldoi_8hi",     CONST, 	altivec_vsldoi_v8hi)
 BU_ALTIVEC_3 (VSLDOI_4SI,     "vsldoi_4si",     CONST, 	altivec_vsldoi_v4si)
+BU_ALTIVEC_3 (VSLDOI_2DI,     "vsldoi_2di",     CONST, 	altivec_vsldoi_v2di)
 BU_ALTIVEC_3 (VSLDOI_4SF,     "vsldoi_4sf",     CONST, 	altivec_vsldoi_v4sf)
 BU_ALTIVEC_3 (VSLDOI_2DF,     "vsldoi_2df",     CONST, 	altivec_vsldoi_v2df)
 

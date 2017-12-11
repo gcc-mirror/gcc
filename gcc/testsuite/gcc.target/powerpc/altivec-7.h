@@ -1,8 +1,8 @@
 /* Origin: Aldy Hernandez  <aldyh@redhat.com>  */
 
-/* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec" } */
+/* This test code is included into altivec-7-be.c and altivec-7-le.c.  
+   The two files have the tests for the number of instructions generated for
+   LE versus BE.  */
 
 #include <altivec.h>
 
@@ -17,6 +17,7 @@ vector unsigned char *vecuchar;
 vector unsigned int *vecuint;
 vector unsigned short *vecushort;
 vector float *vecfloat;
+vector double *vecdouble;
 
 int main ()
 {
@@ -26,6 +27,7 @@ int main ()
   *vecfloat++ = vec_vxor(vecfloat[0], (vector bool int)vecint[1]);
   *varpixel++ = vec_packpx(vecuint[0], vecuint[1]);
   *varpixel++ = vec_vpkpx(vecuint[0], vecuint[1]);
+  *vecshort++ = vec_vmulesb(vecchar[0], vecchar[1]);
   *vecshort++ = vec_vmulosb(vecchar[0], vecchar[1]);
   *vecint++ = vec_ld(var_int[0], intp[1]);
   *vecint++ = vec_lde(var_int[0], intp[1]);
@@ -41,6 +43,8 @@ int main ()
   *vecuint++ = vec_lvx(var_int[0], uintp[1]);
   *vecuint++ = vec_vmsumubm(vecuchar[0], vecuchar[1], vecuint[2]);
   *vecuchar++ = vec_xor(vecuchar[0], (vector unsigned char)vecchar[1]);
+  *vecdouble++ = vec_unpackl(vecfloat[0]);
+  *vecdouble++ = vec_unpackh(vecfloat[0]);
 
   return 0;
 }
