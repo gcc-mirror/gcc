@@ -16,6 +16,34 @@ test_pack_float (vector double x, vector double y)
   return vec_pack (x, y);
 }
 
+vector unsigned char
+test_vsi_packs_vusi_vusi (vector unsigned short x,
+                          vector unsigned short y)
+{
+  return vec_packs (x, y);
+}
+
+vector signed char
+test_vsi_packs_vssi_vssi (vector signed short x,
+                          vector signed short y)
+{
+  return vec_packs (x, y);
+}
+
+vector signed short int
+test_vsi_packs_vsi_vsi (vector signed int x,
+			vector signed int y)
+{
+  return vec_packs (x, y);
+}
+
+vector unsigned short int
+test_vsi_packs_vui_vui (vector unsigned int x,
+			vector unsigned int y)
+{
+  return vec_packs (x, y);
+}
+
 vector signed int
 test_vsi_packs_vsll_vsll (vector signed long long x,
                           vector signed long long y)
@@ -28,6 +56,48 @@ test_vui_packs_vull_vull (vector unsigned long long x,
                           vector unsigned long long y)
 {
   return vec_packs (x, y);
+}
+
+vector unsigned char
+test_vsi_packsu_vssi_vssi (vector signed short x,
+			   vector signed short y)
+{
+  return vec_packsu (x, y);
+}
+
+vector unsigned char
+test_vsi_packsu_vusi_vusi (vector unsigned short x,
+			   vector unsigned short y)
+{
+  return vec_packsu (x, y);
+}
+
+vector unsigned int
+test_vsi_packsu_vsll_vsll (vector signed long long x,
+			   vector signed long long y)
+{
+  return vec_packsu (x, y);
+}
+
+vector unsigned int
+test_vsi_packsu_vull_vull (vector unsigned long long x,
+			   vector unsigned long long y)
+{
+  return vec_packsu (x, y);
+}
+
+vector unsigned short int
+test_vsi_packsu_vsi_vsi (vector signed int x,
+			 vector signed int y)
+{
+  return vec_packsu (x, y);
+}
+
+vector unsigned short int
+test_vsi_packsu_vui_vui (vector unsigned int x,
+			 vector unsigned int y)
+{
+  return vec_packsu (x, y);
 }
 
 vector unsigned char
@@ -115,6 +185,8 @@ test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
      test_pack_float                           1 vpkudum inst
      test_vsi_packs_vsll_vsll                  1 vpksdss
      test_vui_packs_vull_vull                  1 vpkudus
+     test_vui_packs_vssi_vssi                  1 vpkshss
+     test_vsi_packsu_vssi_vssi                 1 vpkshus
      test_unsigned_char_popcnt_signed_char     1 vpopcntb
      test_unsigned_char_popcnt_unsigned_char   1 vpopcntb
      test_unsigned_short_popcnt_signed_short   1 vpopcnth
@@ -133,6 +205,11 @@ test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
 /* { dg-final { scan-assembler-times "vpkudum"  1 } } */
 /* { dg-final { scan-assembler-times "vpksdss"  1 } } */
 /* { dg-final { scan-assembler-times "vpkudus"  1 } } */  
+/* { dg-final { scan-assembler-times "vpkuhus"  2 } } */
+/* { dg-final { scan-assembler-times "vpkshss"  1 } } */  
+/* { dg-final { scan-assembler-times "vpkshus"  1 } } */  
+/* { dg-final { scan-assembler-times "vpksdus"  2 } } */  
+/* { dg-final { scan-assembler-times "vpkuwus"  2 } } */  
 /* { dg-final { scan-assembler-times "vpopcntb" 2 } } */
 /* { dg-final { scan-assembler-times "vpopcnth" 2 } } */
 /* { dg-final { scan-assembler-times "vpopcntw" 2 } } */

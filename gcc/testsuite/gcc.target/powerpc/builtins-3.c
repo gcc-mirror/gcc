@@ -88,26 +88,185 @@ test_neg_double (vector double x)
 	return vec_neg (x);
 }
 
-vector signed long long
-test_vsll_slo_vsll_vsc (vector signed long long x, vector signed char y)
+vector signed char
+test_sll_vsc_vsc_vsuc (vector signed char x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector unsigned char
+test_sll_vuc_vuc_vuc (vector unsigned char x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector signed int
+test_sll_vsi_vsi_vuc (vector signed int x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector unsigned int
+test_sll_vui_vui_vuc (vector unsigned int x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector bool long long
+test_sll_vbll_vbll_vuc (vector bool long long x,
+			vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector bool long long
+test_sll_vbll_vbll_vull (vector bool long long x,
+			vector unsigned long long y)
+{
+	return vec_sll (x, y);
+}
+
+vector bool long long
+test_sll_vbll_vbll_vus (vector bool long long x,
+			vector unsigned short y)
+{
+	return vec_sll (x, y);
+}
+vector pixel
+test_sll_vp_vp_vuc (vector pixel x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector signed short int
+test_sll_vssi_vssi_vuc (vector signed short x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector unsigned short int
+test_sll_vusi_vusi_vuc (vector unsigned short x, vector unsigned char y)
+{
+	return vec_sll (x, y);
+}
+
+vector signed char
+test_slo_vsc_vsc_vsc (vector signed char x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed char
+test_slo_vsc_vsc_vuc (vector signed char x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned char
+test_slo_vuc_vuc_vsc (vector unsigned char x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned char
+test_slo_vuc_vuc_vuc (vector unsigned char x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed int
+test_slo_vsi_vsi_vsc (vector signed int x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed int
+test_slo_vsi_vsi_vuc (vector signed int x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned int
+test_slo_vui_vui_vsc (vector unsigned int x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned int
+test_slo_vui_vui_vuc (vector unsigned int x, vector unsigned char y)
 {
 	return vec_slo (x, y);
 }
 
 vector signed long long
-test_vsll_slo_vsll_vuc (vector signed long long x, vector unsigned char y)
+test_slo_vsll_slo_vsll_vsc (vector signed long long x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed long long
+test_slo_vsll_slo_vsll_vuc (vector signed long long x, vector unsigned char y)
 {
 	return vec_slo (x, y);
 }
 
 vector unsigned long long
-test_vull_slo_vull_vsc (vector unsigned long long x, vector signed char y)
+test_slo_vull_slo_vull_vsc (vector unsigned long long x, vector signed char y)
 {
 	return vec_slo (x, y);
 }
 
 vector unsigned long long
-test_vull_slo_vull_vuc (vector unsigned long long x, vector unsigned char y)
+test_slo_vull_slo_vull_vuc (vector unsigned long long x,
+			    vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector pixel
+test_slo_vp_vp_vsc (vector pixel int x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector pixel
+test_slo_vp_vp_vuc (vector pixel int x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed short int
+test_slo_vssi_vssi_vsc (vector signed short int x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector signed short int
+test_slo_vssi_vssi_vuc (vector signed short int x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned short int
+test_slo_vusi_vusi_vsc (vector unsigned short int x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector unsigned short int
+test_slo_vusi_vusi_vuc (vector unsigned short int x, vector unsigned char y)
+{
+	return vec_slo (x, y);
+}
+
+vector float
+test_slo_vf_vf_vsc (vector float x, vector signed char y)
+{
+	return vec_slo (x, y);
+}
+
+vector float
+test_slo_vf_vf_vuc (vector float x, vector unsigned char y)
 {
 	return vec_slo (x, y);
 }
@@ -163,6 +322,12 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
 	return vec_sldw (x, y, 3);
 }
 
+vector int
+test_cmpb_float (vector float x, vector float y)
+{
+	return vec_cmpb (x, y);
+}
+
 /* Expected test results:
 
      test_eq_char              1 vcmpequb inst
@@ -190,7 +355,8 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
      test_vsi_mulo_vsi_vsi     1 xxsldwi
      test_vui_mulo_vui_vui     1 xxsldwi
      test_vsl_mulo_vsl_vsl     1 xxsldwi
-     test_vul_mulo_vul_vul     1 xxsldwi */
+     test_vul_mulo_vul_vul     1 xxsldwi
+     test_cmpb_float           1 vcmpbfp */
 
 /* { dg-final { scan-assembler-times "vcmpequb" 1 } } */
 /* { dg-final { scan-assembler-times "vcmpequh" 1 } } */
@@ -207,5 +373,6 @@ test_vul_sldw_vul_vul (vector unsigned long long x,
 /* { dg-final { scan-assembler-times "xvnabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvnegsp"  1 } } */
 /* { dg-final { scan-assembler-times "xvnegdp"  1 } } */
-/* { dg-final { scan-assembler-times "vslo"     4 } } */
+/* { dg-final { scan-assembler-times "vslo"    20 } } */
 /* { dg-final { scan-assembler-times "xxsldwi"  8 } } */
+/* { dg-final { scan-assembler-times "vcmpbfp"  1 } } */
