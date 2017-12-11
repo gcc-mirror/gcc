@@ -1,3 +1,14 @@
+2017-12-11  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* c-c++-common/Wattributes-2.c: New test.
+	* c-c++-common/Wattributes.c: Ditto.
+	* g++.dg/Wattributes-2.C: Ditto.
+	* gcc.dg/Wattributes-6.c: Ditto.
+	* gcc.dg/Wattributes-7.c: Ditto.
+
+	* ../../../git/gcc/testsuite/g++.dg/pr53037-4.C: 
+
 2017-12-07  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/altivec-12.c (main):  Add tests for vec_avg.
