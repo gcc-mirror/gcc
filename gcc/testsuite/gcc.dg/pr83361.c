@@ -1,6 +1,6 @@
 /* PR rtl-optimization/83361 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -freorder-blocks-and-partition" } */
+/* { dg-options "-O2 -freorder-blocks-and-partition -Wno-div-by-zero" } */
 
 #include <limits.h>
 
