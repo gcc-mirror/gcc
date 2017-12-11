@@ -1,10 +1,6 @@
-/* { dg-do compile { target { powerpc64le-*-* } } } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O0" } */
-
-/* Test that a number of newly added builtin overloads are accepted
-   by the compiler.  */
-
+/* This test is included into builtins-1-be.c and builtins-1-le.c to test on
+   Big Endian and Little Endian machines.  */
+   
 #include <altivec.h>
 
 vector double y = { 2.0, 4.0 };
@@ -14,7 +10,14 @@ int main ()
 {
   vector float fa = {1.0, 2.0, 3.0, -4.0};
   vector float fb = {-2.0, -3.0, -4.0, -5.0};
+  vector float fd = vec_and (fa, fb);
   vector float fc = vec_cpsgn (fa, fb);
+  vector float fe = vec_mergeh (fa, fb);
+  vector float ff = vec_mergel (fa, fb);
+	  
+  vector double da = {1.0, 2.0};
+  vector double db = {-2.0, -3.0};
+  vector double dz = vec_and (da, db);
 
   vector long long la = {5L, 14L};
   vector long long lb = {3L, 86L};
@@ -33,14 +36,16 @@ int main ()
   vector long long lg = vec_andc (la, lb);
   vector long long lh = vec_andc (la, ld);
   vector long long li = vec_andc (ld, lb);
-
+  
   vector unsigned long long ug = vec_andc (ua, ub);
   vector unsigned long long uh = vec_andc (ua, ud);
   vector unsigned long long ui = vec_andc (ud, ub);
 
-  vector double da = {1.0, -4.0};
-  vector double db = {-2.0, 5.0};
-  vector double dc = vec_cpsgn (da, db);
+  vector double de = {1.0, -4.0};
+  vector double df = {-2.0, 5.0};
+  vector double dg = vec_cpsgn (de, df);
+  vector double dzw = vec_mergeh (de, df);
+  vector double dze = vec_mergel (de, df);
 
   vector long long lj = vec_mergeh (la, lb);
   vector long long lk = vec_mergeh (la, ld);
@@ -49,6 +54,11 @@ int main ()
   vector unsigned long long uj = vec_mergeh (ua, ub);
   vector unsigned long long uk = vec_mergeh (ua, ud);
   vector unsigned long long ul = vec_mergeh (ud, ua);
+
+  vector pixel pa = {9, 16, 25, 36, 1, 2, 3, 4};
+  vector pixel pb = {25, 36, 1, 2, 45, 3, 4, 99};
+  vector pixel pc = vec_mergeh (pa, pb);
+  vector pixel pd = vec_mergel (pa, pb);
 
   vector long long lm = vec_mergel (la, lb);
   vector long long ln = vec_mergel (la, ld);
@@ -75,7 +85,14 @@ int main ()
   vector unsigned long long uu = vec_or (ud, ua);
 
   vector unsigned char ca = {0,4,8,1,5,9,2,6,10,3,7,11,15,12,14,13};
+  vector unsigned char cbb = {5,4,8,3,1,9,2,6,10,3,7,11,15,12,14,13};
+
   vector long long lv = vec_perm (la, lb, ca);
+
+  vector unsigned char  ucm = vec_and (ca, cbb);
+  vector unsigned char  ucn = vec_andc (ca, cbb);
+  vector unsigned char  uco = vec_mergel (ca, cbb);
+
   vector unsigned long long uv = vec_perm (ua, ub, ca);
 
   vector long long lw = vec_sel (la, lb, lc);
@@ -108,20 +125,41 @@ int main ()
   int il = vec_any_lt (ua, ub);
   int im = vec_any_ne (ua, ub);
 
+  vector short ssa = {9, 16, 25, 36, 1, 2, 3, 4};
+  vector short ssb = {-8, -27, -64, -125, 2, 3, 5, 3};
+  vector short sscc = vec_and (ssa, ssb);
+  vector short sscd = vec_mergeh (ssa, ssb);
+  vector short ssce = vec_mergel (ssa, ssb);
+
   vector int sia = {9, 16, 25, 36};
   vector int sib = {-8, -27, -64, -125};
-  vector int sic = vec_mergee (sia, sib);
-  vector int sid = vec_mergeo (sia, sib);
+  vector int sicc = vec_and (sia, sib);
+  vector int sicd = vec_andc (sia, sib);
+  vector int sig = vec_mergel (sia, sib);
 
   vector unsigned int uia = {9, 16, 25, 36};
   vector unsigned int uib = {8, 27, 64, 125};
-  vector unsigned int uic = vec_mergee (uia, uib);
-  vector unsigned int uid = vec_mergeo (uia, uib);
+  vector unsigned int uicc = vec_and (uia, uib);
+  vector unsigned int uidd = vec_andc (uia, uib);
+  vector unsigned int uig = vec_mergel (uia, uib);
+
+  vector bool char bca = {0, 1, 4, 7};
+  vector bool char bcb = {-8, 9, 2, 9};
+  vector bool char bcc = vec_and (bca, bcb);
+  vector bool char bcd = vec_andc (bca, bcb);
+  vector bool char bce = vec_mergel (bca, bcb);
+
+  vector bool short bsa = {0, -1, -1, 0, 3, 4, 6, 7};
+  vector bool short bsb = {-1, -1, 0, -1, 0, 0, 0, 0};
+  vector bool short bscc = vec_and (bsa, bsb);
+  vector bool short bscd = vec_andc (bsa, bsb);
+  vector bool short bsce = vec_mergel (bsa, bsb);
 
   vector bool int bia = {0, -1, -1, 0};
   vector bool int bib = {-1, -1, 0, -1};
-  vector bool int bic = vec_mergee (bia, bib);
-  vector bool int bid = vec_mergeo (bia, bib);
+  vector bool int bicc = vec_and (bia, bib);
+  vector bool int bicd = vec_andc (bia, bib);
+  vector bool int bide = vec_mergel (bia, bib);
 
   vector unsigned int uie = vec_packsu (ua, ub);
 
@@ -129,22 +167,32 @@ int main ()
   vector unsigned long long u2 = vec_cntlz (ua);
   vector int sie = vec_cntlz (sia);
   vector unsigned int uif = vec_cntlz (uia);
-  vector short ssa = {20, -40, -60, 80, 100, -120, -140, 160};
-  vector short ssb = vec_cntlz (ssa);
+  vector short sszz = vec_cntlz (ssa);
+
   vector unsigned short usa = {81, 72, 63, 54, 45, 36, 27, 18};
-  vector unsigned short usb = vec_cntlz (usa);
+  vector unsigned short usb = {81, 72, 63, 54, 45, 36, 27, 18};
+  vector unsigned short usd = vec_and (usa, usb);
+  vector unsigned short use = vec_andc (usa, usb);
+  vector unsigned short usc = vec_cntlz (usa);
+  vector unsigned short uscd = vec_mergeh (usa, usb);
+  vector unsigned short usce = vec_mergel (usa, usb);
+  
   vector signed char sca = {-4, 3, -9, 15, -31, 31, 0, 0,
 		            1, 117, -36, 99, 98, 97, 96, 95};
   vector signed char scb = vec_cntlz (sca);
+  vector signed char scc = vec_mergel (sca, scb);
+
   vector unsigned char cb = vec_cntlz (ca);
 
   vector double dd = vec_xl (0, &y);
   vec_xst (dd, 0, &z);
 
-  vector double de = vec_round (dd);
+  vector double dzz = vec_round (dd);
+  vector double dzz1 = vec_rsqrt (dd);
+  vector double dzz2 = vec_rsqrte (dd);
 
-  vector double df = vec_splat (de, 0);
-  vector double dg = vec_splat (de, 1);
+  vector double dff = vec_splat (de, 0);
+  vector double dgg = vec_splat (de, 1);
   vector long long l3 = vec_splat (l2, 0);
   vector long long l4 = vec_splat (l2, 1);
   vector unsigned long long u3 = vec_splat (u2, 0);
@@ -160,8 +208,10 @@ int main ()
 
   vector double dh = vec_ctf (la, -2);
   vector double di = vec_ctf (ua, 2);
+  vector int sz = vec_cts (fa, 0x1F);
   vector long long l9 = vec_cts (dh, -2);
   vector unsigned long long u7 = vec_ctu (di, 2);
+  vector unsigned int usz = vec_ctu (fa, 0x1F);
 
   return 0;
 }
