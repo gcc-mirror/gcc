@@ -40023,7 +40023,8 @@ rs6000_address_for_fpconvert (rtx x)
 
   gcc_assert (MEM_P (x));
   addr = XEXP (x, 0);
-  if (! legitimate_indirect_address_p (addr, strict_p)
+  if (can_create_pseudo_p ()
+      && ! legitimate_indirect_address_p (addr, strict_p)
       && ! legitimate_indexed_address_p (addr, strict_p))
     {
       if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)

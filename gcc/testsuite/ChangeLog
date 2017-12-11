@@ -1,3 +1,11 @@
+2017-12-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81959
+	* gcc.target/powerpc/pr81959.c: New test.
+
 2017-12-11  Sudakshina Das  <sudi.das@arm.com>
 
 	Backported from trunk
