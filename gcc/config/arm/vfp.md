@@ -456,7 +456,10 @@
       gcc_unreachable ();
     }
  }
-  [(set_attr "predicable" "yes, yes, no, yes, no, no, no, no, no, no")
+  [(set_attr "conds" "*, *, unconditional, *, unconditional, unconditional,\
+		      unconditional, unconditional, unconditional,\
+		      unconditional")
+   (set_attr "predicable" "yes, yes, no, yes, no, no, no, no, no, no")
    (set_attr "predicable_short_it" "no, no, no, yes,\
 				    no, no, no, no,\
 				    no, no")
