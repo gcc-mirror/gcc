@@ -5258,7 +5258,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	  /* Fall through.  */
 
 	default:
-	  output_operand_lossage ("Unsupported operand for code '%c'", code);
+	  output_operand_lossage ("unsupported operand for code '%c'", code);
 	}
       break;
 
@@ -9404,11 +9404,11 @@ aarch64_override_options (void)
   /* The compiler may have been configured with 2.23.* binutils, which does
      not have support for ILP32.  */
   if (TARGET_ILP32)
-    error ("Assembler does not support -mabi=ilp32");
+    error ("assembler does not support -mabi=ilp32");
 #endif
 
   if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
-    sorry ("Return address signing is only supported for -mabi=lp64");
+    sorry ("return address signing is only supported for -mabi=lp64");
 
   /* Make sure we properly set up the explicit options.  */
   if ((aarch64_cpu_string && valid_cpu)
