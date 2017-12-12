@@ -1,3 +1,8 @@
+2017-12-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* combine.c (simplify_set): Do not transform subregs to zero_extends
+	if the destination mode is a vector mode.
+
 2017-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83359
