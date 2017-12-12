@@ -102,6 +102,8 @@
 
 #include <gfniintrin.h>
 
+#include <vaesintrin.h>
+
 #ifndef __RDRND__
 #pragma GCC push_options
 #pragma GCC target("rdrnd")

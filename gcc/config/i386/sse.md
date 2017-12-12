@@ -172,6 +172,9 @@
   UNSPEC_VPMADDUBSWACCSSD
   UNSPEC_VPMADDWDACCD
   UNSPEC_VPMADDWDACCSSD
+
+  ;; For VAES support
+  UNSPEC_VAESDEC
 ])
 
 (define_c_enum "unspecv" [
@@ -373,6 +376,9 @@
 
 (define_mode_iterator VI2_AVX512VL
   [(V8HI "TARGET_AVX512VL") (V16HI "TARGET_AVX512VL") V32HI])
+
+(define_mode_iterator VI1_AVX512VL_F
+  [V32QI (V16QI "TARGET_AVX512VL") (V64QI "TARGET_AVX512F")])
 
 (define_mode_iterator VI8_AVX2_AVX512BW
   [(V8DI "TARGET_AVX512BW") (V4DI "TARGET_AVX2") V2DI])
@@ -20449,3 +20455,13 @@
   "TARGET_AVX512VNNI"
   "vpdpwssds\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
    [(set_attr ("prefix") ("evex"))])
+
+(define_insn "vaesdec_<mode>"
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+	  (unspec:VI1_AVX512VL_F
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "v")]
+	  UNSPEC_VAESDEC))]
+  "TARGET_VAES"
+  "vaesdec\t{%2, %1, %0|%0, %1, %2}"
+)
