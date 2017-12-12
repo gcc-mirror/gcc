@@ -1951,10 +1951,11 @@ instantiate_virtual_regs (void)
 	   Fortunately, they shouldn't contain virtual registers either.  */
         if (GET_CODE (PATTERN (insn)) == USE
 	    || GET_CODE (PATTERN (insn)) == CLOBBER
-	    || GET_CODE (PATTERN (insn)) == ASM_INPUT)
+	    || GET_CODE (PATTERN (insn)) == ASM_INPUT
+	    || DEBUG_MARKER_INSN_P (insn))
 	  continue;
-	else if (DEBUG_INSN_P (insn))
-	  instantiate_virtual_regs_in_rtx (&INSN_VAR_LOCATION (insn));
+	else if (DEBUG_BIND_INSN_P (insn))
+	  instantiate_virtual_regs_in_rtx (INSN_VAR_LOCATION_PTR (insn));
 	else
 	  instantiate_virtual_regs_in_insn (insn);
 

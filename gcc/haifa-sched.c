@@ -4010,7 +4010,7 @@ schedule_insn (rtx_insn *insn)
   gcc_assert (sd_lists_empty_p (insn, SD_LIST_HARD_BACK));
 
   /* Reset debug insns invalidated by moving this insn.  */
-  if (MAY_HAVE_DEBUG_INSNS && !DEBUG_INSN_P (insn))
+  if (MAY_HAVE_DEBUG_BIND_INSNS && !DEBUG_INSN_P (insn))
     for (sd_it = sd_iterator_start (insn, SD_LIST_BACK);
 	 sd_iterator_cond (&sd_it, &dep);)
       {
@@ -4023,7 +4023,7 @@ schedule_insn (rtx_insn *insn)
 	    continue;
 	  }
 
-	gcc_assert (DEBUG_INSN_P (dbg));
+	gcc_assert (DEBUG_BIND_INSN_P (dbg));
 
 	if (sched_verbose >= 6)
 	  fprintf (sched_dump, ";;\t\tresetting: debug insn %d\n",

@@ -205,7 +205,7 @@ void
 sese_insert_phis_for_liveouts (sese_info_p region, basic_block bb,
 			       edge false_e, edge true_e)
 {
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     sese_reset_debug_liveouts (region);
 
   unsigned i;

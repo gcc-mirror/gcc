@@ -2072,7 +2072,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	      gsi_insert_before (&dest_gsi, stmt, GSI_NEW_STMT);
 	    }
 	  /* Other user labels keep around in a form of a debug stmt.  */
-	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_STMTS)
+	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_BIND_STMTS)
 	    {
 	      gimple *dbg = gimple_build_debug_bind (label,
 						     integer_zero_node,

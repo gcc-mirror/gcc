@@ -7154,7 +7154,7 @@ remove_unused_ivs (struct ivopts_data *data)
 
 	  tree def = info->iv->ssa_name;
 
-	  if (MAY_HAVE_DEBUG_STMTS && SSA_NAME_DEF_STMT (def))
+	  if (MAY_HAVE_DEBUG_BIND_STMTS && SSA_NAME_DEF_STMT (def))
 	    {
 	      imm_use_iterator imm_iter;
 	      use_operand_p use_p;

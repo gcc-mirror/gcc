@@ -2512,7 +2512,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  gcc_checking_assert (!root->grp_scalar_read
 			       && !root->grp_assignment_read);
 	  sth_created = true;
-	  if (MAY_HAVE_DEBUG_STMTS)
+	  if (MAY_HAVE_DEBUG_BIND_STMTS)
 	    {
 	      root->grp_to_be_debug_replaced = 1;
 	      root->replacement_decl = create_access_replacement (root);

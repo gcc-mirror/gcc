@@ -5930,7 +5930,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 					    &vars);
 		if (init)
 		  init_stmts.safe_push (init);
-		if (MAY_HAVE_DEBUG_STMTS && args_to_skip)
+		if (MAY_HAVE_DEBUG_BIND_STMTS && args_to_skip)
 		  {
 		    if (parm_num == -1)
 		      {
@@ -6072,7 +6072,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	}
     }
 
-  if (debug_args_to_skip && MAY_HAVE_DEBUG_STMTS)
+  if (debug_args_to_skip && MAY_HAVE_DEBUG_BIND_STMTS)
     {
       tree parm;
       vec<tree, va_gc> **debug_args = NULL;

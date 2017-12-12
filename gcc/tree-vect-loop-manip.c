@@ -192,7 +192,7 @@ adjust_debug_stmts_now (adjust_info *ai)
 static void
 adjust_vec_debug_stmts (void)
 {
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   gcc_assert (adjust_vec.exists ());
@@ -214,7 +214,7 @@ adjust_debug_stmts (tree from, tree to, basic_block bb)
 {
   adjust_info ai;
 
-  if (MAY_HAVE_DEBUG_STMTS
+  if (MAY_HAVE_DEBUG_BIND_STMTS
       && TREE_CODE (from) == SSA_NAME
       && ! SSA_NAME_IS_DEFAULT_DEF (from)
       && ! virtual_operand_p (from))
@@ -242,7 +242,7 @@ adjust_phi_and_debug_stmts (gimple *update_phi, edge e, tree new_def)
 
   SET_PHI_ARG_DEF (update_phi, e->dest_idx, new_def);
 
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     adjust_debug_stmts (orig_def, PHI_RESULT (update_phi),
 			gimple_bb (update_phi));
 }
@@ -1685,7 +1685,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   create_lcssa_for_virtual_phi (loop);
   update_ssa (TODO_update_ssa_only_virtuals);
 
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     {
       gcc_assert (!adjust_vec.exists ());
       adjust_vec.create (32);

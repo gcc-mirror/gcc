@@ -692,7 +692,7 @@ simplify_control_stmt_condition_1 (edge e,
 void
 propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 {
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   if (!single_pred_p (dest))

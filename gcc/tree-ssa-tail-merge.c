@@ -1781,7 +1781,7 @@ tail_merge_optimize (unsigned int todo)
 
   if (nr_bbs_removed_total > 0)
     {
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  calculate_dominance_info (CDI_DOMINATORS);
 	  update_debug_stmts ();

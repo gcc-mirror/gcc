@@ -1125,7 +1125,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       if (tem == NULL_RTX)
 	tem = gen_rtx_raw_SUBREG (GET_MODE (loc), addr, SUBREG_BYTE (loc));
     finish_subreg:
-      if (MAY_HAVE_DEBUG_INSNS
+      if (MAY_HAVE_DEBUG_BIND_INSNS
 	  && GET_CODE (tem) == SUBREG
 	  && (GET_CODE (SUBREG_REG (tem)) == PLUS
 	      || GET_CODE (SUBREG_REG (tem)) == MINUS
@@ -1337,7 +1337,7 @@ dv_onepart_p (decl_or_value dv)
 {
   tree decl;
 
-  if (!MAY_HAVE_DEBUG_INSNS)
+  if (!MAY_HAVE_DEBUG_BIND_INSNS)
     return NOT_ONEPART;
 
   if (dv_is_value_p (dv))
@@ -4861,7 +4861,7 @@ dataflow_set_clear_at_call (dataflow_set *set, rtx_insn *call_insn)
   EXECUTE_IF_SET_IN_HARD_REG_SET (invalidated_regs, 0, r, hrsi)
     var_regno_delete (set, r);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       set->traversed_vars = set->vars;
       shared_hash_htab (set->vars)
@@ -5535,7 +5535,7 @@ use_type (rtx loc, struct count_use_info *cui, machine_mode *modep)
 		  variable names such as VALUEs (never happens) or
 		  DEBUG_EXPRs (only happens in the presence of debug
 		  insns).  */
-	       && (!MAY_HAVE_DEBUG_INSNS
+	       && (!MAY_HAVE_DEBUG_BIND_INSNS
 		   || !rtx_debug_expr_p (XEXP (loc, 0))))
 	return MO_USE;
       else
@@ -6700,7 +6700,7 @@ compute_bb_dataflow (basic_block bb)
   dataflow_set_copy (&old_out, out);
   dataflow_set_copy (out, in);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     local_get_addr_cache = new hash_map<rtx, rtx>;
 
   FOR_EACH_VEC_ELT (VTI (bb)->mos, i, mo)
@@ -6982,7 +6982,7 @@ compute_bb_dataflow (basic_block bb)
 	}
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       delete local_get_addr_cache;
       local_get_addr_cache = NULL;
@@ -7069,7 +7069,7 @@ vt_find_locations (void)
 	      else
 		oldinsz = oldoutsz = 0;
 
-	      if (MAY_HAVE_DEBUG_INSNS)
+	      if (MAY_HAVE_DEBUG_BIND_INSNS)
 		{
 		  dataflow_set *in = &VTI (bb)->in, *first_out = NULL;
 		  bool first = true, adjust = false;
@@ -7130,7 +7130,7 @@ vt_find_locations (void)
 
 	      if (htabmax && htabsz > htabmax)
 		{
-		  if (MAY_HAVE_DEBUG_INSNS)
+		  if (MAY_HAVE_DEBUG_BIND_INSNS)
 		    inform (DECL_SOURCE_LOCATION (cfun->decl),
 			    "variable tracking size limit exceeded with "
 			    "-fvar-tracking-assignments, retrying without");
@@ -7190,7 +7190,7 @@ vt_find_locations (void)
 	}
     }
 
-  if (success && MAY_HAVE_DEBUG_INSNS)
+  if (success && MAY_HAVE_DEBUG_BIND_INSNS)
     FOR_EACH_BB_FN (bb, cfun)
       gcc_assert (VTI (bb)->flooded);
 
@@ -8579,7 +8579,7 @@ vt_expand_loc (rtx loc, variable_table_type *vars)
   struct expand_loc_callback_data data;
   rtx result;
 
-  if (!MAY_HAVE_DEBUG_INSNS)
+  if (!MAY_HAVE_DEBUG_BIND_INSNS)
     return loc;
 
   INIT_ELCD (data, vars);
@@ -9014,7 +9014,7 @@ emit_notes_for_changes (rtx_insn *insn, enum emit_note_where where,
   if (!changed_variables->elements ())
     return;
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     process_changed_values (htab);
 
   data.insn = insn;
@@ -9498,10 +9498,8 @@ vt_emit_notes (void)
      delete_variable_part).  */
   emit_notes = true;
 
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      dropped_values = new variable_table_type (cselib_get_next_uid () * 2);
-    }
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
+    dropped_values = new variable_table_type (cselib_get_next_uid () * 2);
 
   dataflow_set_init (&cur);
 
@@ -9511,13 +9509,13 @@ vt_emit_notes (void)
 	 subsequent basic blocks.  */
       emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	local_get_addr_cache = new hash_map<rtx, rtx>;
 
       /* Emit the notes for the changes in the basic block itself.  */
       emit_notes_in_bb (bb, &cur);
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	delete local_get_addr_cache;
       local_get_addr_cache = NULL;
 
@@ -9533,7 +9531,7 @@ vt_emit_notes (void)
 
   dataflow_set_destroy (&cur);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     delete dropped_values;
   dropped_values = NULL;
 
@@ -9893,7 +9891,7 @@ vt_init_cfa_base (void)
       cfa_base_rtx = NULL_RTX;
       return;
     }
-  if (!MAY_HAVE_DEBUG_INSNS)
+  if (!MAY_HAVE_DEBUG_BIND_INSNS)
     return;
 
   /* Tell alias analysis that cfa_base_rtx should share
@@ -9935,7 +9933,7 @@ vt_initialize (void)
       VTI (bb)->permp = NULL;
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       cselib_init (CSELIB_RECORD_MEMORY | CSELIB_PRESERVE_CONSTANTS);
       scratch_regs = BITMAP_ALLOC (NULL);
@@ -9948,7 +9946,7 @@ vt_initialize (void)
       global_get_addr_cache = NULL;
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       rtx reg, expr;
       int ofst;
@@ -10078,7 +10076,7 @@ vt_initialize (void)
       HOST_WIDE_INT pre, post = 0;
       basic_block first_bb, last_bb;
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	{
 	  cselib_record_sets_hook = add_with_sets;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -10129,7 +10127,7 @@ vt_initialize (void)
 
 		  cselib_hook_called = false;
 		  adjust_insn (bb, insn);
-		  if (MAY_HAVE_DEBUG_INSNS)
+		  if (MAY_HAVE_DEBUG_BIND_INSNS)
 		    {
 		      if (CALL_P (insn))
 			prepare_call_arguments (bb, insn);
@@ -10164,7 +10162,7 @@ vt_initialize (void)
 		      vt_init_cfa_base ();
 		      hard_frame_pointer_adjustment = fp_cfa_offset;
 		      /* Disassociate sp from fp now.  */
-		      if (MAY_HAVE_DEBUG_INSNS)
+		      if (MAY_HAVE_DEBUG_BIND_INSNS)
 			{
 			  cselib_val *v;
 			  cselib_invalidate_rtx (stack_pointer_rtx);
@@ -10184,7 +10182,7 @@ vt_initialize (void)
 
       bb = last_bb;
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	{
 	  cselib_preserve_only_values ();
 	  cselib_reset_table (cselib_get_next_uid ());
@@ -10283,7 +10281,7 @@ vt_finalize (void)
   location_chain_pool.release ();
   shared_hash_pool.release ();
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       if (global_get_addr_cache)
 	delete global_get_addr_cache;
