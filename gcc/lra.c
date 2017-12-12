@@ -1806,7 +1806,7 @@ push_insns (rtx_insn *from, rtx_insn *to)
 static void
 setup_sp_offset (rtx_insn *from, rtx_insn *last)
 {
-  rtx_insn *before = next_nonnote_insn_bb (last);
+  rtx_insn *before = next_nonnote_nondebug_insn_bb (last);
   HOST_WIDE_INT offset = (before == NULL_RTX || ! INSN_P (before)
 			  ? 0 : lra_get_insn_recog_data (before)->sp_offset);
 
