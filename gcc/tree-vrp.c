@@ -6677,7 +6677,7 @@ vrp_dom_walker::after_dom_children (basic_block bb)
 
   x_vr_values = vr_values;
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
-			 m_avail_exprs_stack,
+			 m_avail_exprs_stack, NULL,
 			 simplify_stmt_for_jump_threading);
   x_vr_values = NULL;
 

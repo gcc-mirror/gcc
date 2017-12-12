@@ -1,3 +1,30 @@
+2017-12-12  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/83298
+	PR tree-optimization/83362
+	PR tree-optimization/83383
+	* gimple-ssa-evrp-analyze.h (class evrp_range_analyzer): Make
+	push_value_range a public interface.  Add new argument to
+	record_ranges_from_stmt.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_stmt): Add new argument.
+	Update comments.  Handle recording temporary equivalences.
+	* tree-ssa-dom.c (dom_opt_opt_walker::before_dom_children): Add
+	new argument to call to evrp_range_analyzer::record_ranges_from_stmt.
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-threadedge.c: Include alloc-pool.h, vr-values.h and
+	gimple-ssa-evrp-analyze.h.
+	(record_temporary_equivalences_from_phis): Add new argument.  When
+	the PHI arg is an SSA_NAME, set the result's range to the range
+	of the PHI arg.
+	(record_temporary_equivalences_from_stmts_at_dest): Record ranges
+	from statements too.
+	(thread_through_normal_block): Accept new argument, evrp_range_analyzer.
+	Pass it down to children as needed.
+	(thread_outgoing_edges): Likewise.
+	(thread_across_edge): Likewise.   Push/pop range state as needed.
+	* tree-ssa-threadedge.h (thread_outgoing_edges): Update prototype.
+
 2017-12-12  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386.c (PTA_SKYLAKE_AVX512): Add PTA_CLWB.

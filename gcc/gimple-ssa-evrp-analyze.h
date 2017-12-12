@@ -31,12 +31,17 @@ class evrp_range_analyzer
   }
 
   void enter (basic_block);
+  void push_marker (void);
+  void pop_to_marker (void);
   void leave (basic_block);
-  void record_ranges_from_stmt (gimple *);
+  void record_ranges_from_stmt (gimple *, bool);
 
   /* Main interface to retrieve range information.  */
   value_range *get_value_range (const_tree op)
     { return vr_values->get_value_range (op); }
+
+  /* Record a new unwindable range.  */
+  void push_value_range (tree var, value_range *vr);
 
   /* Dump all the current value ranges.  This is primarily
      a debugging interface.  */
@@ -57,7 +62,6 @@ class evrp_range_analyzer
   DISABLE_COPY_AND_ASSIGN (evrp_range_analyzer);
   class vr_values *vr_values;
 
-  void push_value_range (tree var, value_range *vr);
   value_range *pop_value_range (tree var);
   value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
   void record_ranges_from_incoming_edge (basic_block);
