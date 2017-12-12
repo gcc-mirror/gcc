@@ -1,3 +1,8 @@
+2017-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gcc-dg.exp (process-message): Avoid additional whitespace in
+	$expmsg.
+
 2017-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83385

@@ -1103,14 +1103,15 @@ proc process-message { msgproc msgprefix dgargs } {
 	# Remove it from the original expression and move it
 	# to the proper place in the search expression.
 	set expmsg [string range $expmsg [string length $column] end]
+	set column "$column "
     } elseif [string match "" [lindex $newentry 0]] {
 	# The specified line number is 0; don't expect a column number.
     } else {
 	# There is no column number in the search expression, but we
 	# should expect one in the message itself.
-	set column {[0-9]+:}
+	set column {[0-9]+: }
     }
-    set expmsg "$column $msgprefix\[^\n\]*$expmsg"
+    set expmsg "$column$msgprefix\[^\n\]*$expmsg"
     set newentry [lreplace $newentry 2 2 $expmsg]
 
     set dg-messages [lreplace ${dg-messages} end end $newentry]
