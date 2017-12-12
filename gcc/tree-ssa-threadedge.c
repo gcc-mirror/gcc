@@ -712,6 +712,8 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
       gimple *stmt = gsi_stmt (si);
       if (!is_gimple_debug (stmt))
 	break;
+      if (gimple_debug_nonbind_marker_p (stmt))
+	continue;
       i++;
     }
 
@@ -739,6 +741,8 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 	var = gimple_debug_bind_get_var (stmt);
       else if (gimple_debug_source_bind_p (stmt))
 	var = gimple_debug_source_bind_get_var (stmt);
+      else if (gimple_debug_nonbind_marker_p (stmt))
+	continue;
       else
 	gcc_unreachable ();
 
@@ -766,17 +770,23 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 	    var = gimple_debug_bind_get_var (stmt);
 	  else if (gimple_debug_source_bind_p (stmt))
 	    var = gimple_debug_source_bind_get_var (stmt);
+	  else if (gimple_debug_nonbind_marker_p (stmt))
+	    continue;
 	  else
 	    gcc_unreachable ();
 
-	  /* Discard debug bind overlaps.  ??? Unlike stmts from src,
+	  /* Discard debug bind overlaps.  Unlike stmts from src,
 	     copied into a new block that will precede BB, debug bind
 	     stmts in bypassed BBs may actually be discarded if
-	     they're overwritten by subsequent debug bind stmts, which
-	     might be a problem once we introduce stmt frontier notes
-	     or somesuch.  Adding `&& bb == src' to the condition
-	     below will preserve all potentially relevant debug
-	     notes.  */
+	     they're overwritten by subsequent debug bind stmts.  We
+	     want to copy binds for all modified variables, so that we
+	     retain a bind to the shared def if there is one, or to a
+	     newly introduced PHI node if there is one.  Our bind will
+	     end up reset if the value is dead, but that implies the
+	     variable couldn't have survived, so it's fine.  We are
+	     not actually running the code that performed the binds at
+	     this point, we're just adding binds so that they survive
+	     the new confluence, so markers should not be copied.  */
 	  if (vars && vars->add (var))
 	    continue;
 	  else if (!vars)
@@ -787,8 +797,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 		  break;
 	      if (i >= 0)
 		continue;
-
-	      if (fewvars.length () < (unsigned) alloc_count)
+	      else if (fewvars.length () < (unsigned) alloc_count)
 		fewvars.quick_push (var);
 	      else
 		{

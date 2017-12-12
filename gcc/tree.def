@@ -382,6 +382,9 @@ DEFTREECODE (RESULT_DECL, "result_decl", tcc_declaration, 0)
    DEBUG stmts.  */
 DEFTREECODE (DEBUG_EXPR_DECL, "debug_expr_decl", tcc_declaration, 0)
 
+/* A stmt that marks the beginning of a source statement.  */
+DEFTREECODE (DEBUG_BEGIN_STMT, "debug_begin_stmt", tcc_statement, 0)
+
 /* A namespace declaration.  Namespaces appear in DECL_CONTEXT of other
    _DECLs, providing a hierarchy of names.  */
 DEFTREECODE (NAMESPACE_DECL, "namespace_decl", tcc_declaration, 0)

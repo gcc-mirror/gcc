@@ -1,5 +1,104 @@
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
+	* cfgexpand.c (expand_gimple_basic_block): Handle begin stmt
+	markers.  Integrate source bind into debug stmt expand loop.
+	(pass_expand::execute): Check debug marker limit.  Avoid deep
+	TER and expand debug locations for debug bind insns only.
+	* cse.c (insn_live_p): Keep nonbind markers and debug bindings
+	followed by them.
+	* df-scan.c (df_insn_delete): Accept out-of-block debug insn.
+	* final.c (reemit_insn_block_notes): Take current block from
+	nonbind markers.  Declare note where it's first set.
+	(final_scan_insn): Handle begin stmt notes.  Emit is_stmt according to
+	begin stmt markers if enabled.
+	(notice_source_line): Handle nonbind markers.  Fail if their
+	location is unknown or that of builtins.
+	(rest_of_handle_final): Convert begin stmt markers to notes if
+	var-tracking didn't run.
+	(rest_of_clean_state): Skip begin stmt markers.
+	* gimple-pretty-print.c (dump_gimple_debug): Handle begin stmt
+	markers.
+	* function.c (allocate_struct_function): Set begin_stmt_markers.
+	* function.h (struct function): Add debug_marker_count counter
+	and debug_nonbind_markers flag.
+	* gimple-iterator.c (gsi_remove): Adjust debug_marker_count.
+	* gimple-low.c (lower_function_body): Adjust
+	debug_nonbind_markers.
+	(lower_stmt): Drop or skip gimple debug stmts.
+	(lower_try_catch): Skip debug stmts.
+	* gimple.c (gimple_build_debug_begin_stmt): New.
+	(gimple_copy): Increment debug_marker_count if copying one.
+	* gimple.h (gimple_build_debug_begin_stmt): Declare.
+	* gimplify.c (rexpr_location): New.
+	(rexpr_has_location): New.
+	(warn_switch_unreachable_r): Handle gimple debug stmts.
+	(shortcut_cond_r): Call expr_location.
+	(find_goto): New.
+	(find_goto_label): New.
+	(shortcut_cond_expr): Call expr_has_location, expr_location, and
+	find_goto_label.
+	(gimplify_cond_expr): Call find_goto_label, expr_has_location, and
+	expr_location.
+	(gimplify_expr): Handle begin stmt markers.  Reject debug expr decls.
+	* langhooks-def.h (LANG_HOOKS_EMITS_BEGIN_STMT): New.  Add to...
+	(LANG_HOOKS_INITIALIZER): ... this.
+	* langhooks.h (struct lang_hooks): Add emits_begin_stmt.
+	* lra-contraints.c (inherit_reload_reg): Tolerate between-blocks
+	debug insns.
+	(update_ebb_live_info): Skip debug insn markers.
+	* lra.c (debug_insn_static_data): Rename to...
+	(debug_bind_static_data): ... this.
+	(debug_marker_static_data): New.
+	(lra_set_insn_recog_data): Select one of the above depending
+	on debug insn kind.
+	(lra_update_isn_regno_info): Don't assume debug insns have
+	freqs.
+	(push_insns): Skip debug insns.
+	* lto-streamer-in.c (input_function): Drop debug stmts
+	depending on active options.  Adjust debug_nonbind_markers.
+	* params.def (PARAM_MAX_DEBUG_MARKER_COUNT): New.
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_0): Handle
+	begin stmt marker notes.
+	(print_insn): Likewise.
+	* recog.c (extract_insn): Recognize rtl for debug markers.
+	* rtl.def (DEBUG_MARKER): New.
+	* tree-inline.c: Include params.h.
+	(remap_gimple_stmt): Handle nonbind markers.
+	(maybe_move_debug_stmts_to_successors): Likewise.
+	(copy_debug_stmt): Likewise.
+	* tree-iterator.c (append_to_statement_list_1): Append begin stmt
+	markers regardless of no side effects.
+	(tsi_link_before): Don't update container's side effects when adding
+	a begin stmt marker.
+	(tsi_link_after): Likewise.
+	(expr_first): Skip begin stmt markers.
+	(expr_last): Likewise.
+	* tree-pretty-print (dump_generic_node): Handle begin stmt markers.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_info):
+	Disregard nonbind markers.
+	* tree.c (make_node_stat): Don't set side effects for begin stmt
+	markers.
+	(build1_stat): Likewise.
+	* tree.def (DEBUG_BEGIN_STMT): New.
+	* tree.h (GOTO_DESTINATION): Require a GOTO_EXPR.
+	* var-tracking.c (delete_debug_insns): Renamed to...
+	(delete_vta_debug_insns): ... this.
+	(reemit_marker_as_note): New.
+	(vt_initialize): Reemit markers.
+	(delete_vta_debug_insns): Likewise.
+	(vt_debug_insns_local): Reemit or delete markers.
+	(variable_tracking_main_1): Likewise.
+	* doc/generic.texi (DEBUG_BEGIN_STMT): Document.
+	* doc/gimple.texi (gimple_debug_begin_stmt_p): New.
+	(gimple_debug_nonbind_marker_p): New.
+	(gimple_build_debug_bind): Adjust.
+	(gimple_build_debug_begin_stmt): New.
+	* doc/invoke.texi (max-debug-marker-count): New param.
+	* doc/rtl.texi (debug_implicit_ptr, entry_value): New.
+	(debug_parameter_ref, debug_marker): New.
+	(NOTE_INSN_BEGIN_STMT): New.
+	(DEBUG_INSN): Describe begin stmt markers.
+
 	* cfgbuild.c (find_bb_boundaries): Don't purge dead edges if,
 	without debug insns, we wouldn't, but clean up debug insns
 	after a control flow insn nevertheless.

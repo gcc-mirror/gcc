@@ -455,6 +455,7 @@ check_constexpr_ctor_body_1 (tree last, tree list)
 
     case USING_STMT:
     case STATIC_ASSERT:
+    case DEBUG_BEGIN_STMT:
       return true;
 
     default:
@@ -694,6 +695,7 @@ constexpr_fn_retval (tree body)
       return constexpr_fn_retval (BIND_EXPR_BODY (body));
 
     case USING_STMT:
+    case DEBUG_BEGIN_STMT:
       return NULL_TREE;
 
     case CALL_EXPR:
@@ -3856,6 +3858,14 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       if (returns (jump_target) || breaks (jump_target))
 	break;
     }
+  /* Make sure we don't use the "result" of a debug-only marker.  That
+     would be wrong.  We should be using the result of the previous
+     statement, or NULL if there isn't one.  In practice, this should
+     never happen: the statement after the marker should override the
+     result of the marker, so its value shouldn't survive in R.  Now,
+     should that ever change, we'll need some fixing here to stop
+     markers from modifying the generated executable code.  */
+  gcc_checking_assert (!r || TREE_CODE (r) != DEBUG_BEGIN_STMT);
   return r;
 }
 
@@ -4080,6 +4090,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
 	}
       break;
+
+    case DEBUG_BEGIN_STMT:
+      /* ??? It might be nice to retain this information somehow, so
+	 as to be able to step into a constexpr function call.  */
+      /* Fall through.  */
 
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
@@ -5187,6 +5202,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CONTINUE_STMT:
     case REQUIRES_EXPR:
     case STATIC_ASSERT:
+    case DEBUG_BEGIN_STMT:
       return true;
 
     case PARM_DECL:

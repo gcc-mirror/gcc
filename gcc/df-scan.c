@@ -945,7 +945,7 @@ df_insn_delete (rtx_insn *insn)
      In any case, we expect BB to be non-NULL at least up to register
      allocation, so disallow a non-NULL BB up to there.  Not perfect
      but better than nothing...  */
-  gcc_checking_assert (bb != NULL || reload_completed);
+  gcc_checking_assert (bb != NULL || DEBUG_INSN_P (insn) || reload_completed);
 
   df_grow_bb_info (df_scan);
   df_grow_reg_info ();

@@ -10684,6 +10684,19 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
 /* Statements [gram.stmt.stmt]  */
 
+/* Build and add a DEBUG_BEGIN_STMT statement with location LOC.  */
+
+static void
+add_debug_begin_stmt (location_t loc)
+{
+  if (!MAY_HAVE_DEBUG_MARKER_STMTS)
+    return;
+
+  tree stmt = build0 (DEBUG_BEGIN_STMT, void_type_node);
+  SET_EXPR_LOCATION (stmt, loc);
+  add_stmt (stmt);
+}
+
 /* Parse a statement.
 
    statement:
@@ -10759,6 +10772,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   token = cp_lexer_peek_token (parser->lexer);
   /* Remember the location of the first token in the statement.  */
   statement_location = token->location;
+  add_debug_begin_stmt (statement_location);
   /* If this is a keyword, then that will often determine what kind of
      statement we have.  */
   if (token->type == CPP_KEYWORD)

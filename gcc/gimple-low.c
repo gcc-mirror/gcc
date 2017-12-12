@@ -110,6 +110,17 @@ lower_function_body (void)
 
   i = gsi_last (lowered_body);
 
+  /* If we had begin stmt markers from e.g. PCH, but this compilation
+     doesn't want them, lower_stmt will have cleaned them up; we can
+     now clear the flag that indicates we had them.  */
+  if (!MAY_HAVE_DEBUG_MARKER_STMTS && cfun->debug_nonbind_markers)
+    {
+      /* This counter needs not be exact, but before lowering it will
+	 most certainly be.  */
+      gcc_assert (cfun->debug_marker_count == 0);
+      cfun->debug_nonbind_markers = false;
+    }
+
   /* If the function falls off the end, we need a null return statement.
      If we've already got one in the return_statements vector, we don't
      need to do anything special.  Otherwise build one by hand.  */
@@ -295,6 +306,20 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	lower_sequence (gimple_eh_else_e_body_ptr (eh_else_stmt), data);
       }
       break;
+
+    case GIMPLE_DEBUG:
+      gcc_checking_assert (cfun->debug_nonbind_markers);
+      /* We can't possibly have debug bind stmts before lowering, we
+	 first emit them when entering SSA.  */
+      gcc_checking_assert (gimple_debug_nonbind_marker_p (stmt));
+      /* Propagate fallthruness.  */
+      /* If the function (e.g. from PCH) had debug stmts, but they're
+	 disabled for this compilation, remove them.  */
+      if (!MAY_HAVE_DEBUG_MARKER_STMTS)
+	gsi_remove (gsi, true);
+      else
+	gsi_next (gsi);
+      return;
 
     case GIMPLE_NOP:
     case GIMPLE_ASM:
@@ -501,6 +526,10 @@ lower_try_catch (gimple_stmt_iterator *gsi, struct lower_data *data)
       lower_sequence (gimple_eh_filter_failure_ptr (gsi_stmt (i)), data);
       if (!data->cannot_fallthru)
 	cannot_fallthru = false;
+      break;
+
+    case GIMPLE_DEBUG:
+      gcc_checking_assert (gimple_debug_begin_stmt_p (stmt));
       break;
 
     default:

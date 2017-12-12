@@ -6962,10 +6962,17 @@ insn_live_p (rtx_insn *insn, int *counts)
     {
       rtx_insn *next;
 
+      if (DEBUG_MARKER_INSN_P (insn))
+	return true;
+
       for (next = NEXT_INSN (insn); next; next = NEXT_INSN (next))
 	if (NOTE_P (next))
 	  continue;
 	else if (!DEBUG_INSN_P (next))
+	  return true;
+	/* If we find an inspection point, such as a debug begin stmt,
+	   we want to keep the earlier debug insn.  */
+	else if (DEBUG_MARKER_INSN_P (next))
 	  return true;
 	else if (INSN_VAR_LOCATION_DECL (insn) == INSN_VAR_LOCATION_DECL (next))
 	  return false;

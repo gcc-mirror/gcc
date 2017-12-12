@@ -1453,6 +1453,7 @@ gswitch *gimple_build_switch (tree, tree, vec<tree> );
 geh_dispatch *gimple_build_eh_dispatch (int);
 gdebug *gimple_build_debug_bind (tree, tree, gimple * CXX_MEM_STAT_INFO);
 gdebug *gimple_build_debug_source_bind (tree, tree, gimple * CXX_MEM_STAT_INFO);
+gdebug *gimple_build_debug_begin_stmt (tree, location_t CXX_MEM_STAT_INFO);
 gomp_critical *gimple_build_omp_critical (gimple_seq, tree, tree);
 gomp_for *gimple_build_omp_for (gimple_seq, int, tree, size_t, gimple_seq);
 gomp_parallel *gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
