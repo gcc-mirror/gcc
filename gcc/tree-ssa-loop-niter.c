@@ -3510,6 +3510,12 @@ infer_loop_bounds_from_signedness (struct loop *loop, gimple *stmt)
 
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
+  wide_int minv, maxv;
+  if (get_range_info (def, &minv, &maxv) == VR_RANGE)
+    {
+      low = wide_int_to_tree (type, minv);
+      high = wide_int_to_tree (type, maxv);
+    }
 
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
