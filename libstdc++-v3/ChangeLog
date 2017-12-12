@@ -1,3 +1,13 @@
+2017-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83395
+	* include/std/type_traits (__is_invocable_impl): Remove partial
+	specialization for INVOKE<void> and restore is_void<R> check in
+	primary template.
+	(__is_nt_invocable_impl): Likewise.
+	* testsuite/20_util/is_invocable/83395.cc: New test.
+	* testsuite/20_util/is_nothrow_invocable/83395.cc: New test.
+
 2017-12-07  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR libstdc++/83120

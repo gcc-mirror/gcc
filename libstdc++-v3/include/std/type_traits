@@ -2589,12 +2589,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Result, typename _Ret>
     struct __is_invocable_impl<_Result, _Ret, __void_t<typename _Result::type>>
-    : is_convertible<typename _Result::type, _Ret>::type
-    { };
-
-  template<typename _Result>
-    struct __is_invocable_impl<_Result, void, __void_t<typename _Result::type>>
-    : true_type
+    : __or_<is_void<_Ret>, is_convertible<typename _Result::type, _Ret>>::type
     { };
 
   template<typename _Fn, typename... _ArgTypes>
@@ -2699,14 +2694,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Result, typename _Ret>
     struct __is_nt_invocable_impl<_Result, _Ret,
 				  __void_t<typename _Result::type>>
-    : __and_<is_convertible<typename _Result::type, _Ret>,
-	     is_nothrow_constructible<_Ret, typename _Result::type>>
-    { };
-
-  template<typename _Result>
-    struct __is_nt_invocable_impl<_Result, void,
-				  __void_t<typename _Result::type>>
-    : true_type
+    : __or_<is_void<_Ret>,
+	    __and_<is_convertible<typename _Result::type, _Ret>,
+		   is_nothrow_constructible<_Ret, typename _Result::type>>>
     { };
 
   /// std::is_nothrow_invocable_r
