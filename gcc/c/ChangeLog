@@ -1,3 +1,8 @@
+2017-12-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82679
+	* c-decl.c (grokdeclarator): Check declspecs insted of atomicp.
+
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
 	* c-objc-common.h (LANG_HOOKS_EMITS_BEGIN_STMT): Redefine as true.
