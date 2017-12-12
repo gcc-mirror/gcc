@@ -1,3 +1,11 @@
+2017-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80631
+	* gcc.dg/vect/pr80631-1.c: New test.
+	* gcc.dg/vect/pr80631-2.c: New test.
+	* gcc.dg/vect/pr65947-13.c: Expect integer induc cond reduction
+	vectorization.
+
 2017-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81889
