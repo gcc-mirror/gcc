@@ -1,3 +1,8 @@
+2017-12-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82679
+	* gcc.dg/c11-atomic-5.c: New test.
+
 2017-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83363
