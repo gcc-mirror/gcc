@@ -482,6 +482,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       if (flag_cf_protection != CF_NONE)
 	def_or_undef (parse_in, "__CET__");
     }
+  if (isa_flag2 & OPTION_MASK_ISA_VAES)
+    def_or_undef (parse_in, "__VAES__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
