@@ -1,3 +1,17 @@
+2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+
+	* emit-rtl.c (next_nondebug_insn, prev_nondebug_insn): Reorder.
+	(next_nonnote_nondebug_insn, prev_nonnote_nondebug_insn): Reorder.
+	(next_nonnote_nondebug_insn_bb): New.
+	(prev_nonnote_nondebug_insn_bb): New.
+	(prev_nonnote_insn_bb, next_nonnote_insn_bb): Remove.
+	* rtl.h	(prev_nonnote_insn_bb, next_nonnote_insn_bb): Remove decls.
+	(prev_nonnote_nondebug_insn_bb): Declare.
+	(next_nonnote_nondebug_insn_bb): Declare.
+	* cfgbuild.c (find_bb_boundaries): Adjust to skip debug insns.
+	* cfgrtl.c (get_last_bb_insn): Likewise.
+	* lra.c (push_insns): Likewise.
+
 2017-12-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/82050
